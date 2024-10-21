@@ -1,0 +1,12 @@
+java:
+  applicationPort: 3206
+  image: 'hmctspublic.azurecr.io/pcs/api:latest'
+  ingressHost: pcs-api-{{ .Values.global.environment }}.service.core-compute-{{ .Values.global.environment }}.internal
+  aadIdentityName: pcs
+#  Uncomment once the vault containing the app insights key has been set up
+#  keyVaults:
+#    pcs:
+#      secrets:
+#        - name: AppInsightsInstrumentationKey
+#          alias: azure.application-insights.instrumentation-key
+  environment:

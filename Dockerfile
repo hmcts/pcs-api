@@ -3,7 +3,7 @@ ARG APP_INSIGHTS_AGENT_VERSION=3.6.1
 FROM hmctspublic.azurecr.io/base/java:21-distroless
 
 COPY lib/applicationinsights.json /opt/app/
-COPY build/libs/spring-boot-template.jar /opt/app/
+COPY build/libs/pcs-api.jar /opt/app/
 
-EXPOSE 4550
-CMD [ "spring-boot-template.jar" ]
+EXPOSE 3206
+CMD [ "pcs-api.jar" ]
