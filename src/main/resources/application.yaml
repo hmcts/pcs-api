@@ -24,7 +24,7 @@ spring:
   config:
     import: "optional:configtree:/mnt/secrets/pcs/"
   application:
-    name: Spring Boot Template
+    name: pcs api
 #  datasource:
 #    driver-class-name: org.postgresql.Driver
 #    url: jdbc:postgresql://${DB_HOST}:${DB_PORT}/${DB_NAME}${DB_OPTIONS:}
