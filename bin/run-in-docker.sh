@@ -1,7 +1,7 @@
 #!/usr/bin/env sh
 
 print_help() {
-  echo "Script to run docker containers for Spring Boot Template API service
+  echo "Script to run docker containers for PCS API service
 
   Usage:
 

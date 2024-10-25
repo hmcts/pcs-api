@@ -37,8 +37,7 @@ by executing the following command:
   docker compose up
 ```
 
-This will start the API container exposing the application's port
-(set to `3206` in this template app).
+This will start the API container exposing the application's port `3206`.
 
 In order to test if the application is up, you can call its health endpoint:
 
