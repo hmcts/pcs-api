@@ -2,3 +2,10 @@ java:
   # Don't modify below here
   image: ${IMAGE_NAME}
   ingressHost: ${SERVICE_FQDN}
+  environment:
+    PCS_DB_HOST: "{{ .Release.Name }}-postgresql"
+    PCS_DB_USER_NAME: "{{ .Values.postgresql.auth.username}}"
+    PCS_DB_PASSWORD: "{{ .Values.postgresql.auth.password}}"
+    PCS_DB_NAME: "{{ .Values.postgresql.auth.database}}"
+  postgresql:
+    enabled: true
