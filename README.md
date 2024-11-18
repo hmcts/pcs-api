@@ -37,7 +37,8 @@ by executing the following command:
   docker compose up
 ```
 
-This will start the API container exposing the application's port `3206`.
+This will start the API container exposing the application's port `3206`, and a database container running on the port
+`5432`.
 
 In order to test if the application is up, you can call its health endpoint:
 
@@ -48,7 +49,7 @@ In order to test if the application is up, you can call its health endpoint:
 You should get a response similar to this:
 
 ```
-  {"status":"UP","diskSpace":{"status":"UP","total":249644974080,"free":137188298752,"threshold":10485760}}
+  {"status":"UP","components":{"db":{"status":"UP","details":{"database":"PostgreSQL","validationQuery":"isValid()"}},"diskSpace":{"status":"UP","details":{"total":62671097856,"free":24688128000,"threshold":10485760,"path":"/opt/app/.","exists":true}},"ping":{"status":"UP"}}}
 ```
 
 ### Alternative script to run application
