@@ -24,7 +24,7 @@ services:
       - PCS_DB_NAME=${POSTGRES_DB}
       - PCS_DB_USER_NAME=${POSTGRES_USER}
       - PCS_DB_PASSWORD=${POSTGRES_PASSWORD}
-      - DB_PORT=5432
+      - DB_PORT=${DB_PORT}
     ports:
       - ${SERVER_PORT}:${SERVER_PORT}
     depends_on:
