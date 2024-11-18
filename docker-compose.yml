@@ -1,5 +1,3 @@
-version: '2.1'
-
 services:
   pcs-api:
     build:
@@ -22,5 +20,32 @@ services:
       - LOGBACK_REQUIRE_THREAD
       - LOGBACK_REQUIRE_ALERT_LEVEL=false
       - LOGBACK_REQUIRE_ERROR_CODE=false
+      - PCS_DB_HOST=postgres
+      - PCS_DB_NAME=${POSTGRES_DB}
+      - PCS_DB_USER_NAME=${POSTGRES_USER}
+      - PCS_DB_PASSWORD=${POSTGRES_PASSWORD}
+      - DB_PORT=5432
     ports:
-      - $SERVER_PORT:$SERVER_PORT
+      - ${SERVER_PORT}:${SERVER_PORT}
+    depends_on:
+      pcs-api-db:
+        condition: service_healthy
+
+  pcs-api-db:
+    image: postgres:15-alpine
+    environment:
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    ports:
+      - ${DB_PORT}:${DB_PORT}
+    volumes:
+      - pcs-api-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U pcsuser -d pcs"]
+      interval: 2s
+      timeout: 1s
+      retries: 5
+
+volumes:
+  pcs-api-db-data:
