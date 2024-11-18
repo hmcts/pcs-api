@@ -32,7 +32,7 @@ services:
         condition: service_healthy
 
   pcs-api-db:
-    image: postgres:15-alpine
+    image: postgres:16-alpine
     environment:
       - POSTGRES_DB=${POSTGRES_DB}
       - POSTGRES_USER=${POSTGRES_USER}
