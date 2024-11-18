@@ -20,7 +20,7 @@ services:
       - LOGBACK_REQUIRE_THREAD
       - LOGBACK_REQUIRE_ALERT_LEVEL=false
       - LOGBACK_REQUIRE_ERROR_CODE=false
-      - PCS_DB_HOST=postgres
+      - PCS_DB_HOST=pcs-api-db
       - PCS_DB_NAME=${POSTGRES_DB}
       - PCS_DB_USER_NAME=${POSTGRES_USER}
       - PCS_DB_PASSWORD=${POSTGRES_PASSWORD}
@@ -38,11 +38,11 @@ services:
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
     ports:
-      - ${DB_PORT}:${DB_PORT}
+      - "${DB_PORT}:5432"
     volumes:
       - pcs-api-db-data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U pcsuser -d pcs"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
       interval: 2s
       timeout: 1s
       retries: 5
