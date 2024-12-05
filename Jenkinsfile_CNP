@@ -9,19 +9,19 @@ def component = "api"
 withPipeline(type, product, component) {
   onPR() {
     afterSuccess('functionalTest:preview') {
-      runE2eTests()
+      runE2eTests('preview')
     }
   }
   onMaster() {
     afterSuccess('functionalTest:aat') {
-      runE2eTests()
+      runE2eTests('aat')
     }
   }
 }
 
-def runE2eTests() {
+def runE2eTests(String context) {
   try {
-    stage('Playwright tests') {
+    stage('E2E Test - ${context}') {
       sh './gradlew runE2eTests'
     }
   } finally {
