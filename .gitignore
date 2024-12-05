@@ -37,3 +37,7 @@ applicationinsights-agent-*.jar
 /playwright-report/
 /blob-report/
 /playwright/.cache/
+/src/e2eTest/.yarn/
+/src/e2eTest/playwright-report/
+/src/e2eTest/test-results/
+/src/e2eTest/node_modules/

@@ -6,4 +6,33 @@ def type = "java"
 def product = "pcs"
 def component = "api"
 
-withPipeline(type, product, component) {}
+withPipeline(type, product, component) {
+  onPR() {
+    afterSuccess('functionalTest:preview') {
+      runE2eTests()
+    }
+  }
+  onMaster() {
+    afterSuccess('functionalTest:aat') {
+      runE2eTests()
+    }
+  }
+}
+
+def runE2eTests() {
+  try {
+    stage('Playwright tests') {
+      sh './gradlew runE2eTests'
+    }
+  } finally {
+    publishHTML([
+      allowMissing: true,
+      alwaysLinkToLastBuild: true,
+      keepAll: true,
+      reportDir: "playwright-report",
+      reportFiles: 'index.html',
+      reportName: 'PCS E2E Test Report'
+    ])
+    steps.archiveArtifacts allowEmptyArchive: true, artifacts: 'definitions/test/playwright-report/**'
+  }
+}
