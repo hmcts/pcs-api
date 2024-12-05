@@ -21,7 +21,7 @@ withPipeline(type, product, component) {
 
 def runE2eTests(String context) {
   try {
-    stage('E2E Test - ${context}') {
+    stage('E2E Test - ' + context) {
       sh './gradlew runE2eTests'
     }
   } finally {
