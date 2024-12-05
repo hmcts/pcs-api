@@ -1,5 +1,6 @@
 import { test } from '@playwright/test';
+import config from "../config";
 
 test('has title', async ({ page }) => {
-  await page.goto('https://manage-case.aat.platform.hmcts.net/cases');
+  await page.goto(config.manageCasesBaseURL);
 });

@@ -8,15 +8,28 @@ def component = "api"
 
 withPipeline(type, product, component) {
   onPR() {
-    afterAlways('functionalTest:preview') {
-      runE2eTests('preview')
+    setPreviewEnvVars()
+    afterSuccess('smoketest:preview') {
+      runE2eTests(env.ENVIRONMENT)
     }
   }
   onMaster() {
-    afterAlways('functionalTest:aat') {
-      runE2eTests('aat')
+    setAatEnvVars()
+    afterSuccess('smoketest:aat') {
+      runE2eTests(env.ENVIRONMENT)
     }
   }
+}
+
+def setPreviewEnvVars() {
+  // TODO: Update URL to include XUI when available
+  env.TEST_E2E_URL_WEB = "https://pcs-api-pr-${CHANGE_ID}.preview.platform.hmcts.net"
+  env.ENVIRONMENT= "preview"
+}
+
+def setAatEnvVars() {
+  env.TEST_E2E_URL_WEB = "https://manage-case.aat.platform.hmcts.net/"
+  env.ENVIRONMENT= "aat"
 }
 
 def runE2eTests(String context) {
