@@ -103,6 +103,16 @@ task smoke(type: Test) {
   classpath = sourceSets.smokeTest.runtimeClasspath
 }
 
+task yarnInstall(type:Exec) {
+  workingDir = file("${project.projectDir}/src/e2eTest")
+  commandLine 'yarn', 'install'
+}
+task runE2eTests(type: Exec) {
+  dependsOn yarnInstall
+  workingDir = file("${project.projectDir}/src/e2eTest")
+  commandLine 'yarn', 'test:functional'
+}
+
 jacocoTestReport {
   executionData(test, integration)
   reports {
