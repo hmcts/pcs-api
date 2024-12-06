@@ -6,9 +6,11 @@
     "node": ">=18.0.0"
   },
   "scripts": {
-    "test:functional": "NODE_TLS_REJECT_UNAUTHORIZED=0 yarn playwright install && yarn playwright test --project chromium"
+    "test:functional": "yarn playwright install && yarn playwright test --project chromium --grep @smoke",
+    "test:a11y": "yarn playwright install && yarn playwright test --project chromium --grep @accessibility"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.10.1",
     "@playwright/test": "^1.49.0",
     "@types/node": "^22.10.1",
     "typescript": "^5.7.2"
