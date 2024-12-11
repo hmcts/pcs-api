@@ -31,7 +31,7 @@ def runE2ETestsForBrowser(String browser) {
         allowMissing: true,
         alwaysLinkToLastBuild: true,
         keepAll: true,
-        reportDir: "playwright-report",
+        reportDir: "src/e2eTest/playwright-report",
         reportFiles: 'index.html',
         reportName: "Full ${browser} E2E Test Report"
       ])
