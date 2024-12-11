@@ -82,6 +82,30 @@ docker image rm <image-id>
 
 There is no need to remove postgres and java or similar core images.
 
+### Running the tests
+
+The E2E UI tests use [Playwright](https://playwright.dev/), and in order to access these you need to cd to the /src/e2eTests directory.
+
+This is done with:
+
+```bash
+cd src/e2eTests
+````
+
+The pr suite can be run with the following command:
+
+```bash
+yarn test:functional
+```
+
+By default, the tests will run against http://localhost:3206/, please update the value on line 3 of src/e2eTest/config.ts to change this.
+
+There are also several custom test scripts available:
+
+- `yarn test:changed` - runs only changed spec files
+- `test:chrome` - runs the full E2E suite in Chrome
+- `test:firefox` - runs the full E2E suite in Firefox
+
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details
