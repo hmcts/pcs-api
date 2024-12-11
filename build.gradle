@@ -107,10 +107,23 @@ task yarnInstall(type:Exec) {
   workingDir = file("${project.projectDir}/src/e2eTest")
   commandLine 'yarn', 'install'
 }
+
 task runE2eTests(type: Exec) {
   dependsOn yarnInstall
   workingDir = file("${project.projectDir}/src/e2eTest")
   commandLine 'yarn', 'test:functional'
+}
+
+task runE2eChromeTests(type: Exec) {
+  dependsOn yarnInstall
+  workingDir = file("${project.projectDir}/src/e2eTest")
+  commandLine 'yarn', 'test:chrome'
+}
+
+task runE2eFirefoxTests(type: Exec) {
+  dependsOn yarnInstall
+  workingDir = file("${project.projectDir}/src/e2eTest")
+  commandLine 'yarn', 'test:firefox'
 }
 
 jacocoTestReport {

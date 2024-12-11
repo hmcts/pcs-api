@@ -44,7 +44,7 @@ def runE2eTests(String context) {
       keepAll: true,
       reportDir: "src/e2eTest/playwright-report",
       reportFiles: 'index.html',
-      reportName: 'PCS E2E Test Report'
+      reportName: 'E2E Test Report'
     ])
     steps.archiveArtifacts allowEmptyArchive: true, artifacts: 'definitions/test/playwright-report/**'
   }
