@@ -159,6 +159,8 @@ dependencies {
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-aop'
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-json'
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-jdbc'
+  implementation group: 'org.springframework.boot', name: 'spring-boot-starter-web'
+  implementation group: 'org.springframework.boot', name: 'spring-boot-starter-security'
   implementation group: 'org.springdoc', name: 'springdoc-openapi-starter-webmvc-ui', version: '2.7.0'
 
   implementation group: 'com.github.hmcts.java-logging', name: 'logging', version: '6.1.7'
@@ -169,7 +171,6 @@ dependencies {
   implementation group: 'ch.qos.logback', name: 'logback-core', version: logbackVersion
   implementation group: 'org.postgresql', name: 'postgresql', version: '42.7.4'
   implementation group: 'com.github.hmcts', name: 'service-auth-provider-java-client', version: '5.3.0'
-
   implementation group: 'io.rest-assured', name: 'rest-assured'
 
   testImplementation(platform('org.junit:junit-bom:5.11.3'))

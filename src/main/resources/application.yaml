@@ -20,6 +20,14 @@ springdoc:
   packagesToScan: uk.gov.hmcts.reform.pcs.controllers
   writer-with-order-by-keys: true
 
+security:
+  anonymousPaths:
+    - "/health"
+    - "/health/liveness"
+    - "/health/readiness"
+    - "/swagger-ui.html"
+    - "/swagger-ui/**"
+    - "/v3/api-docs/**"
 spring:
   config:
     import: "optional:configtree:/mnt/secrets/pcs/"
