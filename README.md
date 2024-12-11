@@ -92,6 +92,12 @@ This is done with:
 cd src/e2eTests
 ````
 
+Before running any tests, please install all required packages:
+
+```bash
+yarn install
+````
+
 The pr suite can be run with the following command:
 
 ```bash
