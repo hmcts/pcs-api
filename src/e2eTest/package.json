@@ -6,7 +6,9 @@
     "node": ">=18.0.0"
   },
   "scripts": {
-    "test:functional": "NODE_TLS_REJECT_UNAUTHORIZED=0 yarn playwright install && yarn playwright test --project chromium",
+    "test:functional": "NODE_TLS_REJECT_UNAUTHORIZED=0 yarn playwright install && yarn playwright test --project chromium --grep @PR",
+    "test:chrome": "NODE_TLS_REJECT_UNAUTHORIZED=0 yarn playwright install && yarn playwright test --project chromium --grep @nightly",
+    "test:firefox": "NODE_TLS_REJECT_UNAUTHORIZED=0 yarn playwright install && yarn playwright test --project firefox --grep @nightly",
     "test:changed": "NODE_TLS_REJECT_UNAUTHORIZED=0 yarn playwright install && tsx ./helpers/runChangedTestHelper.ts"
   },
   "devDependencies": {
