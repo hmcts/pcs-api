@@ -32,7 +32,6 @@ class SampleSmokeTest {
 
     @Test
     void smokeTest() {
-        //Add a header to the request
         String s2sToken = s2sAuthTokenGenerator.generate();
         Response response = given()
             .contentType(ContentType.JSON)
