@@ -6,7 +6,25 @@ def type = "java"
 def product = "pcs"
 def component = "api"
 
+def secrets = [
+  'pcs-${env}': [
+    secret('pcs-api-s2s-secret', 'PCS_API_S2S_SECRET')
+  ]
+]
+
+static LinkedHashMap<String, Object> secret(String secretName, String envVar) {
+  [ $class: 'AzureKeyVaultSecret',
+    secretType: 'Secret',
+    name: secretName,
+    version: '',
+    envVariable: envVar
+  ]
+}
+
 withPipeline(type, product, component) {
+
+  env.IDAM_S2S_AUTH_URL = "http://rpe-service-auth-provider-aat.service.core-compute-aat.internal"
+  loadVaultSecrets(secrets)
   onPR() {
     setPreviewEnvVars()
 //    afterSuccess('smoketest:preview') {
