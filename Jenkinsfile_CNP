@@ -21,10 +21,49 @@ static LinkedHashMap<String, Object> secret(String secretName, String envVar) {
   ]
 }
 
-
 withPipeline(type, product, component) {
 
   env.IDAM_S2S_AUTH_URL = "http://rpe-service-auth-provider-aat.service.core-compute-aat.internal"
   loadVaultSecrets(secrets)
+  onPR() {
+    setPreviewEnvVars()
+    afterSuccess('smoketest:preview') {
+      runE2eTests(env.ENVIRONMENT)
+    }
+  }
+  onMaster() {
+    setAatEnvVars()
+    afterSuccess('smoketest:aat') {
+      runE2eTests(env.ENVIRONMENT)
+    }
+  }
+}
 
+def setPreviewEnvVars() {
+  // TODO: Update URL to include XUI when available
+  env.TEST_E2E_URL_WEB = "https://pcs-api-pr-${CHANGE_ID}.preview.platform.hmcts.net"
+  env.ENVIRONMENT= "preview"
+}
+
+def setAatEnvVars() {
+  env.TEST_E2E_URL_WEB = "https://manage-case.aat.platform.hmcts.net/"
+  env.ENVIRONMENT= "aat"
+}
+
+def runE2eTests(String context) {
+  try {
+    stage('E2E Test - ' + context) {
+      sh './gradlew runE2eTests'
+    }
+  } finally {
+    publishHTML([
+      allowMissing: true,
+      alwaysLinkToLastBuild: true,
+      keepAll: true,
+      reportDir: "src/e2eTest/playwright-report",
+      reportFiles: 'index.html',
+      reportName: 'E2E Test Report'
+    ])
+    steps.archiveArtifacts allowEmptyArchive: true, artifacts: 'definitions/test/playwright-report/**'
+  }
 }
