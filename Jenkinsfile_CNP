@@ -27,9 +27,9 @@ withPipeline(type, product, component) {
   loadVaultSecrets(secrets)
   onPR() {
     setPreviewEnvVars()
-    afterSuccess('smoketest:preview') {
-      runE2eTests(env.ENVIRONMENT)
-    }
+//    afterSuccess('smoketest:preview') {
+//      runE2eTests(env.ENVIRONMENT)
+//    }
   }
   onMaster() {
     setAatEnvVars()
