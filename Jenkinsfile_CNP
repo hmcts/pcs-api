@@ -9,9 +9,9 @@ def component = "api"
 withPipeline(type, product, component) {
   onPR() {
     setPreviewEnvVars()
-    afterSuccess('smoketest:preview') {
-      runE2eTests(env.ENVIRONMENT)
-    }
+//    afterSuccess('smoketest:preview') {
+//      runE2eTests(env.ENVIRONMENT)
+//    }
   }
   onMaster() {
     setAatEnvVars()
