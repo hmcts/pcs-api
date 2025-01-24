@@ -59,6 +59,10 @@ configurations {
 
   smokeTestImplementation.extendsFrom testImplementation
   smokeTestRuntimeOnly.extendsFrom runtimeOnly
+
+  cucumberRuntime {
+    extendsFrom testImplementation
+  }
 }
 
 tasks.withType(JavaCompile) {
@@ -82,12 +86,32 @@ test {
   failFast = true
 }
 
-task functional(type: Test) {
+task functional(type: JavaExec) {
   description = "Runs functional tests"
-  group = "Verification"
-  testClassesDirs = sourceSets.functionalTest.output.classesDirs
-  classpath = sourceSets.functionalTest.runtimeClasspath
+  group = "verification"
+  dependsOn assemble, testClasses
+  mainClass = "io.cucumber.core.cli.Main"
+  classpath = configurations.functionalTestRuntimeClasspath + sourceSets.functionalTest.output
+
+  args = [
+    '--threads', '1',
+    '--plugin', "json:${buildDir}/allure-results/cucumber.json",
+    '--plugin', "io.qameta.allure.cucumber7jvm.AllureCucumber7Jvm",
+    '--tags', '',
+    '--glue', 'uk.gov.hmcts.reform.pcs',
+    'src/functionalTest/resources/features'
+  ]
+
+  systemProperty 'allure.results.directory', "$buildDir/allure-results"
 }
+
+task generateAllureReport(type: Exec) {
+  group = "reporting"
+  description = "Generates Allure HTML report"
+  commandLine "allure", "generate", "${buildDir}/allure-results", "-o", "${buildDir}/allure-report"
+}
+
+generateAllureReport.dependsOn functional
 
 task integration(type: Test) {
   description = "Runs integration tests"
@@ -176,6 +200,16 @@ ext {
 
 ext['snakeyaml.version'] = '2.0'
 
+def allureVersion = "2.29.1"
+def aspectJVersion = "1.9.20.1"
+
+configurations {
+  agent {
+    canBeResolved = true
+    canBeConsumed = true
+  }
+}
+
 dependencies {
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-web'
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-actuator'
@@ -196,12 +230,25 @@ dependencies {
   implementation group: 'com.github.hmcts', name: 'service-auth-provider-java-client', version: '5.3.0'
   implementation group: 'io.rest-assured', name: 'rest-assured'
 
+  testImplementation platform("io.qameta.allure:allure-bom:$allureVersion")
+  testImplementation "io.qameta.allure:allure-cucumber7-jvm"
+  testImplementation "io.qameta.allure:allure-junit-platform"
+  testImplementation group: 'io.cucumber', name: 'cucumber-java', version: '7.20.1'
+  testImplementation group: 'io.cucumber', name: 'cucumber-junit', version: '7.20.1'
+  testImplementation group: 'org.junit.platform', name: 'junit-platform-suite-api', version: '1.11.4'
+  agent "org.aspectj:aspectjweaver:$aspectJVersion"
+  testImplementation "io.qameta.allure:allure-junit4-aspect"
+
   testImplementation(platform('org.junit:junit-bom:5.11.4'))
   testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'
   testImplementation group: 'org.springframework.boot', name: 'spring-boot-starter-test', {
     exclude group: 'junit', module: 'junit'
     exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
   }
+}
+
+test {
+  jvmArgs = [ "-javaagent:${configurations.agent.singleFile}" ]
 }
 
 mainClassName = 'uk.gov.hmcts.reform.pcs.Application'
@@ -216,6 +263,10 @@ bootJar {
 
 // Gradle 7.x issue, workaround from: https://github.com/gradle/gradle/issues/17236#issuecomment-894768083
 rootProject.tasks.named("processSmokeTestResources") {
+  duplicatesStrategy = 'include'
+}
+
+rootProject.tasks.named("processFunctionalTestResources") {
   duplicatesStrategy = 'include'
 }
 

@@ -67,3 +67,21 @@ def runE2eTests(String context) {
     steps.archiveArtifacts allowEmptyArchive: true, artifacts: 'definitions/test/playwright-report/**'
   }
 }
+
+def runFunctionalTests(String context) {
+  try {
+    stage('Functional Test - ' + context) {
+      sh './gradlew generateAllureReport'
+    }
+  } finally {
+    publishHTML([
+      allowMissing: true,
+      alwaysLinkToLastBuild: true,
+      keepAll: true,
+      reportDir: "build/allure-report",
+      reportFiles: 'index.html',
+      reportName: 'Functional Test Report'
+    ])
+    steps.archiveArtifacts allowEmptyArchive: true, artifacts: 'definitions/test/api-test-report/**'
+  }
+}
