@@ -42,6 +42,27 @@ withPipeline(type, product, component) {
       runE2eTests(env.ENVIRONMENT)
     }
   }
+
+  before('functionalTest') {
+    yarnBuilder.yarn("allure install")
+  }
+
+  afterAlways('functionalTest') {
+    try {
+      publishHTML([
+        allowMissing: true,
+        alwaysLinkToLastBuild: true,
+        keepAll: true,
+        reportDir: "build/allure-report",
+        reportFiles: 'index.html',
+        reportName: 'Functional Test Report'
+      ])
+      steps.archiveArtifacts allowEmptyArchive: true, artifacts: 'definitions/test/api-test-report/**'
+    }
+    catch (Error) {
+      unstable(message: "${STAGE_NAME} is unstable: " + Error.toString())
+    }
+  }
 }
 
 def setPreviewEnvVars() {
@@ -70,22 +91,5 @@ def runE2eTests(String context) {
       reportName: 'E2E Test Report'
     ])
     steps.archiveArtifacts allowEmptyArchive: true, artifacts: 'definitions/test/playwright-report/**'
-  }
-}
-
-afterAlways('functionalTest') {
-  try {
-    publishHTML([
-      allowMissing: true,
-      alwaysLinkToLastBuild: true,
-      keepAll: true,
-      reportDir: "build/allure-report",
-      reportFiles: 'index.html',
-      reportName: 'Functional Test Report'
-    ])
-    steps.archiveArtifacts allowEmptyArchive: true, artifacts: 'definitions/test/api-test-report/**'
-  }
-  catch (Error) {
-    unstable(message: "${STAGE_NAME} is unstable: " + Error.toString())
   }
 }
