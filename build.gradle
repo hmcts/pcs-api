@@ -102,6 +102,7 @@ task functional(type: JavaExec) {
     'src/functionalTest/resources/features'
   ]
 
+  jvmArgs "-Dlogback.statusListenerClass=ch.qos.logback.core.status.NopStatusListener"
   systemProperty 'allure.results.directory', "$buildDir/allure-results"
 }
 
@@ -112,6 +113,7 @@ task generateAllureReport(type: Exec) {
 }
 
 generateAllureReport.dependsOn functional
+functional.finalizedBy generateAllureReport
 
 task integration(type: Test) {
   description = "Runs integration tests"

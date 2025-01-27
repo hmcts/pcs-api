@@ -71,7 +71,7 @@ def runE2eTests(String context) {
 def runFunctionalTests(String context) {
   try {
     stage('Functional Test - ' + context) {
-      sh './gradlew generateAllureReport'
+      sh './gradlew functional'
     }
   } finally {
     publishHTML([
