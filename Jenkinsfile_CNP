@@ -43,8 +43,23 @@ withPipeline(type, product, component) {
     }
   }
 
-  before('functionalTest') {
-    yarnBuilder.yarn("allure install")
+  environment {
+    ALLURE_VERSION = "2.29.1"
+    ALLURE_HOME = "${tool name: 'Allure', type: 'Tool'}"
+  }
+
+  stages {
+    stage('Install Allure') {
+      steps {
+        script {
+          sh """
+                    curl -o allure.tgz -L https://github.com/allure-framework/allure2/releases/download/${ALLURE_VERSION}/allure-${ALLURE_VERSION}.tgz
+                    tar -zxvf allure.tgz
+                    mv allure-${ALLURE_VERSION} /usr/local/bin/allure
+                    """
+        }
+      }
+    }
   }
 
   afterAlways('functionalTest') {
