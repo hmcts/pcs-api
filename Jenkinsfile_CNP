@@ -25,6 +25,11 @@ withPipeline(type, product, component) {
 
   env.IDAM_S2S_AUTH_URL = "http://rpe-service-auth-provider-aat.service.core-compute-aat.internal"
   loadVaultSecrets(secrets)
+
+  environment {
+    PATH = "/path/to/allure/bin:$PATH"
+  }
+
   onPR() {
     setPreviewEnvVars()
 //    afterSuccess('smoketest:preview') {
