@@ -48,22 +48,7 @@ withPipeline(type, product, component) {
     }
   }
 
-//  stages {
-//    stage('Install Allure') {
-//      steps {
-//        script {
-//          def allureDir = "/tmp/allure-${ALLURE_VERSION}"
-//          sh """
-//              curl -o allure.tgz -L https://github.com/allure-framework/allure2/releases/download/${ALLURE_VERSION}/allure-${ALLURE_VERSION}.tgz
-//              tar -zxvf allure.tgz -C /tmp
-//              sudo mv /tmp/allure-${ALLURE_VERSION} /usr/local/bin/allure
-//          """
-//        }
-//      }
-//    }
-//  }
-
-  afterAlways('functionalTest') {
+  afterAlways('functionalTest:preview') {
     try {
       publishHTML([
         allowMissing: true,
