@@ -23,8 +23,18 @@ static LinkedHashMap<String, Object> secret(String secretName, String envVar) {
 
 withPipeline(type, product, component) {
 
+//  environment {
+//    ALLURE_VERSION = "2.29.1"
+//    PATH = "/usr/local/bin:$PATH"
+//  }
+
   env.IDAM_S2S_AUTH_URL = "http://rpe-service-auth-provider-aat.service.core-compute-aat.internal"
   loadVaultSecrets(secrets)
+
+  environment {
+    PATH = "/path/to/allure/bin:$PATH"
+  }
+
   onPR() {
     setPreviewEnvVars()
 //    afterSuccess('smoketest:preview') {
@@ -35,6 +45,23 @@ withPipeline(type, product, component) {
     setAatEnvVars()
     afterSuccess('smoketest:aat') {
       runE2eTests(env.ENVIRONMENT)
+    }
+  }
+
+  afterAlways('functionalTest:preview') {
+    try {
+      publishHTML([
+        allowMissing: true,
+        alwaysLinkToLastBuild: true,
+        keepAll: true,
+        reportDir: "ReportForFunctionalTests",
+        reportFiles: 'index.html',
+        reportName: 'Functional Test Report'
+      ])
+      steps.archiveArtifacts allowEmptyArchive: true, artifacts: '**/ReportForFunctionalTests/**/*'
+    }
+    catch (Error) {
+      unstable(message: "${STAGE_NAME} is unstable: " + Error.toString())
     }
   }
 }

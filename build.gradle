@@ -5,6 +5,7 @@ plugins {
   id 'org.springframework.boot' version '3.4.1'
   id 'com.github.ben-manes.versions' version '0.52.0'
   id 'org.sonarqube' version '6.0.1.5171'
+  id 'io.qameta.allure' version '2.12.0'
   /*
     Applies analysis tools including checkstyle and OWASP Dependency checker.
     See https://github.com/hmcts/gradle-java-plugin
@@ -59,6 +60,10 @@ configurations {
 
   smokeTestImplementation.extendsFrom testImplementation
   smokeTestRuntimeOnly.extendsFrom runtimeOnly
+
+  cucumberRuntime {
+    extendsFrom testImplementation
+  }
 }
 
 tasks.withType(JavaCompile) {
@@ -82,11 +87,36 @@ test {
   failFast = true
 }
 
-task functional(type: Test) {
+task functional(type: JavaExec) {
   description = "Runs functional tests"
-  group = "Verification"
-  testClassesDirs = sourceSets.functionalTest.output.classesDirs
-  classpath = sourceSets.functionalTest.runtimeClasspath
+  group = "verification"
+  dependsOn assemble, testClasses
+  mainClass = "io.cucumber.core.cli.Main"
+  classpath = configurations.functionalTestRuntimeClasspath + sourceSets.functionalTest.output
+
+  args = [
+    '--threads', '1',
+    '--plugin', "json:${buildDir}/allure-results/cucumber.json",
+    '--plugin', "io.qameta.allure.cucumber7jvm.AllureCucumber7Jvm",
+    '--plugin', "junit:${buildDir}/test-results/functional/cucumber.xml",
+    '--tags', '',
+    '--glue', 'uk.gov.hmcts.reform.pcs',
+    'src/functionalTest/resources/features'
+  ]
+
+  jvmArgs "-Dlogback.statusListenerClass=ch.qos.logback.core.status.NopStatusListener"
+  systemProperty 'allure.results.directory', "$buildDir/allure-results"
+  delete "${buildDir}/reports/allure-report/allureReport"
+
+  finalizedBy {
+    allureReport {
+      doLast{
+        new File("${rootDir}/ReportForFunctionalTests").mkdirs()
+        file("${buildDir}/reports/allure-report/allureReport").renameTo(file("${rootDir}/ReportForFunctionalTests"))
+        logger.quiet("Functional test report moved to ---> file://${rootDir}/ReportForFunctionalTests/index.html")
+      }
+    }
+  }
 }
 
 task integration(type: Test) {
@@ -176,6 +206,16 @@ ext {
 
 ext['snakeyaml.version'] = '2.0'
 
+def allureVersion = "2.29.1"
+def aspectJVersion = "1.9.20.1"
+
+configurations {
+  agent {
+    canBeResolved = true
+    canBeConsumed = true
+  }
+}
+
 dependencies {
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-web'
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-actuator'
@@ -196,12 +236,26 @@ dependencies {
   implementation group: 'com.github.hmcts', name: 'service-auth-provider-java-client', version: '5.3.0'
   implementation group: 'io.rest-assured', name: 'rest-assured'
 
+  testImplementation platform("io.qameta.allure:allure-bom:$allureVersion")
+  testImplementation "io.qameta.allure:allure-cucumber7-jvm"
+  testImplementation "io.qameta.allure:allure-junit-platform"
+  testImplementation group: 'io.qameta.allure', name: 'allure-commandline', version: '2.32.0', ext: 'pom'
+  testImplementation group: 'io.cucumber', name: 'cucumber-java', version: '7.20.1'
+  testImplementation group: 'io.cucumber', name: 'cucumber-junit', version: '7.20.1'
+  testImplementation group: 'org.junit.platform', name: 'junit-platform-suite-api', version: '1.11.4'
+  agent "org.aspectj:aspectjweaver:$aspectJVersion"
+  testImplementation "io.qameta.allure:allure-junit4-aspect"
+
   testImplementation(platform('org.junit:junit-bom:5.11.4'))
   testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'
   testImplementation group: 'org.springframework.boot', name: 'spring-boot-starter-test', {
     exclude group: 'junit', module: 'junit'
     exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
   }
+}
+
+test {
+  jvmArgs = [ "-javaagent:${configurations.agent.singleFile}" ]
 }
 
 mainClassName = 'uk.gov.hmcts.reform.pcs.Application'
@@ -216,6 +270,10 @@ bootJar {
 
 // Gradle 7.x issue, workaround from: https://github.com/gradle/gradle/issues/17236#issuecomment-894768083
 rootProject.tasks.named("processSmokeTestResources") {
+  duplicatesStrategy = 'include'
+}
+
+rootProject.tasks.named("processFunctionalTestResources") {
   duplicatesStrategy = 'include'
 }
 
