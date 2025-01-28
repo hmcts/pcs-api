@@ -63,17 +63,17 @@ withPipeline(type, product, component) {
 //    }
 //  }
 
-  afterAlways('functional') {
+  afterAlways('functionalTest') {
     try {
       publishHTML([
         allowMissing: true,
         alwaysLinkToLastBuild: true,
         keepAll: true,
-        reportDir: "/build/reports/allure-report/allureReport",
+        reportDir: "ReportForFunctionalTests",
         reportFiles: 'index.html',
         reportName: 'Functional Test Report'
       ])
-      steps.archiveArtifacts allowEmptyArchive: true, artifacts: 'definitions/test/api-test-report/**'
+      steps.archiveArtifacts allowEmptyArchive: true, artifacts: '**/Report for Functional Tests/**/*'
     }
     catch (Error) {
       unstable(message: "${STAGE_NAME} is unstable: " + Error.toString())

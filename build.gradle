@@ -105,16 +105,18 @@ task functional(type: JavaExec) {
 
   jvmArgs "-Dlogback.statusListenerClass=ch.qos.logback.core.status.NopStatusListener"
   systemProperty 'allure.results.directory', "$buildDir/allure-results"
-}
+  delete "${buildDir}/reports/allure-report/allureReport"
 
-//task generateAllureReport(type: Exec) {
-//  group = "reporting"
-//  description = "Generates Allure HTML report"
-//  commandLine "allure", "generate", "${buildDir}/allure-results", "-o", "${buildDir}/allure-report"
-//}
-//
-//generateAllureReport.dependsOn functional
-functional.finalizedBy allureReport
+  finalizedBy {
+    allureReport {
+      doLast{
+        new File("${rootDir}/ReportForFunctionalTests").mkdirs()
+        file("${buildDir}/reports/allure-report/allureReport").renameTo(file("${rootDir}/ReportForFunctionalTests"))
+        logger.quiet("Functional test report moved to ---> file://${rootDir}/ReportForFunctionalTests/index.html")
+      }
+    }
+  }
+}
 
 task integration(type: Test) {
   description = "Runs integration tests"
