@@ -63,13 +63,13 @@ withPipeline(type, product, component) {
 //    }
 //  }
 
-  afterAlways('functionalTest') {
+  afterAlways('functional') {
     try {
       publishHTML([
         allowMissing: true,
         alwaysLinkToLastBuild: true,
         keepAll: true,
-        reportDir: "build/reports/allure-report/allureReport",
+        reportDir: "/build/reports/allure-report/allureReport",
         reportFiles: 'index.html',
         reportName: 'Functional Test Report'
       ])
