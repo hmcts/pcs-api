@@ -23,6 +23,11 @@ static LinkedHashMap<String, Object> secret(String secretName, String envVar) {
 
 withPipeline(type, product, component) {
 
+  environment {
+    ALLURE_VERSION = "2.29.1"
+    PATH = "/usr/local/bin:$PATH"
+  }
+
   env.IDAM_S2S_AUTH_URL = "http://rpe-service-auth-provider-aat.service.core-compute-aat.internal"
   loadVaultSecrets(secrets)
 
@@ -43,20 +48,16 @@ withPipeline(type, product, component) {
     }
   }
 
-  environment {
-    ALLURE_VERSION = "2.29.1"
-    ALLURE_HOME = "${tool name: 'Allure', type: 'Tool'}"
-  }
-
   stages {
     stage('Install Allure') {
       steps {
         script {
+          def allureDir = "/tmp/allure-${ALLURE_VERSION}"
           sh """
-                    curl -o allure.tgz -L https://github.com/allure-framework/allure2/releases/download/${ALLURE_VERSION}/allure-${ALLURE_VERSION}.tgz
-                    tar -zxvf allure.tgz
-                    mv allure-${ALLURE_VERSION} /usr/local/bin/allure
-                    """
+              curl -o allure.tgz -L https://github.com/allure-framework/allure2/releases/download/${ALLURE_VERSION}/allure-${ALLURE_VERSION}.tgz
+              tar -zxvf allure.tgz -C /tmp
+              sudo mv /tmp/allure-${ALLURE_VERSION} /usr/local/bin/allure
+          """
         }
       }
     }
