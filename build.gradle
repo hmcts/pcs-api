@@ -116,9 +116,9 @@ task functional(type: JavaExec) {
   finalizedBy {
     allureReport {
       doLast {
-        new File("${rootDir}/ReportForFunctionalTests").mkdirs()
-        file("${buildDir}/reports/allure-report/allureReport").renameTo(file("${rootDir}/ReportForFunctionalTests"))
-        logger.quiet("Functional test report moved to ---> file://${rootDir}/ReportForFunctionalTests/index.html")
+        new File("${rootDir}/report-for-functional-tests").mkdirs()
+        file("${buildDir}/reports/allure-report/allureReport").renameTo(file("${rootDir}/report-for-functional-tests"))
+        logger.quiet("Functional test report moved to ---> file://${rootDir}/report-for-functional-tests/index.html")
       }
     }
   }
@@ -244,12 +244,10 @@ dependencies {
   testImplementation platform("io.qameta.allure:allure-bom:$allureVersion")
   testImplementation "io.qameta.allure:allure-cucumber7-jvm"
   testImplementation "io.qameta.allure:allure-junit-platform"
-  testImplementation group: 'io.qameta.allure', name: 'allure-commandline', version: '2.32.0', ext: 'pom'
   testImplementation group: 'io.cucumber', name: 'cucumber-java', version: '7.20.1'
   testImplementation group: 'io.cucumber', name: 'cucumber-junit', version: '7.20.1'
   testImplementation group: 'org.junit.platform', name: 'junit-platform-suite-api', version: '1.11.4'
   agent "org.aspectj:aspectjweaver:$aspectJVersion"
-  testImplementation "io.qameta.allure:allure-junit4-aspect"
 
   testImplementation(platform('org.junit:junit-bom:5.11.4'))
   testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'
@@ -257,10 +255,6 @@ dependencies {
     exclude group: 'junit', module: 'junit'
     exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
   }
-}
-
-test {
-  jvmArgs = [ "-javaagent:${configurations.agent.singleFile}" ]
 }
 
 mainClassName = 'uk.gov.hmcts.reform.pcs.Application'

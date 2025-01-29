@@ -23,11 +23,6 @@ static LinkedHashMap<String, Object> secret(String secretName, String envVar) {
 
 withPipeline(type, product, component) {
 
-//  environment {
-//    ALLURE_VERSION = "2.29.1"
-//    PATH = "/usr/local/bin:$PATH"
-//  }
-
   env.IDAM_S2S_AUTH_URL = "http://rpe-service-auth-provider-aat.service.core-compute-aat.internal"
   loadVaultSecrets(secrets)
 
@@ -49,20 +44,11 @@ withPipeline(type, product, component) {
   }
 
   afterAlways('functionalTest:preview') {
-    try {
-      publishHTML([
-        allowMissing: true,
-        alwaysLinkToLastBuild: true,
-        keepAll: true,
-        reportDir: "ReportForFunctionalTests",
-        reportFiles: 'index.html',
-        reportName: 'Functional Test Report'
-      ])
-      steps.archiveArtifacts allowEmptyArchive: true, artifacts: '**/ReportForFunctionalTests/*'
-    }
-    catch (Error) {
-      unstable(message: "${STAGE_NAME} is unstable: " + Error.toString())
-    }
+    runFunctionalTests(env.ENVIRONMENT)
+  }
+
+  afterAlways('functionalTest:aat') {
+    runFunctionalTests(env.ENVIRONMENT)
   }
 }
 
@@ -92,5 +78,23 @@ def runE2eTests(String context) {
       reportName: 'E2E Test Report'
     ])
     steps.archiveArtifacts allowEmptyArchive: true, artifacts: 'definitions/test/playwright-report/**'
+  }
+}
+
+def runFunctionalTests(String context) {
+  try {
+    stage('Functional Test - ' + context) {
+      sh './gradlew functional'
+    }
+  } finally {
+    publishHTML([
+      allowMissing: true,
+      alwaysLinkToLastBuild: true,
+      keepAll: true,
+      reportDir: "report-for-functional-tests",
+      reportFiles: 'index.html',
+      reportName: 'Functional Test Report'
+    ])
+    steps.archiveArtifacts allowEmptyArchive: true, artifacts: '**/report-for-functional-tests/*'
   }
 }
