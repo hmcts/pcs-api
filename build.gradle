@@ -5,7 +5,7 @@ plugins {
   id 'org.springframework.boot' version '3.4.2'
   id 'com.github.ben-manes.versions' version '0.52.0'
   id 'org.sonarqube' version '6.0.1.5171'
-  id 'io.qameta.allure' version '2.12.0'
+  id 'net.serenity-bdd.serenity-gradle-plugin' version '4.2.15'
   /*
     Applies analysis tools including checkstyle and OWASP Dependency checker.
     See https://github.com/hmcts/gradle-java-plugin
@@ -87,41 +87,36 @@ test {
   failFast = true
 }
 
-task functional(type: JavaExec) {
+task functional(type: Test) {
   description = "Runs functional tests"
   group = "verification"
   dependsOn assemble, testClasses
-  mainClass = "io.cucumber.core.cli.Main"
+  testClassesDirs = sourceSets.functionalTest.output.classesDirs
   classpath = configurations.functionalTestRuntimeClasspath + sourceSets.functionalTest.output
 
-  args = [
-    '--threads', '1',
-    '--plugin', "json:${buildDir}/allure-results/cucumber.json",
-    '--plugin', "io.qameta.allure.cucumber7jvm.AllureCucumber7Jvm",
-    '--plugin', "junit:${buildDir}/test-results/functional/cucumber.xml",
-    '--tags', '',
-    '--glue', 'uk.gov.hmcts.reform.pcs',
-    'src/functionalTest/resources/features'
-  ]
-
-  jvmArgs "-Dlogback.statusListenerClass=ch.qos.logback.core.status.NopStatusListener"
-  systemProperty 'allure.results.directory', "$buildDir/allure-results"
+  useJUnitPlatform {
+    includeTags System.getProperty("tags", "Functional")
+  }
 
   doFirst {
-    delete "${buildDir}/allure-results"
-    delete "${buildDir}/reports/allure-report/allureReport"
-    logger.quiet("Allure results directory cleaned before running functional tests")
+    delete "${rootDir}/target/site/serenity"
+    logger.quiet("Serenity results directory cleaned before running functional tests")
   }
 
   finalizedBy {
-    allureReport {
+    aggregate {
       doLast {
         new File("${rootDir}/report-for-functional-tests").mkdirs()
-        file("${buildDir}/reports/allure-report/allureReport").renameTo(file("${rootDir}/report-for-functional-tests"))
+        file("${rootDir}/target/site/serenity").renameTo(file("${rootDir}/report-for-functional-tests"))
         logger.quiet("Functional test report moved to ---> file://${rootDir}/report-for-functional-tests/index.html")
       }
     }
   }
+}
+functional.finalizedBy(aggregate)
+
+serenity {
+  reports = ["single-page-html"]
 }
 
 task integration(type: Test) {
@@ -211,16 +206,6 @@ ext {
 
 ext['snakeyaml.version'] = '2.0'
 
-def allureVersion = "2.29.1"
-def aspectJVersion = "1.9.20.1"
-
-configurations {
-  agent {
-    canBeResolved = true
-    canBeConsumed = true
-  }
-}
-
 dependencies {
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-web'
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-actuator'
@@ -241,13 +226,10 @@ dependencies {
   implementation group: 'com.github.hmcts', name: 'service-auth-provider-java-client', version: '5.3.0'
   implementation group: 'io.rest-assured', name: 'rest-assured'
 
-  testImplementation platform("io.qameta.allure:allure-bom:$allureVersion")
-  testImplementation "io.qameta.allure:allure-cucumber7-jvm"
-  testImplementation "io.qameta.allure:allure-junit-platform"
-  testImplementation group: 'io.cucumber', name: 'cucumber-java', version: '7.20.1'
-  testImplementation group: 'io.cucumber', name: 'cucumber-junit', version: '7.20.1'
+  implementation group: 'net.serenity-bdd', name: 'serenity-rest-assured', version: '4.2.15'
+  implementation group: 'net.serenity-bdd', name: 'serenity-core', version: '4.2.15'
+  testImplementation group: 'net.serenity-bdd', name: 'serenity-junit5', version: '4.2.15'
   testImplementation group: 'org.junit.platform', name: 'junit-platform-suite-api', version: '1.11.4'
-  agent "org.aspectj:aspectjweaver:$aspectJVersion"
 
   testImplementation(platform('org.junit:junit-bom:5.11.4'))
   testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'
