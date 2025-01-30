@@ -100,7 +100,8 @@ task functional(type: Test) {
 
   doFirst {
     delete "${rootDir}/target/site/serenity"
-    logger.quiet("Serenity results directory cleaned before running functional tests")
+    delete "${rootDir}/report-for-functional-tests"
+    logger.quiet("Functional test results directory cleaned before running functional tests")
   }
 
   finalizedBy {
@@ -111,6 +112,9 @@ task functional(type: Test) {
         logger.quiet("Functional test report moved to ---> file://${rootDir}/report-for-functional-tests/index.html")
       }
     }
+  }
+  testLogging {
+    events "PASSED", "SKIPPED", "FAILED"
   }
 }
 functional.finalizedBy(aggregate)
