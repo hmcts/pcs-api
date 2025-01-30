@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.FunctionalTest.steps;
+package uk.gov.hmcts.reform.pcs.functional.steps;
 
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
