@@ -6,7 +6,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.springframework.beans.factory.annotation.Value;
 import uk.gov.hmcts.reform.pcs.functional.steps.ApiSteps;
 
 @ExtendWith(SerenityJUnit5Extension.class)
