@@ -1,7 +1,7 @@
 package uk.gov.hmcts.reform.pcs.functional.steps;
 
-import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
+import net.serenitybdd.rest.SerenityRest;
 import net.serenitybdd.annotations.Step;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.notNullValue;
@@ -17,7 +17,7 @@ public class ApiSteps {
 
     @Step("Get user with ID {0}")
     public void getUserById(int userId) {
-        RestAssured.given()
+        SerenityRest.given()
             .baseUri(baseUrl)
             .contentType(ContentType.JSON)
             .when()
