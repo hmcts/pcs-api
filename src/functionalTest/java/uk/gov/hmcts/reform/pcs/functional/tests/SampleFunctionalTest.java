@@ -6,12 +6,13 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.springframework.beans.factory.annotation.Value;
 import uk.gov.hmcts.reform.pcs.functional.steps.ApiSteps;
 
 @ExtendWith(SerenityJUnit5Extension.class)
 class SampleFunctionalTest {
 
-    private static final String BASE_URL = "https://jsonplaceholder.typicode.com";
+    private static final String BASE_URL = System.getProperty("TEST_URL", "http://localhost:8080");
 
     @Steps
     ApiSteps apiSteps;
@@ -22,13 +23,13 @@ class SampleFunctionalTest {
     }
 
     @Test
-    void testGetUser() {
-        apiSteps.getUserById(1);
+    void testHealth() {
+        apiSteps.getHealth();
     }
 
     @Test
     @Tag("Functional")
-    void testGetUser2() {
-        apiSteps.getUserById(1);
+    void testHealth2() {
+        apiSteps.getHealth();
     }
 }
