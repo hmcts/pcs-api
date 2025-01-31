@@ -11,7 +11,7 @@ import uk.gov.hmcts.reform.pcs.functional.steps.ApiSteps;
 @ExtendWith(SerenityJUnit5Extension.class)
 class SampleFunctionalTest {
 
-    private static final String BASE_URL = System.getProperty("TEST_URL", "http://localhost:8080");
+    private static final String BASE_URL = System.getenv("TEST_URL");
 
     @Steps
     ApiSteps apiSteps;
