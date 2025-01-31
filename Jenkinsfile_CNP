@@ -26,10 +26,6 @@ withPipeline(type, product, component) {
   env.IDAM_S2S_AUTH_URL = "http://rpe-service-auth-provider-aat.service.core-compute-aat.internal"
   loadVaultSecrets(secrets)
 
-  environment {
-    PATH = "/path/to/allure/bin:$PATH"
-  }
-
   onPR() {
     setPreviewEnvVars()
 //    afterSuccess('smoketest:preview') {
@@ -93,7 +89,7 @@ def runFunctionalTests(String context) {
       keepAll: true,
       reportDir: "report-for-functional-tests",
       reportFiles: 'index.html',
-      reportName: 'Functional Test Report'
+      reportName: 'API Functional Test Report'
     ])
     steps.archiveArtifacts allowEmptyArchive: true, artifacts: '**/report-for-functional-tests/*'
   }

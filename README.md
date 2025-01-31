@@ -95,7 +95,7 @@ To run the tests, use:
 
 To run tests based on tags, use the following command (replace `tagName` with the desired tag):
 ```bash
-./gradlew functional -Dtags="Functional"
+./gradlew functional -Dtags="tagName"
 ````
 
 Additionally, you can configure the tags to run in the pipeline by editing the functional task in the `build.gradle`, line:

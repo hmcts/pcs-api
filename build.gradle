@@ -60,10 +60,6 @@ configurations {
 
   smokeTestImplementation.extendsFrom testImplementation
   smokeTestRuntimeOnly.extendsFrom runtimeOnly
-
-  cucumberRuntime {
-    extendsFrom testImplementation
-  }
 }
 
 tasks.withType(JavaCompile) {
