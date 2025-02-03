@@ -82,9 +82,31 @@ docker image rm <image-id>
 
 There is no need to remove postgres and java or similar core images.
 
+---
+
 ### Running the tests
 
-The E2E UI tests use [Playwright](https://playwright.dev/), and in order to access these you need to cd to the /src/e2eTests directory.
+The Functional tests use [Rest Assured](https://rest-assured.io) and [Serenity](https://serenity-bdd.github.io) for reporting, and are located in the `/src/functionalTest` directory.
+
+To run the tests, use:
+```bash
+./gradlew functional
+````
+
+To run tests based on tags, use the following command (replace `tagName` with the desired tag):
+```bash
+./gradlew functional -Dtags="tagName"
+````
+
+Additionally, you can configure the tags to run in the pipeline by editing the functional task in the `build.gradle`, line:
+
+`includeTags System.getProperty("tags", "Functional")`
+
+After the tests run, the report will be available under the /[report-for-functional-tests](report-for-functional-tests) folder, in a file named `index.html`.
+
+---
+
+The E2E UI tests use [Playwright](https://playwright.dev/), and in order to access these you need to cd to the `/src/e2eTests` directory.
 
 This is done with:
 
@@ -104,7 +126,7 @@ The pr suite can be run with the following command:
 yarn test:functional
 ```
 
-By default, the tests will run against http://localhost:3206/, please update the value on line 3 of src/e2eTest/config.ts to change this.
+By default, the tests will run against http://localhost:3206/, please update the value on line 3 of `src/e2eTest/config.ts` to change this.
 
 There are also several custom test scripts available:
 

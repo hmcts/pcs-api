@@ -25,6 +25,7 @@ withPipeline(type, product, component) {
 
   env.IDAM_S2S_AUTH_URL = "http://rpe-service-auth-provider-aat.service.core-compute-aat.internal"
   loadVaultSecrets(secrets)
+
   onPR() {
     setPreviewEnvVars()
 //    afterSuccess('smoketest:preview') {
@@ -36,6 +37,14 @@ withPipeline(type, product, component) {
     afterSuccess('smoketest:aat') {
       runE2eTests(env.ENVIRONMENT)
     }
+  }
+
+  afterAlways('functionalTest:preview') {
+    archiveFunctionalTestReports()
+  }
+
+  afterAlways('functionalTest:aat') {
+    archiveFunctionalTestReports()
   }
 }
 
@@ -66,4 +75,17 @@ def runE2eTests(String context) {
     ])
     steps.archiveArtifacts allowEmptyArchive: true, artifacts: 'definitions/test/playwright-report/**'
   }
+}
+
+def archiveFunctionalTestReports() {
+  publishHTML([
+    allowMissing: true,
+    alwaysLinkToLastBuild: true,
+    keepAll: true,
+    reportDir: "report-for-functional-tests",
+    reportFiles: 'index.html',
+    reportName: 'API Functional Test Report'
+  ])
+
+  archiveArtifacts allowEmptyArchive: true, artifacts: '**/report-for-functional-tests/*'
 }
