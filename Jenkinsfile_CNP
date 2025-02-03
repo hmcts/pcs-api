@@ -40,11 +40,11 @@ withPipeline(type, product, component) {
   }
 
   afterAlways('functionalTest:preview') {
-    archiveFunctionalTestReports(env.ENVIRONMENT)
+    archiveFunctionalTestReports()
   }
 
   afterAlways('functionalTest:aat') {
-    archiveFunctionalTestReports(env.ENVIRONMENT)
+    archiveFunctionalTestReports()
   }
 }
 
