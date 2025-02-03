@@ -77,20 +77,15 @@ def runE2eTests(String context) {
   }
 }
 
-def archiveFunctionalTestReports(String context) {
-  try {
-    stage('Archive Functional Test Reports - ' + context) {
-      echo 'Archiving functional test reports...'
-    }
-  } finally {
-    publishHTML([
-      allowMissing: true,
-      alwaysLinkToLastBuild: true,
-      keepAll: true,
-      reportDir: "report-for-functional-tests",
-      reportFiles: 'index.html',
-      reportName: 'API Functional Test Report'
-    ])
-    steps.archiveArtifacts allowEmptyArchive: true, artifacts: '**/report-for-functional-tests/*'
-  }
+def archiveFunctionalTestReports() {
+  publishHTML([
+    allowMissing: true,
+    alwaysLinkToLastBuild: true,
+    keepAll: true,
+    reportDir: "report-for-functional-tests",
+    reportFiles: 'index.html',
+    reportName: 'API Functional Test Report'
+  ])
+
+  archiveArtifacts allowEmptyArchive: true, artifacts: '**/report-for-functional-tests/*'
 }
