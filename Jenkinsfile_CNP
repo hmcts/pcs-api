@@ -40,11 +40,11 @@ withPipeline(type, product, component) {
   }
 
   afterAlways('functionalTest:preview') {
-    runFunctionalTests(env.ENVIRONMENT)
+    archiveFunctionalTestReports(env.ENVIRONMENT)
   }
 
   afterAlways('functionalTest:aat') {
-    runFunctionalTests(env.ENVIRONMENT)
+    archiveFunctionalTestReports(env.ENVIRONMENT)
   }
 }
 
@@ -77,10 +77,10 @@ def runE2eTests(String context) {
   }
 }
 
-def runFunctionalTests(String context) {
+def archiveFunctionalTestReports(String context) {
   try {
-    stage('Functional Test - ' + context) {
-      sh './gradlew functional'
+    stage('Archive Functional Test Reports - ' + context) {
+      echo 'Archiving functional test reports...'
     }
   } finally {
     publishHTML([
