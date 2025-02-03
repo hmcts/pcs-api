@@ -41,3 +41,4 @@ applicationinsights-agent-*.jar
 /src/e2eTest/playwright-report/
 /src/e2eTest/test-results/
 /src/e2eTest/node_modules/
+/report-for-functional-tests/

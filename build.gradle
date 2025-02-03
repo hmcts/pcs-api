@@ -5,6 +5,7 @@ plugins {
   id 'org.springframework.boot' version '3.4.2'
   id 'com.github.ben-manes.versions' version '0.52.0'
   id 'org.sonarqube' version '6.0.1.5171'
+  id 'net.serenity-bdd.serenity-gradle-plugin' version '4.2.15'
   /*
     Applies analysis tools including checkstyle and OWASP Dependency checker.
     See https://github.com/hmcts/gradle-java-plugin
@@ -84,9 +85,38 @@ test {
 
 task functional(type: Test) {
   description = "Runs functional tests"
-  group = "Verification"
+  group = "verification"
+  dependsOn assemble, testClasses
   testClassesDirs = sourceSets.functionalTest.output.classesDirs
-  classpath = sourceSets.functionalTest.runtimeClasspath
+  classpath = configurations.functionalTestRuntimeClasspath + sourceSets.functionalTest.output
+
+  useJUnitPlatform {
+    includeTags System.getProperty("tags", "Functional")
+  }
+
+  doFirst {
+    delete "${rootDir}/target/site/serenity"
+    delete "${rootDir}/report-for-functional-tests"
+    logger.quiet("Functional test results directory cleaned before running functional tests")
+  }
+
+  finalizedBy {
+    aggregate {
+      doLast {
+        new File("${rootDir}/report-for-functional-tests").mkdirs()
+        file("${rootDir}/target/site/serenity").renameTo(file("${rootDir}/report-for-functional-tests"))
+        logger.quiet("Functional test report moved to ---> file://${rootDir}/report-for-functional-tests/index.html")
+      }
+    }
+  }
+  testLogging {
+    events "PASSED", "SKIPPED", "FAILED"
+  }
+}
+functional.finalizedBy(aggregate)
+
+serenity {
+  reports = ["single-page-html"]
 }
 
 task integration(type: Test) {
@@ -195,6 +225,11 @@ dependencies {
   implementation group: 'org.postgresql', name: 'postgresql', version: '42.7.5'
   implementation group: 'com.github.hmcts', name: 'service-auth-provider-java-client', version: '5.3.0'
   implementation group: 'io.rest-assured', name: 'rest-assured'
+
+  implementation group: 'net.serenity-bdd', name: 'serenity-rest-assured', version: '4.2.15'
+  implementation group: 'net.serenity-bdd', name: 'serenity-core', version: '4.2.15'
+  testImplementation group: 'net.serenity-bdd', name: 'serenity-junit5', version: '4.2.15'
+  testImplementation group: 'org.junit.platform', name: 'junit-platform-suite-api', version: '1.11.4'
 
   testImplementation(platform('org.junit:junit-bom:5.11.4'))
   testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'
