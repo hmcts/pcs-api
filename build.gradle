@@ -228,7 +228,7 @@ dependencies {
 
   implementation group: 'net.serenity-bdd', name: 'serenity-rest-assured', version: '4.2.15'
   implementation group: 'net.serenity-bdd', name: 'serenity-core', version: '4.2.16'
-  testImplementation group: 'net.serenity-bdd', name: 'serenity-junit5', version: '4.2.15'
+  testImplementation group: 'net.serenity-bdd', name: 'serenity-junit5', version: '4.2.16'
   testImplementation group: 'org.junit.platform', name: 'junit-platform-suite-api', version: '1.11.4'
 
   testImplementation(platform('org.junit:junit-bom:5.11.4'))
