@@ -25,11 +25,14 @@ services:
       - PCS_DB_USER_NAME=${POSTGRES_USER}
       - PCS_DB_PASSWORD=${POSTGRES_PASSWORD}
       - DB_PORT=${DB_PORT}
+      - IDAM_S2S_AUTH_URL=http://service-auth-provider-api:${SERVICE_AUTH_PORT}
     ports:
       - ${SERVER_PORT}:${SERVER_PORT}
     depends_on:
       pcs-api-db:
         condition: service_healthy
+      service-auth-provider-api:
+        condition: service_started
 
   pcs-api-db:
     image: postgres:17-alpine
@@ -46,6 +49,15 @@ services:
       interval: 2s
       timeout: 1s
       retries: 5
+
+  service-auth-provider-api:
+    image: "hmctspublic.azurecr.io/rpe/service-auth-provider:latest"
+    ports:
+      - "${SERVICE_AUTH_PORT}:${SERVICE_AUTH_PORT}"
+    environment:
+      SERVER_PORT: ${SERVICE_AUTH_PORT}
+      AUTH_PROVIDER_SERVICE_SERVER_JWT_KEY: ${AUTH_PROVIDER_SERVICE_SERVER_JWT_KEY}
+
 
 volumes:
   pcs-api-db-data:
