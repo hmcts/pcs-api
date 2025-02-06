@@ -5,8 +5,6 @@ server:
 # If you use a database then uncomment the `group:, readiness: and include: "db"` lines in the health probes and uncomment the datasource section
 management:
   endpoint:
-    mappings:
-      enabled: true
     health:
       show-details: "always"
       # group:
@@ -16,7 +14,7 @@ management:
     web:
       base-path: /
       exposure:
-        include: "*"
+        include: health, info, prometheus
 
 springdoc:
   packagesToScan: uk.gov.hmcts.reform.pcs.controllers
@@ -30,9 +28,7 @@ security:
     - "/swagger-ui.html"
     - "/swagger-ui/**"
     - "/v3/api-docs/**"
-    - "/hearing/**"
-    - "/"
-    - "/mappings"
+
 spring:
   config:
     import: "optional:configtree:/mnt/secrets/pcs/"
