@@ -13,5 +13,6 @@ java:
     PCS_DB_USER_NAME: "{{ .Values.postgresql.auth.username}}"
     PCS_DB_PASSWORD: "{{ .Values.postgresql.auth.password}}"
     PCS_DB_NAME: "{{ .Values.postgresql.auth.database}}"
+    HMC_API_URL: "https://hmc-cft-hearing-service-pr-558.preview.platform.hmcts.net"
   postgresql:
     enabled: true
