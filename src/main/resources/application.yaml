@@ -70,7 +70,3 @@ hmc:
   deployment-id: ${HMC_DEPLOYMENT_ID:}
   api-url: ${HMC_API_URL:http://localhost:8084}
   serviceId: ${HMC_SERVICE_ID:AAA3}
-logging:
-  level:
-    org.springframework.web: DEBUG
-    org.springframework.boot.autoconfigure.web.servlet.DispatcherServlet: DEBUG
