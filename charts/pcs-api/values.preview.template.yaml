@@ -2,7 +2,12 @@ java:
   # Don't modify below here
   image: ${IMAGE_NAME}
   ingressHost: ${SERVICE_FQDN}
-  disableKeyVaults: true
+  keyVaults:
+    pcs:
+      secrets:
+        - name: app-insights-connection-string
+        - name: pcs-api-s2s-secret
+          alias: PCS_API_S2S_SECRET
   environment:
     PCS_DB_HOST: "{{ .Release.Name }}-postgresql"
     PCS_DB_USER_NAME: "{{ .Values.postgresql.auth.username}}"

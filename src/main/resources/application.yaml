@@ -28,6 +28,7 @@ security:
     - "/swagger-ui.html"
     - "/swagger-ui/**"
     - "/v3/api-docs/**"
+
 spring:
   config:
     import: "optional:configtree:/mnt/secrets/pcs/"
@@ -65,3 +66,7 @@ idam:
 azure:
   application-insights:
     instrumentation-key: ${pcs.AppInsightsInstrumentationKey:00000000-0000-0000-0000-000000000000}
+hmc:
+  deployment-id: ${HMC_DEPLOYMENT_ID:}
+  api-url: ${HMC_API_URL:http://localhost:8084}
+  serviceId: ${HMC_SERVICE_ID:AAA3}
