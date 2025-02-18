@@ -17,7 +17,8 @@ management:
         include: health, info, prometheus
 
 springdoc:
-  packagesToScan: uk.gov.hmcts.reform.pcs.controllers
+  packages-to-scan:
+    - uk.gov.hmcts.reform.pcs
   writer-with-order-by-keys: true
 
 security:
