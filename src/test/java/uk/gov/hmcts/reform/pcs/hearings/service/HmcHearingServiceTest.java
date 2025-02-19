@@ -49,10 +49,9 @@ class HmcHearingServiceTest {
 
         HearingResponse result = hmcHearingService.createHearing(AUTH_HEADER, request);
 
-        assertThat(result).isNotNull();
-        assertThat(result).isEqualTo(response);
-        verify(hmcHearingApi, times(1)).createHearing(AUTH_HEADER,
-                                                      SERVICE_AUTH_HEADER, DEPLOYMENT_ID, request);
+        assertThat(result).isNotNull().isEqualTo(response);
+            verify(hmcHearingApi, times(1)).createHearing(AUTH_HEADER,
+            SERVICE_AUTH_HEADER, DEPLOYMENT_ID, request);
     }
 
     @Test
@@ -61,14 +60,13 @@ class HmcHearingServiceTest {
         HearingResponse response = new HearingResponse();
 
         when(hmcHearingApi.updateHearing(AUTH_HEADER,
-                                         SERVICE_AUTH_HEADER, DEPLOYMENT_ID, HEARING_ID, request)).thenReturn(response);
+            SERVICE_AUTH_HEADER, DEPLOYMENT_ID, HEARING_ID, request)).thenReturn(response);
 
         HearingResponse result = hmcHearingService.updateHearing(AUTH_HEADER, HEARING_ID, request);
 
-        assertThat(result).isNotNull();
-        assertThat(result).isEqualTo(response);
+        assertThat(result).isNotNull().isEqualTo(response);
         verify(hmcHearingApi, times(1)).updateHearing(AUTH_HEADER,
-                                                      SERVICE_AUTH_HEADER, DEPLOYMENT_ID, HEARING_ID, request);
+            SERVICE_AUTH_HEADER, DEPLOYMENT_ID, HEARING_ID, request);
     }
 
     @Test
@@ -106,8 +104,7 @@ class HmcHearingServiceTest {
 
         GetHearingsResponse result = hmcHearingService.getHearing(AUTH_HEADER, HEARING_ID);
 
-        assertThat(result).isNotNull();
-        assertThat(result).isEqualTo(response);
+        assertThat(result).isNotNull().isEqualTo(response);
         verify(hmcHearingApi, times(1)).getHearing(AUTH_HEADER,
                                                    SERVICE_AUTH_HEADER, DEPLOYMENT_ID, HEARING_ID, null);
     }

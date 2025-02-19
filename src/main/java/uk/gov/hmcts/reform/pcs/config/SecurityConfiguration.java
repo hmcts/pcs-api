@@ -34,7 +34,7 @@ public class SecurityConfiguration {
 
     @Bean
     public WebSecurityCustomizer webSecurityCustomizer() {
-        return (web) -> web.ignoring().requestMatchers(anonymousPaths.toArray(String[]::new));
+        return web -> web.ignoring().requestMatchers(anonymousPaths.toArray(String[]::new));
     }
 
     @Bean

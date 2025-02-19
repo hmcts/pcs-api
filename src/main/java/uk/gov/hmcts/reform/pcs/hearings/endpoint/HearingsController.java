@@ -46,7 +46,7 @@ public class HearingsController {
     HearingResponse updateHearing(
         @RequestHeader(AUTHORIZATION) String authorisation,
         @RequestHeader(SERVICE_AUTHORIZATION) String serviceAuthorization,
-        @PathVariable String id,
+        @PathVariable("id") String id,
         @RequestBody UpdateHearingRequest hearingPayload) {
         return hmcHearingService.updateHearing(authorisation, id, hearingPayload);
     }
@@ -55,7 +55,7 @@ public class HearingsController {
     HearingResponse deleteHearing(
         @RequestHeader(AUTHORIZATION) String authorisation,
         @RequestHeader(SERVICE_AUTHORIZATION) String serviceAuthorization,
-        @PathVariable String id,
+        @PathVariable("id") String id,
         @RequestBody DeleteHearingRequest hearingDeletePayload) {
         return hmcHearingService.deleteHearing(authorisation, id, hearingDeletePayload);
     }
@@ -64,7 +64,7 @@ public class HearingsController {
     GetHearingsResponse getHearing(
         @RequestHeader(AUTHORIZATION) String authorisation,
         @RequestHeader(SERVICE_AUTHORIZATION) String serviceAuthorization,
-        @PathVariable String id) {
+        @PathVariable("id") String id) {
         return hmcHearingService.getHearing(authorisation, id);
     }
 }
