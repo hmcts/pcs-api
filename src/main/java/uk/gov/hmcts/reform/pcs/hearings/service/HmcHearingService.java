@@ -5,7 +5,6 @@ import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
@@ -34,7 +33,7 @@ public class HmcHearingService {
 
     public HearingResponse updateHearing(
         @RequestHeader(AUTHORIZATION) String authorisation,
-        @PathVariable("id") String id,
+        String id,
         @RequestBody UpdateHearingRequest hearingPayload) {
         return hmcHearingApi.updateHearing(authorisation, authTokenGenerator.generate(),
                                            hmctsDeploymentId, id, hearingPayload);
@@ -42,7 +41,7 @@ public class HmcHearingService {
 
     public HearingResponse deleteHearing(
         @RequestHeader(AUTHORIZATION) String authorisation,
-        @PathVariable("id") String id,
+        String id,
         @RequestBody DeleteHearingRequest hearingDeletePayload) {
         return hmcHearingApi.deleteHearing(authorisation, authTokenGenerator.generate(),
                                            hmctsDeploymentId, id, hearingDeletePayload);
@@ -50,7 +49,7 @@ public class HmcHearingService {
 
     public GetHearingsResponse getHearing(
         @RequestHeader(AUTHORIZATION) String authorisation,
-        @PathVariable("id") String id) {
+        String id) {
         return hmcHearingApi.getHearing(authorisation, authTokenGenerator.generate(),
                                         hmctsDeploymentId,id, null);
     }
