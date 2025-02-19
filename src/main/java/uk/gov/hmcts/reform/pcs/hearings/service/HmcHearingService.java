@@ -34,7 +34,7 @@ public class HmcHearingService {
 
     public HearingResponse updateHearing(
         @RequestHeader(AUTHORIZATION) String authorisation,
-        @PathVariable String id,
+        @PathVariable("id") String id,
         @RequestBody UpdateHearingRequest hearingPayload) {
         return hmcHearingApi.updateHearing(authorisation, authTokenGenerator.generate(),
                                            hmctsDeploymentId, id, hearingPayload);
@@ -42,7 +42,7 @@ public class HmcHearingService {
 
     public HearingResponse deleteHearing(
         @RequestHeader(AUTHORIZATION) String authorisation,
-        @PathVariable String id,
+        @PathVariable("id") String id,
         @RequestBody DeleteHearingRequest hearingDeletePayload) {
         return hmcHearingApi.deleteHearing(authorisation, authTokenGenerator.generate(),
                                            hmctsDeploymentId, id, hearingDeletePayload);
@@ -50,7 +50,7 @@ public class HmcHearingService {
 
     public GetHearingsResponse getHearing(
         @RequestHeader(AUTHORIZATION) String authorisation,
-        @PathVariable String id) {
+        @PathVariable("id") String id) {
         return hmcHearingApi.getHearing(authorisation, authTokenGenerator.generate(),
                                         hmctsDeploymentId,id, null);
     }
