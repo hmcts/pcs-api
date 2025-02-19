@@ -50,8 +50,8 @@ class HmcHearingServiceTest {
         HearingResponse result = hmcHearingService.createHearing(AUTH_HEADER, request);
 
         assertThat(result).isNotNull().isEqualTo(response);
-            verify(hmcHearingApi, times(1)).createHearing(AUTH_HEADER,
-            SERVICE_AUTH_HEADER, DEPLOYMENT_ID, request);
+        verify(hmcHearingApi, times(1)).createHearing(AUTH_HEADER,
+                SERVICE_AUTH_HEADER, DEPLOYMENT_ID, request);
     }
 
     @Test
