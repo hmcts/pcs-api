@@ -22,15 +22,11 @@ static LinkedHashMap<String, Object> secret(String secretName, String envVar) {
 }
 
 withPipeline(type, product, component) {
-
   env.IDAM_S2S_AUTH_URL = "http://rpe-service-auth-provider-aat.service.core-compute-aat.internal"
   loadVaultSecrets(secrets)
 
   onPR() {
     setPreviewEnvVars()
-//    afterSuccess('smoketest:preview') {
-//      runE2eTests(env.ENVIRONMENT)
-//    }
   }
   onMaster() {
     setAatEnvVars()

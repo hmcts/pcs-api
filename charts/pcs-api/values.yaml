@@ -14,6 +14,7 @@ java:
   environment:
     PCS_DB_USER_NAME: pgadmin
     PCS_DB_NAME: pcs
-    DRAFT_STORE_DB_CONN_OPTIONS: ?sslmode=require&gssEncMode=disable
-    PCS_DB_HOST: pcs-{{ .Values.global.environment }}.postgres.database.azure.com
-    IDAM_S2S_AUTH_URL: http://rpe-service-auth-provider-{{ .Values.global.environment }}.service.core-compute-{{ .Values.global.environment }}.internal
+    DRAFT_STORE_DB_CONN_OPTIONS: "?sslmode=require&gssEncMode=disable"
+    PCS_DB_HOST: "pcs-{{ .Values.global.environment }}.postgres.database.azure.com"
+    IDAM_S2S_AUTH_URL: "http://rpe-service-auth-provider-{{ .Values.global.environment }}.service.core-compute-{{ .Values.global.environment }}.internal"
+    HMC_API_URL: "http://hmc-cft-hearing-service-{{ .Values.global.environment }}.service.core-compute-{{ .Values.global.environment }}.internal"
