@@ -87,8 +87,7 @@ class HmcHearingServiceTest {
         System.out.println("Deployment ID used: " + DEPLOYMENT_ID);
 
         // Check that the result is not null and equals the expected response
-        assertThat(result).isNotNull();
-        assertThat(result).isEqualTo(response);
+        assertThat(result).isNotNull().isEqualTo(response);
 
         // Verify that the deleteHearing method was called once with the correct arguments
         verify(hmcHearingApi, times(1)).deleteHearing(AUTH_HEADER,
