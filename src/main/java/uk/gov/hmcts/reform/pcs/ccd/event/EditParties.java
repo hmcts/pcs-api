@@ -16,7 +16,6 @@ import java.util.List;
 public class EditParties implements CCDConfig<PCSCase, State, UserRole> {
     @Override
     public void configure(ConfigBuilder<PCSCase, State, UserRole> configBuilder) {
-
         configBuilder
             .event("editParties")
             .forAllStates()

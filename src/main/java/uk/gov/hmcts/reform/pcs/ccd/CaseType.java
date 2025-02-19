@@ -7,6 +7,9 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.UserRole;
 
+/**
+ * Setup some common possessions case type configuration.
+ */
 @Component
 public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
 

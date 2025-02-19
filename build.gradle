@@ -1,4 +1,5 @@
 import uk.gov.hmcts.rse.AuthMode
+import uk.gov.hmcts.rse.CftlibExec
 
 plugins {
   id 'application'
@@ -255,6 +256,8 @@ dependencies {
     exclude group: 'junit', module: 'junit'
     exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
   }
+  // Allow fast reloading during dev; recompile a class to trigger fast reload + definition reimport.
+  cftlibImplementation 'org.springframework.boot:spring-boot-devtools'
 }
 
 mainClassName = 'uk.gov.hmcts.reform.pcs.Application'
@@ -272,12 +275,12 @@ project.tasks.named("processSmokeTestResources") {
   duplicatesStrategy = 'include'
 }
 
-bootWithCCD {
+tasks.withType(CftlibExec).configureEach {
   group = 'ccd tasks'
   authMode = AuthMode.Local
+  environment 'SPRING_PROFILES_ACTIVE', 'dev'
 }
 
 wrapper {
   distributionType = Wrapper.DistributionType.ALL
 }
-

@@ -9,6 +9,9 @@ import uk.gov.hmcts.ccd.sdk.api.Permission;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.UserRole.CASE_WORKER;
 
 
+/**
+ * Placeholder access control configuration granting caseworker CRU.
+ */
 public class DefaultStateAccess implements HasAccessControl {
     @Override
     public SetMultimap<HasRole, Permission> getGrants() {

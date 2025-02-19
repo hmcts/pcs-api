@@ -1,3 +1,4 @@
+# This should be a required branch protection check for master.
 name: Cftlib Tests
 
 on:
