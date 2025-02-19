@@ -1,7 +1,5 @@
 package uk.gov.hmcts.reform.pcs.ccd.event;
 
-import lombok.SneakyThrows;
-import org.springframework.security.access.method.P;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CCDConfig;
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
@@ -31,7 +29,8 @@ public class EditParties implements CCDConfig<PCSCase, State, UserRole> {
     }
 
     // Example mid event callback handler
-    private AboutToStartOrSubmitResponse<PCSCase, State> validateParties(CaseDetails<PCSCase, State> details, CaseDetails<PCSCase, State> detailsBefore) {
+    private AboutToStartOrSubmitResponse<PCSCase, State> validateParties(CaseDetails<PCSCase, State> details,
+                                                                         CaseDetails<PCSCase, State> detailsBefore) {
         PCSCase result = details.getData();
         var errors = List.<String>of();
         // Example validation
