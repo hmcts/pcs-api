@@ -13,9 +13,11 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.UserRole;
 
 @Component
 public class CreateTestCase implements CCDConfig<PCSCase, State, UserRole> {
+
+
+
     @Override
     public void configure(ConfigBuilder<PCSCase, State, UserRole> configBuilder) {
-
         configBuilder
             .event("createTestApplication")
             .initialState(State.Open)
@@ -30,7 +32,7 @@ public class CreateTestCase implements CCDConfig<PCSCase, State, UserRole> {
     }
 
     private AboutToStartOrSubmitResponse<PCSCase, State> start(CaseDetails<PCSCase, State> caseDetails) {
-        var data = caseDetails.getData();
+        PCSCase data = caseDetails.getData();
         data.setApplicantForename("Preset value");
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()

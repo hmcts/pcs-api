@@ -65,6 +65,9 @@ configurations {
 
   smokeTestImplementation.extendsFrom testImplementation
   smokeTestRuntimeOnly.extendsFrom runtimeOnly
+
+  cftlibTestImplementation.extendsFrom testImplementation
+  cftlibTestRuntime.extendsFrom testRuntime
 }
 
 tasks.withType(JavaCompile) {
