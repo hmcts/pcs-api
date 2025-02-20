@@ -3,13 +3,15 @@ package uk.gov.hmcts.reform.pcs.notify.model;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.Map;
+
 @Data
 @NoArgsConstructor
 public class SendTextMessage {
 
-    private TemplateId templateId;
+    private String templateId;
     private String phoneNumber;
-    private Personalisation personalisation;
-    private Reference reference;
+    private Map<String, Object> personalisation;
+    private String reference;
     private String smsSenderId;
 }

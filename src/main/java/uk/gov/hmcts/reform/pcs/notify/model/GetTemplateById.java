@@ -7,5 +7,5 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class GetTemplateById {
 
-    private TemplateId templateId;
+    private String templateId;
 }

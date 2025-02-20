@@ -9,6 +9,6 @@ public class GetMultipleMessagesStatus {
 
     private String status;
     private String notificationType;
-    private Reference reference;
+    private String reference;
     private String olderThanId;
 }
