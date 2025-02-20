@@ -234,6 +234,8 @@ dependencies {
   implementation group: 'org.projectlombok', name: 'lombok', version: versions.lombok
   annotationProcessor group: 'org.projectlombok', name: 'lombok', version: versions.lombok
 
+  implementation group: 'uk.gov.service.notify', name: 'notifications-java-client', version: '5.2.1-RELEASE'
+
   implementation group: 'io.rest-assured', name: 'rest-assured'
 
   implementation group: 'net.serenity-bdd', name: 'serenity-rest-assured', version: '4.2.16'
