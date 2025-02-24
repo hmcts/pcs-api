@@ -23,7 +23,8 @@ java:
     #Each topic/queue matches up to one used in the config above
     setup:
       topics:
-        - name: hmc-to-cft-aat
+        - name: pcs
+          fullName: hmc-to-cft-aat
           create: false
           subscriptionNeeded: yes
           rules:
