@@ -32,7 +32,6 @@ withPipeline(type, product, component) {
     setPreviewEnvVars()
   }
   onMaster() {
-    enablePactAs([AppPipelineDsl.PactRoles.CONSUMER])
     setAatEnvVars()
     afterSuccess('smoketest:aat') {
       runE2eTests(env.ENVIRONMENT)
