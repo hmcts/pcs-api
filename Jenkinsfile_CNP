@@ -28,12 +28,12 @@ withPipeline(type, product, component) {
   loadVaultSecrets(secrets)
 
   onPR() {
-    setPreviewEnvVars()
     enablePactAs([AppPipelineDsl.PactRoles.CONSUMER])
+    setPreviewEnvVars()
   }
   onMaster() {
-    setAatEnvVars()
     enablePactAs([AppPipelineDsl.PactRoles.CONSUMER])
+    setAatEnvVars()
     afterSuccess('smoketest:aat') {
       runE2eTests(env.ENVIRONMENT)
     }
