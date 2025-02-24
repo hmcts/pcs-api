@@ -3,10 +3,14 @@ appVersion: "1.0"
 description: A Helm chart for pcs-api App
 name: pcs-api
 home: https://github.com/hmcts/pcs-api
-version: 0.0.21
+version: 0.0.22
 maintainers:
   - name: HMCTS pcs team
 dependencies:
   - name: java
-    version: 5.2.1
-    repository: 'https://hmctspublic.azurecr.io/helm/v1/repo/'
+    version: 5.3.0
+    repository: 'oci://hmctspublic.azurecr.io/helm'
+  - name: servicebus
+    version: 1.2.0
+    repository: 'oci://hmctspublic.azurecr.io/helm'
+    condition: servicebus.enabled
