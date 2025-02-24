@@ -12,6 +12,8 @@ def secrets = [
   ]
 ]
 
+env.PACT_BROKER_FULL_URL = 'https://pact-broker.platform.hmcts.net'
+
 static LinkedHashMap<String, Object> secret(String secretName, String envVar) {
   [ $class: 'AzureKeyVaultSecret',
     secretType: 'Secret',
@@ -27,9 +29,11 @@ withPipeline(type, product, component) {
 
   onPR() {
     setPreviewEnvVars()
+    enablePactAs([AppPipelineDsl.PactRoles.CONSUMER])
   }
   onMaster() {
     setAatEnvVars()
+    enablePactAs([AppPipelineDsl.PactRoles.CONSUMER])
     afterSuccess('smoketest:aat') {
       runE2eTests(env.ENVIRONMENT)
     }
