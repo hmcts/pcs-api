@@ -43,3 +43,4 @@ applicationinsights-agent-*.jar
 /src/e2eTest/node_modules/
 /report-for-functional-tests/
 /target/
+/pacts/
