@@ -2,6 +2,8 @@
 
 @Library("Infrastructure")
 
+import uk.gov.hmcts.contino.AppPipelineDsl
+
 def type = "java"
 def product = "pcs"
 def component = "api"
@@ -32,6 +34,7 @@ withPipeline(type, product, component) {
     setPreviewEnvVars()
   }
   onMaster() {
+    enablePactAs([AppPipelineDsl.PactRoles.CONSUMER])
     setAatEnvVars()
     afterSuccess('smoketest:aat') {
       runE2eTests(env.ENVIRONMENT)
