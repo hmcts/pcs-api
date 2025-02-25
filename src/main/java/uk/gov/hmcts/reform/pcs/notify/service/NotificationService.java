@@ -3,7 +3,6 @@ package uk.gov.hmcts.reform.pcs.notify.service;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.pcs.notify.exception.NotificationException;
 import uk.gov.hmcts.reform.pcs.notify.model.NotificationResponse;
 import uk.gov.hmcts.reform.pcs.notify.model.SendEmail;
