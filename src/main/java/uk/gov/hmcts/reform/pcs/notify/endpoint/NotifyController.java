@@ -29,7 +29,7 @@ public class NotifyController {
 
     @PostMapping("/send-email")
     public ResponseEntity<NotificationResponse> sendEmail(
-        @RequestHeader(AUTHORIZATION) String authorisation,
+        @RequestHeader(value = AUTHORIZATION, required = false) String authorisation,
         @RequestHeader(SERVICE_AUTHORIZATION) String serviceAuthorization,
         @RequestBody SendEmail emailRequest) {
         log.info("Received request to send email to {}", emailRequest.getEmailAddress());
