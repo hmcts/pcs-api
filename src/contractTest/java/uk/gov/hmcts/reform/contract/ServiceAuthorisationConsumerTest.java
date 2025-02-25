@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.contract;
 
+import au.com.dius.pact.consumer.MockServer;
 import au.com.dius.pact.consumer.dsl.PactDslRootValue;
 import au.com.dius.pact.consumer.dsl.PactDslWithProvider;
 import au.com.dius.pact.consumer.junit5.PactConsumerTestExt;
@@ -40,11 +41,6 @@ public class ServiceAuthorisationConsumerTest {
     @Autowired
     private ServiceAuthorisationApi serviceAuthorisationApi;
 
-    @Autowired
-    ObjectMapper objectMapper;
-
-    Map<String, String> jsonPayload = new HashMap<>();
-
     @Pact(provider = "s2s_auth", consumer = "pcs_api")
     public V4Pact executeLease(PactDslWithProvider builder) throws JsonProcessingException {
 
@@ -78,7 +74,9 @@ public class ServiceAuthorisationConsumerTest {
 
     @Test
     @PactTestFor(pactMethod = "executeLease")
-    void verifyLease() {
+    void verifyLease(MockServer mockServer) {
+        System.out.println("Pact mock server is running on port: " + mockServer.getPort());
+
         Map<String, String> jsonPayload = new HashMap<>();
         jsonPayload.put("microservice", "pcs_api");
         jsonPayload.put("oneTimePassword", "784467");
@@ -91,7 +89,8 @@ public class ServiceAuthorisationConsumerTest {
 
     @Test
     @PactTestFor(pactMethod = "executeDetails")
-    void verifyDetails() {
+    void verifyDetails(MockServer mockServer) {
+        System.out.println("Pact mock server is running on port: " + mockServer.getPort());
 
         String token = serviceAuthorisationApi.getServiceName(AUTHORISATION_TOKEN);
         assertThat(token)
