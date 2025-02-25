@@ -19,18 +19,15 @@ import java.util.UUID;
 @Slf4j
 public class NotificationService {
 
-    @Autowired
-    private  final NotificationClient notificationClient;
-    private final AuthTokenGenerator authTokenGenerator;
+    private final NotificationClient notificationClient;
 
-    public NotificationService(@Value("${notify.api-key}") String apiKey, AuthTokenGenerator authTokenGenerator) {
+    @Autowired
+    public NotificationService(@Value("${notify.api-key}") String apiKey) {
         this.notificationClient = new NotificationClient(apiKey);
-        this.authTokenGenerator = authTokenGenerator;
     }
 
-    public NotificationResponse sendEmail(String authorisation, SendEmail emailRequest) {
+    public NotificationResponse sendEmail(SendEmail emailRequest) {
         final SendEmailResponse sendEmailResponse;
-        final String serviceAuthorisation = authTokenGenerator.generate();
         final String destinationAddress = emailRequest.getEmailAddress();
         final String templateId = emailRequest.getTemplateId();
         final Map<String, Object> personalisation = emailRequest.getPersonalisation();
