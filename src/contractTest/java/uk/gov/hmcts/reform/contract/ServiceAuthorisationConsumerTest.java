@@ -81,7 +81,6 @@ public class ServiceAuthorisationConsumerTest {
         String token = serviceAuthorisationApi.serviceToken(jsonPayload);
         assertThat(token)
             .isEqualTo("microServiceToken");
-
     }
 
     @Test

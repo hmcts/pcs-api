@@ -317,8 +317,8 @@ rootProject.tasks.named("processSmokeTestResources") {
   duplicatesStrategy = 'include'
 }
 
-processContractTestResources {
-  duplicatesStrategy = DuplicatesStrategy.INCLUDE
+rootProject.tasks.named("processContractTestResources") {
+  duplicatesStrategy = 'include'
 }
 
 wrapper {
