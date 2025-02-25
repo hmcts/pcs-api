@@ -13,10 +13,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.PropertySource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.gov.hmcts.reform.authorisation.ServiceAuthorisationApi;
 
@@ -26,7 +26,7 @@ import java.util.Map;
 import static io.restassured.RestAssured.given;
 import static org.assertj.core.api.Assertions.assertThat;
 
-@PropertySource(value = "classpath:application.yml")
+@TestPropertySource(properties = "s2s-auth.url=http://localhost:5050")
 @EnableAutoConfiguration
 @ExtendWith(PactConsumerTestExt.class)
 @ExtendWith(SpringExtension.class)
@@ -75,7 +75,6 @@ public class ServiceAuthorisationConsumerTest {
     @Test
     @PactTestFor(pactMethod = "executeLease")
     void verifyLease(MockServer mockServer) {
-        System.out.println("Pact mock server is running on port: " + mockServer.getPort());
         String mockUrl = mockServer.getUrl();
 
         Map<String, String> jsonPayload = new HashMap<>();
