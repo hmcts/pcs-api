@@ -2,8 +2,6 @@ package uk.gov.hmcts.reform.pcs.notify.service;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.pcs.notify.exception.NotificationException;
 import uk.gov.hmcts.reform.pcs.notify.model.NotificationResponse;
@@ -15,8 +13,6 @@ import uk.gov.service.notify.SendEmailResponse;
 
 import java.util.Map;
 import java.util.UUID;
-
-import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 
 @Service
 @Slf4j
@@ -33,8 +29,7 @@ public class NotificationService {
     }
 
     public NotificationResponse sendEmail(
-        @RequestHeader(AUTHORIZATION) String authorisation,
-        @RequestBody SendEmail emailRequest) {
+        String authorisation, SendEmail emailRequest) {
         final SendEmailResponse sendEmailResponse;
         final String serviceAuthorisation = authTokenGenerator.generate();
         final String destinationAddress = emailRequest.getEmailAddress();
