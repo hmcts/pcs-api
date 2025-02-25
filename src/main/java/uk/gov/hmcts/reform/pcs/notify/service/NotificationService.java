@@ -30,7 +30,6 @@ public class NotificationService {
         final String destinationAddress = emailRequest.getEmailAddress();
         final String templateId = emailRequest.getTemplateId();
         final Map<String, Object> personalisation = emailRequest.getPersonalisation();
-
         final String referenceId = UUID.randomUUID().toString();
 
         try {

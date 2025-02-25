@@ -11,6 +11,8 @@ java:
           alias: PCS_DB_PASSWORD
         - name: pcs-api-s2s-secret
           alias: PCS_API_S2S_SECRET
+        - name: govnotify-test-key
+          alias: PCS_NOTIFY_API_KEY
   environment:
     PCS_DB_USER_NAME: pgadmin
     PCS_DB_NAME: pcs
@@ -18,3 +20,4 @@ java:
     PCS_DB_HOST: "pcs-{{ .Values.global.environment }}.postgres.database.azure.com"
     IDAM_S2S_AUTH_URL: "http://rpe-service-auth-provider-{{ .Values.global.environment }}.service.core-compute-{{ .Values.global.environment }}.internal"
     HMC_API_URL: "http://hmc-cft-hearing-service-{{ .Values.global.environment }}.service.core-compute-{{ .Values.global.environment }}.internal"
+

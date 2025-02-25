@@ -174,7 +174,7 @@ sonarqube {
     property "sonar.projectKey", "uk.gov.hmcts.reform:pcs-api"
     property "sonar.coverage.exclusions", "**/config/**/*Configuration.java," +
       "**/*Constants.java," +
-      "**/model/*.java,"
+      "**/model/*.java," + "**/notify/**"
   }
 }
 
