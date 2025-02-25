@@ -3,6 +3,7 @@ package uk.gov.hmcts.reform.pcs.notify.service;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.pcs.notify.exception.NotificationException;
 import uk.gov.hmcts.reform.pcs.notify.model.NotificationResponse;
 import uk.gov.hmcts.reform.pcs.notify.model.SendEmail;
@@ -20,13 +21,16 @@ public class NotificationService {
 
     @Autowired
     private  final NotificationClient notificationClient;
+    private final AuthTokenGenerator authTokenGenerator;
 
-    public NotificationService(@Value("${notify.api-key}") String apiKey) {
+    public NotificationService(@Value("${notify.api-key}") String apiKey, AuthTokenGenerator authTokenGenerator) {
         this.notificationClient = new NotificationClient(apiKey);
+        this.authTokenGenerator = authTokenGenerator;
     }
 
-    public NotificationResponse sendEmail(SendEmail emailRequest) {
+    public NotificationResponse sendEmail(String authorisation, SendEmail emailRequest) {
         final SendEmailResponse sendEmailResponse;
+        final String serviceAuthorisation = authTokenGenerator.generate();
         final String destinationAddress = emailRequest.getEmailAddress();
         final String templateId = emailRequest.getTemplateId();
         final Map<String, Object> personalisation = emailRequest.getPersonalisation();

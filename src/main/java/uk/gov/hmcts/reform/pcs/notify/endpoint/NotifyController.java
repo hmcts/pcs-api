@@ -34,7 +34,7 @@ public class NotifyController {
         @RequestBody SendEmail emailRequest) {
         log.info("Received request to send email to {}", emailRequest.getEmailAddress());
 
-        NotificationResponse notificationResponse = notificationService.sendEmail(emailRequest);
+        NotificationResponse notificationResponse = notificationService.sendEmail(authorisation, emailRequest);
 
         return ResponseEntity.ok(notificationResponse);
     }
