@@ -16,6 +16,8 @@ import uk.gov.service.notify.SendEmailResponse;
 import java.util.Map;
 import java.util.UUID;
 
+import static org.springframework.http.HttpHeaders.AUTHORIZATION;
+
 @Service
 @Slf4j
 public class NotificationService {
@@ -31,7 +33,7 @@ public class NotificationService {
     }
 
     public NotificationResponse sendEmail(
-        @RequestHeader String authorisation,
+        @RequestHeader(AUTHORIZATION) String authorisation,
         @RequestBody SendEmail emailRequest) {
         final SendEmailResponse sendEmailResponse;
         final String serviceAuthorisation = authTokenGenerator.generate();
