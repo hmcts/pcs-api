@@ -26,7 +26,7 @@ import java.util.Map;
 import static io.restassured.RestAssured.given;
 import static org.assertj.core.api.Assertions.assertThat;
 
-@TestPropertySource(properties = "s2s-auth.url=http://localhost:5050")
+@TestPropertySource(properties = "idam.s2s-auth.url=http://localhost:5050")
 @EnableAutoConfiguration
 @ExtendWith(PactConsumerTestExt.class)
 @ExtendWith(SpringExtension.class)
