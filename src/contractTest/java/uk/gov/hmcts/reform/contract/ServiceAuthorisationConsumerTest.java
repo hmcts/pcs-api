@@ -61,7 +61,7 @@ public class ServiceAuthorisationConsumerTest {
             .toPact(V4Pact.class);
     }
 
-    @Pact(consumer = "s2s_auth_client")
+    @Pact(provider = "s2s_auth", consumer = "pcs_api")
     public V4Pact executeDetails(PactDslWithProvider builder) throws JsonProcessingException {
 
         return builder.given("microservice with valid token")
