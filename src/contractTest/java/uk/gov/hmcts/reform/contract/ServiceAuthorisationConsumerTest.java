@@ -23,6 +23,7 @@ import uk.gov.hmcts.reform.authorisation.ServiceAuthorisationApi;
 import java.util.HashMap;
 import java.util.Map;
 
+import static io.restassured.RestAssured.given;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @PropertySource(value = "classpath:application.yml")
@@ -75,12 +76,23 @@ public class ServiceAuthorisationConsumerTest {
     @PactTestFor(pactMethod = "executeLease")
     void verifyLease(MockServer mockServer) {
         System.out.println("Pact mock server is running on port: " + mockServer.getPort());
+        String mockUrl = mockServer.getUrl();
 
         Map<String, String> jsonPayload = new HashMap<>();
         jsonPayload.put("microservice", "pcs_api");
         jsonPayload.put("oneTimePassword", "784467");
 
-        String token = serviceAuthorisationApi.serviceToken(jsonPayload);
+        String token = given()
+            .baseUri(mockUrl)
+            .contentType("application/json")
+            .body(jsonPayload)
+            .when()
+            .post("/lease")
+            .then()
+            .statusCode(200)
+            .extract()
+            .asString();
+
         assertThat(token)
             .isEqualTo("microServiceToken");
 
