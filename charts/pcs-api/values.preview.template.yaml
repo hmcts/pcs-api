@@ -34,4 +34,4 @@ servicebus:
               - name: "hmctsServiceId"
                 value: "AAAA"
               - name: "deploymentId"
-                value: "1234"
+                value: "deployment-${SERVICE_NAME}"
