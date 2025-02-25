@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.contract;
+package uk.gov.hmcts.reform.pcs.contract;
 
 import au.com.dius.pact.consumer.dsl.PactDslRootValue;
 import au.com.dius.pact.consumer.dsl.PactDslWithProvider;
