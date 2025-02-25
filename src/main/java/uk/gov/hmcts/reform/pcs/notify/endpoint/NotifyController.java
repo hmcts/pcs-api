@@ -1,14 +1,11 @@
 package uk.gov.hmcts.reform.pcs.notify.endpoint;
 
-import static org.springframework.http.HttpHeaders.AUTHORIZATION;
-import static uk.gov.hmcts.reform.pcs.notify.constants.NotifyConstants.SERVICE_AUTHORIZATION;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import uk.gov.hmcts.reform.pcs.notify.model.NotificationResponse;
@@ -29,8 +26,6 @@ public class NotifyController {
 
     @PostMapping("/send-email")
     public ResponseEntity<NotificationResponse> sendEmail(
-        @RequestHeader(value = AUTHORIZATION, required = false) String authorisation,
-        @RequestHeader(SERVICE_AUTHORIZATION) String serviceAuthorization,
         @RequestBody SendEmail emailRequest) {
         log.info("Received request to send email to {}", emailRequest.getEmailAddress());
 
