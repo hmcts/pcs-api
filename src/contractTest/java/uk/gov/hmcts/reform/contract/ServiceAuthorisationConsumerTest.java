@@ -1,6 +1,5 @@
 package uk.gov.hmcts.reform.contract;
 
-import au.com.dius.pact.consumer.MockServer;
 import au.com.dius.pact.consumer.dsl.PactDslRootValue;
 import au.com.dius.pact.consumer.dsl.PactDslWithProvider;
 import au.com.dius.pact.consumer.junit5.PactConsumerTestExt;
@@ -23,11 +22,10 @@ import uk.gov.hmcts.reform.authorisation.ServiceAuthorisationApi;
 import java.util.HashMap;
 import java.util.Map;
 
-import static io.restassured.RestAssured.given;
 import static org.assertj.core.api.Assertions.assertThat;
 
-@TestPropertySource(properties = "idam.s2s-auth.url=http://localhost:5050")
 @EnableAutoConfiguration
+@TestPropertySource(properties = "idam.s2s-auth.url=http://localhost:5050")
 @ExtendWith(PactConsumerTestExt.class)
 @ExtendWith(SpringExtension.class)
 @PactTestFor(providerName = "s2s_auth", port = "5050")
@@ -74,24 +72,13 @@ public class ServiceAuthorisationConsumerTest {
 
     @Test
     @PactTestFor(pactMethod = "executeLease")
-    void verifyLease(MockServer mockServer) {
-        String mockUrl = mockServer.getUrl();
+    void verifyLease() {
 
         Map<String, String> jsonPayload = new HashMap<>();
         jsonPayload.put("microservice", "pcs_api");
         jsonPayload.put("oneTimePassword", "784467");
 
-        String token = given()
-            .baseUri(mockUrl)
-            .contentType("application/json")
-            .body(jsonPayload)
-            .when()
-            .post("/lease")
-            .then()
-            .statusCode(200)
-            .extract()
-            .asString();
-
+        String token = serviceAuthorisationApi.serviceToken(jsonPayload);
         assertThat(token)
             .isEqualTo("microServiceToken");
 
@@ -99,8 +86,7 @@ public class ServiceAuthorisationConsumerTest {
 
     @Test
     @PactTestFor(pactMethod = "executeDetails")
-    void verifyDetails(MockServer mockServer) {
-        System.out.println("Pact mock server is running on port: " + mockServer.getPort());
+    void verifyDetails() {
 
         String token = serviceAuthorisationApi.getServiceName(AUTHORISATION_TOKEN);
         assertThat(token)
