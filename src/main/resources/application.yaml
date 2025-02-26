@@ -57,6 +57,8 @@ spring:
             # silence the 'wall-of-text' - unnecessary exception throw about blob types
             non_contextual_creation: true
 idam:
+  api:
+    url: ${IDAM_API_URL:http://localhost:5062}
   s2s-auth:
     url: ${IDAM_S2S_AUTH_URL:http://localhost:4502}
     totp_secret: ${PCS_API_S2S_SECRET:AAAAAAAAAAAAAAAA}
@@ -71,3 +73,7 @@ hmc:
   deployment-id: ${HMC_DEPLOYMENT_ID:}
   api-url: ${HMC_API_URL:http://localhost:8084}
   serviceId: ${HMC_SERVICE_ID:AAA3}
+
+core_case_data:
+  api:
+    url: ${CCD_API_URL:http://localhost:4452}

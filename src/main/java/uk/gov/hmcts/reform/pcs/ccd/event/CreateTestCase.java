@@ -1,6 +1,5 @@
 package uk.gov.hmcts.reform.pcs.ccd.event;
 
-import lombok.SneakyThrows;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CCDConfig;
@@ -39,7 +38,6 @@ public class CreateTestCase implements CCDConfig<PCSCase, State, UserRole> {
             .build();
     }
 
-    @SneakyThrows
     public AboutToStartOrSubmitResponse<PCSCase, State> aboutToSubmit(CaseDetails<PCSCase, State> details,
                                                                        CaseDetails<PCSCase, State> beforeDetails) {
         // TODO: Whatever you need.

@@ -35,6 +35,6 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
 
         builder.tab("Example", "Example Tab")
             .field(PCSCase::getApplicantForename)
-            .field(PCSCase::getParties);
+            .field(PCSCase::getPartyA);
     }
 }

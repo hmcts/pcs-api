@@ -10,7 +10,7 @@ plugins {
   id 'org.sonarqube' version '6.0.1.5171'
   id 'net.serenity-bdd.serenity-gradle-plugin' version '4.2.16'
   id 'hmcts.ccd.sdk' version '5.5.16'
-  id 'com.github.hmcts.rse-cft-lib' version '0.19.1573'
+  id 'com.github.hmcts.rse-cft-lib' version '0.19.1597'
   id 'io.freefair.lombok' version '8.12.1'
   /*
     Applies analysis tools including checkstyle and OWASP Dependency checker.
@@ -166,7 +166,7 @@ task runE2eFirefoxTests(type: Exec) {
 }
 
 jacocoTestReport {
-  executionData(test, integration)
+  executionData(test, integration, cftlibTest)
   reports {
     xml.required = true
     csv.required = false
@@ -229,9 +229,12 @@ dependencies {
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-jdbc'
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-web'
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-security'
+
   implementation group: 'org.springdoc', name: 'springdoc-openapi-starter-webmvc-ui', version: '2.8.5'
 
   implementation group: 'com.github.hmcts.java-logging', name: 'logging', version: '6.1.8'
+  implementation group: 'com.github.hmcts', name: 'ccd-client', version: '5.0.3'
+  implementation group: 'com.github.hmcts', name: 'idam-java-client', version: '3.0.3'
 
   implementation group: 'org.apache.logging.log4j', name: 'log4j-api', version: log4JVersion
   implementation group: 'org.apache.logging.log4j', name: 'log4j-to-slf4j', version: log4JVersion
