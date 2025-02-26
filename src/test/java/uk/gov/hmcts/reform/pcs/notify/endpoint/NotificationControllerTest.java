@@ -7,7 +7,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.http.ResponseEntity;
 import uk.gov.hmcts.reform.pcs.notify.model.NotificationResponse;
-import uk.gov.hmcts.reform.pcs.notify.model.SendEmail;
+import uk.gov.hmcts.reform.pcs.notify.model.EmailNotificationRequest;
 import uk.gov.hmcts.reform.pcs.notify.service.NotificationService;
 
 import java.net.URI;
@@ -40,7 +40,7 @@ class NotificationControllerTest {
         UUID templateId = UUID.randomUUID();
         URI unsubscribeUrl = URI.create("https://unsubscribe.example.com");
 
-        SendEmail emailRequest = new SendEmail(
+        EmailNotificationRequest emailRequest = new EmailNotificationRequest(
             "test@example.com",
             "templateId",
             null,
@@ -60,7 +60,7 @@ class NotificationControllerTest {
             .fromEmail("noreply@example.com")
             .build();
 
-        when(notificationService.sendEmail(any(SendEmail.class))).thenReturn(mockResponse);
+        when(notificationService.sendEmail(any(EmailNotificationRequest.class))).thenReturn(mockResponse);
 
         ResponseEntity<NotificationResponse> response = notifyController.sendEmail(
             "Bearer token",

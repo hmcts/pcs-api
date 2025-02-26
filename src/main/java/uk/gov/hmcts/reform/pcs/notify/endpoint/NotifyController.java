@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import uk.gov.hmcts.reform.pcs.notify.model.NotificationResponse;
-import uk.gov.hmcts.reform.pcs.notify.model.SendEmail;
+import uk.gov.hmcts.reform.pcs.notify.model.EmailNotificationRequest;
 import uk.gov.hmcts.reform.pcs.notify.service.NotificationService;
 
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
@@ -32,7 +32,7 @@ public class NotifyController {
     public ResponseEntity<NotificationResponse> sendEmail(
         @RequestHeader(value = AUTHORIZATION, defaultValue = "DummyId") String authorisation,
         @RequestHeader(SERVICE_AUTHORIZATION) String serviceAuthorization,
-        @RequestBody SendEmail emailRequest) {
+        @RequestBody EmailNotificationRequest emailRequest) {
         log.info("Received request to send email to {}", emailRequest.getEmailAddress());
 
         NotificationResponse notificationResponse = notificationService.sendEmail(emailRequest);

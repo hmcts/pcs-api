@@ -4,7 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import uk.gov.hmcts.reform.pcs.notify.exception.NotificationException;
 import uk.gov.hmcts.reform.pcs.notify.model.NotificationResponse;
-import uk.gov.hmcts.reform.pcs.notify.model.SendEmail;
+import uk.gov.hmcts.reform.pcs.notify.model.EmailNotificationRequest;
 import uk.gov.service.notify.NotificationClient;
 import org.springframework.stereotype.Service;
 import uk.gov.service.notify.NotificationClientException;
@@ -25,7 +25,7 @@ public class NotificationService {
         this.notificationClient = notificationClient;
     }
 
-    public NotificationResponse sendEmail(SendEmail emailRequest) {
+    public NotificationResponse sendEmail(EmailNotificationRequest emailRequest) {
         final SendEmailResponse sendEmailResponse;
         final String destinationAddress = emailRequest.getEmailAddress();
         final String templateId = emailRequest.getTemplateId();

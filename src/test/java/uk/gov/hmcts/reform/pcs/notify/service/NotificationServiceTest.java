@@ -7,7 +7,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import uk.gov.hmcts.reform.pcs.notify.exception.NotificationException;
 import uk.gov.hmcts.reform.pcs.notify.model.NotificationResponse;
-import uk.gov.hmcts.reform.pcs.notify.model.SendEmail;
+import uk.gov.hmcts.reform.pcs.notify.model.EmailNotificationRequest;
 import uk.gov.service.notify.NotificationClient;
 import uk.gov.service.notify.NotificationClientException;
 import uk.gov.service.notify.SendEmailResponse;
@@ -41,7 +41,7 @@ class NotificationServiceTest {
 
     @Test
     void testSendEmailSuccess() throws NotificationClientException {
-        SendEmail emailRequest = new SendEmail(
+        EmailNotificationRequest emailRequest = new EmailNotificationRequest(
             "test@example.com",
             "templateId",
             new HashMap<>(),
@@ -65,7 +65,7 @@ class NotificationServiceTest {
 
     @Test
     void testSendEmailFailure() throws NotificationClientException {
-        SendEmail emailRequest = new SendEmail(
+        EmailNotificationRequest emailRequest = new EmailNotificationRequest(
             "test@example.com",
             "templateId",
             new HashMap<>(),
