@@ -6,7 +6,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.net.URI;
-import java.util.Optional;
 import java.util.UUID;
 
 @Data
@@ -15,12 +14,12 @@ import java.util.UUID;
 @AllArgsConstructor
 public class NotificationResponse {
     private UUID notificationId;
-    private Optional<String> reference;
-    private Optional<URI> oneClickUnsubscribeURL;
+    private String reference;
+    private URI oneClickUnsubscribeURL;
     private UUID templateId;
     private int templateVersion;
     private String templateUri;
     private String body;
     private String subject;
-    private Optional<String> fromEmail;
+    private String fromEmail;
 }
