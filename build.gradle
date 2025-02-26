@@ -251,7 +251,7 @@ def versions = [
 
 ext {
   log4JVersion = "2.24.3"
-  logbackVersion = "1.5.16"
+  logbackVersion = "1.5.17"
 }
 
 ext['snakeyaml.version'] = '2.0'
