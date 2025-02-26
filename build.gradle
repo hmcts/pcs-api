@@ -12,6 +12,7 @@ plugins {
   id 'hmcts.ccd.sdk' version '5.5.16'
   id 'com.github.hmcts.rse-cft-lib' version '0.19.1597'
   id 'io.freefair.lombok' version '8.12.1'
+  id 'au.com.dius.pact' version '4.6.17'
   /*
     Applies analysis tools including checkstyle and OWASP Dependency checker.
     See https://github.com/hmcts/gradle-java-plugin
@@ -54,6 +55,15 @@ sourceSets {
       srcDir file('src/smokeTest/java')
     }
     resources.srcDir file('src/smokeTest/resources')
+  }
+
+  contractTest {
+    java {
+      compileClasspath += main.output
+      runtimeClasspath += main.output
+      srcDir file('src/contractTest/java')
+    }
+    resources.srcDir file('src/contractTest/resources')
   }
 }
 
@@ -165,6 +175,40 @@ task runE2eFirefoxTests(type: Exec) {
   commandLine 'yarn', 'test:firefox'
 }
 
+task contract(type: Test) {
+  description = 'Runs the consumer Pact tests'
+  useJUnitPlatform()
+  testClassesDirs = sourceSets.contractTest.output.classesDirs
+  classpath = sourceSets.contractTest.runtimeClasspath
+  systemProperty 'pact.rootDir', "pacts"
+}
+
+task runAndPublishConsumerPactTests(type: Test){
+  testClassesDirs = sourceSets.contractTest.output.classesDirs
+  classpath = sourceSets.contractTest.runtimeClasspath
+}
+
+project.ext {
+  pactVersion = getCheckedOutGitCommitHash()
+}
+
+pact {
+  publish {
+    pactDirectory = 'pacts'
+    pactBrokerUrl = System.getenv("PACT_BROKER_URL") ?: 'http://localhost:80'
+    tags = [System.getenv("PACT_BRANCH_NAME") ?:'Dev']
+    version = project.pactVersion
+  }
+}
+
+runAndPublishConsumerPactTests.dependsOn contract
+
+runAndPublishConsumerPactTests.finalizedBy pactPublish
+
+def getCheckedOutGitCommitHash() {
+  'git rev-parse --verify --short HEAD'.execute().text.trim()
+}
+
 jacocoTestReport {
   executionData(test, integration, cftlibTest)
   reports {
@@ -216,7 +260,7 @@ def versions = [
 
 ext {
   log4JVersion = "2.24.3"
-  logbackVersion = "1.5.16"
+  logbackVersion = "1.5.17"
 }
 
 ext['snakeyaml.version'] = '2.0'
@@ -248,12 +292,21 @@ dependencies {
 
   implementation group: 'io.rest-assured', name: 'rest-assured'
 
-  implementation group: 'net.serenity-bdd', name: 'serenity-rest-assured', version: '4.2.16'
-  implementation group: 'net.serenity-bdd', name: 'serenity-core', version: '4.2.16'
-  testImplementation group: 'net.serenity-bdd', name: 'serenity-junit5', version: '4.2.16'
-  testImplementation group: 'org.junit.platform', name: 'junit-platform-suite-api', version: '1.11.4'
+  functionalTestImplementation group: 'net.serenity-bdd', name: 'serenity-rest-assured', version: '4.2.16'
+  functionalTestImplementation group: 'net.serenity-bdd', name: 'serenity-core', version: '4.2.16'
+  functionalTestImplementation group: 'net.serenity-bdd', name: 'serenity-junit5', version: '4.2.16'
+  functionalTestImplementation sourceSets.main.runtimeClasspath
+  functionalTestImplementation sourceSets.test.runtimeClasspath
 
-  testImplementation(platform('org.junit:junit-bom:5.11.4'))
+  testImplementation group: 'org.junit.platform', name: 'junit-platform-suite-api', version: '1.12.0'
+
+  contractTestImplementation group: 'au.com.dius.pact.consumer', name: 'junit5', version: '4.6.17'
+  contractTestImplementation group: 'org.hamcrest', name: 'java-hamcrest', version: '2.0.0.0'
+  contractTestImplementation('org.junit.jupiter:junit-jupiter-api:5.11.4')
+  contractTestImplementation sourceSets.main.runtimeClasspath
+  contractTestImplementation sourceSets.test.runtimeClasspath
+
+  testImplementation(platform('org.junit:junit-bom:5.12.0'))
   testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'
   testImplementation group: 'org.springframework.boot', name: 'spring-boot-starter-test', {
     exclude group: 'junit', module: 'junit'
@@ -286,6 +339,10 @@ tasks.withType(CftlibExec).configureEach {
 
 // Ensure we cover Cftlib dev & test with our CI checks
 check.dependsOn cftlibTest
+
+rootProject.tasks.named("processContractTestResources") {
+  duplicatesStrategy = 'include'
+}
 
 wrapper {
   distributionType = Wrapper.DistributionType.ALL

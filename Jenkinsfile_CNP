@@ -2,6 +2,8 @@
 
 @Library("Infrastructure")
 
+import uk.gov.hmcts.contino.AppPipelineDsl
+
 def type = "java"
 def product = "pcs"
 def component = "api"
@@ -26,9 +28,12 @@ withPipeline(type, product, component) {
   loadVaultSecrets(secrets)
 
   onPR() {
+    // Skipping PACT publish on PRs until contracts are verified and CONSUMER_DEPLOY_CHECK can be added
+    //enablePactAs([AppPipelineDsl.PactRoles.CONSUMER])
     setPreviewEnvVars()
   }
   onMaster() {
+    enablePactAs([AppPipelineDsl.PactRoles.CONSUMER])
     setAatEnvVars()
     afterSuccess('smoketest:aat') {
       runE2eTests(env.ENVIRONMENT)
