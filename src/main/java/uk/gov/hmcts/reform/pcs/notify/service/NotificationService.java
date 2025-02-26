@@ -17,9 +17,9 @@ import java.util.UUID;
 @Slf4j
 public class NotificationService {
 
-    @Autowired
     private  final NotificationClient notificationClient;
 
+    @Autowired
     public NotificationService(
         NotificationClient notificationClient) {
         this.notificationClient = notificationClient;
