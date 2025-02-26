@@ -33,8 +33,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class ServiceAuthorisationConsumerTest {
 
     private static final String AUTHORISATION_TOKEN = "Bearer someAuthorisationToken";
-    public static final String MICRO_SERVICE_NAME = "pcs_api";
-    public static final String MICRO_SERVICE_TOKEN = "microServiceToken";
+    public static final String MICRO_SERVICE_NAME = "someMicroServiceName";
+    public static final String MICRO_SERVICE_TOKEN = "someMicroServiceToken";
 
     @Autowired
     private ServiceAuthorisationApi serviceAuthorisationApi;
@@ -47,7 +47,7 @@ public class ServiceAuthorisationConsumerTest {
             .uponReceiving("a request for a token")
             .path("/lease")
             .method(HttpMethod.POST.toString())
-            .body("{\"microservice\":\"pcs_api\",\"oneTimePassword\":\"784467\"}")
+            .body("{\"microservice\":\"" + MICRO_SERVICE_NAME + "\", \"oneTimePassword\":\"784467\"}")
             .willRespondWith()
             .headers(Map.of(HttpHeaders.CONTENT_TYPE, "text/plain"))
             .status(HttpStatus.OK.value())
@@ -75,12 +75,12 @@ public class ServiceAuthorisationConsumerTest {
     void verifyLease() {
 
         Map<String, String> jsonPayload = new HashMap<>();
-        jsonPayload.put("microservice", "pcs_api");
+        jsonPayload.put("microservice", MICRO_SERVICE_NAME);
         jsonPayload.put("oneTimePassword", "784467");
 
         String token = serviceAuthorisationApi.serviceToken(jsonPayload);
         assertThat(token)
-            .isEqualTo("microServiceToken");
+            .isEqualTo(MICRO_SERVICE_TOKEN);
     }
 
     @Test
@@ -89,6 +89,6 @@ public class ServiceAuthorisationConsumerTest {
 
         String token = serviceAuthorisationApi.getServiceName(AUTHORISATION_TOKEN);
         assertThat(token)
-            .isEqualTo("pcs_api");
+            .isEqualTo(MICRO_SERVICE_NAME);
     }
 }
