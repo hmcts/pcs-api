@@ -35,6 +35,7 @@ public class StartupConfig {
             emailRequest.setPersonalisation(personalisation);
 
             NotificationResponse notificationResponse = notificationService.sendEmail(emailRequest);
+            System.out.println("Email sent successfully. Notification ID: " + notificationResponse);
         };
     }
 }
