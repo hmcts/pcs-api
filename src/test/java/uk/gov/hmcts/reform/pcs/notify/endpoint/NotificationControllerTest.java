@@ -6,17 +6,19 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.http.ResponseEntity;
-import uk.gov.hmcts.reform.pcs.notify.model.NotificationResponse;
 import uk.gov.hmcts.reform.pcs.notify.model.EmailNotificationRequest;
 import uk.gov.hmcts.reform.pcs.notify.service.NotificationService;
+import uk.gov.service.notify.SendEmailResponse;
 
 import java.net.URI;
+import java.util.Optional;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -48,21 +50,20 @@ class NotificationControllerTest {
             "emailReplyToId"
         );
 
-        NotificationResponse mockResponse = NotificationResponse.builder()
-            .notificationId(notificationId)
-            .reference("reference")
-            .oneClickUnsubscribeURL(unsubscribeUrl)
-            .templateId(templateId)
-            .templateVersion(1)
-            .templateUri("/template/uri")
-            .body("Email body content")
-            .subject("Email subject")
-            .fromEmail("noreply@example.com")
-            .build();
+        SendEmailResponse mockResponse = mock(SendEmailResponse.class);
+        when(mockResponse.getNotificationId()).thenReturn(notificationId);
+        when(mockResponse.getReference()).thenReturn(Optional.of("reference"));
+        when(mockResponse.getOneClickUnsubscribeURL()).thenReturn(Optional.of(unsubscribeUrl));
+        when(mockResponse.getTemplateId()).thenReturn(templateId);
+        when(mockResponse.getTemplateVersion()).thenReturn(1);
+        when(mockResponse.getTemplateUri()).thenReturn("/template/uri");
+        when(mockResponse.getBody()).thenReturn("Email body content");
+        when(mockResponse.getSubject()).thenReturn("Email subject");
+        when(mockResponse.getFromEmail()).thenReturn(Optional.of("noreply@example.com"));
 
         when(notificationService.sendEmail(any(EmailNotificationRequest.class))).thenReturn(mockResponse);
 
-        ResponseEntity<NotificationResponse> response = notifyController.sendEmail(
+        ResponseEntity<SendEmailResponse> response = notifyController.sendEmail(
             "Bearer token",
             "ServiceAuthToken",
             emailRequest
@@ -72,16 +73,16 @@ class NotificationControllerTest {
         assertTrue(response.getStatusCode().is2xxSuccessful());
         assertNotNull(response.getBody());
 
-        NotificationResponse responseBody = response.getBody();
+        SendEmailResponse responseBody = response.getBody();
         assertEquals(notificationId, responseBody.getNotificationId());
-        assertEquals("reference", responseBody.getReference());
-        assertEquals(unsubscribeUrl, responseBody.getOneClickUnsubscribeURL());
+        assertEquals(Optional.of("reference"), responseBody.getReference());
+        assertEquals(Optional.of(unsubscribeUrl), responseBody.getOneClickUnsubscribeURL());
         assertEquals(templateId, responseBody.getTemplateId());
         assertEquals(1, responseBody.getTemplateVersion());
         assertEquals("/template/uri", responseBody.getTemplateUri());
         assertEquals("Email body content", responseBody.getBody());
         assertEquals("Email subject", responseBody.getSubject());
-        assertEquals("noreply@example.com", responseBody.getFromEmail());
+        assertEquals(Optional.of("noreply@example.com"), responseBody.getFromEmail());
 
         verify(notificationService, times(1)).sendEmail(emailRequest);
     }

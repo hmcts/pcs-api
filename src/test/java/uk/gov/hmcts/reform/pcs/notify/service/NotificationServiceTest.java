@@ -6,7 +6,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import uk.gov.hmcts.reform.pcs.notify.exception.NotificationException;
-import uk.gov.hmcts.reform.pcs.notify.model.NotificationResponse;
 import uk.gov.hmcts.reform.pcs.notify.model.EmailNotificationRequest;
 import uk.gov.service.notify.NotificationClient;
 import uk.gov.service.notify.NotificationClientException;
@@ -55,7 +54,7 @@ class NotificationServiceTest {
         when(notificationClient.sendEmail(anyString(), anyString(), anyMap(), anyString()))
             .thenReturn(sendEmailResponse);
 
-        NotificationResponse response = notificationService.sendEmail(emailRequest);
+        SendEmailResponse response = notificationService.sendEmail(emailRequest);
 
         assertNotNull(response);
         assertEquals(UUID.fromString("550e8400-e29b-41d4-a716-446655440000"), response.getNotificationId());
@@ -78,7 +77,7 @@ class NotificationServiceTest {
         NotificationException exception = assertThrows(NotificationException.class, () ->
             notificationService.sendEmail(emailRequest));
 
-        assertEquals("uk.gov.service.notify.NotificationClientException: Error", exception.getMessage());
+        assertEquals("Email failed to send, please try again.", exception.getMessage());
         verify(notificationClient, times(1))
             .sendEmail(anyString(), anyString(), anyMap(), anyString());
     }

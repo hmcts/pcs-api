@@ -1,9 +1,7 @@
 package uk.gov.hmcts.reform.pcs.notify.service;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import uk.gov.hmcts.reform.pcs.notify.exception.NotificationException;
-import uk.gov.hmcts.reform.pcs.notify.model.NotificationResponse;
 import uk.gov.hmcts.reform.pcs.notify.model.EmailNotificationRequest;
 import uk.gov.service.notify.NotificationClient;
 import org.springframework.stereotype.Service;
@@ -19,13 +17,12 @@ public class NotificationService {
 
     private  final NotificationClient notificationClient;
 
-    @Autowired
     public NotificationService(
         NotificationClient notificationClient) {
         this.notificationClient = notificationClient;
     }
 
-    public NotificationResponse sendEmail(EmailNotificationRequest emailRequest) {
+    public SendEmailResponse sendEmail(EmailNotificationRequest emailRequest) {
         final SendEmailResponse sendEmailResponse;
         final String destinationAddress = emailRequest.getEmailAddress();
         final String templateId = emailRequest.getTemplateId();
@@ -42,7 +39,7 @@ public class NotificationService {
 
             log.debug("Email sent successfully. Reference ID: {}", referenceId);
 
-            return getNotificationResponse(sendEmailResponse);
+            return sendEmailResponse;
         } catch (NotificationClientException notificationClientException) {
             log.error("Failed to send email. Reference ID: {}. Reason: {}",
                       referenceId,
@@ -50,14 +47,7 @@ public class NotificationService {
                       notificationClientException
             );
 
-            throw new NotificationException(notificationClientException);
+            throw new NotificationException("Email failed to send, please try again.", notificationClientException);
         }
-    }
-
-    private static NotificationResponse getNotificationResponse(SendEmailResponse sendEmailResponse) {
-        return NotificationResponse.builder()
-            .notificationId(sendEmailResponse.getNotificationId())
-            .reference(sendEmailResponse.getReference().orElse(null))
-            .build();
     }
 }
