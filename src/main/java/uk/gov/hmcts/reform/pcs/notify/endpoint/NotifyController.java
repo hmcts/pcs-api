@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.pcs.notify.endpoint;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -27,7 +28,7 @@ public class NotifyController {
         this.notificationService = notificationService;
     }
 
-    @PostMapping("/send-email")
+    @PostMapping(value = "/send-email", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<NotificationResponse> sendEmail(
         @RequestHeader(value = AUTHORIZATION, defaultValue = "DummyId") String authorisation,
         @RequestHeader(SERVICE_AUTHORIZATION) String serviceAuthorization,

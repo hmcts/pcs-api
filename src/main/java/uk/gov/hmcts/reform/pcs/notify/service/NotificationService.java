@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.pcs.notify.service;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import uk.gov.hmcts.reform.pcs.notify.exception.NotificationException;
 import uk.gov.hmcts.reform.pcs.notify.model.NotificationResponse;
@@ -17,11 +18,12 @@ import java.util.UUID;
 @Slf4j
 public class NotificationService {
 
+    @Autowired
     private  final NotificationClient notificationClient;
 
     public NotificationService(
-        @Value("${notify.api-key}") String apiKey) {
-        this.notificationClient = new NotificationClient(apiKey);
+        NotificationClient notificationClient) {
+        this.notificationClient = notificationClient;
     }
 
     public NotificationResponse sendEmail(SendEmail emailRequest) {
