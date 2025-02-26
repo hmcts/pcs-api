@@ -57,7 +57,7 @@ public class NotificationService {
     private static NotificationResponse getNotificationResponse(SendEmailResponse sendEmailResponse) {
         return NotificationResponse.builder()
             .notificationId(sendEmailResponse.getNotificationId())
-            .reference(String.valueOf(sendEmailResponse.getReference()))
+            .reference(sendEmailResponse.getReference().orElse(null))
             .build();
     }
 }
