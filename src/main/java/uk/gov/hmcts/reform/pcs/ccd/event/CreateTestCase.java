@@ -1,6 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.event;
 
-import lombok.SneakyThrows;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CCDConfig;
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
@@ -11,11 +11,11 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.UserRole;
 
+@Profile("dev") // Non-prod event
 @Component
 public class CreateTestCase implements CCDConfig<PCSCase, State, UserRole> {
     @Override
     public void configure(ConfigBuilder<PCSCase, State, UserRole> configBuilder) {
-
         configBuilder
             .event("createTestApplication")
             .initialState(State.Open)
@@ -30,7 +30,7 @@ public class CreateTestCase implements CCDConfig<PCSCase, State, UserRole> {
     }
 
     private AboutToStartOrSubmitResponse<PCSCase, State> start(CaseDetails<PCSCase, State> caseDetails) {
-        var data = caseDetails.getData();
+        PCSCase data = caseDetails.getData();
         data.setApplicantForename("Preset value");
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
@@ -38,11 +38,9 @@ public class CreateTestCase implements CCDConfig<PCSCase, State, UserRole> {
             .build();
     }
 
-    @SneakyThrows
     public AboutToStartOrSubmitResponse<PCSCase, State> aboutToSubmit(CaseDetails<PCSCase, State> details,
                                                                        CaseDetails<PCSCase, State> beforeDetails) {
-
-
+        // TODO: Whatever you need.
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
             .data(details.getData())
             .build();

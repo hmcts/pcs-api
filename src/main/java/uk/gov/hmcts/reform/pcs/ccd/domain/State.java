@@ -4,6 +4,10 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
 
+/**
+ * All possible PCS case states.
+ * Converted into CCD states.
+ */
 @RequiredArgsConstructor
 @Getter
 public enum State {

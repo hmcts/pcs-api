@@ -7,6 +7,9 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.UserRole;
 
+/**
+ * Setup some common possessions case type configuration.
+ */
 @Component
 public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
 
@@ -31,6 +34,7 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
             .field(PCSCase::getApplicantForename, label);
 
         builder.tab("Example", "Example Tab")
-            .field(PCSCase::getApplicantForename);
+            .field(PCSCase::getApplicantForename)
+            .field(PCSCase::getPartyA);
     }
 }

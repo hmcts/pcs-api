@@ -5,6 +5,9 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import uk.gov.hmcts.ccd.sdk.api.HasRole;
 
+/**
+ * All the different roles for a PCS case.
+ */
 @AllArgsConstructor
 @Getter
 public enum UserRole implements HasRole {
