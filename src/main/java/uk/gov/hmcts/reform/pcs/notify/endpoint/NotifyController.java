@@ -14,6 +14,11 @@ import uk.gov.service.notify.SendEmailResponse;
 
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 
+/*
+    This is a temporary endpoint created purely for testing the integration with Gov Notify, and will be removed once
+    events are added to our service, DO NOT USE for any future events.
+*/
+
 @Slf4j
 @RestController
 @RequestMapping("/notify")
