@@ -218,7 +218,7 @@ sonarqube {
     property "sonar.projectKey", "uk.gov.hmcts.reform:pcs-api"
     property "sonar.coverage.exclusions", "**/config/**/*Configuration.java," +
       "**/*Constants.java," +
-      "**/model/*.java," + "**/," + "**/uk/gov/hmcts/reform/pcs/Application.java"
+      "**/model/*.java," + "**/uk/gov/hmcts/reform/pcs/Application.java"
   }
 }
 
@@ -278,7 +278,6 @@ dependencies {
   implementation group: 'org.springframework.cloud', name: 'spring-cloud-starter-openfeign', version: '4.2.0'
   implementation group: 'org.projectlombok', name: 'lombok', version: versions.lombok
   annotationProcessor group: 'org.projectlombok', name: 'lombok', version: versions.lombok
-
 
   implementation group: 'io.rest-assured', name: 'rest-assured'
 
