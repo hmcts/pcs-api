@@ -290,7 +290,7 @@ dependencies {
 
   contractTestImplementation group: 'au.com.dius.pact.consumer', name: 'junit5', version: '4.6.17'
   contractTestImplementation group: 'org.hamcrest', name: 'java-hamcrest', version: '2.0.0.0'
-  contractTestImplementation('org.junit.jupiter:junit-jupiter-api:5.11.4')
+  contractTestImplementation('org.junit.jupiter:junit-jupiter-api:5.12.0')
   contractTestImplementation sourceSets.main.runtimeClasspath
   contractTestImplementation sourceSets.test.runtimeClasspath
 
