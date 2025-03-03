@@ -67,7 +67,11 @@ idam:
 azure:
   application-insights:
     instrumentation-key: ${pcs.AppInsightsInstrumentationKey:00000000-0000-0000-0000-000000000000}
+
 hmc:
   deployment-id: ${HMC_DEPLOYMENT_ID:}
   api-url: ${HMC_API_URL:http://localhost:8084}
   serviceId: ${HMC_SERVICE_ID:AAA3}
+
+notify:
+  api-key: ${PCS_NOTIFY_API_KEY:AAAAAAAA-AAAA-AAAA-AAAA-AAAAAAAAAAAA}
