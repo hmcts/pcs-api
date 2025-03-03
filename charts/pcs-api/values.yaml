@@ -22,4 +22,4 @@ java:
     HMC_API_URL: "http://hmc-cft-hearing-service-{{ .Values.global.environment }}.service.core-compute-{{ .Values.global.environment }}.internal"
 
 servicebus:
-  enabled: false
+  enabled: true
