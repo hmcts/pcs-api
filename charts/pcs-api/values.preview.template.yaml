@@ -10,6 +10,8 @@ java:
           alias: PCS_API_S2S_SECRET
         - name: govnotify-test-key
           alias: PCS_NOTIFY_API_KEY
+        - name: hmc-servicebus-connection-string
+          alias: HEARINGS_SERVICEBUS_CONNECTION_STRING
   environment:
     PCS_DB_HOST: "{{ .Release.Name }}-postgresql"
     PCS_DB_USER_NAME: "{{ .Values.postgresql.auth.username}}"
