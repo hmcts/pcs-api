@@ -10,13 +10,21 @@
   </suppress>
   <suppress base="true">
     <notes><![CDATA[
-    Suppressing specific CVEs for azure-identity-extensions
+    Suppressing specific CVEs for azure-identity-extensions as per FP #6491
     ]]></notes>
     <packageUrl regex="true">^pkg:maven/com\.azure/azure-identity-extensions@.*$</packageUrl>
     <cpe>cpe:2.3:a:microsoft:azure_identity_sdk</cpe>
     <cpe>cpe:2.3:a:microsoft:azure_sdk_for_java</cpe>
     <cve>CVE-2023-36414</cve>
     <cve>CVE-2023-36415</cve>
+    <cve>CVE-2024-35255</cve>
+  </suppress>
+  <suppress base="true">
+    <notes><![CDATA[
+    Suppressing specific CVEs for msal4j as per FP #7000
+    ]]></notes>
+    <packageUrl regex="true">^pkg:maven/com\.microsoft\.azure/msal4j@.*$</packageUrl>
+    <cpe>cpe:2.3:a:microsoft:authentication_library</cpe>
     <cve>CVE-2024-35255</cve>
   </suppress>
   <!--End of false positives section -->
