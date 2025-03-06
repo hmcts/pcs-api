@@ -8,5 +8,12 @@
     <packageUrl regex="true">^pkg:maven/com\.fasterxml\.jackson\.core/jackson\-databind@.*$</packageUrl>
     <cve>CVE-2023-35116</cve>
   </suppress>
+  <suppress base="true">
+    <notes><![CDATA[
+   FP per issue #6491
+   ]]></notes>
+    <packageUrl regex="true">^pkg:maven/com\.azure/azure-identity-extensions@.*$</packageUrl>
+    <cpe>cpe:/a:microsoft:azure_cli</cpe>
+  </suppress>
   <!--End of false positives section -->
 </suppressions>
