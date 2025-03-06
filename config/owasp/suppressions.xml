@@ -10,10 +10,12 @@
   </suppress>
   <suppress base="true">
     <notes><![CDATA[
-   FP per issue #6491
-   ]]></notes>
+    Suppressing specific CVEs for azure-identity-extensions
+    ]]></notes>
     <packageUrl regex="true">^pkg:maven/com\.azure/azure-identity-extensions@.*$</packageUrl>
-    <cpe>cpe:/a:microsoft:azure_cli</cpe>
+    <cve>CVE-2023-36414</cve>
+    <cve>CVE-2023-36415</cve>
+    <cve>CVE-2024-35255</cve>
   </suppress>
   <!--End of false positives section -->
 </suppressions>
