@@ -63,7 +63,7 @@ spring:
       topic-client-id: ${HEARINGS_SERVICEBUS_TOPIC_CLIENT_ID:${spring.application.name}}
       pricing-tier: ${HEARINGS_SERVICEBUS_PRICING_TIER:standard}
       receive-timeout: ${HEARINGS_SERVICEBUS_RECEIVE_TIMEOUT:60000}
-      idle-timeout: ${HEARINGS_SERVICEBUS_IDLE_TIMEOUT:60000}
+      idle-timeout: ${HEARINGS_SERVICEBUS_IDLE_TIMEOUT:600000}
       hearings-topic: ${HEARINGS_SERVICEBUS_TOPIC:hmc-to-cft-aat}
       hearings-subscription: ${HEARINGS_SERVICEBUS_SUBSCRIPTION:hmc-to-pcs-subscription-aat}
 idam:
