@@ -268,6 +268,7 @@ dependencies {
   implementation group: 'uk.gov.service.notify', name: 'notifications-java-client', version: '5.2.1-RELEASE'
   implementation platform(group: 'com.azure.spring', name :'spring-cloud-azure-dependencies', version :'5.20.0')
   implementation("com.azure.spring:spring-cloud-azure-starter-servicebus-jms") {
+    exclude group: "com.azure", module: "azure-identity-extensions"
     exclude group: "com.azure", module: "azure-identity"
   }
 
