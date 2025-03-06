@@ -13,6 +13,8 @@
     Suppressing specific CVEs for azure-identity-extensions
     ]]></notes>
     <packageUrl regex="true">^pkg:maven/com\.azure/azure-identity-extensions@.*$</packageUrl>
+    <cpe>cpe:2.3:a:microsoft:azure_identity_sdk</cpe>
+    <cpe>cpe:2.3:a:microsoft:azure_sdk_for_java</cpe>
     <cve>CVE-2023-36414</cve>
     <cve>CVE-2023-36415</cve>
     <cve>CVE-2024-35255</cve>
