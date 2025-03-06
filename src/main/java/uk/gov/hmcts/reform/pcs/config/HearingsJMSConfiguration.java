@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.hearings.config;
+package uk.gov.hmcts.reform.pcs.config;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
