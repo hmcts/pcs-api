@@ -294,7 +294,7 @@ dependencies {
   implementation group: 'io.rest-assured', name: 'rest-assured'
 
   functionalTestImplementation group: 'net.serenity-bdd', name: 'serenity-rest-assured', version: '4.2.16'
-  functionalTestImplementation group: 'net.serenity-bdd', name: 'serenity-core', version: '4.2.16'
+  functionalTestImplementation group: 'net.serenity-bdd', name: 'serenity-core', version: '4.2.17'
   functionalTestImplementation group: 'net.serenity-bdd', name: 'serenity-junit5', version: '4.2.16'
   functionalTestImplementation sourceSets.main.runtimeClasspath
   functionalTestImplementation sourceSets.test.runtimeClasspath
