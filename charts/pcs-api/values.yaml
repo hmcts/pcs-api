@@ -11,6 +11,8 @@ java:
           alias: PCS_DB_PASSWORD
         - name: pcs-api-s2s-secret
           alias: PCS_API_S2S_SECRET
+        - name: govnotify-test-key
+          alias: PCS_NOTIFY_API_KEY
   environment:
     PCS_DB_USER_NAME: pgadmin
     PCS_DB_NAME: pcs
