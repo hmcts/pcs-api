@@ -34,7 +34,8 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
             .field(PCSCase::getApplicantForename, label);
 
         builder.tab("Example", "Example Tab")
-            .field(PCSCase::getApplicantForename)
-            .field(PCSCase::getPartyA);
+                    .label("myLabel", null, "${exampleTabMarkdown}")
+            .field("exampleTabMarkdown", "exampleTabMarkdown=\"NEVER_SHOW\"");
+
     }
 }
