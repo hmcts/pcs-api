@@ -5,10 +5,13 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.CCDDefinitionGenerator;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.rse.ccd.lib.ControlPlane;
+import uk.gov.hmcts.rse.ccd.lib.Database;
 import uk.gov.hmcts.rse.ccd.lib.api.CFTLib;
 import uk.gov.hmcts.rse.ccd.lib.api.CFTLibConfigurer;
 
 import java.io.File;
+import java.sql.Connection;
 import java.util.List;
 import java.util.Map;
 
@@ -43,5 +46,10 @@ public class CftlibConfig implements CFTLibConfigurer {
 
         // Import CCD definitions
         lib.importJsonDefinition(new File("build/definitions/PCS"));
+
+        // TODO: temporary hack to drop AboutToSubmit/Submitted callbacks
+        try (Connection c = ControlPlane.getApi().getConnection(Database.Definitionstore)) {
+            c.createStatement().execute("delete from event_webhook where webhook_type in ('PRE_SUBMIT', 'POST_SUBMIT')");
+        }
     }
 }
