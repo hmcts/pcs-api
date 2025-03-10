@@ -25,13 +25,13 @@ public class CreateTestCase implements CCDConfig<PCSCase, State, UserRole> {
             .grant(Permission.CRUD, UserRole.CASE_WORKER)
             .fields()
             .page("Create test case")
-                .mandatory(PCSCase::getApplicantForename)
+                .mandatory(PCSCase::getCaseDescription)
                 .done();
     }
 
     private AboutToStartOrSubmitResponse<PCSCase, State> start(CaseDetails<PCSCase, State> caseDetails) {
         PCSCase data = caseDetails.getData();
-        data.setApplicantForename("Preset value");
+        data.setCaseDescription("Preset value");
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
             .data(caseDetails.getData())

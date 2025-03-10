@@ -45,7 +45,7 @@ public class TestWithCCD extends CftlibTest {
     public void createsTestCase() {
         var r = ccdApi.startCase(idamToken, s2sToken, "PCS", "createTestApplication");
         var content = CaseDataContent.builder()
-            .data(PCSCase.builder().applicantForename("Foo").build())
+            .data(PCSCase.builder().caseDescription("Foo").build())
             .event(Event.builder().id("createTestApplication").build())
             .eventToken(r.getToken())
             .build();

@@ -22,16 +22,16 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
 
         var label = "Applicant Forename";
         builder.searchInputFields()
-            .field(PCSCase::getApplicantForename, label);
+            .field(PCSCase::getCaseDescription, label);
         builder.searchCasesFields()
-            .field(PCSCase::getApplicantForename, label);
+            .field(PCSCase::getCaseDescription, label);
 
         builder.searchResultFields()
-            .field(PCSCase::getApplicantForename, label);
+            .field(PCSCase::getCaseDescription, label);
         builder.workBasketInputFields()
-            .field(PCSCase::getApplicantForename, label);
+            .field(PCSCase::getCaseDescription, label);
         builder.workBasketResultFields()
-            .field(PCSCase::getApplicantForename, label);
+            .field(PCSCase::getCaseDescription, label);
 
         builder.tab("Example", "Example Tab")
                     .label("myLabel", null, "${exampleTabMarkdown}")
