@@ -4,9 +4,7 @@ import io.pebbletemplates.pebble.PebbleEngine;
 import io.pebbletemplates.pebble.template.PebbleTemplate;
 import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Component;
-import uk.gov.hmcts.ccd.sdk.CaseRepository;
 import uk.gov.hmcts.ccd.sdk.DecentralisedCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 
@@ -15,7 +13,7 @@ import java.io.Writer;
 import java.util.Map;
 
 @Component
-public class PCSCaseRepository extends DecentralisedCaseRepository<PCSCase> {
+public class CCDCaseRepository extends DecentralisedCaseRepository<PCSCase> {
     @Autowired
     private PebbleEngine pebl;
 

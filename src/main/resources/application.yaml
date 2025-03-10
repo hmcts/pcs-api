@@ -50,12 +50,17 @@ spring:
       maxLifetime: 7200000
       connectionTimeout: 30000
   jpa:
+    hibernate:
+      ddl-auto: validate
     properties:
       hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
         jdbc:
           lob:
             # silence the 'wall-of-text' - unnecessary exception throw about blob types
             non_contextual_creation: true
+    show-sql: true
 idam:
   s2s-auth:
     url: ${IDAM_S2S_AUTH_URL:http://localhost:4502}

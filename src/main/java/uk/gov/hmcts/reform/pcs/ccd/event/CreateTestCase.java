@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.event;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CCDConfig;
@@ -10,10 +11,15 @@ import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.UserRole;
+import uk.gov.hmcts.reform.pcs.entity.PcsCase;
+import uk.gov.hmcts.reform.pcs.repository.PCSCaseRepository;
 
 @Profile("dev") // Non-prod event
 @Component
 public class CreateTestCase implements CCDConfig<PCSCase, State, UserRole> {
+    @Autowired
+    private PCSCaseRepository repository;
+
     @Override
     public void configure(ConfigBuilder<PCSCase, State, UserRole> configBuilder) {
         configBuilder
@@ -39,8 +45,14 @@ public class CreateTestCase implements CCDConfig<PCSCase, State, UserRole> {
     }
 
     public AboutToStartOrSubmitResponse<PCSCase, State> aboutToSubmit(CaseDetails<PCSCase, State> details,
-                                                                       CaseDetails<PCSCase, State> beforeDetails) {
-        // TODO: Whatever you need.
+                                                                                                         CaseDetails<PCSCase, State> beforeDetails) {
+
+        var c = PcsCase.builder()
+            .reference(details.getId()) // You need to set the reference as it's the @Id and not auto-generated
+            .caseDescription(details.getData().getCaseDescription())
+            .build();
+        repository.save(c);
+
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
             .data(details.getData())
             .build();

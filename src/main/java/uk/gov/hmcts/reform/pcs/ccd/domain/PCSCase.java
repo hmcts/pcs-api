@@ -5,6 +5,8 @@ import lombok.Data;
 import uk.gov.hmcts.ccd.sdk.External;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
 
+import java.util.List;
+
 /**
  * The main domain model representing a possessions case.
  */
@@ -14,8 +16,7 @@ public class PCSCase {
     @CCD(label = "Description of this case")
     private String caseDescription;
 
-    @CCD(label = "Party A")
-    private Party partyA;
+    private List<Party> parties;
 
     @External
     private String exampleTabMarkdown;
