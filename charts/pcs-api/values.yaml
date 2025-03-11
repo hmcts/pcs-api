@@ -13,6 +13,8 @@ java:
           alias: PCS_API_S2S_SECRET
         - name: govnotify-test-key
           alias: PCS_NOTIFY_API_KEY
+        - name: hmc-servicebus-connection-string
+          alias: HEARINGS_SERVICEBUS_CONNECTION_STRING
   environment:
     PCS_DB_USER_NAME: pgadmin
     PCS_DB_NAME: pcs
