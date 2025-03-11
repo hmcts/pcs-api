@@ -30,7 +30,7 @@ Create docker image:
   docker compose build
 ```
 
-Logout of the Azure Container Registry (ACR) just in case you are already logged.
+Logout of the Azure Container Registry (ACR) just in case you are already logged in.
 
 ```bash
 docker logout hmctspublic.azurecr.io
