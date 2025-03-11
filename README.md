@@ -30,6 +30,12 @@ Create docker image:
   docker compose build
 ```
 
+Logout of the Azure Container Registry (ACR) just in case you are already logged.
+
+```bash
+docker logout hmctspublic.azurecr.io
+```
+
 Run the distribution (created in `build/install/pcs-api` directory)
 by executing the following command:
 
@@ -39,6 +45,7 @@ by executing the following command:
 
 This will start the API container exposing the application's port `3206`, and a database container running on the port
 `5432`.
+
 
 In order to test if the application is up, you can call its health endpoint:
 

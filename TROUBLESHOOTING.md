@@ -7,10 +7,10 @@ Peter Pilgrim
 
 
 
-## PCS API Authentication Failure
+## PCS API Authentication Authorisation Failure
 
-Here are my notes when I received the following authentication error: *unauthorized* when I tried to start the `pcs-api` service.
-I was trying to start the `pcs-api` service with `docker compose up` and I received the following error message:
+Error: `unauthorized` when starting the pcs-api service locally.
+
 
 ```zsh
 docker compose up
@@ -20,38 +20,49 @@ docker compose up
 Error response from daemon: Head "https://hmctspublic.azurecr.io/v2/rpe/service-auth-provider/manifests/latest": unauthorized:
 ```
 
-Resolution to server side `pcs-api` issue. I had to log into the Azure Container Registry (ACR) with the correct credentials.
-I had to log out of the ACR and then log back in with the correct credentials.
+Resolution:
 
-Login to Docker / Get a Docker Hub account
+Step 1) Ensure you are logged in Azure at the command line.
 
 ```zsh
-docker login -u peterpilgrim
+az login
+```
+
+You might have to restart IntelliJ IDEA or Visual Studio Code in order to pick up the new Azure CLI session.
+
+
+Step 2) Ensure that you are logged into the Azure Container Registry (ACR) with the correct credentials.
+
+
+```zsh
+docker login -u <docker-username>  [ -p <docker-password> ]
 ```
 
 Substitute with with your own Docker Hub account credentials. Docker Hub is a public registry [https://hub.docker.com/](https://hub.docker.com/).
 
-From Jake Growler, try `docker login` , because docker may not be using your ACR credentials provided by the tenant
 
-And also make sure you’re logged into the ACR directly by running:
+Step 3) Login to the Azure Container Registry (ACR) with the correct credentials.
 
 ```zsh
 az acr login --name hmctspublic --subscription DCD-CNP-DEV
 ```
 
-I used `brew install az` to install Azure Command Line Interface (CLI) on my MacBook Pro.
-
-And the finally step was the clincher for me. I logged out of the Azure Container Registry (ACR) and then logged back in with the correct credentials.
+Step 4) Resolution in this case is to logout if you logged to ACR before or login every time you want to run a docker command.
 
 ```zsh
 docker logout hmctspublic.azurecr.io
 ```
 
-
+Step 5)
 Afterwards the invoke the command to start the application locally
 
 ```zsh
 docker compose up
+```
+
+The console output should be similar to this:
+
+```
 service-auth-provider-api-1  | Picked up JAVA_TOOL_OPTIONS: -XX:InitialRAMPercentage=30.0 -XX:MaxRAMPercentage=65.0 -XX:MinRAMPercentage=30.0  -javaagent:/opt/app/applicationinsights-agent-3.4.18.jar -Dfile.encoding=UTF-8
 pcs-api-db-1                 | The files belonging to this database system will be owned by user "postgres".
 pcs-api-db-1                 | This user must also own the server process.
@@ -66,17 +77,18 @@ pcs-api-1                    | 2025-03-05T15:00:16.454 INFO  [main] org.apache.c
 pcs-api-1                    | 2025-03-05T15:00:16.454 I
 ```
 
-It finally works, I was able to surf to http://localhost:3206/health
+Application is available locally at port 3206 http://localhost:3206/health
 
+
+## Check Your Current CNP Subscription
 
 Check that you in the correct Cloud Native Platform (CNP) Subscription with the Azure CLI.
 At the terminal running `az account show` tells you that you are a part of DCD-CNP-DEV?
 
 
-
 ```zsh
 az account show
-
+    ...
     "name": "DCD-CNP-DEV",
       "state": "Enabled",
       "tenantDefaultDomain": "HMCTS.NET",
@@ -88,15 +100,10 @@ az account show
       }
 ```
 
-## Double Check Azure Portal Access
+Here are the steps to switch to the correct subscription:
 
-Check that you can see the Azure Portal and HDP resources
-
-https://portal.azure.com/#@HMCTS.NET/resource/subscriptions/8999dec3-0104-4a27-94ee-6588559729d1/resourceGroups/rpe-acr-prod-rg/providers/Microsoft.ContainerRegistry/registries/hmctspublic/overview
-
-Here is a handy reference to Azure Enterprise docs
-
-https://github.com/hmcts/azure-enterprise/blob/main/README.md
-
-
+```zsh
+az account list
+az account set --subscription DCD-CNP-DEV
+```
 
