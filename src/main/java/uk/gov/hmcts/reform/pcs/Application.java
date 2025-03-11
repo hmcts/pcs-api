@@ -4,6 +4,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.openfeign.EnableFeignClients;
 import uk.gov.hmcts.reform.idam.client.IdamApi;
+import org.springframework.jms.annotation.EnableJms;
 import uk.gov.hmcts.reform.pcs.hearings.service.api.HmcHearingApi;
 
 @SpringBootApplication(
@@ -19,6 +20,7 @@ import uk.gov.hmcts.reform.pcs.hearings.service.api.HmcHearingApi;
         IdamApi.class
     }
 )
+@EnableJms
 public class Application {
 
     public static void main(final String[] args) {
