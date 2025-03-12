@@ -49,7 +49,8 @@ public class CftlibConfig implements CFTLibConfigurer {
 
         // TODO: temporary hack to drop AboutToSubmit/Submitted callbacks
         try (Connection c = ControlPlane.getApi().getConnection(Database.Definitionstore)) {
-            c.createStatement().execute("delete from event_webhook where webhook_type in ('PRE_SUBMIT', 'POST_SUBMIT')");
+            c.createStatement().execute(
+                "delete from event_webhook where webhook_type in ('PRE_SUBMIT', 'POST_SUBMIT')");
         }
     }
 }

@@ -5,8 +5,6 @@ import lombok.Data;
 import uk.gov.hmcts.ccd.sdk.External;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
 
-import java.util.List;
-
 /**
  * The CCD domain model representing a possessions case.
  */

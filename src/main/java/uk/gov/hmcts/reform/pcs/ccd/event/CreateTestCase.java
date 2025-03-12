@@ -44,8 +44,8 @@ public class CreateTestCase implements CCDConfig<PCSCase, State, UserRole> {
             .build();
     }
 
-    public AboutToStartOrSubmitResponse<PCSCase, State> aboutToSubmit(CaseDetails<PCSCase, State> details,
-                                                                                                         CaseDetails<PCSCase, State> beforeDetails) {
+    public AboutToStartOrSubmitResponse<PCSCase, State> aboutToSubmit(
+        CaseDetails<PCSCase, State> details, CaseDetails<PCSCase, State> beforeDetails) {
 
         var c = PcsCase.builder()
             .reference(details.getId()) // You need to set the reference as it's the @Id and not auto-generated

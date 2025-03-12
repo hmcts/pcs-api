@@ -27,10 +27,11 @@ public class CCDCaseRepository extends DecentralisedCaseRepository<PCSCase> {
         var pcsCase = repository.getReferenceById(caseRef);
         // Translate it into the CCD model.
         return
-            PCSCase.builder().
-                exampleTabMarkdown(renderExampleTab(pcsCase.getCaseDescription()))
-            .build();
+            PCSCase.builder()
+                .exampleTabMarkdown(renderExampleTab(pcsCase.getCaseDescription()))
+                .build();
     }
+
     @SneakyThrows
     private String renderExampleTab(String description) {
         PebbleTemplate compiledTemplate = pebl.getTemplate("example");
