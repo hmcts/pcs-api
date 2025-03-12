@@ -134,6 +134,16 @@ There are also several custom test scripts available:
 - `test:chrome` - runs the full E2E suite in Chrome
 - `test:firefox` - runs the full E2E suite in Firefox
 
+### Running pcs-api with local CCD
+
+```bash
+./gradlew bootWithCCD
+```
+Above command starts PCS API + CCD & all dependencies
+
+Once successfully loaded open XUI at http://localhost:3000
+See CftlibConfig.java for users and login details.
+
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details
