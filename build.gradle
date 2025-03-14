@@ -251,7 +251,7 @@ dependencyCheck {
 repositories {
   mavenLocal()
   mavenCentral()
-  maven { url 'https://jitpack.io' }
+  maven { url = 'https://jitpack.io' }
 }
 
 def versions = [
@@ -319,7 +319,9 @@ dependencies {
   cftlibImplementation 'org.springframework.boot:spring-boot-devtools'
 }
 
-mainClassName = 'uk.gov.hmcts.reform.pcs.Application'
+application {
+  mainClass = 'uk.gov.hmcts.reform.pcs.Application'
+}
 
 bootJar {
   archiveFileName = "pcs-api.jar"
