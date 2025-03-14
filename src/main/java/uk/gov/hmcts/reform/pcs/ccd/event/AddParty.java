@@ -37,6 +37,7 @@ public class AddParty implements CCDConfig<PCSCase, State, UserRole> {
             .done();
     }
 
+    // Save the new party details to the database (instead of CCD's JSON blob)
     public AboutToStartOrSubmitResponse<PCSCase, State> aboutToSubmit(
         CaseDetails<PCSCase, State> details, CaseDetails<PCSCase, State> beforeDetails) {
         var data = details.getData();

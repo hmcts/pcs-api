@@ -15,6 +15,9 @@ import java.io.Writer;
 import java.time.LocalDateTime;
 import java.util.Map;
 
+/**
+ * Invoked by CCD to load PCS cases under the decentralised model.
+ */
 @Component
 public class CCDCaseRepository extends DecentralisedCaseRepository<PCSCase> {
     @Autowired
@@ -23,6 +26,10 @@ public class CCDCaseRepository extends DecentralisedCaseRepository<PCSCase> {
     @Autowired
     private PCSCaseRepository repository;
 
+    /**
+     * Invoked by CCD to load PCS cases by reference.
+     * @param caseRef The case to load
+     */
     @Override
     public PCSCase getCase(long caseRef, String roleAssignments) {
         // Load the case from our database.
