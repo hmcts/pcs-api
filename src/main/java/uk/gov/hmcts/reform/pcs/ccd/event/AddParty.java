@@ -1,7 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.event;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CCDConfig;
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
@@ -11,47 +10,45 @@ import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.UserRole;
-import uk.gov.hmcts.reform.pcs.entity.PcsCase;
+import uk.gov.hmcts.reform.pcs.entity.Party;
 import uk.gov.hmcts.reform.pcs.repository.PCSCaseRepository;
+import uk.gov.hmcts.reform.pcs.repository.PartyRepository;
 
-@Profile("dev") // Non-prod event
 @Component
-public class CreateTestCase implements CCDConfig<PCSCase, State, UserRole> {
+public class AddParty implements CCDConfig<PCSCase, State, UserRole> {
     @Autowired
-    private PCSCaseRepository repository;
+    private PCSCaseRepository cases;
+
+    @Autowired
+    private PartyRepository parties;
 
     @Override
     public void configure(ConfigBuilder<PCSCase, State, UserRole> configBuilder) {
         configBuilder
-            .event("createTestApplication")
-            .initialState(State.Open)
-            .name("Create test case")
-            .aboutToStartCallback(this::start)
+            .event("addParty")
+            .forState(State.Open)
+            .name("Add a party")
             .aboutToSubmitCallback(this::aboutToSubmit)
             .grant(Permission.CRUD, UserRole.CASE_WORKER)
             .fields()
-            .page("Create test case")
-                .mandatory(PCSCase::getCaseDescription)
-                .done();
-    }
-
-    private AboutToStartOrSubmitResponse<PCSCase, State> start(CaseDetails<PCSCase, State> caseDetails) {
-        PCSCase data = caseDetails.getData();
-        data.setCaseDescription("Acme Corporation v. Smith");
-
-        return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
-            .data(caseDetails.getData())
-            .build();
+            .page("Party details")
+                .mandatory(PCSCase::getPartyFirstName)
+                .mandatory(PCSCase::getPartyLastName)
+            .done();
     }
 
     public AboutToStartOrSubmitResponse<PCSCase, State> aboutToSubmit(
         CaseDetails<PCSCase, State> details, CaseDetails<PCSCase, State> beforeDetails) {
+        var data = details.getData();
 
-        var c = PcsCase.builder()
-            .reference(details.getId()) // You need to set the reference as it's the @Id and not auto-generated
-            .caseDescription(details.getData().getCaseDescription())
+        var c = cases.getReferenceById(details.getId());
+        var p = Party.builder()
+            .forename(data.getPartyFirstName())
+            .surname(data.getPartyLastName())
+            .pcsCase(c)
             .build();
-        repository.save(c);
+
+        parties.save(p);
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
             .data(details.getData())

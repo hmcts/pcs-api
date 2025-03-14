@@ -1,2 +1,17 @@
-# {{ description }}
+# ⚖️ {{ description }}
 
+{% if parties | length > 0 %}
+
+## Parties Overview
+
+| Forename | Surname |
+|---------|----------|
+{% for party in parties %}
+| **{{ party.forename }}** | **{{ party.surname }}** |
+{% endfor %}
+
+{% else %}
+### No parties have yet been added to this case [Add a party](/cases/case-details/{{caseReference}}/trigger/addParty)
+{% endif %}
+
+**Page loaded at {{ time | date("HH:mm:ss") }}**

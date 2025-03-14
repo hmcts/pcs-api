@@ -16,4 +16,9 @@ public class PCSCase {
 
     @External
     private String exampleTabMarkdown;
+
+    @CCD(label = "Party first name")
+    private String partyFirstName;
+    @CCD(label = "Party last name")
+    private String partyLastName;
 }
