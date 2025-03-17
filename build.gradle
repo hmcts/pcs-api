@@ -44,7 +44,6 @@ sourceSets {
       runtimeClasspath += main.output
       srcDir file('src/integrationTest/java')
     }
-    resources.srcDir file('src/integrationTest/resources')
   }
 
   smokeTest {
@@ -298,6 +297,8 @@ dependencies {
   implementation 'org.flywaydb:flyway-database-postgresql:11.3.1'
   implementation 'org.springframework.cloud:spring-cloud-starter-openfeign:4.2.0'
   implementation 'io.pebbletemplates:pebble-spring-boot-starter:3.2.2'
+
+  integrationTestImplementation 'org.testcontainers:postgresql:1.20.6'
 
   functionalTestImplementation group: 'net.serenity-bdd', name: 'serenity-rest-assured', version: '4.2.17'
   functionalTestImplementation group: 'net.serenity-bdd', name: 'serenity-core', version: '4.2.17'

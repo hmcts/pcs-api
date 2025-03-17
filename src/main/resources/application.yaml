@@ -36,7 +36,6 @@ spring:
   application:
     name: pcs api
   datasource:
-    driver-class-name: org.postgresql.Driver
     url: jdbc:postgresql://${PCS_DB_HOST:localhost}:${DB_PORT:6432}/${PCS_DB_NAME:pcs}${PCS_DB_OPTIONS:}
     username: ${PCS_DB_USER_NAME:postgres}
     password: ${PCS_DB_PASSWORD:postgres}
