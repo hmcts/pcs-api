@@ -14,25 +14,31 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
-import uk.gov.hmcts.reform.authorisation.filters.ServiceAuthFilter;
+import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.pcs.hearings.model.DeleteHearingRequest;
 import uk.gov.hmcts.reform.pcs.hearings.model.HearingRequest;
 import uk.gov.hmcts.reform.pcs.hearings.model.UpdateHearingRequest;
+import uk.gov.hmcts.reform.pcs.hearings.service.api.HmcHearingApi;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
+@ActiveProfiles("integration")
 class HearingsControllerIT {
 
     @Autowired
-    private transient MockMvc mockMvc;
-
-    @MockitoBean
-    private ServiceAuthFilter serviceAuthFilter;
+    private MockMvc mockMvc;
 
     @Autowired
     private ObjectMapper objectMapper;
+
+    @MockitoBean
+    AuthTokenGenerator authTokenGenerator;
+
+    @MockitoBean
+    HmcHearingApi hmcHearingApi;
 
     private static final String AUTH_HEADER = "Bearer token";
     private static final String SERVICE_AUTH_HEADER = "ServiceAuthToken";
@@ -57,6 +63,7 @@ class HearingsControllerIT {
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(request)))
             .andExpect(status().isOk());
+
     }
 
     @Test
@@ -77,5 +84,4 @@ class HearingsControllerIT {
                             .header(SERVICE_AUTHORIZATION, SERVICE_AUTH_HEADER))
             .andExpect(status().isOk());
     }
-
 }
