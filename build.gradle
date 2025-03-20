@@ -45,6 +45,7 @@ sourceSets {
       runtimeClasspath += main.output
       srcDir file('src/integrationTest/java')
     }
+    resources.srcDir file('src/integrationTest/resources')
   }
 
   smokeTest {
@@ -343,6 +344,10 @@ tasks.withType(CftlibExec).configureEach {
 
 // Ensure we cover Cftlib dev & test with our CI checks
 check.dependsOn cftlibTest
+
+rootProject.tasks.named("processIntegrationTestResources") {
+  duplicatesStrategy = 'include'
+}
 
 rootProject.tasks.named("processContractTestResources") {
   duplicatesStrategy = 'include'
