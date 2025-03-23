@@ -6,6 +6,7 @@ import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CCDConfig;
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
 import uk.gov.hmcts.ccd.sdk.api.ConfigBuilder;
+import uk.gov.hmcts.ccd.sdk.api.EventPayload;
 import uk.gov.hmcts.ccd.sdk.api.Permission;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
@@ -23,11 +24,10 @@ public class CreateTestCase implements CCDConfig<PCSCase, State, UserRole> {
     @Override
     public void configure(ConfigBuilder<PCSCase, State, UserRole> configBuilder) {
         configBuilder
-            .event("createTestApplication")
+            .decentralisedEvent("createTestApplication", this::submit)
             .initialState(State.Open)
             .name("Create test case")
             .aboutToStartCallback(this::start)
-            .aboutToSubmitCallback(this::aboutToSubmit)
             .grant(Permission.CRUD, UserRole.CASE_WORKER)
             .fields()
             .page("Create test case")
@@ -44,17 +44,11 @@ public class CreateTestCase implements CCDConfig<PCSCase, State, UserRole> {
             .build();
     }
 
-    public AboutToStartOrSubmitResponse<PCSCase, State> aboutToSubmit(
-        CaseDetails<PCSCase, State> details, CaseDetails<PCSCase, State> beforeDetails) {
-
+    public void submit(EventPayload<PCSCase, State> p) {
         var c = PcsCase.builder()
-            .reference(details.getId()) // You need to set the reference as it's the @Id and not auto-generated
-            .caseDescription(details.getData().getCaseDescription())
+            .reference(p.caseReference())
+            .caseDescription(p.payload().getCaseDescription())
             .build();
         repository.save(c);
-
-        return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
-            .data(details.getData())
-            .build();
     }
 }
