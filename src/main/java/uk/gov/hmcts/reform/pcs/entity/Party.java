@@ -11,6 +11,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 /**
  * JPA Entity representing a party involved in a case.
@@ -18,6 +19,7 @@ import lombok.NoArgsConstructor;
 @Entity
 @Builder
 @Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 public class Party {

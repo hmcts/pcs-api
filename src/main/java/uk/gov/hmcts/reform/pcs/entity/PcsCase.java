@@ -34,4 +34,11 @@ public class PcsCase {
     @Builder.Default
     private List<Party> parties = new ArrayList<>();
 
+    public Party findPartyOrThrow(Long partyId) {
+        return parties.stream()
+            .filter(p -> p.getId().equals(partyId))
+            .findFirst()
+            .orElseThrow();
+    }
+
 }
