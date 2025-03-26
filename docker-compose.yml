@@ -26,6 +26,7 @@ services:
       - PCS_DB_PASSWORD=${POSTGRES_PASSWORD}
       - DB_PORT=${DB_PORT}
       - IDAM_S2S_AUTH_URL=http://service-auth-provider-api:${SERVICE_AUTH_PORT}
+      - JAVA_TOOL_OPTIONS=-XX:UseSVE=0
     ports:
       - ${SERVER_PORT}:${SERVER_PORT}
     depends_on:
@@ -57,6 +58,7 @@ services:
     environment:
       SERVER_PORT: ${SERVICE_AUTH_PORT}
       AUTH_PROVIDER_SERVICE_SERVER_JWT_KEY: ${AUTH_PROVIDER_SERVICE_SERVER_JWT_KEY}
+      JAVA_TOOL_OPTIONS: -XX:UseSVE=0
 
 
 volumes:

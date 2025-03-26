@@ -46,8 +46,7 @@ public class CreateTestCase implements CCDConfig<PCSCase, State, UserRole> {
 
     public void submit(EventPayload<PCSCase, State> p) {
         var c = PcsCase.builder()
-            .reference(p.caseReference())
-            .caseDescription(p.payload().getCaseDescription())
+            .caseReference(p.caseReference())
             .build();
         repository.save(c);
     }

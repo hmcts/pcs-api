@@ -23,7 +23,7 @@ import static jakarta.persistence.CascadeType.ALL;
 import static jakarta.persistence.FetchType.LAZY;
 
 /**
- * JPA Entity representing a party involved in a case.
+ * JPA Entity representing a claim in a case.
  */
 @Entity
 @Builder
@@ -31,7 +31,7 @@ import static jakarta.persistence.FetchType.LAZY;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class Party {
+public class Claim {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -42,14 +42,22 @@ public class Party {
     @JsonBackReference
     private PcsCase pcsCase;
 
-    @OneToMany(fetch = LAZY, cascade = ALL, mappedBy = "party")
+    @OneToMany(fetch = LAZY, cascade = ALL, mappedBy = "claim")
     @Builder.Default
     @JsonManagedReference
     private Set<ClaimParty> claimParties = new HashSet<>();
 
-    private String forename;
-    private String surname;
+    private String summary;
 
-    private Boolean active;
+    public void addParty(Party party, PartyRole partyRole) {
+        ClaimParty claimParty = ClaimParty.builder()
+            .claim(this)
+            .party(party)
+            .role(partyRole)
+            .build();
+
+        claimParties.add(claimParty);
+        party.getClaimParties().add(claimParty);
+    }
 
 }

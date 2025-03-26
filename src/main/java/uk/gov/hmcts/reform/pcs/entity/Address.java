@@ -1,55 +1,53 @@
 package uk.gov.hmcts.reform.pcs.entity;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.util.HashSet;
-import java.util.Set;
 import java.util.UUID;
 
-import static jakarta.persistence.CascadeType.ALL;
 import static jakarta.persistence.FetchType.LAZY;
 
-/**
- * JPA Entity representing a party involved in a case.
- */
 @Entity
-@Builder
 @Getter
 @Setter
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class Party {
+public class Address {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @ManyToOne(fetch = LAZY)
+    @OneToOne(fetch = LAZY)
     @JoinColumn(name = "case_id")
     @JsonBackReference
     private PcsCase pcsCase;
 
-    @OneToMany(fetch = LAZY, cascade = ALL, mappedBy = "party")
-    @Builder.Default
-    @JsonManagedReference
-    private Set<ClaimParty> claimParties = new HashSet<>();
+    private String addressLine1;
 
-    private String forename;
-    private String surname;
+    private String addressLine2;
 
-    private Boolean active;
+    private String addressLine3;
+
+    private String postTown;
+
+    private String county;
+
+    @Column(name = "postcode")
+    private String postCode;
+
+    private String country;
 
 }
