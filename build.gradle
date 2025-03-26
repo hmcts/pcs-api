@@ -11,7 +11,7 @@ plugins {
   id 'net.serenity-bdd.serenity-gradle-plugin' version '4.2.16'
   id 'hmcts.ccd.sdk' version '5.5.19'
   id 'com.github.hmcts.rse-cft-lib' version '0.19.1618'
-  id 'io.freefair.lombok' version '8.13'
+  id 'io.freefair.lombok' version '8.13.1'
   id 'au.com.dius.pact' version '4.6.17'
   /*
     Applies analysis tools including checkstyle and OWASP Dependency checker.
