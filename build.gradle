@@ -319,7 +319,7 @@ dependencies {
   implementation group: 'com.github.hmcts', name: 'service-auth-provider-java-client', version: '5.3.2'
   implementation group: 'org.springframework.cloud', name: 'spring-cloud-starter-openfeign', version: '4.2.1'
   implementation group: 'org.projectlombok', name: 'lombok', version: lombokVersion
-  implementation 'org.postgresql:postgresql:42.7.5'
+  implementation group: 'io.vavr', name: 'vavr', version: '0.10.6'
   annotationProcessor group: 'org.projectlombok', name: 'lombok', version: lombokVersion
 
   testImplementation group: 'io.rest-assured', name: 'rest-assured', version: '5.5.1'
