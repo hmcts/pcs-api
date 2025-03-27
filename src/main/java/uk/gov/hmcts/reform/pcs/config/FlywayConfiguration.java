@@ -37,4 +37,10 @@ public class FlywayConfiguration {
     public FlywayMigrationStrategy flywayMigrationStrategy() {
         return new FlywayNoOpStrategy();
     }
+
+    @Bean
+    @ConditionalOnProperty(prefix = "flyway.noop", name = "strategy", havingValue = "false")
+    public FlywayMigrationStrategy flywayVoidMigrationStrategy() {
+        return null;
+    }
 }
