@@ -24,10 +24,9 @@ public class PostCodeCourtController {
     private final PostCodeCourtService postCodeCourtService;
 
     @GetMapping(COURTS_ENDPOINT)
-    public ResponseEntity<List<Court>> getCourts(@RequestHeader(AUTHORIZATION) String authorisation,
-                                                 @RequestHeader(SERVICE_AUTHORIZATION) String serviceAuthorization,
-                                                 @QueryParam(POSTCODE) String postcode) {
-        return ResponseEntity.ok(postCodeCourtService.getCountyCourtsByPostCode(postcode, authorisation));
+    public ResponseEntity<List<Court>> getByPostcode(@RequestHeader(AUTHORIZATION) String authorisation,
+        @RequestHeader(SERVICE_AUTHORIZATION) String serviceAuthorization, @QueryParam(POSTCODE) String postcode) {
+        return ResponseEntity.ok(postCodeCourtService.getEpimIdByPostCode(postcode, authorisation));
     }
 
 }
