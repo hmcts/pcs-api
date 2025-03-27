@@ -1,5 +1,15 @@
+import org.flywaydb.gradle.task.FlywayMigrateTask
 import uk.gov.hmcts.rse.AuthMode
 import uk.gov.hmcts.rse.CftlibExec
+
+buildscript {
+  ext {
+    flywayVersion = '10.17.3'
+  }
+  dependencies {
+    classpath("org.flywaydb:flyway-database-postgresql:$flywayVersion")
+  }
+}
 
 plugins {
   id 'application'
@@ -7,6 +17,7 @@ plugins {
   id 'io.spring.dependency-management' version '1.1.7'
   id 'org.springframework.boot' version '3.4.3'
   id 'com.github.ben-manes.versions' version '0.52.0'
+  id 'org.flywaydb.flyway' version "$flywayVersion"
   id 'org.sonarqube' version '6.0.1.5171'
   id 'net.serenity-bdd.serenity-gradle-plugin' version '4.2.16'
   id 'hmcts.ccd.sdk' version '5.5.19'
@@ -256,6 +267,7 @@ repositories {
 
 def versions = [
   lombok       : '1.18.36',
+  flyway: "$flywayVersion",
 ]
 
 ext {
@@ -266,6 +278,7 @@ ext {
 ext['snakeyaml.version'] = '2.0'
 
 dependencies {
+
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-web'
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-actuator'
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-aop'
@@ -273,6 +286,9 @@ dependencies {
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-jdbc'
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-web'
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-security'
+
+  runtimeOnly group: 'org.flywaydb', name: 'flyway-database-postgresql', version: versions.flyway
+  implementation group: 'org.flywaydb', name: 'flyway-core', version: versions.flyway
 
   implementation group: 'org.springdoc', name: 'springdoc-openapi-starter-webmvc-ui', version: '2.8.5'
   implementation group: 'uk.gov.service.notify', name: 'notifications-java-client', version: '5.2.1-RELEASE'
@@ -328,6 +344,21 @@ bootJar {
 
   manifest {
     attributes('Implementation-Version': project.version.toString())
+  }
+}
+
+flyway {
+  url = System.getenv('FLYWAY_URL')
+  user = System.getenv('FLYWAY_USER')
+  password = System.getenv('FLYWAY_PASSWORD')
+  baselineOnMigrate = true
+  baselineVersion = '000'
+}
+
+tasks.register('migratePostgresDatabase', FlywayMigrateTask) {
+  baselineOnMigrate = true
+  if (project.hasProperty("dburl")) {
+    url = "jdbc:postgresql://${dburl}"
   }
 }
 

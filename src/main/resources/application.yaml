@@ -56,6 +56,8 @@ spring:
           lob:
             # silence the 'wall-of-text' - unnecessary exception throw about blob types
             non_contextual_creation: true
+  flyway:
+    enabled: true
   jms:
     servicebus:
       enabled: ${HEARINGS_SERVICEBUS_ENABLED:false}
@@ -66,6 +68,8 @@ spring:
       idle-timeout: ${HEARINGS_SERVICEBUS_IDLE_TIMEOUT:600000}
       hearings-topic: ${HEARINGS_SERVICEBUS_TOPIC:hmc-to-cft-aat}
       hearings-subscription: ${HEARINGS_SERVICEBUS_SUBSCRIPTION:hmc-to-pcs-subscription-aat}
+dbMigration:
+  runOnStartup: ${RUN_DB_MIGRATION_ON_STARTUP:true}
 idam:
   api:
     url: ${IDAM_API_URL:http://localhost:5062}
