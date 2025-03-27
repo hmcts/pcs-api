@@ -35,10 +35,10 @@ class HearingsControllerIT {
     private ObjectMapper objectMapper;
 
     @MockitoBean
-    AuthTokenGenerator authTokenGenerator;
+    private AuthTokenGenerator authTokenGenerator;
 
     @MockitoBean
-    HmcHearingApi hmcHearingApi;
+    private HmcHearingApi hmcHearingApi;
 
     private static final String AUTH_HEADER = "Bearer token";
     private static final String SERVICE_AUTH_HEADER = "ServiceAuthToken";
