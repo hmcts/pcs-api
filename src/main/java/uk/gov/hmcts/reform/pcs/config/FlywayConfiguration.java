@@ -11,19 +11,30 @@ import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import uk.gov.hmcts.reform.pcs.data.migration.FlywayNoOpStrategy;
 
+/**
+ * Flyway configuration.
+ */
 @AutoConfigureAfter({
     DataSourceAutoConfiguration.class,
     HibernateJpaAutoConfiguration.class
 })
-@AutoConfigureBefore(FlywayAutoConfiguration.class)
+@AutoConfigureBefore({
+    FlywayAutoConfiguration.class
+})
 @Configuration
 @ConditionalOnClass(Flyway.class)
-@ConditionalOnProperty(prefix = "dbMigration", name = "runOnStartup", havingValue = "false")
+@ConditionalOnProperty(prefix = "spring.flyway", name = "enabled", matchIfMissing = true)
 public class FlywayConfiguration {
 
+    /**
+     * Bean for FlywayMigrationStrategy.
+     * @return The FlywayMigrationStrategy
+     */
     @Bean
+    @ConditionalOnProperty(prefix = "flyway.noop", name = "strategy", matchIfMissing = true)
     public FlywayMigrationStrategy flywayMigrationStrategy() {
-        return new uk.gov.hmcts.reform.pcs.data.migration.FlywayNoOpStrategy();
+        return new FlywayNoOpStrategy();
     }
 }

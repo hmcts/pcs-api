@@ -1,3 +1,6 @@
 security:
   anonymousPaths:
     - "/**"
+spring:
+  flyway:
+    enabled: false
