@@ -29,6 +29,7 @@ security:
     - "/swagger-ui.html"
     - "/swagger-ui/**"
     - "/v3/api-docs/**"
+    - "/court/**"
 
 spring:
   config:
@@ -56,6 +57,11 @@ spring:
           lob:
             # silence the 'wall-of-text' - unnecessary exception throw about blob types
             non_contextual_creation: true
+      show-sql: ${SPRING_JPA_SHOW_SQL:false}
+      format_sql: ${SPRING_JPA_FORMAT_SQL:false}
+    packages-to-scan: uk.gov.hmcts.reform.pcs
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    show-sql: true
   jms:
     servicebus:
       enabled: ${HEARINGS_SERVICEBUS_ENABLED:false}
