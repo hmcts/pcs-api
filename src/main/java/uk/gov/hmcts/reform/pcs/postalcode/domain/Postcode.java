@@ -4,11 +4,18 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import lombok.*;
 
 import java.time.LocalDate;
 
+@AllArgsConstructor
+@NoArgsConstructor
 @Entity
 @Table(name = "postcode_lookup")
+@Getter
+@Setter
+@ToString
+@EqualsAndHashCode(of = "epimid")
 public class Postcode {
 
     @Id

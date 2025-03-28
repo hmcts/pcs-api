@@ -52,6 +52,7 @@ spring:
       connectionTimeout: 30000
   jpa:
     properties:
+      dialect: org.hibernate.dialect.PostgreSQLDialect
       hibernate:
         jdbc:
           lob:

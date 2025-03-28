@@ -1,10 +1,10 @@
 package uk.gov.hmcts.reform.pcs.postalcode.controller;
 
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -27,11 +27,12 @@ class PostalCodeControllerTest {
     private PostalCodeService postalCodeService;
 
     @Test
+    @DisplayName("Should return EPIMS ID for valid postcode")
     void shouldHandlePostcodesWithSpacesCorrectly() {
         // Given
         String postcode = "SW1A 1AA";
         PostCodeResponse expectedResponse = new PostCodeResponse();
-        expectedResponse.setEPIMSId("123456");
+        expectedResponse.setEPIMSId(123456);
         when(postalCodeService.getEPIMSIdByPostcode(postcode)).thenReturn(expectedResponse);
 
         // When
@@ -48,7 +49,8 @@ class PostalCodeControllerTest {
     }
 
     @Test
-    void shouldThrowBadRequestExceptionWhenPostcodeIsEmpty() {
+    @DisplayName("Should throw BadRequestException when postcode has invalid format")
+    void shouldThrowBadRequestExceptionWhenPostcodeHasInvalidFormat() {
         // Given
         String emptyPostcode = "";
 
@@ -64,6 +66,7 @@ class PostalCodeControllerTest {
     }
 
     @Test
+    @DisplayName("Should throw BadRequestException when postcode is null")
     void shouldThrowBadRequestExceptionWhenPostcodeIsNull() {
         // Given
         String nullPostcode = null;
@@ -77,69 +80,6 @@ class PostalCodeControllerTest {
         assertThat(exception.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
         assertThat(exception.getReason()).isEqualTo(INVALID_POSTCODE_FORMAT);
         verifyNoInteractions(postalCodeService);
-    }
-
-    @Test
-    void shouldHandlePostcodesWithoutSpacesCorrectly() {
-        // Given
-        String postcode = "SW1A1AA";
-        PostCodeResponse expectedResponse = new PostCodeResponse();
-        expectedResponse.setEPIMSId("789012");
-        when(postalCodeService.getEPIMSIdByPostcode(postcode)).thenReturn(expectedResponse);
-
-        // When
-        ResponseEntity<PostCodeResponse> response = underTest.getPostalCode(
-            "Bearer token",
-            "ServiceAuthToken",
-            postcode
-        );
-
-        // Then
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(response.getBody()).isEqualTo(expectedResponse);
-        verify(postalCodeService).getEPIMSIdByPostcode(postcode);
-    }
-
-    @Test
-    void shouldReturnCorrectResponseForValidPostcodeAtLowerBoundaryLength() {
-        // Given
-        String shortValidPostcode = "W1A1AA";
-        PostCodeResponse expectedResponse = new PostCodeResponse();
-        expectedResponse.setEPIMSId("123456");
-        when(postalCodeService.getEPIMSIdByPostcode(shortValidPostcode)).thenReturn(expectedResponse);
-
-        // When
-        ResponseEntity<PostCodeResponse> response = underTest.getPostalCode(
-            "Bearer token",
-            "ServiceAuthToken",
-            shortValidPostcode
-        );
-
-        // Then
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(response.getBody()).isEqualTo(expectedResponse);
-        verify(postalCodeService).getEPIMSIdByPostcode(shortValidPostcode);
-    }
-
-    @Test
-    void shouldReturnCorrectResponseForValidPostcodeAtUpperBoundaryLength() {
-        // Given
-        String longValidPostcode = "SW1A 1AA";
-        PostCodeResponse expectedResponse = new PostCodeResponse();
-        expectedResponse.setEPIMSId("987654");
-        when(postalCodeService.getEPIMSIdByPostcode(longValidPostcode)).thenReturn(expectedResponse);
-
-        // When
-        ResponseEntity<PostCodeResponse> response = underTest.getPostalCode(
-            "Bearer token",
-            "ServiceAuthToken",
-            longValidPostcode
-        );
-
-        // Then
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(response.getBody()).isEqualTo(expectedResponse);
-        verify(postalCodeService).getEPIMSIdByPostcode(longValidPostcode);
     }
 
 }

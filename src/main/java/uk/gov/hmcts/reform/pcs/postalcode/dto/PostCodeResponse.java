@@ -1,16 +1,14 @@
 package uk.gov.hmcts.reform.pcs.postalcode.dto;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
+@AllArgsConstructor
+@NoArgsConstructor
 @Data
 public class PostCodeResponse {
 
-    private String ePIMSId;
+    private int ePIMSId;
 
-    public PostCodeResponse(String ePIMSId) {
-        this.ePIMSId = ePIMSId;
-    }
-
-    public PostCodeResponse() {
-    }
 }
