@@ -36,7 +36,7 @@ class PostalCodeControllerTest {
         when(postalCodeService.getEPIMSIdByPostcode(postcode)).thenReturn(expectedResponse);
 
         // When
-        ResponseEntity<PostCodeResponse> response = underTest.getPostalCode(
+        ResponseEntity<PostCodeResponse> response = underTest.getEPIMSIdByPostcode(
             "Bearer token",
             "ServiceAuthToken",
             postcode
@@ -56,7 +56,7 @@ class PostalCodeControllerTest {
 
         // When
         ResponseStatusException exception = assertThrows(ResponseStatusException.class, () ->
-            underTest.getPostalCode("Bearer token", "ServiceAuthToken", emptyPostcode)
+            underTest.getEPIMSIdByPostcode("Bearer token", "ServiceAuthToken", emptyPostcode)
         );
 
         // Then
@@ -73,7 +73,7 @@ class PostalCodeControllerTest {
 
         // When
         ResponseStatusException exception = assertThrows(ResponseStatusException.class, () ->
-            underTest.getPostalCode("Bearer token", "ServiceAuthToken", nullPostcode)
+            underTest.getEPIMSIdByPostcode("Bearer token", "ServiceAuthToken", nullPostcode)
         );
 
         // Then

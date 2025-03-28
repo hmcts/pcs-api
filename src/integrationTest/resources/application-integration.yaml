@@ -1,3 +1,18 @@
 security:
   anonymousPaths:
     - "/**"
+
+spring:
+  sql:
+    init:
+      mode: always
+  datasource:
+    url: jdbc:tc:postgresql:latest:///testdb
+    username: testuser
+    password: testpass
+    driver-class-name: org.testcontainers.jdbc.ContainerDatabaseDriver
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: update
+    show-sql: true

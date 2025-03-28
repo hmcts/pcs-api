@@ -23,7 +23,7 @@ public class PostalCodeController {
     private final PostalCodeService postalCodeService;
 
     @GetMapping("/court")
-    public ResponseEntity<PostCodeResponse> getPostalCode(@RequestHeader(AUTHORIZATION) String authorisation,
+    public ResponseEntity<PostCodeResponse> getEPIMSIdByPostcode(@RequestHeader(AUTHORIZATION) String authorisation,
                                                           @RequestHeader(SERVICE_AUTHORIZATION) String serviceAuthorization,
                                                           @QueryParam("postcode") String postcode) {
         if (StringUtils.isEmpty(postcode)) {

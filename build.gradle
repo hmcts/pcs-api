@@ -317,6 +317,10 @@ dependencies {
     exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
   }
 
+  testImplementation 'org.testcontainers:testcontainers:1.20.6'
+  testImplementation 'org.testcontainers:junit-jupiter:1.20.3'
+  testImplementation 'org.testcontainers:postgresql:1.20.6'
+
   // Runtime H2 database dependency
   runtimeOnly 'com.h2database:h2'
   testImplementation 'com.h2database:h2'
