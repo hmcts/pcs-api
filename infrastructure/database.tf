@@ -1,6 +1,5 @@
 provider "azurerm" {
   features {}
-  resource_provider_registrations = ""
   alias                      = "postgres_network"
   subscription_id            = var.aks_subscription_id
 }
