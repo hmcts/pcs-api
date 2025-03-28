@@ -57,7 +57,7 @@ spring:
             # silence the 'wall-of-text' - unnecessary exception throw about blob types
             non_contextual_creation: true
   flyway:
-    enabled: true
+    enabled: false
   jms:
     servicebus:
       enabled: ${HEARINGS_SERVICEBUS_ENABLED:false}
