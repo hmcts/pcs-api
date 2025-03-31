@@ -52,3 +52,9 @@ resource "azurerm_key_vault_secret" "POSTGRES_HOST" {
   value        = module.postgresql.fqdn
   key_vault_id = data.azurerm_key_vault.pcs_key_vault.id
 }
+
+resource "azurerm_key_vault_secret" "POSTGRES_DATABASE" {
+  name         = "${var.component}-POSTGRES-DATABASE"
+  value        = var.product
+  key_vault_id = data.azurerm_key_vault.pcs_key_vault.id
+}
