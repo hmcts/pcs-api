@@ -68,4 +68,11 @@ public class PcsCase {
         claim.setPcsCase(this);
     }
 
+    public Party findPartyOrThrow(Long partyId) {
+        return parties.stream()
+            .filter(p -> p.getId().equals(partyId))
+            .findFirst()
+            .orElseThrow();
+    }
+
 }

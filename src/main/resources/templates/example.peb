@@ -4,10 +4,10 @@
 
 ## Parties Overview
 
-| Forename | Surname |
-|---------|----------|
+| Forename | Surname | Actions |
+|---------|----------| ---- |
 {% for party in parties %}
-| **{{ party.forename }}** | **{{ party.surname }}** |
+| **{{ party.forename }}** | **{{ party.surname }}** | [Edit](/cases/case-details/{{caseReference}}/trigger/editParty?partyId={{ party.id }}) |
 {% endfor %}
 
 {% else %}
