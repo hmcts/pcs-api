@@ -23,13 +23,13 @@ public class PostalCodeController {
     private final PostalCodeService postalCodeService;
 
     @GetMapping("/court")
-    public ResponseEntity<PostCodeResponse> getEPIMSIdByPostcode(@RequestHeader(AUTHORIZATION) String authorisation,
-                                                          @RequestHeader(SERVICE_AUTHORIZATION) String serviceAuthorization,
-                                                          @QueryParam("postcode") String postcode) {
+    public ResponseEntity<PostCodeResponse> getEpimIdByPostcode(@RequestHeader(AUTHORIZATION) String authorisation,
+                                                                @RequestHeader(SERVICE_AUTHORIZATION) String serviceAuthorization,
+                                                                @QueryParam("postcode") String postcode) {
         if (StringUtils.isEmpty(postcode)) {
             throw new ResponseStatusException(BAD_REQUEST, INVALID_POSTCODE_FORMAT);
         }
-        return ResponseEntity.ok().body(postalCodeService.getEPIMSIdByPostcode(postcode));
+        return ResponseEntity.ok().body(postalCodeService.getEpimIdByPostcode(postcode));
     }
 
 }

@@ -11,7 +11,7 @@ import java.time.LocalDate;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name = "postcode_lookup")
+@Table(name = "postcode_court_mapping")
 @Getter
 @Setter
 @ToString

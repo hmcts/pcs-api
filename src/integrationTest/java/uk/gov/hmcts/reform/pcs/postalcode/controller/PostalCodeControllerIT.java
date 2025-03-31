@@ -40,21 +40,22 @@ class PostalCodeControllerIT {
 
     @DisplayName("Should return valid PostCodeResponse with 200 response code")
     @Test
-    void returnValidResponseWithEPIMSIdFromKnownPostcode() throws Exception {
+    void returnValidResponseWithEpimsIdFromKnownPostcode() throws Exception {
         // Given
         String postcode = "W3 7RX";
         int epimsId = 20262;
 
         // When
         final MockHttpServletResponse response = mockMvc.perform(get(COURT)
-                                                                      .header(AUTHORIZATION, AUTH_HEADER)
-                                                                      .header(SERVICE_AUTHORIZATION, SERVICE_AUTH_HEADER)
-                                                                      .queryParam(POSTCODE, postcode))
+                                                                  .header(AUTHORIZATION, AUTH_HEADER)
+                                                                  .header(SERVICE_AUTHORIZATION, SERVICE_AUTH_HEADER)
+                                                                  .queryParam(POSTCODE, postcode))
             .andReturn().getResponse();
 
         // Then
         assertThat(response.getStatus()).isEqualTo(OK.value());
-        final PostCodeResponse postCodeResponse = objectMapper.readValue(response.getContentAsString(), PostCodeResponse.class);
+        final PostCodeResponse postCodeResponse = objectMapper
+            .readValue(response.getContentAsString(), PostCodeResponse.class);
         assertThat(postCodeResponse.getEPIMSId()).isEqualTo(epimsId);
     }
 
@@ -73,7 +74,8 @@ class PostalCodeControllerIT {
 
         // Then
         assertThat(response.getStatus()).isEqualTo(OK.value());
-        final PostCodeResponse postCodeResponse = objectMapper.readValue(response.getContentAsString(), PostCodeResponse.class);
+        final PostCodeResponse postCodeResponse = objectMapper
+            .readValue(response.getContentAsString(), PostCodeResponse.class);
         assertThat(postCodeResponse.getEPIMSId()).isZero();
     }
 

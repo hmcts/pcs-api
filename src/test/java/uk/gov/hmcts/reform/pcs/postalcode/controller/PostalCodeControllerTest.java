@@ -27,16 +27,16 @@ class PostalCodeControllerTest {
     private PostalCodeService postalCodeService;
 
     @Test
-    @DisplayName("Should return EPIMS ID for valid postcode")
+    @DisplayName("Should return EpimsId ID for valid postcode")
     void shouldHandlePostcodesWithSpacesCorrectly() {
         // Given
         String postcode = "SW1A 1AA";
         PostCodeResponse expectedResponse = new PostCodeResponse();
-        expectedResponse.setEPIMSId(123456);
-        when(postalCodeService.getEPIMSIdByPostcode(postcode)).thenReturn(expectedResponse);
+        expectedResponse.setEpimId(123456);
+        when(postalCodeService.getEpimIdByPostcode(postcode)).thenReturn(expectedResponse);
 
         // When
-        ResponseEntity<PostCodeResponse> response = underTest.getEPIMSIdByPostcode(
+        ResponseEntity<PostCodeResponse> response = underTest.getEpimIdByPostcode(
             "Bearer token",
             "ServiceAuthToken",
             postcode
@@ -56,7 +56,7 @@ class PostalCodeControllerTest {
 
         // When
         ResponseStatusException exception = assertThrows(ResponseStatusException.class, () ->
-            underTest.getEPIMSIdByPostcode("Bearer token", "ServiceAuthToken", emptyPostcode)
+            underTest.getEpimIdByPostcode("Bearer token", "ServiceAuthToken", emptyPostcode)
         );
 
         // Then
@@ -68,12 +68,9 @@ class PostalCodeControllerTest {
     @Test
     @DisplayName("Should throw BadRequestException when postcode is null")
     void shouldThrowBadRequestExceptionWhenPostcodeIsNull() {
-        // Given
-        String nullPostcode = null;
-
-        // When
+        // Given // When
         ResponseStatusException exception = assertThrows(ResponseStatusException.class, () ->
-            underTest.getEPIMSIdByPostcode("Bearer token", "ServiceAuthToken", nullPostcode)
+            underTest.getEpimIdByPostcode("Bearer token", "ServiceAuthToken", null)
         );
 
         // Then

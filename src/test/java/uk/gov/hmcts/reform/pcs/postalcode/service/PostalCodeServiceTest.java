@@ -36,10 +36,10 @@ class PostalCodeServiceTest {
         when(postalCodeRepository.findByPostcode(postcode)).thenReturn(Optional.of(postalCode));
 
         // When
-        PostCodeResponse response = underTest.getEPIMSIdByPostcode(postcode);
+        PostCodeResponse response = underTest.getEpimIdByPostcode(postcode);
 
         // Then
-        assertThat(response.getEPIMSId()).isEqualTo(expectedEpimId);
+        assertThat(response.getEpimId()).isEqualTo(expectedEpimId);
         verify(postalCodeRepository).findByPostcode(postcode);
     }
 
@@ -51,10 +51,10 @@ class PostalCodeServiceTest {
         when(postalCodeRepository.findByPostcode(nonExistentPostcode)).thenReturn(Optional.empty());
 
         // When
-        PostCodeResponse response = underTest.getEPIMSIdByPostcode(nonExistentPostcode);
+        PostCodeResponse response = underTest.getEpimIdByPostcode(nonExistentPostcode);
 
         // Then
-        assertThat(response.getEPIMSId()).isZero();
+        assertThat(response.getEpimId()).isZero();
         verify(postalCodeRepository).findByPostcode(nonExistentPostcode);
     }
 

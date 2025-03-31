@@ -9,6 +9,6 @@ import lombok.NoArgsConstructor;
 @Data
 public class PostCodeResponse {
 
-    private int ePIMSId;
+    private int epimId;
 
 }
