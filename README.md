@@ -7,6 +7,7 @@
 The project uses [Gradle](https://gradle.org) as a build tool. It already contains
 `./gradlew` wrapper script, so there's no need to install gradle.
 
+test
 To build the project execute the following command:
 
 ```bash
