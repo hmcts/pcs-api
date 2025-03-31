@@ -17,5 +17,6 @@ java:
     PCS_DB_USER_NAME: "{{ .Values.postgresql.auth.username}}"
     PCS_DB_PASSWORD: "{{ .Values.postgresql.auth.password}}"
     PCS_DB_NAME: "{{ .Values.postgresql.auth.database}}"
+    FLYWAY_NOOP_STRATEGY: "false"
   postgresql:
     enabled: true
