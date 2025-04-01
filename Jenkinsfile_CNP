@@ -49,10 +49,10 @@ withPipeline(type, product, component) {
     archiveFunctionalTestReports()
   }
   onPR{
-    before('dockerbuild') {
+    before('build') {
       sh './bin/preview-test-data-migration.sh'
     }
-    afterAlways('dockerbuild') {
+    afterAlways('build') {
       sh 'git checkout src/main/resources/db/migration/'
       sh 'git -C src/main/resources/db/migration/ clean -f'
     }
