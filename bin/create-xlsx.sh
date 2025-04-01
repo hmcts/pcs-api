@@ -15,7 +15,7 @@ fi
 # Check if the environment is provided, if not default to local
 if [ -z "$ENV" ]; then
   ENV="local"
-  echo "No environment specified, defaulting to local"
+  echo "No environment specified, defaulting to to local naming convention."
 fi
 
 # Set the tag version based on current Date and Time
