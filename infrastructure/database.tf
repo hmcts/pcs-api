@@ -58,3 +58,9 @@ resource "azurerm_key_vault_secret" "POSTGRES_DATABASE" {
   value        = var.product
   key_vault_id = data.azurerm_key_vault.pcs_key_vault.id
 }
+
+resource "azurerm_key_vault_secret" "POSTGRES_PORT" {
+  name         = "${var.component}-POSTGRES-PORT"
+  value        = "5432"
+  key_vault_id = data.azurerm_key_vault.pcs_key_vault.id
+}
