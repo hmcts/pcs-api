@@ -7,8 +7,8 @@ ENV=$1
 RUN_DIR=$(pwd)
 
 # Check if the directory exists
-if [ ! -d "$RUN_DIR/build/ccd-definition/PCS" ]; then
-  echo "Error: Directory $RUN_DIR/build/ccd-definition/PCS does not exist."
+if [ ! -d "$RUN_DIR/build/definitions/PCS" ]; then
+  echo "Error: Directory $RUN_DIR/build/definitions/PCS does not exist."
   exit 1
 fi
 
@@ -51,11 +51,11 @@ case ${ENV} in
 esac
 
 # Create the xlsx file name for the CCD definition
-CcdDefinitionFile="CCD_Definition_${CCD_DEF_VERSION}.xlsx"
+CCD_DEFINITION_FILE="CCD_Definition_${CCD_DEF_VERSION}.xlsx"
 
 # Runs the CCD JSON -> XLSX converter and outputs to the output directory
 docker run --rm --name json2xlsx \
-  -v "$RUN_DIR/build/ccd-definition/PCS:/build/ccd-definition/PCS" \
+  -v "$RUN_DIR/build/definitions/PCS:/build/definitions/PCS" \
   -v "$RUN_DIR/output:/tmp/output" \
   hmctspublic.azurecr.io/ccd/definition-processor:latest \
-  json2xlsx -D /build/ccd-definition/PCS -o "/tmp/output/${CcdDefinitionFile}"
+  json2xlsx -D /build/definitions/PCS -o "/tmp/output/${CCD_DEFINITION_FILE}"

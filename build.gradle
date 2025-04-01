@@ -93,7 +93,7 @@ configurations {
 }
 
 ccd {
-  configDir = file('build/ccd-definition')
+  configDir = file('build/definitions')
 }
 
 tasks.withType(JavaCompile) {
