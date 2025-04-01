@@ -21,7 +21,7 @@ public class DatabaseConfig {
     private String packagesToScan;
 
     @Bean
-    @ConfigurationProperties(prefix = "spring.datasource.hikari")
+    @ConfigurationProperties(prefix = "spring.datasource")
     public DataSource dataSource() {
         return DataSourceBuilder.create().type(com.zaxxer.hikari.HikariDataSource.class).build();
     }

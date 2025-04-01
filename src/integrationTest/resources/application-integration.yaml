@@ -14,13 +14,9 @@ spring:
     password: testpass
     driver-class-name: org.testcontainers.jdbc.ContainerDatabaseDriver
   jpa:
-    #database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
       ddl-auto: update
     show-sql: true
     properties:
-      #dialect: org.hibernate.dialect.PostgreSQLDialect
       hibernate.format_sql: true
       show-dql: true
-      #hibernate:
-        #dialect: org.hibernate.dialect.PostgreSQLDialect
