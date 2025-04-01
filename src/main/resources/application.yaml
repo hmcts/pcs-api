@@ -29,7 +29,6 @@ security:
     - "/swagger-ui.html"
     - "/swagger-ui/**"
     - "/v3/api-docs/**"
-    - "/pcs-case/**"
 
 spring:
   config:
@@ -60,7 +59,8 @@ spring:
           lob:
             # silence the 'wall-of-text' - unnecessary exception throw about blob types
             non_contextual_creation: true
-    show-sql: true
+  flyway:
+    enabled: false
   jms:
     servicebus:
       enabled: ${HEARINGS_SERVICEBUS_ENABLED:false}
@@ -71,6 +71,9 @@ spring:
       idle-timeout: ${HEARINGS_SERVICEBUS_IDLE_TIMEOUT:600000}
       hearings-topic: ${HEARINGS_SERVICEBUS_TOPIC:hmc-to-cft-aat}
       hearings-subscription: ${HEARINGS_SERVICEBUS_SUBSCRIPTION:hmc-to-pcs-subscription-aat}
+flyway:
+  noop:
+    strategy: ${FLYWAY_NOOP_STRATEGY:true}
 idam:
   api:
     url: ${IDAM_API_URL:http://localhost:5062}

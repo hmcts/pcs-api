@@ -1,6 +1,5 @@
 provider "azurerm" {
   features {}
-  skip_provider_registration = true
   alias                      = "postgres_network"
   subscription_id            = var.aks_subscription_id
 }
@@ -51,5 +50,11 @@ resource "azurerm_key_vault_secret" "POSTGRES-PASS" {
 resource "azurerm_key_vault_secret" "POSTGRES_HOST" {
   name         = "${var.component}-POSTGRES-HOST"
   value        = module.postgresql.fqdn
+  key_vault_id = data.azurerm_key_vault.pcs_key_vault.id
+}
+
+resource "azurerm_key_vault_secret" "POSTGRES_DATABASE" {
+  name         = "${var.component}-POSTGRES-DATABASE"
+  value        = var.product
   key_vault_id = data.azurerm_key_vault.pcs_key_vault.id
 }
