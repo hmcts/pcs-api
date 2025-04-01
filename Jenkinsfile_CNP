@@ -96,7 +96,7 @@ def setPerftestEnvVars() {
   env.ENVIRONMENT= "perftest"
 }
 
-def generateDefinitons() {
+def generateDefinitons(builder) {
   builder.gradle('generateDefinitions')
   sh "./bin/create-xlsx.sh ${env.ENVIRONMENT}"
   steps.archiveArtifacts artifacts: "definitions/*.xlsx"
