@@ -12,14 +12,14 @@ if [ ! -d "$RUN_DIR/build/ccd-definition/PCS" ]; then
   exit 1
 fi
 
-# Check if the version and environment are provided
+# Check if the environment is provided, if not default to local
 if [ -z "$ENV" ]; then
-  echo "Usage: $(basename "$0") <env>"
-  exit 1
+  ENV="local"
+  echo "No environment specified, defaulting to local"
 fi
 
-# Get the tag version from the Chart.yaml file
-TAG_VERSION=$(date +"%d%m%Y-%H%M%S")
+# Set the tag version based on current Date and Time
+TAG_VERSION=$(date +"%d%m%Y_%H%M%S")
 
 # Set the CCD definition version based on the environment
 case ${ENV} in
@@ -50,13 +50,10 @@ case ${ENV} in
     ;;
 esac
 
-echo "CCD definition version: $CCD_DEF_VERSION"
-
-# Create the xlsx file for the CCD definition
+# Create the xlsx file name for the CCD definition
 CcdDefinitionFile="CCD_Definition_${CCD_DEF_VERSION}.xlsx"
-echo "Creating xlsx file for the CCD definition: $CcdDefinitionFile"
 
-# Runs the CCD JSON -> XLSX converter
+# Runs the CCD JSON -> XLSX converter and outputs to the output directory
 docker run --rm --name json2xlsx \
   -v "$RUN_DIR/build/ccd-definition/PCS:/build/ccd-definition/PCS" \
   -v "$RUN_DIR/output:/tmp/output" \
