@@ -97,7 +97,7 @@ def setPerftestEnvVars() {
 }
 
 def generateDefinitons(builder) {
-  builder.gradle('generateDefinitions')
+  builder.gradle('generateCCDConfig')
   sh "./bin/create-xlsx.sh ${env.ENVIRONMENT}"
   steps.archiveArtifacts artifacts: "definitions/*.xlsx"
 }
