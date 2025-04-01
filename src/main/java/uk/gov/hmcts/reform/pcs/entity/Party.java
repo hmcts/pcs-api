@@ -19,7 +19,6 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
-import static jakarta.persistence.CascadeType.ALL;
 import static jakarta.persistence.FetchType.LAZY;
 
 /**
@@ -42,7 +41,7 @@ public class Party {
     @JsonBackReference
     private PcsCase pcsCase;
 
-    @OneToMany(fetch = LAZY, cascade = ALL, mappedBy = "party")
+    @OneToMany(fetch = LAZY, mappedBy = "party")
     @Builder.Default
     @JsonManagedReference
     private Set<ClaimParty> claimParties = new HashSet<>();

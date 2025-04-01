@@ -9,7 +9,7 @@ import uk.gov.hmcts.ccd.sdk.api.Permission;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.DynamicListElement;
 import uk.gov.hmcts.ccd.sdk.type.DynamicMultiSelectList;
-import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.PcsCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.UserRole;
 import uk.gov.hmcts.reform.pcs.repository.PartyRepository;
@@ -20,7 +20,7 @@ import java.util.UUID;
 import static java.util.Collections.emptyList;
 
 @Component
-public class DeactivateParties implements CCDConfig<PCSCase, State, UserRole> {
+public class DeactivateParties implements CCDConfig<PcsCase, State, UserRole> {
 
     private final PartyRepository partyRepository;
 
@@ -29,7 +29,7 @@ public class DeactivateParties implements CCDConfig<PCSCase, State, UserRole> {
     }
 
     @Override
-    public void configure(ConfigBuilder<PCSCase, State, UserRole> configBuilder) {
+    public void configure(ConfigBuilder<PcsCase, State, UserRole> configBuilder) {
         configBuilder
             .decentralisedEvent(EventId.deactivateParties.name(), this::submit)
             .forAllStates()
@@ -40,7 +40,7 @@ public class DeactivateParties implements CCDConfig<PCSCase, State, UserRole> {
             .fields()
             .page("deactivate-parties")
             .mandatory(
-                PCSCase::getPartiesToDeactivate,
+                PcsCase::getPartiesToDeactivate,
                 "",
                 emptyList(),
                 "Parties to deactivate",
@@ -49,8 +49,8 @@ public class DeactivateParties implements CCDConfig<PCSCase, State, UserRole> {
             .done();
     }
 
-    private AboutToStartOrSubmitResponse<PCSCase, State> start(CaseDetails<PCSCase, State> caseDetails) {
-        PCSCase pcsCase = caseDetails.getData();
+    private AboutToStartOrSubmitResponse<PcsCase, State> start(CaseDetails<PcsCase, State> caseDetails) {
+        PcsCase pcsCase = caseDetails.getData();
 
         List<DynamicListElement> optionsList = partyRepository.findAllDtoByCaseReference(caseDetails.getId(), true)
             .stream()
@@ -65,15 +65,14 @@ public class DeactivateParties implements CCDConfig<PCSCase, State, UserRole> {
             .build();
         pcsCase.setPartiesToDeactivate(dynamicList);
 
-        return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
+        return AboutToStartOrSubmitResponse.<PcsCase, State>builder()
             .data(caseDetails.getData())
             .build();
     }
 
-    private void submit(EventPayload<PCSCase, State> eventPayload) {
-        PCSCase pcsCase = eventPayload.payload();
+    private void submit(EventPayload<PcsCase, State> eventPayload) {
+        PcsCase pcsCase = eventPayload.caseData();
 
-        // TODO: Check permissions here?
         DynamicMultiSelectList partiesToDeactivate = pcsCase.getPartiesToDeactivate();
 
         List<UUID> uuidsToDeactivate = partiesToDeactivate.getValue().stream()

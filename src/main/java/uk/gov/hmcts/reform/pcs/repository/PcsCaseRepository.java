@@ -8,7 +8,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Repository
-public interface PCSCaseRepository extends JpaRepository<PcsCase, UUID>, CustomPcsCaseRepository {
+public interface PcsCaseRepository extends JpaRepository<PcsCase, UUID>, CustomPcsCaseRepository {
 
     Optional<PcsCase> findByCaseReference(long caseReference);
 

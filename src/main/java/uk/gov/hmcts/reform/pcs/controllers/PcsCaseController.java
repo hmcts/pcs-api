@@ -6,13 +6,13 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.PcsCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.entity.Claim;
 import uk.gov.hmcts.reform.pcs.entity.PartyRole;
-import uk.gov.hmcts.reform.pcs.entity.PcsCase;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
-import uk.gov.hmcts.reform.pcs.repository.PCSCaseRepository;
+import uk.gov.hmcts.reform.pcs.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.repository.PartyRepository;
 
 import java.util.List;
@@ -25,34 +25,34 @@ import static uk.gov.hmcts.reform.pcs.ccd.ListValueUtils.wrapListItems;
 @RequestMapping("/pcs-case")
 public class PcsCaseController {
 
-    private final PCSCaseRepository pcsCaseRepository;
+    private final PcsCaseRepository pcsCaseRepository;
     private final PartyRepository partyRepository;
 
-    public PcsCaseController(PCSCaseRepository pcsCaseRepository,
+    public PcsCaseController(PcsCaseRepository pcsCaseRepository,
                              PartyRepository partyRepository) {
         this.pcsCaseRepository = pcsCaseRepository;
         this.partyRepository = partyRepository;
     }
 
     @GetMapping("/reference/{reference}")
-    public PCSCase getCaseByReference(@PathVariable long reference) {
-        PCSCase pcsCase = pcsCaseRepository.findDtoByCaseReference(reference)
+    public PcsCase getCaseByReference(@PathVariable long reference) {
+        PcsCase pcsCase = pcsCaseRepository.findDtoByCaseReference(reference)
             .orElseThrow(() -> new CaseNotFoundException("Case not found for " + reference));
 
 
-        Map<Boolean, List<Party>> partiesByActiveFlag = partyRepository.findAllDtoByCaseReference(reference)
+        Map<YesOrNo, List<Party>> partiesByActiveFlag = partyRepository.findAllDtoByCaseReference(reference)
             .stream()
-            .collect(Collectors.groupingBy(Party::isActive));
+            .collect(Collectors.groupingBy(Party::getActive));
 
-        pcsCase.setActiveParties(wrapListItems(partiesByActiveFlag.get(true)));
-        pcsCase.setInactiveParties(wrapListItems(partiesByActiveFlag.get(false)));
+        pcsCase.setActiveParties(wrapListItems(partiesByActiveFlag.get(YesOrNo.YES)));
+        pcsCase.setInactiveParties(wrapListItems(partiesByActiveFlag.get(YesOrNo.NO)));
 
         return pcsCase;
     }
 
     @PostMapping("/reference/{reference}")
     public ResponseEntity<String> createSampleCase(@PathVariable long reference) {
-        PcsCase pcsCase = PcsCase.builder()
+        uk.gov.hmcts.reform.pcs.entity.PcsCase pcsCase = uk.gov.hmcts.reform.pcs.entity.PcsCase.builder()
             .caseReference(reference)
             .build();
 

@@ -1,0 +1,25 @@
+{% macro showParties(partyList) %}
+  {% for party in partyList %}
+  {{ party.forename }} {{ party.surname }} {% if party.active == "NO" %} (inactive) {% endif %}<br>
+  {%- endfor %}
+{% endmacro %}
+
+{% macro showActions(claimId, _context) %}
+[Add claimant](/cases/case-details/{{_context.caseReference}}/trigger/{{_context.addClaimantEvent}}?claimId={{claimId}})<br>[Add defendant](/cases/case-details/{{_context.caseReference}}/trigger/{{_context.addDefendantEvent}}?claimId={{claimId}})<br>[Add interested party](/cases/case-details/{{_context.caseReference}}/trigger/{{_context.addInterestedPartyEvent}}?claimId={{claimId}})<br>
+{% endmacro %}
+
+## Claims Overview
+
+{% if claims | length > 0 %}
+
+| Claim summary | Amount | Claimants | Defendants | Interested Parties | Actions |
+|---------------|--------|-----------|------------|--------------------|---------|
+{% for claim in claims %}
+| {{ claim.summary }} | £{{ claim.amountInPounds }} | {{ showParties( claim.claimants ) }} | {{ showParties(claim.defendants) }}| {{ showParties(claim.interestedParties) }} | {{ showActions(claim.id, _context) }}
+{% endfor %}
+
+{% else %}
+### No claims have been added to this case
+{% endif %}
+[Create a new claim](/cases/case-details/{{caseReference}}/trigger/{{createClaimEvent}})
+

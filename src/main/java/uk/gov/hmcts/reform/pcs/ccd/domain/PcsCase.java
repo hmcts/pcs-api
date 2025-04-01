@@ -17,7 +17,7 @@ import java.util.List;
  */
 @Builder
 @Data
-public class PCSCase {
+public class PcsCase {
 
     @CCD(ignore = true)
     @JsonIgnore
@@ -35,32 +35,13 @@ public class PCSCase {
     @CCD(label = "Applicant's first name")
     private String applicantForename;
 
-    // TODO: Add a note to the CCD SDK README about using ListValue for Collection type?
-    @CCD(label = "Claimants",
-        typeOverride = FieldType.Collection,
-        typeParameterOverride = "Party"
-    )
-    private List<ListValue<Party>> claimants;
-
-    @CCD(label = "Defendants",
-        typeOverride = FieldType.Collection,
-        typeParameterOverride = "Party"
-    )
-    private List<ListValue<Party>> defendants;
-
-    @CCD(label = "Interested Parties",
-        typeOverride = FieldType.Collection,
-        typeParameterOverride = "Party"
-    )
-    private List<ListValue<Party>> interestedParties;
-
     @CCD(label = "Active Parties",
         typeOverride = FieldType.Collection,
         typeParameterOverride = "Party"
     )
     private List<ListValue<Party>> activeParties;
 
-    @CCD(typeOverride = FieldType.YesOrNo)
+    @CCD
     private YesOrNo activePartiesEmpty;
 
     @CCD(label = "Inactive Parties",
@@ -69,8 +50,11 @@ public class PCSCase {
     )
     private List<ListValue<Party>> inactiveParties;
 
-    @CCD(typeOverride = FieldType.YesOrNo)
+    @CCD
     private YesOrNo inactivePartiesEmpty;
+
+    @CCD(label = "Party")
+    private Party currentParty;
 
     @CCD(label = "Parties",
         typeOverride = FieldType.Collection,
@@ -87,5 +71,43 @@ public class PCSCase {
         label = "Select parties to reactivate"
     )
     private DynamicMultiSelectList partiesToReactivate;
+
+    @CCD(ignore = true)
+    @JsonIgnore
+    private List<Claim> claims;
+
+    @CCD(label = "Claim details")
+    private Claim claimToAdd;
+
+    @CCD(
+        label = "Claimants"
+    )
+    private DynamicMultiSelectList claimantsToAdd;
+
+    @CCD(
+        label = "Defendants"
+    )
+    private DynamicMultiSelectList defendantsToAdd;
+
+    @CCD(
+        label = "Interested Parties"
+    )
+    private DynamicMultiSelectList interestedPartiesToAdd;
+
+    @CCD(typeOverride = FieldType.YesOrNo)
+    private YesOrNo ipEmpty;
+
+    @CCD(typeOverride = FieldType.YesOrNo)
+    private YesOrNo partyListEmpty;
+
+    @CCD(label = "Current claim ID")
+    private String currentClaimId;
+
+    private String claimsSummaryMarkdown;
+    private String partyRolesMarkdown;
+
+    public void addClaim(Claim claim) {
+        claims.add(claim);
+    }
 
 }

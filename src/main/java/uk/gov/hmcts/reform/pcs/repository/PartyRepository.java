@@ -17,6 +17,7 @@ public interface PartyRepository extends JpaRepository<Party, UUID> {
         select new uk.gov.hmcts.reform.pcs.ccd.domain.Party(p.id, p.forename, p.surname, p.active)
         from Party p
         where p.pcsCase.caseReference = :caseReference
+        order by p.surname, p.forename
         """)
     List<uk.gov.hmcts.reform.pcs.ccd.domain.Party> findAllDtoByCaseReference(
         @Param("caseReference") long caseReference);
@@ -25,6 +26,7 @@ public interface PartyRepository extends JpaRepository<Party, UUID> {
         select new uk.gov.hmcts.reform.pcs.ccd.domain.Party(p.id, p.forename, p.surname, p.active)
         from Party p
         where p.pcsCase.caseReference = :caseReference and p.active = :active
+        order by p.surname, p.forename
         """)
     List<uk.gov.hmcts.reform.pcs.ccd.domain.Party> findAllDtoByCaseReference(@Param("caseReference") long caseReference,
                                                                              @Param("active") boolean active);

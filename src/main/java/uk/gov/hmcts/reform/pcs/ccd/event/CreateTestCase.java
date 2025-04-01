@@ -9,20 +9,19 @@ import uk.gov.hmcts.ccd.sdk.api.ConfigBuilder;
 import uk.gov.hmcts.ccd.sdk.api.EventPayload;
 import uk.gov.hmcts.ccd.sdk.api.Permission;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
-import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.PcsCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.UserRole;
-import uk.gov.hmcts.reform.pcs.entity.PcsCase;
-import uk.gov.hmcts.reform.pcs.repository.PCSCaseRepository;
+import uk.gov.hmcts.reform.pcs.repository.PcsCaseRepository;
 
 @Profile("dev") // Non-prod event
 @Component
-public class CreateTestCase implements CCDConfig<PCSCase, State, UserRole> {
+public class CreateTestCase implements CCDConfig<PcsCase, State, UserRole> {
     @Autowired
-    private PCSCaseRepository repository;
+    private PcsCaseRepository repository;
 
     @Override
-    public void configure(ConfigBuilder<PCSCase, State, UserRole> configBuilder) {
+    public void configure(ConfigBuilder<PcsCase, State, UserRole> configBuilder) {
         configBuilder
             .decentralisedEvent("createTestApplication", this::submit)
             .initialState(State.Open)
@@ -31,24 +30,22 @@ public class CreateTestCase implements CCDConfig<PCSCase, State, UserRole> {
             .grant(Permission.CRUD, UserRole.CASE_WORKER)
             .fields()
             .page("Create test case")
-                .mandatory(PCSCase::getCaseDescription)
+                .mandatory(PcsCase::getCaseDescription)
                 .done();
     }
 
-    private AboutToStartOrSubmitResponse<PCSCase, State> start(CaseDetails<PCSCase, State> caseDetails) {
-        PCSCase data = caseDetails.getData();
+    private AboutToStartOrSubmitResponse<PcsCase, State> start(CaseDetails<PcsCase, State> caseDetails) {
+        PcsCase data = caseDetails.getData();
         data.setCaseDescription("Acme Corporation v. Smith");
 
-        return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
+        return AboutToStartOrSubmitResponse.<PcsCase, State>builder()
             .data(caseDetails.getData())
             .build();
     }
 
-    public void submit(EventPayload<PCSCase, State> p) {
-        var c = PcsCase.builder()
+    public void submit(EventPayload<PcsCase, State> p) {
+        var c = uk.gov.hmcts.reform.pcs.entity.PcsCase.builder()
             .caseReference(p.caseReference())
-            .reference(p.caseReference())
-            .caseDescription(p.caseData().getCaseDescription())
             .build();
         repository.save(c);
     }

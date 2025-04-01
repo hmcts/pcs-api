@@ -13,35 +13,26 @@ import uk.gov.hmcts.reform.pcs.service.PartyService;
 
 import java.util.List;
 
-import static java.util.Collections.emptyList;
-import static uk.gov.hmcts.reform.pcs.ccd.ListValueUtils.unwrapListItems;
-
 @Component
-public class AddParties implements CCDConfig<PcsCase, State, UserRole> {
+public class AddParty implements CCDConfig<PcsCase, State, UserRole> {
 
     private final PartyService partyService;
 
-    public AddParties(PartyService partyService) {
+    public AddParty(PartyService partyService) {
         this.partyService = partyService;
     }
 
     @Override
     public void configure(ConfigBuilder<PcsCase, State, UserRole> configBuilder) {
         configBuilder
-            .decentralisedEvent(EventId.addParties.name(), this::submit)
+            .decentralisedEvent(EventId.addParty.name(), this::submit)
             .forAllStates()
-            .name("Add parties")
+            .name("Add party")
             .showSummary()
             .grant(Permission.CRUD, UserRole.CASE_WORKER)
             .fields()
-            .page("parties")
-            .mandatory(
-                PcsCase::getPartiesToAdd,
-                "",
-                emptyList(),
-                "Parties",
-                "Add more claimants, defendants and other interested parties here."
-            )
+            .page("party")
+            .mandatory(PcsCase::getCurrentParty)
             .done();
     }
 
@@ -50,9 +41,9 @@ public class AddParties implements CCDConfig<PcsCase, State, UserRole> {
         long caseReference = eventPayload.caseReference();
 
         PcsCase pcsCase = eventPayload.caseData();
-        List<Party> partiesToAdd = unwrapListItems(pcsCase.getPartiesToAdd());
+        Party partyToAdd = pcsCase.getCurrentParty();
 
-        partyService.addParties(caseReference, partiesToAdd);
+        partyService.addParties(caseReference, List.of(partyToAdd));
     }
 
 }
