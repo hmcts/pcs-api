@@ -357,6 +357,7 @@ flyway {
   password = System.getenv('FLYWAY_PASSWORD')
   baselineOnMigrate = true
   baselineVersion = '000'
+  validateMigrationNaming = true
 }
 
 tasks.register('migratePostgresDatabase', FlywayMigrateTask) {
