@@ -53,7 +53,8 @@ withPipeline(type, product, component) {
     sh './bin/preview-test-data-migration.sh'
   }
   afterAlways('dockerbuild') {
-    sh 'git checkout src/main/resources/db/'
+    sh 'git checkout src/main/resources/db/migration/'
+    sh 'git -C src/main/resources/db/migration/ clean -f'
   }
 }
 
