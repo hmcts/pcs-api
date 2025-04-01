@@ -24,8 +24,7 @@ public class PostCodeController {
 
     @GetMapping("/court")
     public ResponseEntity<PostCodeResponse> getEpimIdByPostcode(@RequestHeader(AUTHORIZATION) String authorisation,
-                                                                @RequestHeader(SERVICE_AUTHORIZATION) String serviceAuthorization,
-                                                                @QueryParam("postcode") String postcode) {
+        @RequestHeader(SERVICE_AUTHORIZATION) String serviceAuthorization, @QueryParam("postcode") String postcode) {
         if (StringUtils.isEmpty(postcode)) {
             throw new ResponseStatusException(BAD_REQUEST, INVALID_POSTCODE_MESSAGE);
         }
