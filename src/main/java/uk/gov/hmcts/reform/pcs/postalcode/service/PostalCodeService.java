@@ -11,9 +11,9 @@ public class PostalCodeService {
 
     private final PostalCodeRepository postalCodeRepository;
 
-    public PostCodeResponse getEpimIdByPostcode(String postcode) {
-        return postalCodeRepository.findByPostcode(postcode)
-                .map(pc -> new PostCodeResponse(pc.getEpimid())).orElseGet(PostCodeResponse::new);
+    public PostCodeResponse getEpimIdByPostCode(String postcode) {
+        return postalCodeRepository.findByPostCode(postcode)
+                .map(pc -> new PostCodeResponse(pc.getEpimId())).orElseGet(PostCodeResponse::new);
     }
 
 }

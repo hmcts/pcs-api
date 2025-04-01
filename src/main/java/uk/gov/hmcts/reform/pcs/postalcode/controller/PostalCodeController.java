@@ -19,7 +19,7 @@ import static uk.gov.hmcts.reform.pcs.hearings.constants.HearingConstants.SERVIC
 @RestController
 public class PostalCodeController {
 
-    public static final String INVALID_POSTCODE_FORMAT = "Invalid postcode format";
+    public static final String INVALID_POSTCODE_FORMAT = "Invalid postcode";
     private final PostalCodeService postalCodeService;
 
     @GetMapping("/court")
@@ -29,7 +29,7 @@ public class PostalCodeController {
         if (StringUtils.isEmpty(postcode)) {
             throw new ResponseStatusException(BAD_REQUEST, INVALID_POSTCODE_FORMAT);
         }
-        return ResponseEntity.ok().body(postalCodeService.getEpimIdByPostcode(postcode));
+        return ResponseEntity.ok().body(postalCodeService.getEpimIdByPostCode(postcode));
     }
 
 }

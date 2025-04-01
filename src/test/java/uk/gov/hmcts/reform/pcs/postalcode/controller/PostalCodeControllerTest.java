@@ -14,7 +14,9 @@ import uk.gov.hmcts.reform.pcs.postalcode.service.PostalCodeService;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.pcs.postalcode.controller.PostalCodeController.INVALID_POSTCODE_FORMAT;
 
 @ExtendWith(MockitoExtension.class)
@@ -33,7 +35,7 @@ class PostalCodeControllerTest {
         String postcode = "SW1A 1AA";
         PostCodeResponse expectedResponse = new PostCodeResponse();
         expectedResponse.setEpimId(123456);
-        when(postalCodeService.getEpimIdByPostcode(postcode)).thenReturn(expectedResponse);
+        when(postalCodeService.getEpimIdByPostCode(postcode)).thenReturn(expectedResponse);
 
         // When
         ResponseEntity<PostCodeResponse> response = underTest.getEpimIdByPostcode(
@@ -45,7 +47,7 @@ class PostalCodeControllerTest {
         // Then
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody()).isEqualTo(expectedResponse);
-        verify(postalCodeService).getEPIMSIdByPostcode(postcode);
+        verify(postalCodeService).getEpimIdByPostCode(postcode);
     }
 
     @Test

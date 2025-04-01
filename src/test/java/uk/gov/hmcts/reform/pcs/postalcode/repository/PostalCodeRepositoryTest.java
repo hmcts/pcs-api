@@ -5,9 +5,10 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.test.context.ActiveProfiles;
-import uk.gov.hmcts.reform.pcs.postalcode.domain.Postcode;
+import uk.gov.hmcts.reform.pcs.audit.Audit;
+import uk.gov.hmcts.reform.pcs.postalcode.domain.PostCode;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -25,27 +26,27 @@ class PostalCodeRepositoryTest {
         // Given
         String postcode = "W3 7RX";
         int epimid = 20262;
-        final Postcode postcodeToSave = getPostcode(epimid, postcode);
-        postalCodeRepository.save(postcodeToSave);
+        final PostCode postCodeToSave = getPostcode(epimid, postcode);
+        postalCodeRepository.save(postCodeToSave);
 
         // When
-        Optional<Postcode> found = postalCodeRepository.findByPostcode(postcode);
+        Optional<PostCode> found = postalCodeRepository.findByPostCode(postcode);
 
         // Then
         assertThat(found).isPresent();
-        assertThat(found.get().getEpimid()).isEqualTo(epimid);
-        assertThat(found.get().getPostcode()).isEqualTo(postcode);
+        assertThat(found.get().getEpimId()).isEqualTo(epimid);
+        assertThat(found.get().getPostCode()).isEqualTo(postcode);
     }
 
-    private Postcode getPostcode(int epimid, String postcode) {
-        Postcode postcodeToSave = new Postcode();
-        postcodeToSave.setEpimid(epimid);
-        postcodeToSave.setPostcode(postcode);
-        postcodeToSave.setAudit("123");
-        postcodeToSave.setLegislativeCountry("UK");
-        postcodeToSave.setEffectiveFrom(LocalDate.now());
-        postcodeToSave.setEffectiveTo(LocalDate.now().plusMonths(1));
-        return postcodeToSave;
+    private PostCode getPostcode(int epimid, String postcode) {
+        PostCode postCodeToSave = new PostCode();
+        postCodeToSave.setEpimId(epimid);
+        postCodeToSave.setPostCode(postcode);
+        postCodeToSave.setAudit(new Audit());
+        postCodeToSave.setLegislativeCountry("England");
+        postCodeToSave.setEffectiveFrom(LocalDateTime.now());
+        postCodeToSave.setEffectiveTo(LocalDateTime.now().plusMonths(1));
+        return postCodeToSave;
     }
 
 }
