@@ -50,8 +50,12 @@ spring:
       maxLifetime: 7200000
       connectionTimeout: 30000
   jpa:
+    hibernate:
+      ddl-auto: validate
     properties:
       hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
         jdbc:
           lob:
             # silence the 'wall-of-text' - unnecessary exception throw about blob types
