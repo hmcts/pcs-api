@@ -26,7 +26,7 @@ case ${ENV} in
   local)
     CCD_DEF_VERSION="${TAG_VERSION}_local"
     ;;
-  pr)
+  preview)
     CCD_DEF_VERSION="${TAG_VERSION}_pr_${CHANGE_ID:-unknown}"
     ;;
   aat)
