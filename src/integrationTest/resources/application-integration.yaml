@@ -1,11 +1,10 @@
 security:
   anonymousPaths:
     - "/**"
+
 spring:
   flyway:
     enabled: false
-
-spring:
   sql:
     init:
       mode: never
