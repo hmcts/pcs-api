@@ -2,7 +2,7 @@ create table public.pcs_case
 (
   id             uuid primary key,
   version        integer,
-  case_reference bigint unique references ccd.case_data (reference) deferrable initially deferred
+  case_reference bigint unique
 );
 
 create table public.address
