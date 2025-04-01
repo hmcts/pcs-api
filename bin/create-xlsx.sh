@@ -8,7 +8,7 @@ RUN_DIR=$(pwd)
 
 # Check if the directory exists
 if [ ! -d "$RUN_DIR/build/ccd-definition/PCS" ]; then
-  echo "Error: Directory $RUN_DIR/build/ccd-definition/PCS does not exist"
+  echo "Error: Directory $RUN_DIR/build/ccd-definition/PCS does not exist."
   exit 1
 fi
 
