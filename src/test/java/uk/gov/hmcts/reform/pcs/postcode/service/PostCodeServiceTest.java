@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.postalcode.service;
+package uk.gov.hmcts.reform.pcs.postcode.service;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -6,9 +6,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import uk.gov.hmcts.reform.pcs.postalcode.domain.PostCode;
-import uk.gov.hmcts.reform.pcs.postalcode.dto.PostCodeResponse;
-import uk.gov.hmcts.reform.pcs.postalcode.repository.PostalCodeRepository;
+import uk.gov.hmcts.reform.pcs.postcode.domain.PostCode;
+import uk.gov.hmcts.reform.pcs.postcode.dto.PostCodeResponse;
+import uk.gov.hmcts.reform.pcs.postcode.repository.PostCodeRepository;
 
 import java.util.Optional;
 
@@ -17,13 +17,13 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class PostalCodeServiceTest {
+class PostCodeServiceTest {
 
     @Mock
-    private PostalCodeRepository postalCodeRepository;
+    private PostCodeRepository postCodeRepository;
 
     @InjectMocks
-    private PostalCodeService underTest;
+    private PostCodeService underTest;
 
     @Test
     @DisplayName("Return null for non-existent postcode")
@@ -33,14 +33,14 @@ class PostalCodeServiceTest {
         int expectedEpimId = 20262;
         PostCode postalCode = new PostCode();
         postalCode.setEpimId(expectedEpimId);
-        when(postalCodeRepository.findByPostCode(postcode)).thenReturn(Optional.of(postalCode));
+        when(postCodeRepository.findByPostCode(postcode)).thenReturn(Optional.of(postalCode));
 
         // When
         PostCodeResponse response = underTest.getEpimIdByPostCode(postcode);
 
         // Then
         assertThat(response.getEpimId()).isEqualTo(expectedEpimId);
-        verify(postalCodeRepository).findByPostCode(postcode);
+        verify(postCodeRepository).findByPostCode(postcode);
     }
 
     @Test
@@ -48,14 +48,14 @@ class PostalCodeServiceTest {
     void shouldReturnEmptyResponseForNonExistentPostcode() {
         // Given
         String nonExistentPostcode = "XY1 2AB";
-        when(postalCodeRepository.findByPostCode(nonExistentPostcode)).thenReturn(Optional.empty());
+        when(postCodeRepository.findByPostCode(nonExistentPostcode)).thenReturn(Optional.empty());
 
         // When
         PostCodeResponse response = underTest.getEpimIdByPostCode(nonExistentPostcode);
 
         // Then
         assertThat(response.getEpimId()).isZero();
-        verify(postalCodeRepository).findByPostCode(nonExistentPostcode);
+        verify(postCodeRepository).findByPostCode(nonExistentPostcode);
     }
 
 }

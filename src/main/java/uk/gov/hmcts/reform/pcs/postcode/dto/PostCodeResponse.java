@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.postalcode.dto;
+package uk.gov.hmcts.reform.pcs.postcode.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

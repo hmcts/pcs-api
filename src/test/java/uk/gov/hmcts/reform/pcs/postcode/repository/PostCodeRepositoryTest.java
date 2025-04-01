@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.postalcode.repository;
+package uk.gov.hmcts.reform.pcs.postcode.repository;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -6,7 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.test.context.ActiveProfiles;
 import uk.gov.hmcts.reform.pcs.audit.Audit;
-import uk.gov.hmcts.reform.pcs.postalcode.domain.PostCode;
+import uk.gov.hmcts.reform.pcs.postcode.domain.PostCode;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
@@ -15,10 +15,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @DataJpaTest
 @ActiveProfiles("test")
-class PostalCodeRepositoryTest {
+class PostCodeRepositoryTest {
 
     @Autowired
-    private PostalCodeRepository postalCodeRepository;
+    private PostCodeRepository postCodeRepository;
 
     @Test
     @DisplayName("Test finding a postcode by value")
@@ -27,10 +27,10 @@ class PostalCodeRepositoryTest {
         String postcode = "W3 7RX";
         int epimid = 20262;
         final PostCode postCodeToSave = getPostcode(epimid, postcode);
-        postalCodeRepository.save(postCodeToSave);
+        postCodeRepository.save(postCodeToSave);
 
         // When
-        Optional<PostCode> found = postalCodeRepository.findByPostCode(postcode);
+        Optional<PostCode> found = postCodeRepository.findByPostCode(postcode);
 
         // Then
         assertThat(found).isPresent();

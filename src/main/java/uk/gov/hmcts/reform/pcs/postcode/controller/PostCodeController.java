@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.postalcode.controller;
+package uk.gov.hmcts.reform.pcs.postcode.controller;
 
 import com.azure.core.annotation.QueryParam;
 import lombok.AllArgsConstructor;
@@ -8,8 +8,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
-import uk.gov.hmcts.reform.pcs.postalcode.dto.PostCodeResponse;
-import uk.gov.hmcts.reform.pcs.postalcode.service.PostalCodeService;
+import uk.gov.hmcts.reform.pcs.postcode.dto.PostCodeResponse;
+import uk.gov.hmcts.reform.pcs.postcode.service.PostCodeService;
 
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
@@ -17,10 +17,10 @@ import static uk.gov.hmcts.reform.pcs.hearings.constants.HearingConstants.SERVIC
 
 @AllArgsConstructor
 @RestController
-public class PostalCodeController {
+public class PostCodeController {
 
     public static final String INVALID_POSTCODE_MESSAGE = "Invalid postcode";
-    private final PostalCodeService postalCodeService;
+    private final PostCodeService postCodeService;
 
     @GetMapping("/court")
     public ResponseEntity<PostCodeResponse> getEpimIdByPostcode(@RequestHeader(AUTHORIZATION) String authorisation,
@@ -29,7 +29,7 @@ public class PostalCodeController {
         if (StringUtils.isEmpty(postcode)) {
             throw new ResponseStatusException(BAD_REQUEST, INVALID_POSTCODE_MESSAGE);
         }
-        return ResponseEntity.ok().body(postalCodeService.getEpimIdByPostCode(postcode));
+        return ResponseEntity.ok().body(postCodeService.getEpimIdByPostCode(postcode));
     }
 
 }

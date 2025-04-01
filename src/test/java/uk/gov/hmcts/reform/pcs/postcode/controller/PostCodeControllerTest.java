@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.postalcode.controller;
+package uk.gov.hmcts.reform.pcs.postcode.controller;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -9,24 +9,24 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.server.ResponseStatusException;
-import uk.gov.hmcts.reform.pcs.postalcode.dto.PostCodeResponse;
-import uk.gov.hmcts.reform.pcs.postalcode.service.PostalCodeService;
+import uk.gov.hmcts.reform.pcs.postcode.dto.PostCodeResponse;
+import uk.gov.hmcts.reform.pcs.postcode.service.PostCodeService;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
-import static uk.gov.hmcts.reform.pcs.postalcode.controller.PostalCodeController.INVALID_POSTCODE_MESSAGE;
+import static uk.gov.hmcts.reform.pcs.postcode.controller.PostCodeController.INVALID_POSTCODE_MESSAGE;
 
 @ExtendWith(MockitoExtension.class)
-class PostalCodeControllerTest {
+class PostCodeControllerTest {
 
     @InjectMocks
-    private PostalCodeController underTest;
+    private PostCodeController underTest;
 
     @Mock
-    private PostalCodeService postalCodeService;
+    private PostCodeService postCodeService;
 
     @Test
     @DisplayName("Should return EpimsId ID for valid postcode")
@@ -35,7 +35,7 @@ class PostalCodeControllerTest {
         String postcode = "SW1A 1AA";
         PostCodeResponse expectedResponse = new PostCodeResponse();
         expectedResponse.setEpimId(123456);
-        when(postalCodeService.getEpimIdByPostCode(postcode)).thenReturn(expectedResponse);
+        when(postCodeService.getEpimIdByPostCode(postcode)).thenReturn(expectedResponse);
 
         // When
         ResponseEntity<PostCodeResponse> response = underTest.getEpimIdByPostcode(
@@ -47,7 +47,7 @@ class PostalCodeControllerTest {
         // Then
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody()).isEqualTo(expectedResponse);
-        verify(postalCodeService).getEpimIdByPostCode(postcode);
+        verify(postCodeService).getEpimIdByPostCode(postcode);
     }
 
     @Test
@@ -64,7 +64,7 @@ class PostalCodeControllerTest {
         // Then
         assertThat(exception.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
         assertThat(exception.getReason()).isEqualTo(INVALID_POSTCODE_MESSAGE);
-        verifyNoInteractions(postalCodeService);
+        verifyNoInteractions(postCodeService);
     }
 
     @Test
@@ -78,7 +78,7 @@ class PostalCodeControllerTest {
         // Then
         assertThat(exception.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
         assertThat(exception.getReason()).isEqualTo(INVALID_POSTCODE_MESSAGE);
-        verifyNoInteractions(postalCodeService);
+        verifyNoInteractions(postCodeService);
     }
 
 }

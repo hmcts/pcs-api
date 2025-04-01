@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.postalcode.controller;
+package uk.gov.hmcts.reform.pcs.postcode.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.SneakyThrows;
@@ -10,9 +10,9 @@ import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.web.servlet.MockMvc;
 import uk.gov.hmcts.reform.pcs.audit.Audit;
 import uk.gov.hmcts.reform.pcs.config.AbstractIT;
-import uk.gov.hmcts.reform.pcs.postalcode.domain.PostCode;
-import uk.gov.hmcts.reform.pcs.postalcode.dto.PostCodeResponse;
-import uk.gov.hmcts.reform.pcs.postalcode.repository.PostalCodeRepository;
+import uk.gov.hmcts.reform.pcs.postcode.domain.PostCode;
+import uk.gov.hmcts.reform.pcs.postcode.dto.PostCodeResponse;
+import uk.gov.hmcts.reform.pcs.postcode.repository.PostCodeRepository;
 
 import java.time.LocalDateTime;
 
@@ -23,7 +23,7 @@ import static org.springframework.http.HttpStatus.OK;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 
 @AutoConfigureMockMvc
-class PostalCodeControllerIT extends AbstractIT {
+class PostCodeControllerIT extends AbstractIT {
 
     private static final String AUTH_HEADER = "Bearer token";
     private static final String SERVICE_AUTH_HEADER = "ServiceAuthToken";
@@ -36,7 +36,7 @@ class PostalCodeControllerIT extends AbstractIT {
     @Autowired
     private ObjectMapper objectMapper;
     @Autowired
-    private PostalCodeRepository postalCodeRepository;
+    private PostCodeRepository postCodeRepository;
 
     @DisplayName("Should return valid PostCodeResponse with 200 response code")
     @Test
@@ -44,7 +44,7 @@ class PostalCodeControllerIT extends AbstractIT {
         // Given
         String postCode = "W3 7RX";
         int epimId = 20262;
-        postalCodeRepository.save(newPostCode(postCode, epimId));
+        postCodeRepository.save(newPostCode(postCode, epimId));
 
         // When
         final MockHttpServletResponse response = mockMvc.perform(get(COURT)

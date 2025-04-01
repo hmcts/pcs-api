@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.postalcode.domain;
+package uk.gov.hmcts.reform.pcs.postcode.domain;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
