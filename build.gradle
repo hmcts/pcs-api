@@ -270,7 +270,7 @@ repositories {
 }
 
 def versions = [
-  lombok       : '1.18.36',
+  lombok       : '1.18.38',
   flyway: "$flywayVersion",
 ]
 
