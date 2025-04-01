@@ -48,6 +48,13 @@ withPipeline(type, product, component) {
   afterAlways('functionalTest:aat') {
     archiveFunctionalTestReports()
   }
+
+  before('dockerbuild') {
+    sh './bin/preview-test-data-migration.sh'
+  }
+  afterAlways('dockerbuild') {
+    sh 'git checkout src/main/resources/db/'
+  }
 }
 
 def setPreviewEnvVars() {
