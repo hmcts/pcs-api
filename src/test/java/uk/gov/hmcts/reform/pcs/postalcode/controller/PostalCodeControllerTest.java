@@ -17,7 +17,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
-import static uk.gov.hmcts.reform.pcs.postalcode.controller.PostalCodeController.INVALID_POSTCODE_FORMAT;
+import static uk.gov.hmcts.reform.pcs.postalcode.controller.PostalCodeController.INVALID_POSTCODE_MESSAGE;
 
 @ExtendWith(MockitoExtension.class)
 class PostalCodeControllerTest {
@@ -63,7 +63,7 @@ class PostalCodeControllerTest {
 
         // Then
         assertThat(exception.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
-        assertThat(exception.getReason()).isEqualTo(INVALID_POSTCODE_FORMAT);
+        assertThat(exception.getReason()).isEqualTo(INVALID_POSTCODE_MESSAGE);
         verifyNoInteractions(postalCodeService);
     }
 
@@ -77,7 +77,7 @@ class PostalCodeControllerTest {
 
         // Then
         assertThat(exception.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
-        assertThat(exception.getReason()).isEqualTo(INVALID_POSTCODE_FORMAT);
+        assertThat(exception.getReason()).isEqualTo(INVALID_POSTCODE_MESSAGE);
         verifyNoInteractions(postalCodeService);
     }
 
