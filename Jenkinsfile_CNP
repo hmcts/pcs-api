@@ -99,7 +99,7 @@ def setPerftestEnvVars() {
 def generateDefinitions(builder) {
   builder.gradle('generateCCDConfig')
   sh "./bin/create-xlsx.sh ${env.ENVIRONMENT}"
-  steps.archiveArtifacts artifacts: "build/output/*.xlsx"
+  steps.archiveArtifacts artifacts: "output/*.xlsx"
 }
 
 def runE2eTests(String context) {
