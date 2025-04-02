@@ -21,30 +21,34 @@ fi
 # Set the tag version based on current Date and Time
 tag_version=$(date +"%d%m%Y_%H%M%S")
 
-# Define allowed environments
-allowed_envs=("local" "preview" "aat" "prod" "demo" "perftest" "ithc")
-
-# Check if the environment is valid
-valid_env=false
-for valid in "${allowed_envs[@]}"; do
-  if [ "$env" == "$valid" ]; then
-    valid_env=true
-    break
-  fi
-done
-
-# Exit if environment is not valid
-if [ "$valid_env" == false ]; then
-  echo "Error: Unknown environment '$env'. Allowed environments are: ${allowed_envs[*]}"
-  exit 1
-fi
-
 # Set the CCD definition version based on the environment
-if [ "${env}" == "preview" ]; then
-  ccd_def_version="${tag_version}_pr_${CHANGE_ID:-unknown}"
-else
-  ccd_def_version="${tag_version}_${env}"
-fi
+case ${ENV} in
+  local)
+    ccd_def_version="${tag_version}_local"
+    ;;
+  preview)
+    ccd_def_version="${tag_version}pr${CHANGE_ID:-unknown}"
+    ;;
+  aat)
+    ccd_def_version="${tag_version}_aat"
+    ;;
+  prod)
+    ccd_def_version="${tag_version}_prod"
+    ;;
+  demo)
+    ccd_def_version="${tag_version}_demo"
+    ;;
+  ithc)
+    ccd_def_version="${tag_version}_ithc"
+    ;;
+  perftest)
+    ccd_def_version="${tag_version}_perftest"
+    ;;
+  *)
+    echo "Invalid environment"
+    exit 1
+    ;;
+esac
 
 # Create the xlsx file name for the CCD definition
 ccd_definition_file="CCD_Definition_${ccd_def_version}.xlsx"
