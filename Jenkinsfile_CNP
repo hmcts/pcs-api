@@ -82,17 +82,14 @@ def setAatEnvVars() {
 }
 
 def setDemoEnvVars() {
-  env.TEST_E2E_URL_WEB = "https://manage-case.demo.platform.hmcts.net/"
   env.ENVIRONMENT= "demo"
 }
 
 def setIthcEnvVars() {
-  env.TEST_E2E_URL_WEB = "https://manage-case.ithc.platform.hmcts.net/"
   env.ENVIRONMENT= "ithc"
 }
 
 def setPerftestEnvVars() {
-  env.TEST_E2E_URL_WEB = "https://manage-case.perftest.platform.hmcts.net/"
   env.ENVIRONMENT= "perftest"
 }
 
