@@ -14,9 +14,7 @@ import java.net.URI;
 import java.util.Optional;
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -69,20 +67,20 @@ class NotificationControllerTest {
             emailRequest
         );
 
-        assertNotNull(response);
-        assertTrue(response.getStatusCode().is2xxSuccessful());
-        assertNotNull(response.getBody());
+        assertThat(response).isNotNull();
+        assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
+        assertThat(response.getBody()).isNotNull();
 
         SendEmailResponse responseBody = response.getBody();
-        assertEquals(notificationId, responseBody.getNotificationId());
-        assertEquals(Optional.of("reference"), responseBody.getReference());
-        assertEquals(Optional.of(unsubscribeUrl), responseBody.getOneClickUnsubscribeURL());
-        assertEquals(templateId, responseBody.getTemplateId());
-        assertEquals(1, responseBody.getTemplateVersion());
-        assertEquals("/template/uri", responseBody.getTemplateUri());
-        assertEquals("Email body content", responseBody.getBody());
-        assertEquals("Email subject", responseBody.getSubject());
-        assertEquals(Optional.of("noreply@example.com"), responseBody.getFromEmail());
+        assertThat(responseBody.getNotificationId()).isEqualTo(notificationId);
+        assertThat(responseBody.getReference()).isEqualTo(Optional.of("reference"));
+        assertThat(responseBody.getOneClickUnsubscribeURL()).isEqualTo(Optional.of(unsubscribeUrl));
+        assertThat(responseBody.getTemplateId()).isEqualTo(templateId);
+        assertThat(responseBody.getTemplateVersion()).isEqualTo(1);
+        assertThat(responseBody.getTemplateUri()).isEqualTo("/template/uri");
+        assertThat(responseBody.getBody()).isEqualTo("Email body content");
+        assertThat(responseBody.getSubject()).isEqualTo("Email subject");
+        assertThat(responseBody.getFromEmail()).isEqualTo(Optional.of("noreply@example.com"));
 
         verify(notificationService, times(1)).sendEmail(emailRequest);
     }

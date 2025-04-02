@@ -15,9 +15,8 @@ import java.util.HashMap;
 import java.util.Optional;
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.anyMap;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
@@ -56,8 +55,8 @@ class NotificationServiceTest {
 
         SendEmailResponse response = notificationService.sendEmail(emailRequest);
 
-        assertNotNull(response);
-        assertEquals(UUID.fromString("550e8400-e29b-41d4-a716-446655440000"), response.getNotificationId());
+        assertThat(response).isNotNull();
+        assertThat(response.getNotificationId()).isEqualTo(UUID.fromString("550e8400-e29b-41d4-a716-446655440000"));
         verify(notificationClient, times(1))
             .sendEmail(anyString(), anyString(), anyMap(), anyString());
     }
@@ -74,10 +73,10 @@ class NotificationServiceTest {
         when(notificationClient.sendEmail(anyString(), anyString(), anyMap(), anyString()))
             .thenThrow(new NotificationClientException("Error"));
 
-        NotificationException exception = assertThrows(NotificationException.class, () ->
-            notificationService.sendEmail(emailRequest));
+        assertThatThrownBy(() -> notificationService.sendEmail(emailRequest))
+            .isInstanceOf(NotificationException.class)
+            .hasMessage("Email failed to send, please try again.");
 
-        assertEquals("Email failed to send, please try again.", exception.getMessage());
         verify(notificationClient, times(1))
             .sendEmail(anyString(), anyString(), anyMap(), anyString());
     }
