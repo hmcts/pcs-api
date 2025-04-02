@@ -27,7 +27,7 @@ case ${env} in
     ccd_def_version="${tag_version}_local"
     ;;
   preview)
-    ccd_def_version="${tag_version}pr${CHANGE_ID:-unknown}"
+    ccd_def_version="${tag_version}_pr_${CHANGE_ID:-unknown}"
     ;;
   aat)
     ccd_def_version="${tag_version}_aat"
@@ -45,7 +45,7 @@ case ${env} in
     ccd_def_version="${tag_version}_perftest"
     ;;
   *)
-    echo "Invalid environment"
+    echo "Error: Invalid environment '$env'. Valid options are: local, preview, aat, prod, demo, ithc, perftest"
     exit 1
     ;;
 esac
