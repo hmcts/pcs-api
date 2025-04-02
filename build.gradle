@@ -377,6 +377,7 @@ tasks.withType(CftlibExec).configureEach {
   environment 'RSE_LIB_ADDITIONAL_DATABASES', 'pcs'
   environment 'PCS_DB_USER_NAME', 'postgres'
   environment 'PCS_DB_PASSWORD', 'postgres'
+  environment 'DB_PORT', '6432'
   environment 'SPRING_PROFILES_ACTIVE', 'dev'
 }
 
