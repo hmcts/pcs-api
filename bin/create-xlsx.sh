@@ -22,7 +22,7 @@ fi
 tag_version=$(date +"%d%m%Y_%H%M%S")
 
 # Set the CCD definition version based on the environment
-case ${ENV} in
+case ${env} in
   local)
     ccd_def_version="${tag_version}_local"
     ;;
