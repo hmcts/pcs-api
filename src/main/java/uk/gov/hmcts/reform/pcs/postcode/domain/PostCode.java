@@ -1,7 +1,6 @@
 package uk.gov.hmcts.reform.pcs.postcode.domain;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
@@ -47,15 +46,6 @@ public class PostCode {
     @Column(name = "audit", nullable = false, columnDefinition = "jsonb")
     @JdbcTypeCode(SqlTypes.JSON)
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
-    private String audit;
-
-    public void setAudit(Audit auditObject) {
-        try {
-            ObjectMapper objectMapper = new ObjectMapper();
-            this.audit = objectMapper.writeValueAsString(auditObject);
-        } catch (Exception e) {
-            throw new RuntimeException("Error serializing Audit object to JSON", e);
-        }
-    }
+    private Audit audit;
 
 }

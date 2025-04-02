@@ -279,6 +279,10 @@ ext['snakeyaml.version'] = '2.0'
 
 dependencies {
 
+  constraints {
+    implementation('org.hibernate.orm:hibernate-core:6.6.11')
+  }
+
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-web'
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-actuator'
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-aop'
@@ -336,10 +340,6 @@ dependencies {
   testImplementation 'org.testcontainers:testcontainers:1.20.6'
   testImplementation 'org.testcontainers:junit-jupiter:1.20.3'
   testImplementation 'org.testcontainers:postgresql:1.20.6'
-
-  // Runtime H2 database dependency
-  runtimeOnly 'com.h2database:h2'
-  testImplementation 'com.h2database:h2'
 
   // Allow fast reloading during dev; recompile a class to trigger fast reload + definition reimport.
   cftlibImplementation 'org.springframework.boot:spring-boot-devtools'
