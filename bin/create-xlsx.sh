@@ -21,6 +21,24 @@ fi
 # Set the tag version based on current Date and Time
 tag_version=$(date +"%d%m%Y_%H%M%S")
 
+# Define allowed environments
+allowed_envs=("local" "preview" "aat" "prod" "demo" "perftest" "ithc")
+
+# Check if the environment is valid
+valid_env=false
+for valid in "${allowed_envs[@]}"; do
+  if [ "$env" == "$valid" ]; then
+    valid_env=true
+    break
+  fi
+done
+
+# Exit if environment is not valid
+if [ "$valid_env" == false ]; then
+  echo "Error: Unknown environment '$env'. Allowed environments are: ${allowed_envs[*]}"
+  exit 1
+fi
+
 # Set the CCD definition version based on the environment
 if [ "${env}" == "preview" ]; then
   ccd_def_version="${tag_version}_pr_${CHANGE_ID:-unknown}"
