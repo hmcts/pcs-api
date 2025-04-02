@@ -34,6 +34,6 @@ ccd_definition_file="CCD_Definition_${ccd_def_version}.xlsx"
 # Runs the CCD JSON -> XLSX converter and outputs to the output directory
 docker run --rm --name json2xlsx \
   -v "$run_dir/build/definitions/PCS:/build/definitions/PCS" \
-  -v "$run_dir/output:/tmp/output" \
+  -v "$run_dir/build/definitions:/build/definitions" \
   hmctspublic.azurecr.io/ccd/definition-processor:latest \
-  json2xlsx -D /build/definitions/PCS -o "/tmp/output/${ccd_definition_file}"
+  json2xlsx -D /build/definitions/PCS -o "/build/definitions/${ccd_definition_file}"
