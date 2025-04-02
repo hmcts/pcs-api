@@ -1,61 +1,39 @@
 #!/usr/bin/env bash
 
 # This script is used to create the xlsx file for the given version and environment
-ENV=$1
+env=$1
 
 # Get the current directory
-RUN_DIR=$(pwd)
+run_dir=$(pwd)
 
 # Check if the directory exists
-if [ ! -d "$RUN_DIR/build/definitions/PCS" ]; then
-  echo "Error: Directory $RUN_DIR/build/definitions/PCS does not exist."
+if [ ! -d "$run_dir/build/definitions/PCS" ]; then
+  echo "Error: Directory $run_dir/build/definitions/PCS does not exist."
   exit 1
 fi
 
 # Check if the environment is provided, if not default to local
-if [ -z "$ENV" ]; then
-  ENV="local"
+if [ -z "$env" ]; then
+  env="local"
   echo "No environment specified, defaulting to the local naming convention."
 fi
 
 # Set the tag version based on current Date and Time
-TAG_VERSION=$(date +"%d%m%Y_%H%M%S")
+tag_version=$(date +"%d%m%Y_%H%M%S")
 
 # Set the CCD definition version based on the environment
-case ${ENV} in
-  local)
-    CCD_DEF_VERSION="${TAG_VERSION}_local"
-    ;;
-  preview)
-    CCD_DEF_VERSION="${TAG_VERSION}_pr_${CHANGE_ID:-unknown}"
-    ;;
-  aat)
-    CCD_DEF_VERSION="${TAG_VERSION}_aat"
-    ;;
-  prod)
-    CCD_DEF_VERSION="${TAG_VERSION}_prod"
-    ;;
-  demo)
-    CCD_DEF_VERSION="${TAG_VERSION}_demo"
-    ;;
-  ithc)
-    CCD_DEF_VERSION="${TAG_VERSION}_ithc"
-    ;;
-  perftest)
-    CCD_DEF_VERSION="${TAG_VERSION}_perftest"
-    ;;
-  *)
-    echo "Invalid environment"
-    exit 1
-    ;;
-esac
+if [ "${env}" == "preview" ]; then
+  ccd_def_version="${tag_version}_pr_${CHANGE_ID:-unknown}"
+else
+  ccd_def_version="${tag_version}_${env}"
+fi
 
 # Create the xlsx file name for the CCD definition
-CCD_DEFINITION_FILE="CCD_Definition_${CCD_DEF_VERSION}.xlsx"
+ccd_definition_file="CCD_Definition_${ccd_def_version}.xlsx"
 
 # Runs the CCD JSON -> XLSX converter and outputs to the output directory
 docker run --rm --name json2xlsx \
-  -v "$RUN_DIR/build/definitions/PCS:/build/definitions/PCS" \
-  -v "$RUN_DIR/output:/tmp/output" \
+  -v "$run_dir/build/definitions/PCS:/build/definitions/PCS" \
+  -v "$run_dir/output:/tmp/output" \
   hmctspublic.azurecr.io/ccd/definition-processor:latest \
-  json2xlsx -D /build/definitions/PCS -o "/tmp/output/${CCD_DEFINITION_FILE}"
+  json2xlsx -D /build/definitions/PCS -o "/tmp/output/${ccd_definition_file}"
