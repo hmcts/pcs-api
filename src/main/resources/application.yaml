@@ -50,7 +50,7 @@ spring:
       connectionTimeout: 30000
   jpa:
     hibernate:
-      ddl-auto: validate
+      ddl-auto: update
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
@@ -60,7 +60,7 @@ spring:
             # silence the 'wall-of-text' - unnecessary exception throw about blob types
             non_contextual_creation: true
   flyway:
-    enabled: false
+    enabled: true
   jms:
     servicebus:
       enabled: ${HEARINGS_SERVICEBUS_ENABLED:false}
@@ -73,7 +73,7 @@ spring:
       hearings-subscription: ${HEARINGS_SERVICEBUS_SUBSCRIPTION:hmc-to-pcs-subscription-aat}
 flyway:
   noop:
-    strategy: ${FLYWAY_NOOP_STRATEGY:true}
+    strategy: false
 idam:
   api:
     url: ${IDAM_API_URL:http://localhost:5062}
