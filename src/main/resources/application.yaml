@@ -70,7 +70,7 @@ spring:
       hearings-subscription: ${HEARINGS_SERVICEBUS_SUBSCRIPTION:hmc-to-pcs-subscription-aat}
 flyway:
   noop:
-    strategy: ${FLYWAY_NOOP_STRATEGY:true}
+    strategy: ${FLYWAY_NOOP_STRATEGY:false}
 idam:
   api:
     url: ${IDAM_API_URL:http://localhost:5062}
