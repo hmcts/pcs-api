@@ -58,7 +58,7 @@ public class CreateClaim implements CCDConfig<PcsCase, State, UserRole> {
             .name("Create claim")
             .showSummary()
             .aboutToStartCallback(this::start)
-            .grant(Permission.CRUD, UserRole.CASE_WORKER)
+            .grant(Permission.CRUD, UserRole.CASE_WORKER, UserRole.JUDICIARY)
             .fields()
             .page("summary")
             .mandatory(PcsCase::getClaimToAdd)

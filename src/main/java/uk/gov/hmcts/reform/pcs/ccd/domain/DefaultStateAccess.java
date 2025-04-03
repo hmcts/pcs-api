@@ -7,6 +7,8 @@ import uk.gov.hmcts.ccd.sdk.api.HasRole;
 import uk.gov.hmcts.ccd.sdk.api.Permission;
 
 import static uk.gov.hmcts.reform.pcs.ccd.domain.UserRole.CASE_WORKER;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.UserRole.INTERESTED_PARTY;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.UserRole.JUDICIARY;
 
 
 /**
@@ -17,6 +19,8 @@ public class DefaultStateAccess implements HasAccessControl {
     public SetMultimap<HasRole, Permission> getGrants() {
         SetMultimap<HasRole, Permission> grants = HashMultimap.create();
         grants.putAll(CASE_WORKER, Permission.CRU);
+        grants.putAll(JUDICIARY, Permission.CRUD);
+        grants.putAll(INTERESTED_PARTY, Permission.CRUD);
         return grants;
     }
 }
