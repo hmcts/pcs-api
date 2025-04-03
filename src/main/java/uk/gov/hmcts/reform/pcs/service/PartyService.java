@@ -49,11 +49,7 @@ public class PartyService {
     }
 
     private uk.gov.hmcts.reform.pcs.entity.Party convertToPartyEntity(Party party) {
-        uk.gov.hmcts.reform.pcs.entity.Party partyEntity
-            = modelMapper.map(party, uk.gov.hmcts.reform.pcs.entity.Party.class);
-
-        partyEntity.setActive(true);
-        return partyEntity;
+        return modelMapper.map(party, uk.gov.hmcts.reform.pcs.entity.Party.class);
     }
 
 }
