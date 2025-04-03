@@ -50,7 +50,7 @@ public class CaseType implements CCDConfig<PcsCase, State, UserRole> {
             .label("partyRolesMarkdownLabel", null, "${partyRolesMarkdown}")
             .field("partyRolesMarkdown", "partyRolesMarkdown=\"NEVER_SHOW\"");
 
-        builder.tab("claims", "Claims")
+        builder.tab("claims", "Claims (Markdown)")
             .label("claimsSummaryMarkdownLabel", null, "${claimsSummaryMarkdown}")
             .field("claimsSummaryMarkdown", "claimsSummaryMarkdown=\"NEVER_SHOW\"");
 

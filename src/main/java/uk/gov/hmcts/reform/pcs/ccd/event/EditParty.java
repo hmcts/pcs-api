@@ -18,6 +18,8 @@ import java.util.UUID;
 @Component
 public class EditParty implements CCDConfig<PcsCase, State, UserRole> {
 
+    private static final String NEVER_SHOW = "[STATE]=\"NEVER_SHOW\"";
+
     private final PartyRepository partyRepository;
 
     public EditParty(PartyRepository partyRepository) {
@@ -32,6 +34,7 @@ public class EditParty implements CCDConfig<PcsCase, State, UserRole> {
             .name("Edit party")
             .showSummary()
             .grant(Permission.CRUD, UserRole.CASE_WORKER)
+            .showCondition(NEVER_SHOW)
             .fields()
             .page("party")
             .mandatory(PcsCase::getCurrentParty)
