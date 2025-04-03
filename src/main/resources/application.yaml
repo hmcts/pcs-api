@@ -29,7 +29,6 @@ security:
     - "/swagger-ui.html"
     - "/swagger-ui/**"
     - "/v3/api-docs/**"
-
 spring:
   config:
     import: "optional:configtree:/mnt/secrets/pcs/"
@@ -38,8 +37,8 @@ spring:
   datasource:
     driver-class-name: org.postgresql.Driver
     url: jdbc:postgresql://${PCS_DB_HOST:localhost}:${DB_PORT:5432}/${PCS_DB_NAME:pcs}${PCS_DB_OPTIONS:}
-    username: ${PCS_DB_USER_NAME}
-    password: ${PCS_DB_PASSWORD}
+    username: ${PCS_DB_USER_NAME:pcsuser}
+    password: ${PCS_DB_PASSWORD:pcspass}
     properties:
       charSet: UTF-8
     hikari:
@@ -70,7 +69,7 @@ spring:
       hearings-subscription: ${HEARINGS_SERVICEBUS_SUBSCRIPTION:hmc-to-pcs-subscription-aat}
 flyway:
   noop:
-    strategy: ${FLYWAY_NOOP_STRATEGY:true}
+    strategy: ${FLYWAY_NOOP_STRATEGY:false}
 idam:
   api:
     url: ${IDAM_API_URL:http://localhost:5062}
