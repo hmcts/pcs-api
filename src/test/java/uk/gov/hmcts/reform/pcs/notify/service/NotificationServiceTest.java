@@ -53,7 +53,7 @@ class NotificationServiceTest {
 
         assertThat(response).isNotNull();
         assertThat(response.getNotificationId()).isEqualTo(UUID.fromString("550e8400-e29b-41d4-a716-446655440000"));
-        assertThat(response.getReference()).isPresent().contains("reference");
+        assertThat(response.getReference()).contains("reference");
         verify(notificationClient).sendEmail(anyString(), anyString(), anyMap(), anyString());
     }
 
