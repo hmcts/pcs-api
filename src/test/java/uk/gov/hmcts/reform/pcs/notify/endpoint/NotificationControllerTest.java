@@ -17,7 +17,6 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -78,6 +77,6 @@ class NotificationControllerTest {
         assertThat(responseBody.getSubject()).isEqualTo("Email subject");
         assertThat(responseBody.getFromEmail()).contains("noreply@example.com");
 
-        verify(notificationService, times(1)).sendEmail(emailRequest);
+        verify(notificationService).sendEmail(emailRequest);
     }
 }

@@ -20,7 +20,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.anyMap;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -74,7 +73,6 @@ class NotificationServiceTest {
             .isInstanceOf(NotificationException.class)
             .hasMessage("Email failed to send, please try again.");
 
-        verify(notificationClient, times(1))
-            .sendEmail(anyString(), anyString(), anyMap(), anyString());
+        verify(notificationClient).sendEmail(anyString(), anyString(), anyMap(), anyString());
     }
 }
