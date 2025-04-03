@@ -1,10 +1,10 @@
 package uk.gov.hmcts.reform.pcs.notify.endpoint;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.ResponseEntity;
 import uk.gov.hmcts.reform.pcs.notify.model.EmailNotificationRequest;
 import uk.gov.hmcts.reform.pcs.notify.service.NotificationService;
@@ -21,6 +21,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+@ExtendWith(MockitoExtension.class)
 class NotificationControllerTest {
 
     @Mock
@@ -28,11 +29,6 @@ class NotificationControllerTest {
 
     @InjectMocks
     private NotifyController notifyController;
-
-    @BeforeEach
-    void setUp() {
-        MockitoAnnotations.openMocks(this);
-    }
 
     @Test
     void testSendEmail_Success() {
@@ -73,14 +69,14 @@ class NotificationControllerTest {
 
         SendEmailResponse responseBody = response.getBody();
         assertThat(responseBody.getNotificationId()).isEqualTo(notificationId);
-        assertThat(responseBody.getReference()).isEqualTo(Optional.of("reference"));
-        assertThat(responseBody.getOneClickUnsubscribeURL()).isEqualTo(Optional.of(unsubscribeUrl));
+        assertThat(responseBody.getReference()).contains("reference");
+        assertThat(responseBody.getOneClickUnsubscribeURL()).contains(unsubscribeUrl);
         assertThat(responseBody.getTemplateId()).isEqualTo(templateId);
         assertThat(responseBody.getTemplateVersion()).isEqualTo(1);
         assertThat(responseBody.getTemplateUri()).isEqualTo("/template/uri");
         assertThat(responseBody.getBody()).isEqualTo("Email body content");
         assertThat(responseBody.getSubject()).isEqualTo("Email subject");
-        assertThat(responseBody.getFromEmail()).isEqualTo(Optional.of("noreply@example.com"));
+        assertThat(responseBody.getFromEmail()).contains("noreply@example.com");
 
         verify(notificationService, times(1)).sendEmail(emailRequest);
     }

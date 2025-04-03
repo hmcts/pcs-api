@@ -1,10 +1,10 @@
 package uk.gov.hmcts.reform.pcs.notify.service;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.pcs.notify.exception.NotificationException;
 import uk.gov.hmcts.reform.pcs.notify.model.EmailNotificationRequest;
 import uk.gov.service.notify.NotificationClient;
@@ -24,6 +24,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+@ExtendWith(MockitoExtension.class)
 class NotificationServiceTest {
 
     @Mock
@@ -31,11 +32,6 @@ class NotificationServiceTest {
 
     @InjectMocks
     private NotificationService notificationService;
-
-    @BeforeEach
-    void setUp() {
-        MockitoAnnotations.openMocks(this);
-    }
 
     @Test
     void testSendEmailSuccess() throws NotificationClientException {
@@ -49,7 +45,8 @@ class NotificationServiceTest {
         SendEmailResponse sendEmailResponse = mock(SendEmailResponse.class);
         when(sendEmailResponse.getNotificationId())
             .thenReturn(UUID.fromString("550e8400-e29b-41d4-a716-446655440000"));
-        when(sendEmailResponse.getReference()).thenReturn(Optional.of("reference"));
+        when(sendEmailResponse.getReference())
+            .thenReturn(Optional.of("reference"));
         when(notificationClient.sendEmail(anyString(), anyString(), anyMap(), anyString()))
             .thenReturn(sendEmailResponse);
 
@@ -57,8 +54,8 @@ class NotificationServiceTest {
 
         assertThat(response).isNotNull();
         assertThat(response.getNotificationId()).isEqualTo(UUID.fromString("550e8400-e29b-41d4-a716-446655440000"));
-        verify(notificationClient, times(1))
-            .sendEmail(anyString(), anyString(), anyMap(), anyString());
+        assertThat(response.getReference()).isPresent().contains("reference");
+        verify(notificationClient).sendEmail(anyString(), anyString(), anyMap(), anyString());
     }
 
     @Test
