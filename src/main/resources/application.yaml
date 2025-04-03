@@ -37,9 +37,6 @@ spring:
     name: pcs api
   datasource:
     driver-class-name: org.postgresql.Driver
-    jdbc-url: jdbc:postgresql://${PCS_DB_HOST:localhost}:${DB_PORT:5432}/${PCS_DB_NAME:pcs}${PCS_DB_OPTIONS:}
-    user: ${PCS_DB_USER_NAME}
-    pwd: ${PCS_DB_PASSWORD}
     url: jdbc:postgresql://${PCS_DB_HOST:localhost}:${DB_PORT:5432}/${PCS_DB_NAME:pcs}${PCS_DB_OPTIONS:}
     username: ${PCS_DB_USER_NAME}
     password: ${PCS_DB_PASSWORD}
@@ -60,10 +57,9 @@ spring:
         show-sql: ${SPRING_JPA_SHOW_SQL:false}
     packages-to-scan: uk.gov.hmcts.reform.pcs
     show-sql: true
-    defer-datasource-initialization: true
     database-platform: org.hibernate.dialect.PostgreSQLDialect
   flyway:
-    enabled: false
+    enabled: true
   jms:
     servicebus:
       enabled: ${HEARINGS_SERVICEBUS_ENABLED:false}

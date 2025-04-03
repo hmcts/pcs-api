@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.postcode.controller;
+package uk.gov.hmcts.reform.pcs.postcodecourt.controller;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -9,62 +9,56 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.server.ResponseStatusException;
-import uk.gov.hmcts.reform.pcs.postcode.dto.PostCodeResponse;
-import uk.gov.hmcts.reform.pcs.postcode.service.PostCodeService;
+import uk.gov.hmcts.reform.pcs.postcodecourt.service.PostCodeCourtService;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
-import static org.mockito.Mockito.when;
-import static uk.gov.hmcts.reform.pcs.postcode.controller.PostCodeController.INVALID_POSTCODE_MESSAGE;
+import static uk.gov.hmcts.reform.pcs.postcodecourt.controller.PostCodeController.INVALID_POSTCODE_MESSAGE;
 
 @ExtendWith(MockitoExtension.class)
-class PostCodeControllerTest {
+class PostCodeCourtControllerTest {
 
     @InjectMocks
     private PostCodeController underTest;
 
     @Mock
-    private PostCodeService postCodeService;
+    private PostCodeCourtService postCodeCourtService;
 
     @Test
-    @DisplayName("Should return EpimsId ID for valid postcode")
-    void shouldHandlePostcodesWithSpacesCorrectly() {
+    @DisplayName("Should return Http200 for valid postcode")
+    void shouldHandlePostcodesRequest() {
         // Given
-        String postcode = "SW1A 1AA";
-        PostCodeResponse expectedResponse = new PostCodeResponse();
-        expectedResponse.setEpimId(123456);
-        when(postCodeService.getEpimIdByPostCode(postcode)).thenReturn(expectedResponse);
+        String postCode = "SW1A 1AA";
 
         // When
-        ResponseEntity<PostCodeResponse> response = underTest.getEpimIdByPostcode(
+        ResponseEntity<Void> response = underTest.getByPostcode(
             "Bearer token",
             "ServiceAuthToken",
-            postcode
+            postCode
         );
 
         // Then
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(response.getBody()).isEqualTo(expectedResponse);
-        verify(postCodeService).getEpimIdByPostCode(postcode);
+        verify(postCodeCourtService).getEpimIdByPostCode(postCode);
     }
 
     @Test
     @DisplayName("Should throw BadRequestException when postcode has invalid format")
     void shouldThrowBadRequestExceptionWhenPostcodeHasInvalidFormat() {
         // Given
-        String emptyPostcode = "";
+        String emptyPostCode = "";
 
         // When
         ResponseStatusException exception = assertThrows(ResponseStatusException.class, () ->
-            underTest.getEpimIdByPostcode("Bearer token", "ServiceAuthToken", emptyPostcode)
+            underTest.getByPostcode("Bearer token", "ServiceAuthToken", emptyPostCode)
         );
 
         // Then
         assertThat(exception.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
         assertThat(exception.getReason()).isEqualTo(INVALID_POSTCODE_MESSAGE);
-        verifyNoInteractions(postCodeService);
+        verifyNoInteractions(postCodeCourtService);
     }
 
     @Test
@@ -72,13 +66,29 @@ class PostCodeControllerTest {
     void shouldThrowBadRequestExceptionWhenPostcodeIsNull() {
         // Given // When
         ResponseStatusException exception = assertThrows(ResponseStatusException.class, () ->
-            underTest.getEpimIdByPostcode("Bearer token", "ServiceAuthToken", null)
+            underTest.getByPostcode("Bearer token", "ServiceAuthToken", null)
         );
 
         // Then
         assertThat(exception.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
         assertThat(exception.getReason()).isEqualTo(INVALID_POSTCODE_MESSAGE);
-        verifyNoInteractions(postCodeService);
+        verifyNoInteractions(postCodeCourtService);
+    }
+
+    @Test
+    @DisplayName("Should throw BadRequestException when service to service token is empty")
+    void shouldThrowBadRequestWhenServiceToServiceTokenInvalid() {
+        // Given
+        String postCode = "";
+
+        // When
+        ResponseStatusException exception = assertThrows(ResponseStatusException.class, () ->
+                underTest.getByPostcode("Bearer token", " ", postCode)
+        );
+
+        // Then
+        assertThat(exception.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        verifyNoInteractions(postCodeCourtService);
     }
 
 }

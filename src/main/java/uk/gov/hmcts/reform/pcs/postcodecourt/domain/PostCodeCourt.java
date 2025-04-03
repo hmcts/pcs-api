@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.postcode.domain;
+package uk.gov.hmcts.reform.pcs.postcodecourt.domain;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.Column;
@@ -25,7 +25,7 @@ import java.time.LocalDateTime;
 @Setter
 @ToString
 @EqualsAndHashCode(of = "postCode")
-public class PostCode {
+public class PostCodeCourt {
 
     @Id
     @Column(name = "postcode", length = 20, nullable = false)

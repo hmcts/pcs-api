@@ -4,7 +4,17 @@ security:
 
 spring:
   flyway:
+    locations: classpath:db/migration
     enabled: false
+    url: jdbc:tc:postgresql:latest:///testdb
+    username: testuser
+    password: testpass
+    driver-class-name: org.testcontainers.jdbc.ContainerDatabaseDriver
+    datasource:
+      url: jdbc:tc:postgresql:latest:///testdb
+      username: testuser
+      password: testpass
+      driver-class-name: org.testcontainers.jdbc.ContainerDatabaseDriver
   sql:
     init:
       mode: never
@@ -14,9 +24,12 @@ spring:
     password: testpass
     driver-class-name: org.testcontainers.jdbc.ContainerDatabaseDriver
   jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
-      ddl-auto: update
+      ddl-auto: none
     show-sql: true
     properties:
+      hibernate:
+        hbm2ddl-auto: none
       hibernate.format_sql: true
       show-dql: true
