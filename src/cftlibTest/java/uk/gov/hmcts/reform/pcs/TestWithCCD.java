@@ -14,7 +14,7 @@ import uk.gov.hmcts.reform.ccd.client.model.CaseDataContent;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.ccd.client.model.Event;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
-import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.PcsCase;
 import uk.gov.hmcts.rse.ccd.lib.test.CftlibTest;
 
 
@@ -45,7 +45,7 @@ public class TestWithCCD extends CftlibTest {
     public void createsTestCase() {
         var r = ccdApi.startCase(idamToken, s2sToken, "PCS", "createTestApplication");
         var content = CaseDataContent.builder()
-            .data(PCSCase.builder().applicantForename("Foo").build())
+            .data(PcsCase.builder().caseDescription("Foo").build())
             .event(Event.builder().id("createTestApplication").build())
             .eventToken(r.getToken())
             .build();

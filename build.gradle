@@ -20,9 +20,9 @@ plugins {
   id 'org.flywaydb.flyway' version "$flywayVersion"
   id 'org.sonarqube' version '6.1.0.5360'
   id 'net.serenity-bdd.serenity-gradle-plugin' version '4.2.16'
-  id 'hmcts.ccd.sdk' version '5.5.19'
-  id 'com.github.hmcts.rse-cft-lib' version '0.19.1618'
-  id 'io.freefair.lombok' version '8.13.1'
+//  id 'hmcts.ccd.sdk' version '5.5.19'
+  id 'com.github.hmcts.rse-cft-lib' version '0.20.0-alpha.19'
+  id 'io.freefair.lombok' version '8.13'
   id 'au.com.dius.pact' version '4.6.17'
   /*
     Applies analysis tools including checkstyle and OWASP Dependency checker.
@@ -56,7 +56,6 @@ sourceSets {
       runtimeClasspath += main.output
       srcDir file('src/integrationTest/java')
     }
-    resources.srcDir file('src/integrationTest/resources')
   }
 
   smokeTest {
@@ -236,9 +235,7 @@ sonarqube {
   properties {
     property "sonar.projectName", "Reform :: pcs-api"
     property "sonar.projectKey", "uk.gov.hmcts.reform:pcs-api"
-    property "sonar.coverage.exclusions", "**/config/**/*Configuration.java," +
-      "**/*Constants.java," +
-      "**/model/*.java," + "**/uk/gov/hmcts/reform/pcs/Application.java"
+    property "sonar.coverage.exclusions", "**/*.java"
   }
 }
 
@@ -284,6 +281,7 @@ dependencies {
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-aop'
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-json'
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-jdbc'
+  implementation group: 'org.springframework.boot', name: 'spring-boot-starter-data-jpa'
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-web'
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-security'
 
@@ -295,7 +293,7 @@ dependencies {
   implementation platform(group: 'com.azure.spring', name :'spring-cloud-azure-dependencies', version :'5.20.1')
   implementation "com.azure.spring:spring-cloud-azure-starter-servicebus-jms"
 
-  implementation group: 'com.github.hmcts.java-logging', name: 'logging', version: '6.1.8'
+  implementation group: 'com.github.hmcts.java-logging', name: 'logging', version: '6.1.7'
   implementation group: 'com.github.hmcts', name: 'ccd-client', version: '5.0.3'
   implementation group: 'com.github.hmcts', name: 'idam-java-client', version: '3.0.3'
 
@@ -306,10 +304,16 @@ dependencies {
   implementation group: 'org.postgresql', name: 'postgresql', version: '42.7.5'
   implementation group: 'com.github.hmcts', name: 'service-auth-provider-java-client', version: '5.3.0'
   implementation group: 'org.springframework.cloud', name: 'spring-cloud-starter-openfeign', version: '4.2.1'
+  implementation group: 'org.modelmapper', name: 'modelmapper', version: '3.2.2'
   implementation group: 'org.projectlombok', name: 'lombok', version: versions.lombok
   annotationProcessor group: 'org.projectlombok', name: 'lombok', version: versions.lombok
 
   implementation group: 'io.rest-assured', name: 'rest-assured'
+  implementation 'com.github.hmcts:idam-java-client:3.0.3'
+  implementation 'org.springframework.cloud:spring-cloud-starter-openfeign:4.2.0'
+  implementation 'io.pebbletemplates:pebble-spring-boot-starter:3.2.2'
+
+  integrationTestImplementation 'org.testcontainers:postgresql:1.20.6'
 
   functionalTestImplementation group: 'net.serenity-bdd', name: 'serenity-rest-assured', version: '4.2.17'
   functionalTestImplementation group: 'net.serenity-bdd', name: 'serenity-core', version: '4.2.17'
@@ -353,6 +357,7 @@ flyway {
   password = System.getenv('FLYWAY_PASSWORD')
   baselineOnMigrate = true
   baselineVersion = '000'
+  validateMigrationNaming = true
 }
 
 tasks.register('migratePostgresDatabase', FlywayMigrateTask) {
@@ -367,9 +372,15 @@ project.tasks.named("processSmokeTestResources") {
   duplicatesStrategy = 'include'
 }
 
+ccd {
+  decentralised = true
+}
+
 tasks.withType(CftlibExec).configureEach {
   group = 'ccd tasks'
   authMode = AuthMode.Local
+  environment 'RSE_LIB_ADDITIONAL_DATABASES', 'pcs'
+  environment 'POC_APIS_URL', 'http://localhost:3206'
   environment 'SPRING_PROFILES_ACTIVE', 'dev'
 }
 
@@ -382,8 +393,4 @@ rootProject.tasks.named("processIntegrationTestResources") {
 
 rootProject.tasks.named("processContractTestResources") {
   duplicatesStrategy = 'include'
-}
-
-wrapper {
-  distributionType = Wrapper.DistributionType.ALL
 }

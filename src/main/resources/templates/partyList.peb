@@ -1,0 +1,41 @@
+{% macro showParty(party) %}
+  {{ party.forename }} {{ party.surname }} {% if party.active == "NO" %} *(inactive)* {% endif %}
+{%- endmacro %}
+
+{% macro showClaims(role, claimsList) %}
+  {% for claim in claimsList %}
+    <li>{{ claim.summary }} ({{ role | upper }})</li>
+  {%- endfor %}
+{% endmacro %}
+
+{% macro showClaimsByRole(roleToClaimsMap) %}
+  <ul>
+  {%- for entry in roleToClaimsMap %}
+    {{ showClaims(entry.key, entry.value) }}
+  {% else %}
+    No claims associated
+  {%- endfor %}
+  </ul>
+{%- endmacro %}
+
+{% macro showActions(party, _context) %}
+[Edit party](/cases/case-details/{{_context.caseReference}}/trigger/{{_context.editPartyEvent}}?partyId={{party.id}})
+{%- endmacro %}
+
+## Parties
+
+{% if partyClaimsMap | length > 0 %}
+
+| Party | Related Claims | Actions |
+|-------|----------------|---------|
+{% for entry in partyClaimsMap %}
+  {%- set party = entry.key -%}
+  {%- set roleToClaimsMap = entry.value -%}
+  | {{ showParty(party) }} | {{ showClaimsByRole(roleToClaimsMap) }} | {{ showActions(party, _context) }} |
+{% endfor %}
+
+{% else %}
+### No parties have been added to this case
+{% endif %}
+[Add a new party](/cases/case-details/{{caseReference}}/trigger/{{addPartyEvent}})
+
