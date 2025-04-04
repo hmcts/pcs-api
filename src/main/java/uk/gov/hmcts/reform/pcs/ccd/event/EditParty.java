@@ -15,10 +15,10 @@ import uk.gov.hmcts.reform.pcs.repository.PartyRepository;
 
 import java.util.UUID;
 
+import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
+
 @Component
 public class EditParty implements CCDConfig<PcsCase, State, UserRole> {
-
-    private static final String NEVER_SHOW = "[STATE]=\"NEVER_SHOW\"";
 
     private final PartyRepository partyRepository;
 
