@@ -5,7 +5,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
 @Component
-@ConfigurationProperties(prefix = "spring.flyway")
+@ConfigurationProperties(prefix = "spring.flyway.datasource")
 @Data
 public class FlywayDBProperties {
     private String url;

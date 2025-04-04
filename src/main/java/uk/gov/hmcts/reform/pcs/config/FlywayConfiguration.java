@@ -11,11 +11,7 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.core.annotation.Order;
 import uk.gov.hmcts.reform.pcs.data.migration.FlywayNoOpStrategy;
 
-/**
- * Flyway configuration.
- */
 @Configuration
-@ConditionalOnClass(Flyway.class)
 @ConditionalOnProperty(prefix = "spring.flyway", name = "enabled", matchIfMissing = true)
 @Order(2)
 public class FlywayConfiguration {

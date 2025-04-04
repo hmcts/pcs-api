@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.postcodecourt.controller;
 
+import lombok.extern.slf4j.Slf4j;
 import org.flywaydb.test.annotation.FlywayTest;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -21,6 +22,7 @@ import static org.springframework.http.HttpStatus.OK;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 
 @AutoConfigureMockMvc
+@Slf4j
 class PostCodeCourtControllerIT extends AbstractPostgresContainerIT {
 
     private static final String AUTH_HEADER = "Bearer token";
@@ -36,10 +38,8 @@ class PostCodeCourtControllerIT extends AbstractPostgresContainerIT {
 
     @DisplayName("Should return valid Http 200 response code from a known postcode.")
     @Test
-    @FlywayTest(invokeCleanDB = false, invokeMigrateDB = false, invokeBaselineDB = true)
     void shouldReturnValidResponseForAKnownPostcode() throws Exception {
         // Given
-        //flyway.migrate();
         String postCode = "W3 7RX";
         int epimId = 20262;
         postCodeCourtRepository.save(newPostCode(postCode, epimId));
@@ -50,6 +50,7 @@ class PostCodeCourtControllerIT extends AbstractPostgresContainerIT {
                                                                   .header(SERVICE_AUTHORIZATION, SERVICE_AUTH_HEADER)
                                                                   .queryParam(POSTCODE, postCode))
             .andReturn().getResponse();
+
         // Then
         assertThat(response.getStatus()).isEqualTo(OK.value());
         assertThat(response.getContentLength()).isZero();
