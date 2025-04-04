@@ -36,8 +36,8 @@ import java.util.Map;
 @Testcontainers
 @ActiveProfiles("integration")
 @ComponentScan(basePackages = {
-        "uk.gov.hmcts.reform.pcs",
-        "uk.gov.hmcts.reform.pcs.config"
+    "uk.gov.hmcts.reform.pcs",
+    "uk.gov.hmcts.reform.pcs.config"
 })
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @ContextConfiguration(initializers = AbstractPostgresContainerIT.Initializer.class)
