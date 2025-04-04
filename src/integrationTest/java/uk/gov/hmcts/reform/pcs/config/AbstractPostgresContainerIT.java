@@ -60,11 +60,7 @@ public abstract class AbstractPostgresContainerIT {
             properties.put("spring.datasource.username", postgreSQLContainer.getUsername());
             properties.put("spring.datasource.password", postgreSQLContainer.getPassword());
             properties.put("spring.datasource.driver-class-name", "org.postgresql.Driver");
-            properties.put("spring.flyway.datasource.url", postgreSQLContainer.getJdbcUrl());
-            properties.put("spring.flyway.datasource.username", postgreSQLContainer.getUsername());
-            properties.put("spring.flyway.datasource.password", postgreSQLContainer.getPassword());
-            properties.put("spring.flyway.datasource.driver-class-name", "org.postgresql.Driver");
-            properties.put("spring.flyway.datasource.locations", "classpath:db/migration");
+            properties.put("spring.flyway.locations", "classpath:db/migration");
             properties.put("spring.jpa.database-platform", "org.hibernate.dialect.PostgreSQLDialect");
             properties.put("spring.jpa.hibernate.ddl-auto", "validate");
             properties.put("spring.flyway.enabled", true);
