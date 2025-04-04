@@ -10,5 +10,6 @@ import lombok.NoArgsConstructor;
 public class PostCodeResponse {
 
     private int epimId;
+    private String courtName;
 
 }
