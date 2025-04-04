@@ -22,11 +22,10 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import static uk.gov.hmcts.reform.pcs.ccd.MultiSelectListUtils.getSelectedCodes;
+import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 
 @Component
 public class AddDefendantToClaim implements CCDConfig<PcsCase, State, UserRole> {
-
-    private static final String NEVER_SHOW = "[STATE]=\"NEVER_SHOW\"";
 
     private final PartyService partyService;
     private final ClaimService claimService;
@@ -54,7 +53,7 @@ public class AddDefendantToClaim implements CCDConfig<PcsCase, State, UserRole> 
             .mandatory(PcsCase::getDefendantsToAdd)
             .label("no-claimants-label", "### There are no unassigned parties for this claim", "partyListEmpty=\"Yes\"")
             .readonly(PcsCase::getCurrentClaimId, NEVER_SHOW)
-            .readonly(PcsCase::getPartyListEmpty, "[STATE]=\"NEVER_SHOW\"")
+            .readonly(PcsCase::getPartyListEmpty, NEVER_SHOW)
             .done();
     }
 

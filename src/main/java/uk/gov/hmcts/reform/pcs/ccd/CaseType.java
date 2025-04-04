@@ -7,13 +7,13 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PcsCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.UserRole;
 
+import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
+
 /**
  * Setup some common possessions case type configuration.
  */
 @Component
 public class CaseType implements CCDConfig<PcsCase, State, UserRole> {
-
-    private static final String NEVER_SHOW = "caseDescription=\"NEVER\"";
 
     @Override
     public void configure(final ConfigBuilder<PcsCase, State, UserRole> builder) {
@@ -48,11 +48,11 @@ public class CaseType implements CCDConfig<PcsCase, State, UserRole> {
 
         builder.tab("partiesMarkdown", "Parties (Markdown)")
             .label("partyRolesMarkdownLabel", null, "${partyRolesMarkdown}")
-            .field("partyRolesMarkdown", "partyRolesMarkdown=\"NEVER_SHOW\"");
+            .field("partyRolesMarkdown", NEVER_SHOW);
 
         builder.tab("claims", "Claims (Markdown)")
             .label("claimsSummaryMarkdownLabel", null, "${claimsSummaryMarkdown}")
-            .field("claimsSummaryMarkdown", "claimsSummaryMarkdown=\"NEVER_SHOW\"");
+            .field("claimsSummaryMarkdown", NEVER_SHOW);
 
         builder.tab("CaseHistory", "History")
             .field("caseHistory");

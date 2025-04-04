@@ -28,6 +28,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
+
 @Component
 public class CreateClaim implements CCDConfig<PcsCase, State, UserRole> {
 
@@ -69,7 +71,7 @@ public class CreateClaim implements CCDConfig<PcsCase, State, UserRole> {
             .page("interested-parties")
             .showCondition("ipEmpty=\"No\"")
             .optional(PcsCase::getInterestedPartiesToAdd)
-            .readonly(PcsCase::getIpEmpty, "[STATE]=\"NEVER_SHOW\"")
+            .readonly(PcsCase::getIpEmpty, NEVER_SHOW)
             .done();
     }
 
