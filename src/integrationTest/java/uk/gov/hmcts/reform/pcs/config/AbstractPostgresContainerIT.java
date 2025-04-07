@@ -44,7 +44,7 @@ import java.util.Map;
 @Slf4j
 public abstract class AbstractPostgresContainerIT {
 
-    private static final String POSTGRES_VERSION = "postgres:12.2";
+    private static final String POSTGRES_VERSION = "postgres:17.4";
     private static final PostgreSQLContainer<?> postgreSQLContainer = new PostgreSQLContainer<>(POSTGRES_VERSION)
             .withReuse(true);
 
