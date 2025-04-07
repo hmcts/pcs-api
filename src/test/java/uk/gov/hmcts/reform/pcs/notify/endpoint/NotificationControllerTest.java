@@ -1,10 +1,10 @@
 package uk.gov.hmcts.reform.pcs.notify.endpoint;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.ResponseEntity;
 import uk.gov.hmcts.reform.pcs.notify.model.EmailNotificationRequest;
 import uk.gov.hmcts.reform.pcs.notify.service.NotificationService;
@@ -14,15 +14,13 @@ import java.net.URI;
 import java.util.Optional;
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+@ExtendWith(MockitoExtension.class)
 class NotificationControllerTest {
 
     @Mock
@@ -30,11 +28,6 @@ class NotificationControllerTest {
 
     @InjectMocks
     private NotifyController notifyController;
-
-    @BeforeEach
-    void setUp() {
-        MockitoAnnotations.openMocks(this);
-    }
 
     @Test
     void testSendEmail_Success() {
@@ -69,21 +62,21 @@ class NotificationControllerTest {
             emailRequest
         );
 
-        assertNotNull(response);
-        assertTrue(response.getStatusCode().is2xxSuccessful());
-        assertNotNull(response.getBody());
+        assertThat(response).isNotNull();
+        assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
+        assertThat(response.getBody()).isNotNull();
 
         SendEmailResponse responseBody = response.getBody();
-        assertEquals(notificationId, responseBody.getNotificationId());
-        assertEquals(Optional.of("reference"), responseBody.getReference());
-        assertEquals(Optional.of(unsubscribeUrl), responseBody.getOneClickUnsubscribeURL());
-        assertEquals(templateId, responseBody.getTemplateId());
-        assertEquals(1, responseBody.getTemplateVersion());
-        assertEquals("/template/uri", responseBody.getTemplateUri());
-        assertEquals("Email body content", responseBody.getBody());
-        assertEquals("Email subject", responseBody.getSubject());
-        assertEquals(Optional.of("noreply@example.com"), responseBody.getFromEmail());
+        assertThat(responseBody.getNotificationId()).isEqualTo(notificationId);
+        assertThat(responseBody.getReference()).contains("reference");
+        assertThat(responseBody.getOneClickUnsubscribeURL()).contains(unsubscribeUrl);
+        assertThat(responseBody.getTemplateId()).isEqualTo(templateId);
+        assertThat(responseBody.getTemplateVersion()).isEqualTo(1);
+        assertThat(responseBody.getTemplateUri()).isEqualTo("/template/uri");
+        assertThat(responseBody.getBody()).isEqualTo("Email body content");
+        assertThat(responseBody.getSubject()).isEqualTo("Email subject");
+        assertThat(responseBody.getFromEmail()).contains("noreply@example.com");
 
-        verify(notificationService, times(1)).sendEmail(emailRequest);
+        verify(notificationService).sendEmail(emailRequest);
     }
 }
