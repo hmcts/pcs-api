@@ -4,7 +4,7 @@ import uk.gov.hmcts.rse.CftlibExec
 
 buildscript {
   ext {
-    flywayVersion = '10.22.0'
+    flywayVersion = '11.6.0'
   }
   dependencies {
     classpath("org.flywaydb:flyway-database-postgresql:$flywayVersion")
@@ -90,6 +90,10 @@ configurations {
 
   cftlibTestImplementation.extendsFrom testImplementation
   cftlibTestRuntime.extendsFrom testRuntime
+}
+
+ccd {
+  configDir = file('build/definitions')
 }
 
 tasks.withType(JavaCompile) {
