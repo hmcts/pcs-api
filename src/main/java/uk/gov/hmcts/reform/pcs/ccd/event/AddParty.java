@@ -29,16 +29,12 @@ public class AddParty implements CCDConfig<PcsCase, State, UserRole> {
             .forAllStates()
             .name("Add party")
             .showSummary()
-//            .grant(Permission.C, UserRole.UPDATER)
+            .grant(Permission.CR, UserRole.CREATOR_WITH_UPDATE, UserRole.UPDATER)
             .fields()
             .page("party")
             .mandatory(PcsCase::getCurrentParty)
             .done();
     }
-
-    // TODO: Make event links not appear (or be disabled) when no permission
-    // TODO: Make sure only creator can create
-
 
     private void submit(EventPayload<PcsCase, State> eventPayload) {
         long caseReference = eventPayload.caseReference();

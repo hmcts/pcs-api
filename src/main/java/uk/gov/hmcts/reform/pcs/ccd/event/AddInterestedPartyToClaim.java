@@ -46,7 +46,7 @@ public class AddInterestedPartyToClaim implements CCDConfig<PcsCase, State, User
             .decentralisedEvent(EventId.addInterestedPartyToClaim.name(), this::submit, this::start)
             .forAllStates()
             .name("Add interested party")
-            .grant(Permission.CRUD, UserRole.CASE_WORKER)
+            .grant(Permission.CR, UserRole.CREATOR_WITH_UPDATE, UserRole.UPDATER)
             .showCondition(NEVER_SHOW)
             .fields()
             .page("interested-parties")

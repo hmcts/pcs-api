@@ -3,15 +3,14 @@ package uk.gov.hmcts.reform.pcs.ccd;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.DecentralisedCaseRepository;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
-import uk.gov.hmcts.reform.pcs.ccd.domain.PcsCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
-import uk.gov.hmcts.reform.pcs.ccd.renderer.RolesTestRenderer;
-import uk.gov.hmcts.reform.pcs.service.CaseDescriptionService;
+import uk.gov.hmcts.reform.pcs.ccd.domain.PcsCase;
 import uk.gov.hmcts.reform.pcs.ccd.renderer.ClaimsListRenderer;
 import uk.gov.hmcts.reform.pcs.ccd.renderer.PartyListRenderer;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
-import uk.gov.hmcts.reform.pcs.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.repository.PartyRepository;
+import uk.gov.hmcts.reform.pcs.repository.PcsCaseRepository;
+import uk.gov.hmcts.reform.pcs.service.CaseDescriptionService;
 
 import java.util.List;
 import java.util.Map;
@@ -30,21 +29,18 @@ public class CCDCaseRepository extends DecentralisedCaseRepository<PcsCase> {
     private final CaseDescriptionService caseDescriptionService;
     private final ClaimsListRenderer claimsListRenderer;
     private final PartyListRenderer partyListRenderer;
-    private final RolesTestRenderer rolesTestRenderer;
 
     public CCDCaseRepository(PcsCaseRepository pcsCaseRepository,
                              PartyRepository partyRepository,
                              CaseDescriptionService caseDescriptionService,
                              ClaimsListRenderer claimsListRenderer,
-                             PartyListRenderer partyListRenderer,
-                             RolesTestRenderer rolesTestRenderer) {
+                             PartyListRenderer partyListRenderer) {
 
         this.pcsCaseRepository = pcsCaseRepository;
         this.partyRepository = partyRepository;
         this.caseDescriptionService = caseDescriptionService;
         this.claimsListRenderer = claimsListRenderer;
         this.partyListRenderer = partyListRenderer;
-        this.rolesTestRenderer = rolesTestRenderer;
     }
 
     /**
@@ -85,7 +81,6 @@ public class CCDCaseRepository extends DecentralisedCaseRepository<PcsCase> {
         pcsCase.setInactivePartiesEmpty(YesOrNo.from(pcsCase.getInactiveParties().isEmpty()));
         pcsCase.setClaimsSummaryMarkdown(claimsListRenderer.render(pcsCase.getClaims(), caseRef));
         pcsCase.setPartyRolesMarkdown(partyListRenderer.render(allParties, pcsCase.getClaims(), caseRef));
-        pcsCase.setRolesTestMarkdown(rolesTestRenderer.render(allParties, pcsCase.getClaims(), caseRef));
     }
 
     private static String formatCaseRef(Long caseId) {

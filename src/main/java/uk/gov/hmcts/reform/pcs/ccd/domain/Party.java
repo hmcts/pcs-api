@@ -15,16 +15,20 @@ import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 @Data
 public class Party {
 
-    @CCD(label = "Party ID", typeOverride = FieldType.Text, showCondition = NEVER_SHOW)
+    @CCD(label = "Party ID", typeOverride = FieldType.Text, showCondition = NEVER_SHOW,
+        access = DefaultAccess.class)
     private final UUID id;
 
-    @CCD(label = "Forename")
+    @CCD(label = "Forename",
+        access = DefaultAccess.class)
     private String forename;
 
-    @CCD(label = "Surname")
+    @CCD(label = "Surname",
+        access = DefaultAccess.class)
     private String surname;
 
-    @CCD(label = "Is party active?")
+    @CCD(label = "Is party active?",
+        access = DefaultAccess.class)
     private final YesOrNo active;
 
     @JsonCreator

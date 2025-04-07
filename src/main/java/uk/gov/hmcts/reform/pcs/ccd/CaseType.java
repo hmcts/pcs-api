@@ -43,23 +43,22 @@ public class CaseType implements CCDConfig<PcsCase, State, UserRole> {
             .field(PcsCase::getPropertyAddress);
 
         builder.tab("parties", "Parties")
+            .forRoles(UserRole.READER, UserRole.CREATOR_WITH_UPDATE, UserRole.UPDATER)
             .field(PcsCase::getActiveParties, "", "#TABLE(forename,surname)")
             .field(PcsCase::getInactiveParties, "", "#TABLE(forename,surname)");
 
         builder.tab("partiesMarkdown", "Parties (Markdown)")
+            .forRoles(UserRole.READER, UserRole.CREATOR_WITH_UPDATE, UserRole.UPDATER)
             .label("partyRolesMarkdownLabel", null, "${partyRolesMarkdown}")
             .field("partyRolesMarkdown", NEVER_SHOW);
 
         builder.tab("claims", "Claims (Markdown)")
+            .forRoles(UserRole.READER, UserRole.CREATOR_WITH_UPDATE, UserRole.UPDATER)
             .label("claimsSummaryMarkdownLabel", null, "${claimsSummaryMarkdown}")
             .field("claimsSummaryMarkdown", NEVER_SHOW);
 
-        builder.tab("roles", "Roles test")
-            .label("rolesTestMarkdownLabel", null, "${rolesTestMarkdown}")
-            .field("rolesTestMarkdown", NEVER_SHOW);
-
-
         builder.tab("CaseHistory", "History")
+            .forRoles(UserRole.READER, UserRole.CREATOR_WITH_UPDATE, UserRole.UPDATER)
             .field("caseHistory");
 
         // ExUI won't populate model fields with their values if they are not referenced as a display field somewhere.

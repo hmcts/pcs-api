@@ -18,12 +18,16 @@ public class Claim {
     @JsonIgnore
     private final UUID id;
 
-    @CCD(label = "Summary")
+    @CCD(
+        label = "Summary",
+        access = DefaultAccess.class
+    )
     private String summary;
 
     @CCD(
         label = "Claim Amount",
-        typeOverride = FieldType.MoneyGBP
+        typeOverride = FieldType.MoneyGBP,
+        access = DefaultAccess.class
     )
     private String amountInPence;
 

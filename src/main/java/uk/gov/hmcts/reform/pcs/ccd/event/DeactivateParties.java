@@ -36,7 +36,7 @@ public class DeactivateParties implements CCDConfig<PcsCase, State, UserRole> {
             .name("Deactivate parties")
             .showCondition("activePartiesEmpty=\"No\"")
             .aboutToStartCallback(this::start)
-            .grant(Permission.CRUD, UserRole.CASE_WORKER)
+            .grant(Permission.CR, UserRole.CREATOR_WITH_UPDATE, UserRole.UPDATER)
             .fields()
             .page("deactivate-parties")
             .mandatory(

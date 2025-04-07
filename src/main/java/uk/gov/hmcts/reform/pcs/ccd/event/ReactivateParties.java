@@ -36,7 +36,7 @@ public class ReactivateParties implements CCDConfig<PcsCase, State, UserRole> {
             .name("Reactivate parties")
             .showCondition("inactivePartiesEmpty=\"No\"")
             .aboutToStartCallback(this::start)
-            .grant(Permission.CRUD, UserRole.CASE_WORKER)
+            .grant(Permission.CR, UserRole.CREATOR_WITH_UPDATE, UserRole.UPDATER)
             .fields()
             .page("reactivate-parties")
             .mandatory(

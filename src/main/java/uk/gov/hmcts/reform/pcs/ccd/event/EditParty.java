@@ -33,7 +33,7 @@ public class EditParty implements CCDConfig<PcsCase, State, UserRole> {
             .forAllStates()
             .name("Edit party")
             .showSummary()
-            .grant(Permission.CRUD, UserRole.CASE_WORKER)
+            .grant(Permission.CR, UserRole.CREATOR_WITH_UPDATE, UserRole.UPDATER)
             .showCondition(NEVER_SHOW)
             .fields()
             .page("party")

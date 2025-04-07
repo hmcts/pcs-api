@@ -46,7 +46,7 @@ public class AddClaimantToClaim implements CCDConfig<PcsCase, State, UserRole> {
             .decentralisedEvent(EventId.addClaimantToClaim.name(), this::submit, this::start)
             .forAllStates()
             .name("Add claimant")
-            .grant(Permission.CRUD, UserRole.CASE_WORKER)
+            .grant(Permission.CR, UserRole.CREATOR_WITH_UPDATE, UserRole.UPDATER)
             .showCondition(NEVER_SHOW)
             .fields()
             .page("claimants")
