@@ -12,7 +12,6 @@ import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
 import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
 
 import javax.sql.DataSource;
-import java.util.Properties;
 
 @Configuration
 @Order(3)
@@ -27,7 +26,6 @@ public class EntityManagerConfig {
         LocalContainerEntityManagerFactoryBean em = new LocalContainerEntityManagerFactoryBean();
         em.setDataSource(dataSource);
         em.setPackagesToScan(packagesToScan);
-        em.setJpaProperties(hibernateProperties());
         HibernateJpaVendorAdapter vendorAdapter = new HibernateJpaVendorAdapter();
         vendorAdapter.setGenerateDdl(false);
         em.setJpaVendorAdapter(vendorAdapter);
@@ -37,13 +35,6 @@ public class EntityManagerConfig {
     @Bean(name = "transactionManager")
     public JpaTransactionManager transactionManager(EntityManagerFactory entityManagerFactory) {
         return new JpaTransactionManager(entityManagerFactory);
-    }
-
-    private Properties hibernateProperties() {
-        Properties properties = new Properties();
-        properties.setProperty("hibernate.show_sql", "true");
-        properties.setProperty("hibernate.format_sql", "true");
-        return properties;
     }
 
 }
