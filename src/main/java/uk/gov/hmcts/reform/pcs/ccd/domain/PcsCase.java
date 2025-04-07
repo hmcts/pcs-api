@@ -105,6 +105,7 @@ public class PcsCase {
 
     private String claimsSummaryMarkdown;
     private String partyRolesMarkdown;
+    private String rolesTestMarkdown;
 
     public void addClaim(Claim claim) {
         claims.add(claim);

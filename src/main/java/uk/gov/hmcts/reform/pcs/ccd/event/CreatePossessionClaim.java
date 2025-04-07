@@ -31,7 +31,7 @@ public class CreatePossessionClaim implements CCDConfig<PcsCase, State, UserRole
             .initialState(State.Open)
             .name("Create possession claim")
             .showSummary()
-            .grant(Permission.CRUD, UserRole.CASE_WORKER)
+            .grant(Permission.C, UserRole.CREATOR_NO_READ)
             .fields()
             .page("property details")
             .mandatory(PcsCase::getPropertyAddress)

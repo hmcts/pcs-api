@@ -25,10 +25,11 @@ public class CftlibConfig implements CFTLibConfigurer {
     @Override
     public void configure(CFTLib lib) {
         var users = Map.of(
-            "caseworker1@pcs.com", List.of("caseworker", "caseworker-civil"),
-            "caseworker2@pcs.com", List.of("caseworker", "caseworker-civil"),
-            "judge@pcs.com", List.of("caseworker", "judiciary"),
-            "solicitor@interestedparty.com", List.of("caseworker", "interested-party")
+            "caseworker@pcs.com", List.of("caseworker", "caseworker-civil", "creator"),
+            "caseworker2@pcs.com", List.of("caseworker", "caseworker-civil", "creator-no-read"),
+            "caseworker3@pcs.com", List.of("caseworker", "caseworker-civil", "updater"),
+            "readonly@pcs.com", List.of("caseworker", "caseworker-civil", "reader"),
+            "solicitor@interestedparty.com", List.of("caseworker", "caseworker-civil", "interested-party")
         );
 
         // Create users and roles including in idam simulator
@@ -42,7 +43,11 @@ public class CftlibConfig implements CFTLibConfigurer {
             "caseworker-civil",
             "caseworker-other",
             "judiciary",
-            "interested-party"
+            "interested-party",
+            "creator",
+            "creator-no-read",
+            "updater",
+            "reader"
         );
 
         // Generate CCD definitions

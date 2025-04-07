@@ -15,9 +15,13 @@ import java.util.Set;
 @Getter
 public enum UserRole implements HasRole {
 
-    CASE_WORKER("caseworker-civil", Permission.CRU),
-    JUDICIARY("judiciary", Permission.CRU),
-    INTERESTED_PARTY("interested-party", Permission.CRU);
+    CREATOR("creator", Permission.CRU),
+    CREATOR_NO_READ("creator-no-read", Set.of(Permission.C)),
+    UPDATER("updater", Set.of(Permission.R, Permission.U)),
+    READER("reader", Set.of(Permission.R)),
+    CASE_WORKER("caseworker-civil", Permission.CRU);
+//    JUDICIARY("judiciary", Permission.CRU),
+//    INTERESTED_PARTY("interested-party", Permission.CRU);
 
     @JsonValue
     private final String role;
