@@ -24,11 +24,11 @@ public class PostCodeCourtController {
 
     @GetMapping("/court")
     public ResponseEntity<Void> getByPostcode(@RequestHeader(AUTHORIZATION) String authorisation,
-        @RequestHeader(SERVICE_AUTHORIZATION) String serviceAuthorization, @QueryParam(POSTCODE) String postCode) {
-        if (StringUtils.isEmpty(postCode)) {
+        @RequestHeader(SERVICE_AUTHORIZATION) String serviceAuthorization, @QueryParam(POSTCODE) String postcode) {
+        if (StringUtils.isEmpty(postcode)) {
             throw new ResponseStatusException(BAD_REQUEST, INVALID_POSTCODE_MESSAGE);
         }
-        postCodeCourtService.getEpimIdByPostCode(postCode);
+        postCodeCourtService.getEpimIdByPostCode(postcode);
         return ResponseEntity.ok().build();
     }
 
