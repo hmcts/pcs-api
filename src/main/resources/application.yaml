@@ -101,4 +101,4 @@ notify:
   api-key: ${PCS_NOTIFY_API_KEY:AAAAAAAA-AAAA-AAAA-AAAA-AAAAAAAAAAAA}
 
 location-reference:
-  service-url: ${LOCATION_REF_SERVICE_URL:http://localhost:8099}
+  service-url: ${LOCATION_REF_SERVICE_URL:http://rd-location-ref-api-aat:service:core-compute-aat:}
