@@ -3,23 +3,12 @@ package uk.gov.hmcts.reform.pcs.config;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.flywaydb.core.Flyway;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.ApplicationContextInitializer;
 import org.springframework.context.ConfigurableApplicationContext;
-import org.springframework.context.annotation.ComponentScan;
 import org.springframework.core.env.MapPropertySource;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.testcontainers.containers.PostgreSQLContainer;
-import org.testcontainers.junit.jupiter.Testcontainers;
-import uk.gov.hmcts.reform.pcs.Application;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
@@ -31,30 +20,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-@SpringBootTest(classes = Application.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@ExtendWith(SpringExtension.class)
-@Testcontainers
-@ActiveProfiles("integration")
-@ComponentScan(basePackages = {
-    "uk.gov.hmcts.reform.pcs",
-    "uk.gov.hmcts.reform.pcs.config"
-})
-@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-@ContextConfiguration(initializers = AbstractPostgresContainerIT.Initializer.class)
 @Slf4j
 public abstract class AbstractPostgresContainerIT {
 
-    private static final String POSTGRES_VERSION = "postgres:17.4";
-    private static final PostgreSQLContainer<?> postgreSQLContainer = new PostgreSQLContainer<>(POSTGRES_VERSION)
-            .withReuse(true);
-
-    static {
-            postgreSQLContainer.start();
-    }
-
-    static class Initializer implements ApplicationContextInitializer<ConfigurableApplicationContext> {
+    public static class Initializer implements ApplicationContextInitializer<ConfigurableApplicationContext> {
         @Override
         public void initialize(ConfigurableApplicationContext applicationContext) {
+            PostgreSQLContainer<?> postgreSQLContainer = PostgresTestContainerHolder.getInstance();
             Map<String, Object> properties = new HashMap<>();
             properties.put("spring.datasource.url", postgreSQLContainer.getJdbcUrl());
             properties.put("spring.datasource.username", postgreSQLContainer.getUsername());
@@ -81,12 +53,6 @@ public abstract class AbstractPostgresContainerIT {
     @Autowired
     private DataSource dataSource;
 
-    @BeforeAll
-    static void beforeAll() {
-        log.info("Starting PostgreSQL container...");
-        log.info("PostgreSQL container started. JDBC URL: {}", postgreSQLContainer.getJdbcUrl());
-    }
-
     @BeforeEach
     @SneakyThrows
     void beforeEach() {
@@ -111,11 +77,6 @@ public abstract class AbstractPostgresContainerIT {
             }
             log.info("Current tables in database: {}", String.join(", ", tables));
         }
-    }
-
-    @AfterAll
-    static void afterAll() {
-        postgreSQLContainer.stop();
     }
 
 }

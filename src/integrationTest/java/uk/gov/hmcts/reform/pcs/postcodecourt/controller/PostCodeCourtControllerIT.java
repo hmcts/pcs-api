@@ -5,11 +5,11 @@ import org.flywaydb.test.annotation.FlywayTest;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.web.servlet.MockMvc;
 import uk.gov.hmcts.reform.pcs.audit.Audit;
 import uk.gov.hmcts.reform.pcs.config.AbstractPostgresContainerIT;
+import uk.gov.hmcts.reform.pcs.config.IntegrationTest;
 import uk.gov.hmcts.reform.pcs.postcodecourt.domain.PostCodeCourt;
 import uk.gov.hmcts.reform.pcs.postcodecourt.repository.PostCodeCourtRepository;
 
@@ -22,8 +22,8 @@ import static org.springframework.http.HttpStatus.OK;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static uk.gov.hmcts.reform.pcs.postcodecourt.controller.PostCodeCourtController.POSTCODE;
 
-@AutoConfigureMockMvc
 @Slf4j
+@IntegrationTest
 class PostCodeCourtControllerIT extends AbstractPostgresContainerIT {
 
     private static final String AUTH_HEADER = "Bearer token";
