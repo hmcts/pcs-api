@@ -20,6 +20,7 @@ import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.OK;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static uk.gov.hmcts.reform.pcs.postcodecourt.controller.PostCodeCourtController.POSTCODE;
 
 @AutoConfigureMockMvc
 @Slf4j
@@ -29,7 +30,6 @@ class PostCodeCourtControllerIT extends AbstractPostgresContainerIT {
     private static final String SERVICE_AUTH_HEADER = "ServiceAuthToken";
     public static final String SERVICE_AUTHORIZATION = "ServiceAuthorization";
     public static final String COURT = "/court";
-    public static final String POSTCODE = "postCode";
 
     @Autowired
     private transient MockMvc mockMvc;

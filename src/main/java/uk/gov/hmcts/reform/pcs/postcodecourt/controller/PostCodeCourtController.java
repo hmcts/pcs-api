@@ -16,14 +16,15 @@ import static uk.gov.hmcts.reform.pcs.hearings.constants.HearingConstants.SERVIC
 
 @AllArgsConstructor
 @RestController
-public class PostCodeController {
+public class PostCodeCourtController {
 
+    public static final String POSTCODE = "postcode";
     public static final String INVALID_POSTCODE_MESSAGE = "Invalid postcode";
     private final PostCodeCourtService postCodeCourtService;
 
     @GetMapping("/court")
     public ResponseEntity<Void> getByPostcode(@RequestHeader(AUTHORIZATION) String authorisation,
-        @RequestHeader(SERVICE_AUTHORIZATION) String serviceAuthorization, @QueryParam("postCode") String postCode) {
+        @RequestHeader(SERVICE_AUTHORIZATION) String serviceAuthorization, @QueryParam(POSTCODE) String postCode) {
         if (StringUtils.isEmpty(postCode)) {
             throw new ResponseStatusException(BAD_REQUEST, INVALID_POSTCODE_MESSAGE);
         }

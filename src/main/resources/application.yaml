@@ -29,6 +29,7 @@ security:
     - "/swagger-ui.html"
     - "/swagger-ui/**"
     - "/v3/api-docs/**"
+    - "/court"
 
 spring:
   config:

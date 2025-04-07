@@ -15,13 +15,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
-import static uk.gov.hmcts.reform.pcs.postcodecourt.controller.PostCodeController.INVALID_POSTCODE_MESSAGE;
+import static uk.gov.hmcts.reform.pcs.postcodecourt.controller.PostCodeCourtController.INVALID_POSTCODE_MESSAGE;
 
 @ExtendWith(MockitoExtension.class)
 class PostCodeCourtControllerTest {
 
     @InjectMocks
-    private PostCodeController underTest;
+    private PostCodeCourtController underTest;
 
     @Mock
     private PostCodeCourtService postCodeCourtService;
