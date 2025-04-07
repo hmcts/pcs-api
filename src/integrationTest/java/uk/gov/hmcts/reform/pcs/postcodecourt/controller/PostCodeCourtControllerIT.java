@@ -38,7 +38,7 @@ class PostCodeCourtControllerIT extends AbstractPostgresContainerIT {
 
     @DisplayName("Should return valid Http 200 response code from a known postcode.")
     @Test
-    void shouldReturnValidResponseForAKnownPostcode() throws Exception {
+    void shouldReturnValidResponseForAKnownPostCode() throws Exception {
         // Given
         String postCode = "W3 7RX";
         int epimId = 20262;
@@ -56,17 +56,16 @@ class PostCodeCourtControllerIT extends AbstractPostgresContainerIT {
         assertThat(response.getContentLength()).isZero();
     }
 
-    @DisplayName("Should return Bad Request response for empty postcode.")
+    @DisplayName("Should return bad request for invalid service token.")
     @Test
     @FlywayTest
     void shouldReturnBadRequestForInvalidServiceToken() throws Exception {
         // Given
-        String postCode = "";
+        String postCode = "UB7 0DG";
 
         // When
         final MockHttpServletResponse response = mockMvc.perform(get(COURT)
                                                                      .header(AUTHORIZATION, AUTH_HEADER)
-                                                                     .header(SERVICE_AUTHORIZATION, "")
                                                                      .queryParam(POSTCODE, postCode))
             .andReturn().getResponse();
 
