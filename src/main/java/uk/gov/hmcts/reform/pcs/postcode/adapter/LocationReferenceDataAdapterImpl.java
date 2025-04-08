@@ -24,10 +24,10 @@ public class LocationReferenceDataAdapterImpl implements LocationReferenceDataAd
     public List<CourtVenue> fetchCountyCourts(int epimmsId) {
         return webClient.get()
             .uri(uriBuilder -> uriBuilder
-                .path("internal/refdata/location/court-venues")
-                .queryParam("epimms_id", epimmsId)
-                .queryParam("court_type_id", COUNTY_COURT_TYPE_ID)
-                .build())
+                     .path("internal/refdata/location/court-venues")
+                     .queryParam("epimms_id", epimmsId)
+                     .queryParam("court_type_id", COUNTY_COURT_TYPE_ID)
+                     .build())
             .retrieve()
             .bodyToFlux(CourtVenueResponse.class)
             .map(res -> new CourtVenue(res.courtVenueId(), res.courtName()))

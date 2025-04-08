@@ -10,7 +10,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.server.ResponseStatusException;
 import uk.gov.hmcts.reform.pcs.postcode.dto.PostCodeResponse;
+import uk.gov.hmcts.reform.pcs.postcode.record.CourtVenue;
 import uk.gov.hmcts.reform.pcs.postcode.service.PostCodeService;
+
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -35,6 +38,7 @@ class PostCodeControllerTest {
         String postcode = "SW1A 1AA";
         PostCodeResponse expectedResponse = new PostCodeResponse();
         expectedResponse.setEpimId(123456);
+        expectedResponse.setCourtVenues(List.of(new CourtVenue(40821, "Royal Courts of Justice (Main Building)")));
         when(postCodeService.getEpimIdByPostCode(postcode)).thenReturn(expectedResponse);
 
         // When
