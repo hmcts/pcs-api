@@ -27,7 +27,7 @@ public class CreateTestCase implements CCDConfig<PcsCase, State, UserRole> {
             .initialState(State.Open)
             .name("Create test case")
             .aboutToStartCallback(this::start)
-            .grant(Permission.CRUD, UserRole.CASE_WORKER)
+            .grant(Permission.CRUD, UserRole.CASE_WORKER, UserRole.READER)
             .fields()
             .page("Create test case")
                 .mandatory(PcsCase::getCaseDescription)
