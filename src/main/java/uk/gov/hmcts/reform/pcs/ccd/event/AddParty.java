@@ -29,7 +29,7 @@ public class AddParty implements CCDConfig<PcsCase, State, UserRole> {
             .forAllStates()
             .name("Add party")
             .showSummary()
-            .grant(Permission.CR, UserRole.CREATOR_WITH_UPDATE, UserRole.UPDATER)
+            .grant(Permission.CRUD, UserRole.CREATOR_WITH_UPDATE, UserRole.UPDATER)
             .fields()
             .page("party")
             .mandatory(PcsCase::getCurrentParty)

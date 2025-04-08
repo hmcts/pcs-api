@@ -17,7 +17,7 @@ public enum UserRole implements HasRole {
 
     CREATOR_WITH_UPDATE("creator-with-update", Permission.CRU),
     CREATOR_NO_READ("creator-no-read", Set.of(Permission.C)),
-    UPDATER("updater", Set.of(Permission.R, Permission.U)),
+    UPDATER("updater", Permission.CRU),
     READER("reader", Set.of(Permission.R)),
     CASE_WORKER("caseworker-civil", Permission.CRU);
 
