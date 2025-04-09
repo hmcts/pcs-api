@@ -20,6 +20,12 @@ public class EntityManagerConfig {
     @Value("${spring.jpa.packages-to-scan:uk.gov.hmcts.reform.pcs}")
     private String packagesToScan;
 
+    private final JpaPropertiesConfig jpaPropertiesConfig;
+
+    public EntityManagerConfig(JpaPropertiesConfig jpaPropertiesConfig) {
+        this.jpaPropertiesConfig = jpaPropertiesConfig;
+    }
+
     @Bean
     @Lazy
     public LocalContainerEntityManagerFactoryBean entityManagerFactory(@Qualifier("postgres") DataSource dataSource) {
@@ -27,8 +33,9 @@ public class EntityManagerConfig {
         em.setDataSource(dataSource);
         em.setPackagesToScan(packagesToScan);
         HibernateJpaVendorAdapter vendorAdapter = new HibernateJpaVendorAdapter();
-        vendorAdapter.setGenerateDdl(false);
+        vendorAdapter.setGenerateDdl(Boolean.parseBoolean(jpaPropertiesConfig.getHibernateGenerateDdl()));
         em.setJpaVendorAdapter(vendorAdapter);
+        em.setJpaProperties(jpaPropertiesConfig.toProperties());
         return em;
     }
 

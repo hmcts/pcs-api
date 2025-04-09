@@ -2,8 +2,8 @@ package uk.gov.hmcts.reform.pcs.postcodecourt.domain;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.Column;
+import jakarta.persistence.EmbeddedId;
 import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
@@ -24,15 +24,12 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 @ToString
-@EqualsAndHashCode(of = "postCode")
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class PostCodeCourt {
 
-    @Id
-    @Column(name = "postcode", length = 20, nullable = false)
-    private String postCode;
-
-    @Column(name = "epimid", nullable = false)
-    private int epimId;
+    @EqualsAndHashCode.Include
+    @EmbeddedId
+    private PostCodeCourtKey id;
 
     @Column(name = "legislative_country", length = 80, nullable = false)
     private String legislativeCountry;

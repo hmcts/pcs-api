@@ -11,6 +11,7 @@ import uk.gov.hmcts.reform.pcs.audit.Audit;
 import uk.gov.hmcts.reform.pcs.config.AbstractPostgresContainerIT;
 import uk.gov.hmcts.reform.pcs.config.IntegrationTest;
 import uk.gov.hmcts.reform.pcs.postcodecourt.domain.PostCodeCourt;
+import uk.gov.hmcts.reform.pcs.postcodecourt.domain.PostCodeCourtKey;
 import uk.gov.hmcts.reform.pcs.postcodecourt.repository.PostCodeCourtRepository;
 
 import java.time.LocalDateTime;
@@ -42,10 +43,10 @@ class PostCodeCourtControllerIT extends AbstractPostgresContainerIT {
         // Given
         String postCode = "W3 7RX";
         int epimId = 20262;
-        postCodeCourtRepository.save(newPostCode(postCode, epimId));
+        postCodeCourtRepository.save(createPostCodeCourt(postCode, epimId));
 
         // When
-        final MockHttpServletResponse response = mockMvc.perform(get(COURT)
+        MockHttpServletResponse response = mockMvc.perform(get(COURT)
                                                                   .header(AUTHORIZATION, AUTH_HEADER)
                                                                   .header(SERVICE_AUTHORIZATION, SERVICE_AUTH_HEADER)
                                                                   .queryParam(POSTCODE, postCode))
@@ -56,15 +57,15 @@ class PostCodeCourtControllerIT extends AbstractPostgresContainerIT {
         assertThat(response.getContentLength()).isZero();
     }
 
-    @DisplayName("Should return bad request for invalid service token.")
+    @DisplayName("Should return bad request for missing service token.")
     @Test
     @FlywayTest
-    void shouldReturnBadRequestForInvalidServiceToken() throws Exception {
+    void shouldReturnBadRequestForMissingServiceToken() throws Exception {
         // Given
         String postCode = "UB7 0DG";
 
         // When
-        final MockHttpServletResponse response = mockMvc.perform(get(COURT)
+        MockHttpServletResponse response = mockMvc.perform(get(COURT)
                                                                      .header(AUTHORIZATION, AUTH_HEADER)
                                                                      .queryParam(POSTCODE, postCode))
             .andReturn().getResponse();
@@ -74,10 +75,27 @@ class PostCodeCourtControllerIT extends AbstractPostgresContainerIT {
         assertThat(response.getContentLength()).isZero();
     }
 
-    private PostCodeCourt newPostCode(String postCode, int epimId) {
+    @DisplayName("Should return bad request for missing authorization token.")
+    @Test
+    @FlywayTest
+    void shouldReturnBadRequestForMissingAuthorizationToken() throws Exception {
+        // Given
+        String postCode = "UB7 0DG";
+
+        // When
+        MockHttpServletResponse response = mockMvc.perform(get(COURT)
+                        .header(SERVICE_AUTHORIZATION, SERVICE_AUTH_HEADER)
+                        .queryParam(POSTCODE, postCode))
+                .andReturn().getResponse();
+
+        // Then
+        assertThat(response.getStatus()).isEqualTo(BAD_REQUEST.value());
+        assertThat(response.getContentLength()).isZero();
+    }
+
+    private PostCodeCourt createPostCodeCourt(String postCode, int epimId) {
         PostCodeCourt postCodeCourt = new PostCodeCourt();
-        postCodeCourt.setPostCode(postCode);
-        postCodeCourt.setEpimId(epimId);
+        postCodeCourt.setId(new PostCodeCourtKey(postCode, epimId));
         populateRemaining(postCodeCourt);
         return postCodeCourt;
     }
