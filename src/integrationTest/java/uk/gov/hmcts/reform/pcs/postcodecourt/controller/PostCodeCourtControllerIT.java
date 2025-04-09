@@ -1,11 +1,16 @@
 package uk.gov.hmcts.reform.pcs.postcodecourt.controller;
 
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.flywaydb.test.annotation.FlywayTest;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.mock.web.MockHttpServletResponse;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import uk.gov.hmcts.reform.pcs.audit.Audit;
 import uk.gov.hmcts.reform.pcs.config.AbstractPostgresContainerIT;
@@ -26,6 +31,9 @@ import static uk.gov.hmcts.reform.pcs.postcodecourt.controller.PostCodeCourtCont
 
 @Slf4j
 @IntegrationTest
+@SpringBootTest
+@AutoConfigureMockMvc
+@ExtendWith(SpringExtension.class)
 class PostCodeCourtControllerIT extends AbstractPostgresContainerIT {
 
     private static final String AUTH_HEADER = "Bearer token";
@@ -34,8 +42,10 @@ class PostCodeCourtControllerIT extends AbstractPostgresContainerIT {
 
     @Autowired
     private transient MockMvc mockMvc;
+
     @Autowired
     private PostCodeCourtRepository postCodeCourtRepository;
+
 
     @DisplayName("Should return valid Http 200 response code from a known postcode.")
     @Test

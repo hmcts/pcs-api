@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.postcodecourt.controller;
 
+import org.apache.qpid.jms.util.ResourceNotFoundException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -24,20 +25,21 @@ class PostCodeCourtControllerTest {
 
     @Test
     @DisplayName("Should return Http200 for valid postcode")
-    void shouldHandlePostcodesRequest() {
+    void shouldHandlePostcodesRequest() throws ResourceNotFoundException {
         // Given
         String postCode = "SW1A 1AA";
 
         // When
+        String authorisation = "Bearer token";
         ResponseEntity<Void> response = underTest.getByPostcode(
-            "Bearer token",
+                authorisation,
             "ServiceAuthToken",
             postCode
         );
 
         // Then
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-        verify(postCodeCourtService).getEpimIdByPostCode(postCode);
+        verify(postCodeCourtService).getEpimIdByPostCode(postCode, authorisation);
     }
 
 }

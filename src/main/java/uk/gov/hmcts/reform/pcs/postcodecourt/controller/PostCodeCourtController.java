@@ -2,6 +2,8 @@ package uk.gov.hmcts.reform.pcs.postcodecourt.controller;
 
 import com.azure.core.annotation.QueryParam;
 import lombok.AllArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.qpid.jms.util.ResourceNotFoundException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -22,8 +24,8 @@ public class PostCodeCourtController {
 
     @GetMapping(COURTS_ENDPOINT)
     public ResponseEntity<Void> getByPostcode(@RequestHeader(AUTHORIZATION) String authorisation,
-        @RequestHeader(SERVICE_AUTHORIZATION) String serviceAuthorization, @QueryParam(POSTCODE) String postcode) {
-        postCodeCourtService.getEpimIdByPostCode(postcode);
+        @RequestHeader(SERVICE_AUTHORIZATION) String serviceAuthorization, @QueryParam(POSTCODE) String postcode) throws ResourceNotFoundException {
+        postCodeCourtService.getEpimIdByPostCode(postcode, authorisation);
         return ResponseEntity.ok().build();
     }
 

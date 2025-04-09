@@ -9,6 +9,7 @@ import uk.gov.hmcts.reform.idam.client.IdamApi;
 import org.springframework.jms.annotation.EnableJms;
 import uk.gov.hmcts.reform.pcs.config.JpaPropertiesConfig;
 import uk.gov.hmcts.reform.pcs.hearings.service.api.HmcHearingApi;
+import uk.gov.hmcts.reform.pcs.location.service.api.LocationReferenceApi;
 
 @SpringBootApplication(
     scanBasePackages = {
@@ -19,6 +20,7 @@ import uk.gov.hmcts.reform.pcs.hearings.service.api.HmcHearingApi;
 @EnableFeignClients(
     clients = {
         HmcHearingApi.class,
+        LocationReferenceApi.class,
         IdamApi.class
     }
 )
