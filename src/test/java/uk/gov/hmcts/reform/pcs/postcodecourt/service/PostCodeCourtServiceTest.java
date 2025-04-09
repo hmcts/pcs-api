@@ -6,8 +6,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.hmcts.reform.pcs.location.service.LocationReferenceService;
 import uk.gov.hmcts.reform.pcs.postcodecourt.domain.PostCodeCourt;
 import uk.gov.hmcts.reform.pcs.postcodecourt.domain.PostCodeCourtKey;
+import uk.gov.hmcts.reform.pcs.postcodecourt.record.CourtVenue;
 import uk.gov.hmcts.reform.pcs.postcodecourt.repository.PostCodeCourtRepository;
 
 import java.util.List;
@@ -22,6 +24,9 @@ class PostCodeCourtServiceTest {
     @Mock
     private PostCodeCourtRepository postCodeCourtRepository;
 
+    @Mock
+    private LocationReferenceService locationReferenceService;
+
     @InjectMocks
     private PostCodeCourtService underTest;
 
@@ -34,13 +39,18 @@ class PostCodeCourtServiceTest {
         PostCodeCourt postCodeCourt = new PostCodeCourt();
         postCodeCourt.setId(new PostCodeCourtKey(postCode, expectedEpimId));
         when(postCodeCourtRepository.findByIdPostCode(postCode)).thenReturn(List.of(postCodeCourt));
+        when(locationReferenceService.getCountyCourts(null, expectedEpimId))
+                .thenReturn(List.of(new CourtVenue(expectedEpimId, 101, "Royal Courts of Justice (Main Building)")));
 
         // When
-        List<PostCodeCourt> response = underTest.getEpimIdByPostCode(postCode);
+        final List<CourtVenue> response = underTest.getEpimIdByPostCode(postCode, null);
 
         // Then
-        assertThat(response).isNotEmpty().containsExactly(postCodeCourt);
+        assertThat(response).isNotEmpty(); // Check if the list is not empty
+        assertThat(response).anyMatch(courtVenue -> expectedEpimId == courtVenue.epimmsId()); // Check if any CourtVenue in the list has the expected EpimId
+
         verify(postCodeCourtRepository).findByIdPostCode(postCode);
+        verify(locationReferenceService).getCountyCourts(null, expectedEpimId);
     }
 
     @Test
@@ -51,7 +61,7 @@ class PostCodeCourtServiceTest {
         when(postCodeCourtRepository.findByIdPostCode(nonExistentPostCode)).thenReturn(List.of());
 
         // When
-        List<PostCodeCourt> response = underTest.getEpimIdByPostCode(nonExistentPostCode);
+        final List<CourtVenue> response = underTest.getEpimIdByPostCode(nonExistentPostCode, null);
 
         // Then
         assertThat(response).isEmpty();

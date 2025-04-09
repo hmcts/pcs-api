@@ -8,7 +8,10 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import uk.gov.hmcts.reform.pcs.postcodecourt.record.CourtVenue;
 import uk.gov.hmcts.reform.pcs.postcodecourt.service.PostCodeCourtService;
+
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
@@ -29,15 +32,16 @@ class PostCodeCourtControllerTest {
         String postCode = "SW1A 1AA";
 
         // When
-        ResponseEntity<Void> response = underTest.getByPostcode(
-            "Bearer token",
+        String authorisation = "Bearer token";
+        ResponseEntity<List<CourtVenue>> response = underTest.getByPostcode(
+                authorisation,
             "ServiceAuthToken",
             postCode
         );
 
         // Then
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-        verify(postCodeCourtService).getEpimIdByPostCode(postCode);
+        verify(postCodeCourtService).getEpimIdByPostCode(postCode, authorisation);
     }
 
 }
