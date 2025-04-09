@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.notify.endpoint;
+package uk.gov.hmcts.reform.pcs.testingsupport.endpoint;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -27,7 +27,7 @@ class NotificationControllerTest {
     private NotificationService notificationService;
 
     @InjectMocks
-    private NotifyController notifyController;
+    private TestingSupport notifyController;
 
     @Test
     void testSendEmail_Success() {
