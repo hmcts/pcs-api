@@ -38,8 +38,8 @@ spring:
   datasource:
     driver-class-name: org.postgresql.Driver
     url: jdbc:postgresql://${PCS_DB_HOST:localhost}:${DB_PORT:5432}/${PCS_DB_NAME:pcs}${PCS_DB_OPTIONS:}
-    username: ${PCS_DB_USER_NAME}
-    password: ${PCS_DB_PASSWORD}
+    username: ${PCS_DB_USER_NAME:}
+    password: ${PCS_DB_PASSWORD:}
     properties:
       charSet: UTF-8
     hikari:
@@ -90,6 +90,11 @@ hmc:
   deployment-id: ${HMC_DEPLOYMENT_ID:}
   api-url: ${HMC_API_URL:http://localhost:8084}
   serviceId: ${HMC_SERVICE_ID:AAA3}
+
+location-reference:
+  deployment-id: ${LOC_REF_DEPLOYMENT_ID:}
+  api-url: ${LOC_REF_URL:http://rd-location-ref-api-aat.service.core-compute-aat.internal}
+  serviceId: ${LOC_REF_SERVICE_ID:AAA3}
 
 notify:
   api-key: ${PCS_NOTIFY_API_KEY:AAAAAAAA-AAAA-AAAA-AAAA-AAAAAAAAAAAA}
