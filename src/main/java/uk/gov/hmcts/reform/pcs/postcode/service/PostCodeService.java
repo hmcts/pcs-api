@@ -21,8 +21,10 @@ public class PostCodeService {
     public PostCodeResponse getEpimIdByPostCode(String postcode) {
         PostCode postCodeEntity = postCodeRepository.findByPostCode(postcode).orElseThrow();
 
-        return new PostCodeResponse(postCodeEntity.getEpimId(),
-                                    locationReferenceDataAdapter.fetchCountyCourts(postCodeEntity.getEpimId())
-        );
+        PostCodeResponse postCodeResponse = new PostCodeResponse(postCodeEntity.getEpimId(),null);
+        locationReferenceDataAdapter.fetchCountyCourt(postCodeEntity.getEpimId())
+                .map(courtVenues -> { postCodeResponse.setCourtVenues(courtVenues);
+                                                        return postCodeResponse;});
+        return postCodeResponse;
     }
 }

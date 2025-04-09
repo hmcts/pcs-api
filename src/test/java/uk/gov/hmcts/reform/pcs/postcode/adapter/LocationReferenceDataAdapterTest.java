@@ -7,6 +7,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;
+import uk.gov.hmcts.reform.pcs.postcode.auth.S2AuthTokenService;
+import uk.gov.hmcts.reform.pcs.postcode.auth.IdamAuthTokenService;
 import uk.gov.hmcts.reform.pcs.postcode.record.CourtVenue;
 import uk.gov.hmcts.reform.pcs.postcode.record.CourtVenueResponse;
 
@@ -20,6 +22,13 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 public class LocationReferenceDataAdapterTest {
+
+
+    @Mock
+    private S2AuthTokenService s2AuthTokenService;
+
+    @Mock
+    private IdamAuthTokenService idamAuthTokenService;
 
     @Mock
     private WebClient.Builder webClientBuilder;
@@ -47,7 +56,7 @@ public class LocationReferenceDataAdapterTest {
         String baseUrl = "https://rd-location-ref-api-aat:service:core-compute-aat:";
         when(webClientBuilder.baseUrl(baseUrl)).thenReturn(webClientBuilder);
         when(webClientBuilder.build()).thenReturn(webClientMock);
-        locationReferenceDataAdapter = new LocationReferenceDataAdapterImpl(webClientBuilder, baseUrl);
+        locationReferenceDataAdapter = new LocationReferenceDataAdapterImpl(webClientBuilder, baseUrl, s2AuthTokenService, idamAuthTokenService);
     }
 
     @SuppressWarnings("unchecked")

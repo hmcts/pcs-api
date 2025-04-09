@@ -79,6 +79,15 @@ flyway:
   noop:
     strategy: ${FLYWAY_NOOP_STRATEGY:true}
 idam:
+  token:
+    url: https://idam-api.aat.platform.hmcts.net
+    username: civil-system-update@mailnesia.com
+    password: Password12
+    client-id: civil_citizen_ui
+    client-secret: 47js6e86Wv5718D2O77OL466020731ii
+    redirect-uri: https://civil-citizen-ui.aat.platform.hmcts.net/oauth2/callback
+    scope: profile openid roles
+    grant-type: password
   api:
     url: ${IDAM_API_URL:http://localhost:5062}
   s2s-auth:
@@ -87,6 +96,7 @@ idam:
     microservice: ${S2S_SERVICE_NAME:pcs_api}
   s2s-authorised:
     services: ${S2S_NAMES_WHITELIST:pcs_api,pcs_frontend,ccd_data}
+
 
 azure:
   application-insights:
