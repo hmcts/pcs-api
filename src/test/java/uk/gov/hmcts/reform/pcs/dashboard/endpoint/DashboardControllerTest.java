@@ -9,14 +9,14 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class DashboardNotificationControllerTest {
+class DashboardControllerTest {
 
 
-    private DashboardNotificationController underTest;
+    private DashboardController underTest;
 
     @BeforeEach
     void setUp() {
-        underTest = new DashboardNotificationController();
+        underTest = new DashboardController();
     }
 
     @Test

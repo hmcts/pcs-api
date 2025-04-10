@@ -18,12 +18,12 @@ import uk.gov.hmcts.reform.pcs.dashboard.model.DashboardNotification;
 import java.util.List;
 
 @RestController
-@RequestMapping("/dashboard/notification")
-@Tag(name = "Dashboard Notifications")
+@RequestMapping("/dashboard")
+@Tag(name = "Dashboard")
 @AllArgsConstructor
-public class DashboardNotificationController {
+public class DashboardController {
 
-    @GetMapping(value = "/{caseReference}",
+    @GetMapping(value = "/{caseReference}/notifications",
         consumes = MediaType.APPLICATION_JSON_VALUE,
         produces = MediaType.APPLICATION_JSON_VALUE
     )
@@ -37,12 +37,12 @@ public class DashboardNotificationController {
         })
     @ApiResponse(
         responseCode = "401",
-        description = "Provided S2S token is missing or invalid",
+        description = "Access token is missing or invalid",
         content = @Content()
         )
     @ApiResponse(
         responseCode = "403",
-        description = "Calling service is not authorised to use the endpoint",
+        description = "Not authorised to use the endpoint",
         content = @Content()
         )
     @ApiResponse(
