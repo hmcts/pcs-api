@@ -36,7 +36,7 @@ public class DashboardNotificationService {
         }
 
         DashboardNotification dashboardNotification1 = DashboardNotification.builder()
-            .templateId("Notice.AAA6.ClaimIssue.ClaimSubmit.Required")
+            .templateId("Notice.AAA3.ClaimIssue.ClaimSubmit.Required")
             .templateValues(Map.of(
                                 "location", "London",
                                 "dueDate", LocalDate.of(2025, Month.MAY, 20),
@@ -47,7 +47,7 @@ public class DashboardNotificationService {
             .build();
 
         DashboardNotification dashboardNotification2 = DashboardNotification.builder()
-            .templateId("Notice.AAA6.DefResponse.ResponseTimeElapsed.Claimant")
+            .templateId("Notice.AAA3.DefResponse.ResponseTimeElapsed.Claimant")
             .templateValues(Map.of(
                                 "claimantName", "Patricia Person",
                                 "responseTimeDays", 28
@@ -56,7 +56,7 @@ public class DashboardNotificationService {
             .build();
 
         DashboardNotification dashboardNotification3 = DashboardNotification.builder()
-            .templateId("Notice.AAA6.DefResponse.MoreTimeRequested.Defendant")
+            .templateId("Notice.AAA3.DefResponse.MoreTimeRequested.Defendant")
             .templateValues(Map.of(
                                 "defendantName", "Delia Defendant",
                                 "result", "approved"
