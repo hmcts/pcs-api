@@ -21,13 +21,13 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class NotificationControllerTest {
+class TestingSupportTest {
 
     @Mock
     private NotificationService notificationService;
 
     @InjectMocks
-    private TestingSupport notifyController;
+    private TestingSupportController underTest;
 
     @Test
     void testSendEmail_Success() {
@@ -56,7 +56,7 @@ class NotificationControllerTest {
 
         when(notificationService.sendEmail(any(EmailNotificationRequest.class))).thenReturn(mockResponse);
 
-        ResponseEntity<SendEmailResponse> response = notifyController.sendEmail(
+        ResponseEntity<SendEmailResponse> response = underTest.sendEmail(
             "Bearer token",
             "ServiceAuthToken",
             emailRequest

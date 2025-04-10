@@ -22,11 +22,11 @@ import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 @Slf4j
 @RestController
 @RequestMapping("/testing-support")
-public class TestingSupport {
+public class TestingSupportController {
 
     private final NotificationService notificationService;
 
-    public TestingSupport(NotificationService notificationService) {
+    public TestingSupportController(NotificationService notificationService) {
         this.notificationService = notificationService;
     }
 
