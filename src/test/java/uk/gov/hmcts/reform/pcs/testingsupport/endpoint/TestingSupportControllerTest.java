@@ -21,7 +21,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class TestingSupportTest {
+class TestingSupportControllerTest {
 
     @Mock
     private NotificationService notificationService;
