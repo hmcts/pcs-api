@@ -37,11 +37,14 @@ public abstract class AbstractPostgresContainerIT {
             properties.put("spring.jpa.hibernate.ddl-auto", "validate");
             properties.put("spring.flyway.enabled", true);
             properties.put("spring.flyway.clean-disabled", false);
-            properties.put("flyway.group", true);
+            properties.put("spring.flyway.group", false);
             properties.put("flyway.noop.strategy", false);
             properties.put("spring.jpa.show-sql", true);
+            properties.put("logging.level.org.flywaydb","DEBUG");
             properties.put("spring.jpa.properties.hibernate.format_sql", true);
             properties.put("logging.level.org.hibernate.SQL", "DEBUG");
+            properties.put("logging.level.org.flywaydb.core.internal", "DEBUG");
+            properties.put("logging.level.org.flywaydb.core.Flyway", "DEBUG");
 
             MapPropertySource propertySource = new MapPropertySource("testcontainers", properties);
             applicationContext.getEnvironment().getPropertySources().addFirst(propertySource);

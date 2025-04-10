@@ -15,8 +15,10 @@ import uk.gov.hmcts.reform.pcs.postcodecourt.domain.PostCodeCourtKey;
 import uk.gov.hmcts.reform.pcs.postcodecourt.repository.PostCodeCourtRepository;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.OK;
@@ -36,6 +38,31 @@ class PostCodeCourtControllerIT extends AbstractPostgresContainerIT {
     private transient MockMvc mockMvc;
     @Autowired
     private PostCodeCourtRepository postCodeCourtRepository;
+
+    @Test
+    @DisplayName("Should return valid Http OK for known postcodes. The response should be empty.")
+    void shouldReturnValidHttpOKForKnownPostCodes() {
+        // Given
+        List<PostCodeCourt> all = postCodeCourtRepository.findAll();
+
+        // When
+        all.forEach(postCodeCourt -> {
+            try {
+                MockHttpServletResponse response = mockMvc.perform(get(COURTS_ENDPOINT)
+                                .header(AUTHORIZATION, AUTH_HEADER)
+                                .header(SERVICE_AUTHORIZATION, SERVICE_AUTH_HEADER)
+                                .queryParam(POSTCODE, postCodeCourt.getId().getPostCode()))
+                        .andReturn().getResponse();
+
+                // Then
+                assertThat(response.getStatus()).isEqualTo(OK.value());
+                assertThat(response.getContentLength()).isZero();
+            } catch (Exception e) {
+                fail("Unable to find postcode: " + postCodeCourt.getId().getPostCode());
+            }
+        });
+
+    }
 
     @DisplayName("Should return valid Http 200 response code from a known postcode.")
     @Test
