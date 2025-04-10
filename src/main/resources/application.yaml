@@ -55,7 +55,6 @@ spring:
         dialect: org.hibernate.dialect.PostgreSQLDialect
         format_sql: true
         show-sql: ${SPRING_JPA_SHOW_SQL:false}
-    packages-to-scan: uk.gov.hmcts.reform.pcs
     database-platform: org.hibernate.dialect.PostgreSQLDialect
   flyway:
     enabled: false

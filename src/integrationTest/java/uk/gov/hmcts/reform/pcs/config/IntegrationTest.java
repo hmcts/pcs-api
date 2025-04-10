@@ -4,7 +4,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.ComponentScan;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
@@ -24,10 +23,6 @@ import java.lang.annotation.Target;
 @AutoConfigureMockMvc
 @Testcontainers
 @ActiveProfiles("integration")
-@ComponentScan(basePackages = {
-    "uk.gov.hmcts.reform.pcs",
-    "uk.gov.hmcts.reform.pcs.config"
-})
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 public @interface IntegrationTest {
 }

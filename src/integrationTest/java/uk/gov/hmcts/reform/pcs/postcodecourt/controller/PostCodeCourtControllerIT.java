@@ -21,6 +21,7 @@ import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.OK;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static uk.gov.hmcts.reform.pcs.postcodecourt.controller.PostCodeCourtController.COURTS_ENDPOINT;
 import static uk.gov.hmcts.reform.pcs.postcodecourt.controller.PostCodeCourtController.POSTCODE;
 
 @Slf4j
@@ -30,7 +31,6 @@ class PostCodeCourtControllerIT extends AbstractPostgresContainerIT {
     private static final String AUTH_HEADER = "Bearer token";
     private static final String SERVICE_AUTH_HEADER = "ServiceAuthToken";
     public static final String SERVICE_AUTHORIZATION = "ServiceAuthorization";
-    public static final String COURT = "/court";
 
     @Autowired
     private transient MockMvc mockMvc;
@@ -46,7 +46,7 @@ class PostCodeCourtControllerIT extends AbstractPostgresContainerIT {
         postCodeCourtRepository.save(createPostCodeCourt(postCode, epimId));
 
         // When
-        MockHttpServletResponse response = mockMvc.perform(get(COURT)
+        MockHttpServletResponse response = mockMvc.perform(get(COURTS_ENDPOINT)
                                                                   .header(AUTHORIZATION, AUTH_HEADER)
                                                                   .header(SERVICE_AUTHORIZATION, SERVICE_AUTH_HEADER)
                                                                   .queryParam(POSTCODE, postCode))
@@ -65,7 +65,7 @@ class PostCodeCourtControllerIT extends AbstractPostgresContainerIT {
         String postCode = "UB7 0DG";
 
         // When
-        MockHttpServletResponse response = mockMvc.perform(get(COURT)
+        MockHttpServletResponse response = mockMvc.perform(get(COURTS_ENDPOINT)
                                                                      .header(AUTHORIZATION, AUTH_HEADER)
                                                                      .queryParam(POSTCODE, postCode))
             .andReturn().getResponse();
@@ -83,7 +83,7 @@ class PostCodeCourtControllerIT extends AbstractPostgresContainerIT {
         String postCode = "UB7 0DG";
 
         // When
-        MockHttpServletResponse response = mockMvc.perform(get(COURT)
+        MockHttpServletResponse response = mockMvc.perform(get(COURTS_ENDPOINT)
                         .header(SERVICE_AUTHORIZATION, SERVICE_AUTH_HEADER)
                         .queryParam(POSTCODE, postCode))
                 .andReturn().getResponse();

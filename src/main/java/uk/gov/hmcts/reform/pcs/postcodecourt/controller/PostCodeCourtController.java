@@ -15,10 +15,12 @@ import static uk.gov.hmcts.reform.pcs.hearings.constants.HearingConstants.SERVIC
 @RestController
 public class PostCodeCourtController {
 
+    public static final String COURTS_ENDPOINT = "/courts";
     public static final String POSTCODE = "postcode";
+
     private final PostCodeCourtService postCodeCourtService;
 
-    @GetMapping("/court")
+    @GetMapping(COURTS_ENDPOINT)
     public ResponseEntity<Void> getByPostcode(@RequestHeader(AUTHORIZATION) String authorisation,
         @RequestHeader(SERVICE_AUTHORIZATION) String serviceAuthorization, @QueryParam(POSTCODE) String postcode) {
         postCodeCourtService.getEpimIdByPostCode(postcode);
