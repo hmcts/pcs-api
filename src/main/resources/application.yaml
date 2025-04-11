@@ -92,3 +92,6 @@ hmc:
 
 notify:
   api-key: ${PCS_NOTIFY_API_KEY:AAAAAAAA-AAAA-AAAA-AAAA-AAAAAAAAAAAA}
+
+testing-support:
+  enabled: ${ENABLE_TESTING_SUPPORT:false}

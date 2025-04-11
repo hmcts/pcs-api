@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.notify.endpoint;
+package uk.gov.hmcts.reform.pcs.testingsupport.endpoint;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -21,13 +21,13 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class NotificationControllerTest {
+class TestingSupportControllerTest {
 
     @Mock
     private NotificationService notificationService;
 
     @InjectMocks
-    private NotifyController notifyController;
+    private TestingSupportController underTest;
 
     @Test
     void testSendEmail_Success() {
@@ -56,7 +56,7 @@ class NotificationControllerTest {
 
         when(notificationService.sendEmail(any(EmailNotificationRequest.class))).thenReturn(mockResponse);
 
-        ResponseEntity<SendEmailResponse> response = notifyController.sendEmail(
+        ResponseEntity<SendEmailResponse> response = underTest.sendEmail(
             "Bearer token",
             "ServiceAuthToken",
             emailRequest
