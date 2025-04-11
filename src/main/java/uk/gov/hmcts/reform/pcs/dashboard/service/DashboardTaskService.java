@@ -35,10 +35,9 @@ public class DashboardTaskService {
             return List.of();
         }
 
-        // Define tasks with dummy data
         Task task1 = Task.builder()
             .templateId("Task.AAA6.Claim.ViewClaim")
-            .groupId("CLAIM")   // Grouped under "CLAIM"
+            .groupId("CLAIM")
             .status("AVAILABLE")
             .templateValues(Map.of(
                 "dueDate", LocalDate.of(2025, 5, 20),
@@ -50,14 +49,13 @@ public class DashboardTaskService {
 
         Task task2 = Task.builder()
             .templateId("Task.AAA6.Hearing.UploadDocuments")
-            .groupId("HEARING")  // Grouped under "HEARING"
+            .groupId("HEARING")
             .status("ACTION_NEEDED")
             .templateValues(Map.of(
                 "deadline", LocalDate.of(2025, 5, 20)
             ))
             .build();
 
-        // Now grouping tasks under TaskGroup
         var taskGroup1 = new TaskGroup();
         taskGroup1.setGroupId("CLAIM");
         taskGroup1.setStatus("AVAILABLE");

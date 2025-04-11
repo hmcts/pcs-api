@@ -99,7 +99,7 @@ public class DashboardController {
         @Parameter(description = "The unique identifier of the case to fetch tasks for", required = true)
         @PathVariable("caseReference") Long caseReference) {
 
-        var tasks = dashboardTaskService.getTasks(caseReference); // Calling Task service
+        var tasks = dashboardTaskService.getTasks(caseReference);
 
         return ResponseEntity.ok(tasks);
     }
