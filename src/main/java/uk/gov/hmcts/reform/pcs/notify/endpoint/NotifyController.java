@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.notify.endpoint;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -22,6 +23,7 @@ import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 @Slf4j
 @RestController
 @RequestMapping("/notify")
+@Tag(name = "Notify")
 public class NotifyController {
 
     private final NotificationService notificationService;
