@@ -26,11 +26,12 @@ class DashboardNotificationsIT {
         int validCaseReference = 1234;
 
         mockMvc
-            .perform(get("/dashboard/{caseReference}/notifications", validCaseReference)
-                         .accept(MediaType.APPLICATION_JSON)
-            )
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$", hasSize(3)));
+                .perform(get("/dashboard/{caseReference}/notifications", validCaseReference)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .header("ServiceAuthorization", "some token")
+                )
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(3)));
     }
 
     @Test
@@ -38,10 +39,11 @@ class DashboardNotificationsIT {
         int unknownCaseReference = 9999;
 
         mockMvc
-            .perform(get("/dashboard/{caseReference}/notifications", unknownCaseReference)
-                         .accept(MediaType.APPLICATION_JSON)
-            )
-            .andExpect(status().isNotFound());
+                .perform(get("/dashboard/{caseReference}/notifications", unknownCaseReference)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .header("ServiceAuthorization", "some token")
+                )
+                .andExpect(status().isNotFound());
     }
 
 }
