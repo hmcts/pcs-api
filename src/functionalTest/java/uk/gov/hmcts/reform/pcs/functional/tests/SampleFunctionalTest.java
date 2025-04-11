@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.functional.tests;
 
+import io.restassured.response.Response;
 import net.serenitybdd.junit5.SerenityJUnit5Extension;
 import net.serenitybdd.annotations.Steps;
 import org.junit.jupiter.api.BeforeEach;
@@ -23,7 +24,11 @@ class SampleFunctionalTest {
 
     @Test
     void testHealth() {
+        apiSteps.createServiceToken();
         apiSteps.getHealth();
+        apiSteps.checkStatusCode(200);
+        apiSteps.checkStatus("UP");
+
     }
 
     @Test
