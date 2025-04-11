@@ -72,6 +72,12 @@ class NotificationServiceTest {
 
     @Test
     void testSendEmailFailure() throws NotificationClientException {
+
+        UUID caseId = UUID.randomUUID();
+        CaseNotification testCaseNotification = new CaseNotification();
+        testCaseNotification.setCaseId(caseId);
+        when(notificationRepository.save(any(CaseNotification.class))).thenReturn(testCaseNotification);
+
         EmailNotificationRequest emailRequest = new EmailNotificationRequest(
             "test@example.com",
             "templateId",
@@ -93,17 +99,16 @@ class NotificationServiceTest {
     void testSaveCaseNotification() {
         String recipient = "test@example.com";
         String status = "Schedule Pending";
-        String type = "Email";
         UUID caseId = UUID.randomUUID();
-
+        String type = "Email";
         CaseNotification testCaseNotification = new CaseNotification();
-        testCaseNotification.setCaseId(caseId);
         testCaseNotification.setStatus(status);
         testCaseNotification.setRecipient(recipient);
+        testCaseNotification.setCaseId(caseId);
+        testCaseNotification.setType(type);
 
         when(notificationRepository.save(any(CaseNotification.class))).thenReturn(testCaseNotification);
-
-        CaseNotification saved = notificationService.createCaseNotification(recipient, type);
+        CaseNotification saved = notificationService.createCaseNotification(recipient, type, caseId);
 
         assertThat(saved).isNotNull();
         assertThat(saved.getCaseId()).isEqualTo(testCaseNotification.getCaseId());
@@ -115,16 +120,9 @@ class NotificationServiceTest {
     void testIfIllegalArgumentExceptionWhenMandatoryFieldIsNull() {
 
         String recipient = "test@example.com";
-        String status = "Schedule Pending";
         UUID caseId = UUID.randomUUID();
 
-        CaseNotification testCaseNotification = new CaseNotification();
-        testCaseNotification.setCaseId(caseId);
-        testCaseNotification.setStatus(status);
-        testCaseNotification.setRecipient(recipient);
-        testCaseNotification.setType(null);
-
-        assertThatThrownBy(() -> notificationService.createCaseNotification(recipient, null)).isInstanceOf(
+        assertThatThrownBy(() -> notificationService.createCaseNotification(recipient, null, caseId)).isInstanceOf(
             IllegalArgumentException.class).hasMessage("Recipient or type cannot be null");
     }
 
@@ -132,17 +130,12 @@ class NotificationServiceTest {
     void testIfNotificationExceptionThrownWhenSavingFails() {
         String recipient = "test@example.com";
         String type = "Email";
-        String status = "Pending";
-
-        CaseNotification testCaseNotification = new CaseNotification();
-        testCaseNotification.setStatus(status);
-        testCaseNotification.setRecipient(recipient);
-        testCaseNotification.setType(null);
+        UUID caseId = UUID.randomUUID();
 
         when(notificationRepository.save(any(CaseNotification.class)))
             .thenThrow(new DataIntegrityViolationException("Constraint violation"));
 
-        assertThatThrownBy(() -> notificationService.createCaseNotification(recipient, type))
+        assertThatThrownBy(() -> notificationService.createCaseNotification(recipient, type, caseId))
             .isInstanceOf(NotificationException.class).hasMessage("Failed to save Case Notification.");
     }
 

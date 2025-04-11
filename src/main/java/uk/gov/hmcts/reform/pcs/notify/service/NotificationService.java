@@ -35,6 +35,7 @@ public class NotificationService {
         final Map<String, Object> personalisation = emailRequest.getPersonalisation();
         final String referenceId = UUID.randomUUID().toString();
 
+        createCaseNotification(emailRequest.getEmailAddress(), "Email", UUID.randomUUID());
         try {
             sendEmailResponse = notificationClient.sendEmail(
                 templateId,
@@ -44,8 +45,6 @@ public class NotificationService {
             );
 
             log.debug("Email sent successfully. Reference ID: {}", referenceId);
-
-            createCaseNotification(emailRequest.getEmailAddress(), "Email");
 
             return sendEmailResponse;
         } catch (NotificationClientException notificationClientException) {
@@ -59,13 +58,17 @@ public class NotificationService {
         }
     }
 
-    public CaseNotification createCaseNotification(String recipient, String type) {
+    public CaseNotification createCaseNotification(String recipient, String type, UUID caseId) {
 
         if (recipient == null || type == null) {
             throw new IllegalArgumentException("Recipient or type cannot be null");
         }
+        if (caseId == null) {
+            throw new IllegalArgumentException("Case ID cannot be null");
+        }
+
         CaseNotification toSaveCaseNotification = new CaseNotification();
-        toSaveCaseNotification.setCaseId(UUID.randomUUID());
+        toSaveCaseNotification.setCaseId(caseId);
         toSaveCaseNotification.setStatus("Schedule Pending");
         toSaveCaseNotification.setType(type);
         toSaveCaseNotification.setRecipient(recipient);

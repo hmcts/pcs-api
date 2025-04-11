@@ -29,8 +29,8 @@ import java.util.UUID;
 public class CaseNotification {
 
     @Id
-    @GeneratedValue( strategy = GenerationType.UUID)
-    @Column(name = "notification_id", updatable = false, nullable = false)
+    @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(name = "notification_id", nullable = false)
     private UUID notificationId;
 
     @Column(name = "case_id", nullable = false)
