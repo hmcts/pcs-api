@@ -41,8 +41,7 @@ public class DashboardController {
         content = {
             @Content(
                 mediaType = "application/json",
-                array = @ArraySchema(schema = @Schema(implementation = DashboardNotification.class))
-            )
+                array = @ArraySchema(schema = @Schema(implementation = DashboardNotification.class)))
         })
     @ApiResponse(
         responseCode = "401",
@@ -76,8 +75,7 @@ public class DashboardController {
         content = {
             @Content(
                 mediaType = "application/json",
-                array = @ArraySchema(schema = @Schema(implementation = TaskGroup.class)) // Using TaskGroup
-            )
+                array = @ArraySchema(schema = @Schema(implementation = TaskGroup.class)))
         })
     @ApiResponse(
         responseCode = "401",
