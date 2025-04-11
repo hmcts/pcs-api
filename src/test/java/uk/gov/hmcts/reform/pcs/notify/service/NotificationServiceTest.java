@@ -5,8 +5,11 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.dao.DataIntegrityViolationException;
+import uk.gov.hmcts.reform.pcs.notify.domain.CaseNotification;
 import uk.gov.hmcts.reform.pcs.notify.exception.NotificationException;
 import uk.gov.hmcts.reform.pcs.notify.model.EmailNotificationRequest;
+import uk.gov.hmcts.reform.pcs.notify.repository.NotificationRepository;
 import uk.gov.service.notify.NotificationClient;
 import uk.gov.service.notify.NotificationClientException;
 import uk.gov.service.notify.SendEmailResponse;
@@ -22,6 +25,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.any;
 
 @ExtendWith(MockitoExtension.class)
 class NotificationServiceTest {
@@ -29,11 +33,20 @@ class NotificationServiceTest {
     @Mock
     private NotificationClient notificationClient;
 
+    @Mock
+    private NotificationRepository notificationRepository;
+
     @InjectMocks
     private NotificationService notificationService;
 
     @Test
     void testSendEmailSuccess() throws NotificationClientException {
+
+        UUID caseId = UUID.randomUUID();
+        CaseNotification testCaseNotification = new CaseNotification();
+        testCaseNotification.setCaseId(caseId);
+        when(notificationRepository.save(any(CaseNotification.class))).thenReturn(testCaseNotification);
+
         EmailNotificationRequest emailRequest = new EmailNotificationRequest(
             "test@example.com",
             "templateId",
@@ -75,4 +88,62 @@ class NotificationServiceTest {
 
         verify(notificationClient).sendEmail(anyString(), anyString(), anyMap(), anyString());
     }
+
+    @Test
+    void testSaveCaseNotification() {
+        String recipient = "test@example.com";
+        String status = "Schedule Pending";
+        String type = "Email";
+        UUID caseId = UUID.randomUUID();
+
+        CaseNotification testCaseNotification = new CaseNotification();
+        testCaseNotification.setCaseId(caseId);
+        testCaseNotification.setStatus(status);
+        testCaseNotification.setRecipient(recipient);
+
+        when(notificationRepository.save(any(CaseNotification.class))).thenReturn(testCaseNotification);
+
+        CaseNotification saved = notificationService.createCaseNotification(recipient, type);
+
+        assertThat(saved).isNotNull();
+        assertThat(saved.getCaseId()).isEqualTo(testCaseNotification.getCaseId());
+        assertThat(saved.getRecipient()).isEqualTo(testCaseNotification.getRecipient());
+        verify(notificationRepository).save(any(CaseNotification.class));
+    }
+
+    @Test
+    void testIfIllegalArgumentExceptionWhenMandatoryFieldIsNull() {
+
+        String recipient = "test@example.com";
+        String status = "Schedule Pending";
+        UUID caseId = UUID.randomUUID();
+
+        CaseNotification testCaseNotification = new CaseNotification();
+        testCaseNotification.setCaseId(caseId);
+        testCaseNotification.setStatus(status);
+        testCaseNotification.setRecipient(recipient);
+        testCaseNotification.setType(null);
+
+        assertThatThrownBy(() -> notificationService.createCaseNotification(recipient, null)).isInstanceOf(
+            IllegalArgumentException.class).hasMessage("Recipient or type cannot be null");
+    }
+
+    @Test
+    void testIfNotificationExceptionThrownWhenSavingFails() {
+        String recipient = "test@example.com";
+        String type = "Email";
+        String status = "Pending";
+
+        CaseNotification testCaseNotification = new CaseNotification();
+        testCaseNotification.setStatus(status);
+        testCaseNotification.setRecipient(recipient);
+        testCaseNotification.setType(null);
+
+        when(notificationRepository.save(any(CaseNotification.class)))
+            .thenThrow(new DataIntegrityViolationException("Constraint violation"));
+
+        assertThatThrownBy(() -> notificationService.createCaseNotification(recipient, type))
+            .isInstanceOf(NotificationException.class).hasMessage("Failed to save Case Notification.");
+    }
+
 }

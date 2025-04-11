@@ -1,10 +1,13 @@
 package uk.gov.hmcts.reform.pcs.notify.service;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataAccessException;
+import org.springframework.stereotype.Service;
+import uk.gov.hmcts.reform.pcs.notify.domain.CaseNotification;
 import uk.gov.hmcts.reform.pcs.notify.exception.NotificationException;
 import uk.gov.hmcts.reform.pcs.notify.model.EmailNotificationRequest;
+import uk.gov.hmcts.reform.pcs.notify.repository.NotificationRepository;
 import uk.gov.service.notify.NotificationClient;
-import org.springframework.stereotype.Service;
 import uk.gov.service.notify.NotificationClientException;
 import uk.gov.service.notify.SendEmailResponse;
 
@@ -15,11 +18,14 @@ import java.util.UUID;
 @Slf4j
 public class NotificationService {
 
-    private  final NotificationClient notificationClient;
+    private final NotificationClient notificationClient;
+    private final NotificationRepository notificationRepository;
 
     public NotificationService(
-        NotificationClient notificationClient) {
+        NotificationClient notificationClient,
+        NotificationRepository notificationRepository) {
         this.notificationClient = notificationClient;
+        this.notificationRepository = notificationRepository;
     }
 
     public SendEmailResponse sendEmail(EmailNotificationRequest emailRequest) {
@@ -39,6 +45,8 @@ public class NotificationService {
 
             log.debug("Email sent successfully. Reference ID: {}", referenceId);
 
+            createCaseNotification(emailRequest.getEmailAddress(), "Email");
+
             return sendEmailResponse;
         } catch (NotificationClientException notificationClientException) {
             log.error("Failed to send email. Reference ID: {}. Reason: {}",
@@ -48,6 +56,36 @@ public class NotificationService {
             );
 
             throw new NotificationException("Email failed to send, please try again.", notificationClientException);
+        }
+    }
+
+    public CaseNotification createCaseNotification(String recipient, String type) {
+
+        if (recipient == null || type == null) {
+            throw new IllegalArgumentException("Recipient or type cannot be null");
+        }
+        CaseNotification toSaveCaseNotification = new CaseNotification();
+        toSaveCaseNotification.setCaseId(UUID.randomUUID());
+        toSaveCaseNotification.setStatus("Schedule Pending");
+        toSaveCaseNotification.setType(type);
+        toSaveCaseNotification.setRecipient(recipient);
+
+        try {
+            CaseNotification savedCaseNotification = notificationRepository.save(toSaveCaseNotification);
+            log.info(
+                "Case Notification with ID {} has been saved to the database",
+                savedCaseNotification.getNotificationId()
+            );
+
+            return savedCaseNotification;
+        } catch (DataAccessException dataAccessException) {
+            log.error(
+                "Failed to save Case Notification with Case ID: {}. Reason: {}",
+                toSaveCaseNotification.getCaseId(),
+                dataAccessException.getMessage(),
+                dataAccessException
+            );
+            throw new NotificationException("Failed to save Case Notification.", dataAccessException);
         }
     }
 }
