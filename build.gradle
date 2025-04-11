@@ -107,6 +107,7 @@ tasks.withType(JavaExec).configureEach {
 
 tasks.withType(Test) {
   useJUnitPlatform()
+  maxParallelForks = 1
 
   testLogging {
     exceptionFormat = 'full'
@@ -283,11 +284,15 @@ ext['snakeyaml.version'] = '2.0'
 
 dependencies {
 
+  constraints {
+    implementation('org.hibernate.orm:hibernate-core:6.6.11')
+  }
+
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-web'
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-actuator'
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-aop'
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-json'
-  implementation group: 'org.springframework.boot', name: 'spring-boot-starter-jdbc'
+  implementation group: 'org.springframework.boot', name: 'spring-boot-starter-data-jpa'
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-web'
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-security'
 
@@ -311,6 +316,7 @@ dependencies {
   implementation group: 'com.github.hmcts', name: 'service-auth-provider-java-client', version: '5.3.0'
   implementation group: 'org.springframework.cloud', name: 'spring-cloud-starter-openfeign', version: '4.2.1'
   implementation group: 'org.projectlombok', name: 'lombok', version: versions.lombok
+  implementation 'org.postgresql:postgresql:42.7.5'
   annotationProcessor group: 'org.projectlombok', name: 'lombok', version: versions.lombok
 
   implementation group: 'io.rest-assured', name: 'rest-assured'
@@ -335,6 +341,12 @@ dependencies {
     exclude group: 'junit', module: 'junit'
     exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
   }
+
+  testImplementation 'org.testcontainers:testcontainers:1.20.6'
+  testImplementation 'org.testcontainers:junit-jupiter:1.20.3'
+  testImplementation 'org.testcontainers:postgresql:1.20.6'
+  testImplementation("org.flywaydb.flyway-test-extensions:flyway-spring-test:10.0.0")
+
   // Allow fast reloading during dev; recompile a class to trigger fast reload + definition reimport.
   cftlibImplementation 'org.springframework.boot:spring-boot-devtools'
 }
@@ -374,6 +386,10 @@ project.tasks.named("processSmokeTestResources") {
 tasks.withType(CftlibExec).configureEach {
   group = 'ccd tasks'
   authMode = AuthMode.Local
+  environment 'RSE_LIB_ADDITIONAL_DATABASES', 'pcs'
+  environment 'PCS_DB_USER_NAME', 'postgres'
+  environment 'PCS_DB_PASSWORD', 'postgres'
+  environment 'DB_PORT', '6432'
   environment 'SPRING_PROFILES_ACTIVE', 'dev'
 }
 
