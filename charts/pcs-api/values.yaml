@@ -26,3 +26,5 @@ java:
     SPRING_FLYWAY_ENABLED: "true"
 servicebus:
   enabled: false
+ccd:
+  enabled: false
