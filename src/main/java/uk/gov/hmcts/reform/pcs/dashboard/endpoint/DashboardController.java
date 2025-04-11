@@ -10,7 +10,11 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AllArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.PathVariable;
 import uk.gov.hmcts.reform.pcs.dashboard.model.DashboardNotification;
 import uk.gov.hmcts.reform.pcs.dashboard.model.TaskGroup;
 import uk.gov.hmcts.reform.pcs.dashboard.service.DashboardNotificationService;
@@ -94,7 +98,7 @@ public class DashboardController {
         @Parameter(description = "The unique identifier of the case to fetch tasks for", required = true)
         @PathVariable("caseReference") Long caseReference) {
 
-        var tasks = dashboardTaskService.getTasks(caseReference); // Calling Task service
+        var tasks = dashboardTaskService.getTasks(caseReference);
 
         return ResponseEntity.ok(tasks);
     }
