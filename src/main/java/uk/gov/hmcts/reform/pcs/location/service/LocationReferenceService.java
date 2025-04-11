@@ -26,7 +26,6 @@ public class LocationReferenceService {
         log.info(String.format("Getting County courts for Epimms Id %d with the authToken size %s ", epimmsId, authorisation.length()));
         String serviceAuthorization = authTokenGenerator.generate();
         log.info(String.format("Generated service auth token size %s ", serviceAuthorization.length()));
-
         return locationReferenceApi.getCountyCourts(authorisation, serviceAuthorization, epimmsId, COUNTY_COURT_TYPE_ID);
     }
 }

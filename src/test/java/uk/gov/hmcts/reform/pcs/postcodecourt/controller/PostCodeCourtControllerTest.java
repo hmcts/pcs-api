@@ -1,6 +1,5 @@
 package uk.gov.hmcts.reform.pcs.postcodecourt.controller;
 
-import org.apache.qpid.jms.util.ResourceNotFoundException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -28,7 +27,7 @@ class PostCodeCourtControllerTest {
 
     @Test
     @DisplayName("Should return Http200 for valid postcode")
-    void shouldHandlePostcodesRequest() throws ResourceNotFoundException {
+    void shouldHandlePostcodesRequest() {
         // Given
         String postCode = "SW1A 1AA";
 
