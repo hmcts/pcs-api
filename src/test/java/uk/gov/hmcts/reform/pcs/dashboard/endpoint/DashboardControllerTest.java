@@ -23,7 +23,7 @@ class DashboardControllerTest {
     void shouldReturnEmptyNotificationsList() {
         // When
         ResponseEntity<List<DashboardNotification>> responseEntity
-            = underTest.getNotificationsForCase(1234L);
+            = underTest.getNotificationsForCase(1234L, null);
 
         // Then
         assertThat(responseEntity.getBody()).isEmpty();
