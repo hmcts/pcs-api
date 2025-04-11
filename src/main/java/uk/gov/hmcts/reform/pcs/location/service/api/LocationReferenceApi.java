@@ -1,9 +1,12 @@
 package uk.gov.hmcts.reform.pcs.location.service.api;
 
+import feign.codec.ErrorDecoder;
 import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.context.annotation.Bean;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestParam;
+import uk.gov.hmcts.reform.pcs.location.exception.ResourceNotFoundException;
 import uk.gov.hmcts.reform.pcs.postcodecourt.record.CourtVenue;
 
 import java.util.List;
@@ -22,5 +25,5 @@ public interface LocationReferenceApi {
         @RequestHeader(SERVICE_AUTHORIZATION) String serviceAuthorization,
         @RequestParam(name = "epimms_id", required = false) Integer epimmsId,
         @RequestParam(name = "court_type_id", required = false) Integer courTypeId
-    );
+    ) throws ResourceNotFoundException;
 }

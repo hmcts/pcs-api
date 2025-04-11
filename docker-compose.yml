@@ -25,7 +25,7 @@ services:
       - PCS_DB_USER_NAME=${POSTGRES_USER}
       - PCS_DB_PASSWORD=${POSTGRES_PASSWORD}
       - DB_PORT=${DB_PORT}
-      - IDAM_S2S_AUTH_URL=http://service-auth-provider-api:${SERVICE_AUTH_PORT}
+      - IDAM_S2S_AUTH_URL=http://rpe-service-auth-provider-aat.service.core-compute-aat.internal/testing-support
     ports:
       - ${SERVER_PORT}:${SERVER_PORT}
     depends_on:

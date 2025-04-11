@@ -9,7 +9,10 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import uk.gov.hmcts.reform.pcs.postcodecourt.record.CourtVenue;
 import uk.gov.hmcts.reform.pcs.postcodecourt.service.PostCodeCourtService;
+
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
@@ -31,7 +34,7 @@ class PostCodeCourtControllerTest {
 
         // When
         String authorisation = "Bearer token";
-        ResponseEntity<Void> response = underTest.getByPostcode(
+        ResponseEntity<List<CourtVenue>> response = underTest.getByPostcode(
                 authorisation,
             "ServiceAuthToken",
             postCode

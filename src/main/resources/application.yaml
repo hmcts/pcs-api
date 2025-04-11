@@ -29,7 +29,7 @@ security:
     - "/swagger-ui.html"
     - "/swagger-ui/**"
     - "/v3/api-docs/**"
-    - "/court"
+    - "/courts"
 
 spring:
   config:
@@ -79,7 +79,7 @@ idam:
   s2s-auth:
     url: ${IDAM_S2S_AUTH_URL:http://localhost:4502}
     totp_secret: ${PCS_API_S2S_SECRET:AAAAAAAAAAAAAAAA}
-    microservice: ${S2S_SERVICE_NAME:pcs_api}
+    microservice: ${S2S_SERVICE_NAME:civil_service}
   s2s-authorised:
     services: ${S2S_NAMES_WHITELIST:pcs_api,pcs_frontend,ccd_data}
 
@@ -94,7 +94,7 @@ hmc:
 
 location-reference:
   deployment-id: ${HMC_DEPLOYMENT_ID:}
-  api-url: ${HMC_API_URL:http://rd-location-ref-api-aat-service-core-compute-aat}
+  api-url: ${HMC_API_URL:http://rd-location-ref-api-aat.service.core-compute-aat.internal}
   serviceId: ${HMC_SERVICE_ID:AAA3}
 
 notify:
