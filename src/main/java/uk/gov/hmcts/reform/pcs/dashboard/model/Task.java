@@ -14,6 +14,5 @@ import java.util.Map;
 public class Task {
     private String templateId;
     private Map<String, Object> templateValues;
-    private String groupId;
     private String status;
 }

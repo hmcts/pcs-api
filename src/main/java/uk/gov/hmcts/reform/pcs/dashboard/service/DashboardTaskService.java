@@ -35,9 +35,8 @@ public class DashboardTaskService {
             return List.of();
         }
 
-        Task task1 = Task.builder()
+        var task1 = Task.builder()
             .templateId("Task.AAA6.Claim.ViewClaim")
-            .groupId("CLAIM")
             .status("AVAILABLE")
             .templateValues(Map.of(
                 "dueDate", LocalDate.of(2025, 5, 20),
@@ -47,24 +46,23 @@ public class DashboardTaskService {
             ))
             .build();
 
-        Task task2 = Task.builder()
+        var task2 = Task.builder()
             .templateId("Task.AAA6.Hearing.UploadDocuments")
-            .groupId("HEARING")
             .status("ACTION_NEEDED")
             .templateValues(Map.of(
                 "deadline", LocalDate.of(2025, 5, 20)
             ))
             .build();
 
-        var taskGroup1 = new TaskGroup();
-        taskGroup1.setGroupId("CLAIM");
-        taskGroup1.setStatus("AVAILABLE");
-        taskGroup1.setTasks(task1);
+        var taskGroup1 = TaskGroup.builder()
+            .groupId("CLAIM")
+            .task(task1)
+            .build();
 
-        var taskGroup2 = new TaskGroup();
-        taskGroup2.setGroupId("HEARING");
-        taskGroup2.setStatus("ACTION_NEEDED");
-        taskGroup2.setTasks(task2);
+        var taskGroup2 = TaskGroup.builder()
+            .groupId("HEARING")
+            .task(task2)
+            .build();
 
         return List.of(taskGroup1, taskGroup2);
     }
