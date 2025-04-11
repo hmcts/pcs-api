@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import uk.gov.hmcts.reform.pcs.dashboard.model.DashboardNotification;
+import uk.gov.hmcts.reform.pcs.dashboard.service.DashboardNotificationService;
 
 import java.util.List;
 
@@ -23,6 +24,8 @@ import java.util.List;
 @Tag(name = "Dashboard")
 @AllArgsConstructor
 public class DashboardController {
+
+    private final DashboardNotificationService dashboardNotificationService;
 
     @GetMapping(value = "/{caseReference}/notifications",
         produces = MediaType.APPLICATION_JSON_VALUE
@@ -54,7 +57,7 @@ public class DashboardController {
         @PathVariable("caseReference") Long caseReference,
         @RequestHeader(value = "ServiceAuthorization") String serviceAuthorization) {
 
-        List<DashboardNotification> notifications = List.of();
+        List<DashboardNotification> notifications = dashboardNotificationService.getNotifications(caseReference);
 
         return ResponseEntity.ok(notifications);
     }
