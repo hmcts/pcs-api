@@ -22,8 +22,6 @@ import uk.gov.hmcts.reform.pcs.dashboard.service.DashboardTaskService;
 
 import java.util.List;
 
-import static org.springframework.http.HttpHeaders.AUTHORIZATION;
-
 @RestController
 @RequestMapping("/dashboard")
 @Tag(name = "Dashboard")
