@@ -1,3 +1,13 @@
+java:
+  postgresql:
+    primary:
+      initdb:
+        scripts:
+          init.sql: |-
+            CREATE DATABASE "data-store" WITH OWNER = hmcts ENCODING = 'UTF-8' CONNECTION LIMIT = -1;
+            CREATE DATABASE "definition-store" WITH OWNER = hmcts ENCODING = 'UTF-8' CONNECTION LIMIT = -1;
+            CREATE DATABASE "user-profile" WITH OWNER = hmcts ENCODING = 'UTF-8' CONNECTION LIMIT = -1;
+            CREATE DATABASE "role_assignment" WITH OWNER = hmcts ENCODING = 'UTF-8' CONNECTION LIMIT = -1;
 ccd:
   enabled: true
   ccd:
@@ -39,7 +49,7 @@ ccd:
         maxReplicas: 1
       environment:
         USER_PROFILE_DB_OPTIONS: "?stringtype=unspecified&gssEncMode=disable"
-        USER_PROFILE_S2S_AUTHORISED_SERVICES: ccd_data,ccd_definition,ccd_admin,sscs
+        USER_PROFILE_S2S_AUTHORISED_SERVICES: ccd_data,ccd_definition,ccd_admin,pcs_api
       keyVaults: [ ]
       secrets:
         USER_PROFILE_DB_PASSWORD:
