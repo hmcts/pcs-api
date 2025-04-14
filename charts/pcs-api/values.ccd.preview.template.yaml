@@ -131,4 +131,4 @@ global:
   idamWebUrl: https://idam-web-public.aat.platform.hmcts.net
   s2sUrl: http://rpe-service-auth-provider-aat.service.core-compute-aat.internal
   postgresSecret: ${SERVICE_NAME}-postgresql
-  postgresHostname: "{{ .Release.Name }}-postgresql"
+  postgresHostname: ${SERVICE_NAME}-postgresql
