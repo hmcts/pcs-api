@@ -1,6 +1,8 @@
 package uk.gov.hmcts.reform.pcs.notify.endpoint;
 
 import lombok.extern.slf4j.Slf4j;
+import org.jobrunr.jobs.JobId;
+import org.jobrunr.scheduling.BackgroundJob;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -10,7 +12,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import uk.gov.hmcts.reform.pcs.notify.model.EmailNotificationRequest;
 import uk.gov.hmcts.reform.pcs.notify.service.NotificationService;
-import uk.gov.service.notify.SendEmailResponse;
+
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.UUID;
 
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 
@@ -31,14 +36,21 @@ public class NotifyController {
     }
 
     @PostMapping(value = "/send-email", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<SendEmailResponse> sendEmail(
+    public ResponseEntity<String> sendEmail(
         @RequestHeader(value = AUTHORIZATION, defaultValue = "DummyId") String authorisation,
         @RequestHeader(value = "ServiceAuthorization") String serviceAuthorization,
         @RequestBody EmailNotificationRequest emailRequest) {
-        log.debug("Received request to send email to {}", emailRequest.getEmailAddress());
+        final String referenceId = UUID.randomUUID().toString();
 
-        SendEmailResponse notificationResponse = notificationService.sendEmail(emailRequest);
+        JobId emailSendId = BackgroundJob.enqueue(() -> notificationService.sendEmail(emailRequest, referenceId));
 
-        return ResponseEntity.ok(notificationResponse);
+        JobId emailCheckId = BackgroundJob.schedule(
+            Instant.now().plus(5, ChronoUnit.SECONDS),
+            () -> notificationService.getNotificationStatus("30a69eb3-2ab3-43d4-8067-b0a878bda41b"));
+
+        // USE NOTIFICATION ID YOU MORON
+
+        return ResponseEntity.ok("Jobs enqueued successfully - Email job: "
+                                        + ", Status check job: ");
     }
 }

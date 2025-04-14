@@ -2,7 +2,7 @@ package uk.gov.hmcts.reform.pcs.functional.steps;
 
 import net.serenitybdd.rest.SerenityRest;
 import net.serenitybdd.annotations.Step;
-import static org.hamcrest.Matchers.equalTo;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class ApiSteps {
 
@@ -15,12 +15,15 @@ public class ApiSteps {
 
     @Step("Check Health")
     public void getHealth() {
-        SerenityRest.given()
+        String status = SerenityRest.given()
             .baseUri(baseUrl)
             .when()
             .get("/health")
             .then()
             .statusCode(200)
-            .body("status", equalTo("UP"));
+            .extract()
+            .path("status");
+
+        assertThat(status).isEqualTo("UP");
     }
 }
