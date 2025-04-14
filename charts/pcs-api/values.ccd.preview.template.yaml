@@ -101,7 +101,6 @@ ccd:
         UPLOAD_TIMESTAMP_FEATURED_CASE_TYPES: CARE_SUPERVISION_EPO
       secrets:
         DATA_STORE_DB_PASSWORD:
-          secretRef: postgres
           key: password
           disabled: false
       ingressHost: ccd-data-store-api-${SERVICE_FQDN}
