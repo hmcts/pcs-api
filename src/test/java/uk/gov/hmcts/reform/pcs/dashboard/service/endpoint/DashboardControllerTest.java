@@ -50,7 +50,7 @@ class DashboardControllerTest {
         when(dashboardTaskService.getTasks(caseReference)).thenReturn(taskGroups);
 
         mockMvc.perform(get("/dashboard/{caseReference}/tasks", caseReference)
-                            .header("Authorization", "Bearer valid_token"))
+                            .header("ServiceAuthorization", "Bearer valid_token"))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$[0].groupId").value("CLAIM"))
             .andExpect(jsonPath("$[1].groupId").value("HEARING"));
@@ -64,7 +64,7 @@ class DashboardControllerTest {
         when(dashboardTaskService.getTasks(caseReference)).thenReturn(List.of());
 
         mockMvc.perform(get("/dashboard/{caseReference}/tasks", caseReference)
-                            .header("Authorization", "Bearer valid_token"))
+                            .header("ServiceAuthorization", "Bearer valid_token"))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$").isEmpty());
     }
@@ -77,7 +77,7 @@ class DashboardControllerTest {
         when(dashboardTaskService.getTasks(caseReference)).thenThrow(new CaseNotFoundException(caseReference));
 
         mockMvc.perform(get("/dashboard/{caseReference}/tasks", caseReference)
-                            .header("Authorization", "Bearer valid_token"))
+                            .header("ServiceAuthorization", "Bearer valid_token"))
             .andExpect(status().isNotFound());
     }
 }

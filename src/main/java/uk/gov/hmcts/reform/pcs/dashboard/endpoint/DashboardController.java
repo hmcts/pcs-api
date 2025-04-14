@@ -93,7 +93,7 @@ public class DashboardController {
         content = @Content()
     )
     public ResponseEntity<List<TaskGroup>> getTasksForCase(
-        @RequestHeader(AUTHORIZATION) String authorisation,
+        @RequestHeader(value = "ServiceAuthorization") String authorisation,
         @Parameter(description = "The unique identifier of the case to fetch tasks for", required = true)
         @PathVariable("caseReference") Long caseReference) {
 

@@ -52,7 +52,7 @@ class DashboardNotificationsIT {
 
         mockMvc
             .perform(get("/dashboard/{caseReference}/tasks", validCaseReference)
-                         .header("Authorization", "Bearer dummy-token")
+                         .header("ServiceAuthorization", "Bearer dummy-token")
                          .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$", hasSize(2)));
@@ -64,7 +64,7 @@ class DashboardNotificationsIT {
 
         mockMvc
             .perform(get("/dashboard/{caseReference}/tasks", unknownCaseReference)
-                         .header("Authorization", "Bearer dummy-token")
+                         .header("ServiceAuthorization", "Bearer dummy-token")
                          .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isNotFound());
     }
