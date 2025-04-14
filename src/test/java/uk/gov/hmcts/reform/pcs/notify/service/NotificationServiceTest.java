@@ -42,11 +42,6 @@ class NotificationServiceTest {
     @Test
     void testSendEmailSuccess() throws NotificationClientException {
 
-        UUID caseId = UUID.randomUUID();
-        CaseNotification testCaseNotification = new CaseNotification();
-        testCaseNotification.setCaseId(caseId);
-        when(notificationRepository.save(any(CaseNotification.class))).thenReturn(testCaseNotification);
-
         EmailNotificationRequest emailRequest = new EmailNotificationRequest(
             "test@example.com",
             "templateId",
@@ -55,6 +50,7 @@ class NotificationServiceTest {
             "emailReplyToId"
         );
         SendEmailResponse sendEmailResponse = mock(SendEmailResponse.class);
+        when(notificationRepository.save(any(CaseNotification.class))).thenReturn(mock(CaseNotification.class));
         when(sendEmailResponse.getNotificationId())
             .thenReturn(UUID.fromString("550e8400-e29b-41d4-a716-446655440000"));
         when(sendEmailResponse.getReference())
@@ -73,11 +69,6 @@ class NotificationServiceTest {
     @Test
     void testSendEmailFailure() throws NotificationClientException {
 
-        UUID caseId = UUID.randomUUID();
-        CaseNotification testCaseNotification = new CaseNotification();
-        testCaseNotification.setCaseId(caseId);
-        when(notificationRepository.save(any(CaseNotification.class))).thenReturn(testCaseNotification);
-
         EmailNotificationRequest emailRequest = new EmailNotificationRequest(
             "test@example.com",
             "templateId",
@@ -85,6 +76,7 @@ class NotificationServiceTest {
             "reference",
             "emailReplyToId"
         );
+        when(notificationRepository.save(any(CaseNotification.class))).thenReturn(mock(CaseNotification.class));
         when(notificationClient.sendEmail(anyString(), anyString(), anyMap(), anyString()))
             .thenThrow(new NotificationClientException("Error"));
 
@@ -117,17 +109,7 @@ class NotificationServiceTest {
     }
 
     @Test
-    void testIfIllegalArgumentExceptionWhenMandatoryFieldIsNull() {
-
-        String recipient = "test@example.com";
-        UUID caseId = UUID.randomUUID();
-
-        assertThatThrownBy(() -> notificationService.createCaseNotification(recipient, null, caseId)).isInstanceOf(
-            IllegalArgumentException.class).hasMessage("Recipient or type cannot be null");
-    }
-
-    @Test
-    void testIfNotificationExceptionThrownWhenSavingFails() {
+    void testIfNotificationExceptionThrownWhenSavingFails() throws DataIntegrityViolationException {
         String recipient = "test@example.com";
         String type = "Email";
         UUID caseId = UUID.randomUUID();
@@ -137,6 +119,7 @@ class NotificationServiceTest {
 
         assertThatThrownBy(() -> notificationService.createCaseNotification(recipient, type, caseId))
             .isInstanceOf(NotificationException.class).hasMessage("Failed to save Case Notification.");
+        verify(notificationRepository).save(any(CaseNotification.class));
     }
 
 }

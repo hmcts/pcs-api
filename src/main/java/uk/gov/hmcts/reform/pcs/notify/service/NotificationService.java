@@ -59,32 +59,22 @@ public class NotificationService {
     }
 
     public CaseNotification createCaseNotification(String recipient, String type, UUID caseId) {
-
-        if (recipient == null || type == null) {
-            throw new IllegalArgumentException("Recipient or type cannot be null");
-        }
-        if (caseId == null) {
-            throw new IllegalArgumentException("Case ID cannot be null");
-        }
-
-        CaseNotification toSaveCaseNotification = new CaseNotification();
-        toSaveCaseNotification.setCaseId(caseId);
-        toSaveCaseNotification.setStatus("Schedule Pending");
-        toSaveCaseNotification.setType(type);
-        toSaveCaseNotification.setRecipient(recipient);
+        CaseNotification toSaveNotification = new CaseNotification();
+        toSaveNotification.setCaseId(caseId);
+        toSaveNotification.setStatus("Schedule Pending");
+        toSaveNotification.setType(type);
+        toSaveNotification.setRecipient(recipient);
 
         try {
-            CaseNotification savedCaseNotification = notificationRepository.save(toSaveCaseNotification);
-            log.info(
-                "Case Notification with ID {} has been saved to the database",
-                savedCaseNotification.getNotificationId()
+            CaseNotification savedNotification = notificationRepository.save(toSaveNotification);
+            log.debug(
+                "Case Notification with ID {} has been saved to the database", savedNotification.getNotificationId()
             );
-
-            return savedCaseNotification;
+            return savedNotification;
         } catch (DataAccessException dataAccessException) {
             log.error(
                 "Failed to save Case Notification with Case ID: {}. Reason: {}",
-                toSaveCaseNotification.getCaseId(),
+                toSaveNotification.getCaseId(),
                 dataAccessException.getMessage(),
                 dataAccessException
             );
