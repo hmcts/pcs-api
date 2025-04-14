@@ -134,3 +134,4 @@ global:
   s2sUrl: http://rpe-service-auth-provider-aat.service.core-compute-aat.internal
   postgresSecret: ${SERVICE_NAME}-postgresql
   postgresHostname: ${SERVICE_NAME}-postgresql
+  postgresUsername: "javapostgres"
