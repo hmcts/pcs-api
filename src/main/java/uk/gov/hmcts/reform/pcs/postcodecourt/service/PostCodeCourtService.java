@@ -21,16 +21,16 @@ public class PostCodeCourtService {
     private final LocationReferenceService locationReferenceService;
 
     public List<CourtVenue> getEpimIdByPostCode(String postcode, String authorisation)  {
-        List<Integer> epimmIds =  postCodeCourtRepository.findByIdPostCode(postcode).stream()
-                                    .map(postCodeCourt -> {
-                                         log.info(
-                                             "Fetching epimm id {} for postcode {}",
-                                             postCodeCourt.getId().getEpimId(),
-                                             postcode
-                                         );
-                                         return postCodeCourt.getId().getEpimId();
-                                     })
-                                    .toList();
+        List<Integer> epimmIds = postCodeCourtRepository.findByIdPostCode(postcode).stream()
+            .map(postCodeCourt -> {
+                log.info(
+                    "Fetching epimm id {} for postcode {}",
+                    postCodeCourt.getId().getEpimId(),
+                    postcode
+                );
+                return postCodeCourt.getId().getEpimId();
+            })
+            .toList();
         return safeGetCountyCourts(authorisation, epimmIds);
     }
 
