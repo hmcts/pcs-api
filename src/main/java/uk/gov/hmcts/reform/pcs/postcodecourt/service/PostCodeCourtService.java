@@ -22,7 +22,16 @@ public class PostCodeCourtService {
 
     public List<CourtVenue> getEpimIdByPostCode(String postcode, String authorisation)  {
         List<Integer> epimmIds =  postCodeCourtRepository.findByIdPostCode(postcode).stream()
-                                    .map(postCodeCourt -> postCodeCourt.getId().getEpimId())
+                                    .map(postCodeCourt ->
+                                         {
+                                             log.info(
+                                                 "Fetching epimm id {} for postcode {}",
+                                                 postCodeCourt.getId().getEpimId(),
+                                                 postcode
+                                             );
+                                             return postCodeCourt.getId().getEpimId();
+                                         }
+                                    )
                                     .toList();
 
         return safeGetCountyCourts(authorisation, epimmIds);
@@ -30,7 +39,7 @@ public class PostCodeCourtService {
 
     private List<CourtVenue> safeGetCountyCourts(String authorisation, List<Integer> epimmIds) {
         return Try.of(() -> locationReferenceService.getCountyCourts(authorisation, epimmIds))
-                .onFailure(e -> log.info(String.format("Failed to fetch court details Error %s", e.getMessage())))
+                .onFailure(e -> log.info("Failed to fetch court details Error {}", e.getMessage()))
                 .getOrElse(Collections.emptyList());
     }
 
