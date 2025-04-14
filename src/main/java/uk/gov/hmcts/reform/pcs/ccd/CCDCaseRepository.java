@@ -1,24 +1,30 @@
 package uk.gov.hmcts.reform.pcs.ccd;
 
-import lombok.AllArgsConstructor;
-import org.apache.commons.lang3.BooleanUtils;
+import io.pebbletemplates.pebble.PebbleEngine;
+import io.pebbletemplates.pebble.template.PebbleTemplate;
+import lombok.SneakyThrows;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.DecentralisedCaseRepository;
-import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
-import uk.gov.hmcts.reform.pcs.ccd.domain.HearingFee;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.entity.PcsCase;
 import uk.gov.hmcts.reform.pcs.repository.PCSCaseRepository;
 
-import java.math.BigDecimal;
+import java.io.StringWriter;
+import java.io.Writer;
+import java.time.LocalDateTime;
+import java.util.Map;
 
 /**
  * Invoked by CCD to load PCS cases under the decentralised model.
  */
 @Component
-@AllArgsConstructor
 public class CCDCaseRepository extends DecentralisedCaseRepository<PCSCase> {
+    @Autowired
+    private PebbleEngine pebl;
 
-    private final PCSCaseRepository repository;
+    @Autowired
+    private PCSCaseRepository repository;
 
     /**
      * Invoked by CCD to load PCS cases by reference.
@@ -29,25 +35,23 @@ public class CCDCaseRepository extends DecentralisedCaseRepository<PCSCase> {
         // Load the case from our database.
         var pcsCase = repository.getReferenceById(caseRef);
         // Translate it into the CCD model.
-        boolean documentsProvided = BooleanUtils.isTrue(pcsCase.getDocumentsProvided());
-
-        HearingFee hearingFee = HearingFee.builder()
-            .dueDate(pcsCase.getFeeDueDate())
-            .amount(convertToPenceString(pcsCase.getFeeAmount()))
-            .paid(YesOrNo.from(BooleanUtils.isTrue(pcsCase.getFeePaid())))
-            .build();
-
         return
             PCSCase.builder()
-                .caseDescription(pcsCase.getCaseDescription())
-                .documentsProvided(YesOrNo.from(documentsProvided))
-                .hearingDate(pcsCase.getHearingDate() != null ? pcsCase.getHearingDate().toLocalDate() : null)
-                .hearingFee(hearingFee)
+                .exampleTabMarkdown(renderExampleTab(pcsCase))
                 .build();
     }
 
-    private static String convertToPenceString(BigDecimal amountInPounds) {
-        return amountInPounds != null ? amountInPounds.movePointRight(2).toPlainString() : null;
-    }
+    @SneakyThrows
+    private String renderExampleTab(PcsCase c) {
+        PebbleTemplate compiledTemplate = pebl.getTemplate("example");
+        Writer writer = new StringWriter();
 
+        compiledTemplate.evaluate(writer, Map.of(
+            "description", c.getCaseDescription(),
+            "parties", c.getParties(),
+            "caseReference", c.getReference(),
+            "time", LocalDateTime.now()
+        ));
+        return writer.toString();
+    }
 }

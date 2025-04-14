@@ -9,14 +9,11 @@ import uk.gov.hmcts.ccd.sdk.api.ConfigBuilder;
 import uk.gov.hmcts.ccd.sdk.api.EventPayload;
 import uk.gov.hmcts.ccd.sdk.api.Permission;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
-import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.UserRole;
 import uk.gov.hmcts.reform.pcs.entity.PcsCase;
 import uk.gov.hmcts.reform.pcs.repository.PCSCaseRepository;
-
-import java.math.BigDecimal;
 
 @Profile("dev") // Non-prod event
 @Component
@@ -47,23 +44,11 @@ public class CreateTestCase implements CCDConfig<PCSCase, State, UserRole> {
             .build();
     }
 
-    public void submit(EventPayload<PCSCase, State> eventPayload) {
-
-        PCSCase caseData = eventPayload.caseData();
-        PcsCase c = PcsCase.builder()
-            .reference(eventPayload.caseReference())
-            .caseDescription(caseData.getCaseDescription())
-            .documentsProvided(false)
-//            .hearingDate(caseData.getHearingDate().atTime(14, 30))
-//            .feeAmount(new BigDecimal(caseData.getHearingFee().getAmount()))
-//            .feeDueDate(caseData.getHearingFee().getDueDate())
-//            .feePaid(toBoolean(caseData.getHearingFee().getPaid()))
+    public void submit(EventPayload<PCSCase, State> p) {
+        var c = PcsCase.builder()
+            .reference(p.caseReference())
+            .caseDescription(p.caseData().getCaseDescription())
             .build();
-
         repository.save(c);
-    }
-
-    private static Boolean toBoolean(YesOrNo yesOrNo) {
-        return yesOrNo != null ? yesOrNo.toBoolean() : null;
     }
 }

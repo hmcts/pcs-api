@@ -33,10 +33,8 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
         builder.workBasketResultFields()
             .field(PCSCase::getCaseDescription, label);
 
-        builder.tab("summary", "Summary")
-            .field(PCSCase::getCaseDescription)
-            .field(PCSCase::getDocumentsProvided)
-            .field(PCSCase::getHearingDate)
-            .field(PCSCase::getHearingFee);
+        builder.tab("Example", "Example Tab")
+            .label("myLabel", null, "${exampleTabMarkdown}")
+            .field("exampleTabMarkdown", "exampleTabMarkdown=\"NEVER_SHOW\"");
     }
 }
