@@ -25,6 +25,11 @@ ccd:
             secrets:
               - name: role-assignment-service-LD-SDK-KEY
                 alias: LD_SDK_KEY
+        secrets:
+          ROLE_ASSIGNMENT_DB_PASSWORD:
+            secretRef: postgres
+            key: PASSWORD
+            disabled: true
   ccd-user-profile-api:
     java:
       disableKeyVaults: true
@@ -59,6 +64,11 @@ ccd:
         WELSH_TRANSLATION_ENABLED: false
         DEFINITION_STORE_DB_USERNAME: "{{ .Values.postgresql.auth.username}}"
         DEFINITION_STORE_DB_PASSWORD: "{{ .Values.postgresql.auth.password}}"
+      secrets:
+        DEFINITION_STORE_DB_PASSWORD:
+          secretRef: postgres
+          key: PASSWORD
+          disabled: true
       ingressHost: ccd-definition-store-${SERVICE_FQDN}
 
   ccd-data-store-api:
@@ -90,6 +100,11 @@ ccd:
         CASE_DOCUMENT_AM_URL: ${CASE_DOCUMENT_AM_URL}
         UPLOAD_TIMESTAMP_FEATURED_CASE_TYPES: CARE_SUPERVISION_EPO
         DATA_STORE_DB_PASSWORD: "{{ .Values.postgresql.auth.password}}"
+      secrets:
+        DATA_STORE_DB_PASSWORD:
+          secretRef: postgres
+          key: PASSWORD
+          disabled: true
       ingressHost: ccd-data-store-api-${SERVICE_FQDN}
       autoscaling:
         enabled: false
