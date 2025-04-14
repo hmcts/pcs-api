@@ -63,6 +63,10 @@ public class NotificationControllerIT {
         registry.add("spring.datasource.driver-class-name", postgres::getDriverClassName);
     }
 
+    private static final String AUTH_HEADER = "Bearer token";
+    private static final String SERVICE_AUTH_HEADER = "ServiceAuthToken";
+    private static final String END_POINT = "/notify/send-email";
+
     @Autowired
     private MockMvc mockMvc;
 
@@ -80,9 +84,6 @@ public class NotificationControllerIT {
         notificationRepository.deleteAll();
     }
 
-    private static final String AUTH_HEADER = "Bearer token";
-    private static final String SERVICE_AUTH_HEADER = "ServiceAuthToken";
-    private static final String END_POINT = "/notify/send-email";
 
     @Test
     void testHttpOkWhenEmailIsSentSuccessfully() throws Exception {
@@ -93,7 +94,7 @@ public class NotificationControllerIT {
                             .header(AUTHORIZATION, AUTH_HEADER)
                             .header(SERVICE_AUTHORIZATION, SERVICE_AUTH_HEADER)
                             .content(objectMapper.writeValueAsString(request)))
-            .andExpect(status().isOk()).andReturn();
+                .andExpect(status().isOk());
 
         verify(notificationClient).sendEmail(anyString(), anyString(), anyMap(), anyString());
     }

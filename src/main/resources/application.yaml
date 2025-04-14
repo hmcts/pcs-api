@@ -58,7 +58,8 @@ spring:
       database-platform: org.hibernate.dialect.PostgreSQLDialect
 
   flyway:
-    enabled: false
+    enabled: true
+    locations: classpath:db/migration
   jms:
     servicebus:
       enabled: ${HEARINGS_SERVICEBUS_ENABLED:false}
