@@ -1,3 +1,15 @@
+global:
+  ccdApiGatewayIngress: http://${SERVICE_NAME}-ccd-api-gw
+  ccdDefinitionStoreUrl: http://${SERVICE_NAME}-ccd-definition-store
+  ccdUserProfileUrl: http://${SERVICE_NAME}-ccd-user-profile-api
+  dmStoreUrl: http://dm-store-aat.service.core-compute-aat.internal
+  idamApiUrl: https://idam-api.aat.platform.hmcts.net
+  idamWebUrl: https://idam-web-public.aat.platform.hmcts.net
+  s2sUrl: http://rpe-service-auth-provider-aat.service.core-compute-aat.internal
+  postgresSecret: ${SERVICE_NAME}-postgresql
+  postgresHostname: ${SERVICE_NAME}-postgresql
+  postgresUsername: "javapostgres"
+
 java:
   postgresql:
     image:
@@ -103,9 +115,6 @@ ccd:
         IDAM_API_BASE_URL: https://idam-api.aat.platform.hmcts.net
         IDAM_OIDC_URL: https://idam-web-public.aat.platform.hmcts.net
         DATA_STORE_CROSS_JURISDICTIONAL_ROLES: caseworker-caa,caseworker-approver
-        ELASTIC_SEARCH_ENABLED: true
-        ELASTIC_SEARCH_HOSTS: ${SERVICE_NAME}-es-master:9200
-        ELASTIC_SEARCH_DATA_NODES_HOSTS:  http://${SERVICE_NAME}-es-master:9200
         HTTP_CLIENT_READ_TIMEOUT: '120000'
         HTTP_CLIENT_MAX_TOTAL: '300'
         HTTP_CLIENT_MAX_CLIENT_PER_ROUTE: '30'
@@ -113,7 +122,6 @@ ccd:
         DATA_STORE_DB_OPTIONS: "?stringtype=unspecified"
         CCD_DOCUMENT_URL_PATTERN: ^https?://(((?:dm-store-aat\.service\.core-compute-aat\.internal(?::\d+)?)\/documents\/[A-Za-z0-9-]+(?:\/binary)?))
         CASE_DOCUMENT_AM_URL: ${CASE_DOCUMENT_AM_URL}
-        UPLOAD_TIMESTAMP_FEATURED_CASE_TYPES: CARE_SUPERVISION_EPO
       secrets:
         DATA_STORE_DB_PASSWORD:
           key: password
@@ -137,14 +145,39 @@ ccd:
       ingressIP: ${INGRESS_IP}
       ingressHost: gateway-${SERVICE_FQDN}
       disableKeyVaults: true
-global:
-  ccdApiGatewayIngress: http://${SERVICE_NAME}-ccd-api-gw
-  ccdDefinitionStoreUrl: http://${SERVICE_NAME}-ccd-definition-store
-  ccdUserProfileUrl: http://${SERVICE_NAME}-ccd-user-profile-api
-  dmStoreUrl: http://dm-store-aat.service.core-compute-aat.internal
-  idamApiUrl: https://idam-api.aat.platform.hmcts.net
-  idamWebUrl: https://idam-web-public.aat.platform.hmcts.net
-  s2sUrl: http://rpe-service-auth-provider-aat.service.core-compute-aat.internal
-  postgresSecret: ${SERVICE_NAME}-postgresql
-  postgresHostname: ${SERVICE_NAME}-postgresql
-  postgresUsername: "javapostgres"
+
+
+xui-webapp:
+  enabled: true
+  nodejs:
+    imagePullPolicy: Always
+    releaseNameOverride: ${SERVICE_NAME}-xui-webapp
+    image: hmctspublic.azurecr.io/xui/webapp:latest
+    ingressHost: xui-${SERVICE_FQDN}
+    environment:
+      HEALTH_CCD_COMPONENT_API: http://${SERVICE_NAME}-ccd-api-gw/health
+      HEALTH_CCD_DATA_API: http://${SERVICE_NAME}-ccd-data-store-api/health
+      HEALTH_TERMS_AND_CONDITIONS_API: http://xui-terms-and-conditions-aat.service.core-compute-aat.internal/health
+      SERVICES_CCD_COMPONENT_API: http://${SERVICE_NAME}-ccd-api-gw
+      SERVICES_CCD_DATA_STORE_API: http://${SERVICE_NAME}-ccd-data-store-api
+      SERVICES_TERMS_AND_CONDITIONS: http://xui-terms-and-conditions-aat.service.core-compute-aat.internal
+      SERVICES_HEARINGS_COMPONENT_API: http://jurisdiction-hearings-api-aat.service.core-compute-aat.internal
+      SERVICES_ROLE_ASSIGNMENT_API: https://am-role-assignment-service-${SERVICE_FQDN}
+      HEALTH_ROLE_ASSIGNMENT_API: http://${SERVICE_NAME}-am-role-assignment-service/health
+      JURISDICTIONS: PCS
+      FEATURE_REDIS_ENABLED: false
+      FEATURE_APP_INSIGHTS_ENABLED: false
+      FEATURE_SECURE_COOKIE_ENABLED: false
+      FEATURE_HELMET_ENABLED: false
+      FEATURE_OIDC_ENABLED: false
+      FEATURE_ACCESS_MANAGEMENT_ENABLED: true
+      PROTOCOL: http
+      PREVIEW_DEPLOYMENT_ID: "pcs-${CHANGE_ID}"
+    keyVaults:
+      rpx:
+        resourceGroup: rpx
+        secrets:
+          - mc-s2s-client-secret
+          - mc-idam-client-secret
+          - system-user-name
+          - system-user-password
