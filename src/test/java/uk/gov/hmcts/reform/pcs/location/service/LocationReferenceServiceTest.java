@@ -1,8 +1,11 @@
 package uk.gov.hmcts.reform.pcs.location.service;
 
 import org.jetbrains.annotations.NotNull;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -15,7 +18,8 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.verify;
 
 public class LocationReferenceServiceTest {
 
@@ -41,13 +45,47 @@ public class LocationReferenceServiceTest {
     }
 
     @Test
-    void shouldReturnCountyCourts_whenCalledWithValidInputs() {
+    void shouldReturnCountyCourts_whenCalledWithValidSingleEpimmId() {
         // Given
-        List<CourtVenue> expectedCourtVenues = List.of(new CourtVenue(36791, 40838, "Brentford County Court And Family Court"),
-                                                       new CourtVenue(20262, 40827, "Central London County Court"));
+        List<CourtVenue> expectedCourtVenues = List.of(
+                new CourtVenue(36791, 40838, "Brentford County Court And Family Court")
+        );
         when(authTokenGenerator.generate()).thenReturn(SERVICE_AUTH_TOKEN);
-        when(locationReferenceApi.getCountyCourts(AUTHORIZATION, SERVICE_AUTH_TOKEN, BRENTFORD_COURT_EPIMMS_ID.concat(",").concat(LONDON_COURT_EPIMMS_ID), COUNTY_COURT_TYPE_ID))
-            .thenReturn(expectedCourtVenues);
+        when(locationReferenceApi.getCountyCourts(
+                AUTHORIZATION,
+                SERVICE_AUTH_TOKEN,
+                BRENTFORD_COURT_EPIMMS_ID,
+                COUNTY_COURT_TYPE_ID))
+                .thenReturn(expectedCourtVenues);
+
+        // When
+        List<CourtVenue> actualCourtVenues = locationReferenceService.getCountyCourts(AUTHORIZATION,  List.of(36791));
+
+        // Then
+        assertEquals(expectedCourtVenues, actualCourtVenues);
+        verify(authTokenGenerator).generate();
+        verify(locationReferenceApi).getCountyCourts(
+                AUTHORIZATION,
+                SERVICE_AUTH_TOKEN,
+                BRENTFORD_COURT_EPIMMS_ID,
+                COUNTY_COURT_TYPE_ID
+        );
+    }
+
+    @Test
+    void shouldReturnCountyCourts_whenCalledWithValidMultipleEpimmIds() {
+        // Given
+        List<CourtVenue> expectedCourtVenues = List.of(
+                new CourtVenue(36791, 40838, "Brentford County Court And Family Court"),
+                new CourtVenue(20262, 40827, "Central London County Court")
+        );
+        when(authTokenGenerator.generate()).thenReturn(SERVICE_AUTH_TOKEN);
+        when(locationReferenceApi.getCountyCourts(
+                AUTHORIZATION,
+                SERVICE_AUTH_TOKEN,
+                BRENTFORD_COURT_EPIMMS_ID.concat(",").concat(LONDON_COURT_EPIMMS_ID),
+                COUNTY_COURT_TYPE_ID))
+                .thenReturn(expectedCourtVenues);
 
         // When
         List<CourtVenue> actualCourtVenues = locationReferenceService.getCountyCourts(AUTHORIZATION, EPIMM_IDS);
@@ -55,15 +93,24 @@ public class LocationReferenceServiceTest {
         // Then
         assertEquals(expectedCourtVenues, actualCourtVenues);
         verify(authTokenGenerator).generate();
-        verify(locationReferenceApi).getCountyCourts(AUTHORIZATION, SERVICE_AUTH_TOKEN, BRENTFORD_COURT_EPIMMS_ID.concat(",").concat(LONDON_COURT_EPIMMS_ID), COUNTY_COURT_TYPE_ID);
+        verify(locationReferenceApi).getCountyCourts(
+                AUTHORIZATION,
+                SERVICE_AUTH_TOKEN,
+                BRENTFORD_COURT_EPIMMS_ID.concat(",").concat(LONDON_COURT_EPIMMS_ID),
+                COUNTY_COURT_TYPE_ID
+        );
     }
 
     @Test
-    void shouldReturnEmptyCountyCourtsList_whenCalledWithValidInputs() {
+    void shouldReturnEmptyCountyCourtsList_whenCalledWithValidMultipleEpimmIds() {
         // Given
         when(authTokenGenerator.generate()).thenReturn(SERVICE_AUTH_TOKEN);
-        when(locationReferenceApi.getCountyCourts(AUTHORIZATION, SERVICE_AUTH_TOKEN, BRENTFORD_COURT_EPIMMS_ID.concat(",").concat(LONDON_COURT_EPIMMS_ID), COUNTY_COURT_TYPE_ID))
-            .thenReturn(Collections.emptyList());
+        when(locationReferenceApi.getCountyCourts(
+                AUTHORIZATION,
+                SERVICE_AUTH_TOKEN,
+                BRENTFORD_COURT_EPIMMS_ID.concat(",").concat(LONDON_COURT_EPIMMS_ID),
+                COUNTY_COURT_TYPE_ID
+        )).thenReturn(Collections.emptyList());
 
         // When
         List<CourtVenue> actualCourtVenues = locationReferenceService.getCountyCourts(AUTHORIZATION, EPIMM_IDS);
@@ -71,7 +118,22 @@ public class LocationReferenceServiceTest {
         // Then
         assertTrue(actualCourtVenues.isEmpty());
         verify(authTokenGenerator).generate();
-        verify(locationReferenceApi).getCountyCourts(AUTHORIZATION, SERVICE_AUTH_TOKEN, BRENTFORD_COURT_EPIMMS_ID.concat(",").concat(LONDON_COURT_EPIMMS_ID), COUNTY_COURT_TYPE_ID);
+        verify(locationReferenceApi).getCountyCourts(
+                AUTHORIZATION,
+                SERVICE_AUTH_TOKEN,
+                BRENTFORD_COURT_EPIMMS_ID.concat(",").concat(LONDON_COURT_EPIMMS_ID),
+                COUNTY_COURT_TYPE_ID
+        );
+    }
+
+    @ParameterizedTest
+    @NullAndEmptySource
+    void shouldThrowExceptionWhenEpimmIdsIsNullOrEmpty(List<Integer> epimmIds) {
+        IllegalArgumentException exception = Assertions.assertThrows(
+                IllegalArgumentException.class,
+                () -> locationReferenceService.getCountyCourts(AUTHORIZATION, epimmIds)
+        );
+        Assertions.assertEquals("epimmIds cannot be null or empty", exception.getMessage());
     }
 }
 

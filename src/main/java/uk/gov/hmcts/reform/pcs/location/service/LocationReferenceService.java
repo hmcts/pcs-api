@@ -23,9 +23,11 @@ public class LocationReferenceService {
     private final LocationReferenceApi locationReferenceApi;
     private final AuthTokenGenerator authTokenGenerator;
 
-
     public List<CourtVenue> getCountyCourts(@RequestHeader(AUTHORIZATION) String authorisation,
                                             List<Integer> epimmIds) {
+        if (Objects.isNull(epimmIds) || epimmIds.isEmpty()) {
+           throw new IllegalArgumentException("epimmIds cannot be null or empty");
+        }
         String formattedEpimmsIds = formatEpimmsIds(epimmIds);
         log.info("Getting County courts for Epimms Id {}", formattedEpimmsIds);
         String serviceAuthorization = authTokenGenerator.generate();
@@ -35,9 +37,6 @@ public class LocationReferenceService {
     }
 
     private String formatEpimmsIds(List<Integer> epimmsIds) {
-        if (Objects.isNull(epimmsIds) || epimmsIds.isEmpty()) {
-            return "";
-        }
         return epimmsIds.size() == 1
                 ? String.valueOf(epimmsIds.getFirst())
                 : epimmsIds.stream()
