@@ -11,7 +11,7 @@ import java.util.Map;
 public class DashboardNotification {
 
     @Schema(description = "ID of notification message template",
-        examples = {"Notice.AAA6.ClaimIssue.ClaimFee.Required"})
+        examples = {"Notice.AAA3.ClaimIssue.ClaimFee.Required"})
     private final String templateId;
 
     @Schema(description = "Template values for substitution",
