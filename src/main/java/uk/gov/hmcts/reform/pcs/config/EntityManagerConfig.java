@@ -1,7 +1,6 @@
 package uk.gov.hmcts.reform.pcs.config;
 
 import jakarta.persistence.EntityManagerFactory;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -14,7 +13,7 @@ import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
 import javax.sql.DataSource;
 
 @Configuration
-@Order(3)
+@Order(2)
 public class EntityManagerConfig {
 
     @Value("${spring.jpa.packages-to-scan:uk.gov.hmcts.reform.pcs}")
@@ -28,7 +27,7 @@ public class EntityManagerConfig {
 
     @Bean
     @Lazy
-    public LocalContainerEntityManagerFactoryBean entityManagerFactory(@Qualifier("postgres") DataSource dataSource) {
+    public LocalContainerEntityManagerFactoryBean entityManagerFactory(DataSource dataSource) {
         LocalContainerEntityManagerFactoryBean em = new LocalContainerEntityManagerFactoryBean();
         em.setDataSource(dataSource);
         em.setPackagesToScan(packagesToScan);

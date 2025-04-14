@@ -23,6 +23,8 @@ import java.util.Map;
 @Slf4j
 public abstract class AbstractPostgresContainerIT {
 
+    public static final String DEBUG = "DEBUG";
+
     public static class Initializer implements ApplicationContextInitializer<ConfigurableApplicationContext> {
         @Override
         public void initialize(ConfigurableApplicationContext applicationContext) {
@@ -40,11 +42,11 @@ public abstract class AbstractPostgresContainerIT {
             properties.put("spring.flyway.group", false);
             properties.put("flyway.noop.strategy", false);
             properties.put("spring.jpa.show-sql", true);
-            properties.put("logging.level.org.flywaydb","DEBUG");
             properties.put("spring.jpa.properties.hibernate.format_sql", true);
-            properties.put("logging.level.org.hibernate.SQL", "DEBUG");
-            properties.put("logging.level.org.flywaydb.core.internal", "DEBUG");
-            properties.put("logging.level.org.flywaydb.core.Flyway", "DEBUG");
+            properties.put("logging.level.org.flywaydb", DEBUG);
+            properties.put("logging.level.org.hibernate.SQL", DEBUG);
+            properties.put("logging.level.org.flywaydb.core.internal", DEBUG);
+            properties.put("logging.level.org.flywaydb.core.Flyway", DEBUG);
 
             MapPropertySource propertySource = new MapPropertySource("testcontainers", properties);
             applicationContext.getEnvironment().getPropertySources().addFirst(propertySource);

@@ -11,7 +11,7 @@ import uk.gov.hmcts.reform.pcs.data.migration.FlywayNoOpStrategy;
 
 @Configuration
 @ConditionalOnProperty(prefix = "spring.flyway", name = "enabled", matchIfMissing = true)
-@Order(2)
+@Order(1)
 public class FlywayConfiguration {
 
     @Bean
