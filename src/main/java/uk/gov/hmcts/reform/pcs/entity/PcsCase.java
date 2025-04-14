@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.entity;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
@@ -9,7 +10,12 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import uk.gov.hmcts.ccd.sdk.api.CCD;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -29,16 +35,15 @@ public class PcsCase {
 
     private String caseDescription;
 
-    @OneToMany
-    @JoinColumn(name = "reference", referencedColumnName = "reference")
-    @Builder.Default
-    private List<Party> parties = new ArrayList<>();
+    private LocalDateTime hearingDate;
 
-    public Party findPartyOrThrow(Long partyId) {
-        return parties.stream()
-            .filter(p -> p.getId().equals(partyId))
-            .findFirst()
-            .orElseThrow();
-    }
+    private Boolean documentsProvided;
+
+    private BigDecimal feeAmount;
+
+    private LocalDate feeDueDate;
+
+    @Column()
+    private Boolean feePaid;
 
 }

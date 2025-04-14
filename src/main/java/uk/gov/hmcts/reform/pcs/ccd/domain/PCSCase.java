@@ -3,6 +3,10 @@ package uk.gov.hmcts.reform.pcs.ccd.domain;
 import lombok.Builder;
 import lombok.Data;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
+import uk.gov.hmcts.ccd.sdk.type.FieldType;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+
+import java.time.LocalDate;
 
 /**
  * The CCD domain model representing a possessions case.
@@ -13,12 +17,12 @@ public class PCSCase {
     @CCD(label = "Description of this case")
     private String caseDescription;
 
-    // Markdown string making up the 'example' tab in XUI.
-    // Set dynamically upon case load
-    private String exampleTabMarkdown;
+    @CCD(label = "Hearing Date",
+    typeOverride = FieldType.Date)
+    private LocalDate hearingDate;
 
-    @CCD(label = "Party first name")
-    private String partyFirstName;
-    @CCD(label = "Party last name")
-    private String partyLastName;
+    @CCD(label = "Have documents been provided?")
+    private YesOrNo documentsProvided;
+
+    private HearingFee hearingFee;
 }
