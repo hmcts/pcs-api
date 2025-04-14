@@ -21,16 +21,16 @@ public class PostCodeCourtService {
     private final LocationReferenceService locationReferenceService;
 
     public List<CourtVenue> getEpimIdByPostCode(String postcode, String authorisation)  {
-        return postCodeCourtRepository.findByIdPostCode(postcode).stream()
-                .map(postCodeCourt -> postCodeCourt.getId().getEpimId())
-                .map(epimmsId -> safeGetCountyCourts(authorisation, epimmsId))
-                .flatMap(List::stream)
-                .toList();
+        List<Integer> epimmIds =  postCodeCourtRepository.findByIdPostCode(postcode).stream()
+                                    .map(postCodeCourt -> postCodeCourt.getId().getEpimId())
+                                    .toList();
+
+        return safeGetCountyCourts(authorisation, epimmIds);
     }
 
-    private List<CourtVenue> safeGetCountyCourts(String authorisation, Integer epimmsId) {
-        return Try.of(() -> locationReferenceService.getCountyCourts(authorisation, epimmsId))
-                .onFailure(e -> log.info(String.format("Failed to fetch courts for epimmsId: {%d} Error [%s]", epimmsId, e.getMessage())))
+    private List<CourtVenue> safeGetCountyCourts(String authorisation, List<Integer> epimmIds) {
+        return Try.of(() -> locationReferenceService.getCountyCourts(authorisation, epimmIds))
+                .onFailure(e -> log.info(String.format("Failed to fetch court details Error %s", e.getMessage())))
                 .getOrElse(Collections.emptyList());
     }
 

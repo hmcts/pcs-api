@@ -39,7 +39,7 @@ class PostCodeCourtServiceTest {
         PostCodeCourt postCodeCourt = new PostCodeCourt();
         postCodeCourt.setId(new PostCodeCourtKey(postCode, expectedEpimId));
         when(postCodeCourtRepository.findByIdPostCode(postCode)).thenReturn(List.of(postCodeCourt));
-        when(locationReferenceService.getCountyCourts(null, expectedEpimId))
+        when(locationReferenceService.getCountyCourts(null, List.of(expectedEpimId)))
                 .thenReturn(List.of(new CourtVenue(expectedEpimId, 101, "Royal Courts of Justice (Main Building)")));
 
         // When
@@ -50,7 +50,7 @@ class PostCodeCourtServiceTest {
         assertThat(response).anyMatch(courtVenue -> expectedEpimId == courtVenue.epimmsId()); // Check if any CourtVenue in the list has the expected EpimId
 
         verify(postCodeCourtRepository).findByIdPostCode(postCode);
-        verify(locationReferenceService).getCountyCourts(null, expectedEpimId);
+        verify(locationReferenceService).getCountyCourts(null, List.of(expectedEpimId));
     }
 
     @Test

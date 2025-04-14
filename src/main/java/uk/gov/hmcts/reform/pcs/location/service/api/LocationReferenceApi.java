@@ -20,7 +20,7 @@ public interface LocationReferenceApi {
     List<CourtVenue> getCountyCourts(
         @RequestHeader(AUTHORIZATION) String authorisation,
         @RequestHeader(SERVICE_AUTHORIZATION) String serviceAuthorization,
-        @RequestParam(name = "epimms_id", required = false) Integer epimmsId,
+        @RequestParam(name = "epimms_id", required = false) String epimmsId,
         @RequestParam(name = "court_type_id", required = false) Integer courTypeId
     ) ;
 }
