@@ -22,6 +22,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import uk.gov.hmcts.reform.pcs.notify.domain.CaseNotification;
 import uk.gov.hmcts.reform.pcs.notify.model.EmailNotificationRequest;
 import uk.gov.hmcts.reform.pcs.notify.repository.NotificationRepository;
+import uk.gov.hmcts.reform.pcs.notify.service.NotificationService;
 import uk.gov.service.notify.NotificationClient;
 import uk.gov.service.notify.NotificationClientException;
 
@@ -76,6 +77,9 @@ public class NotificationControllerIT {
     @Autowired
     private NotificationRepository notificationRepository;
 
+    @Autowired
+    private NotificationService notificationService;
+
     @MockitoBean
     private NotificationClient notificationClient;
 
@@ -118,14 +122,15 @@ public class NotificationControllerIT {
 
     @Test
     void testBadRequestWhenSendingEmailFails() throws Exception {
+        EmailNotificationRequest request = createEmailNotificationRequest();
 
-        when(notificationClient.sendEmail(anyString(), anyString(), anyMap(), anyString()))
+        when(notificationService.sendEmail(request))
             .thenThrow(new NotificationClientException("Email sending failed"));
 
         mockMvc.perform(post(END_POINT)
                             .contentType(MediaType.APPLICATION_JSON)
                             .header(AUTHORIZATION, AUTH_HEADER)
-                            .content(objectMapper.writeValueAsString(mock(EmailNotificationRequest.class))))
+                        .content(objectMapper.writeValueAsString(request)))
             .andExpect(status().isBadRequest());
     }
 

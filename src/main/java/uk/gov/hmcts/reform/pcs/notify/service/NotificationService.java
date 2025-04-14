@@ -67,7 +67,7 @@ public class NotificationService {
 
         try {
             CaseNotification savedNotification = notificationRepository.save(toSaveNotification);
-            log.debug(
+            log.info(
                 "Case Notification with ID {} has been saved to the database", savedNotification.getNotificationId()
             );
             return savedNotification;

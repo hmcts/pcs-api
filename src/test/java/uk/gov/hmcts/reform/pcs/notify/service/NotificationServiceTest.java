@@ -93,6 +93,7 @@ class NotificationServiceTest {
         String status = "Schedule Pending";
         UUID caseId = UUID.randomUUID();
         String type = "Email";
+        
         CaseNotification testCaseNotification = new CaseNotification();
         testCaseNotification.setStatus(status);
         testCaseNotification.setRecipient(recipient);
