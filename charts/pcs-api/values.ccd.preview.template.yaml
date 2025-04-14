@@ -31,6 +31,7 @@ ccd:
       environment:
         ROLE_ASSIGNMENT_DB_USERNAME: "{{ .Values.postgresql.auth.username}}"
         ROLE_ASSIGNMENT_DB_HOST: '{{ tpl .Values.global.postgresHostname $}}'
+        ROLE_ASSIGNMENT_DB_OPTIONS: "?stringtype=unspecified"
       keyVaults:
         am:
           secrets:
