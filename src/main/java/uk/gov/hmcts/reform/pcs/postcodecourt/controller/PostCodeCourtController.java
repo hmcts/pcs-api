@@ -25,8 +25,7 @@ public class PostCodeCourtController {
 
     @GetMapping(COURTS_ENDPOINT)
     public ResponseEntity<List<CourtVenue>> getByPostcode(@RequestHeader(AUTHORIZATION) String authorisation,
-                                                         @RequestHeader(SERVICE_AUTHORIZATION) String serviceAuthorization,
-                                                          @QueryParam(POSTCODE) String postcode) {
+        @RequestHeader(SERVICE_AUTHORIZATION) String serviceAuthorization, @QueryParam(POSTCODE) String postcode) {
         return ResponseEntity.ok(postCodeCourtService.getEpimIdByPostCode(postcode, authorisation));
     }
 

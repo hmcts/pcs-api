@@ -22,18 +22,15 @@ public class PostCodeCourtService {
 
     public List<CourtVenue> getEpimIdByPostCode(String postcode, String authorisation)  {
         List<Integer> epimmIds =  postCodeCourtRepository.findByIdPostCode(postcode).stream()
-                                    .map(postCodeCourt ->
-                                         {
-                                             log.info(
-                                                 "Fetching epimm id {} for postcode {}",
-                                                 postCodeCourt.getId().getEpimId(),
-                                                 postcode
-                                             );
-                                             return postCodeCourt.getId().getEpimId();
-                                         }
-                                    )
+                                    .map(postCodeCourt -> {
+                                         log.info(
+                                             "Fetching epimm id {} for postcode {}",
+                                             postCodeCourt.getId().getEpimId(),
+                                             postcode
+                                         );
+                                         return postCodeCourt.getId().getEpimId();
+                                     })
                                     .toList();
-
         return safeGetCountyCourts(authorisation, epimmIds);
     }
 

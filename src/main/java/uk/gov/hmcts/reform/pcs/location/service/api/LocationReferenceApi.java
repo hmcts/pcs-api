@@ -22,5 +22,5 @@ public interface LocationReferenceApi {
         @RequestHeader(SERVICE_AUTHORIZATION) String serviceAuthorization,
         @RequestParam(name = "epimms_id", required = false) String epimmsId,
         @RequestParam(name = "court_type_id", required = false) Integer courTypeId
-    ) ;
+    );
 }

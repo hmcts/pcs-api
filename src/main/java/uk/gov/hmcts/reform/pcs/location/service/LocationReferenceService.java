@@ -9,6 +9,7 @@ import uk.gov.hmcts.reform.pcs.location.service.api.LocationReferenceApi;
 import uk.gov.hmcts.reform.pcs.postcodecourt.record.CourtVenue;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
@@ -23,17 +24,18 @@ public class LocationReferenceService {
     private final AuthTokenGenerator authTokenGenerator;
 
 
-    public List<CourtVenue> getCountyCourts(@RequestHeader(AUTHORIZATION) String authorisation, List<Integer> epimmIds) {
-
+    public List<CourtVenue> getCountyCourts(@RequestHeader(AUTHORIZATION) String authorisation,
+                                            List<Integer> epimmIds) {
         String formattedEpimmsIds = formatEpimmsIds(epimmIds);
-        log.info(String.format("Getting County courts for Epimms Id %s with the authToken size %s ", formattedEpimmsIds, authorisation.length()));
+        log.info("Getting County courts for Epimms Id {}", formattedEpimmsIds);
         String serviceAuthorization = authTokenGenerator.generate();
-        log.info(String.format("Generated service auth token size %s ", serviceAuthorization.length()));
-        return locationReferenceApi.getCountyCourts(authorisation, serviceAuthorization, formattedEpimmsIds, COUNTY_COURT_TYPE_ID);
+        log.info("Generated service auth token size {} ", serviceAuthorization.length());
+        return locationReferenceApi.getCountyCourts(authorisation, serviceAuthorization,
+                formattedEpimmsIds, COUNTY_COURT_TYPE_ID);
     }
 
     private String formatEpimmsIds(List<Integer> epimmsIds) {
-        if (epimmsIds == null || epimmsIds.isEmpty()) {
+        if (Objects.isNull(epimmsIds) || epimmsIds.isEmpty()) {
             return "";
         }
         return epimmsIds.size() == 1
