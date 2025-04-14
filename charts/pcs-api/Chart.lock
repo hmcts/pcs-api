@@ -1,0 +1,12 @@
+dependencies:
+- name: java
+  repository: oci://hmctspublic.azurecr.io/helm
+  version: 5.3.0
+- name: servicebus
+  repository: oci://hmctspublic.azurecr.io/helm
+  version: 1.2.1
+- name: ccd
+  repository: https://hmctspublic.azurecr.io/helm/v1/repo/
+  version: 9.2.1
+digest: sha256:ea8500670f94168f68cb9f43fa07a8bd26dfd712fca7ff860296705dacdbd8ee
+generated: "2025-04-14T09:53:59.916018+01:00"

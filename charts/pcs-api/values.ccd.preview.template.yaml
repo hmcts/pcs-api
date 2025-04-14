@@ -38,6 +38,7 @@ ccd:
         minReplicas: 1
         maxReplicas: 1
       environment:
+        USER_PROFILE_DB_OPTIONS: "?stringtype=unspecified&gssEncMode=disable"
         USER_PROFILE_S2S_AUTHORISED_SERVICES: ccd_data,ccd_definition,ccd_admin,sscs
       keyVaults: [ ]
       secrets:
@@ -65,6 +66,7 @@ ccd:
         ELASTIC_SEARCH_HOST: ${SERVICE_NAME}-es-master
         WELSH_TRANSLATION_ENABLED: false
         DEFINITION_STORE_DB_USERNAME: "{{ .Values.postgresql.auth.username}}"
+        DEFINITION_STORE_DB_OPTIONS: ""
       secrets:
         DEFINITION_STORE_DB_PASSWORD:
           key: password
@@ -95,7 +97,7 @@ ccd:
         HTTP_CLIENT_MAX_TOTAL: '300'
         HTTP_CLIENT_MAX_CLIENT_PER_ROUTE: '30'
         DATA_STORE_DB_MAX_POOL_SIZE: 80
-        DATA_STORE_DB_OPTIONS: "?stringtype=unspecified&reWriteBatchedInserts=true&sslmode=require"
+        DATA_STORE_DB_OPTIONS: "?stringtype=unspecified"
         CCD_DOCUMENT_URL_PATTERN: ^https?://(((?:dm-store-aat\.service\.core-compute-aat\.internal(?::\d+)?)\/documents\/[A-Za-z0-9-]+(?:\/binary)?))
         CASE_DOCUMENT_AM_URL: ${CASE_DOCUMENT_AM_URL}
         UPLOAD_TIMESTAMP_FEATURED_CASE_TYPES: CARE_SUPERVISION_EPO
