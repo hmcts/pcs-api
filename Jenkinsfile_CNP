@@ -3,6 +3,7 @@
 @Library("Infrastructure")
 
 import uk.gov.hmcts.contino.AppPipelineDsl
+import uk.gov.hmcts.contino.GradleBuilder
 
 def type = "java"
 def product = "pcs"
@@ -23,6 +24,8 @@ static LinkedHashMap<String, Object> secret(String secretName, String envVar) {
   ]
 }
 
+GradleBuilder builder = new GradleBuilder(this, product)
+
 withPipeline(type, product, component) {
   env.IDAM_S2S_AUTH_URL = "http://rpe-service-auth-provider-aat.service.core-compute-aat.internal"
   loadVaultSecrets(secrets)
@@ -33,12 +36,29 @@ withPipeline(type, product, component) {
     //enablePactAs([AppPipelineDsl.PactRoles.CONSUMER])
     setPreviewEnvVars()
   }
+
   onMaster() {
     enablePactAs([AppPipelineDsl.PactRoles.CONSUMER])
     setAatEnvVars()
     afterSuccess('smoketest:aat') {
       runE2eTests(env.ENVIRONMENT)
     }
+  }
+
+  onDemo {
+    setDemoEnvVars()
+  }
+
+  onIthc {
+    setIthcEnvVars()
+  }
+
+  onPerftest {
+    setPerftestEnvVars()
+  }
+
+  afterAlways('build') {
+    generateDefinitions(builder)
   }
 
   afterAlways('functionalTest:preview') {
@@ -59,6 +79,24 @@ def setPreviewEnvVars() {
 def setAatEnvVars() {
   env.TEST_E2E_URL_WEB = "https://manage-case.aat.platform.hmcts.net/"
   env.ENVIRONMENT= "aat"
+}
+
+def setDemoEnvVars() {
+  env.ENVIRONMENT= "demo"
+}
+
+def setIthcEnvVars() {
+  env.ENVIRONMENT= "ithc"
+}
+
+def setPerftestEnvVars() {
+  env.ENVIRONMENT= "perftest"
+}
+
+def generateDefinitions(builder) {
+  builder.gradle('generateCCDConfig')
+  sh "./bin/create-xlsx.sh ${env.ENVIRONMENT}"
+  steps.archiveArtifacts artifacts: "build/definitions/*.xlsx"
 }
 
 def runE2eTests(String context) {
