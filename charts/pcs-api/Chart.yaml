@@ -18,3 +18,7 @@ dependencies:
     version: 9.2.1
     repository: 'https://hmctspublic.azurecr.io/helm/v1/repo/'
     condition: ccd.enabled
+  - name: xui-webapp
+    version: 1.0.18
+    repository: 'https://hmctspublic.azurecr.io/helm/v1/repo/'
+    condition: xui-webapp.enabled

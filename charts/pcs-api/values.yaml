@@ -28,3 +28,5 @@ servicebus:
   enabled: false
 ccd:
   enabled: false
+xui-webapp:
+  enabled: false
