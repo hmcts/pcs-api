@@ -17,7 +17,7 @@ ccd:
           minReplicas: 1
           maxReplicas: 1
         environment:
-          ROLE_ASSIGNMENT_DB_USERNAME: hmcts
+          ROLE_ASSIGNMENT_DB_USERNAME: "{{ .Values.postgresql.auth.username}}"
           ROLE_ASSIGNMENT_DB_HOST: '{{ tpl .Values.global.postgresHostname $}}'
           ROLE_ASSIGNMENT_DB_PASSWORD: "{{ .Values.postgresql.auth.password}}"
         keyVaults:
@@ -57,7 +57,7 @@ ccd:
         ELASTIC_SEARCH_ENABLED: true
         ELASTIC_SEARCH_HOST: ${SERVICE_NAME}-es-master
         WELSH_TRANSLATION_ENABLED: false
-        DEFINITION_STORE_DB_USERNAME: hmcts
+        DEFINITION_STORE_DB_USERNAME: "{{ .Values.postgresql.auth.username}}"
         DEFINITION_STORE_DB_PASSWORD: "{{ .Values.postgresql.auth.password}}"
       ingressHost: ccd-definition-store-${SERVICE_FQDN}
 
@@ -70,7 +70,7 @@ ccd:
       devcpuRequests: '500m'
       environment:
         DATA_STORE_DB_HOST: '{{ tpl .Values.global.postgresHostname $}}'
-        DATA_STORE_DB_USERNAME: hmcts
+        DATA_STORE_DB_USERNAME: "{{ .Values.postgresql.auth.username}}"
         DATA_STORE_IDAM_KEY: ${CCD_DATA_STORE_S2S_SECRET}
         IDAM_OAUTH2_DATA_STORE_CLIENT_SECRET: ${IDAM_OAUTH2_DATA_STORE_CLIENT_SECRET}
         IDAM_DATA_STORE_SYSTEM_USER_USERNAME: ${IDAM_DATA_STORE_SYSTEM_USER_USERNAME}
