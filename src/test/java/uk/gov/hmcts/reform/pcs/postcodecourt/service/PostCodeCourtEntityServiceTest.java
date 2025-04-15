@@ -6,8 +6,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import uk.gov.hmcts.reform.pcs.postcodecourt.domain.PostCodeCourt;
-import uk.gov.hmcts.reform.pcs.postcodecourt.domain.PostCodeCourtKey;
+import uk.gov.hmcts.reform.pcs.postcodecourt.entity.PostCodeCourtEntity;
+import uk.gov.hmcts.reform.pcs.postcodecourt.entity.PostCodeCourtKey;
 import uk.gov.hmcts.reform.pcs.postcodecourt.repository.PostCodeCourtRepository;
 
 import java.util.List;
@@ -17,7 +17,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class PostCodeCourtServiceTest {
+class PostCodeCourtEntityServiceTest {
 
     @Mock
     private PostCodeCourtRepository postCodeCourtRepository;
@@ -31,15 +31,15 @@ class PostCodeCourtServiceTest {
         // Given
         String postCode = "W3 7RX";
         int expectedEpimId = 20262;
-        PostCodeCourt postCodeCourt = new PostCodeCourt();
-        postCodeCourt.setId(new PostCodeCourtKey(postCode, expectedEpimId));
-        when(postCodeCourtRepository.findByIdPostCode(postCode)).thenReturn(List.of(postCodeCourt));
+        PostCodeCourtEntity postCodeCourtEntity = new PostCodeCourtEntity();
+        postCodeCourtEntity.setId(new PostCodeCourtKey(postCode, expectedEpimId));
+        when(postCodeCourtRepository.findByIdPostCode(postCode)).thenReturn(List.of(postCodeCourtEntity));
 
         // When
-        List<PostCodeCourt> response = underTest.getEpimIdByPostCode(postCode);
+        List<PostCodeCourtEntity> response = underTest.getEpimIdByPostCode(postCode);
 
         // Then
-        assertThat(response).isNotEmpty().containsExactly(postCodeCourt);
+        assertThat(response).isNotEmpty().containsExactly(postCodeCourtEntity);
         verify(postCodeCourtRepository).findByIdPostCode(postCode);
     }
 
@@ -51,7 +51,7 @@ class PostCodeCourtServiceTest {
         when(postCodeCourtRepository.findByIdPostCode(nonExistentPostCode)).thenReturn(List.of());
 
         // When
-        List<PostCodeCourt> response = underTest.getEpimIdByPostCode(nonExistentPostCode);
+        List<PostCodeCourtEntity> response = underTest.getEpimIdByPostCode(nonExistentPostCode);
 
         // Then
         assertThat(response).isEmpty();

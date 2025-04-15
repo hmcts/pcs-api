@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.postcodecourt.domain;
+package uk.gov.hmcts.reform.pcs.postcodecourt.entity;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.Column;
@@ -25,7 +25,7 @@ import java.time.LocalDateTime;
 @Setter
 @ToString
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
-public class PostCodeCourt {
+public class PostCodeCourtEntity {
 
     @EqualsAndHashCode.Include
     @EmbeddedId

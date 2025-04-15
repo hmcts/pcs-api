@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.postcodecourt.domain;
+package uk.gov.hmcts.reform.pcs.postcodecourt.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
@@ -20,5 +20,5 @@ public class PostCodeCourtKey implements Serializable {
     private String postCode;
 
     @Column(name = "epimid", nullable = false)
-    private int epimId;
+    private Integer epimId;
 }

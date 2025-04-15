@@ -9,8 +9,8 @@ import org.springframework.test.web.servlet.MockMvc;
 import uk.gov.hmcts.reform.pcs.audit.Audit;
 import uk.gov.hmcts.reform.pcs.config.AbstractPostgresContainerIT;
 import uk.gov.hmcts.reform.pcs.config.IntegrationTest;
-import uk.gov.hmcts.reform.pcs.postcodecourt.domain.PostCodeCourt;
-import uk.gov.hmcts.reform.pcs.postcodecourt.domain.PostCodeCourtKey;
+import uk.gov.hmcts.reform.pcs.postcodecourt.entity.PostCodeCourtEntity;
+import uk.gov.hmcts.reform.pcs.postcodecourt.entity.PostCodeCourtKey;
 import uk.gov.hmcts.reform.pcs.postcodecourt.repository.PostCodeCourtRepository;
 
 import java.time.LocalDateTime;
@@ -27,7 +27,7 @@ import static uk.gov.hmcts.reform.pcs.postcodecourt.controller.PostCodeCourtCont
 
 @Slf4j
 @IntegrationTest
-class PostCodeCourtControllerIT extends AbstractPostgresContainerIT {
+class PostCodeCourtEntityControllerIT extends AbstractPostgresContainerIT {
 
     private static final String AUTH_HEADER = "Bearer token";
     private static final String SERVICE_AUTH_HEADER = "ServiceAuthToken";
@@ -42,22 +42,22 @@ class PostCodeCourtControllerIT extends AbstractPostgresContainerIT {
     @DisplayName("Should return valid Http OK for known postcodes. The response should be empty.")
     void shouldReturnValidHttpOKForKnownPostCodes() {
         // Given
-        List<PostCodeCourt> all = postCodeCourtRepository.findAll();
+        List<PostCodeCourtEntity> all = postCodeCourtRepository.findAll();
 
         // When
-        all.forEach(postCodeCourt -> {
+        all.forEach(postCodeCourtEntity -> {
             try {
                 MockHttpServletResponse response = mockMvc.perform(get(COURTS_ENDPOINT)
                                 .header(AUTHORIZATION, AUTH_HEADER)
                                 .header(SERVICE_AUTHORIZATION, SERVICE_AUTH_HEADER)
-                                .queryParam(POSTCODE, postCodeCourt.getId().getPostCode()))
+                                .queryParam(POSTCODE, postCodeCourtEntity.getId().getPostCode()))
                         .andReturn().getResponse();
 
                 // Then
                 assertThat(response.getStatus()).isEqualTo(OK.value());
                 assertThat(response.getContentLength()).isZero();
             } catch (Exception e) {
-                fail("Unable to find postcode: " + postCodeCourt.getId().getPostCode());
+                fail("Unable to find postcode: " + postCodeCourtEntity.getId().getPostCode());
             }
         });
 
@@ -117,18 +117,18 @@ class PostCodeCourtControllerIT extends AbstractPostgresContainerIT {
         assertThat(response.getContentLength()).isZero();
     }
 
-    private PostCodeCourt createPostCodeCourt(String postCode, int epimId) {
-        PostCodeCourt postCodeCourt = new PostCodeCourt();
-        postCodeCourt.setId(new PostCodeCourtKey(postCode, epimId));
-        populateRemaining(postCodeCourt);
-        return postCodeCourt;
+    private PostCodeCourtEntity createPostCodeCourt(String postCode, int epimId) {
+        PostCodeCourtEntity postCodeCourtEntity = new PostCodeCourtEntity();
+        postCodeCourtEntity.setId(new PostCodeCourtKey(postCode, epimId));
+        populateRemaining(postCodeCourtEntity);
+        return postCodeCourtEntity;
     }
 
-    private void populateRemaining(PostCodeCourt postCodeCourt) {
-        postCodeCourt.setEffectiveFrom(LocalDateTime.now());
-        postCodeCourt.setEffectiveTo(LocalDateTime.now().plusMonths(1));
-        postCodeCourt.setLegislativeCountry("England");
-        postCodeCourt.setAudit(new Audit());
+    private void populateRemaining(PostCodeCourtEntity postCodeCourtEntity) {
+        postCodeCourtEntity.setEffectiveFrom(LocalDateTime.now());
+        postCodeCourtEntity.setEffectiveTo(LocalDateTime.now().plusMonths(1));
+        postCodeCourtEntity.setLegislativeCountry("England");
+        postCodeCourtEntity.setAudit(new Audit());
     }
 
 }
