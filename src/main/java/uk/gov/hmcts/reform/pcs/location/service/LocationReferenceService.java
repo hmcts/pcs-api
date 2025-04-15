@@ -26,7 +26,7 @@ public class LocationReferenceService {
     public List<CourtVenue> getCountyCourts(@RequestHeader(AUTHORIZATION) String authorisation,
                                             List<Integer> epimmIds) {
         if (Objects.isNull(epimmIds) || epimmIds.isEmpty()) {
-           throw new IllegalArgumentException("epimmIds cannot be null or empty");
+            throw new IllegalArgumentException("epimmIds cannot be null or empty");
         }
         String formattedEpimmsIds = formatEpimmsIds(epimmIds);
         log.info("Getting County courts for Epimms Id {}", formattedEpimmsIds);
