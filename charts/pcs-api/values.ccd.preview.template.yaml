@@ -33,6 +33,8 @@ ccd:
       enabled: false
     s2s:
       enabled: false
+    apiGatewayWeb:
+      enabled: true
   am-role-assignment-service:
     java:
       ingressHost: am-role-assignment-service-${SERVICE_FQDN}
