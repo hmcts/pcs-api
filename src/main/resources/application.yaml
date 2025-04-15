@@ -92,3 +92,4 @@ hmc:
 
 notify:
   api-key: ${PCS_NOTIFY_API_KEY:AAAAAAAA-AAAA-AAAA-AAAA-AAAAAAAAAAAA}
+  status-check-delay: ${NOTIFY_STATUS_CHECK_DELAY:3000}
