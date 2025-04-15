@@ -36,10 +36,6 @@ ccd:
   am-role-assignment-service:
     java:
       ingressHost: am-role-assignment-service-${SERVICE_FQDN}
-      autoscaling:
-        enabled: false
-        minReplicas: 1
-        maxReplicas: 1
       environment:
         ROLE_ASSIGNMENT_DB_USERNAME: "{{ .Values.postgresql.auth.username}}"
         ROLE_ASSIGNMENT_DB_HOST: '{{ tpl .Values.global.postgresHostname $}}'
@@ -56,11 +52,8 @@ ccd:
   ccd-user-profile-api:
     java:
       disableKeyVaults: true
-      imagePullPolicy: Always
       ingressHost: ccd-user-profile-api-${SERVICE_FQDN}
       autoscaling:
-        enabled: false
-        minReplicas: 1
         maxReplicas: 1
       environment:
         USER_PROFILE_DB_OPTIONS: "?stringtype=unspecified&gssEncMode=disable"
@@ -78,17 +71,13 @@ ccd:
       devmemoryLimits: '2048Mi'
       devcpuRequests: '500m'
       autoscaling:
-        enabled: false
-        minReplicas: 1
         maxReplicas: 1
-      imagePullPolicy: Always
       environment:
         DEFINITION_STORE_DB_HOST: '{{ tpl .Values.global.postgresHostname $}}'
         DEFINITION_STORE_IDAM_KEY: ${CCD_DEFINITION_STORE_S2S_SECRET}
         IDAM_USER_URL: https://idam-web-public.aat.platform.hmcts.net
         DEFINITION_STORE_TX_TIMEOUT_DEFAULT: 360
-        ELASTIC_SEARCH_ENABLED: true
-        ELASTIC_SEARCH_HOST: ${SERVICE_NAME}-es-master
+        ELASTIC_SEARCH_ENABLED: false
         WELSH_TRANSLATION_ENABLED: false
         DEFINITION_STORE_DB_USERNAME: "{{ .Values.postgresql.auth.username}}"
         DEFINITION_STORE_DB_OPTIONS: ""
@@ -101,17 +90,12 @@ ccd:
   ccd-data-store-api:
     java:
       disableKeyVaults: true
-      imagePullPolicy: Always
       devmemoryRequests: '1524Mi'
       devmemoryLimits: '2048Mi'
       devcpuRequests: '500m'
       environment:
         DATA_STORE_DB_HOST: '{{ tpl .Values.global.postgresHostname $}}'
         DATA_STORE_DB_USERNAME: "{{ .Values.postgresql.auth.username}}"
-        DATA_STORE_IDAM_KEY: ${CCD_DATA_STORE_S2S_SECRET}
-        IDAM_OAUTH2_DATA_STORE_CLIENT_SECRET: ${IDAM_OAUTH2_DATA_STORE_CLIENT_SECRET}
-        IDAM_DATA_STORE_SYSTEM_USER_USERNAME: ${IDAM_DATA_STORE_SYSTEM_USER_USERNAME}
-        IDAM_DATA_STORE_SYSTEM_USER_PASSWORD: ${IDAM_DATA_STORE_SYSTEM_USER_PASSWORD}
         IDAM_API_BASE_URL: https://idam-api.aat.platform.hmcts.net
         IDAM_OIDC_URL: https://idam-web-public.aat.platform.hmcts.net
         DATA_STORE_CROSS_JURISDICTIONAL_ROLES: caseworker-caa,caseworker-approver
@@ -121,7 +105,6 @@ ccd:
         DATA_STORE_DB_MAX_POOL_SIZE: 80
         DATA_STORE_DB_OPTIONS: "?stringtype=unspecified"
         CCD_DOCUMENT_URL_PATTERN: ^https?://(((?:dm-store-aat\.service\.core-compute-aat\.internal(?::\d+)?)\/documents\/[A-Za-z0-9-]+(?:\/binary)?))
-        CASE_DOCUMENT_AM_URL: ${CASE_DOCUMENT_AM_URL}
       secrets:
         DATA_STORE_DB_PASSWORD:
           key: password
@@ -129,23 +112,32 @@ ccd:
       ingressHost: ccd-data-store-api-${SERVICE_FQDN}
       autoscaling:
         enabled: false
-        minReplicas: 1
         maxReplicas: 1
-
+      keyVaults:
+        ccd:
+          secrets:
+            - name: ccd-data-s2s-secret
+              alias: DATA_STORE_IDAM_KEY
+            - name: idam-data-store-client-secret
+              alias: IDAM_OAUTH2_DATA_STORE_CLIENT_SECRET
+            - name: idam-data-store-system-user-username
+              alias: IDAM_DATA_STORE_SYSTEM_USER_USERNAME
+            - name: idam-data-store-system-user-password
+              alias: IDAM_DATA_STORE_SYSTEM_USER_PASSWORD
   ccd-api-gateway-web:
     nodejs:
       image: hmctspublic.azurecr.io/ccd/api-gateway-web:prod-66a4048-20250203150702
       imagePullPolicy: Always
       environment:
-        ADDRESS_LOOKUP_TOKEN: ${ADDRESS_LOOKUP_TOKEN}
-        IDAM_SERVICE_KEY: ${CCD_API_GATEWAY_S2S_SECRET}
-        IDAM_OAUTH2_CLIENT_SECRET: ${CCD_API_GATEWAY_IDAM_CLIENT_SECRET}
         PROXY_DOCUMENT_MANAGEMENT: http://dm-store-aat.service.core-compute-aat.internal
         ALLOW_CONFIG_MUTATIONS: true
-      ingressIP: ${INGRESS_IP}
       ingressHost: gateway-${SERVICE_FQDN}
-      disableKeyVaults: true
-
+      keyVaults:
+        ccd:
+          secrets:
+            - ccd-api-gateway-oauth2-client-secret
+            - postcode-info-address-lookup-token
+            - microservicekey-ccd-gw
 
 xui-webapp:
   enabled: true
