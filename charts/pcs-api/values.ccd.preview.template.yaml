@@ -42,6 +42,7 @@ ccd:
         ROLE_ASSIGNMENT_DB_USERNAME: "{{ .Values.postgresql.auth.username}}"
         ROLE_ASSIGNMENT_DB_HOST: '{{ tpl .Values.global.postgresHostname $}}'
         ROLE_ASSIGNMENT_DB_OPTIONS: "?stringtype=unspecified"
+        CCD_DATA_STORE_URL: http://${SERVICE_NAME}-ccd-data-store-api
       keyVaults:
         am:
           secrets:
