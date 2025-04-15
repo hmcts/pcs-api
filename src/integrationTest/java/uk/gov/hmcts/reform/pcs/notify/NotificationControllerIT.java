@@ -88,7 +88,6 @@ public class NotificationControllerIT {
         notificationRepository.deleteAll();
     }
 
-
     @Test
     void testHttpOkWhenEmailIsSentSuccessfully() throws Exception {
         EmailNotificationRequest request = createEmailNotificationRequest();

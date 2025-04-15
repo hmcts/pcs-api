@@ -16,10 +16,8 @@ import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import static io.restassured.RestAssured.given;
 
 @TestPropertySource(properties = {
-    "spring.flyway.enabled=false",
-    "spring.jpa.hibernate.ddl-auto=none",
+    "spring.flyway.enabled=false"
 })
-
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
 class SampleSmokeTest {
     protected static final String CONTENT_TYPE_VALUE = "application/json";
