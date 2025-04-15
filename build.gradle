@@ -1,13 +1,24 @@
+import org.flywaydb.gradle.task.FlywayMigrateTask
 import uk.gov.hmcts.rse.AuthMode
 import uk.gov.hmcts.rse.CftlibExec
+
+buildscript {
+  ext {
+    flywayVersion = '11.7.0'
+  }
+  dependencies {
+    classpath("org.flywaydb:flyway-database-postgresql:$flywayVersion")
+  }
+}
 
 plugins {
   id 'application'
   id 'jacoco'
   id 'io.spring.dependency-management' version '1.1.7'
-  id 'org.springframework.boot' version '3.4.3'
+  id 'org.springframework.boot' version '3.4.4'
   id 'com.github.ben-manes.versions' version '0.52.0'
-  id 'org.sonarqube' version '6.0.1.5171'
+  id 'org.flywaydb.flyway' version "$flywayVersion"
+  id 'org.sonarqube' version '6.1.0.5360'
   id 'net.serenity-bdd.serenity-gradle-plugin' version '4.2.16'
   id 'com.github.hmcts.rse-cft-lib' version '0.20.0-alpha.20'
   id 'io.freefair.lombok' version '8.13'
@@ -77,6 +88,10 @@ configurations {
 
   cftlibTestImplementation.extendsFrom testImplementation
   cftlibTestRuntime.extendsFrom testRuntime
+}
+
+ccd {
+  configDir = file('build/definitions')
 }
 
 tasks.withType(JavaCompile) {
@@ -253,17 +268,19 @@ repositories {
 }
 
 def versions = [
-  lombok       : '1.18.36',
+  lombok       : '1.18.38',
+  flyway: "$flywayVersion",
 ]
 
 ext {
   log4JVersion = "2.24.3"
-  logbackVersion = "1.5.17"
+  logbackVersion = "1.5.18"
 }
 
 ext['snakeyaml.version'] = '2.0'
 
 dependencies {
+
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-web'
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-actuator'
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-aop'
@@ -273,9 +290,12 @@ dependencies {
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-web'
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-security'
 
-  implementation group: 'org.springdoc', name: 'springdoc-openapi-starter-webmvc-ui', version: '2.8.5'
+  runtimeOnly group: 'org.flywaydb', name: 'flyway-database-postgresql', version: versions.flyway
+  implementation group: 'org.flywaydb', name: 'flyway-core', version: versions.flyway
+
+  implementation group: 'org.springdoc', name: 'springdoc-openapi-starter-webmvc-ui', version: '2.8.6'
   implementation group: 'uk.gov.service.notify', name: 'notifications-java-client', version: '5.2.1-RELEASE'
-  implementation platform(group: 'com.azure.spring', name :'spring-cloud-azure-dependencies', version :'5.20.1')
+  implementation platform(group: 'com.azure.spring', name :'spring-cloud-azure-dependencies', version :'5.22.0')
   implementation "com.azure.spring:spring-cloud-azure-starter-servicebus-jms"
 
   implementation group: 'com.github.hmcts.java-logging', name: 'logging', version: '6.1.7'
@@ -288,7 +308,7 @@ dependencies {
   implementation group: 'ch.qos.logback', name: 'logback-core', version: logbackVersion
   implementation group: 'org.postgresql', name: 'postgresql', version: '42.7.5'
   implementation group: 'com.github.hmcts', name: 'service-auth-provider-java-client', version: '5.3.0'
-  implementation group: 'org.springframework.cloud', name: 'spring-cloud-starter-openfeign', version: '4.2.0'
+  implementation group: 'org.springframework.cloud', name: 'spring-cloud-starter-openfeign', version: '4.2.1'
   implementation group: 'org.projectlombok', name: 'lombok', version: versions.lombok
   annotationProcessor group: 'org.projectlombok', name: 'lombok', version: versions.lombok
 
@@ -301,20 +321,20 @@ dependencies {
   integrationTestImplementation 'org.testcontainers:postgresql:1.20.6'
 
   functionalTestImplementation group: 'net.serenity-bdd', name: 'serenity-rest-assured', version: '4.2.17'
-  functionalTestImplementation group: 'net.serenity-bdd', name: 'serenity-core', version: '4.2.17'
-  functionalTestImplementation group: 'net.serenity-bdd', name: 'serenity-junit5', version: '4.2.17'
+  functionalTestImplementation group: 'net.serenity-bdd', name: 'serenity-core', version: '4.2.19'
+  functionalTestImplementation group: 'net.serenity-bdd', name: 'serenity-junit5', version: '4.2.19'
   functionalTestImplementation sourceSets.main.runtimeClasspath
   functionalTestImplementation sourceSets.test.runtimeClasspath
 
-  testImplementation group: 'org.junit.platform', name: 'junit-platform-suite-api', version: '1.12.1'
+  testImplementation group: 'org.junit.platform', name: 'junit-platform-suite-api', version: '1.12.2'
 
   contractTestImplementation group: 'au.com.dius.pact.consumer', name: 'junit5', version: '4.6.17'
   contractTestImplementation group: 'org.hamcrest', name: 'java-hamcrest', version: '2.0.0.0'
-  contractTestImplementation('org.junit.jupiter:junit-jupiter-api:5.12.1')
+  contractTestImplementation('org.junit.jupiter:junit-jupiter-api:5.12.2')
   contractTestImplementation sourceSets.main.runtimeClasspath
   contractTestImplementation sourceSets.test.runtimeClasspath
 
-  testImplementation(platform('org.junit:junit-bom:5.12.1'))
+  testImplementation(platform('org.junit:junit-bom:5.12.2'))
   testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'
   testImplementation group: 'org.springframework.boot', name: 'spring-boot-starter-test', {
     exclude group: 'junit', module: 'junit'
@@ -333,6 +353,21 @@ bootJar {
 
   manifest {
     attributes('Implementation-Version': project.version.toString())
+  }
+}
+
+flyway {
+  url = System.getenv('FLYWAY_URL')
+  user = System.getenv('FLYWAY_USER')
+  password = System.getenv('FLYWAY_PASSWORD')
+  baselineOnMigrate = true
+  baselineVersion = '000'
+}
+
+tasks.register('migratePostgresDatabase', FlywayMigrateTask) {
+  baselineOnMigrate = true
+  if (project.hasProperty("dburl")) {
+    url = "jdbc:postgresql://${dburl}"
   }
 }
 
@@ -356,6 +391,14 @@ tasks.withType(CftlibExec).configureEach {
 // Ensure we cover Cftlib dev & test with our CI checks
 check.dependsOn cftlibTest
 
-project.tasks.named("processContractTestResources") {
+rootProject.tasks.named("processIntegrationTestResources") {
   duplicatesStrategy = 'include'
+}
+
+rootProject.tasks.named("processContractTestResources") {
+  duplicatesStrategy = 'include'
+}
+
+wrapper {
+  distributionType = Wrapper.DistributionType.ALL
 }
