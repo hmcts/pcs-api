@@ -125,7 +125,7 @@ ccd:
         ccd:
           secrets:
             - name: ccd-data-s2s-secret
-              alias: DATA_STORE_IDAM_KEY
+              alias: idam.s2s-auth.totp_secret
             - name: idam-data-store-client-secret
               alias: IDAM_OAUTH2_DATA_STORE_CLIENT_SECRET
             - name: idam-data-store-system-user-username
