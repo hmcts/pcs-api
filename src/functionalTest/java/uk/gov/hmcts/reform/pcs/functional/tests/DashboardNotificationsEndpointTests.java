@@ -11,7 +11,7 @@ import uk.gov.hmcts.reform.pcs.functional.steps.ApiSteps;
 
 @Tag("Functional")
 @ExtendWith(SerenityJUnit5Extension.class)
-class NotificationsEndpointTests {
+class DashboardNotificationsEndpointTests {
 
     @Steps
     static ApiSteps apiSteps;
@@ -27,7 +27,7 @@ class NotificationsEndpointTests {
 
     @Title("Dashboard notifications endpoint - return 200 when request is valid and uses pcs_api s2s token")
     @Test
-    void dashboardNotifications200SuccessWithPCSApiToken() {
+    void dashboardNotifications200SuccessWithPCSApiTokenScenario() {
         apiSteps.requestIsPreparedWithAppropriateValues();
         apiSteps.theRequestContainsValidServiceToken("pcs_api");
         apiSteps.theRequestContainsThePathParameter("caseReference", "1666630757927238");
@@ -37,7 +37,7 @@ class NotificationsEndpointTests {
 
     @Title("Dashboard notifications endpoint - return 200 when request is valid and uses pcs_frontend s2s token")
     @Test
-    void dashboardNotifications200SuccessWithFrontendToken() {
+    void dashboardNotifications200SuccessWithFrontendTokenScenario() {
         apiSteps.requestIsPreparedWithAppropriateValues();
         apiSteps.theRequestContainsValidServiceToken("pcs_frontend");
         apiSteps.theRequestContainsThePathParameter("caseReference", "1666630757927238");
@@ -47,7 +47,7 @@ class NotificationsEndpointTests {
 
     @Title("Dashboard notifications endpoint - return 404 when case id doesn't exist")
     @Test
-    void dashboardNotifications404NotFound() {
+    void dashboardNotifications404NotFoundScenario() {
         apiSteps.requestIsPreparedWithAppropriateValues();
         apiSteps.theRequestContainsValidServiceToken("pcs_api");
         apiSteps.theRequestContainsThePathParameter("caseReference", "9999");
@@ -56,7 +56,7 @@ class NotificationsEndpointTests {
         apiSteps.theResponseBodyContains("message", "No case found with reference 9999");
     }
 
-    @Title("Dashboard notifications endpoint - return 403 Forbidden when the request uses an unauthorised service token")
+    @Title("Dashboard notifications endpoint - return 403 Forbidden when the request uses an unauthorised s2s token")
     @Test
     void dashboardNotifications403ForbiddenScenario() {
         apiSteps.requestIsPreparedWithAppropriateValues();

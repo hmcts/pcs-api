@@ -57,7 +57,8 @@ public class ApiSteps {
 
     @Step("the request contains an expired service token")
     public void theRequestContainsExpiredServiceToken() {
-        String expiredS2sToken = "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJwY3NfYXBpIiwiZXhwIjoxNzQ0MjI0NTgyfQ.5vd6i9FgZOXaOcWnlz4qAUN4Zutf4wyjoIU0DjmA_1G2FZm2uR_zKkl6lz4jc9_Trrf_cqU3Wi2B9GK5vD8LpQ";
+        String expiredS2sToken = "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJwY3NfYXBpIiwiZXhwIjoxNzQ0MjI0NTgyfQ.5vd6i9FgZOXaOc"
+            + "Wnlz4qAUN4Zutf4wyjoIU0DjmA_1G2FZm2uR_zKkl6lz4jc9_Trrf_cqU3Wi2B9GK5vD8LpQ";
         request = request.request().header("ServiceAuthorization", expiredS2sToken);
     }
 
