@@ -29,6 +29,7 @@ class SampleFunctionalTest {
     @Test
     @Tag("Functional")
     void testHealth2() {
+        apiSteps.createServiceToken();
         apiSteps.getHealth();
     }
 }
