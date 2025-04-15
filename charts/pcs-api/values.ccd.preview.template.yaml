@@ -47,6 +47,12 @@ ccd:
           secrets:
             - name: role-assignment-service-LD-SDK-KEY
               alias: LD_SDK_KEY
+            - name: am-role-assignment-service-s2s-secret
+              alias: AM_ROLE_ASSIGNMENT_SERVICE_SECRET
+            - name: role-assignment-service-IDAM-CLIENT-SECRET
+              alias: ROLE_ASSIGNMENT_IDAM_CLIENT_SECRET
+            - name: role-assignment-service-IDAM-ADMIN-SECRET
+              alias: ROLE_ASSIGNMENT_IDAM_ADMIN_PASSWORD
       secrets:
         ROLE_ASSIGNMENT_DB_PASSWORD:
           key: password
