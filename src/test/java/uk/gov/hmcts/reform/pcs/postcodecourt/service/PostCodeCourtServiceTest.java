@@ -47,8 +47,7 @@ class PostCodeCourtServiceTest {
 
         // Then
         assertThat(response).isNotEmpty(); // Check if the list is not empty
-        assertThat(response).anyMatch(courtVenue -> expectedEpimId == courtVenue.epimmsId()); // Check if any CourtVenue in the list has the expected EpimId
-
+        assertThat(response).anyMatch(courtVenue -> expectedEpimId == courtVenue.epimmsId());
         verify(postCodeCourtRepository).findByIdPostCode(postCode);
         verify(locationReferenceService).getCountyCourts(null, List.of(expectedEpimId));
     }
