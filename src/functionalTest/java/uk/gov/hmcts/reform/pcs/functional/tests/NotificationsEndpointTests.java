@@ -1,35 +1,78 @@
 package uk.gov.hmcts.reform.pcs.functional.tests;
 
+import net.serenitybdd.annotations.Title;
 import net.serenitybdd.junit5.SerenityJUnit5Extension;
 import net.serenitybdd.annotations.Steps;
-import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import uk.gov.hmcts.reform.pcs.functional.steps.ApiSteps;
 
+@Tag("Functional")
 @ExtendWith(SerenityJUnit5Extension.class)
-class SampleFunctionalTest {
-
-    private static final String BASE_URL = System.getenv("TEST_URL");
+class NotificationsEndpointTests {
 
     @Steps
-    ApiSteps apiSteps;
+    static ApiSteps apiSteps;
 
-    @BeforeEach
-    void setUp() {
-        apiSteps.setupBaseUrl(BASE_URL);
+    @BeforeAll
+    static void beforeAll() {
+        apiSteps = new ApiSteps();
+        apiSteps.setUp();
     }
 
+    // Currently, endpoint use mock data and happy path tests only check that valid tokens return a 200 response.
+    // Once real data is available, add assertions to validate response content to happy path scenarios.
+
+    @Title("Dashboard notifications endpoint - return 200 when request is valid and uses pcs_api s2s token")
     @Test
-    void testHealth() {
-        apiSteps.getHealth();
+    void dashboardNotifications200SuccessWithPCSApiToken() {
+        apiSteps.requestIsPreparedWithAppropriateValues();
+        apiSteps.theRequestContainsValidServiceToken("pcs_api");
+        apiSteps.theRequestContainsThePathParameter("caseReference", "1666630757927238");
+        apiSteps.callIsSubmittedToTheEndpoint("DashboardNotifications", "GET");
+        apiSteps.checkStatusCode(200);
     }
 
+    @Title("Dashboard notifications endpoint - return 200 when request is valid and uses pcs_frontend s2s token")
     @Test
-    @Tag("Functional")
-    void testHealth2() {
-        apiSteps.createServiceToken();
-        apiSteps.getHealth();
+    void dashboardNotifications200SuccessWithFrontendToken() {
+        apiSteps.requestIsPreparedWithAppropriateValues();
+        apiSteps.theRequestContainsValidServiceToken("pcs_frontend");
+        apiSteps.theRequestContainsThePathParameter("caseReference", "1666630757927238");
+        apiSteps.callIsSubmittedToTheEndpoint("DashboardNotifications", "GET");
+        apiSteps.checkStatusCode(200);
+    }
+
+    @Title("Dashboard notifications endpoint - return 404 when case id doesn't exist")
+    @Test
+    void dashboardNotifications404NotFound() {
+        apiSteps.requestIsPreparedWithAppropriateValues();
+        apiSteps.theRequestContainsValidServiceToken("pcs_api");
+        apiSteps.theRequestContainsThePathParameter("caseReference", "9999");
+        apiSteps.callIsSubmittedToTheEndpoint("DashboardNotifications", "GET");
+        apiSteps.checkStatusCode(404);
+        apiSteps.theResponseBodyContains("message", "No case found with reference 9999");
+    }
+
+    @Title("Dashboard notifications endpoint - return 403 Forbidden when the request uses an unauthorised service token")
+    @Test
+    void dashboardNotifications403ForbiddenScenario() {
+        apiSteps.requestIsPreparedWithAppropriateValues();
+        apiSteps.theRequestContainsUnauthorisedServiceToken();
+        apiSteps.theRequestContainsThePathParameter("caseReference", "1666630757927238");
+        apiSteps.callIsSubmittedToTheEndpoint("DashboardNotifications", "GET");
+        apiSteps.checkStatusCode(403);
+    }
+
+    @Title("Dashboard notifications endpoint - return 401 Unauthorised when the request uses an invalid service token")
+    @Test
+    void dashboardNotifications401UnauthorisedScenario() {
+        apiSteps.requestIsPreparedWithAppropriateValues();
+        apiSteps.theRequestContainsExpiredServiceToken();
+        apiSteps.theRequestContainsThePathParameter("caseReference", "1666630757927238");
+        apiSteps.callIsSubmittedToTheEndpoint("DashboardNotifications", "GET");
+        apiSteps.checkStatusCode(401);
     }
 }
