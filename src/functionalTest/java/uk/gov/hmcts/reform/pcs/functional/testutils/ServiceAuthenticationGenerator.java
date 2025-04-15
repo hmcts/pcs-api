@@ -12,7 +12,7 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 public class ServiceAuthenticationGenerator {
 
     private final String s2sUrl = System.getenv("IDAM_S2S_AUTH_URL");
-    private final String microservice = System.getenv("S2S_SERVICE_NAME");
+    private final String microservice = "pcs_api";
 
     public String generate() {
         return generate(this.microservice);
