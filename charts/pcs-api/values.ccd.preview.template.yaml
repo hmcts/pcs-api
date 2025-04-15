@@ -158,6 +158,7 @@ xui-webapp:
       HEALTH_ROLE_ASSIGNMENT_API: http://${SERVICE_NAME}-am-role-assignment-service/health
       JURISDICTIONS: PCS
       FEATURE_REDIS_ENABLED: false
+      REDISCLOUD_URL: http://dummyrediscloudurl
       FEATURE_APP_INSIGHTS_ENABLED: false
       FEATURE_SECURE_COOKIE_ENABLED: false
       FEATURE_HELMET_ENABLED: false
