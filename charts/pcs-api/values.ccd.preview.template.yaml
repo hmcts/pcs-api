@@ -168,6 +168,7 @@ xui-webapp:
       FEATURE_ACCESS_MANAGEMENT_ENABLED: true
       PROTOCOL: http
       PREVIEW_DEPLOYMENT_ID: "pcs-${CHANGE_ID}"
+      LAUNCH_DARKLY_CLIENT_ID: 645baeea2787d812993d9d70
     keyVaults:
       rpx:
         resourceGroup: rpx
