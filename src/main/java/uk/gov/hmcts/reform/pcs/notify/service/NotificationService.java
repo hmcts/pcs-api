@@ -14,6 +14,8 @@ import uk.gov.service.notify.Notification;
 
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 import java.util.concurrent.TimeUnit;
 
 @Service
@@ -46,8 +48,12 @@ public class NotificationService {
 
             log.debug("Email sent successfully. Reference ID: {}", referenceId);
             
-            // Trigger async status check
-            checkNotificationStatus(sendEmailResponse.getNotificationId().toString());
+            // Trigger async status check using CompletableFuture
+            checkNotificationStatus(sendEmailResponse.getNotificationId().toString())
+                .exceptionally(throwable -> {
+                    log.error("Error checking notification status: {}", throwable.getMessage(), throwable);
+                    return null;
+                });
 
             return sendEmailResponse;
         } catch (NotificationClientException notificationClientException) {
@@ -62,27 +68,29 @@ public class NotificationService {
     }
 
     @Async("notificationExecutor")
-    protected void checkNotificationStatus(String notificationId) {
-        try {
-            // Wait for configured delay
-            TimeUnit.MILLISECONDS.sleep(statusCheckDelay);
-            
-            Notification notification = notificationClient.getNotificationById(notificationId);
-            log.info("Notification status check - ID: {}, Status: {}, CreatedAt: {}, CompletedAt: {}", 
-                notificationId,
-                notification.getStatus(),
-                notification.getCreatedAt(),
-                notification.getCompletedAt()
-            );
-        } catch (NotificationClientException | InterruptedException e) {
-            log.error("Error checking notification status for ID: {}. Error: {}", 
-                notificationId, 
-                e.getMessage(),
-                e
-            );
-            if (e instanceof InterruptedException) {
-                Thread.currentThread().interrupt();
+    public CompletableFuture<Notification> checkNotificationStatus(String notificationId) {
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                // Wait for configured delay
+                TimeUnit.MILLISECONDS.sleep(statusCheckDelay);
+                
+                Notification notification = notificationClient.getNotificationById(notificationId);
+                log.info("Notification status check - ID: {}, Status: {}", 
+                    notificationId,
+                    notification.getStatus()
+                );
+                return notification;
+            } catch (NotificationClientException | InterruptedException e) {
+                log.error("Error checking notification status for ID: {}. Error: {}", 
+                    notificationId, 
+                    e.getMessage(),
+                    e
+                );
+                if (e instanceof InterruptedException) {
+                    Thread.currentThread().interrupt();
+                }
+                throw new CompletionException(e);
             }
-        }
+        });
     }
 }
