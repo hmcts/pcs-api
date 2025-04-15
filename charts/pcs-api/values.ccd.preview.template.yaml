@@ -26,7 +26,7 @@ ccd:
   enabled: true
   ccd:
     adminWeb:
-      enabled: false
+      enabled: true
     definitionImporter:
       enabled: false
     userProfileImporter:
@@ -146,7 +146,19 @@ ccd:
             - ccd-api-gateway-oauth2-client-secret
             - postcode-info-address-lookup-token
             - microservicekey-ccd-gw
-
+  ccd-admin-web:
+    nodejs:
+      image: hmctspublic.azurecr.io/ccd/admin-web:latest
+      ingressHost: admin-web-${SERVICE_FQDN}
+      environment:
+        ADMINWEB_GLOBAL_SEARCH_INDEX_URL: http://${SERVICE_NAME}-ccd-definition-store/elastic-support/global-search/index
+        ADMINWEB_ELASTIC_CASE_TYPES_URL: http://${SERVICE_NAME}-ccd-definition-store/elastic-support/case-types
+        ALLOW_CONFIG_MUTATIONS: true
+      keyVaults:
+        ccd:
+          secrets:
+            - microservicekey-ccd-admin
+            - ccd-admin-web-oauth2-client-secret
 xui-webapp:
   enabled: true
   nodejs:
