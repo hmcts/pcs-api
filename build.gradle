@@ -301,7 +301,7 @@ dependencies {
 
   implementation group: 'org.springdoc', name: 'springdoc-openapi-starter-webmvc-ui', version: '2.8.6'
   implementation group: 'uk.gov.service.notify', name: 'notifications-java-client', version: '5.2.1-RELEASE'
-  implementation platform(group: 'com.azure.spring', name :'spring-cloud-azure-dependencies', version :'5.21.0')
+  implementation platform(group: 'com.azure.spring', name :'spring-cloud-azure-dependencies', version :'5.22.0')
   implementation "com.azure.spring:spring-cloud-azure-starter-servicebus-jms"
 
   implementation group: 'com.github.hmcts.java-logging', name: 'logging', version: '6.1.8'
@@ -327,15 +327,15 @@ dependencies {
   functionalTestImplementation sourceSets.main.runtimeClasspath
   functionalTestImplementation sourceSets.test.runtimeClasspath
 
-  testImplementation group: 'org.junit.platform', name: 'junit-platform-suite-api', version: '1.12.1'
+  testImplementation group: 'org.junit.platform', name: 'junit-platform-suite-api', version: '1.12.2'
 
   contractTestImplementation group: 'au.com.dius.pact.consumer', name: 'junit5', version: '4.6.17'
   contractTestImplementation group: 'org.hamcrest', name: 'java-hamcrest', version: '2.0.0.0'
-  contractTestImplementation('org.junit.jupiter:junit-jupiter-api:5.12.1')
+  contractTestImplementation('org.junit.jupiter:junit-jupiter-api:5.12.2')
   contractTestImplementation sourceSets.main.runtimeClasspath
   contractTestImplementation sourceSets.test.runtimeClasspath
 
-  testImplementation(platform('org.junit:junit-bom:5.12.1'))
+  testImplementation(platform('org.junit:junit-bom:5.12.2'))
   testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'
   testImplementation group: 'org.springframework.boot', name: 'spring-boot-starter-test', {
     exclude group: 'junit', module: 'junit'
@@ -345,7 +345,6 @@ dependencies {
   testImplementation 'org.testcontainers:testcontainers:1.20.6'
   testImplementation 'org.testcontainers:junit-jupiter:1.20.3'
   testImplementation 'org.testcontainers:postgresql:1.20.6'
-  testImplementation("org.flywaydb.flyway-test-extensions:flyway-spring-test:10.0.0")
 
   // Allow fast reloading during dev; recompile a class to trigger fast reload + definition reimport.
   cftlibImplementation 'org.springframework.boot:spring-boot-devtools'

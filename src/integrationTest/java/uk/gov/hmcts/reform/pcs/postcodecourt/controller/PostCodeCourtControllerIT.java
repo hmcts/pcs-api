@@ -1,7 +1,6 @@
 package uk.gov.hmcts.reform.pcs.postcodecourt.controller;
 
 import lombok.extern.slf4j.Slf4j;
-import org.flywaydb.test.annotation.FlywayTest;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -86,7 +85,6 @@ class PostCodeCourtControllerIT extends AbstractPostgresContainerIT {
 
     @DisplayName("Should return bad request for missing service token.")
     @Test
-    @FlywayTest
     void shouldReturnBadRequestForMissingServiceToken() throws Exception {
         // Given
         String postCode = "UB7 0DG";
@@ -104,7 +102,6 @@ class PostCodeCourtControllerIT extends AbstractPostgresContainerIT {
 
     @DisplayName("Should return bad request for missing authorization token.")
     @Test
-    @FlywayTest
     void shouldReturnBadRequestForMissingAuthorizationToken() throws Exception {
         // Given
         String postCode = "UB7 0DG";
