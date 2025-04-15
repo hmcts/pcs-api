@@ -341,10 +341,11 @@ dependencies {
     exclude group: 'junit', module: 'junit'
     exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
   }
-
+  testImplementation 'org.springframework.boot:spring-boot-starter-webflux'
   testImplementation 'org.testcontainers:testcontainers:1.20.6'
   testImplementation 'org.testcontainers:junit-jupiter:1.20.6'
   testImplementation 'org.testcontainers:postgresql:1.20.6'
+  testImplementation 'com.h2database:h2'
 
   // Allow fast reloading during dev; recompile a class to trigger fast reload + definition reimport.
   cftlibImplementation 'org.springframework.boot:spring-boot-devtools'

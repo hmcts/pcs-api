@@ -4,7 +4,8 @@ security:
 
 spring:
   flyway:
-    locations: classpath:db/migration
+    enabled: true
+    locations: classpath:db/migration,classpath:db/testdata
   sql:
     init:
       mode: never
