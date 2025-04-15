@@ -26,12 +26,12 @@ class DashboardNotificationsIT {
         int validCaseReference = 1234;
 
         mockMvc
-                .perform(get("/dashboard/{caseReference}/notifications", validCaseReference)
-                        .accept(MediaType.APPLICATION_JSON)
-                        .header("ServiceAuthorization", "some token")
-                )
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(3)));
+            .perform(get("/dashboard/{caseReference}/notifications", validCaseReference)
+                         .header("ServiceAuthorization", "Bearer dummy-token")
+                         .accept(MediaType.APPLICATION_JSON)
+            )
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$", hasSize(3)));
     }
 
     @Test
@@ -39,11 +39,43 @@ class DashboardNotificationsIT {
         int unknownCaseReference = 9999;
 
         mockMvc
-                .perform(get("/dashboard/{caseReference}/notifications", unknownCaseReference)
-                        .accept(MediaType.APPLICATION_JSON)
-                        .header("ServiceAuthorization", "some token")
-                )
-                .andExpect(status().isNotFound());
+            .perform(get("/dashboard/{caseReference}/notifications", unknownCaseReference)
+                         .header("ServiceAuthorization", "Bearer dummy-token")
+                         .accept(MediaType.APPLICATION_JSON)
+            )
+            .andExpect(status().isNotFound());
     }
 
+    @Test
+    void shouldGetDashboardTasks() throws Exception {
+        int validCaseReference = 1234;
+
+        mockMvc
+            .perform(get("/dashboard/{caseReference}/tasks", validCaseReference)
+                         .header("ServiceAuthorization", "Bearer dummy-token")
+                         .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$", hasSize(2)));
+    }
+
+    @Test
+    void shouldReturn404ForUnknownCaseTasks() throws Exception {
+        int unknownCaseReference = 9999;
+
+        mockMvc
+            .perform(get("/dashboard/{caseReference}/tasks", unknownCaseReference)
+                         .header("ServiceAuthorization", "Bearer dummy-token")
+                         .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void shouldReturn400IfAuthorizationHeaderMissing() throws Exception {
+        int caseReference = 1234;
+
+        mockMvc
+            .perform(get("/dashboard/{caseReference}/tasks", caseReference)
+                         .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isBadRequest());
+    }
 }
