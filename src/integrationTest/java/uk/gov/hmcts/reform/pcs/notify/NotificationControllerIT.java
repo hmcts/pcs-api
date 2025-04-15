@@ -4,6 +4,7 @@ package uk.gov.hmcts.reform.pcs.notify;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,6 +35,7 @@ import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.anyMap;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -43,7 +45,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static uk.gov.hmcts.reform.pcs.hearings.constants.HearingConstants.SERVICE_AUTHORIZATION;
 
 @ExtendWith(SpringExtension.class)
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
 @AutoConfigureMockMvc
 @Testcontainers
 @ActiveProfiles("integration")
@@ -88,8 +90,9 @@ public class NotificationControllerIT {
         notificationRepository.deleteAll();
     }
 
+    @DisplayName("Should return Http status Ok when email is sent successfully")
     @Test
-    void testHttpOkWhenEmailIsSentSuccessfully() throws Exception {
+    void shouldReturnOkStatusWhenEmailIsSentSuccessfully() throws Exception {
         EmailNotificationRequest request = createEmailNotificationRequest();
 
         mockMvc.perform(post(END_POINT)
@@ -99,11 +102,17 @@ public class NotificationControllerIT {
                             .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk());
 
-        verify(notificationClient).sendEmail(anyString(), anyString(), anyMap(), anyString());
+        verify(notificationClient).sendEmail(
+            eq(request.getTemplateId()),
+            eq(request.getEmailAddress()),
+            anyMap(),
+            anyString()
+        );
     }
 
+    @DisplayName("Should save case notification when endpoint is called successfully")
     @Test
-    void testSavingNotificationWhenEndpointGetsCalled() throws Exception {
+    void shouldSaveNotificationWhenEndpointGetsCalled() throws Exception {
         EmailNotificationRequest request = createEmailNotificationRequest();
 
         mockMvc.perform(post(END_POINT)
@@ -119,8 +128,9 @@ public class NotificationControllerIT {
         assertThat(notifications.getFirst().getStatus()).isEqualTo("Schedule Pending");
     }
 
+    @DisplayName("Should return bad request when sending email fails")
     @Test
-    void testBadRequestWhenSendingEmailFails() throws Exception {
+    void shouldReturnBadRequestWhenSendingEmailFails() throws Exception {
         EmailNotificationRequest request = createEmailNotificationRequest();
 
         when(notificationService.sendEmail(request))
@@ -133,8 +143,9 @@ public class NotificationControllerIT {
             .andExpect(status().isBadRequest());
     }
 
+    @DisplayName("Should return bad request when service authorization token is missing")
     @Test
-    void testBadRequestWhenServiceAuthorizationTokenIsMissing() throws Exception {
+    void shouldReturnBadRequestWithoutServiceAuthorizationToken() throws Exception {
         mockMvc.perform(post(END_POINT)
                             .contentType(MediaType.APPLICATION_JSON)
                             .header(AUTHORIZATION, AUTH_HEADER)
