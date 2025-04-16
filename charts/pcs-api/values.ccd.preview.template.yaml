@@ -123,7 +123,7 @@ ccd:
               alias: IDAM_DATA_STORE_SYSTEM_USER_PASSWORD
   ccd-api-gateway-web:
     nodejs:
-      image: hmctspublic.azurecr.io/ccd/api-gateway-web:prod-66a4048-20250203150702
+      image: hmctspublic.azurecr.io/ccd/api-gateway-web:latest
       imagePullPolicy: Always
       environment:
         PROXY_DOCUMENT_MANAGEMENT: http://dm-store-aat.service.core-compute-aat.internal
