@@ -75,7 +75,6 @@ ccd:
 
   ccd-definition-store-api:
     java:
-      disableKeyVaults: true
       devmemoryRequests: '1024Mi'
       devmemoryLimits: '2048Mi'
       devcpuRequests: '500m'
@@ -83,7 +82,6 @@ ccd:
         maxReplicas: 1
       environment:
         DEFINITION_STORE_DB_HOST: '{{ tpl .Values.global.postgresHostname $}}'
-        DEFINITION_STORE_IDAM_KEY: ${CCD_DEFINITION_STORE_S2S_SECRET}
         IDAM_USER_URL: https://idam-web-public.aat.platform.hmcts.net
         DEFINITION_STORE_TX_TIMEOUT_DEFAULT: 360
         ELASTIC_SEARCH_ENABLED: false
@@ -95,7 +93,11 @@ ccd:
           key: password
           disabled: false
       ingressHost: ccd-definition-store-${SERVICE_FQDN}
-
+      keyVaults:
+        ccd:
+          secrets:
+            - name: ccd-definition-s2s-secret
+              alias: DEFINITION_STORE_IDAM_KEY
   ccd-data-store-api:
     java:
       devmemoryRequests: '1524Mi'
