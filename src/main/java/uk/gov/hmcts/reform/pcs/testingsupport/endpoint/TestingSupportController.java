@@ -1,7 +1,8 @@
-package uk.gov.hmcts.reform.pcs.notify.endpoint;
+package uk.gov.hmcts.reform.pcs.testingsupport.endpoint;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -22,13 +23,14 @@ import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 
 @Slf4j
 @RestController
-@RequestMapping("/notify")
-@Tag(name = "Notify")
-public class NotifyController {
+@RequestMapping("/testing-support")
+@ConditionalOnProperty(name = "testing-support.enabled", havingValue = "true")
+@Tag(name = "Testing Support")
+public class TestingSupportController {
 
     private final NotificationService notificationService;
 
-    public NotifyController(NotificationService notificationService) {
+    public TestingSupportController(NotificationService notificationService) {
         this.notificationService = notificationService;
     }
 
