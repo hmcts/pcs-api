@@ -13,8 +13,8 @@ import java.util.Map;
 
 public class ApiSteps {
 
-    RequestSpecification request;
-    Response response;
+    private RequestSpecification request;
+    private Response response;
 
     private final String baseUrl = System.getenv("TEST_URL");
     private String pcsApiS2sToken;
@@ -45,6 +45,10 @@ public class ApiSteps {
             "pcs_api", pcsApiS2sToken,
             "pcs_frontend", pcsFrontendS2sToken
         );
+
+        if (!serviceTokens.containsKey(microservice.toLowerCase())) {
+            throw new IllegalArgumentException("Unknown microservice: " + microservice);
+        }
 
         String validS2sToken = serviceTokens.get(microservice.toLowerCase());
         request = request.request().header("ServiceAuthorization", validS2sToken);

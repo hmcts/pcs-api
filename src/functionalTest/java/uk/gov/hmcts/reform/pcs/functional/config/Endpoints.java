@@ -5,7 +5,7 @@ public enum Endpoints {
     DashboardNotifications("/dashboard/{caseReference}/notifications"),
     DashboardTasks("/dashboard/{caseReference}/tasks");
 
-    public final String resource;
+    private final String resource;
 
     Endpoints(String resource) {
         this.resource = resource;

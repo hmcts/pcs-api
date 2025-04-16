@@ -18,13 +18,13 @@ public class ServiceAuthenticationGenerator {
         return generate(this.microservice);
     }
 
-    public String generate(final String s2sName) {
+    public String generate(final String microservice) {
         final Response response = RestAssured
             .given()
             .relaxedHTTPSValidation()
             .baseUri(s2sUrl)
             .header(CONTENT_TYPE, APPLICATION_JSON_VALUE)
-            .body(Map.of("microservice", s2sName))
+            .body(Map.of("microservice", microservice))
             .when()
             .post("/testing-support/lease")
             .andReturn();
@@ -32,7 +32,7 @@ public class ServiceAuthenticationGenerator {
         if (response.statusCode() != 200) {
             throw new RuntimeException(String.format(
                 "Failed to generate S2S token for '%s'. Status code: %d. Response: %s",
-                s2sName,
+                microservice,
                 response.statusCode(),
                 response.asString()
             ));
