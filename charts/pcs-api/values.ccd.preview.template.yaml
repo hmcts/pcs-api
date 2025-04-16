@@ -178,7 +178,7 @@ xui-webapp:
       SERVICES_HEARINGS_COMPONENT_API: http://jurisdiction-hearings-api-aat.service.core-compute-aat.internal
       SERVICES_ROLE_ASSIGNMENT_API: https://am-role-assignment-service-${SERVICE_FQDN}
       HEALTH_ROLE_ASSIGNMENT_API: http://${SERVICE_NAME}-am-role-assignment-service/health
-      JURISDICTIONS: PCS
+      JURISDICTIONS: CIVIL
       FEATURE_REDIS_ENABLED: false
       REDISCLOUD_URL: http://dummyrediscloudurl
       FEATURE_APP_INSIGHTS_ENABLED: false
