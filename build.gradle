@@ -4,7 +4,7 @@ import uk.gov.hmcts.rse.CftlibExec
 
 buildscript {
   ext {
-    flywayVersion = '11.7.0'
+    flywayVersion = '11.7.1'
   }
   dependencies {
     classpath("org.flywaydb:flyway-database-postgresql:$flywayVersion")
@@ -19,7 +19,7 @@ plugins {
   id 'com.github.ben-manes.versions' version '0.52.0'
   id 'org.flywaydb.flyway' version "$flywayVersion"
   id 'org.sonarqube' version '6.1.0.5360'
-  id 'net.serenity-bdd.serenity-gradle-plugin' version '4.2.16'
+  id 'net.serenity-bdd.serenity-gradle-plugin' version '4.2.22'
   id 'hmcts.ccd.sdk' version '5.5.19'
   id 'com.github.hmcts.rse-cft-lib' version '0.19.1618'
   id 'io.freefair.lombok' version '8.13.1'
@@ -322,9 +322,9 @@ dependencies {
 
   implementation group: 'io.rest-assured', name: 'rest-assured'
 
-  functionalTestImplementation group: 'net.serenity-bdd', name: 'serenity-rest-assured', version: '4.2.17'
-  functionalTestImplementation group: 'net.serenity-bdd', name: 'serenity-core', version: '4.2.19'
-  functionalTestImplementation group: 'net.serenity-bdd', name: 'serenity-junit5', version: '4.2.19'
+  functionalTestImplementation group: 'net.serenity-bdd', name: 'serenity-rest-assured', version: '4.2.22'
+  functionalTestImplementation group: 'net.serenity-bdd', name: 'serenity-core', version: '4.2.22'
+  functionalTestImplementation group: 'net.serenity-bdd', name: 'serenity-junit5', version: '4.2.22'
   functionalTestImplementation sourceSets.main.runtimeClasspath
   functionalTestImplementation sourceSets.test.runtimeClasspath
 
