@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.notify.service;
 
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -39,8 +40,9 @@ class NotificationServiceTest {
     @InjectMocks
     private NotificationService notificationService;
 
+    @DisplayName("Should successfully send email when input data is valid")
     @Test
-    void testSendEmailSuccess() throws NotificationClientException {
+    void shouldSendEmailWhenDataIsValid() throws NotificationClientException {
         EmailNotificationRequest emailRequest = new EmailNotificationRequest(
             "test@example.com",
             "templateId",
@@ -65,8 +67,9 @@ class NotificationServiceTest {
         verify(notificationClient).sendEmail(anyString(), anyString(), anyMap(), anyString());
     }
 
+    @DisplayName("Should throw notification exception when email sending fails")
     @Test
-    void testSendEmailFailure() throws NotificationClientException {
+    void shouldThrowNotificationExceptionWhenEmailSendingFails() throws NotificationClientException {
         EmailNotificationRequest emailRequest = new EmailNotificationRequest(
             "test@example.com",
             "templateId",
@@ -85,8 +88,9 @@ class NotificationServiceTest {
         verify(notificationClient).sendEmail(anyString(), anyString(), anyMap(), anyString());
     }
 
+    @DisplayName("Should save case notification when end point is called successfully")
     @Test
-    void testSaveCaseNotification() {
+    void shouldSaveCaseNotificationWhenEndPointIsCalled() {
         String recipient = "test@example.com";
         String status = "Schedule Pending";
         UUID caseId = UUID.randomUUID();
@@ -107,8 +111,9 @@ class NotificationServiceTest {
         verify(notificationRepository).save(any(CaseNotification.class));
     }
 
+    @DisplayName("Should throw notification exception when saving of notification fails")
     @Test
-    void testIfNotificationExceptionThrownWhenSavingFails() throws DataIntegrityViolationException {
+    void shouldThrowNotificationExceptionWhenSavingFails() throws DataIntegrityViolationException {
         String recipient = "test@example.com";
         String type = "Email";
         UUID caseId = UUID.randomUUID();
