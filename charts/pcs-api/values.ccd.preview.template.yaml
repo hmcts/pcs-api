@@ -1,7 +1,7 @@
 global:
   ccdApiGatewayIngress: http://${SERVICE_NAME}-ccd-api-gw
   ccdDefinitionStoreUrl: http://${SERVICE_NAME}-ccd-definition-store
-  ccdUserProfileUrl: http://${SERVICE_NAME}-ccd-user-profile-api
+  ccdUserProfileUrl: http://ccd-user-profile-api-aat.service.core-compute-aat.internal
   dmStoreUrl: http://dm-store-aat.service.core-compute-aat.internal
   idamApiUrl: https://idam-api.aat.platform.hmcts.net
   idamWebUrl: https://idam-web-public.aat.platform.hmcts.net
@@ -28,6 +28,8 @@ ccd:
     adminWeb:
       enabled: true
     definitionImporter:
+      enabled: false
+    userProfile:
       enabled: false
     userProfileImporter:
       enabled: false
@@ -58,21 +60,6 @@ ccd:
         ROLE_ASSIGNMENT_DB_PASSWORD:
           key: password
           disabled: false
-  ccd-user-profile-api:
-    java:
-      disableKeyVaults: true
-      ingressHost: ccd-user-profile-api-${SERVICE_FQDN}
-      autoscaling:
-        maxReplicas: 1
-      environment:
-        USER_PROFILE_DB_OPTIONS: "?stringtype=unspecified&gssEncMode=disable"
-        USER_PROFILE_S2S_AUTHORISED_SERVICES: ccd_data,ccd_definition,ccd_admin,pcs_api
-      keyVaults: [ ]
-      secrets:
-        USER_PROFILE_DB_PASSWORD:
-          secretRef: "{{ .Values.global.postgresSecret }}"
-          key: password
-
   ccd-definition-store-api:
     java:
       devmemoryRequests: '1024Mi'
