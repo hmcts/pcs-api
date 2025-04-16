@@ -7,15 +7,21 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.reactive.server.WebTestClient;
+import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.pcs.Application;
 import uk.gov.hmcts.reform.pcs.config.AbstractPostgresContainerIT;
+import uk.gov.hmcts.reform.pcs.location.service.api.LocationReferenceApi;
 import uk.gov.hmcts.reform.pcs.postcodecourt.entity.PostCodeCourtEntity;
 import uk.gov.hmcts.reform.pcs.postcodecourt.repository.PostCodeCourtRepository;
 
+import java.util.Collections;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 import static uk.gov.hmcts.reform.pcs.postcodecourt.controller.PostCodeCourtController.COURTS_ENDPOINT;
 import static uk.gov.hmcts.reform.pcs.postcodecourt.controller.PostCodeCourtController.POSTCODE;
@@ -35,11 +41,24 @@ class PostCodeCourtControllerIT extends AbstractPostgresContainerIT {
     @Autowired
     private PostCodeCourtRepository postCodeCourtRepository;
 
+    @MockitoBean
+    private AuthTokenGenerator authTokenGenerator;
+
+    @MockitoBean
+    private LocationReferenceApi locationReferenceApi;
+
     @Test
     @DisplayName("Should return valid Http OK for known postcodes. The response should be empty.")
     void shouldReturnValidHttpOKForKnownPostCodes() {
         // Given
         List<PostCodeCourtEntity> all = postCodeCourtRepository.findAll();
+
+        when(locationReferenceApi.getCountyCourts(
+                any(String.class),
+                any(String.class),
+                any(String.class),
+                any(Integer.class))
+        ).thenReturn(Collections.emptyList());
 
         // When && Then
         assertThat(all).isNotEmpty();
@@ -49,7 +68,14 @@ class PostCodeCourtControllerIT extends AbstractPostgresContainerIT {
                             .queryParam(POSTCODE, postCodeCourtEntity.getId().getPostCode()).build())
                     .header(AUTHORIZATION, AUTH_HEADER)
                     .header(SERVICE_AUTHORIZATION, SERVICE_AUTH_HEADER)
-                    .exchange().expectStatus().isOk().expectBody().isEmpty();
+                    .exchange()
+                    .expectStatus().isOk()
+                    .expectBody(List.class)
+                    .consumeWith(response -> {
+                        List<?> body = response.getResponseBody();
+                        assert body != null;
+                        assert body.isEmpty();
+                    });
         });
     }
 
