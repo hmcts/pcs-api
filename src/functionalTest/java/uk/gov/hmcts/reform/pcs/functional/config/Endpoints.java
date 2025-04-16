@@ -2,7 +2,8 @@ package uk.gov.hmcts.reform.pcs.functional.config;
 
 public enum Endpoints {
 
-    DashboardNotifications("/dashboard/{caseReference}/notifications");
+    DashboardNotifications("/dashboard/{caseReference}/notifications"),
+    DashboardTasks("/dashboard/{caseReference}/tasks");
 
     public final String resource;
 
