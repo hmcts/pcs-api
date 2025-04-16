@@ -26,7 +26,7 @@ public class NotificationService {
 
     public NotificationService(
         NotificationClient notificationClient,
-        @Value("${notify.status-check-delay}") long statusCheckDelay) {
+        @Value("${notify.status-check-delay-millis}") long statusCheckDelay) {
         this.notificationClient = notificationClient;
         this.statusCheckDelay = statusCheckDelay;
     }
