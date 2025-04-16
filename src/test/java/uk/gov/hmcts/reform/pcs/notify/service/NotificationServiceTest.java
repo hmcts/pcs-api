@@ -66,7 +66,8 @@ class NotificationServiceTest {
         SendEmailResponse response = notificationService.sendEmail(emailRequest);
 
         assertThat(response).isNotNull();
-        assertThat(response.getNotificationId()).isEqualTo(UUID.fromString("550e8400-e29b-41d4-a716-446655440000"));
+        assertThat(response.getNotificationId())
+            .isEqualTo(UUID.fromString("550e8400-e29b-41d4-a716-446655440000"));
         assertThat(response.getReference()).contains("reference");
         verify(notificationClient).sendEmail(anyString(), anyString(), anyMap(), anyString());
     }
@@ -91,7 +92,8 @@ class NotificationServiceTest {
     }
 
     @Test
-    void testCheckNotificationStatusDelivered() throws NotificationClientException, InterruptedException, ExecutionException, TimeoutException {
+    void testCheckNotificationStatusDelivered() throws NotificationClientException, 
+            InterruptedException, ExecutionException, TimeoutException {
         String notificationId = UUID.randomUUID().toString();
         Notification notification = mock(Notification.class);
         
@@ -107,7 +109,8 @@ class NotificationServiceTest {
     }
 
     @Test
-    void testCheckNotificationStatusPending() throws NotificationClientException, InterruptedException, ExecutionException, TimeoutException {
+    void testCheckNotificationStatusPending() throws NotificationClientException, 
+            InterruptedException, ExecutionException, TimeoutException {
         String notificationId = UUID.randomUUID().toString();
         Notification notification = mock(Notification.class);
 
