@@ -297,7 +297,7 @@ dependencies {
 
   implementation group: 'org.springdoc', name: 'springdoc-openapi-starter-webmvc-ui', version: '2.8.6'
   implementation group: 'uk.gov.service.notify', name: 'notifications-java-client', version: '5.2.1-RELEASE'
-  implementation platform(group: 'com.azure.spring', name: 'spring-cloud-azure-dependencies', version: '5.21.0')
+  implementation platform(group: 'com.azure.spring', name :'spring-cloud-azure-dependencies', version :'5.22.0')
   implementation "com.azure.spring:spring-cloud-azure-starter-servicebus-jms"
 
   implementation group: 'com.github.hmcts.java-logging', name: 'logging', version: '6.1.8'
@@ -317,20 +317,20 @@ dependencies {
   implementation group: 'io.rest-assured', name: 'rest-assured'
 
   functionalTestImplementation group: 'net.serenity-bdd', name: 'serenity-rest-assured', version: '4.2.17'
-  functionalTestImplementation group: 'net.serenity-bdd', name: 'serenity-core', version: '4.2.17'
-  functionalTestImplementation group: 'net.serenity-bdd', name: 'serenity-junit5', version: '4.2.17'
+  functionalTestImplementation group: 'net.serenity-bdd', name: 'serenity-core', version: '4.2.19'
+  functionalTestImplementation group: 'net.serenity-bdd', name: 'serenity-junit5', version: '4.2.19'
   functionalTestImplementation sourceSets.main.runtimeClasspath
   functionalTestImplementation sourceSets.test.runtimeClasspath
 
-  testImplementation group: 'org.junit.platform', name: 'junit-platform-suite-api', version: '1.12.1'
+  testImplementation group: 'org.junit.platform', name: 'junit-platform-suite-api', version: '1.12.2'
 
   contractTestImplementation group: 'au.com.dius.pact.consumer', name: 'junit5', version: '4.6.17'
   contractTestImplementation group: 'org.hamcrest', name: 'java-hamcrest', version: '2.0.0.0'
-  contractTestImplementation('org.junit.jupiter:junit-jupiter-api:5.12.1')
+  contractTestImplementation('org.junit.jupiter:junit-jupiter-api:5.12.2')
   contractTestImplementation sourceSets.main.runtimeClasspath
   contractTestImplementation sourceSets.test.runtimeClasspath
 
-  testImplementation(platform('org.junit:junit-bom:5.12.1'))
+  testImplementation(platform('org.junit:junit-bom:5.12.2'))
   testImplementation "org.springframework.security:spring-security-test:$springSecurityTestVersion"
   testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'
   testImplementation group: 'org.springframework.boot', name: 'spring-boot-starter-test', {
