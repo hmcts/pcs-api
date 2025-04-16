@@ -24,7 +24,7 @@ import static uk.gov.hmcts.reform.pcs.postcodecourt.controller.PostCodeCourtCont
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @SpringBootTest(classes = Application.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("integration")
-class PostCodeCourtEntityControllerIT extends AbstractPostgresContainerIT {
+class PostCodeCourtControllerIT extends AbstractPostgresContainerIT {
 
     private static final String AUTH_HEADER = "Bearer token";
     private static final String SERVICE_AUTH_HEADER = "ServiceAuthToken";
@@ -70,7 +70,7 @@ class PostCodeCourtEntityControllerIT extends AbstractPostgresContainerIT {
 
     @DisplayName("Should return bad request for missing authorization token.")
     @Test
-    void shouldReturnBadRequestForMissingAuthorizationToken() throws Exception {
+    void shouldReturnBadRequestForMissingAuthorizationToken() {
         // Given
         String postCode = "UB7 0DG";
 
