@@ -258,16 +258,22 @@ tasks.register('functional', Test) {
     logger.quiet("Functional test results directory cleaned before running functional tests")
   }
 
-  finalizedBy("aggregate")
-}
-
-tasks.named("aggregate") {
   doLast {
     file("${rootDir}/report-for-functional-tests").mkdirs()
     file("${rootDir}/target/site/serenity").renameTo(file("${rootDir}/report-for-functional-tests"))
     logger.quiet("Functional test report moved to ---> file://${rootDir}/report-for-functional-tests/index.html")
   }
+
+  finalizedBy("aggregate")
 }
+
+//tasks.named("aggregate") {
+//  doLast {
+//    file("${rootDir}/report-for-functional-tests").mkdirs()
+//    file("${rootDir}/target/site/serenity").renameTo(file("${rootDir}/report-for-functional-tests"))
+//    logger.quiet("Functional test report moved to ---> file://${rootDir}/report-for-functional-tests/index.html")
+//  }
+//}
 
 serenity {
   reports = ["single-page-html"]
