@@ -59,7 +59,7 @@ class PostCodeCourtControllerIT extends AbstractPostgresContainerIT {
         when(authTokenGenerator.generate()).thenReturn(LOC_REF_SERVICE_AUTH_HEADER);
 
         all.forEach(postCodeCourtEntity -> {
-          when(locationReferenceApi.getCountyCourts(
+            when(locationReferenceApi.getCountyCourts(
                     AUTH_HEADER,
                     LOC_REF_SERVICE_AUTH_HEADER,
                     postCodeCourtEntity.getId().getEpimId().toString(),
