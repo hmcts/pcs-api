@@ -255,6 +255,7 @@ tasks.register('functional', Test) {
 
   doFirst {
     delete "${rootDir}/target/site/serenity", "${rootDir}/report-for-functional-tests"
+    logger.quiet("Functional test results directory cleaned before running functional tests")
   }
 
   finalizedBy {
