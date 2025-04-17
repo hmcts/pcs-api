@@ -3,11 +3,9 @@ import uk.gov.hmcts.rse.AuthMode
 import uk.gov.hmcts.rse.CftlibExec
 
 buildscript {
-  ext {
-    flywayVersion = '11.7.1'
-  }
+  ext.flywayVersion = '11.7.1'
   dependencies {
-    classpath("org.flywaydb:flyway-database-postgresql:$flywayVersion")
+    classpath "org.flywaydb:flyway-database-postgresql:$flywayVersion"
   }
 }
 
@@ -24,10 +22,6 @@ plugins {
   id 'com.github.hmcts.rse-cft-lib' version '0.19.1666'
   id 'io.freefair.lombok' version '8.13.1'
   id 'au.com.dius.pact' version '4.6.17'
-  /*
-    Applies analysis tools including checkstyle and OWASP Dependency checker.
-    See https://github.com/hmcts/gradle-java-plugin
- */
   id 'uk.gov.hmcts.java' version '0.12.65'
 }
 
@@ -40,227 +34,12 @@ java {
   }
 }
 
-sourceSets {
-  functionalTest {
-    java {
-      compileClasspath += main.output
-      runtimeClasspath += main.output
-      srcDir file('src/functionalTest/java')
-    }
-    resources.srcDir file('src/functionalTest/resources')
-  }
-
-  integrationTest {
-    java {
-      compileClasspath += main.output
-      runtimeClasspath += main.output
-      srcDir file('src/integrationTest/java')
-    }
-    resources.srcDir file('src/integrationTest/resources')
-  }
-
-  smokeTest {
-    java {
-      compileClasspath += main.output
-      runtimeClasspath += main.output
-      srcDir file('src/smokeTest/java')
-    }
-    resources.srcDir file('src/smokeTest/resources')
-  }
-
-  contractTest {
-    java {
-      compileClasspath += main.output
-      runtimeClasspath += main.output
-      srcDir file('src/contractTest/java')
-    }
-    resources.srcDir file('src/contractTest/resources')
-  }
+application {
+  mainClass = 'uk.gov.hmcts.reform.pcs.Application'
 }
 
-configurations {
-  functionalTestImplementation.extendsFrom testImplementation
-  functionalTestRuntimeOnly.extendsFrom runtimeOnly
-
-  integrationTestImplementation.extendsFrom testImplementation
-  integrationTestRuntimeOnly.extendsFrom runtimeOnly
-
-  smokeTestImplementation.extendsFrom testImplementation
-  smokeTestRuntimeOnly.extendsFrom runtimeOnly
-
-  cftlibTestImplementation.extendsFrom testImplementation
-  cftlibTestRuntime.extendsFrom testRuntime
-}
-
-ccd {
-  configDir = file('build/definitions')
-}
-
-tasks.withType(JavaCompile) {
-  options.compilerArgs << "-Xlint:unchecked" << "-Werror"
-}
-
-// https://github.com/gradle/gradle/issues/16791
-tasks.withType(JavaExec).configureEach {
-  javaLauncher.set(javaToolchains.launcherFor(java.toolchain))
-}
-
-tasks.withType(Test) {
-  useJUnitPlatform()
-
-  testLogging {
-    exceptionFormat = 'full'
-  }
-}
-
-test {
-  failFast = true
-}
-
-task functional(type: Test) {
-  description = "Runs functional tests"
-  group = "verification"
-  dependsOn assemble, testClasses
-  testClassesDirs = sourceSets.functionalTest.output.classesDirs
-  classpath = configurations.functionalTestRuntimeClasspath + sourceSets.functionalTest.output
-
-  useJUnitPlatform {
-    includeTags System.getProperty("tags", "Functional")
-  }
-
-  doFirst {
-    delete "${rootDir}/target/site/serenity"
-    delete "${rootDir}/report-for-functional-tests"
-    logger.quiet("Functional test results directory cleaned before running functional tests")
-  }
-
-  finalizedBy {
-    aggregate {
-      doLast {
-        new File("${rootDir}/report-for-functional-tests").mkdirs()
-        file("${rootDir}/target/site/serenity").renameTo(file("${rootDir}/report-for-functional-tests"))
-        logger.quiet("Functional test report moved to ---> file://${rootDir}/report-for-functional-tests/index.html")
-      }
-    }
-  }
-  testLogging {
-    events "PASSED", "SKIPPED", "FAILED"
-  }
-}
-functional.finalizedBy(aggregate)
-
-serenity {
-  reports = ["single-page-html"]
-}
-
-task integration(type: Test) {
-  description = "Runs integration tests"
-  group = "Verification"
-  testClassesDirs = sourceSets.integrationTest.output.classesDirs
-  classpath = sourceSets.integrationTest.runtimeClasspath
-  failFast = true
-}
-
-task smoke(type: Test) {
-  description = "Runs Smoke Tests"
-  testClassesDirs = sourceSets.smokeTest.output.classesDirs
-  classpath = sourceSets.smokeTest.runtimeClasspath
-}
-
-task yarnInstall(type:Exec) {
-  workingDir = file("${project.projectDir}/src/e2eTest")
-  commandLine 'yarn', 'install'
-}
-
-task runE2eTests(type: Exec) {
-  dependsOn yarnInstall
-  workingDir = file("${project.projectDir}/src/e2eTest")
-  commandLine 'yarn', 'test:functional'
-}
-
-task runE2eChromeTests(type: Exec) {
-  dependsOn yarnInstall
-  workingDir = file("${project.projectDir}/src/e2eTest")
-  commandLine 'yarn', 'test:chrome'
-}
-
-task runE2eFirefoxTests(type: Exec) {
-  dependsOn yarnInstall
-  workingDir = file("${project.projectDir}/src/e2eTest")
-  commandLine 'yarn', 'test:firefox'
-}
-
-task contract(type: Test) {
-  description = 'Runs the consumer Pact tests'
-  useJUnitPlatform()
-  testClassesDirs = sourceSets.contractTest.output.classesDirs
-  classpath = sourceSets.contractTest.runtimeClasspath
-  systemProperty 'pact.rootDir', "pacts"
-}
-
-task runAndPublishConsumerPactTests(type: Test){
-  testClassesDirs = sourceSets.contractTest.output.classesDirs
-  classpath = sourceSets.contractTest.runtimeClasspath
-}
-
-project.ext {
-  pactVersion = getCheckedOutGitCommitHash()
-}
-
-pact {
-  publish {
-    pactDirectory = 'pacts'
-    pactBrokerUrl = System.getenv("PACT_BROKER_URL") ?: 'http://localhost:80'
-    tags = [System.getenv("PACT_BRANCH_NAME") ?:'Dev']
-    version = project.pactVersion
-  }
-}
-
-runAndPublishConsumerPactTests.dependsOn contract
-
-runAndPublishConsumerPactTests.finalizedBy pactPublish
-
-def getCheckedOutGitCommitHash() {
-  'git rev-parse --verify --short HEAD'.execute().text.trim()
-}
-
-jacocoTestReport {
-  executionData(test, integration, cftlibTest)
-  reports {
-    xml.required = true
-    csv.required = false
-    html.required = true
-  }
-}
-
-project.tasks['sonarqube'].dependsOn jacocoTestReport
-project.tasks['check'].dependsOn integration
-
-sonarqube {
-  properties {
-    property "sonar.projectName", "Reform :: pcs-api"
-    property "sonar.projectKey", "uk.gov.hmcts.reform:pcs-api"
-    property "sonar.coverage.exclusions", "**/config/**/*Configuration.java," +
-      "**/*Constants.java," +
-      "**/model/*.java," + "**/uk/gov/hmcts/reform/pcs/Application.java"
-  }
-}
-
-// before committing a change, make sure task still works
-dependencyUpdates {
-  def isNonStable = { String version ->
-    def stableKeyword = ['RELEASE', 'FINAL', 'GA'].any { qualifier -> version.toUpperCase().contains(qualifier) }
-    def regex = /^[0-9,.v-]+$/
-    return !stableKeyword && !(version ==~ regex)
-  }
-  rejectVersionIf { selection -> // <---- notice how the closure argument is named
-    return isNonStable(selection.candidate.version) && !isNonStable(selection.currentVersion)
-  }
-}
-
-// https://jeremylong.github.io/DependencyCheck/dependency-check-gradle/configuration.html
-dependencyCheck {
-  suppressionFile = 'config/owasp/suppressions.xml'
+wrapper {
+  distributionType = Wrapper.DistributionType.ALL
 }
 
 repositories {
@@ -269,83 +48,170 @@ repositories {
   maven { url = 'https://jitpack.io' }
 }
 
-def versions = [
-  lombok       : '1.18.38',
-  flyway: "$flywayVersion",
-]
+sourceSets {
+  create("functionalTest") {
+    java.srcDir file("src/functionalTest/java")
+    resources.srcDir file("src/functionalTest/resources")
+    compileClasspath += sourceSets.main.output
+    runtimeClasspath += sourceSets.main.output
+  }
+  create("integrationTest") {
+    compileClasspath += sourceSets.main.output
+    runtimeClasspath += sourceSets.main.output
+    java.srcDir file("src/integrationTest/java")
+    resources.srcDir file("src/integrationTest/resources")
+  }
+  create("smokeTest") {
+    compileClasspath += sourceSets.main.output
+    runtimeClasspath += sourceSets.main.output
+    java.srcDir file("src/smokeTest/java")
+    resources.srcDir file("src/smokeTest/resources")
+  }
+  create("contractTest") {
+    compileClasspath += sourceSets.main.output
+    runtimeClasspath += sourceSets.main.output
+    java.srcDir file("src/contractTest/java")
+    resources.srcDir file("src/contractTest/resources")
+  }
+}
+
+configurations {
+  functionalTestImplementation {
+    extendsFrom configurations.testImplementation
+  }
+  functionalTestRuntimeOnly {
+    extendsFrom configurations.runtimeOnly
+  }
+
+  integrationTestImplementation {
+    extendsFrom configurations.testImplementation
+  }
+  integrationTestRuntimeOnly {
+    extendsFrom configurations.runtimeOnly
+  }
+
+  contractTestImplementation {
+    extendsFrom configurations.testImplementation
+  }
+  contractTestRuntimeOnly {
+    extendsFrom configurations.runtimeOnly
+  }
+
+  smokeTestImplementation {
+    extendsFrom configurations.testImplementation
+  }
+  smokeTestRuntimeOnly {
+    extendsFrom configurations.runtimeOnly
+  }
+
+  cftlibTestImplementation {
+    extendsFrom configurations.testImplementation
+  }
+  cftlibTestRuntimeOnly {
+    extendsFrom configurations.testRuntimeOnly
+  }
+}
 
 ext {
-  log4JVersion = "2.24.3"
-  logbackVersion = "1.5.18"
+  flywayVersion = '11.7.0'
+  springBootVersion = '3.2.4'
+  springDocVersion = '2.8.6'
+  notifyClientVersion = '5.2.1-RELEASE'
+  hmctsLoggingVersion = '6.1.8'
+  serviceAuthVersion = '5.3.0'
+  log4JVersion = '2.24.3'
+  logbackVersion = '1.5.18'
+  lombokVersion = '1.18.36'
+  postgresVersion = '42.7.5'
+  serenityVersion = '4.2.17'
+  swaggerAnnotationsVersion = '2.2.30'
+  junitPlatformVersion = '1.12.1'
+  springSecurityTestVersion = '6.4.4'
+  azureSpringVersion = '5.21.0'
+  openFeignVersion = '4.2.1'
+  pactVersion = '4.6.17'
+  junitBomVersion = '5.12.1'
+  ccdClientVersion = '5.0.3'
+  idamClientVersion = '3.0.3'
+  hamcrestVersion = '2.0.0.0'
+  snakeyamlVersion = '2.2'
 }
-
-ext['snakeyaml.version'] = '2.0'
 
 dependencies {
+  // Spring Boot
+  implementation "org.springframework.boot:spring-boot-starter-web"
+  implementation "org.springframework.boot:spring-boot-starter-actuator"
+  implementation "org.springframework.boot:spring-boot-starter-aop"
+  implementation "org.springframework.boot:spring-boot-starter-json"
+  implementation "org.springframework.boot:spring-boot-starter-jdbc"
+  implementation "org.springframework.boot:spring-boot-starter-security"
 
-  implementation group: 'org.springframework.boot', name: 'spring-boot-starter-web'
-  implementation group: 'org.springframework.boot', name: 'spring-boot-starter-actuator'
-  implementation group: 'org.springframework.boot', name: 'spring-boot-starter-aop'
-  implementation group: 'org.springframework.boot', name: 'spring-boot-starter-json'
-  implementation group: 'org.springframework.boot', name: 'spring-boot-starter-jdbc'
-  implementation group: 'org.springframework.boot', name: 'spring-boot-starter-web'
-  implementation group: 'org.springframework.boot', name: 'spring-boot-starter-security'
+  // SpringDoc & OpenAPI
+  implementation "org.springdoc:springdoc-openapi-starter-webmvc-ui:$springDocVersion"
 
-  runtimeOnly group: 'org.flywaydb', name: 'flyway-database-postgresql', version: versions.flyway
-  implementation group: 'org.flywaydb', name: 'flyway-core', version: versions.flyway
+  // Flyway
+  implementation "org.flywaydb:flyway-core:$flywayVersion"
+  runtimeOnly "org.flywaydb:flyway-database-postgresql:$flywayVersion"
 
-  implementation group: 'org.springdoc', name: 'springdoc-openapi-starter-webmvc-ui', version: '2.8.6'
-  implementation group: 'uk.gov.service.notify', name: 'notifications-java-client', version: '5.2.1-RELEASE'
-  implementation platform(group: 'com.azure.spring', name :'spring-cloud-azure-dependencies', version :'5.22.0')
+  // Azure
+  implementation platform("com.azure.spring:spring-cloud-azure-dependencies:$azureSpringVersion")
   implementation "com.azure.spring:spring-cloud-azure-starter-servicebus-jms"
 
-  implementation group: 'com.github.hmcts.java-logging', name: 'logging', version: '6.1.8'
-  implementation group: 'com.github.hmcts', name: 'ccd-client', version: '5.0.5'
-  implementation group: 'com.github.hmcts', name: 'idam-java-client', version: '3.0.3'
+  // HMCTS
+  implementation "com.github.hmcts.java-logging:logging:$hmctsLoggingVersion"
+  implementation "com.github.hmcts:ccd-client:$ccdClientVersion"
+  implementation "com.github.hmcts:idam-java-client:$idamClientVersion"
+  implementation "com.github.hmcts:service-auth-provider-java-client:$serviceAuthVersion"
 
-  implementation group: 'org.apache.logging.log4j', name: 'log4j-api', version: log4JVersion
-  implementation group: 'org.apache.logging.log4j', name: 'log4j-to-slf4j', version: log4JVersion
-  implementation group: 'ch.qos.logback', name: 'logback-classic', version: logbackVersion
-  implementation group: 'ch.qos.logback', name: 'logback-core', version: logbackVersion
-  implementation group: 'org.postgresql', name: 'postgresql', version: '42.7.5'
-  implementation group: 'com.github.hmcts', name: 'service-auth-provider-java-client', version: '5.3.0'
-  implementation group: 'org.springframework.cloud', name: 'spring-cloud-starter-openfeign', version: '4.2.1'
-  implementation group: 'org.projectlombok', name: 'lombok', version: versions.lombok
-  annotationProcessor group: 'org.projectlombok', name: 'lombok', version: versions.lombok
+  // GOV.UK Notify
+  implementation "uk.gov.service.notify:notifications-java-client:$notifyClientVersion"
 
-  implementation group: 'io.rest-assured', name: 'rest-assured'
+  // Logging
+  implementation "org.apache.logging.log4j:log4j-api:$log4JVersion"
+  implementation "org.apache.logging.log4j:log4j-to-slf4j:$log4JVersion"
+  implementation "ch.qos.logback:logback-classic:$logbackVersion"
+  implementation "ch.qos.logback:logback-core:$logbackVersion"
 
-  functionalTestImplementation group: 'net.serenity-bdd', name: 'serenity-rest-assured', version: '4.2.22'
-  functionalTestImplementation group: 'net.serenity-bdd', name: 'serenity-core', version: '4.2.22'
-  functionalTestImplementation group: 'net.serenity-bdd', name: 'serenity-junit5', version: '4.2.22'
-  functionalTestImplementation sourceSets.main.runtimeClasspath
-  functionalTestImplementation sourceSets.test.runtimeClasspath
+  // PostgreSQL
+  implementation "org.postgresql:postgresql:$postgresVersion"
 
-  testImplementation group: 'org.junit.platform', name: 'junit-platform-suite-api', version: '1.12.2'
+  // OpenFeign
+  implementation "org.springframework.cloud:spring-cloud-starter-openfeign:$openFeignVersion"
 
-  contractTestImplementation group: 'au.com.dius.pact.consumer', name: 'junit5', version: '4.6.17'
-  contractTestImplementation group: 'org.hamcrest', name: 'java-hamcrest', version: '2.0.0.0'
-  contractTestImplementation('org.junit.jupiter:junit-jupiter-api:5.12.2')
-  contractTestImplementation sourceSets.main.runtimeClasspath
-  contractTestImplementation sourceSets.test.runtimeClasspath
+  // Lombok
+  implementation "org.projectlombok:lombok:$lombokVersion"
+  annotationProcessor "org.projectlombok:lombok:$lombokVersion"
 
-  testImplementation(platform('org.junit:junit-bom:5.12.2'))
-  testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'
-  testImplementation group: 'org.springframework.boot', name: 'spring-boot-starter-test', {
-    exclude group: 'junit', module: 'junit'
-    exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
+  // REST Assured
+  implementation "io.rest-assured:rest-assured"
+
+  // Functional Tests - Serenity
+  functionalTestImplementation "net.serenity-bdd:serenity-rest-assured:$serenityVersion"
+  functionalTestImplementation "net.serenity-bdd:serenity-core:$serenityVersion"
+  functionalTestImplementation "net.serenity-bdd:serenity-junit5:$serenityVersion"
+
+  // Contract Tests - Pact
+  contractTestImplementation "au.com.dius.pact.consumer:junit5:$pactVersion"
+  contractTestImplementation "org.hamcrest:java-hamcrest:$hamcrestVersion"
+  contractTestImplementation "org.junit.jupiter:junit-jupiter-api:$junitBomVersion"
+
+  // JUnit & Spring Testing
+  testImplementation platform("org.junit:junit-bom:$junitBomVersion")
+  testImplementation "org.junit.platform:junit-platform-suite-api:$junitPlatformVersion"
+  testImplementation "org.springframework.security:spring-security-test:$springSecurityTestVersion"
+  testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine"
+
+  testImplementation("org.springframework.boot:spring-boot-starter-test") {
+    exclude group: "junit", module: "junit"
+    exclude group: "org.junit.vintage", module: "junit-vintage-engine"
   }
-  // Allow fast reloading during dev; recompile a class to trigger fast reload + definition reimport.
-  cftlibImplementation 'org.springframework.boot:spring-boot-devtools'
-}
 
-application {
-  mainClass = 'uk.gov.hmcts.reform.pcs.Application'
+  // Dev Tools
+  cftlibImplementation "org.springframework.boot:spring-boot-devtools"
 }
 
 bootJar {
   archiveFileName = "pcs-api.jar"
-
   manifest {
     attributes('Implementation-Version': project.version.toString())
   }
@@ -366,28 +232,149 @@ tasks.register('migratePostgresDatabase', FlywayMigrateTask) {
   }
 }
 
-// Gradle 7.x issue, workaround from: https://github.com/gradle/gradle/issues/17236#issuecomment-894768083
-project.tasks.named("processSmokeTestResources") {
+tasks.withType(JavaCompile).configureEach {
+  options.compilerArgs += ["-Xlint:unchecked", "-Werror"]
+}
+
+tasks.withType(JavaExec).configureEach {
+  javaLauncher.set(javaToolchains.launcherFor(java.toolchain))
+}
+
+tasks.withType(Test).configureEach {
+  useJUnitPlatform()
+  testLogging.exceptionFormat = 'full'
+}
+
+tasks.register('functional', Test) {
+  group = 'verification'
+  description = 'Runs functional tests'
+  dependsOn assemble, testClasses
+  testClassesDirs = sourceSets.functionalTest.output.classesDirs
+  classpath = configurations.functionalTestRuntimeClasspath
+  useJUnitPlatform { includeTags System.getProperty("tags", "Functional") }
+
+  doFirst {
+    delete "${rootDir}/target/site/serenity", "${rootDir}/report-for-functional-tests"
+  }
+
+  finalizedBy {
+    tasks.register("aggregate") {
+      doLast {
+        file("${rootDir}/report-for-functional-tests").mkdirs()
+        file("${rootDir}/target/site/serenity").renameTo(file("${rootDir}/report-for-functional-tests"))
+      }
+    }
+  }
+}
+
+serenity {
+  reports = ["single-page-html"]
+}
+
+tasks.register('integration', Test) {
+  description = 'Runs integration tests'
+  group = 'verification'
+  testClassesDirs = sourceSets.integrationTest.output.classesDirs
+  classpath = sourceSets.integrationTest.runtimeClasspath
+  failFast = true // Consistent with smoke, contract and pact.
+}
+
+tasks.register('smoke', Test) {
+  description = 'Runs smoke tests'
+  group = 'verification'
+  testClassesDirs = sourceSets.smokeTest.output.classesDirs
+  classpath = sourceSets.smokeTest.runtimeClasspath
+}
+
+['runE2eTests', 'runE2eChromeTests', 'runE2eFirefoxTests'].each { taskName ->
+  tasks.register(taskName, Exec) {
+    dependsOn 'yarnInstall'
+    workingDir = file("${project.projectDir}/src/e2eTest")
+    commandLine 'yarn', taskName.replace('runE2e', 'test:')
+  }
+}
+
+tasks.register('yarnInstall', Exec) {
+  workingDir = file("${project.projectDir}/src/e2eTest")
+  commandLine 'yarn', 'install'
+}
+
+tasks.register('contract', Test) {
+  useJUnitPlatform()
+  testClassesDirs = sourceSets.contractTest.output.classesDirs
+  classpath = sourceSets.contractTest.runtimeClasspath
+  systemProperty 'pact.rootDir', "pacts"
+}
+
+static def getCheckedOutGitCommitHash() {
+  'git rev-parse --verify --short HEAD'.execute().text.trim()
+}
+
+ext.pactVersion = getCheckedOutGitCommitHash()
+
+pact {
+  publish {
+    pactDirectory = 'pacts'
+    pactBrokerUrl = System.getenv("PACT_BROKER_URL") ?: 'http://localhost:80'
+    tags = [System.getenv("PACT_BRANCH_NAME") ?: 'Dev']
+    version = project.pactVersion
+  }
+}
+
+tasks.register('runAndPublishConsumerPactTests', Test) {
+  testClassesDirs = sourceSets.contractTest.output.classesDirs
+  classpath = sourceSets.contractTest.runtimeClasspath
+  dependsOn 'contract'
+  finalizedBy 'pactPublish'
+}
+
+ccd {
+  configDir = file('build/definitions')
+}
+
+jacocoTestReport {
+  executionData(test, integration, cftlibTest)
+  reports {
+    xml.required = true
+    html.required = true
+  }
+}
+
+sonarqube {
+  properties {
+    property "sonar.projectName", "Reform :: pcs-api"
+    property "sonar.projectKey", "uk.gov.hmcts.reform:pcs-api"
+    property "sonar.coverage.exclusions", "**/config/**/*Configuration.java,**/*Constants.java,**/model/*.java,**/uk/gov/hmcts/reform/pcs/Application.java"
+  }
+}
+
+check.dependsOn jacocoTestReport, integration, cftlibTest
+
+dependencyUpdates {
+  rejectVersionIf {
+    def isNonStable = { v ->
+      !['RELEASE', 'FINAL', 'GA'].any { q -> v.toUpperCase().contains(q) } && !(v ==~ /^[0-9,.v-]+$/)
+    }
+    isNonStable(it.candidate.version) && !isNonStable(it.currentVersion)
+  }
+}
+
+dependencyCheck {
+  suppressionFile = 'config/owasp/suppressions.xml'
+}
+
+tasks.named("processSmokeTestResources") {
   duplicatesStrategy = 'include'
+}
+
+["processIntegrationTestResources", "processContractTestResources"].each {
+  rootProject.tasks.named(it) {
+    duplicatesStrategy = 'include'
+  }
 }
 
 tasks.withType(CftlibExec).configureEach {
   group = 'ccd tasks'
   authMode = AuthMode.Local
   environment 'SPRING_PROFILES_ACTIVE', 'dev'
-}
-
-// Ensure we cover Cftlib dev & test with our CI checks
-check.dependsOn cftlibTest
-
-rootProject.tasks.named("processIntegrationTestResources") {
-  duplicatesStrategy = 'include'
-}
-
-rootProject.tasks.named("processContractTestResources") {
-  duplicatesStrategy = 'include'
-}
-
-wrapper {
-  distributionType = Wrapper.DistributionType.ALL
 }
