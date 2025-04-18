@@ -1,12 +1,16 @@
 package uk.gov.hmcts.reform.pcs.notify.service;
 
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.dao.DataIntegrityViolationException;
+import uk.gov.hmcts.reform.pcs.notify.domain.CaseNotification;
 import uk.gov.hmcts.reform.pcs.notify.exception.NotificationException;
 import uk.gov.hmcts.reform.pcs.notify.model.EmailNotificationRequest;
+import uk.gov.hmcts.reform.pcs.notify.repository.NotificationRepository;
 import uk.gov.service.notify.NotificationClient;
 import uk.gov.service.notify.NotificationClientException;
 import uk.gov.service.notify.SendEmailResponse;
@@ -22,6 +26,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.any;
 
 @ExtendWith(MockitoExtension.class)
 class NotificationServiceTest {
@@ -29,11 +34,15 @@ class NotificationServiceTest {
     @Mock
     private NotificationClient notificationClient;
 
+    @Mock
+    private NotificationRepository notificationRepository;
+
     @InjectMocks
     private NotificationService notificationService;
 
+    @DisplayName("Should successfully send email when input data is valid")
     @Test
-    void testSendEmailSuccess() throws NotificationClientException {
+    void shouldSendEmailWhenDataIsValid() throws NotificationClientException {
         EmailNotificationRequest emailRequest = new EmailNotificationRequest(
             "test@example.com",
             "templateId",
@@ -42,6 +51,7 @@ class NotificationServiceTest {
             "emailReplyToId"
         );
         SendEmailResponse sendEmailResponse = mock(SendEmailResponse.class);
+        when(notificationRepository.save(any(CaseNotification.class))).thenReturn(mock(CaseNotification.class));
         when(sendEmailResponse.getNotificationId())
             .thenReturn(UUID.fromString("550e8400-e29b-41d4-a716-446655440000"));
         when(sendEmailResponse.getReference())
@@ -57,8 +67,9 @@ class NotificationServiceTest {
         verify(notificationClient).sendEmail(anyString(), anyString(), anyMap(), anyString());
     }
 
+    @DisplayName("Should throw notification exception when email sending fails")
     @Test
-    void testSendEmailFailure() throws NotificationClientException {
+    void shouldThrowNotificationExceptionWhenEmailSendingFails() throws NotificationClientException {
         EmailNotificationRequest emailRequest = new EmailNotificationRequest(
             "test@example.com",
             "templateId",
@@ -66,6 +77,7 @@ class NotificationServiceTest {
             "reference",
             "emailReplyToId"
         );
+        when(notificationRepository.save(any(CaseNotification.class))).thenReturn(mock(CaseNotification.class));
         when(notificationClient.sendEmail(anyString(), anyString(), anyMap(), anyString()))
             .thenThrow(new NotificationClientException("Error"));
 
@@ -75,4 +87,43 @@ class NotificationServiceTest {
 
         verify(notificationClient).sendEmail(anyString(), anyString(), anyMap(), anyString());
     }
+
+    @DisplayName("Should save case notification when end point is called successfully")
+    @Test
+    void shouldSaveCaseNotificationWhenEndPointIsCalled() {
+        String recipient = "test@example.com";
+        String status = "Schedule Pending";
+        UUID caseId = UUID.randomUUID();
+        String type = "Email";
+
+        CaseNotification testCaseNotification = new CaseNotification();
+        testCaseNotification.setStatus(status);
+        testCaseNotification.setRecipient(recipient);
+        testCaseNotification.setCaseId(caseId);
+        testCaseNotification.setType(type);
+
+        when(notificationRepository.save(any(CaseNotification.class))).thenReturn(testCaseNotification);
+        CaseNotification saved = notificationService.createCaseNotification(recipient, type, caseId);
+
+        assertThat(saved).isNotNull();
+        assertThat(saved.getCaseId()).isEqualTo(testCaseNotification.getCaseId());
+        assertThat(saved.getRecipient()).isEqualTo(testCaseNotification.getRecipient());
+        verify(notificationRepository).save(any(CaseNotification.class));
+    }
+
+    @DisplayName("Should throw notification exception when saving of notification fails")
+    @Test
+    void shouldThrowNotificationExceptionWhenSavingFails() throws DataIntegrityViolationException {
+        String recipient = "test@example.com";
+        String type = "Email";
+        UUID caseId = UUID.randomUUID();
+
+        when(notificationRepository.save(any(CaseNotification.class)))
+            .thenThrow(new DataIntegrityViolationException("Constraint violation"));
+
+        assertThatThrownBy(() -> notificationService.createCaseNotification(recipient, type, caseId))
+            .isInstanceOf(NotificationException.class).hasMessage("Failed to save Case Notification.");
+        verify(notificationRepository).save(any(CaseNotification.class));
+    }
+
 }
