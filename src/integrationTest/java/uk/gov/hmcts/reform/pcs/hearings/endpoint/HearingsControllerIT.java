@@ -1,5 +1,19 @@
 package uk.gov.hmcts.reform.pcs.hearings.endpoint;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.web.servlet.MockMvc;
+import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
+import uk.gov.hmcts.reform.pcs.config.AbstractPostgresContainerIT;
+import uk.gov.hmcts.reform.pcs.config.IntegrationTest;
+import uk.gov.hmcts.reform.pcs.hearings.model.DeleteHearingRequest;
+import uk.gov.hmcts.reform.pcs.hearings.model.HearingRequest;
+import uk.gov.hmcts.reform.pcs.hearings.model.UpdateHearingRequest;
+import uk.gov.hmcts.reform.pcs.hearings.service.api.HmcHearingApi;
+
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -8,25 +22,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static uk.gov.hmcts.reform.pcs.hearings.constants.HearingConstants.SERVICE_AUTHORIZATION;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.http.MediaType;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.test.web.servlet.MockMvc;
-import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
-import uk.gov.hmcts.reform.pcs.hearings.model.DeleteHearingRequest;
-import uk.gov.hmcts.reform.pcs.hearings.model.HearingRequest;
-import uk.gov.hmcts.reform.pcs.hearings.model.UpdateHearingRequest;
-import uk.gov.hmcts.reform.pcs.hearings.service.api.HmcHearingApi;
-
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@AutoConfigureMockMvc
-@ActiveProfiles("integration")
-class HearingsControllerIT {
+@IntegrationTest
+class HearingsControllerIT extends AbstractPostgresContainerIT {
 
     @Autowired
     private MockMvc mockMvc;
