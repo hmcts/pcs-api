@@ -167,7 +167,7 @@ task smoke(type: Test) {
   classpath = sourceSets.smokeTest.runtimeClasspath
 }
 
-task yarnInstall(type:Exec) {
+task yarnInstall(type: Exec) {
   workingDir = file("${project.projectDir}/src/e2eTest")
   commandLine 'yarn', 'install'
 }
@@ -198,7 +198,7 @@ task contract(type: Test) {
   systemProperty 'pact.rootDir', "pacts"
 }
 
-task runAndPublishConsumerPactTests(type: Test){
+task runAndPublishConsumerPactTests(type: Test) {
   testClassesDirs = sourceSets.contractTest.output.classesDirs
   classpath = sourceSets.contractTest.runtimeClasspath
 }
@@ -211,7 +211,7 @@ pact {
   publish {
     pactDirectory = 'pacts'
     pactBrokerUrl = System.getenv("PACT_BROKER_URL") ?: 'http://localhost:80'
-    tags = [System.getenv("PACT_BRANCH_NAME") ?:'Dev']
+    tags = [System.getenv("PACT_BRANCH_NAME") ?: 'Dev']
     version = project.pactVersion
   }
 }
@@ -270,13 +270,14 @@ repositories {
 }
 
 def versions = [
-  lombok       : '1.18.38',
+  lombok: '1.18.38',
   flyway: "$flywayVersion",
 ]
 
 ext {
-  log4JVersion = "2.24.3"
-  logbackVersion = "1.5.18"
+  log4JVersion = '2.24.3'
+  logbackVersion = '1.5.18'
+  springSecurityTestVersion = '6.4.4'
 }
 
 ext['snakeyaml.version'] = '2.0'
@@ -330,6 +331,7 @@ dependencies {
   contractTestImplementation sourceSets.test.runtimeClasspath
 
   testImplementation(platform('org.junit:junit-bom:5.12.2'))
+  testImplementation "org.springframework.security:spring-security-test:$springSecurityTestVersion"
   testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'
   testImplementation group: 'org.springframework.boot', name: 'spring-boot-starter-test', {
     exclude group: 'junit', module: 'junit'

@@ -3,6 +3,7 @@ package uk.gov.hmcts.reform.pcs.hearings.endpoint;
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 import static uk.gov.hmcts.reform.pcs.hearings.constants.HearingConstants.SERVICE_AUTHORIZATION;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -26,6 +27,7 @@ import uk.gov.hmcts.reform.pcs.hearings.service.HmcHearingService;
  */
 @RestController
 @RequestMapping("/hearing")
+@Tag(name = "Hearings")
 public class HearingsController {
 
     private final HmcHearingService hmcHearingService;
