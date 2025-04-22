@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.notify.endpoint;
 
+import com.github.kagkarlsson.scheduler.SchedulerClient;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -9,36 +10,63 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import uk.gov.hmcts.reform.pcs.notify.model.EmailNotificationRequest;
-import uk.gov.hmcts.reform.pcs.notify.service.NotificationService;
+import uk.gov.hmcts.reform.pcs.notify.model.EmailNotificationResponse;
+import uk.gov.hmcts.reform.pcs.notify.scheduler.EmailTaskConfiguration;
+import uk.gov.hmcts.reform.pcs.notify.scheduler.EmailState;
 import uk.gov.service.notify.SendEmailResponse;
 
-import static org.springframework.http.HttpHeaders.AUTHORIZATION;
+import java.time.Instant;
+import java.util.UUID;
 
-/*
-    This is a temporary endpoint created purely for testing the integration with Gov Notify, and will be removed once
-    events are added to our service, DO NOT USE for any future events.
-*/
+import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 
 @Slf4j
 @RestController
 @RequestMapping("/notify")
 public class NotifyController {
 
-    private final NotificationService notificationService;
+    private final SchedulerClient schedulerClient;
 
-    public NotifyController(NotificationService notificationService) {
-        this.notificationService = notificationService;
+    public NotifyController(SchedulerClient schedulerClient) {
+        this.schedulerClient = schedulerClient;
     }
 
     @PostMapping(value = "/send-email", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<SendEmailResponse> sendEmail(
+    public ResponseEntity<EmailNotificationResponse> sendEmail(
         @RequestHeader(value = AUTHORIZATION, defaultValue = "DummyId") String authorisation,
         @RequestHeader(value = "ServiceAuthorization") String serviceAuthorization,
         @RequestBody EmailNotificationRequest emailRequest) {
-        log.debug("Received request to send email to {}", emailRequest.getEmailAddress());
 
-        SendEmailResponse notificationResponse = notificationService.sendEmail(emailRequest);
+        log.info("Received request to send email to: {}", emailRequest.getEmailAddress());
 
-        return ResponseEntity.ok(notificationResponse);
+        // Generate a unique ID for this email task
+        String taskId = UUID.randomUUID().toString();
+
+        // Create the email state object
+        EmailState emailState = new EmailState(
+            taskId,
+            emailRequest.getEmailAddress(),
+            emailRequest.getTemplateId(),
+            emailRequest.getPersonalisation(),
+            emailRequest.getReference(),
+            emailRequest.getEmailReplyToId(),
+            null, // notification ID will be set after sending
+            0     // initial retry count
+        );
+
+        // Schedule the send email task to run immediately
+        schedulerClient.scheduleIfNotExists(
+            EmailTaskConfiguration.sendEmailTask
+                .instance(taskId)
+                .data(emailState)
+                .scheduledTo(Instant.now())
+        );
+
+        // Create response
+        EmailNotificationResponse response = new EmailNotificationResponse();
+        response.setTaskId(taskId);
+        response.setStatus("SCHEDULED");
+
+        return ResponseEntity.accepted().body(response);
     }
 }
