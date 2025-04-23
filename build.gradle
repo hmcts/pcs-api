@@ -4,7 +4,8 @@ import uk.gov.hmcts.rse.CftlibExec
 
 buildscript {
   ext {
-    flywayVersion = '11.7.0'
+    flywayVersion = '11.7.2'
+    serenityBddVersion = '4.2.22'
   }
   dependencies {
     classpath("org.flywaydb:flyway-database-postgresql:$flywayVersion")
@@ -19,9 +20,10 @@ plugins {
   id 'com.github.ben-manes.versions' version '0.52.0'
   id 'org.flywaydb.flyway' version "$flywayVersion"
   id 'org.sonarqube' version '6.1.0.5360'
-  id 'net.serenity-bdd.serenity-gradle-plugin' version '4.2.16'
-  id 'com.github.hmcts.rse-cft-lib' version '0.20.0-alpha.20'
-  id 'io.freefair.lombok' version '8.13'
+  id 'net.serenity-bdd.serenity-gradle-plugin' version "$serenityBddVersion"
+  id 'hmcts.ccd.sdk' version '5.5.19'
+  id 'com.github.hmcts.rse-cft-lib' version '0.19.1618'
+  id 'io.freefair.lombok' version '8.13.1'
   id 'au.com.dius.pact' version '4.6.17'
   /*
     Applies analysis tools including checkstyle and OWASP Dependency checker.
@@ -105,6 +107,7 @@ tasks.withType(JavaExec).configureEach {
 
 tasks.withType(Test) {
   useJUnitPlatform()
+  maxParallelForks = 1
 
   testLogging {
     exceptionFormat = 'full'
@@ -165,7 +168,7 @@ task smoke(type: Test) {
   classpath = sourceSets.smokeTest.runtimeClasspath
 }
 
-task yarnInstall(type:Exec) {
+task yarnInstall(type: Exec) {
   workingDir = file("${project.projectDir}/src/e2eTest")
   commandLine 'yarn', 'install'
 }
@@ -196,7 +199,7 @@ task contract(type: Test) {
   systemProperty 'pact.rootDir', "pacts"
 }
 
-task runAndPublishConsumerPactTests(type: Test){
+task runAndPublishConsumerPactTests(type: Test) {
   testClassesDirs = sourceSets.contractTest.output.classesDirs
   classpath = sourceSets.contractTest.runtimeClasspath
 }
@@ -209,7 +212,7 @@ pact {
   publish {
     pactDirectory = 'pacts'
     pactBrokerUrl = System.getenv("PACT_BROKER_URL") ?: 'http://localhost:80'
-    tags = [System.getenv("PACT_BRANCH_NAME") ?:'Dev']
+    tags = [System.getenv("PACT_BRANCH_NAME") ?: 'Dev']
     version = project.pactVersion
   }
 }
@@ -268,24 +271,29 @@ repositories {
 }
 
 def versions = [
-  lombok       : '1.18.38',
+  lombok: '1.18.38',
   flyway: "$flywayVersion",
+  springSecurityVersion: '6.4.4'
 ]
 
 ext {
   log4JVersion = "2.24.3"
   logbackVersion = "1.5.18"
+  testcontainersVersion = "1.20.6"
 }
 
 ext['snakeyaml.version'] = '2.0'
 
 dependencies {
 
+  constraints {
+    implementation('org.hibernate.orm:hibernate-core:6.6.11')
+  }
+
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-web'
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-actuator'
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-aop'
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-json'
-  implementation group: 'org.springframework.boot', name: 'spring-boot-starter-jdbc'
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-data-jpa'
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-web'
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-security'
@@ -298,8 +306,8 @@ dependencies {
   implementation platform(group: 'com.azure.spring', name :'spring-cloud-azure-dependencies', version :'5.22.0')
   implementation "com.azure.spring:spring-cloud-azure-starter-servicebus-jms"
 
-  implementation group: 'com.github.hmcts.java-logging', name: 'logging', version: '6.1.7'
-  implementation group: 'com.github.hmcts', name: 'ccd-client', version: '5.0.3'
+  implementation group: 'com.github.hmcts.java-logging', name: 'logging', version: '6.1.8'
+  implementation group: 'com.github.hmcts', name: 'ccd-client', version: '5.0.5'
   implementation group: 'com.github.hmcts', name: 'idam-java-client', version: '3.0.3'
 
   implementation group: 'org.apache.logging.log4j', name: 'log4j-api', version: log4JVersion
@@ -310,6 +318,7 @@ dependencies {
   implementation group: 'com.github.hmcts', name: 'service-auth-provider-java-client', version: '5.3.0'
   implementation group: 'org.springframework.cloud', name: 'spring-cloud-starter-openfeign', version: '4.2.1'
   implementation group: 'org.projectlombok', name: 'lombok', version: versions.lombok
+  implementation 'org.postgresql:postgresql:42.7.5'
   annotationProcessor group: 'org.projectlombok', name: 'lombok', version: versions.lombok
 
   implementation group: 'io.rest-assured', name: 'rest-assured'
@@ -320,9 +329,9 @@ dependencies {
 
   integrationTestImplementation 'org.testcontainers:postgresql:1.20.6'
 
-  functionalTestImplementation group: 'net.serenity-bdd', name: 'serenity-rest-assured', version: '4.2.17'
-  functionalTestImplementation group: 'net.serenity-bdd', name: 'serenity-core', version: '4.2.19'
-  functionalTestImplementation group: 'net.serenity-bdd', name: 'serenity-junit5', version: '4.2.19'
+  functionalTestImplementation group: 'net.serenity-bdd', name: 'serenity-rest-assured', version: serenityBddVersion
+  functionalTestImplementation group: 'net.serenity-bdd', name: 'serenity-core', version: serenityBddVersion
+  functionalTestImplementation group: 'net.serenity-bdd', name: 'serenity-junit5', version: serenityBddVersion
   functionalTestImplementation sourceSets.main.runtimeClasspath
   functionalTestImplementation sourceSets.test.runtimeClasspath
 
@@ -335,11 +344,20 @@ dependencies {
   contractTestImplementation sourceSets.test.runtimeClasspath
 
   testImplementation(platform('org.junit:junit-bom:5.12.2'))
+  testImplementation group: 'org.springframework.security', name: 'spring-security-test', version: versions.springSecurityVersion
   testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'
   testImplementation group: 'org.springframework.boot', name: 'spring-boot-starter-test', {
     exclude group: 'junit', module: 'junit'
     exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
   }
+  testImplementation 'org.springframework.boot:spring-boot-starter-webflux'
+
+  testImplementation group: 'org.testcontainers', name: 'testcontainers', version: testcontainersVersion
+  testImplementation group: 'org.testcontainers', name: 'junit-jupiter', version: testcontainersVersion
+  testImplementation group: 'org.testcontainers', name: 'postgresql', version: testcontainersVersion
+
+  testImplementation 'com.h2database:h2'
+
   // Allow fast reloading during dev; recompile a class to trigger fast reload + definition reimport.
   cftlibImplementation 'org.springframework.boot:spring-boot-devtools'
 }
@@ -384,6 +402,9 @@ tasks.withType(CftlibExec).configureEach {
   group = 'ccd tasks'
   authMode = AuthMode.Local
   environment 'RSE_LIB_ADDITIONAL_DATABASES', 'pcs'
+  environment 'PCS_DB_USER_NAME', 'postgres'
+  environment 'PCS_DB_PASSWORD', 'postgres'
+  environment 'DB_PORT', '6432'
   environment 'POC_APIS_URL', 'http://localhost:3206'
   environment 'SPRING_PROFILES_ACTIVE', 'dev'
 }

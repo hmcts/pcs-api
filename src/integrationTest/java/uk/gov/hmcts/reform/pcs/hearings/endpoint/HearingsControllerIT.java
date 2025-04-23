@@ -23,9 +23,9 @@ import uk.gov.hmcts.reform.pcs.hearings.model.HearingRequest;
 import uk.gov.hmcts.reform.pcs.hearings.model.UpdateHearingRequest;
 import uk.gov.hmcts.reform.pcs.hearings.service.api.HmcHearingApi;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest
 @AutoConfigureMockMvc
-@ActiveProfiles("integration")
+@ActiveProfiles("test")
 class HearingsControllerIT {
 
     @Autowired
