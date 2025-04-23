@@ -19,5 +19,6 @@ java:
     PCS_DB_NAME: "{{ .Values.postgresql.auth.database}}"
     FLYWAY_NOOP_STRATEGY: "false"
     SPRING_FLYWAY_LOCATIONS: "classpath:db/migration,classpath:db/testdata"
+    ENABLE_TESTING_SUPPORT: true
   postgresql:
     enabled: true
