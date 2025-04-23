@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.testingsupport.endpoint;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.MediaType;
@@ -24,6 +25,7 @@ import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 @RestController
 @RequestMapping("/testing-support")
 @ConditionalOnProperty(name = "testing-support.enabled", havingValue = "true")
+@Tag(name = "Testing Support")
 public class TestingSupportController {
 
     private final NotificationService notificationService;
