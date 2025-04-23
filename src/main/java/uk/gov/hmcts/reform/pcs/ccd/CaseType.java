@@ -1,5 +1,8 @@
 package uk.gov.hmcts.reform.pcs.ccd;
 
+import static java.lang.System.getenv;
+import static java.util.Optional.ofNullable;
+
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CCDConfig;
 import uk.gov.hmcts.ccd.sdk.api.ConfigBuilder;
@@ -13,12 +16,25 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.UserRole;
 @Component
 public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
 
+    private static final String CASE_TYPE_ID = "PCS";
+    public static final String CASE_TYPE_NAME = "Civil Possessions";
+    public static final String CASE_TYPE_DESCRIPTION = "Civil Possessions Claims";
+    public static final String JURISDICTION_ID = "CIVIL";
+    public static final String JURISDICTION_NAME = "Civil Possessions";
+    public static final String JURISDICTION_DESCRIPTION= "Civil Possessions Claims";
+
+    public static String getCaseTypeId() {
+        return ofNullable(getenv().get("CHANGE_ID"))
+            .map(num -> CASE_TYPE_ID + "_" + num)
+            .orElse(CASE_TYPE_ID);
+    }
+
     @Override
     public void configure(final ConfigBuilder<PCSCase, State, UserRole> builder) {
-        builder.setCallbackHost("http://localhost:3206");
+        builder.setCallbackHost(getenv().getOrDefault("CASE_API_URL", "http://localhost:3206"));
 
-        builder.caseType("PCS", "Civil Possessions", "Possessions");
-        builder.jurisdiction("CIVIL", "Civil Possessions", "The new one");
+        builder.caseType(getCaseTypeId(), CASE_TYPE_NAME, CASE_TYPE_DESCRIPTION);
+        builder.jurisdiction(JURISDICTION_ID, JURISDICTION_NAME, JURISDICTION_DESCRIPTION);
 
         var label = "Applicant Forename";
         builder.searchInputFields()

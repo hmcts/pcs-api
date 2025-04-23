@@ -18,40 +18,24 @@ if [ -z "$env" ]; then
   echo "No environment specified, defaulting to the local naming convention."
 fi
 
-# Set the tag version based on current Date and Time
-tag_version=$(date +"%d%m%Y_%H%M%S")
 
 # Set the CCD definition version based on the environment
-case ${env} in
-  local)
-    ccd_def_version="${tag_version}_local"
+
+case "$env" in
+  local|aat|prod|demo|ithc|perftest)
+    ccd_def_env="$env"
     ;;
   preview)
-    ccd_def_version="${tag_version}_pr_${CHANGE_ID:-unknown}"
-    ;;
-  aat)
-    ccd_def_version="${tag_version}_aat"
-    ;;
-  prod)
-    ccd_def_version="${tag_version}_prod"
-    ;;
-  demo)
-    ccd_def_version="${tag_version}_demo"
-    ;;
-  ithc)
-    ccd_def_version="${tag_version}_ithc"
-    ;;
-  perftest)
-    ccd_def_version="${tag_version}_perftest"
+    ccd_def_env="pr_${CHANGE_ID:-unknown}"
     ;;
   *)
-    echo "Error: Invalid environment '$env'. Valid options are: local, preview, aat, prod, demo, ithc, perftest"
+    echo "Error: Invalid environment '$env'. Valid options: local, preview, aat, prod, demo, ithc, perftest"
     exit 1
     ;;
 esac
 
 # Create the xlsx file name for the CCD definition
-ccd_definition_file="CCD_Definition_${ccd_def_version}.xlsx"
+ccd_definition_file="CCD_Definition_${ccd_def_env}.xlsx"
 
 # Runs the CCD JSON -> XLSX converter and outputs to the output directory
 docker run --rm --name json2xlsx \
