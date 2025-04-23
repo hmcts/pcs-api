@@ -15,10 +15,10 @@ dependencies:
     repository: 'oci://hmctspublic.azurecr.io/helm'
     condition: servicebus.enabled
   - name: ccd
-    version: 9.2.1
-    repository: 'https://hmctspublic.azurecr.io/helm/v1/repo/'
+    version: 9.2.2
+    repository: 'oci://hmctspublic.azurecr.io/helm'
     condition: ccd.enabled
   - name: xui-webapp
-    version: 1.0.18
-    repository: 'https://hmctspublic.azurecr.io/helm/v1/repo/'
+    version: 1.0.30
+    repository: 'oci://hmctspublic.azurecr.io/helm'
     condition: xui-webapp.enabled
