@@ -5,10 +5,10 @@ env=$1
 
 # Get the current directory
 run_dir=$(pwd)
-
+ls "$run_dir/build/definitions/"
 # Check if the directory exists
-if [ ! -d "$run_dir/build/definitions/" ]; then
-  echo "Error: Directory $run_dir/build/definitions/ does not exist."
+if [ ! -d "$run_dir/build/definitions/PCS" ]; then
+  echo "Error: Directory $run_dir/build/definitions/PCS does not exist."
   exit 1
 fi
 
