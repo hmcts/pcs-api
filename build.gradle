@@ -5,7 +5,7 @@ import uk.gov.hmcts.rse.CftlibExec
 buildscript {
   ext {
     flywayVersion = '11.7.2'
-    senerityBddGradlePluginVersion = '4.2.22'
+    serenityBddGradlePluginVersion = '4.2.22'
   }
   dependencies {
     classpath("org.flywaydb:flyway-database-postgresql:$flywayVersion")
@@ -20,7 +20,7 @@ plugins {
   id 'com.github.ben-manes.versions' version '0.52.0'
   id 'org.flywaydb.flyway' version "$flywayVersion"
   id 'org.sonarqube' version '6.1.0.5360'
-  id 'net.serenity-bdd.serenity-gradle-plugin' version "$senerityBddGradlePluginVersion"
+  id 'net.serenity-bdd.serenity-gradle-plugin' version "$serenityBddGradlePluginVersion"
   id 'hmcts.ccd.sdk' version '5.5.19'
   id 'com.github.hmcts.rse-cft-lib' version '0.19.1666'
   id 'io.freefair.lombok' version '8.13.1'
