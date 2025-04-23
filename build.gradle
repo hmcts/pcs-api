@@ -5,6 +5,7 @@ import uk.gov.hmcts.rse.CftlibExec
 buildscript {
   ext {
     flywayVersion = '11.7.2'
+    serenityBddVersion = '4.2.22'
   }
   dependencies {
     classpath("org.flywaydb:flyway-database-postgresql:$flywayVersion")
@@ -19,7 +20,7 @@ plugins {
   id 'com.github.ben-manes.versions' version '0.52.0'
   id 'org.flywaydb.flyway' version "$flywayVersion"
   id 'org.sonarqube' version '6.1.0.5360'
-  id 'net.serenity-bdd.serenity-gradle-plugin' version '4.2.22'
+  id 'net.serenity-bdd.serenity-gradle-plugin' version "$serenityBddVersion"
   id 'hmcts.ccd.sdk' version '5.5.19'
   id 'com.github.hmcts.rse-cft-lib' version '0.19.1668'
   id 'io.freefair.lombok' version '8.13.1'
@@ -167,7 +168,7 @@ task smoke(type: Test) {
   classpath = sourceSets.smokeTest.runtimeClasspath
 }
 
-task yarnInstall(type:Exec) {
+task yarnInstall(type: Exec) {
   workingDir = file("${project.projectDir}/src/e2eTest")
   commandLine 'yarn', 'install'
 }
@@ -198,7 +199,7 @@ task contract(type: Test) {
   systemProperty 'pact.rootDir', "pacts"
 }
 
-task runAndPublishConsumerPactTests(type: Test){
+task runAndPublishConsumerPactTests(type: Test) {
   testClassesDirs = sourceSets.contractTest.output.classesDirs
   classpath = sourceSets.contractTest.runtimeClasspath
 }
@@ -211,7 +212,7 @@ pact {
   publish {
     pactDirectory = 'pacts'
     pactBrokerUrl = System.getenv("PACT_BROKER_URL") ?: 'http://localhost:80'
-    tags = [System.getenv("PACT_BRANCH_NAME") ?:'Dev']
+    tags = [System.getenv("PACT_BRANCH_NAME") ?: 'Dev']
     version = project.pactVersion
   }
 }
@@ -270,8 +271,9 @@ repositories {
 }
 
 def versions = [
-  lombok       : '1.18.38',
+  lombok: '1.18.38',
   flyway: "$flywayVersion",
+  springSecurityVersion: '6.4.4'
 ]
 
 ext {
@@ -315,9 +317,9 @@ dependencies {
 
   implementation group: 'io.rest-assured', name: 'rest-assured'
 
-  functionalTestImplementation group: 'net.serenity-bdd', name: 'serenity-rest-assured', version: '4.2.22'
-  functionalTestImplementation group: 'net.serenity-bdd', name: 'serenity-core', version: '4.2.22'
-  functionalTestImplementation group: 'net.serenity-bdd', name: 'serenity-junit5', version: '4.2.22'
+  functionalTestImplementation group: 'net.serenity-bdd', name: 'serenity-rest-assured', version: serenityBddVersion
+  functionalTestImplementation group: 'net.serenity-bdd', name: 'serenity-core', version: serenityBddVersion
+  functionalTestImplementation group: 'net.serenity-bdd', name: 'serenity-junit5', version: serenityBddVersion
   functionalTestImplementation sourceSets.main.runtimeClasspath
   functionalTestImplementation sourceSets.test.runtimeClasspath
 
@@ -330,6 +332,7 @@ dependencies {
   contractTestImplementation sourceSets.test.runtimeClasspath
 
   testImplementation(platform('org.junit:junit-bom:5.12.2'))
+  testImplementation group: 'org.springframework.security', name: 'spring-security-test', version: versions.springSecurityVersion
   testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'
   testImplementation group: 'org.springframework.boot', name: 'spring-boot-starter-test', {
     exclude group: 'junit', module: 'junit'
