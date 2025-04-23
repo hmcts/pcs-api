@@ -25,7 +25,7 @@ import uk.gov.hmcts.reform.pcs.hearings.service.api.HmcHearingApi;
 
 @SpringBootTest
 @AutoConfigureMockMvc
-@ActiveProfiles("integration")
+@ActiveProfiles("test")
 class HearingsControllerIT {
 
     @Autowired
