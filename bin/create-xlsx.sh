@@ -1,45 +1,29 @@
 #!/usr/bin/env bash
-
-# This script is used to create the xlsx file for the given version and environment
+set -ex
 env=$1
-
-# Get the current directory
 run_dir=$(pwd)
-ls "$run_dir/build/definitions/"
-# Check if the directory exists
-if [ ! -d "$run_dir/build/definitions/PCS" ]; then
-  echo "Error: Directory $run_dir/build/definitions/PCS does not exist."
-  exit 1
-fi
 
-# Check if the environment is provided, if not default to local
 if [ -z "$env" ]; then
   env="local"
   echo "No environment specified, defaulting to the local naming convention."
 fi
 
+for case_dir in "$run_dir"/build/definitions/*/; do
+  case_type=$(basename "$case_dir")
 
-# Set the CCD definition version based on the environment
+  echo "Processing case type: $case_type"
 
-case "$env" in
-  local|aat|prod|demo|ithc|perftest)
-    ccd_def_env="$env"
-    ;;
-  preview)
-    ccd_def_env="pr_${CHANGE_ID:-unknown}"
-    ;;
-  *)
-    echo "Error: Invalid environment '$env'. Valid options: local, preview, aat, prod, demo, ithc, perftest"
-    exit 1
-    ;;
-esac
+  if [ ! -d "$case_dir" ]; then
+    echo "Skipping $case_type as it's not a directory."
+    continue
+  fi
 
-# Create the xlsx file name for the CCD definition
-ccd_definition_file="CCD_Definition_${ccd_def_env}.xlsx"
+  ccd_definition_file="CCD_Definition_${case_type}_${env}.xlsx"
 
-# Runs the CCD JSON -> XLSX converter and outputs to the output directory
-docker run --rm --name json2xlsx \
-  -v "$run_dir/build/definitions/PCS:/build/definitions/PCS" \
-  -v "$run_dir/build/definitions:/build/definitions" \
+docker run --rm --name "json2xlsx" \
+  -v "$run_dir/build/definitions/${case_type}:/tmp/ccd-input" \
+  -v "$run_dir/build/definitions:/tmp/ccd-output" \
   hmctspublic.azurecr.io/ccd/definition-processor:latest \
-  json2xlsx -D /build/definitions/PCS -o "/build/definitions/${ccd_definition_file}"
+  json2xlsx -D /tmp/ccd-input -o /tmp/ccd-output/"${ccd_definition_file}"
+
+done
