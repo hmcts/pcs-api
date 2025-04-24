@@ -21,7 +21,7 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
     public static final String CASE_TYPE_DESCRIPTION = "Civil Possessions Claims";
     public static final String JURISDICTION_ID = "CIVIL";
     public static final String JURISDICTION_NAME = "Civil Possessions";
-    public static final String JURISDICTION_DESCRIPTION= "Civil Possessions Claims";
+    public static final String JURISDICTION_DESCRIPTION = "Civil Possessions Claims";
 
     public static String getCaseTypeId() {
         return ofNullable(getenv().get("CHANGE_ID"))
