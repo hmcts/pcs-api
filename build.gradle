@@ -411,6 +411,12 @@ tasks.withType(CftlibExec).configureEach {
   environment 'SPRING_PROFILES_ACTIVE', 'dev'
 }
 
+tasks.register('highLevelDataSetup', JavaExec) {
+  mainClass.set("uk.gov.hmcts.reform.pcs.ccd.config.HighLevelDataSetupApp")
+  classpath += sourceSets.main.runtimeClasspath
+  jvmArgs = ['--add-opens=java.base/java.lang.reflect=ALL-UNNAMED']
+}
+
 // Ensure we cover Cftlib dev & test with our CI checks
 check.dependsOn cftlibTest
 
