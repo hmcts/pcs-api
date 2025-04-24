@@ -36,8 +36,8 @@ import static uk.gov.hmcts.reform.pcs.postcodecourt.controller.PostCodeCourtCont
 class PostCodeCourtControllerIT extends AbstractPostgresContainerIT {
 
     private static final String AUTH_HEADER = "Bearer token";
-    private static final String PCS_SERVICE_AUTH_HEADER = "Bearer eyJhbGciOiJIUzUxMiJ9";
-    private static final String LOC_REF_SERVICE_AUTH_HEADER = "Bearer eyJzdWIiOiJwY3NfYXBpIiwiZXhwIjoxNzQ0ODkxODI3fQ";
+    private static final String PCS_SERVICE_AUTH_HEADER = "Bearer serviceToken";
+    private static final String LOC_REF_SERVICE_AUTH_HEADER = "Bearer locServiceToken";
     private static final String SERVICE_AUTHORIZATION = "ServiceAuthorization";
     private static final int COUNTY_COURT_TYPE_ID = 10;
 
