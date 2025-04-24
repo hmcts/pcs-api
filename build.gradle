@@ -409,3 +409,4 @@ rootProject.tasks.named("processContractTestResources") {
 wrapper {
   distributionType = Wrapper.DistributionType.ALL
 }
+
