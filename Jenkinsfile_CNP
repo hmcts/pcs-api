@@ -58,9 +58,13 @@ withPipeline(type, product, component) {
     setPerftestEnvVars()
   }
 
-afterAlways('build') {
-  generateDefinitions(builder)
-}
+  before('highleveldatasetup') {
+    onPR{
+      env.DEFINITION_STORE_URL_BASE = "https://ccd-definition-store-pcs-api-pr-${CHANGE_ID}.preview.platform.hmcts.net"
+      env.CASE_API_URL = "https://pcs-api-pr-${CHANGE_ID}.preview.platform.hmcts.net"
+    }
+    generateDefinitions(builder)
+  }
 
   afterAlways('functionalTest:preview') {
     archiveFunctionalTestReports()
