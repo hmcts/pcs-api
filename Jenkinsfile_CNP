@@ -35,6 +35,7 @@ withPipeline(type, product, component) {
     // Skipping PACT publish on PRs until contracts are verified and CONSUMER_DEPLOY_CHECK can be added
     //enablePactAs([AppPipelineDsl.PactRoles.CONSUMER])
     setPreviewEnvVars()
+    enableHighLevelDataSetup()
   }
 
   onMaster() {
