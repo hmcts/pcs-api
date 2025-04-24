@@ -282,7 +282,7 @@ ext {
   testcontainersVersion = "1.20.6"
   springFrameworkBootVersion = "3.4.4"
   lombokVersion = "1.18.38"
-  springSecurityVersion = "6.4.4"
+  springSecurityVersion = "6.4.5"
   pactVersion = "4.6.17"
 }
 
