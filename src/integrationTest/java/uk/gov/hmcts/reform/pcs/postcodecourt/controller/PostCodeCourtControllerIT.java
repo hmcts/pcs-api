@@ -38,8 +38,8 @@ class PostCodeCourtControllerIT extends AbstractPostgresContainerIT {
     private static final String AUTH_HEADER = "Bearer token";
     private static final String PCS_SERVICE_AUTH_HEADER = "Bearer eyJhbGciOiJIUzUxMiJ9";
     private static final String LOC_REF_SERVICE_AUTH_HEADER = "Bearer eyJzdWIiOiJwY3NfYXBpIiwiZXhwIjoxNzQ0ODkxODI3fQ";
-    public static final String SERVICE_AUTHORIZATION = "ServiceAuthorization";
-    public static final int COUNTY_COURT_TYPE_ID = 10;
+    private static final String SERVICE_AUTHORIZATION = "ServiceAuthorization";
+    private static final int COUNTY_COURT_TYPE_ID = 10;
 
     @Autowired
     private WebTestClient webTestClient;
