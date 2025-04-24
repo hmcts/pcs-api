@@ -52,12 +52,13 @@ spring:
   jpa:
     properties:
       hibernate:
-        jdbc:
-          lob:
-            # silence the 'wall-of-text' - unnecessary exception throw about blob types
-            non_contextual_creation: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+        show-sql: ${SPRING_JPA_SHOW_SQL:false}
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
   flyway:
     enabled: false
+    locations: classpath:db/migration
   jms:
     servicebus:
       enabled: ${HEARINGS_SERVICEBUS_ENABLED:false}
@@ -92,3 +93,7 @@ hmc:
 
 notify:
   api-key: ${PCS_NOTIFY_API_KEY:AAAAAAAA-AAAA-AAAA-AAAA-AAAAAAAAAAAA}
+  status-check-delay-millis: ${NOTIFY_STATUS_CHECK_DELAY:3000}
+
+testing-support:
+  enabled: ${ENABLE_TESTING_SUPPORT:false}
