@@ -75,7 +75,6 @@ class PostCodeCourtControllerIT extends AbstractPostgresContainerIT {
         String postCode1 = "W3 7RX";
         String postCode2 = "W3 6RS";
         String postCode3 = "M13 9PL";
-        String postCode4 = "SW1H 9EA";
 
         final PostCodeCourtKey id1 = new PostCodeCourtKey(postCode1, 20262);
         final PostCodeCourtKey id2 = new PostCodeCourtKey(postCode2, 36791);
@@ -98,7 +97,7 @@ class PostCodeCourtControllerIT extends AbstractPostgresContainerIT {
         assertPostcodeReturns(postCode1, court1);
         assertPostcodeReturns(postCode2, court2);
         assertPostcodeReturns(postCode3, court3);
-        assertPostcodeReturns(postCode4, null);
+        assertPostcodeReturns("SW1H 9EA", null);
     }
 
     private void stubLocationReferenceApi(String epimId, List<CourtVenue> response) {
