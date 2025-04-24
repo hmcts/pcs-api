@@ -77,24 +77,23 @@ class PostCodeCourtControllerIT extends AbstractPostgresContainerIT {
         String postCode3 = "M13 9PL";
         String postCode4 = "SW1H 9EA";
 
-        PostCodeCourtKey id1 = new PostCodeCourtKey(postCode1, 20262);
-        PostCodeCourtKey id2 = new PostCodeCourtKey(postCode2, 36791);
-        PostCodeCourtKey id3 = new PostCodeCourtKey(postCode3, 144641);
-        PostCodeCourtKey id4 = new PostCodeCourtKey(postCode4, 990000);
+        final PostCodeCourtKey id1 = new PostCodeCourtKey(postCode1, 20262);
+        final PostCodeCourtKey id2 = new PostCodeCourtKey(postCode2, 36791);
+        final PostCodeCourtKey id3 = new PostCodeCourtKey(postCode3, 144641);
 
-        Court court1 = new Court(40827, "Central London County Court", 20262);
-        Court court2 = new Court(40838, "Brentford County Court And Family Court", 36791);
-        Court court3 = new Court(40896, "Manchester Crown Court", 144641);
+        final Court court1 = new Court(40827, "Central London County Court", id1.getEpimId());
+        final Court court2 = new Court(40838, "Brentford County Court And Family Court", id2.getEpimId());
+        final Court court3 = new Court(40896, "Manchester Crown Court", id3.getEpimId());
 
         when(authTokenGenerator.generate()).thenReturn(LOC_REF_SERVICE_AUTH_HEADER);
 
-        stubLocationReferenceApi("20262", List.of(new CourtVenue(id1.getEpimId(), court1.id(), court1.name())));
-        stubLocationReferenceApi("36791", List.of(new CourtVenue(id2.getEpimId(), court2.id(), court2.name())));
-        stubLocationReferenceApi("144641", List.of(new CourtVenue(id3.getEpimId(), court3.id(), court3.name())));
-        stubLocationReferenceApi("990000", Collections.emptyList()); // simulate no match
+        stubLocationReferenceApi(id1.getEpimId().toString(), List.of(new CourtVenue(id1.getEpimId(), court1.id(), court1.name())));
+        stubLocationReferenceApi(id2.getEpimId().toString(), List.of(new CourtVenue(id2.getEpimId(), court2.id(), court2.name())));
+        stubLocationReferenceApi(id3.getEpimId().toString(), List.of(new CourtVenue(id3.getEpimId(), court3.id(), court3.name())));
+        stubLocationReferenceApi("990000", Collections.emptyList());
 
         assertPostcodeReturns(postCode1, court1);
-        assertPostcodeReturns(postCode2, court2); // no result expected
+        assertPostcodeReturns(postCode2, court2);
         assertPostcodeReturns(postCode3, court3);
         assertPostcodeReturns(postCode4, null);
     }
