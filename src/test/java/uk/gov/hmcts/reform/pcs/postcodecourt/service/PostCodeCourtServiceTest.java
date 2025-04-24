@@ -44,8 +44,15 @@ class PostCodeCourtServiceTest {
 
         final List<Court> response = underTest.getEpimIdByPostCode(postCode, null);
 
-        assertThat(response).isNotEmpty(); // Check if the list is not empty
-        assertThat(response).anyMatch(court -> expectedEpimId == court.epimId());
+        assertThat(response).isNotEmpty();
+        assertThat(response)
+                .singleElement()
+                .satisfies(court -> {
+                    assertThat(court.epimId()).isEqualTo(expectedEpimId);
+                    assertThat(court.id()).isEqualTo(101);
+                    assertThat(court.name()).isEqualTo("Royal Courts of Justice (Main Building)");
+                });
+
         verify(postCodeCourtRepository).findByIdPostCode(postCode);
         verify(locationReferenceService).getCountyCourts(null, List.of(expectedEpimId));
     }
