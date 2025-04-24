@@ -21,7 +21,7 @@ public class PostCodeCourtService {
     private final PostCodeCourtRepository postCodeCourtRepository;
     private final LocationReferenceService locationReferenceService;
 
-    public List<Court> getEpimIdByPostCode(String postcode, String authorisation)  {
+    public List<Court> getCountyCourtsByPostCode(String postcode, String authorisation)  {
         List<Integer> epimIds = postCodeCourtRepository.findByIdPostCode(postcode).stream()
             .map(postCodeCourt -> {
                 log.info(

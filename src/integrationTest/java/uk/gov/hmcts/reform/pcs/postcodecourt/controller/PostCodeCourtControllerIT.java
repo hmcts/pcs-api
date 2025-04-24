@@ -87,9 +87,12 @@ class PostCodeCourtControllerIT extends AbstractPostgresContainerIT {
 
         when(authTokenGenerator.generate()).thenReturn(LOC_REF_SERVICE_AUTH_HEADER);
 
-        stubLocationReferenceApi(id1.getEpimId().toString(), List.of(new CourtVenue(id1.getEpimId(), court1.id(), court1.name())));
-        stubLocationReferenceApi(id2.getEpimId().toString(), List.of(new CourtVenue(id2.getEpimId(), court2.id(), court2.name())));
-        stubLocationReferenceApi(id3.getEpimId().toString(), List.of(new CourtVenue(id3.getEpimId(), court3.id(), court3.name())));
+        stubLocationReferenceApi(id1.getEpimId().toString(),
+                List.of(new CourtVenue(id1.getEpimId(), court1.id(), court1.name())));
+        stubLocationReferenceApi(id2.getEpimId().toString(),
+                List.of(new CourtVenue(id2.getEpimId(), court2.id(), court2.name())));
+        stubLocationReferenceApi(id3.getEpimId().toString(),
+                List.of(new CourtVenue(id3.getEpimId(), court3.id(), court3.name())));
         stubLocationReferenceApi("990000", Collections.emptyList());
 
         assertPostcodeReturns(postCode1, court1);

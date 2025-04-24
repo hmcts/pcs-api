@@ -32,8 +32,8 @@ class PostCodeCourtServiceTest {
     private PostCodeCourtService underTest;
 
     @Test
-    @DisplayName("Return valid epimId for an existing PostCode")
-    void shouldReturnForExistingPostCode() {
+    @DisplayName("Return CountyCourts for an existing PostCode")
+    void shouldReturnCountyCourtsForExistingPostCode() {
         String postCode = "W3 7RX";
         int expectedEpimId = 20262;
         PostCodeCourtEntity postCodeCourtEntity = new PostCodeCourtEntity();
@@ -42,7 +42,7 @@ class PostCodeCourtServiceTest {
         when(locationReferenceService.getCountyCourts(null,  List.of(expectedEpimId)))
             .thenReturn(List.of(new CourtVenue(expectedEpimId, 101, "Royal Courts of Justice (Main Building)")));
 
-        final List<Court> response = underTest.getEpimIdByPostCode(postCode, null);
+        final List<Court> response = underTest.getCountyCourtsByPostCode(postCode, null);
 
         assertThat(response).isNotEmpty();
         assertThat(response)
@@ -58,12 +58,12 @@ class PostCodeCourtServiceTest {
     }
 
     @Test
-    @DisplayName("Should return an empty Optional for a non-existent postcode")
-    void shouldReturnEmptyOptionalForNonExistentPostCode() {
+    @DisplayName("Should return an empty list of CountyCourts for a non-existent postcode")
+    void shouldReturnEmptyOfCountyCourtsForNonExistentPostCode() {
         String nonExistentPostCode = "XY1 2AB";
         when(postCodeCourtRepository.findByIdPostCode(nonExistentPostCode)).thenReturn(List.of());
 
-        final List<Court> response = underTest.getEpimIdByPostCode(nonExistentPostCode, null);
+        final List<Court> response = underTest.getCountyCourtsByPostCode(nonExistentPostCode, null);
 
         assertThat(response).isEmpty();
         verify(postCodeCourtRepository).findByIdPostCode(nonExistentPostCode);
