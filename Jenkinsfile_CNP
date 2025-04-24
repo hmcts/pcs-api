@@ -57,9 +57,9 @@ withPipeline(type, product, component) {
     setPerftestEnvVars()
   }
 
-//  afterAlways('build') {
-//    generateDefinitions(builder)
-//  }
+afterAlways('build') {
+  generateDefinitions(builder)
+}
 
   afterAlways('functionalTest:preview') {
     archiveFunctionalTestReports()
