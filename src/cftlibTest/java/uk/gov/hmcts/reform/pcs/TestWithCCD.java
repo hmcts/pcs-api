@@ -21,7 +21,7 @@ import uk.gov.hmcts.rse.ccd.lib.test.CftlibTest;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-public class TestWithCCDTest extends CftlibTest {
+public class TestWithCCD extends CftlibTest {
 
     @Autowired
     private CoreCaseDataApi ccdApi;
