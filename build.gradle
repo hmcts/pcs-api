@@ -359,6 +359,7 @@ dependencies {
   testImplementation group: 'org.testcontainers', name: 'junit-jupiter', version: testcontainersVersion
   testImplementation group: 'org.testcontainers', name: 'postgresql', version: testcontainersVersion
 
+  runtimeOnly 'com.h2database:h2'
   testImplementation 'com.h2database:h2'
 
   // Allow fast reloading during dev; recompile a class to trigger fast reload + definition reimport.
