@@ -43,7 +43,7 @@ public class PostCodeCourtService {
 
     private List<CourtVenue> safeGetCountyCourts(String authorisation, List<Integer> epimIds) {
         return Try.of(() -> locationReferenceService.getCountyCourts(authorisation, epimIds))
-                .onFailure(e -> log.info("Failed to fetch court details Error {}", e.getMessage()))
+                .onFailure(e -> log.error("Failed to fetch court details Error {}", e.getMessage()))
                 .getOrElse(Collections.emptyList());
     }
 

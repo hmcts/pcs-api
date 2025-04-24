@@ -25,7 +25,7 @@ public class LocationReferenceService {
             throw new IllegalArgumentException("epimIds cannot be null or empty");
         }
         String formattedEpimIds = formatEpimIds(epimIds);
-        log.info("Getting County courts for EpimIds {}", formattedEpimIds);
+        log.info("Getting County courts from /refdata/location/court-venues for EpimIds {}", formattedEpimIds);
         String serviceAuthorization = authTokenGenerator.generate();
         return locationReferenceApi.getCountyCourts(authorisation, serviceAuthorization,
                 formattedEpimIds, COUNTY_COURT_TYPE_ID);
