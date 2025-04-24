@@ -14,13 +14,14 @@ import uk.gov.hmcts.reform.ccd.client.model.CaseDataContent;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.ccd.client.model.Event;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
+import uk.gov.hmcts.reform.pcs.ccd.CaseType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.rse.ccd.lib.test.CftlibTest;
 
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-public class TestWithCCD extends CftlibTest {
+public class TestWithCCDTest extends CftlibTest {
 
     @Autowired
     private CoreCaseDataApi ccdApi;
@@ -43,14 +44,14 @@ public class TestWithCCD extends CftlibTest {
     @Order(1)
     @Test
     public void createsTestCase() {
-        var r = ccdApi.startCase(idamToken, s2sToken, "PCS", "createTestApplication");
+        var r = ccdApi.startCase(idamToken, s2sToken, CaseType.getCaseTypeId(), "createTestApplication");
         var content = CaseDataContent.builder()
             .data(PCSCase.builder().applicantForename("Foo").build())
             .event(Event.builder().id("createTestApplication").build())
             .eventToken(r.getToken())
             .build();
         caseDetails = ccdApi.submitForCaseworker(idamToken, s2sToken, userId,
-                                                 "CIVIL", "PCS", false, content);
+                                                 "CIVIL", CaseType.getCaseTypeId(), false, content);
         assertThat(caseDetails.getId()).isNotNull();
     }
 }
