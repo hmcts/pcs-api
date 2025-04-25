@@ -11,16 +11,15 @@ import uk.gov.hmcts.reform.pcs.location.model.CourtVenue;
 
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @Service
 @Slf4j
 public class LocationReferenceService {
 
-    @Value("${location-reference.court-county-type-id:10}")
+    @Value("${location-reference.court-county-type-id}")
     @Getter
-    private Integer countyCourtTypeId;
+    private Integer countyCourtTypeId = 10;
 
     private final LocationReferenceApi locationReferenceApi;
     private final AuthTokenGenerator authTokenGenerator;
@@ -40,11 +39,8 @@ public class LocationReferenceService {
         if (epimIds.size() > 1) {
             log.warn("Received multiple epimIds: {}", epimIds);
         }
-
-        return epimIds.size() == 1
-                ? String.valueOf(epimIds.getFirst())
-                : epimIds.stream()
+        return String.join(",", epimIds.stream()
                 .map(String::valueOf)
-                .collect(Collectors.joining(","));
+                .toList());
     }
 }
