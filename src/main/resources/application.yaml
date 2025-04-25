@@ -94,6 +94,7 @@ hmc:
 
 location-reference:
   api-url: ${LOCATION_REF_URL:http://localhost:8089}
+  court-county-type-id: ${COURT_COUNTY_TYPE_ID:10}
 
 notify:
   api-key: ${PCS_NOTIFY_API_KEY:AAAAAAAA-AAAA-AAAA-AAAA-AAAAAAAAAAAA}

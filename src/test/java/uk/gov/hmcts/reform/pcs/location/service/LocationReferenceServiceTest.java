@@ -1,6 +1,5 @@
 package uk.gov.hmcts.reform.pcs.location.service;
 
-import com.azure.core.exception.ResourceNotFoundException;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -138,12 +137,12 @@ public class LocationReferenceServiceTest {
                 SERVICE_AUTH_TOKEN,
                 "425094",
                 COUNTY_COURT_TYPE_ID
-        )).thenThrow(new ResourceNotFoundException("No matching courts found for LE2 0QB", null));
+        )).thenThrow(new RuntimeException("No matching courts found for LE2 0QB", null));
 
         assertThatThrownBy(() ->
                 locationReferenceService.getCountyCourts(AUTHORIZATION, List.of(425094))
         )
-                .isInstanceOf(ResourceNotFoundException.class)
+                .isInstanceOf(RuntimeException.class)
                 .hasMessageContaining("No matching courts found for LE2 0QB");
 
         verify(authTokenGenerator).generate();

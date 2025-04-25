@@ -1,6 +1,5 @@
 package uk.gov.hmcts.reform.pcs.postcodecourt.controller;
 
-import com.azure.core.exception.ResourceNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -148,7 +147,7 @@ class PostCodeCourtControllerIT extends AbstractPostgresContainerIT {
                 LOC_REF_SERVICE_AUTH_HEADER,
                 postCodeCourtEntity.getId().getEpimId().toString(),
                 COUNTY_COURT_TYPE_ID
-        )).thenThrow(new ResourceNotFoundException("No matching courts found for ".concat(postCode), null)));
+        )).thenThrow(new RuntimeException("No matching courts found for ".concat(postCode), null)));
 
         assertingResponseToBeEmptyList(all);
     }
