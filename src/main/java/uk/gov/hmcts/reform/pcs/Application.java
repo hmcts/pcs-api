@@ -4,15 +4,14 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.openfeign.EnableFeignClients;
-import uk.gov.hmcts.reform.idam.client.IdamApi;
 import org.springframework.jms.annotation.EnableJms;
+import uk.gov.hmcts.reform.idam.client.IdamApi;
 import uk.gov.hmcts.reform.pcs.hearings.service.api.HmcHearingApi;
 
 @SpringBootApplication(
     scanBasePackages = {
         "uk.gov.hmcts.reform.pcs",
-        "uk.gov.hmcts.ccd.sdk",
-        "uk.gov.hmcts.reform.pcs.hearings",
+        "uk.gov.hmcts.ccd.sdk"
     })
 @EnableFeignClients(
     clients = {

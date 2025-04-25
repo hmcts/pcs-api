@@ -1,0 +1,166 @@
+global:
+  ccdApiGatewayIngress: http://${SERVICE_NAME}-ccd-api-gw
+  ccdDefinitionStoreUrl: http://${SERVICE_NAME}-ccd-definition-store
+  ccdUserProfileUrl: http://ccd-user-profile-api-aat.service.core-compute-aat.internal
+  dmStoreUrl: http://dm-store-aat.service.core-compute-aat.internal
+  idamApiUrl: https://idam-api.aat.platform.hmcts.net
+  idamWebUrl: https://idam-web-public.aat.platform.hmcts.net
+  s2sUrl: http://rpe-service-auth-provider-aat.service.core-compute-aat.internal
+  postgresSecret: ${SERVICE_NAME}-postgresql
+  postgresHostname: ${SERVICE_NAME}-postgresql
+  postgresUsername: "javapostgres"
+  amRoleAssignmentServiceUrl: http://am-role-assignment-service-aat.service.core-compute-aat.internal
+
+java:
+  postgresql:
+    image:
+      debug: true
+    primary:
+      initdb:
+        scripts:
+          init.sql: |-
+            CREATE DATABASE "data-store" WITH OWNER = javapostgres ENCODING = 'UTF-8' CONNECTION LIMIT = -1;
+            CREATE DATABASE "definition-store" WITH OWNER = javapostgres ENCODING = 'UTF-8' CONNECTION LIMIT = -1;
+ccd:
+  enabled: true
+  ccd:
+    adminWeb:
+      enabled: true
+    definitionImporter:
+      enabled: false
+    userProfile:
+      enabled: false
+    userProfileImporter:
+      enabled: false
+    s2s:
+      enabled: false
+    apiGatewayWeb:
+      enabled: true
+    ras:
+      enabled: false
+  ccd-definition-store-api:
+    java:
+      devmemoryRequests: '1024Mi'
+      devmemoryLimits: '2048Mi'
+      devcpuRequests: '500m'
+      autoscaling:
+        maxReplicas: 1
+      environment:
+        DEFINITION_STORE_DB_HOST: '{{ tpl .Values.global.postgresHostname $}}'
+        IDAM_USER_URL: https://idam-web-public.aat.platform.hmcts.net
+        DEFINITION_STORE_TX_TIMEOUT_DEFAULT: 360
+        ELASTIC_SEARCH_ENABLED: false
+        WELSH_TRANSLATION_ENABLED: false
+        DEFINITION_STORE_DB_USERNAME: "{{ .Values.postgresql.auth.username}}"
+        DEFINITION_STORE_DB_OPTIONS: ""
+      secrets:
+        DEFINITION_STORE_DB_PASSWORD:
+          key: password
+          disabled: false
+      ingressHost: ccd-definition-store-${SERVICE_FQDN}
+      keyVaults:
+        ccd:
+          secrets:
+            - name: ccd-definition-s2s-secret
+              alias: DEFINITION_STORE_IDAM_KEY
+  ccd-data-store-api:
+    java:
+      devmemoryRequests: '1524Mi'
+      devmemoryLimits: '2048Mi'
+      devcpuRequests: '500m'
+      environment:
+        DATA_STORE_DB_HOST: '{{ tpl .Values.global.postgresHostname $}}'
+        DATA_STORE_DB_USERNAME: "{{ .Values.postgresql.auth.username}}"
+        IDAM_API_BASE_URL: https://idam-api.aat.platform.hmcts.net
+        IDAM_OIDC_URL: https://idam-web-public.aat.platform.hmcts.net
+        DATA_STORE_CROSS_JURISDICTIONAL_ROLES: caseworker-caa,caseworker-approver
+        HTTP_CLIENT_READ_TIMEOUT: '120000'
+        HTTP_CLIENT_MAX_TOTAL: '300'
+        HTTP_CLIENT_MAX_CLIENT_PER_ROUTE: '30'
+        DATA_STORE_DB_MAX_POOL_SIZE: 80
+        DATA_STORE_DB_OPTIONS: "?stringtype=unspecified"
+        CCD_DOCUMENT_URL_PATTERN: ^https?://(((?:dm-store-aat\.service\.core-compute-aat\.internal(?::\d+)?)\/documents\/[A-Za-z0-9-]+(?:\/binary)?))
+      secrets:
+        DATA_STORE_DB_PASSWORD:
+          key: password
+          disabled: false
+      ingressHost: ccd-data-store-api-${SERVICE_FQDN}
+      autoscaling:
+        enabled: false
+        maxReplicas: 1
+      keyVaults:
+        ccd:
+          secrets:
+            - name: ccd-data-s2s-secret
+              alias: idam.s2s-auth.totp_secret
+            - name: idam-data-store-client-secret
+              alias: IDAM_OAUTH2_DATA_STORE_CLIENT_SECRET
+            - name: idam-data-store-system-user-username
+              alias: IDAM_DATA_STORE_SYSTEM_USER_USERNAME
+            - name: idam-data-store-system-user-password
+              alias: IDAM_DATA_STORE_SYSTEM_USER_PASSWORD
+  ccd-api-gateway-web:
+    nodejs:
+      image: hmctspublic.azurecr.io/ccd/api-gateway-web:latest
+      imagePullPolicy: Always
+      environment:
+        PROXY_DOCUMENT_MANAGEMENT: http://dm-store-aat.service.core-compute-aat.internal
+        ALLOW_CONFIG_MUTATIONS: true
+      ingressHost: gateway-${SERVICE_FQDN}
+      keyVaults:
+        ccd:
+          secrets:
+            - ccd-api-gateway-oauth2-client-secret
+            - postcode-info-address-lookup-token
+            - microservicekey-ccd-gw
+  ccd-admin-web:
+    nodejs:
+      image: hmctspublic.azurecr.io/ccd/admin-web:latest
+      ingressHost: admin-web-${SERVICE_FQDN}
+      environment:
+        ADMINWEB_GLOBAL_SEARCH_INDEX_URL: http://${SERVICE_NAME}-ccd-definition-store/elastic-support/global-search/index
+        ADMINWEB_ELASTIC_CASE_TYPES_URL: http://${SERVICE_NAME}-ccd-definition-store/elastic-support/case-types
+        ALLOW_CONFIG_MUTATIONS: true
+      keyVaults:
+        ccd:
+          secrets:
+            - microservicekey-ccd-admin
+            - ccd-admin-web-oauth2-client-secret
+xui-webapp:
+  enabled: true
+  nodejs:
+    imagePullPolicy: Always
+    releaseNameOverride: ${SERVICE_NAME}-xui-webapp
+    image: hmctspublic.azurecr.io/xui/webapp:latest
+    ingressHost: xui-${SERVICE_FQDN}
+    devmemoryRequests: 500Mi
+    devcpuRequests: 500m
+    devmemoryLimits: 1Gi
+    devcpuLimits: 1
+    environment:
+      HEALTH_CCD_COMPONENT_API: http://${SERVICE_NAME}-ccd-api-gw/health
+      HEALTH_CCD_DATA_API: http://${SERVICE_NAME}-ccd-data-store-api/health
+      HEALTH_TERMS_AND_CONDITIONS_API: http://xui-terms-and-conditions-aat.service.core-compute-aat.internal/health
+      SERVICES_CCD_COMPONENT_API: http://${SERVICE_NAME}-ccd-api-gw
+      SERVICES_CCD_DATA_STORE_API: http://${SERVICE_NAME}-ccd-data-store-api
+      SERVICES_TERMS_AND_CONDITIONS: http://xui-terms-and-conditions-aat.service.core-compute-aat.internal
+      SERVICES_HEARINGS_COMPONENT_API: http://jurisdiction-hearings-api-aat.service.core-compute-aat.internal
+      JURISDICTIONS: CIVIL
+      FEATURE_REDIS_ENABLED: false
+      REDISCLOUD_URL: http://dummyrediscloudurl
+      FEATURE_APP_INSIGHTS_ENABLED: false
+      FEATURE_SECURE_COOKIE_ENABLED: false
+      FEATURE_HELMET_ENABLED: false
+      FEATURE_OIDC_ENABLED: false
+      FEATURE_ACCESS_MANAGEMENT_ENABLED: true
+      PROTOCOL: http
+      PREVIEW_DEPLOYMENT_ID: "pcs-${CHANGE_ID}"
+      LAUNCH_DARKLY_CLIENT_ID: 645baeea2787d812993d9d70
+    keyVaults:
+      rpx:
+        resourceGroup: rpx
+        secrets:
+          - mc-s2s-client-secret
+          - mc-idam-client-secret
+          - system-user-name
+          - system-user-password
