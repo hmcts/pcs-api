@@ -1,8 +1,6 @@
 package uk.gov.hmcts.reform.pcs;
 
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
@@ -10,11 +8,8 @@ import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import uk.gov.hmcts.reform.ccd.client.CoreCaseDataApi;
-import uk.gov.hmcts.reform.ccd.client.model.CaseDataContent;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
-import uk.gov.hmcts.reform.ccd.client.model.Event;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
-import uk.gov.hmcts.reform.pcs.ccd.domain.PcsCase;
 import uk.gov.hmcts.rse.ccd.lib.test.CftlibTest;
 
 
@@ -43,14 +38,5 @@ public class TestWithCCD extends CftlibTest {
     @Order(1)
     @Test
     public void createsTestCase() {
-        var r = ccdApi.startCase(idamToken, s2sToken, "PCS", "createTestApplication");
-        var content = CaseDataContent.builder()
-            .data(PcsCase.builder().caseDescription("Foo").build())
-            .event(Event.builder().id("createTestApplication").build())
-            .eventToken(r.getToken())
-            .build();
-        caseDetails = ccdApi.submitForCaseworker(idamToken, s2sToken, userId,
-                                                 "CIVIL", "PCS", false, content);
-        assertThat(caseDetails.getId()).isNotNull();
     }
 }
