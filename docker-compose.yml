@@ -26,7 +26,6 @@ services:
       - PCS_DB_PASSWORD=${POSTGRES_PASSWORD}
       - DB_PORT=${DB_PORT}
       - IDAM_S2S_AUTH_URL=http://service-auth-provider-api:${SERVICE_AUTH_PORT}
-      - LOCATION_REF_URL=http://rd-location-ref-api-aat.service.core-compute-aat.internal
     ports:
       - ${SERVER_PORT}:${SERVER_PORT}
     depends_on:

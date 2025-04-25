@@ -93,9 +93,7 @@ hmc:
   serviceId: ${HMC_SERVICE_ID:AAA3}
 
 location-reference:
-  deployment-id: ${LOCATION_REF_DEPLOYMENT_ID:}
   api-url: ${LOCATION_REF_URL:http://localhost:8089}
-  serviceId: ${LOCATION_REF_SERVICE_ID:AAA3}
 
 notify:
   api-key: ${PCS_NOTIFY_API_KEY:AAAAAAAA-AAAA-AAAA-AAAA-AAAAAAAAAAAA}
