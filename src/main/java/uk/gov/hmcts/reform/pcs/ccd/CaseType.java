@@ -17,7 +17,7 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
     public void configure(final ConfigBuilder<PCSCase, State, UserRole> builder) {
         builder.setCallbackHost("http://localhost:3206");
 
-        builder.caseType("PCS", "Civil Possessions", "Possessions");
+        builder.decentralisedCaseType("PCS", "Civil Possessions", "Possessions");
         builder.jurisdiction("CIVIL", "Civil Possessions", "The new one");
 
         var label = "Applicant Forename";

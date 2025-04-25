@@ -385,6 +385,10 @@ project.tasks.named("processSmokeTestResources") {
   duplicatesStrategy = 'include'
 }
 
+ccd {
+  decentralised = true
+}
+
 tasks.withType(CftlibExec).configureEach {
   group = 'ccd tasks'
   authMode = AuthMode.Local
@@ -392,6 +396,7 @@ tasks.withType(CftlibExec).configureEach {
   environment 'PCS_DB_USER_NAME', 'postgres'
   environment 'PCS_DB_PASSWORD', 'postgres'
   environment 'DB_PORT', '6432'
+  environment 'POC_APIS_URL', 'http://localhost:3206'
   environment 'SPRING_PROFILES_ACTIVE', 'dev'
 }
 
