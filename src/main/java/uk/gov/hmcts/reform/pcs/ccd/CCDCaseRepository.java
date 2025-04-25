@@ -60,7 +60,7 @@ public class CCDCaseRepository extends DecentralisedCaseRepository<PcsCase> {
 
     private PcsCase loadCaseData(long caseRef) {
         return pcsCaseRepository.findDtoByCaseReference(caseRef).orElseThrow(
-            () -> new CaseNotFoundException("No case data found for reference " + caseRef)
+            () -> new CaseNotFoundException(caseRef)
         );
     }
 

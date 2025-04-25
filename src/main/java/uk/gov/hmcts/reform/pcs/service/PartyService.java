@@ -28,7 +28,7 @@ public class PartyService {
 
     public void addParties(long caseReference, List<Party> parties) {
         PcsCase pcsCaseEntity = pcsCaseRepository.findByCaseReference(caseReference)
-            .orElseThrow(() -> new CaseNotFoundException("Case not found for " + caseReference));
+            .orElseThrow(() -> new CaseNotFoundException(caseReference));
 
         List<uk.gov.hmcts.reform.pcs.entity.Party> partyEntities = parties.stream()
             .map(this::convertToPartyEntity)

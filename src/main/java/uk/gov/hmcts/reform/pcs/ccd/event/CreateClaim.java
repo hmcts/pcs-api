@@ -173,7 +173,7 @@ public class CreateClaim implements CCDConfig<PcsCase, State, UserRole> {
 
         long caseReference = eventPayload.caseReference();
         uk.gov.hmcts.reform.pcs.entity.PcsCase pcsCaseEntity = pcsCaseRepository.findByCaseReference(caseReference)
-            .orElseThrow(() -> new CaseNotFoundException("Case not found for " + caseReference));
+            .orElseThrow(() -> new CaseNotFoundException(caseReference));
 
         pcsCaseEntity.addClaim(claimEntity);
         claimRepository.save(claimEntity);

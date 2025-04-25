@@ -1,6 +1,5 @@
 package uk.gov.hmcts.reform.pcs.ccd.event;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CCDConfig;
@@ -17,8 +16,12 @@ import uk.gov.hmcts.reform.pcs.repository.PcsCaseRepository;
 @Profile("dev") // Non-prod event
 @Component
 public class CreateTestCase implements CCDConfig<PcsCase, State, UserRole> {
-    @Autowired
-    private PcsCaseRepository repository;
+
+    private final PcsCaseRepository repository;
+
+    public CreateTestCase(PcsCaseRepository repository) {
+        this.repository = repository;
+    }
 
     @Override
     public void configure(ConfigBuilder<PcsCase, State, UserRole> configBuilder) {
