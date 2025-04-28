@@ -54,9 +54,8 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
         format_sql: true
-        show-sql: false
-      database-platform: org.hibernate.dialect.PostgreSQLDialect
-
+        show-sql: ${SPRING_JPA_SHOW_SQL:false}
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
   flyway:
     enabled: true
     locations: classpath:db/migration
@@ -94,3 +93,7 @@ hmc:
 
 notify:
   api-key: ${PCS_NOTIFY_API_KEY:AAAAAAAA-AAAA-AAAA-AAAA-AAAAAAAAAAAA}
+  status-check-delay-millis: ${NOTIFY_STATUS_CHECK_DELAY:3000}
+
+testing-support:
+  enabled: ${ENABLE_TESTING_SUPPORT:false}
