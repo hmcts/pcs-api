@@ -17,14 +17,18 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.UserRole;
 public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
 
     private static final String CASE_TYPE_ID = "PCS";
-    public static final String CASE_TYPE_NAME = "Civil Possessions";
-    public static final String CASE_TYPE_DESCRIPTION = "Civil Possessions Case Type";
-    public static final String JURISDICTION_ID = "CIVIL";
-    public static final String JURISDICTION_NAME = "Civil Possessions";
-    public static final String JURISDICTION_DESCRIPTION = "Civil Possessions Jurisdiction";
+    private static final String CASE_TYPE_NAME = "Civil Possessions";
+    private static final String CASE_TYPE_DESCRIPTION = "Civil Possessions Case Type";
+    private static final String JURISDICTION_ID = "CIVIL";
+    private static final String JURISDICTION_NAME = "Civil Possessions";
+    private static final String JURISDICTION_DESCRIPTION = "Civil Possessions Jurisdiction";
 
     public static String getCaseTypeId() {
         return withChangeId(CASE_TYPE_ID, "-");
+    }
+
+    public static String getCaseTypeName() {
+        return withChangeId(CASE_TYPE_NAME, " ");
     }
 
     private static String withChangeId(String base, String separator) {
@@ -37,7 +41,7 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
     public void configure(final ConfigBuilder<PCSCase, State, UserRole> builder) {
         builder.setCallbackHost(getenv().getOrDefault("CASE_API_URL", "http://localhost:3206"));
 
-        builder.caseType(getCaseTypeId(), withChangeId(CASE_TYPE_NAME," "), CASE_TYPE_DESCRIPTION);
+        builder.caseType(getCaseTypeId(), getCaseTypeName(), CASE_TYPE_DESCRIPTION);
         builder.jurisdiction(JURISDICTION_ID, JURISDICTION_NAME, JURISDICTION_DESCRIPTION);
 
         var label = "Applicant Forename";
