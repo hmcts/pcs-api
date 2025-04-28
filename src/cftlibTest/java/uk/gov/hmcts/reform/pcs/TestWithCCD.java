@@ -44,14 +44,14 @@ public class TestWithCCD extends CftlibTest {
     @Order(1)
     @Test
     public void createsTestCase() {
-        var r = ccdApi.startCase(idamToken, s2sToken, CaseType.getCaseTypeId(), "createTestApplication");
+        var r = ccdApi.startCase(idamToken, s2sToken, CaseType.getCaseType(), "createTestApplication");
         var content = CaseDataContent.builder()
             .data(PCSCase.builder().applicantForename("Foo").build())
             .event(Event.builder().id("createTestApplication").build())
             .eventToken(r.getToken())
             .build();
         caseDetails = ccdApi.submitForCaseworker(idamToken, s2sToken, userId,
-                                                 "CIVIL", CaseType.getCaseTypeId(), false, content);
+                                                 "CIVIL", CaseType.getCaseType(), false, content);
         assertThat(caseDetails.getId()).isNotNull();
     }
 }

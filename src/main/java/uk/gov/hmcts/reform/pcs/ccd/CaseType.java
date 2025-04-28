@@ -23,7 +23,7 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
     private static final String JURISDICTION_NAME = "Civil Possessions";
     private static final String JURISDICTION_DESCRIPTION = "Civil Possessions Jurisdiction";
 
-    public static String getCaseTypeId() {
+    public static String getCaseType() {
         return withChangeId(CASE_TYPE_ID, "-");
     }
 
@@ -41,7 +41,7 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
     public void configure(final ConfigBuilder<PCSCase, State, UserRole> builder) {
         builder.setCallbackHost(getenv().getOrDefault("CASE_API_URL", "http://localhost:3206"));
 
-        builder.caseType(getCaseTypeId(), getCaseTypeName(), CASE_TYPE_DESCRIPTION);
+        builder.caseType(getCaseType(), getCaseTypeName(), CASE_TYPE_DESCRIPTION);
         builder.jurisdiction(JURISDICTION_ID, JURISDICTION_NAME, JURISDICTION_DESCRIPTION);
 
         var label = "Applicant Forename";
