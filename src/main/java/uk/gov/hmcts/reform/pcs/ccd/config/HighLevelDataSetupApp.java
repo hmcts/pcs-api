@@ -74,7 +74,7 @@ public class HighLevelDataSetupApp extends DataLoaderToDefinitionStore {
     protected boolean shouldTolerateDataSetupFailure(Throwable e) {
         return switch (e) {
             case ImportException importException -> isGatewayTimeout(importException);
-            case SSLException sslException-> true;
+            case SSLException sslException -> true;
             case AEADBadTagException aeadBadTagException -> true;
             default -> shouldTolerateDataSetupFailure();
         };
