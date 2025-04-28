@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Locale;
 import javax.crypto.AEADBadTagException;
 import javax.net.ssl.SSLException;
+import org.apache.http.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uk.gov.hmcts.befta.dse.ccd.CcdEnvironment;
@@ -71,9 +72,8 @@ public class HighLevelDataSetupApp extends DataLoaderToDefinitionStore {
 
     @Override
     protected boolean shouldTolerateDataSetupFailure(Throwable e) {
-        int httpStatusCode504 = 504;
         if (e instanceof ImportException importException) {
-            return importException.getHttpStatusCode() == httpStatusCode504;
+            return importException.getHttpStatusCode() == HttpStatus.SC_GATEWAY_TIMEOUT;
         }
         if (e instanceof SSLException) {
             return true;
