@@ -72,15 +72,15 @@ public class HighLevelDataSetupApp extends DataLoaderToDefinitionStore {
 
     @Override
     protected boolean shouldTolerateDataSetupFailure(Throwable e) {
-        if (e instanceof ImportException importException) {
-            return importException.getHttpStatusCode() == HttpStatus.SC_GATEWAY_TIMEOUT;
-        }
-        if (e instanceof SSLException) {
-            return true;
-        }
-        if (e instanceof AEADBadTagException) {
-            return true;
-        }
-        return shouldTolerateDataSetupFailure();
+        return switch (e) {
+            case ImportException importException -> isGatewayTimeout(importException);
+            case SSLException sslException-> true;
+            case AEADBadTagException aeadBadTagException -> true;
+            default -> shouldTolerateDataSetupFailure();
+        };
+    }
+
+    private boolean isGatewayTimeout(ImportException importException) {
+        return importException.getHttpStatusCode() == HttpStatus.SC_GATEWAY_TIMEOUT;
     }
 }
