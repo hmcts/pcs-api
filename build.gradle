@@ -4,7 +4,7 @@ import uk.gov.hmcts.rse.CftlibExec
 
 buildscript {
   ext {
-    flywayVersion = '11.7.2'
+    flywayVersion = '11.8.0'
     serenityBddVersion = '4.2.22'
   }
   dependencies {
@@ -16,7 +16,7 @@ plugins {
   id 'application'
   id 'jacoco'
   id 'io.spring.dependency-management' version '1.1.7'
-  id 'org.springframework.boot' version '3.4.4'
+  id 'org.springframework.boot' version '3.4.5'
   id 'com.github.ben-manes.versions' version '0.52.0'
   id 'org.flywaydb.flyway' version "$flywayVersion"
   id 'org.sonarqube' version '6.1.0.5360'
@@ -280,7 +280,7 @@ ext {
   log4JVersion = "2.24.3"
   logbackVersion = "1.5.18"
   testcontainersVersion = "1.21.0"
-  springFrameworkBootVersion = "3.4.4"
+  springFrameworkBootVersion = "3.4.5"
   lombokVersion = "1.18.38"
   springSecurityVersion = "6.4.5"
   pactVersion = "4.6.17"
@@ -295,7 +295,7 @@ dependencies {
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-json', version: springFrameworkBootVersion
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-web', version: springFrameworkBootVersion
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-security', version: springFrameworkBootVersion
-  implementation group: 'org.springframework.boot', name: 'spring-boot-starter-data-jpa', version: '3.4.4'
+  implementation group: 'org.springframework.boot', name: 'spring-boot-starter-data-jpa', version: '3.4.5'
 
   runtimeOnly group: 'org.flywaydb', name: 'flyway-database-postgresql', version: flywayVersion
 
