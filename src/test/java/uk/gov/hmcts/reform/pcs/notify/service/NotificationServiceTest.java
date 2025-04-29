@@ -7,13 +7,16 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 import uk.gov.hmcts.reform.pcs.config.AsyncConfiguration;
+import uk.gov.hmcts.reform.pcs.notify.entity.NotificationStatusEntity;
 import uk.gov.hmcts.reform.pcs.notify.exception.NotificationException;
 import uk.gov.hmcts.reform.pcs.notify.model.EmailNotificationRequest;
+import uk.gov.hmcts.reform.pcs.notify.repository.NotificationStatusRepository;
 import uk.gov.service.notify.NotificationClient;
 import uk.gov.service.notify.NotificationClientException;
 import uk.gov.service.notify.SendEmailResponse;
 import uk.gov.service.notify.Notification;
 
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Optional;
 import java.util.UUID;
@@ -24,8 +27,11 @@ import java.util.concurrent.TimeoutException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyMap;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -37,13 +43,16 @@ class NotificationServiceTest {
     @Mock
     private NotificationClient notificationClient;
 
+    @Mock
+    private NotificationStatusRepository statusRepository;
+
     private NotificationService notificationService;
 
-    private static final long STATUS_CHECK_DELAY = 100L; // 100ms for faster tests
+    private static final long STATUS_CHECK_DELAY = 100L;
 
     @BeforeEach
     void setUp() {
-        notificationService = new NotificationService(notificationClient, STATUS_CHECK_DELAY);
+        notificationService = new NotificationService(notificationClient, statusRepository, STATUS_CHECK_DELAY);
     }
 
     @Test
@@ -142,5 +151,124 @@ class NotificationServiceTest {
             });
 
         verify(notificationClient).getNotificationById(notificationId);
+    }
+
+    @Test
+    void shouldSaveInitialStatusWhenSendingEmail() throws NotificationClientException {
+        // Given
+        String notificationId = UUID.randomUUID().toString();
+        SendEmailResponse sendEmailResponse = mock(SendEmailResponse.class);
+        when(sendEmailResponse.getNotificationId()).thenReturn(UUID.fromString(notificationId));
+        when(notificationClient.sendEmail(anyString(), anyString(), anyMap(), anyString()))
+            .thenReturn(sendEmailResponse);
+
+        // When
+        EmailNotificationRequest request = EmailNotificationRequest.builder()
+            .templateId("template-id")
+            .emailAddress("test@example.com")
+            .personalisation(new HashMap<>())
+            .reference("reference")
+            .build();
+        notificationService.sendEmail(request);
+
+        // Then
+        verify(statusRepository).save(argThat(entity -> {
+            assertThat(entity.getNotificationId()).isEqualTo(notificationId);
+            assertThat(entity.getStatus()).isEqualTo("sent");
+            assertThat(entity.getCreatedAt()).isNotNull();
+            assertThat(entity.getLastUpdated()).isNotNull();
+            return true;
+        }));
+    }
+
+    @Test
+    void shouldUpdateStatusInDatabaseWhenCheckingNotification() throws Exception {
+        // Given
+        String notificationId = UUID.randomUUID().toString();
+        Notification notification = mock(Notification.class);
+        when(notification.getStatus()).thenReturn("delivered");
+        when(notificationClient.getNotificationById(notificationId)).thenReturn(notification);
+
+        NotificationStatusEntity existingStatus = new NotificationStatusEntity();
+        existingStatus.setNotificationId(notificationId);
+        existingStatus.setStatus("sent");
+        existingStatus.setCreatedAt(LocalDateTime.now().minusMinutes(5));
+        existingStatus.setLastUpdated(LocalDateTime.now().minusMinutes(5));
+        when(statusRepository.findById(notificationId)).thenReturn(Optional.of(existingStatus));
+
+        // When
+        CompletableFuture<Notification> future = notificationService.checkNotificationStatus(notificationId);
+        future.get(6, TimeUnit.SECONDS);
+
+        // Then
+        verify(statusRepository).save(argThat(entity -> {
+            assertThat(entity.getNotificationId()).isEqualTo(notificationId);
+            assertThat(entity.getStatus()).isEqualTo("delivered");
+            assertThat(entity.getCreatedAt()).isEqualTo(existingStatus.getCreatedAt());
+            assertThat(entity.getLastUpdated()).isAfter(existingStatus.getLastUpdated());
+            return true;
+        }));
+    }
+
+    @Test
+    void shouldCreateNewStatusEntityIfNotFoundDuringCheck() throws Exception {
+        // Given
+        String notificationId = UUID.randomUUID().toString();
+        Notification notification = mock(Notification.class);
+        when(notification.getStatus()).thenReturn("delivered");
+        when(notificationClient.getNotificationById(notificationId)).thenReturn(notification);
+        when(statusRepository.findById(notificationId)).thenReturn(Optional.empty());
+
+        // When
+        CompletableFuture<Notification> future = notificationService.checkNotificationStatus(notificationId);
+        future.get(6, TimeUnit.SECONDS);
+
+        // Then
+        verify(statusRepository).save(argThat(entity -> {
+            assertThat(entity.getNotificationId()).isEqualTo(notificationId);
+            assertThat(entity.getStatus()).isEqualTo("delivered");
+            assertThat(entity.getCreatedAt()).isNotNull();
+            assertThat(entity.getLastUpdated()).isNotNull();
+            return true;
+        }));
+    }
+
+    @Test
+    void shouldHandleDatabaseErrorWhenSavingInitialStatus() throws NotificationClientException {
+        // Given
+        String notificationId = UUID.randomUUID().toString();
+        SendEmailResponse sendEmailResponse = mock(SendEmailResponse.class);
+        when(sendEmailResponse.getNotificationId()).thenReturn(UUID.fromString(notificationId));
+        when(notificationClient.sendEmail(anyString(), anyString(), anyMap(), anyString()))
+            .thenReturn(sendEmailResponse);
+        doThrow(new RuntimeException("Database error")).when(statusRepository).save(any(NotificationStatusEntity.class));
+
+        // When & Then
+        EmailNotificationRequest request = EmailNotificationRequest.builder()
+            .templateId("template-id")
+            .emailAddress("test@example.com")
+            .personalisation(new HashMap<>())
+            .reference("reference")
+            .build();
+        assertThatThrownBy(() -> notificationService.sendEmail(request))
+            .isInstanceOf(NotificationException.class)
+            .hasMessageContaining("Error saving notification status");
+    }
+
+    @Test
+    void shouldHandleDatabaseErrorWhenUpdatingStatus() throws NotificationClientException {
+        // Given
+        String notificationId = UUID.randomUUID().toString();
+        Notification notification = mock(Notification.class);
+        when(notification.getStatus()).thenReturn("delivered");
+        when(notificationClient.getNotificationById(notificationId)).thenReturn(notification);
+        doThrow(new RuntimeException("Database error")).when(statusRepository).save(any(NotificationStatusEntity.class));
+
+        // When & Then
+        CompletableFuture<Notification> future = notificationService.checkNotificationStatus(notificationId);
+        assertThatThrownBy(() -> future.get(6, TimeUnit.SECONDS))
+            .isInstanceOf(ExecutionException.class)
+            .hasRootCauseInstanceOf(RuntimeException.class)
+            .hasRootCauseMessage("Database error");
     }
 }
