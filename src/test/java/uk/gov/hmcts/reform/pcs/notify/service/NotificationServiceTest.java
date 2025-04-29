@@ -210,7 +210,7 @@ class NotificationServiceTest {
         when(notificationClient.getNotificationById(notificationId)).thenReturn(notification);
         doThrow(new RuntimeException("Database error"))
         .when(statusRepository)
-        .save(any(NotificationStatusEntity.class));
+            .save(any(NotificationStatusEntity.class));
 
         CompletableFuture<Notification> future = notificationService.checkNotificationStatus(notificationId);
         assertThatThrownBy(() -> future.get(6, TimeUnit.SECONDS))
