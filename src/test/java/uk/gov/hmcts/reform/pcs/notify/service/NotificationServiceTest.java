@@ -81,13 +81,17 @@ class NotificationServiceTest {
     }
 
     @Test
-    void testCheckNotificationStatusDelivered() throws NotificationClientException, 
-            InterruptedException, ExecutionException, TimeoutException {
+    void testCheckNotificationStatusDelivered() 
+            throws NotificationClientException, 
+                   InterruptedException, 
+                   ExecutionException, 
+                   TimeoutException {
         String notificationId = UUID.randomUUID().toString();
         Notification notification = mock(Notification.class);
         
         when(notification.getStatus()).thenReturn("delivered");
-        when(notificationClient.getNotificationById(notificationId)).thenReturn(notification);
+        when(notificationClient.getNotificationById(notificationId))
+            .thenReturn(notification);
 
         CompletableFuture<Notification> future = notificationService.checkNotificationStatus(notificationId);
         Notification result = future.get(6, TimeUnit.SECONDS);
@@ -102,7 +106,12 @@ class NotificationServiceTest {
         String notificationId = UUID.randomUUID().toString();
         SendEmailResponse sendEmailResponse = mock(SendEmailResponse.class);
         when(sendEmailResponse.getNotificationId()).thenReturn(UUID.fromString(notificationId));
-        when(notificationClient.sendEmail(anyString(), anyString(), anyMap(), anyString())).thenReturn(sendEmailResponse);
+        when(notificationClient.sendEmail(
+                anyString(),
+                anyString(),
+                anyMap(),
+                anyString()))
+            .thenReturn(sendEmailResponse);
 
         EmailNotificationRequest request = EmailNotificationRequest.builder()
             .templateId("template-id")
@@ -172,9 +181,15 @@ class NotificationServiceTest {
         String notificationId = UUID.randomUUID().toString();
         SendEmailResponse sendEmailResponse = mock(SendEmailResponse.class);
         when(sendEmailResponse.getNotificationId()).thenReturn(UUID.fromString(notificationId));
-        when(notificationClient.sendEmail(anyString(), anyString(), anyMap(), anyString()))
+        when(notificationClient.sendEmail(
+                anyString(),
+                anyString(),
+                anyMap(),
+                anyString()))
             .thenReturn(sendEmailResponse);
-        doThrow(new RuntimeException("Database error")).when(statusRepository).save(any(NotificationStatusEntity.class));
+        doThrow(new RuntimeException("Database error"))
+            .when(statusRepository)
+            .save(any(NotificationStatusEntity.class));
 
         EmailNotificationRequest request = EmailNotificationRequest.builder()
             .templateId("template-id")
