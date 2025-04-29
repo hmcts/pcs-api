@@ -3,10 +3,11 @@ package uk.gov.hmcts.reform.pcs.functional.tests;
 import net.serenitybdd.annotations.Steps;
 import net.serenitybdd.annotations.Title;
 import net.serenitybdd.junit5.SerenityJUnit5Extension;
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import uk.gov.hmcts.reform.pcs.functional.config.TestConstants;
 import uk.gov.hmcts.reform.pcs.functional.steps.ApiSteps;
 
 @Tag("Functional")
@@ -14,11 +15,10 @@ import uk.gov.hmcts.reform.pcs.functional.steps.ApiSteps;
 class DashboardTasksEndpointTests {
 
     @Steps
-    static ApiSteps apiSteps;
+    ApiSteps apiSteps;
 
-    @BeforeAll
-    static void beforeAll() {
-        apiSteps = new ApiSteps();
+    @BeforeEach
+    void beforeEach() {
         apiSteps.setUp();
     }
 
@@ -29,7 +29,7 @@ class DashboardTasksEndpointTests {
     @Test
     void dashboardTasks200SuccessWithPCSApiTokenScenario() {
         apiSteps.requestIsPreparedWithAppropriateValues();
-        apiSteps.theRequestContainsValidServiceToken("pcs_api");
+        apiSteps.theRequestContainsValidServiceToken(TestConstants.PCS_API);
         apiSteps.theRequestContainsThePathParameter("caseReference", "1666630757927238");
         apiSteps.callIsSubmittedToTheEndpoint("DashboardTasks", "GET");
         apiSteps.checkStatusCode(200);
@@ -39,7 +39,7 @@ class DashboardTasksEndpointTests {
     @Test
     void dashboardTasks200SuccessWithFrontendTokenScenario() {
         apiSteps.requestIsPreparedWithAppropriateValues();
-        apiSteps.theRequestContainsValidServiceToken("pcs_frontend");
+        apiSteps.theRequestContainsValidServiceToken(TestConstants.PCS_FRONTEND);
         apiSteps.theRequestContainsThePathParameter("caseReference", "1666630757927238");
         apiSteps.callIsSubmittedToTheEndpoint("DashboardTasks", "GET");
         apiSteps.checkStatusCode(200);
@@ -49,7 +49,7 @@ class DashboardTasksEndpointTests {
     @Test
     void dashboardTasks404NotFoundScenario() {
         apiSteps.requestIsPreparedWithAppropriateValues();
-        apiSteps.theRequestContainsValidServiceToken("pcs_api");
+        apiSteps.theRequestContainsValidServiceToken(TestConstants.PCS_API);
         apiSteps.theRequestContainsThePathParameter("caseReference", "9999");
         apiSteps.callIsSubmittedToTheEndpoint("DashboardTasks", "GET");
         apiSteps.checkStatusCode(404);
