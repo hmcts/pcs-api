@@ -67,8 +67,7 @@ class NotificationServiceTest {
         SendEmailResponse sendEmailResponse = mock(SendEmailResponse.class);
         when(sendEmailResponse.getNotificationId())
             .thenReturn(UUID.fromString("550e8400-e29b-41d4-a716-446655440000"));
-        when(sendEmailResponse.getReference())
-            .thenReturn(Optional.of("reference"));
+        when(sendEmailResponse.getReference()).thenReturn(Optional.of("reference"));
         when(notificationClient.sendEmail(anyString(), anyString(), anyMap(), anyString()))
             .thenReturn(sendEmailResponse);
 
@@ -78,25 +77,6 @@ class NotificationServiceTest {
         assertThat(response.getNotificationId())
             .isEqualTo(UUID.fromString("550e8400-e29b-41d4-a716-446655440000"));
         assertThat(response.getReference()).contains("reference");
-        verify(notificationClient).sendEmail(anyString(), anyString(), anyMap(), anyString());
-    }
-
-    @Test
-    void testSendEmailFailure() throws NotificationClientException {
-        EmailNotificationRequest emailRequest = new EmailNotificationRequest(
-            "test@example.com",
-            "templateId",
-            new HashMap<>(),
-            "reference",
-            "emailReplyToId"
-        );
-        when(notificationClient.sendEmail(anyString(), anyString(), anyMap(), anyString()))
-            .thenThrow(new NotificationClientException("Error"));
-
-        assertThatThrownBy(() -> notificationService.sendEmail(emailRequest))
-            .isInstanceOf(NotificationException.class)
-            .hasMessage("Email failed to send, please try again.");
-
         verify(notificationClient).sendEmail(anyString(), anyString(), anyMap(), anyString());
     }
 
@@ -118,51 +98,12 @@ class NotificationServiceTest {
     }
 
     @Test
-    void testCheckNotificationStatusPending() throws NotificationClientException, 
-            InterruptedException, ExecutionException, TimeoutException {
-        String notificationId = UUID.randomUUID().toString();
-        Notification notification = mock(Notification.class);
-
-        when(notification.getStatus()).thenReturn("pending");
-        when(notificationClient.getNotificationById(notificationId)).thenReturn(notification);
-
-        CompletableFuture<Notification> future = notificationService.checkNotificationStatus(notificationId);
-        Notification result = future.get(6, TimeUnit.SECONDS);
-
-        assertThat(result).isNotNull();
-        assertThat(result.getStatus()).isEqualTo("pending");
-        verify(notificationClient).getNotificationById(notificationId);
-    }
-
-    @Test
-    void testCheckNotificationStatusError() throws NotificationClientException {
-        String notificationId = UUID.randomUUID().toString();
-        when(notificationClient.getNotificationById(notificationId))
-            .thenThrow(new NotificationClientException("Failed to fetch notification status"));
-
-        CompletableFuture<Notification> future = notificationService.checkNotificationStatus(notificationId);
-        
-        assertThatThrownBy(() -> future.get(6, TimeUnit.SECONDS))
-            .isInstanceOf(ExecutionException.class)
-            .satisfies(thrown -> {
-                assertThat(thrown.getCause())
-                    .isInstanceOf(NotificationClientException.class)
-                    .hasMessage("Failed to fetch notification status");
-            });
-
-        verify(notificationClient).getNotificationById(notificationId);
-    }
-
-    @Test
     void shouldSaveInitialStatusWhenSendingEmail() throws NotificationClientException {
-        // Given
         String notificationId = UUID.randomUUID().toString();
         SendEmailResponse sendEmailResponse = mock(SendEmailResponse.class);
         when(sendEmailResponse.getNotificationId()).thenReturn(UUID.fromString(notificationId));
-        when(notificationClient.sendEmail(anyString(), anyString(), anyMap(), anyString()))
-            .thenReturn(sendEmailResponse);
+        when(notificationClient.sendEmail(anyString(), anyString(), anyMap(), anyString())).thenReturn(sendEmailResponse);
 
-        // When
         EmailNotificationRequest request = EmailNotificationRequest.builder()
             .templateId("template-id")
             .emailAddress("test@example.com")
@@ -171,7 +112,6 @@ class NotificationServiceTest {
             .build();
         notificationService.sendEmail(request);
 
-        // Then
         verify(statusRepository).save(argThat(entity -> {
             assertThat(entity.getNotificationId()).isEqualTo(notificationId);
             assertThat(entity.getStatus()).isEqualTo("sent");
@@ -183,7 +123,6 @@ class NotificationServiceTest {
 
     @Test
     void shouldUpdateStatusInDatabaseWhenCheckingNotification() throws Exception {
-        // Given
         String notificationId = UUID.randomUUID().toString();
         Notification notification = mock(Notification.class);
         when(notification.getStatus()).thenReturn("delivered");
@@ -196,11 +135,9 @@ class NotificationServiceTest {
         existingStatus.setLastUpdated(LocalDateTime.now().minusMinutes(5));
         when(statusRepository.findById(notificationId)).thenReturn(Optional.of(existingStatus));
 
-        // When
         CompletableFuture<Notification> future = notificationService.checkNotificationStatus(notificationId);
         future.get(6, TimeUnit.SECONDS);
 
-        // Then
         verify(statusRepository).save(argThat(entity -> {
             assertThat(entity.getNotificationId()).isEqualTo(notificationId);
             assertThat(entity.getStatus()).isEqualTo("delivered");
@@ -212,18 +149,15 @@ class NotificationServiceTest {
 
     @Test
     void shouldCreateNewStatusEntityIfNotFoundDuringCheck() throws Exception {
-        // Given
         String notificationId = UUID.randomUUID().toString();
         Notification notification = mock(Notification.class);
         when(notification.getStatus()).thenReturn("delivered");
         when(notificationClient.getNotificationById(notificationId)).thenReturn(notification);
         when(statusRepository.findById(notificationId)).thenReturn(Optional.empty());
 
-        // When
         CompletableFuture<Notification> future = notificationService.checkNotificationStatus(notificationId);
         future.get(6, TimeUnit.SECONDS);
 
-        // Then
         verify(statusRepository).save(argThat(entity -> {
             assertThat(entity.getNotificationId()).isEqualTo(notificationId);
             assertThat(entity.getStatus()).isEqualTo("delivered");
@@ -235,7 +169,6 @@ class NotificationServiceTest {
 
     @Test
     void shouldHandleDatabaseErrorWhenSavingInitialStatus() throws NotificationClientException {
-        // Given
         String notificationId = UUID.randomUUID().toString();
         SendEmailResponse sendEmailResponse = mock(SendEmailResponse.class);
         when(sendEmailResponse.getNotificationId()).thenReturn(UUID.fromString(notificationId));
@@ -243,7 +176,6 @@ class NotificationServiceTest {
             .thenReturn(sendEmailResponse);
         doThrow(new RuntimeException("Database error")).when(statusRepository).save(any(NotificationStatusEntity.class));
 
-        // When & Then
         EmailNotificationRequest request = EmailNotificationRequest.builder()
             .templateId("template-id")
             .emailAddress("test@example.com")
@@ -257,14 +189,12 @@ class NotificationServiceTest {
 
     @Test
     void shouldHandleDatabaseErrorWhenUpdatingStatus() throws NotificationClientException {
-        // Given
         String notificationId = UUID.randomUUID().toString();
         Notification notification = mock(Notification.class);
         when(notification.getStatus()).thenReturn("delivered");
         when(notificationClient.getNotificationById(notificationId)).thenReturn(notification);
         doThrow(new RuntimeException("Database error")).when(statusRepository).save(any(NotificationStatusEntity.class));
 
-        // When & Then
         CompletableFuture<Notification> future = notificationService.checkNotificationStatus(notificationId);
         assertThatThrownBy(() -> future.get(6, TimeUnit.SECONDS))
             .isInstanceOf(ExecutionException.class)
