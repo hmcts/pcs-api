@@ -43,7 +43,7 @@ public class NotificationControllerIT extends AbstractPostgresContainerIT {
 
     private static final String AUTH_HEADER = "Bearer token";
     private static final String SERVICE_AUTH_HEADER = "ServiceAuthToken";
-    private static final String END_POINT = "/notify/send-email";
+    private static final String END_POINT = "/testing-support/send-email";
 
     @Autowired
     private MockMvc mockMvc;
@@ -60,12 +60,12 @@ public class NotificationControllerIT extends AbstractPostgresContainerIT {
     @BeforeEach
     void setUp() throws NotificationClientException {
         notificationRepository.deleteAll();
-        
+
         SendEmailResponse mockResponse = mock(SendEmailResponse.class);
         UUID notificationId = UUID.randomUUID();
         when(mockResponse.getNotificationId()).thenReturn(notificationId);
         when(mockResponse.getReference()).thenReturn(Optional.of("reference"));
-        
+
         when(notificationClient.sendEmail(
             anyString(), anyString(), anyMap(), anyString()
         )).thenReturn(mockResponse);
@@ -109,7 +109,7 @@ public class NotificationControllerIT extends AbstractPostgresContainerIT {
         assertThat(notifications.getFirst().getStatus()).isEqualTo("Schedule Pending");
     }
 
-    @DisplayName("Should return bad request when sending email fails")
+    @DisplayName("Should return Internal Server Error when sending email fails")
     @Test
     void shouldReturnBadRequestWhenSendingEmailFails() throws Exception {
         EmailNotificationRequest request = createEmailNotificationRequest();
@@ -123,14 +123,14 @@ public class NotificationControllerIT extends AbstractPostgresContainerIT {
                             .header(AUTHORIZATION, AUTH_HEADER)
                             .header(SERVICE_AUTHORIZATION, SERVICE_AUTH_HEADER)
                             .content(objectMapper.writeValueAsString(request)))
-            .andExpect(status().isBadRequest());
+            .andExpect(status().isInternalServerError());
     }
 
     @DisplayName("Should return bad request when service authorization token is missing")
     @Test
     void shouldReturnBadRequestWithoutServiceAuthorizationToken() throws Exception {
         EmailNotificationRequest request = createEmailNotificationRequest();
-        
+
         mockMvc.perform(post(END_POINT)
                             .contentType(MediaType.APPLICATION_JSON)
                             .header(AUTHORIZATION, AUTH_HEADER)
