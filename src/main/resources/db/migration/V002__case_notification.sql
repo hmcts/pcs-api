@@ -1,4 +1,4 @@
-CREATE TABLE case_notification
+CREATE TABLE case_notifications
 (
   notification_id UUID NOT NULL,
   case_id         UUID NOT NULL,
@@ -8,5 +8,5 @@ CREATE TABLE case_notification
   status          VARCHAR(255) NOT NULL,
   type            VARCHAR(255) NOT NULL,
   recipient       VARCHAR(255) NOT NULL,
-  CONSTRAINT pk_case_notification PRIMARY KEY (notification_id)
+  CONSTRAINT pk_case_notifications PRIMARY KEY (notification_id)
 );
