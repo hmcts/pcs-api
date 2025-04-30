@@ -42,7 +42,7 @@ public class CaseNotification {
     @Column(name = "scheduled_at")
     private LocalDateTime scheduledAt;
 
-    @Column(name = "last_updated_at",nullable = false)
+    @Column(name = "last_updated_at", nullable = false)
     private LocalDateTime lastUpdatedAt;
 
     @Column(name = "status", nullable = false)

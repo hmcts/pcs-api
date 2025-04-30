@@ -106,12 +106,12 @@ public class NotificationEndpointIT extends AbstractPostgresContainerIT {
         List<CaseNotification> notifications = notificationRepository.findAll();
         assertThat(notifications).isNotEmpty();
         assertThat(notifications.getFirst().getRecipient()).isEqualTo(request.getEmailAddress());
-        assertThat(notifications.getFirst().getStatus()).isEqualTo("Schedule Pending");
+        assertThat(notifications.getFirst().getStatus()).isEqualTo("schedule pending");
     }
 
     @DisplayName("Should return Internal Server Error when sending email fails")
     @Test
-    void shouldReturnBadRequestWhenSendingEmailFails() throws Exception {
+    void shouldReturnInternalServerErrorWhenSendingEmailFails() throws Exception {
         EmailNotificationRequest request = createEmailNotificationRequest();
 
         when(notificationClient.sendEmail(

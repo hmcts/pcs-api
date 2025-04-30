@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.pcs.notify.domain.CaseNotification;
 import uk.gov.hmcts.reform.pcs.notify.exception.NotificationException;
 import uk.gov.hmcts.reform.pcs.notify.model.EmailNotificationRequest;
+import uk.gov.hmcts.reform.pcs.notify.model.NotificationStatus;
 import uk.gov.hmcts.reform.pcs.notify.repository.NotificationRepository;
 import uk.gov.service.notify.NotificationClient;
 import uk.gov.service.notify.NotificationClientException;
@@ -102,10 +103,11 @@ public class NotificationService {
         });
     }
 
-    public CaseNotification createCaseNotification(String recipient, String type, UUID caseId) {
+    CaseNotification createCaseNotification(String recipient, String type, UUID caseId) {
         CaseNotification toSaveNotification = new CaseNotification();
         toSaveNotification.setCaseId(caseId);
-        toSaveNotification.setStatus("Schedule Pending");
+        // Use the toString() method of the enum to get the string value
+        toSaveNotification.setStatus(NotificationStatus.SCHEDULE_PENDING.toString());
         toSaveNotification.setType(type);
         toSaveNotification.setRecipient(recipient);
 
