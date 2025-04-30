@@ -21,7 +21,7 @@ import java.util.UUID;
 @Entity
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "case_notifications")
+@Table(name = "case_notification")
 @Getter
 @Setter
 @ToString
