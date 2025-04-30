@@ -7,8 +7,8 @@ public enum NotificationStatus {
     PERMANENT_FAILURE("permanent-failure"),
     TEMPORARY_FAILURE("temporary-failure"),
     TECHNICAL_FAILURE("technical-failure"),
-    SCHEDULE("schedule"),
-    SCHEDULE_PENDING("schedule pending");
+    SCHEDULE("scheduled"),
+    SCHEDULE_PENDING("pending-schedule");
 
     private final String value;
 

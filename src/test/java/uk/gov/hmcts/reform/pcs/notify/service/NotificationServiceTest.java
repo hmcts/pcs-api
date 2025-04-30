@@ -12,7 +12,6 @@ import uk.gov.hmcts.reform.pcs.config.AsyncConfiguration;
 import uk.gov.hmcts.reform.pcs.notify.domain.CaseNotification;
 import uk.gov.hmcts.reform.pcs.notify.exception.NotificationException;
 import uk.gov.hmcts.reform.pcs.notify.model.EmailNotificationRequest;
-import uk.gov.hmcts.reform.pcs.notify.model.NotificationStatus;
 import uk.gov.hmcts.reform.pcs.notify.repository.NotificationRepository;
 import uk.gov.service.notify.NotificationClient;
 import uk.gov.service.notify.NotificationClientException;
@@ -110,7 +109,7 @@ class NotificationServiceTest {
     @Test
     void shouldSaveCaseNotificationWhenEndPointIsCalled() {
         String recipient = "test@example.com";
-        String status = "schedule pending";
+        String status = "pending-schedule";
         UUID caseId = UUID.randomUUID();
         String type = "Email";
 
