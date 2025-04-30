@@ -107,7 +107,7 @@ public class NotificationService {
         CaseNotification toSaveNotification = new CaseNotification();
         toSaveNotification.setCaseId(caseId);
         // Use the toString() method of the enum to get the string value
-        toSaveNotification.setStatus(NotificationStatus.SCHEDULE_PENDING.toString());
+        toSaveNotification.setStatus(NotificationStatus.PENDING_SCHEDULE.toString());
         toSaveNotification.setType(type);
         toSaveNotification.setRecipient(recipient);
 
