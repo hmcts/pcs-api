@@ -80,7 +80,8 @@ class NotificationServiceTest {
             .isEqualTo(UUID.fromString("550e8400-e29b-41d4-a716-446655440000"));
         assertThat(response.getReference()).contains("reference");
         verify(notificationClient).sendEmail(anyString(), anyString(), anyMap(), anyString());
-        verify(notificationRepository).save(any(CaseNotification.class));
+        // Verify save is called exactly 2 times - once for initial creation and once for status update
+        verify(notificationRepository, org.mockito.Mockito.times(2)).save(any(CaseNotification.class));
     }
 
     @DisplayName("Should throw notification exception when email sending fails")
@@ -102,7 +103,8 @@ class NotificationServiceTest {
             .hasMessage("Email failed to send, please try again.");
 
         verify(notificationClient).sendEmail(anyString(), anyString(), anyMap(), anyString());
-        verify(notificationRepository).save(any(CaseNotification.class));
+        // Verify save is called exactly 2 times - once for initial creation and once for status update
+        verify(notificationRepository, org.mockito.Mockito.times(2)).save(any(CaseNotification.class));
     }
 
     @DisplayName("Should save case notification when end point is called successfully")
