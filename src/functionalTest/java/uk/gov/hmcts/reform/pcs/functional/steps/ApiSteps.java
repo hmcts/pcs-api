@@ -19,6 +19,7 @@ public class ApiSteps {
     private String pcsFrontendS2sToken;
     private String unauthorisedS2sToken;
 
+    @Step("Generate S2S tokens")
     public void setUp() {
 
         ServiceAuthenticationGenerator serviceAuthenticationGenerator = new ServiceAuthenticationGenerator();
