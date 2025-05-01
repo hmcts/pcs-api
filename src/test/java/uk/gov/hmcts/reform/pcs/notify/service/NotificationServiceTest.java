@@ -4,6 +4,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -200,5 +201,42 @@ class NotificationServiceTest {
             });
 
         verify(notificationClient).getNotificationById(notificationId);
+    }
+
+    @DisplayName("Should generate UUID for case ID when sending email")
+    @Test
+    void shouldGenerateUuidForCaseIdWhenSendingEmail() throws NotificationClientException {
+        // Given
+        final EmailNotificationRequest emailRequest = new EmailNotificationRequest(
+            "test@example.com",
+            "templateId",
+            new HashMap<>(),
+            "reference",
+            "emailReplyToId"
+        );
+        SendEmailResponse sendEmailResponse = mock(SendEmailResponse.class);
+        
+        // Capture the CaseNotification being saved to verify its caseId is a UUID
+        ArgumentCaptor<CaseNotification> caseNotificationCaptor = ArgumentCaptor.forClass(CaseNotification.class);
+        when(notificationRepository.save(caseNotificationCaptor.capture())).thenReturn(mock(CaseNotification.class));
+        
+        // Setup stub for the email sending to avoid actual notification client call
+        when(notificationClient.sendEmail(anyString(), anyString(), anyMap(), anyString()))
+            .thenReturn(sendEmailResponse);
+        
+        // Mock the response ID which is used in the production code
+        when(sendEmailResponse.getNotificationId())
+            .thenReturn(UUID.randomUUID());
+        
+        // When
+        notificationService.sendEmail(emailRequest);
+
+        // Then
+        // First save captured value is from the createCaseNotification call
+        CaseNotification capturedNotification = caseNotificationCaptor.getAllValues().get(0);
+        assertThat(capturedNotification.getCaseId()).isNotNull();
+        // Verify that a valid UUID was set for the caseId
+        assertThat(capturedNotification.getCaseId().toString())
+            .matches("[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}");
     }
 }
