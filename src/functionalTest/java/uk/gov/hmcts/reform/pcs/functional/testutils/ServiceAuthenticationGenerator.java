@@ -10,9 +10,7 @@ import static org.springframework.http.HttpHeaders.CONTENT_TYPE;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 public class ServiceAuthenticationGenerator {
-
     private final String s2sUrl = System.getenv("IDAM_S2S_AUTH_URL");
-
     public String generate() {
         return generate(TestConstants.PCS_API);
     }

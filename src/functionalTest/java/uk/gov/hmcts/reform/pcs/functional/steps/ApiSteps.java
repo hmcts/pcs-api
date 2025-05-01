@@ -21,7 +21,6 @@ public class ApiSteps {
 
     @Step("Generate S2S tokens")
     public void setUp() {
-
         ServiceAuthenticationGenerator serviceAuthenticationGenerator = new ServiceAuthenticationGenerator();
         pcsApiS2sToken = serviceAuthenticationGenerator.generate();
         pcsFrontendS2sToken = serviceAuthenticationGenerator.generate(TestConstants.PCS_FRONTEND);
