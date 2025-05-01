@@ -36,7 +36,7 @@ public class CaseNotification {
     @Column(name = "case_id", nullable = false)
     private UUID caseId;
 
-    @Column(name = "provider_notification_id", nullable = false)
+    @Column(name = "provider_notification_id", nullable = true)
     private UUID providerNotificationId;
 
     @Column(name = "submitted_at")

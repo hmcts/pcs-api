@@ -2,7 +2,7 @@ CREATE TABLE case_notification
 (
   notification_id UUID NOT NULL,
   case_id         UUID NOT NULL,
-  provider_notification_id UUID NOT NULL,
+  provider_notification_id UUID,
   submitted_at    TIMESTAMP WITHOUT TIME ZONE,
   scheduled_at    TIMESTAMP WITHOUT TIME ZONE,
   last_updated_at TIMESTAMP WITHOUT TIME ZONE NOT NULL,

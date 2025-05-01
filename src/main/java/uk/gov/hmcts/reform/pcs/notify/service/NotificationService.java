@@ -45,7 +45,7 @@ public class NotificationService {
         final String referenceId = UUID.randomUUID().toString();
 
         // Save notification to database
-        createCaseNotification(emailRequest.getEmailAddress(), "Email", UUID.randomUUID(), UUID.randomUUID());
+        createCaseNotification(emailRequest.getEmailAddress(), "Email", UUID.randomUUID());
 
         try {
             sendEmailResponse = notificationClient.sendEmail(
@@ -103,10 +103,9 @@ public class NotificationService {
         });
     }
 
-    CaseNotification createCaseNotification(String recipient, String type, UUID caseId, UUID providerNotificationId) {
+    CaseNotification createCaseNotification(String recipient, String type, UUID caseId) {
         CaseNotification toSaveNotification = new CaseNotification();
         toSaveNotification.setCaseId(caseId);
-        toSaveNotification.setProviderNotificationId(UUID.randomUUID()); // Temporary random UUID
         // Use the toString() method of the enum to get the string value
         toSaveNotification.setStatus(NotificationStatus.PENDING_SCHEDULE.toString());
         toSaveNotification.setType(type);

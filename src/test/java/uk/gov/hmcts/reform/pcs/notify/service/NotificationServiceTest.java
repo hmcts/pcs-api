@@ -111,28 +111,20 @@ class NotificationServiceTest {
         String recipient = "test@example.com";
         String status = "pending-schedule";
         UUID caseId = UUID.randomUUID();
-        UUID providerNotificationId = UUID.randomUUID();
         String type = "Email";
 
         CaseNotification testCaseNotification = new CaseNotification();
         testCaseNotification.setStatus(status);
         testCaseNotification.setRecipient(recipient);
         testCaseNotification.setCaseId(caseId);
-        testCaseNotification.setProviderNotificationId(providerNotificationId);
         testCaseNotification.setType(type);
 
         when(notificationRepository.save(any(CaseNotification.class))).thenReturn(testCaseNotification);
-        CaseNotification saved = notificationService.createCaseNotification(
-            recipient, 
-            type, 
-            caseId, 
-            providerNotificationId
-        );
+        CaseNotification saved = notificationService.createCaseNotification(recipient, type, caseId);
 
         assertThat(saved).isNotNull();
         assertThat(saved.getCaseId()).isEqualTo(testCaseNotification.getCaseId());
         assertThat(saved.getRecipient()).isEqualTo(testCaseNotification.getRecipient());
-        assertThat(saved.getProviderNotificationId()).isEqualTo(providerNotificationId);
         verify(notificationRepository).save(any(CaseNotification.class));
     }
 
@@ -142,13 +134,12 @@ class NotificationServiceTest {
         String recipient = "test@example.com";
         String type = "Email";
         UUID caseId = UUID.randomUUID();
-        UUID providerNotificationId = UUID.randomUUID();
 
         when(notificationRepository.save(any(CaseNotification.class)))
             .thenThrow(new DataIntegrityViolationException("Constraint violation"));
 
         assertThatThrownBy(() -> 
-            notificationService.createCaseNotification(recipient, type, caseId, providerNotificationId)
+            notificationService.createCaseNotification(recipient, type, caseId)
         ).isInstanceOf(NotificationException.class).hasMessage("Failed to save Case Notification.");
         verify(notificationRepository).save(any(CaseNotification.class));
     }
