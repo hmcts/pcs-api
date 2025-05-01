@@ -12,6 +12,8 @@ global:
   amRoleAssignmentServiceUrl: http://am-role-assignment-service-aat.service.core-compute-aat.internal
 
 java:
+  environment:
+    CHANGE_ID: ${CHANGE_ID}
   postgresql:
     image:
       debug: true
