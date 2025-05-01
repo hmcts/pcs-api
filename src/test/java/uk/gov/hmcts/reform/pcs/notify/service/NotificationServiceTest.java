@@ -122,7 +122,12 @@ class NotificationServiceTest {
         testCaseNotification.setType(type);
 
         when(notificationRepository.save(any(CaseNotification.class))).thenReturn(testCaseNotification);
-        CaseNotification saved = notificationService.createCaseNotification(recipient, type, caseId, providerNotificationId);
+        CaseNotification saved = notificationService.createCaseNotification(
+            recipient, 
+            type, 
+            caseId, 
+            providerNotificationId
+        );
 
         assertThat(saved).isNotNull();
         assertThat(saved.getCaseId()).isEqualTo(testCaseNotification.getCaseId());
@@ -142,8 +147,9 @@ class NotificationServiceTest {
         when(notificationRepository.save(any(CaseNotification.class)))
             .thenThrow(new DataIntegrityViolationException("Constraint violation"));
 
-        assertThatThrownBy(() -> notificationService.createCaseNotification(recipient, type, caseId, providerNotificationId))
-            .isInstanceOf(NotificationException.class).hasMessage("Failed to save Case Notification.");
+        assertThatThrownBy(() -> 
+            notificationService.createCaseNotification(recipient, type, caseId, providerNotificationId)
+        ).isInstanceOf(NotificationException.class).hasMessage("Failed to save Case Notification.");
         verify(notificationRepository).save(any(CaseNotification.class));
     }
 
