@@ -106,6 +106,7 @@ public class NotificationService {
     CaseNotification createCaseNotification(String recipient, String type, UUID caseId) {
         CaseNotification toSaveNotification = new CaseNotification();
         toSaveNotification.setCaseId(caseId);
+        toSaveNotification.setProviderNotificationId(UUID.randomUUID()); // Temporary random UUID
         // Use the toString() method of the enum to get the string value
         toSaveNotification.setStatus(NotificationStatus.PENDING_SCHEDULE.toString());
         toSaveNotification.setType(type);

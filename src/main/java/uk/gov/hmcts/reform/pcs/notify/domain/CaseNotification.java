@@ -36,6 +36,9 @@ public class CaseNotification {
     @Column(name = "case_id", nullable = false)
     private UUID caseId;
 
+    @Column(name = "provider_notification_id", nullable = false)
+    private UUID providerNotificationId;
+
     @Column(name = "submitted_at")
     private LocalDateTime submittedAt;
 
