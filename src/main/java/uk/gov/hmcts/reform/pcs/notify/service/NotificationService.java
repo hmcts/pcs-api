@@ -45,7 +45,7 @@ public class NotificationService {
         final String referenceId = UUID.randomUUID().toString();
 
         // Save notification to database
-        createCaseNotification(emailRequest.getEmailAddress(), "Email", UUID.randomUUID());
+        createCaseNotification(emailRequest.getEmailAddress(), "Email", UUID.randomUUID(), UUID.randomUUID());
 
         try {
             sendEmailResponse = notificationClient.sendEmail(
@@ -103,7 +103,7 @@ public class NotificationService {
         });
     }
 
-    CaseNotification createCaseNotification(String recipient, String type, UUID caseId) {
+    CaseNotification createCaseNotification(String recipient, String type, UUID caseId, UUID providerNotificationId) {
         CaseNotification toSaveNotification = new CaseNotification();
         toSaveNotification.setCaseId(caseId);
         toSaveNotification.setProviderNotificationId(UUID.randomUUID()); // Temporary random UUID
