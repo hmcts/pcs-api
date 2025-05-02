@@ -11,7 +11,7 @@ def product = "pcs"
 def component = "api"
 
 def secrets = [
-  "pcs-${env}": [
+  'pcs-${env}': [
     secret('pcs-api-s2s-secret', 'PCS_API_S2S_SECRET'),
     secret('idam-system-user-name', 'IDAM_SYSTEM_USERNAME'),
     secret('idam-system-user-password', 'IDAM_SYSTEM_USER_PASSWORD'),
