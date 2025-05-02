@@ -7,7 +7,10 @@ import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.http.MediaType.APPLICATION_FORM_URLENCODED_VALUE;
-import static uk.gov.hmcts.reform.pcs.functional.config.AuthConfig.*;
+import static uk.gov.hmcts.reform.pcs.functional.config.AuthConfig.CLIENT_ID;
+import static uk.gov.hmcts.reform.pcs.functional.config.AuthConfig.GRANT_TYPE;
+import static uk.gov.hmcts.reform.pcs.functional.config.AuthConfig.SCOPE;
+import static uk.gov.hmcts.reform.pcs.functional.config.AuthConfig.ENDPOINT;
 
 public class IdamAuthenticationGenerator {
 
