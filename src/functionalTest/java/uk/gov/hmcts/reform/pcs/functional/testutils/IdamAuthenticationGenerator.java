@@ -14,7 +14,7 @@ import static uk.gov.hmcts.reform.pcs.functional.config.AuthConfig.ENDPOINT;
 
 public class IdamAuthenticationGenerator {
 
-    private static final String BASE_URL = getEnv("IDAM_Bearer_AUTH_URL");
+    private static final String BASE_URL = getEnv("IDAM_BEARER_AUTH_URL");
     private static final String USERNAME = getEnv("IDAM_SYSTEM_USERNAME");
     private static final String PASSWORD = getEnv("IDAM_SYSTEM_USER_PASSWORD");
     private static final String CLIENT_SECRET = getEnv("PCS_API_IDAM_SECRET");
