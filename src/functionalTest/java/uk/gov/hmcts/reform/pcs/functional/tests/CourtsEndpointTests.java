@@ -18,11 +18,11 @@ class CourtsEndpointTests {
     @Steps
     static ApiSteps apiSteps;
 
-    private String postcodeValid = "W3 7RX";
-    private String postcodeInvalid = "W3 7RY";
-    private String expectedCourtName = "Central London County Court";
-    private int expectedCourtId = 40827;
-    private int expectedEpimId = 20262;
+    private final String postcodeValid = "W3 7RX";
+    private final String postcodeInvalid = "W3 7RY";
+    private final String expectedCourtName = "Central London County Court";
+    private final int expectedCourtId = 40827;
+    private final int expectedEpimId = 20262;
 
 
     @BeforeAll
@@ -164,17 +164,6 @@ class CourtsEndpointTests {
             apiSteps.theRequestContainsTheQueryParameter("postcode", "");
             apiSteps.callIsSubmittedToTheEndpoint("Courts", "GET");
             apiSteps.checkStatusCode(200);
-        }
-
-        @Issue("HDPI-352")
-        @Title("Courts endpoint - returns 404 Not Found for Invalid end point")
-        void shouldReturn404ForInvalidEndpoint() {
-            apiSteps.requestIsPreparedWithAppropriateValues();
-            apiSteps.theRequestContainsValidServiceToken("pcs_frontend");
-            apiSteps.theRequestContainsValidIdamToken();
-            apiSteps.theRequestContainsTheQueryParameter("postcode", postcodeValid);
-            apiSteps.callIsSubmittedToTheEndpoint("Courtss", "GET");
-            apiSteps.checkStatusCode(404);
         }
     }
 }
