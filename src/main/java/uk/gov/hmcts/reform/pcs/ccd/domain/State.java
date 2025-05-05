@@ -14,8 +14,10 @@ public enum State {
 
     @CCD(
         label = "Open",
-        access = {DefaultStateAccess.class}
+        access = {DefaultStateAccess.class},
+        hint = "## ${caseDescription}"
     )
     Open;
+
 }
 

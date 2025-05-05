@@ -1,0 +1,20 @@
+## Events
+
+Applicant name: **{{ pcsCase.applicantName }}**
+<br>
+{% if roles containsAny ["my-applicant-case-role", "my-judge-role"] %}
+([Update](/cases/case-details/{{caseReference}}/trigger/updateApplicantName))
+{% else %}
+(*Update not permitted*)
+{% endif %}
+
+<br>
+
+Applicant name: **{{ pcsCase.respondentName }}**
+<br>
+{% if roles containsAny ["my-respondent-case-role", "my-judge-role"] %}
+([Update](/cases/case-details/{{caseReference}}/trigger/updateRespondentName))
+{% else %}
+(*Update not permitted*)
+{% endif %}
+

@@ -1,0 +1,14 @@
+### User Roles
+
+You are signed in as **{{ currentLogin }}** and have the following roles:<br/>
+<br/>
+
+{% if roles | length > 0 %}
+{% for role in roles %}
+* {{ role }}<br/>
+
+{% endfor %}
+
+{% else %}
+No roles have been assigned
+{% endif %}

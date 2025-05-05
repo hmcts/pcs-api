@@ -86,6 +86,10 @@ idam:
 #    secret: ${IDAM_CLIENT_SECRET:123456}
 #    redirect_uri: ${IDAM_API_REDIRECT_URL:http://localhost:3001/oauth2/callback}
 
+role-assignment-service:
+  api:
+    url: ${RAS_API_URL:http://localhost:4096}
+
 azure:
   application-insights:
     instrumentation-key: ${pcs.AppInsightsInstrumentationKey:00000000-0000-0000-0000-000000000000}

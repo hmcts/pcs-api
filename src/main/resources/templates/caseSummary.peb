@@ -1,0 +1,37 @@
+
+{% macro formatAddressLineWithBR(addressLine) %}
+  {%- if addressLine is not empty %}**{{ addressLine }}**<br> {% endif %}
+{% endmacro %}
+
+{% macro formatAddress(address) %}
+  {{- formatAddressLineWithBR(address.addressLine1) }}
+	{{- formatAddressLineWithBR(address.addressLine2) }}
+	{{- formatAddressLineWithBR(address.addressLine3) }}
+	{{- formatAddressLineWithBR(address.postTown) }}
+	{{- formatAddressLineWithBR(address.county) }}
+	{{- formatAddressLineWithBR(address.postCode) }}
+	{{- formatAddressLineWithBR(address.country) }}
+{% endmacro %}
+
+## Case Summary
+
+Applicant name: **{{ pcsCase.applicantName }}**<br>
+
+Applicant address:<br>
+{% if roles containsAny ["my-applicant-case-role", "my-judge-role"] %}
+{{ formatAddress(pcsCase.applicantAddress) }}
+{% else %}
+*(hidden)*
+{% endif %}
+
+___
+
+Respondent name: **{{ pcsCase.respondentName }}**<br>
+
+Respondent address:<br>
+{% if roles containsAny ["my-respondent-case-role", "my-judge-role"] %}
+{{ formatAddress(pcsCase.respondentAddress) }}
+{% else %}
+*(hidden)*
+{% endif %}
+

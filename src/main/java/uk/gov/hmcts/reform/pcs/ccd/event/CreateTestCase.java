@@ -1,6 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.event;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.AllArgsConstructor;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CCDConfig;
@@ -9,46 +9,55 @@ import uk.gov.hmcts.ccd.sdk.api.ConfigBuilder;
 import uk.gov.hmcts.ccd.sdk.api.EventPayload;
 import uk.gov.hmcts.ccd.sdk.api.Permission;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
-import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.PcsCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.UserRole;
-import uk.gov.hmcts.reform.pcs.entity.PcsCase;
 import uk.gov.hmcts.reform.pcs.repository.PCSCaseRepository;
+
+import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.createTestCase;
 
 @Profile("dev") // Non-prod event
 @Component
-public class CreateTestCase implements CCDConfig<PCSCase, State, UserRole> {
-    @Autowired
-    private PCSCaseRepository repository;
+@AllArgsConstructor
+public class CreateTestCase implements CCDConfig<PcsCase, State, UserRole> {
+
+    private final PCSCaseRepository pcsCaseRepository;
 
     @Override
-    public void configure(ConfigBuilder<PCSCase, State, UserRole> configBuilder) {
+    public void configure(ConfigBuilder<PcsCase, State, UserRole> configBuilder) {
         configBuilder
-            .decentralisedEvent("createTestApplication", this::submit)
+            .decentralisedEvent(createTestCase.name(), this::submit)
             .initialState(State.Open)
             .name("Create test case")
             .aboutToStartCallback(this::start)
-            .grant(Permission.CRUD, UserRole.CASE_WORKER)
+            .grant(Permission.CRUD, UserRole.CIVIL_CASE_WORKER, UserRole.MY_APPLICANT_ROLE)
             .fields()
             .page("Create test case")
-                .mandatory(PCSCase::getCaseDescription)
+                .mandatory(PcsCase::getCaseDescription)
+                .mandatory(PcsCase::getApplicantName)
+                .mandatory(PcsCase::getRespondentName)
                 .done();
     }
 
-    private AboutToStartOrSubmitResponse<PCSCase, State> start(CaseDetails<PCSCase, State> caseDetails) {
-        PCSCase data = caseDetails.getData();
-        data.setCaseDescription("Acme Corporation v. Smith");
+    private AboutToStartOrSubmitResponse<PcsCase, State> start(CaseDetails<PcsCase, State> caseDetails) {
+        PcsCase pcsCase = caseDetails.getData();
+        pcsCase.setCaseDescription("Acme Corporation v. Smith");
 
-        return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
-            .data(caseDetails.getData())
+        return AboutToStartOrSubmitResponse.<PcsCase, State>builder()
+            .data(pcsCase)
             .build();
     }
 
-    public void submit(EventPayload<PCSCase, State> p) {
-        var c = PcsCase.builder()
-            .reference(p.caseReference())
-            .caseDescription(p.caseData().getCaseDescription())
+    public void submit(EventPayload<PcsCase, State> eventPayload) {
+        PcsCase pcsCase = eventPayload.caseData();
+
+        var pcsCaseEntity = uk.gov.hmcts.reform.pcs.entity.PcsCase.builder()
+            .caseReference(eventPayload.caseReference())
+            .description(pcsCase.getCaseDescription())
+            .applicantName(pcsCase.getApplicantName())
+            .respondentName(pcsCase.getRespondentName())
             .build();
-        repository.save(c);
+
+        pcsCaseRepository.save(pcsCaseEntity);
     }
 }

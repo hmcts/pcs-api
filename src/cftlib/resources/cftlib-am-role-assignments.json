@@ -1,0 +1,171 @@
+[
+  {
+    "email": "housing-association@pcs.com",
+    "id": "8ebad581-46bf-3c78-96da-77e0445a5695",
+    "roleAssignments": [
+      {
+        "roleType": "ORGANISATION",
+        "roleName": "case-creation",
+        "grantType": "STANDARD",
+        "roleCategory": "PROFESSIONAL",
+        "classification": "PUBLIC",
+        "readOnly": false,
+        "attributes": { "caseType": "PCS", "jurisdiction": "CIVIL" },
+        "authorisations": []
+      }
+    ]
+  },
+  {
+    "email": "case-allocator@pcs.com",
+    "id": "a6a64c98-bd48-329b-858c-e9c41949f937",
+    "roleAssignments": [
+      {
+        "roleType": "CASE",
+        "roleName": "case-allocator",
+        "grantType": "SPECIFIC",
+        "roleCategory": "PROFESSIONAL",
+        "classification": "RESTRICTED",
+        "readOnly": false,
+        "attributes": { "caseType": "PCS", "jurisdiction": "CIVIL" },
+        "authorisations": []
+      }
+    ]
+  },
+  {
+    "email": "caseworker@pcs.com",
+    "id": "74e702fa-e20f-3a40-bc1d-d915f0874d00",
+    "roleAssignments": [
+      {
+        "roleType": "CASE",
+        "roleName": "idam:my-applicant-role",
+        "grantType": "SPECIFIC",
+        "roleCategory": "PROFESSIONAL",
+        "classification": "RESTRICTED",
+        "readOnly": false,
+        "attributes": { "caseType": "PCS", "jurisdiction": "CIVIL" },
+        "authorisations": []
+      },
+      {
+        "roleType": "CASE",
+        "roleName": "idam:my-defendent-role",
+        "grantType": "SPECIFIC",
+        "roleCategory": "PROFESSIONAL",
+        "classification": "RESTRICTED",
+        "readOnly": false,
+        "attributes": { "caseType": "PCS", "jurisdiction": "CIVIL" },
+        "authorisations": []
+      },
+      {
+        "roleType": "CASE",
+        "roleName": "[APPONESOLICITOR]",
+        "grantType": "SPECIFIC",
+        "roleCategory": "PROFESSIONAL",
+        "classification": "RESTRICTED",
+        "readOnly": false,
+        "attributes": { "caseType": "PCS", "jurisdiction": "CIVIL" },
+        "authorisations": []
+      },
+      {
+        "roleType": "CASE",
+        "roleName": "[APPTWOSOLICITOR]",
+        "grantType": "SPECIFIC",
+        "roleCategory": "PROFESSIONAL",
+        "classification": "RESTRICTED",
+        "readOnly": false,
+        "attributes": { "caseType": "PCS", "jurisdiction": "CIVIL" },
+        "authorisations": []
+      },
+      {
+        "roleType": "CASE",
+        "roleName": "[APPLICANTTWO]",
+        "grantType": "SPECIFIC",
+        "roleCategory": "CITIZEN",
+        "classification": "RESTRICTED",
+        "readOnly": false,
+        "attributes": { "caseType": "PCS", "jurisdiction": "CIVIL" },
+        "authorisations": []
+      }
+    ],
+    "overrideAll": true
+  },
+  {
+    "email": "applicant1@pcs.com",
+    "id": "68489173-2079-3f0a-9d7d-89bf7f29e52b",
+    "roleAssignments": [
+      {
+        "roleType": "CASE",
+        "roleName": "my-applicant-role",
+        "grantType": "SPECIFIC",
+        "roleCategory": "PROFESSIONAL",
+        "classification": "RESTRICTED",
+        "readOnly": false,
+        "attributes": { "caseType": "PCS", "jurisdiction": "CIVIL" },
+        "authorisations": []
+      }, {
+        "roleType": "CASE",
+        "roleName": "my-applicant-case-role",
+        "grantType": "SPECIFIC",
+        "roleCategory": "PROFESSIONAL",
+        "classification": "RESTRICTED",
+        "readOnly": false,
+        "attributes": {
+          "caseType": "PCS",
+          "caseId": "1746200043636854",
+          "jurisdiction": "CIVIL"
+        },
+        "authorisations": []
+      }
+    ],
+    "overrideAll": true
+  },
+  {
+    "email": "respondent1@pcs.com",
+    "id": "9d47b501-d853-3662-9233-9ec9fac76622",
+    "roleAssignments": [
+      {
+        "roleType": "CASE",
+        "roleName": "my-respondent-role",
+        "grantType": "SPECIFIC",
+        "roleCategory": "PROFESSIONAL",
+        "classification": "RESTRICTED",
+        "readOnly": false,
+        "attributes": {
+          "caseType": "PCS",
+          "jurisdiction": "CIVIL"
+        },
+        "authorisations": []
+      },       {
+        "roleType": "CASE",
+        "roleName": "my-respondent-case-role",
+        "grantType": "SPECIFIC",
+        "roleCategory": "PROFESSIONAL",
+        "classification": "RESTRICTED",
+        "readOnly": false,
+        "attributes": {
+          "caseType": "PCS",
+          "jurisdiction": "CIVIL",
+          "caseId": "1746200043636854"
+        },
+        "authorisations": []
+      }
+    ],
+    "overrideAll": true
+  },
+  {
+    "email": "judge@pcs.com",
+    "id": "749ce9f7-535a-3cf5-ba07-f66e6d55c5fa",
+    "roleAssignments": [
+      {
+        "roleType": "CASE",
+        "roleName": "my-judge-role",
+        "grantType": "SPECIFIC",
+        "roleCategory": "JUDICIAL",
+        "classification": "RESTRICTED",
+        "readOnly": false,
+        "attributes": { "caseType": "PCS", "jurisdiction": "CIVIL" },
+        "authorisations": []
+      }
+    ],
+    "overrideAll": true
+  }
+]
