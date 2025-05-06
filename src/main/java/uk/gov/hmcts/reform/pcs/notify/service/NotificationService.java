@@ -114,13 +114,11 @@ public class NotificationService {
                 
                 // Find and update notification status in database
                 try {
-                    // Retrieve notification by provider notification ID
                     CaseNotification caseNotification = notificationRepository
                         .findByProviderNotificationId(UUID.fromString(notificationId))
                         .orElse(null);
                     
                     if (caseNotification != null) {
-                        // Update status based on provider notification status
                         try {
                             NotificationStatus notificationStatus = NotificationStatus.fromString(status);
                             caseNotification.setStatus(notificationStatus.toString());
