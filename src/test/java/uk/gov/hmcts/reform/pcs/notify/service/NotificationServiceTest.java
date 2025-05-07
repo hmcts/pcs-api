@@ -13,7 +13,6 @@ import uk.gov.hmcts.reform.pcs.config.AsyncConfiguration;
 import uk.gov.hmcts.reform.pcs.notify.domain.CaseNotification;
 import uk.gov.hmcts.reform.pcs.notify.exception.NotificationException;
 import uk.gov.hmcts.reform.pcs.notify.model.EmailNotificationRequest;
-import uk.gov.hmcts.reform.pcs.notify.model.NotificationStatus;
 import uk.gov.hmcts.reform.pcs.notify.repository.NotificationRepository;
 import uk.gov.service.notify.NotificationClient;
 import uk.gov.service.notify.NotificationClientException;
@@ -114,11 +113,12 @@ class NotificationServiceTest {
     @Test
     void shouldSaveCaseNotificationWhenEndPointIsCalled() {
         String recipient = "test@example.com";
-        String type = "Email";
+        String status = "pending-schedule";
         UUID caseId = UUID.randomUUID();
+        String type = "Email";
 
         CaseNotification testCaseNotification = new CaseNotification();
-        testCaseNotification.setStatus(NotificationStatus.PENDING_SCHEDULE.toString());
+        testCaseNotification.setStatus(status);
         testCaseNotification.setRecipient(recipient);
         testCaseNotification.setCaseId(caseId);
         testCaseNotification.setType(type);
@@ -155,32 +155,32 @@ class NotificationServiceTest {
         String notificationId = UUID.randomUUID().toString();
         Notification notification = mock(Notification.class);
         
-        when(notification.getStatus()).thenReturn(NotificationStatus.DELIVERED.toString());
+        when(notification.getStatus()).thenReturn("delivered");
         when(notificationClient.getNotificationById(notificationId)).thenReturn(notification);
 
         CompletableFuture<Notification> future = notificationService.checkNotificationStatus(notificationId);
         Notification result = future.get(6, TimeUnit.SECONDS);
 
         assertThat(result).isNotNull();
-        assertThat(result.getStatus()).isEqualTo(NotificationStatus.DELIVERED.toString());
+        assertThat(result.getStatus()).isEqualTo("delivered");
         verify(notificationClient).getNotificationById(notificationId);
     }
 
-    @DisplayName("Should check notification status created")
+    @DisplayName("Should check notification status pending")
     @Test
     void testCheckNotificationStatusPending() throws NotificationClientException, 
             InterruptedException, ExecutionException, TimeoutException {
         String notificationId = UUID.randomUUID().toString();
         Notification notification = mock(Notification.class);
 
-        when(notification.getStatus()).thenReturn(NotificationStatus.CREATED.toString());
+        when(notification.getStatus()).thenReturn("pending");
         when(notificationClient.getNotificationById(notificationId)).thenReturn(notification);
 
         CompletableFuture<Notification> future = notificationService.checkNotificationStatus(notificationId);
         Notification result = future.get(6, TimeUnit.SECONDS);
 
         assertThat(result).isNotNull();
-        assertThat(result.getStatus()).isEqualTo(NotificationStatus.CREATED.toString());
+        assertThat(result.getStatus()).isEqualTo("pending");
         verify(notificationClient).getNotificationById(notificationId);
     }
 
@@ -192,7 +192,7 @@ class NotificationServiceTest {
             .thenThrow(new NotificationClientException("Failed to fetch notification status"));
 
         CompletableFuture<Notification> future = notificationService.checkNotificationStatus(notificationId);
-
+        
         assertThatThrownBy(() -> future.get(6, TimeUnit.SECONDS))
             .isInstanceOf(ExecutionException.class)
             .satisfies(thrown -> {
