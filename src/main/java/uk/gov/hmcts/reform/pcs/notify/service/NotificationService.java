@@ -63,17 +63,8 @@ public class NotificationService {
             log.debug("Email sent successfully. Reference ID: {}", referenceId);
 
             // Update notification with provider ID received from GOV.UK Notify
-            try {
-                UUID providerNotificationId = UUID.fromString(sendEmailResponse.getNotificationId().toString());
-                caseNotification.setProviderNotificationId(providerNotificationId);
-                caseNotification.setStatus(NotificationStatus.SENDING.toString());
-                caseNotification.setSubmittedAt(LocalDateTime.now());
-                notificationRepository.save(caseNotification);
-                log.info("Updated notification with provider ID: {}", providerNotificationId);
-            } catch (Exception e) {
-                log.error("Error updating notification with provider ID: {}", e.getMessage(), e);
-            }
-            
+            UUID providerNotificationId = UUID.fromString(sendEmailResponse.getNotificationId().toString());
+            updateNotificationStatus(caseNotification, NotificationStatus.SENDING, providerNotificationId);
             
             // Trigger async status check using CompletableFuture
             checkNotificationStatus(sendEmailResponse.getNotificationId().toString())
@@ -85,13 +76,7 @@ public class NotificationService {
             return sendEmailResponse;
         } catch (NotificationClientException notificationClientException) {
             // Update notification status to failure
-            try {
-                caseNotification.setStatus(NotificationStatus.TECHNICAL_FAILURE.toString());
-                caseNotification.setLastUpdatedAt(LocalDateTime.now());
-                notificationRepository.save(caseNotification);
-            } catch (Exception e) {
-                log.error("Error updating notification status to failure: {}", e.getMessage(), e);
-            }
+            updateNotificationStatus(caseNotification, NotificationStatus.TECHNICAL_FAILURE, null);
             
             log.error("Failed to send email. Reference ID: {}. Reason: {}",
                       referenceId,
@@ -122,11 +107,7 @@ public class NotificationService {
                     if (caseNotification != null) {
                         try {
                             NotificationStatus notificationStatus = NotificationStatus.fromString(status);
-                            caseNotification.setStatus(notificationStatus.getValue());
-                            caseNotification.setLastUpdatedAt(LocalDateTime.now());
-                            notificationRepository.save(caseNotification);
-                            log.info("Updated notification status in database - ID: {}, Status: {}", 
-                                notificationId, status);
+                            updateNotificationStatus(caseNotification, notificationStatus, null);
                         } catch (IllegalArgumentException e) {
                             log.warn("Unknown notification status: {}", status);
                         }
@@ -175,6 +156,42 @@ public class NotificationService {
                 dataAccessException
             );
             throw new NotificationException("Failed to save Case Notification.", dataAccessException);
+        }
+    }
+
+    /**
+     * Updates the status of a notification and saves it to the database.
+     * 
+     * @param notification The notification to update
+     * @param status The new status to set
+     * @param providerNotificationId Optional provider notification ID to set (can be null)
+     * @return The updated notification (or null if an error occurred)
+     */
+    private CaseNotification updateNotificationStatus(
+            CaseNotification notification, 
+            NotificationStatus status, 
+            UUID providerNotificationId) {
+        
+        try {
+            notification.setStatus(status.getValue());
+            notification.setLastUpdatedAt(LocalDateTime.now());
+            
+            if (providerNotificationId != null) {
+                notification.setProviderNotificationId(providerNotificationId);
+            }
+            
+            if (status == NotificationStatus.SENDING) {
+                notification.setSubmittedAt(LocalDateTime.now());
+            }
+            
+            CaseNotification saved = notificationRepository.save(notification);
+            log.info("Updated notification status to {} for notification ID: {}", 
+                    status, notification.getNotificationId());
+            return saved;
+        } catch (Exception e) {
+            log.error("Error updating notification status to {}: {}", 
+                    status, e.getMessage(), e);
+            return null;
         }
     }
 }
