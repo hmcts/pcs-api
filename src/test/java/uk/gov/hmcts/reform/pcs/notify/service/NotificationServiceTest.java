@@ -35,6 +35,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.times;
 
 @ExtendWith(MockitoExtension.class)
 @SpringJUnitConfig(AsyncConfiguration.class)
@@ -82,7 +83,7 @@ class NotificationServiceTest {
         assertThat(response.getReference()).contains("reference");
         verify(notificationClient).sendEmail(anyString(), anyString(), anyMap(), anyString());
         // Verify save is called exactly 2 times - once for initial creation and once for status update
-        verify(notificationRepository, org.mockito.Mockito.times(2)).save(any(CaseNotification.class));
+        verify(notificationRepository, times(2)).save(any(CaseNotification.class));
     }
 
     @DisplayName("Should throw notification exception when email sending fails")
@@ -105,7 +106,7 @@ class NotificationServiceTest {
 
         verify(notificationClient).sendEmail(anyString(), anyString(), anyMap(), anyString());
         // Verify save is called exactly 2 times - once for initial creation and once for status update
-        verify(notificationRepository, org.mockito.Mockito.times(2)).save(any(CaseNotification.class));
+        verify(notificationRepository, times(2)).save(any(CaseNotification.class));
     }
 
     @DisplayName("Should save case notification when end point is called successfully")
