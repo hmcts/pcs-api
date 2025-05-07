@@ -122,7 +122,7 @@ public class NotificationService {
                     if (caseNotification != null) {
                         try {
                             NotificationStatus notificationStatus = NotificationStatus.fromString(status);
-                            caseNotification.setStatus(notificationStatus.toString());
+                            caseNotification.setStatus(notificationStatus.getValue());
                             caseNotification.setLastUpdatedAt(LocalDateTime.now());
                             notificationRepository.save(caseNotification);
                             log.info("Updated notification status in database - ID: {}, Status: {}", 
