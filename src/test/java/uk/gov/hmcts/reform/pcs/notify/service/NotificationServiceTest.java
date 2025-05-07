@@ -206,7 +206,6 @@ class NotificationServiceTest {
     @DisplayName("Should generate UUID for case ID when sending email")
     @Test
     void shouldGenerateUuidForCaseIdWhenSendingEmail() throws NotificationClientException {
-        // Given
         final EmailNotificationRequest emailRequest = new EmailNotificationRequest(
             "test@example.com",
             "templateId",
@@ -228,10 +227,8 @@ class NotificationServiceTest {
         when(sendEmailResponse.getNotificationId())
             .thenReturn(UUID.randomUUID());
         
-        // When
         notificationService.sendEmail(emailRequest);
 
-        // Then
         // First save captured value is from the createCaseNotification call
         CaseNotification capturedNotification = caseNotificationCaptor.getAllValues().get(0);
         assertThat(capturedNotification.getCaseId()).isNotNull();
