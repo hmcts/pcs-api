@@ -15,7 +15,9 @@ import uk.gov.service.notify.NotificationClientException;
 import uk.gov.service.notify.SendEmailResponse;
 import uk.gov.service.notify.Notification;
 
+import java.time.LocalDateTime;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
@@ -27,14 +29,17 @@ public class NotificationService {
     private final NotificationClient notificationClient;
     private final NotificationRepository notificationRepository;
     private final long statusCheckDelay;
+    private final int maxStatusCheckRetries;
 
     public NotificationService(
         NotificationClient notificationClient,
         NotificationRepository notificationRepository,
-        @Value("${notify.status-check-delay-millis}") long statusCheckDelay) {
+        @Value("${notify.status-check-delay-millis}") long statusCheckDelay,
+        @Value("${notify.max-status-check-retries:5}") int maxStatusCheckRetries) {
         this.notificationClient = notificationClient;
         this.notificationRepository = notificationRepository;
         this.statusCheckDelay = statusCheckDelay;
+        this.maxStatusCheckRetries = maxStatusCheckRetries;
     }
 
     public SendEmailResponse sendEmail(EmailNotificationRequest emailRequest) {
@@ -44,8 +49,8 @@ public class NotificationService {
         final Map<String, Object> personalisation = emailRequest.getPersonalisation();
         final String referenceId = UUID.randomUUID().toString();
 
-        // Save notification to database
-        createCaseNotification(emailRequest.getEmailAddress(), "Email", UUID.randomUUID());
+        // Create notification in database
+        CaseNotification caseNotification = createCaseNotification(emailRequest.getEmailAddress(), "Email", UUID.randomUUID());
 
         try {
             sendEmailResponse = notificationClient.sendEmail(
@@ -57,12 +62,11 @@ public class NotificationService {
 
             log.debug("Email sent successfully. Reference ID: {}", referenceId);
             
-            // Trigger async status check using CompletableFuture
-            checkNotificationStatus(sendEmailResponse.getNotificationId().toString())
-                .exceptionally(throwable -> {
-                    log.error("Error checking notification status: {}", throwable.getMessage(), throwable);
-                    return null;
-                });
+            // Update the notification with provider ID
+            updateProviderNotificationId(caseNotification.getNotificationId(), sendEmailResponse.getNotificationId());
+            
+            // Schedule status check
+            scheduleStatusCheck(sendEmailResponse.getNotificationId().toString(), 0);
 
             return sendEmailResponse;
         } catch (NotificationClientException notificationClientException) {
@@ -101,6 +105,101 @@ public class NotificationService {
                 throw new CompletionException(e);
             }
         });
+    }
+
+    @Async("notificationExecutor")
+    public void scheduleStatusCheck(String notificationId, int retryCount) {
+        try {
+            // Wait for configured delay before checking
+            TimeUnit.MILLISECONDS.sleep(statusCheckDelay);
+            
+            Notification notification = notificationClient.getNotificationById(notificationId);
+            String status = notification.getStatus();
+            
+            log.info("Notification status check - ID: {}, Status: {}, Retry: {}", 
+                notificationId, status, retryCount);
+            
+            // Update the status in our database
+            updateNotificationStatus(UUID.fromString(notificationId), status);
+            
+            // If the status is terminal, we're done
+            if (isTerminalStatus(status)) {
+                log.info("Notification ID: {} reached terminal status: {}", notificationId, status);
+                return;
+            }
+            
+            // If we haven't reached max retries, schedule another check
+            if (retryCount < maxStatusCheckRetries) {
+                scheduleStatusCheck(notificationId, retryCount + 1);
+            } else {
+                log.info("Reached maximum retry attempts for notification ID: {}", notificationId);
+            }
+        } catch (NotificationClientException | InterruptedException e) {
+            log.error("Error in scheduled status check for ID: {}. Error: {}", 
+                notificationId, 
+                e.getMessage(),
+                e
+            );
+            if (e instanceof InterruptedException) {
+                Thread.currentThread().interrupt();
+            }
+            
+            // If we haven't reached max retries, try again despite the error
+            if (retryCount < maxStatusCheckRetries) {
+                scheduleStatusCheck(notificationId, retryCount + 1);
+            } else {
+                log.error("Failed to check status after maximum retries for notification ID: {}", notificationId);
+            }
+        }
+    }
+    
+    private boolean isTerminalStatus(String status) {
+        return status.equals(NotificationStatus.DELIVERED.toString()) || 
+               status.equals(NotificationStatus.PERMANENT_FAILURE.toString()) || 
+               status.equals(NotificationStatus.TECHNICAL_FAILURE.toString());
+    }
+    
+    private void updateNotificationStatus(UUID providerNotificationId, String status) {
+        try {
+            Optional<CaseNotification> notificationOpt = 
+                notificationRepository.findByProviderNotificationId(providerNotificationId);
+            
+            if (notificationOpt.isPresent()) {
+                CaseNotification notification = notificationOpt.get();
+                notification.setStatus(status);
+                notification.setLastUpdatedAt(LocalDateTime.now());
+                
+                notificationRepository.save(notification);
+                log.info("Updated notification status to {} for ID: {}", 
+                    status, notification.getNotificationId());
+            } else {
+                log.warn("No notification found with provider ID: {}", providerNotificationId);
+            }
+        } catch (DataAccessException e) {
+            log.error("Failed to update notification status for provider ID: {}. Error: {}", 
+                providerNotificationId, e.getMessage(), e);
+        }
+    }
+    
+    private void updateProviderNotificationId(UUID notificationId, UUID providerNotificationId) {
+        try {
+            Optional<CaseNotification> notificationOpt = notificationRepository.findById(notificationId);
+            
+            if (notificationOpt.isPresent()) {
+                CaseNotification notification = notificationOpt.get();
+                notification.setProviderNotificationId(providerNotificationId);
+                notification.setLastUpdatedAt(LocalDateTime.now());
+                
+                notificationRepository.save(notification);
+                log.info("Updated provider notification ID to {} for notification ID: {}", 
+                    providerNotificationId, notificationId);
+            } else {
+                log.warn("No notification found with ID: {}", notificationId);
+            }
+        } catch (DataAccessException e) {
+            log.error("Failed to update provider notification ID for notification ID: {}. Error: {}", 
+                notificationId, e.getMessage(), e);
+        }
     }
 
     CaseNotification createCaseNotification(String recipient, String type, UUID caseId) {
