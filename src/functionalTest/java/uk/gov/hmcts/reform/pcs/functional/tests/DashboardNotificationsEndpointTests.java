@@ -53,7 +53,7 @@ class DashboardNotificationsEndpointTests {
         apiSteps.theRequestContainsThePathParameter("caseReference", "9999");
         apiSteps.callIsSubmittedToTheEndpoint("DashboardNotifications", "GET");
         apiSteps.checkStatusCode(404);
-        apiSteps.theResponseBodyContains("message", "No case found with reference 9999");
+        apiSteps.theResponseBodyContainsAString("message", "No case found with reference 9999");
     }
 
     @Title("Dashboard notifications endpoint - return 403 Forbidden when the request uses an unauthorised s2s token")

@@ -53,7 +53,7 @@ class DashboardTasksEndpointTests {
         apiSteps.theRequestContainsThePathParameter("caseReference", "9999");
         apiSteps.callIsSubmittedToTheEndpoint("DashboardTasks", "GET");
         apiSteps.checkStatusCode(404);
-        apiSteps.theResponseBodyContains("message", "No case found with reference 9999");
+        apiSteps.theResponseBodyContainsAString("message", "No case found with reference 9999");
     }
 
     @Title("Dashboard tasks endpoint - return 403 Forbidden when the request uses an unauthorised service token")
