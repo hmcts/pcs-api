@@ -96,7 +96,6 @@ public class NotificationService {
                 TimeUnit.MILLISECONDS.sleep(statusCheckDelay);
                 
                 Notification notification = notificationClient.getNotificationById(notificationId);
-                String status = notification.getStatus();
                 
                 // Find and update notification status in database
                 try {
@@ -105,6 +104,7 @@ public class NotificationService {
                         .orElse(null);
                     
                     if (caseNotification != null) {
+                        String status = notification.getStatus();
                         try {
                             NotificationStatus notificationStatus = NotificationStatus.fromString(status);
                             updateNotificationStatus(caseNotification, notificationStatus, null);
