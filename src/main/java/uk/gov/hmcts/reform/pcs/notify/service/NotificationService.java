@@ -139,7 +139,7 @@ public class NotificationService {
         CaseNotification toSaveNotification = new CaseNotification();
         toSaveNotification.setCaseId(caseId);
         // Use the toString() method of the enum to get the string value
-        toSaveNotification.setStatus(NotificationStatus.PENDING_SCHEDULE.toString());
+        toSaveNotification.setStatus(NotificationStatus.PENDING_SCHEDULE);
         toSaveNotification.setType(type);
         toSaveNotification.setRecipient(recipient);
 
@@ -174,7 +174,7 @@ public class NotificationService {
             UUID providerNotificationId) {
         
         try {
-            notification.setStatus(status.getValue());
+            notification.setStatus(status);
             notification.setLastUpdatedAt(LocalDateTime.now());
             
             if (providerNotificationId != null) {

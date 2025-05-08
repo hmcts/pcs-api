@@ -14,6 +14,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
+import uk.gov.hmcts.reform.pcs.notify.model.NotificationStatus;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -49,7 +50,7 @@ public class CaseNotification {
     private LocalDateTime lastUpdatedAt;
 
     @Column(name = "status", nullable = false)
-    private String status;
+    private NotificationStatus status;
 
     @Column(name = "type", nullable = false)
     private String type;
