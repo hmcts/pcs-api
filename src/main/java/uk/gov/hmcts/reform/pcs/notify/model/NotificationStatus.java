@@ -8,7 +8,8 @@ public enum NotificationStatus {
     TEMPORARY_FAILURE("temporary-failure"),
     TECHNICAL_FAILURE("technical-failure"),
     SCHEDULE("scheduled"),
-    PENDING_SCHEDULE("pending-schedule");
+    PENDING_SCHEDULE("pending-schedule"), 
+    SUBMITTED("submitted");
 
     private final String value;
 

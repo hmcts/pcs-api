@@ -65,7 +65,7 @@ public class NotificationService {
 
             // Update notification with provider ID received from GOV.UK Notify
             UUID providerNotificationId = sendEmailResponse.getNotificationId();
-            updateNotificationStatus(caseNotification, NotificationStatus.SENDING, providerNotificationId);
+            updateNotificationStatus(caseNotification, NotificationStatus.SUBMITTED, providerNotificationId);
             
             // Trigger async status check using CompletableFuture
             checkNotificationStatus(providerNotificationId.toString())
