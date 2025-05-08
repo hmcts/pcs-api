@@ -22,6 +22,7 @@ java:
     PCS_DB_HOST: "pcs-{{ .Values.global.environment }}.postgres.database.azure.com"
     IDAM_S2S_AUTH_URL: "http://rpe-service-auth-provider-{{ .Values.global.environment }}.service.core-compute-{{ .Values.global.environment }}.internal"
     HMC_API_URL: "http://hmc-cft-hearing-service-{{ .Values.global.environment }}.service.core-compute-{{ .Values.global.environment }}.internal"
+    LOCATION_REF_URL: "http://rd-location-ref-api-{{ .Values.global.environment }}.service.core-compute-{{ .Values.global.environment }}.internal"
     FLYWAY_NOOP_STRATEGY: "true"
     SPRING_FLYWAY_ENABLED: "true"
 servicebus:
