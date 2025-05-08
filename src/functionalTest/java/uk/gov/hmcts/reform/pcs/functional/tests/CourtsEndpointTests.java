@@ -4,13 +4,14 @@ import net.serenitybdd.annotations.Issue;
 import net.serenitybdd.annotations.Title;
 import net.serenitybdd.junit5.SerenityJUnit5Extension;
 import net.serenitybdd.annotations.Steps;
-import org.junit.Ignore;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import uk.gov.hmcts.reform.pcs.functional.steps.ApiSteps;
+import org.junit.jupiter.api.Disabled;
+
 
 @Tag("Functional")
 @ExtendWith(SerenityJUnit5Extension.class)
@@ -62,7 +63,7 @@ class CourtsEndpointTests {
             apiSteps.checkStatusCode(200);
         }
 
-        @Ignore("This test is ignored for now due to missing test data in AAT")
+        @Disabled("This test is ignored/disabled for now due to missing test data in AAT")
         @Issue("HDPI-352")
         @Title("Courts endpoint - returns 200 and expected court data for valid postcode")
         @Test
