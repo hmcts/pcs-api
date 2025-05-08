@@ -50,7 +50,8 @@ public class NotificationService {
         final String referenceId = UUID.randomUUID().toString();
 
         // Create notification in database
-        CaseNotification caseNotification = createCaseNotification(emailRequest.getEmailAddress(), "Email", UUID.randomUUID());
+        CaseNotification caseNotification = createCaseNotification(
+            emailRequest.getEmailAddress(), "Email", UUID.randomUUID());
 
         try {
             sendEmailResponse = notificationClient.sendEmail(
@@ -119,7 +120,7 @@ public class NotificationService {
             log.info("Notification status check - ID: {}, Status: {}, Retry: {}", 
                 notificationId, status, retryCount);
             
-            // Update the status in our database
+            // Update the status in database
             updateNotificationStatus(UUID.fromString(notificationId), status);
             
             // If the status is terminal, we're done
@@ -154,9 +155,9 @@ public class NotificationService {
     }
     
     private boolean isTerminalStatus(String status) {
-        return status.equals(NotificationStatus.DELIVERED.toString()) || 
-               status.equals(NotificationStatus.PERMANENT_FAILURE.toString()) || 
-               status.equals(NotificationStatus.TECHNICAL_FAILURE.toString());
+        return status.equals(NotificationStatus.DELIVERED.toString()) 
+            || status.equals(NotificationStatus.PERMANENT_FAILURE.toString()) 
+            || status.equals(NotificationStatus.TECHNICAL_FAILURE.toString());
     }
     
     private void updateNotificationStatus(UUID providerNotificationId, String status) {
