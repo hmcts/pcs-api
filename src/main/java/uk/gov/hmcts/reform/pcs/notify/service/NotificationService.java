@@ -63,11 +63,11 @@ public class NotificationService {
             log.debug("Email sent successfully. Reference ID: {}", referenceId);
 
             // Update notification with provider ID received from GOV.UK Notify
-            UUID providerNotificationId = UUID.fromString(sendEmailResponse.getNotificationId().toString());
+            UUID providerNotificationId = sendEmailResponse.getNotificationId();
             updateNotificationStatus(caseNotification, NotificationStatus.SENDING, providerNotificationId);
             
             // Trigger async status check using CompletableFuture
-            checkNotificationStatus(sendEmailResponse.getNotificationId().toString())
+            checkNotificationStatus(providerNotificationId.toString())
                 .exceptionally(throwable -> {
                     log.error("Error checking notification status: {}", throwable.getMessage(), throwable);
                     return null;
