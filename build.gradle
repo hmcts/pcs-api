@@ -4,7 +4,7 @@ import uk.gov.hmcts.rse.CftlibExec
 
 buildscript {
   ext {
-    flywayVersion = '11.8.0'
+    flywayVersion = '11.8.1'
     serenityBddVersion = '4.2.22'
   }
   dependencies {
@@ -21,7 +21,7 @@ plugins {
   id 'org.flywaydb.flyway' version "$flywayVersion"
   id 'org.sonarqube' version '6.1.0.5360'
   id 'net.serenity-bdd.serenity-gradle-plugin' version "$serenityBddVersion"
-  id 'hmcts.ccd.sdk' version '5.5.19'
+  id 'hmcts.ccd.sdk' version '5.5.20'
   id 'com.github.hmcts.rse-cft-lib' version '0.19.1697'
   id 'io.freefair.lombok' version '8.13.1'
   id 'au.com.dius.pact' version '4.6.17'
@@ -29,7 +29,7 @@ plugins {
     Applies analysis tools including checkstyle and OWASP Dependency checker.
     See https://github.com/hmcts/gradle-java-plugin
  */
-  id 'uk.gov.hmcts.java' version '0.12.65'
+  id 'uk.gov.hmcts.java' version '0.12.66'
 }
 
 group = 'uk.gov.hmcts.reform'
