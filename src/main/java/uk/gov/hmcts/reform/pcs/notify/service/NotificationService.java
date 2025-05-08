@@ -17,6 +17,7 @@ import uk.gov.service.notify.Notification;
 
 import java.time.LocalDateTime;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
@@ -167,7 +168,7 @@ public class NotificationService {
      * @param providerNotificationId Optional provider notification ID to set (can be null)
      * @return The updated notification (or null if an error occurred)
      */
-    private CaseNotification updateNotificationStatus(
+    private Optional<CaseNotification> updateNotificationStatus(
             CaseNotification notification, 
             NotificationStatus status, 
             UUID providerNotificationId) {
@@ -187,7 +188,7 @@ public class NotificationService {
             CaseNotification saved = notificationRepository.save(notification);
             log.info("Updated notification status to {} for notification ID: {}", 
                     status, notification.getNotificationId());
-            return saved;
+            return Optional.of(saved);
         } catch (Exception e) {
             log.error("Error updating notification status to {}: {}", 
                     status, e.getMessage(), e);
