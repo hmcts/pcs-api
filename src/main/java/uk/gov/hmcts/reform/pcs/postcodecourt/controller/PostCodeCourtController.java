@@ -6,10 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RestController;
-import uk.gov.hmcts.reform.pcs.postcodecourt.model.Court;
 import uk.gov.hmcts.reform.pcs.postcodecourt.service.PostCodeCourtService;
-
-import java.util.List;
 
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 import static uk.gov.hmcts.reform.pcs.hearings.constants.HearingConstants.SERVICE_AUTHORIZATION;
@@ -24,10 +21,10 @@ public class PostCodeCourtController {
     private final PostCodeCourtService postCodeCourtService;
 
     @GetMapping(COURTS_ENDPOINT)
-    public ResponseEntity<List<Court>> getCourts(@RequestHeader(AUTHORIZATION) String authorisation,
-                                                 @RequestHeader(SERVICE_AUTHORIZATION) String serviceAuthorization,
-                                                 @QueryParam(POSTCODE) String postcode) {
-        return ResponseEntity.ok(postCodeCourtService.getCountyCourtsByPostCode(postcode, authorisation));
+    public ResponseEntity<Void> getByPostcode(@RequestHeader(AUTHORIZATION) String authorisation,
+        @RequestHeader(SERVICE_AUTHORIZATION) String serviceAuthorization, @QueryParam(POSTCODE) String postcode) {
+        postCodeCourtService.getEpimIdByPostCode(postcode);
+        return ResponseEntity.ok().build();
     }
 
 }

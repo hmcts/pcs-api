@@ -26,3 +26,5 @@ spring:
 logging:
   level:
     uk.gov.hmcts.reform.pcs: DEBUG
+testing-support:
+  enabled: true

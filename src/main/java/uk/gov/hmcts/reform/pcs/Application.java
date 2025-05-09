@@ -6,7 +6,6 @@ import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.jms.annotation.EnableJms;
 import uk.gov.hmcts.reform.idam.client.IdamApi;
 import uk.gov.hmcts.reform.pcs.hearings.service.api.HmcHearingApi;
-import uk.gov.hmcts.reform.pcs.location.service.api.LocationReferenceApi;
 
 @SpringBootApplication(
     scanBasePackages = {
@@ -17,7 +16,6 @@ import uk.gov.hmcts.reform.pcs.location.service.api.LocationReferenceApi;
 @EnableFeignClients(
     clients = {
         HmcHearingApi.class,
-        LocationReferenceApi.class,
         IdamApi.class
     }
 )
