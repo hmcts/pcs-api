@@ -12,7 +12,7 @@ spring:
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
-      ddl-auto: validate
+      ddl-auto: none
       dialect: org.hibernate.dialect.PostgreSQLDialect
       format_sql: true
       show-sql: ${SPRING_JPA_SHOW_SQL:false}
@@ -22,10 +22,6 @@ spring:
         hbm2ddl-auto: none
       hibernate.format_sql: true
       show-dql: true
-
-flyway:
-  noop:
-    strategy: false
 
 logging:
   level:

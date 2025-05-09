@@ -15,7 +15,7 @@ import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 import uk.gov.hmcts.reform.pcs.audit.Audit;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -35,10 +35,10 @@ public class PostCodeCourtEntity {
     private String legislativeCountry;
 
     @Column(name = "effective_from")
-    private LocalDate effectiveFrom;
+    private LocalDateTime effectiveFrom;
 
     @Column(name = "effective_to")
-    private LocalDate effectiveTo;
+    private LocalDateTime effectiveTo;
 
     @Column(name = "audit", nullable = false, columnDefinition = "jsonb")
     @JdbcTypeCode(SqlTypes.JSON)

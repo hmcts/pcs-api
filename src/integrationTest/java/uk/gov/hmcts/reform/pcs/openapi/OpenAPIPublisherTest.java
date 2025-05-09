@@ -7,7 +7,6 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
-import uk.gov.hmcts.reform.pcs.config.AbstractPostgresContainerIT;
 
 import java.io.OutputStream;
 import java.nio.file.Files;
@@ -22,8 +21,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  */
 @SpringBootTest
 @AutoConfigureMockMvc
-@ActiveProfiles("integration")
-class OpenAPIPublisherTest extends AbstractPostgresContainerIT {
+@ActiveProfiles("test")
+class OpenAPIPublisherTest {
 
     @Autowired
     private MockMvc mvc;
