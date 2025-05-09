@@ -48,7 +48,7 @@ public class ApiSteps {
         );
 
         if (!serviceTokens.containsKey(microservice.toLowerCase())) {
-            throw new IllegalArgumentException(TestConstants.UNKNOWN_MICROSERVICE + microservice);
+            throw new IllegalArgumentException("Unknown microservice: " + microservice);
         }
 
         String validS2sToken = serviceTokens.get(microservice.toLowerCase());
@@ -80,7 +80,7 @@ public class ApiSteps {
             case "POST" -> SerenityRest.when().post(resourceAPI.getResource());
             case "GET" -> SerenityRest.when().get(resourceAPI.getResource());
             case "DELETE" -> SerenityRest.when().delete(resourceAPI.getResource());
-            default -> throw new IllegalStateException(TestConstants.UNEXPECTED_VALUE + method.toUpperCase());
+            default -> throw new IllegalStateException("Unexpected value: " + method.toUpperCase());
         }
     }
 

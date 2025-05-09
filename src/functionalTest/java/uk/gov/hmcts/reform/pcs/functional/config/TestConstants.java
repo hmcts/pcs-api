@@ -4,7 +4,6 @@ public class TestConstants {
     public static final String PCS_API = "pcs_api";
     public static final String PCS_FRONTEND = "pcs_frontend";
     public static final String CIVIL_SERVICE = "civil_service";
-    public static final String UNKNOWN_MICROSERVICE = "Unknown microservice: ";
     public static final String AUTHORIZATION = "Authorization";
     public static final String SERVICE_AUTHORIZATION = "ServiceAuthorization";
     public static final String EXPIRED_S2S_TOKEN = "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJwY3NfYXBpIiwiZXhwIjoxNzQ0MjI0NT"
@@ -23,5 +22,4 @@ public class TestConstants {
         + "8Fq1PflA-mwBmR0F1nUGWHxPfWp4a2TaTkvhKiUxMkCCwfvTJLjBndJi3iCNezRzvxoHMJtKCOVR8PvNQu6pnxNha0xIC9DSBBFt0VjX"
         + "Kma_P3Pijxi_Ce69kZ3B6ZertwCy4ElmbPQhJgCjbQHimxSa-Omh-zcQG1MD1h1WPYN3OQLS4anvsNFWlDiBmaexN5C7Kru_LTTGLa5w"
         + "p604m_FAF2nmpgZdsP7o4MQ6Wd00DXlgY1fAw";
-    public static final String UNEXPECTED_VALUE = "Unexpected value: ";
 }
