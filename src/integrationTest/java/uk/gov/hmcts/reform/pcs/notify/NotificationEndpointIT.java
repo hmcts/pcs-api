@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.testingsupport.endpoint;
+package uk.gov.hmcts.reform.pcs.notify;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
@@ -40,7 +40,7 @@ import static uk.gov.hmcts.reform.pcs.hearings.constants.HearingConstants.SERVIC
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
 @AutoConfigureMockMvc
 @ActiveProfiles("integration")
-public class TestingSupportNotificationIT extends AbstractPostgresContainerIT {
+public class NotificationEndpointIT extends AbstractPostgresContainerIT {
 
     private static final String AUTH_HEADER = "Bearer token";
     private static final String SERVICE_AUTH_HEADER = "ServiceAuthToken";
