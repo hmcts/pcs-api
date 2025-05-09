@@ -9,6 +9,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import uk.gov.hmcts.reform.pcs.functional.config.CourtConstants;
 import uk.gov.hmcts.reform.pcs.functional.config.TestConstants;
 import uk.gov.hmcts.reform.pcs.functional.steps.ApiSteps;
+import org.junit.jupiter.api.Disabled;
+
 
 @Issue("HDPI-352")
 @Tag("Functional")
@@ -27,6 +29,7 @@ class CourtsEndpointTests {
     // hardcoded. Once real data is available, DB connections needs to be established to identify the postcode to
     // be used and to construct expected response Test is written with an assumption of single set of data in response,
     // need improvements when more than one court name can be returned
+    @Disabled("This test is ignored/disabled for now due to missing test data in AAT")
     @Title("Courts endpoint - returns 200 and expected court data for valid postcode")
     @Test
     void shouldReturnExpectedCourtForPostcode() {
