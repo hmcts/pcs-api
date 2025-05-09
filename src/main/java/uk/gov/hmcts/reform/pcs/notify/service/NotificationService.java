@@ -166,7 +166,7 @@ public class NotificationService {
      * @param notification The notification to update
      * @param status The new status to set
      * @param providerNotificationId Optional provider notification ID to set (can be null)
-     * @return The updated notification (or null if an error occurred)
+     * @return An Optional containing the updated notification, or an empty Optional if an error occurred
      */
     private Optional<CaseNotification> updateNotificationStatus(
             CaseNotification notification, 
