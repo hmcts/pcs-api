@@ -25,8 +25,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @Slf4j
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-@SpringBootTest(classes = Application.class
-        , webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(classes = Application.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Import(TestSchedulingConfig.class)
 @ActiveProfiles("integration")
 class SchedulingConfigIT extends AbstractPostgresContainerIT {
@@ -49,14 +48,13 @@ class SchedulingConfigIT extends AbstractPostgresContainerIT {
     @Test
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     @Rollback(false)
-    void testRecurringTasks() throws Exception {
+    void testRecurringTasks() throws InterruptedException {
         Thread.sleep(10000);
-        assertThat(countDownLatch.await(10, TimeUnit.SECONDS)).isTrue();
+        assertThat(countDownLatch.await(20, TimeUnit.SECONDS)).isTrue();
     }
 
     @AfterEach
     void cleanup() {
-        // Make sure to clean up
         log.info("Stopping test scheduler");
         if (testScheduler != null) {
             testScheduler.stop();

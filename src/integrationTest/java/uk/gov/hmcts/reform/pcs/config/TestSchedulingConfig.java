@@ -11,6 +11,7 @@ import org.springframework.context.annotation.Primary;
 
 import javax.sql.DataSource;
 import java.time.Duration;
+import java.time.Instant;
 import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 
@@ -35,8 +36,17 @@ public class TestSchedulingConfig {
                     countDownLatch.countDown();
                 });
 
-        return Scheduler.create(dataSource).pollingInterval(Duration.ofSeconds(1))
-                .registerShutdownHook().startTasks(task).build();
+        final Scheduler scheduler = Scheduler.create(dataSource)
+                .pollingInterval(Duration.ofSeconds(1))
+                .registerShutdownHook().build();
+        
+//        return Scheduler.create(dataSource)
+//                .pollingInterval(Duration.ofSeconds(1))
+//                .registerShutdownHook().startTasks(task).build();
+
+        scheduler.scheduleIfNotExists(task.instance(uniqueTaskName), Instant.now());
+        scheduler.start();
+        return scheduler;
     }
 
 }
