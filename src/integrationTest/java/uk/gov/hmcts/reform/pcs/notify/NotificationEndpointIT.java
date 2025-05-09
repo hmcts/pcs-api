@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.testingsupport.endpoint;
+package uk.gov.hmcts.reform.pcs.notify;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
@@ -14,6 +14,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import uk.gov.hmcts.reform.pcs.config.AbstractPostgresContainerIT;
 import uk.gov.hmcts.reform.pcs.notify.domain.CaseNotification;
 import uk.gov.hmcts.reform.pcs.notify.model.EmailNotificationRequest;
+import uk.gov.hmcts.reform.pcs.notify.model.NotificationStatus;
 import uk.gov.hmcts.reform.pcs.notify.repository.NotificationRepository;
 import uk.gov.service.notify.NotificationClient;
 import uk.gov.service.notify.NotificationClientException;
@@ -39,7 +40,7 @@ import static uk.gov.hmcts.reform.pcs.hearings.constants.HearingConstants.SERVIC
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
 @AutoConfigureMockMvc
 @ActiveProfiles("integration")
-public class TestingSupportNotificationIT extends AbstractPostgresContainerIT {
+public class NotificationEndpointIT extends AbstractPostgresContainerIT {
 
     private static final String AUTH_HEADER = "Bearer token";
     private static final String SERVICE_AUTH_HEADER = "ServiceAuthToken";
@@ -106,7 +107,7 @@ public class TestingSupportNotificationIT extends AbstractPostgresContainerIT {
         List<CaseNotification> notifications = notificationRepository.findAll();
         assertThat(notifications).isNotEmpty();
         assertThat(notifications.getFirst().getRecipient()).isEqualTo(request.getEmailAddress());
-        assertThat(notifications.getFirst().getStatus()).isEqualTo("pending-schedule");
+        assertThat(notifications.getFirst().getStatus()).isEqualTo(NotificationStatus.SUBMITTED);
     }
 
     @DisplayName("Should return Internal Server Error when sending email fails")
