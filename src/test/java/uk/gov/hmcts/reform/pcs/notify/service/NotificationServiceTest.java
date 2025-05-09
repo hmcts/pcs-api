@@ -16,10 +16,10 @@ import uk.gov.hmcts.reform.pcs.notify.exception.NotificationException;
 import uk.gov.hmcts.reform.pcs.notify.model.EmailNotificationRequest;
 import uk.gov.hmcts.reform.pcs.notify.model.NotificationStatus;
 import uk.gov.hmcts.reform.pcs.notify.repository.NotificationRepository;
+import uk.gov.service.notify.Notification;
 import uk.gov.service.notify.NotificationClient;
 import uk.gov.service.notify.NotificationClientException;
 import uk.gov.service.notify.SendEmailResponse;
-import uk.gov.service.notify.Notification;
 
 import java.util.HashMap;
 import java.util.Optional;
@@ -57,21 +57,28 @@ import static org.mockito.Mockito.when;
 @SpringJUnitConfig(AsyncConfiguration.class)
 class NotificationServiceTest {
 
+    // Constants
+    private static final long STATUS_CHECK_DELAY = 100L; // 100ms for faster tests
+    
+    // Mocks
     @Mock
     private NotificationClient notificationClient;
 
     @Mock
     private NotificationRepository notificationRepository;
 
+    // Service under test
     private NotificationService notificationService;
-
-    private static final long STATUS_CHECK_DELAY = 100L; // 100ms for faster tests
 
     @BeforeEach
     void setUp() {
         notificationService = new NotificationService(notificationClient, notificationRepository, STATUS_CHECK_DELAY);
     }
 
+    // ===============================================================================================
+    // Tests for sendEmail - Public API
+    // ===============================================================================================
+    
     @DisplayName("Should successfully send email when input data is valid")
     @Test
     void testSendEmailSuccess() throws NotificationClientException {
@@ -125,6 +132,44 @@ class NotificationServiceTest {
         verify(notificationRepository, times(2)).save(any(CaseNotification.class));
     }
 
+    @DisplayName("Should generate UUID for case ID when sending email")
+    @Test
+    void shouldGenerateUuidForCaseIdWhenSendingEmail() throws NotificationClientException {
+        final EmailNotificationRequest emailRequest = new EmailNotificationRequest(
+            "test@example.com",
+            "templateId",
+            new HashMap<>(),
+            "reference",
+            "emailReplyToId"
+        );
+        SendEmailResponse sendEmailResponse = mock(SendEmailResponse.class);
+        
+        // Capture the CaseNotification being saved to verify its caseId is a UUID
+        ArgumentCaptor<CaseNotification> caseNotificationCaptor = ArgumentCaptor.forClass(CaseNotification.class);
+        when(notificationRepository.save(caseNotificationCaptor.capture())).thenReturn(mock(CaseNotification.class));
+        
+        // Setup stub for the email sending to avoid actual notification client call
+        when(notificationClient.sendEmail(anyString(), anyString(), anyMap(), anyString()))
+            .thenReturn(sendEmailResponse);
+        
+        // Mock the response ID which is used in the production code
+        when(sendEmailResponse.getNotificationId())
+            .thenReturn(UUID.randomUUID());
+        
+        notificationService.sendEmail(emailRequest);
+
+        // First save captured value is from the createCaseNotification call
+        CaseNotification capturedNotification = caseNotificationCaptor.getAllValues().get(0);
+        assertThat(capturedNotification.getCaseId()).isNotNull();
+        // Verify that a valid UUID was set for the caseId
+        assertThat(capturedNotification.getCaseId().toString())
+            .matches("[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}");
+    }
+
+    // ===============================================================================================
+    // Tests for createCaseNotification - Package Private Method
+    // ===============================================================================================
+    
     @DisplayName("Should save case notification when end point is called successfully")
     @Test
     void shouldSaveCaseNotificationWhenEndPointIsCalled() {
@@ -164,6 +209,10 @@ class NotificationServiceTest {
         verify(notificationRepository).save(any(CaseNotification.class));
     }
 
+    // ===============================================================================================
+    // Tests for checkNotificationStatus - Public API
+    // ===============================================================================================
+    
     @DisplayName("Should check notification status delivered")
     @Test
     void testCheckNotificationStatusDelivered() throws NotificationClientException, 
@@ -220,41 +269,11 @@ class NotificationServiceTest {
         verify(notificationClient).getNotificationById(notificationId);
     }
 
-    @DisplayName("Should generate UUID for case ID when sending email")
-    @Test
-    void shouldGenerateUuidForCaseIdWhenSendingEmail() throws NotificationClientException {
-        final EmailNotificationRequest emailRequest = new EmailNotificationRequest(
-            "test@example.com",
-            "templateId",
-            new HashMap<>(),
-            "reference",
-            "emailReplyToId"
-        );
-        SendEmailResponse sendEmailResponse = mock(SendEmailResponse.class);
-        
-        // Capture the CaseNotification being saved to verify its caseId is a UUID
-        ArgumentCaptor<CaseNotification> caseNotificationCaptor = ArgumentCaptor.forClass(CaseNotification.class);
-        when(notificationRepository.save(caseNotificationCaptor.capture())).thenReturn(mock(CaseNotification.class));
-        
-        // Setup stub for the email sending to avoid actual notification client call
-        when(notificationClient.sendEmail(anyString(), anyString(), anyMap(), anyString()))
-            .thenReturn(sendEmailResponse);
-        
-        // Mock the response ID which is used in the production code
-        when(sendEmailResponse.getNotificationId())
-            .thenReturn(UUID.randomUUID());
-        
-        notificationService.sendEmail(emailRequest);
-
-        // First save captured value is from the createCaseNotification call
-        CaseNotification capturedNotification = caseNotificationCaptor.getAllValues().get(0);
-        assertThat(capturedNotification.getCaseId()).isNotNull();
-        // Verify that a valid UUID was set for the caseId
-        assertThat(capturedNotification.getCaseId().toString())
-            .matches("[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}");
-    }
-
     // Removed direct reflection testing of private methods in favor of testing through the public API
+    
+    // ===============================================================================================
+    // Tests for private helper methods (using ReflectionTestUtils)
+    // ===============================================================================================
 
     @DisplayName("Should handle notification client exception when processing notification status")
     @Test
@@ -447,6 +466,10 @@ class NotificationServiceTest {
         assertThat(caseNotification.getLastUpdatedAt()).isNotNull();
         verify(notificationRepository).save(caseNotification);
     }
+    
+    // ===============================================================================================
+    // Advanced scenarios and edge cases
+    // ===============================================================================================
     
     @DisplayName("Should handle database exception gracefully in updateNotificationStatus")
     @Test
