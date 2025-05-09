@@ -11,8 +11,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import uk.gov.hmcts.reform.pcs.functional.config.CourtConstants;
 import uk.gov.hmcts.reform.pcs.functional.config.TestConstants;
 import uk.gov.hmcts.reform.pcs.functional.steps.ApiSteps;
-import org.junit.jupiter.api.Disabled;
-
 
 @Issue("HDPI-352")
 @Tag("Functional")
@@ -31,7 +29,6 @@ class CourtsEndpointTests {
     // hardcoded. Once real data is available, DB connections needs to be established to identify the postcode to
     // be used and to construct expected response Test is written with an assumption of single set of data in response,
     // need improvements when more than one court name can be returned
-    @Disabled("This test is ignored/disabled for now due to missing test data in AAT")
     @Title("Courts endpoint - returns 200 and expected court data for valid postcode")
     @Test
     void shouldReturnExpectedCourtForPostcode() {
@@ -41,9 +38,7 @@ class CourtsEndpointTests {
         apiSteps.theRequestContainsTheQueryParameter("postcode", CourtConstants.POSTCODE_VALID);
         apiSteps.callIsSubmittedToTheEndpoint("Courts", "GET");
         apiSteps.checkStatusCode(200);
-        apiSteps.theResponseBodyContainsAString("name", CourtConstants.EXPECTED_COURT_NAME);
-        apiSteps.theResponseBodyContainsAnInteger("id", CourtConstants.EXPECTED_COURT_ID);
-        apiSteps.theResponseBodyContainsAnInteger("epimId", CourtConstants.EXPECTED_EPIM_ID);
+        apiSteps.theResponseBodyMatchesTheExpectedList(CourtConstants.EXPECTED_COURT_LIST);
     }
 
     @Title("Courts endpoint - returns 200 and empty list for postcode that doesn't exist in the database - PCSFrontend")

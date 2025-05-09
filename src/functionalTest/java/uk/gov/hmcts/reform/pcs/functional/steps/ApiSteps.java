@@ -1,5 +1,7 @@
 package uk.gov.hmcts.reform.pcs.functional.steps;
 
+import java.util.List;
+import java.util.Map;
 import io.restassured.http.ContentType;
 import io.restassured.specification.RequestSpecification;
 import net.serenitybdd.annotations.Step;
@@ -9,8 +11,6 @@ import uk.gov.hmcts.reform.pcs.functional.config.Endpoints;
 import uk.gov.hmcts.reform.pcs.functional.config.TestConstants;
 import uk.gov.hmcts.reform.pcs.functional.testutils.IdamAuthenticationGenerator;
 import uk.gov.hmcts.reform.pcs.functional.testutils.ServiceAuthenticationGenerator;
-
-import java.util.Map;
 
 public class ApiSteps {
 
@@ -91,16 +91,12 @@ public class ApiSteps {
 
     @Step("the response body contains {0} as a string: {1}")
     public void theResponseBodyContainsAString(String attribute, String value) {
-        try {
-            SerenityRest.then().assertThat().body("[0]." + attribute, Matchers.equalTo(value));
-        } catch (AssertionError | ClassCastException e) {
-            SerenityRest.then().assertThat().body(attribute, Matchers.equalTo(value));
-        }
+        SerenityRest.then().assertThat().body(attribute, Matchers.equalTo(value));
     }
 
-    @Step("the response body contains {0} as an integer: {1}")
-    public void theResponseBodyContainsAnInteger(String attribute, int value) {
-        SerenityRest.then().assertThat().body(attribute, Matchers.contains(value));
+    @Step("the response body matches the expected list")
+    public void theResponseBodyMatchesTheExpectedList(List<Map<String, Object>> expectedList) {
+        SerenityRest.then().assertThat().body("", Matchers.equalTo(expectedList));
     }
 
     @Step("the response body is an empty array")
