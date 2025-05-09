@@ -107,7 +107,7 @@ public class NotificationEndpointIT extends AbstractPostgresContainerIT {
         List<CaseNotification> notifications = notificationRepository.findAll();
         assertThat(notifications).isNotEmpty();
         assertThat(notifications.getFirst().getRecipient()).isEqualTo(request.getEmailAddress());
-        assertThat(notifications.getFirst().getStatus()).isEqualTo(NotificationStatus.SENDING.toString());
+        assertThat(notifications.getFirst().getStatus()).isEqualTo(NotificationStatus.SUBMITTED);
     }
 
     @DisplayName("Should return Internal Server Error when sending email fails")
