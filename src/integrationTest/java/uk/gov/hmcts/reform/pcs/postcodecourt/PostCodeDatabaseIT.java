@@ -11,6 +11,11 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+/**
+ * Simple test of a DB trigger to avoid having to set up a DB Unit Test framework.
+ * If more DB test unit coverage is needed then a framework can be set up and
+ * this test migrated there.
+ */
 @DataJpaTest
 @ActiveProfiles("integration")
 class PostCodeDatabaseIT extends AbstractPostgresContainerIT {
