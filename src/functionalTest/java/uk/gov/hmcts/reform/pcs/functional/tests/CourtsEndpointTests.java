@@ -4,7 +4,9 @@ import net.serenitybdd.annotations.Issue;
 import net.serenitybdd.annotations.Title;
 import net.serenitybdd.junit5.SerenityJUnit5Extension;
 import net.serenitybdd.annotations.Steps;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.extension.ExtendWith;
 import uk.gov.hmcts.reform.pcs.functional.config.CourtConstants;
 import uk.gov.hmcts.reform.pcs.functional.config.TestConstants;
@@ -43,6 +45,7 @@ class CourtsEndpointTests {
         apiSteps.theResponseBodyContainsAnInteger("id", CourtConstants.EXPECTED_COURT_ID);
         apiSteps.theResponseBodyContainsAnInteger("epimId", CourtConstants.EXPECTED_EPIM_ID);
     }
+
     @Title("Courts endpoint - returns 200 and empty list for postcode that doesn't exist in the database - PCSFrontend")
     @Test
     void shouldReturnEmptyListForPostcodeNotExist() {
@@ -54,6 +57,7 @@ class CourtsEndpointTests {
         apiSteps.checkStatusCode(200);
         apiSteps.theResponseBodyIsAnEmptyArray();
     }
+
     @Title("Courts endpoint - return 403 Forbidden when the request uses an unauthorised S2S token")
     @Test
     void courts403ForbiddenScenario() {

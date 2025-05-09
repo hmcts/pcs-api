@@ -96,7 +96,6 @@ public class ApiSteps {
         } catch (AssertionError | ClassCastException e) {
             SerenityRest.then().assertThat().body(attribute, Matchers.equalTo(value));
         }
-//        SerenityRest.then().assertThat().body(attribute, Matchers.equalTo(value));
     }
 
     @Step("the response body contains {0} as an integer: {1}")
