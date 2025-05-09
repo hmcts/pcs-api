@@ -71,10 +71,9 @@ class PostCodeCourtControllerIT extends AbstractPostgresContainerIT {
     @Test
     @DisplayName("Should return valid Http OK and correct response body for known postcodes")
     void shouldReturnHttpOkAndCorrectResponseForKnownPostCodes() {
-        // TODO: Put spaces back into postcodes once HDPI-709 is done
-        String postCode1 = "W37RX";
-        String postCode2 = "W36RS";
-        String postCode3 = "M139PL";
+        String postCode1 = "W3 7RX";
+        String postCode2 = "W3 6RS";
+        String postCode3 = "M13 9PL";
 
         final PostCodeCourtKey id1 = new PostCodeCourtKey(postCode1, 20262);
         final PostCodeCourtKey id2 = new PostCodeCourtKey(postCode2, 36791);
@@ -97,7 +96,7 @@ class PostCodeCourtControllerIT extends AbstractPostgresContainerIT {
         assertPostcodeReturns(postCode1, court1);
         assertPostcodeReturns(postCode2, court2);
         assertPostcodeReturns(postCode3, court3);
-        assertPostcodeReturns("SW1H9EA", null);
+        assertPostcodeReturns("SW1H 9EA", null);
     }
 
     private void stubLocationReferenceApi(String epimId, List<CourtVenue> response) {

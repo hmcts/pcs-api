@@ -16,6 +16,8 @@ import uk.gov.hmcts.reform.pcs.postcodecourt.repository.PostCodeCourtRepository;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -32,13 +34,15 @@ class PostCodeCourtServiceTest {
     private PostCodeCourtService underTest;
 
     @Test
-    @DisplayName("Return CountyCourts for an existing PostCode")
-    void shouldReturnCountyCourtsForExistingPostCode() {
-        String postCode = "W3 7RX";
+    @DisplayName("Return CountyCourts for an existing PostCode with spaces")
+    void shouldReturnCountyCourtsForExistingPostCodeWithSpaces() {
+        String postCode = " W3 7RX ";
+        String trimmedPostcode = "W37RX";
         int expectedEpimId = 20262;
+
         PostCodeCourtEntity postCodeCourtEntity = new PostCodeCourtEntity();
         postCodeCourtEntity.setId(new PostCodeCourtKey(postCode, expectedEpimId));
-        when(postCodeCourtRepository.findByIdPostCode(postCode)).thenReturn(List.of(postCodeCourtEntity));
+        when(postCodeCourtRepository.findByIdPostCode(trimmedPostcode)).thenReturn(List.of(postCodeCourtEntity));
         when(locationReferenceService.getCountyCourts(null,  List.of(expectedEpimId)))
             .thenReturn(List.of(new CourtVenue(expectedEpimId, 101, "Royal Courts of Justice (Main Building)")));
 
@@ -53,20 +57,32 @@ class PostCodeCourtServiceTest {
                     assertThat(court.name()).isEqualTo("Royal Courts of Justice (Main Building)");
                 });
 
-        verify(postCodeCourtRepository).findByIdPostCode(postCode);
+        verify(postCodeCourtRepository).findByIdPostCode(trimmedPostcode);
         verify(locationReferenceService).getCountyCourts(null, List.of(expectedEpimId));
     }
 
     @Test
     @DisplayName("Should return an empty list of CountyCourts for a non-existent postcode")
-    void shouldReturnEmptyOfCountyCourtsForNonExistentPostCode() {
+    void shouldReturnEmptyListOfCountyCourtsForNonExistentPostCode() {
         String nonExistentPostCode = "XY1 2AB";
-        when(postCodeCourtRepository.findByIdPostCode(nonExistentPostCode)).thenReturn(List.of());
+        String trimmedPostcode = "XY12AB";
+        when(postCodeCourtRepository.findByIdPostCode(trimmedPostcode)).thenReturn(List.of());
 
         final List<Court> response = underTest.getCountyCourtsByPostCode(nonExistentPostCode, null);
 
         assertThat(response).isEmpty();
-        verify(postCodeCourtRepository).findByIdPostCode(nonExistentPostCode);
+        verify(postCodeCourtRepository).findByIdPostCode(trimmedPostcode);
+    }
+
+    @Test
+    @DisplayName("Should return an empty list of CountyCourts for a null postcode")
+    void shouldReturnEmptyListOfCountyCourtsForNullPostCode() {
+        String nullPostcode = null;
+
+        final List<Court> response = underTest.getCountyCourtsByPostCode(nullPostcode, null);
+
+        assertThat(response).isEmpty();
+        verify(postCodeCourtRepository, never()).findByIdPostCode(any());
     }
 
 }
