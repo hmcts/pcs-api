@@ -30,6 +30,13 @@ public class NotificationService {
     private final NotificationRepository notificationRepository;
     private final long statusCheckDelay;
 
+    /**
+     * Constructor for the NotificationService.
+     *
+     * @param notificationClient The notification client for GOV.UK Notify
+     * @param notificationRepository Repository for saving notification data
+     * @param statusCheckDelay Delay in milliseconds before checking notification status
+     */
     public NotificationService(
         NotificationClient notificationClient,
         NotificationRepository notificationRepository,
@@ -39,6 +46,13 @@ public class NotificationService {
         this.statusCheckDelay = statusCheckDelay;
     }
 
+    /**
+     * Sends an email using GOV.UK Notify service.
+     *
+     * @param emailRequest The email request containing necessary information
+     * @return SendEmailResponse from GOV.UK Notify
+     * @throws NotificationException If the email fails to send
+     */
     public SendEmailResponse sendEmail(EmailNotificationRequest emailRequest) {
         SendEmailResponse sendEmailResponse;
         final String destinationAddress = emailRequest.getEmailAddress();
@@ -89,34 +103,97 @@ public class NotificationService {
         }
     }
 
+    /**
+     * Asynchronously checks the status of a notification with GOV.UK Notify.
+     * 
+     * @param notificationId The ID of the notification to check
+     * @return CompletableFuture containing the notification details
+     */
     @Async("notificationExecutor")
     public CompletableFuture<Notification> checkNotificationStatus(String notificationId) {
         return CompletableFuture.supplyAsync(() -> {
             try {
-                // Wait for configured delay
-                TimeUnit.MILLISECONDS.sleep(statusCheckDelay);
-                
-                Notification notification = notificationClient.getNotificationById(notificationId);
-                
-                updateNotificationStatusInDatabase(notification, notificationId);
-                
-                return notification;
+                return getAndProcessNotificationStatus(notificationId);
             } catch (NotificationClientException | InterruptedException e) {
-                log.error("Error checking notification status for ID: {}. Error: {}", 
-                    notificationId, 
-                    e.getMessage(),
-                    e
-                );
-                if (e instanceof InterruptedException) {
-                    Thread.currentThread().interrupt();
-                }
+                handleStatusCheckException(notificationId, e);
                 throw new CompletionException(e);
             }
         });
     }
+
+    /**
+     * Creates a case notification in the database.
+     * 
+     * @param recipient The recipient of the notification
+     * @param type The type of notification
+     * @param caseId The associated case ID
+     * @return The created CaseNotification
+     * @throws NotificationException If saving the notification fails
+     */
+    CaseNotification createCaseNotification(String recipient, String type, UUID caseId) {
+        CaseNotification toSaveNotification = new CaseNotification();
+        toSaveNotification.setCaseId(caseId);
+        // Use the toString() method of the enum to get the string value
+        toSaveNotification.setStatus(NotificationStatus.PENDING_SCHEDULE);
+        toSaveNotification.setType(type);
+        toSaveNotification.setRecipient(recipient);
+
+        try {
+            CaseNotification savedNotification = notificationRepository.save(toSaveNotification);
+            log.info(
+                "Case Notification with ID {} has been saved to the database", savedNotification.getNotificationId()
+            );
+            return savedNotification;
+        } catch (DataAccessException dataAccessException) {
+            log.error(
+                "Failed to save Case Notification with Case ID: {}. Reason: {}",
+                toSaveNotification.getCaseId(),
+                dataAccessException.getMessage(),
+                dataAccessException
+            );
+            throw new NotificationException("Failed to save Case Notification.", dataAccessException);
+        }
+    }
     
     /**
-     * Updates the notification status in the database, based on the status from GOV.UK Notify
+     * Retrieves notification status from GOV.UK Notify and processes it.
+     * 
+     * @param notificationId The notification ID to check
+     * @return The notification object from GOV.UK Notify
+     * @throws NotificationClientException If there's an error communicating with GOV.UK Notify
+     * @throws InterruptedException If the thread is interrupted while waiting
+     */
+    private Notification getAndProcessNotificationStatus(String notificationId) 
+            throws NotificationClientException, InterruptedException {
+        // Wait for configured delay
+        TimeUnit.MILLISECONDS.sleep(statusCheckDelay);
+        
+        Notification notification = notificationClient.getNotificationById(notificationId);
+        
+        updateNotificationStatusInDatabase(notification, notificationId);
+        
+        return notification;
+    }
+    
+    /**
+     * Handles exceptions that occur when checking notification status.
+     * 
+     * @param notificationId The notification ID being checked
+     * @param e The exception that was thrown
+     */
+    private void handleStatusCheckException(String notificationId, Exception e) {
+        log.error("Error checking notification status for ID: {}. Error: {}", 
+            notificationId, 
+            e.getMessage(),
+            e
+        );
+        if (e instanceof InterruptedException) {
+            Thread.currentThread().interrupt();
+        }
+    }
+
+    /**
+     * Updates the notification status in the database, based on the status from GOV.UK Notify.
      * 
      * @param notification The notification object from GOV.UK Notify
      * @param notificationId The notification ID for database lookup
@@ -150,31 +227,6 @@ public class NotificationService {
             updateNotificationStatus(caseNotification, notificationStatus, null);
         } catch (IllegalArgumentException e) {
             log.warn("Unknown notification status: {}", status);
-        }
-    }
-
-    CaseNotification createCaseNotification(String recipient, String type, UUID caseId) {
-        CaseNotification toSaveNotification = new CaseNotification();
-        toSaveNotification.setCaseId(caseId);
-        // Use the toString() method of the enum to get the string value
-        toSaveNotification.setStatus(NotificationStatus.PENDING_SCHEDULE);
-        toSaveNotification.setType(type);
-        toSaveNotification.setRecipient(recipient);
-
-        try {
-            CaseNotification savedNotification = notificationRepository.save(toSaveNotification);
-            log.info(
-                "Case Notification with ID {} has been saved to the database", savedNotification.getNotificationId()
-            );
-            return savedNotification;
-        } catch (DataAccessException dataAccessException) {
-            log.error(
-                "Failed to save Case Notification with Case ID: {}. Reason: {}",
-                toSaveNotification.getCaseId(),
-                dataAccessException.getMessage(),
-                dataAccessException
-            );
-            throw new NotificationException("Failed to save Case Notification.", dataAccessException);
         }
     }
 
