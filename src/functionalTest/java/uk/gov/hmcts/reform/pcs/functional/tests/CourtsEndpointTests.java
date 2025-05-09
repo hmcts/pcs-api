@@ -42,8 +42,8 @@ class CourtsEndpointTests {
         apiSteps.theResponseBodyMatchesTheExpectedList(CourtConstants.EXPECTED_COURT_LIST);
     }
 
-    @Title("Courts endpoint - returns 200 and empty list for postcode that doesn't exist in the database " +
-        "and uses pcs_frontend S2S token")
+    @Title("Courts endpoint - returns 200 and empty list for postcode that doesn't exist in the database "
+        + "and uses pcs_frontend S2S token")
     @Test
     void shouldReturnEmptyListForPostcodeNotExist() {
         apiSteps.requestIsPreparedWithAppropriateValues();
@@ -68,7 +68,7 @@ class CourtsEndpointTests {
 
     @Title("Courts endpoint - return 401 Unauthorised when the request uses an expired service token")
     @Test
-    void courts401UnauthorisedScenarioInvalidServiceToken() {
+    void courts401UnauthorisedScenarioExpiredServiceToken() {
         apiSteps.requestIsPreparedWithAppropriateValues();
         apiSteps.theRequestContainsExpiredServiceToken();
         apiSteps.theRequestContainsValidIdamToken();
@@ -82,7 +82,7 @@ class CourtsEndpointTests {
     @Disabled("Disabled as this needs to return 401, not 200")
     @Title("Courts endpoint - return 401 Unauthorised when the request uses an expired Idam token")
     @Test
-    void courts401UnauthorisedScenarioInvalidIdamToken() {
+    void courts401UnauthorisedScenarioExpiredIdamToken() {
         apiSteps.requestIsPreparedWithAppropriateValues();
         apiSteps.theRequestContainsValidServiceToken("pcs_api");
         apiSteps.theRequestContainsExpiredIdamToken();
