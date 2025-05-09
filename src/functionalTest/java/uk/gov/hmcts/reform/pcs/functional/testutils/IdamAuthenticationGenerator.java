@@ -1,7 +1,6 @@
 package uk.gov.hmcts.reform.pcs.functional.testutils;
 
-import io.restassured.RestAssured;
-import io.restassured.response.Response;
+import net.serenitybdd.rest.SerenityRest;
 
 import java.util.Map;
 
@@ -29,24 +28,24 @@ public class IdamAuthenticationGenerator {
             "grant_type", GRANT_TYPE
         );
 
-        Response response = RestAssured
+        SerenityRest
             .given()
             .baseUri(BASE_URL)
             .contentType(APPLICATION_FORM_URLENCODED_VALUE)
             .formParams(formData)
             .post(ENDPOINT);
 
-        if (response.statusCode() != 200) {
+        if (SerenityRest.lastResponse().statusCode() != 200) {
             throw new RuntimeException(String.format(
                 "Failed to generate IDAM token. Status code: %d%nResponse: %s",
-                response.statusCode(),
-                response.prettyPrint()
+                SerenityRest.lastResponse().statusCode(),
+                SerenityRest.lastResponse().prettyPrint()
             ));
         }
 
-        assertThat(response.getStatusCode()).isEqualTo(200);
+        assertThat(SerenityRest.lastResponse().getStatusCode()).isEqualTo(200);
 
-        return response.jsonPath().getString("access_token");
+        return SerenityRest.lastResponse().jsonPath().getString("access_token");
     }
 
     private static String getEnv(String name) {
