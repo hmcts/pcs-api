@@ -23,3 +23,5 @@ java:
     ENABLE_TESTING_SUPPORT: true
   postgresql:
     enabled: true
+    image:
+      tag: '16.0.0'
