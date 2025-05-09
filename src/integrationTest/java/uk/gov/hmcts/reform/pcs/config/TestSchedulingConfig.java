@@ -1,12 +1,15 @@
 package uk.gov.hmcts.reform.pcs.config;
 
 import com.github.kagkarlsson.scheduler.Scheduler;
-import com.github.kagkarlsson.scheduler.task.helper.RecurringTask;
+import com.github.kagkarlsson.scheduler.SchedulerClient;
+import com.github.kagkarlsson.scheduler.task.OnStartup;
+import com.github.kagkarlsson.scheduler.task.Task;
 import com.github.kagkarlsson.scheduler.task.helper.Tasks;
 import com.github.kagkarlsson.scheduler.task.schedule.FixedDelay;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.DependsOn;
 import org.springframework.context.annotation.Primary;
 
 import javax.sql.DataSource;
@@ -26,27 +29,39 @@ public class TestSchedulingConfig {
 
     @Bean
     @Primary
-    public Scheduler testScheduler(DataSource dataSource, CountDownLatch countDownLatch) {
-        String uniqueTaskName = "test-task-" + UUID.randomUUID();
-
-        RecurringTask<?> task = Tasks.recurring(uniqueTaskName, FixedDelay.of(Duration.ofSeconds(1)))
-                .execute((taskInstance, executionContext) -> {
-                    long countBefore = countDownLatch.getCount();
-                    log.info("Running test task: {} - with count of {}", taskInstance.getTaskName(), countBefore);
-                    countDownLatch.countDown();
-                });
-
+    @DependsOn("testSchedulerClient")
+    public Scheduler testScheduler(DataSource dataSource, Task<OnStartup> testTask) {
         final Scheduler scheduler = Scheduler.create(dataSource)
                 .pollingInterval(Duration.ofSeconds(1))
-                .registerShutdownHook().build();
-        
-//        return Scheduler.create(dataSource)
-//                .pollingInterval(Duration.ofSeconds(1))
-//                .registerShutdownHook().startTasks(task).build();
-
-        scheduler.scheduleIfNotExists(task.instance(uniqueTaskName), Instant.now());
+                .startTasks((Task<OnStartup> & OnStartup) testTask)
+                .registerShutdownHook()
+                .build();
         scheduler.start();
         return scheduler;
     }
+
+    @Bean
+    @Primary
+    public SchedulerClient testSchedulerClient(DataSource dataSource, Task<OnStartup> testTask) {
+        final SchedulerClient schedulerClient = SchedulerClient.Builder.create(dataSource).build();
+        schedulerClient.scheduleIfNotExists(testTask.instance(testTask.getName()), Instant.now().plusSeconds(3));
+        return schedulerClient;
+    }
+
+    @Bean
+    public String taskName() {
+        return "test-task-" + UUID.randomUUID();
+    }
+
+    @Bean
+    public Task<?> testTask(CountDownLatch countDownLatch, String taskName) {
+        return Tasks.recurring(taskName, FixedDelay.of(Duration.ofSeconds(1)))
+            .execute((taskInstance, executionContext) -> {
+                long countBefore = countDownLatch.getCount();
+                log.info("Running test task: {} - with count of {}", taskInstance.getTaskName(), countBefore);
+                countDownLatch.countDown();
+            });
+    }
+
 
 }

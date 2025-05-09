@@ -21,10 +21,10 @@ import java.util.stream.Collectors;
 @Slf4j
 public class SchedulingConfig {
 
-    @Primary
     @Bean
-    public SchedulerClient schedulerClient(DataSource dataSource, List<Task<?>> taskDefinitions) {
-        return SchedulerClient.Builder.create(dataSource, taskDefinitions).build();
+    public SchedulerClient schedulerClient(DataSource dataSource, List<Task<?>> tasks) {
+        // Allows for interaction with the Scheduling system without actually executing the tasks.
+        return SchedulerClient.Builder.create(dataSource, tasks).build();
     }
 
     @Bean(initMethod = "start", destroyMethod = "stop")
