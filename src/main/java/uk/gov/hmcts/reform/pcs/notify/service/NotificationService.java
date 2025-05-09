@@ -98,27 +98,7 @@ public class NotificationService {
                 
                 Notification notification = notificationClient.getNotificationById(notificationId);
                 
-                // Find and update notification status in database
-                try {
-                    CaseNotification caseNotification = notificationRepository
-                        .findByProviderNotificationId(UUID.fromString(notificationId))
-                        .orElse(null);
-                    
-                    if (caseNotification != null) {
-                        String status = notification.getStatus();
-                        try {
-                            NotificationStatus notificationStatus = NotificationStatus.fromString(status);
-                            updateNotificationStatus(caseNotification, notificationStatus, null);
-                        } catch (IllegalArgumentException e) {
-                            log.warn("Unknown notification status: {}", status);
-                        }
-                    } else {
-                        log.warn("Could not find case notification with provider ID: {}", notificationId);
-                    }
-                } catch (Exception e) {
-                    log.error("Error updating notification status in database for ID: {}. Error: {}", 
-                        notificationId, e.getMessage(), e);
-                }
+                updateNotificationStatusInDatabase(notification, notificationId);
                 
                 return notification;
             } catch (NotificationClientException | InterruptedException e) {
@@ -133,6 +113,44 @@ public class NotificationService {
                 throw new CompletionException(e);
             }
         });
+    }
+    
+    /**
+     * Updates the notification status in the database, based on the status from GOV.UK Notify
+     * 
+     * @param notification The notification object from GOV.UK Notify
+     * @param notificationId The notification ID for database lookup
+     */
+    private void updateNotificationStatusInDatabase(Notification notification, String notificationId) {
+        try {
+            CaseNotification caseNotification = notificationRepository
+                .findByProviderNotificationId(UUID.fromString(notificationId))
+                .orElse(null);
+            
+            if (caseNotification != null) {
+                updateNotificationWithStatus(caseNotification, notification.getStatus());
+            } else {
+                log.warn("Could not find case notification with provider ID: {}", notificationId);
+            }
+        } catch (Exception e) {
+            log.error("Error updating notification status in database for ID: {}. Error: {}", 
+                notificationId, e.getMessage(), e);
+        }
+    }
+    
+    /**
+     * Updates a notification with the status from GOV.UK Notify
+     * 
+     * @param caseNotification The notification entity to update
+     * @param status The status string from GOV.UK Notify
+     */
+    private void updateNotificationWithStatus(CaseNotification caseNotification, String status) {
+        try {
+            NotificationStatus notificationStatus = NotificationStatus.fromString(status);
+            updateNotificationStatus(caseNotification, notificationStatus, null);
+        } catch (IllegalArgumentException e) {
+            log.warn("Unknown notification status: {}", status);
+        }
     }
 
     CaseNotification createCaseNotification(String recipient, String type, UUID caseId) {
