@@ -11,6 +11,7 @@ import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.context.annotation.Primary;
+import org.springframework.test.context.ActiveProfiles;
 
 import javax.sql.DataSource;
 import java.time.Duration;
@@ -20,6 +21,7 @@ import java.util.concurrent.CountDownLatch;
 
 @TestConfiguration
 @Slf4j
+@ActiveProfiles("integration")
 public class TestSchedulingConfig {
 
     @Bean
@@ -62,6 +64,5 @@ public class TestSchedulingConfig {
                 countDownLatch.countDown();
             });
     }
-
 
 }

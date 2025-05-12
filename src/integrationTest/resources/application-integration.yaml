@@ -30,3 +30,7 @@ flyway:
 logging:
   level:
     uk.gov.hmcts.reform.pcs: DEBUG
+
+job:
+  executor:
+    enabled: true
