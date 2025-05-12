@@ -2,6 +2,8 @@ package uk.gov.hmcts.reform.pcs.notify.domain;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -49,6 +51,7 @@ public class CaseNotification {
     @Column(name = "last_updated_at", nullable = false)
     private LocalDateTime lastUpdatedAt;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
     private NotificationStatus status;
 
