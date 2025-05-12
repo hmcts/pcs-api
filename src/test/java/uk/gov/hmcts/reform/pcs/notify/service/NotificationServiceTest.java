@@ -490,7 +490,7 @@ class NotificationServiceTest {
             providerNotificationId
         );
         
-        assertThat(resultObj).isNull(); // Method returns null on exception
+        assertThat(resultObj).isEqualTo(Optional.empty()); // Method returns Optional.empty on exception
     }
 
     @DisplayName("Should handle multiple exceptions during status check")
