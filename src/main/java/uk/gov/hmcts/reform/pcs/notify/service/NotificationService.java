@@ -262,7 +262,7 @@ public class NotificationService {
         } catch (Exception e) {
             log.error("Error updating notification status to {}: {}", 
                     status, e.getMessage(), e);
-            return null;
+            return Optional.empty();
         }
     }
 }
