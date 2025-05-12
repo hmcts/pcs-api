@@ -6,6 +6,7 @@ import com.github.kagkarlsson.scheduler.task.Task;
 import com.github.kagkarlsson.scheduler.task.TaskInstance;
 import com.github.kagkarlsson.scheduler.task.helper.RecurringTask;
 import com.github.kagkarlsson.scheduler.task.schedule.FixedDelay;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
@@ -18,6 +19,7 @@ import java.util.stream.Collectors;
 
 @Component
 @Slf4j
+@Getter
 public class TaskFactory {
 
     private List<Task<OnStartup>> startupTasks;
@@ -29,25 +31,10 @@ public class TaskFactory {
         allTasks = establishTasks();
     }
 
-    public List<Task<OnStartup>> getStartupTasks() {
-        return startupTasks;
-    }
-
-    /**
-     * Single responsibility for all tasks.
-     * Avoids discrepancies between tasks known to the client and the scheduler.
-     * @return A list of all tasks.
-     */
-    public List<Task<?>> getAllTasks() {
-        return allTasks;
-    }
-
     private List<Task<?>> establishTasks() {
         List<Task<?>> tasks = new ArrayList<>();
         startupTasks = getStartupTasks();
         tasks.addAll(startupTasks);
-        // task.addAll(getRecurringTasks());
-        // tasks.addAll(getCustomTasks());
         return new ArrayList<>(tasks.stream()
                 .collect(Collectors.toMap(
                         Task::getName,
@@ -75,7 +62,5 @@ public class TaskFactory {
             log.info("Running test task: {}", taskInstance.getTaskName());
         }
     }
-
-
 
 }
