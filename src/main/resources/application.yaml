@@ -102,3 +102,7 @@ notify:
 
 testing-support:
   enabled: ${ENABLE_TESTING_SUPPORT:false}
+
+job:
+  executor:
+    enabled: true

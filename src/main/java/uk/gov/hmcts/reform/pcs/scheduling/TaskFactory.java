@@ -49,7 +49,7 @@ public class TaskFactory {
     }
 
     private Task<OnStartup> exampleTask() {
-        return new AnExampleRecurringTask(UUID.randomUUID().toString());
+        return new AnExampleRecurringTask("exampleTask-" + UUID.randomUUID());
     }
 
     private static class AnExampleRecurringTask extends RecurringTask<OnStartup> implements OnStartup {
