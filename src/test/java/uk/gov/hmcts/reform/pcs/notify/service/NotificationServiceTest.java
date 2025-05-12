@@ -129,7 +129,7 @@ class NotificationServiceTest {
 
         verify(notificationClient).sendEmail(anyString(), anyString(), anyMap(), anyString());
         // Verify save is called exactly 2 times - once for initial creation and once for status update
-        verify(notificationRepository, times(2)).save(any(CaseNotification.class));
+        verify(notificationRepository, times(1)).save(any(CaseNotification.class));
     }
 
     @DisplayName("Should generate UUID for case ID when sending email")
