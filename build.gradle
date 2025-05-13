@@ -413,6 +413,7 @@ tasks.withType(CftlibExec).configureEach {
   environment 'PCS_DB_PASSWORD', 'postgres'
   environment 'DB_PORT', '6432'
   environment 'POC_APIS_URL', 'http://localhost:3206'
+  environment 'SPRING_FLYWAY_ENABLED', 'true'
   environment 'SPRING_PROFILES_ACTIVE', 'dev'
 }
 
