@@ -5,10 +5,10 @@ security:
 spring:
   flyway:
     enabled: true
-    locations: classpath:db/migration,classpath:db/testdata
+    locations: classpath:db/migration
   sql:
     init:
-      mode: never
+      mode: always
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
