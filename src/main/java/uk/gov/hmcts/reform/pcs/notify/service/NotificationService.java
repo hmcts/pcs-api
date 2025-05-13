@@ -90,6 +90,9 @@ public class NotificationService {
 
             return sendEmailResponse;
         } catch (NotificationClientException notificationClientException) {
+            // Update notification status to failure
+            updateNotificationStatus(caseNotification, NotificationStatus.TECHNICAL_FAILURE, null);
+            
             log.error("Failed to send email. Reference ID: {}. Reason: {}",
                       referenceId,
                       notificationClientException.getMessage(),
