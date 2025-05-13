@@ -21,8 +21,8 @@ plugins {
   id 'org.flywaydb.flyway' version "$flywayVersion"
   id 'org.sonarqube' version '6.1.0.5360'
   id 'net.serenity-bdd.serenity-gradle-plugin' version "$serenityBddVersion"
-  id 'hmcts.ccd.sdk' version '5.5.20'
-  id 'com.github.hmcts.rse-cft-lib' version '0.19.1700'
+//  id 'hmcts.ccd.sdk' version '5.5.20'
+  id 'com.github.hmcts.rse-cft-lib' version '0.20.0-alpha.20'
   id 'io.freefair.lombok' version '8.13.1'
   id 'au.com.dius.pact' version '4.6.17'
   /*
@@ -401,6 +401,10 @@ project.tasks.named("processSmokeTestResources") {
   duplicatesStrategy = 'include'
 }
 
+ccd {
+  decentralised = true
+}
+
 tasks.withType(CftlibExec).configureEach {
   group = 'ccd tasks'
   authMode = AuthMode.Local
@@ -408,6 +412,7 @@ tasks.withType(CftlibExec).configureEach {
   environment 'PCS_DB_USER_NAME', 'postgres'
   environment 'PCS_DB_PASSWORD', 'postgres'
   environment 'DB_PORT', '6432'
+  environment 'POC_APIS_URL', 'http://localhost:3206'
   environment 'SPRING_PROFILES_ACTIVE', 'dev'
 }
 
