@@ -31,7 +31,7 @@ public class CCDCaseRepository extends DecentralisedCaseRepository<PCSCase> {
      * @param caseRef The case to load
      */
     @Override
-    public PCSCase getCase(long caseRef, String roleAssignments) {
+    public PCSCase getCase(long caseRef) {
         // Load the case from our database.
         var pcsCase = repository.getReferenceById(caseRef);
         // Translate it into the CCD model.
