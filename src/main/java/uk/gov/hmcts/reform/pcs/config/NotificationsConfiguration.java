@@ -7,10 +7,28 @@ import uk.gov.service.notify.NotificationClient;
 
 @Configuration
 public class NotificationsConfiguration {
+
+    @Value("${GOV_NOTIFY_API_KEY:}")
+    private String apiKey;
+
+    @Value("${notify.status-check-delay-millis:60000}")
+    private long statusCheckDelay;
+
+    @Value("${notify.max-status-check-retries:5}")
+    private int maxStatusCheckRetries;
+
     @Bean
-    public NotificationClient notificationClient(
-        @Value("${notify.api-key}") String apiKey
-    ) {
+    public NotificationClient notificationClient() {
         return new NotificationClient(apiKey);
+    }
+
+    @Bean
+    public long statusCheckDelay() {
+        return statusCheckDelay;
+    }
+
+    @Bean
+    public int maxStatusCheckRetries() {
+        return maxStatusCheckRetries;
     }
 }
