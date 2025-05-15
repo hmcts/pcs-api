@@ -1,12 +1,15 @@
 package uk.gov.hmcts.reform.pcs.notify.service;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataAccessException;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import uk.gov.hmcts.reform.pcs.notify.domain.CaseNotification;
 import uk.gov.hmcts.reform.pcs.notify.exception.NotificationException;
 import uk.gov.hmcts.reform.pcs.notify.model.EmailNotificationRequest;
+import uk.gov.hmcts.reform.pcs.notify.model.NotificationStatus;
+import uk.gov.hmcts.reform.pcs.notify.repository.NotificationRepository;
 import uk.gov.service.notify.NotificationClient;
 import uk.gov.service.notify.NotificationClientException;
 import uk.gov.service.notify.SendEmailResponse;
@@ -19,15 +22,18 @@ import java.util.concurrent.CompletionException;
 import java.util.concurrent.TimeUnit;
 
 @Service
+@Slf4j
 public class NotificationService {
-    private static final Logger log = LoggerFactory.getLogger(NotificationService.class);
     private final NotificationClient notificationClient;
+    private final NotificationRepository notificationRepository;
     private final long statusCheckDelay;
 
     public NotificationService(
         NotificationClient notificationClient,
+        NotificationRepository notificationRepository,
         @Value("${notify.status-check-delay-millis}") long statusCheckDelay) {
         this.notificationClient = notificationClient;
+        this.notificationRepository = notificationRepository;
         this.statusCheckDelay = statusCheckDelay;
     }
 
@@ -37,6 +43,9 @@ public class NotificationService {
         final String templateId = emailRequest.getTemplateId();
         final Map<String, Object> personalisation = emailRequest.getPersonalisation();
         final String referenceId = UUID.randomUUID().toString();
+
+        // Save notification to database
+        createCaseNotification(emailRequest.getEmailAddress(), "Email", UUID.randomUUID());
 
         try {
             sendEmailResponse = notificationClient.sendEmail(
@@ -92,5 +101,30 @@ public class NotificationService {
                 throw new CompletionException(e);
             }
         });
+    }
+
+    CaseNotification createCaseNotification(String recipient, String type, UUID caseId) {
+        CaseNotification toSaveNotification = new CaseNotification();
+        toSaveNotification.setCaseId(caseId);
+        // Use the toString() method of the enum to get the string value
+        toSaveNotification.setStatus(NotificationStatus.PENDING_SCHEDULE.toString());
+        toSaveNotification.setType(type);
+        toSaveNotification.setRecipient(recipient);
+
+        try {
+            CaseNotification savedNotification = notificationRepository.save(toSaveNotification);
+            log.info(
+                "Case Notification with ID {} has been saved to the database", savedNotification.getNotificationId()
+            );
+            return savedNotification;
+        } catch (DataAccessException dataAccessException) {
+            log.error(
+                "Failed to save Case Notification with Case ID: {}. Reason: {}",
+                toSaveNotification.getCaseId(),
+                dataAccessException.getMessage(),
+                dataAccessException
+            );
+            throw new NotificationException("Failed to save Case Notification.", dataAccessException);
+        }
     }
 }
