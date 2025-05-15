@@ -12,7 +12,10 @@ def component = "api"
 
 def secrets = [
   'pcs-${env}': [
-    secret('pcs-api-s2s-secret', 'PCS_API_S2S_SECRET')
+    secret('pcs-api-s2s-secret', 'PCS_API_S2S_SECRET'),
+    secret('idam-system-user-name', 'IDAM_SYSTEM_USERNAME'),
+    secret('idam-system-user-password', 'IDAM_SYSTEM_USER_PASSWORD'),
+    secret('pcs-api-idam-secret', 'PCS_API_IDAM_SECRET')
   ]
 ]
 
@@ -30,12 +33,13 @@ GradleBuilder builder = new GradleBuilder(this, product)
 withPipeline(type, product, component) {
   def githubApi = new GithubAPI(this)
   env.IDAM_S2S_AUTH_URL = "http://rpe-service-auth-provider-aat.service.core-compute-aat.internal"
+  env.IDAM_API_URL = "https://idam-api.aat.platform.hmcts.net"
   loadVaultSecrets(secrets)
   enableDbMigration('pcs')
 
   onPR() {
     // Skipping PACT publish on PRs until contracts are verified and CONSUMER_DEPLOY_CHECK can be added
-    //enablePactAs([AppPipelineDsl.PactRoles.CONSUMER])
+    // enablePactAs([AppPipelineDsl.PactRoles.CONSUMER])
     setPreviewEnvVars()
     if (githubApi.getLabelsbyPattern(env.BRANCH_NAME, "pr-values:ccd").size() > 0) {
       enableHighLevelDataSetup()
