@@ -195,6 +195,7 @@ tasks.register('runE2eFirefoxTests', Exec) {
 tasks.register('contract', Test) {
   description = 'Runs the consumer Pact tests'
   useJUnitPlatform()
+  systemProperty 'flyway.enabled', 'false'
   testClassesDirs = sourceSets.contractTest.output.classesDirs
   classpath = sourceSets.contractTest.runtimeClasspath
   systemProperty 'pact.rootDir', "pacts"
