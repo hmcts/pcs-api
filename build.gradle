@@ -197,7 +197,6 @@ tasks.register('contract', Test) {
   useJUnitPlatform()
   testClassesDirs = sourceSets.contractTest.output.classesDirs
   classpath = sourceSets.contractTest.runtimeClasspath
-
   systemProperty 'pact.rootDir', "pacts"
 }
 
