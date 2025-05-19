@@ -32,7 +32,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @ExtendWith(PactConsumerTestExt.class)
 @ExtendWith(SpringExtension.class)
 @PactTestFor(providerName = "referenceData_location", port = "8089")
-@SpringBootTest(classes = LocationReferenceApi.class)
+@SpringBootTest(classes = {LocationReferenceApi.class, DisableFlywayConfig.class})
 @EnableFeignClients(basePackages = {"uk.gov.hmcts.reform.idam.client", "uk.gov.hmcts.reform.pcs.location.service.api"})
 
 public class LocationReferenceDataApiConsumerTest {

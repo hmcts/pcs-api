@@ -19,6 +19,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.gov.hmcts.reform.authorisation.ServiceAuthorisationApi;
+import uk.gov.hmcts.reform.pcs.location.service.api.LocationReferenceApi;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -30,7 +31,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @ExtendWith(PactConsumerTestExt.class)
 @ExtendWith(SpringExtension.class)
 @PactTestFor(providerName = "s2s_auth", port = "5050")
-@SpringBootTest(classes = ServiceAuthorisationApi.class)
+@SpringBootTest(classes = {ServiceAuthorisationApi.class, DisableFlywayConfig.class})
 @EnableFeignClients(basePackages = "uk.gov.hmcts.reform.idam.client")
 
 public class ServiceAuthorisationConsumerTest {
