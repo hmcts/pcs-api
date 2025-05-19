@@ -5,14 +5,14 @@ security:
 spring:
   flyway:
     enabled: true
-    locations: classpath:db/migration,classpath:db/testdata
+    locations: classpath:db/migration
   sql:
     init:
-      mode: never
+      mode: always
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
-      ddl-auto: none
+      ddl-auto: validate
       dialect: org.hibernate.dialect.PostgreSQLDialect
       format_sql: true
       show-sql: ${SPRING_JPA_SHOW_SQL:false}
@@ -23,8 +23,13 @@ spring:
       hibernate.format_sql: true
       show-dql: true
 
+flyway:
+  noop:
+    strategy: false
+
 logging:
   level:
     uk.gov.hmcts.reform.pcs: DEBUG
+
 testing-support:
   enabled: true

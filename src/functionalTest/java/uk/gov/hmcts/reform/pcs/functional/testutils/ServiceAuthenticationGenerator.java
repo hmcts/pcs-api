@@ -1,7 +1,7 @@
 package uk.gov.hmcts.reform.pcs.functional.testutils;
 
-import io.restassured.RestAssured;
-import io.restassured.response.Response;
+import net.serenitybdd.rest.SerenityRest;
+import uk.gov.hmcts.reform.pcs.functional.config.TestConstants;
 
 import java.util.Map;
 
@@ -10,16 +10,14 @@ import static org.springframework.http.HttpHeaders.CONTENT_TYPE;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 public class ServiceAuthenticationGenerator {
-
     private final String s2sUrl = System.getenv("IDAM_S2S_AUTH_URL");
-    private final String microservice = "pcs_api";
 
     public String generate() {
-        return generate(this.microservice);
+        return generate(TestConstants.PCS_API);
     }
 
     public String generate(final String microservice) {
-        final Response response = RestAssured
+        SerenityRest
             .given()
             .relaxedHTTPSValidation()
             .baseUri(s2sUrl)
@@ -29,17 +27,17 @@ public class ServiceAuthenticationGenerator {
             .post("/testing-support/lease")
             .andReturn();
 
-        if (response.statusCode() != 200) {
+        if (SerenityRest.lastResponse().statusCode() != 200) {
             throw new RuntimeException(String.format(
                 "Failed to generate S2S token for '%s'. Status code: %d. Response: %s",
                 microservice,
-                response.statusCode(),
-                response.asString()
+                SerenityRest.lastResponse().statusCode(),
+                SerenityRest.lastResponse().asString()
             ));
         }
 
-        assertThat(response.getStatusCode()).isEqualTo(200);
+        assertThat(SerenityRest.lastResponse().getStatusCode()).isEqualTo(200);
 
-        return response.getBody().asString();
+        return SerenityRest.lastResponse().getBody().asString();
     }
 }

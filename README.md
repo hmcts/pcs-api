@@ -88,6 +88,15 @@ There is no need to remove postgres and java or similar core images.
 
 The Functional tests use [Rest Assured](https://rest-assured.io) and [Serenity](https://serenity-bdd.github.io) for reporting, and are located in the `/src/functionalTest` directory.
 
+The following environment variables are needed to run the tests:
+- PCS_API_S2S_SECRET
+- TEST_URL
+- IDAM_S2S_AUTH_URL
+- IDAM_API_URL
+- IDAM_SYSTEM_USERNAME
+- IDAM_SYSTEM_USER_PASSWORD
+- PCS_API_IDAM_SECRET
+
 To run the tests, use:
 ```bash
 ./gradlew functional
