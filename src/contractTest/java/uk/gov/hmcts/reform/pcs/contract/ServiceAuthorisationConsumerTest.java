@@ -19,7 +19,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.gov.hmcts.reform.authorisation.ServiceAuthorisationApi;
-import uk.gov.hmcts.reform.pcs.location.service.api.LocationReferenceApi;
 
 import java.util.HashMap;
 import java.util.Map;
