@@ -198,9 +198,6 @@ tasks.register('contract', Test) {
   testClassesDirs = sourceSets.contractTest.output.classesDirs
   classpath = sourceSets.contractTest.runtimeClasspath
 
-  environment 'PCS_DB_PASSWORD', System.getenv('PCS_DB_PASSWORD')
-  environment 'PCS_DB_USER_NAME', System.getenv('PCS_DB_USER_NAME')
-
   systemProperty 'pact.rootDir', "pacts"
 }
 
