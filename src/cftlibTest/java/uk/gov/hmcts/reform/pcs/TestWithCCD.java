@@ -1,6 +1,9 @@
 package uk.gov.hmcts.reform.pcs;
 
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.SneakyThrows;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
@@ -28,6 +31,9 @@ public class TestWithCCD extends CftlibTest {
     @Autowired
     private IdamClient idamClient;
 
+    @Autowired
+    private ObjectMapper mapper;
+
     CaseDetails caseDetails;
     String idamToken;
     String s2sToken;
@@ -43,14 +49,27 @@ public class TestWithCCD extends CftlibTest {
     @Order(1)
     @Test
     public void createsTestCase() {
-        var r = ccdApi.startCase(idamToken, s2sToken, "PCS", "createTestApplication");
+        testCreateCase("createTestApplication");
+    }
+
+    @Order(2)
+    @Test
+    public void createsTestCaseDecentralised() throws JsonProcessingException {
+        testCreateCase("createTestApplicationDecentralised");
+    }
+
+    @SneakyThrows
+    private void testCreateCase(String event) {
+        var r = ccdApi.startCase(idamToken, s2sToken, "PCS", event);
         var content = CaseDataContent.builder()
             .data(PCSCase.builder().caseDescription("Foo").build())
-            .event(Event.builder().id("createTestApplication").build())
+            .event(Event.builder().id(event).build())
             .eventToken(r.getToken())
             .build();
         caseDetails = ccdApi.submitForCaseworker(idamToken, s2sToken, userId,
-                                                 "CIVIL", "PCS", false, content);
+            "CIVIL", "PCS", false, content);
         assertThat(caseDetails.getId()).isNotNull();
+        var result = mapper.readValue(mapper.writeValueAsString(caseDetails.getData()), PCSCase.class);
+        assertThat(result.getCaseDescription()).isEqualTo("Foo");
     }
 }

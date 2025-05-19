@@ -37,6 +37,7 @@ public class CCDCaseRepository extends DecentralisedCaseRepository<PCSCase> {
         // Translate it into the CCD model.
         return
             PCSCase.builder()
+                .caseDescription(pcsCase.getCaseDescription())
                 .exampleTabMarkdown(renderExampleTab(pcsCase))
                 .build();
     }
