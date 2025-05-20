@@ -46,15 +46,20 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
 
         var label = "Applicant Forename";
         builder.searchInputFields()
+            .caseReferenceField()
             .field(PCSCase::getApplicantForename, label);
         builder.searchCasesFields()
+            .caseReferenceField()
             .field(PCSCase::getApplicantForename, label);
 
         builder.searchResultFields()
+            .caseReferenceField()
             .field(PCSCase::getApplicantForename, label);
         builder.workBasketInputFields()
+            .caseReferenceField()
             .field(PCSCase::getApplicantForename, label);
         builder.workBasketResultFields()
+            .caseReferenceField()
             .field(PCSCase::getApplicantForename, label);
 
         builder.tab("Example", "Example Tab")
