@@ -11,8 +11,12 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
+import org.springframework.boot.autoconfigure.http.HttpMessageConvertersAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.cloud.openfeign.EnableFeignClients;
+import org.springframework.cloud.openfeign.FeignAutoConfiguration;
+import org.springframework.cloud.openfeign.FeignClientsConfiguration;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
@@ -25,13 +29,13 @@ import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@EnableAutoConfiguration
+@ImportAutoConfiguration({FeignAutoConfiguration.class, FeignClientsConfiguration.class,
+    HttpMessageConvertersAutoConfiguration.class})
+@EnableFeignClients(clients = ServiceAuthorisationApi.class)
 @TestPropertySource(properties = "idam.s2s-auth.url=http://localhost:5050")
 @ExtendWith(PactConsumerTestExt.class)
 @ExtendWith(SpringExtension.class)
 @PactTestFor(providerName = "s2s_auth", port = "5050")
-@SpringBootTest(classes = {ServiceAuthorisationApi.class, DisableFlywayConfig.class})
-@EnableFeignClients(basePackages = "uk.gov.hmcts.reform.idam.client")
 
 public class ServiceAuthorisationConsumerTest {
 
