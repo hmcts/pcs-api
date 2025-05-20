@@ -5,7 +5,7 @@ import uk.gov.hmcts.rse.CftlibExec
 buildscript {
   ext {
     flywayVersion = '11.8.2'
-    serenityBddVersion = '4.2.23'
+    serenityBddVersion = '4.2.26'
   }
   dependencies {
     classpath("org.flywaydb:flyway-database-postgresql:$flywayVersion")
@@ -284,7 +284,7 @@ ext {
   testcontainersVersion = "1.21.0"
   springFrameworkBootVersion = "3.4.5"
   lombokVersion = "1.18.38"
-  springSecurityVersion = "6.4.5"
+  springSecurityVersion = "6.5.0"
   pactVersion = "4.6.17"
 }
 
