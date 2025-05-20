@@ -11,13 +11,16 @@ import au.com.dius.pact.core.model.annotations.Pact;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.cloud.openfeign.EnableFeignClients;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
+import org.springframework.cloud.openfeign.FeignAutoConfiguration;
+import org.springframework.cloud.openfeign.FeignClientsConfiguration;
+import org.springframework.boot.autoconfigure.http.HttpMessageConvertersAutoConfiguration;
 import uk.gov.hmcts.reform.pcs.location.model.CourtVenue;
 import uk.gov.hmcts.reform.pcs.location.service.api.LocationReferenceApi;
 
@@ -27,13 +30,14 @@ import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@EnableAutoConfiguration
-@TestPropertySource(properties = "refdata.location.url=http://localhost:8089")
+@ImportAutoConfiguration({FeignAutoConfiguration.class, FeignClientsConfiguration.class,
+    HttpMessageConvertersAutoConfiguration.class})
+@EnableFeignClients(clients = LocationReferenceApi.class)
+@Import(LocationReferenceApi.class)
+@TestPropertySource(properties = {"location-reference.api-url=http://localhost:8089"})
 @ExtendWith(PactConsumerTestExt.class)
 @ExtendWith(SpringExtension.class)
 @PactTestFor(providerName = "referenceData_location", port = "8089")
-@SpringBootTest(classes = {LocationReferenceApi.class, DisableFlywayConfig.class})
-@EnableFeignClients(basePackages = {"uk.gov.hmcts.reform.idam.client", "uk.gov.hmcts.reform.pcs.location.service.api"})
 
 public class LocationReferenceDataApiConsumerTest {
 
