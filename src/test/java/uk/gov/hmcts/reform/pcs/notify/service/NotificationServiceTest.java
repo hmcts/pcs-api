@@ -144,7 +144,8 @@ class NotificationServiceTest {
 
         assertThatThrownBy(() -> 
             notificationService.createCaseNotification(recipient, type, caseId)
-        ).isInstanceOf(NotificationException.class).hasMessage("Failed to save Case Notification.");
+        ).isInstanceOf(NotificationException.class)
+            .hasMessage("Failed to save Case Notification.");
         verify(notificationRepository).save(any(CaseNotification.class));
     }
 
@@ -209,8 +210,11 @@ class NotificationServiceTest {
     void shouldLogErrorInUpdateNotificationStatusInDatabaseIfExceptionThrown() throws Exception {
         String notificationId = UUID.randomUUID().toString();
         Notification notification = mock(Notification.class);
-        when(notificationRepository.findByProviderNotificationId(UUID.fromString(notificationId))).thenThrow(new RuntimeException("DB error"));
-        var method = notificationService.getClass().getDeclaredMethod("updateNotificationStatusInDatabase", Notification.class, String.class);
+        when(notificationRepository.findByProviderNotificationId(UUID.fromString(notificationId)))
+            .thenThrow(new RuntimeException("DB error"));
+        var method = notificationService.getClass().getDeclaredMethod(
+            "updateNotificationStatusInDatabase", Notification.class, String.class
+        );
         method.setAccessible(true);
         method.invoke(notificationService, notification, notificationId);
         // No exception means the branch was hit
@@ -221,7 +225,9 @@ class NotificationServiceTest {
     void shouldLogErrorInHandleStatusCheckExceptionForNotificationClientException() throws Exception {
         String notificationId = UUID.randomUUID().toString();
         NotificationClientException ex = new NotificationClientException("error");
-        var method = notificationService.getClass().getDeclaredMethod("handleStatusCheckException", String.class, Exception.class);
+        var method = notificationService.getClass().getDeclaredMethod(
+            "handleStatusCheckException", String.class, Exception.class
+        );
         method.setAccessible(true);
         method.invoke(notificationService, notificationId, ex);
         // No exception means the branch was hit
@@ -233,9 +239,13 @@ class NotificationServiceTest {
         CaseNotification notification = new CaseNotification();
         NotificationStatus status = NotificationStatus.SENDING;
         when(notificationRepository.save(notification)).thenReturn(notification);
-        var method = notificationService.getClass().getDeclaredMethod("updateNotificationStatus", CaseNotification.class, NotificationStatus.class, UUID.class);
+        var method = notificationService.getClass().getDeclaredMethod(
+            "updateNotificationStatus", CaseNotification.class, NotificationStatus.class, UUID.class
+        );
         method.setAccessible(true);
-        Optional<?> result = (Optional<?>) method.invoke(notificationService, notification, status, null);
+        Optional<?> result = (Optional<?>) method.invoke(
+            notificationService, notification, status, null
+        );
         assertThat(result).isPresent();
         assertThat(notification.getSubmittedAt()).isNotNull();
     }
@@ -247,9 +257,13 @@ class NotificationServiceTest {
         NotificationStatus status = NotificationStatus.SUBMITTED;
         UUID providerId = UUID.randomUUID();
         when(notificationRepository.save(notification)).thenReturn(notification);
-        var method = notificationService.getClass().getDeclaredMethod("updateNotificationStatus", CaseNotification.class, NotificationStatus.class, UUID.class);
+        var method = notificationService.getClass().getDeclaredMethod(
+            "updateNotificationStatus", CaseNotification.class, NotificationStatus.class, UUID.class
+        );
         method.setAccessible(true);
-        Optional<?> result = (Optional<?>) method.invoke(notificationService, notification, status, providerId);
+        Optional<?> result = (Optional<?>) method.invoke(
+            notificationService, notification, status, providerId
+        );
         assertThat(result).isPresent();
         assertThat(notification.getProviderNotificationId()).isEqualTo(providerId);
     }
@@ -261,8 +275,10 @@ class NotificationServiceTest {
             "test@example.com", "templateId", new HashMap<>(), "reference", "emailReplyToId"
         );
         NotificationService spyService = org.mockito.Mockito.spy(notificationService);
-        org.mockito.Mockito.lenient().doReturn(CompletableFuture.failedFuture(new RuntimeException("Async error")))
-            .when(spyService).checkNotificationStatus(org.mockito.ArgumentMatchers.anyString());
+        org.mockito.Mockito.lenient()
+            .doReturn(CompletableFuture.failedFuture(new RuntimeException("Async error")))
+            .when(spyService)
+            .checkNotificationStatus(org.mockito.ArgumentMatchers.anyString());
         try {
             spyService.sendEmail(emailRequest);
         } catch (Exception ignored) {
@@ -276,9 +292,13 @@ class NotificationServiceTest {
         CaseNotification notification = new CaseNotification();
         NotificationStatus status = NotificationStatus.SUBMITTED;
         when(notificationRepository.save(notification)).thenReturn(notification);
-        var method = notificationService.getClass().getDeclaredMethod("updateNotificationStatus", CaseNotification.class, NotificationStatus.class, UUID.class);
+        var method = notificationService.getClass().getDeclaredMethod(
+            "updateNotificationStatus", CaseNotification.class, NotificationStatus.class, UUID.class
+        );
         method.setAccessible(true);
-        Optional<?> result = (Optional<?>) method.invoke(notificationService, notification, status, null);
+        Optional<?> result = (Optional<?>) method.invoke(
+            notificationService, notification, status, null
+        );
         assertThat(result).isPresent();
         assertThat(notification.getStatus()).isEqualTo(status);
         assertThat(notification.getProviderNotificationId()).isNull();
@@ -292,9 +312,13 @@ class NotificationServiceTest {
         NotificationStatus status = NotificationStatus.SENDING;
         UUID providerId = UUID.randomUUID();
         when(notificationRepository.save(notification)).thenReturn(notification);
-        var method = notificationService.getClass().getDeclaredMethod("updateNotificationStatus", CaseNotification.class, NotificationStatus.class, UUID.class);
+        var method = notificationService.getClass().getDeclaredMethod(
+            "updateNotificationStatus", CaseNotification.class, NotificationStatus.class, UUID.class
+        );
         method.setAccessible(true);
-        Optional<?> result = (Optional<?>) method.invoke(notificationService, notification, status, providerId);
+        Optional<?> result = (Optional<?>) method.invoke(
+            notificationService, notification, status, providerId
+        );
         assertThat(result).isPresent();
         assertThat(notification.getStatus()).isEqualTo(status);
         assertThat(notification.getProviderNotificationId()).isEqualTo(providerId);
@@ -305,7 +329,9 @@ class NotificationServiceTest {
     @DisplayName("Should log warning if updateNotificationWithStatus called with invalid status")
     void shouldLogWarningIfUpdateNotificationWithStatusInvalid() throws Exception {
         CaseNotification notification = new CaseNotification();
-        var method = notificationService.getClass().getDeclaredMethod("updateNotificationWithStatus", CaseNotification.class, String.class);
+        var method = notificationService.getClass().getDeclaredMethod(
+            "updateNotificationWithStatus", CaseNotification.class, String.class
+        );
         method.setAccessible(true);
         method.invoke(notificationService, notification, "INVALID_STATUS");
         // No exception means the branch was hit
@@ -315,9 +341,13 @@ class NotificationServiceTest {
     @DisplayName("Should update notification with valid status in updateNotificationWithStatus")
     void shouldUpdateNotificationWithStatusValid() throws Exception {
         CaseNotification notification = new CaseNotification();
-        var method = notificationService.getClass().getDeclaredMethod("updateNotificationWithStatus", CaseNotification.class, String.class);
+        var method = notificationService.getClass().getDeclaredMethod(
+            "updateNotificationWithStatus", CaseNotification.class, String.class
+        );
         method.setAccessible(true);
-        method.invoke(notificationService, notification, NotificationStatus.SUBMITTED.toString());
+        method.invoke(
+            notificationService, notification, NotificationStatus.SUBMITTED.toString()
+        );
         // No exception means the branch was hit
     }
 
@@ -326,8 +356,11 @@ class NotificationServiceTest {
     void shouldLogWarningIfProviderNotificationNotFoundInUpdateNotificationStatusInDatabase() throws Exception {
         String notificationId = UUID.randomUUID().toString();
         Notification notification = mock(Notification.class);
-        when(notificationRepository.findByProviderNotificationId(UUID.fromString(notificationId))).thenReturn(Optional.empty());
-        var method = notificationService.getClass().getDeclaredMethod("updateNotificationStatusInDatabase", Notification.class, String.class);
+        when(notificationRepository.findByProviderNotificationId(UUID.fromString(notificationId)))
+            .thenReturn(Optional.empty());
+        var method = notificationService.getClass().getDeclaredMethod(
+            "updateNotificationStatusInDatabase", Notification.class, String.class
+        );
         method.setAccessible(true);
         method.invoke(notificationService, notification, notificationId);
         // No exception means the branch was hit
@@ -338,8 +371,11 @@ class NotificationServiceTest {
     void shouldLogErrorIfFindByProviderNotificationIdThrowsInUpdateNotificationStatusInDatabase() throws Exception {
         String notificationId = UUID.randomUUID().toString();
         Notification notification = mock(Notification.class);
-        when(notificationRepository.findByProviderNotificationId(UUID.fromString(notificationId))).thenThrow(new RuntimeException("DB error"));
-        var method = notificationService.getClass().getDeclaredMethod("updateNotificationStatusInDatabase", Notification.class, String.class);
+        when(notificationRepository.findByProviderNotificationId(UUID.fromString(notificationId)))
+            .thenThrow(new RuntimeException("DB error"));
+        var method = notificationService.getClass().getDeclaredMethod(
+            "updateNotificationStatusInDatabase", Notification.class, String.class
+        );
         method.setAccessible(true);
         method.invoke(notificationService, notification, notificationId);
         // No exception means the branch was hit
@@ -352,15 +388,20 @@ class NotificationServiceTest {
         Notification notification = mock(Notification.class);
         // Branch: caseNotification != null
         CaseNotification found = new CaseNotification();
-        when(notificationRepository.findByProviderNotificationId(UUID.fromString(notificationId))).thenReturn(Optional.of(found));
-        var method = notificationService.getClass().getDeclaredMethod("updateNotificationStatusInDatabase", Notification.class, String.class);
+        when(notificationRepository.findByProviderNotificationId(UUID.fromString(notificationId)))
+            .thenReturn(Optional.of(found));
+        var method = notificationService.getClass().getDeclaredMethod(
+            "updateNotificationStatusInDatabase", Notification.class, String.class
+        );
         method.setAccessible(true);
         method.invoke(notificationService, notification, notificationId);
         // Branch: caseNotification == null
-        when(notificationRepository.findByProviderNotificationId(UUID.fromString(notificationId))).thenReturn(Optional.empty());
+        when(notificationRepository.findByProviderNotificationId(UUID.fromString(notificationId)))
+            .thenReturn(Optional.empty());
         method.invoke(notificationService, notification, notificationId);
         // Branch: catch block
-        when(notificationRepository.findByProviderNotificationId(UUID.fromString(notificationId))).thenThrow(new RuntimeException("DB error"));
+        when(notificationRepository.findByProviderNotificationId(UUID.fromString(notificationId)))
+            .thenThrow(new RuntimeException("DB error"));
         method.invoke(notificationService, notification, notificationId);
     }
 
@@ -369,7 +410,9 @@ class NotificationServiceTest {
     void shouldHitLogErrorAndInterruptInHandleStatusCheckException() throws Exception {
         String notificationId = UUID.randomUUID().toString();
         InterruptedException interrupted = new InterruptedException("interrupted");
-        var method = notificationService.getClass().getDeclaredMethod("handleStatusCheckException", String.class, Exception.class);
+        var method = notificationService.getClass().getDeclaredMethod(
+            "handleStatusCheckException", String.class, Exception.class
+        );
         method.setAccessible(true);
         Thread.currentThread().interrupt(); // Set interrupt flag
         method.invoke(notificationService, notificationId, interrupted);
