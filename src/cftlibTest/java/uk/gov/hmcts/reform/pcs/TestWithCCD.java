@@ -2,22 +2,13 @@ package uk.gov.hmcts.reform.pcs;
 
 
 import java.time.Duration;
-import java.util.List;
-import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.notNullValue;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import groovyjarjarantlr4.v4.parse.GrammarTreeVisitor;
 import lombok.SneakyThrows;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.ContentType;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.http.util.EntityUtils;
 import org.hamcrest.MatcherAssert;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Order;
