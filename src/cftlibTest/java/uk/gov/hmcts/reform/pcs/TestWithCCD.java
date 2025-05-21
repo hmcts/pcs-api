@@ -1,11 +1,23 @@
 package uk.gov.hmcts.reform.pcs;
 
 
+import java.time.Duration;
+import java.util.List;
+import java.util.Map;
+
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.awaitility.Awaitility.await;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.notNullValue;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import groovyjarjarantlr4.v4.parse.GrammarTreeVisitor;
 import lombok.SneakyThrows;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.ContentType;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.util.EntityUtils;
 import org.hamcrest.MatcherAssert;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Order;
@@ -87,5 +99,34 @@ public class TestWithCCD extends CftlibTest {
         var firstEvent = events.getFirst();
         MatcherAssert.assertThat(firstEvent.getStateId(), equalTo("Open"));
         MatcherAssert.assertThat(firstEvent.getStateName(), equalTo("Open"));
+    }
+
+    @Order(6)
+    @SneakyThrows
+    @Test
+    void searchCases() {
+        // Give some time to index the case created by the previous test
+        Thread.sleep(600);
+        await()
+            .timeout(Duration.ofSeconds(10))
+            .ignoreExceptions()
+            .until(this::caseAppearsInSearch);
+    }
+
+    @SneakyThrows
+    private Boolean caseAppearsInSearch() {
+        var query = String.format("""
+            {
+              "native_es_query":{"from":0,"query":{"bool":{"must":[
+              {"term":{"reference":"%d"}}
+              ]}},"size":25,"sort":[{"_id": "desc"}]},
+              "supplementary_data":["*"]
+            }""", caseDetails.getId());
+        var result = ccdApi.searchCases(idamToken, s2sToken, "PCS", query);
+        assertThat(result.getTotal()).isEqualTo(1);
+
+        assertThat(result.getCases().getFirst().getData().get("caseDescription")).isEqualTo("Foo");
+
+        return true;
     }
 }
