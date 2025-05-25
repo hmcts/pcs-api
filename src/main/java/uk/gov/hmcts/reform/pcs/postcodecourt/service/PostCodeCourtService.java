@@ -21,8 +21,10 @@ import io.vavr.control.Try;
 @Slf4j
 public class PostCodeCourtService {
 
+    private static final int MIN_POSTCODE_LENGTH = 5;
     private final PostCodeCourtRepository postCodeCourtRepository;
     private final LocationReferenceService locationReferenceService;
+
 
     public List<Court> getCountyCourtsByPostCode(String postcode, String authorisation) {
 
@@ -53,23 +55,26 @@ public class PostCodeCourtService {
         }
         postcode = postcode.replaceAll("\\s", "").toUpperCase(Locale.ROOT);
         List<PostCodeCourtEntity> courts = postCodeCourtRepository.findByIdPostCode(postcode);
-
-        if (!courts.isEmpty()) {
-            return courts;
+        if (courts.isEmpty()) {
+            log.info("Full postcode match not found for: {}, Attempting partial match.", postcode);
+            courts = tryPartialPostCodeLookup(postcode);
         }
-        //Trimming post code for partial match
-        String trimmedPostCode = postcode;
+        return courts;
+    }
+
+    private List<PostCodeCourtEntity> tryPartialPostCodeLookup(String postcode) {
         int maxTrim = 3;
+        String trimmedPostcode = postcode;
+
         for (int i = 0; i < maxTrim; i++) {
-            log.info("Trimming last character of postcode: {} for partial match", trimmedPostCode);
-            trimmedPostCode = postcode.substring(0, trimmedPostCode.length() - 1);
-            courts = postCodeCourtRepository.findByIdPostCode(trimmedPostCode);
-            if (!courts.isEmpty()) {
-                log.info("Found postcode: {} for partial match", trimmedPostCode);
-                return courts;
+            trimmedPostcode = postcode.substring(0, trimmedPostcode.length() - 1);
+            log.info("Attempting partial match lookup for trimmed postcode: {}", trimmedPostcode);
+            List<PostCodeCourtEntity> result = postCodeCourtRepository.findByIdPostCode(trimmedPostcode);
+            if (!result.isEmpty()) {
+                log.info("Found partial match of {} for postcode: {}", trimmedPostcode, postcode);
+                return result;
             }
         }
-        //Throw exception if no full or partial match is found
         throw new PostCodeNotFoundException("No court mapping found for postcode:" + postcode);
     }
 
