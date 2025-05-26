@@ -322,7 +322,7 @@ dependencies {
   implementation group: 'io.vavr', name: 'vavr', version: '0.10.6'
   annotationProcessor group: 'org.projectlombok', name: 'lombok', version: lombokVersion
 
-  testImplementation group: 'io.rest-assured', name: 'rest-assured', version: '5.5.2'
+  testImplementation group: 'io.rest-assured', name: 'rest-assured', version: '5.5.5'
 
   implementation(group: 'com.github.hmcts', name: 'befta-fw', version: '9.2.4') {
     exclude group: 'org.apache.commons', module: 'commons-compress'
