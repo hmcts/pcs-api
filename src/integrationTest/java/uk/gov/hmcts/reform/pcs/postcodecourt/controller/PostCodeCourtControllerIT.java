@@ -12,9 +12,9 @@ import org.springframework.test.web.reactive.server.WebTestClient;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.pcs.Application;
 import uk.gov.hmcts.reform.pcs.config.AbstractPostgresContainerIT;
+import uk.gov.hmcts.reform.pcs.location.model.CourtVenue;
 import uk.gov.hmcts.reform.pcs.location.service.api.LocationReferenceApi;
 import uk.gov.hmcts.reform.pcs.postcodecourt.entity.PostCodeCourtEntity;
-import uk.gov.hmcts.reform.pcs.location.model.CourtVenue;
 import uk.gov.hmcts.reform.pcs.postcodecourt.entity.PostCodeCourtKey;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.Court;
 import uk.gov.hmcts.reform.pcs.postcodecourt.repository.PostCodeCourtRepository;
@@ -71,10 +71,9 @@ class PostCodeCourtControllerIT extends AbstractPostgresContainerIT {
     @Test
     @DisplayName("Should return valid Http OK and correct response body for known postcodes")
     void shouldReturnHttpOkAndCorrectResponseForKnownPostCodes() {
-        // TODO: Put spaces back into postcodes once HDPI-709 is done
-        String postCode1 = "W37RX";
-        String postCode2 = "W36RS";
-        String postCode3 = "M139PL";
+        String postCode1 = "W3 7RX";
+        String postCode2 = "W3 6RS";
+        String postCode3 = "M13 9PL";
 
         final PostCodeCourtKey id1 = new PostCodeCourtKey(postCode1, 20262);
         final PostCodeCourtKey id2 = new PostCodeCourtKey(postCode2, 36791);
@@ -97,7 +96,6 @@ class PostCodeCourtControllerIT extends AbstractPostgresContainerIT {
         assertPostcodeReturns(postCode1, court1);
         assertPostcodeReturns(postCode2, court2);
         assertPostcodeReturns(postCode3, court3);
-        assertPostcodeReturns("SW1H9EA", null);
     }
 
     private void stubLocationReferenceApi(String epimId, List<CourtVenue> response) {
@@ -132,7 +130,6 @@ class PostCodeCourtControllerIT extends AbstractPostgresContainerIT {
                     }
                 });
     }
-
 
     @DisplayName("Should return empty list when for given postcode's epimId doesn't have any matching county courts.")
     @Test
@@ -176,7 +173,19 @@ class PostCodeCourtControllerIT extends AbstractPostgresContainerIT {
                         .queryParam(POSTCODE, postCode).build())
                 .header(SERVICE_AUTHORIZATION, PCS_SERVICE_AUTH_HEADER)
                 .exchange().expectStatus().isBadRequest();
+    }
 
+    @Test
+    @DisplayName("Should return http Not Found when postcode mapping is not found ")
+    void shouldReturnStatus404WhenPostcodeMappingIsNotFound() {
+        String postCode = "LE2 0QH";
+
+        webTestClient.get()
+            .uri(uriBuilder -> uriBuilder.path(COURTS_ENDPOINT)
+                .queryParam(POSTCODE, postCode).build())
+            .header(SERVICE_AUTHORIZATION, PCS_SERVICE_AUTH_HEADER)
+            .header(AUTHORIZATION, AUTH_HEADER)
+            .exchange().expectStatus().isNotFound();
     }
 
     private void assertingResponseToBeEmptyList(List<PostCodeCourtEntity> all) {
