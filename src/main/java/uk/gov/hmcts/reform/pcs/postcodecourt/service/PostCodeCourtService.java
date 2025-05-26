@@ -21,7 +21,6 @@ import io.vavr.control.Try;
 @Slf4j
 public class PostCodeCourtService {
 
-    private static final int MIN_POSTCODE_LENGTH = 5;
     private final PostCodeCourtRepository postCodeCourtRepository;
     private final LocationReferenceService locationReferenceService;
 
@@ -56,7 +55,7 @@ public class PostCodeCourtService {
         postcode = postcode.replaceAll("\\s", "").toUpperCase(Locale.ROOT);
         List<PostCodeCourtEntity> courts = postCodeCourtRepository.findByIdPostCode(postcode);
         if (courts.isEmpty()) {
-            log.info("Full postcode match not found for: {}, Attempting partial match.", postcode);
+            log.warn("Full postcode match not found for {}, Attempting partial match", postcode);
             courts = tryPartialPostCodeLookup(postcode);
         }
         return courts;
@@ -66,16 +65,16 @@ public class PostCodeCourtService {
         int maxTrim = 3;
         String trimmedPostcode = postcode;
 
-        for (int i = 0; i < maxTrim; i++) {
-            trimmedPostcode = postcode.substring(0, trimmedPostcode.length() - 1);
+        for (int i = 0; i < maxTrim && trimmedPostcode.length() > 1; i++) {
+            trimmedPostcode = trimmedPostcode.substring(0, trimmedPostcode.length() - 1);
             log.info("Attempting partial match lookup for trimmed postcode: {}", trimmedPostcode);
             List<PostCodeCourtEntity> result = postCodeCourtRepository.findByIdPostCode(trimmedPostcode);
             if (!result.isEmpty()) {
-                log.info("Found partial match of {} for postcode: {}", trimmedPostcode, postcode);
+                log.info("Found partial match of {} for postcode {}", trimmedPostcode, postcode);
                 return result;
             }
         }
-        throw new PostCodeNotFoundException("No court mapping found for postcode:" + postcode);
+        throw new PostCodeNotFoundException("No court mapping found for postcode " + postcode);
     }
 
     private List<CourtVenue> safeGetCountyCourts(String authorisation, List<Integer> epimIds) {
