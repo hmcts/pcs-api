@@ -92,8 +92,11 @@ public class DashboardTaskService {
                 Task.builder()
                     .templateId("Task.AAA6.Hearing.UploadDocuments")
                     .templateValues(Map.of(
-                        "deadline", ZonedDateTime.of(LocalDate.of(2025, 5, 20), LocalTime.of(15, 0, 0), ZoneId.of("UTC"))
-                        
+                        "deadline", ZonedDateTime.of(
+                            LocalDate.of(2025, 5, 20), 
+                            LocalTime.of(15, 0, 0), 
+                            ZoneId.of("UTC")
+                        )
                     ))
                     .status("ACTION_NEEDED")
                     .build(),
@@ -110,7 +113,11 @@ public class DashboardTaskService {
                 Task.builder()
                     .templateId("Task.AAA6.Hearing.PayFee")
                     .templateValues(Map.of(
-                        "deadline", ZonedDateTime.of(LocalDate.of(2025, 6, 28), LocalTime.of(15, 0, 0), ZoneId.of("UTC"))
+                        "deadline", ZonedDateTime.of(
+                            LocalDate.of(2025, 6, 28),
+                            LocalTime.of(15, 0, 0),
+                            ZoneId.of("UTC")
+                            )
                     ))
                     .status("ACTION_NEEDED")
                     .build(),
