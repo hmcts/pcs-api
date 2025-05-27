@@ -64,8 +64,14 @@ class DashboardControllerTest {
         // Given
         var caseReference = 5678L;
         var authHeader = "Bearer token";
-        var taskGroup1 = new TaskGroup("Group A", Task.builder().build());
-        var taskGroup2 = new TaskGroup("Group B", Task.builder().build());
+        var taskGroup1 = TaskGroup.builder()
+            .groupId("Group A")
+            .tasks(List.of(Task.builder().build()))
+            .build();
+        var taskGroup2 = TaskGroup.builder()
+            .groupId("Group B")
+            .tasks(List.of(Task.builder().build()))
+            .build();
         var expectedTasks = List.of(taskGroup1, taskGroup2);
 
         when(dashboardTaskService.getTasks(caseReference)).thenReturn(expectedTasks);
