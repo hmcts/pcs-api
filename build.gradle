@@ -350,6 +350,7 @@ tasks.withType(CftlibExec).configureEach {
   environment 'RSE_LIB_ADDITIONAL_DATABASES', 'pcs'
   environment 'POC_APIS_URL', 'http://localhost:3206'
   environment 'SPRING_PROFILES_ACTIVE', 'dev'
+  environment 'XUI_MANAGE_CASES_TAG', 'dev'
 }
 
 // Ensure we cover Cftlib dev & test with our CI checks

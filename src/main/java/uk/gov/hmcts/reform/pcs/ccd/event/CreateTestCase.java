@@ -15,8 +15,8 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.UserRole;
 import uk.gov.hmcts.reform.pcs.entity.PcsCase;
 import uk.gov.hmcts.reform.pcs.repository.PCSCaseRepository;
 
-@Profile("dev") // Non-prod event
-@Component
+//@Profile("dev") // Non-prod event
+//@Component
 public class CreateTestCase implements CCDConfig<PCSCase, State, UserRole> {
     @Autowired
     private PCSCaseRepository repository;

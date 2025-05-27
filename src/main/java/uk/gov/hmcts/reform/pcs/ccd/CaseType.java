@@ -20,18 +20,29 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
         builder.decentralisedCaseType("PCS", "Civil Possessions", "Possessions");
         builder.jurisdiction("CIVIL", "Civil Possessions", "The new one");
 
-        var label = "Applicant Forename";
+        var label = "Case description";
         builder.searchInputFields()
             .field(PCSCase::getCaseDescription, label);
         builder.searchCasesFields()
             .field(PCSCase::getCaseDescription, label);
 
+        builder.searchCasesFields()
+            .field(PCSCase::getState, "State");
+
+
         builder.searchResultFields()
             .field(PCSCase::getCaseDescription, label);
+        builder.searchResultFields()
+                .field(PCSCase::getState, "State");
+
         builder.workBasketInputFields()
             .field(PCSCase::getCaseDescription, label);
         builder.workBasketResultFields()
             .field(PCSCase::getCaseDescription, label);
+
+        builder.workBasketResultFields()
+            .field(PCSCase::getState, "State");
+
 
         builder.tab("Example", "Example Tab")
             .label("myLabel", null, "${exampleTabMarkdown}")

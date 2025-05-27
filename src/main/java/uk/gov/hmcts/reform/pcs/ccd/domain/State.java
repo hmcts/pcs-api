@@ -13,6 +13,12 @@ import uk.gov.hmcts.ccd.sdk.api.CCD;
 public enum State {
 
     @CCD(
+        label = "Pre-Submission",
+        access = {DefaultStateAccess.class}
+    )
+    PreSubmission,
+
+    @CCD(
         label = "Open",
         access = {DefaultStateAccess.class}
     )

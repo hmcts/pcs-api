@@ -39,6 +39,8 @@ public class CCDCaseRepository extends DecentralisedCaseRepository<PCSCase> {
             PCSCase.builder()
                 .caseDescription(pcsCase.getCaseDescription())
                 .exampleTabMarkdown(renderExampleTab(pcsCase))
+                .organisationName("Luton Local Housing")
+                .state("Pre-Submission")
                 .build();
     }
 
@@ -48,7 +50,7 @@ public class CCDCaseRepository extends DecentralisedCaseRepository<PCSCase> {
         Writer writer = new StringWriter();
 
         compiledTemplate.evaluate(writer, Map.of(
-            "description", c.getCaseDescription(),
+            "description", "A possession claim",
             "parties", c.getParties(),
             "caseReference", c.getReference(),
             "time", LocalDateTime.now()

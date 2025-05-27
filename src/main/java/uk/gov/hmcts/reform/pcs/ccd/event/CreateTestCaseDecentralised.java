@@ -12,7 +12,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.UserRole;
 import uk.gov.hmcts.reform.pcs.entity.PcsCase;
 import uk.gov.hmcts.reform.pcs.repository.PCSCaseRepository;
 
-@Component
+//@Component
 public class CreateTestCaseDecentralised implements CCDConfig<PCSCase, State, UserRole> {
     @Autowired
     private PCSCaseRepository repository;
@@ -22,7 +22,7 @@ public class CreateTestCaseDecentralised implements CCDConfig<PCSCase, State, Us
         configBuilder
             .decentralisedEvent("createTestApplicationDecentralised", this::submit, this::start)
             .initialState(State.Open)
-            .name("Create test case")
+            .name("Create test case decentralised")
             .grant(Permission.CRUD, UserRole.CASE_WORKER)
             .fields()
             .page("Create test case")
