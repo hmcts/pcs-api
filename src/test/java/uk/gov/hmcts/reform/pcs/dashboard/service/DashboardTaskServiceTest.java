@@ -62,11 +62,15 @@ class DashboardTaskServiceTest {
 
         TaskGroup taskGroup1 = result.getFirst();
         assertThat(taskGroup1.getGroupId()).isEqualTo("CLAIM");
-        assertThat(taskGroup1.getTask()).isEqualTo(task1);
+        assertThat(taskGroup1.getTasks()).hasSize(1);
+        assertThat(taskGroup1.getTasks().getFirst().getTemplateId()).isEqualTo(task1.getTemplateId());
+        assertThat(taskGroup1.getTasks().getFirst().getStatus()).isEqualTo(task1.getStatus());
 
         TaskGroup taskGroup2 = result.get(1);
         assertThat(taskGroup2.getGroupId()).isEqualTo("HEARING");
-        assertThat(taskGroup2.getTask()).isEqualTo(task2);
+        assertThat(taskGroup2.getTasks()).hasSize(1);
+        assertThat(taskGroup2.getTasks().getFirst().getTemplateId()).isEqualTo(task2.getTemplateId());
+        assertThat(taskGroup2.getTasks().getFirst().getStatus()).isEqualTo(task2.getStatus());
     }
 
     @Test

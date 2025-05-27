@@ -11,7 +11,9 @@ import uk.gov.hmcts.reform.pcs.dashboard.model.TaskGroup;
 import uk.gov.hmcts.reform.pcs.dashboard.service.DashboardNotificationService;
 import uk.gov.hmcts.reform.pcs.dashboard.service.DashboardTaskService;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
@@ -64,15 +66,31 @@ class DashboardControllerTest {
         // Given
         var caseReference = 5678L;
         var authHeader = "Bearer token";
-        var taskGroup1 = TaskGroup.builder()
-            .groupId("Group A")
-            .tasks(List.of(Task.builder().build()))
+        
+        // Create simplified task groups that match the service structure
+        var claimGroup = TaskGroup.builder()
+            .groupId("CLAIM")
+            .tasks(List.of(
+                Task.builder()
+                    .templateId("Task.AAA6.Claim.ViewClaim")
+                    .templateValues(Collections.emptyMap())
+                    .status("AVAILABLE")
+                    .build()
+            ))
             .build();
-        var taskGroup2 = TaskGroup.builder()
-            .groupId("Group B")
-            .tasks(List.of(Task.builder().build()))
+            
+        var hearingGroup = TaskGroup.builder()
+            .groupId("HEARING")
+            .tasks(List.of(
+                Task.builder()
+                    .templateId("Task.AAA6.Hearing.ViewHearing")
+                    .templateValues(Collections.emptyMap())
+                    .status("AVAILABLE")
+                    .build()
+            ))
             .build();
-        var expectedTasks = List.of(taskGroup1, taskGroup2);
+            
+        var expectedTasks = List.of(claimGroup, hearingGroup);
 
         when(dashboardTaskService.getTasks(caseReference)).thenReturn(expectedTasks);
 
