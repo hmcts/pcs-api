@@ -42,17 +42,16 @@ class CourtsEndpointTests {
         apiSteps.theResponseBodyMatchesTheExpectedList(CourtConstants.EXPECTED_COURT_LIST);
     }
 
-    @Title("Courts endpoint - returns 200 and empty list for postcode that doesn't exist in the database "
+    @Title("Courts endpoint - returns 404 for postcode that doesn't exist in the database "
         + "and uses pcs_frontend S2S token")
     @Test
-    void shouldReturnEmptyListForPostcodeNotExist() {
+    void shouldReturn404ForPostcodeNotExist() {
         apiSteps.requestIsPreparedWithAppropriateValues();
         apiSteps.theRequestContainsValidServiceToken(TestConstants.PCS_FRONTEND);
         apiSteps.theRequestContainsValidIdamToken();
         apiSteps.theRequestContainsTheQueryParameter("postcode", CourtConstants.POSTCODE_INVALID);
         apiSteps.callIsSubmittedToTheEndpoint("Courts", "GET");
-        apiSteps.checkStatusCode(200);
-        apiSteps.theResponseBodyIsAnEmptyArray();
+        apiSteps.checkStatusCode(404);
     }
 
     @Title("Courts endpoint - return 403 Forbidden when the request uses an unauthorised S2S token")
