@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.testingsupport.endpoint;
+package uk.gov.hmcts.reform.pcs.testingsupport.exception;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

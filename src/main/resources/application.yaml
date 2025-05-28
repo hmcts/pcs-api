@@ -102,3 +102,9 @@ notify:
 
 testing-support:
   enabled: ${ENABLE_TESTING_SUPPORT:false}
+
+# Below sets if DB scheduler can execute on the current instance of the API.
+job:
+  executor:
+    enabled: ${DB_EXECUTOR_ENABLED:true}
+  polling-interval: 10
