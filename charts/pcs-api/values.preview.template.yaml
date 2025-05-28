@@ -54,7 +54,7 @@ dbTaskRunner:
     DB_SCHEDULER_ENABLED: false
     DB_EXECUTOR_ENABLED: true
   postgresql:
-    enabled: true
+    enabled: false
     image:
       tag: '16.0.0'
 
