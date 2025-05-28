@@ -21,7 +21,7 @@ java:
     SPRING_FLYWAY_LOCATIONS: "classpath:db/migration,classpath:db/testdata"
     SPRING_LOGGING_LEVEL_ROOT: "DEBUG"
     ENABLE_TESTING_SUPPORT: true
-    DB_EXECUTOR_ENABLED: false
+    DB_SCHEDULER_EXECUTOR_ENABLED: false
   postgresql:
     enabled: true
     image:
@@ -50,7 +50,7 @@ dbTaskRunner:
     SPRING_FLYWAY_LOCATIONS: "classpath:db/migration,classpath:db/testdata"
     SPRING_LOGGING_LEVEL_ROOT: "DEBUG"
     ENABLE_TESTING_SUPPORT: true
-    DB_EXECUTOR_ENABLED: true
+    DB_SCHEDULER_EXECUTOR_ENABLED: true
   postgresql:
     enabled: false
     image:
