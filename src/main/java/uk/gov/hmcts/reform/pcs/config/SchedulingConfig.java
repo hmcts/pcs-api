@@ -40,7 +40,7 @@ public class SchedulingConfig {
      * Where ? Can be any type.
      */
     @Bean(initMethod = "start", destroyMethod = "stop")
-    @ConditionalOnProperty(name = "db-scheduler.executor.enabled", havingValue = "true")
+    @ConditionalOnProperty(prefix = "db-scheduler", name = "executor-enabled", havingValue = "true")
     @DependsOn("schedulerClient")
     public Scheduler startupTasksScheduler(DataSource dataSource,
                                             @Value("${db-scheduler.polling-interval-seconds}")

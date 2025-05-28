@@ -29,6 +29,7 @@ security:
     - "/swagger-ui.html"
     - "/swagger-ui/**"
     - "/v3/api-docs/**"
+    - "/testing-support/**"
 
 spring:
   config:
@@ -37,9 +38,9 @@ spring:
     name: pcs api
   datasource:
     driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://${PCS_DB_HOST:localhost}:${DB_PORT:5432}/${PCS_DB_NAME:pcs}${PCS_DB_OPTIONS:}
-    username: ${PCS_DB_USER_NAME}
-    password: ${PCS_DB_PASSWORD}
+    url: jdbc:postgresql://${PCS_DB_HOST:localhost}:${DB_PORT:6432}/${PCS_DB_NAME:postgres}${PCS_DB_OPTIONS:}
+    username: ${PCS_DB_USER_NAME:postgres}
+    password: ${PCS_DB_PASSWORD:}
     properties:
       charSet: UTF-8
     hikari:
@@ -101,10 +102,9 @@ notify:
   status-check-delay-millis: ${NOTIFY_STATUS_CHECK_DELAY:3000}
 
 testing-support:
-  enabled: ${ENABLE_TESTING_SUPPORT:false}
+  enabled: ${ENABLE_TESTING_SUPPORT:true}
 
 # Below sets if DB scheduler can execute on the current instance of the API.
 db-scheduler:
-  executor:
-    enabled: ${DB_SCHEDULER_EXECUTOR_ENABLED:false}
+  executor-enabled: ${DB_SCHEDULER_EXECUTOR_ENABLED:true}
   polling-interval-seconds: 10
