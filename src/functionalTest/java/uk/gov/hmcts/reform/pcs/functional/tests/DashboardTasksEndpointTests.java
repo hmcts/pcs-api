@@ -10,6 +10,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import uk.gov.hmcts.reform.pcs.functional.config.TestConstants;
 import uk.gov.hmcts.reform.pcs.functional.steps.ApiSteps;
 
+import java.io.IOException;
+
 @Tag("Functional")
 @ExtendWith(SerenityJUnit5Extension.class)
 class DashboardTasksEndpointTests {
@@ -27,22 +29,25 @@ class DashboardTasksEndpointTests {
 
     @Title("Dashboard tasks endpoint - return 200 when request is valid and uses pcs_api s2s token")
     @Test
-    void dashboardTasks200SuccessWithPCSApiTokenScenario() {
+    void dashboardTasks200SuccessWithPCSApiTokenScenario() throws IOException {
         apiSteps.requestIsPreparedWithAppropriateValues();
         apiSteps.theRequestContainsValidServiceToken(TestConstants.PCS_API);
         apiSteps.theRequestContainsThePathParameter("caseReference", "1666630757927238");
         apiSteps.callIsSubmittedToTheEndpoint("DashboardTasks", "GET");
         apiSteps.checkStatusCode(200);
+        apiSteps.theResponseBodyMatchesTheExpectedResponse("src/functionalTest/resources/responses/dashboardTasksResponse.json");
+
     }
 
     @Title("Dashboard tasks endpoint - return 200 when request is valid and uses pcs_frontend s2s token")
     @Test
-    void dashboardTasks200SuccessWithFrontendTokenScenario() {
+    void dashboardTasks200SuccessWithFrontendTokenScenario() throws IOException {
         apiSteps.requestIsPreparedWithAppropriateValues();
         apiSteps.theRequestContainsValidServiceToken(TestConstants.PCS_FRONTEND);
         apiSteps.theRequestContainsThePathParameter("caseReference", "1666630757927238");
         apiSteps.callIsSubmittedToTheEndpoint("DashboardTasks", "GET");
         apiSteps.checkStatusCode(200);
+        apiSteps.theResponseBodyMatchesTheExpectedResponse("src/functionalTest/resources/responses/dashboardTasksResponse.json");
     }
 
     @Title("Dashboard tasks endpoint - return 404 when case id doesn't exist")
