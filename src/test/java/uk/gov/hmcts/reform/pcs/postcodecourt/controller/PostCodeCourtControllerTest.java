@@ -8,7 +8,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import uk.gov.hmcts.reform.pcs.postcodecourt.exception.PostCodeNotFoundException;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.Court;
 import uk.gov.hmcts.reform.pcs.postcodecourt.service.PostCodeCourtService;
 
@@ -16,7 +15,6 @@ import java.util.Collections;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -59,17 +57,6 @@ class PostCodeCourtControllerTest {
         );
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody()).isEqualTo(Collections.emptyList());
-        verify(postCodeCourtService).getCountyCourtsByPostCode(POST_CODE, AUTH_TOKEN);
-    }
-
-    @Test
-    @DisplayName("Should throw PostCodeNotFound exception when postcode court mapping is not found")
-    void shouldThrowPostCodeNotFoundExceptionWhenMappingIsNotFound() {
-        when(postCodeCourtService.getCountyCourtsByPostCode(POST_CODE, AUTH_TOKEN))
-            .thenThrow(new PostCodeNotFoundException("No court mapping found for postcode " + POST_CODE));
-        assertThatThrownBy(() -> underTest.getCourts(AUTH_TOKEN, "ServiceAuthToken", POST_CODE))
-            .isInstanceOf(PostCodeNotFoundException.class)
-            .hasMessage("No court mapping found for postcode " + POST_CODE);
         verify(postCodeCourtService).getCountyCourtsByPostCode(POST_CODE, AUTH_TOKEN);
     }
 }

@@ -96,6 +96,7 @@ class PostCodeCourtControllerIT extends AbstractPostgresContainerIT {
         assertPostcodeReturns(postCode1, court1);
         assertPostcodeReturns(postCode2, court2);
         assertPostcodeReturns(postCode3, court3);
+        assertPostcodeReturns("SW1H9EA", null);
     }
 
     private void stubLocationReferenceApi(String epimId, List<CourtVenue> response) {
@@ -135,8 +136,9 @@ class PostCodeCourtControllerIT extends AbstractPostgresContainerIT {
     @Test
     void shouldThrow404NotfoundExceptionFromLocationReferenceThenReceiveEmptyListInResponse() {
         String postCode = "LE2 0QB";
+        List<String> postcodes = List.of("LE2 0QB", "LE2 0Q", "LE2 0", "LE2");
 
-        List<PostCodeCourtEntity> all = postCodeCourtRepository.findByIdPostCode(postCode);
+        List<PostCodeCourtEntity> all = postCodeCourtRepository.findByIdPostCodeIn(postcodes);
 
         when(authTokenGenerator.generate()).thenReturn(LOC_REF_SERVICE_AUTH_HEADER);
 
@@ -173,19 +175,6 @@ class PostCodeCourtControllerIT extends AbstractPostgresContainerIT {
                         .queryParam(POSTCODE, postCode).build())
                 .header(SERVICE_AUTHORIZATION, PCS_SERVICE_AUTH_HEADER)
                 .exchange().expectStatus().isBadRequest();
-    }
-
-    @Test
-    @DisplayName("Should return http Not Found when postcode mapping is not found ")
-    void shouldReturnStatus404WhenPostcodeMappingIsNotFound() {
-        String postCode = "LE2 0QH";
-
-        webTestClient.get()
-            .uri(uriBuilder -> uriBuilder.path(COURTS_ENDPOINT)
-                .queryParam(POSTCODE, postCode).build())
-            .header(SERVICE_AUTHORIZATION, PCS_SERVICE_AUTH_HEADER)
-            .header(AUTHORIZATION, AUTH_HEADER)
-            .exchange().expectStatus().isNotFound();
     }
 
     private void assertingResponseToBeEmptyList(List<PostCodeCourtEntity> all) {
