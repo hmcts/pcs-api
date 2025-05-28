@@ -35,7 +35,8 @@ class DashboardTasksEndpointTests {
         apiSteps.theRequestContainsThePathParameter("caseReference", "1666630757927238");
         apiSteps.callIsSubmittedToTheEndpoint("DashboardTasks", "GET");
         apiSteps.checkStatusCode(200);
-        apiSteps.theResponseBodyMatchesTheExpectedResponse("src/functionalTest/resources/responses/dashboardTasksResponse.json");
+        apiSteps.theResponseBodyMatchesTheExpectedResponse(
+            "src/functionalTest/resources/responses/dashboardTasksResponse.json");
 
     }
 
@@ -47,7 +48,8 @@ class DashboardTasksEndpointTests {
         apiSteps.theRequestContainsThePathParameter("caseReference", "1666630757927238");
         apiSteps.callIsSubmittedToTheEndpoint("DashboardTasks", "GET");
         apiSteps.checkStatusCode(200);
-        apiSteps.theResponseBodyMatchesTheExpectedResponse("src/functionalTest/resources/responses/dashboardTasksResponse.json");
+        apiSteps.theResponseBodyMatchesTheExpectedResponse(
+            "src/functionalTest/resources/responses/dashboardTasksResponse.json");
     }
 
     @Title("Dashboard tasks endpoint - return 404 when case id doesn't exist")
