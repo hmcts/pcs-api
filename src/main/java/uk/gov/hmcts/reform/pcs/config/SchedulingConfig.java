@@ -43,11 +43,13 @@ public class SchedulingConfig {
     @ConditionalOnProperty(name = "job.executor.enabled", havingValue = "true")
     @DependsOn("schedulerClient")
     public Scheduler startupTasksScheduler(DataSource dataSource,
-                                           @Value("${job.polling-interval}") long interval, List<Task<?>> tasks) {
+                                            @Value("${job.polling-interval-seconds}")
+                                            long interval,
+                                            List<Task<?>> tasks) {
         Scheduler scheduler = Scheduler.create(dataSource, tasks)
-                .pollingInterval(Duration.ofSeconds(interval))
-                .registerShutdownHook()
-                .build();
+            .pollingInterval(Duration.ofSeconds(interval))
+            .registerShutdownHook()
+            .build();
         scheduler.start();
         return scheduler;
     }

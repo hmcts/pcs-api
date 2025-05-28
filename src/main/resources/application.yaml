@@ -107,4 +107,4 @@ testing-support:
 job:
   executor:
     enabled: ${DB_EXECUTOR_ENABLED:true}
-  polling-interval: 10
+  polling-interval-seconds: 10
