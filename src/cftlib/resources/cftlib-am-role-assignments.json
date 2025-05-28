@@ -1,0 +1,60 @@
+[
+  {
+    "email": "applicant-solicitor@pcs.com",
+    "id": "4751c408-6d6c-334c-acb7-cba80f76374c",
+    "roleAssignments": [
+      {
+        "roleType": "ORGANISATION",
+        "roleName": "applicant-solicitor",
+        "grantType": "STANDARD",
+        "roleCategory": "PROFESSIONAL",
+        "classification": "PUBLIC",
+        "readOnly": false,
+        "attributes": {
+          "caseType": "PCS",
+          "jurisdiction": "CIVIL"
+        },
+        "authorisations": []
+      }
+    ]
+  },
+  {
+    "email": "respondent-solicitor@pcs.com",
+    "id": "0a7b40c5-c450-3f1e-84e5-2f99cef415ce",
+    "roleAssignments": [
+      {
+        "roleType": "ORGANISATION",
+        "roleName": "respondent-solicitor",
+        "grantType": "STANDARD",
+        "roleCategory": "PROFESSIONAL",
+        "classification": "PUBLIC",
+        "readOnly": false,
+        "attributes": {
+          "caseType": "PCS",
+          "jurisdiction": "CIVIL"
+        },
+        "authorisations": []
+      }
+    ]
+  },
+  {
+    "email": "judge@pcs.com",
+    "id": "749ce9f7-535a-3cf5-ba07-f66e6d55c5fa",
+    "roleAssignments": [
+      {
+        "roleType": "ORGANISATION",
+        "roleName": "judge",
+        "grantType": "SPECIFIC",
+        "roleCategory": "JUDICIAL",
+        "classification": "RESTRICTED",
+        "readOnly": false,
+        "attributes": {
+          "caseType": "PCS",
+          "jurisdiction": "CIVIL"
+        },
+        "authorisations": []
+      }
+    ],
+    "overrideAll": true
+  }
+]

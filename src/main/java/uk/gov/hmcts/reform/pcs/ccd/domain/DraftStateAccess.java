@@ -7,23 +7,17 @@ import uk.gov.hmcts.ccd.sdk.api.HasRole;
 import uk.gov.hmcts.ccd.sdk.api.Permission;
 
 import static uk.gov.hmcts.reform.pcs.ccd.domain.UserRole.APPLICANT_SOLICITOR;
-import static uk.gov.hmcts.reform.pcs.ccd.domain.UserRole.CIVIL_CASE_WORKER;
-import static uk.gov.hmcts.reform.pcs.ccd.domain.UserRole.JUDGE;
-import static uk.gov.hmcts.reform.pcs.ccd.domain.UserRole.RESPONDENT_SOLICITOR;
 
 
 /**
  * Placeholder access control configuration granting caseworker CRU.
  */
-public class DefaultStateAccess implements HasAccessControl {
+public class DraftStateAccess implements HasAccessControl {
 
     @Override
     public SetMultimap<HasRole, Permission> getGrants() {
         SetMultimap<HasRole, Permission> grants = HashMultimap.create();
-        grants.putAll(CIVIL_CASE_WORKER, Permission.CRU);
         grants.putAll(APPLICANT_SOLICITOR, Permission.CRU);
-        grants.putAll(RESPONDENT_SOLICITOR, Permission.CRU);
-        grants.putAll(JUDGE, Permission.CRUD);
         return grants;
     }
 }
