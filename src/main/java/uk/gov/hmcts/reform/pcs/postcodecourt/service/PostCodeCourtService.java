@@ -1,20 +1,20 @@
 package uk.gov.hmcts.reform.pcs.postcodecourt.service;
 
+import io.vavr.control.Try;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import uk.gov.hmcts.reform.pcs.location.service.LocationReferenceService;
 import uk.gov.hmcts.reform.pcs.location.model.CourtVenue;
+import uk.gov.hmcts.reform.pcs.location.service.LocationReferenceService;
 import uk.gov.hmcts.reform.pcs.postcodecourt.entity.PostCodeCourtEntity;
-import uk.gov.hmcts.reform.pcs.postcodecourt.exception.PostCodeNotFoundException;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.Court;
 import uk.gov.hmcts.reform.pcs.postcodecourt.repository.PostCodeCourtRepository;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
-
-import io.vavr.control.Try;
 
 @Service
 @AllArgsConstructor
@@ -23,7 +23,6 @@ public class PostCodeCourtService {
 
     private final PostCodeCourtRepository postCodeCourtRepository;
     private final LocationReferenceService locationReferenceService;
-
 
     public List<Court> getCountyCourtsByPostCode(String postcode, String authorisation) {
 
@@ -53,28 +52,30 @@ public class PostCodeCourtService {
             return List.of();
         }
         postcode = postcode.replaceAll("\\s", "").toUpperCase(Locale.ROOT);
-        List<PostCodeCourtEntity> courts = postCodeCourtRepository.findByIdPostCode(postcode);
-        if (courts.isEmpty()) {
-            log.warn("Full postcode match not found for {}, Attempting partial match", postcode);
-            courts = tryPartialPostCodeLookup(postcode);
+
+        List<String> postcodes = getPostCodeLookupCandidates(postcode);
+        List<PostCodeCourtEntity> results = postCodeCourtRepository.findByIdPostCodeIn(postcodes);
+        if (results.isEmpty()) {
+            log.warn("No postcode court found for postcode {}", postcode);
+            return List.of();
         }
-        return courts;
+        PostCodeCourtEntity postCodeMatch = results.stream()
+            .max(Comparator.comparingInt(e -> e.getId().getPostCode().length()))
+            .get();
+        log.info("Found court mapping for postcode {} as {}", postcode, postCodeMatch.getId().getPostCode());
+        return List.of(postCodeMatch);
     }
 
-    private List<PostCodeCourtEntity> tryPartialPostCodeLookup(String postcode) {
+    private List<String> getPostCodeLookupCandidates(String postcode) {
         int maxTrim = 3;
+        List<String> postcodes = new ArrayList<>();
+        postcodes.add(postcode);
         String trimmedPostcode = postcode;
-
         for (int i = 0; i < maxTrim && trimmedPostcode.length() > 1; i++) {
             trimmedPostcode = trimmedPostcode.substring(0, trimmedPostcode.length() - 1);
-            log.info("Attempting partial match lookup for trimmed postcode: {}", trimmedPostcode);
-            List<PostCodeCourtEntity> result = postCodeCourtRepository.findByIdPostCode(trimmedPostcode);
-            if (!result.isEmpty()) {
-                log.info("Found partial match of {} for postcode {}", trimmedPostcode, postcode);
-                return result;
-            }
+            postcodes.add(trimmedPostcode);
         }
-        throw new PostCodeNotFoundException("No court mapping found for postcode " + postcode);
+        return postcodes;
     }
 
     private List<CourtVenue> safeGetCountyCourts(String authorisation, List<Integer> epimIds) {

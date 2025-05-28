@@ -6,22 +6,19 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.hmcts.reform.pcs.location.model.CourtVenue;
+import uk.gov.hmcts.reform.pcs.location.service.LocationReferenceService;
 import uk.gov.hmcts.reform.pcs.postcodecourt.entity.PostCodeCourtEntity;
 import uk.gov.hmcts.reform.pcs.postcodecourt.entity.PostCodeCourtKey;
-import uk.gov.hmcts.reform.pcs.location.service.LocationReferenceService;
-import uk.gov.hmcts.reform.pcs.location.model.CourtVenue;
-import uk.gov.hmcts.reform.pcs.postcodecourt.exception.PostCodeNotFoundException;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.Court;
 import uk.gov.hmcts.reform.pcs.postcodecourt.repository.PostCodeCourtRepository;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -43,10 +40,11 @@ class PostCodeCourtServiceTest {
         String postCode = " W3 7RX ";
         String trimmedPostcode = "W37RX";
         int expectedEpimId = 20262;
+        List<String> postcodes = getPostCodeCandidates(trimmedPostcode);
 
         PostCodeCourtEntity postCodeCourtEntity = new PostCodeCourtEntity();
         postCodeCourtEntity.setId(new PostCodeCourtKey(postCode, expectedEpimId));
-        when(postCodeCourtRepository.findByIdPostCode(trimmedPostcode)).thenReturn(List.of(postCodeCourtEntity));
+        when(postCodeCourtRepository.findByIdPostCodeIn(postcodes)).thenReturn(List.of(postCodeCourtEntity));
         when(locationReferenceService.getCountyCourts(null,  List.of(expectedEpimId)))
             .thenReturn(List.of(new CourtVenue(expectedEpimId, 101, "Royal Courts of Justice (Main Building)")));
 
@@ -61,33 +59,44 @@ class PostCodeCourtServiceTest {
                     assertThat(court.name()).isEqualTo("Royal Courts of Justice (Main Building)");
                 });
 
-        verify(postCodeCourtRepository).findByIdPostCode(trimmedPostcode);
+        verify(postCodeCourtRepository).findByIdPostCodeIn(postcodes);
         verify(locationReferenceService).getCountyCourts(null, List.of(expectedEpimId));
+    }
+
+    @Test
+    @DisplayName("Should return an empty list of CountyCourts for a non-existent postcode")
+    void shouldReturnEmptyListOfCountyCourtsForNonExistentPostCode() {
+        String nonExistentPostCode = "XY1 2AB";
+        String trimmedPostcode = "XY12AB";
+        List<String> postcodes = getPostCodeCandidates(trimmedPostcode);
+        when(postCodeCourtRepository.findByIdPostCodeIn(postcodes)).thenReturn(List.of());
+
+        final List<Court> response = underTest.getCountyCourtsByPostCode(nonExistentPostCode, null);
+
+        assertThat(response).isEmpty();
+        verify(postCodeCourtRepository).findByIdPostCodeIn(postcodes);
     }
 
     @Test
     @DisplayName("Should return an empty list of CountyCourts for a null postcode")
     void shouldReturnEmptyListOfCountyCourtsForNullPostCode() {
         String nullPostcode = null;
-
         final List<Court> response = underTest.getCountyCourtsByPostCode(nullPostcode, null);
-
         assertThat(response).isEmpty();
-        verify(postCodeCourtRepository, never()).findByIdPostCode(any());
+        verify(postCodeCourtRepository, never()).findByIdPostCodeIn(anyList());
     }
 
     @Test
     @DisplayName("Should return a partial match when its available")
     void shouldReturnPartiallyMatchedCountyCourts() {
         String postCode = "W37RX";
+        String trimmedPostcode = "W37R";
         int expectedEpimId = 76598;
         PostCodeCourtEntity postCodeCourtEntity = new PostCodeCourtEntity();
-        postCodeCourtEntity.setId(new PostCodeCourtKey(postCode, expectedEpimId));
+        postCodeCourtEntity.setId(new PostCodeCourtKey(trimmedPostcode, expectedEpimId));
+        List<String> postcodes = getPostCodeCandidates(postCode);
 
-        when(postCodeCourtRepository.findByIdPostCode(postCode)).thenReturn(List.of());
-        when(postCodeCourtRepository.findByIdPostCode("W37R")).thenReturn(List.of());
-        when(postCodeCourtRepository.findByIdPostCode("W37")).thenReturn(List.of());
-        when(postCodeCourtRepository.findByIdPostCode("W3")).thenReturn(List.of(postCodeCourtEntity));
+        when(postCodeCourtRepository.findByIdPostCodeIn(postcodes)).thenReturn(List.of(postCodeCourtEntity));
         when(locationReferenceService.getCountyCourts(null, List.of(expectedEpimId)))
             .thenReturn(List.of(new CourtVenue(expectedEpimId, 303, "Main Court of Justice")));
 
@@ -95,20 +104,18 @@ class PostCodeCourtServiceTest {
         assertThat(response)
             .isNotEmpty()
             .isEqualTo(List.of(new Court(303, "Main Court of Justice", expectedEpimId)));
-        verify(postCodeCourtRepository).findByIdPostCode("W3");
+        verify(postCodeCourtRepository).findByIdPostCodeIn(postcodes);
         verify(locationReferenceService).getCountyCourts(null, List.of(expectedEpimId));
-        verify(postCodeCourtRepository, times(4)).findByIdPostCode(anyString());
     }
 
-    @Test
-    @DisplayName("Should throw a PostCodeNotFound exception when no partial or full match is found")
-    void shouldThrowPostCodeNotFoundExceptionWhenMatchIsNotFound() {
-        String postCode = "W37RX";
-        when(postCodeCourtRepository.findByIdPostCode(anyString())).thenReturn(List.of());
-        assertThatThrownBy(() -> underTest.getCountyCourtsByPostCode(postCode, null)).isInstanceOf(
-                PostCodeNotFoundException.class)
-            .hasMessage("No court mapping found for postcode " + postCode);
-        verify(postCodeCourtRepository).findByIdPostCode(postCode);
-        verify(postCodeCourtRepository, times(4)).findByIdPostCode(anyString());
+    private List<String> getPostCodeCandidates(String postCode) {
+        String trimmedPostcode = postCode;
+        List<String> postCodes = new ArrayList<>();
+        postCodes.add(postCode);
+        for (int x = 0; x < 3; x++) {
+            trimmedPostcode = trimmedPostcode.substring(0, trimmedPostcode.length() - 1);
+            postCodes.add(trimmedPostcode);
+        }
+        return postCodes;
     }
 }
