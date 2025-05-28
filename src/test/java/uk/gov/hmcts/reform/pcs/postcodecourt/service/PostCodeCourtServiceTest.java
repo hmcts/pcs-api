@@ -87,13 +87,13 @@ class PostCodeCourtServiceTest {
     }
 
     @Test
-    @DisplayName("Should return a partial match when its available")
-    void shouldReturnPartiallyMatchedCountyCourts() {
+    @DisplayName("Should return a partial match if available when no full match is found")
+    void shouldReturnPartiallyMatchedPostCode() {
         String postCode = "W37RX";
-        String trimmedPostcode = "W37R";
+        String partialPostcode = "W37R";
         int expectedEpimId = 76598;
         PostCodeCourtEntity postCodeCourtEntity = new PostCodeCourtEntity();
-        postCodeCourtEntity.setId(new PostCodeCourtKey(trimmedPostcode, expectedEpimId));
+        postCodeCourtEntity.setId(new PostCodeCourtKey(partialPostcode, expectedEpimId));
         List<String> postcodes = getPostCodeCandidates(postCode);
 
         when(postCodeCourtRepository.findByIdPostCodeIn(postcodes)).thenReturn(List.of(postCodeCourtEntity));
@@ -109,12 +109,12 @@ class PostCodeCourtServiceTest {
     }
 
     private List<String> getPostCodeCandidates(String postCode) {
-        String trimmedPostcode = postCode;
+        String partialPostcode = postCode;
         List<String> postCodes = new ArrayList<>();
         postCodes.add(postCode);
         for (int x = 0; x < 3; x++) {
-            trimmedPostcode = trimmedPostcode.substring(0, trimmedPostcode.length() - 1);
-            postCodes.add(trimmedPostcode);
+            partialPostcode = partialPostcode.substring(0, partialPostcode.length() - 1);
+            postCodes.add(partialPostcode);
         }
         return postCodes;
     }
