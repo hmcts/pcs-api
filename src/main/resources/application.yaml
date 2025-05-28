@@ -35,6 +35,9 @@ spring:
     import: "optional:configtree:/mnt/secrets/pcs/"
   application:
     name: pcs api
+  autoconfigure:
+    exclude:
+      - com.github.kagkarlsson.scheduler.boot.autoconfigure.DbSchedulerAutoConfiguration
   datasource:
     driver-class-name: org.postgresql.Driver
     url: jdbc:postgresql://${PCS_DB_HOST:localhost}:${DB_PORT:5432}/${PCS_DB_NAME:pcs}${PCS_DB_OPTIONS:}
