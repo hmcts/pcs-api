@@ -30,7 +30,7 @@ java:
 dbTaskRunner:
   # Don't modify below here
   image: ${IMAGE_NAME}
-  ingressHost: ${SERVICE_FQDN}
+  ingressHost: task-${SERVICE_FQDN}
   keyVaults:
     pcs:
       secrets:
