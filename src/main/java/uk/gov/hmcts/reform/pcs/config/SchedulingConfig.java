@@ -22,9 +22,8 @@ public class SchedulingConfig {
 
 
     /**
-     * SchedulerClient bean is always and this is  used to schedule jobs, but does NOT execute them.
-     * Keep active everywhere where job scheduling is
-     * needed.
+     * SchedulerClient bean is always on and this is  used to schedule jobs, but does NOT execute them.
+     * Keep active everywhere where job scheduling is needed.
      */
     @Bean
     public SchedulerClient schedulerClient(DataSource dataSource) {
@@ -35,8 +34,10 @@ public class SchedulingConfig {
      * Scheduler bean is conditionally created and started ONLY if job execution is enabled.
      * Use environment variable "job.executor.enabled" = true to enable execution.
      * Only start with on nodes intended for job execution. Scheduler.start()
-     * Share the same database for job metadata for coordination. (if multiple databases are used in the future)
-     * Ensure that instances have graceful shutdown hooks to prevent missed executions.
+     * Share the same database for job metadata for coordination.
+     * Worth noting two instances of the API are in use now, one called java, one called dbTaskRunner.
+     * In order to make sure a task is registered by the scheduler, please use a bean that returns type Task<?>
+     * Where ? Can be any type.
      */
     @Bean(initMethod = "start", destroyMethod = "stop")
     @ConditionalOnProperty(name = "job.executor.enabled", havingValue = "true")
