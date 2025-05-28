@@ -99,7 +99,9 @@ class TestingSupportControllerTest {
         TaskInstance<Void> mockTaskInstance = mock(TaskInstance.class);
         when(helloWorldTask.instance(anyString())).thenReturn(mockTaskInstance);
 
-        ResponseEntity<String> response = underTest.scheduleHelloWorldTask(5);
+        ResponseEntity<String> response = underTest.scheduleHelloWorldTask(5,
+                                                                           "Bearer token",
+                                                                           "ServiceAuthToken");
 
         assertThat(response).isNotNull();
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
@@ -127,7 +129,9 @@ class TestingSupportControllerTest {
         doThrow(new RuntimeException("Scheduler failure")).when(schedulerClient)
             .scheduleIfNotExists(any(TaskInstance.class), any(Instant.class));
 
-        ResponseEntity<String> response = underTest.scheduleHelloWorldTask(2);
+        ResponseEntity<String> response = underTest.scheduleHelloWorldTask(2,
+                                                                           "Bearer token",
+                                                                           "ServiceAuthToken");
 
         assertThat(response).isNotNull();
         assertThat(response.getStatusCode().is5xxServerError()).isTrue();

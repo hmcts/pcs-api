@@ -58,7 +58,9 @@ public class TestingSupportController {
 
     @PostMapping("/hello-world")
     public ResponseEntity<String> scheduleHelloWorldTask(
-        @RequestParam(value = "delaySeconds", defaultValue = "1") int delaySeconds) {
+        @RequestParam(value = "delaySeconds", defaultValue = "1") int delaySeconds,
+        @RequestHeader(value = AUTHORIZATION, defaultValue = "DummyId") String authorisation,
+        @RequestHeader(value = "ServiceAuthorization") String serviceAuthorization) {
         try {
             String taskId = "helloWorld-" + UUID.randomUUID();
             Instant executionTime = Instant.now().plusSeconds(delaySeconds);
