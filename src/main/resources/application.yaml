@@ -29,7 +29,6 @@ security:
     - "/swagger-ui.html"
     - "/swagger-ui/**"
     - "/v3/api-docs/**"
-    - "/testing-support/**"
 
 spring:
   config:
@@ -38,9 +37,9 @@ spring:
     name: pcs api
   datasource:
     driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://${PCS_DB_HOST:localhost}:${DB_PORT:6432}/${PCS_DB_NAME:postgres}${PCS_DB_OPTIONS:}
-    username: ${PCS_DB_USER_NAME:postgres}
-    password: ${PCS_DB_PASSWORD:}
+    url: jdbc:postgresql://${PCS_DB_HOST:localhost}:${DB_PORT:5432}/${PCS_DB_NAME:pcs}${PCS_DB_OPTIONS:}
+    username: ${PCS_DB_USER_NAME}
+    password: ${PCS_DB_PASSWORD}
     properties:
       charSet: UTF-8
     hikari:
