@@ -25,8 +25,6 @@ java:
     LOCATION_REF_URL: "http://rd-location-ref-api-{{ .Values.global.environment }}.service.core-compute-{{ .Values.global.environment }}.internal"
     FLYWAY_NOOP_STRATEGY: "true"
     SPRING_FLYWAY_ENABLED: "true"
-    DB_SCHEDULER_ENABLED: true
-    DB_EXECUTOR_ENABLED: false
 servicebus:
   enabled: false
 ccd:
@@ -61,6 +59,3 @@ dbTaskRunner:
     LOCATION_REF_URL: "http://rd-location-ref-api-{{ .Values.global.environment }}.service.core-compute-{{ .Values.global.environment }}.internal"
     FLYWAY_NOOP_STRATEGY: "true"
     SPRING_FLYWAY_ENABLED: "true"
-    DB_SCHEDULER_ENABLED: false
-    DB_EXECUTOR_ENABLED: true
-

@@ -46,6 +46,7 @@ public class SchedulingConfig {
                                             @Value("${job.polling-interval-seconds}")
                                             long interval,
                                             List<Task<?>> tasks) {
+        log.info("Starting scheduler");
         Scheduler scheduler = Scheduler.create(dataSource, tasks)
             .pollingInterval(Duration.ofSeconds(interval))
             .registerShutdownHook()
