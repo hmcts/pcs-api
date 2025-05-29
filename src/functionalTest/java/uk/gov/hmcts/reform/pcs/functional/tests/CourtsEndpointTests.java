@@ -55,13 +55,13 @@ class CourtsEndpointTests {
         apiSteps.theResponseBodyIsAnEmptyArray();
     }
 
-    @Title("Courts endpoint - returns 200 and expected court data for shortened valid postcode")
+    @Title("Courts endpoint - returns 200 and expected court data for partial postcode")
     @Test
-    void shouldReturnExpectedCourtForShortenedPostcode() {
+    void shouldReturnExpectedCourtForPartialPostcode() {
         apiSteps.requestIsPreparedWithAppropriateValues();
         apiSteps.theRequestContainsValidServiceToken(TestConstants.PCS_API);
         apiSteps.theRequestContainsValidIdamToken();
-        apiSteps.theRequestContainsTheQueryParameter("postcode", CourtConstants.SHORTENED_POSTCODE_VALID);
+        apiSteps.theRequestContainsTheQueryParameter("postcode", CourtConstants.PARTIAL_POSTCODE_VALID);
         apiSteps.callIsSubmittedToTheEndpoint("Courts", "GET");
         apiSteps.checkStatusCode(200);
         apiSteps.theResponseBodyMatchesTheExpectedList(CourtConstants.EXPECTED_COURT_LIST);
