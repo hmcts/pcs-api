@@ -56,7 +56,7 @@ public class PostCodeCourtService {
         List<String> postcodes = getPostCodeLookupCandidates(postcode);
         List<PostCodeCourtEntity> results = postCodeCourtRepository.findByIdPostCodeIn(postcodes);
         if (results.isEmpty()) {
-            log.warn("No postcode court found for postcode {}", postcode);
+            log.warn("Postcode court mapping not found for postcode {}", postcode);
             return List.of();
         }
         PostCodeCourtEntity postCodeMatch = results.stream()
@@ -68,12 +68,12 @@ public class PostCodeCourtService {
 
     private List<String> getPostCodeLookupCandidates(String postcode) {
         int maxTrim = 3;
+        String partialPostcode = postcode;
         List<String> postcodes = new ArrayList<>();
         postcodes.add(postcode);
-        String trimmedPostcode = postcode;
-        for (int i = 0; i < maxTrim && trimmedPostcode.length() > 1; i++) {
-            trimmedPostcode = trimmedPostcode.substring(0, trimmedPostcode.length() - 1);
-            postcodes.add(trimmedPostcode);
+        for (int i = 0; i < maxTrim && partialPostcode.length() > 2; i++) {
+            partialPostcode = partialPostcode.substring(0, partialPostcode.length() - 1);
+            postcodes.add(partialPostcode);
         }
         return postcodes;
     }
