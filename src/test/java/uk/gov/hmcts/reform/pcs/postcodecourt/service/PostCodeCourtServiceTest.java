@@ -112,7 +112,7 @@ class PostCodeCourtServiceTest {
         String partialPostcode = postCode;
         List<String> postCodes = new ArrayList<>();
         postCodes.add(postCode);
-        for (int x = 0; x < 3; x++) {
+        for (int x = 0; x < 3 && partialPostcode.length() > 2; x++) {
             partialPostcode = partialPostcode.substring(0, partialPostcode.length() - 1);
             postCodes.add(partialPostcode);
         }
