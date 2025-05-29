@@ -71,7 +71,7 @@ public class PostCodeCourtService {
         String partialPostcode = postcode;
         List<String> postcodes = new ArrayList<>();
         postcodes.add(postcode);
-        for (int i = 0; i < maxTrim && partialPostcode.length() > 1; i++) {
+        for (int i = 0; i < maxTrim && partialPostcode.length() > 2; i++) {
             partialPostcode = partialPostcode.substring(0, partialPostcode.length() - 1);
             postcodes.add(partialPostcode);
         }
