@@ -46,7 +46,6 @@ public class SchedulingConfig {
     @Bean(initMethod = "start", destroyMethod = "stop")
     @ConditionalOnProperty(prefix = "db-scheduler", name = "executor-enabled", havingValue = "true")
     @DependsOn("schedulerClient")
-    @Primary
     public Scheduler startupTasksScheduler(DataSource dataSource,
                                             @Value("${db-scheduler.threads}")
                                             int threadCount,
