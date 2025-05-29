@@ -55,6 +55,18 @@ class CourtsEndpointTests {
         apiSteps.theResponseBodyIsAnEmptyArray();
     }
 
+    @Title("Courts endpoint - returns 200 and expected court data for shortened valid postcode")
+    @Test
+    void shouldReturnExpectedCourtForShortenedPostcode() {
+        apiSteps.requestIsPreparedWithAppropriateValues();
+        apiSteps.theRequestContainsValidServiceToken(TestConstants.PCS_API);
+        apiSteps.theRequestContainsValidIdamToken();
+        apiSteps.theRequestContainsTheQueryParameter("postcode", CourtConstants.SHORTENED_POSTCODE_VALID);
+        apiSteps.callIsSubmittedToTheEndpoint("Courts", "GET");
+        apiSteps.checkStatusCode(200);
+        apiSteps.theResponseBodyMatchesTheExpectedList(CourtConstants.EXPECTED_COURT_LIST);
+    }
+
     @Title("Courts endpoint - return 403 Forbidden when the request uses an unauthorised S2S token")
     @Test
     void courts403ForbiddenScenario() {

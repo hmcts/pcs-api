@@ -5,6 +5,7 @@ import java.util.Map;
 
 public class CourtConstants {
     public static final String POSTCODE_VALID = "W3 7RX";
+    public static final String SHORTENED_POSTCODE_VALID = "UB2";
     public static final String POSTCODE_INVALID = "W3 7RY";
     public static final Map<String, Object> EXPECTED_COURT_MAP = Map.of(
         "id", 40827,
