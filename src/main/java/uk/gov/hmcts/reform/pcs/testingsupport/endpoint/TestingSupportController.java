@@ -56,7 +56,7 @@ public class TestingSupportController {
         return ResponseEntity.ok(notificationResponse);
     }
 
-    @PostMapping("/hello-world")
+    @PostMapping("/db-scheduler-test")
     public ResponseEntity<String> scheduleHelloWorldTask(
         @RequestParam(value = "delaySeconds", defaultValue = "1") int delaySeconds,
         @RequestHeader(value = AUTHORIZATION, defaultValue = "DummyId") String authorisation,
