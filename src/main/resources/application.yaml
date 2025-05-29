@@ -35,9 +35,6 @@ spring:
     import: "optional:configtree:/mnt/secrets/pcs/"
   application:
     name: pcs api
-  autoconfigure:
-    exclude:
-      - com.github.kagkarlsson.scheduler.boot.autoconfigure.DbSchedulerAutoConfiguration
   datasource:
     driver-class-name: org.postgresql.Driver
     url: jdbc:postgresql://${PCS_DB_HOST:localhost}:${DB_PORT:5432}/${PCS_DB_NAME:pcs}${PCS_DB_OPTIONS:}
@@ -108,5 +105,7 @@ testing-support:
 
 # Below sets if DB scheduler can execute on the current instance of the API.
 db-scheduler:
+  enabled: false # This disables the autoconfiguration of DB Scheduler. Always off.
   executor-enabled: ${DB_SCHEDULER_EXECUTOR_ENABLED:true}
   polling-interval-seconds: 10
+  threads: 10
