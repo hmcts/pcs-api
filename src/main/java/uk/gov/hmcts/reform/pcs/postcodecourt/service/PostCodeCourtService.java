@@ -56,7 +56,7 @@ public class PostCodeCourtService {
         List<String> postcodes = getPostCodeLookupCandidates(postcode);
         List<PostCodeCourtEntity> results = postCodeCourtRepository.findByIdPostCodeIn(postcodes);
         if (results.isEmpty()) {
-            log.warn("No postcode court mapping found for postcode {}", postcode);
+            log.warn("Postcode court mapping not found for postcode {}", postcode);
             return List.of();
         }
         PostCodeCourtEntity postCodeMatch = results.stream()
