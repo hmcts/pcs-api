@@ -14,19 +14,19 @@ public class PCSCase {
 
     @CCD(
         label = "Applicant's forname",
-        access = {CitizenAccess.class}
+        access = {CitizenAccess.class, CaseworkerAccess.class}
     )
     private String applicantForename;
 
     @CCD(
         label = "Applicant's surname",
-        access = {CitizenAccess.class}
+        access = {CitizenAccess.class, CaseworkerAccess.class}
     )
     private String applicantSurname;
 
     @CCD(
         label = "Applicant's address",
-        access = {CitizenAccess.class}
+        access = {CitizenAccess.class, CaseworkerAccess.class}
     )
     private AddressUK applicantAddress;
 

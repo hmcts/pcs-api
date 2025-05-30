@@ -20,7 +20,7 @@ public enum State {
 
     @CCD(
         label = "Submitted",
-        access = {DefaultStateAccess.class}
+        access = {CaseworkerAccess.class}
     )
     Submitted
 }
