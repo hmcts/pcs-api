@@ -32,7 +32,8 @@ public class CitizenUpdateApplication implements CCDConfig<PCSCase, State, UserR
             .showCondition(ShowConditions.NEVER_SHOW)
             .name("Patch case")
             .description("Patch a possession case")
-            .grant(Permission.CRU, CREATOR);
+            .grant(Permission.CRU, CREATOR)
+            .grant(Permission.R, UserRole.CIVIL_CASE_WORKER);
     }
 
     private void submit(EventPayload<PCSCase, State> eventPayload) {

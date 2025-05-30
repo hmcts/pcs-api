@@ -31,7 +31,8 @@ public class CitizenCreateApplication implements CCDConfig<PCSCase, State, UserR
             .showCondition(NEVER_SHOW)
             .name("Create draft case")
             .description("Create a draft possession claim")
-            .grant(Permission.CRU, UserRole.CITIZEN);
+            .grant(Permission.CRU, UserRole.CITIZEN)
+            .grant(Permission.R, UserRole.CIVIL_CASE_WORKER);
     }
 
     private void submit(EventPayload<PCSCase, State> eventPayload) {

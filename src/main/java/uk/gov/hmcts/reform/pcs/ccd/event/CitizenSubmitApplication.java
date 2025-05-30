@@ -28,7 +28,8 @@ public class CitizenSubmitApplication implements CCDConfig<PCSCase, State, UserR
             .showCondition(ShowConditions.NEVER_SHOW)
             .name("Submit case")
             .description("Submit the possession case")
-            .grant(Permission.CRU, CREATOR);
+            .grant(Permission.CRU, CREATOR)
+            .grant(Permission.R, UserRole.CIVIL_CASE_WORKER);
     }
 
     private void submit(EventPayload<PCSCase, State> eventPayload) {
