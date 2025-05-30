@@ -3,4 +3,7 @@ INSERT INTO postcode_court_mapping (postcode, epimid, legislative_country, effec
     ('W3 6RS', 36791, 'England', '2025-02-01', NULL, '{"created_by": "admin", "change_reason": "initial insert"}'::jsonb),
     ('M13 9PL', 144641, 'England', '2025-04-01', '2035-04-01', '{"created_by": "admin", "change_reason": "initial insert"}'::jsonb),
     ('LE2 0QB', 425094, 'England', '2023-04-01', '2024-04-01', '{"created_by": "admin", "change_reason": "initial insert"}'::jsonb),
-    ('UB7 0DG', 28837, 'England', '2026-04-01', '2035-04-01', '{"created_by": "admin", "change_reason": "initial insert"}'::jsonb);
+    ('UB7 0DG', 28837, 'England', '2026-04-01', '2035-04-01', '{"created_by": "admin", "change_reason": "initial insert"}'::jsonb),
+    ('SW4 7R', 36791, 'England', '2025-05-01', '2035-04-01', '{"created_by": "admin", "change_reason": "initial insert"}'::jsonb),
+    ('W5 7', 144641, 'England', '2025-05-01', '2035-04-01', '{"created_by": "admin", "change_reason": "initial insert"}'::jsonb),
+    ('UB2', 20262, 'England', '2025-05-01', '2035-04-01', '{"created_by": "admin", "change_reason": "initial insert"}'::jsonb);
