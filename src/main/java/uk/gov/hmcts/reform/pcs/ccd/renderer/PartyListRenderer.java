@@ -26,7 +26,10 @@ public class PartyListRenderer {
         this.pebbleEngine = pebbleEngine;
     }
 
-    public String render(List<Party> allParties, List<Claim> claimsList, long caseReference) {
+    public String render(List<Party> allParties,
+                            List<Claim> claimsList,
+                            long caseReference,
+                            String inactivePartiesEmpty) {
         PebbleTemplate compiledTemplate = pebbleEngine.getTemplate("partyList");
 
 
@@ -46,7 +49,11 @@ public class PartyListRenderer {
             "caseReference", caseReference,
             "partyClaimsMap", partyClaimsMap,
             "editPartyEvent", EventId.editParty,
-            "addPartyEvent", EventId.addParty
+            "addPartyEvent", EventId.addParty,
+            "addPartiesEvent", EventId.addParties,
+            "deactivateParties", EventId.deactivateParties,
+            "reactivateParties", EventId.reactivateParties,
+            "inactivePartiesEmpty", inactivePartiesEmpty
         );
 
         try {

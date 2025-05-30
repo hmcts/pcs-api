@@ -19,7 +19,7 @@
 {%- endmacro %}
 
 {% macro showActions(party, _context) %}
-[Edit party](/cases/case-details/{{_context.caseReference}}/trigger/{{_context.editPartyEvent}}?partyId={{party.id}})
+<a href="/cases/case-details/{{_context.caseReference}}/trigger/{{_context.editPartyEvent}}?partyId={{party.id}}" role="button" class="govuk-button govuk-button--secondary">Edit party</a>
 {%- endmacro %}
 
 ## Parties
@@ -37,5 +37,21 @@
 {% else %}
 ### No parties have been added to this case
 {% endif %}
-[Add a new party](/cases/case-details/{{caseReference}}/trigger/{{addPartyEvent}})
+<a href="/cases/case-details/{{caseReference}}/trigger/{{addPartyEvent}}" role="button" class="govuk-button">
+  Add a new party
+</a>
+<a href="/cases/case-details/{{caseReference}}/trigger/{{addPartiesEvent}}" role="button" class="govuk-button govuk-button--secondary">
+  Add new parties
+</a>
+<br>
+{% if partyClaimsMap | length > 0 %}
+<a href="/cases/case-details/{{caseReference}}/trigger/{{deactivateParties}}" role="button" class="govuk-button">
+  Deactivate parties
+</a>
+  {% if inactivePartiesEmpty == "NO" %}
+    <a href="/cases/case-details/{{caseReference}}/trigger/{{reactivateParties}}" role="button" class="govuk-button govuk-button--secondary">
+     Reactivate parties
+    </a>
+  {% endif %}
+{% endif %}
 

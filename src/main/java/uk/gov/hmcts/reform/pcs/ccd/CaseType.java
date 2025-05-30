@@ -39,23 +39,23 @@ public class CaseType implements CCDConfig<PcsCase, State, UserRole> {
             .field(PcsCase::getHyphenatedCaseRef, "Case Reference")
             .field(PcsCase::getCaseDescription, label);
 
-        builder.tab("overview", "Overview")
+        builder.tab("CaseHistory", "Case History")
+            .field("caseHistory");
+
+        builder.tab("overview", "Case Details")
             .field(PcsCase::getPropertyAddress);
 
-        builder.tab("parties", "Parties")
+        builder.tab("parties", "Case Parties")
             .field(PcsCase::getActiveParties, "", "#TABLE(forename,surname)")
             .field(PcsCase::getInactiveParties, "", "#TABLE(forename,surname)");
 
-        builder.tab("partiesMarkdown", "Parties (Markdown)")
+        builder.tab("partiesMarkdown", "Case Parties (Markdown)")
             .label("partyRolesMarkdownLabel", null, "${partyRolesMarkdown}")
             .field("partyRolesMarkdown", NEVER_SHOW);
 
-        builder.tab("claims", "Claims (Markdown)")
+        builder.tab("claims", "Case Claims (Markdown)")
             .label("claimsSummaryMarkdownLabel", null, "${claimsSummaryMarkdown}")
             .field("claimsSummaryMarkdown", NEVER_SHOW);
-
-        builder.tab("CaseHistory", "History")
-            .field("caseHistory");
 
         // ExUI won't populate model fields with their values if they are not referenced as a display field somewhere.
         // This affects the use of model fields in the State label and event show conditions for example. As a

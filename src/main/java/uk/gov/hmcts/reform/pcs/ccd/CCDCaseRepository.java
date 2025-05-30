@@ -79,7 +79,8 @@ public class CCDCaseRepository extends DecentralisedCaseRepository<PcsCase> {
         pcsCase.setActivePartiesEmpty(YesOrNo.from(pcsCase.getActiveParties().isEmpty()));
         pcsCase.setInactivePartiesEmpty(YesOrNo.from(pcsCase.getInactiveParties().isEmpty()));
         pcsCase.setClaimsSummaryMarkdown(claimsListRenderer.render(pcsCase.getClaims(), caseRef));
-        pcsCase.setPartyRolesMarkdown(partyListRenderer.render(allParties, pcsCase.getClaims(), caseRef));
+        pcsCase.setPartyRolesMarkdown(partyListRenderer.render(allParties, pcsCase.getClaims(), caseRef,
+                                                                pcsCase.getInactivePartiesEmpty().toString()));
     }
 
     private static String formatCaseRef(Long caseId) {

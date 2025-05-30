@@ -5,7 +5,7 @@
 {% endmacro %}
 
 {% macro showActions(claimId, _context) %}
-[Add claimant](/cases/case-details/{{_context.caseReference}}/trigger/{{_context.addClaimantEvent}}?claimId={{claimId}})<br>[Add defendant](/cases/case-details/{{_context.caseReference}}/trigger/{{_context.addDefendantEvent}}?claimId={{claimId}})<br>[Add interested party](/cases/case-details/{{_context.caseReference}}/trigger/{{_context.addInterestedPartyEvent}}?claimId={{claimId}})<br>
+<a href="/cases/case-details/{{_context.caseReference}}/trigger/{{_context.addClaimantEvent}}?claimId={{claimId}}" role="button" class="govuk-button govuk-button--secondary">Add claimant</a><br><a href="/cases/case-details/{{_context.caseReference}}/trigger/{{_context.addDefendantEvent}}?claimId={{claimId}}" role="button" class="govuk-button govuk-button--secondary">Add defendant</a><br><a href="/cases/case-details/{{_context.caseReference}}/trigger/{{_context.addInterestedPartyEvent}}?claimId={{claimId}}" role="button" class="govuk-button govuk-button--secondary">Add interested party</a>
 {% endmacro %}
 
 ## Claims Overview
@@ -21,5 +21,7 @@
 {% else %}
 ### No claims have been added to this case
 {% endif %}
-[Create a new claim](/cases/case-details/{{caseReference}}/trigger/{{createClaimEvent}})
+<a href="/cases/case-details/{{caseReference}}/trigger/{{createClaimEvent}}" role="button" class="govuk-button">
+  Create a new claim
+</a>
 
