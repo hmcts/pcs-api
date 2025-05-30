@@ -36,9 +36,9 @@ spring:
   application:
     name: pcs api
   datasource:
-    url: jdbc:postgresql://${PCS_DB_HOST:localhost}:${DB_PORT:6432}/${PCS_DB_NAME:pcs}${PCS_DB_OPTIONS:}
+    url: jdbc:postgresql://${PCS_DB_HOST:localhost}:${DB_PORT:6432}/${PCS_DB_NAME:postgres}${PCS_DB_OPTIONS:}
     username: ${PCS_DB_USER_NAME:postgres}
-    password: ${PCS_DB_PASSWORD:postgres}
+    password: ${PCS_DB_PASSWORD:}  # Empty password since auth method is 'trust'
     properties:
       charSet: UTF-8
     hikari:
