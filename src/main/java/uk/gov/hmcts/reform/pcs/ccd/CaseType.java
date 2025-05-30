@@ -45,7 +45,7 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
         builder.jurisdiction(JURISDICTION_ID, JURISDICTION_NAME, JURISDICTION_DESCRIPTION);
 
         String fornameLabel = "Applicant Forename";
-        String surnameLabel = "Applicant Forename";
+        String surnameLabel = "Applicant Surname";
         builder.searchInputFields()
             .caseReferenceField()
             .field(PCSCase::getApplicantForename, fornameLabel);
