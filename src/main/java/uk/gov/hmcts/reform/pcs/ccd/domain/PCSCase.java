@@ -3,6 +3,7 @@ package uk.gov.hmcts.reform.pcs.ccd.domain;
 import lombok.Builder;
 import lombok.Data;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
+import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 
 /**
  * The main domain model representing a possessions case.
@@ -10,9 +11,23 @@ import uk.gov.hmcts.ccd.sdk.api.CCD;
 @Builder
 @Data
 public class PCSCase {
-    @CCD(label = "Applicant's first name")
+
+    @CCD(
+        label = "Applicant's forname",
+        access = {CitizenAccess.class}
+    )
     private String applicantForename;
 
-    @CCD(label = "Party A")
-    private Party partyA;
+    @CCD(
+        label = "Applicant's surname",
+        access = {CitizenAccess.class}
+    )
+    private String applicantSurname;
+
+    @CCD(
+        label = "Applicant's address",
+        access = {CitizenAccess.class}
+    )
+    private AddressUK applicantAddress;
+
 }

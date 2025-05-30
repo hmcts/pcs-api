@@ -13,9 +13,15 @@ import uk.gov.hmcts.ccd.sdk.api.CCD;
 public enum State {
 
     @CCD(
-        label = "Open",
+        label = "Draft",
+        access = {CitizenAccess.class}
+    )
+    Draft,
+
+    @CCD(
+        label = "Submitted",
         access = {DefaultStateAccess.class}
     )
-    Open;
+    Submitted
 }
 
