@@ -13,7 +13,8 @@ public class CaseDescriptionService {
 
     public String createCaseDescription(PcsCase pcsCase) {
         AddressUK propertyAddress = pcsCase.getPropertyAddress();
-        return "Property address: " + getPropertyAddressAsString(propertyAddress);
+        String caseNumber = pcsCase.getHyphenatedCaseRef();
+        return "Case number: " + caseNumber + "\nProperty address: " + getPropertyAddressAsString(propertyAddress);
     }
 
     private String getPropertyAddressAsString(AddressUK propertyAddress) {
