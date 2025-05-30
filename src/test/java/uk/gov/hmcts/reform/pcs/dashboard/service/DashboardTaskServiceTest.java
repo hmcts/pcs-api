@@ -1,20 +1,14 @@
 package uk.gov.hmcts.reform.pcs.dashboard.service;
 
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.junit.jupiter.MockitoExtension;
-import uk.gov.hmcts.reform.pcs.dashboard.model.Task;
 import uk.gov.hmcts.reform.pcs.dashboard.model.TaskGroup;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
@@ -29,44 +23,32 @@ class DashboardTaskServiceTest {
     private static final long CASE_REF_WITH_TASKS = 1234L;
     private static final long UNKNOWN_CASE_REF = 9999L;
 
-    private Task task1;
-    private Task task2;
-
-    @BeforeEach
-    void setUp() {
-        task1 = Task.builder()
-            .templateId("Task.AAA6.Claim.ViewClaim")
-            .status("AVAILABLE")
-            .templateValues(Map.of(
-                "dueDate", LocalDate.of(2025, 5, 20),
-                "amount", BigDecimal.valueOf(76.00),
-                "location", "London",
-                "appointmentTime", LocalDateTime.of(2025, 5, 20, 10, 30, 0, 0)
-            ))
-            .build();
-
-        task2 = Task.builder()
-            .templateId("Task.AAA6.Hearing.UploadDocuments")
-            .status("ACTION_NEEDED")
-            .templateValues(Map.of(
-                "deadline", LocalDate.of(2025, 5, 20)
-            ))
-            .build();
-    }
-
     @Test
     void testGetTasksForCaseWithTasksReturnsTaskGroups() {
         List<TaskGroup> result = dashboardTaskService.getTasks(CASE_REF_WITH_TASKS);
 
-        assertThat(result).hasSize(2);
+        // Expect 6 task groups now
+        assertThat(result).hasSize(6);
 
-        TaskGroup taskGroup1 = result.getFirst();
-        assertThat(taskGroup1.getGroupId()).isEqualTo("CLAIM");
-        assertThat(taskGroup1.getTask()).isEqualTo(task1);
+        // Verify CLAIM group
+        TaskGroup claimGroup = result.stream()
+            .filter(group -> "CLAIM".equals(group.getGroupId()))
+            .findFirst()
+            .orElseThrow();
+        assertThat(claimGroup.getTasks()).hasSizeGreaterThan(0);
+        assertThat(claimGroup.getTasks().getFirst().getTemplateId()).startsWith("Task.AAA6.Claim.");
 
-        TaskGroup taskGroup2 = result.get(1);
-        assertThat(taskGroup2.getGroupId()).isEqualTo("HEARING");
-        assertThat(taskGroup2.getTask()).isEqualTo(task2);
+        // Verify HEARING group
+        TaskGroup hearingGroup = result.stream()
+            .filter(group -> "HEARING".equals(group.getGroupId()))
+            .findFirst()
+            .orElseThrow();
+        assertThat(hearingGroup.getTasks()).hasSizeGreaterThan(0);
+        
+        // Check if a task with Upload Documents exists in HEARING group
+        assertThat(hearingGroup.getTasks().stream()
+            .anyMatch(task -> "Task.AAA6.Hearing.UploadDocuments".equals(task.getTemplateId())
+                && "ACTION_NEEDED".equals(task.getStatus()))).isTrue();
     }
 
     @Test

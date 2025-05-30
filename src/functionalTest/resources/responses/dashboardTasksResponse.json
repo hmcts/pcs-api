@@ -1,0 +1,144 @@
+[
+  {
+    "groupId": "CLAIM",
+    "tasks": [
+      {
+        "templateId": "Task.AAA6.Claim.ViewClaim",
+        "templateValues": {
+
+        },
+        "status": "AVAILABLE"
+      },
+      {
+        "templateId": "Task.AAA6.Claim.Adjustments",
+        "templateValues": {
+
+        },
+        "status": "AVAILABLE"
+      },
+      {
+        "templateId": "Task.AAA6.Claim.Equality",
+        "templateValues": {
+
+        },
+        "status": "AVAILABLE"
+      },
+      {
+        "templateId": "Task.AAA6.Claim.Information",
+        "templateValues": {
+
+        },
+        "status": "AVAILABLE"
+      }
+    ]
+  },
+  {
+    "groupId": "RESPONSE",
+    "tasks": [
+      {
+        "templateId": "Task.AAA6.Response.ViewResponse",
+        "templateValues": {
+
+        },
+        "status": "AVAILABLE"
+      },
+      {
+        "templateId": "Task.AAA6.Response.Information",
+        "templateValues": {
+
+        },
+        "status": "COMPLETED"
+      }
+    ]
+  },
+  {
+    "groupId": "HEARING",
+    "tasks": [
+      {
+        "templateId": "Task.AAA6.Hearing.ViewHearing",
+        "templateValues": {
+
+        },
+        "status": "AVAILABLE"
+      },
+      {
+        "templateId": "Task.AAA6.Hearing.UploadDocuments",
+        "templateValues": {
+          "deadline": "2025-05-20T15:00:00Z"
+        },
+        "status": "ACTION_NEEDED"
+      },
+      {
+        "templateId": "Task.AAA6.Hearing.ViewDocuments",
+        "templateValues": {
+
+        },
+        "status": "NOT_AVAILABLE"
+      },
+      {
+        "templateId": "Task.AAA6.Hearing.TrialArrangments",
+        "templateValues": {
+
+        },
+        "status": "NOT_AVAILABLE"
+      },
+      {
+        "templateId": "Task.AAA6.Hearing.PayFee",
+        "templateValues": {
+          "deadline": "2025-06-28T15:00:00Z"
+        },
+        "status": "ACTION_NEEDED"
+      },
+      {
+        "templateId": "Task.AAA6.Hearing.ViewBundle",
+        "templateValues": {
+
+        },
+        "status": "NOT_AVAILABLE"
+      }
+    ]
+  },
+  {
+    "groupId": "NOTICE",
+    "tasks": [
+      {
+        "templateId": "Task.AAA6.Notice.ViewNotices",
+        "templateValues": {
+
+        },
+        "status": "AVAILABLE"
+      }
+    ]
+  },
+  {
+    "groupId": "JUDGEMENT",
+    "tasks": [
+      {
+        "templateId": "Task.AAA6.Judgement.ViewJudgement",
+        "templateValues": {
+
+        },
+        "status": "NOT_AVAILABLE"
+      }
+    ]
+  },
+  {
+    "groupId": "APPLICATIONS",
+    "tasks": [
+      {
+        "templateId": "Task.AAA6.Applications.Contact",
+        "templateValues": {
+
+        },
+        "status": "OPTIONAL"
+      },
+      {
+        "templateId": "Task.AAA6.Applications.ViewApplications",
+        "templateValues": {
+
+        },
+        "status": "IN_PROGRESS"
+      }
+    ]
+  }
+]

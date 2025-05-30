@@ -1,7 +1,13 @@
 package uk.gov.hmcts.reform.pcs.functional.steps;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.restassured.http.ContentType;
 import io.restassured.specification.RequestSpecification;
 import net.serenitybdd.annotations.Step;
@@ -11,6 +17,8 @@ import uk.gov.hmcts.reform.pcs.functional.config.Endpoints;
 import uk.gov.hmcts.reform.pcs.functional.config.TestConstants;
 import uk.gov.hmcts.reform.pcs.functional.testutils.IdamAuthenticationGenerator;
 import uk.gov.hmcts.reform.pcs.functional.testutils.ServiceAuthenticationGenerator;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class ApiSteps {
 
@@ -104,6 +112,15 @@ public class ApiSteps {
         SerenityRest.then()
             .assertThat()
             .body("", Matchers.hasSize(0));
+    }
+
+    @Step("the response body matches the expected response")
+    public void theResponseBodyMatchesTheExpectedResponse(String expectedResponsePath) throws IOException {
+        String expectedResponse = new String(Files.readAllBytes(Paths.get(expectedResponsePath)));
+        ObjectMapper mapper = new ObjectMapper();
+        JsonNode expectedJson = mapper.readTree(expectedResponse);
+        JsonNode actualJson = mapper.readTree(SerenityRest.lastResponse().asString());
+        assertEquals(expectedJson, actualJson);
     }
 
     @Step("the request contains a valid IDAM token")

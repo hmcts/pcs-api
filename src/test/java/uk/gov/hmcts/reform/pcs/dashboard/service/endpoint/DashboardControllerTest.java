@@ -7,11 +7,13 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import uk.gov.hmcts.reform.pcs.dashboard.endpoint.DashboardController;
+import uk.gov.hmcts.reform.pcs.dashboard.model.Task;
 import uk.gov.hmcts.reform.pcs.dashboard.model.TaskGroup;
 import uk.gov.hmcts.reform.pcs.dashboard.service.DashboardNotificationService;
 import uk.gov.hmcts.reform.pcs.dashboard.service.DashboardTaskService;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 
+import java.util.Collections;
 import java.util.List;
 
 import static org.mockito.Mockito.when;
@@ -38,11 +40,19 @@ class DashboardControllerTest {
 
         var taskGroup1 = TaskGroup.builder()
             .groupId("CLAIM")
-            .task(null)
+            .tasks(List.of(Task.builder()
+                .templateId("Task.AAA6.Claim.ViewClaim")
+                .templateValues(Collections.emptyMap())
+                .status("AVAILABLE")
+                .build()))
             .build();
         var taskGroup2 = TaskGroup.builder()
             .groupId("HEARING")
-            .task(null)
+            .tasks(List.of(Task.builder()
+                .templateId("Task.AAA6.Hearing.ViewHearing")
+                .templateValues(Collections.emptyMap())
+                .status("AVAILABLE")
+                .build()))
             .build();
 
         List<TaskGroup> taskGroups = List.of(taskGroup1, taskGroup2);

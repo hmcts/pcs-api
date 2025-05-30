@@ -5,9 +5,10 @@ import uk.gov.hmcts.reform.pcs.dashboard.model.Task;
 import uk.gov.hmcts.reform.pcs.dashboard.model.TaskGroup;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Map;
 
@@ -35,35 +36,147 @@ public class DashboardTaskService {
             return List.of();
         }
 
-        var task1 = Task.builder()
-            .templateId("Task.AAA6.Claim.ViewClaim")
-            .status("AVAILABLE")
-            .templateValues(Map.of(
-                "dueDate", LocalDate.of(2025, 5, 20),
-                "amount", BigDecimal.valueOf(76.00),
-                "location", "London",
-                "appointmentTime", LocalDateTime.of(2025, 5, 20, 10, 30, 0, 0)
-            ))
-            .build();
-
-        var task2 = Task.builder()
-            .templateId("Task.AAA6.Hearing.UploadDocuments")
-            .status("ACTION_NEEDED")
-            .templateValues(Map.of(
-                "deadline", LocalDate.of(2025, 5, 20)
-            ))
-            .build();
-
-        var taskGroup1 = TaskGroup.builder()
+        // CLAIM Task Group
+        var claimGroup = TaskGroup.builder()
             .groupId("CLAIM")
-            .task(task1)
+            .tasks(List.of(
+                Task.builder()
+                    .templateId("Task.AAA6.Claim.ViewClaim")
+                    .templateValues(Map.of())
+                    .status("AVAILABLE")
+                    .build(),
+                Task.builder()
+                    .templateId("Task.AAA6.Claim.Adjustments")
+                    .templateValues(Map.of())
+                    .status("AVAILABLE")
+                    .build(),
+                Task.builder()
+                    .templateId("Task.AAA6.Claim.Equality")
+                    .templateValues(Map.of())
+                    .status("AVAILABLE")
+                    .build(),
+                Task.builder()
+                    .templateId("Task.AAA6.Claim.Information")
+                    .templateValues(Map.of())
+                    .status("AVAILABLE")
+                    .build()
+            ))
             .build();
 
-        var taskGroup2 = TaskGroup.builder()
+        // RESPONSE Task Group
+        var responseGroup = TaskGroup.builder()
+            .groupId("RESPONSE")
+            .tasks(List.of(
+                Task.builder()
+                    .templateId("Task.AAA6.Response.ViewResponse")
+                    .templateValues(Map.of())
+                    .status("AVAILABLE")
+                    .build(),
+                Task.builder()
+                    .templateId("Task.AAA6.Response.Information")
+                    .templateValues(Map.of())
+                    .status("COMPLETED")
+                    .build()
+            ))
+            .build();
+
+        // HEARING Task Group
+        var hearingGroup = TaskGroup.builder()
             .groupId("HEARING")
-            .task(task2)
+            .tasks(List.of(
+                Task.builder()
+                    .templateId("Task.AAA6.Hearing.ViewHearing")
+                    .templateValues(Map.of())
+                    .status("AVAILABLE")
+                    .build(),
+                Task.builder()
+                    .templateId("Task.AAA6.Hearing.UploadDocuments")
+                    .templateValues(Map.of(
+                        "deadline", ZonedDateTime.of(
+                            LocalDate.of(2025, 5, 20), 
+                            LocalTime.of(15, 0, 0), 
+                            ZoneId.of("UTC")
+                        )
+                    ))
+                    .status("ACTION_NEEDED")
+                    .build(),
+                Task.builder()
+                    .templateId("Task.AAA6.Hearing.ViewDocuments")
+                    .templateValues(Map.of())
+                    .status("NOT_AVAILABLE")
+                    .build(),
+                Task.builder()
+                    .templateId("Task.AAA6.Hearing.TrialArrangments")
+                    .templateValues(Map.of())
+                    .status("NOT_AVAILABLE")
+                    .build(),
+                Task.builder()
+                    .templateId("Task.AAA6.Hearing.PayFee")
+                    .templateValues(Map.of(
+                        "deadline", ZonedDateTime.of(
+                            LocalDate.of(2025, 6, 28),
+                            LocalTime.of(15, 0, 0),
+                            ZoneId.of("UTC")
+                            )
+                    ))
+                    .status("ACTION_NEEDED")
+                    .build(),
+                Task.builder()
+                    .templateId("Task.AAA6.Hearing.ViewBundle")
+                    .templateValues(Map.of())
+                    .status("NOT_AVAILABLE")
+                    .build()
+            ))
             .build();
 
-        return List.of(taskGroup1, taskGroup2);
+        // NOTICE Task Group
+        var noticeGroup = TaskGroup.builder()
+            .groupId("NOTICE")
+            .tasks(List.of(
+                Task.builder()
+                    .templateId("Task.AAA6.Notice.ViewNotices")
+                    .templateValues(Map.of())
+                    .status("AVAILABLE")
+                    .build()
+            ))
+            .build();
+
+        // JUDGEMENT Task Group
+        var judgementGroup = TaskGroup.builder()
+            .groupId("JUDGEMENT")
+            .tasks(List.of(
+                Task.builder()
+                    .templateId("Task.AAA6.Judgement.ViewJudgement")
+                    .templateValues(Map.of())
+                    .status("NOT_AVAILABLE")
+                    .build()
+            ))
+            .build();
+
+        // APPLICATIONS Task Group
+        var applicationsGroup = TaskGroup.builder()
+            .groupId("APPLICATIONS")
+            .tasks(List.of(
+                Task.builder()
+                    .templateId("Task.AAA6.Applications.Contact")
+                    .templateValues(Map.of())
+                    .status("OPTIONAL")
+                    .build(),
+                Task.builder()
+                    .templateId("Task.AAA6.Applications.ViewApplications")
+                    .templateValues(Map.of())
+                    .status("IN_PROGRESS")
+                    .build()
+            ))
+            .build();
+
+        return List.of(
+            claimGroup, 
+            responseGroup, 
+            hearingGroup, 
+            noticeGroup, 
+            judgementGroup, 
+            applicationsGroup
+        );
     }
 }

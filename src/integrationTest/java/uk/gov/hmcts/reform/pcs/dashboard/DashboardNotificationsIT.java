@@ -56,7 +56,7 @@ class DashboardNotificationsIT extends AbstractPostgresContainerIT {
                          .header("ServiceAuthorization", "Bearer dummy-token")
                          .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$", hasSize(2)));
+            .andExpect(jsonPath("$", hasSize(6)));
     }
 
     @Test
