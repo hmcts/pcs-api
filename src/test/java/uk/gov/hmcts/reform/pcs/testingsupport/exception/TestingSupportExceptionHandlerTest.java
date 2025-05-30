@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.testingsupport.endpoint;
+package uk.gov.hmcts.reform.pcs.testingsupport.exception;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
@@ -19,11 +19,11 @@ class TestingSupportExceptionHandlerTest {
     void shouldReturnInternalServerErrorForNotificationException() {
         NotificationException exception = mock(NotificationException.class);
         when(exception.getMessage()).thenReturn("Failed to send notification");
-        
+
         ResponseEntity<RestExceptionHandler.Error> response = handler.handleNotificationException(exception);
-        
+
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
-        
+
         RestExceptionHandler.Error errorResponse = response.getBody();
         assertNotNull(errorResponse);
     }
