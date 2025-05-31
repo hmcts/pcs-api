@@ -32,7 +32,7 @@ public class EditDraft implements CCDConfig<PCSCase, State, UserRole> {
         configBuilder
             .decentralisedEvent("editDraft", this::aboutToSubmit, this::rehydrate)
             .forState(State.PreSubmission)
-            .name("Resume drafting")
+            .name("Complete draft case")
             .grant(Permission.CRUD, UserRole.CASE_WORKER)
             .fields()
             .page("Organisation name", this::mid)

@@ -41,6 +41,7 @@ public class CCDCaseRepository extends DecentralisedCaseRepository<PCSCase> {
                 .exampleTabMarkdown(renderExampleTab(pcsCase))
                 .organisationName("Luton Local Housing")
                 .state("Pre-Submission")
+                .country(pcsCase.getCountry())
                 .build();
     }
 

@@ -1,7 +1,8 @@
 -- create pcs_case table with reference as primary key
 create table pcs_case (
     reference bigint primary key references ccd.case_data(reference) deferrable initially deferred,
-    case_description varchar(255) not null
+    case_description varchar(255) not null,
+    country varchar(255) not null
 );
 
 create table party (

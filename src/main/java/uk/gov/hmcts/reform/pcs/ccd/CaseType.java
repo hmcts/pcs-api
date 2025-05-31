@@ -22,12 +22,18 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
 
         var label = "Case description";
         builder.searchInputFields()
-            .field(PCSCase::getCaseDescription, label);
+            .field(PCSCase::getCaseDescription, label)
+            .field(PCSCase::getCountry, "State");
+
         builder.searchCasesFields()
             .field(PCSCase::getCaseDescription, label);
 
         builder.searchCasesFields()
             .field(PCSCase::getState, "State");
+
+        builder.searchCasesFields()
+            .field(PCSCase::getCountry, "Country");
+
 
 
         builder.searchResultFields()
@@ -35,13 +41,18 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
         builder.searchResultFields()
                 .field(PCSCase::getState, "State");
 
+        builder.searchResultFields()
+            .field(PCSCase::getCountry, "Country");
+
+
         builder.workBasketInputFields()
-            .field(PCSCase::getCaseDescription, label);
-        builder.workBasketResultFields()
             .field(PCSCase::getCaseDescription, label);
 
         builder.workBasketResultFields()
             .field(PCSCase::getState, "State");
+        builder.workBasketResultFields()
+            .field(PCSCase::getCountry, "Country");
+
 
 
         builder.tab("Example", "Example Tab")

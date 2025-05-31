@@ -29,6 +29,8 @@ public class PcsCase {
 
     private String caseDescription;
 
+    private String country;
+
     @OneToMany
     @JoinColumn(name = "reference", referencedColumnName = "reference")
     @Builder.Default
