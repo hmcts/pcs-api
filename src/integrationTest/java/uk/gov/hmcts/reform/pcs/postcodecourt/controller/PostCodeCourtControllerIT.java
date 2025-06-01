@@ -12,16 +12,16 @@ import org.springframework.test.web.reactive.server.WebTestClient;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.pcs.Application;
 import uk.gov.hmcts.reform.pcs.config.AbstractPostgresContainerIT;
+import uk.gov.hmcts.reform.pcs.idam.IdamService;
 import uk.gov.hmcts.reform.pcs.location.service.api.LocationReferenceApi;
 import uk.gov.hmcts.reform.pcs.postcodecourt.entity.PostCodeCourtEntity;
 import uk.gov.hmcts.reform.pcs.location.model.CourtVenue;
 import uk.gov.hmcts.reform.pcs.postcodecourt.entity.PostCodeCourtKey;
+import uk.gov.hmcts.reform.pcs.exception.InvalidAuthorisationToken;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.Court;
 import uk.gov.hmcts.reform.pcs.postcodecourt.repository.PostCodeCourtRepository;
-
 import java.util.Collections;
 import java.util.List;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
@@ -51,6 +51,9 @@ class PostCodeCourtControllerIT extends AbstractPostgresContainerIT {
 
     @MockitoBean
     private LocationReferenceApi locationReferenceApi;
+
+    @MockitoBean
+    private IdamService idamService;
 
     @Test
     @DisplayName("Should return valid Http OK for known postcodes. The response should be empty for all epimIds.")
@@ -177,6 +180,74 @@ class PostCodeCourtControllerIT extends AbstractPostgresContainerIT {
                 .header(SERVICE_AUTHORIZATION, PCS_SERVICE_AUTH_HEADER)
                 .exchange().expectStatus().isBadRequest();
 
+    }
+
+    @Test
+    @DisplayName("Should return bad request when postcode is empty")
+    void shouldReturnStatus400WhenPostcodeEmpty() {
+        String postCode = "";
+
+        webTestClient.get()
+            .uri(uriBuilder -> uriBuilder.path(COURTS_ENDPOINT)
+                .queryParam(POSTCODE, postCode).build())
+            .header(SERVICE_AUTHORIZATION, PCS_SERVICE_AUTH_HEADER)
+            .header(AUTHORIZATION, AUTH_HEADER)
+            .exchange().expectStatus().isBadRequest();
+    }
+
+    @Test
+    @DisplayName("Should return bad request when postcode is missing")
+    void shouldReturnStatus400WhenPostcodeMissing() {
+
+        webTestClient.get()
+            .uri(COURTS_ENDPOINT)
+            .header(SERVICE_AUTHORIZATION, PCS_SERVICE_AUTH_HEADER)
+            .header(AUTHORIZATION, AUTH_HEADER)
+            .exchange().expectStatus().isBadRequest();
+    }
+
+    @Test
+    @DisplayName("Should return 401 when authorisation token is missing")
+    void shouldReturnStatus401WhenAuthorisationTokenIsMissing() {
+        String postCode = "E10 6DS";
+
+        when(idamService.validateAuthToken(""))
+            .thenThrow(new InvalidAuthorisationToken("Auth Token is empty"));
+
+        webTestClient.get()
+            .uri(uriBuilder -> uriBuilder.path(COURTS_ENDPOINT)
+                .queryParam(POSTCODE, postCode).build())
+            .header(SERVICE_AUTHORIZATION, PCS_SERVICE_AUTH_HEADER)
+            .header(AUTHORIZATION, "")
+            .exchange().expectStatus().isUnauthorized();
+    }
+
+    @Test
+    @DisplayName("Should return status 200 when token is valid")
+    void shouldReturnStatus200WhenTokenIsValid() {
+        String postCode = "E10 QBX";
+        when(idamService.validateAuthToken(AUTH_HEADER)).thenReturn(true);
+
+        webTestClient.get().uri(uriBuilder -> uriBuilder.path(COURTS_ENDPOINT)
+                .queryParam(POSTCODE, postCode)
+                .build())
+            .header(SERVICE_AUTHORIZATION, PCS_SERVICE_AUTH_HEADER)
+            .header(AUTHORIZATION, AUTH_HEADER)
+            .exchange().expectStatus().isOk();
+    }
+
+    @Test
+    @DisplayName("Should return status 401 when token is invalid")
+    void shouldReturnStatus401WhenTokenInvalid() {
+        String postCode = "N17 EYM";
+        when(idamService.validateAuthToken(AUTH_HEADER)).thenThrow(new InvalidAuthorisationToken("Token is invalid"));
+
+        webTestClient.get().uri(uriBuilder -> uriBuilder.path(COURTS_ENDPOINT)
+                .queryParam(POSTCODE, postCode)
+                .build())
+            .header(SERVICE_AUTHORIZATION, PCS_SERVICE_AUTH_HEADER)
+            .header(AUTHORIZATION, AUTH_HEADER)
+            .exchange().expectStatus().isUnauthorized();
     }
 
     private void assertingResponseToBeEmptyList(List<PostCodeCourtEntity> all) {

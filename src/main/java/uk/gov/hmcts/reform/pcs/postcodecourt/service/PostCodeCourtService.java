@@ -25,7 +25,7 @@ public class PostCodeCourtService {
     private final LocationReferenceService locationReferenceService;
 
     public List<Court> getCountyCourtsByPostCode(String postcode, String authorisation) {
-        if (postcode == null || postcode.isEmpty()) {
+        if (postcode == null || postcode.isBlank()) {
             throw new InvalidPostCodeException("Postcode cannot be empty or null");
         }
 

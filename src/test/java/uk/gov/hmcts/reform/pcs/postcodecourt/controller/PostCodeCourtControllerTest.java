@@ -8,6 +8,9 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import uk.gov.hmcts.reform.pcs.idam.IdamService;
+import uk.gov.hmcts.reform.pcs.exception.InvalidAuthorisationToken;
+import uk.gov.hmcts.reform.pcs.postcodecourt.exception.InvalidPostCodeException;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.Court;
 import uk.gov.hmcts.reform.pcs.postcodecourt.service.PostCodeCourtService;
 
@@ -15,6 +18,7 @@ import java.util.Collections;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -29,16 +33,19 @@ class PostCodeCourtControllerTest {
     @Mock
     private PostCodeCourtService postCodeCourtService;
 
+    @Mock
+    private IdamService idamService;
+
     @Test
     @DisplayName("Should return list of courts with Http200 for valid postcode")
     void shouldHandlePostcodesRequestWithCourtsInResponse() {
         List<Court> courts = List.of(new Court(40827, "Central London County Court", 20262));
         when(postCodeCourtService.getCountyCourtsByPostCode(POST_CODE, AUTH_TOKEN))
-                .thenReturn(courts);
+            .thenReturn(courts);
         ResponseEntity<List<Court>> response = underTest.getCourts(
-                AUTH_TOKEN,
+            AUTH_TOKEN,
             "ServiceAuthToken",
-                POST_CODE
+            POST_CODE
         );
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody()).isEqualTo(courts);
@@ -49,16 +56,39 @@ class PostCodeCourtControllerTest {
     @DisplayName("Should return empty list of courts with Http200 for valid postcode")
     void shouldHandlePostcodesRequestWithEmptyListOfCourtsInResponse() {
         when(postCodeCourtService.getCountyCourtsByPostCode(POST_CODE, AUTH_TOKEN))
-                .thenReturn(Collections.emptyList());
+            .thenReturn(Collections.emptyList());
         ResponseEntity<List<Court>> response = underTest.getCourts(
-                AUTH_TOKEN,
-                "ServiceAuthToken",
-                POST_CODE
+            AUTH_TOKEN,
+            "ServiceAuthToken",
+            POST_CODE
         );
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody()).isEqualTo(Collections.emptyList());
         verify(postCodeCourtService).getCountyCourtsByPostCode(POST_CODE, AUTH_TOKEN);
     }
+
+    @Test
+    @DisplayName("Should throw InvalidPostCode exception when postcode is null")
+    void shouldThrowInvalidPostCodeExceptionWhenPostCodeIsNull() {
+        when(postCodeCourtService.getCountyCourtsByPostCode(null, AUTH_TOKEN))
+            .thenThrow(new InvalidPostCodeException("Postcode cannot be empty or null"));
+        assertThatThrownBy(() -> underTest.getCourts(AUTH_TOKEN, "ServiceAuthToken", null))
+            .isInstanceOf(InvalidPostCodeException.class)
+            .hasMessage("Postcode cannot be empty or null");
+    }
+
+    @Test
+    @DisplayName("Should throw InvalidPostCode exception when postcode is empty")
+    void shouldThrowInvalidPostCodeExceptionWhenPostCodeIsEmpty() {
+        String emptyPostcode = "";
+        when(postCodeCourtService.getCountyCourtsByPostCode(emptyPostcode, AUTH_TOKEN))
+            .thenThrow(new InvalidPostCodeException("Postcode cannot be empty or null"));
+        assertThatThrownBy(() -> underTest.getCourts(AUTH_TOKEN, "ServiceAuthToken", emptyPostcode))
+            .isInstanceOf(InvalidPostCodeException.class)
+            .hasMessage("Postcode cannot be empty or null");
+    }
+
 }
+
 
 

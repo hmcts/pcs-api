@@ -10,12 +10,14 @@ import uk.gov.hmcts.reform.pcs.postcodecourt.entity.PostCodeCourtEntity;
 import uk.gov.hmcts.reform.pcs.postcodecourt.entity.PostCodeCourtKey;
 import uk.gov.hmcts.reform.pcs.location.service.LocationReferenceService;
 import uk.gov.hmcts.reform.pcs.location.model.CourtVenue;
+import uk.gov.hmcts.reform.pcs.postcodecourt.exception.InvalidPostCodeException;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.Court;
 import uk.gov.hmcts.reform.pcs.postcodecourt.repository.PostCodeCourtRepository;
 
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -75,14 +77,23 @@ class PostCodeCourtServiceTest {
     }
 
     @Test
-    @DisplayName("Should return an empty list of CountyCourts for a null postcode")
-    void shouldReturnEmptyListOfCountyCourtsForNullPostCode() {
-        String nullPostcode = null;
-
-        final List<Court> response = underTest.getCountyCourtsByPostCode(nullPostcode, null);
-
-        assertThat(response).isEmpty();
+    @DisplayName("Should throw InvalidPostCode exception when postcode empty")
+    void shouldThrowInvalidPostCodeExceptionWhenPostcodeIsEmpty() {
+        String emptyPostCode = "";
+        assertThatThrownBy(() -> underTest.getCountyCourtsByPostCode(emptyPostCode, null)).isInstanceOf(
+                InvalidPostCodeException.class)
+            .hasMessage("Postcode cannot be empty or null");
         verify(postCodeCourtRepository, never()).findByIdPostCode(any());
     }
+
+    @Test
+    @DisplayName("Should throw InvalidPostCode exception when postcode null")
+    void shouldThrowInvalidPostCodeExceptionWhenPostcodeIsNull() {
+        assertThatThrownBy(() -> underTest.getCountyCourtsByPostCode(null, null)).isInstanceOf(
+                InvalidPostCodeException.class)
+            .hasMessage("Postcode cannot be empty or null");
+        verify(postCodeCourtRepository, never()).findByIdPostCode(any());
+    }
+
 
 }
