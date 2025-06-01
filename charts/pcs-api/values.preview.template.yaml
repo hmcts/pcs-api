@@ -12,6 +12,12 @@ java:
           alias: PCS_NOTIFY_API_KEY
         - name: hmc-servicebus-connection-string
           alias: HEARINGS_SERVICEBUS_CONNECTION_STRING
+        - name: idam-secret
+          alias: IDAM_CLIENT_SECRET
+        - name: idam-systemupdate-username
+          alias: IDAM_SYSTEM_UPDATE_USERNAME
+        - name: idam-systemupdate-password
+          alias: IDAM_SYSTEM_UPDATE_PASSWORD
   environment:
     PCS_DB_HOST: "{{ .Release.Name }}-postgresql"
     PCS_DB_USER_NAME: "{{ .Values.postgresql.auth.username}}"
