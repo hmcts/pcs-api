@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.pcs.idam;
 
 
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -13,7 +14,9 @@ import uk.gov.hmcts.reform.pcs.exception.InvalidAuthTokenException;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
 class IdamServiceTest {
@@ -26,27 +29,37 @@ class IdamServiceTest {
     @InjectMocks
     private IdamService underTest;
 
+    @DisplayName("Should throw InvalidAuthTokenException when token is null")
     @Test
-    void shouldThrowWhenAuthTokenIsNull() {
+    void shouldThrowInvalidAuthTokenExceptionWhenAuthTokenIsNull() {
         assertThatThrownBy(() -> underTest.validateAuthToken(null))
             .isInstanceOf(InvalidAuthTokenException.class)
-            .hasMessageContaining("missing or empty");
+            .hasMessage("Authorisation token is null or blank");
+        
+        verifyNoInteractions(idamClient);
     }
 
+    @DisplayName("Should throw InvalidAuthTokenException when token is blank")
     @Test
-    void shouldThrowWhenAuthTokenIsBlank() {
+    void shouldThrowInvalidAuthTokenExceptionWhenAuthTokenIsBlank() {
         assertThatThrownBy(() -> underTest.validateAuthToken(" "))
             .isInstanceOf(InvalidAuthTokenException.class)
-            .hasMessageContaining("missing or empty");
+            .hasMessage("Authorisation token is null or blank");
+
+        verifyNoInteractions(idamClient);
     }
 
+    @DisplayName("Should throw InvalidAuthTokenException when token is malformed")
     @Test
-    void shouldThrowWhenAuthTokenMalformed() {
+    void shouldThrowInvalidAuthTokenExceptionWhenAuthTokenMalformed() {
         assertThatThrownBy(() -> underTest.validateAuthToken("InvalidToken"))
             .isInstanceOf(InvalidAuthTokenException.class)
-            .hasMessageContaining("Malformed or missing Bearer token");
+            .hasMessageContaining("Malformed Bearer token");
+
+        verifyNoInteractions(idamClient);
     }
 
+    @DisplayName("Should return user if token is valid")
     @Test
     void shouldReturnUserWhenTokenIsValid() {
         String token = BEARER_PREFIX + "valid-token";
@@ -56,6 +69,8 @@ class IdamServiceTest {
 
         assertThat(user).isNotNull();
         assertThat(user.getAuthToken()).isEqualTo(token);
+
+        verify(idamClient).getUserInfo(token);
     }
 
 }
