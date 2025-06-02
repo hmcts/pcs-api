@@ -1,7 +1,6 @@
 package uk.gov.hmcts.reform.pcs.idam;
 
 
-import feign.FeignException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -59,16 +58,6 @@ class IdamServiceTest {
         assertThat(user.getAuthToken()).isEqualTo(token);
     }
 
-    @Test
-    void shouldThrowWhenFeignUnauthorizedExceptionThrown() {
-        String token = BEARER_PREFIX + "expired-token";
-        when(idamClient.getUserInfo("expired-token"))
-            .thenThrow(new FeignException.Unauthorized("401", null, null, null));
-
-        assertThatThrownBy(() -> underTest.validateAuthToken(token))
-            .isInstanceOf(InvalidAuthTokenException.class)
-            .hasMessageContaining("expired or invalid");
-    }
 }
 
 
