@@ -9,7 +9,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import uk.gov.hmcts.reform.pcs.idam.IdamService;
-import uk.gov.hmcts.reform.pcs.exception.InvalidAuthorisationToken;
 import uk.gov.hmcts.reform.pcs.postcodecourt.exception.InvalidPostCodeException;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.Court;
 import uk.gov.hmcts.reform.pcs.postcodecourt.service.PostCodeCourtService;

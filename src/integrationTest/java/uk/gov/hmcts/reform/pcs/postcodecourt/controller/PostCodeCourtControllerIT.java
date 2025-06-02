@@ -10,14 +10,16 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
+import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 import uk.gov.hmcts.reform.pcs.Application;
 import uk.gov.hmcts.reform.pcs.config.AbstractPostgresContainerIT;
 import uk.gov.hmcts.reform.pcs.idam.IdamService;
+import uk.gov.hmcts.reform.pcs.idam.User;
 import uk.gov.hmcts.reform.pcs.location.service.api.LocationReferenceApi;
 import uk.gov.hmcts.reform.pcs.postcodecourt.entity.PostCodeCourtEntity;
 import uk.gov.hmcts.reform.pcs.location.model.CourtVenue;
 import uk.gov.hmcts.reform.pcs.postcodecourt.entity.PostCodeCourtKey;
-import uk.gov.hmcts.reform.pcs.exception.InvalidAuthorisationToken;
+import uk.gov.hmcts.reform.pcs.exception.InvalidAuthTokenException;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.Court;
 import uk.gov.hmcts.reform.pcs.postcodecourt.repository.PostCodeCourtRepository;
 import java.util.Collections;
@@ -212,7 +214,7 @@ class PostCodeCourtControllerIT extends AbstractPostgresContainerIT {
         String postCode = "E10 6DS";
 
         when(idamService.validateAuthToken(""))
-            .thenThrow(new InvalidAuthorisationToken("Auth Token is empty"));
+            .thenThrow(new InvalidAuthTokenException("Auth Token is empty"));
 
         webTestClient.get()
             .uri(uriBuilder -> uriBuilder.path(COURTS_ENDPOINT)
@@ -226,7 +228,17 @@ class PostCodeCourtControllerIT extends AbstractPostgresContainerIT {
     @DisplayName("Should return status 200 when token is valid")
     void shouldReturnStatus200WhenTokenIsValid() {
         String postCode = "E10 QBX";
-        when(idamService.validateAuthToken(AUTH_HEADER)).thenReturn(true);
+        UserInfo mockUserInfo = UserInfo.builder()
+            .sub("subject-123")
+            .uid("uid-456")
+            .name("John Doe")
+            .givenName("John")
+            .familyName("Doe")
+            .roles(List.of("caseworker"))
+            .build();
+        User mockUser = new User("Bearer Auth Token", mockUserInfo);
+
+        when(idamService.validateAuthToken(AUTH_HEADER)).thenReturn(mockUser);
 
         webTestClient.get().uri(uriBuilder -> uriBuilder.path(COURTS_ENDPOINT)
                 .queryParam(POSTCODE, postCode)
@@ -240,7 +252,7 @@ class PostCodeCourtControllerIT extends AbstractPostgresContainerIT {
     @DisplayName("Should return status 401 when token is invalid")
     void shouldReturnStatus401WhenTokenInvalid() {
         String postCode = "N17 EYM";
-        when(idamService.validateAuthToken(AUTH_HEADER)).thenThrow(new InvalidAuthorisationToken("Token is invalid"));
+        when(idamService.validateAuthToken(AUTH_HEADER)).thenThrow(new InvalidAuthTokenException("Token is invalid"));
 
         webTestClient.get().uri(uriBuilder -> uriBuilder.path(COURTS_ENDPOINT)
                 .queryParam(POSTCODE, postCode)
