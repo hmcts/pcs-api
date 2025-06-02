@@ -83,8 +83,8 @@ idam:
   s2s-authorised:
     services: ${S2S_NAMES_WHITELIST:pcs_api,pcs_frontend,ccd_data}
   systemupdate:
-    username: ${IDAM_SYSTEM_UPDATE_USERNAME:dummysystemupdate@test.com}
-    password: ${IDAM_SYSTEM_UPDATE_PASSWORD:dummy}
+    username: ${IDAM_SYSTEM_USERNAME:dummysystemupdate@test.com}
+    password: ${IDAM_SYSTEM_PASSWORD:dummy}
   client:
     id: 'pcs'
     secret: ${IDAM_CLIENT_SECRET:123456}

@@ -15,12 +15,12 @@ java:
           alias: PCS_NOTIFY_API_KEY
         - name: hmc-servicebus-connection-string
           alias: HEARINGS_SERVICEBUS_CONNECTION_STRING
-        - name: idam-secret
+        - name: pcs-api-idam-secret
           alias: IDAM_CLIENT_SECRET
-        - name: idam-systemupdate-username
-          alias: IDAM_SYSTEM_UPDATE_USERNAME
-        - name: idam-systemupdate-password
-          alias: IDAM_SYSTEM_UPDATE_PASSWORD
+        - name: idam-system-username
+          alias: IDAM_SYSTEM_USERNAME
+        - name: idam-system-password
+          alias: IDAM_SYSTEM_PASSWORD
 
   environment:
     PCS_DB_USER_NAME: pgadmin
