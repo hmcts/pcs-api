@@ -338,15 +338,15 @@ dependencies {
   functionalTestImplementation sourceSets.main.runtimeClasspath
   functionalTestImplementation sourceSets.test.runtimeClasspath
 
-  testImplementation group: 'org.junit.platform', name: 'junit-platform-suite-api', version: '1.12.2'
+  testImplementation group: 'org.junit.platform', name: 'junit-platform-suite-api', version: '1.13.0'
 
   contractTestImplementation group: 'au.com.dius.pact.consumer', name: 'junit5', version: pactVersion
   contractTestImplementation group: 'org.hamcrest', name: 'java-hamcrest', version: '2.0.0.0'
-  contractTestImplementation('org.junit.jupiter:junit-jupiter-api:5.12.2')
+  contractTestImplementation('org.junit.jupiter:junit-jupiter-api:5.13.0')
   contractTestImplementation sourceSets.main.runtimeClasspath
   contractTestImplementation sourceSets.test.runtimeClasspath
 
-  testImplementation(platform('org.junit:junit-bom:5.12.2'))
+  testImplementation(platform('org.junit:junit-bom:5.13.0'))
   testImplementation group: 'org.springframework.security', name: 'spring-security-test', version: springSecurityVersion
   testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'
   testImplementation(group: 'org.springframework.boot', name: 'spring-boot-starter-test', version: springFrameworkBootVersion) {
@@ -425,6 +425,10 @@ rootProject.tasks.named("processIntegrationTestResources") {
 }
 
 rootProject.tasks.named("processContractTestResources") {
+  duplicatesStrategy = 'include'
+}
+
+rootProject.tasks.named("processFunctionalTestResources") {
   duplicatesStrategy = 'include'
 }
 
