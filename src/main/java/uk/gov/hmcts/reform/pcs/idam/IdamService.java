@@ -31,8 +31,8 @@ public class IdamService {
             log.info("Successfully authenticated Idam token");
             return user;
         } catch (FeignException.Unauthorized ex) {
-            log.error("The authorasation token provided is expired or invalid", ex);
-            throw new InvalidAuthTokenException("The authorasation token provided is expired or invalid");
+            log.error("The authorization token provided is expired or invalid", ex);
+            throw new InvalidAuthTokenException("The authorization token provided is expired or invalid");
         } catch (Exception ex) {
             log.error("Unexpected error while validating authorisation token", ex);
             throw new InvalidAuthTokenException("Unexpected error while validating token", ex);
