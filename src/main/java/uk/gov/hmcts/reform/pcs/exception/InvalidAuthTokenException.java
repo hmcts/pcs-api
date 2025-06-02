@@ -1,11 +1,11 @@
 package uk.gov.hmcts.reform.pcs.exception;
 
-public class InvalidAuthorisationToken extends RuntimeException {
-    public InvalidAuthorisationToken(String message, Exception cause) {
+public class InvalidAuthTokenException extends RuntimeException {
+    public InvalidAuthTokenException(String message, Exception cause) {
         super(message, cause);
     }
 
-    public InvalidAuthorisationToken(String message) {
+    public InvalidAuthTokenException(String message) {
         super(message);
     }
 }
