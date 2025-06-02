@@ -1,15 +1,16 @@
 package uk.gov.hmcts.reform.pcs.postcodecourt.service;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.hmcts.reform.pcs.idam.IdamService;
+import uk.gov.hmcts.reform.pcs.location.model.CourtVenue;
+import uk.gov.hmcts.reform.pcs.location.service.LocationReferenceService;
 import uk.gov.hmcts.reform.pcs.postcodecourt.entity.PostCodeCourtEntity;
 import uk.gov.hmcts.reform.pcs.postcodecourt.entity.PostCodeCourtKey;
-import uk.gov.hmcts.reform.pcs.location.service.LocationReferenceService;
-import uk.gov.hmcts.reform.pcs.location.model.CourtVenue;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.Court;
 import uk.gov.hmcts.reform.pcs.postcodecourt.repository.PostCodeCourtRepository;
 
@@ -24,14 +25,24 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class PostCodeCourtServiceTest {
 
+    private static final String SYSTEM_USER_TOKEN = "some system user token";
+
     @Mock
     private PostCodeCourtRepository postCodeCourtRepository;
 
     @Mock
     private LocationReferenceService locationReferenceService;
 
-    @InjectMocks
+    @Mock
+    private IdamService idamService;
+
     private PostCodeCourtService underTest;
+
+    @BeforeEach
+    void setUp() {
+        when(idamService.getSystemUserAuthorisation()).thenReturn(SYSTEM_USER_TOKEN);
+        underTest = new PostCodeCourtService(postCodeCourtRepository, locationReferenceService, idamService);
+    }
 
     @Test
     @DisplayName("Return CountyCourts for an existing PostCode with spaces")
@@ -43,10 +54,10 @@ class PostCodeCourtServiceTest {
         PostCodeCourtEntity postCodeCourtEntity = new PostCodeCourtEntity();
         postCodeCourtEntity.setId(new PostCodeCourtKey(postCode, expectedEpimId));
         when(postCodeCourtRepository.findByIdPostCode(trimmedPostcode)).thenReturn(List.of(postCodeCourtEntity));
-        when(locationReferenceService.getCountyCourts(null,  List.of(expectedEpimId)))
+        when(locationReferenceService.getCountyCourts(SYSTEM_USER_TOKEN, List.of(expectedEpimId)))
             .thenReturn(List.of(new CourtVenue(expectedEpimId, 101, "Royal Courts of Justice (Main Building)")));
 
-        final List<Court> response = underTest.getCountyCourtsByPostCode(postCode, null);
+        final List<Court> response = underTest.getCountyCourtsByPostCode(postCode);
 
         assertThat(response).isNotEmpty();
         assertThat(response)
@@ -58,7 +69,7 @@ class PostCodeCourtServiceTest {
                 });
 
         verify(postCodeCourtRepository).findByIdPostCode(trimmedPostcode);
-        verify(locationReferenceService).getCountyCourts(null, List.of(expectedEpimId));
+        verify(locationReferenceService).getCountyCourts(SYSTEM_USER_TOKEN, List.of(expectedEpimId));
     }
 
     @Test
@@ -68,7 +79,7 @@ class PostCodeCourtServiceTest {
         String trimmedPostcode = "XY12AB";
         when(postCodeCourtRepository.findByIdPostCode(trimmedPostcode)).thenReturn(List.of());
 
-        final List<Court> response = underTest.getCountyCourtsByPostCode(nonExistentPostCode, null);
+        final List<Court> response = underTest.getCountyCourtsByPostCode(nonExistentPostCode);
 
         assertThat(response).isEmpty();
         verify(postCodeCourtRepository).findByIdPostCode(trimmedPostcode);
@@ -77,9 +88,7 @@ class PostCodeCourtServiceTest {
     @Test
     @DisplayName("Should return an empty list of CountyCourts for a null postcode")
     void shouldReturnEmptyListOfCountyCourtsForNullPostCode() {
-        String nullPostcode = null;
-
-        final List<Court> response = underTest.getCountyCourtsByPostCode(nullPostcode, null);
+        final List<Court> response = underTest.getCountyCourtsByPostCode(null);
 
         assertThat(response).isEmpty();
         verify(postCodeCourtRepository, never()).findByIdPostCode(any());

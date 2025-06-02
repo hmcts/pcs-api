@@ -15,6 +15,11 @@ java:
           alias: PCS_NOTIFY_API_KEY
         - name: hmc-servicebus-connection-string
           alias: HEARINGS_SERVICEBUS_CONNECTION_STRING
+        - name: idam-system-user-name
+          alias: PCS_IDAM_SYSTEM_USERNAME
+        - name: idam-system-user-password
+          alias: PCS_IDAM_SYSTEM_PASSWORD
+
   environment:
     PCS_DB_USER_NAME: pgadmin
     PCS_DB_NAME: pcs

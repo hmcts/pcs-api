@@ -23,6 +23,7 @@ class PostCodeCourtControllerTest {
 
     private static final String POST_CODE = "W3 7RX";
     private static final String AUTH_TOKEN = "Bearer token";
+
     @InjectMocks
     private PostCodeCourtController underTest;
 
@@ -33,7 +34,7 @@ class PostCodeCourtControllerTest {
     @DisplayName("Should return list of courts with Http200 for valid postcode")
     void shouldHandlePostcodesRequestWithCourtsInResponse() {
         List<Court> courts = List.of(new Court(40827, "Central London County Court", 20262));
-        when(postCodeCourtService.getCountyCourtsByPostCode(POST_CODE, AUTH_TOKEN))
+        when(postCodeCourtService.getCountyCourtsByPostCode(POST_CODE))
                 .thenReturn(courts);
         ResponseEntity<List<Court>> response = underTest.getCourts(
                 AUTH_TOKEN,
@@ -42,13 +43,13 @@ class PostCodeCourtControllerTest {
         );
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody()).isEqualTo(courts);
-        verify(postCodeCourtService).getCountyCourtsByPostCode(POST_CODE, AUTH_TOKEN);
+        verify(postCodeCourtService).getCountyCourtsByPostCode(POST_CODE);
     }
 
     @Test
     @DisplayName("Should return empty list of courts with Http200 for valid postcode")
     void shouldHandlePostcodesRequestWithEmptyListOfCourtsInResponse() {
-        when(postCodeCourtService.getCountyCourtsByPostCode(POST_CODE, AUTH_TOKEN))
+        when(postCodeCourtService.getCountyCourtsByPostCode(POST_CODE))
                 .thenReturn(Collections.emptyList());
         ResponseEntity<List<Court>> response = underTest.getCourts(
                 AUTH_TOKEN,
@@ -57,7 +58,7 @@ class PostCodeCourtControllerTest {
         );
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody()).isEqualTo(Collections.emptyList());
-        verify(postCodeCourtService).getCountyCourtsByPostCode(POST_CODE, AUTH_TOKEN);
+        verify(postCodeCourtService).getCountyCourtsByPostCode(POST_CODE);
     }
 }
 
