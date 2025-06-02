@@ -120,7 +120,7 @@ The E2E UI tests use [Playwright](https://playwright.dev/), and in order to acce
 This is done with:
 
 ```bash
-cd src/e2eTests
+cd src/e2eTest
 ````
 
 Before running any tests, please install all required packages:

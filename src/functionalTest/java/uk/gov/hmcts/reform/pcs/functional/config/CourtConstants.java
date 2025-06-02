@@ -4,8 +4,9 @@ import java.util.List;
 import java.util.Map;
 
 public class CourtConstants {
-    public static final String POSTCODE_VALID = "W3 7RX";
+    public static final String POSTCODE_VALID = "M13 9PL";
     public static final String POSTCODE_INVALID = "W3 7RY";
+    public static final int COURT_TYPE_ID = 10;
     public static final Map<String, Object> EXPECTED_COURT_MAP = Map.of(
         "id", 40827,
         "name", "Central London County Court",

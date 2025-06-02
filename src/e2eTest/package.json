@@ -1,5 +1,5 @@
 {
-  "name": "project-e2e-tests",
+  "name": "e2eTest",
   "version": "1.0.0",
   "private": true,
   "engines": {
