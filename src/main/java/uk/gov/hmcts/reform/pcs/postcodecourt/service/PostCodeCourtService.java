@@ -27,7 +27,7 @@ public class PostCodeCourtService {
 
     public List<Court> getCountyCourtsByPostCode(String postcode, String authorisation) {
         if (postcode == null || postcode.isBlank()) {
-            throw new InvalidPostCodeException("Postcode cannot be empty or null");
+            throw new InvalidPostCodeException("Postcode can't be empty or null");
         }
 
         List<Integer> epimIds = getPostcodeCourtMappings(postcode).stream()

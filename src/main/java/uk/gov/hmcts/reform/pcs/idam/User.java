@@ -9,5 +9,4 @@ import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 public class User {
     private String authToken;
     private UserInfo userDetails;
-
 }

@@ -25,6 +25,7 @@ import uk.gov.hmcts.reform.pcs.postcodecourt.repository.PostCodeCourtRepository;
 import java.util.Collections;
 import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 import static uk.gov.hmcts.reform.pcs.postcodecourt.controller.PostCodeCourtController.COURTS_ENDPOINT;
@@ -226,14 +227,7 @@ class PostCodeCourtControllerIT extends AbstractPostgresContainerIT {
     @DisplayName("Should return status 200 when token is valid")
     void shouldReturnStatus200WhenTokenIsValid() {
         String postCode = "E10 QBX";
-        UserInfo mockUserInfo = UserInfo.builder()
-            .sub("subject-123")
-            .uid("uid-456")
-            .name("John Doe")
-            .givenName("John")
-            .familyName("Doe")
-            .roles(List.of("caseworker"))
-            .build();
+        UserInfo mockUserInfo = mock(UserInfo.class);
         User mockUser = new User("Bearer Auth Token", mockUserInfo);
 
         when(idamService.validateAuthToken(AUTH_HEADER)).thenReturn(mockUser);

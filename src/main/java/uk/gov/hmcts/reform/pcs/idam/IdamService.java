@@ -46,7 +46,6 @@ public class IdamService {
         return new User(bearerToken, userDetails);
     }
 
-
     private String getBearerToken(String token) {
         if (StringUtils.isBlank(token)) {
             return token;

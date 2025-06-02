@@ -10,12 +10,7 @@ import uk.gov.hmcts.reform.pcs.location.model.CourtVenue;
 import uk.gov.hmcts.reform.pcs.location.service.LocationReferenceService;
 import uk.gov.hmcts.reform.pcs.postcodecourt.entity.PostCodeCourtEntity;
 import uk.gov.hmcts.reform.pcs.postcodecourt.entity.PostCodeCourtKey;
-<<<<<<< HEAD
-import uk.gov.hmcts.reform.pcs.location.service.LocationReferenceService;
-import uk.gov.hmcts.reform.pcs.location.model.CourtVenue;
 import uk.gov.hmcts.reform.pcs.postcodecourt.exception.InvalidPostCodeException;
-=======
->>>>>>> master
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.Court;
 import uk.gov.hmcts.reform.pcs.postcodecourt.repository.PostCodeCourtRepository;
 
@@ -25,7 +20,6 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -86,15 +80,6 @@ class PostCodeCourtServiceTest {
     }
 
     @Test
-    @DisplayName("Should return an empty list of CountyCourts for a null postcode")
-    void shouldReturnEmptyListOfCountyCourtsForNullPostCode() {
-        String nullPostcode = null;
-        final List<Court> response = underTest.getCountyCourtsByPostCode(nullPostcode, null);
-        assertThat(response).isEmpty();
-        verify(postCodeCourtRepository, never()).findByIdPostCodeIn(anyList());
-    }
-
-    @Test
     @DisplayName("Should return a partial match if available when no full match is found")
     void shouldReturnPartiallyMatchedPostCode() {
         String postCode = "W37RX";
@@ -122,7 +107,7 @@ class PostCodeCourtServiceTest {
         String emptyPostCode = "";
         assertThatThrownBy(() -> underTest.getCountyCourtsByPostCode(emptyPostCode, null)).isInstanceOf(
                 InvalidPostCodeException.class)
-            .hasMessage("Postcode cannot be empty or null");
+            .hasMessage("Postcode can't be empty or null");
         verify(postCodeCourtRepository, never()).findByIdPostCodeIn(any());
     }
 
@@ -131,7 +116,7 @@ class PostCodeCourtServiceTest {
     void shouldThrowInvalidPostCodeExceptionWhenPostcodeIsNull() {
         assertThatThrownBy(() -> underTest.getCountyCourtsByPostCode(null, null)).isInstanceOf(
                 InvalidPostCodeException.class)
-            .hasMessage("Postcode cannot be empty or null");
+            .hasMessage("Postcode can't be empty or null");
         verify(postCodeCourtRepository, never()).findByIdPostCodeIn(any());
     }
 
