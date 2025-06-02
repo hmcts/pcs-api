@@ -141,13 +141,13 @@ class PostCodeCourtControllerIT extends AbstractPostgresContainerIT {
                 });
     }
 
-
     @DisplayName("Should return empty list when for given postcode's epimId doesn't have any matching county courts.")
     @Test
     void shouldThrow404NotfoundExceptionFromLocationReferenceThenReceiveEmptyListInResponse() {
         String postCode = "LE2 0QB";
+        List<String> postcodes = List.of("LE2 0QB", "LE2 0Q", "LE2 0", "LE2");
 
-        List<PostCodeCourtEntity> all = postCodeCourtRepository.findByIdPostCode(postCode);
+        List<PostCodeCourtEntity> all = postCodeCourtRepository.findByIdPostCodeIn(postcodes);
 
         when(authTokenGenerator.generate()).thenReturn(LOC_REF_SERVICE_AUTH_HEADER);
 
@@ -180,11 +180,10 @@ class PostCodeCourtControllerIT extends AbstractPostgresContainerIT {
         String postCode = "UB7 0DG";
 
         webTestClient.get()
-            .uri(uriBuilder -> uriBuilder.path(COURTS_ENDPOINT)
-                .queryParam(POSTCODE, postCode).build())
-            .header(SERVICE_AUTHORIZATION, PCS_SERVICE_AUTH_HEADER)
-            .exchange().expectStatus().isBadRequest();
-
+                .uri(uriBuilder -> uriBuilder.path(COURTS_ENDPOINT)
+                        .queryParam(POSTCODE, postCode).build())
+                .header(SERVICE_AUTHORIZATION, PCS_SERVICE_AUTH_HEADER)
+                .exchange().expectStatus().isBadRequest();
     }
 
     private void assertingResponseToBeEmptyList(List<PostCodeCourtEntity> all) {
