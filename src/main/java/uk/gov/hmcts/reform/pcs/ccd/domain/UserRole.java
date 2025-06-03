@@ -8,6 +8,8 @@ import uk.gov.hmcts.ccd.sdk.api.Permission;
 
 import java.util.Set;
 
+import static uk.gov.hmcts.reform.pcs.ccd.domain.RoleType.IDAM;
+
 /**
  * All the different roles for a PCS case.
  */
@@ -15,11 +17,14 @@ import java.util.Set;
 @Getter
 public enum UserRole implements HasRole {
 
-    CASE_WORKER("caseworker-civil", Permission.CRU);
+    CITIZEN("citizen", Permission.CRU, IDAM),
+    CREATOR("[CREATOR]", Permission.CRU, IDAM),
+    CIVIL_CASE_WORKER("caseworker-civil", Permission.CRUD, IDAM);
 
     @JsonValue
     private final String role;
     private final Set<Permission> caseTypePermissions;
+    private final RoleType roleType;
 
     public String getCaseTypePermissions() {
         return Permission.toString(caseTypePermissions);
