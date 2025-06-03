@@ -18,12 +18,9 @@ import static uk.gov.hmcts.reform.pcs.ccd.domain.RoleType.RAS;
 @Getter
 public enum UserRole implements HasRole {
 
-    CITIZEN("citizen", Permission.CRU, RAS),
-    CREATOR("[CREATOR]", Permission.CRU, RAS),
-    CIVIL_CASE_WORKER("caseworker-civil", Permission.CRUD, IDAM),
-    APPLICANT_SOLICITOR("applicant-solicitor", Permission.CRU, RAS),
-    RESPONDENT_SOLICITOR("respondent-solicitor", Permission.CRU, RAS),
-    JUDGE("judge", Permission.CRU, RAS);
+    CITIZEN("citizen", Permission.CRU, IDAM),
+    CREATOR("[CREATOR]", Permission.CRU, IDAM),
+    CIVIL_CASE_WORKER("caseworker-civil", Permission.CRUD, IDAM);
 
     @JsonValue
     private final String role;
