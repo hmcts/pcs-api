@@ -69,6 +69,7 @@ public class IdamService {
             throw new IdamException("Unable to get access token response", fe);
         }
     }
+
     private String getBearerToken(String token) {
         if (StringUtils.isBlank(token)) {
             return token;

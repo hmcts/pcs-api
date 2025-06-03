@@ -21,6 +21,7 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -43,7 +44,7 @@ class PostCodeCourtServiceTest {
 
     @BeforeEach
     void setUp() {
-        when(idamService.getSystemUserAuthorisation()).thenReturn(SYSTEM_USER_TOKEN);
+        lenient().when(idamService.getSystemUserAuthorisation()).thenReturn(SYSTEM_USER_TOKEN);
         underTest = new PostCodeCourtService(postCodeCourtRepository, locationReferenceService, idamService);
     }
 

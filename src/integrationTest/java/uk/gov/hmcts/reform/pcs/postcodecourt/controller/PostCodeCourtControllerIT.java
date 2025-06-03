@@ -102,6 +102,8 @@ class PostCodeCourtControllerIT extends AbstractPostgresContainerIT {
 
         when(authTokenGenerator.generate()).thenReturn(LOC_REF_SERVICE_AUTH_HEADER);
 
+        when(idamService.getSystemUserAuthorisation()).thenReturn("Bearer " + SYSTEM_USER_ID_TOKEN);
+
         stubLocationReferenceApi(id1.getEpimId().toString(),
                 List.of(new CourtVenue(id1.getEpimId(), court1.id(), court1.name())));
         stubLocationReferenceApi(id2.getEpimId().toString(),
