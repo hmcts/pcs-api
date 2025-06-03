@@ -6,17 +6,26 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
 import uk.gov.hmcts.reform.pcs.exception.InvalidAuthTokenException;
-
-import static com.azure.spring.cloud.autoconfigure.implementation.aad.security.constants.Constants.BEARER_PREFIX;
+import org.springframework.beans.factory.annotation.Value;
+import uk.gov.hmcts.reform.idam.client.models.TokenResponse;
+import uk.gov.hmcts.reform.pcs.exception.IdamException;
 
 @Service
 @Slf4j
 public class IdamService {
+    private static final String BEARER_PREFIX = "Bearer ";
 
     private final IdamClient idamClient;
+    private final String idamSystemUsername;
+    private final String idamSystemPassword;
 
-    public IdamService(IdamClient idamClient) {
+    public IdamService(IdamClient idamClient,
+                       @Value("${idam.system-user.username}") String idamSystemUsername,
+                       @Value("${idam.system-user.password}") String idamSystemPassword) {
+
         this.idamClient = idamClient;
+        this.idamSystemUsername = idamSystemUsername;
+        this.idamSystemPassword = idamSystemPassword;
     }
 
     public User validateAuthToken(String authorisation) {
@@ -24,7 +33,7 @@ public class IdamService {
             log.warn("Authorization token is null or blank");
             throw new InvalidAuthTokenException("Authorization token is null or blank");
         }
-        if (!authorisation.startsWith("Bearer ") || authorisation.length() <= 7) {
+        if (!authorisation.startsWith(BEARER_PREFIX) || authorisation.length() <= 7) {
             log.warn("Malformed Bearer token: '{}'", authorisation);
             throw new InvalidAuthTokenException("Malformed Authorization token");
         }
@@ -48,6 +57,18 @@ public class IdamService {
         return new User(bearerToken, userDetails);
     }
 
+    public String getSystemUserAuthorisation() {
+        TokenResponse accessTokenResponse = getAccessTokenResponse();
+        return BEARER_PREFIX + accessTokenResponse.idToken;
+    }
+
+    private TokenResponse getAccessTokenResponse() {
+        try {
+            return idamClient.getAccessTokenResponse(idamSystemUsername, idamSystemPassword);
+        } catch (FeignException fe) {
+            throw new IdamException("Unable to get access token response", fe);
+        }
+    }
     private String getBearerToken(String token) {
         if (StringUtils.isBlank(token)) {
             return token;

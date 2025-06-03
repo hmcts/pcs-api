@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.pcs.postcodecourt.controller;
 
 import lombok.extern.slf4j.Slf4j;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,6 +12,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
+import uk.gov.hmcts.reform.idam.client.IdamClient;
 import uk.gov.hmcts.reform.pcs.Application;
 import uk.gov.hmcts.reform.pcs.config.AbstractPostgresContainerIT;
 import uk.gov.hmcts.reform.pcs.idam.IdamService;
@@ -22,6 +24,9 @@ import uk.gov.hmcts.reform.pcs.postcodecourt.entity.PostCodeCourtKey;
 import uk.gov.hmcts.reform.pcs.exception.InvalidAuthTokenException;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.Court;
 import uk.gov.hmcts.reform.pcs.postcodecourt.repository.PostCodeCourtRepository;
+
+import uk.gov.hmcts.reform.pcs.util.IdamHelper;
+
 import java.util.Collections;
 import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -38,6 +43,7 @@ import static uk.gov.hmcts.reform.pcs.postcodecourt.controller.PostCodeCourtCont
 class PostCodeCourtControllerIT extends AbstractPostgresContainerIT {
 
     private static final String AUTH_HEADER = "Bearer token";
+    private static final String SYSTEM_USER_ID_TOKEN = "system-user-id-token";
     private static final String PCS_SERVICE_AUTH_HEADER = "Bearer serviceToken";
     private static final String LOC_REF_SERVICE_AUTH_HEADER = "Bearer locServiceToken";
     private static final String SERVICE_AUTHORIZATION = "ServiceAuthorization";
@@ -45,18 +51,23 @@ class PostCodeCourtControllerIT extends AbstractPostgresContainerIT {
 
     @Autowired
     private WebTestClient webTestClient;
-
     @Autowired
     private PostCodeCourtRepository postCodeCourtRepository;
 
     @MockitoBean
     private AuthTokenGenerator authTokenGenerator;
-
+    @MockitoBean
+    private IdamClient idamClient;
     @MockitoBean
     private LocationReferenceApi locationReferenceApi;
-
     @MockitoBean
     private IdamService idamService;
+
+    @BeforeEach
+    void setUp() {
+        IdamHelper.stubIdamSystemUser(idamClient, SYSTEM_USER_ID_TOKEN);
+    }
+
 
     @Test
     @DisplayName("Should return valid Http OK for known postcodes. The response should be empty for all epimIds.")
@@ -65,10 +76,10 @@ class PostCodeCourtControllerIT extends AbstractPostgresContainerIT {
         when(authTokenGenerator.generate()).thenReturn(LOC_REF_SERVICE_AUTH_HEADER);
 
         all.forEach(postCodeCourtEntity -> when(locationReferenceApi.getCountyCourts(
-                AUTH_HEADER,
-                LOC_REF_SERVICE_AUTH_HEADER,
-                postCodeCourtEntity.getId().getEpimId().toString(),
-                COUNTY_COURT_TYPE_ID
+            "Bearer " + SYSTEM_USER_ID_TOKEN,
+            LOC_REF_SERVICE_AUTH_HEADER,
+            postCodeCourtEntity.getId().getEpimId().toString(),
+            COUNTY_COURT_TYPE_ID
         )).thenReturn(Collections.emptyList()));
         assertThat(all).isNotEmpty();
         assertingResponseToBeEmptyList(all);
@@ -107,10 +118,10 @@ class PostCodeCourtControllerIT extends AbstractPostgresContainerIT {
 
     private void stubLocationReferenceApi(String epimId, List<CourtVenue> response) {
         when(locationReferenceApi.getCountyCourts(
-                AUTH_HEADER,
-                LOC_REF_SERVICE_AUTH_HEADER,
-                epimId,
-                COUNTY_COURT_TYPE_ID
+            "Bearer " + SYSTEM_USER_ID_TOKEN,
+            LOC_REF_SERVICE_AUTH_HEADER,
+            epimId,
+            COUNTY_COURT_TYPE_ID
         )).thenReturn(response);
     }
 
@@ -149,10 +160,10 @@ class PostCodeCourtControllerIT extends AbstractPostgresContainerIT {
         when(authTokenGenerator.generate()).thenReturn(LOC_REF_SERVICE_AUTH_HEADER);
 
         all.forEach(postCodeCourtEntity -> when(locationReferenceApi.getCountyCourts(
-                AUTH_HEADER,
-                LOC_REF_SERVICE_AUTH_HEADER,
-                postCodeCourtEntity.getId().getEpimId().toString(),
-                COUNTY_COURT_TYPE_ID
+            "Bearer " + SYSTEM_USER_ID_TOKEN,
+            LOC_REF_SERVICE_AUTH_HEADER,
+            postCodeCourtEntity.getId().getEpimId().toString(),
+            COUNTY_COURT_TYPE_ID
         )).thenThrow(new RuntimeException("No matching courts found for ".concat(postCode), null)));
 
         assertingResponseToBeEmptyList(all);
@@ -164,10 +175,10 @@ class PostCodeCourtControllerIT extends AbstractPostgresContainerIT {
         String postCode = "UB7 0DG";
 
         webTestClient.get()
-                .uri(uriBuilder -> uriBuilder.path(COURTS_ENDPOINT)
-                        .queryParam(POSTCODE, postCode).build())
-                .header(AUTHORIZATION, AUTH_HEADER)
-                .exchange().expectStatus().isBadRequest();
+            .uri(uriBuilder -> uriBuilder.path(COURTS_ENDPOINT)
+                .queryParam(POSTCODE, postCode).build())
+            .header(AUTHORIZATION, AUTH_HEADER)
+            .exchange().expectStatus().isBadRequest();
 
     }
 
@@ -256,18 +267,18 @@ class PostCodeCourtControllerIT extends AbstractPostgresContainerIT {
 
     private void assertingResponseToBeEmptyList(List<PostCodeCourtEntity> all) {
         all.forEach(postCodeCourtEntity -> webTestClient.get()
-                .uri(uriBuilder -> uriBuilder.path(COURTS_ENDPOINT)
-                        .queryParam(POSTCODE, postCodeCourtEntity.getId().getPostCode()).build())
-                .header(AUTHORIZATION, AUTH_HEADER)
-                .header(SERVICE_AUTHORIZATION, PCS_SERVICE_AUTH_HEADER)
-                .exchange()
-                .expectStatus().isOk()
-                .expectBody(List.class)
-                .consumeWith(response -> {
-                    List<?> body = response.getResponseBody();
-                    assertThat(body)
-                            .isNotNull()
-                            .isEmpty();
-                }));
+            .uri(uriBuilder -> uriBuilder.path(COURTS_ENDPOINT)
+                .queryParam(POSTCODE, postCodeCourtEntity.getId().getPostCode()).build())
+            .header(AUTHORIZATION, AUTH_HEADER)
+            .header(SERVICE_AUTHORIZATION, PCS_SERVICE_AUTH_HEADER)
+            .exchange()
+            .expectStatus().isOk()
+            .expectBody(List.class)
+            .consumeWith(response -> {
+                List<?> body = response.getResponseBody();
+                assertThat(body)
+                    .isNotNull()
+                    .isEmpty();
+            }));
     }
 }

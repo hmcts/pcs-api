@@ -18,13 +18,14 @@ java:
         - name: pcs-api-idam-secret
           alias: IDAM_CLIENT_SECRET
         - name: idam-system-user-name
-          alias: IDAM_SYSTEM_USERNAME
+          alias: PCS_IDAM_SYSTEM_USERNAME
         - name: idam-system-user-password
-          alias: IDAM_SYSTEM_PASSWORD
+          alias: PCS_IDAM_SYSTEM_PASSWORD
 
   environment:
     PCS_DB_USER_NAME: pgadmin
     PCS_DB_NAME: pcs
+    IDAM_CLIENT_ID: "pcs-api"
     DRAFT_STORE_DB_CONN_OPTIONS: "?sslmode=require&gssEncMode=disable"
     PCS_DB_HOST: "pcs-{{ .Values.global.environment }}.postgres.database.azure.com"
     IDAM_S2S_AUTH_URL: "http://rpe-service-auth-provider-{{ .Values.global.environment }}.service.core-compute-{{ .Values.global.environment }}.internal"

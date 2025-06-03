@@ -49,7 +49,7 @@ public class PostCodeCourtController {
     public ResponseEntity<List<Court>> getCourts(@RequestHeader(AUTHORIZATION) String authorisation,
                                                  @RequestHeader(SERVICE_AUTHORIZATION) String serviceAuthorization,
                                                  @QueryParam(POSTCODE) String postcode) {
-        return ResponseEntity.ok(postCodeCourtService.getCountyCourtsByPostCode(postcode, authorisation));
+        return ResponseEntity.ok(postCodeCourtService.getCountyCourtsByPostCode(postcode));
     }
 
 }

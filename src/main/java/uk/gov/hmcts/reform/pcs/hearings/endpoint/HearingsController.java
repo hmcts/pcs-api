@@ -1,8 +1,5 @@
 package uk.gov.hmcts.reform.pcs.hearings.endpoint;
 
-import static org.springframework.http.HttpHeaders.AUTHORIZATION;
-import static uk.gov.hmcts.reform.pcs.hearings.constants.HearingConstants.SERVICE_AUTHORIZATION;
-
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -20,6 +17,9 @@ import uk.gov.hmcts.reform.pcs.hearings.model.HearingRequest;
 import uk.gov.hmcts.reform.pcs.hearings.model.HearingResponse;
 import uk.gov.hmcts.reform.pcs.hearings.model.UpdateHearingRequest;
 import uk.gov.hmcts.reform.pcs.hearings.service.HmcHearingService;
+
+import static org.springframework.http.HttpHeaders.AUTHORIZATION;
+import static uk.gov.hmcts.reform.pcs.hearings.constants.HearingConstants.SERVICE_AUTHORIZATION;
 
 /**
  * This controller will just pass through the input to HMC currently,
@@ -41,7 +41,7 @@ public class HearingsController {
         @RequestHeader(AUTHORIZATION) String authorisation,
         @RequestHeader(SERVICE_AUTHORIZATION) String serviceAuthorization,
         @RequestBody HearingRequest hearingPayload) {
-        return hmcHearingService.createHearing(authorisation, hearingPayload);
+        return hmcHearingService.createHearing(hearingPayload);
     }
 
     @PutMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
@@ -50,7 +50,7 @@ public class HearingsController {
         @RequestHeader(SERVICE_AUTHORIZATION) String serviceAuthorization,
         @PathVariable("id") String id,
         @RequestBody UpdateHearingRequest hearingPayload) {
-        return hmcHearingService.updateHearing(authorisation, id, hearingPayload);
+        return hmcHearingService.updateHearing(id, hearingPayload);
     }
 
     @DeleteMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
@@ -59,7 +59,7 @@ public class HearingsController {
         @RequestHeader(SERVICE_AUTHORIZATION) String serviceAuthorization,
         @PathVariable("id") String id,
         @RequestBody DeleteHearingRequest hearingDeletePayload) {
-        return hmcHearingService.deleteHearing(authorisation, id, hearingDeletePayload);
+        return hmcHearingService.deleteHearing(id, hearingDeletePayload);
     }
 
     @GetMapping(value = "/{id}")
@@ -67,6 +67,6 @@ public class HearingsController {
         @RequestHeader(AUTHORIZATION) String authorisation,
         @RequestHeader(SERVICE_AUTHORIZATION) String serviceAuthorization,
         @PathVariable("id") String id) {
-        return hmcHearingService.getHearing(authorisation, id);
+        return hmcHearingService.getHearing(id);
     }
 }
