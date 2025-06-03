@@ -9,7 +9,6 @@ import uk.gov.hmcts.ccd.sdk.api.Permission;
 import java.util.Set;
 
 import static uk.gov.hmcts.reform.pcs.ccd.domain.RoleType.IDAM;
-import static uk.gov.hmcts.reform.pcs.ccd.domain.RoleType.RAS;
 
 /**
  * All the different roles for a PCS case.
