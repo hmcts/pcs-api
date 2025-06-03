@@ -30,6 +30,8 @@ ccd:
       enabled: true
     definitionImporter:
       enabled: false
+    elastic:
+      enabled: true
     userProfile:
       enabled: false
     userProfileImporter:
