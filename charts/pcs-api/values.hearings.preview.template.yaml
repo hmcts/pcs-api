@@ -22,3 +22,8 @@ servicebus:
                 value: "AAA3"
               - name: "hmctsDeploymentId"
                 value: "deployment-${SERVICE_NAME}"
+
+ccd:
+  ccd-data-store-api:
+    java:
+      image: 'hmctssandbox.azurecr.io/ccd/data-store-api:scott-HDPI-866'
