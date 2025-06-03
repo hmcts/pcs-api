@@ -23,6 +23,11 @@ spring:
       hibernate.format_sql: true
       show-dql: true
 
+idam:
+  system-user:
+    username: pcs-system-user-it
+    password: pcs-system-password-it
+
 flyway:
   noop:
     strategy: false

@@ -15,12 +15,22 @@ java:
           alias: PCS_NOTIFY_API_KEY
         - name: hmc-servicebus-connection-string
           alias: HEARINGS_SERVICEBUS_CONNECTION_STRING
+        - name: pcs-api-idam-secret
+          alias: IDAM_CLIENT_SECRET
+        - name: idam-system-user-name
+          alias: PCS_IDAM_SYSTEM_USERNAME
+        - name: idam-system-user-password
+          alias: PCS_IDAM_SYSTEM_PASSWORD
+
   environment:
     PCS_DB_USER_NAME: pgadmin
     PCS_DB_NAME: pcs
+    IDAM_CLIENT_ID: "pcs-api"
     DRAFT_STORE_DB_CONN_OPTIONS: "?sslmode=require&gssEncMode=disable"
     PCS_DB_HOST: "pcs-{{ .Values.global.environment }}.postgres.database.azure.com"
     IDAM_S2S_AUTH_URL: "http://rpe-service-auth-provider-{{ .Values.global.environment }}.service.core-compute-{{ .Values.global.environment }}.internal"
+    IDAM_API_REDIRECT_URL: "https://pcs-pfe-{{ .Values.global.environment }}.service.core-compute-{{ .Values.global.environment }}.internal/authenticated"
+    IDAM_API_URL: "https://idam-api.{{ .Values.global.environment }}.platform.hmcts.net"
     HMC_API_URL: "http://hmc-cft-hearing-service-{{ .Values.global.environment }}.service.core-compute-{{ .Values.global.environment }}.internal"
     LOCATION_REF_URL: "http://rd-location-ref-api-{{ .Values.global.environment }}.service.core-compute-{{ .Values.global.environment }}.internal"
     FLYWAY_NOOP_STRATEGY: "true"
