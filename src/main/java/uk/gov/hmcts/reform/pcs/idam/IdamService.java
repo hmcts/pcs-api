@@ -19,22 +19,22 @@ public class IdamService {
 
     public User validateAuthToken(String authorisation) {
         if (authorisation == null || authorisation.isBlank()) {
-            log.warn("Authorisation token is null or blank");
-            throw new InvalidAuthTokenException("Authorisation token is null or blank");
+            log.warn("Authorization token is null or blank");
+            throw new InvalidAuthTokenException("Authorization token is null or blank");
         }
         if (!authorisation.startsWith("Bearer ") || authorisation.length() <= 7) {
             log.warn("Malformed Bearer token: '{}'", authorisation);
-            throw new InvalidAuthTokenException("Malformed Bearer token");
+            throw new InvalidAuthTokenException("Malformed Authorization token");
         }
         try {
             User user = retrieveUser(authorisation);
             log.info("Successfully authenticated Idam token");
             return user;
         } catch (FeignException.Unauthorized ex) {
-            log.error("The authorization token provided is expired or invalid", ex);
-            throw new InvalidAuthTokenException("The authorization token provided is expired or invalid");
+            log.error("The Authorization token provided is expired or invalid", ex);
+            throw new InvalidAuthTokenException("The Authorization token provided is expired or invalid");
         } catch (Exception ex) {
-            log.error("Unexpected error while validating authorisation token", ex);
+            log.error("Unexpected error while validating Authorization token", ex);
             throw new InvalidAuthTokenException("Unexpected error while validating token", ex);
         }
     }
