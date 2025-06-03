@@ -67,6 +67,8 @@ ccd:
               alias: DEFINITION_STORE_IDAM_KEY
   ccd-data-store-api:
     java:
+      image: 'hmctspublic.azurecr.io/ccd/data-store-api:pr-2496'
+      imagePullPolicy: Always
       devmemoryRequests: '1524Mi'
       devmemoryLimits: '2048Mi'
       devcpuRequests: '500m'
@@ -117,7 +119,7 @@ ccd:
             - microservicekey-ccd-gw
   ccd-admin-web:
     nodejs:
-      image: hmctspublic.azurecr.io/ccd/admin-web:latest
+      image: hmctspublic.azurecr.io/ccd/admin-web:pr-2496
       ingressHost: admin-web-${SERVICE_FQDN}
       environment:
         ADMINWEB_GLOBAL_SEARCH_INDEX_URL: http://${SERVICE_NAME}-ccd-definition-store/elastic-support/global-search/index
