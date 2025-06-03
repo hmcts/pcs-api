@@ -6,6 +6,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -34,7 +36,7 @@ public class IdamAuthenticationFilter extends OncePerRequestFilter {
             filterChain.doFilter(request, response);
             return;
         }
-        String authToken = request.getHeader("Authorization");
+        String authToken = request.getHeader(HttpHeaders.AUTHORIZATION);
 
         try {
             User user = idamService.validateAuthToken(authToken);
@@ -44,10 +46,7 @@ public class IdamAuthenticationFilter extends OncePerRequestFilter {
             filterChain.doFilter(request, response);
         } catch (InvalidAuthTokenException ex) {
             log.error("Authorization failed: {}", ex.getMessage(), ex);
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            response.setContentType("application/json");
-            String json = "{\"error\":\"" + ex.getMessage() + "\"}";
-            response.getWriter().write(json);
+            response.setStatus(HttpStatus.UNAUTHORIZED.value());
         }
     }
 
