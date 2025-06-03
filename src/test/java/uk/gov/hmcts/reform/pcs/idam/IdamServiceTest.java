@@ -4,6 +4,8 @@ package uk.gov.hmcts.reform.pcs.idam;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -29,22 +31,14 @@ class IdamServiceTest {
     @InjectMocks
     private IdamService underTest;
 
-    @DisplayName("Should throw InvalidAuthTokenException when token is null")
-    @Test
-    void shouldThrowInvalidAuthTokenExceptionWhenAuthTokenIsNull() {
+
+    @ParameterizedTest
+    @NullAndEmptySource
+    @DisplayName("Should throw InvalidAuthTokenException when token is null or blank")
+    void shouldThrowInvalidAuthTokenExceptionWhenAuthTokenIsNullOrBlank(String authToken) {
         assertThatThrownBy(() -> underTest.validateAuthToken(null))
             .isInstanceOf(InvalidAuthTokenException.class)
-            .hasMessage("Authorisation token is null or blank");
-        
-        verifyNoInteractions(idamClient);
-    }
-
-    @DisplayName("Should throw InvalidAuthTokenException when token is blank")
-    @Test
-    void shouldThrowInvalidAuthTokenExceptionWhenAuthTokenIsBlank() {
-        assertThatThrownBy(() -> underTest.validateAuthToken(" "))
-            .isInstanceOf(InvalidAuthTokenException.class)
-            .hasMessage("Authorisation token is null or blank");
+                .hasMessage("Authorization token is null or blank");
 
         verifyNoInteractions(idamClient);
     }
@@ -54,7 +48,7 @@ class IdamServiceTest {
     void shouldThrowInvalidAuthTokenExceptionWhenAuthTokenMalformed() {
         assertThatThrownBy(() -> underTest.validateAuthToken("InvalidToken"))
             .isInstanceOf(InvalidAuthTokenException.class)
-            .hasMessageContaining("Malformed Bearer token");
+                .hasMessageContaining("Malformed Authorization token");
 
         verifyNoInteractions(idamClient);
     }

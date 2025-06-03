@@ -86,7 +86,7 @@ idam:
     username: ${IDAM_SYSTEM_USERNAME:dummysystemupdate@test.com}
     password: ${IDAM_SYSTEM_PASSWORD:dummy}
   client:
-    id: 'pcs'
+    id: 'pcs-api'
     secret: ${IDAM_CLIENT_SECRET:123456}
     redirect_uri: ${IDAM_API_REDIRECT_URL:http://localhost:3001/oauth2/callback}
 

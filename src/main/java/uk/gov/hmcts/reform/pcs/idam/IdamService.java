@@ -3,7 +3,6 @@ package uk.gov.hmcts.reform.pcs.idam;
 import com.nimbusds.oauth2.sdk.util.StringUtils;
 import feign.FeignException;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
 import uk.gov.hmcts.reform.pcs.exception.InvalidAuthTokenException;
@@ -14,8 +13,11 @@ import static com.azure.spring.cloud.autoconfigure.implementation.aad.security.c
 @Slf4j
 public class IdamService {
 
-    @Autowired
-    private IdamClient idamClient;
+    private final IdamClient idamClient;
+
+    public IdamService(IdamClient idamClient) {
+        this.idamClient = idamClient;
+    }
 
     public User validateAuthToken(String authorisation) {
         if (authorisation == null || authorisation.isBlank()) {

@@ -6,13 +6,11 @@ import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RestController;
-import uk.gov.hmcts.reform.pcs.dashboard.model.DashboardNotification;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.Court;
 import uk.gov.hmcts.reform.pcs.postcodecourt.service.PostCodeCourtService;
 
@@ -34,9 +32,10 @@ public class PostCodeCourtController {
         description = "Returns a list of courts matching the given postcode")
     @ApiResponse(responseCode = "200",
         description = "Successful response with list of courts or empty list if no match found",
-        content = {@Content(
-            mediaType = "application/json",
-            array = @ArraySchema(schema = @Schema(implementation = Court.class)))
+        content =
+            {
+                @Content(mediaType = "application/json",
+                    array = @ArraySchema(schema = @Schema(implementation = Court.class)))
         })
     @ApiResponse(responseCode = "400",
         description = "Missing or empty postcode query parameter",
