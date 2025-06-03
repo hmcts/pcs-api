@@ -42,6 +42,11 @@ java {
 }
 
 sourceSets {
+  pipeline {
+    java.srcDir 'src/pipeline/java'
+    compileClasspath += sourceSets.main.output + configurations.testRuntimeClasspath
+    runtimeClasspath += output + compileClasspath
+  }
   functionalTest {
     java {
       compileClasspath += main.output
@@ -91,6 +96,8 @@ configurations {
 
   cftlibTestImplementation.extendsFrom testImplementation
   cftlibTestRuntime.extendsFrom testRuntime
+
+  pipelineImplementation.extendsFrom testImplementation
 }
 
 ccd {
@@ -413,7 +420,7 @@ tasks.withType(CftlibExec).configureEach {
 
 tasks.register('highLevelDataSetup', JavaExec) {
   mainClass.set("uk.gov.hmcts.reform.pcs.ccd.config.HighLevelDataSetupApp")
-  classpath += sourceSets.main.runtimeClasspath
+  classpath = sourceSets.pipeline.runtimeClasspath
   jvmArgs = ['--add-opens=java.base/java.lang.reflect=ALL-UNNAMED']
 }
 
