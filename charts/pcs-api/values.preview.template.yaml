@@ -18,36 +18,6 @@ java:
           alias: PCS_IDAM_SYSTEM_USERNAME
         - name: idam-system-user-password
           alias: PCS_IDAM_SYSTEM_PASSWORD
-
-  environment:
-    PCS_DB_HOST: "{{ .Release.Name }}-postgresql"
-    PCS_DB_USER_NAME: "{{ .Values.postgresql.auth.username}}"
-    PCS_DB_PASSWORD: "{{ .Values.postgresql.auth.password}}"
-    PCS_DB_NAME: "{{ .Values.postgresql.auth.database}}"
-    FLYWAY_NOOP_STRATEGY: "false"
-    SPRING_FLYWAY_LOCATIONS: "classpath:db/migration,classpath:db/testdata"
-    SPRING_LOGGING_LEVEL_ROOT: "DEBUG"
-    ENABLE_TESTING_SUPPORT: true
-    DB_SCHEDULER_EXECUTOR_ENABLED: false
-  postgresql:
-    enabled: true
-    image:
-      tag: '16.0.0'
-
-dbTaskRunner:
-  # Don't modify below here
-  image: ${IMAGE_NAME}
-  ingressHost: task-${SERVICE_FQDN}
-  keyVaults:
-    pcs:
-      secrets:
-        - name: app-insights-connection-string
-        - name: pcs-api-s2s-secret
-          alias: PCS_API_S2S_SECRET
-        - name: govnotify-test-key
-          alias: PCS_NOTIFY_API_KEY
-        - name: hmc-servicebus-connection-string
-          alias: HEARINGS_SERVICEBUS_CONNECTION_STRING
   environment:
     PCS_DB_HOST: "{{ .Release.Name }}-postgresql"
     PCS_DB_USER_NAME: "{{ .Values.postgresql.auth.username}}"
@@ -59,7 +29,7 @@ dbTaskRunner:
     ENABLE_TESTING_SUPPORT: true
     DB_SCHEDULER_EXECUTOR_ENABLED: true
   postgresql:
-    enabled: false
+    enabled: true
     image:
       tag: '16.0.0'
 
