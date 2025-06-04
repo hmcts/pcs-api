@@ -32,10 +32,13 @@ public class HighLevelDataSetupApp extends DataLoaderToDefinitionStore {
     }
 
     public static void main(String[] args) throws Throwable {
+        // Start PostgreSQL TestContainer
         startPostgreSQLContainer();
 
+        // Set system properties for Spring to use
         setDatabaseSystemProperties();
 
+        // Add shutdown hook to stop container
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             if (postgres != null && postgres.isRunning()) {
                 logger.info("Stopping PostgreSQL TestContainer...");
@@ -69,16 +72,24 @@ public class HighLevelDataSetupApp extends DataLoaderToDefinitionStore {
     }
 
     private static void setDatabaseSystemProperties() {
+        // Set datasource properties
         System.setProperty("spring.datasource.url", postgres.getJdbcUrl());
         System.setProperty("spring.datasource.username", postgres.getUsername());
         System.setProperty("spring.datasource.password", postgres.getPassword());
         System.setProperty("spring.datasource.driver-class-name", "org.postgresql.Driver");
-        System.setProperty("spring.jpa.database-platform", "org.hibernate.dialect.PostgreSQLDialect");
+
+        // Set JPA properties with different property names to avoid circular reference
+        System.setProperty("database.platform", "org.hibernate.dialect.PostgreSQLDialect");
+        System.setProperty("database.url", postgres.getJdbcUrl());
+        System.setProperty("database.username", postgres.getUsername());
+        System.setProperty("database.password", postgres.getPassword());
+        System.setProperty("database.driver", "org.postgresql.Driver");
 
         logger.info("Database connection configured:");
         logger.info("  URL: {}", postgres.getJdbcUrl());
         logger.info("  Username: {}", postgres.getUsername());
         logger.info("  Driver: org.postgresql.Driver");
+        logger.info("  Platform: org.hibernate.dialect.PostgreSQLDialect");
     }
 
     @Override

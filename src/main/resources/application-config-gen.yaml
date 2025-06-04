@@ -1,11 +1,11 @@
 spring:
   datasource:
-    url: ${spring.datasource.url}
-    driver-class-name: ${spring.datasource.driver-class-name}
-    username: ${spring.datasource.username}
-    password: ${spring.datasource.password}
+    url: ${database.url}
+    driver-class-name: ${database.driver}
+    username: ${database.username}
+    password: ${database.password}
   jpa:
-    database-platform: ${spring.jpa.database-platform}
+    database-platform: ${database.platform}
     hibernate:
       ddl-auto: none
     show-sql: true
