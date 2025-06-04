@@ -47,10 +47,6 @@ public class SecurityConfiguration {
         http
             .addFilterBefore(serviceAuthFilter, AbstractPreAuthenticatedProcessingFilter.class)
             .addFilterBefore(idamAuthFilter, AbstractPreAuthenticatedProcessingFilter.class)
-            .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/courts/**").authenticated()
-                .anyRequest().permitAll()
-            )
             .sessionManagement(sessionManagement -> sessionManagement.sessionCreationPolicy(STATELESS))
             .httpBasic(AbstractHttpConfigurer::disable)
             .formLogin(AbstractHttpConfigurer::disable)

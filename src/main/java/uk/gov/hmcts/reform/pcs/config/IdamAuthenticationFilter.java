@@ -28,14 +28,14 @@ public class IdamAuthenticationFilter extends OncePerRequestFilter {
     private  IdamService idamService;
 
     @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) {
+        return !request.getRequestURI().startsWith("/courts");
+    }
+
+    @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
-        String path = request.getRequestURI();
 
-        if (!path.startsWith("/courts")) {
-            filterChain.doFilter(request, response);
-            return;
-        }
         String authToken = request.getHeader(HttpHeaders.AUTHORIZATION);
 
         try {
