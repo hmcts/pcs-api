@@ -1,19 +1,19 @@
 package uk.gov.hmcts.reform.pcs.ccd.config;
 
+import java.util.List;
+import java.util.Locale;
+import javax.crypto.AEADBadTagException;
+import javax.net.ssl.SSLException;
 import org.apache.http.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.testcontainers.containers.PostgreSQLContainer;
 import uk.gov.hmcts.befta.dse.ccd.CcdEnvironment;
 import uk.gov.hmcts.befta.dse.ccd.CcdRoleConfig;
 import uk.gov.hmcts.befta.dse.ccd.DataLoaderToDefinitionStore;
 import uk.gov.hmcts.befta.exception.ImportException;
 import uk.gov.hmcts.befta.util.BeftaUtils;
 import uk.gov.hmcts.reform.pcs.ccd.CaseType;
-
-import javax.crypto.AEADBadTagException;
-import javax.net.ssl.SSLException;
-import java.util.List;
-import java.util.Locale;
 
 public class HighLevelDataSetupApp extends DataLoaderToDefinitionStore {
 
@@ -23,8 +23,8 @@ public class HighLevelDataSetupApp extends DataLoaderToDefinitionStore {
         new CcdRoleConfig("caseworker-civil", "PUBLIC"),
     };
 
-
     private final CcdEnvironment environment;
+    private static PostgreSQLContainer<?> postgres;
 
     public HighLevelDataSetupApp(CcdEnvironment dataSetupEnvironment) {
         super(dataSetupEnvironment);
@@ -32,7 +32,53 @@ public class HighLevelDataSetupApp extends DataLoaderToDefinitionStore {
     }
 
     public static void main(String[] args) throws Throwable {
-        DataLoaderToDefinitionStore.main(HighLevelDataSetupApp.class, args);
+        startPostgreSQLContainer();
+
+        setDatabaseSystemProperties();
+
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            if (postgres != null && postgres.isRunning()) {
+                logger.info("Stopping PostgreSQL TestContainer...");
+                postgres.stop();
+                logger.info("PostgreSQL TestContainer stopped");
+            }
+        }));
+
+        try {
+            DataLoaderToDefinitionStore.main(HighLevelDataSetupApp.class, args);
+        } catch (Exception e) {
+            logger.error("Error during data setup", e);
+            // Ensure container is stopped even if there's an error
+            if (postgres != null && postgres.isRunning()) {
+                postgres.stop();
+            }
+            throw e;
+        }
+    }
+
+    private static void startPostgreSQLContainer() {
+        logger.info("Starting PostgreSQL TestContainer...");
+        postgres = new PostgreSQLContainer<>("postgres:15-alpine")
+            .withDatabaseName("testdb")
+            .withUsername("test")
+            .withPassword("test")
+            .withReuse(false); // Set to true if you want to reuse containers across runs
+
+        postgres.start();
+        logger.info("PostgreSQL TestContainer started successfully on {}", postgres.getJdbcUrl());
+    }
+
+    private static void setDatabaseSystemProperties() {
+        System.setProperty("spring.datasource.url", postgres.getJdbcUrl());
+        System.setProperty("spring.datasource.username", postgres.getUsername());
+        System.setProperty("spring.datasource.password", postgres.getPassword());
+        System.setProperty("spring.datasource.driver-class-name", "org.postgresql.Driver");
+        System.setProperty("spring.jpa.database-platform", "org.hibernate.dialect.PostgreSQLDialect");
+
+        logger.info("Database connection configured:");
+        logger.info("  URL: {}", postgres.getJdbcUrl());
+        logger.info("  Username: {}", postgres.getUsername());
+        logger.info("  Driver: org.postgresql.Driver");
     }
 
     @Override

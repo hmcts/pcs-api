@@ -1,11 +1,11 @@
 spring:
   datasource:
-    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;
-    driver-class-name: org.h2.Driver
-    username: sa
-    password:
+    url: ${spring.datasource.url}
+    driver-class-name: ${spring.datasource.driver-class-name}
+    username: ${spring.datasource.username}
+    password: ${spring.datasource.password}
   jpa:
-    database-platform: org.hibernate.dialect.H2Dialect
+    database-platform: ${spring.jpa.database-platform}
     hibernate:
       ddl-auto: none
     show-sql: true
