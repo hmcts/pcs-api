@@ -44,6 +44,7 @@ class IdamServiceTest {
         String systemUserToken = underTest.getSystemUserAuthorisation();
 
         assertThat(systemUserToken).isEqualTo("Bearer %s", expectedIdToken);
+        
     }
 
     @Test
