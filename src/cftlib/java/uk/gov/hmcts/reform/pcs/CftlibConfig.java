@@ -34,6 +34,9 @@ public class CftlibConfig implements CFTLibConfigurer {
             lib.createProfile(entry.getKey(), "CIVIL", "PCS", State.Open.name());
         }
 
+        // Create local system user
+        lib.createIdamUser("pcs-system-user@localhost");
+
         lib.createRoles(
             "caseworker",
             "caseworker-civil"
