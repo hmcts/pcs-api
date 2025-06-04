@@ -5,7 +5,6 @@ spring:
     username: ${testcontainer.datasource.username}
     password: ${testcontainer.datasource.password}
   jpa:
-    database-platform: ${testcontainer.jpa.platform}
     hibernate:
       ddl-auto: none
     show-sql: true

@@ -81,13 +81,11 @@ public class HighLevelDataSetupApp extends DataLoaderToDefinitionStore {
         System.setProperty("testcontainer.datasource.username", username);
         System.setProperty("testcontainer.datasource.password", password);
         System.setProperty("testcontainer.datasource.driver", "org.postgresql.Driver");
-        System.setProperty("testcontainer.jpa.platform", "org.hibernate.dialect.PostgreSQLDialect");
 
         logger.info("TestContainer database properties set:");
         logger.info("  testcontainer.datasource.url: {}", jdbcUrl);
         logger.info("  testcontainer.datasource.username: {}", username);
         logger.info("  testcontainer.datasource.driver: org.postgresql.Driver");
-        logger.info("  testcontainer.jpa.platform: org.hibernate.dialect.PostgreSQLDialect");
     }
 
     @Override
