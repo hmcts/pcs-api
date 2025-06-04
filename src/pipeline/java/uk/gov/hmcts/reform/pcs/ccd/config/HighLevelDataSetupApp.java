@@ -72,24 +72,22 @@ public class HighLevelDataSetupApp extends DataLoaderToDefinitionStore {
     }
 
     private static void setDatabaseSystemProperties() {
-        // Set datasource properties
-        System.setProperty("spring.datasource.url", postgres.getJdbcUrl());
-        System.setProperty("spring.datasource.username", postgres.getUsername());
-        System.setProperty("spring.datasource.password", postgres.getPassword());
+        String jdbcUrl = postgres.getJdbcUrl();
+        String username = postgres.getUsername();
+        String password = postgres.getPassword();
+
+        // Set Spring datasource properties directly
+        System.setProperty("spring.datasource.url", jdbcUrl);
+        System.setProperty("spring.datasource.username", username);
+        System.setProperty("spring.datasource.password", password);
         System.setProperty("spring.datasource.driver-class-name", "org.postgresql.Driver");
+        System.setProperty("spring.jpa.database-platform", "org.hibernate.dialect.PostgreSQLDialect");
 
-        // Set JPA properties with different property names to avoid circular reference
-        System.setProperty("database.platform", "org.hibernate.dialect.PostgreSQLDialect");
-        System.setProperty("database.url", postgres.getJdbcUrl());
-        System.setProperty("database.username", postgres.getUsername());
-        System.setProperty("database.password", postgres.getPassword());
-        System.setProperty("database.driver", "org.postgresql.Driver");
-
-        logger.info("Database connection configured:");
-        logger.info("  URL: {}", postgres.getJdbcUrl());
-        logger.info("  Username: {}", postgres.getUsername());
-        logger.info("  Driver: org.postgresql.Driver");
-        logger.info("  Platform: org.hibernate.dialect.PostgreSQLDialect");
+        logger.info("Database system properties set:");
+        logger.info("  spring.datasource.url: {}", jdbcUrl);
+        logger.info("  spring.datasource.username: {}", username);
+        logger.info("  spring.datasource.driver-class-name: org.postgresql.Driver");
+        logger.info("  spring.jpa.database-platform: org.hibernate.dialect.PostgreSQLDialect");
     }
 
     @Override

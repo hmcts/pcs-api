@@ -1,11 +1,12 @@
 spring:
   datasource:
-    url: ${database.url}
-    driver-class-name: ${database.driver}
-    username: ${database.username}
-    password: ${database.password}
+    # These will be set by system properties from the TestContainer
+    url: ${spring.datasource.url:}
+    driver-class-name: ${spring.datasource.driver-class-name:}
+    username: ${spring.datasource.username:}
+    password: ${spring.datasource.password:}
   jpa:
-    database-platform: ${database.platform}
+    database-platform: ${spring.jpa.database-platform:}
     hibernate:
       ddl-auto: none
     show-sql: true
