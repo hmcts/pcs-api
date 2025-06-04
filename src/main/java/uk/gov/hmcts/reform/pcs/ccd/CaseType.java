@@ -42,16 +42,22 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
                 .field(PCSCase::getState, "State");
 
         builder.searchResultFields()
-            .field(PCSCase::getCountry, "Country");
+            .field(PCSCase::getCountry, "Country")
+            .field(PCSCase::getCaseDescription, "Description");
 
 
         builder.workBasketInputFields()
-            .field(PCSCase::getCaseDescription, label);
+            .field(PCSCase::getCaseDescription, label)
+            .field(PCSCase::getCaseDescription, "Description");
 
         builder.workBasketResultFields()
             .field(PCSCase::getState, "State");
         builder.workBasketResultFields()
-            .field(PCSCase::getCountry, "Country");
+            .field(PCSCase::getCountry, "Country")
+            .field(PCSCase::getCaseDescription, "Description");
+
+
+
 
 
 
