@@ -13,6 +13,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.UserRole;
 
 import static uk.gov.hmcts.reform.pcs.ccd.domain.State.Draft;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.State.Submitted;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.UserRole.CITIZEN;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.UserRole.CREATOR;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.citizenSubmitApplication;
 
@@ -28,7 +29,7 @@ public class CitizenSubmitApplication implements CCDConfig<PCSCase, State, UserR
             .showCondition(ShowConditions.NEVER_SHOW)
             .name("Submit case")
             .description("Submit the possession case")
-            .grant(Permission.CRU, CREATOR)
+            .grant(Permission.CRU, CREATOR, CITIZEN)
             .grant(Permission.R, UserRole.CIVIL_CASE_WORKER);
     }
 

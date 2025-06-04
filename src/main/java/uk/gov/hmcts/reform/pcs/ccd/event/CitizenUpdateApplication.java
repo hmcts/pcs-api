@@ -14,6 +14,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 
 import static uk.gov.hmcts.reform.pcs.ccd.domain.State.Draft;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.UserRole.CITIZEN;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.UserRole.CREATOR;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.citizenUpdateApplication;
 
@@ -32,7 +33,7 @@ public class CitizenUpdateApplication implements CCDConfig<PCSCase, State, UserR
             .showCondition(ShowConditions.NEVER_SHOW)
             .name("Patch case")
             .description("Patch a possession case")
-            .grant(Permission.CRU, CREATOR)
+            .grant(Permission.CRU, CREATOR, CITIZEN)
             .grant(Permission.R, UserRole.CIVIL_CASE_WORKER);
     }
 
