@@ -76,18 +76,18 @@ public class HighLevelDataSetupApp extends DataLoaderToDefinitionStore {
         String username = postgres.getUsername();
         String password = postgres.getPassword();
 
-        // Set Spring datasource properties directly
-        System.setProperty("spring.datasource.url", jdbcUrl);
-        System.setProperty("spring.datasource.username", username);
-        System.setProperty("spring.datasource.password", password);
-        System.setProperty("spring.datasource.driver-class-name", "org.postgresql.Driver");
-        System.setProperty("spring.jpa.database-platform", "org.hibernate.dialect.PostgreSQLDialect");
+        // Use custom property names to avoid circular references
+        System.setProperty("testcontainer.datasource.url", jdbcUrl);
+        System.setProperty("testcontainer.datasource.username", username);
+        System.setProperty("testcontainer.datasource.password", password);
+        System.setProperty("testcontainer.datasource.driver", "org.postgresql.Driver");
+        System.setProperty("testcontainer.jpa.platform", "org.hibernate.dialect.PostgreSQLDialect");
 
-        logger.info("Database system properties set:");
-        logger.info("  spring.datasource.url: {}", jdbcUrl);
-        logger.info("  spring.datasource.username: {}", username);
-        logger.info("  spring.datasource.driver-class-name: org.postgresql.Driver");
-        logger.info("  spring.jpa.database-platform: org.hibernate.dialect.PostgreSQLDialect");
+        logger.info("TestContainer database properties set:");
+        logger.info("  testcontainer.datasource.url: {}", jdbcUrl);
+        logger.info("  testcontainer.datasource.username: {}", username);
+        logger.info("  testcontainer.datasource.driver: org.postgresql.Driver");
+        logger.info("  testcontainer.jpa.platform: org.hibernate.dialect.PostgreSQLDialect");
     }
 
     @Override
