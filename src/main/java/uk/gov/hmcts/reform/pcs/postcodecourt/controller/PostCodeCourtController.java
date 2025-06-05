@@ -42,7 +42,11 @@ public class PostCodeCourtController {
         content = @Content()
     )
     @ApiResponse(responseCode = "401",
-        description = "Invalid or missing Authorization/ServiceAuthorization header",
+        description = "Invalid or missing Authorization/Service Authorization header",
+        content = @Content()
+    )
+    @ApiResponse(responseCode = "403",
+        description = "Unauthorised Service Authorization header",
         content = @Content()
     )
     @GetMapping(COURTS_ENDPOINT)
