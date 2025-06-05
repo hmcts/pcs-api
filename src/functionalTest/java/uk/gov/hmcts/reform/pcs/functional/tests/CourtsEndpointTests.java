@@ -108,5 +108,6 @@ class CourtsEndpointTests {
         apiSteps.theRequestContainsTheQueryParameter("postcode", null);
         apiSteps.callIsSubmittedToTheEndpoint("Courts", "GET");
         apiSteps.checkStatusCode(400);
+        apiSteps.theResponseBodyContainsAString("message", "Postcode can't be empty or null");
     }
 }
