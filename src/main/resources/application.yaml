@@ -108,4 +108,11 @@ notify:
   status-check-delay-millis: ${NOTIFY_STATUS_CHECK_DELAY:3000}
 
 testing-support:
-  enabled: ${ENABLE_TESTING_SUPPORT:false}
+  enabled: ${ENABLE_TESTING_SUPPORT:true}
+
+# Below sets if DB scheduler can execute on the current instance of the API.
+db-scheduler:
+  enabled: false # This disables the autoconfiguration of DB Scheduler. Always off.
+  executor-enabled: ${DB_SCHEDULER_EXECUTOR_ENABLED:true}
+  polling-interval-seconds: 10
+  threads: 10
