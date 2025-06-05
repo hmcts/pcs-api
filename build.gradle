@@ -4,7 +4,7 @@ import uk.gov.hmcts.rse.CftlibExec
 
 buildscript {
   ext {
-    flywayVersion = '11.8.2'
+    flywayVersion = '11.9.1'
     serenityBddVersion = '4.2.30'
   }
   dependencies {
