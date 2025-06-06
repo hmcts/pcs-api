@@ -77,6 +77,7 @@ public class HighLevelDataSetupApp extends DataLoaderToDefinitionStore {
         System.setProperty("spring.datasource.username", username);
         System.setProperty("spring.datasource.password", password);
         System.setProperty("spring.datasource.driver-class-name", "org.postgresql.Driver");
+        System.setProperty("FLYWAY_ENABLED", "true");
     }
 
     @Override

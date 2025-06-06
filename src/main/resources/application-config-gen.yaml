@@ -1,6 +1,6 @@
 spring:
   flyway:
-    enabled: true
+    enabled: false
     locations: classpath:db/migration
   sql:
     init:
