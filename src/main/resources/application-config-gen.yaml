@@ -5,6 +5,9 @@ spring:
   sql:
     init:
       mode: always
+  datasource:
+    username: postgres
+    password:
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
