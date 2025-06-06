@@ -123,7 +123,7 @@ def generateDefinitions(builder) {
 def runE2eTests(String context) {
   try {
     stage('E2E Test - ' + context) {
-         yarnBuilder.yarn("test:functional}")
+         yarnBuilder.yarn("test:functional")
     }
   } finally {
     publishHTML([
