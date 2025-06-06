@@ -97,7 +97,7 @@ def setPreviewEnvVars() {
 }
 
 def setAatEnvVars() {
-  env.TEST_E2E_URL_WEB = "https://manage-case.aat.platform.hmcts.net/"
+  env.TEST_E2E_URL_EXUI = "https://manage-case.aat.platform.hmcts.net/"
   env.ENVIRONMENT= "aat"
 }
 
