@@ -10,6 +10,8 @@ def type = "java"
 def product = "pcs"
 def component = "api"
 
+def yarnBuilder = new uk.gov.hmcts.contino.YarnBuilder(this)
+
 def secrets = [
   'pcs-${env}': [
     secret('pcs-api-s2s-secret', 'PCS_API_S2S_SECRET'),
@@ -119,20 +121,24 @@ def generateDefinitions(builder) {
 }
 
 def runE2eTests(String context) {
-  try {
-    stage('E2E Test - ' + context) {
-      sh './gradlew runE2eTests'
+  node {
+    try {
+      stage('E2E Test - ' + context) {
+      dir('src/e2eTest') {
+        yarnBuilder.yarn("test:functional")
+        }
+      }
+    } finally {
+      publishHTML([
+        allowMissing: true,
+        alwaysLinkToLastBuild: true,
+        keepAll: true,
+        reportDir: "src/e2eTest/playwright-report",
+        reportFiles: 'index.html',
+        reportName: 'E2E Test Report'
+      ])
+      archiveArtifacts allowEmptyArchive: true, artifacts: 'src/e2eTest/playwright-report/**'
     }
-  } finally {
-    publishHTML([
-      allowMissing: true,
-      alwaysLinkToLastBuild: true,
-      keepAll: true,
-      reportDir: "src/e2eTest/playwright-report",
-      reportFiles: 'index.html',
-      reportName: 'E2E Test Report'
-    ])
-    steps.archiveArtifacts allowEmptyArchive: true, artifacts: 'definitions/test/playwright-report/**'
   }
 }
 
