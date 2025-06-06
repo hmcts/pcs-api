@@ -133,11 +133,11 @@ def runE2eTests(String context) {
         allowMissing: true,
         alwaysLinkToLastBuild: true,
         keepAll: true,
-        reportDir: "src/e2eTest/playwright-report",
+        reportDir: "src/e2eTest/testTemp",
         reportFiles: 'index.html',
         reportName: 'E2E Test Report'
       ])
-      archiveArtifacts allowEmptyArchive: true, artifacts: 'src/e2eTest/playwright-report/**'
+      archiveArtifacts allowEmptyArchive: true, artifacts: 'src/e2eTest/testTemp/index.html'
     }
   }
 }
