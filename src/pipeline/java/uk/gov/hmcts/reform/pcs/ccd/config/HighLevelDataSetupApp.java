@@ -32,13 +32,10 @@ public class HighLevelDataSetupApp extends DataLoaderToDefinitionStore {
     }
 
     public static void main(String[] args) throws Throwable {
-        // Start PostgreSQL TestContainer
         startPostgreSQLContainer();
 
-        // Set system properties for Spring to use
         setDatabaseSystemProperties();
 
-        // Add shutdown hook to stop container
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             if (postgres != null && postgres.isRunning()) {
                 logger.info("Stopping PostgreSQL TestContainer...");
@@ -65,7 +62,7 @@ public class HighLevelDataSetupApp extends DataLoaderToDefinitionStore {
             .withDatabaseName("testdb")
             .withUsername("test")
             .withPassword("test")
-            .withReuse(false); // Set to true if you want to reuse containers across runs
+            .withReuse(false);
 
         postgres.start();
         logger.info("PostgreSQL TestContainer started successfully on {}", postgres.getJdbcUrl());
@@ -76,16 +73,10 @@ public class HighLevelDataSetupApp extends DataLoaderToDefinitionStore {
         String username = postgres.getUsername();
         String password = postgres.getPassword();
 
-        // Use custom property names to avoid circular references
         System.setProperty("testcontainer.datasource.url", jdbcUrl);
         System.setProperty("testcontainer.datasource.username", username);
         System.setProperty("testcontainer.datasource.password", password);
         System.setProperty("testcontainer.datasource.driver", "org.postgresql.Driver");
-
-        logger.info("TestContainer database properties set:");
-        logger.info("  testcontainer.datasource.url: {}", jdbcUrl);
-        logger.info("  testcontainer.datasource.username: {}", username);
-        logger.info("  testcontainer.datasource.driver: org.postgresql.Driver");
     }
 
     @Override
