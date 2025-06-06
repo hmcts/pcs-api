@@ -17,7 +17,7 @@ def secrets = [
     secret('pcs-api-s2s-secret', 'PCS_API_S2S_SECRET'),
     secret('idam-system-user-name', 'IDAM_SYSTEM_USERNAME'),
     secret('idam-system-user-password', 'IDAM_SYSTEM_USER_PASSWORD'),
-    secret('pcs-api-idam-secret', 'PCS_API_IDAM_SECRET')
+    secret('pcs-api-idam-secret', 'PCS_API_IDAM_SECRET'),
     secret('pcs-frontend-idam-secret', 'PCS_FRONTEND_IDAM_SECRET'),
     secret('idam-system-user-name', 'IDAM_SYSTEM_USERNAME'),
     secret('idam-system-user-password', 'IDAM_SYSTEM_USER_PASSWORD'),
