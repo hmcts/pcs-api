@@ -44,21 +44,27 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
         builder.caseType(getCaseType(), getCaseTypeName(), CASE_TYPE_DESCRIPTION);
         builder.jurisdiction(JURISDICTION_ID, JURISDICTION_NAME, JURISDICTION_DESCRIPTION);
 
-        var label = "Applicant Forename";
+        var label = "Claim information";
         builder.searchInputFields()
-            .field(PCSCase::getApplicantForename, label);
+            .field(PCSCase::getApplicantForename, label)
+            .field(PCSCase::getClaimPropertyAddress, label);
         builder.searchCasesFields()
-            .field(PCSCase::getApplicantForename, label);
+            .field(PCSCase::getApplicantForename, label)
+            .field(PCSCase::getClaimPropertyAddress, label);
 
         builder.searchResultFields()
-            .field(PCSCase::getApplicantForename, label);
+            .field(PCSCase::getApplicantForename, label)
+            .field(PCSCase::getClaimPropertyAddress, label);
         builder.workBasketInputFields()
-            .field(PCSCase::getApplicantForename, label);
+            .field(PCSCase::getApplicantForename, label)
+            .field(PCSCase::getClaimPropertyAddress, label);
         builder.workBasketResultFields()
-            .field(PCSCase::getApplicantForename, label);
+            .field(PCSCase::getApplicantForename, label)
+            .field(PCSCase::getClaimPropertyAddress, label);
 
-        builder.tab("Example", "Example Tab")
+        builder.tab("Claim information", label)
             .field(PCSCase::getApplicantForename)
-            .field(PCSCase::getPartyA);
+            .field(PCSCase::getClaimPropertyAddress);
+
     }
 }
