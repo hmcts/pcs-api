@@ -61,7 +61,6 @@ public class HighLevelDataSetupApp extends DataLoaderToDefinitionStore {
         postgres = new PostgreSQLContainer<>("postgres:15-alpine")
             .withDatabaseName("testdb")
             .withUsername("postgres")
-            .withPassword("postgres")
             .withReuse(false);
 
         postgres.start();
@@ -71,11 +70,9 @@ public class HighLevelDataSetupApp extends DataLoaderToDefinitionStore {
     private static void setDatabaseSystemProperties() {
         String jdbcUrl = postgres.getJdbcUrl();
         String username = postgres.getUsername();
-        String password = postgres.getPassword();
 
         System.setProperty("testcontainer.datasource.url", jdbcUrl);
         System.setProperty("testcontainer.datasource.username", username);
-        System.setProperty("testcontainer.datasource.password", password);
         System.setProperty("testcontainer.datasource.driver", "org.postgresql.Driver");
     }
 
