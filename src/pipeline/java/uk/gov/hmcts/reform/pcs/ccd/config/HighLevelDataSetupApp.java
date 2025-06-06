@@ -61,7 +61,7 @@ public class HighLevelDataSetupApp extends DataLoaderToDefinitionStore {
         postgres = new PostgreSQLContainer<>("postgres:15-alpine")
             .withDatabaseName("testdb")
             .withUsername("postgres")
-            .withPassword("")
+            .withPassword("postgres")
             .withReuse(false);
 
         postgres.start();
