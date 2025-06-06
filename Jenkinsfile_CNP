@@ -124,7 +124,9 @@ def runE2eTests(String context) {
   node {
     try {
       stage('E2E Test - ' + context) {
+      dir('src/e2eTest') {
         yarnBuilder.yarn("test:functional")
+        }
       }
     } finally {
       publishHTML([
@@ -135,7 +137,7 @@ def runE2eTests(String context) {
         reportFiles: 'index.html',
         reportName: 'E2E Test Report'
       ])
-      archiveArtifacts allowEmptyArchive: true, artifacts: 'src/e2eTest/playwright-report/**'
+      archiveArtifacts allowEmptyArchive: true, artifacts: 'src/e2eTest/playwright-report/*'
     }
   }
 }
