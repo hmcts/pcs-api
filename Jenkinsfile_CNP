@@ -121,20 +121,22 @@ def generateDefinitions(builder) {
 }
 
 def runE2eTests(String context) {
-  try {
-    stage('E2E Test - ' + context) {
-         yarnBuilder.yarn("test:functional")
+  node {
+    try {
+      stage('E2E Test - ' + context) {
+        yarnBuilder.yarn("test:functional")
+      }
+    } finally {
+      publishHTML([
+        allowMissing: true,
+        alwaysLinkToLastBuild: true,
+        keepAll: true,
+        reportDir: "src/e2eTest/playwright-report",
+        reportFiles: 'index.html',
+        reportName: 'E2E Test Report'
+      ])
+      archiveArtifacts allowEmptyArchive: true, artifacts: 'src/e2eTest/playwright-report/**'
     }
-  } finally {
-    publishHTML([
-      allowMissing: true,
-      alwaysLinkToLastBuild: true,
-      keepAll: true,
-      reportDir: "src/e2eTest/playwright-report",
-      reportFiles: 'index.html',
-      reportName: 'E2E Test Report'
-    ])
-    steps.archiveArtifacts allowEmptyArchive: true, artifacts: 'src/e2eTest/playwright-report/**'
   }
 }
 
