@@ -50,8 +50,7 @@ withPipeline(type, product, component) {
     if (githubApi.getLabelsbyPattern(env.BRANCH_NAME, "pr-values:ccd").size() > 0) {
       enableHighLevelDataSetup()
     }
-    echo "list of directories:"
-    sh 'ls -R'
+
     runE2eTests(env.ENVIRONMENT)
 
   }
@@ -126,6 +125,7 @@ def runE2eTests(String context) {
   node {
     try {
       stage('E2E Test - ' + context) {
+      sh 'ls -R'
       dir('src/e2eTest') {
         yarnBuilder.yarn("test:functional")
         }
