@@ -10,8 +10,6 @@ def type = "java"
 def product = "pcs"
 def component = "api"
 
-def yarnBuilder = new uk.gov.hmcts.contino.YarnBuilder(this)
-
 def secrets = [
   'pcs-${env}': [
     secret('pcs-api-s2s-secret', 'PCS_API_S2S_SECRET'),
@@ -50,9 +48,9 @@ withPipeline(type, product, component) {
     if (githubApi.getLabelsbyPattern(env.BRANCH_NAME, "pr-values:ccd").size() > 0) {
       enableHighLevelDataSetup()
     }
-
-    runE2eTests(env.ENVIRONMENT)
-
+    afterSuccess('smoketest:aat') {
+      runE2eTests(env.ENVIRONMENT)
+    }
   }
 
   onMaster() {
@@ -99,7 +97,7 @@ def setPreviewEnvVars() {
 }
 
 def setAatEnvVars() {
-  env.TEST_E2E_URL_EXUI = "https://manage-case.aat.platform.hmcts.net/"
+  env.TEST_E2E_URL_WEB = "https://manage-case.aat.platform.hmcts.net/"
   env.ENVIRONMENT= "aat"
 }
 
@@ -122,26 +120,20 @@ def generateDefinitions(builder) {
 }
 
 def runE2eTests(String context) {
-  node {
-    try {
-      stage('E2E Test - ' + context) {
-      sh 'ls'
-      sh 'ls src/e2eTest'
-      dir('src/e2eTest') {
-        yarnBuilder.yarn("test:functional")
-        }
-      }
-    } finally {
-      publishHTML([
-        allowMissing: true,
-        alwaysLinkToLastBuild: true,
-        keepAll: true,
-        reportDir: "src/e2eTest/testTemp",
-        reportFiles: 'index.html',
-        reportName: 'E2E Test Report'
-      ])
-      archiveArtifacts allowEmptyArchive: true, artifacts: 'src/e2eTest/testTemp/index.html'
+  try {
+    stage('E2E Test - ' + context) {
+      sh './gradlew runE2eTests'
     }
+  } finally {
+    publishHTML([
+      allowMissing: true,
+      alwaysLinkToLastBuild: true,
+      keepAll: true,
+      reportDir: "src/e2eTest/playwright-report",
+      reportFiles: 'index.html',
+      reportName: 'E2E Test Report'
+    ])
+    steps.archiveArtifacts allowEmptyArchive: true, artifacts: 'definitions/test/playwright-report/**'
   }
 }
 
