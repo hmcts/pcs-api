@@ -137,7 +137,9 @@ def runE2eTests(String context) {
         reportFiles: 'index.html',
         reportName: 'E2E Test Report'
       ])
-      archiveArtifacts allowEmptyArchive: true, artifacts: 'src/e2eTest/playwright-report/*'
+      archiveArtifacts allowEmptyArchive: true, artifacts: 'definitions/test/playwright-report/**'
+      archiveArtifacts allowEmptyArchive: true, artifacts: '**/report-for-e2eTest-tests/*'
+
     }
   }
 }
