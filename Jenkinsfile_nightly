@@ -11,13 +11,23 @@ def type = "java"
 def product = "pcs"
 def component = "api"
 
+def secrets = [
+  'pcs-${env}': [
+    secret('pcs-frontend-idam-secret', 'PCS_FRONTEND_IDAM_SECRET'),
+    secret('idam-system-user-name', 'IDAM_SYSTEM_USERNAME'),
+    secret('idam-system-user-password', 'IDAM_SYSTEM_USER_PASSWORD'),
+    secret('pcs-frontend-idam-user-temp-password', 'PCS_FRONTEND_IDAM_USER_TEMP_PASSWORD')
+  ]
+]
+
 withNightlyPipeline(type, product, component) {
-//  enableSlackNotifications('#pcs-tech')
-//  afterAlways('DependencyCheckNightly') {
-//    env.TEST_E2E_URL_WEB = "https://manage-case.aat.platform.hmcts.net/"
-//    runE2ETestsForBrowser('Chrome')
-//    runE2ETestsForBrowser('Firefox')
-//  }
+    enableSlackNotifications('#pcs-tech')
+    loadVaultSecrets(secrets)
+    afterAlways('DependencyCheckNightly') {
+    env.TEST_E2E_URL_EXUI = "https://manage-case.aat.platform.hmcts.net/"
+    runE2ETestsForBrowser('Chrome')
+    runE2ETestsForBrowser('Firefox')
+  }
 }
 
 def runE2ETestsForBrowser(String browser) {
