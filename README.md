@@ -115,12 +115,12 @@ After the tests run, the report will be available under the /[report-for-functio
 
 ---
 
-The E2E UI tests use [Playwright](https://playwright.dev/), and in order to access these you need to cd to the `/src/e2eTests` directory.
+The E2E UI tests use [Playwright](https://playwright.dev/), and in order to access these you need to cd to the `/src/e2eTest` directory.
 
 This is done with:
 
 ```bash
-cd src/e2eTests
+cd src/e2eTest
 ````
 
 Before running any tests, please install all required packages:
@@ -128,14 +128,23 @@ Before running any tests, please install all required packages:
 ```bash
 yarn install
 ````
+Running the tests
+The e2e tests use play and Serenity for reporting, and are located in the /src/functionalTest directory.
 
-The pr suite can be run with the following command:
+The following environment variables are needed to run the tests:
+
+- IDAM_SYSTEM_USERNAME
+- IDAM_SYSTEM_USER_PASSWORD
+- PCS_FRONTEND_IDAM_USER_TEMP_PASSWORD
+- PCS_FRONTEND_IDAM_SECRET
+
+The e2e suite can be run with the following command:
 
 ```bash
-yarn test:functional
+yarn --cwd src/e2eTest test
 ```
 
-By default, the tests will run against http://localhost:3206/, please update the value on line 3 of `src/e2eTest/config.ts` to change this.
+By default, the tests will run against http://localhost:3000/, please update the value on line 3 of `src/e2eTest/config/config.ts` to change this.
 
 There are also several custom test scripts available:
 

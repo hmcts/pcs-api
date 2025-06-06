@@ -17,7 +17,9 @@ module.exports = defineConfig({
   /* Report slow tests if they take longer than 5 mins */
   reportSlowTests: { max: 15, threshold: 5 * 60 * 1000 },
   workers: process.env.FUNCTIONAL_TESTS_WORKERS ? parseInt(process.env.FUNCTIONAL_TESTS_WORKERS) : 4,
-  reporter: process.env.CI ? [['html'], ['list']] : [['list']],
+  reporter: process.env.CI
+    ? [['list']]                     // In CI: simple output
+    : [['html', { open: 'on-failure' }], ['list']],  // Locally: list + HTML report
   projects: [
     {
       name: 'chromium',
