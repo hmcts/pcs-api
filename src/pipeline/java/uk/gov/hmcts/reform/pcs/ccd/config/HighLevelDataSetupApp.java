@@ -73,10 +73,10 @@ public class HighLevelDataSetupApp extends DataLoaderToDefinitionStore {
         String username = postgres.getUsername();
         String password = postgres.getPassword();
 
-        System.setProperty("testcontainer.datasource.url", jdbcUrl);
-        System.setProperty("testcontainer.datasource.username", username);
-        System.setProperty("testcontainer.datasource.password", password);
-        System.setProperty("testcontainer.datasource.driver", "org.postgresql.Driver");
+        System.setProperty("spring.datasource.url", jdbcUrl);
+        System.setProperty("spring.datasource.username", username);
+        System.setProperty("spring.datasource.password", password);
+        System.setProperty("spring.datasource.driver-class-name", "org.postgresql.Driver");
     }
 
     @Override
