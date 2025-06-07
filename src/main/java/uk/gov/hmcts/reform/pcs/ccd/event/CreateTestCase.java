@@ -17,12 +17,17 @@ public class CreateTestCase implements CCDConfig<PCSCase, State, UserRole> {
         configBuilder
             .event("createTestApplication")
             .initialState(State.Open)
-            .name("Create test case")
+            .name("Make a claim")
             .aboutToStartCallback(this::start)
             .aboutToSubmitCallback(this::aboutToSubmit)
             .grant(Permission.CRUD, UserRole.CASE_WORKER)
             .fields()
-            .page("Create test case")
+            .page("Make a claim")
+            .pageLabel("What is the address of the property you are claiming possession of?")
+            .label("---", "---")
+            .mandatory(PCSCase::getClaimPropertyAddress)
+            .page("Additional information")
+            .pageLabel("Please enter applicant's name")
                 .mandatory(PCSCase::getApplicantForename)
                 .done();
     }
