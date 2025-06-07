@@ -11,6 +11,7 @@ import uk.gov.hmcts.reform.pcs.location.model.CourtVenue;
 import uk.gov.hmcts.reform.pcs.location.service.LocationReferenceService;
 import uk.gov.hmcts.reform.pcs.postcodecourt.entity.PostCodeCourtEntity;
 import uk.gov.hmcts.reform.pcs.postcodecourt.entity.PostCodeCourtKey;
+import uk.gov.hmcts.reform.pcs.postcodecourt.exception.InvalidPostCodeException;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.Court;
 import uk.gov.hmcts.reform.pcs.postcodecourt.repository.PostCodeCourtRepository;
 
@@ -18,7 +19,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.anyList;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -41,7 +44,7 @@ class PostCodeCourtServiceTest {
 
     @BeforeEach
     void setUp() {
-        when(idamService.getSystemUserAuthorisation()).thenReturn(SYSTEM_USER_TOKEN);
+        lenient().when(idamService.getSystemUserAuthorisation()).thenReturn(SYSTEM_USER_TOKEN);
         underTest = new PostCodeCourtService(postCodeCourtRepository, locationReferenceService, idamService);
     }
 
@@ -56,7 +59,7 @@ class PostCodeCourtServiceTest {
         PostCodeCourtEntity postCodeCourtEntity = new PostCodeCourtEntity();
         postCodeCourtEntity.setId(new PostCodeCourtKey(postCode, expectedEpimId));
         when(postCodeCourtRepository.findByIdPostCodeIn(postcodes)).thenReturn(List.of(postCodeCourtEntity));
-        when(locationReferenceService.getCountyCourts(SYSTEM_USER_TOKEN,  List.of(expectedEpimId)))
+        when(locationReferenceService.getCountyCourts(SYSTEM_USER_TOKEN, List.of(expectedEpimId)))
             .thenReturn(List.of(new CourtVenue(expectedEpimId, 101, "Royal Courts of Justice (Main Building)")));
 
         final List<Court> response = underTest.getCountyCourtsByPostCode(postCode);
@@ -89,15 +92,6 @@ class PostCodeCourtServiceTest {
     }
 
     @Test
-    @DisplayName("Should return an empty list of CountyCourts for a null postcode")
-    void shouldReturnEmptyListOfCountyCourtsForNullPostCode() {
-        final List<Court> response = underTest.getCountyCourtsByPostCode(null);
-
-        assertThat(response).isEmpty();
-        verify(postCodeCourtRepository, never()).findByIdPostCodeIn(anyList());
-    }
-
-    @Test
     @DisplayName("Should return a partial match if available when no full match is found")
     void shouldReturnPartiallyMatchedPostCode() {
         String postCode = "W37RX";
@@ -120,6 +114,25 @@ class PostCodeCourtServiceTest {
         verify(locationReferenceService).getCountyCourts(SYSTEM_USER_TOKEN, List.of(expectedEpimId));
     }
 
+    @Test
+    @DisplayName("Should throw InvalidPostCode exception when postcode empty")
+    void shouldThrowInvalidPostCodeExceptionWhenPostcodeIsEmpty() {
+        String emptyPostCode = "";
+        assertThatThrownBy(() -> underTest.getCountyCourtsByPostCode(emptyPostCode)).isInstanceOf(
+                InvalidPostCodeException.class)
+            .hasMessage("Postcode can't be empty or null");
+        verify(postCodeCourtRepository, never()).findByIdPostCodeIn(any());
+    }
+
+    @Test
+    @DisplayName("Should throw InvalidPostCode exception when postcode null")
+    void shouldThrowInvalidPostCodeExceptionWhenPostcodeIsNull() {
+        assertThatThrownBy(() -> underTest.getCountyCourtsByPostCode(null)).isInstanceOf(
+                InvalidPostCodeException.class)
+            .hasMessage("Postcode can't be empty or null");
+        verify(postCodeCourtRepository, never()).findByIdPostCodeIn(any());
+    }
+
     private List<String> getPostCodeCandidates(String postCode) {
         String partialPostcode = postCode;
         List<String> postCodes = new ArrayList<>();
@@ -130,4 +143,5 @@ class PostCodeCourtServiceTest {
         }
         return postCodes;
     }
+
 }
