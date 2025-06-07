@@ -276,7 +276,6 @@ repositories {
   mavenLocal()
   mavenCentral()
   maven { url = 'https://pkgs.dev.azure.com/hmcts/Artifacts/_packaging/hmcts-lib/maven/v1'}
-  maven { url = 'https://jitpack.io'}
 }
 
 ext {
@@ -309,6 +308,7 @@ dependencies {
   implementation "com.azure.spring:spring-cloud-azure-starter-servicebus-jms"
 
   implementation group: 'com.github.hmcts.java-logging', name: 'logging', version: '6.1.9'
+  implementation group: 'com.github.hmcts', name: 'core-case-data-store-client', version: '5.1.0'
   implementation group: 'com.github.hmcts', name: 'ccd-client', version: '5.1.0'
   implementation group: 'com.github.hmcts', name: 'idam-java-client', version: '3.0.4'
 
