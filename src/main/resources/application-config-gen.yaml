@@ -1,11 +1,23 @@
 spring:
+  flyway:
+    enabled: false
+    locations: classpath:db/migration
+  sql:
+    init:
+      mode: always
   datasource:
-    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;
-    driver-class-name: org.h2.Driver
-    username: sa
-    password:
+    username: postgres
+    password: postgres
   jpa:
-    database-platform: org.hibernate.dialect.H2Dialect
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
-      ddl-auto: none
+      ddl-auto: validate
+      dialect: org.hibernate.dialect.PostgreSQLDialect
+      format_sql: true
+      show-sql: ${SPRING_JPA_SHOW_SQL:false}
     show-sql: true
+    properties:
+      hibernate:
+        hbm2ddl-auto: none
+      hibernate.format_sql: true
+      show-dql: true

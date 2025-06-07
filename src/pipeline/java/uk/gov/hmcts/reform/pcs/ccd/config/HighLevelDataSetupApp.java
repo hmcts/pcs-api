@@ -7,6 +7,7 @@ import javax.net.ssl.SSLException;
 import org.apache.http.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.testcontainers.containers.PostgreSQLContainer;
 import uk.gov.hmcts.befta.dse.ccd.CcdEnvironment;
 import uk.gov.hmcts.befta.dse.ccd.CcdRoleConfig;
 import uk.gov.hmcts.befta.dse.ccd.DataLoaderToDefinitionStore;
@@ -22,8 +23,8 @@ public class HighLevelDataSetupApp extends DataLoaderToDefinitionStore {
         new CcdRoleConfig("caseworker-civil", "PUBLIC"),
     };
 
-
     private final CcdEnvironment environment;
+    private static PostgreSQLContainer<?> postgres;
 
     public HighLevelDataSetupApp(CcdEnvironment dataSetupEnvironment) {
         super(dataSetupEnvironment);
@@ -31,7 +32,52 @@ public class HighLevelDataSetupApp extends DataLoaderToDefinitionStore {
     }
 
     public static void main(String[] args) throws Throwable {
-        DataLoaderToDefinitionStore.main(HighLevelDataSetupApp.class, args);
+        startPostgreSQLContainer();
+
+        setDatabaseSystemProperties();
+
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            if (postgres != null && postgres.isRunning()) {
+                logger.info("Stopping PostgreSQL TestContainer...");
+                postgres.stop();
+                logger.info("PostgreSQL TestContainer stopped");
+            }
+        }));
+
+        try {
+            DataLoaderToDefinitionStore.main(HighLevelDataSetupApp.class, args);
+        } catch (Exception e) {
+            logger.error("Error during data setup", e);
+            // Ensure container is stopped even if there's an error
+            if (postgres != null && postgres.isRunning()) {
+                postgres.stop();
+            }
+            throw e;
+        }
+    }
+
+    private static void startPostgreSQLContainer() {
+        logger.info("Starting PostgreSQL TestContainer...");
+        postgres = new PostgreSQLContainer<>("postgres:15-alpine")
+            .withDatabaseName("testdb")
+            .withUsername("postgres")
+            .withPassword("postgres")
+            .withReuse(false);
+
+        postgres.start();
+        logger.info("PostgreSQL TestContainer started successfully on {}", postgres.getJdbcUrl());
+    }
+
+    private static void setDatabaseSystemProperties() {
+        String jdbcUrl = postgres.getJdbcUrl();
+        String username = postgres.getUsername();
+        String password = postgres.getPassword();
+
+        System.setProperty("spring.datasource.url", jdbcUrl);
+        System.setProperty("spring.datasource.username", username);
+        System.setProperty("spring.datasource.password", password);
+        System.setProperty("spring.datasource.driver-class-name", "org.postgresql.Driver");
+        System.setProperty("FLYWAY_ENABLED", "true");
     }
 
     @Override
