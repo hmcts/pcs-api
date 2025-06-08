@@ -1,14 +1,13 @@
 package uk.gov.hmcts.reform.pcs;
 
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.ccd.client.CoreCaseDataApi;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDataContent;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
@@ -17,6 +16,8 @@ import uk.gov.hmcts.reform.idam.client.IdamClient;
 import uk.gov.hmcts.reform.pcs.ccd.CaseType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.rse.ccd.lib.test.CftlibTest;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
@@ -45,8 +46,18 @@ public class TestWithCCD extends CftlibTest {
     @Test
     public void createsTestCase() {
         var r = ccdApi.startCase(idamToken, s2sToken, CaseType.getCaseType(), "createTestApplication");
+        PCSCase caseData = PCSCase.builder()
+            .applicantForename("Foo")
+            .propertyAddress(AddressUK.builder()
+                                 .addressLine1("123 Baker Street")
+                                 .addressLine2("Marylebone")
+                                 .postTown("London")
+                                 .county("Greater London")
+                                 .postCode("NW1 6XE")
+                                 .build())
+            .build();
         var content = CaseDataContent.builder()
-            .data(PCSCase.builder().applicantForename("Foo").build())
+            .data(caseData)
             .event(Event.builder().id("createTestApplication").build())
             .eventToken(r.getToken())
             .build();

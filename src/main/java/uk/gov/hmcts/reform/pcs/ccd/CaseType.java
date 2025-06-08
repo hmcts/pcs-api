@@ -1,14 +1,14 @@
 package uk.gov.hmcts.reform.pcs.ccd;
 
-import static java.lang.System.getenv;
-import static java.util.Optional.ofNullable;
-
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CCDConfig;
 import uk.gov.hmcts.ccd.sdk.api.ConfigBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.UserRole;
+
+import static java.lang.System.getenv;
+import static java.util.Optional.ofNullable;
 
 /**
  * Setup some common possessions case type configuration.
@@ -44,27 +44,33 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
         builder.caseType(getCaseType(), getCaseTypeName(), CASE_TYPE_DESCRIPTION);
         builder.jurisdiction(JURISDICTION_ID, JURISDICTION_NAME, JURISDICTION_DESCRIPTION);
 
-        var label = "Claim information";
+        var nameLabel = "Applicant's first name";
+        var addressLabel = "Property Address";
+        var claimantLabel = "Claimant Information";
         builder.searchInputFields()
-            .field(PCSCase::getApplicantForename, label)
-            .field(PCSCase::getClaimPropertyAddress, label);
+            .field(PCSCase::getApplicantForename, nameLabel);
+
         builder.searchCasesFields()
-            .field(PCSCase::getApplicantForename, label)
-            .field(PCSCase::getClaimPropertyAddress, label);
+            .field(PCSCase::getApplicantForename, nameLabel)
+            .field(PCSCase::getPropertyAddress, addressLabel);
 
         builder.searchResultFields()
-            .field(PCSCase::getApplicantForename, label)
-            .field(PCSCase::getClaimPropertyAddress, label);
-        builder.workBasketInputFields()
-            .field(PCSCase::getApplicantForename, label)
-            .field(PCSCase::getClaimPropertyAddress, label);
-        builder.workBasketResultFields()
-            .field(PCSCase::getApplicantForename, label)
-            .field(PCSCase::getClaimPropertyAddress, label);
+            .field(PCSCase::getApplicantForename, nameLabel)
+            .field(PCSCase::getPropertyAddress, addressLabel);
 
-        builder.tab("Claim information", label)
-            .field(PCSCase::getApplicantForename)
-            .field(PCSCase::getClaimPropertyAddress);
+        builder.workBasketInputFields()
+            .field(PCSCase::getApplicantForename, nameLabel)
+            .field(PCSCase::getPropertyAddress, addressLabel);
+
+        builder.workBasketResultFields()
+            .field(PCSCase::getApplicantForename, nameLabel)
+            .field(PCSCase::getPropertyAddress, addressLabel);
+        
+        builder.tab("claimantInformation", claimantLabel)
+            .field(PCSCase::getApplicantForename);
+
+        builder.tab("propertyAddress", "Property Address")
+            .field(PCSCase::getPropertyAddress);
 
     }
 }
