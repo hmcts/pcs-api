@@ -1,6 +1,7 @@
-import { test } from '@playwright/test';
-import config from "../config";
+import {test} from '@playwright/test';
+import Config from "../config/config";
 
-test('has title @PR @nightly', async ({ page }) => {
-  await page.goto(config.manageCasesBaseURL);
+test('has title @functional @PR @nightly', async ({ page }) => {
+  console.log('Manage Cases Base URL:', Config.manageCasesBaseURL);
+  await page.goto(Config.manageCasesBaseURL);
 });

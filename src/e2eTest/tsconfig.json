@@ -1,9 +1,22 @@
+
 {
   "compilerOptions": {
-    "esModuleInterop": true,
+    "target": "ES2020",
+    "module": "CommonJS",
+    "lib": ["ESNext", "DOM"],
+    "moduleResolution": "node",
     "allowSyntheticDefaultImports": true,
-    "strict": true,
     "noImplicitAny": true,
-    "noImplicitThis": false
-  }
+    "noImplicitThis": false,
+    "resolveJsonModule": true,
+    "esModuleInterop": true,
+    "strict": true,
+    "baseUrl": ".",
+    "paths": {
+      "@fixtures/*": ["fixtures/*"],
+      "@pages/*": ["pages/*"],
+      "@helpers/*": ["helpers/*"]
+    }
+  },
+  "include": ["**/*.ts"]
 }
