@@ -10,6 +10,7 @@ public enum EventId {
     createClaim,
     addClaimantToClaim,
     addDefendantToClaim,
-    addInterestedPartyToClaim
+    addInterestedPartyToClaim,
+    hearing
 
 }
