@@ -10,14 +10,7 @@ spring:
     password: postgres
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
-    hibernate:
-      ddl-auto: validate
-      dialect: org.hibernate.dialect.PostgreSQLDialect
-      format_sql: true
-      show-sql: ${SPRING_JPA_SHOW_SQL:false}
-    show-sql: true
+    show-sql: ${SPRING_JPA_SHOW_SQL:false}
     properties:
       hibernate:
-        hbm2ddl-auto: none
-      hibernate.format_sql: true
-      show-dql: true
+        format_sql: tue

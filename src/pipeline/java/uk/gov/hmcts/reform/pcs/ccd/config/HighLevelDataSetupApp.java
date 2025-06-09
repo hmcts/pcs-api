@@ -1,5 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.config;
 
+import java.sql.Connection;
+import java.sql.DriverManager;
 import java.util.List;
 import java.util.Locale;
 import javax.crypto.AEADBadTagException;
@@ -31,19 +33,29 @@ public class HighLevelDataSetupApp extends DataLoaderToDefinitionStore {
         environment = dataSetupEnvironment;
     }
 
+    static {
+        try {
+            logger.info("=== Static block: Starting container setup ===");
+            startPostgreSQLContainer();
+            setDatabaseSystemProperties();
+
+            Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+                if (postgres != null && postgres.isRunning()) {
+                    logger.info("Stopping PostgreSQL TestContainer...");
+                    postgres.stop();
+                    logger.info("PostgreSQL TestContainer stopped");
+                }
+            }));
+            logger.info("=== Container setup completed successfully ===");
+        } catch (Exception e) {
+            logger.error("Failed to initialize TestContainer in static block", e);
+            throw new RuntimeException("Container initialization failed", e);
+        }
+    }
+
     public static void main(String[] args) throws Throwable {
-        startPostgreSQLContainer();
-
-        setDatabaseSystemProperties();
-
-        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            if (postgres != null && postgres.isRunning()) {
-                logger.info("Stopping PostgreSQL TestContainer...");
-                postgres.stop();
-                logger.info("PostgreSQL TestContainer stopped");
-            }
-        }));
-
+        logger.info("Main method called, container should be running: {}",
+                    postgres != null && postgres.isRunning());
         try {
             DataLoaderToDefinitionStore.main(HighLevelDataSetupApp.class, args);
         } catch (Exception e) {
@@ -65,7 +77,14 @@ public class HighLevelDataSetupApp extends DataLoaderToDefinitionStore {
             .withReuse(false);
 
         postgres.start();
-        logger.info("PostgreSQL TestContainer started successfully on {}", postgres.getJdbcUrl());
+        try (Connection conn = DriverManager.getConnection(
+            postgres.getJdbcUrl(),
+            postgres.getUsername(),
+            postgres.getPassword())) {
+            logger.info("Successfully tested database connection");
+        } catch (Exception e) {
+            logger.warn("Could not test database connection", e);
+        }
     }
 
     private static void setDatabaseSystemProperties() {
