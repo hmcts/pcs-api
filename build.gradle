@@ -5,7 +5,7 @@ import uk.gov.hmcts.rse.CftlibExec
 buildscript {
   ext {
     flywayVersion = '11.9.1'
-    serenityBddVersion = '4.2.32'
+    serenityBddVersion = '4.2.33'
   }
   dependencies {
     classpath("org.flywaydb:flyway-database-postgresql:$flywayVersion")
@@ -339,15 +339,15 @@ dependencies {
   functionalTestImplementation sourceSets.main.runtimeClasspath
   functionalTestImplementation sourceSets.test.runtimeClasspath
 
-  testImplementation group: 'org.junit.platform', name: 'junit-platform-suite-api', version: '1.13.0'
+  testImplementation group: 'org.junit.platform', name: 'junit-platform-suite-api', version: '1.13.1'
 
   contractTestImplementation group: 'au.com.dius.pact.consumer', name: 'junit5', version: pactVersion
   contractTestImplementation group: 'org.hamcrest', name: 'java-hamcrest', version: '2.0.0.0'
-  contractTestImplementation('org.junit.jupiter:junit-jupiter-api:5.13.0')
+  contractTestImplementation('org.junit.jupiter:junit-jupiter-api:5.13.1')
   contractTestImplementation sourceSets.main.runtimeClasspath
   contractTestImplementation sourceSets.test.runtimeClasspath
 
-  testImplementation(platform('org.junit:junit-bom:5.13.0'))
+  testImplementation(platform('org.junit:junit-bom:5.13.1'))
   testImplementation group: 'org.springframework.security', name: 'spring-security-test', version: springSecurityVersion
   testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'
   testImplementation(group: 'org.springframework.boot', name: 'spring-boot-starter-test', version: springFrameworkBootVersion) {
