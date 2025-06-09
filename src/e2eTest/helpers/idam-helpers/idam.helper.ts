@@ -8,7 +8,7 @@ import config from "../../config/config";
 const testConfig = config.iDam;
 const username = process.env.IDAM_SYSTEM_USERNAME as string;
 const password = process.env.IDAM_SYSTEM_USER_PASSWORD as string;
-const clientSecret = process.env.PCS_FRONTEND_IDAM_SECRET as string;
+const clientSecret = process.env.PCS_API_IDAM_SECRET as string;
 
 export async function getAccessTokenFromIdam(): Promise<string> {
 

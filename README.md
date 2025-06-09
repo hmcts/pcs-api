@@ -136,7 +136,7 @@ The following environment variables are needed to run the tests:
 - IDAM_SYSTEM_USERNAME
 - IDAM_SYSTEM_USER_PASSWORD
 - PCS_FRONTEND_IDAM_USER_TEMP_PASSWORD
-- PCS_FRONTEND_IDAM_SECRET
+- PCS_API_IDAM_SECRET
 - TEST_E2E_URL_EXUI
 
 The e2e suite can be run with the following command:
