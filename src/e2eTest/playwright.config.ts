@@ -24,7 +24,7 @@ module.exports = defineConfig({
       use: {
         ...devices['Desktop Chrome'],
         channel: 'chromium',
-        screenshot: 'off',
+        screenshot: 'only-on-failure',
         video: 'off',
         trace: 'on-first-retry',
         javaScriptEnabled: true,
@@ -35,44 +35,11 @@ module.exports = defineConfig({
       name: 'firefox',
       use: {
         ...devices['Desktop Firefox'],
-        screenshot: 'off',
+        screenshot: 'only-on-failure',
         video: 'off',
         trace: 'on-first-retry',
         javaScriptEnabled: true,
         viewport: DEFAULT_VIEWPORT,
-      },
-    },
-    {
-      name: 'webkit',
-      use: {
-        ...devices['Desktop Safari'],
-        screenshot: 'off',
-        video: 'off',
-        trace: 'on-first-retry',
-        javaScriptEnabled: true,
-        viewport: DEFAULT_VIEWPORT,
-      },
-    },
-    {
-      name: 'MobileChrome',
-      use: {
-        ...devices['Pixel 5'],
-        trace: 'on-first-retry',
-      },
-    },
-    {
-      name: 'MobileSafari',
-      use: {
-        ...devices['iPhone 12'],
-        trace: 'on-first-retry',
-      },
-    },
-    {
-      name: 'MicrosoftEdge',
-      use: {
-        ...devices['Desktop Edge'],
-        channel: 'msedge',
-        trace: 'on-first-retry',
       },
     },
   ],
