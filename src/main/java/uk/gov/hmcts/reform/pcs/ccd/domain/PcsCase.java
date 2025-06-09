@@ -10,6 +10,9 @@ import uk.gov.hmcts.ccd.sdk.type.FieldType;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 
+import java.time.LocalDate;
+
+
 import java.util.List;
 
 /**
@@ -109,5 +112,11 @@ public class PcsCase {
     public void addClaim(Claim claim) {
         claims.add(claim);
     }
+
+    @CCD(label = "Hearing date")
+    private LocalDate hearingDate;
+
+    @CCD(label = "Hearing location")
+    private String hearingLocation;
 
 }
