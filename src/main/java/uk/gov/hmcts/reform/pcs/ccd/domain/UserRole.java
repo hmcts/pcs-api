@@ -15,7 +15,7 @@ import java.util.Set;
 @Getter
 public enum UserRole implements HasRole {
 
-    CASE_WORKER("caseworker-pcs", Permission.CRU);
+    CASE_WORKER("caseworker-civil", Permission.CRU);
 
     @JsonValue
     private final String role;
