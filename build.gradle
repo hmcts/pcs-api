@@ -5,7 +5,7 @@ import uk.gov.hmcts.rse.CftlibExec
 buildscript {
   ext {
     flywayVersion = '11.9.1'
-    serenityBddVersion = '4.2.32'
+    serenityBddVersion = '4.2.33'
   }
   dependencies {
     classpath("org.flywaydb:flyway-database-postgresql:$flywayVersion")
@@ -22,7 +22,7 @@ plugins {
   id 'org.sonarqube' version '6.2.0.5505'
   id 'net.serenity-bdd.serenity-gradle-plugin' version "$serenityBddVersion"
   id 'hmcts.ccd.sdk' version '5.5.21'
-  id 'com.github.hmcts.rse-cft-lib' version '0.19.1740'
+  id 'com.github.hmcts.rse-cft-lib' version '0.19.1744'
   id 'io.freefair.lombok' version '8.13.1'
   id 'au.com.dius.pact' version '4.6.17'
   /*
@@ -276,7 +276,6 @@ repositories {
   mavenLocal()
   mavenCentral()
   maven { url = 'https://pkgs.dev.azure.com/hmcts/Artifacts/_packaging/hmcts-lib/maven/v1'}
-  maven { url = 'https://jitpack.io'}
 }
 
 ext {
@@ -340,15 +339,15 @@ dependencies {
   functionalTestImplementation sourceSets.main.runtimeClasspath
   functionalTestImplementation sourceSets.test.runtimeClasspath
 
-  testImplementation group: 'org.junit.platform', name: 'junit-platform-suite-api', version: '1.13.0'
+  testImplementation group: 'org.junit.platform', name: 'junit-platform-suite-api', version: '1.13.1'
 
   contractTestImplementation group: 'au.com.dius.pact.consumer', name: 'junit5', version: pactVersion
   contractTestImplementation group: 'org.hamcrest', name: 'java-hamcrest', version: '2.0.0.0'
-  contractTestImplementation('org.junit.jupiter:junit-jupiter-api:5.13.0')
+  contractTestImplementation('org.junit.jupiter:junit-jupiter-api:5.13.1')
   contractTestImplementation sourceSets.main.runtimeClasspath
   contractTestImplementation sourceSets.test.runtimeClasspath
 
-  testImplementation(platform('org.junit:junit-bom:5.13.0'))
+  testImplementation(platform('org.junit:junit-bom:5.13.1'))
   testImplementation group: 'org.springframework.security', name: 'spring-security-test', version: springSecurityVersion
   testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'
   testImplementation(group: 'org.springframework.boot', name: 'spring-boot-starter-test', version: springFrameworkBootVersion) {
@@ -360,8 +359,6 @@ dependencies {
   testImplementation group: 'org.testcontainers', name: 'junit-jupiter', version: testcontainersVersion
   testImplementation group: 'org.testcontainers', name: 'postgresql', version: testcontainersVersion
 
-  developmentOnly 'com.h2database:h2'
-  testImplementation 'com.h2database:h2'
 
   // Allow fast reloading during dev; recompile a class to trigger fast reload + definition reimport.
   cftlibImplementation 'org.springframework.boot:spring-boot-devtools'
@@ -396,6 +393,7 @@ tasks.register('migratePostgresDatabase', FlywayMigrateTask) {
 
 project.tasks.named("generateCCDConfig") {
   environment 'SPRING_PROFILES_ACTIVE', 'config-gen'
+  environment 'SPRING_FLYWAY_ENABLED', 'false'
 }
 
 // Gradle 7.x issue, workaround from: https://github.com/gradle/gradle/issues/17236#issuecomment-894768083
