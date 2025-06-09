@@ -70,14 +70,6 @@ public class IdamConsumerTest {
             .toPact(V4Pact.class);
     }
 
-    @Test
-    @PactTestFor(pactMethod = "requestToken")
-    void verifyToken() {
-        TokenResponse tokenResponse = idamApi.generateOpenIdToken(buildTokenRequest());
-        assertThat(tokenResponse.accessToken)
-            .isNotBlank();
-    }
-
     private TokenRequest buildTokenRequest() {
         return new TokenRequest(
             "pcs_api",
@@ -105,18 +97,6 @@ public class IdamConsumerTest {
             .toPact(V4Pact.class);
     }
 
-    @Test
-    @PactTestFor(pactMethod = "requestUserInfo")
-    public void verifyPactResponse() {
-        var userDetails = idamApi.retrieveUserInfo("Bearer authorisationToken");
-        assertThat(userDetails.getSub())
-            .isEqualTo("caseofficer@fake.hmcts.net");
-        assertThat(userDetails.getUid())
-            .isEqualTo("1111-2222-3333-4567");
-        assertThat(userDetails.getRoles())
-            .contains("caseworker");
-    }
-
     static PactDslJsonBody createUserDetailsResponse() {
         return new PactDslJsonBody()
             .stringType("uid", "1111-2222-3333-4567")
@@ -125,5 +105,17 @@ public class IdamConsumerTest {
             .stringValue("familyName", "Officer")
             .minArrayLike("roles", 1, PactDslJsonRootValue.stringType("caseworker"),1)
             .stringType("IDAM_ADMIN_USER", "idamAdminUser");
+    }
+
+    @Test
+    @PactTestFor(pactMethods = {"requestToken", "requestUserInfo"})
+    void verifyAllPacts() {
+        TokenResponse tokenResponse = idamApi.generateOpenIdToken(buildTokenRequest());
+        assertThat(tokenResponse.accessToken).isNotBlank();
+
+        var userDetails = idamApi.retrieveUserInfo("Bearer authorisationToken");
+        assertThat(userDetails.getSub()).isEqualTo("caseofficer@fake.hmcts.net");
+        assertThat(userDetails.getUid()).isEqualTo("1111-2222-3333-4567");
+        assertThat(userDetails.getRoles()).contains("caseworker");
     }
 }
