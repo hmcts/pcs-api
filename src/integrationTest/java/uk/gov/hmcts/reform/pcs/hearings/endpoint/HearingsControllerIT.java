@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.pcs.hearings.endpoint;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -10,11 +11,13 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
+import uk.gov.hmcts.reform.idam.client.IdamClient;
 import uk.gov.hmcts.reform.pcs.config.AbstractPostgresContainerIT;
 import uk.gov.hmcts.reform.pcs.hearings.model.DeleteHearingRequest;
 import uk.gov.hmcts.reform.pcs.hearings.model.HearingRequest;
 import uk.gov.hmcts.reform.pcs.hearings.model.UpdateHearingRequest;
 import uk.gov.hmcts.reform.pcs.hearings.service.api.HmcHearingApi;
+import uk.gov.hmcts.reform.pcs.util.IdamHelper;
 
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
@@ -29,20 +32,26 @@ import static uk.gov.hmcts.reform.pcs.hearings.constants.HearingConstants.SERVIC
 @ActiveProfiles("integration")
 class HearingsControllerIT extends AbstractPostgresContainerIT {
 
+    private static final String AUTH_HEADER = "Bearer token";
+    private static final String SERVICE_AUTH_HEADER = "ServiceAuthToken";
+    private static final String SYSTEM_USER_ID_TOKEN = "system-user-id-token";
+
     @Autowired
     private MockMvc mockMvc;
-
     @Autowired
     private ObjectMapper objectMapper;
 
     @MockitoBean
     private AuthTokenGenerator authTokenGenerator;
-
+    @MockitoBean
+    private IdamClient idamClient;
     @MockitoBean
     private HmcHearingApi hmcHearingApi;
 
-    private static final String AUTH_HEADER = "Bearer token";
-    private static final String SERVICE_AUTH_HEADER = "ServiceAuthToken";
+    @BeforeEach
+    void setUp() {
+        IdamHelper.stubIdamSystemUser(idamClient, SYSTEM_USER_ID_TOKEN);
+    }
 
     @Test
     void shouldCreateHearing() throws Exception {

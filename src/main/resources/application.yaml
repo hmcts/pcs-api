@@ -82,6 +82,13 @@ idam:
     microservice: ${S2S_SERVICE_NAME:pcs_api}
   s2s-authorised:
     services: ${S2S_NAMES_WHITELIST:pcs_api,pcs_frontend,ccd_data}
+  system-user:
+    username: ${PCS_IDAM_SYSTEM_USERNAME:pcs-system-user@localhost}
+    password: ${PCS_IDAM_SYSTEM_PASSWORD:password}
+  client:
+    id: ${IDAM_CLIENT_ID:pcs-api}
+    secret: ${IDAM_CLIENT_SECRET:123456}
+    redirect_uri: ${IDAM_API_REDIRECT_URL:http://localhost:3001/oauth2/callback}
 
 azure:
   application-insights:
@@ -101,4 +108,11 @@ notify:
   status-check-delay-millis: ${NOTIFY_STATUS_CHECK_DELAY:3000}
 
 testing-support:
-  enabled: ${ENABLE_TESTING_SUPPORT:false}
+  enabled: ${ENABLE_TESTING_SUPPORT:true}
+
+# Below sets if DB scheduler can execute on the current instance of the API.
+db-scheduler:
+  enabled: false # This disables the autoconfiguration of DB Scheduler. Always off.
+  executor-enabled: ${DB_SCHEDULER_EXECUTOR_ENABLED:true}
+  polling-interval-seconds: 10
+  threads: 10
