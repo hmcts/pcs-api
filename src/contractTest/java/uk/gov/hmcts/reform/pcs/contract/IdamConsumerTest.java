@@ -100,7 +100,7 @@ public class IdamConsumerTest {
     static PactDslJsonBody createUserDetailsResponse() {
         return new PactDslJsonBody()
             .stringType("uid", "1111-2222-3333-4567")
-            .stringValue("sub", "caseofficer@fake.hmcts.net")
+            .stringType("sub", "caseofficer@fake.hmcts.net")
             .stringValue("givenName", "Case")
             .stringValue("familyName", "Officer")
             .minArrayLike("roles", 1, PactDslJsonRootValue.stringType("caseworker"),1)
