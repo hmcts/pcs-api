@@ -28,20 +28,19 @@ public class CftlibConfig implements CFTLibConfigurer {
         var users = Map.of(
             "caseworker@pcs.com", List.of("caseworker", "caseworker-pcs"));
 
-        lib.createRoles(
-            "caseworker",
-            "caseworker-pcs"
-        );
-
         // Create users and roles including in idam simulator
         for (var entry : users.entrySet()) {
             lib.createIdamUser(entry.getKey(), entry.getValue().toArray(new String[0]));
-            lib.createProfile(entry.getKey(), "CIVIL", "PCS", State.Open.name());
+            lib.createProfile(entry.getKey(), "PCS", "PCS", State.Open.name());
         }
 
         // Create local system user
         lib.createIdamUser("pcs-system-user@localhost");
 
+        lib.createRoles(
+            "caseworker",
+            "caseworker-pcs"
+        );
 
         // Generate CCD definitions
         configWriter.generateAllCaseTypesToJSON(new File("build/definitions"));
