@@ -1,14 +1,10 @@
 package uk.gov.hmcts.reform.pcs.hearings.service;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.pcs.hearings.model.DeleteHearingRequest;
 import uk.gov.hmcts.reform.pcs.hearings.model.GetHearingsResponse;
@@ -16,14 +12,21 @@ import uk.gov.hmcts.reform.pcs.hearings.model.HearingRequest;
 import uk.gov.hmcts.reform.pcs.hearings.model.HearingResponse;
 import uk.gov.hmcts.reform.pcs.hearings.model.UpdateHearingRequest;
 import uk.gov.hmcts.reform.pcs.hearings.service.api.HmcHearingApi;
+import uk.gov.hmcts.reform.pcs.idam.IdamService;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+@ExtendWith(MockitoExtension.class)
 class HmcHearingServiceTest {
 
     @Mock
     private HmcHearingApi hmcHearingApi;
-
     @Mock
     private AuthTokenGenerator authTokenGenerator;
+    @Mock
+    private IdamService idamService;
 
     private HmcHearingService hmcHearingService;
 
@@ -34,9 +37,9 @@ class HmcHearingServiceTest {
 
     @BeforeEach
     void setUp() {
-        MockitoAnnotations.openMocks(this);
         when(authTokenGenerator.generate()).thenReturn(SERVICE_AUTH_HEADER);
-        hmcHearingService = new HmcHearingService(hmcHearingApi, authTokenGenerator);
+        when(idamService.getSystemUserAuthorisation()).thenReturn(AUTH_HEADER);
+        hmcHearingService = new HmcHearingService(hmcHearingApi, authTokenGenerator, idamService);
     }
 
     @Test
@@ -47,11 +50,10 @@ class HmcHearingServiceTest {
         when(hmcHearingApi.createHearing(AUTH_HEADER,
                                          SERVICE_AUTH_HEADER, DEPLOYMENT_ID, request)).thenReturn(response);
 
-        HearingResponse result = hmcHearingService.createHearing(AUTH_HEADER, request);
+        HearingResponse result = hmcHearingService.createHearing(request);
 
         assertThat(result).isNotNull().isEqualTo(response);
-        verify(hmcHearingApi, times(1)).createHearing(AUTH_HEADER,
-                SERVICE_AUTH_HEADER, DEPLOYMENT_ID, request);
+        verify(hmcHearingApi).createHearing(AUTH_HEADER, SERVICE_AUTH_HEADER, DEPLOYMENT_ID, request);
     }
 
     @Test
@@ -62,11 +64,10 @@ class HmcHearingServiceTest {
         when(hmcHearingApi.updateHearing(AUTH_HEADER,
             SERVICE_AUTH_HEADER, DEPLOYMENT_ID, HEARING_ID, request)).thenReturn(response);
 
-        HearingResponse result = hmcHearingService.updateHearing(AUTH_HEADER, HEARING_ID, request);
+        HearingResponse result = hmcHearingService.updateHearing(HEARING_ID, request);
 
         assertThat(result).isNotNull().isEqualTo(response);
-        verify(hmcHearingApi, times(1)).updateHearing(AUTH_HEADER,
-            SERVICE_AUTH_HEADER, DEPLOYMENT_ID, HEARING_ID, request);
+        verify(hmcHearingApi).updateHearing(AUTH_HEADER, SERVICE_AUTH_HEADER, DEPLOYMENT_ID, HEARING_ID, request);
     }
 
     @Test
@@ -79,8 +80,7 @@ class HmcHearingServiceTest {
                                          SERVICE_AUTH_HEADER, DEPLOYMENT_ID, HEARING_ID, request)).thenReturn(response);
 
         // Call the service method that triggers the API method
-        HearingResponse result = hmcHearingService.deleteHearing(AUTH_HEADER,
-                                                                 HEARING_ID, request);
+        HearingResponse result = hmcHearingService.deleteHearing(HEARING_ID, request);
 
         // Debugging output to check if the result is null
         System.out.println("Delete Hearing Response: " + result);
@@ -90,8 +90,7 @@ class HmcHearingServiceTest {
         assertThat(result).isNotNull().isEqualTo(response);
 
         // Verify that the deleteHearing method was called once with the correct arguments
-        verify(hmcHearingApi, times(1)).deleteHearing(AUTH_HEADER,
-                                                      SERVICE_AUTH_HEADER, DEPLOYMENT_ID, HEARING_ID, request);
+        verify(hmcHearingApi).deleteHearing(AUTH_HEADER, SERVICE_AUTH_HEADER, DEPLOYMENT_ID, HEARING_ID, request);
     }
 
     @Test
@@ -101,10 +100,9 @@ class HmcHearingServiceTest {
         when(hmcHearingApi.getHearing(AUTH_HEADER,
                                       SERVICE_AUTH_HEADER, DEPLOYMENT_ID, HEARING_ID, null)).thenReturn(response);
 
-        GetHearingsResponse result = hmcHearingService.getHearing(AUTH_HEADER, HEARING_ID);
+        GetHearingsResponse result = hmcHearingService.getHearing(HEARING_ID);
 
         assertThat(result).isNotNull().isEqualTo(response);
-        verify(hmcHearingApi, times(1)).getHearing(AUTH_HEADER,
-                                                   SERVICE_AUTH_HEADER, DEPLOYMENT_ID, HEARING_ID, null);
+        verify(hmcHearingApi).getHearing(AUTH_HEADER, SERVICE_AUTH_HEADER, DEPLOYMENT_ID, HEARING_ID, null);
     }
 }

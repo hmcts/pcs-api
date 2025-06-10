@@ -4,9 +4,11 @@ import io.vavr.control.Try;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import uk.gov.hmcts.reform.pcs.idam.IdamService;
 import uk.gov.hmcts.reform.pcs.location.model.CourtVenue;
 import uk.gov.hmcts.reform.pcs.location.service.LocationReferenceService;
 import uk.gov.hmcts.reform.pcs.postcodecourt.entity.PostCodeCourtEntity;
+import uk.gov.hmcts.reform.pcs.postcodecourt.exception.InvalidPostCodeException;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.Court;
 import uk.gov.hmcts.reform.pcs.postcodecourt.repository.PostCodeCourtRepository;
 
@@ -23,8 +25,12 @@ public class PostCodeCourtService {
 
     private final PostCodeCourtRepository postCodeCourtRepository;
     private final LocationReferenceService locationReferenceService;
+    private final IdamService idamService;
 
-    public List<Court> getCountyCourtsByPostCode(String postcode, String authorisation) {
+    public List<Court> getCountyCourtsByPostCode(String postcode) {
+        if (postcode == null || postcode.isBlank()) {
+            throw new InvalidPostCodeException("Postcode can't be empty or null");
+        }
 
         List<Integer> epimIds = getPostcodeCourtMappings(postcode).stream()
             .map(postCodeCourt -> {
@@ -37,7 +43,7 @@ public class PostCodeCourtService {
             })
             .toList();
         log.info("searching county courts with epimIDs {}", epimIds);
-        return safeGetCountyCourts(authorisation, epimIds).stream()
+        return safeGetCountyCourts(epimIds).stream()
             .map(courtVenue -> new Court(
                 courtVenue.courtVenueId(),
                 courtVenue.courtName(),
@@ -47,10 +53,7 @@ public class PostCodeCourtService {
     }
 
     private List<PostCodeCourtEntity> getPostcodeCourtMappings(String postcode) {
-        if (postcode == null) {
-            log.warn("Returning empty list of postcode court mappings for null postcode.");
-            return List.of();
-        }
+
         postcode = postcode.replaceAll("\\s", "").toUpperCase(Locale.ROOT);
 
         List<String> postcodes = getPostCodeLookupCandidates(postcode);
@@ -78,7 +81,9 @@ public class PostCodeCourtService {
         return postcodes;
     }
 
-    private List<CourtVenue> safeGetCountyCourts(String authorisation, List<Integer> epimIds) {
+    private List<CourtVenue> safeGetCountyCourts(List<Integer> epimIds) {
+        String authorisation = idamService.getSystemUserAuthorisation();
+
         return Try.of(() -> locationReferenceService.getCountyCourts(authorisation, epimIds))
                 .onFailure(e -> log.error("Failed to fetch court details Error {}", e.getMessage(), e))
                 .getOrElse(Collections.emptyList());
