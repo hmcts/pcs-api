@@ -36,6 +36,19 @@ public class EmailState implements Serializable {
         this.retryCount = retryCount;
     }
 
+    public EmailState withNotificationId(String notificationId) {
+        return new EmailState(
+            this.id,
+            this.emailAddress,
+            this.templateId,
+            this.personalisation,
+            this.reference,
+            this.emailReplyToId,
+            notificationId,
+            this.retryCount
+        );
+    }
+
     @Override
     public String toString() {
         return "EmailState{"

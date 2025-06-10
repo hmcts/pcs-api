@@ -1,17 +1,16 @@
 package uk.gov.hmcts.reform.pcs.notify.config;
 
 import com.github.kagkarlsson.scheduler.task.CompletionHandler;
+import com.github.kagkarlsson.scheduler.task.FailureHandler;
 import com.github.kagkarlsson.scheduler.task.SchedulableInstance;
 import com.github.kagkarlsson.scheduler.task.TaskDescriptor;
 import com.github.kagkarlsson.scheduler.task.TaskInstance;
 import com.github.kagkarlsson.scheduler.task.helper.CustomTask;
 import com.github.kagkarlsson.scheduler.task.helper.Tasks;
-import com.github.kagkarlsson.scheduler.task.schedule.Schedules;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import uk.gov.hmcts.reform.pcs.notify.exception.NotificationException;
 import uk.gov.hmcts.reform.pcs.notify.exception.PermanentNotificationException;
 import uk.gov.hmcts.reform.pcs.notify.exception.TemporaryNotificationException;
 import uk.gov.hmcts.reform.pcs.notify.model.EmailNotificationRequest;
@@ -39,30 +38,27 @@ public class EmailTaskConfiguration {
     private final NotificationService notificationService;
 
     @Autowired
-    public EmailTaskConfiguration(NotificationService notificationService,
-                                    NotificationClient notificationClient) {
+    public EmailTaskConfiguration(NotificationService notificationService) {
         this.notificationService = notificationService;
     }
 
     /**
-     * Creates a custom task that handles the process of sending an email using the provided {@link EmailState}.
-     * This task communicates with an external email notification service.
-     * The task performs the following operations:
-     * - Attempts to send an email based on the email state provided.
-     * - Extracts the notification ID from the response upon successful email submission and updates the email state.
-     * - Chains the successful task to a verification task with a delay to allow processing.
-     * - Handles failures:
-     *   - For permanent failures, the task is removed without retries.
-     *   - For temporary failures, retries the task with an exponential backoff based on error type.
-     *   - Retries up to a defined retry limit (currently 3 retries) for other exceptions,
-     *     after which the task is removed.
+     * Creates and returns a task for sending email notifications.
+     * The task handles email sending logic, processes responses,
+     * and includes retrying mechanisms for temporary failures
+     * with a maximum of 5 retries. Permanent failures are logged
+     * and the task is removed after failure.
      *
-     * @return A {@link CustomTask} object that represents the send email task with the configured behavior.
+     * @return a configured CustomTask for processing email notifications using the EmailState object.
      */
     @Bean
     public CustomTask<EmailState> sendEmailTask() {
-        return Tasks.custom(sendEmailTask).execute((
-            (taskInstance, executionContext) -> {
+        return Tasks.custom(sendEmailTask)
+            .onFailure(new FailureHandler.MaxRetriesFailureHandler<>(
+                5, // max retries
+                new FailureHandler.ExponentialBackoffFailureHandler<>(Duration.ofSeconds(3)) // base delay
+            ))
+            .execute((taskInstance, executionContext) -> {
                 EmailState emailState = taskInstance.getData();
                 log.info("Processing send email task: {}", emailState.id);
 
@@ -76,25 +72,11 @@ public class EmailTaskConfiguration {
                         .build();
 
                     SendEmailResponse response = notificationService.sendEmail(emailRequest);
-
-                    // Extract notification ID from the response
                     String notificationId = response.getNotificationId().toString();
                     log.info("Email sent successfully. Notification ID: {}", notificationId);
 
-                    // Update the email state with the notification ID
-                    EmailState nextState = new EmailState(
-                        emailState.id,
-                        emailState.emailAddress,
-                        emailState.templateId,
-                        emailState.personalisation,
-                        emailState.reference,
-                        emailState.emailReplyToId,
-                        notificationId,
-                        emailState.retryCount
-                    );
+                    EmailState nextState = emailState.withNotificationId(notificationId);
 
-                    // Chain to verification task with a delay to allow GOV.UK Notify to process
-                    log.info("The time is {}", Instant.now());
                     return new CompletionHandler.OnCompleteReplace<>(
                         currentInstance -> SchedulableInstance.of(
                             new TaskInstance<>(verifyEmailTask.getTaskName(), currentInstance.getId(), nextState),
@@ -102,164 +84,58 @@ public class EmailTaskConfiguration {
                         )
                     );
                 } catch (PermanentNotificationException e) {
-                    log.error("Permanent failure sending email. Reference ID: {}. Reason: {}",
-                        emailState.id,
-                        e.getMessage(),
-                        e
-                    );
-                    // Don't retry permanent failures
+                    log.error("Permanent failure sending email: {}", e.getMessage(), e);
                     return new CompletionHandler.OnCompleteRemove<>();
-
                 } catch (TemporaryNotificationException e) {
-                    log.warn("Temporary failure sending email. Reference ID: {}. Reason: {}",
-                        emailState.id,
-                        e.getMessage(),
-                        e
-                    );
-
-                    // Always retry temporary failures (429, 500) regardless of retry count
-                    EmailState retryState = new EmailState(
-                        emailState.id,
-                        emailState.emailAddress,
-                        emailState.templateId,
-                        emailState.personalisation,
-                        emailState.reference,
-                        emailState.emailReplyToId,
-                        null, // No notification ID yet
-                        emailState.retryCount + 1
-                    );
-
-                    // Use exponential backoff for different error types
-                    Duration retryDelay = (e.getCause() instanceof NotificationClientException
-                                            notificationClientException)
-                        ? getRetryDelayForStatusCode(notificationClientException.getHttpResult())
-                        : Duration.ofMinutes(20);
-
-                    log.info("Scheduling retry #{} for temporary failure task: {} in {}",
-                        retryState.retryCount, retryState.id, retryDelay);
-                    return new CompletionHandler.OnCompleteReschedule<>(
-                        Schedules.fixedDelay(retryDelay),
-                        retryState
-                    );
-
-                } catch (NotificationException e) {
-                    log.error("Failed to send email. Reference ID: {}. Reason: {}",
-                        emailState.id,
-                        e.getMessage(),
-                        e
-                    );
-
-                    if (emailState.retryCount < 5) {
-                        EmailState retryState = new EmailState(
-                            emailState.id,
-                            emailState.emailAddress,
-                            emailState.templateId,
-                            emailState.personalisation,
-                            emailState.reference,
-                            emailState.emailReplyToId,
-                            null, // No notification ID yet
-                            emailState.retryCount + 1
-                        );
-
-                        log.info("Scheduling retry #{} for task: {}", retryState.retryCount, retryState.id);
-                        return new CompletionHandler.OnCompleteReschedule<>(
-                            Schedules.fixedDelay(Duration.ofMinutes(20)),
-                            retryState
-                        );
-                    } else {
-                        log.error("Max retries reached for email task: {}", emailState.id);
-                        return new CompletionHandler.OnCompleteRemove<>();
-                    }
-                }
-            })
-        );
-    }
-
-    /**
-     * Creates and returns a custom task for verifying the delivery status of an email notification.
-     * The task fetches the current status of the email and determines the appropriate action:
-     * - Completes the task if the email is delivered successfully.
-     * - Reschedules the task if the email delivery has failed and retry attempts to remain.
-     * - Removes the task if the email delivery has either failed all retries or encountered a critical issue.
-     * The task also handles unexpected exceptions, rescheduling the task for later execution as needed.
-     *
-     * @return a configured {@code CustomTask<EmailState>} instance that performs email delivery verification.
-     */
-    @Bean
-    public CustomTask<EmailState> verifyEmailTask() {
-        return Tasks.custom(verifyEmailTask)
-            .execute((taskInstance, executionContext) -> {
-                EmailState emailState = taskInstance.getData();
-                log.info("The time is {}, Verifying email delivery for notification ID: {}",
-                            Instant.now(), emailState.notificationId);
-
-                try {
-                    // Use notification client to check the email status
-                    Notification notification = notificationService.fetchNotificationStatus(emailState.notificationId);
-                    String status = notification.getStatus();
-
-                    log.info("Email status for notification ID {}: {}", emailState.notificationId, status);
-
-                    // Check if email is delivered or still in progress
-
-                    if (NotificationStatus.DELIVERED.toString().equalsIgnoreCase(status)) {
-                        // Email successfully delivered
-                        log.info("Email successfully delivered. Task complete: {}", emailState.id);
-                        return new CompletionHandler.OnCompleteRemove<>();
-                    } else if (NotificationStatus.TEMPORARY_FAILURE.toString().equalsIgnoreCase(status)) {
-                        if (emailState.retryCount < 5) {
-                            EmailState retryState = new EmailState(
-                                emailState.id,
-                                emailState.emailAddress,
-                                emailState.templateId,
-                                emailState.personalisation,
-                                emailState.reference,
-                                emailState.emailReplyToId,
-                                null, // No notification ID yet
-                                emailState.retryCount + 1
-                            );
-
-                            log.info("Scheduling resend #{} for task: {}", retryState.retryCount, retryState.id);
-                            return new CompletionHandler.OnCompleteReschedule<>(
-                                Schedules.fixedDelay(Duration.ofMinutes(20)),
-                                retryState
-                            );
-                        } else {
-                            log.info("Email failed all retries. Task removed: {}", emailState.id);
-                            return new CompletionHandler.OnCompleteRemove<>();
-                        }
-                    } else {
-                        log.error("Email delivery failed with status: {} for task: {}", status, emailState.id);
-                        return new CompletionHandler.OnCompleteRemove<>();
-                    }
-                } catch (NotificationClientException e) {
-                    log.error("Error verifying email status: {}", e.getMessage());
-                    return new CompletionHandler.OnCompleteReschedule<>(
-                        Schedules.fixedDelay(Duration.ofMinutes(2)),
-                        emailState
-                    );
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                    throw new RuntimeException(e);
+                    log.warn("Retryable failure: {}", e.getMessage(), e);
+                    // Let the scheduler retry using the configured failure handler
+                    throw e;
                 }
             });
     }
 
+
     /**
-     * Determines the retry delay duration based on the provided HTTP status code.
+     * Creates and configures a custom task for verifying email delivery status.
+     * The task handles retry logic in case of failures, with exponential backoff for temporary issues.
+     * It checks the delivery status of an email using the notification service and processes the status accordingly.
      *
-     * @param statusCode the HTTP status code that influences the retry delay calculation.
-     * @return the duration to wait before retrying the operation. Specific delays are:
-     *         429 (Rate limit) - 5 minutes,
-     *         500 (Server error) - 10 minutes,
-     *         Other status codes - 20 minutes.
+     * @return a configured instance of {@code CustomTask} for managing the email verification process with retry and
+     *     failure handling mechanisms.
      */
-    private Duration getRetryDelayForStatusCode(int statusCode) {
-        return switch (statusCode) {
-            case 429 -> Duration.ofMinutes(5);  // Rate limit - retry sooner
-            case 500 -> Duration.ofMinutes(10); // Server error - retry with moderate delay
-            default -> Duration.ofMinutes(20);  // Default delay
-        };
+    @Bean
+    public CustomTask<EmailState> verifyEmailTask() {
+        return Tasks.custom(verifyEmailTask)
+            .onFailure(new FailureHandler.MaxRetriesFailureHandler<>(
+                5,
+                new FailureHandler.ExponentialBackoffFailureHandler<>(Duration.ofSeconds(5))
+            ))
+            .execute((taskInstance, executionContext) -> {
+                EmailState emailState = taskInstance.getData();
+                log.info("Verifying email delivery for ID: {}", emailState.notificationId);
+
+                try {
+                    Notification notification = notificationService.fetchNotificationStatus(emailState.notificationId);
+                    String status = notification.getStatus();
+
+                    if (NotificationStatus.DELIVERED.toString().equalsIgnoreCase(status)) {
+                        log.info("Email successfully delivered: {}", emailState.id);
+                        return new CompletionHandler.OnCompleteRemove<>();
+                    } else if (NotificationStatus.TEMPORARY_FAILURE.toString().equalsIgnoreCase(status)) {
+                        log.warn("Temporary failure status for task: {}", emailState.id);
+                        throw new TemporaryNotificationException("Temporary delivery failure", null); // triggers retry
+                    } else {
+                        log.error("Permanent failure with status: {} for task: {}", status, emailState.id);
+                        return new CompletionHandler.OnCompleteRemove<>();
+                    }
+                } catch (NotificationClientException e) {
+                    log.error("Failed to verify status due to API error", e);
+                    throw new TemporaryNotificationException("Failed to verify email status", e);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    throw new RuntimeException("Task interrupted", e);
+                }
+            });
     }
 }
 
