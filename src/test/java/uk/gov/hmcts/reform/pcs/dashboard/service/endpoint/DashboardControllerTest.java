@@ -12,6 +12,7 @@ import uk.gov.hmcts.reform.pcs.dashboard.model.TaskGroup;
 import uk.gov.hmcts.reform.pcs.dashboard.service.DashboardNotificationService;
 import uk.gov.hmcts.reform.pcs.dashboard.service.DashboardTaskService;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
+import uk.gov.hmcts.reform.pcs.idam.IdamService;
 
 import java.util.Collections;
 import java.util.List;
@@ -32,6 +33,9 @@ class DashboardControllerTest {
 
     @MockitoBean
     private DashboardNotificationService dashboardNotificationService;
+
+    @MockitoBean
+    private IdamService idamService;
 
     @Test
     @WithMockUser
