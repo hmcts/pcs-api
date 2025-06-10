@@ -130,9 +130,10 @@ public class EmailTaskConfiguration {
                     );
 
                     // Use exponential backoff for different error types
-                    Duration retryDelay = (e.getCause() instanceof NotificationClientException)
-                        ? getRetryDelayForStatusCode(((NotificationClientException) e.getCause()).getHttpResult()) :
-                        Duration.ofMinutes(20);
+                    Duration retryDelay = (e.getCause() instanceof NotificationClientException
+                                            notificationClientException)
+                        ? getRetryDelayForStatusCode(notificationClientException.getHttpResult())
+                        : Duration.ofMinutes(20);
 
                     log.info("Scheduling retry #{} for temporary failure task: {} in {}",
                         retryState.retryCount, retryState.id, retryDelay);
@@ -148,7 +149,7 @@ public class EmailTaskConfiguration {
                         e
                     );
 
-                    if (emailState.retryCount < 3) {
+                    if (emailState.retryCount < 5) {
                         EmailState retryState = new EmailState(
                             emailState.id,
                             emailState.emailAddress,
@@ -226,6 +227,7 @@ public class EmailTaskConfiguration {
                         emailState
                     );
                 } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
                     throw new RuntimeException(e);
                 }
             });
