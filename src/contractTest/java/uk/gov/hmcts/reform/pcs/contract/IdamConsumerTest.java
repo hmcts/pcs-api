@@ -47,6 +47,7 @@ public class IdamConsumerTest {
         System.setProperty("pact.specification.version", "3");
     }
 
+    @Disabled("Do not publish this pact until SIDM-9833 is resolved")
     @Pact(provider = "idamApi_oidc", consumer = "pcs_api")
     public V4Pact requestToken(PactDslWithProvider builder) throws JsonProcessingException {
 
@@ -83,6 +84,7 @@ public class IdamConsumerTest {
             null, null);
     }
 
+    @Disabled("Do not publish this pact until SIDM-9833 is resolved")
     @Pact(provider = "idamApi_oidc", consumer = "pcs_api")
     public V4Pact requestUserInfo(PactDslWithProvider builder) throws JsonProcessingException {
 
@@ -108,7 +110,6 @@ public class IdamConsumerTest {
             .stringType("IDAM_ADMIN_USER", "idamAdminUser");
     }
 
-    @Disabled("Do not publish this pact until SIDM-9833 is resolved")
     @Test
     @PactTestFor(pactMethods = {"requestToken", "requestUserInfo"})
     void verifyAllPacts() {
