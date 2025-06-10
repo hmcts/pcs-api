@@ -2,7 +2,6 @@ package uk.gov.hmcts.reform.pcs.notify.service;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataAccessException;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.pcs.notify.domain.CaseNotification;
@@ -19,16 +18,12 @@ import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionException;
-import java.util.concurrent.TimeUnit;
 
 @Service
 @Slf4j
 public class NotificationService {
     private final NotificationClient notificationClient;
     private final NotificationRepository notificationRepository;
-    private final long statusCheckDelay;
 
     /**
      * Constructor for the NotificationService.
@@ -43,15 +38,19 @@ public class NotificationService {
         @Value("${notify.status-check-delay-millis}") long statusCheckDelay) {
         this.notificationClient = notificationClient;
         this.notificationRepository = notificationRepository;
-        this.statusCheckDelay = statusCheckDelay;
     }
 
     /**
-     * Sends an email using GOV.UK Notify service.
+     * Sends an email notification using the provided email request details.
      *
-     * @param emailRequest The email request containing necessary information
-     * @return SendEmailResponse from GOV.UK Notify
-     * @throws NotificationException If the email fails to send
+     * This method sends an email using the notification client by utilizing a specific template ID,
+     * destination address, and personalization data. It also updates the notification status in
+     * the database based on the outcome of the email sending process.
+     *
+     * @param emailRequest the email request details containing the destination address, template ID,
+     *                     and personalization data for the email
+     * @return a {@link SendEmailResponse} object containing the response details of the sent email
+     * @throws NotificationException if an error occurs while attempting to send the email
      */
     public SendEmailResponse sendEmail(EmailNotificationRequest emailRequest) {
         SendEmailResponse sendEmailResponse;
@@ -62,8 +61,8 @@ public class NotificationService {
 
         // Create initial notification in database
         CaseNotification caseNotification = createCaseNotification(
-            emailRequest.getEmailAddress(), 
-            "Email", 
+            emailRequest.getEmailAddress(),
+            "Email",
             UUID.randomUUID()
         );
 
@@ -80,23 +79,16 @@ public class NotificationService {
             // Update notification with provider ID received from GOV.UK Notify
             UUID providerNotificationId = sendEmailResponse.getNotificationId();
             updateNotificationStatus(caseNotification, NotificationStatus.SUBMITTED, providerNotificationId);
-            
-            // Trigger async status check using CompletableFuture
-            checkNotificationStatus(providerNotificationId.toString())
-                .exceptionally(throwable -> {
-                    log.error("Error checking notification status: {}", throwable.getMessage(), throwable);
-                    return null;
-                });
 
             return sendEmailResponse;
         } catch (NotificationClientException notificationClientException) {
             // Update notification status to failure
             updateNotificationStatus(caseNotification, NotificationStatus.TECHNICAL_FAILURE, null);
-            
+
             log.error("Failed to send email. Reference ID: {}. Reason: {}",
-                      referenceId,
-                      notificationClientException.getMessage(),
-                      notificationClientException
+                        referenceId,
+                        notificationClientException.getMessage(),
+                        notificationClientException
             );
 
             throw new NotificationException("Email failed to send, please try again.", notificationClientException);
@@ -104,33 +96,33 @@ public class NotificationService {
     }
 
     /**
-     * Asynchronously checks the status of a notification with GOV.UK Notify.
-     * 
-     * @param notificationId The ID of the notification to check
-     * @return CompletableFuture containing the notification details
+     * Fetches the notification status for the given notification ID and updates
+     * the notification status in the database accordingly.
+     *
+     * @param notificationId the unique identifier of the notification to be fetched
+     * @return the fetched Notification object containing details about the notification
+     * @throws NotificationClientException if an error occurs during the notification retrieval
+     * @throws InterruptedException if the thread executing the method is interrupted
      */
-    @Async("notificationExecutor")
-    public CompletableFuture<Notification> checkNotificationStatus(String notificationId) {
-        return CompletableFuture.supplyAsync(() -> {
-            try {
-                return getAndProcessNotificationStatus(notificationId);
-            } catch (NotificationClientException | InterruptedException e) {
-                handleStatusCheckException(notificationId, e);
-                throw new CompletionException(e);
-            }
-        });
+    public Notification fetchNotificationStatus(String notificationId)
+            throws NotificationClientException, InterruptedException {
+        Notification notification = notificationClient.getNotificationById(notificationId);
+
+        updateNotificationStatusInDatabase(notification, notificationId);
+
+        return notification;
     }
 
     /**
      * Creates a case notification in the database.
-     * 
+     *
      * @param recipient The recipient of the notification
      * @param type The type of notification
      * @param caseId The associated case ID
      * @return The created CaseNotification
      * @throws NotificationException If saving the notification fails
      */
-    CaseNotification createCaseNotification(String recipient, String type, UUID caseId) {
+    private CaseNotification createCaseNotification(String recipient, String type, UUID caseId) {
         CaseNotification toSaveNotification = new CaseNotification();
         toSaveNotification.setCaseId(caseId);
         // Use the toString() method of the enum to get the string value
@@ -154,47 +146,10 @@ public class NotificationService {
             throw new NotificationException("Failed to save Case Notification.", dataAccessException);
         }
     }
-    
-    /**
-     * Retrieves notification status from GOV.UK Notify and processes it.
-     * 
-     * @param notificationId The notification ID to check
-     * @return The notification object from GOV.UK Notify
-     * @throws NotificationClientException If there's an error communicating with GOV.UK Notify
-     * @throws InterruptedException If the thread is interrupted while waiting
-     */
-    private Notification getAndProcessNotificationStatus(String notificationId) 
-            throws NotificationClientException, InterruptedException {
-        // Wait for configured delay
-        TimeUnit.MILLISECONDS.sleep(statusCheckDelay);
-        
-        Notification notification = notificationClient.getNotificationById(notificationId);
-        
-        updateNotificationStatusInDatabase(notification, notificationId);
-        
-        return notification;
-    }
-    
-    /**
-     * Handles exceptions that occur when checking notification status.
-     * 
-     * @param notificationId The notification ID being checked
-     * @param e The exception that was thrown
-     */
-    private void handleStatusCheckException(String notificationId, Exception e) {
-        log.error("Error checking notification status for ID: {}. Error: {}", 
-            notificationId, 
-            e.getMessage(),
-            e
-        );
-        if (e instanceof InterruptedException) {
-            Thread.currentThread().interrupt();
-        }
-    }
 
     /**
      * Updates the notification status in the database, based on the status from GOV.UK Notify.
-     * 
+     *
      * @param notification The notification object from GOV.UK Notify
      * @param notificationId The notification ID for database lookup
      */
@@ -203,21 +158,21 @@ public class NotificationService {
             CaseNotification caseNotification = notificationRepository
                 .findByProviderNotificationId(UUID.fromString(notificationId))
                 .orElse(null);
-            
+
             if (caseNotification != null) {
                 updateNotificationWithStatus(caseNotification, notification.getStatus());
             } else {
                 log.warn("Could not find case notification with provider ID: {}", notificationId);
             }
         } catch (Exception e) {
-            log.error("Error updating notification status in database for ID: {}. Error: {}", 
+            log.error("Error updating notification status in database for ID: {}. Error: {}",
                 notificationId, e.getMessage(), e);
         }
     }
-    
+
     /**
      * Updates a notification with the status from GOV.UK Notify
-     * 
+     *
      * @param caseNotification The notification entity to update
      * @param status The status string from GOV.UK Notify
      */
@@ -232,35 +187,35 @@ public class NotificationService {
 
     /**
      * Updates the status of a notification and saves it to the database.
-     * 
+     *
      * @param notification The notification to update
      * @param status The new status to set
      * @param providerNotificationId Optional provider notification ID to set (can be null)
      * @return An Optional containing the updated notification, or an empty Optional if an error occurred
      */
     private Optional<CaseNotification> updateNotificationStatus(
-            CaseNotification notification, 
-            NotificationStatus status, 
+            CaseNotification notification,
+            NotificationStatus status,
             UUID providerNotificationId) {
-        
+
         try {
             notification.setStatus(status);
             notification.setLastUpdatedAt(LocalDateTime.now());
-            
+
             if (providerNotificationId != null) {
                 notification.setProviderNotificationId(providerNotificationId);
             }
-            
+
             if (status == NotificationStatus.SENDING) {
                 notification.setSubmittedAt(LocalDateTime.now());
             }
-            
+
             CaseNotification saved = notificationRepository.save(notification);
-            log.info("Updated notification status to {} for notification ID: {}", 
+            log.info("Updated notification status to {} for notification ID: {}",
                     status, notification.getNotificationId());
             return Optional.of(saved);
         } catch (Exception e) {
-            log.error("Error updating notification status to {}: {}", 
+            log.error("Error updating notification status to {}: {}",
                     status, e.getMessage(), e);
             return Optional.empty();
         }
