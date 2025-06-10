@@ -38,6 +38,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @ExtendWith(SpringExtension.class)
 @PactTestFor(providerName = "idamApi_oidc", port = "5000")
 
+@Disabled("Do not publish this pact until SIDM-9833 is resolved")
 public class IdamConsumerTest {
 
     @Autowired
@@ -47,7 +48,6 @@ public class IdamConsumerTest {
         System.setProperty("pact.specification.version", "3");
     }
 
-    @Disabled("Do not publish this pact until SIDM-9833 is resolved")
     @Pact(provider = "idamApi_oidc", consumer = "pcs_api")
     public V4Pact requestToken(PactDslWithProvider builder) throws JsonProcessingException {
 
@@ -84,7 +84,6 @@ public class IdamConsumerTest {
             null, null);
     }
 
-    @Disabled("Do not publish this pact until SIDM-9833 is resolved")
     @Pact(provider = "idamApi_oidc", consumer = "pcs_api")
     public V4Pact requestUserInfo(PactDslWithProvider builder) throws JsonProcessingException {
 
