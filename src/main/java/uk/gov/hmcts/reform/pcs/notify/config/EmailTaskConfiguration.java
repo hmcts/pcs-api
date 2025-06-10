@@ -177,13 +177,13 @@ public class EmailTaskConfiguration {
 
     /**
      * Creates and returns a custom task for verifying the delivery status of an email notification.
-     * The task fetches the email delivery status using the notification service and handles the
-     * status accordingly. If the email is delivered successfully, the task completes. In case of
-     * failures, it logs the errors and completes. If the email is still pending, the task is
-     * rescheduled to check the status later.
+     * The task fetches the current status of the email and determines the appropriate action:
+     * - Completes the task if the email is delivered successfully.
+     * - Reschedules the task if the email delivery has failed and retry attempts to remain.
+     * - Removes the task if the email delivery has either failed all retries or encountered a critical issue.
+     * The task also handles unexpected exceptions, rescheduling the task for later execution as needed.
      *
-     * @return a custom task that verifies email delivery status, reschedules if still pending,
-     *         or completes upon successful delivery or failure.
+     * @return a configured {@code CustomTask<EmailState>} instance that performs email delivery verification.
      */
     @Bean
     public CustomTask<EmailState> verifyEmailTask() {
@@ -201,24 +201,36 @@ public class EmailTaskConfiguration {
                     log.info("Email status for notification ID {}: {}", emailState.notificationId, status);
 
                     // Check if email is delivered or still in progress
+
                     if (NotificationStatus.DELIVERED.toString().equalsIgnoreCase(status)) {
                         // Email successfully delivered
                         log.info("Email successfully delivered. Task complete: {}", emailState.id);
                         return new CompletionHandler.OnCompleteRemove<>();
-                    } else if ("permanent-failure".equalsIgnoreCase(status)
-                        || "temporary-failure".equalsIgnoreCase(status)
-                        || "technical-failure".equalsIgnoreCase(status)) {
-                        // Handle failures
+                    } else if (NotificationStatus.TEMPORARY_FAILURE.toString().equalsIgnoreCase(status)) {
+                        if (emailState.retryCount < 5) {
+                            EmailState retryState = new EmailState(
+                                emailState.id,
+                                emailState.emailAddress,
+                                emailState.templateId,
+                                emailState.personalisation,
+                                emailState.reference,
+                                emailState.emailReplyToId,
+                                null, // No notification ID yet
+                                emailState.retryCount + 1
+                            );
+
+                            log.info("Scheduling resend #{} for task: {}", retryState.retryCount, retryState.id);
+                            return new CompletionHandler.OnCompleteReschedule<>(
+                                Schedules.fixedDelay(Duration.ofMinutes(20)),
+                                retryState
+                            );
+                        } else {
+                            log.info("Email failed all retries. Task removed: {}", emailState.id);
+                            return new CompletionHandler.OnCompleteRemove<>();
+                        }
+                    } else {
                         log.error("Email delivery failed with status: {} for task: {}", status, emailState.id);
                         return new CompletionHandler.OnCompleteRemove<>();
-                    } else {
-                        // Still pending, check again later
-                        log.info("Email still processing (status: {}). Will check again for task: {}",
-                                status, emailState.id);
-                        return new CompletionHandler.OnCompleteReschedule<>(
-                            Schedules.fixedDelay(Duration.ofMinutes(1)),
-                            emailState
-                        );
                     }
                 } catch (NotificationClientException e) {
                     log.error("Error verifying email status: {}", e.getMessage());
