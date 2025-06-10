@@ -6,6 +6,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.pcs.notify.domain.CaseNotification;
 import uk.gov.hmcts.reform.pcs.notify.exception.NotificationException;
+import uk.gov.hmcts.reform.pcs.notify.exception.PermanentNotificationException;
+import uk.gov.hmcts.reform.pcs.notify.exception.TemporaryNotificationException;
 import uk.gov.hmcts.reform.pcs.notify.model.EmailNotificationRequest;
 import uk.gov.hmcts.reform.pcs.notify.model.NotificationStatus;
 import uk.gov.hmcts.reform.pcs.notify.repository.NotificationRepository;
@@ -42,7 +44,6 @@ public class NotificationService {
 
     /**
      * Sends an email notification using the provided email request details.
-     *
      * This method sends an email using the notification client by utilizing a specific template ID,
      * destination address, and personalization data. It also updates the notification status in
      * the database based on the outcome of the email sending process.
@@ -83,7 +84,7 @@ public class NotificationService {
             return sendEmailResponse;
         } catch (NotificationClientException notificationClientException) {
             // Update notification status to failure
-            updateNotificationStatus(caseNotification, NotificationStatus.TECHNICAL_FAILURE, null);
+            int httpsStatusCode = notificationClientException.getHttpResult();
 
             log.error("Failed to send email. Reference ID: {}. Reason: {}",
                         referenceId,
@@ -91,7 +92,35 @@ public class NotificationService {
                         notificationClientException
             );
 
-            throw new NotificationException("Email failed to send, please try again.", notificationClientException);
+            switch (httpsStatusCode) {
+                case 400, 403 -> {
+                    updateNotificationStatus(
+                        caseNotification,
+                        NotificationStatus.PERMANENT_FAILURE,
+                        null
+                    );
+                    throw new PermanentNotificationException("Email failed to send.",
+                                                                notificationClientException);
+                }
+                case 429, 500 -> {
+                    updateNotificationStatus(
+                        caseNotification,
+                        NotificationStatus.TEMPORARY_FAILURE,
+                        null
+                    );
+                    throw new TemporaryNotificationException("Email temporarily failed to send.",
+                                                                notificationClientException);
+                }
+                default -> {
+                    updateNotificationStatus(
+                        caseNotification,
+                        NotificationStatus.TECHNICAL_FAILURE,
+                        null
+                    );
+                    throw new NotificationException("Email failed to send, please try again.",
+                                                        notificationClientException);
+                }
+            }
         }
     }
 
