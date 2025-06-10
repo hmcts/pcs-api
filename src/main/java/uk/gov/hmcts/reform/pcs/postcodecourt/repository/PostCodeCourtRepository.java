@@ -9,6 +9,6 @@ import java.util.List;
 @Repository
 public interface PostCodeCourtRepository extends JpaRepository<PostCodeCourtEntity, Integer> {
 
-    List<PostCodeCourtEntity> findByIdPostCode(String postCode);
+    List<PostCodeCourtEntity> findByIdPostCodeIn(List<String> postcodes);
 
 }

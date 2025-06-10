@@ -5,7 +5,6 @@ import net.serenitybdd.annotations.Title;
 import net.serenitybdd.junit5.SerenityJUnit5Extension;
 import net.serenitybdd.annotations.Steps;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -55,6 +54,18 @@ class CourtsEndpointTests {
         apiSteps.theResponseBodyIsAnEmptyArray();
     }
 
+    @Title("Courts endpoint - returns 200 and expected court data for partial postcode")
+    @Test
+    void shouldReturnExpectedCourtForPartialPostcode() {
+        apiSteps.requestIsPreparedWithAppropriateValues();
+        apiSteps.theRequestContainsValidServiceToken(TestConstants.PCS_API);
+        apiSteps.theRequestContainsValidIdamToken();
+        apiSteps.theRequestContainsTheQueryParameter("postcode", CourtConstants.PARTIAL_POSTCODE_VALID);
+        apiSteps.callIsSubmittedToTheEndpoint("Courts", "GET");
+        apiSteps.checkStatusCode(200);
+        apiSteps.theResponseBodyMatchesTheExpectedList(CourtConstants.EXPECTED_COURT_LIST);
+    }
+
     @Title("Courts endpoint - return 403 Forbidden when the request uses an unauthorised S2S token")
     @Test
     void courts403ForbiddenScenario() {
@@ -77,9 +88,6 @@ class CourtsEndpointTests {
         apiSteps.checkStatusCode(401);
     }
 
-    //This test needs to be modified later to assert the response code as 401. As of now API response code is 200
-    //for Invalid/Expired Idam Token
-    @Disabled("Disabled as this needs to return 401, not 200")
     @Title("Courts endpoint - return 401 Unauthorised when the request uses an expired Idam token")
     @Test
     void courts401UnauthorisedScenarioExpiredIdamToken() {
@@ -91,8 +99,6 @@ class CourtsEndpointTests {
         apiSteps.checkStatusCode(401);
     }
 
-    //This test needs to be modified to check for response status 400, currently API returns 200
-    @Disabled("Disabled as this should return 400, not 200")
     @Title("Courts endpoint - returns 400 Bad Request for missing postcode")
     @Test
     void shouldReturn400ForInvalidPostcode() {
@@ -102,5 +108,6 @@ class CourtsEndpointTests {
         apiSteps.theRequestContainsTheQueryParameter("postcode", null);
         apiSteps.callIsSubmittedToTheEndpoint("Courts", "GET");
         apiSteps.checkStatusCode(400);
+        apiSteps.theResponseBodyContainsAString("message", "Postcode can't be empty or null");
     }
 }
