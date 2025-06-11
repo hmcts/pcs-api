@@ -17,6 +17,7 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.preauth.AbstractPreAuthenticatedProcessingFilter;
 import uk.gov.hmcts.reform.authorisation.filters.ServiceAuthFilter;
 
+
 @Configuration
 @ConfigurationProperties(prefix = "security")
 @EnableWebSecurity
@@ -25,11 +26,13 @@ public class SecurityConfiguration {
     @Getter
     private final List<String> anonymousPaths = new ArrayList<>();
     private final ServiceAuthFilter serviceAuthFilter;
+    private final IdamAuthenticationFilter idamAuthFilter;
 
     @Autowired
-    public SecurityConfiguration(ServiceAuthFilter serviceAuthFilter) {
+    public SecurityConfiguration(ServiceAuthFilter serviceAuthFilter, IdamAuthenticationFilter idamAuthFilter) {
         super();
         this.serviceAuthFilter = serviceAuthFilter;
+        this.idamAuthFilter = idamAuthFilter;
     }
 
     @Bean
@@ -43,6 +46,7 @@ public class SecurityConfiguration {
 
         http
             .addFilterBefore(serviceAuthFilter, AbstractPreAuthenticatedProcessingFilter.class)
+            .addFilterBefore(idamAuthFilter, AbstractPreAuthenticatedProcessingFilter.class)
             .sessionManagement(sessionManagement -> sessionManagement.sessionCreationPolicy(STATELESS))
             .httpBasic(AbstractHttpConfigurer::disable)
             .formLogin(AbstractHttpConfigurer::disable)
