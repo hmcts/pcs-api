@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.notify.config;
+package uk.gov.hmcts.reform.pcs.notify.model;
 
 import lombok.Builder;
 import lombok.Data;

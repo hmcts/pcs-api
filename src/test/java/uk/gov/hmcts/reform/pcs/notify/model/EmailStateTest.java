@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.notify.config;
+package uk.gov.hmcts.reform.pcs.notify.model;
 
 import org.junit.jupiter.api.Test;
 
