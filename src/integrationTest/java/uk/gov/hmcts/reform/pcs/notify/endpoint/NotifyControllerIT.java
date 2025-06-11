@@ -38,6 +38,8 @@ class NotifyControllerIT extends AbstractPostgresContainerIT {
     private static final String SCHEDULED_STATUS = "SCHEDULED";
     private static final String TEST_EMAIL_ADDRESS = "test@example.com";
     private static final String TEMPLATE_123_ID = "template-123";
+    private static final String JSON_PATH_STATUS = "$.status";
+    private static final String JSON_PATH_TASK_ID = "$.taskId";
 
     private static final String AUTH_HEADER = "Bearer token";
     private static final String SERVICE_AUTH_HEADER = "ServiceAuthToken";
@@ -66,9 +68,6 @@ class NotifyControllerIT extends AbstractPostgresContainerIT {
     void setUp() {
         IdamHelper.stubIdamSystemUser(idamClient, SYSTEM_USER_ID_TOKEN);
     }
-
-    private static final String JSON_PATH_STATUS = "$.status";
-    private static final String JSON_PATH_TASK_ID = "$.taskId";
 
     @Test
     void shouldSendEmailWithValidRequest() throws Exception {
