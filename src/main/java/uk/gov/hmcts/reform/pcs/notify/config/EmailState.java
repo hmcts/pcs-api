@@ -1,9 +1,14 @@
 package uk.gov.hmcts.reform.pcs.notify.config;
 
+import lombok.Builder;
+import lombok.Data;
+
 import java.io.Serial;
 import java.io.Serializable;
 import java.util.Map;
 
+@Data
+@Builder(toBuilder = true)
 public class EmailState implements Serializable {
     @Serial
     private static final long serialVersionUID = 1L;
@@ -15,17 +20,16 @@ public class EmailState implements Serializable {
     public final String reference;
     public final String emailReplyToId;
     public final String notificationId;
-    public final int retryCount;
 
     // Default constructor for serialization
     public EmailState() {
         this(null, null, null, null, null, null,
-            null, 0);
+            null);
     }
 
     public EmailState(String id, String emailAddress, String templateId,
                       Map<String, Object> personalisation, String reference,
-                      String emailReplyToId, String notificationId, int retryCount) {
+                      String emailReplyToId, String notificationId) {
         this.id = id;
         this.emailAddress = emailAddress;
         this.templateId = templateId;
@@ -33,7 +37,6 @@ public class EmailState implements Serializable {
         this.reference = reference;
         this.emailReplyToId = emailReplyToId;
         this.notificationId = notificationId;
-        this.retryCount = retryCount;
     }
 
     public EmailState withNotificationId(String notificationId) {
@@ -44,19 +47,7 @@ public class EmailState implements Serializable {
             this.personalisation,
             this.reference,
             this.emailReplyToId,
-            notificationId,
-            this.retryCount
+            notificationId
         );
-    }
-
-    @Override
-    public String toString() {
-        return "EmailState{"
-            + "id='" + id + '\''
-            + ", emailAddress='" + emailAddress + '\''
-            + ", templateId='" + templateId + '\''
-            + ", notificationId='" + notificationId + '\''
-            + ", retryCount=" + retryCount
-            + '}';
     }
 }

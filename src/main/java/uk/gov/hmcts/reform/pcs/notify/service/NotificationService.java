@@ -135,11 +135,20 @@ public class NotificationService {
      */
     public Notification fetchNotificationStatus(String notificationId)
             throws NotificationClientException, InterruptedException {
-        Notification notification = notificationClient.getNotificationById(notificationId);
+        try {
+            Notification notification = notificationClient.getNotificationById(notificationId);
+            updateNotificationStatusInDatabase(notification, notificationId);
+            return notification;
+        } catch (NotificationClientException notificationClientException) {
+            int httpsStatusCode = notificationClientException.getHttpResult();
 
-        updateNotificationStatusInDatabase(notification, notificationId);
-
-        return notification;
+            log.error("Failed to fetch email. Reference ID: {}. Reason: {}",
+                        notificationClientException.getMessage(),
+                        httpsStatusCode
+            );
+            throw new NotificationException("Email failed to send, please try again.",
+                                            notificationClientException);
+        }
     }
 
     /**

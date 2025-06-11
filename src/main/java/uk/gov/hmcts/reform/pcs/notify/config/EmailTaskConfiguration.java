@@ -17,7 +17,6 @@ import uk.gov.hmcts.reform.pcs.notify.model.EmailNotificationRequest;
 import uk.gov.hmcts.reform.pcs.notify.model.NotificationStatus;
 import uk.gov.hmcts.reform.pcs.notify.service.NotificationService;
 import uk.gov.service.notify.Notification;
-import uk.gov.service.notify.NotificationClient;
 import uk.gov.service.notify.NotificationClientException;
 import uk.gov.service.notify.SendEmailResponse;
 
@@ -117,20 +116,15 @@ public class EmailTaskConfiguration {
                 try {
                     Notification notification = notificationService.fetchNotificationStatus(emailState.notificationId);
                     String status = notification.getStatus();
-
                     if (NotificationStatus.DELIVERED.toString().equalsIgnoreCase(status)) {
                         log.info("Email successfully delivered: {}", emailState.id);
-                        return new CompletionHandler.OnCompleteRemove<>();
-                    } else if (NotificationStatus.TEMPORARY_FAILURE.toString().equalsIgnoreCase(status)) {
-                        log.warn("Temporary failure status for task: {}", emailState.id);
-                        throw new TemporaryNotificationException("Temporary delivery failure", null); // triggers retry
                     } else {
-                        log.error("Permanent failure with status: {} for task: {}", status, emailState.id);
-                        return new CompletionHandler.OnCompleteRemove<>();
+                        log.error("Failure with status: {} for task: {}", status, emailState.id);
                     }
+                    return new CompletionHandler.OnCompleteRemove<>();
                 } catch (NotificationClientException e) {
                     log.error("Failed to verify status due to API error", e);
-                    throw new TemporaryNotificationException("Failed to verify email status", e);
+                    return new CompletionHandler.OnCompleteRemove<>();
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
                     throw new RuntimeException("Task interrupted", e);

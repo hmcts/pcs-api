@@ -49,8 +49,7 @@ public class NotifyController {
             emailRequest.getPersonalisation(),
             emailRequest.getReference(),
             emailRequest.getEmailReplyToId(),
-            null, // notification ID will be set after sending
-            0     // initial retry count
+            null // notification ID will be set after sending
         );
 
         // Schedule the send email task to run immediately
