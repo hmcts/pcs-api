@@ -435,3 +435,5 @@ rootProject.tasks.named("processFunctionalTestResources") {
 wrapper {
   distributionType = Wrapper.DistributionType.ALL
 }
+
+// Testing decentralised ccd
