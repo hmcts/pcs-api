@@ -85,6 +85,7 @@ ccd:
         DATA_STORE_DB_OPTIONS: "?stringtype=unspecified"
         CCD_DOCUMENT_URL_PATTERN: ^https?://(((?:dm-store-aat\.service\.core-compute-aat\.internal(?::\d+)?)\/documents\/[A-Za-z0-9-]+(?:\/binary)?))
         POC_APIS_URL: ${SERVICE_FQDN}
+        DATA_STORE_S2S_AUTHORISED_SERVICES: "ccd_definition,ccd_gw,ccd_data,ccd_ps,aac_manage_case_assignment,ccd_case_document_am_api,am_role_assignment_service,pcs_api,pcs_frontend"
       secrets:
         DATA_STORE_DB_PASSWORD:
           key: password
