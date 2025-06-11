@@ -44,7 +44,7 @@ public class EmailTaskConfiguration {
     public EmailTaskConfiguration(
         NotificationService notificationService,
         @Value("${db-scheduler.max-retries}") int maxRetries,
-        @Value("${db-scheduler.backoff-delay}") long backoffDelay,
+        @Value("${db-scheduler.backoff-delay-seconds}") long backoffDelay,
         @Value("${db-scheduler.status-check-delay}") long statusCheckDelay
     ) {
         this.notificationService = notificationService;
@@ -111,7 +111,6 @@ public class EmailTaskConfiguration {
      * identified by its notification ID present in the task's data. The task
      * includes a failure handling mechanism with a configurable maximum retries
      * and an exponential backoff delay for retry attempts.
-     *
      * Logging is performed to provide insights into the success or failure of
      * the email delivery verification process.
      *

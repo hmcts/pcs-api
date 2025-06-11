@@ -47,7 +47,6 @@ class NotificationServiceTest {
 
     private NotificationService notificationService;
 
-    private static final long STATUS_CHECK_DELAY = 1000L;
     private static final String EMAIL_ADDRESS = "test@example.com";
     private static final String TEMPLATE_ID = "template-123";
     private static final UUID CASE_ID = UUID.randomUUID();
@@ -58,8 +57,7 @@ class NotificationServiceTest {
     void setUp() {
         notificationService = new NotificationService(
             notificationClient,
-            notificationRepository,
-            STATUS_CHECK_DELAY
+            notificationRepository
         );
     }
 
