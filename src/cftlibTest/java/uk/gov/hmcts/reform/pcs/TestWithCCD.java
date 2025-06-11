@@ -62,7 +62,7 @@ public class TestWithCCD extends CftlibTest {
             .eventToken(r.getToken())
             .build();
         caseDetails = ccdApi.submitForCaseworker(idamToken, s2sToken, userId,
-                                                 "PCS", CaseType.getCaseType(), false, content
+                                                 "CIVIL", CaseType.getCaseType(), false, content
         );
         assertThat(caseDetails.getId()).isNotNull();
     }
