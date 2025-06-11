@@ -51,16 +51,14 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
             .field(PCSCase::getApplicantForename, nameLabel);
 
         builder.searchCasesFields()
-            .field(PCSCase::getApplicantForename, nameLabel)
-            .field(PCSCase::getPropertyAddress, addressLabel);
+            .field(PCSCase::getApplicantForename, nameLabel);
 
         builder.searchResultFields()
             .field(PCSCase::getApplicantForename, nameLabel)
             .field(PCSCase::getPropertyAddress, addressLabel);
 
         builder.workBasketInputFields()
-            .field(PCSCase::getApplicantForename, nameLabel)
-            .field(PCSCase::getPropertyAddress, addressLabel);
+            .field(PCSCase::getApplicantForename, nameLabel);
 
         builder.workBasketResultFields()
             .field(PCSCase::getApplicantForename, nameLabel)
