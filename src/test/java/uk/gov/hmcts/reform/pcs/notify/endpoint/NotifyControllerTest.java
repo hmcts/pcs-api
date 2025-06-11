@@ -12,6 +12,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
+import uk.gov.hmcts.reform.pcs.idam.IdamService;
 import uk.gov.hmcts.reform.pcs.notify.model.EmailNotificationRequest;
 import uk.gov.hmcts.reform.pcs.notify.model.EmailNotificationResponse;
 
@@ -41,6 +42,11 @@ class NotifyControllerTest {
         @Bean
         public SchedulerClient schedulerClient() {
             return Mockito.mock(SchedulerClient.class);
+        }
+
+        @Bean
+        public IdamService idamService() {
+            return Mockito.mock(IdamService.class);
         }
     }
 
