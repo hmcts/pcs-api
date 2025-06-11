@@ -48,27 +48,27 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
         var addressLabel = "Property Address";
         var claimantLabel = "Claimant Information";
         builder.searchInputFields()
-            .field(PCSCase::getApplicantForename, nameLabel, UserRole.CASE_WORKER);
+            .field(PCSCase::getApplicantForename, nameLabel);
 
         builder.searchCasesFields()
-            .field(PCSCase::getApplicantForename, nameLabel, UserRole.CASE_WORKER.getRole());
+            .field(PCSCase::getApplicantForename, nameLabel);
 
         builder.searchResultFields()
-            .field(PCSCase::getApplicantForename, nameLabel, UserRole.CASE_WORKER)
-            .field(PCSCase::getPropertyAddress, addressLabel, UserRole.CASE_WORKER);
+            .field(PCSCase::getApplicantForename, nameLabel)
+            .field(PCSCase::getPropertyAddress, addressLabel);
 
         builder.workBasketInputFields()
-            .field(PCSCase::getApplicantForename, nameLabel, UserRole.CASE_WORKER);
+            .field(PCSCase::getApplicantForename, nameLabel);
 
         builder.workBasketResultFields()
-            .field(PCSCase::getApplicantForename, nameLabel, UserRole.CASE_WORKER)
-            .field(PCSCase::getPropertyAddress, addressLabel, UserRole.CASE_WORKER);
+            .field(PCSCase::getApplicantForename, nameLabel)
+            .field(PCSCase::getPropertyAddress, addressLabel);
 
         builder.tab("claimantInformation", claimantLabel)
-            .field(PCSCase::getApplicantForename, UserRole.CASE_WORKER.getRole());
+            .field(PCSCase::getApplicantForename);
 
         builder.tab("propertyAddress", "Property Address")
-            .field(PCSCase::getPropertyAddress, UserRole.CASE_WORKER.getRole());
+            .field(PCSCase::getPropertyAddress);
 
     }
 }
