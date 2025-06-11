@@ -37,6 +37,10 @@ class EmailTaskConfigurationTest {
     @Mock
     private NotificationService notificationService;
 
+    private final int maxRetries = 3;
+    private final long backoffDelay = 10L;
+    private final long statusCheckDelay = 30L;
+
     @Mock
     private ExecutionContext executionContext;
 
@@ -46,7 +50,6 @@ class EmailTaskConfigurationTest {
     @Mock
     private Notification notification;
 
-    @InjectMocks
     private EmailTaskConfiguration emailTaskConfiguration;
 
     @Captor
@@ -59,6 +62,13 @@ class EmailTaskConfigurationTest {
 
     @BeforeEach
     void setUp() {
+        emailTaskConfiguration = new EmailTaskConfiguration(
+            notificationService,
+            maxRetries,
+            backoffDelay,
+            statusCheckDelay
+        );
+
         testEmailState = EmailState.builder()
             .id("test-email-1")
             .emailAddress("test@example.com")

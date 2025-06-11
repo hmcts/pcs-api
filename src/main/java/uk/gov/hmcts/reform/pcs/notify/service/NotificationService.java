@@ -2,7 +2,6 @@ package uk.gov.hmcts.reform.pcs.notify.service;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataAccessException;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.pcs.notify.domain.CaseNotification;
 import uk.gov.hmcts.reform.pcs.notify.exception.NotificationException;
@@ -32,12 +31,10 @@ public class NotificationService {
      *
      * @param notificationClient The notification client for GOV.UK Notify
      * @param notificationRepository Repository for saving notification data
-     * @param statusCheckDelay Delay in milliseconds before checking notification status
      */
     public NotificationService(
         NotificationClient notificationClient,
-        NotificationRepository notificationRepository,
-        @Value("${notify.status-check-delay-millis}") long statusCheckDelay) {
+        NotificationRepository notificationRepository) {
         this.notificationClient = notificationClient;
         this.notificationRepository = notificationRepository;
     }

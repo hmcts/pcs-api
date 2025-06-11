@@ -9,6 +9,7 @@ import com.github.kagkarlsson.scheduler.task.helper.CustomTask;
 import com.github.kagkarlsson.scheduler.task.helper.Tasks;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import uk.gov.hmcts.reform.pcs.notify.exception.PermanentNotificationException;
@@ -35,27 +36,37 @@ public class EmailTaskConfiguration {
         TaskDescriptor.of("verify-email-task", EmailState.class);
 
     private final NotificationService notificationService;
+    private final int maxRetries;
+    private final long backoffDelay;
+    private final long statusCheckDelay;
 
     @Autowired
-    public EmailTaskConfiguration(NotificationService notificationService) {
+    public EmailTaskConfiguration(
+        NotificationService notificationService,
+        @Value("${db-scheduler.max-retries}") int maxRetries,
+        @Value("${db-scheduler.backoff-delay}") long backoffDelay,
+        @Value("${db-scheduler.status-check-delay}") long statusCheckDelay
+    ) {
         this.notificationService = notificationService;
+        this.maxRetries = maxRetries;
+        this.backoffDelay = backoffDelay;
+        this.statusCheckDelay = statusCheckDelay;
     }
 
     /**
-     * Creates and returns a task for sending email notifications.
-     * The task handles email sending logic, processes responses,
-     * and includes retrying mechanisms for temporary failures
-     * with a maximum of 5 retries. Permanent failures are logged
-     * and the task is removed after failure.
+     * Creates and configures a custom task for sending emails. The task processes the send email request
+     * using the specified email state and handles success along with both permanent and temporary failures.
+     * The task retries on temporary failures using exponential backoff delay up to the maximum retry count
+     * and removes the task in case of permanent failures.
      *
-     * @return a configured CustomTask for processing email notifications using the EmailState object.
+     * @return a configured CustomTask instance for sending emails, with proper retry and failure handling.
      */
     @Bean
     public CustomTask<EmailState> sendEmailTask() {
         return Tasks.custom(sendEmailTask)
             .onFailure(new FailureHandler.MaxRetriesFailureHandler<>(
-                5, // max retries
-                new FailureHandler.ExponentialBackoffFailureHandler<>(Duration.ofSeconds(3)) // base delay
+                maxRetries, // max retries
+                new FailureHandler.ExponentialBackoffFailureHandler<>(Duration.ofSeconds(backoffDelay)) // base delay
             ))
             .execute((taskInstance, executionContext) -> {
                 EmailState emailState = taskInstance.getData();
@@ -79,7 +90,7 @@ public class EmailTaskConfiguration {
                     return new CompletionHandler.OnCompleteReplace<>(
                         currentInstance -> SchedulableInstance.of(
                             new TaskInstance<>(verifyEmailTask.getTaskName(), currentInstance.getId(), nextState),
-                            Instant.now().plusSeconds(60)
+                            Instant.now().plusSeconds(statusCheckDelay)
                         )
                     );
                 } catch (PermanentNotificationException e) {
@@ -95,19 +106,23 @@ public class EmailTaskConfiguration {
 
 
     /**
-     * Creates and configures a custom task for verifying email delivery status.
-     * The task handles retry logic in case of failures, with exponential backoff for temporary issues.
-     * It checks the delivery status of an email using the notification service and processes the status accordingly.
+     * Creates and configures a custom task to verify email delivery status.
+     * The task attempts to verify the delivery status of a notification email
+     * identified by its notification ID present in the task's data. The task
+     * includes a failure handling mechanism with a configurable maximum retries
+     * and an exponential backoff delay for retry attempts.
      *
-     * @return a configured instance of {@code CustomTask} for managing the email verification process with retry and
-     *     failure handling mechanisms.
+     * Logging is performed to provide insights into the success or failure of
+     * the email delivery verification process.
+     *
+     * @return a configured {@link CustomTask} instance for verifying email delivery status.
      */
     @Bean
     public CustomTask<EmailState> verifyEmailTask() {
         return Tasks.custom(verifyEmailTask)
             .onFailure(new FailureHandler.MaxRetriesFailureHandler<>(
-                5,
-                new FailureHandler.ExponentialBackoffFailureHandler<>(Duration.ofSeconds(5))
+                maxRetries,
+                new FailureHandler.ExponentialBackoffFailureHandler<>(Duration.ofSeconds(backoffDelay))
             ))
             .execute((taskInstance, executionContext) -> {
                 EmailState emailState = taskInstance.getData();
