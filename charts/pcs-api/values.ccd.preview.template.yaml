@@ -6,15 +6,19 @@ global:
   idamApiUrl: https://idam-api.aat.platform.hmcts.net
   idamWebUrl: https://idam-web-public.aat.platform.hmcts.net
   s2sUrl: http://rpe-service-auth-provider-aat.service.core-compute-aat.internal
-  postgresSecret: ${SERVICE_NAME}-postgresql
-  postgresHostname: ${SERVICE_NAME}-postgresql
-  postgresUsername: "javapostgres"
+  postgresSecret: postgres
+  postgresHostname: "pcs-preview.postgres.database.azure.com"
+  postgresUsername: "hmcts"
   amRoleAssignmentServiceUrl: http://am-role-assignment-service-aat.service.core-compute-aat.internal
+  databaseNamePrefix: "pr-${CHANGE_ID}-"
 
 java:
   environment:
     CHANGE_ID: ${CHANGE_ID}
+    PCS_DB_NAME: "{{ .Values.global.databaseNamePrefix }}pcs"
+
   postgresql:
+    enabled: false
     image:
       debug: true
     primary:
@@ -23,6 +27,14 @@ java:
           init.sql: |-
             CREATE DATABASE "data-store" WITH OWNER = javapostgres ENCODING = 'UTF-8' CONNECTION LIMIT = -1;
             CREATE DATABASE "definition-store" WITH OWNER = javapostgres ENCODING = 'UTF-8' CONNECTION LIMIT = -1;
+postgresql:
+  enabled: true
+  flexibleserver: sscs-preview
+  setup:
+    databases:
+      - name: "pr-${CHANGE_ID}-data-store"
+      - name: "pr-${CHANGE_ID}-definition-store"
+      - name: "pr-${CHANGE_ID}-pcs"
 ccd:
   enabled: true
   ccd:
