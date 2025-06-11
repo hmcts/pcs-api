@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import uk.gov.hmcts.reform.pcs.notify.exception.PermanentNotificationException;
+import uk.gov.hmcts.reform.pcs.notify.exception.TaskInterruptedException;
 import uk.gov.hmcts.reform.pcs.notify.exception.TemporaryNotificationException;
 import uk.gov.hmcts.reform.pcs.notify.model.EmailNotificationRequest;
 import uk.gov.hmcts.reform.pcs.notify.model.NotificationStatus;
@@ -141,7 +142,7 @@ public class EmailTaskConfiguration {
                     return new CompletionHandler.OnCompleteRemove<>();
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
-                    throw new RuntimeException("Task interrupted", e);
+                    throw new TaskInterruptedException("Task interrupted", e);
                 }
             });
     }
