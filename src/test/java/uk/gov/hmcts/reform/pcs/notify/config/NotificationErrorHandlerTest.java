@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.notify.service;
+package uk.gov.hmcts.reform.pcs.notify.config;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;

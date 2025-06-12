@@ -1,107 +1,282 @@
 package uk.gov.hmcts.reform.pcs.testingsupport.endpoint;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.kagkarlsson.scheduler.SchedulerClient;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.context.TestConfiguration;
-import org.springframework.context.annotation.Bean;
-import org.springframework.http.MediaType;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
-import uk.gov.hmcts.reform.pcs.idam.IdamService;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import uk.gov.hmcts.reform.pcs.notify.exception.NotificationException;
 import uk.gov.hmcts.reform.pcs.notify.model.EmailNotificationRequest;
 import uk.gov.hmcts.reform.pcs.notify.model.EmailNotificationResponse;
-import uk.gov.hmcts.reform.pcs.notify.model.NotificationStatus;
+import uk.gov.hmcts.reform.pcs.notify.service.NotificationService;
 
 import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@WebMvcTest(NotifyController.class)
-@AutoConfigureMockMvc(addFilters = false)
+@ExtendWith(MockitoExtension.class)
+@DisplayName("NotifyController Tests")
 class NotifyControllerTest {
 
-    @Autowired
-    private MockMvc mockMvc;
+    @Mock
+    private NotificationService notificationService;
 
-    @Autowired
-    private SchedulerClient schedulerClient;
+    private NotifyController notifyController;
 
-    @Autowired
-    private ObjectMapper objectMapper;
+    private static final String AUTH_HEADER = "Bearer test-token";
+    private static final String SERVICE_AUTH_HEADER = "service-auth-token";
+    private static final String TEST_EMAIL = "test@example.com";
+    private static final String TEMPLATE_ID = "template-123";
+    private static final String TASK_ID = "task-456";
+    private static final String SCHEDULED_STATUS = "SCHEDULED";
 
-    @TestConfiguration
-    static class TestConfig {
-        @Bean
-        public SchedulerClient schedulerClient() {
-            return Mockito.mock(SchedulerClient.class);
+    @BeforeEach
+    void setUp() {
+        notifyController = new NotifyController(notificationService);
+    }
+
+    @Nested
+    @DisplayName("Send Email Tests")
+    class SendEmailTests {
+
+        @Test
+        @DisplayName("Should successfully schedule email notification")
+        void shouldSuccessfullyScheduleEmailNotification() {
+            EmailNotificationRequest request = createValidEmailRequest();
+            EmailNotificationResponse expectedResponse = createEmailResponse();
+
+            when(notificationService.scheduleEmailNotification(any(EmailNotificationRequest.class)))
+                .thenReturn(expectedResponse);
+
+            ResponseEntity<EmailNotificationResponse> response = notifyController.sendEmail(
+                AUTH_HEADER, SERVICE_AUTH_HEADER, request);
+
+            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.ACCEPTED);
+            assertThat(response.getBody()).isNotNull();
+            assertThat(response.getBody().getTaskId()).isEqualTo(TASK_ID);
+            assertThat(response.getBody().getStatus()).isEqualTo(SCHEDULED_STATUS);
+
+            verify(notificationService).scheduleEmailNotification(request);
         }
 
-        @Bean
-        public IdamService idamService() {
-            return Mockito.mock(IdamService.class);
+        @Test
+        @DisplayName("Should handle minimal email request")
+        void shouldHandleMinimalEmailRequest() {
+            EmailNotificationRequest request = EmailNotificationRequest.builder()
+                .emailAddress(TEST_EMAIL)
+                .templateId(TEMPLATE_ID)
+                .build();
+
+            EmailNotificationResponse expectedResponse = createEmailResponse();
+
+            when(notificationService.scheduleEmailNotification(any(EmailNotificationRequest.class)))
+                .thenReturn(expectedResponse);
+
+            ResponseEntity<EmailNotificationResponse> response = notifyController.sendEmail(
+                AUTH_HEADER, SERVICE_AUTH_HEADER, request);
+
+            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.ACCEPTED);
+            assertThat(response.getBody()).isNotNull();
+            verify(notificationService).scheduleEmailNotification(request);
+        }
+
+        @Test
+        @DisplayName("Should handle email request with personalisation")
+        void shouldHandleEmailRequestWithPersonalisation() {
+            Map<String, Object> personalisation = new HashMap<>();
+            personalisation.put("firstName", "John");
+            personalisation.put("lastName", "Doe");
+            personalisation.put("caseReference", "CASE-123");
+
+            EmailNotificationRequest request = EmailNotificationRequest.builder()
+                .emailAddress(TEST_EMAIL)
+                .templateId(TEMPLATE_ID)
+                .personalisation(personalisation)
+                .reference("REF-789")
+                .emailReplyToId("reply-to-123")
+                .build();
+
+            EmailNotificationResponse expectedResponse = createEmailResponse();
+
+            when(notificationService.scheduleEmailNotification(any(EmailNotificationRequest.class)))
+                .thenReturn(expectedResponse);
+
+            ResponseEntity<EmailNotificationResponse> response = notifyController.sendEmail(
+                AUTH_HEADER, SERVICE_AUTH_HEADER, request);
+
+            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.ACCEPTED);
+            assertThat(response.getBody()).isNotNull();
+            assertThat(response.getBody().getTaskId()).isEqualTo(TASK_ID);
+
+            verify(notificationService).scheduleEmailNotification(request);
+        }
+
+        @Test
+        @DisplayName("Should use default authorization header when not provided")
+        void shouldUseDefaultAuthorizationHeaderWhenNotProvided() {
+            EmailNotificationRequest request = createValidEmailRequest();
+            EmailNotificationResponse expectedResponse = createEmailResponse();
+
+            when(notificationService.scheduleEmailNotification(any(EmailNotificationRequest.class)))
+                .thenReturn(expectedResponse);
+
+            ResponseEntity<EmailNotificationResponse> response = notifyController.sendEmail(
+                "DummyId", SERVICE_AUTH_HEADER, request);
+
+            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.ACCEPTED);
+            assertThat(response.getBody()).isNotNull();
+            verify(notificationService).scheduleEmailNotification(request);
+        }
+
+        @Test
+        @DisplayName("Should return internal server error when service throws exception")
+        void shouldReturnInternalServerErrorWhenServiceThrowsException() {
+            EmailNotificationRequest request = createValidEmailRequest();
+
+            when(notificationService.scheduleEmailNotification(any(EmailNotificationRequest.class)))
+                .thenThrow(new NotificationException("Database error", new RuntimeException()));
+
+            ResponseEntity<EmailNotificationResponse> response = notifyController.sendEmail(
+                AUTH_HEADER, SERVICE_AUTH_HEADER, request);
+
+            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
+            assertThat(response.getBody()).isNull();
+
+            verify(notificationService).scheduleEmailNotification(request);
+        }
+
+        @Test
+        @DisplayName("Should return internal server error when service throws runtime exception")
+        void shouldReturnInternalServerErrorWhenServiceThrowsRuntimeException() {
+            EmailNotificationRequest request = createValidEmailRequest();
+
+            when(notificationService.scheduleEmailNotification(any(EmailNotificationRequest.class)))
+                .thenThrow(new RuntimeException("Unexpected error"));
+
+            ResponseEntity<EmailNotificationResponse> response = notifyController.sendEmail(
+                AUTH_HEADER, SERVICE_AUTH_HEADER, request);
+
+            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
+            assertThat(response.getBody()).isNull();
+
+            verify(notificationService).scheduleEmailNotification(request);
+        }
+
+        @Test
+        @DisplayName("Should handle empty personalisation map")
+        void shouldHandleEmptyPersonalisationMap() {
+            EmailNotificationRequest request = EmailNotificationRequest.builder()
+                .emailAddress(TEST_EMAIL)
+                .templateId(TEMPLATE_ID)
+                .personalisation(new HashMap<>())
+                .build();
+
+            EmailNotificationResponse expectedResponse = createEmailResponse();
+
+            when(notificationService.scheduleEmailNotification(any(EmailNotificationRequest.class)))
+                .thenReturn(expectedResponse);
+
+            ResponseEntity<EmailNotificationResponse> response = notifyController.sendEmail(
+                AUTH_HEADER, SERVICE_AUTH_HEADER, request);
+
+            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.ACCEPTED);
+            assertThat(response.getBody()).isNotNull();
+            verify(notificationService).scheduleEmailNotification(request);
+        }
+
+        @Test
+        @DisplayName("Should handle personalisation with different data types")
+        void shouldHandlePersonalisationWithDifferentDataTypes() {
+            Map<String, Object> personalisation = new HashMap<>();
+            personalisation.put("stringValue", "test");
+            personalisation.put("intValue", 123);
+            personalisation.put("booleanValue", true);
+            personalisation.put("doubleValue", 45.67);
+
+            EmailNotificationRequest request = EmailNotificationRequest.builder()
+                .emailAddress(TEST_EMAIL)
+                .templateId(TEMPLATE_ID)
+                .personalisation(personalisation)
+                .build();
+
+            EmailNotificationResponse expectedResponse = createEmailResponse();
+
+            when(notificationService.scheduleEmailNotification(any(EmailNotificationRequest.class)))
+                .thenReturn(expectedResponse);
+
+            ResponseEntity<EmailNotificationResponse> response = notifyController.sendEmail(
+                AUTH_HEADER, SERVICE_AUTH_HEADER, request);
+
+            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.ACCEPTED);
+            assertThat(response.getBody()).isNotNull();
+            verify(notificationService).scheduleEmailNotification(request);
+        }
+
+        @Test
+        @DisplayName("Should handle null reference and reply-to ID")
+        void shouldHandleNullReferenceAndReplyToId() {
+            EmailNotificationRequest request = EmailNotificationRequest.builder()
+                .emailAddress(TEST_EMAIL)
+                .templateId(TEMPLATE_ID)
+                .reference(null)
+                .emailReplyToId(null)
+                .build();
+
+            EmailNotificationResponse expectedResponse = createEmailResponse();
+
+            when(notificationService.scheduleEmailNotification(any(EmailNotificationRequest.class)))
+                .thenReturn(expectedResponse);
+
+            ResponseEntity<EmailNotificationResponse> response = notifyController.sendEmail(
+                AUTH_HEADER, SERVICE_AUTH_HEADER, request);
+
+            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.ACCEPTED);
+            assertThat(response.getBody()).isNotNull();
+            verify(notificationService).scheduleEmailNotification(request);
         }
     }
 
-    @Test
-    void shouldScheduleEmailSuccessfully() throws Exception {
-        EmailNotificationRequest request = EmailNotificationRequest.builder()
-            .emailAddress("test@example.com")
-            .templateId("template123")
-            .personalisation(new HashMap<>())
-            .reference("ref123")
-            .emailReplyToId("replyTo123")
+    @Nested
+    @DisplayName("Constructor Tests")
+    class ConstructorTests {
+
+        @Test
+        @DisplayName("Should create controller with notification service dependency")
+        void shouldCreateControllerWithNotificationServiceDependency() {
+            NotifyController controller = new NotifyController(notificationService);
+
+            assertThat(controller).isNotNull();
+        }
+    }
+
+    private EmailNotificationRequest createValidEmailRequest() {
+        Map<String, Object> personalisation = new HashMap<>();
+        personalisation.put("name", "Test User");
+        personalisation.put("reference", "TEST-REF-123");
+
+        return EmailNotificationRequest.builder()
+            .emailAddress(TEST_EMAIL)
+            .templateId(TEMPLATE_ID)
+            .personalisation(personalisation)
+            .reference("external-ref-456")
+            .emailReplyToId("reply-to-789")
             .build();
-
-        when(schedulerClient.scheduleIfNotExists(Mockito.any())).thenReturn(true);
-
-        MvcResult result = mockMvc.perform(post("/testing-support/send-email")
-                                                .contentType(MediaType.APPLICATION_JSON)
-                                                .header("Authorization", "DummyId")
-                                                .header("ServiceAuthorization", "ServiceAuth123")
-                                                .content(objectMapper.writeValueAsString(request)))
-            .andExpect(status().isAccepted())
-            .andExpect(jsonPath("$.taskId").isNotEmpty())
-            .andExpect(jsonPath("$.status").value(NotificationStatus.SCHEDULE.toString()))
-            .andReturn();
-
-        String responseBody = result.getResponse().getContentAsString();
-        EmailNotificationResponse response = objectMapper.readValue(responseBody, EmailNotificationResponse.class);
-
-        assertThat(response.getTaskId()).isNotBlank();
-        assertThat(response.getStatus()).isEqualTo(NotificationStatus.SCHEDULE.toString());
     }
 
-    @Test
-    void shouldFailWhenRequiredHeadersAreMissing() throws Exception {
-        MvcResult result = mockMvc.perform(post("/testing-support/send-email")
-                                                .contentType(MediaType.APPLICATION_JSON)
-                                                .content("{\"emailAddress\":\"test@example.com\","
-                                                            + "\"templateId\":\"template123\","
-                                                            + "\"personalisation\":{},\"reference\":\"ref123\""
-                                                            + ",\"emailReplyToId\":\"replyTo123\"}"))
-            .andReturn();
-
-        assertThat(result.getResponse().getStatus()).isEqualTo(400);
-    }
-
-    @Test
-    void shouldFailWhenRequestBodyIsInvalid() throws Exception {
-        MvcResult result = mockMvc.perform(post("/testing-support/send-email")
-                                                .contentType(MediaType.APPLICATION_JSON)
-                                                .header("Authorization", "DummyId")
-                                                .header("ServiceAuthorization", "ServiceAuth123")
-                                                .content(""))
-            .andReturn();
-
-        assertThat(result.getResponse().getStatus()).isEqualTo(400);
+    private EmailNotificationResponse createEmailResponse() {
+        EmailNotificationResponse response = new EmailNotificationResponse();
+        response.setTaskId(TASK_ID);
+        response.setStatus(SCHEDULED_STATUS);
+        response.setNotificationId(UUID.randomUUID());
+        return response;
     }
 }

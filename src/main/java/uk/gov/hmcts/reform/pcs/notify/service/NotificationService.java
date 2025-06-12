@@ -1,132 +1,135 @@
 package uk.gov.hmcts.reform.pcs.notify.service;
 
+import com.github.kagkarlsson.scheduler.SchedulerClient;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
+import uk.gov.hmcts.reform.pcs.notify.config.EmailTaskConfiguration;
 import uk.gov.hmcts.reform.pcs.notify.domain.CaseNotification;
 import uk.gov.hmcts.reform.pcs.notify.exception.NotificationException;
 import uk.gov.hmcts.reform.pcs.notify.model.EmailNotificationRequest;
+import uk.gov.hmcts.reform.pcs.notify.model.EmailNotificationResponse;
+import uk.gov.hmcts.reform.pcs.notify.model.EmailState;
 import uk.gov.hmcts.reform.pcs.notify.model.NotificationStatus;
 import uk.gov.hmcts.reform.pcs.notify.repository.NotificationRepository;
-import uk.gov.service.notify.NotificationClient;
-import uk.gov.service.notify.NotificationClientException;
-import uk.gov.service.notify.SendEmailResponse;
-import uk.gov.service.notify.Notification;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
-import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
 @Service
 @Slf4j
 public class NotificationService {
-    private final NotificationClient notificationClient;
     private final NotificationRepository notificationRepository;
-    private final NotificationErrorHandler errorHandler;
+    private final SchedulerClient schedulerClient;
 
     /**
      * Constructs a new NotificationService with the specified dependencies.
      *
-     * @param notificationClient the client used for sending notifications
      * @param notificationRepository the repository responsible for managing notification data
-     * @param errorHandler the handler for processing notification-related errors
+     * @param schedulerClient the scheduler client for task scheduling
      */
     public NotificationService(
-        NotificationClient notificationClient,
         NotificationRepository notificationRepository,
-        NotificationErrorHandler errorHandler) {
-        this.notificationClient = notificationClient;
+        SchedulerClient schedulerClient) {
         this.notificationRepository = notificationRepository;
-        this.errorHandler = errorHandler;
+        this.schedulerClient = schedulerClient;
     }
 
     /**
-     * Sends an email using the provided email notification request details.
-     * This method utilizes a notification client to send an email to the specified
-     * recipient with a given template ID and personalization data and handles
-     * the entire lifecycle of email notification tracking.
+     * Schedules an email notification to be sent. This method creates a database record
+     * for the notification and schedules a task to handle the actual email sending.
      *
-     * @param emailRequest the request object containing details for the email to be sent.
-     *                     This includes the recipient's email address, the template ID,
-     *                     and any personalization data that should be included in the email.
-     * @return a {@code SendEmailResponse} object containing the response details from
-     *         the notification client if the email is sent successfully.
-     *         Note that if an exception occurs during the process, this method will not
-     *         return normally and will allow the appropriate error handler to manage the error.
+     * @param emailRequest the request object containing details for the email to be sent
+     * @return EmailNotificationResponse containing the task ID and initial status
+     * @throws NotificationException if there's an error creating the notification record
      */
-    public SendEmailResponse sendEmail(EmailNotificationRequest emailRequest) {
-        final String destinationAddress = emailRequest.getEmailAddress();
-        final String templateId = emailRequest.getTemplateId();
-        final Map<String, Object> personalisation = emailRequest.getPersonalisation();
-        final String referenceId = UUID.randomUUID().toString();
+    public EmailNotificationResponse scheduleEmailNotification(EmailNotificationRequest emailRequest) {
+        String taskId = UUID.randomUUID().toString();
 
         // Create initial notification in database
         CaseNotification caseNotification = createCaseNotification(
             emailRequest.getEmailAddress(),
-            UUID.randomUUID()
+            UUID.randomUUID(), // You might want to pass this from the request
+            taskId
         );
 
-        try {
-            SendEmailResponse sendEmailResponse = notificationClient.sendEmail(
-                templateId,
-                destinationAddress,
-                personalisation,
-                referenceId
-            );
+        // Create the email state object for the task
+        EmailState emailState = new EmailState(
+            taskId,
+            emailRequest.getEmailAddress(),
+            emailRequest.getTemplateId(),
+            emailRequest.getPersonalisation(),
+            emailRequest.getReference(),
+            emailRequest.getEmailReplyToId(),
+            null, // notification ID will be set after sending
+            caseNotification.getNotificationId()
+        );
 
-            log.debug("Email sent successfully. Reference ID: {}", referenceId);
+        // Schedule the send email task to run immediately
+        boolean scheduled = schedulerClient.scheduleIfNotExists(
+            EmailTaskConfiguration.sendEmailTask
+                .instance(taskId)
+                .data(emailState)
+                .scheduledTo(Instant.now())
+        );
 
-            // Update notification with provider ID received from GOV.UK Notify
-            UUID providerNotificationId = sendEmailResponse.getNotificationId();
-            updateNotificationStatus(caseNotification, NotificationStatus.SUBMITTED, providerNotificationId);
-
-            return sendEmailResponse;
-        } catch (NotificationClientException notificationClientException) {
-            errorHandler.handleSendEmailException(
-                notificationClientException,
-                caseNotification,
-                referenceId,
-                this::updateNotificationFromStatusUpdate
-            );
-            // This line will never be reached due to exceptions thrown in error handler
-            return null;
+        if (!scheduled) {
+            log.warn("Task with ID {} already exists", taskId);
         }
+
+        // Update notification status to SCHEDULED
+        updateNotificationStatus(caseNotification, NotificationStatus.SCHEDULED, null);
+
+        // Create response
+        EmailNotificationResponse response = new EmailNotificationResponse();
+        response.setTaskId(taskId);
+        response.setStatus(NotificationStatus.SCHEDULED.toString());
+        response.setNotificationId(caseNotification.getNotificationId());
+
+        log.info("Email notification scheduled with task ID: {} and notification ID: {}",
+                 taskId, caseNotification.getNotificationId());
+
+        return response;
     }
 
     /**
-     * Fetches the notification status for the given notification ID and updates
-     * the notification status in the database accordingly.
+     * Updates notification status after successful email sending.
+     * Called by the task after NotificationClient.sendEmail() succeeds.
      *
-     * @param notificationId the unique identifier of the notification to be fetched
-     * @return the fetched Notification object containing details about the notification
-     * @throws NotificationClientException if an error occurs during the notification retrieval
-     * @throws InterruptedException if the thread executing the method is interrupted
+     * @param dbNotificationId the database notification ID
+     * @param providerNotificationId the notification ID from GOV.UK Notify
      */
-    public Notification fetchNotificationStatus(String notificationId)
-        throws NotificationClientException, InterruptedException {
-        try {
-            Notification notification = notificationClient.getNotificationById(notificationId);
-            updateNotificationStatusInDatabase(notification, notificationId);
-            return notification;
-        } catch (NotificationClientException notificationClientException) {
-            errorHandler.handleFetchException(notificationClientException, notificationId);
-            // This line will never be reached due to exception thrown in error handler
-            return null;
+    public void updateNotificationAfterSending(UUID dbNotificationId, UUID providerNotificationId) {
+        Optional<CaseNotification> notificationOpt = notificationRepository.findById(dbNotificationId);
+        if (notificationOpt.isEmpty()) {
+            log.error("Notification not found with ID: {}", dbNotificationId);
+            return;
         }
+
+        CaseNotification notification = notificationOpt.get();
+        updateNotificationStatus(notification, NotificationStatus.SUBMITTED, providerNotificationId);
     }
 
     /**
-     * Helper method to update notification status from NotificationStatusUpdate object.
+     * Updates notification status after email sending failure.
+     * Called by the task when NotificationClient.sendEmail() fails.
      *
-     * @param statusUpdate The status update containing notification, status, and provider ID
+     * @param dbNotificationId the database notification ID
+     * @param exception the exception that occurred
      */
-    private void updateNotificationFromStatusUpdate(NotificationErrorHandler.NotificationStatusUpdate statusUpdate) {
-        updateNotificationStatus(
-            statusUpdate.notification(),
-            statusUpdate.status(),
-            statusUpdate.providerNotificationId()
-        );
+    public void updateNotificationAfterFailure(UUID dbNotificationId, Exception exception) {
+        Optional<CaseNotification> notificationOpt = notificationRepository.findById(dbNotificationId);
+        if (notificationOpt.isEmpty()) {
+            log.error("Notification not found with ID on failure: {}", dbNotificationId);
+            return;
+        }
+
+        CaseNotification notification = notificationOpt.get();
+        updateNotificationStatus(notification, NotificationStatus.PERMANENT_FAILURE, null);
+        log.error("Email sending failed for notification ID: {}, error: {}",
+                  dbNotificationId, exception.getMessage());
     }
 
     /**
@@ -134,13 +137,13 @@ public class NotificationService {
      *
      * @param recipient The recipient of the notification
      * @param caseId    The associated case ID
+     * @param taskId    The task ID for tracking
      * @return The created CaseNotification
      * @throws NotificationException If saving the notification fails
      */
-    private CaseNotification createCaseNotification(String recipient, UUID caseId) {
+    private CaseNotification createCaseNotification(String recipient, UUID caseId, String taskId) {
         CaseNotification toSaveNotification = new CaseNotification();
         toSaveNotification.setCaseId(caseId);
-        // Use the toString() method of the enum to get the string value
         toSaveNotification.setStatus(NotificationStatus.PENDING_SCHEDULE);
         toSaveNotification.setType("Email");
         toSaveNotification.setRecipient(recipient);
@@ -148,7 +151,8 @@ public class NotificationService {
         try {
             CaseNotification savedNotification = notificationRepository.save(toSaveNotification);
             log.info(
-                "Case Notification with ID {} has been saved to the database", savedNotification.getNotificationId()
+                "Case Notification with ID {} has been saved to the database with task ID {}",
+                savedNotification.getNotificationId(), taskId
             );
             return savedNotification;
         } catch (DataAccessException dataAccessException) {
@@ -162,41 +166,28 @@ public class NotificationService {
         }
     }
 
-    /**
-     * Updates the notification status in the database, based on the status from GOV.UK Notify.
-     *
-     * @param notification The notification object from GOV.UK Notify
-     * @param notificationId The notification ID for database lookup
-     */
-    private void updateNotificationStatusInDatabase(Notification notification, String notificationId) {
-        try {
-            CaseNotification caseNotification = notificationRepository
-                .findByProviderNotificationId(UUID.fromString(notificationId))
-                .orElse(null);
 
-            if (caseNotification != null) {
-                updateNotificationWithStatus(caseNotification, notification.getStatus());
-            } else {
-                log.warn("Could not find case notification with provider ID: {}", notificationId);
-            }
-        } catch (Exception e) {
-            log.error("Error updating notification status in database for ID: {}. Error: {}",
-                      notificationId, e.getMessage(), e);
+
+    /**
+     * Updates notification status from verification task.
+     * Called by the verification task after checking status with NotificationClient.
+     *
+     * @param dbNotificationId the database notification ID
+     * @param statusString the status string from GOV.UK Notify
+     */
+    public void updateNotificationStatus(UUID dbNotificationId, String statusString) {
+        Optional<CaseNotification> notificationOpt = notificationRepository.findById(dbNotificationId);
+        if (notificationOpt.isEmpty()) {
+            log.error("Notification not found with ID on status update: {}", dbNotificationId);
+            return;
         }
-    }
 
-    /**
-     * Updates a notification with the status from GOV.UK Notify
-     *
-     * @param caseNotification The notification entity to update
-     * @param status The status string from GOV.UK Notify
-     */
-    private void updateNotificationWithStatus(CaseNotification caseNotification, String status) {
+        CaseNotification notification = notificationOpt.get();
         try {
-            NotificationStatus notificationStatus = NotificationStatus.fromString(status);
-            updateNotificationStatus(caseNotification, notificationStatus, null);
+            NotificationStatus status = NotificationStatus.fromString(statusString);
+            updateNotificationStatus(notification, status, null);
         } catch (IllegalArgumentException e) {
-            log.warn("Unknown notification status: {}", status);
+            log.warn("Unknown notification status: {}", statusString);
         }
     }
 
@@ -206,9 +197,8 @@ public class NotificationService {
      * @param notification The notification to update
      * @param status The new status to set
      * @param providerNotificationId Optional provider notification ID to set (can be null)
-     * @return An Optional containing the updated notification, or an empty Optional if an error occurred
      */
-    private Optional<CaseNotification> updateNotificationStatus(
+    private void updateNotificationStatus(
         CaseNotification notification,
         NotificationStatus status,
         UUID providerNotificationId) {
@@ -225,14 +215,12 @@ public class NotificationService {
                 notification.setSubmittedAt(LocalDateTime.now());
             }
 
-            CaseNotification saved = notificationRepository.save(notification);
+            notificationRepository.save(notification);
             log.info("Updated notification status to {} for notification ID: {}",
                      status, notification.getNotificationId());
-            return Optional.of(saved);
         } catch (Exception e) {
             log.error("Error updating notification status to {}: {}",
                       status, e.getMessage(), e);
-            return Optional.empty();
         }
     }
 }

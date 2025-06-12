@@ -10,7 +10,7 @@ public enum NotificationStatus {
     PERMANENT_FAILURE("permanent-failure"),
     TEMPORARY_FAILURE("temporary-failure"),
     TECHNICAL_FAILURE("technical-failure"),
-    SCHEDULE("scheduled"),
+    SCHEDULED("scheduled"),
     PENDING_SCHEDULE("pending-schedule"),
     SUBMITTED("submitted");
 

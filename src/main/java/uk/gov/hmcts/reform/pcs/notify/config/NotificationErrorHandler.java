@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.notify.service;
+package uk.gov.hmcts.reform.pcs.notify.config;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;

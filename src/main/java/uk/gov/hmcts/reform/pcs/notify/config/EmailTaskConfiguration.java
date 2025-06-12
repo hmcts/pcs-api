@@ -12,20 +12,23 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import uk.gov.hmcts.reform.pcs.notify.domain.CaseNotification;
 import uk.gov.hmcts.reform.pcs.notify.model.EmailState;
 import uk.gov.hmcts.reform.pcs.notify.exception.PermanentNotificationException;
-import uk.gov.hmcts.reform.pcs.notify.exception.TaskInterruptedException;
 import uk.gov.hmcts.reform.pcs.notify.exception.TemporaryNotificationException;
-import uk.gov.hmcts.reform.pcs.notify.model.EmailNotificationRequest;
 import uk.gov.hmcts.reform.pcs.notify.model.NotificationStatus;
+import uk.gov.hmcts.reform.pcs.notify.repository.NotificationRepository;
 import uk.gov.hmcts.reform.pcs.notify.service.NotificationService;
 import uk.gov.service.notify.Notification;
+import uk.gov.service.notify.NotificationClient;
 import uk.gov.service.notify.NotificationClientException;
 import uk.gov.service.notify.SendEmailResponse;
 
 import java.time.Duration;
 import java.time.Instant;
-
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
 
 @Configuration
 @Slf4j
@@ -39,6 +42,9 @@ public class EmailTaskConfiguration {
         TaskDescriptor.of(VERIFY_EMAIL_TASK_NAME, EmailState.class);
 
     private final NotificationService notificationService;
+    private final NotificationClient notificationClient;
+    private final NotificationErrorHandler errorHandler;
+    private final NotificationRepository notificationRepository;
     private final int maxRetriesSendEmail;
     private final int maxRetriesCheckEmail;
     private final Duration sendingBackoffDelay;
@@ -48,6 +54,9 @@ public class EmailTaskConfiguration {
     @Autowired
     public EmailTaskConfiguration(
         NotificationService notificationService,
+        NotificationClient notificationClient,
+        NotificationErrorHandler errorHandler,
+        NotificationRepository notificationRepository,
         @Value("${notify.send-email.max-retries}") int maxRetriesSendEmail,
         @Value("${notify.check-status.max-retries}") int maxRetriesCheckEmail,
         @Value("${notify.send-email.backoff-delay-seconds}") Duration sendingBackoffDelay,
@@ -55,6 +64,9 @@ public class EmailTaskConfiguration {
         @Value("${notify.check-status.backoff-delay-seconds}") Duration statusCheckBackoffDelay
     ) {
         this.notificationService = notificationService;
+        this.notificationClient = notificationClient;
+        this.errorHandler = errorHandler;
+        this.notificationRepository = notificationRepository;
         this.maxRetriesSendEmail = maxRetriesSendEmail;
         this.maxRetriesCheckEmail = maxRetriesCheckEmail;
         this.sendingBackoffDelay = sendingBackoffDelay;
@@ -62,14 +74,6 @@ public class EmailTaskConfiguration {
         this.statusCheckBackoffDelay = statusCheckBackoffDelay;
     }
 
-    /**
-     * Creates and configures a custom task for sending emails. The task processes the send email request
-     * using the specified email state and handles success along with both permanent and temporary failures.
-     * The task retries on temporary failures using exponential backoff delay up to the maximum retry count
-     * and removes the task in case of permanent failures.
-     *
-     * @return a configured CustomTask instance for sending emails, with proper retry and failure handling.
-     */
     @Bean
     public CustomTask<EmailState> sendEmailTask() {
         return Tasks.custom(sendEmailTask)
@@ -79,31 +83,42 @@ public class EmailTaskConfiguration {
             ))
             .execute((taskInstance, executionContext) -> {
                 EmailState emailState = taskInstance.getData();
-                log.info("Processing send email task: {}", emailState.getId());
+                log.info("Processing send email task: {} with DB notification ID: {}",
+                            emailState.getId(), emailState.getDbNotificationId());
+
+                Optional<CaseNotification> notificationOpt = notificationRepository.findById(
+                    emailState.getDbNotificationId());
+                if (notificationOpt.isEmpty()) {
+                    log.error("Notification not found with ID: {}", emailState.getDbNotificationId());
+                    return new CompletionHandler.OnCompleteRemove<>();
+                }
+
+                CaseNotification caseNotification = notificationOpt.get();
 
                 try {
-                    EmailNotificationRequest emailRequest = EmailNotificationRequest.builder()
-                        .emailAddress(emailState.getEmailAddress())
-                        .templateId(emailState.getTemplateId())
-                        .personalisation(emailState.getPersonalisation())
-                        .reference(emailState.getReference())
-                        .emailReplyToId(emailState.getEmailReplyToId())
-                        .build();
+                    final String templateId = emailState.getTemplateId();
+                    final String destinationAddress = emailState.getEmailAddress();
+                    final Map<String, Object> personalisation = emailState.getPersonalisation();
+                    final String referenceId = UUID.randomUUID().toString();
 
-                    SendEmailResponse response = notificationService.sendEmail(emailRequest);
+                    SendEmailResponse response = notificationClient.sendEmail(
+                        templateId,
+                        destinationAddress,
+                        personalisation,
+                        referenceId
+                    );
 
-                    if (response == null) {
-                        log.error("Email service returned null response for task: {}", emailState.getId());
-                        throw new PermanentNotificationException("Null response from email service",
-                                                                    new IllegalStateException(
-                                                                        "Email service returned null response"));
-                    }
                     if (response.getNotificationId() == null) {
                         log.error("Email service returned null notification ID for task: {}", emailState.getId());
                         throw new PermanentNotificationException("Null notification ID from email service",
                                                                     new IllegalStateException(
                                                                         "Email service returned null notification ID"));
                     }
+
+                    notificationService.updateNotificationAfterSending(
+                        emailState.getDbNotificationId(),
+                        response.getNotificationId()
+                    );
 
                     String notificationId = response.getNotificationId().toString();
                     log.info("Email sent successfully. Notification ID: {}", notificationId);
@@ -118,29 +133,26 @@ public class EmailTaskConfiguration {
                             Instant.now().plus(statusCheckTaskDelay)
                         )
                     );
+                } catch (NotificationClientException e) {
+                    log.error("NotificationClient error sending email: {}", e.getMessage(), e);
+
+                    errorHandler.handleSendEmailException(
+                        e,
+                        caseNotification,
+                        UUID.randomUUID().toString(),
+                        this::updateNotificationFromStatusUpdate
+                    );
+                    return null;
                 } catch (PermanentNotificationException e) {
                     log.error("Permanent failure sending email: {}", e.getMessage(), e);
                     return new CompletionHandler.OnCompleteRemove<>();
                 } catch (TemporaryNotificationException e) {
                     log.warn("Retryable failure: {}", e.getMessage(), e);
-                    // Let the scheduler retry using the configured failure handler
                     throw e;
                 }
             });
     }
 
-
-    /**
-     * Creates and configures a custom task to verify email delivery status.
-     * The task attempts to verify the delivery status of a notification email
-     * identified by its notification ID present in the task's data. The task
-     * includes a failure handling mechanism with a configurable maximum retries
-     * and an exponential backoff delay for retry attempts.
-     * Logging is performed to provide insights into the success or failure of
-     * the email delivery verification process.
-     *
-     * @return a configured {@link CustomTask} instance for verifying email delivery status.
-     */
     @Bean
     public CustomTask<EmailState> verifyEmailTask() {
         return Tasks.custom(verifyEmailTask)
@@ -153,8 +165,13 @@ public class EmailTaskConfiguration {
                 log.info("Verifying email delivery for ID: {}", emailState.getNotificationId());
 
                 try {
-                    Notification notification = notificationService
-                        .fetchNotificationStatus(emailState.getNotificationId());
+                    Notification notification = notificationClient.getNotificationById(emailState.getNotificationId());
+
+                    notificationService.updateNotificationStatus(
+                        emailState.getDbNotificationId(),
+                        notification.getStatus()
+                    );
+
                     String status = notification.getStatus();
                     if (NotificationStatus.DELIVERED.toString().equalsIgnoreCase(status)) {
                         log.info("Email successfully delivered: {}", emailState.getId());
@@ -164,12 +181,17 @@ public class EmailTaskConfiguration {
                     return new CompletionHandler.OnCompleteRemove<>();
                 } catch (NotificationClientException e) {
                     log.error("Failed to verify status due to API error", e);
+
+                    errorHandler.handleFetchException(e, emailState.getNotificationId());
                     return new CompletionHandler.OnCompleteRemove<>();
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                    throw new TaskInterruptedException("Task interrupted", e);
                 }
             });
     }
-}
 
+    private void updateNotificationFromStatusUpdate(NotificationErrorHandler.NotificationStatusUpdate statusUpdate) {
+        notificationService.updateNotificationStatus(
+            statusUpdate.notification().getNotificationId(),
+            statusUpdate.status().toString()
+        );
+    }
+}

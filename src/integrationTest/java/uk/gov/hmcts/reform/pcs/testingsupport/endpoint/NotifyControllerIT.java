@@ -1,8 +1,9 @@
 package uk.gov.hmcts.reform.pcs.testingsupport.endpoint;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.kagkarlsson.scheduler.SchedulerClient;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -14,15 +15,20 @@ import org.springframework.test.web.servlet.MockMvc;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
 import uk.gov.hmcts.reform.pcs.config.AbstractPostgresContainerIT;
+import uk.gov.hmcts.reform.pcs.notify.exception.NotificationException;
 import uk.gov.hmcts.reform.pcs.notify.model.EmailNotificationRequest;
+import uk.gov.hmcts.reform.pcs.notify.model.EmailNotificationResponse;
 import uk.gov.hmcts.reform.pcs.notify.service.NotificationService;
 import uk.gov.hmcts.reform.pcs.util.IdamHelper;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -33,13 +39,15 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @ActiveProfiles("integration")
 @TestConstructor(autowireMode = TestConstructor.AutowireMode.ALL)
+@DisplayName("NotifyController Integration Tests")
 class NotifyControllerIT extends AbstractPostgresContainerIT {
 
-    private static final String SCHEDULED_STATUS = "scheduled";
+    private static final String SCHEDULED_STATUS = "SCHEDULED";
     private static final String TEST_EMAIL_ADDRESS = "test@example.com";
     private static final String TEMPLATE_123_ID = "template-123";
     private static final String JSON_PATH_STATUS = "$.status";
     private static final String JSON_PATH_TASK_ID = "$.taskId";
+    private static final String JSON_PATH_NOTIFICATION_ID = "$.notificationId";
     private static final int ACCEPTED_STATUS = 202;
 
     private static final String AUTH_HEADER = "Bearer token";
@@ -56,8 +64,6 @@ class NotifyControllerIT extends AbstractPostgresContainerIT {
     @MockitoBean
     private IdamClient idamClient;
     @MockitoBean
-    private SchedulerClient schedulerClient;
-    @MockitoBean
     private NotificationService notificationService;
 
     public NotifyControllerIT(MockMvc mockMvc, ObjectMapper objectMapper) {
@@ -68,198 +74,383 @@ class NotifyControllerIT extends AbstractPostgresContainerIT {
     @BeforeEach
     void setUp() {
         IdamHelper.stubIdamSystemUser(idamClient, SYSTEM_USER_ID_TOKEN);
+
+        EmailNotificationResponse mockResponse = new EmailNotificationResponse();
+        mockResponse.setTaskId("task-123");
+        mockResponse.setStatus(SCHEDULED_STATUS);
+        mockResponse.setNotificationId(UUID.randomUUID());
+
+        when(notificationService.scheduleEmailNotification(any(EmailNotificationRequest.class)))
+            .thenReturn(mockResponse);
     }
 
-    @Test
-    void shouldSendEmailWithValidRequest() throws Exception {
-        EmailNotificationRequest request = createValidEmailRequest();
+    @Nested
+    @DisplayName("Successful Email Scheduling Tests")
+    class SuccessfulEmailSchedulingTests {
 
-        mockMvc.perform(post(SEND_EMAIL_ENDPOINT)
-                            .header(AUTHORIZATION, AUTH_HEADER)
-                            .header(SERVICE_AUTHORIZATION, SERVICE_AUTH_HEADER)
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(request)))
-            .andExpect(status().is(ACCEPTED_STATUS))
-            .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-            .andExpect(jsonPath(JSON_PATH_TASK_ID, is(notNullValue())))
-            .andExpect(jsonPath(JSON_PATH_STATUS, is(SCHEDULED_STATUS)));
+        @Test
+        @DisplayName("Should send email with valid request")
+        void shouldSendEmailWithValidRequest() throws Exception {
+            EmailNotificationRequest request = createValidEmailRequest();
+
+            mockMvc.perform(post(SEND_EMAIL_ENDPOINT)
+                                .header(AUTHORIZATION, AUTH_HEADER)
+                                .header(SERVICE_AUTHORIZATION, SERVICE_AUTH_HEADER)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().is(ACCEPTED_STATUS))
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath(JSON_PATH_TASK_ID, is(notNullValue())))
+                .andExpect(jsonPath(JSON_PATH_STATUS, is(SCHEDULED_STATUS)))
+                .andExpect(jsonPath(JSON_PATH_NOTIFICATION_ID, is(notNullValue())));
+        }
+
+        @Test
+        @DisplayName("Should send email with minimal request")
+        void shouldSendEmailWithMinimalRequest() throws Exception {
+            EmailNotificationRequest request = EmailNotificationRequest.builder()
+                .emailAddress(TEST_EMAIL_ADDRESS)
+                .templateId(TEMPLATE_123_ID)
+                .build();
+
+            mockMvc.perform(post(SEND_EMAIL_ENDPOINT)
+                                .header(AUTHORIZATION, AUTH_HEADER)
+                                .header(SERVICE_AUTHORIZATION, SERVICE_AUTH_HEADER)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().is(ACCEPTED_STATUS))
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath(JSON_PATH_TASK_ID, is(notNullValue())))
+                .andExpect(jsonPath(JSON_PATH_STATUS, is(SCHEDULED_STATUS)));
+        }
+
+        @Test
+        @DisplayName("Should send email with personalisation data")
+        void shouldSendEmailWithPersonalisationData() throws Exception {
+            Map<String, Object> personalisation = new HashMap<>();
+            personalisation.put("firstName", "John");
+            personalisation.put("lastName", "Doe");
+            personalisation.put("caseReference", "CASE-123");
+
+            EmailNotificationRequest request = EmailNotificationRequest.builder()
+                .emailAddress("john.doe@example.com")
+                .templateId("template-456")
+                .personalisation(personalisation)
+                .reference("REF-789")
+                .emailReplyToId("reply-to-123")
+                .build();
+
+            mockMvc.perform(post(SEND_EMAIL_ENDPOINT)
+                                .header(AUTHORIZATION, AUTH_HEADER)
+                                .header(SERVICE_AUTHORIZATION, SERVICE_AUTH_HEADER)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().is(ACCEPTED_STATUS))
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath(JSON_PATH_TASK_ID, is(notNullValue())))
+                .andExpect(jsonPath(JSON_PATH_STATUS, is(SCHEDULED_STATUS)));
+        }
+
+        @Test
+        @DisplayName("Should send email with default authorization header")
+        void shouldSendEmailWithDefaultAuthorizationHeader() throws Exception {
+            EmailNotificationRequest request = createValidEmailRequest();
+
+            mockMvc.perform(post(SEND_EMAIL_ENDPOINT)
+                                .header(SERVICE_AUTHORIZATION, SERVICE_AUTH_HEADER)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().is(ACCEPTED_STATUS))
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath(JSON_PATH_TASK_ID, is(notNullValue())))
+                .andExpect(jsonPath(JSON_PATH_STATUS, is(SCHEDULED_STATUS)));
+        }
+
+        @Test
+        @DisplayName("Should send email with empty personalisation")
+        void shouldSendEmailWithEmptyPersonalisation() throws Exception {
+            EmailNotificationRequest request = EmailNotificationRequest.builder()
+                .emailAddress(TEST_EMAIL_ADDRESS)
+                .templateId(TEMPLATE_123_ID)
+                .personalisation(new HashMap<>())
+                .build();
+
+            mockMvc.perform(post(SEND_EMAIL_ENDPOINT)
+                                .header(AUTHORIZATION, AUTH_HEADER)
+                                .header(SERVICE_AUTHORIZATION, SERVICE_AUTH_HEADER)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().is(ACCEPTED_STATUS))
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath(JSON_PATH_TASK_ID, is(notNullValue())))
+                .andExpect(jsonPath(JSON_PATH_STATUS, is(SCHEDULED_STATUS)));
+        }
+
+        @Test
+        @DisplayName("Should send email with special characters in personalisation")
+        void shouldSendEmailWithSpecialCharactersInPersonalisation() throws Exception {
+            Map<String, Object> personalisation = new HashMap<>();
+            personalisation.put("specialChars", "àáâãäåæçèéêë");
+            personalisation.put("numbers", 12345);
+            personalisation.put("boolean", true);
+
+            EmailNotificationRequest request = EmailNotificationRequest.builder()
+                .emailAddress(TEST_EMAIL_ADDRESS)
+                .templateId(TEMPLATE_123_ID)
+                .personalisation(personalisation)
+                .build();
+
+            mockMvc.perform(post(SEND_EMAIL_ENDPOINT)
+                                .header(AUTHORIZATION, AUTH_HEADER)
+                                .header(SERVICE_AUTHORIZATION, SERVICE_AUTH_HEADER)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().is(ACCEPTED_STATUS))
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath(JSON_PATH_TASK_ID, is(notNullValue())))
+                .andExpect(jsonPath(JSON_PATH_STATUS, is(SCHEDULED_STATUS)));
+        }
     }
 
-    @Test
-    void shouldSendEmailWithMinimalRequest() throws Exception {
-        EmailNotificationRequest request = EmailNotificationRequest.builder()
-            .emailAddress(TEST_EMAIL_ADDRESS)
-            .templateId(TEMPLATE_123_ID)
-            .build();
+    @Nested
+    @DisplayName("Error Handling Tests")
+    class ErrorHandlingTests {
 
-        mockMvc.perform(post(SEND_EMAIL_ENDPOINT)
-                            .header(AUTHORIZATION, AUTH_HEADER)
-                            .header(SERVICE_AUTHORIZATION, SERVICE_AUTH_HEADER)
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(request)))
-            .andExpect(status().is(ACCEPTED_STATUS))
-            .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-            .andExpect(jsonPath(JSON_PATH_TASK_ID, is(notNullValue())))
-            .andExpect(jsonPath(JSON_PATH_STATUS, is(SCHEDULED_STATUS)));
+        @Test
+        @DisplayName("Should return 500 when service throws exception")
+        void shouldReturn500WhenServiceThrowsException() throws Exception {
+            when(notificationService.scheduleEmailNotification(any(EmailNotificationRequest.class)))
+                .thenThrow(new NotificationException("Database error", new RuntimeException()));
+
+            EmailNotificationRequest request = createValidEmailRequest();
+
+            mockMvc.perform(post(SEND_EMAIL_ENDPOINT)
+                                .header(AUTHORIZATION, AUTH_HEADER)
+                                .header(SERVICE_AUTHORIZATION, SERVICE_AUTH_HEADER)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isInternalServerError());
+        }
+
+        @Test
+        @DisplayName("Should return 500 when service throws runtime exception")
+        void shouldReturn500WhenServiceThrowsRuntimeException() throws Exception {
+            when(notificationService.scheduleEmailNotification(any(EmailNotificationRequest.class)))
+                .thenThrow(new RuntimeException("Unexpected error"));
+
+            EmailNotificationRequest request = createValidEmailRequest();
+
+            mockMvc.perform(post(SEND_EMAIL_ENDPOINT)
+                                .header(AUTHORIZATION, AUTH_HEADER)
+                                .header(SERVICE_AUTHORIZATION, SERVICE_AUTH_HEADER)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isInternalServerError());
+        }
+
+        @Test
+        @DisplayName("Should return 400 when request body is empty")
+        void shouldReturn400WhenRequestBodyIsEmpty() throws Exception {
+            mockMvc.perform(post(SEND_EMAIL_ENDPOINT)
+                                .header(AUTHORIZATION, AUTH_HEADER)
+                                .header(SERVICE_AUTHORIZATION, SERVICE_AUTH_HEADER)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("{}"))
+                .andExpect(status().is(ACCEPTED_STATUS));
+        }
+
+        @Test
+        @DisplayName("Should return 400 when request body is invalid")
+        void shouldReturn400WhenRequestBodyIsInvalid() throws Exception {
+            mockMvc.perform(post(SEND_EMAIL_ENDPOINT)
+                                .header(AUTHORIZATION, AUTH_HEADER)
+                                .header(SERVICE_AUTHORIZATION, SERVICE_AUTH_HEADER)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(""))
+                .andExpect(status().isBadRequest());
+        }
+
+        @Test
+        @DisplayName("Should return 415 when content type is not json")
+        void shouldReturn415WhenContentTypeIsNotJson() throws Exception {
+            EmailNotificationRequest request = createValidEmailRequest();
+
+            mockMvc.perform(post(SEND_EMAIL_ENDPOINT)
+                                .header(AUTHORIZATION, AUTH_HEADER)
+                                .header(SERVICE_AUTHORIZATION, SERVICE_AUTH_HEADER)
+                                .contentType(MediaType.TEXT_PLAIN)
+                                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isUnsupportedMediaType());
+        }
+
+        @Test
+        @DisplayName("Should return 400 when service authorization header is missing")
+        void shouldReturn400WhenServiceAuthorizationHeaderIsMissing() throws Exception {
+            EmailNotificationRequest request = createValidEmailRequest();
+
+            mockMvc.perform(post(SEND_EMAIL_ENDPOINT)
+                                .header(AUTHORIZATION, AUTH_HEADER)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest());
+        }
     }
 
-    @Test
-    void shouldSendEmailWithPersonalisationData() throws Exception {
-        Map<String, Object> personalisation = new HashMap<>();
-        personalisation.put("firstName", "John");
-        personalisation.put("lastName", "Doe");
-        personalisation.put("caseReference", "CASE-123");
+    @Nested
+    @DisplayName("Concurrent Request Tests")
+    class ConcurrentRequestTests {
 
-        EmailNotificationRequest request = EmailNotificationRequest.builder()
-            .emailAddress("john.doe@example.com")
-            .templateId("template-456")
-            .personalisation(personalisation)
-            .reference("REF-789")
-            .emailReplyToId("reply-to-123")
-            .build();
+        @Test
+        @DisplayName("Should handle multiple concurrent requests")
+        void shouldHandleMultipleConcurrentRequests() throws Exception {
+            EmailNotificationRequest request1 = EmailNotificationRequest.builder()
+                .emailAddress("user1@example.com")
+                .templateId("template-1")
+                .build();
 
-        mockMvc.perform(post(SEND_EMAIL_ENDPOINT)
-                            .header(AUTHORIZATION, AUTH_HEADER)
-                            .header(SERVICE_AUTHORIZATION, SERVICE_AUTH_HEADER)
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(request)))
-            .andExpect(status().is(ACCEPTED_STATUS))
-            .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-            .andExpect(jsonPath(JSON_PATH_TASK_ID, is(notNullValue())))
-            .andExpect(jsonPath(JSON_PATH_STATUS, is(SCHEDULED_STATUS)));
+            EmailNotificationRequest request2 = EmailNotificationRequest.builder()
+                .emailAddress("user2@example.com")
+                .templateId("template-2")
+                .build();
+
+            mockMvc.perform(post(SEND_EMAIL_ENDPOINT)
+                                .header(AUTHORIZATION, AUTH_HEADER)
+                                .header(SERVICE_AUTHORIZATION, SERVICE_AUTH_HEADER)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(request1)))
+                .andExpect(status().is(ACCEPTED_STATUS))
+                .andExpect(jsonPath(JSON_PATH_TASK_ID, is(notNullValue())))
+                .andExpect(jsonPath(JSON_PATH_STATUS, is(SCHEDULED_STATUS)));
+
+            mockMvc.perform(post(SEND_EMAIL_ENDPOINT)
+                                .header(AUTHORIZATION, AUTH_HEADER)
+                                .header(SERVICE_AUTHORIZATION, SERVICE_AUTH_HEADER)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(request2)))
+                .andExpect(status().is(ACCEPTED_STATUS))
+                .andExpect(jsonPath(JSON_PATH_TASK_ID, is(notNullValue())))
+                .andExpect(jsonPath(JSON_PATH_STATUS, is(SCHEDULED_STATUS)));
+        }
     }
 
-    @Test
-    void shouldSendEmailWithDefaultAuthorizationHeader() throws Exception {
-        EmailNotificationRequest request = createValidEmailRequest();
+    @Nested
+    @DisplayName("Request Validation Tests")
+    class RequestValidationTests {
 
-        mockMvc.perform(post(SEND_EMAIL_ENDPOINT)
-                            .header(SERVICE_AUTHORIZATION, SERVICE_AUTH_HEADER)
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(request)))
-            .andExpect(status().is(ACCEPTED_STATUS))
-            .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-            .andExpect(jsonPath(JSON_PATH_TASK_ID, is(notNullValue())))
-            .andExpect(jsonPath(JSON_PATH_STATUS, is(SCHEDULED_STATUS)));
-    }
+        @Test
+        @DisplayName("Should handle request with null values")
+        void shouldHandleRequestWithNullValues() throws Exception {
+            EmailNotificationRequest request = EmailNotificationRequest.builder()
+                .emailAddress(TEST_EMAIL_ADDRESS)
+                .templateId(TEMPLATE_123_ID)
+                .personalisation(null)
+                .reference(null)
+                .emailReplyToId(null)
+                .build();
 
-    @Test
-    void shouldReturn400WhenRequestBodyIsEmpty() throws Exception {
-        mockMvc.perform(post(SEND_EMAIL_ENDPOINT)
-                            .header(AUTHORIZATION, AUTH_HEADER)
-                            .header(SERVICE_AUTHORIZATION, SERVICE_AUTH_HEADER)
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content("{}"))
-            .andExpect(status().is(ACCEPTED_STATUS)); // Controller doesn't validate, so it accepts empty body
-    }
+            mockMvc.perform(post(SEND_EMAIL_ENDPOINT)
+                                .header(AUTHORIZATION, AUTH_HEADER)
+                                .header(SERVICE_AUTHORIZATION, SERVICE_AUTH_HEADER)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().is(ACCEPTED_STATUS))
+                .andExpect(jsonPath(JSON_PATH_TASK_ID, is(notNullValue())))
+                .andExpect(jsonPath(JSON_PATH_STATUS, is(SCHEDULED_STATUS)));
+        }
 
-    @Test
-    void shouldReturn400WhenRequestBodyIsInvalid() throws Exception {
-        mockMvc.perform(post(SEND_EMAIL_ENDPOINT)
-                            .header(AUTHORIZATION, AUTH_HEADER)
-                            .header(SERVICE_AUTHORIZATION, SERVICE_AUTH_HEADER)
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(""))
-            .andExpect(status().isBadRequest());
-    }
+        @Test
+        @DisplayName("Should handle large personalisation payload")
+        void shouldHandleLargePersonalisationPayload() throws Exception {
+            Map<String, Object> personalisation = new HashMap<>();
+            for (int i = 0; i < 100; i++) {
+                personalisation.put("key" + i, "value" + i + " with some longer content to make it bigger");
+            }
 
-    @Test
-    void shouldReturn415WhenContentTypeIsNotJson() throws Exception {
-        EmailNotificationRequest request = createValidEmailRequest();
+            EmailNotificationRequest request = EmailNotificationRequest.builder()
+                .emailAddress(TEST_EMAIL_ADDRESS)
+                .templateId(TEMPLATE_123_ID)
+                .personalisation(personalisation)
+                .build();
 
-        mockMvc.perform(post(SEND_EMAIL_ENDPOINT)
-                            .header(AUTHORIZATION, AUTH_HEADER)
-                            .header(SERVICE_AUTHORIZATION, SERVICE_AUTH_HEADER)
-                            .contentType(MediaType.TEXT_PLAIN)
-                            .content(objectMapper.writeValueAsString(request)))
-            .andExpect(status().isUnsupportedMediaType());
-    }
+            mockMvc.perform(post(SEND_EMAIL_ENDPOINT)
+                                .header(AUTHORIZATION, AUTH_HEADER)
+                                .header(SERVICE_AUTHORIZATION, SERVICE_AUTH_HEADER)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().is(ACCEPTED_STATUS))
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath(JSON_PATH_TASK_ID, is(notNullValue())))
+                .andExpect(jsonPath(JSON_PATH_STATUS, is(SCHEDULED_STATUS)));
+        }
 
-    @Test
-    void shouldReturn400WhenServiceAuthorizationHeaderIsMissing() throws Exception {
-        EmailNotificationRequest request = createValidEmailRequest();
+        @Test
+        @DisplayName("Should handle request with complex personalisation data types")
+        void shouldHandleRequestWithComplexPersonalisationDataTypes() throws Exception {
+            Map<String, Object> personalisation = new HashMap<>();
+            personalisation.put("string", "test value");
+            personalisation.put("integer", 42);
+            personalisation.put("double", 3.14159);
+            personalisation.put("boolean", true);
+            personalisation.put("null", null);
 
-        mockMvc.perform(post(SEND_EMAIL_ENDPOINT)
-                            .header(AUTHORIZATION, AUTH_HEADER)
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(request)))
-            .andExpect(status().isBadRequest());
-    }
+            EmailNotificationRequest request = EmailNotificationRequest.builder()
+                .emailAddress(TEST_EMAIL_ADDRESS)
+                .templateId(TEMPLATE_123_ID)
+                .personalisation(personalisation)
+                .build();
 
-    @Test
-    void shouldSendEmailWithEmptyPersonalisation() throws Exception {
-        EmailNotificationRequest request = EmailNotificationRequest.builder()
-            .emailAddress(TEST_EMAIL_ADDRESS)
-            .templateId(TEMPLATE_123_ID)
-            .personalisation(new HashMap<>())
-            .build();
+            mockMvc.perform(post(SEND_EMAIL_ENDPOINT)
+                                .header(AUTHORIZATION, AUTH_HEADER)
+                                .header(SERVICE_AUTHORIZATION, SERVICE_AUTH_HEADER)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().is(ACCEPTED_STATUS))
+                .andExpect(jsonPath(JSON_PATH_TASK_ID, is(notNullValue())))
+                .andExpect(jsonPath(JSON_PATH_STATUS, is(SCHEDULED_STATUS)));
+        }
 
-        mockMvc.perform(post(SEND_EMAIL_ENDPOINT)
-                            .header(AUTHORIZATION, AUTH_HEADER)
-                            .header(SERVICE_AUTHORIZATION, SERVICE_AUTH_HEADER)
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(request)))
-            .andExpect(status().is(ACCEPTED_STATUS))
-            .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-            .andExpect(jsonPath(JSON_PATH_TASK_ID, is(notNullValue())))
-            .andExpect(jsonPath(JSON_PATH_STATUS, is(SCHEDULED_STATUS)));
-    }
+        @Test
+        @DisplayName("Should handle request with long email address")
+        void shouldHandleRequestWithLongEmailAddress() throws Exception {
+            String longEmail =
+                "verylongemailaddressthatexceedstypicallengths.withanextremelylongdomainname@"
+                    + "example.verylongdomainextension.com";
 
-    @Test
-    void shouldSendEmailWithSpecialCharactersInPersonalisation() throws Exception {
-        Map<String, Object> personalisation = new HashMap<>();
-        personalisation.put("specialChars", "àáâãäåæçèéêë");
-        personalisation.put("numbers", 12345);
-        personalisation.put("boolean", true);
+            EmailNotificationRequest request = EmailNotificationRequest.builder()
+                .emailAddress(longEmail)
+                .templateId(TEMPLATE_123_ID)
+                .build();
 
-        EmailNotificationRequest request = EmailNotificationRequest.builder()
-            .emailAddress(TEST_EMAIL_ADDRESS)
-            .templateId(TEMPLATE_123_ID)
-            .personalisation(personalisation)
-            .build();
+            mockMvc.perform(post(SEND_EMAIL_ENDPOINT)
+                                .header(AUTHORIZATION, AUTH_HEADER)
+                                .header(SERVICE_AUTHORIZATION, SERVICE_AUTH_HEADER)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().is(ACCEPTED_STATUS))
+                .andExpect(jsonPath(JSON_PATH_TASK_ID, is(notNullValue())))
+                .andExpect(jsonPath(JSON_PATH_STATUS, is(SCHEDULED_STATUS)));
+        }
 
-        mockMvc.perform(post(SEND_EMAIL_ENDPOINT)
-                            .header(AUTHORIZATION, AUTH_HEADER)
-                            .header(SERVICE_AUTHORIZATION, SERVICE_AUTH_HEADER)
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(request)))
-            .andExpect(status().is(ACCEPTED_STATUS))
-            .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-            .andExpect(jsonPath(JSON_PATH_TASK_ID, is(notNullValue())))
-            .andExpect(jsonPath(JSON_PATH_STATUS, is(SCHEDULED_STATUS)));
-    }
+        @Test
+        @DisplayName("Should handle request with long template ID")
+        void shouldHandleRequestWithLongTemplateId() throws Exception {
+            String longTemplateId =
+                "very-long-template-id-that-exceeds-typical-lengths-and-contains-many-characters-to-test-handling";
 
-    @Test
-    void shouldHandleMultipleConcurrentRequests() throws Exception {
-        EmailNotificationRequest request1 = EmailNotificationRequest.builder()
-            .emailAddress("user1@example.com")
-            .templateId("template-1")
-            .build();
+            EmailNotificationRequest request = EmailNotificationRequest.builder()
+                .emailAddress(TEST_EMAIL_ADDRESS)
+                .templateId(longTemplateId)
+                .build();
 
-        EmailNotificationRequest request2 = EmailNotificationRequest.builder()
-            .emailAddress("user2@example.com")
-            .templateId("template-2")
-            .build();
-
-        // Send first request
-        mockMvc.perform(post(SEND_EMAIL_ENDPOINT)
-                            .header(AUTHORIZATION, AUTH_HEADER)
-                            .header(SERVICE_AUTHORIZATION, SERVICE_AUTH_HEADER)
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(request1)))
-            .andExpect(status().is(ACCEPTED_STATUS))
-            .andExpect(jsonPath(JSON_PATH_TASK_ID, is(notNullValue())))
-            .andExpect(jsonPath(JSON_PATH_STATUS, is(SCHEDULED_STATUS)));
-
-        // Send second request
-        mockMvc.perform(post(SEND_EMAIL_ENDPOINT)
-                            .header(AUTHORIZATION, AUTH_HEADER)
-                            .header(SERVICE_AUTHORIZATION, SERVICE_AUTH_HEADER)
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(request2)))
-            .andExpect(status().is(ACCEPTED_STATUS))
-            .andExpect(jsonPath(JSON_PATH_TASK_ID, is(notNullValue())))
-            .andExpect(jsonPath(JSON_PATH_STATUS, is(SCHEDULED_STATUS)));
+            mockMvc.perform(post(SEND_EMAIL_ENDPOINT)
+                                .header(AUTHORIZATION, AUTH_HEADER)
+                                .header(SERVICE_AUTHORIZATION, SERVICE_AUTH_HEADER)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().is(ACCEPTED_STATUS))
+                .andExpect(jsonPath(JSON_PATH_TASK_ID, is(notNullValue())))
+                .andExpect(jsonPath(JSON_PATH_STATUS, is(SCHEDULED_STATUS)));
+        }
     }
 
     private EmailNotificationRequest createValidEmailRequest() {

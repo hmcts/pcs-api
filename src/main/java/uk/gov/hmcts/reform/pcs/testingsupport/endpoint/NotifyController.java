@@ -1,6 +1,5 @@
 package uk.gov.hmcts.reform.pcs.testingsupport.endpoint;
 
-import com.github.kagkarlsson.scheduler.SchedulerClient;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.MediaType;
@@ -12,12 +11,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import uk.gov.hmcts.reform.pcs.notify.model.EmailNotificationRequest;
 import uk.gov.hmcts.reform.pcs.notify.model.EmailNotificationResponse;
-import uk.gov.hmcts.reform.pcs.notify.model.EmailState;
-import uk.gov.hmcts.reform.pcs.notify.config.EmailTaskConfiguration;
-import uk.gov.hmcts.reform.pcs.notify.model.NotificationStatus;
-
-import java.time.Instant;
-import java.util.UUID;
+import uk.gov.hmcts.reform.pcs.notify.service.NotificationService;
 
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 
@@ -27,10 +21,10 @@ import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 @ConditionalOnProperty(name = "testing-support.enabled", havingValue = "true")
 public class NotifyController {
 
-    private final SchedulerClient schedulerClient;
+    private final NotificationService notificationService;
 
-    public NotifyController(SchedulerClient schedulerClient) {
-        this.schedulerClient = schedulerClient;
+    public NotifyController(NotificationService notificationService) {
+        this.notificationService = notificationService;
     }
 
     @PostMapping(value = "/send-email", consumes = MediaType.APPLICATION_JSON_VALUE)
@@ -41,33 +35,15 @@ public class NotifyController {
 
         log.info("Received request to send email to: {}", emailRequest.getEmailAddress());
 
-        // Generate a unique ID for this email task
-        String taskId = UUID.randomUUID().toString();
+        try {
+            EmailNotificationResponse response = notificationService.scheduleEmailNotification(emailRequest);
 
-        // Create the email state object
-        EmailState emailState = new EmailState(
-            taskId,
-            emailRequest.getEmailAddress(),
-            emailRequest.getTemplateId(),
-            emailRequest.getPersonalisation(),
-            emailRequest.getReference(),
-            emailRequest.getEmailReplyToId(),
-            null // notification ID will be set after sending
-        );
+            log.info("Email notification scheduled successfully with task ID: {}", response.getTaskId());
+            return ResponseEntity.accepted().body(response);
 
-        // Schedule the send email task to run immediately
-        schedulerClient.scheduleIfNotExists(
-            EmailTaskConfiguration.sendEmailTask
-                .instance(taskId)
-                .data(emailState)
-                .scheduledTo(Instant.now())
-        );
-
-        // Create response
-        EmailNotificationResponse response = new EmailNotificationResponse();
-        response.setTaskId(taskId);
-        response.setStatus(NotificationStatus.SCHEDULE.toString());
-
-        return ResponseEntity.accepted().body(response);
+        } catch (Exception e) {
+            log.error("Failed to schedule email notification: {}", e.getMessage(), e);
+            return ResponseEntity.internalServerError().build();
+        }
     }
 }
