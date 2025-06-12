@@ -16,9 +16,14 @@ java:
   environment:
     CHANGE_ID: ${CHANGE_ID}
     PCS_DB_NAME: "{{ .Values.global.databaseNamePrefix }}pcs"
-
+    PCS_DB_HOST: '{{ tpl .Values.global.postgresHostname $}}'
+    PCS_DB_USER_NAME: "{{ .Values.global.postgresUsername}}"
+  secrets:
+    PCS_DB_PASSWORD:
+      secretRef: "{{ .Values.global.postgresSecret }}"
+      key: PASSWORD
   postgresql:
-    enabled: false
+    enabled: falset
     image:
       debug: true
     primary:
