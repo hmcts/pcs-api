@@ -42,15 +42,18 @@ public class NotificationService {
     }
 
     /**
-     * Sends an email notification using the provided email request details.
-     * The method interacts with the notification service to send the email and updates
-     * internal notification records accordingly.
+     * Sends an email using the provided email notification request details.
+     * This method utilizes a notification client to send an email to the specified
+     * recipient with a given template ID and personalization data and handles
+     * the entire lifecycle of email notification tracking.
      *
-     * @param emailRequest the request object containing email address, template ID,
-     *                     personalisation data, and other necessary information.
-     * @return a {@code SendEmailResponse} object containing details of the email sent,
-     *         including the notification ID.
-     * @throws NotificationClientException if an error occurs during the email sending process.
+     * @param emailRequest the request object containing details for the email to be sent.
+     *                     This includes the recipient's email address, the template ID,
+     *                     and any personalization data that should be included in the email.
+     * @return a {@code SendEmailResponse} object containing the response details from
+     *         the notification client if the email is sent successfully.
+     *         Note that if an exception occurs during the process, this method will not
+     *         return normally and will allow the appropriate error handler to manage the error.
      */
     public SendEmailResponse sendEmail(EmailNotificationRequest emailRequest) {
         final String destinationAddress = emailRequest.getEmailAddress();

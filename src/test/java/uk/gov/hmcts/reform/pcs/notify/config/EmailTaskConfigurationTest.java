@@ -39,12 +39,6 @@ class EmailTaskConfigurationTest {
     @Mock
     private NotificationService notificationService;
 
-    private final int maxRetriesSendEmail = 5;
-    private final int maxRetriesCheckEmail = 5;
-    private final long sendingBackoffDelay = 10L;
-    private final long statusCheckDelay = 30L;
-    private final long verifyingBackoffDelay = 10L;
-
     @Mock
     private ExecutionContext executionContext;
 
@@ -66,6 +60,11 @@ class EmailTaskConfigurationTest {
 
     @BeforeEach
     void setUp() {
+        long verifyingBackoffDelay = 10L;
+        int maxRetriesSendEmail = 5;
+        int maxRetriesCheckEmail = 5;
+        long sendingBackoffDelay = 10L;
+        long statusCheckDelay = 30L;
         emailTaskConfiguration = new EmailTaskConfiguration(
             notificationService,
             maxRetriesSendEmail,
@@ -173,13 +172,12 @@ class EmailTaskConfigurationTest {
     class VerifyEmailTaskTests {
 
         private CustomTask<EmailState> verifyEmailTask;
-        private EmailState emailStateWithNotificationId;
         private TaskInstance<EmailState> verifyTaskInstance;
 
         @BeforeEach
         void setUp() {
             verifyEmailTask = emailTaskConfiguration.verifyEmailTask();
-            emailStateWithNotificationId = testEmailState.toBuilder()
+            EmailState emailStateWithNotificationId = testEmailState.toBuilder()
                 .notificationId(testNotificationId)
                 .build();
             verifyTaskInstance = new TaskInstance<>(
