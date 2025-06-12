@@ -23,7 +23,7 @@ java:
       secretRef: "{{ .Values.global.postgresSecret }}"
       key: PASSWORD
   postgresql:
-    enabled: falset
+    enabled: false
     image:
       debug: true
     primary:
