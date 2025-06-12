@@ -40,6 +40,8 @@ ccd:
       enabled: true
     ras:
       enabled: false
+    elastic:
+      enabled: true
   ccd-definition-store-api:
     java:
       devmemoryRequests: '1024Mi'
@@ -173,11 +175,4 @@ xui-webapp:
           - mc-idam-client-secret
           - system-user-name
           - system-user-password
-
-elasticsearch:
-  clusterName: ccd-docker-es-cluster
-  extraEnvs:
-    - discovery.type=single-node
-    - bootstrap.memory_lock=true
-    - action.auto_create_index=.security*,.watches,.triggered_watches,.watcher-history-*,.logstash_dead_letter,.ml*,grantofrepresentation_cases,caveat_cases,legacy_cases,standingsearch_cases,willlodgement_cases
 
