@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.notify.endpoint;
+package uk.gov.hmcts.reform.pcs.testingsupport.endpoint;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.kagkarlsson.scheduler.SchedulerClient;

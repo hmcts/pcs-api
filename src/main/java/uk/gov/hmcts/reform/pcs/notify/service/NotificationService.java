@@ -26,11 +26,11 @@ public class NotificationService {
     private final NotificationErrorHandler errorHandler;
 
     /**
-     * Constructor for the NotificationService.
+     * Constructs a new NotificationService with the specified dependencies.
      *
-     * @param notificationClient The notification client for GOV.UK Notify
-     * @param notificationRepository Repository for saving notification data
-     * @param errorHandler Handler for notification exceptions
+     * @param notificationClient the client used for sending notifications
+     * @param notificationRepository the repository responsible for managing notification data
+     * @param errorHandler the handler for processing notification-related errors
      */
     public NotificationService(
         NotificationClient notificationClient,
@@ -43,14 +43,14 @@ public class NotificationService {
 
     /**
      * Sends an email notification using the provided email request details.
-     * This method sends an email using the notification client by utilizing a specific template ID,
-     * destination address, and personalization data. It also updates the notification status in
-     * the database based on the outcome of the email sending process.
+     * The method interacts with the notification service to send the email and updates
+     * internal notification records accordingly.
      *
-     * @param emailRequest the email request details containing the destination address, template ID,
-     *                     and personalization data for the email
-     * @return a {@link SendEmailResponse} object containing the response details of the sent email
-     * @throws NotificationException if an error occurs while attempting to send the email
+     * @param emailRequest the request object containing email address, template ID,
+     *                     personalisation data, and other necessary information.
+     * @return a {@code SendEmailResponse} object containing details of the email sent,
+     *         including the notification ID.
+     * @throws NotificationClientException if an error occurs during the email sending process.
      */
     public SendEmailResponse sendEmail(EmailNotificationRequest emailRequest) {
         final String destinationAddress = emailRequest.getEmailAddress();
@@ -120,9 +120,9 @@ public class NotificationService {
      */
     private void updateNotificationFromStatusUpdate(NotificationErrorHandler.NotificationStatusUpdate statusUpdate) {
         updateNotificationStatus(
-            statusUpdate.getNotification(),
-            statusUpdate.getStatus(),
-            statusUpdate.getProviderNotificationId()
+            statusUpdate.notification(),
+            statusUpdate.status(),
+            statusUpdate.providerNotificationId()
         );
     }
 

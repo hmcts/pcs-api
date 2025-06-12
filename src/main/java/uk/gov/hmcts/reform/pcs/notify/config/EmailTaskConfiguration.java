@@ -38,21 +38,27 @@ public class EmailTaskConfiguration {
         TaskDescriptor.of("verify-email-task", EmailState.class);
 
     private final NotificationService notificationService;
-    private final int maxRetries;
-    private final long backoffDelay;
+    private final int maxRetriesSendEmail;
+    private final int maxRetriesCheckEmail;
+    private final long sendingBackoffDelay;
     private final long statusCheckDelay;
+    private final long verifyingBackoffDelay;
 
     @Autowired
     public EmailTaskConfiguration(
         NotificationService notificationService,
-        @Value("${db-scheduler.max-retries}") int maxRetries,
-        @Value("${db-scheduler.backoff-delay-seconds}") long backoffDelay,
-        @Value("${db-scheduler.status-check-delay}") long statusCheckDelay
+        @Value("${notify.send-email.max-retries}") int maxRetriesSendEmail,
+        @Value("${notify.send-email.max-retries}") int maxRetriesCheckEmail,
+        @Value("${notify.send-email.backoff-delay-seconds}") long sendingBackoffDelay,
+        @Value("${notify.check-status.delay-seconds}") long verifyingBackoffDelay,
+        @Value("${notify.check-status.backoff-delay-seconds}") long statusCheckDelay
     ) {
         this.notificationService = notificationService;
-        this.maxRetries = maxRetries;
-        this.backoffDelay = backoffDelay;
+        this.maxRetriesSendEmail = maxRetriesSendEmail;
+        this.maxRetriesCheckEmail = maxRetriesCheckEmail;
+        this.sendingBackoffDelay = sendingBackoffDelay;
         this.statusCheckDelay = statusCheckDelay;
+        this.verifyingBackoffDelay = verifyingBackoffDelay;
     }
 
     /**
@@ -67,8 +73,8 @@ public class EmailTaskConfiguration {
     public CustomTask<EmailState> sendEmailTask() {
         return Tasks.custom(sendEmailTask)
             .onFailure(new FailureHandler.MaxRetriesFailureHandler<>(
-                maxRetries, // max retries
-                new FailureHandler.ExponentialBackoffFailureHandler<>(Duration.ofSeconds(backoffDelay)) // base delay
+                maxRetriesSendEmail,
+                new FailureHandler.ExponentialBackoffFailureHandler<>(Duration.ofSeconds(sendingBackoffDelay))
             ))
             .execute((taskInstance, executionContext) -> {
                 EmailState emailState = taskInstance.getData();
@@ -124,8 +130,8 @@ public class EmailTaskConfiguration {
     public CustomTask<EmailState> verifyEmailTask() {
         return Tasks.custom(verifyEmailTask)
             .onFailure(new FailureHandler.MaxRetriesFailureHandler<>(
-                maxRetries,
-                new FailureHandler.ExponentialBackoffFailureHandler<>(Duration.ofSeconds(backoffDelay))
+                maxRetriesCheckEmail,
+                new FailureHandler.ExponentialBackoffFailureHandler<>(Duration.ofSeconds(verifyingBackoffDelay))
             ))
             .execute((taskInstance, executionContext) -> {
                 EmailState emailState = taskInstance.getData();

@@ -105,6 +105,13 @@ location-reference:
 
 notify:
   api-key: ${PCS_NOTIFY_API_KEY:AAAAAAAA-AAAA-AAAA-AAAA-AAAAAAAAAAAA}
+  send-email:
+    max-retries: ${NOTIFY_SEND_EMAIL_MAX_RETRIES:5}
+    backoff-delay-seconds: ${NOTIFY_SEND_EMAIL_BACKOFF_DELAY_SECONDS:300}
+  check-status:
+    max-retries: ${NOTIFY_CHECK_STATUS_MAX_RETRIES:5}
+    delay-seconds: ${NOTIFY_CHECK_STATUS_DELAY_SECONDS:60}
+    backoff-delay-seconds: ${NOTIFY_CHECK_STATUS_BACKOFF_DELAY_SECONDS:3600}
 
 testing-support:
   enabled: ${ENABLE_TESTING_SUPPORT:true}
@@ -116,5 +123,6 @@ db-scheduler:
   polling-interval-seconds: 10
   threads: 10
   max-retries: ${DB_SCHEDULER_MAX_RETRIES:5}
-  backoff-delay-seconds: ${DB_SCHEDULER_BACKOFF_DELAY_SECONDS:300}
+  sending-backoff-delay-seconds: ${DB_SCHEDULER_BACKOFF_DELAY_SECONDS:300}
+  verifying-backoff-delay-seconds: ${DB_SCHEDULER_BACKOFF_DELAY_SECONDS:3600}
   status-check-delay: ${DB_SCHEDULER_STATUS_CHECK_DELAY_SECONDS:60}

@@ -71,9 +71,9 @@ class NotificationErrorHandlerTest {
             verify(statusUpdater).accept(captor.capture());
 
             NotificationErrorHandler.NotificationStatusUpdate statusUpdate = captor.getValue();
-            assertThat(statusUpdate.getNotification()).isEqualTo(mockCaseNotification);
-            assertThat(statusUpdate.getStatus()).isEqualTo(NotificationStatus.PERMANENT_FAILURE);
-            assertThat(statusUpdate.getProviderNotificationId()).isNull();
+            assertThat(statusUpdate.notification()).isEqualTo(mockCaseNotification);
+            assertThat(statusUpdate.status()).isEqualTo(NotificationStatus.PERMANENT_FAILURE);
+            assertThat(statusUpdate.providerNotificationId()).isNull();
         }
 
         @Test
@@ -94,7 +94,7 @@ class NotificationErrorHandlerTest {
                 forClass(NotificationErrorHandler.NotificationStatusUpdate.class);
             verify(statusUpdater).accept(captor.capture());
 
-            assertThat(captor.getValue().getStatus()).isEqualTo(NotificationStatus.PERMANENT_FAILURE);
+            assertThat(captor.getValue().status()).isEqualTo(NotificationStatus.PERMANENT_FAILURE);
         }
 
         @Test
@@ -115,7 +115,7 @@ class NotificationErrorHandlerTest {
                 forClass(NotificationErrorHandler.NotificationStatusUpdate.class);
             verify(statusUpdater).accept(captor.capture());
 
-            assertThat(captor.getValue().getStatus()).isEqualTo(NotificationStatus.TEMPORARY_FAILURE);
+            assertThat(captor.getValue().status()).isEqualTo(NotificationStatus.TEMPORARY_FAILURE);
         }
 
         @Test
@@ -138,7 +138,7 @@ class NotificationErrorHandlerTest {
                 forClass(NotificationErrorHandler.NotificationStatusUpdate.class);
             verify(statusUpdater).accept(captor.capture());
 
-            assertThat(captor.getValue().getStatus()).isEqualTo(NotificationStatus.TEMPORARY_FAILURE);
+            assertThat(captor.getValue().status()).isEqualTo(NotificationStatus.TEMPORARY_FAILURE);
         }
 
         @Test
@@ -160,7 +160,7 @@ class NotificationErrorHandlerTest {
                 forClass(NotificationErrorHandler.NotificationStatusUpdate.class);
             verify(statusUpdater).accept(captor.capture());
 
-            assertThat(captor.getValue().getStatus()).isEqualTo(NotificationStatus.TECHNICAL_FAILURE);
+            assertThat(captor.getValue().status()).isEqualTo(NotificationStatus.TECHNICAL_FAILURE);
         }
 
         @Test
@@ -239,9 +239,9 @@ class NotificationErrorHandlerTest {
                     providerNotificationId
                 );
 
-            assertThat(statusUpdate.getNotification()).isEqualTo(mockCaseNotification);
-            assertThat(statusUpdate.getStatus()).isEqualTo(status);
-            assertThat(statusUpdate.getProviderNotificationId()).isEqualTo(providerNotificationId);
+            assertThat(statusUpdate.notification()).isEqualTo(mockCaseNotification);
+            assertThat(statusUpdate.status()).isEqualTo(status);
+            assertThat(statusUpdate.providerNotificationId()).isEqualTo(providerNotificationId);
         }
 
         @Test
@@ -256,9 +256,9 @@ class NotificationErrorHandlerTest {
                     null
                 );
 
-            assertThat(statusUpdate.getNotification()).isEqualTo(mockCaseNotification);
-            assertThat(statusUpdate.getStatus()).isEqualTo(status);
-            assertThat(statusUpdate.getProviderNotificationId()).isNull();
+            assertThat(statusUpdate.notification()).isEqualTo(mockCaseNotification);
+            assertThat(statusUpdate.status()).isEqualTo(status);
+            assertThat(statusUpdate.providerNotificationId()).isNull();
         }
     }
 }

@@ -17,26 +17,26 @@ import java.util.function.Consumer;
 public class NotificationErrorHandler {
 
     /**
-     * Handles NotificationClientException from GOV.UK Notify and updates notification status accordingly.
+     * Handles exceptions that occur while attempting to send an email notification.
+     * Depending on the HTTP status code within the exception, this method categorizes
+     * the error as a permanent failure, temporary failure, or technical failure,
+     * updates the notification status accordingly, and rethrows a respective exception type.
      *
-     * @param exception The NotificationClientException that occurred
-     * @param caseNotification The case notification to update
-     * @param referenceId The reference ID for logging
-     * @param statusUpdater Function to update notification status
-     * @throws PermanentNotificationException for 400, 403 status codes
-     * @throws TemporaryNotificationException for 429, 500 status codes
-     * @throws NotificationException for all other status codes
+     * @param exception the {@link NotificationClientException} that occurred during the email send attempt
+     * @param caseNotification the {@link CaseNotification} object associated with the email notification
+     * @param referenceId a unique reference identifier for the email notification
+     * @param statusUpdater a {@link Consumer} function to update the status of the notification
      */
     public void handleSendEmailException(NotificationClientException exception,
-                                         CaseNotification caseNotification,
-                                         String referenceId,
-                                         Consumer<NotificationStatusUpdate> statusUpdater) {
+                                            CaseNotification caseNotification,
+                                            String referenceId,
+                                            Consumer<NotificationStatusUpdate> statusUpdater) {
         int httpStatusCode = exception.getHttpResult();
 
         log.error("Failed to send email. Reference ID: {}. Reason: {}",
-                  referenceId,
-                  exception.getMessage(),
-                  exception
+                    referenceId,
+                    exception.getMessage(),
+                    exception
         );
 
         switch (httpStatusCode) {
@@ -68,50 +68,31 @@ public class NotificationErrorHandler {
     }
 
     /**
-     * Handles NotificationClientException from fetch operations.
+     * Handles the exception encountered while attempting to fetch a notification by logging details
+     * about the failure and rethrowing it as a {@code NotificationException}.
      *
-     * @param exception The NotificationClientException that occurred
-     * @param notificationId The notification ID for logging
-     * @throws NotificationException Always throws this exception for fetch failures
+     * @param exception the {@code NotificationClientException} thrown during the fetch operation,
+     *                  containing details such as the HTTP status code and error message.
+     * @param notificationId the unique identifier of the notification that failed to be fetched.
      */
     public void handleFetchException(NotificationClientException exception, String notificationId) {
         int httpStatusCode = exception.getHttpResult();
 
         log.error("Failed to fetch notification. ID: {}. Status Code: {}. Reason: {}",
-                  notificationId,
-                  httpStatusCode,
-                  exception.getMessage()
+                    notificationId,
+                    httpStatusCode,
+                    exception.getMessage()
         );
 
         throw new NotificationException("Failed to fetch notification, please try again.", exception);
     }
 
     /**
-     * Data class to encapsulate notification status update parameters.
+     * Represents an update to the status of a case notification.
+     * This class encapsulates information about the notification,
+     * the updated status, and an optional provider notification ID.
      */
-    public static class NotificationStatusUpdate {
-        private final CaseNotification notification;
-        private final NotificationStatus status;
-        private final UUID providerNotificationId;
-
-        public NotificationStatusUpdate(CaseNotification notification,
-                                        NotificationStatus status,
-                                        UUID providerNotificationId) {
-            this.notification = notification;
-            this.status = status;
-            this.providerNotificationId = providerNotificationId;
-        }
-
-        public CaseNotification getNotification() {
-            return notification;
-        }
-
-        public NotificationStatus getStatus() {
-            return status;
-        }
-
-        public UUID getProviderNotificationId() {
-            return providerNotificationId;
-        }
+    public record NotificationStatusUpdate(CaseNotification notification, NotificationStatus status,
+                                            UUID providerNotificationId) {
     }
 }
