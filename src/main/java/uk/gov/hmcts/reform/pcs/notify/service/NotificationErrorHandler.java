@@ -81,7 +81,8 @@ public class NotificationErrorHandler {
         log.error("Failed to fetch notification. ID: {}. Status Code: {}. Reason: {}",
                     notificationId,
                     httpStatusCode,
-                    exception.getMessage()
+                    exception.getMessage(),
+                    exception
         );
 
         throw new NotificationException("Failed to fetch notification, please try again.", exception);

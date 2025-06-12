@@ -30,35 +30,36 @@ import java.time.Instant;
 @Configuration
 @Slf4j
 public class EmailTaskConfiguration {
+    private static final String SEND_EMAIL_TASK_NAME = "send-email-task";
+    private static final String VERIFY_EMAIL_TASK_NAME = "verify-email-task";
 
     public static final TaskDescriptor<EmailState> sendEmailTask =
-        TaskDescriptor.of("send-email-task", EmailState.class);
-
+        TaskDescriptor.of(SEND_EMAIL_TASK_NAME, EmailState.class);
     public static final TaskDescriptor<EmailState> verifyEmailTask =
-        TaskDescriptor.of("verify-email-task", EmailState.class);
+        TaskDescriptor.of(VERIFY_EMAIL_TASK_NAME, EmailState.class);
 
     private final NotificationService notificationService;
     private final int maxRetriesSendEmail;
     private final int maxRetriesCheckEmail;
-    private final long sendingBackoffDelay;
-    private final long statusCheckDelay;
-    private final long verifyingBackoffDelay;
+    private final Duration sendingBackoffDelay;
+    private final Duration statusCheckTaskDelay;
+    private final Duration statusCheckBackoffDelay;
 
     @Autowired
     public EmailTaskConfiguration(
         NotificationService notificationService,
         @Value("${notify.send-email.max-retries}") int maxRetriesSendEmail,
         @Value("${notify.send-email.max-retries}") int maxRetriesCheckEmail,
-        @Value("${notify.send-email.backoff-delay-seconds}") long sendingBackoffDelay,
-        @Value("${notify.check-status.delay-seconds}") long verifyingBackoffDelay,
-        @Value("${notify.check-status.backoff-delay-seconds}") long statusCheckDelay
+        @Value("${notify.send-email.backoff-delay-seconds}") Duration sendingBackoffDelay,
+        @Value("${notify.check-status.task-delay-seconds}") Duration statusCheckTaskDelay,
+        @Value("${notify.check-status.backoff-delay-seconds}") Duration statusCheckBackoffDelay
     ) {
         this.notificationService = notificationService;
         this.maxRetriesSendEmail = maxRetriesSendEmail;
         this.maxRetriesCheckEmail = maxRetriesCheckEmail;
         this.sendingBackoffDelay = sendingBackoffDelay;
-        this.statusCheckDelay = statusCheckDelay;
-        this.verifyingBackoffDelay = verifyingBackoffDelay;
+        this.statusCheckTaskDelay = statusCheckTaskDelay;
+        this.statusCheckBackoffDelay = statusCheckBackoffDelay;
     }
 
     /**
@@ -74,7 +75,7 @@ public class EmailTaskConfiguration {
         return Tasks.custom(sendEmailTask)
             .onFailure(new FailureHandler.MaxRetriesFailureHandler<>(
                 maxRetriesSendEmail,
-                new FailureHandler.ExponentialBackoffFailureHandler<>(Duration.ofSeconds(sendingBackoffDelay))
+                new FailureHandler.ExponentialBackoffFailureHandler<>(sendingBackoffDelay)
             ))
             .execute((taskInstance, executionContext) -> {
                 EmailState emailState = taskInstance.getData();
@@ -90,6 +91,20 @@ public class EmailTaskConfiguration {
                         .build();
 
                     SendEmailResponse response = notificationService.sendEmail(emailRequest);
+
+                    if (response == null) {
+                        log.error("Email service returned null response for task: {}", emailState.getId());
+                        throw new PermanentNotificationException("Null response from email service",
+                                                                    new IllegalStateException(
+                                                                        "Email service returned null response"));
+                    }
+                    if (response.getNotificationId() == null) {
+                        log.error("Email service returned null notification ID for task: {}", emailState.getId());
+                        throw new PermanentNotificationException("Null notification ID from email service",
+                                                                    new IllegalStateException(
+                                                                        "Email service returned null notification ID"));
+                    }
+
                     String notificationId = response.getNotificationId().toString();
                     log.info("Email sent successfully. Notification ID: {}", notificationId);
 
@@ -100,7 +115,7 @@ public class EmailTaskConfiguration {
                     return new CompletionHandler.OnCompleteReplace<>(
                         currentInstance -> SchedulableInstance.of(
                             new TaskInstance<>(verifyEmailTask.getTaskName(), currentInstance.getId(), nextState),
-                            Instant.now().plusSeconds(statusCheckDelay)
+                            Instant.now().plus(statusCheckTaskDelay)
                         )
                     );
                 } catch (PermanentNotificationException e) {
@@ -131,7 +146,7 @@ public class EmailTaskConfiguration {
         return Tasks.custom(verifyEmailTask)
             .onFailure(new FailureHandler.MaxRetriesFailureHandler<>(
                 maxRetriesCheckEmail,
-                new FailureHandler.ExponentialBackoffFailureHandler<>(Duration.ofSeconds(verifyingBackoffDelay))
+                new FailureHandler.ExponentialBackoffFailureHandler<>(statusCheckBackoffDelay)
             ))
             .execute((taskInstance, executionContext) -> {
                 EmailState emailState = taskInstance.getData();

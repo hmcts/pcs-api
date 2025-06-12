@@ -110,7 +110,7 @@ notify:
     backoff-delay-seconds: ${NOTIFY_SEND_EMAIL_BACKOFF_DELAY_SECONDS:300}
   check-status:
     max-retries: ${NOTIFY_CHECK_STATUS_MAX_RETRIES:5}
-    delay-seconds: ${NOTIFY_CHECK_STATUS_DELAY_SECONDS:60}
+    task-delay-seconds: ${NOTIFY_CHECK_STATUS_DELAY_SECONDS:60}
     backoff-delay-seconds: ${NOTIFY_CHECK_STATUS_BACKOFF_DELAY_SECONDS:3600}
 
 testing-support:

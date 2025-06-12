@@ -24,6 +24,7 @@ import uk.gov.service.notify.Notification;
 import uk.gov.service.notify.NotificationClientException;
 import uk.gov.service.notify.SendEmailResponse;
 
+import java.time.Duration;
 import java.util.Map;
 import java.util.UUID;
 
@@ -60,11 +61,11 @@ class EmailTaskConfigurationTest {
 
     @BeforeEach
     void setUp() {
-        long verifyingBackoffDelay = 10L;
         int maxRetriesSendEmail = 5;
         int maxRetriesCheckEmail = 5;
-        long sendingBackoffDelay = 10L;
-        long statusCheckDelay = 30L;
+        Duration sendingBackoffDelay = Duration.ofSeconds(10);
+        Duration statusCheckDelay = Duration.ofSeconds(30);
+        Duration verifyingBackoffDelay = Duration.ofSeconds(10);
         emailTaskConfiguration = new EmailTaskConfiguration(
             notificationService,
             maxRetriesSendEmail,
@@ -165,6 +166,102 @@ class EmailTaskConfigurationTest {
             assertThat(request.getEmailReplyToId()).isEqualTo("reply-to-123");
             assertThat(request.getPersonalisation()).isEqualTo(testEmailState.getPersonalisation());
         }
+
+        @Test
+        @DisplayName("Should handle null response from notification service")
+        void shouldHandleNullResponseFromNotificationService() {
+            when(notificationService.sendEmail(any(EmailNotificationRequest.class)))
+                .thenReturn(null);
+
+            CompletionHandler<EmailState> result = sendEmailTask.execute(taskInstance, executionContext);
+
+            assertThat(result).isInstanceOf(CompletionHandler.OnCompleteRemove.class);
+            verify(notificationService).sendEmail(any(EmailNotificationRequest.class));
+        }
+
+        @Test
+        @DisplayName("Should handle null notification ID from response")
+        void shouldHandleNullNotificationIdFromResponse() {
+            when(sendEmailResponse.getNotificationId()).thenReturn(null);
+            when(notificationService.sendEmail(any(EmailNotificationRequest.class)))
+                .thenReturn(sendEmailResponse);
+
+            CompletionHandler<EmailState> result = sendEmailTask.execute(taskInstance, executionContext);
+
+            assertThat(result).isInstanceOf(CompletionHandler.OnCompleteRemove.class);
+            verify(notificationService).sendEmail(any(EmailNotificationRequest.class));
+        }
+
+        @Test
+        @DisplayName("Should handle email state with null personalisation")
+        void shouldHandleEmailStateWithNullPersonalisation() {
+            EmailState emailStateWithNullPersonalisation = testEmailState.toBuilder()
+                .personalisation(null)
+                .build();
+            TaskInstance<EmailState> taskInstanceWithNullPersonalisation =
+                new TaskInstance<>("send-email-task", "instance-1", emailStateWithNullPersonalisation);
+
+            when(sendEmailResponse.getNotificationId()).thenReturn(testUuid);
+            when(notificationService.sendEmail(any(EmailNotificationRequest.class)))
+                .thenReturn(sendEmailResponse);
+
+            CompletionHandler<EmailState> result = sendEmailTask.execute(taskInstanceWithNullPersonalisation,
+                                                                            executionContext);
+
+            assertThat(result).isInstanceOf(CompletionHandler.OnCompleteReplace.class);
+            verify(notificationService).sendEmail(emailRequestCaptor.capture());
+            EmailNotificationRequest capturedRequest = emailRequestCaptor.getValue();
+            assertThat(capturedRequest.getPersonalisation()).isNull();
+        }
+
+        @Test
+        @DisplayName("Should handle email state with empty personalisation")
+        void shouldHandleEmailStateWithEmptyPersonalisation() {
+            EmailState emailStateWithEmptyPersonalisation = testEmailState.toBuilder()
+                .personalisation(Map.of())
+                .build();
+            TaskInstance<EmailState> taskInstanceWithEmptyPersonalisation =
+                new TaskInstance<>("send-email-task", "instance-1", emailStateWithEmptyPersonalisation);
+
+            when(sendEmailResponse.getNotificationId()).thenReturn(testUuid);
+            when(notificationService.sendEmail(any(EmailNotificationRequest.class)))
+                .thenReturn(sendEmailResponse);
+
+            CompletionHandler<EmailState> result = sendEmailTask.execute(taskInstanceWithEmptyPersonalisation,
+                                                                            executionContext);
+
+            assertThat(result).isInstanceOf(CompletionHandler.OnCompleteReplace.class);
+            verify(notificationService).sendEmail(emailRequestCaptor.capture());
+            EmailNotificationRequest capturedRequest = emailRequestCaptor.getValue();
+            assertThat(capturedRequest.getPersonalisation()).isEmpty();
+        }
+
+        @Test
+        @DisplayName("Should handle email state with null optional fields")
+        void shouldHandleEmailStateWithNullOptionalFields() {
+            EmailState emailStateWithNulls = EmailState.builder()
+                .id("test-email-1")
+                .emailAddress("test@example.com")
+                .templateId("template-123")
+                .personalisation(Map.of("name", "John Doe"))
+                .reference(null)
+                .emailReplyToId(null)
+                .build();
+            TaskInstance<EmailState> taskInstanceWithNulls =
+                new TaskInstance<>("send-email-task", "instance-1", emailStateWithNulls);
+
+            when(sendEmailResponse.getNotificationId()).thenReturn(testUuid);
+            when(notificationService.sendEmail(any(EmailNotificationRequest.class)))
+                .thenReturn(sendEmailResponse);
+
+            CompletionHandler<EmailState> result = sendEmailTask.execute(taskInstanceWithNulls, executionContext);
+
+            assertThat(result).isInstanceOf(CompletionHandler.OnCompleteReplace.class);
+            verify(notificationService).sendEmail(emailRequestCaptor.capture());
+            EmailNotificationRequest capturedRequest = emailRequestCaptor.getValue();
+            assertThat(capturedRequest.getReference()).isNull();
+            assertThat(capturedRequest.getEmailReplyToId()).isNull();
+        }
     }
 
     @Nested
@@ -251,6 +348,75 @@ class EmailTaskConfigurationTest {
             verify(notificationService).fetchNotificationStatus(testNotificationId);
             Mockito.verifyNoMoreInteractions(notificationService);
         }
+
+        @Test
+        @DisplayName("Should handle different notification statuses")
+        void shouldHandleDifferentNotificationStatuses() throws Exception {
+            String[] statuses = {"sending", "pending", "failed", "technical-failure", "temporary-failure"};
+
+            for (String status : statuses) {
+                when(notification.getStatus()).thenReturn(status);
+                when(notificationService.fetchNotificationStatus(testNotificationId))
+                    .thenReturn(notification);
+
+                CompletionHandler<EmailState> result = verifyEmailTask.execute(verifyTaskInstance, executionContext);
+
+                assertThat(result).isInstanceOf(CompletionHandler.OnCompleteRemove.class);
+            }
+
+            verify(notificationService, Mockito.times(statuses.length)).fetchNotificationStatus(testNotificationId);
+        }
+
+        @Test
+        @DisplayName("Should handle email state without notification ID")
+        void shouldHandleEmailStateWithoutNotificationId() throws Exception {
+            EmailState emailStateWithoutNotificationId = testEmailState.toBuilder()
+                .notificationId(null)
+                .build();
+            TaskInstance<EmailState> taskInstanceWithoutNotificationId =
+                new TaskInstance<>("verify-email-task", "instance-1", emailStateWithoutNotificationId);
+
+            when(notificationService.fetchNotificationStatus(null))
+                .thenThrow(new NotificationClientException("Invalid notification ID"));
+
+            CompletionHandler<EmailState> result = verifyEmailTask.execute(taskInstanceWithoutNotificationId,
+                                                                            executionContext);
+
+            assertThat(result).isInstanceOf(CompletionHandler.OnCompleteRemove.class);
+            verify(notificationService).fetchNotificationStatus(null);
+        }
+
+        @Test
+        @DisplayName("Should handle case-insensitive delivered status")
+        void shouldHandleCaseInsensitiveDeliveredStatus() throws Exception {
+            String[] deliveredStatuses = {"DELIVERED", "delivered", "Delivered", "DELIVERED "};
+
+            for (String status : deliveredStatuses) {
+                when(notification.getStatus()).thenReturn(status);
+                when(notificationService.fetchNotificationStatus(testNotificationId))
+                    .thenReturn(notification);
+
+                CompletionHandler<EmailState> result = verifyEmailTask.execute(verifyTaskInstance, executionContext);
+
+                assertThat(result).isInstanceOf(CompletionHandler.OnCompleteRemove.class);
+            }
+
+            verify(notificationService, Mockito.times(deliveredStatuses.length))
+                .fetchNotificationStatus(testNotificationId);
+        }
+
+        @Test
+        @DisplayName("Should maintain thread interruption flag when handling InterruptedException")
+        void shouldMaintainThreadInterruptionFlag() throws Exception {
+            InterruptedException exception = new InterruptedException("Thread interrupted");
+            when(notificationService.fetchNotificationStatus(testNotificationId))
+                .thenThrow(exception);
+
+            assertThatThrownBy(() -> verifyEmailTask.execute(verifyTaskInstance, executionContext))
+                .isInstanceOf(RuntimeException.class);
+
+            assertThat(Thread.currentThread().isInterrupted()).isTrue();
+        }
     }
 
     @Nested
@@ -281,6 +447,15 @@ class EmailTaskConfigurationTest {
             CustomTask<EmailState> task = emailTaskConfiguration.verifyEmailTask();
 
             assertThat(task).isNotNull();
+        }
+
+        @Test
+        @DisplayName("Should verify task names match between descriptors")
+        void shouldVerifyTaskNamesMatchBetweenDescriptors() {
+            assertThat(EmailTaskConfiguration.sendEmailTask.getTaskName())
+                .isEqualTo("send-email-task");
+            assertThat(EmailTaskConfiguration.verifyEmailTask.getTaskName())
+                .isEqualTo("verify-email-task");
         }
     }
 }
