@@ -48,7 +48,7 @@ public class EmailTaskConfiguration {
     public EmailTaskConfiguration(
         NotificationService notificationService,
         @Value("${notify.send-email.max-retries}") int maxRetriesSendEmail,
-        @Value("${notify.send-email.max-retries}") int maxRetriesCheckEmail,
+        @Value("${notify.check-status.max-retries}") int maxRetriesCheckEmail,
         @Value("${notify.send-email.backoff-delay-seconds}") long sendingBackoffDelay,
         @Value("${notify.check-status.delay-seconds}") long verifyingBackoffDelay,
         @Value("${notify.check-status.backoff-delay-seconds}") long statusCheckDelay
