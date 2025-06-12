@@ -67,10 +67,6 @@ ccd:
         WELSH_TRANSLATION_ENABLED: false
         DEFINITION_STORE_DB_USERNAME: "{{ .Values.postgresql.auth.username}}"
         DEFINITION_STORE_DB_OPTIONS: ""
-      secrets:
-        DEFINITION_STORE_DB_PASSWORD:
-          key: password
-          disabled: false
       ingressHost: ccd-definition-store-${SERVICE_FQDN}
       keyVaults:
         ccd:
@@ -94,10 +90,6 @@ ccd:
         DATA_STORE_DB_MAX_POOL_SIZE: 80
         DATA_STORE_DB_OPTIONS: "?stringtype=unspecified"
         CCD_DOCUMENT_URL_PATTERN: ^https?://(((?:dm-store-aat\.service\.core-compute-aat\.internal(?::\d+)?)\/documents\/[A-Za-z0-9-]+(?:\/binary)?))
-      secrets:
-        DATA_STORE_DB_PASSWORD:
-          key: password
-          disabled: false
       ingressHost: ccd-data-store-api-${SERVICE_FQDN}
       autoscaling:
         enabled: false
