@@ -23,7 +23,7 @@ import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 
 @Slf4j
 @RestController
-@RequestMapping("/notify")
+@RequestMapping("/testing-support")
 @ConditionalOnProperty(name = "testing-support.enabled", havingValue = "true")
 public class NotifyController {
 

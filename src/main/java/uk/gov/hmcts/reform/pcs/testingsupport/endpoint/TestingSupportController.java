@@ -6,17 +6,12 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import uk.gov.hmcts.reform.pcs.notify.model.EmailNotificationRequest;
-import uk.gov.hmcts.reform.pcs.notify.service.NotificationService;
-import uk.gov.service.notify.SendEmailResponse;
 
 import java.time.Instant;
 import java.util.UUID;
@@ -30,30 +25,15 @@ import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 @Tag(name = "Testing Support")
 public class TestingSupportController {
 
-    private final NotificationService notificationService;
     private final SchedulerClient schedulerClient;
     private final Task<Void> helloWorldTask;
 
     public TestingSupportController(
-        NotificationService notificationService,
         SchedulerClient schedulerClient,
         @Qualifier("helloWorldTask") Task<Void> helloWorldTask
     ) {
-        this.notificationService = notificationService;
         this.schedulerClient = schedulerClient;
         this.helloWorldTask = helloWorldTask;
-    }
-
-    @PostMapping(value = "/send-email", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<SendEmailResponse> sendEmail(
-        @RequestHeader(value = AUTHORIZATION, defaultValue = "DummyId") String authorisation,
-        @RequestHeader(value = "ServiceAuthorization") String serviceAuthorization,
-        @RequestBody EmailNotificationRequest emailRequest) {
-        log.debug("Received request to send email to {}", emailRequest.getEmailAddress());
-
-        SendEmailResponse notificationResponse = notificationService.sendEmail(emailRequest);
-
-        return ResponseEntity.ok(notificationResponse);
     }
 
     @PostMapping("/db-scheduler-test")

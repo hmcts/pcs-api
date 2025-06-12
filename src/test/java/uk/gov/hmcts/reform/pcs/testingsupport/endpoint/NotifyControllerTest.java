@@ -63,7 +63,7 @@ class NotifyControllerTest {
 
         when(schedulerClient.scheduleIfNotExists(Mockito.any())).thenReturn(true);
 
-        MvcResult result = mockMvc.perform(post("/notify/send-email")
+        MvcResult result = mockMvc.perform(post("/testing-support/send-email")
                                                 .contentType(MediaType.APPLICATION_JSON)
                                                 .header("Authorization", "DummyId")
                                                 .header("ServiceAuthorization", "ServiceAuth123")
@@ -82,7 +82,7 @@ class NotifyControllerTest {
 
     @Test
     void shouldFailWhenRequiredHeadersAreMissing() throws Exception {
-        MvcResult result = mockMvc.perform(post("/notify/send-email")
+        MvcResult result = mockMvc.perform(post("/testing-support/send-email")
                                                 .contentType(MediaType.APPLICATION_JSON)
                                                 .content("{\"emailAddress\":\"test@example.com\","
                                                             + "\"templateId\":\"template123\","
@@ -95,7 +95,7 @@ class NotifyControllerTest {
 
     @Test
     void shouldFailWhenRequestBodyIsInvalid() throws Exception {
-        MvcResult result = mockMvc.perform(post("/notify/send-email")
+        MvcResult result = mockMvc.perform(post("/testing-support/send-email")
                                                 .contentType(MediaType.APPLICATION_JSON)
                                                 .header("Authorization", "DummyId")
                                                 .header("ServiceAuthorization", "ServiceAuth123")

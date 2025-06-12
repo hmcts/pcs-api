@@ -40,12 +40,13 @@ class NotifyControllerIT extends AbstractPostgresContainerIT {
     private static final String TEMPLATE_123_ID = "template-123";
     private static final String JSON_PATH_STATUS = "$.status";
     private static final String JSON_PATH_TASK_ID = "$.taskId";
+    private static final int ACCEPTED_STATUS = 202;
 
     private static final String AUTH_HEADER = "Bearer token";
     private static final String SERVICE_AUTH_HEADER = "ServiceAuthToken";
     private static final String SYSTEM_USER_ID_TOKEN = "system-user-id-token";
     private static final String SERVICE_AUTHORIZATION = "ServiceAuthorization";
-    private static final String SEND_EMAIL_ENDPOINT = "/notify/send-email";
+    private static final String SEND_EMAIL_ENDPOINT = "/testing-support/send-email";
 
     private final MockMvc mockMvc;
     private final ObjectMapper objectMapper;
@@ -78,7 +79,7 @@ class NotifyControllerIT extends AbstractPostgresContainerIT {
                             .header(SERVICE_AUTHORIZATION, SERVICE_AUTH_HEADER)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(request)))
-            .andExpect(status().isAccepted())
+            .andExpect(status().is(ACCEPTED_STATUS))
             .andExpect(content().contentType(MediaType.APPLICATION_JSON))
             .andExpect(jsonPath(JSON_PATH_TASK_ID, is(notNullValue())))
             .andExpect(jsonPath(JSON_PATH_STATUS, is(SCHEDULED_STATUS)));
@@ -96,7 +97,7 @@ class NotifyControllerIT extends AbstractPostgresContainerIT {
                             .header(SERVICE_AUTHORIZATION, SERVICE_AUTH_HEADER)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(request)))
-            .andExpect(status().isAccepted())
+            .andExpect(status().is(ACCEPTED_STATUS))
             .andExpect(content().contentType(MediaType.APPLICATION_JSON))
             .andExpect(jsonPath(JSON_PATH_TASK_ID, is(notNullValue())))
             .andExpect(jsonPath(JSON_PATH_STATUS, is(SCHEDULED_STATUS)));
@@ -122,7 +123,7 @@ class NotifyControllerIT extends AbstractPostgresContainerIT {
                             .header(SERVICE_AUTHORIZATION, SERVICE_AUTH_HEADER)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(request)))
-            .andExpect(status().isAccepted())
+            .andExpect(status().is(ACCEPTED_STATUS))
             .andExpect(content().contentType(MediaType.APPLICATION_JSON))
             .andExpect(jsonPath(JSON_PATH_TASK_ID, is(notNullValue())))
             .andExpect(jsonPath(JSON_PATH_STATUS, is(SCHEDULED_STATUS)));
@@ -136,7 +137,7 @@ class NotifyControllerIT extends AbstractPostgresContainerIT {
                             .header(SERVICE_AUTHORIZATION, SERVICE_AUTH_HEADER)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(request)))
-            .andExpect(status().isAccepted())
+            .andExpect(status().is(ACCEPTED_STATUS))
             .andExpect(content().contentType(MediaType.APPLICATION_JSON))
             .andExpect(jsonPath(JSON_PATH_TASK_ID, is(notNullValue())))
             .andExpect(jsonPath(JSON_PATH_STATUS, is(SCHEDULED_STATUS)));
@@ -149,7 +150,7 @@ class NotifyControllerIT extends AbstractPostgresContainerIT {
                             .header(SERVICE_AUTHORIZATION, SERVICE_AUTH_HEADER)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content("{}"))
-            .andExpect(status().isAccepted()); // Controller doesn't validate, so it accepts empty body
+            .andExpect(status().is(ACCEPTED_STATUS)); // Controller doesn't validate, so it accepts empty body
     }
 
     @Test
@@ -198,7 +199,7 @@ class NotifyControllerIT extends AbstractPostgresContainerIT {
                             .header(SERVICE_AUTHORIZATION, SERVICE_AUTH_HEADER)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(request)))
-            .andExpect(status().isAccepted())
+            .andExpect(status().is(ACCEPTED_STATUS))
             .andExpect(content().contentType(MediaType.APPLICATION_JSON))
             .andExpect(jsonPath(JSON_PATH_TASK_ID, is(notNullValue())))
             .andExpect(jsonPath(JSON_PATH_STATUS, is(SCHEDULED_STATUS)));
@@ -222,7 +223,7 @@ class NotifyControllerIT extends AbstractPostgresContainerIT {
                             .header(SERVICE_AUTHORIZATION, SERVICE_AUTH_HEADER)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(request)))
-            .andExpect(status().isAccepted())
+            .andExpect(status().is(ACCEPTED_STATUS))
             .andExpect(content().contentType(MediaType.APPLICATION_JSON))
             .andExpect(jsonPath(JSON_PATH_TASK_ID, is(notNullValue())))
             .andExpect(jsonPath(JSON_PATH_STATUS, is(SCHEDULED_STATUS)));
@@ -246,7 +247,7 @@ class NotifyControllerIT extends AbstractPostgresContainerIT {
                             .header(SERVICE_AUTHORIZATION, SERVICE_AUTH_HEADER)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(request1)))
-            .andExpect(status().isAccepted())
+            .andExpect(status().is(ACCEPTED_STATUS))
             .andExpect(jsonPath(JSON_PATH_TASK_ID, is(notNullValue())))
             .andExpect(jsonPath(JSON_PATH_STATUS, is(SCHEDULED_STATUS)));
 
@@ -256,7 +257,7 @@ class NotifyControllerIT extends AbstractPostgresContainerIT {
                             .header(SERVICE_AUTHORIZATION, SERVICE_AUTH_HEADER)
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(request2)))
-            .andExpect(status().isAccepted())
+            .andExpect(status().is(ACCEPTED_STATUS))
             .andExpect(jsonPath(JSON_PATH_TASK_ID, is(notNullValue())))
             .andExpect(jsonPath(JSON_PATH_STATUS, is(SCHEDULED_STATUS)));
     }
