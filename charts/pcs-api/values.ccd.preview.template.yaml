@@ -29,7 +29,7 @@ java:
             CREATE DATABASE "definition-store" WITH OWNER = javapostgres ENCODING = 'UTF-8' CONNECTION LIMIT = -1;
 postgresql:
   enabled: true
-  flexibleserver: sscs-preview
+  flexibleserver: pcs-preview
   setup:
     databases:
       - name: "pr-${CHANGE_ID}-data-store"
