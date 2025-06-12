@@ -67,7 +67,7 @@ ccd:
               alias: DEFINITION_STORE_IDAM_KEY
   ccd-data-store-api:
     java:
-      image: hmctspublic.azurecr.io/ccd/data-store-api:pr-2496
+      image: 'hmctspublic.azurecr.io/ccd/data-store-api:pr-2496'
       imagePullPolicy: Always
       devmemoryRequests: '1524Mi'
       devmemoryLimits: '2048Mi'
@@ -84,6 +84,7 @@ ccd:
         DATA_STORE_DB_MAX_POOL_SIZE: 80
         DATA_STORE_DB_OPTIONS: "?stringtype=unspecified"
         CCD_DOCUMENT_URL_PATTERN: ^https?://(((?:dm-store-aat\.service\.core-compute-aat\.internal(?::\d+)?)\/documents\/[A-Za-z0-9-]+(?:\/binary)?))
+        POC_APIS_URL: https://${SERVICE_FQDN}
       secrets:
         DATA_STORE_DB_PASSWORD:
           key: password
