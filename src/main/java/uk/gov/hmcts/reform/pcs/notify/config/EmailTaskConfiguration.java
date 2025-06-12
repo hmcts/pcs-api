@@ -74,6 +74,20 @@ public class EmailTaskConfiguration {
         this.statusCheckBackoffDelay = statusCheckBackoffDelay;
     }
 
+    /**
+     * Creates and returns a custom task for sending email notifications.
+     * The task processes email notifications by retrieving the notification record from the database,
+     * sending the email using the specified notification client, and updating the notification record
+     * after successfully sending the email. If the email cannot be sent, the task handles both retryable
+     * and non-retryable failure scenarios appropriately.
+     * Failure scenarios are addressed through the following handlers:
+     * - MaxRetriesFailureHandler: limits the number of retry attempts.
+     * - ExponentialBackoffFailureHandler: applies an exponential delay between retries for temporary failures.
+     * Upon successful email delivery, the task schedules a new task for verifying email delivery status.
+     *
+     * @return a configured {@link CustomTask} object designed to process sending of email notifications
+     *         and to handle both success and failure scenarios.
+     */
     @Bean
     public CustomTask<EmailState> sendEmailTask() {
         return Tasks.custom(sendEmailTask)
@@ -153,6 +167,17 @@ public class EmailTaskConfiguration {
             });
     }
 
+
+    /**
+     * Defines a custom task to verify the delivery status of an email notification
+     * by interacting with the notification client and updating the notification status
+     * in the system. The task leverages a retry mechanism with exponential backoff
+     * in case of failures, up to a maximum number of retries.
+     * The task logs the email delivery verification process, handles failures
+     * during the API call, and updates the notification status accordingly.
+     *
+     * @return the custom task for verifying email delivery status
+     */
     @Bean
     public CustomTask<EmailState> verifyEmailTask() {
         return Tasks.custom(verifyEmailTask)

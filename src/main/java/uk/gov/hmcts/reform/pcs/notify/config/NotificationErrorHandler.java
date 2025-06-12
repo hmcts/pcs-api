@@ -17,15 +17,13 @@ import java.util.function.Consumer;
 public class NotificationErrorHandler {
 
     /**
-     * Handles exceptions that occur while attempting to send an email notification.
-     * Depending on the HTTP status code within the exception, this method categorizes
-     * the error as a permanent failure, temporary failure, or technical failure,
-     * updates the notification status accordingly, and rethrows a respective exception type.
+     * Handles exceptions occurring during the sending of emails and logs the error details.
+     * Updates the notification status accordingly based on the HTTP status code of the exception.
      *
-     * @param exception the {@link NotificationClientException} that occurred during the email send attempt
-     * @param caseNotification the {@link CaseNotification} object associated with the email notification
-     * @param referenceId a unique reference identifier for the email notification
-     * @param statusUpdater a {@link Consumer} function to update the status of the notification
+     * @param exception The exception thrown during the email sending process.
+     * @param caseNotification The case notification associated with the email being sent.
+     * @param referenceId A unique ID reference used for tracking the email transaction.
+     * @param statusUpdater A consumer that updates the notification status based on the outcome.
      */
     public void handleSendEmailException(NotificationClientException exception,
                                             CaseNotification caseNotification,

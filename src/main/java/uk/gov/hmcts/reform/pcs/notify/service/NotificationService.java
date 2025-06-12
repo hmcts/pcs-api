@@ -24,12 +24,6 @@ public class NotificationService {
     private final NotificationRepository notificationRepository;
     private final SchedulerClient schedulerClient;
 
-    /**
-     * Constructs a new NotificationService with the specified dependencies.
-     *
-     * @param notificationRepository the repository responsible for managing notification data
-     * @param schedulerClient the scheduler client for task scheduling
-     */
     public NotificationService(
         NotificationRepository notificationRepository,
         SchedulerClient schedulerClient) {
@@ -38,24 +32,24 @@ public class NotificationService {
     }
 
     /**
-     * Schedules an email notification to be sent. This method creates a database record
-     * for the notification and schedules a task to handle the actual email sending.
+     * Schedules an email notification to be sent. It generates a unique task ID for the notification,
+     * creates a notification record in the database, and schedules a task to send the email using a task scheduler.
+     * The notification status is updated to SCHEDULED after successfully scheduling the task.
      *
-     * @param emailRequest the request object containing details for the email to be sent
-     * @return EmailNotificationResponse containing the task ID and initial status
-     * @throws NotificationException if there's an error creating the notification record
+     * @param emailRequest the request containing details of the email to be sent, including the recipient's
+     *                     email address, template ID, personalization data, reference, and reply-to ID
+     * @return an EmailNotificationResponse containing the task ID, notification ID, and status of the scheduled
+     * notification
      */
     public EmailNotificationResponse scheduleEmailNotification(EmailNotificationRequest emailRequest) {
         String taskId = UUID.randomUUID().toString();
 
-        // Create initial notification in database
         CaseNotification caseNotification = createCaseNotification(
             emailRequest.getEmailAddress(),
-            UUID.randomUUID(), // You might want to pass this from the request
+            UUID.randomUUID(),
             taskId
         );
 
-        // Create the email state object for the task
         EmailState emailState = new EmailState(
             taskId,
             emailRequest.getEmailAddress(),
@@ -67,7 +61,6 @@ public class NotificationService {
             caseNotification.getNotificationId()
         );
 
-        // Schedule the send email task to run immediately
         boolean scheduled = schedulerClient.scheduleIfNotExists(
             EmailTaskConfiguration.sendEmailTask
                 .instance(taskId)
@@ -79,10 +72,8 @@ public class NotificationService {
             log.warn("Task with ID {} already exists", taskId);
         }
 
-        // Update notification status to SCHEDULED
         updateNotificationStatus(caseNotification, NotificationStatus.SCHEDULED, null);
 
-        // Create response
         EmailNotificationResponse response = new EmailNotificationResponse();
         response.setTaskId(taskId);
         response.setStatus(NotificationStatus.SCHEDULED.toString());
@@ -95,11 +86,11 @@ public class NotificationService {
     }
 
     /**
-     * Updates notification status after successful email sending.
-     * Called by the task after NotificationClient.sendEmail() succeeds.
+     * Updates the status and associated provider notification ID of a notification
+     * after it has been sent.
      *
-     * @param dbNotificationId the database notification ID
-     * @param providerNotificationId the notification ID from GOV.UK Notify
+     * @param dbNotificationId the unique identifier of the notification in the database
+     * @param providerNotificationId the unique identifier of the notification from the provider
      */
     public void updateNotificationAfterSending(UUID dbNotificationId, UUID providerNotificationId) {
         Optional<CaseNotification> notificationOpt = notificationRepository.findById(dbNotificationId);
@@ -113,11 +104,11 @@ public class NotificationService {
     }
 
     /**
-     * Updates notification status after email sending failure.
-     * Called by the task when NotificationClient.sendEmail() fails.
+     * Updates the notification status to indicate a permanent failure after an email sending operation fails.
+     * Logs the error details associated with the failure.
      *
-     * @param dbNotificationId the database notification ID
-     * @param exception the exception that occurred
+     * @param dbNotificationId the unique identifier of the notification in the database
+     * @param exception the exception containing the details of the failure
      */
     public void updateNotificationAfterFailure(UUID dbNotificationId, Exception exception) {
         Optional<CaseNotification> notificationOpt = notificationRepository.findById(dbNotificationId);
@@ -129,17 +120,19 @@ public class NotificationService {
         CaseNotification notification = notificationOpt.get();
         updateNotificationStatus(notification, NotificationStatus.PERMANENT_FAILURE, null);
         log.error("Email sending failed for notification ID: {}, error: {}",
-                  dbNotificationId, exception.getMessage());
+                    dbNotificationId, exception.getMessage());
     }
 
     /**
-     * Creates a case notification in the database.
+     * Creates a new CaseNotification, sets its properties, saves it to the database,
+     * and returns the saved notification.
+     * Throws a NotificationException if the save operation fails.
      *
-     * @param recipient The recipient of the notification
-     * @param caseId    The associated case ID
-     * @param taskId    The task ID for tracking
-     * @return The created CaseNotification
-     * @throws NotificationException If saving the notification fails
+     * @param recipient the recipient email address for the notification
+     * @param caseId the unique identifier of the case associated with the notification
+     * @param taskId the identifier of the associated task for logging purposes
+     * @return the saved CaseNotification object
+     * @throws NotificationException if an error occurs while saving the notification
      */
     private CaseNotification createCaseNotification(String recipient, UUID caseId, String taskId) {
         CaseNotification toSaveNotification = new CaseNotification();
@@ -166,14 +159,13 @@ public class NotificationService {
         }
     }
 
-
-
     /**
-     * Updates notification status from verification task.
-     * Called by the verification task after checking status with NotificationClient.
+     * Updates the status of a notification based on the provided notification ID and status string.
+     * If the notification ID is not found, an error is logged, and the process terminates.
+     * If the provided status string does not match a valid notification status, a warning is logged.
      *
-     * @param dbNotificationId the database notification ID
-     * @param statusString the status string from GOV.UK Notify
+     * @param dbNotificationId the unique identifier of the notification in the database
+     * @param statusString the new status to set for the notification, represented as a string
      */
     public void updateNotificationStatus(UUID dbNotificationId, String statusString) {
         Optional<CaseNotification> notificationOpt = notificationRepository.findById(dbNotificationId);
@@ -192,11 +184,14 @@ public class NotificationService {
     }
 
     /**
-     * Updates the status of a notification and saves it to the database.
+     * Updates the status of the given notification, along with relevant timestamps
+     * and the provider notification ID if applicable. This method saves the updated
+     * notification details to the repository.
      *
-     * @param notification The notification to update
-     * @param status The new status to set
-     * @param providerNotificationId Optional provider notification ID to set (can be null)
+     * @param notification The notification object whose status is to be updated.
+     * @param status The new status to be applied to the notification.
+     * @param providerNotificationId The unique identifier of the notification from
+     *        the provider, if available.
      */
     private void updateNotificationStatus(
         CaseNotification notification,
@@ -217,10 +212,10 @@ public class NotificationService {
 
             notificationRepository.save(notification);
             log.info("Updated notification status to {} for notification ID: {}",
-                     status, notification.getNotificationId());
+                        status, notification.getNotificationId());
         } catch (Exception e) {
             log.error("Error updating notification status to {}: {}",
-                      status, e.getMessage(), e);
+                        status, e.getMessage(), e);
         }
     }
 }
