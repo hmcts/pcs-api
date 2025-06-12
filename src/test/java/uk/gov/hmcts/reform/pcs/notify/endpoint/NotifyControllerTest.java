@@ -15,6 +15,7 @@ import org.springframework.test.web.servlet.MvcResult;
 import uk.gov.hmcts.reform.pcs.idam.IdamService;
 import uk.gov.hmcts.reform.pcs.notify.model.EmailNotificationRequest;
 import uk.gov.hmcts.reform.pcs.notify.model.EmailNotificationResponse;
+import uk.gov.hmcts.reform.pcs.notify.model.NotificationStatus;
 
 import java.util.HashMap;
 
@@ -69,14 +70,14 @@ class NotifyControllerTest {
                                                 .content(objectMapper.writeValueAsString(request)))
             .andExpect(status().isAccepted())
             .andExpect(jsonPath("$.taskId").isNotEmpty())
-            .andExpect(jsonPath("$.status").value("SCHEDULED"))
+            .andExpect(jsonPath("$.status").value(NotificationStatus.SCHEDULE.toString()))
             .andReturn();
 
         String responseBody = result.getResponse().getContentAsString();
         EmailNotificationResponse response = objectMapper.readValue(responseBody, EmailNotificationResponse.class);
 
         assertThat(response.getTaskId()).isNotBlank();
-        assertThat(response.getStatus()).isEqualTo("SCHEDULED");
+        assertThat(response.getStatus()).isEqualTo(NotificationStatus.SCHEDULE.toString());
     }
 
     @Test

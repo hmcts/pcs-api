@@ -30,6 +30,8 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class EmailTaskConfigurationTest {
@@ -95,15 +97,15 @@ class EmailTaskConfigurationTest {
         @Test
         @DisplayName("Should successfully send email and schedule verification task")
         void shouldSuccessfullySendEmailAndScheduleVerification() {
-            Mockito.when(sendEmailResponse.getNotificationId()).thenReturn(testUuid);
-            Mockito.when(notificationService.sendEmail(any(EmailNotificationRequest.class)))
+            when(sendEmailResponse.getNotificationId()).thenReturn(testUuid);
+            when(notificationService.sendEmail(any(EmailNotificationRequest.class)))
                 .thenReturn(sendEmailResponse);
 
             CompletionHandler<EmailState> result = sendEmailTask.execute(taskInstance, executionContext);
 
             assertThat(result).isInstanceOf(CompletionHandler.OnCompleteReplace.class);
 
-            Mockito.verify(notificationService).sendEmail(emailRequestCaptor.capture());
+            verify(notificationService).sendEmail(emailRequestCaptor.capture());
             EmailNotificationRequest capturedRequest = emailRequestCaptor.getValue();
 
             assertThat(capturedRequest.getEmailAddress()).isEqualTo("test@example.com");
@@ -118,13 +120,13 @@ class EmailTaskConfigurationTest {
         void shouldHandlePermanentNotificationException() {
             PermanentNotificationException exception = new PermanentNotificationException(
                 "Permanent error", new RuntimeException("Underlying cause"));
-            Mockito.when(notificationService.sendEmail(any(EmailNotificationRequest.class)))
+            when(notificationService.sendEmail(any(EmailNotificationRequest.class)))
                 .thenThrow(exception);
 
             CompletionHandler<EmailState> result = sendEmailTask.execute(taskInstance, executionContext);
 
             assertThat(result).isInstanceOf(CompletionHandler.OnCompleteRemove.class);
-            Mockito.verify(notificationService).sendEmail(any(EmailNotificationRequest.class));
+            verify(notificationService).sendEmail(any(EmailNotificationRequest.class));
         }
 
         @Test
@@ -132,33 +134,33 @@ class EmailTaskConfigurationTest {
         void shouldRethrowTemporaryNotificationException() {
             TemporaryNotificationException exception = new TemporaryNotificationException(
                 "Temporary error", new RuntimeException("Underlying cause"));
-            Mockito.when(notificationService.sendEmail(any(EmailNotificationRequest.class)))
+            when(notificationService.sendEmail(any(EmailNotificationRequest.class)))
                 .thenThrow(exception);
 
             assertThatThrownBy(() -> sendEmailTask.execute(taskInstance, executionContext))
                 .isInstanceOf(TemporaryNotificationException.class)
                 .hasMessage("Temporary error");
 
-            Mockito.verify(notificationService).sendEmail(any(EmailNotificationRequest.class));
+            verify(notificationService).sendEmail(any(EmailNotificationRequest.class));
         }
 
         @Test
         @DisplayName("Should build email request with all required fields")
         void shouldBuildEmailRequestWithAllFields() {
-            Mockito.when(sendEmailResponse.getNotificationId()).thenReturn(testUuid);
-            Mockito.when(notificationService.sendEmail(any(EmailNotificationRequest.class)))
+            when(sendEmailResponse.getNotificationId()).thenReturn(testUuid);
+            when(notificationService.sendEmail(any(EmailNotificationRequest.class)))
                 .thenReturn(sendEmailResponse);
 
             sendEmailTask.execute(taskInstance, executionContext);
 
-            Mockito.verify(notificationService).sendEmail(emailRequestCaptor.capture());
+            verify(notificationService).sendEmail(emailRequestCaptor.capture());
             EmailNotificationRequest request = emailRequestCaptor.getValue();
 
             assertThat(request.getEmailAddress()).isEqualTo("test@example.com");
             assertThat(request.getTemplateId()).isEqualTo("template-123");
             assertThat(request.getReference()).isEqualTo("ref-123");
             assertThat(request.getEmailReplyToId()).isEqualTo("reply-to-123");
-            assertThat(request.getPersonalisation()).isEqualTo(testEmailState.personalisation);
+            assertThat(request.getPersonalisation()).isEqualTo(testEmailState.getPersonalisation());
         }
     }
 
@@ -183,50 +185,48 @@ class EmailTaskConfigurationTest {
         @Test
         @DisplayName("Should successfully verify delivered email and remove task")
         void shouldSuccessfullyVerifyDeliveredEmail() throws Exception {
-            // Given
-            Mockito.when(notification.getStatus()).thenReturn(NotificationStatus.DELIVERED.toString());
-            Mockito.when(notificationService.fetchNotificationStatus(testNotificationId))
+            when(notification.getStatus()).thenReturn(NotificationStatus.DELIVERED.toString());
+
+            when(notificationService.fetchNotificationStatus(testNotificationId))
                 .thenReturn(notification);
 
-            // When
             CompletionHandler<EmailState> result = verifyEmailTask.execute(verifyTaskInstance, executionContext);
 
-            // Then
             assertThat(result).isInstanceOf(CompletionHandler.OnCompleteRemove.class);
-            Mockito.verify(notificationService).fetchNotificationStatus(testNotificationId);
+            verify(notificationService).fetchNotificationStatus(testNotificationId);
         }
 
         @Test
         @DisplayName("Should handle failed email status and remove task")
         void shouldHandleFailedEmailStatus() throws Exception {
-            Mockito.when(notification.getStatus()).thenReturn("failed");
-            Mockito.when(notificationService.fetchNotificationStatus(testNotificationId))
+            when(notification.getStatus()).thenReturn("failed");
+            when(notificationService.fetchNotificationStatus(testNotificationId))
                 .thenReturn(notification);
 
             CompletionHandler<EmailState> result = verifyEmailTask.execute(verifyTaskInstance, executionContext);
 
             assertThat(result).isInstanceOf(CompletionHandler.OnCompleteRemove.class);
-            Mockito.verify(notificationService).fetchNotificationStatus(testNotificationId);
+            verify(notificationService).fetchNotificationStatus(testNotificationId);
         }
 
         @Test
         @DisplayName("Should handle NotificationClientException and remove task")
         void shouldHandleNotificationClientException() throws Exception {
             NotificationClientException exception = new NotificationClientException("API error");
-            Mockito.when(notificationService.fetchNotificationStatus(testNotificationId))
+            when(notificationService.fetchNotificationStatus(testNotificationId))
                 .thenThrow(exception);
 
             CompletionHandler<EmailState> result = verifyEmailTask.execute(verifyTaskInstance, executionContext);
 
             assertThat(result).isInstanceOf(CompletionHandler.OnCompleteRemove.class);
-            Mockito.verify(notificationService).fetchNotificationStatus(testNotificationId);
+            verify(notificationService).fetchNotificationStatus(testNotificationId);
         }
 
         @Test
         @DisplayName("Should handle InterruptedException and throw RuntimeException")
         void shouldHandleInterruptedException() throws Exception {
             InterruptedException exception = new InterruptedException("Thread interrupted");
-            Mockito.when(notificationService.fetchNotificationStatus(testNotificationId))
+            when(notificationService.fetchNotificationStatus(testNotificationId))
                 .thenThrow(exception);
 
             assertThatThrownBy(() -> verifyEmailTask.execute(verifyTaskInstance, executionContext))
@@ -234,19 +234,19 @@ class EmailTaskConfigurationTest {
                 .hasMessage("Task interrupted")
                 .hasCause(exception);
 
-            Mockito.verify(notificationService).fetchNotificationStatus(testNotificationId);
+            verify(notificationService).fetchNotificationStatus(testNotificationId);
         }
 
         @Test
         @DisplayName("Should verify with correct notification ID")
         void shouldVerifyWithCorrectNotificationId() throws Exception {
-            Mockito.when(notification.getStatus()).thenReturn(NotificationStatus.DELIVERED.toString());
-            Mockito.when(notificationService.fetchNotificationStatus(testNotificationId))
+            when(notification.getStatus()).thenReturn(NotificationStatus.DELIVERED.toString());
+            when(notificationService.fetchNotificationStatus(testNotificationId))
                 .thenReturn(notification);
 
             verifyEmailTask.execute(verifyTaskInstance, executionContext);
 
-            Mockito.verify(notificationService).fetchNotificationStatus(testNotificationId);
+            verify(notificationService).fetchNotificationStatus(testNotificationId);
             Mockito.verifyNoMoreInteractions(notificationService);
         }
     }

@@ -14,6 +14,7 @@ import uk.gov.hmcts.reform.pcs.notify.model.EmailNotificationRequest;
 import uk.gov.hmcts.reform.pcs.notify.model.EmailNotificationResponse;
 import uk.gov.hmcts.reform.pcs.notify.model.EmailState;
 import uk.gov.hmcts.reform.pcs.notify.config.EmailTaskConfiguration;
+import uk.gov.hmcts.reform.pcs.notify.model.NotificationStatus;
 
 import java.time.Instant;
 import java.util.UUID;
@@ -65,7 +66,7 @@ public class NotifyController {
         // Create response
         EmailNotificationResponse response = new EmailNotificationResponse();
         response.setTaskId(taskId);
-        response.setStatus("SCHEDULED");
+        response.setStatus(NotificationStatus.SCHEDULE.toString());
 
         return ResponseEntity.accepted().body(response);
     }

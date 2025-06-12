@@ -5,8 +5,6 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.pcs.notify.domain.CaseNotification;
 import uk.gov.hmcts.reform.pcs.notify.exception.NotificationException;
-import uk.gov.hmcts.reform.pcs.notify.exception.PermanentNotificationException;
-import uk.gov.hmcts.reform.pcs.notify.exception.TemporaryNotificationException;
 import uk.gov.hmcts.reform.pcs.notify.model.EmailNotificationRequest;
 import uk.gov.hmcts.reform.pcs.notify.model.NotificationStatus;
 import uk.gov.hmcts.reform.pcs.notify.repository.NotificationRepository;
@@ -25,18 +23,22 @@ import java.util.UUID;
 public class NotificationService {
     private final NotificationClient notificationClient;
     private final NotificationRepository notificationRepository;
+    private final NotificationErrorHandler errorHandler;
 
     /**
      * Constructor for the NotificationService.
      *
      * @param notificationClient The notification client for GOV.UK Notify
      * @param notificationRepository Repository for saving notification data
+     * @param errorHandler Handler for notification exceptions
      */
     public NotificationService(
         NotificationClient notificationClient,
-        NotificationRepository notificationRepository) {
+        NotificationRepository notificationRepository,
+        NotificationErrorHandler errorHandler) {
         this.notificationClient = notificationClient;
         this.notificationRepository = notificationRepository;
+        this.errorHandler = errorHandler;
     }
 
     /**
@@ -51,7 +53,6 @@ public class NotificationService {
      * @throws NotificationException if an error occurs while attempting to send the email
      */
     public SendEmailResponse sendEmail(EmailNotificationRequest emailRequest) {
-        SendEmailResponse sendEmailResponse;
         final String destinationAddress = emailRequest.getEmailAddress();
         final String templateId = emailRequest.getTemplateId();
         final Map<String, Object> personalisation = emailRequest.getPersonalisation();
@@ -60,12 +61,11 @@ public class NotificationService {
         // Create initial notification in database
         CaseNotification caseNotification = createCaseNotification(
             emailRequest.getEmailAddress(),
-            "Email",
             UUID.randomUUID()
         );
 
         try {
-            sendEmailResponse = notificationClient.sendEmail(
+            SendEmailResponse sendEmailResponse = notificationClient.sendEmail(
                 templateId,
                 destinationAddress,
                 personalisation,
@@ -80,44 +80,14 @@ public class NotificationService {
 
             return sendEmailResponse;
         } catch (NotificationClientException notificationClientException) {
-            // Update notification status to failure
-            int httpsStatusCode = notificationClientException.getHttpResult();
-
-            log.error("Failed to send email. Reference ID: {}. Reason: {}",
-                        referenceId,
-                        notificationClientException.getMessage(),
-                        notificationClientException
+            errorHandler.handleSendEmailException(
+                notificationClientException,
+                caseNotification,
+                referenceId,
+                this::updateNotificationFromStatusUpdate
             );
-
-            switch (httpsStatusCode) {
-                case 400, 403 -> {
-                    updateNotificationStatus(
-                        caseNotification,
-                        NotificationStatus.PERMANENT_FAILURE,
-                        null
-                    );
-                    throw new PermanentNotificationException("Email failed to send.",
-                                                                notificationClientException);
-                }
-                case 429, 500 -> {
-                    updateNotificationStatus(
-                        caseNotification,
-                        NotificationStatus.TEMPORARY_FAILURE,
-                        null
-                    );
-                    throw new TemporaryNotificationException("Email temporarily failed to send.",
-                                                                notificationClientException);
-                }
-                default -> {
-                    updateNotificationStatus(
-                        caseNotification,
-                        NotificationStatus.TECHNICAL_FAILURE,
-                        null
-                    );
-                    throw new NotificationException("Email failed to send, please try again.",
-                                                        notificationClientException);
-                }
-            }
+            // This line will never be reached due to exceptions thrown in error handler
+            return null;
         }
     }
 
@@ -131,38 +101,45 @@ public class NotificationService {
      * @throws InterruptedException if the thread executing the method is interrupted
      */
     public Notification fetchNotificationStatus(String notificationId)
-            throws NotificationClientException, InterruptedException {
+        throws NotificationClientException, InterruptedException {
         try {
             Notification notification = notificationClient.getNotificationById(notificationId);
             updateNotificationStatusInDatabase(notification, notificationId);
             return notification;
         } catch (NotificationClientException notificationClientException) {
-            int httpsStatusCode = notificationClientException.getHttpResult();
-
-            log.error("Failed to fetch email. Reference ID: {}. Reason: {}",
-                        notificationClientException.getMessage(),
-                        httpsStatusCode
-            );
-            throw new NotificationException("Email failed to send, please try again.",
-                                            notificationClientException);
+            errorHandler.handleFetchException(notificationClientException, notificationId);
+            // This line will never be reached due to exception thrown in error handler
+            return null;
         }
+    }
+
+    /**
+     * Helper method to update notification status from NotificationStatusUpdate object.
+     *
+     * @param statusUpdate The status update containing notification, status, and provider ID
+     */
+    private void updateNotificationFromStatusUpdate(NotificationErrorHandler.NotificationStatusUpdate statusUpdate) {
+        updateNotificationStatus(
+            statusUpdate.getNotification(),
+            statusUpdate.getStatus(),
+            statusUpdate.getProviderNotificationId()
+        );
     }
 
     /**
      * Creates a case notification in the database.
      *
      * @param recipient The recipient of the notification
-     * @param type The type of notification
-     * @param caseId The associated case ID
+     * @param caseId    The associated case ID
      * @return The created CaseNotification
      * @throws NotificationException If saving the notification fails
      */
-    private CaseNotification createCaseNotification(String recipient, String type, UUID caseId) {
+    private CaseNotification createCaseNotification(String recipient, UUID caseId) {
         CaseNotification toSaveNotification = new CaseNotification();
         toSaveNotification.setCaseId(caseId);
         // Use the toString() method of the enum to get the string value
         toSaveNotification.setStatus(NotificationStatus.PENDING_SCHEDULE);
-        toSaveNotification.setType(type);
+        toSaveNotification.setType("Email");
         toSaveNotification.setRecipient(recipient);
 
         try {
@@ -201,7 +178,7 @@ public class NotificationService {
             }
         } catch (Exception e) {
             log.error("Error updating notification status in database for ID: {}. Error: {}",
-                notificationId, e.getMessage(), e);
+                      notificationId, e.getMessage(), e);
         }
     }
 
@@ -229,9 +206,9 @@ public class NotificationService {
      * @return An Optional containing the updated notification, or an empty Optional if an error occurred
      */
     private Optional<CaseNotification> updateNotificationStatus(
-            CaseNotification notification,
-            NotificationStatus status,
-            UUID providerNotificationId) {
+        CaseNotification notification,
+        NotificationStatus status,
+        UUID providerNotificationId) {
 
         try {
             notification.setStatus(status);
@@ -247,11 +224,11 @@ public class NotificationService {
 
             CaseNotification saved = notificationRepository.save(notification);
             log.info("Updated notification status to {} for notification ID: {}",
-                    status, notification.getNotificationId());
+                     status, notification.getNotificationId());
             return Optional.of(saved);
         } catch (Exception e) {
             log.error("Error updating notification status to {}: {}",
-                    status, e.getMessage(), e);
+                      status, e.getMessage(), e);
             return Optional.empty();
         }
     }

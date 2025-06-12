@@ -72,22 +72,24 @@ public class EmailTaskConfiguration {
             ))
             .execute((taskInstance, executionContext) -> {
                 EmailState emailState = taskInstance.getData();
-                log.info("Processing send email task: {}", emailState.id);
+                log.info("Processing send email task: {}", emailState.getId());
 
                 try {
                     EmailNotificationRequest emailRequest = EmailNotificationRequest.builder()
-                        .emailAddress(emailState.emailAddress)
-                        .templateId(emailState.templateId)
-                        .personalisation(emailState.personalisation)
-                        .reference(emailState.reference)
-                        .emailReplyToId(emailState.emailReplyToId)
+                        .emailAddress(emailState.getEmailAddress())
+                        .templateId(emailState.getTemplateId())
+                        .personalisation(emailState.getPersonalisation())
+                        .reference(emailState.getReference())
+                        .emailReplyToId(emailState.getEmailReplyToId())
                         .build();
 
                     SendEmailResponse response = notificationService.sendEmail(emailRequest);
                     String notificationId = response.getNotificationId().toString();
                     log.info("Email sent successfully. Notification ID: {}", notificationId);
 
-                    EmailState nextState = emailState.withNotificationId(notificationId);
+                    EmailState nextState = emailState.toBuilder()
+                        .notificationId(notificationId)
+                        .build();
 
                     return new CompletionHandler.OnCompleteReplace<>(
                         currentInstance -> SchedulableInstance.of(
@@ -127,15 +129,16 @@ public class EmailTaskConfiguration {
             ))
             .execute((taskInstance, executionContext) -> {
                 EmailState emailState = taskInstance.getData();
-                log.info("Verifying email delivery for ID: {}", emailState.notificationId);
+                log.info("Verifying email delivery for ID: {}", emailState.getNotificationId());
 
                 try {
-                    Notification notification = notificationService.fetchNotificationStatus(emailState.notificationId);
+                    Notification notification = notificationService
+                        .fetchNotificationStatus(emailState.getNotificationId());
                     String status = notification.getStatus();
                     if (NotificationStatus.DELIVERED.toString().equalsIgnoreCase(status)) {
-                        log.info("Email successfully delivered: {}", emailState.id);
+                        log.info("Email successfully delivered: {}", emailState.getId());
                     } else {
-                        log.error("Failure with status: {} for task: {}", status, emailState.id);
+                        log.error("Failure with status: {} for task: {}", status, emailState.getId());
                     }
                     return new CompletionHandler.OnCompleteRemove<>();
                 } catch (NotificationClientException e) {

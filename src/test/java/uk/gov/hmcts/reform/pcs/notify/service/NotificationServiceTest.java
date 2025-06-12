@@ -1,6 +1,5 @@
 package uk.gov.hmcts.reform.pcs.notify.service;
 
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -14,7 +13,6 @@ import org.springframework.dao.DataAccessException;
 import uk.gov.hmcts.reform.pcs.notify.domain.CaseNotification;
 import uk.gov.hmcts.reform.pcs.notify.exception.NotificationException;
 import uk.gov.hmcts.reform.pcs.notify.exception.PermanentNotificationException;
-import uk.gov.hmcts.reform.pcs.notify.exception.TemporaryNotificationException;
 import uk.gov.hmcts.reform.pcs.notify.model.EmailNotificationRequest;
 import uk.gov.hmcts.reform.pcs.notify.model.NotificationStatus;
 import uk.gov.hmcts.reform.pcs.notify.repository.NotificationRepository;
@@ -28,6 +26,12 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -45,6 +49,9 @@ class NotificationServiceTest {
     @Mock
     private NotificationRepository notificationRepository;
 
+    @Mock
+    private NotificationErrorHandler errorHandler;
+
     private NotificationService notificationService;
 
     private static final String EMAIL_ADDRESS = "test@example.com";
@@ -57,7 +64,8 @@ class NotificationServiceTest {
     void setUp() {
         notificationService = new NotificationService(
             notificationClient,
-            notificationRepository
+            notificationRepository,
+            errorHandler
         );
     }
 
@@ -94,148 +102,76 @@ class NotificationServiceTest {
         @Test
         @DisplayName("Should successfully send email and update notification status")
         void shouldSuccessfullySendEmailAndUpdateNotificationStatus() throws NotificationClientException {
-            // Given
             when(mockSendEmailResponse.getNotificationId()).thenReturn(PROVIDER_NOTIFICATION_ID);
-            when(notificationRepository.save(ArgumentMatchers.any(CaseNotification.class)))
+            when(notificationRepository.save(any(CaseNotification.class)))
                 .thenReturn(mockCaseNotification);
-            when(notificationClient.sendEmail(ArgumentMatchers.anyString(), ArgumentMatchers.anyString(),
-                                                ArgumentMatchers.anyMap(), ArgumentMatchers.anyString()))
+            when(notificationClient.sendEmail(
+                anyString(), anyString(),
+                ArgumentMatchers.anyMap(), anyString()))
                 .thenReturn(mockSendEmailResponse);
 
             SendEmailResponse result = notificationService.sendEmail(emailRequest);
 
-            Assertions.assertThat(result).isEqualTo(mockSendEmailResponse);
+            assertThat(result).isEqualTo(mockSendEmailResponse);
 
             verify(notificationClient).sendEmail(
-                ArgumentMatchers.eq(TEMPLATE_ID),
-                ArgumentMatchers.eq(EMAIL_ADDRESS),
-                ArgumentMatchers.eq(personalisation),
-                ArgumentMatchers.anyString()
+                eq(TEMPLATE_ID),
+                eq(EMAIL_ADDRESS),
+                eq(personalisation),
+                anyString()
             );
 
-            verify(notificationRepository, times(2)).save(ArgumentMatchers
-                                                                .any(CaseNotification.class));
+            verify(notificationRepository, times(2)).save(any(CaseNotification.class));
+
+            verifyNoInteractions(errorHandler);
 
             ArgumentCaptor<CaseNotification> notificationCaptor = ArgumentCaptor.forClass(CaseNotification.class);
             verify(notificationRepository, times(2)).save(notificationCaptor.capture());
 
-            CaseNotification initialNotification = notificationCaptor.getAllValues().get(0);
-            Assertions.assertThat(initialNotification.getRecipient()).isEqualTo(EMAIL_ADDRESS);
-            Assertions.assertThat(initialNotification.getType()).isEqualTo("Email");
-            Assertions.assertThat(initialNotification.getStatus()).isEqualTo(NotificationStatus.PENDING_SCHEDULE);
+            CaseNotification initialNotification = notificationCaptor.getAllValues().getFirst();
+            assertThat(initialNotification.getRecipient()).isEqualTo(EMAIL_ADDRESS);
+            assertThat(initialNotification.getType()).isEqualTo("Email");
+            assertThat(initialNotification.getStatus()).isEqualTo(NotificationStatus.PENDING_SCHEDULE);
 
             CaseNotification updatedNotification = notificationCaptor.getAllValues().get(1);
-            Assertions.assertThat(updatedNotification.getStatus()).isEqualTo(NotificationStatus.SUBMITTED);
-            Assertions.assertThat(updatedNotification.getProviderNotificationId()).isEqualTo(PROVIDER_NOTIFICATION_ID);
-            Assertions.assertThat(updatedNotification.getLastUpdatedAt()).isNotNull();
+            assertThat(updatedNotification.getStatus()).isEqualTo(NotificationStatus.SUBMITTED);
+            assertThat(updatedNotification.getProviderNotificationId()).isEqualTo(PROVIDER_NOTIFICATION_ID);
+            assertThat(updatedNotification.getLastUpdatedAt()).isNotNull();
         }
 
         @Test
-        @DisplayName("Should throw PermanentNotificationException for 400 status code")
-        void shouldThrowPermanentNotificationExceptionFor400StatusCode() throws NotificationClientException {
-            when(notificationRepository.save(ArgumentMatchers.any(CaseNotification.class)))
+        @DisplayName("Should delegate exception handling to error handler")
+        void shouldDelegateExceptionHandlingToErrorHandler() throws NotificationClientException {
+            when(notificationRepository.save(any(CaseNotification.class)))
                 .thenReturn(mockCaseNotification);
             NotificationClientException clientException = mock(NotificationClientException.class);
-            when(clientException.getHttpResult()).thenReturn(400);
-            when(clientException.getMessage()).thenReturn("Bad Request");
-            when(notificationClient.sendEmail(ArgumentMatchers.anyString(), ArgumentMatchers.anyString(),
-                                                ArgumentMatchers.anyMap(), ArgumentMatchers.anyString()))
+            when(notificationClient.sendEmail(
+                anyString(), anyString(),
+                ArgumentMatchers.anyMap(), anyString()))
                 .thenThrow(clientException);
 
-            Assertions.assertThatThrownBy(() -> notificationService.sendEmail(emailRequest))
+            doThrow(new PermanentNotificationException("Email failed to send.", clientException))
+                .when(errorHandler)
+                .handleSendEmailException(
+                    eq(clientException),
+                    eq(mockCaseNotification),
+                    anyString(),
+                    any()
+                );
+
+            assertThatThrownBy(() -> notificationService.sendEmail(emailRequest))
                 .isInstanceOf(PermanentNotificationException.class)
                 .hasMessage("Email failed to send.")
                 .hasCause(clientException);
 
-            ArgumentCaptor<CaseNotification> notificationCaptor = ArgumentCaptor.forClass(CaseNotification.class);
-            verify(notificationRepository, times(2)).save(notificationCaptor.capture());
+            verify(errorHandler).handleSendEmailException(
+                eq(clientException),
+                eq(mockCaseNotification),
+                anyString(),
+                any()
+            );
 
-            CaseNotification updatedNotification = notificationCaptor.getAllValues().get(1);
-            Assertions.assertThat(updatedNotification.getStatus()).isEqualTo(NotificationStatus.PERMANENT_FAILURE);
-        }
-
-        @Test
-        @DisplayName("Should throw PermanentNotificationException for 403 status code")
-        void shouldThrowPermanentNotificationExceptionFor403StatusCode() throws NotificationClientException {
-            when(notificationRepository.save(ArgumentMatchers.any(CaseNotification.class)))
-                .thenReturn(mockCaseNotification);
-            NotificationClientException clientException = mock(NotificationClientException.class);
-            when(clientException.getHttpResult()).thenReturn(403);
-            when(clientException.getMessage()).thenReturn("Forbidden");
-            when(notificationClient.sendEmail(ArgumentMatchers.anyString(), ArgumentMatchers.anyString(),
-                                                ArgumentMatchers.anyMap(), ArgumentMatchers.anyString()))
-                .thenThrow(clientException);
-
-            Assertions.assertThatThrownBy(() -> notificationService.sendEmail(emailRequest))
-                .isInstanceOf(PermanentNotificationException.class)
-                .hasMessage("Email failed to send.")
-                .hasCause(clientException);
-        }
-
-        @Test
-        @DisplayName("Should throw TemporaryNotificationException for 429 status code")
-        void shouldThrowTemporaryNotificationExceptionFor429StatusCode() throws NotificationClientException {
-            when(notificationRepository.save(ArgumentMatchers.any(CaseNotification.class)))
-                .thenReturn(mockCaseNotification);
-            NotificationClientException clientException = mock(NotificationClientException.class);
-            when(clientException.getHttpResult()).thenReturn(429);
-            when(clientException.getMessage()).thenReturn("Too Many Requests");
-            when(notificationClient.sendEmail(ArgumentMatchers.anyString(), ArgumentMatchers.anyString(),
-                                                ArgumentMatchers.anyMap(), ArgumentMatchers.anyString()))
-                .thenThrow(clientException);
-
-            Assertions.assertThatThrownBy(() -> notificationService.sendEmail(emailRequest))
-                .isInstanceOf(TemporaryNotificationException.class)
-                .hasMessage("Email temporarily failed to send.")
-                .hasCause(clientException);
-
-            ArgumentCaptor<CaseNotification> notificationCaptor = ArgumentCaptor.forClass(CaseNotification.class);
-            verify(notificationRepository, times(2)).save(notificationCaptor.capture());
-
-            CaseNotification updatedNotification = notificationCaptor.getAllValues().get(1);
-            Assertions.assertThat(updatedNotification.getStatus()).isEqualTo(NotificationStatus.TEMPORARY_FAILURE);
-        }
-
-        @Test
-        @DisplayName("Should throw TemporaryNotificationException for 500 status code")
-        void shouldThrowTemporaryNotificationExceptionFor500StatusCode() throws NotificationClientException {
-            when(notificationRepository.save(ArgumentMatchers.any(CaseNotification.class)))
-                .thenReturn(mockCaseNotification);
-            NotificationClientException clientException = mock(NotificationClientException.class);
-            when(clientException.getHttpResult()).thenReturn(500);
-            when(clientException.getMessage()).thenReturn("Internal Server Error");
-            when(notificationClient.sendEmail(ArgumentMatchers.anyString(), ArgumentMatchers.anyString(),
-                                                ArgumentMatchers.anyMap(), ArgumentMatchers.anyString()))
-                .thenThrow(clientException);
-
-            Assertions.assertThatThrownBy(() -> notificationService.sendEmail(emailRequest))
-                .isInstanceOf(TemporaryNotificationException.class)
-                .hasMessage("Email temporarily failed to send.")
-                .hasCause(clientException);
-        }
-
-        @Test
-        @DisplayName("Should throw NotificationException for other status codes")
-        void shouldThrowNotificationExceptionForOtherStatusCodes() throws NotificationClientException {
-            when(notificationRepository.save(ArgumentMatchers.any(CaseNotification.class)))
-                .thenReturn(mockCaseNotification);
-            NotificationClientException clientException = mock(NotificationClientException.class);
-            when(clientException.getHttpResult()).thenReturn(502);
-            when(clientException.getMessage()).thenReturn("Bad Gateway");
-            when(notificationClient.sendEmail(ArgumentMatchers.anyString(), ArgumentMatchers.anyString(),
-                                                ArgumentMatchers.anyMap(), ArgumentMatchers.anyString()))
-                .thenThrow(clientException);
-
-            Assertions.assertThatThrownBy(() -> notificationService.sendEmail(emailRequest))
-                .isInstanceOf(NotificationException.class)
-                .hasMessage("Email failed to send, please try again.")
-                .hasCause(clientException);
-
-            ArgumentCaptor<CaseNotification> notificationCaptor = ArgumentCaptor.forClass(CaseNotification.class);
-            verify(notificationRepository, times(2)).save(notificationCaptor.capture());
-
-            CaseNotification updatedNotification = notificationCaptor.getAllValues().get(1);
-            Assertions.assertThat(updatedNotification.getStatus()).isEqualTo(NotificationStatus.TECHNICAL_FAILURE);
+            verify(notificationRepository).save(any(CaseNotification.class));
         }
 
         @Test
@@ -243,15 +179,16 @@ class NotificationServiceTest {
         void shouldThrowNotificationExceptionWhenDatabaseSaveFails() {
             DataAccessException databaseException = mock(DataAccessException.class);
             when(databaseException.getMessage()).thenReturn("Database connection failed");
-            when(notificationRepository.save(ArgumentMatchers.any(CaseNotification.class)))
+            when(notificationRepository.save(any(CaseNotification.class)))
                 .thenThrow(databaseException);
 
-            Assertions.assertThatThrownBy(() -> notificationService.sendEmail(emailRequest))
+            assertThatThrownBy(() -> notificationService.sendEmail(emailRequest))
                 .isInstanceOf(NotificationException.class)
                 .hasMessage("Failed to save Case Notification.")
                 .hasCause(databaseException);
 
             verifyNoInteractions(notificationClient);
+            verifyNoInteractions(errorHandler);
         }
     }
 
@@ -282,18 +219,38 @@ class NotificationServiceTest {
                 .thenReturn(mockNotification);
             when(notificationRepository.findByProviderNotificationId(PROVIDER_NOTIFICATION_ID))
                 .thenReturn(Optional.of(mockCaseNotification));
-            when(notificationRepository.save(ArgumentMatchers.any(CaseNotification.class)))
+            when(notificationRepository.save(any(CaseNotification.class)))
                 .thenReturn(mockCaseNotification);
 
             Notification result = notificationService.fetchNotificationStatus(NOTIFICATION_ID_STRING);
 
-            Assertions.assertThat(result).isEqualTo(mockNotification);
+            assertThat(result).isEqualTo(mockNotification);
 
             verify(notificationClient).getNotificationById(NOTIFICATION_ID_STRING);
-
             verify(notificationRepository).findByProviderNotificationId(PROVIDER_NOTIFICATION_ID);
+            verify(notificationRepository).save(any(CaseNotification.class));
 
-            verify(notificationRepository).save(ArgumentMatchers.any(CaseNotification.class));
+            verifyNoInteractions(errorHandler);
+        }
+
+        @Test
+        @DisplayName("Should delegate fetch exception handling to error handler")
+        void shouldDelegateFetchExceptionHandlingToErrorHandler() throws NotificationClientException {
+            NotificationClientException clientException = mock(NotificationClientException.class);
+            when(notificationClient.getNotificationById(NOTIFICATION_ID_STRING))
+                .thenThrow(clientException);
+
+            doThrow(new NotificationException("Failed to fetch notification, please try again.", clientException))
+                .when(errorHandler)
+                .handleFetchException(clientException, NOTIFICATION_ID_STRING);
+
+            assertThatThrownBy(() -> notificationService.fetchNotificationStatus(NOTIFICATION_ID_STRING))
+                .isInstanceOf(NotificationException.class)
+                .hasMessage("Failed to fetch notification, please try again.")
+                .hasCause(clientException);
+
+            verify(errorHandler).handleFetchException(clientException, NOTIFICATION_ID_STRING);
+            verifyNoInteractions(notificationRepository);
         }
 
         @Test
@@ -307,30 +264,11 @@ class NotificationServiceTest {
 
             Notification result = notificationService.fetchNotificationStatus(NOTIFICATION_ID_STRING);
 
-            Assertions.assertThat(result).isEqualTo(mockNotification);
+            assertThat(result).isEqualTo(mockNotification);
 
             verify(notificationClient).getNotificationById(NOTIFICATION_ID_STRING);
-
             verify(notificationRepository).findByProviderNotificationId(PROVIDER_NOTIFICATION_ID);
-
-            verify(notificationRepository, never()).save(ArgumentMatchers.any(CaseNotification.class));
-        }
-
-        @Test
-        @DisplayName("Should throw NotificationException when client throws exception")
-        void shouldThrowNotificationExceptionWhenClientThrowsException() throws NotificationClientException {
-            NotificationClientException clientException = mock(NotificationClientException.class);
-            when(clientException.getHttpResult()).thenReturn(404);
-            when(clientException.getMessage()).thenReturn("Not Found");
-            when(notificationClient.getNotificationById(NOTIFICATION_ID_STRING))
-                .thenThrow(clientException);
-
-            Assertions.assertThatThrownBy(() -> notificationService.fetchNotificationStatus(NOTIFICATION_ID_STRING))
-                .isInstanceOf(NotificationException.class)
-                .hasMessage("Email failed to send, please try again.")
-                .hasCause(clientException);
-
-            verifyNoInteractions(notificationRepository);
+            verify(notificationRepository, never()).save(any(CaseNotification.class));
         }
 
         @Test
@@ -344,15 +282,31 @@ class NotificationServiceTest {
 
             Notification result = notificationService.fetchNotificationStatus(NOTIFICATION_ID_STRING);
 
-            Assertions.assertThat(result).isEqualTo(mockNotification);
-
+            assertThat(result).isEqualTo(mockNotification);
             verify(notificationClient).getNotificationById(NOTIFICATION_ID_STRING);
+        }
+
+        @Test
+        @DisplayName("Should handle unknown notification status gracefully")
+        void shouldHandleUnknownNotificationStatusGracefully()
+            throws NotificationClientException, InterruptedException {
+            when(mockNotification.getStatus()).thenReturn("unknown_status");
+
+            when(notificationClient.getNotificationById(NOTIFICATION_ID_STRING))
+                .thenReturn(mockNotification);
+            when(notificationRepository.findByProviderNotificationId(PROVIDER_NOTIFICATION_ID))
+                .thenReturn(Optional.of(mockCaseNotification));
+
+            Notification result = notificationService.fetchNotificationStatus(NOTIFICATION_ID_STRING);
+
+            assertThat(result).isEqualTo(mockNotification);
+            verify(notificationRepository, never()).save(any(CaseNotification.class));
         }
     }
 
     @Nested
-    @DisplayName("Edge Cases and Error Handling Tests")
-    class EdgeCasesAndErrorHandlingTests {
+    @DisplayName("Edge Cases Tests")
+    class EdgeCasesTests {
 
         @Test
         @DisplayName("Should handle null personalisation in email request")
@@ -369,20 +323,21 @@ class NotificationServiceTest {
             SendEmailResponse mockSendEmailResponse = mock(SendEmailResponse.class);
             when(mockSendEmailResponse.getNotificationId()).thenReturn(PROVIDER_NOTIFICATION_ID);
 
-            when(notificationRepository.save(ArgumentMatchers.any(CaseNotification.class)))
+            when(notificationRepository.save(any(CaseNotification.class)))
                 .thenReturn(mockCaseNotification);
-            when(notificationClient.sendEmail(ArgumentMatchers.anyString(), ArgumentMatchers.anyString(),
-                                                ArgumentMatchers.isNull(), ArgumentMatchers.anyString()))
+            when(notificationClient.sendEmail(
+                anyString(), anyString(),
+                ArgumentMatchers.isNull(), anyString()))
                 .thenReturn(mockSendEmailResponse);
 
             SendEmailResponse result = notificationService.sendEmail(emailRequest);
 
-            Assertions.assertThat(result).isEqualTo(mockSendEmailResponse);
+            assertThat(result).isEqualTo(mockSendEmailResponse);
             verify(notificationClient).sendEmail(
-                ArgumentMatchers.eq(TEMPLATE_ID),
-                ArgumentMatchers.eq(EMAIL_ADDRESS),
+                eq(TEMPLATE_ID),
+                eq(EMAIL_ADDRESS),
                 ArgumentMatchers.isNull(),
-                ArgumentMatchers.anyString()
+                anyString()
             );
         }
 
@@ -401,46 +356,22 @@ class NotificationServiceTest {
             SendEmailResponse mockSendEmailResponse = mock(SendEmailResponse.class);
             when(mockSendEmailResponse.getNotificationId()).thenReturn(PROVIDER_NOTIFICATION_ID);
 
-            when(notificationRepository.save(ArgumentMatchers.any(CaseNotification.class)))
+            when(notificationRepository.save(any(CaseNotification.class)))
                 .thenReturn(mockCaseNotification);
-            when(notificationClient.sendEmail(ArgumentMatchers.anyString(), ArgumentMatchers.anyString(),
-                                                ArgumentMatchers.anyMap(), ArgumentMatchers.anyString()))
+            when(notificationClient.sendEmail(
+                anyString(), anyString(),
+                ArgumentMatchers.anyMap(), anyString()))
                 .thenReturn(mockSendEmailResponse);
 
             SendEmailResponse result = notificationService.sendEmail(emailRequest);
 
-            Assertions.assertThat(result).isEqualTo(mockSendEmailResponse);
+            assertThat(result).isEqualTo(mockSendEmailResponse);
             verify(notificationClient).sendEmail(
-                ArgumentMatchers.eq(TEMPLATE_ID),
-                ArgumentMatchers.eq(EMAIL_ADDRESS),
-                ArgumentMatchers.eq(new HashMap<>()),
-                ArgumentMatchers.anyString()
+                eq(TEMPLATE_ID),
+                eq(EMAIL_ADDRESS),
+                eq(new HashMap<>()),
+                anyString()
             );
-        }
-
-        @Test
-        @DisplayName("Should handle unknown notification status gracefully")
-        void shouldHandleUnknownNotificationStatusGracefully()
-            throws NotificationClientException, InterruptedException {
-            final String notificationIdString = PROVIDER_NOTIFICATION_ID.toString();
-            Notification mockNotification = mock(Notification.class);
-            when(mockNotification.getStatus()).thenReturn("unknown_status");
-
-            CaseNotification mockCaseNotification = new CaseNotification();
-            mockCaseNotification.setNotificationId(NOTIFICATION_ID);
-            mockCaseNotification.setProviderNotificationId(PROVIDER_NOTIFICATION_ID);
-            mockCaseNotification.setStatus(NotificationStatus.SUBMITTED);
-
-            when(notificationClient.getNotificationById(notificationIdString))
-                .thenReturn(mockNotification);
-            when(notificationRepository.findByProviderNotificationId(PROVIDER_NOTIFICATION_ID))
-                .thenReturn(Optional.of(mockCaseNotification));
-
-            Notification result = notificationService.fetchNotificationStatus(notificationIdString);
-
-            Assertions.assertThat(result).isEqualTo(mockNotification);
-
-            verify(notificationRepository, never()).save(ArgumentMatchers.any(CaseNotification.class));
         }
     }
 }

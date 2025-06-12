@@ -13,13 +13,13 @@ public class EmailState implements Serializable {
     @Serial
     private static final long serialVersionUID = 1L;
 
-    public final String id;
-    public final String emailAddress;
-    public final String templateId;
-    public final Map<String, Object> personalisation;
-    public final String reference;
-    public final String emailReplyToId;
-    public final String notificationId;
+    private final String id;
+    private final String emailAddress;
+    private final String templateId;
+    private final Map<String, Object> personalisation;
+    private final String reference;
+    private final String emailReplyToId;
+    private final String notificationId;
 
     // Default constructor for serialization
     public EmailState() {
@@ -37,17 +37,5 @@ public class EmailState implements Serializable {
         this.reference = reference;
         this.emailReplyToId = emailReplyToId;
         this.notificationId = notificationId;
-    }
-
-    public EmailState withNotificationId(String notificationId) {
-        return new EmailState(
-            this.id,
-            this.emailAddress,
-            this.templateId,
-            this.personalisation,
-            this.reference,
-            this.emailReplyToId,
-            notificationId
-        );
     }
 }

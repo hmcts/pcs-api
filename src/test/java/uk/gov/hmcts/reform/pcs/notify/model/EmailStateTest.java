@@ -88,7 +88,7 @@ class EmailStateTest {
             .notificationId("oldNotif")
             .build();
 
-        EmailState updated = original.withNotificationId("newNotif");
+        EmailState updated = original.toBuilder().notificationId("newNotif").build();
 
         assertThat(updated).isNotSameAs(original);
         assertThat(updated)

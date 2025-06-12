@@ -35,7 +35,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @TestConstructor(autowireMode = TestConstructor.AutowireMode.ALL)
 class NotifyControllerIT extends AbstractPostgresContainerIT {
 
-    private static final String SCHEDULED_STATUS = "SCHEDULED";
+    private static final String SCHEDULED_STATUS = "scheduled";
     private static final String TEST_EMAIL_ADDRESS = "test@example.com";
     private static final String TEMPLATE_123_ID = "template-123";
     private static final String JSON_PATH_STATUS = "$.status";
