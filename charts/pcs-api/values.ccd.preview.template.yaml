@@ -174,7 +174,7 @@ xui-webapp:
           - system-user-name
           - system-user-password
 
-elastic/elasticsearch:
+elasticsearch:
   clusterName: ccd-docker-es-cluster
   extraEnvs:
     - discovery.type=single-node
