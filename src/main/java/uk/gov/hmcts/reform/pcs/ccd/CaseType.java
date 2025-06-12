@@ -67,7 +67,7 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
         builder.tab("claimantInformation", claimantLabel)
             .field(PCSCase::getApplicantForename);
 
-        builder.tab("propertyAddress", "Property Address")
+        builder.tab("propertyAddress", addressLabel)
             .field(PCSCase::getPropertyAddress);
 
     }
