@@ -22,3 +22,6 @@ dependencies:
     version: 1.0.31
     repository: 'oci://hmctspublic.azurecr.io/helm'
     condition: xui-webapp.enabled
+  - name: elastic/elasticsearch
+    version: 7.11.1
+    repository: 'https://helm.elastic.co'
