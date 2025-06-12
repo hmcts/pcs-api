@@ -15,7 +15,8 @@
     "paths": {
       "@fixtures/*": ["fixtures/*"],
       "@pages/*": ["pages/*"],
-      "@helpers/*": ["helpers/*"]
+      "@helpers/*": ["helpers/*"],
+      "@data/*": ["data/*"]
     }
   },
   "include": ["**/*.ts"]

@@ -145,7 +145,7 @@ The e2e suite can be run with the following command:
 yarn test:functional
 ```
 
-By default, the tests will run against http://localhost:3000/, please update the value on line 3 of `src/e2eTest/config/config.ts` to change this.
+By default, the tests will run against http://localhost:3000/, please update the value on line 3 of `src/e2eTest/config/config.data.json` to change this.
 
 There are also several custom test scripts available:
 

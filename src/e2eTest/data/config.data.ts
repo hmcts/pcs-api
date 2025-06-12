@@ -1,4 +1,4 @@
-export class Config {
+export class ConfigData {
   public static readonly manageCasesBaseURL: string =
     process.env.TEST_E2E_URL_EXUI || "http://localhost:3000";
 
@@ -9,7 +9,7 @@ export class Config {
     "grantType": "password",
     "scope": "profile openid roles",
     "clientId": "pcs-api",
-    "roles": 'caseworker-pcs',
+    "roles": ['caseworker-civil','caseworker'],
   };
   public static readonly localHost = {
     "env":'localhost',
@@ -18,4 +18,4 @@ export class Config {
   };
 }
 
-export default Config;
+export default ConfigData;

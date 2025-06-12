@@ -1,6 +1,6 @@
 import { v4 as uuidv4 } from 'uuid';
 
-export interface TestConfig {
+export interface TestConfigHelper {
   idamUrl: string;
   idamTestingSupportUrl: string;
   loginEndpoint: string;
@@ -19,15 +19,16 @@ export interface UserData {
   };
 }
 
-export function buildUserDataWithRole(role: string, password: string): UserData {
+export function buildUserDataWithRole(role: string[], password: string): UserData {
+
   return {
     password,
     user: {
       id: uuidv4(),
-      email: `pcs-${role}-${Math.random().toString(36).slice(2, 9).toLowerCase()}@gmail.com`,
-      forename: `fn_${role}_${Math.random().toString(36).slice(2, 15)}`,
-      surname: `sn_${role}_${Math.random().toString(36).slice(2, 15)}`,
-      roleNames: [role],
+      email: `pcs-${role[1]}-${Math.random().toString(36).slice(2, 9).toLowerCase()}@gmail.com`,
+      forename: `fn_${role[1]}_${Math.random().toString(36).slice(2, 15)}`,
+      surname: `sn_${role[1]}_${Math.random().toString(36).slice(2, 15)}`,
+      roleNames: role,
     },
   };
 }
