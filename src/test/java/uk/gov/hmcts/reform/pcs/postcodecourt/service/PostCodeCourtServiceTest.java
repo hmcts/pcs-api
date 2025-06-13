@@ -15,6 +15,7 @@ import uk.gov.hmcts.reform.pcs.postcodecourt.exception.InvalidPostCodeException;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.Court;
 import uk.gov.hmcts.reform.pcs.postcodecourt.repository.PostCodeCourtRepository;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -54,10 +55,9 @@ class PostCodeCourtServiceTest {
         String postCode = " W3 7RX ";
         String trimmedPostcode = "W37RX";
         int expectedEpimId = 20262;
+        PostCodeCourtEntity postCodeCourtEntity = createEntityWithLiveEpimId(postCode, expectedEpimId);
         List<String> postcodes = getPostCodeCandidates(trimmedPostcode);
 
-        PostCodeCourtEntity postCodeCourtEntity = new PostCodeCourtEntity();
-        postCodeCourtEntity.setId(new PostCodeCourtKey(postCode, expectedEpimId));
         when(postCodeCourtRepository.findByIdPostCodeIn(postcodes)).thenReturn(List.of(postCodeCourtEntity));
         when(locationReferenceService.getCountyCourts(SYSTEM_USER_TOKEN, List.of(expectedEpimId)))
             .thenReturn(List.of(new CourtVenue(expectedEpimId, 101, "Royal Courts of Justice (Main Building)")));
@@ -97,8 +97,7 @@ class PostCodeCourtServiceTest {
         String postCode = "W37RX";
         String partialPostcode = "W37R";
         int expectedEpimId = 76598;
-        PostCodeCourtEntity postCodeCourtEntity = new PostCodeCourtEntity();
-        postCodeCourtEntity.setId(new PostCodeCourtKey(partialPostcode, expectedEpimId));
+        PostCodeCourtEntity postCodeCourtEntity = createEntityWithLiveEpimId(partialPostcode, expectedEpimId);
         List<String> postcodes = getPostCodeCandidates(postCode);
 
         when(postCodeCourtRepository.findByIdPostCodeIn(postcodes)).thenReturn(List.of(postCodeCourtEntity));
@@ -133,6 +132,97 @@ class PostCodeCourtServiceTest {
         verify(postCodeCourtRepository, never()).findByIdPostCodeIn(any());
     }
 
+    @Test
+    @DisplayName("Should return postcode court mapping when EpimId is live")
+    void shouldReturnPostcodeCourtMappingWhenEpimIdIsLive() {
+        String postCode = "W37RX";
+        int liveEpimId = 76598;
+        PostCodeCourtEntity postCodeCourtEntity = createEntityWithLiveEpimId(postCode, liveEpimId);
+        List<String> postcodes = getPostCodeCandidates(postCode);
+
+        when(postCodeCourtRepository.findByIdPostCodeIn(postcodes)).thenReturn(List.of(postCodeCourtEntity));
+        when(locationReferenceService.getCountyCourts(SYSTEM_USER_TOKEN, List.of(liveEpimId)))
+            .thenReturn(List.of(new CourtVenue(liveEpimId, 303, "Main Court of Justice")));
+
+        List<Court> response = underTest.getCountyCourtsByPostCode(postCode);
+
+        assertThat(response)
+            .isNotEmpty()
+            .isEqualTo(List.of(new Court(303, "Main Court of Justice", liveEpimId)));
+        verify(postCodeCourtRepository).findByIdPostCodeIn(postcodes);
+        verify(locationReferenceService).getCountyCourts(SYSTEM_USER_TOKEN, List.of(liveEpimId));
+    }
+
+    @Test
+    @DisplayName("Should return live EpimId when effectiveTo date is null")
+    void shouldReturnLiveEpimIdWhenEffectiveToDateIsNull() {
+        String postCode = "W37RX";
+        int liveEpimId = 76598;
+        PostCodeCourtEntity postCodeCourtEntity = createEntityWithLiveEpimId(postCode, liveEpimId);
+        postCodeCourtEntity.setEffectiveTo(null);
+        List<String> postcodes = getPostCodeCandidates(postCode);
+
+        when(postCodeCourtRepository.findByIdPostCodeIn(postcodes)).thenReturn(List.of(postCodeCourtEntity));
+        when(locationReferenceService.getCountyCourts(SYSTEM_USER_TOKEN, List.of(liveEpimId)))
+            .thenReturn(List.of(new CourtVenue(liveEpimId, 303, "Main Court of Justice")));
+
+        List<Court> response = underTest.getCountyCourtsByPostCode(postCode);
+
+        assertThat(response)
+            .isNotEmpty()
+            .isEqualTo(List.of(new Court(303, "Main Court of Justice", liveEpimId)));
+        verify(postCodeCourtRepository).findByIdPostCodeIn(postcodes);
+        verify(locationReferenceService).getCountyCourts(SYSTEM_USER_TOKEN, List.of(liveEpimId));
+
+    }
+
+    @Test
+    @DisplayName("Should return empty list when EpimId is not live")
+    void shoudlReturnEmptyListWhenEpimIdIsNotLive() {
+        String postCode = "W37RX";
+        int expectedEpimId = 76598;
+        PostCodeCourtEntity postCodeCourtEntity = createEntityWithNonLiveEpimId(postCode, expectedEpimId);
+        List<String> postcodes = getPostCodeCandidates(postCode);
+
+        when(postCodeCourtRepository.findByIdPostCodeIn(postcodes)).thenReturn(List.of(postCodeCourtEntity));
+        when(locationReferenceService.getCountyCourts(SYSTEM_USER_TOKEN, List.of(expectedEpimId)))
+            .thenReturn(List.of(new CourtVenue(expectedEpimId, 303, "Main Court of Justice")));
+
+        List<Court> response = underTest.getCountyCourtsByPostCode(postCode);
+
+        assertThat(response).isEmpty();
+        verify(postCodeCourtRepository).findByIdPostCodeIn(postcodes);
+    }
+
+    @Test
+    @DisplayName("Should return live EpimId when multilple EpimId's are found")
+    void shouldReturnLiveEpimIdWhenMultilpleEpimIdsFound() {
+        String postCode = "W37RX";
+        int nonLiveEpimId = 76598;
+        PostCodeCourtEntity nonLivePostCodeCourtEntity = createEntityWithNonLiveEpimId(postCode, nonLiveEpimId);
+
+        int liveEpimId = 89567;
+        PostCodeCourtEntity livePostCodeCourtEntity = createEntityWithLiveEpimId(postCode, liveEpimId);
+
+        List<String> postcodes = getPostCodeCandidates(postCode);
+        when(postCodeCourtRepository.findByIdPostCodeIn(postcodes)).thenReturn(List.of(
+            nonLivePostCodeCourtEntity,
+            livePostCodeCourtEntity
+        ));
+
+        when(locationReferenceService.getCountyCourts(SYSTEM_USER_TOKEN, List.of(liveEpimId)))
+            .thenReturn(List.of(new CourtVenue(liveEpimId, 303, "Main Court of Justice")));
+
+        List<Court> response = underTest.getCountyCourtsByPostCode(postCode);
+
+        assertThat(response)
+            .isNotEmpty()
+            .isEqualTo(List.of(new Court(303, "Main Court of Justice", liveEpimId)));
+        verify(postCodeCourtRepository).findByIdPostCodeIn(postcodes);
+        verify(locationReferenceService).getCountyCourts(SYSTEM_USER_TOKEN, List.of(liveEpimId));
+        verify(postCodeCourtRepository).findByIdPostCodeIn(postcodes);
+    }
+
     private List<String> getPostCodeCandidates(String postCode) {
         String partialPostcode = postCode;
         List<String> postCodes = new ArrayList<>();
@@ -144,4 +234,22 @@ class PostCodeCourtServiceTest {
         return postCodes;
     }
 
+    private PostCodeCourtEntity createEntityWithNonLiveEpimId(String postCode, int epimId) {
+        PostCodeCourtEntity postCodeCourtEntity = new PostCodeCourtEntity();
+        postCodeCourtEntity.setId(new PostCodeCourtKey(postCode, epimId));
+        postCodeCourtEntity.setEffectiveFrom(LocalDate.now().minusDays(4));
+        postCodeCourtEntity.setEffectiveTo(LocalDate.now().minusDays(1));
+
+        return postCodeCourtEntity;
+    }
+
+
+    private PostCodeCourtEntity createEntityWithLiveEpimId(String postCode, int epimId) {
+        PostCodeCourtEntity livePostCodeCourtEntity = new PostCodeCourtEntity();
+        livePostCodeCourtEntity.setId(new PostCodeCourtKey(postCode, epimId));
+        livePostCodeCourtEntity.setEffectiveFrom(LocalDate.now().minusDays(4));
+        livePostCodeCourtEntity.setEffectiveTo(LocalDate.now().plusDays(6));
+
+        return livePostCodeCourtEntity;
+    }
 }
