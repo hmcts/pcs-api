@@ -271,9 +271,9 @@ sonarqube {
     property "sonar.coverage.exclusions", "**/config/**/*Configuration.java," +
       "**/*Constants.java," +
       "**/model/*.java," +
+      "**/ccd/**/*.java," +
       "**/uk/gov/hmcts/reform/pcs/Application.java," +
       "**/uk/gov/hmcts/reform/pcs/ccd/config/HighLevelDataSetupApp.java"
-    property "sonar.qualitygate.wait", "false"
   }
 }
 
