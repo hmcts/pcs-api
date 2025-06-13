@@ -12,9 +12,9 @@ import uk.gov.hmcts.reform.pcs.postcodecourt.exception.InvalidPostCodeException;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.Court;
 import uk.gov.hmcts.reform.pcs.postcodecourt.repository.PostCodeCourtRepository;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 
@@ -62,11 +62,14 @@ public class PostCodeCourtService {
             log.warn("Postcode court mapping not found for postcode {}", postcode);
             return List.of();
         }
-        PostCodeCourtEntity postCodeMatch = results.stream()
-            .max(Comparator.comparingInt(e -> e.getId().getPostCode().length()))
-            .get();
-        log.info("Found court mapping for postcode {} as {}", postcode, postCodeMatch.getId().getPostCode());
-        return List.of(postCodeMatch);
+        int maxLength = results.stream()
+            .mapToInt(e -> e.getId().getPostCode().length())
+            .max()
+            .orElse(0);
+        List<PostCodeCourtEntity> filterResults = results.stream()
+            .filter(e -> e.getId().getPostCode().length() == maxLength)
+            .toList();
+        return getLiveEpimId(filterResults);
     }
 
     private List<String> getPostCodeLookupCandidates(String postcode) {
@@ -87,6 +90,25 @@ public class PostCodeCourtService {
         return Try.of(() -> locationReferenceService.getCountyCourts(authorisation, epimIds))
                 .onFailure(e -> log.error("Failed to fetch court details Error {}", e.getMessage(), e))
                 .getOrElse(Collections.emptyList());
+    }
+
+    private List<PostCodeCourtEntity> getLiveEpimId(List<PostCodeCourtEntity> results) {
+
+        LocalDate currentDate = LocalDate.now();
+        List<PostCodeCourtEntity> liveEpimId = results.stream().filter(
+                s -> !s.getEffectiveFrom().isAfter(currentDate) &&
+                    (s.getEffectiveTo() == null || !s.getEffectiveTo().isBefore(currentDate)))
+            .toList();
+        if (liveEpimId.isEmpty()) {
+            log.warn("Live Epim Id not found for postcode {}", results.get(0).getId().getPostCode());
+            return List.of();
+        }
+        if (results.size() > 1) {
+            // throw error as two lives have been found?
+            log.error("Multiple live EpimId's found for postcode {}", results.get(0).getId().getPostCode());
+            return List.of();
+        }
+        return liveEpimId;
     }
 
 }
