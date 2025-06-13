@@ -41,7 +41,7 @@ ccd:
     ras:
       enabled: false
     elastic:
-      enabled: true
+      enabled: false
   ccd-definition-store-api:
     java:
       devmemoryRequests: '1024Mi'
@@ -137,9 +137,6 @@ ccd:
           secrets:
             - microservicekey-ccd-admin
             - ccd-admin-web-oauth2-client-secret
-  elasticsearch:
-    releaseNameOverride: ${SERVICE_NAME}-es
-    ingressHost: es-${SERVICE_FQDN}
 xui-webapp:
   enabled: true
   nodejs:
