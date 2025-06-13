@@ -323,6 +323,7 @@ dependencies {
   implementation group: 'com.github.kagkarlsson', name: 'db-scheduler-spring-boot-starter', version: '15.6.0'
   annotationProcessor group: 'org.projectlombok', name: 'lombok', version: lombokVersion
 
+
   testImplementation group: 'io.rest-assured', name: 'rest-assured', version: '5.5.5'
 
   implementation(group: 'com.github.hmcts', name: 'befta-fw', version: '9.2.4') {
