@@ -3,7 +3,7 @@ import * as process from 'node:process';
 import { defineConfig, devices } from '@playwright/test';
 
 const DEFAULT_VIEWPORT = { width: 1920, height: 1080 };
-const browser = process.env.BROWSER || 'chromium'; // Use for report folder name
+const browser = (process.env.BROWSER || 'chromium').toLowerCase();
 
 module.exports = defineConfig({
   testDir: 'tests/',
