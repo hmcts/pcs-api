@@ -139,6 +139,9 @@ ccd:
             - ccd-admin-web-oauth2-client-secret
   elasticsearch:
     clusterName: ${SERVICE_NAME}-es
+  logstash:
+    environment:
+      ES_HOSTS: http://${SERVICE_NAME}-es-master:9200
 xui-webapp:
   enabled: true
   nodejs:
