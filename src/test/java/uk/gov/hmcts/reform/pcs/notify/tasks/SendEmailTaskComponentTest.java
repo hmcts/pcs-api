@@ -12,7 +12,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.pcs.notify.config.NotificationErrorHandler;
 import uk.gov.hmcts.reform.pcs.notify.model.EmailState;
-import uk.gov.hmcts.reform.pcs.notify.config.SendEmailTaskComponent;
+import uk.gov.hmcts.reform.pcs.notify.task.SendEmailTaskComponent;
 import uk.gov.hmcts.reform.pcs.notify.repository.NotificationRepository;
 import uk.gov.hmcts.reform.pcs.notify.service.NotificationService;
 import uk.gov.service.notify.NotificationClient;
@@ -237,7 +237,7 @@ class SendEmailTaskComponentTest {
         @Test
         @DisplayName("Should handle zero duration configurations")
         void shouldHandleZeroDurationConfigurations() {
-            uk.gov.hmcts.reform.pcs.notify.config.SendEmailTaskComponent component = new SendEmailTaskComponent(
+            SendEmailTaskComponent component = new SendEmailTaskComponent(
                 notificationService,
                 notificationClient,
                 errorHandler,

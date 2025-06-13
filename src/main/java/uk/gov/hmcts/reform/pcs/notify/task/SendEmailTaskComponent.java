@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
+import uk.gov.hmcts.reform.pcs.notify.config.NotificationErrorHandler;
 import uk.gov.hmcts.reform.pcs.notify.config.NotificationErrorHandler.NotificationStatusUpdate;
 import uk.gov.hmcts.reform.pcs.notify.domain.CaseNotification;
 import uk.gov.hmcts.reform.pcs.notify.model.EmailState;
@@ -28,6 +29,8 @@ import java.time.Instant;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+
+import static uk.gov.hmcts.reform.pcs.notify.task.VerifyEmailTaskComponent.verifyEmailTask;
 
 @Component
 @Slf4j
@@ -134,7 +137,7 @@ public class SendEmailTaskComponent {
                     return new CompletionHandler.OnCompleteReplace<>(
                         currentInstance -> SchedulableInstance.of(
                             new TaskInstance<>(
-                                uk.gov.hmcts.reform.pcs.notify.config.VerifyEmailTaskComponent.verifyEmailTask
+                                verifyEmailTask
                                     .getTaskName(),
                                 currentInstance.getId(), nextState),
                             Instant.now().plus(statusCheckTaskDelay)
