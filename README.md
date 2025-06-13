@@ -139,16 +139,14 @@ The following environment variables are needed to run the tests:
 - PCS_API_IDAM_SECRET
 - TEST_E2E_URL_EXUI
 
-Localhost Login for E2E Tests
-
-When running against `localhost`, the test framework **will not create test users via IDAM**.
-
+Localhost Login for E2E Tests:
+When running against `localhost`, the test framework will not create test users via IDAM.
 Instead, it expects these environment variables to be set manually:
 
 - TEST_USERNAME
 - TEST_PASSWORD
 
-Refer CftlibConfig.java under cftlib for details.
+Refer CftlibConfig.java under cftlib for username.
 
 The e2e suite can be run with the following command:
 
@@ -162,7 +160,6 @@ There are also several custom test scripts available:
 
 - `yarn test:changed` - runs only changed spec files
 - `yarn test:chrome` - runs the full E2E suite in Chrome
-- `yarn test:firefox` - runs the full E2E suite in Firefox
 
 ### Running pcs-api with local CCD
 
