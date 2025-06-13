@@ -3,7 +3,7 @@ import * as actions from '@helpers/actions.helper';
 import { caseData } from '@data/case.data';
 import {Page} from "@playwright/test";
 
-test.describe('Create Case with Address @functional @PR @nightly', () => {
+test.describe('Create Case with Address @nightly', () => {
   // Use test-scoped credentials
   //test.use({
   //  username: caseData.email,
