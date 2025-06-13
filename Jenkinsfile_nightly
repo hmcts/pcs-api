@@ -37,17 +37,21 @@ def runE2ETestsForBrowser(String browser) {
     } catch (Error) {
       unstable(message: "${STAGE_NAME} is unstable: " + Error.toString())
     } finally {
+      def browserLower = browser.toLowerCase()
+      def reportFolder = browserLower == "chrome" ? "chromium" : browserLower
+
       publishHTML([
         allowMissing: true,
         alwaysLinkToLastBuild: true,
         keepAll: true,
-        reportDir: "src/e2eTest/playwright-report",
+        reportDir: "src/e2eTest/playwright-report-${reportFolder}",
         reportFiles: 'index.html',
         reportName: "Full ${browser} E2E Test Report"
       ])
+
       steps.archiveArtifacts(
         allowEmptyArchive: true,
-        artifacts: 'definitions/test/playwright-report/**'
+        artifacts: "src/e2eTest/playwright-report-${reportFolder}/**"
       )
     }
   }

@@ -3,6 +3,7 @@ import * as process from 'node:process';
 import { defineConfig, devices } from '@playwright/test';
 
 const DEFAULT_VIEWPORT = { width: 1920, height: 1080 };
+const browser = process.env.BROWSER || 'chromium'; // Use for report folder name
 
 module.exports = defineConfig({
   testDir: 'tests/',
@@ -17,7 +18,10 @@ module.exports = defineConfig({
   /* Report slow tests if they take longer than 5 mins */
   reportSlowTests: { max: 15, threshold: 5 * 60 * 1000 },
   workers: process.env.FUNCTIONAL_TESTS_WORKERS ? parseInt(process.env.FUNCTIONAL_TESTS_WORKERS) : 4,
-  reporter: process.env.CI ? [['html'], ['list']] : [['html']],
+  reporter: process.env.CI
+    ? [['html', { outputFolder: `playwright-report-${browser}` }], ['list']]
+    : [['html', { outputFolder: `playwright-report-${browser}` }]],
+
   projects: [
     {
       name: 'chromium',
