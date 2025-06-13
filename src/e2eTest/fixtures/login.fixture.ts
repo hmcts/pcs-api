@@ -34,14 +34,13 @@ export const test = baseTest.extend<MyFixtures>({
 
     await page.goto(ConfigData.manageCasesBaseURL);
 
-    await actions.fillInput(page, 'Email address', finalUsername);
-    await actions.fillInput(page, 'Password', finalPassword);
-
-    await actions.clickButton(page, 'Sign in');
+    await actions.fillInputById(page, 'username', finalUsername);
+    await actions.fillInputById(page, 'password', finalPassword);
+    await actions.clickLoginButton(page);
 
     await use(page);
 
-    // Cleanup if we created the user
+    // Delete if we created the user
     if (userCreated && finalUsername) {
       try {
         await idamHelper.deleteAccount(finalUsername);

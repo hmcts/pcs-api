@@ -54,3 +54,21 @@ export async function handleCookies(page: Page): Promise<void> {
   }
 }
 
+export async function fillInputById(page: Page, id: string, value: string): Promise<void> {
+  const input = page.locator(`#${id}`);
+  try {
+    await input.waitFor({ state: 'visible', timeout: 5000 });
+    await input.fill(value);
+  } catch {
+    throw new Error(`Input with id="${id}" not found or not visible.`);
+  }
+}
+
+export async function clickLoginButton(page: Page): Promise<void> {
+  const button = page.locator('button[name="save"], input[name="save"][value="Sign in"]');
+  if (await button.count() === 0) {
+    throw new Error(`Login button not found.`);
+  }
+  await button.first().click();
+}
+
