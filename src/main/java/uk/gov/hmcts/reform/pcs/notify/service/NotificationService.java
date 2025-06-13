@@ -39,7 +39,7 @@ public class NotificationService {
      * @param emailRequest the request containing details of the email to be sent, including the recipient's
      *                     email address, template ID, personalization data, reference, and reply-to ID
      * @return an EmailNotificationResponse containing the task ID, notification ID, and status of the scheduled
-     * notification
+     *      notification
      */
     public EmailNotificationResponse scheduleEmailNotification(EmailNotificationRequest emailRequest) {
         String taskId = UUID.randomUUID().toString();

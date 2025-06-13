@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import uk.gov.hmcts.reform.pcs.notify.config.NotificationErrorHandler.NotificationStatusUpdate;
 import uk.gov.hmcts.reform.pcs.notify.domain.CaseNotification;
 import uk.gov.hmcts.reform.pcs.notify.model.EmailState;
 import uk.gov.hmcts.reform.pcs.notify.exception.PermanentNotificationException;
@@ -213,7 +214,7 @@ public class EmailTaskConfiguration {
             });
     }
 
-    private void updateNotificationFromStatusUpdate(NotificationErrorHandler.NotificationStatusUpdate statusUpdate) {
+    private void updateNotificationFromStatusUpdate(NotificationStatusUpdate statusUpdate) {
         notificationService.updateNotificationStatus(
             statusUpdate.notification().getNotificationId(),
             statusUpdate.status().toString()
