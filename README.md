@@ -115,12 +115,12 @@ After the tests run, the report will be available under the /[report-for-functio
 
 ---
 
-The E2E UI tests use [Playwright](https://playwright.dev/), and in order to access these you need to cd to the `/src/e2eTests` directory.
+The E2E UI tests use [Playwright](https://playwright.dev/), and in order to access these you need to cd to the `/src/e2eTest` directory.
 
 This is done with:
 
 ```bash
-cd src/e2eTests
+cd src/e2eTest
 ````
 
 Before running any tests, please install all required packages:
@@ -128,20 +128,38 @@ Before running any tests, please install all required packages:
 ```bash
 yarn install
 ````
+Running the tests
+The e2e tests use playwright, and are located in the /src/e2eTest directory.
 
-The pr suite can be run with the following command:
+The following environment variables are needed to run the tests:
+
+- IDAM_SYSTEM_USERNAME
+- IDAM_SYSTEM_USER_PASSWORD
+- PCS_FRONTEND_IDAM_USER_TEMP_PASSWORD
+- PCS_API_IDAM_SECRET
+- TEST_E2E_URL_EXUI
+
+Localhost Login for E2E Tests:
+When running against `localhost`, the test framework will not create test users via IDAM.
+Instead, it expects these environment variables to be set manually:
+
+- TEST_USERNAME
+- TEST_PASSWORD
+
+Refer CftlibConfig.java under cftlib for username.
+
+The e2e suite can be run with the following command:
 
 ```bash
 yarn test:functional
 ```
 
-By default, the tests will run against http://localhost:3206/, please update the value on line 3 of `src/e2eTest/config.ts` to change this.
+By default, the tests will run against http://localhost:3000/, please update the value on line 3 of `src/e2eTest/config/config.data.json` to change this.
 
 There are also several custom test scripts available:
 
 - `yarn test:changed` - runs only changed spec files
-- `test:chrome` - runs the full E2E suite in Chrome
-- `test:firefox` - runs the full E2E suite in Firefox
+- `yarn test:chrome` - runs the full E2E suite in Chrome
 
 ### Running pcs-api with local CCD
 

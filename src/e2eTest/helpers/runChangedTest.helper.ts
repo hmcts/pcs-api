@@ -33,7 +33,7 @@ export class ChangedTestsRunner {
       return;
     }
     try {
-      const command: string = `yarn playwright test ${testFiles.join(' ')} --project chromium`;
+      const command: string = `yarn playwright test ${testFiles.join(' ')} --project chrome`;
       await this.execCommand(command);
     } catch (error) {
       throw new Error('Error running Playwright tests: ' + error);

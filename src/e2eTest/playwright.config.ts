@@ -8,7 +8,6 @@ module.exports = defineConfig({
   testDir: 'tests/',
   /* Run tests in files in parallel */
   fullyParallel: true,
-  /* Fail the build on CI if you accidentally left test.only in the source code. */
   forbidOnly: !!process.env.CI,
   /* Retry on CI only */
   retries: process.env.CI ? 2 : 0,
@@ -17,62 +16,20 @@ module.exports = defineConfig({
   /* Report slow tests if they take longer than 5 mins */
   reportSlowTests: { max: 15, threshold: 5 * 60 * 1000 },
   workers: process.env.FUNCTIONAL_TESTS_WORKERS ? parseInt(process.env.FUNCTIONAL_TESTS_WORKERS) : 4,
-  reporter: process.env.CI ? [['html'], ['list']] : [['list']],
+  reporter: process.env.CI ? [['html'], ['list']] : [['html']],
+
   projects: [
     {
-      name: 'chromium',
+      name: 'chrome',
       use: {
         ...devices['Desktop Chrome'],
-        channel: 'chromium',
-        screenshot: 'off',
-        video: 'off',
+        channel: 'chrome',
+        screenshot: 'only-on-failure',
+        video: 'retain-on-failure',
         trace: 'on-first-retry',
         javaScriptEnabled: true,
         viewport: DEFAULT_VIEWPORT,
-      },
-    },
-    {
-      name: 'firefox',
-      use: {
-        ...devices['Desktop Firefox'],
-        screenshot: 'off',
-        video: 'off',
-        trace: 'on-first-retry',
-        javaScriptEnabled: true,
-        viewport: DEFAULT_VIEWPORT,
-      },
-    },
-    {
-      name: 'webkit',
-      use: {
-        ...devices['Desktop Safari'],
-        screenshot: 'off',
-        video: 'off',
-        trace: 'on-first-retry',
-        javaScriptEnabled: true,
-        viewport: DEFAULT_VIEWPORT,
-      },
-    },
-    {
-      name: 'MobileChrome',
-      use: {
-        ...devices['Pixel 5'],
-        trace: 'on-first-retry',
-      },
-    },
-    {
-      name: 'MobileSafari',
-      use: {
-        ...devices['iPhone 12'],
-        trace: 'on-first-retry',
-      },
-    },
-    {
-      name: 'MicrosoftEdge',
-      use: {
-        ...devices['Desktop Edge'],
-        channel: 'msedge',
-        trace: 'on-first-retry',
+        headless: true,
       },
     },
   ],
