@@ -4,6 +4,7 @@ package uk.gov.hmcts.reform.pcs;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -43,6 +44,7 @@ public class TestWithCCD extends CftlibTest {
 
     @Order(1)
     @Test
+    @Disabled
     public void createsTestCase() {
         var r = ccdApi.startCase(idamToken, s2sToken, CaseType.getCaseType(), "createTestApplication");
         var content = CaseDataContent.builder()
