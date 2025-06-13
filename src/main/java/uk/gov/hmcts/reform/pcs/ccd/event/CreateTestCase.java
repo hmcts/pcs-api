@@ -22,7 +22,7 @@ public class CreateTestCase implements CCDConfig<PCSCase, State, UserRole> {
             .grant(Permission.CRUD, UserRole.CASE_WORKER)
             .fields()
             .page("Make a claim")
-            .pageLabel("What is the address of the property you are claiming possession of?")
+            .pageLabel("What is the address of the property you're claiming possession of?")
             .label("lineSeparator", "---")
             .mandatory(PCSCase::getPropertyAddress)
             .page("claimant information")
