@@ -273,6 +273,7 @@ sonarqube {
       "**/model/*.java," +
       "**/uk/gov/hmcts/reform/pcs/Application.java," +
       "**/uk/gov/hmcts/reform/pcs/ccd/config/HighLevelDataSetupApp.java"
+    property "sonar.qualitygate.wait", "false"
   }
 }
 
