@@ -140,8 +140,11 @@ ccd:
   elasticsearch:
     clusterName: ${SERVICE_NAME}-es
   logstash:
-    environment:
-      ES_HOSTS: http://${SERVICE_NAME}-es-master:9200
+    logstashConfig:
+      logstash.yml: |
+        http.host: 0.0.0.0
+        xpack.monitoring.enabled: false
+        xpack.monitoring.elasticsearch.hosts: ["http://${SERVICE_NAME}-es-master:9200"]
 xui-webapp:
   enabled: true
   nodejs:
