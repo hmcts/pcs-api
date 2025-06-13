@@ -91,6 +91,7 @@ ccd:
         ELASTIC_SEARCH_ENABLED: true
         ELASTIC_SEARCH_DATA_NODES_HOSTS: "http://{{ .Release.Name }}-es-master:9200"
         ELASTIC_SEARCH_HOSTS: "http://{{ .Release.Name }}-es-master:9200"
+        ELASTIC_SEARCH_CASE_INDEX_NAME_FORMAT: 'pcs_cases'
       secrets:
         DATA_STORE_DB_PASSWORD:
           key: password
