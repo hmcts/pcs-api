@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.notify.tasks;
+package uk.gov.hmcts.reform.pcs.notify.task;
 
 import com.github.kagkarlsson.scheduler.task.helper.CustomTask;
 import org.junit.jupiter.api.BeforeEach;
@@ -12,7 +12,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.pcs.notify.config.NotificationErrorHandler;
 import uk.gov.hmcts.reform.pcs.notify.model.EmailState;
-import uk.gov.hmcts.reform.pcs.notify.task.SendEmailTaskComponent;
 import uk.gov.hmcts.reform.pcs.notify.repository.NotificationRepository;
 import uk.gov.hmcts.reform.pcs.notify.service.NotificationService;
 import uk.gov.service.notify.NotificationClient;
