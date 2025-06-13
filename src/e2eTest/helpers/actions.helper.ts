@@ -2,6 +2,7 @@ import { Page, expect, Locator } from '@playwright/test';
 
 export async function clickLink(page: Page, linkText: string): Promise<void> {
   const link: Locator = page.getByRole('link', { name: linkText });
+  await expect(link).toBeVisible();
   await link.click();
 }
 

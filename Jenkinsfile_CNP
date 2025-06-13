@@ -46,10 +46,9 @@ withPipeline(type, product, component) {
       enableHighLevelDataSetup()
     }
 
-    afterSuccess('smoketest:preview') {
-          runE2ETestsForBrowser('Chrome')
-          runE2ETestsForBrowser('Firefox')
-        }
+    afterSuccess('smoketest:aat') {
+      runE2eTests(env.ENVIRONMENT)
+    }
 
   }
 
@@ -150,29 +149,4 @@ def archiveFunctionalTestReports() {
   archiveArtifacts allowEmptyArchive: true, artifacts: '**/report-for-functional-tests/*'
 }
 
-def runE2ETestsForBrowser(String browser) {
-  stage("Full E2E Test - ${browser}") {
-    try {
-      sh "./gradlew runE2e${browser}Tests"
-    } catch (Error) {
-      unstable(message: "${STAGE_NAME} is unstable: " + Error.toString())
-    } finally {
-      def browserLower = browser.toLowerCase()
-      def reportFolder = browserLower == "chrome" ? "chromium" : browserLower
 
-      publishHTML([
-        allowMissing: true,
-        alwaysLinkToLastBuild: true,
-        keepAll: true,
-        reportDir: "src/e2eTest/playwright-report-${reportFolder}",
-        reportFiles: 'index.html',
-        reportName: "Full ${browser} E2E Test Report"
-      ])
-
-      steps.archiveArtifacts(
-        allowEmptyArchive: true,
-        artifacts: 'definitions/test/playwright-report-${reportFolder}/**'
-      )
-    }
-  }
-}

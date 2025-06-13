@@ -1,7 +1,5 @@
 
 export const caseData = {
-  email: '',
-  password: '',
   jurisdiction: 'Civil Possessions',
   caseType: 'Civil Possessions',
   event: 'Make a claim',

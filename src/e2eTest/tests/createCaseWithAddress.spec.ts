@@ -3,12 +3,7 @@ import * as actions from '@helpers/actions.helper';
 import { caseData } from '@data/case.data';
 import {Page} from "@playwright/test";
 
-test.describe('Create Case with Address @nightly', () => {
-  // Use test-scoped credentials
-  //test.use({
-  //  username: caseData.email,
-  //password: caseData.password
-  //});
+test.describe('Create Case with Address @PR @nightly', () => {
 
   test('should create a case successfully with Dropdown Address Flow', async ({ loggedInPage },testInfo) => {
     await testInfo.attach('Page URL', {
@@ -25,7 +20,7 @@ test.describe('Create Case with Address @nightly', () => {
     await testInfo.attach('Page URL', {
       body: loggedInPage.url(),
       contentType: 'text/plain',
-    })
+    });
     await startCaseCreation(loggedInPage);
     await selectAddress(loggedInPage,true);
     await enterApplicantDetails(loggedInPage);

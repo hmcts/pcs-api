@@ -139,6 +139,17 @@ The following environment variables are needed to run the tests:
 - PCS_API_IDAM_SECRET
 - TEST_E2E_URL_EXUI
 
+Localhost Login for E2E Tests
+
+When running against `localhost`, the test framework **will not create test users via IDAM**.
+
+Instead, it expects these environment variables to be set manually:
+
+- TEST_USERNAME
+- TEST_PASSWORD
+
+Refer CftlibConfig.java under cftlib for details.
+
 The e2e suite can be run with the following command:
 
 ```bash

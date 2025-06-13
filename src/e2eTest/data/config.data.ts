@@ -9,12 +9,12 @@ export class ConfigData {
     "grantType": "password",
     "scope": "profile openid roles",
     "clientId": "pcs-api",
-    "roles": ['caseworker-civil','caseworker'],
+    "roles": ['caseworker-pcs','caseworker'],
   };
   public static readonly localHost = {
-    "env":'localhost',
-    "username": 'caseworker@pcs.com',
-    "password": "password"
+    env: 'localhost',
+    username: process.env.TEST_USERNAME || '',
+    password: process.env.TEST_PASSWORD || '',
   };
 }
 
