@@ -33,6 +33,7 @@ java:
     LOCATION_REF_URL: "http://rd-location-ref-api-{{ .Values.global.environment }}.service.core-compute-{{ .Values.global.environment }}.internal"
     FLYWAY_NOOP_STRATEGY: "true"
     SPRING_FLYWAY_ENABLED: "true"
+    CCD_SDK_DECENTRALISED: "true"
 servicebus:
   enabled: false
 ccd:
