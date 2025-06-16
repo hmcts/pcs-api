@@ -53,7 +53,7 @@ ccd:
         DEFINITION_STORE_DB_HOST: '{{ tpl .Values.global.postgresHostname $}}'
         IDAM_USER_URL: https://idam-web-public.aat.platform.hmcts.net
         DEFINITION_STORE_TX_TIMEOUT_DEFAULT: 360
-        ELASTIC_SEARCH_ENABLED: false
+        ELASTIC_SEARCH_ENABLED: true
         WELSH_TRANSLATION_ENABLED: false
         DEFINITION_STORE_DB_USERNAME: "{{ .Values.postgresql.auth.username}}"
         DEFINITION_STORE_DB_OPTIONS: ""
