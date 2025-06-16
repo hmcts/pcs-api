@@ -37,6 +37,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -165,7 +166,7 @@ class SendEmailTaskComponentTest {
 
             ArgumentCaptor<String> referenceCaptor = ArgumentCaptor.forClass(String.class);
             verify(notificationClient).sendEmail(eq(templateId), eq(emailAddress), eq(personalisation),
-                                                    referenceCaptor.capture());
+                referenceCaptor.capture());
 
             String referenceId = referenceCaptor.getValue();
             assertThat(referenceId).isNotNull().isNotEmpty();
@@ -224,8 +225,8 @@ class SendEmailTaskComponentTest {
     class NullNotificationIdTests {
 
         @Test
-        @DisplayName("Should return OnCompleteRemove when notification ID is null")
-        void shouldReturnOnCompleteRemoveWhenNotificationIdIsNull() throws Exception {
+        @DisplayName("Should throw PermanentNotificationException when notification ID is null")
+        void shouldThrowPermanentNotificationExceptionWhenNotificationIdIsNull() throws Exception {
             when(notificationRepository.findById(dbNotificationId)).thenReturn(Optional.of(caseNotification));
             when(sendEmailResponse.getNotificationId()).thenReturn(null);
             when(notificationClient.sendEmail(eq(templateId), eq(emailAddress), eq(personalisation), anyString()))
@@ -233,9 +234,10 @@ class SendEmailTaskComponentTest {
 
             CustomTask<EmailState> task = sendEmailTaskComponent.sendEmailTask();
 
-            CompletionHandler<EmailState> result = task.execute(taskInstance, executionContext);
+            assertThatThrownBy(() -> task.execute(taskInstance, executionContext))
+                .isInstanceOf(PermanentNotificationException.class)
+                .hasMessage("Null notification ID from email service");
 
-            assertThat(result).isInstanceOf(CompletionHandler.OnCompleteRemove.class);
             verify(notificationService, never()).updateNotificationAfterSending(any(), any());
         }
     }
@@ -245,10 +247,12 @@ class SendEmailTaskComponentTest {
     class NotificationClientExceptionHandlingTests {
 
         @Test
-        @DisplayName("Should handle NotificationClientException and delegate to error handler")
-        void shouldHandleNotificationClientExceptionAndDelegateToErrorHandler() throws Exception {
-            NotificationClientException exception = new NotificationClientException("Test error",
-                                                                                    new RuntimeException());
+        @DisplayName("Should return OnCompleteRemove for permanent failure 400 status code")
+        void shouldReturnOnCompleteRemoveForPermanentFailure400StatusCode() throws Exception {
+            NotificationClientException exception = mock(NotificationClientException.class);
+            when(exception.getHttpResult()).thenReturn(400);
+            when(exception.getMessage()).thenReturn("Bad Request");
+
             when(notificationRepository.findById(dbNotificationId)).thenReturn(Optional.of(caseNotification));
             when(notificationClient.sendEmail(eq(templateId), eq(emailAddress), eq(personalisation), anyString()))
                 .thenThrow(exception);
@@ -257,23 +261,64 @@ class SendEmailTaskComponentTest {
 
             CompletionHandler<EmailState> result = task.execute(taskInstance, executionContext);
 
-            @SuppressWarnings("unchecked")
-            ArgumentCaptor<Consumer<NotificationStatusUpdate>> consumerCaptor = ArgumentCaptor.forClass(Consumer.class);
-            verify(errorHandler).handleSendEmailException(
-                eq(exception),
-                eq(caseNotification),
-                anyString(),
-                consumerCaptor.capture()
-            );
-
-            assertThat(result).isNull();
+            assertThat(result).isInstanceOf(CompletionHandler.OnCompleteRemove.class);
+            verify(errorHandler).handleSendEmailException(eq(exception), eq(caseNotification), anyString(), any());
+            verify(notificationService, never()).updateNotificationAfterSending(any(), any());
         }
 
         @Test
-        @DisplayName("Should pass updateNotificationFromStatusUpdate to error handler")
-        void shouldPassUpdateNotificationFromStatusUpdateToErrorHandler() throws Exception {
-            NotificationClientException exception = new NotificationClientException("Test error",
-                                                                                    new RuntimeException());
+        @DisplayName("Should return OnCompleteRemove for permanent failure 403 status code")
+        void shouldReturnOnCompleteRemoveForPermanentFailure403StatusCode() throws Exception {
+            NotificationClientException exception = mock(NotificationClientException.class);
+            when(exception.getHttpResult()).thenReturn(403);
+            when(exception.getMessage()).thenReturn("Forbidden");
+
+            when(notificationRepository.findById(dbNotificationId)).thenReturn(Optional.of(caseNotification));
+            when(notificationClient.sendEmail(eq(templateId), eq(emailAddress), eq(personalisation), anyString()))
+                .thenThrow(exception);
+
+            CustomTask<EmailState> task = sendEmailTaskComponent.sendEmailTask();
+
+            CompletionHandler<EmailState> result = task.execute(taskInstance, executionContext);
+
+            assertThat(result).isInstanceOf(CompletionHandler.OnCompleteRemove.class);
+            verify(errorHandler).handleSendEmailException(eq(exception), eq(caseNotification), anyString(), any());
+            verify(notificationService, never()).updateNotificationAfterSending(any(), any());
+        }
+
+        @Test
+        @DisplayName("Should throw TemporaryNotificationException for temporary failure status codes")
+        void shouldThrowTemporaryNotificationExceptionForTemporaryFailureStatusCodes() throws Exception {
+            int[] temporaryFailureStatusCodes = {429, 500, 502, 503, 999};
+
+            for (int statusCode : temporaryFailureStatusCodes) {
+                NotificationClientException exception = mock(NotificationClientException.class);
+                when(exception.getHttpResult()).thenReturn(statusCode);
+                when(exception.getMessage()).thenReturn("Status " + statusCode);
+
+                when(notificationRepository.findById(dbNotificationId)).thenReturn(Optional.of(caseNotification));
+                when(notificationClient.sendEmail(eq(templateId), eq(emailAddress), eq(personalisation), anyString()))
+                    .thenThrow(exception);
+
+                CustomTask<EmailState> task = sendEmailTaskComponent.sendEmailTask();
+
+                assertThatThrownBy(() -> task.execute(taskInstance, executionContext))
+                    .isInstanceOf(TemporaryNotificationException.class)
+                    .hasMessage("Email temporarily failed to send.")
+                    .hasCause(exception);
+
+                verify(notificationService, never()).updateNotificationAfterSending(any(), any());
+                verifyNoInteractions(errorHandler);
+            }
+        }
+
+        @Test
+        @DisplayName("Should pass updateNotificationFromStatusUpdate to error handler for permanent failures")
+        void shouldPassUpdateNotificationFromStatusUpdateToErrorHandlerForPermanentFailures() throws Exception {
+            NotificationClientException exception = mock(NotificationClientException.class);
+            when(exception.getHttpResult()).thenReturn(400);
+            when(exception.getMessage()).thenReturn("Bad Request");
+
             when(notificationRepository.findById(dbNotificationId)).thenReturn(Optional.of(caseNotification));
             when(notificationClient.sendEmail(eq(templateId), eq(emailAddress), eq(personalisation), anyString()))
                 .thenThrow(exception);
@@ -303,64 +348,6 @@ class SendEmailTaskComponentTest {
                 statusUpdate.notification().getNotificationId(),
                 statusUpdate.status().toString()
             );
-        }
-    }
-
-    @Nested
-    @DisplayName("PermanentNotificationException Handling Tests")
-    class PermanentNotificationExceptionHandlingTests {
-
-        @Test
-        @DisplayName("Should return OnCompleteRemove for PermanentNotificationException")
-        void shouldReturnOnCompleteRemoveForPermanentNotificationException() throws Exception {
-            when(notificationRepository.findById(dbNotificationId)).thenReturn(Optional.of(caseNotification));
-            when(notificationClient.sendEmail(eq(templateId), eq(emailAddress), eq(personalisation), anyString()))
-                .thenThrow(new PermanentNotificationException("Permanent failure", new RuntimeException()));
-
-            CustomTask<EmailState> task = sendEmailTaskComponent.sendEmailTask();
-
-            CompletionHandler<EmailState> result = task.execute(taskInstance, executionContext);
-
-            assertThat(result).isInstanceOf(CompletionHandler.OnCompleteRemove.class);
-            verify(notificationService, never()).updateNotificationAfterSending(any(), any());
-        }
-
-        @Test
-        @DisplayName("Should not interact with error handler for PermanentNotificationException")
-        void shouldNotInteractWithErrorHandlerForPermanentNotificationException() throws Exception {
-            when(notificationRepository.findById(dbNotificationId)).thenReturn(Optional.of(caseNotification));
-            when(notificationClient.sendEmail(eq(templateId), eq(emailAddress), eq(personalisation), anyString()))
-                .thenThrow(new PermanentNotificationException("Permanent failure", new RuntimeException()));
-
-            CustomTask<EmailState> task = sendEmailTaskComponent.sendEmailTask();
-
-            task.execute(taskInstance, executionContext);
-
-            verifyNoInteractions(errorHandler);
-        }
-    }
-
-    @Nested
-    @DisplayName("TemporaryNotificationException Handling Tests")
-    class TemporaryNotificationExceptionHandlingTests {
-
-        @Test
-        @DisplayName("Should rethrow TemporaryNotificationException for retry")
-        void shouldRethrowTemporaryNotificationExceptionForRetry() throws Exception {
-            TemporaryNotificationException exception = new TemporaryNotificationException("Temporary failure",
-                                                                                            new RuntimeException());
-            when(notificationRepository.findById(dbNotificationId)).thenReturn(Optional.of(caseNotification));
-            when(notificationClient.sendEmail(eq(templateId), eq(emailAddress), eq(personalisation), anyString()))
-                .thenThrow(exception);
-
-            CustomTask<EmailState> task = sendEmailTaskComponent.sendEmailTask();
-
-            assertThatThrownBy(() -> task.execute(taskInstance, executionContext))
-                .isInstanceOf(TemporaryNotificationException.class)
-                .hasMessage("Temporary failure");
-
-            verify(notificationService, never()).updateNotificationAfterSending(any(), any());
-            verifyNoInteractions(errorHandler);
         }
     }
 
@@ -458,10 +445,12 @@ class SendEmailTaskComponentTest {
         }
 
         @Test
-        @DisplayName("Should handle error flow with proper cleanup")
-        void shouldHandleErrorFlowWithProperCleanup() throws Exception {
-            NotificationClientException exception = new NotificationClientException("Service unavailable",
-                                                                                    new RuntimeException());
+        @DisplayName("Should handle permanent failure flow with proper cleanup")
+        void shouldHandlePermanentFailureFlowWithProperCleanup() throws Exception {
+            NotificationClientException exception = mock(NotificationClientException.class);
+            when(exception.getHttpResult()).thenReturn(400);
+            when(exception.getMessage()).thenReturn("Bad Request");
+
             when(notificationRepository.findById(dbNotificationId)).thenReturn(Optional.of(caseNotification));
             when(notificationClient.sendEmail(eq(templateId), eq(emailAddress), eq(personalisation), anyString()))
                 .thenThrow(exception);
@@ -474,7 +463,31 @@ class SendEmailTaskComponentTest {
             verify(notificationClient).sendEmail(eq(templateId), eq(emailAddress), eq(personalisation), anyString());
             verify(errorHandler).handleSendEmailException(eq(exception), eq(caseNotification), anyString(), any());
             verify(notificationService, never()).updateNotificationAfterSending(any(), any());
-            assertThat(result).isNull();
+            assertThat(result).isInstanceOf(CompletionHandler.OnCompleteRemove.class);
+        }
+
+        @Test
+        @DisplayName("Should handle temporary failure flow with retry")
+        void shouldHandleTemporaryFailureFlowWithRetry() throws Exception {
+            NotificationClientException exception = mock(NotificationClientException.class);
+            when(exception.getHttpResult()).thenReturn(500);
+            when(exception.getMessage()).thenReturn("Internal Server Error");
+
+            when(notificationRepository.findById(dbNotificationId)).thenReturn(Optional.of(caseNotification));
+            when(notificationClient.sendEmail(eq(templateId), eq(emailAddress), eq(personalisation), anyString()))
+                .thenThrow(exception);
+
+            CustomTask<EmailState> task = sendEmailTaskComponent.sendEmailTask();
+
+            assertThatThrownBy(() -> task.execute(taskInstance, executionContext))
+                .isInstanceOf(TemporaryNotificationException.class)
+                .hasMessage("Email temporarily failed to send.")
+                .hasCause(exception);
+
+            verify(notificationRepository).findById(dbNotificationId);
+            verify(notificationClient).sendEmail(eq(templateId), eq(emailAddress), eq(personalisation), anyString());
+            verify(notificationService, never()).updateNotificationAfterSending(any(), any());
+            verifyNoInteractions(errorHandler);
         }
     }
 }

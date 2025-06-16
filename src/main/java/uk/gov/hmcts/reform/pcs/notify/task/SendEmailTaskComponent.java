@@ -146,19 +146,17 @@ public class SendEmailTaskComponent {
                 } catch (NotificationClientException e) {
                     log.error("NotificationClient error sending email: {}", e.getMessage(), e);
 
-                    errorHandler.handleSendEmailException(
-                        e,
-                        caseNotification,
-                        UUID.randomUUID().toString(),
-                        this::updateNotificationFromStatusUpdate
-                    );
-                    return null;
-                } catch (PermanentNotificationException e) {
-                    log.error("Permanent failure sending email: {}", e.getMessage(), e);
-                    return new CompletionHandler.OnCompleteRemove<>();
-                } catch (TemporaryNotificationException e) {
-                    log.warn("Retryable failure: {}", e.getMessage(), e);
-                    throw e;
+                    if (isPermanentFailure(e)) {
+                        errorHandler.handleSendEmailException(
+                            e,
+                            caseNotification,
+                            UUID.randomUUID().toString(),
+                            this::updateNotificationFromStatusUpdate
+                        );
+                        return new CompletionHandler.OnCompleteRemove<>();
+                    } else {
+                        throw new TemporaryNotificationException("Email temporarily failed to send.", e);
+                    }
                 }
             });
     }
@@ -168,5 +166,10 @@ public class SendEmailTaskComponent {
             statusUpdate.notification().getNotificationId(),
             statusUpdate.status().toString()
         );
+    }
+
+    private boolean isPermanentFailure(NotificationClientException e) {
+        int httpStatusCode = e.getHttpResult();
+        return httpStatusCode == 400 || httpStatusCode == 403;
     }
 }

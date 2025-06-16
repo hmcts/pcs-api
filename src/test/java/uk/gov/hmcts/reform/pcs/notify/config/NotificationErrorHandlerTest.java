@@ -10,7 +10,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.pcs.notify.domain.CaseNotification;
 import uk.gov.hmcts.reform.pcs.notify.exception.NotificationException;
-import uk.gov.hmcts.reform.pcs.notify.exception.PermanentNotificationException;
 import uk.gov.hmcts.reform.pcs.notify.exception.TemporaryNotificationException;
 import uk.gov.hmcts.reform.pcs.notify.model.NotificationStatus;
 import uk.gov.service.notify.NotificationClientException;
@@ -53,18 +52,14 @@ class NotificationErrorHandlerTest {
     class SendEmailExceptionHandlingTests {
 
         @Test
-        @DisplayName("Should throw PermanentNotificationException for 400 status code")
-        void shouldThrowPermanentNotificationExceptionFor400StatusCode() {
+        @DisplayName("Should update status to PERMANENT_FAILURE for 400 status code without throwing exception")
+        void shouldUpdateStatusToPermanentFailureFor400StatusCodeWithoutThrowingException() {
             NotificationClientException clientException = mock(NotificationClientException.class);
             when(clientException.getHttpResult()).thenReturn(400);
             when(clientException.getMessage()).thenReturn("Bad Request");
 
-            assertThatThrownBy(() ->
-                errorHandler.handleSendEmailException(clientException,
-                                                        mockCaseNotification, REFERENCE_ID, statusUpdater))
-                .isInstanceOf(PermanentNotificationException.class)
-                .hasMessage("Email failed to send.")
-                .hasCause(clientException);
+            errorHandler.handleSendEmailException(clientException,
+                                                  mockCaseNotification, REFERENCE_ID, statusUpdater);
 
             ArgumentCaptor<NotificationErrorHandler.NotificationStatusUpdate> captor =
                 forClass(NotificationErrorHandler.NotificationStatusUpdate.class);
@@ -77,18 +72,14 @@ class NotificationErrorHandlerTest {
         }
 
         @Test
-        @DisplayName("Should throw PermanentNotificationException for 403 status code")
-        void shouldThrowPermanentNotificationExceptionFor403StatusCode() {
+        @DisplayName("Should update status to PERMANENT_FAILURE for 403 status code without throwing exception")
+        void shouldUpdateStatusToPermanentFailureFor403StatusCodeWithoutThrowingException() {
             NotificationClientException clientException = mock(NotificationClientException.class);
             when(clientException.getHttpResult()).thenReturn(403);
             when(clientException.getMessage()).thenReturn("Forbidden");
 
-            assertThatThrownBy(() ->
-                errorHandler.handleSendEmailException(clientException,
-                                                        mockCaseNotification, REFERENCE_ID, statusUpdater))
-                .isInstanceOf(PermanentNotificationException.class)
-                .hasMessage("Email failed to send.")
-                .hasCause(clientException);
+            errorHandler.handleSendEmailException(clientException,
+                                                  mockCaseNotification, REFERENCE_ID, statusUpdater);
 
             ArgumentCaptor<NotificationErrorHandler.NotificationStatusUpdate> captor =
                 forClass(NotificationErrorHandler.NotificationStatusUpdate.class);
@@ -105,8 +96,9 @@ class NotificationErrorHandlerTest {
             when(clientException.getMessage()).thenReturn("Too Many Requests");
 
             assertThatThrownBy(() ->
-                errorHandler.handleSendEmailException(clientException,
-                                                        mockCaseNotification, REFERENCE_ID, statusUpdater))
+                                   errorHandler.handleSendEmailException(clientException,
+                                                                            mockCaseNotification, REFERENCE_ID,
+                                                                            statusUpdater))
                 .isInstanceOf(TemporaryNotificationException.class)
                 .hasMessage("Email temporarily failed to send.")
                 .hasCause(clientException);
@@ -126,10 +118,10 @@ class NotificationErrorHandlerTest {
             when(clientException.getMessage()).thenReturn("Internal Server Error");
 
             assertThatThrownBy(() ->
-                                    errorHandler.handleSendEmailException(clientException,
-                                                                            mockCaseNotification,
-                                                                            REFERENCE_ID,
-                                                                            statusUpdater))
+                                   errorHandler.handleSendEmailException(clientException,
+                                                                         mockCaseNotification,
+                                                                         REFERENCE_ID,
+                                                                         statusUpdater))
                 .isInstanceOf(TemporaryNotificationException.class)
                 .hasMessage("Email temporarily failed to send.")
                 .hasCause(clientException);
@@ -149,9 +141,9 @@ class NotificationErrorHandlerTest {
             when(clientException.getMessage()).thenReturn("Bad Gateway");
 
             assertThatThrownBy(() ->
-                                    errorHandler.handleSendEmailException(clientException,
-                                                                            mockCaseNotification,
-                                                                            REFERENCE_ID, statusUpdater))
+                                   errorHandler.handleSendEmailException(clientException,
+                                                                         mockCaseNotification,
+                                                                         REFERENCE_ID, statusUpdater))
                 .isInstanceOf(NotificationException.class)
                 .hasMessage("Email failed to send, please try again.")
                 .hasCause(clientException);
@@ -174,9 +166,9 @@ class NotificationErrorHandlerTest {
                 when(clientException.getMessage()).thenReturn("Status " + statusCode);
 
                 assertThatThrownBy(() ->
-                                        errorHandler.handleSendEmailException(clientException,
-                                                                                mockCaseNotification,
-                                                                                REFERENCE_ID, statusUpdater))
+                                       errorHandler.handleSendEmailException(clientException,
+                                                                             mockCaseNotification,
+                                                                             REFERENCE_ID, statusUpdater))
                     .isInstanceOf(NotificationException.class)
                     .hasMessage("Email failed to send, please try again.")
                     .hasCause(clientException);
@@ -196,7 +188,7 @@ class NotificationErrorHandlerTest {
             when(clientException.getMessage()).thenReturn("Not Found");
 
             assertThatThrownBy(() -> errorHandler.handleFetchException(clientException, NOTIFICATION_ID)
-                )
+            )
                 .isInstanceOf(NotificationException.class)
                 .hasMessage("Failed to fetch notification, please try again.")
                 .hasCause(clientException);
@@ -213,8 +205,8 @@ class NotificationErrorHandlerTest {
                 when(clientException.getMessage()).thenReturn("Status " + statusCode);
 
                 assertThatThrownBy(() ->
-                                                  errorHandler.handleFetchException(clientException, NOTIFICATION_ID)
-                    )
+                                       errorHandler.handleFetchException(clientException, NOTIFICATION_ID)
+                )
                     .isInstanceOf(NotificationException.class)
                     .hasMessage("Failed to fetch notification, please try again.")
                     .hasCause(clientException);

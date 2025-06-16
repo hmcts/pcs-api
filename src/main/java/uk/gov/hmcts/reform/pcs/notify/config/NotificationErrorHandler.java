@@ -4,7 +4,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.pcs.notify.domain.CaseNotification;
 import uk.gov.hmcts.reform.pcs.notify.exception.NotificationException;
-import uk.gov.hmcts.reform.pcs.notify.exception.PermanentNotificationException;
 import uk.gov.hmcts.reform.pcs.notify.exception.TemporaryNotificationException;
 import uk.gov.hmcts.reform.pcs.notify.model.NotificationStatus;
 import uk.gov.service.notify.NotificationClientException;
@@ -44,7 +43,6 @@ public class NotificationErrorHandler {
                     NotificationStatus.PERMANENT_FAILURE,
                     null
                 ));
-                throw new PermanentNotificationException("Email failed to send.", exception);
             }
             case 429, 500 -> {
                 statusUpdater.accept(new NotificationStatusUpdate(
