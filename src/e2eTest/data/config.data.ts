@@ -11,11 +11,6 @@ export class ConfigData {
     "clientId": "pcs-api",
     "roles": ['caseworker-pcs','caseworker'],
   };
-  public static readonly localHost = {
-    env: 'localhost',
-    username: process.env.TEST_USERNAME || '',
-    password: process.env.TEST_PASSWORD || '',
-  };
 }
 
 export default ConfigData;

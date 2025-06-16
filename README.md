@@ -128,7 +128,8 @@ Before running any tests, please install all required packages:
 ```bash
 yarn install
 ````
-Running the tests
+Running the tests:
+
 The e2e tests use playwright, and are located in the /src/e2eTest directory.
 
 The following environment variables are needed to run the tests:
@@ -139,23 +140,11 @@ The following environment variables are needed to run the tests:
 - PCS_API_IDAM_SECRET
 - TEST_E2E_URL_EXUI
 
-Localhost Login for E2E Tests:
-When running against `localhost`, the test framework will not create test users via IDAM.
-Instead, it expects these environment variables to be set manually:
-
-- TEST_USERNAME
-- TEST_PASSWORD
-
-Refer CftlibConfig.java under cftlib for username.
-
 The e2e suite can be run with the following command:
 
 ```bash
 yarn test:functional
 ```
-
-By default, the tests will run against http://localhost:3000/, please update the value on line 3 of `src/e2eTest/config/config.data.json` to change this.
-
 There are also several custom test scripts available:
 
 - `yarn test:changed` - runs only changed spec files

@@ -16,36 +16,31 @@ export const test = baseTest.extend<MyFixtures>({
   loggedInPage: async ({ page, username, password }, use) => {
 
     let userCreated = false;
-    let finalUsername = username;
-    let finalPassword = password;
+    let Username = username;
+    let Password = password;
 
     // if credentials are provided then do not create new user
-    if (!finalUsername || !finalPassword) {
-      if (ConfigData.manageCasesBaseURL.includes(ConfigData.localHost.env)) {
-        finalUsername = ConfigData.localHost.username;
-        finalPassword = ConfigData.localHost.password;
-      } else {
+    if (!Username || !Password) {
         userCreated = true;
         const { userData, password: generatedPassword } = await idamHelper.createUser(ConfigData.iDam.roles);
-        finalUsername = userData.user.email;
-        finalPassword = generatedPassword;
-      }
+        Username = userData.user.email;
+        Password = generatedPassword;
     }
 
     await page.goto(ConfigData.manageCasesBaseURL);
 
-    await actions.fillInputById(page, 'username', finalUsername);
-    await actions.fillInputById(page, 'password', finalPassword);
-    await actions.clickLoginButton(page);
+    await actions.fillInput(page, 'Email address', Username);
+    await actions.fillInput(page, 'Password', Password);
+    await actions.clickButton(page, 'Sign in');
 
     await use(page);
 
     // Delete if we created the user
-    if (userCreated && finalUsername) {
+    if (userCreated && Username) {
       try {
-        await idamHelper.deleteAccount(finalUsername);
+        await idamHelper.deleteAccount(Username);
       } catch (err) {
-        console.warn(`Teardown failed for user ${finalUsername}:`, err);
+        console.warn(`Teardown failed for user ${Username}:`, err);
       }
     }
   }
