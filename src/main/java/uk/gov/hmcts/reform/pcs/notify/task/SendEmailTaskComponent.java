@@ -126,7 +126,7 @@ public class SendEmailTaskComponent {
                     );
 
                     String notificationId = response.getNotificationId().toString();
-                    log.info("Email sent successfully. Notification ID: {}", notificationId);
+                    log.info("Request sent successfully. Notification ID: {}", notificationId);
 
                     EmailState nextState = emailState.toBuilder()
                         .notificationId(notificationId)
