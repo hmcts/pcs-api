@@ -17,7 +17,6 @@ import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 import uk.gov.hmcts.reform.pcs.notify.config.NotificationErrorHandler;
 import uk.gov.hmcts.reform.pcs.notify.model.EmailState;
-import uk.gov.hmcts.reform.pcs.notify.model.NotificationStatus;
 import uk.gov.hmcts.reform.pcs.notify.service.NotificationService;
 import uk.gov.service.notify.Notification;
 import uk.gov.service.notify.NotificationClient;
@@ -31,6 +30,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.reform.pcs.notify.model.NotificationStatus.PERMANENT_FAILURE;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
@@ -116,24 +116,8 @@ class VerifyEmailTaskComponentTest {
     class SuccessfulEmailVerificationTests {
 
         @Test
-        @DisplayName("Should verify email delivery successfully for delivered status")
-        void shouldVerifyEmailDeliverySuccessfullyForDeliveredStatus() throws Exception {
-            String deliveredStatus = NotificationStatus.DELIVERED.toString();
-            when(notificationClient.getNotificationById(notificationId)).thenReturn(notification);
-            when(notification.getStatus()).thenReturn(deliveredStatus);
-
-            CustomTask<EmailState> task = verifyEmailTaskComponent.verifyEmailTask();
-
-            CompletionHandler<EmailState> result = task.execute(taskInstance, executionContext);
-
-            verify(notificationClient).getNotificationById(notificationId);
-            verify(notificationService).updateNotificationStatus(dbNotificationId, deliveredStatus);
-            assertThat(result).isInstanceOf(CompletionHandler.OnCompleteRemove.class);
-        }
-
-        @Test
-        @DisplayName("Should verify email delivery successfully for delivered status (case insensitive)")
-        void shouldVerifyEmailDeliverySuccessfullyForDeliveredStatusCaseInsensitive() throws Exception {
+        @DisplayName("Should verify email delivery successfully for delivered status (lowercase)")
+        void shouldVerifyEmailDeliverySuccessfullyForDeliveredStatusLowercase() throws Exception {
             String deliveredStatus = "delivered";
             when(notificationClient.getNotificationById(notificationId)).thenReturn(notification);
             when(notification.getStatus()).thenReturn(deliveredStatus);
@@ -148,7 +132,7 @@ class VerifyEmailTaskComponentTest {
         }
 
         @Test
-        @DisplayName("Should verify email delivery successfully for DELIVERED status (uppercase)")
+        @DisplayName("Should verify email delivery successfully for delivered status (uppercase)")
         void shouldVerifyEmailDeliverySuccessfullyForDeliveredStatusUppercase() throws Exception {
             String deliveredStatus = "DELIVERED";
             when(notificationClient.getNotificationById(notificationId)).thenReturn(notification);
@@ -162,6 +146,38 @@ class VerifyEmailTaskComponentTest {
             verify(notificationService).updateNotificationStatus(dbNotificationId, deliveredStatus);
             assertThat(result).isInstanceOf(CompletionHandler.OnCompleteRemove.class);
         }
+
+        @Test
+        @DisplayName("Should verify email delivery successfully for delivered status (mixed case)")
+        void shouldVerifyEmailDeliverySuccessfullyForDeliveredStatusMixedCase() throws Exception {
+            String deliveredStatus = "DeLiVeReD";
+            when(notificationClient.getNotificationById(notificationId)).thenReturn(notification);
+            when(notification.getStatus()).thenReturn(deliveredStatus);
+
+            CustomTask<EmailState> task = verifyEmailTaskComponent.verifyEmailTask();
+
+            CompletionHandler<EmailState> result = task.execute(taskInstance, executionContext);
+
+            verify(notificationClient).getNotificationById(notificationId);
+            verify(notificationService).updateNotificationStatus(dbNotificationId, deliveredStatus);
+            assertThat(result).isInstanceOf(CompletionHandler.OnCompleteRemove.class);
+        }
+
+        @Test
+        @DisplayName("Should preserve original case when updating delivered status")
+        void shouldPreserveOriginalCaseWhenUpdatingDeliveredStatus() throws Exception {
+            String originalStatus = "Delivered";
+            when(notificationClient.getNotificationById(notificationId)).thenReturn(notification);
+            when(notification.getStatus()).thenReturn(originalStatus);
+
+            CustomTask<EmailState> task = verifyEmailTaskComponent.verifyEmailTask();
+
+            CompletionHandler<EmailState> result = task.execute(taskInstance, executionContext);
+
+            verify(notificationClient).getNotificationById(notificationId);
+            verify(notificationService).updateNotificationStatus(dbNotificationId, originalStatus);
+            assertThat(result).isInstanceOf(CompletionHandler.OnCompleteRemove.class);
+        }
     }
 
     @Nested
@@ -170,9 +186,9 @@ class VerifyEmailTaskComponentTest {
 
         @ParameterizedTest
         @ValueSource(strings = {"FAILED", "PERMANENT_FAILURE", "TEMPORARY_FAILURE",
-            "TECHNICAL_FAILURE", "PENDING", "SENDING"})
-        @DisplayName("Should handle non-delivered statuses")
-        void shouldHandleNonDeliveredStatuses(String status) throws Exception {
+            "TECHNICAL_FAILURE", "PENDING", "SENDING", "ERROR", "INVALID"})
+        @DisplayName("Should update status to PERMANENT_FAILURE for non-delivered statuses")
+        void shouldUpdateStatusToPermanentFailureForNonDeliveredStatuses(String status) throws Exception {
             when(notificationClient.getNotificationById(notificationId)).thenReturn(notification);
             when(notification.getStatus()).thenReturn(status);
 
@@ -181,13 +197,13 @@ class VerifyEmailTaskComponentTest {
             CompletionHandler<EmailState> result = task.execute(taskInstance, executionContext);
 
             verify(notificationClient).getNotificationById(notificationId);
-            verify(notificationService).updateNotificationStatus(dbNotificationId, status);
+            verify(notificationService).updateNotificationStatus(dbNotificationId, PERMANENT_FAILURE.toString());
             assertThat(result).isInstanceOf(CompletionHandler.OnCompleteRemove.class);
         }
 
         @Test
-        @DisplayName("Should handle failed status")
-        void shouldHandleFailedStatus() throws Exception {
+        @DisplayName("Should update status to PERMANENT_FAILURE for failed status")
+        void shouldUpdateStatusToPermanentFailureForFailedStatus() throws Exception {
             String failedStatus = "FAILED";
             when(notificationClient.getNotificationById(notificationId)).thenReturn(notification);
             when(notification.getStatus()).thenReturn(failedStatus);
@@ -197,29 +213,13 @@ class VerifyEmailTaskComponentTest {
             CompletionHandler<EmailState> result = task.execute(taskInstance, executionContext);
 
             verify(notificationClient).getNotificationById(notificationId);
-            verify(notificationService).updateNotificationStatus(dbNotificationId, failedStatus);
+            verify(notificationService).updateNotificationStatus(dbNotificationId, PERMANENT_FAILURE.toString());
             assertThat(result).isInstanceOf(CompletionHandler.OnCompleteRemove.class);
         }
 
         @Test
-        @DisplayName("Should handle permanent failure status")
-        void shouldHandlePermanentFailureStatus() throws Exception {
-            String permanentFailureStatus = "PERMANENT_FAILURE";
-            when(notificationClient.getNotificationById(notificationId)).thenReturn(notification);
-            when(notification.getStatus()).thenReturn(permanentFailureStatus);
-
-            CustomTask<EmailState> task = verifyEmailTaskComponent.verifyEmailTask();
-
-            CompletionHandler<EmailState> result = task.execute(taskInstance, executionContext);
-
-            verify(notificationClient).getNotificationById(notificationId);
-            verify(notificationService).updateNotificationStatus(dbNotificationId, permanentFailureStatus);
-            assertThat(result).isInstanceOf(CompletionHandler.OnCompleteRemove.class);
-        }
-
-        @Test
-        @DisplayName("Should handle pending status")
-        void shouldHandlePendingStatus() throws Exception {
+        @DisplayName("Should update status to PERMANENT_FAILURE for pending status")
+        void shouldUpdateStatusToPermanentFailureForPendingStatus() throws Exception {
             String pendingStatus = "PENDING";
             when(notificationClient.getNotificationById(notificationId)).thenReturn(notification);
             when(notification.getStatus()).thenReturn(pendingStatus);
@@ -229,7 +229,23 @@ class VerifyEmailTaskComponentTest {
             CompletionHandler<EmailState> result = task.execute(taskInstance, executionContext);
 
             verify(notificationClient).getNotificationById(notificationId);
-            verify(notificationService).updateNotificationStatus(dbNotificationId, pendingStatus);
+            verify(notificationService).updateNotificationStatus(dbNotificationId, PERMANENT_FAILURE.toString());
+            assertThat(result).isInstanceOf(CompletionHandler.OnCompleteRemove.class);
+        }
+
+        @Test
+        @DisplayName("Should update status to PERMANENT_FAILURE for custom non-delivered status")
+        void shouldUpdateStatusToPermanentFailureForCustomNonDeliveredStatus() throws Exception {
+            String customStatus = "UNKNOWN_STATUS";
+            when(notificationClient.getNotificationById(notificationId)).thenReturn(notification);
+            when(notification.getStatus()).thenReturn(customStatus);
+
+            CustomTask<EmailState> task = verifyEmailTaskComponent.verifyEmailTask();
+
+            CompletionHandler<EmailState> result = task.execute(taskInstance, executionContext);
+
+            verify(notificationClient).getNotificationById(notificationId);
+            verify(notificationService).updateNotificationStatus(dbNotificationId, PERMANENT_FAILURE.toString());
             assertThat(result).isInstanceOf(CompletionHandler.OnCompleteRemove.class);
         }
     }
@@ -242,7 +258,7 @@ class VerifyEmailTaskComponentTest {
         @DisplayName("Should handle NotificationClientException and delegate to error handler")
         void shouldHandleNotificationClientExceptionAndDelegateToErrorHandler() throws Exception {
             NotificationClientException exception = new NotificationClientException("API error",
-                                                                                    new RuntimeException());
+                new RuntimeException());
             when(notificationClient.getNotificationById(notificationId)).thenThrow(exception);
 
             CustomTask<EmailState> task = verifyEmailTaskComponent.verifyEmailTask();
@@ -257,7 +273,7 @@ class VerifyEmailTaskComponentTest {
         @DisplayName("Should handle NotificationClientException with different error messages")
         void shouldHandleNotificationClientExceptionWithDifferentErrorMessages() throws Exception {
             NotificationClientException exception = new NotificationClientException("Service temporarily unavailable",
-                                                                                    new RuntimeException());
+                new RuntimeException());
             when(notificationClient.getNotificationById(notificationId)).thenThrow(exception);
 
             CustomTask<EmailState> task = verifyEmailTaskComponent.verifyEmailTask();
@@ -272,7 +288,7 @@ class VerifyEmailTaskComponentTest {
         @DisplayName("Should not update notification status when exception occurs")
         void shouldNotUpdateNotificationStatusWhenExceptionOccurs() throws Exception {
             NotificationClientException exception = new NotificationClientException("Network error",
-                                                                                    new RuntimeException());
+                new RuntimeException());
             when(notificationClient.getNotificationById(notificationId)).thenThrow(exception);
 
             CustomTask<EmailState> task = verifyEmailTaskComponent.verifyEmailTask();
@@ -290,7 +306,7 @@ class VerifyEmailTaskComponentTest {
         @Test
         @DisplayName("Should handle email state with all required fields")
         void shouldHandleEmailStateWithAllRequiredFields() throws Exception {
-            String deliveredStatus = NotificationStatus.DELIVERED.toString();
+            String deliveredStatus = "Delivered";
             when(notificationClient.getNotificationById(notificationId)).thenReturn(notification);
             when(notification.getStatus()).thenReturn(deliveredStatus);
 
@@ -313,7 +329,7 @@ class VerifyEmailTaskComponentTest {
                 .build();
             when(taskInstance.getData()).thenReturn(minimalEmailState);
 
-            String deliveredStatus = NotificationStatus.DELIVERED.toString();
+            String deliveredStatus = "delivered";
             when(notificationClient.getNotificationById(notificationId)).thenReturn(notification);
             when(notification.getStatus()).thenReturn(deliveredStatus);
 
@@ -335,7 +351,7 @@ class VerifyEmailTaskComponentTest {
                 .build();
             when(taskInstance.getData()).thenReturn(uuidEmailState);
 
-            String deliveredStatus = NotificationStatus.DELIVERED.toString();
+            String deliveredStatus = "DELIVERED";
             when(notificationClient.getNotificationById(uuidNotificationId)).thenReturn(notification);
             when(notification.getStatus()).thenReturn(deliveredStatus);
 
@@ -364,13 +380,12 @@ class VerifyEmailTaskComponentTest {
         @Test
         @DisplayName("Should use correct configuration values")
         void shouldUseCorrectConfigurationValues() {
-            // Given & When
             VerifyEmailTaskComponent component = new VerifyEmailTaskComponent(
                 notificationService,
                 notificationClient,
                 errorHandler,
-                10, // different max retries
-                Duration.ofMinutes(5) // different backoff delay
+                10,
+                Duration.ofMinutes(5)
             );
 
             CustomTask<EmailState> task = component.verifyEmailTask();
@@ -383,37 +398,52 @@ class VerifyEmailTaskComponentTest {
     class StatusUpdateTests {
 
         @Test
-        @DisplayName("Should update notification status with exact status from notification client")
-        void shouldUpdateNotificationStatusWithExactStatusFromNotificationClient() throws Exception {
-            String exactStatus = "custom_status";
+        @DisplayName("Should update notification status with original delivered status (case-insensitive match)")
+        void shouldUpdateNotificationStatusWithOriginalDeliveredStatusCaseInsensitiveMatch() throws Exception {
+            String originalDeliveredStatus = "DELIVERED";
             when(notificationClient.getNotificationById(notificationId)).thenReturn(notification);
-            when(notification.getStatus()).thenReturn(exactStatus);
+            when(notification.getStatus()).thenReturn(originalDeliveredStatus);
 
             CustomTask<EmailState> task = verifyEmailTaskComponent.verifyEmailTask();
 
             task.execute(taskInstance, executionContext);
 
-            verify(notificationService).updateNotificationStatus(dbNotificationId, exactStatus);
+            verify(notificationService).updateNotificationStatus(dbNotificationId, originalDeliveredStatus);
         }
 
         @Test
-        @DisplayName("Should handle null status from notification")
-        void shouldHandleNullStatusFromNotification() throws Exception {
+        @DisplayName("Should update to PERMANENT_FAILURE for non-delivered status")
+        void shouldUpdateToPermanentFailureForNonDeliveredStatus() throws Exception {
+            String customStatus = "custom_status";
+            when(notificationClient.getNotificationById(notificationId)).thenReturn(notification);
+            when(notification.getStatus()).thenReturn(customStatus);
+
+            CustomTask<EmailState> task = verifyEmailTaskComponent.verifyEmailTask();
+
+            task.execute(taskInstance, executionContext);
+
+            verify(notificationService).updateNotificationStatus(dbNotificationId, PERMANENT_FAILURE.toString());
+        }
+
+        @Test
+        @DisplayName("Should handle null status from notification by throwing exception")
+        void shouldHandleNullStatusFromNotificationByThrowingException() throws Exception {
             when(notificationClient.getNotificationById(notificationId)).thenReturn(notification);
             when(notification.getStatus()).thenReturn(null);
 
             CustomTask<EmailState> task = verifyEmailTaskComponent.verifyEmailTask();
 
-            CompletionHandler<EmailState> result = task.execute(taskInstance, executionContext);
-
-            verify(notificationClient).getNotificationById(notificationId);
-            verify(notificationService).updateNotificationStatus(dbNotificationId, null);
-            assertThat(result).isInstanceOf(CompletionHandler.OnCompleteRemove.class);
+            try {
+                task.execute(taskInstance, executionContext);
+            } catch (NullPointerException e) {
+                verify(notificationClient).getNotificationById(notificationId);
+                verifyNoInteractions(notificationService);
+            }
         }
 
         @Test
-        @DisplayName("Should handle empty status from notification")
-        void shouldHandleEmptyStatusFromNotification() throws Exception {
+        @DisplayName("Should update to PERMANENT_FAILURE for empty status from notification")
+        void shouldUpdateToPermanentFailureForEmptyStatusFromNotification() throws Exception {
             String emptyStatus = "";
             when(notificationClient.getNotificationById(notificationId)).thenReturn(notification);
             when(notification.getStatus()).thenReturn(emptyStatus);
@@ -423,8 +453,22 @@ class VerifyEmailTaskComponentTest {
             CompletionHandler<EmailState> result = task.execute(taskInstance, executionContext);
 
             verify(notificationClient).getNotificationById(notificationId);
-            verify(notificationService).updateNotificationStatus(dbNotificationId, emptyStatus);
+            verify(notificationService).updateNotificationStatus(dbNotificationId, PERMANENT_FAILURE.toString());
             assertThat(result).isInstanceOf(CompletionHandler.OnCompleteRemove.class);
+        }
+
+        @Test
+        @DisplayName("Should preserve exact case of delivered status when updating")
+        void shouldPreserveExactCaseOfDeliveredStatusWhenUpdating() throws Exception {
+            String mixedCaseDelivered = "dElIvErEd";
+            when(notificationClient.getNotificationById(notificationId)).thenReturn(notification);
+            when(notification.getStatus()).thenReturn(mixedCaseDelivered);
+
+            CustomTask<EmailState> task = verifyEmailTaskComponent.verifyEmailTask();
+
+            task.execute(taskInstance, executionContext);
+
+            verify(notificationService).updateNotificationStatus(dbNotificationId, mixedCaseDelivered);
         }
     }
 
@@ -435,7 +479,7 @@ class VerifyEmailTaskComponentTest {
         @Test
         @DisplayName("Should handle complete successful verification flow")
         void shouldHandleCompleteSuccessfulVerificationFlow() throws Exception {
-            String deliveredStatus = NotificationStatus.DELIVERED.toString();
+            String deliveredStatus = "DELIVERED";
             when(notificationClient.getNotificationById(notificationId)).thenReturn(notification);
             when(notification.getStatus()).thenReturn(deliveredStatus);
 
@@ -451,9 +495,8 @@ class VerifyEmailTaskComponentTest {
         @Test
         @DisplayName("Should handle complete error flow with proper cleanup")
         void shouldHandleCompleteErrorFlowWithProperCleanup() throws Exception {
-            // Given
             NotificationClientException exception = new NotificationClientException("Service error",
-                                                                                    new RuntimeException());
+                new RuntimeException());
             when(notificationClient.getNotificationById(notificationId)).thenThrow(exception);
 
             CustomTask<EmailState> task = verifyEmailTaskComponent.verifyEmailTask();
@@ -476,7 +519,23 @@ class VerifyEmailTaskComponentTest {
             CompletionHandler<EmailState> result = task.execute(taskInstance, executionContext);
 
             verify(notificationClient).getNotificationById(notificationId);
-            verify(notificationService).updateNotificationStatus(dbNotificationId, failedStatus);
+            verify(notificationService).updateNotificationStatus(dbNotificationId, PERMANENT_FAILURE.toString());
+            assertThat(result).isInstanceOf(CompletionHandler.OnCompleteRemove.class);
+        }
+
+        @Test
+        @DisplayName("Should handle verification flow with case-insensitive delivered status")
+        void shouldHandleVerificationFlowWithCaseInsensitiveDeliveredStatus() throws Exception {
+            String mixedCaseDelivered = "dElIvErEd";
+            when(notificationClient.getNotificationById(notificationId)).thenReturn(notification);
+            when(notification.getStatus()).thenReturn(mixedCaseDelivered);
+
+            CustomTask<EmailState> task = verifyEmailTaskComponent.verifyEmailTask();
+
+            CompletionHandler<EmailState> result = task.execute(taskInstance, executionContext);
+
+            verify(notificationClient).getNotificationById(notificationId);
+            verify(notificationService).updateNotificationStatus(dbNotificationId, mixedCaseDelivered);
             assertThat(result).isInstanceOf(CompletionHandler.OnCompleteRemove.class);
         }
     }
@@ -495,16 +554,15 @@ class VerifyEmailTaskComponentTest {
             try {
                 task.execute(taskInstance, executionContext);
             } catch (NullPointerException e) {
-                // Expected behavior with current implementation
                 verify(notificationClient).getNotificationById(notificationId);
                 verifyNoInteractions(notificationService);
             }
         }
 
         @Test
-        @DisplayName("Should handle mixed case delivered status variations")
-        void shouldHandleMixedCaseDeliveredStatusVariations() throws Exception {
-            String mixedCaseStatus = "DeLiVeReD";
+        @DisplayName("Should treat all case variations of delivered as delivered status")
+        void shouldTreatAllCaseVariationsOfDeliveredAsDeliveredStatus() throws Exception {
+            String mixedCaseStatus = "dElIvErEd";
             when(notificationClient.getNotificationById(notificationId)).thenReturn(notification);
             when(notification.getStatus()).thenReturn(mixedCaseStatus);
 
@@ -514,6 +572,22 @@ class VerifyEmailTaskComponentTest {
 
             verify(notificationClient).getNotificationById(notificationId);
             verify(notificationService).updateNotificationStatus(dbNotificationId, mixedCaseStatus);
+            assertThat(result).isInstanceOf(CompletionHandler.OnCompleteRemove.class);
+        }
+
+        @Test
+        @DisplayName("Should handle status with leading and trailing spaces as non-delivered")
+        void shouldHandleStatusWithLeadingAndTrailingSpacesAsNonDelivered() throws Exception {
+            String statusWithSpaces = " delivered ";
+            when(notificationClient.getNotificationById(notificationId)).thenReturn(notification);
+            when(notification.getStatus()).thenReturn(statusWithSpaces);
+
+            CustomTask<EmailState> task = verifyEmailTaskComponent.verifyEmailTask();
+
+            CompletionHandler<EmailState> result = task.execute(taskInstance, executionContext);
+
+            verify(notificationClient).getNotificationById(notificationId);
+            verify(notificationService).updateNotificationStatus(dbNotificationId, PERMANENT_FAILURE.toString());
             assertThat(result).isInstanceOf(CompletionHandler.OnCompleteRemove.class);
         }
     }

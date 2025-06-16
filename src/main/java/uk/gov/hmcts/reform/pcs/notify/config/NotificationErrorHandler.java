@@ -16,13 +16,14 @@ import java.util.function.Consumer;
 public class NotificationErrorHandler {
 
     /**
-     * Handles exceptions occurring during the sending of emails and logs the error details.
-     * Updates the notification status accordingly based on the HTTP status code of the exception.
+     * Handles exceptions occurring during the process of sending an email notification.
+     * Based on the HTTP status code of the exception, this method updates the notification's
+     * status and may throw further exceptions if necessary.
      *
-     * @param exception The exception thrown during the email sending process.
-     * @param caseNotification The case notification associated with the email being sent.
-     * @param referenceId A unique ID reference used for tracking the email transaction.
-     * @param statusUpdater A consumer that updates the notification status based on the outcome.
+     * @param exception the {@code NotificationClientException} encountered while sending the email
+     * @param caseNotification the {@code CaseNotification} object containing details about the notification
+     * @param referenceId a unique reference ID corresponding to the notification attempt
+     * @param statusUpdater a {@code Consumer} function to update the status of the notification
      */
     public void handleSendEmailException(NotificationClientException exception,
                                             CaseNotification caseNotification,
@@ -64,12 +65,12 @@ public class NotificationErrorHandler {
     }
 
     /**
-     * Handles the exception encountered while attempting to fetch a notification by logging details
-     * about the failure and rethrowing it as a {@code NotificationException}.
+     * Handles exceptions that occur during the fetch notification process by logging the error details
+     * and rethrowing a custom {@code NotificationException}.
      *
-     * @param exception the {@code NotificationClientException} thrown during the fetch operation,
-     *                  containing details such as the HTTP status code and error message.
-     * @param notificationId the unique identifier of the notification that failed to be fetched.
+     * @param exception       The exception thrown during the fetch operation, containing details such as HTTP status
+     *                         code.
+     * @param notificationId  The unique identifier of the notification that failed to fetch.
      */
     public void handleFetchException(NotificationClientException exception, String notificationId) {
         int httpStatusCode = exception.getHttpResult();

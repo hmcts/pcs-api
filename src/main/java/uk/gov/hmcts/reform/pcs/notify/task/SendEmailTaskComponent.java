@@ -68,18 +68,16 @@ public class SendEmailTaskComponent {
     }
 
     /**
-     * Creates and returns a custom task for sending email notifications.
-     * The task processes email notifications by retrieving the notification record from the database,
-     * sending the email using the specified notification client, and updating the notification record
-     * after successfully sending the email. If the email cannot be sent, the task handles both retryable
-     * and non-retryable failure scenarios appropriately.
-     * Failure scenarios are addressed through the following handlers:
-     * - MaxRetriesFailureHandler: limits the number of retry attempts.
-     * - ExponentialBackoffFailureHandler: applies an exponential delay between retries for temporary failures.
-     * Upon successful email delivery, the task schedules a new task for verifying email delivery status.
+     * Defines a custom task for sending email notifications by interacting with the
+     * notification client and processing the associated state. The task uses a retry
+     * mechanism with exponential backoff in case of failures, up to the configured
+     * maximum number of retries. On successful execution, the task initiates the
+     * verification of the sent email's delivery status.
+     * The method includes error handling for various scenarios, such as permanent
+     * notification failures, temporary failures, and missing notifications. Updates
+     * the notification state in the system following the email sending process.
      *
-     * @return a configured {@link CustomTask} object designed to process sending of email notifications
-     *         and to handle both success and failure scenarios.
+     * @return the custom task for sending email notifications
      */
     @Bean
     public CustomTask<EmailState> sendEmailTask() {

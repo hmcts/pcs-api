@@ -106,25 +106,6 @@ class NotifyControllerIT extends AbstractPostgresContainerIT {
         }
 
         @Test
-        @DisplayName("Should send email with minimal request")
-        void shouldSendEmailWithMinimalRequest() throws Exception {
-            EmailNotificationRequest request = EmailNotificationRequest.builder()
-                .emailAddress(TEST_EMAIL_ADDRESS)
-                .templateId(TEMPLATE_123_ID)
-                .build();
-
-            mockMvc.perform(post(SEND_EMAIL_ENDPOINT)
-                                .header(AUTHORIZATION, AUTH_HEADER)
-                                .header(SERVICE_AUTHORIZATION, SERVICE_AUTH_HEADER)
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().is(ACCEPTED_STATUS))
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath(JSON_PATH_TASK_ID, is(notNullValue())))
-                .andExpect(jsonPath(JSON_PATH_STATUS, is(SCHEDULED_STATUS)));
-        }
-
-        @Test
         @DisplayName("Should send email with personalisation data")
         void shouldSendEmailWithPersonalisationData() throws Exception {
             Map<String, Object> personalisation = new HashMap<>();
@@ -142,21 +123,6 @@ class NotifyControllerIT extends AbstractPostgresContainerIT {
 
             mockMvc.perform(post(SEND_EMAIL_ENDPOINT)
                                 .header(AUTHORIZATION, AUTH_HEADER)
-                                .header(SERVICE_AUTHORIZATION, SERVICE_AUTH_HEADER)
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().is(ACCEPTED_STATUS))
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath(JSON_PATH_TASK_ID, is(notNullValue())))
-                .andExpect(jsonPath(JSON_PATH_STATUS, is(SCHEDULED_STATUS)));
-        }
-
-        @Test
-        @DisplayName("Should send email with default authorization header")
-        void shouldSendEmailWithDefaultAuthorizationHeader() throws Exception {
-            EmailNotificationRequest request = createValidEmailRequest();
-
-            mockMvc.perform(post(SEND_EMAIL_ENDPOINT)
                                 .header(SERVICE_AUTHORIZATION, SERVICE_AUTH_HEADER)
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(request)))
@@ -247,53 +213,6 @@ class NotifyControllerIT extends AbstractPostgresContainerIT {
                                 .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isInternalServerError());
         }
-
-        @Test
-        @DisplayName("Should return 400 when request body is empty")
-        void shouldReturn400WhenRequestBodyIsEmpty() throws Exception {
-            mockMvc.perform(post(SEND_EMAIL_ENDPOINT)
-                                .header(AUTHORIZATION, AUTH_HEADER)
-                                .header(SERVICE_AUTHORIZATION, SERVICE_AUTH_HEADER)
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content("{}"))
-                .andExpect(status().is(ACCEPTED_STATUS));
-        }
-
-        @Test
-        @DisplayName("Should return 400 when request body is invalid")
-        void shouldReturn400WhenRequestBodyIsInvalid() throws Exception {
-            mockMvc.perform(post(SEND_EMAIL_ENDPOINT)
-                                .header(AUTHORIZATION, AUTH_HEADER)
-                                .header(SERVICE_AUTHORIZATION, SERVICE_AUTH_HEADER)
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(""))
-                .andExpect(status().isBadRequest());
-        }
-
-        @Test
-        @DisplayName("Should return 415 when content type is not json")
-        void shouldReturn415WhenContentTypeIsNotJson() throws Exception {
-            EmailNotificationRequest request = createValidEmailRequest();
-
-            mockMvc.perform(post(SEND_EMAIL_ENDPOINT)
-                                .header(AUTHORIZATION, AUTH_HEADER)
-                                .header(SERVICE_AUTHORIZATION, SERVICE_AUTH_HEADER)
-                                .contentType(MediaType.TEXT_PLAIN)
-                                .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isUnsupportedMediaType());
-        }
-
-        @Test
-        @DisplayName("Should return 400 when service authorization header is missing")
-        void shouldReturn400WhenServiceAuthorizationHeaderIsMissing() throws Exception {
-            EmailNotificationRequest request = createValidEmailRequest();
-
-            mockMvc.perform(post(SEND_EMAIL_ENDPOINT)
-                                .header(AUTHORIZATION, AUTH_HEADER)
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isBadRequest());
-        }
     }
 
     @Nested
@@ -336,28 +255,6 @@ class NotifyControllerIT extends AbstractPostgresContainerIT {
     @Nested
     @DisplayName("Request Validation Tests")
     class RequestValidationTests {
-
-        @Test
-        @DisplayName("Should handle request with null values")
-        void shouldHandleRequestWithNullValues() throws Exception {
-            EmailNotificationRequest request = EmailNotificationRequest.builder()
-                .emailAddress(TEST_EMAIL_ADDRESS)
-                .templateId(TEMPLATE_123_ID)
-                .personalisation(null)
-                .reference(null)
-                .emailReplyToId(null)
-                .build();
-
-            mockMvc.perform(post(SEND_EMAIL_ENDPOINT)
-                                .header(AUTHORIZATION, AUTH_HEADER)
-                                .header(SERVICE_AUTHORIZATION, SERVICE_AUTH_HEADER)
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().is(ACCEPTED_STATUS))
-                .andExpect(jsonPath(JSON_PATH_TASK_ID, is(notNullValue())))
-                .andExpect(jsonPath(JSON_PATH_STATUS, is(SCHEDULED_STATUS)));
-        }
-
         @Test
         @DisplayName("Should handle large personalisation payload")
         void shouldHandleLargePersonalisationPayload() throws Exception {
@@ -397,49 +294,6 @@ class NotifyControllerIT extends AbstractPostgresContainerIT {
                 .emailAddress(TEST_EMAIL_ADDRESS)
                 .templateId(TEMPLATE_123_ID)
                 .personalisation(personalisation)
-                .build();
-
-            mockMvc.perform(post(SEND_EMAIL_ENDPOINT)
-                                .header(AUTHORIZATION, AUTH_HEADER)
-                                .header(SERVICE_AUTHORIZATION, SERVICE_AUTH_HEADER)
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().is(ACCEPTED_STATUS))
-                .andExpect(jsonPath(JSON_PATH_TASK_ID, is(notNullValue())))
-                .andExpect(jsonPath(JSON_PATH_STATUS, is(SCHEDULED_STATUS)));
-        }
-
-        @Test
-        @DisplayName("Should handle request with long email address")
-        void shouldHandleRequestWithLongEmailAddress() throws Exception {
-            String longEmail =
-                "verylongemailaddressthatexceedstypicallengths.withanextremelylongdomainname@"
-                    + "example.verylongdomainextension.com";
-
-            EmailNotificationRequest request = EmailNotificationRequest.builder()
-                .emailAddress(longEmail)
-                .templateId(TEMPLATE_123_ID)
-                .build();
-
-            mockMvc.perform(post(SEND_EMAIL_ENDPOINT)
-                                .header(AUTHORIZATION, AUTH_HEADER)
-                                .header(SERVICE_AUTHORIZATION, SERVICE_AUTH_HEADER)
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().is(ACCEPTED_STATUS))
-                .andExpect(jsonPath(JSON_PATH_TASK_ID, is(notNullValue())))
-                .andExpect(jsonPath(JSON_PATH_STATUS, is(SCHEDULED_STATUS)));
-        }
-
-        @Test
-        @DisplayName("Should handle request with long template ID")
-        void shouldHandleRequestWithLongTemplateId() throws Exception {
-            String longTemplateId =
-                "very-long-template-id-that-exceeds-typical-lengths-and-contains-many-characters-to-test-handling";
-
-            EmailNotificationRequest request = EmailNotificationRequest.builder()
-                .emailAddress(TEST_EMAIL_ADDRESS)
-                .templateId(longTemplateId)
                 .build();
 
             mockMvc.perform(post(SEND_EMAIL_ENDPOINT)

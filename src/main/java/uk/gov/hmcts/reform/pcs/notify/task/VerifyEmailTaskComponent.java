@@ -12,13 +12,16 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.pcs.notify.config.NotificationErrorHandler;
 import uk.gov.hmcts.reform.pcs.notify.model.EmailState;
-import uk.gov.hmcts.reform.pcs.notify.model.NotificationStatus;
 import uk.gov.hmcts.reform.pcs.notify.service.NotificationService;
 import uk.gov.service.notify.Notification;
 import uk.gov.service.notify.NotificationClient;
 import uk.gov.service.notify.NotificationClientException;
 
 import java.time.Duration;
+import java.util.Objects;
+
+import static uk.gov.hmcts.reform.pcs.notify.model.NotificationStatus.DELIVERED;
+import static uk.gov.hmcts.reform.pcs.notify.model.NotificationStatus.PERMANENT_FAILURE;
 
 @Component
 @Slf4j
@@ -73,13 +76,20 @@ public class VerifyEmailTaskComponent {
                 try {
                     Notification notification = notificationClient.getNotificationById(emailState.getNotificationId());
 
-                    notificationService.updateNotificationStatus(
-                        emailState.getDbNotificationId(),
-                        notification.getStatus()
-                    );
+                    if (Objects.equals(notification.getStatus().toLowerCase(), DELIVERED.toString())) {
+                        notificationService.updateNotificationStatus(
+                            emailState.getDbNotificationId(),
+                            notification.getStatus()
+                        );
+                    } else {
+                        notificationService.updateNotificationStatus(
+                            emailState.getDbNotificationId(),
+                            PERMANENT_FAILURE.toString()
+                        );
+                    }
 
                     String status = notification.getStatus();
-                    if (NotificationStatus.DELIVERED.toString().equalsIgnoreCase(status)) {
+                    if (DELIVERED.toString().equalsIgnoreCase(status)) {
                         log.info("Email successfully delivered: {}", emailState.getId());
                     } else {
                         log.error("Failure with status: {} for task: {}", status, emailState.getId());

@@ -32,14 +32,16 @@ public class NotificationService {
     }
 
     /**
-     * Schedules an email notification to be sent. It generates a unique task ID for the notification,
-     * creates a notification record in the database, and schedules a task to send the email using a task scheduler.
-     * The notification status is updated to SCHEDULED after successfully scheduling the task.
+     * Schedules an email notification to be sent based on the provided request data.
+     * The method generates a unique task ID and notification ID, creates the necessary
+     * state, and schedules the email sending task. If the task is already scheduled,
+     * it prevents duplicate scheduling.
      *
-     * @param emailRequest the request containing details of the email to be sent, including the recipient's
-     *                     email address, template ID, personalization data, reference, and reply-to ID
-     * @return an EmailNotificationResponse containing the task ID, notification ID, and status of the scheduled
-     *      notification
+     * @param emailRequest the request object containing details needed to send the email,
+     *                     such as email address, template ID, personalisation details,
+     *                     reference, and email reply-to ID
+     * @return an instance of EmailNotificationResponse containing the task ID, notification status,
+     *         and notification ID associated with the scheduled email notification
      */
     public EmailNotificationResponse scheduleEmailNotification(EmailNotificationRequest emailRequest) {
         String taskId = UUID.randomUUID().toString();
@@ -86,11 +88,11 @@ public class NotificationService {
     }
 
     /**
-     * Updates the status and associated provider notification ID of a notification
-     * after it has been sent.
+     * Updates the status of a notification after it has been sent by associating it
+     * with a provider notification identifier and updating its status to SUBMITTED.
      *
-     * @param dbNotificationId the unique identifier of the notification in the database
-     * @param providerNotificationId the unique identifier of the notification from the provider
+     * @param dbNotificationId the unique identifier of the notification stored in the database
+     * @param providerNotificationId the unique identifier of the notification assigned by the provider
      */
     public void updateNotificationAfterSending(UUID dbNotificationId, UUID providerNotificationId) {
         Optional<CaseNotification> notificationOpt = notificationRepository.findById(dbNotificationId);
