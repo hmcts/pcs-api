@@ -2,8 +2,6 @@ package uk.gov.hmcts.reform.pcs.ccd.config;
 
 import java.util.List;
 import java.util.Locale;
-import javax.crypto.AEADBadTagException;
-import javax.net.ssl.SSLException;
 import org.apache.http.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
