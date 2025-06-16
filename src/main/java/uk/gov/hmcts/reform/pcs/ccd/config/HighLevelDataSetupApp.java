@@ -36,18 +36,7 @@ public class HighLevelDataSetupApp extends DataLoaderToDefinitionStore {
 
     @Override
     public void addCcdRoles() {
-        for (CcdRoleConfig roleConfig : CCD_ROLES) {
-            try {
-                logger.info("\n\nAdding CCD Role {}.", roleConfig);
-                addCcdRole(roleConfig);
-                logger.info("\n\nAdded CCD Role {}.", roleConfig);
-            } catch (Exception e) {
-                logger.error("\n\nCouldn't add CCD Role {}.\n\n", roleConfig, e);
-                if (!shouldTolerateDataSetupFailure()) {
-                    throw e;
-                }
-            }
-        }
+        logger.info("Skipping CCD role creation in decentralised mode");
     }
 
     @Override
@@ -66,18 +55,12 @@ public class HighLevelDataSetupApp extends DataLoaderToDefinitionStore {
 
     @Override
     protected boolean shouldTolerateDataSetupFailure() {
-        var env = getDataSetupEnvironment();
-        return CcdEnvironment.PERFTEST == env || CcdEnvironment.DEMO == env || CcdEnvironment.ITHC == env;
+        return true;
     }
 
     @Override
     protected boolean shouldTolerateDataSetupFailure(Throwable e) {
-        return switch (e) {
-            case ImportException importException -> isGatewayTimeout(importException);
-            case SSLException sslException -> true;
-            case AEADBadTagException aeadBadTagException -> true;
-            default -> shouldTolerateDataSetupFailure();
-        };
+        return true;
     }
 
     private boolean isGatewayTimeout(ImportException importException) {
