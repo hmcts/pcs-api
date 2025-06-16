@@ -73,7 +73,7 @@ public class PostCodeCourtService {
             .filter(e -> e.getId().getPostCode().equals(longestPostcodeMatch))
             .toList();
         log.info(
-            "Found court mapping of {} for postcode {}",
+            "Found court mapping of {} for postcode: {}",
             filteredResults.getFirst().getId().getPostCode(),
             postcode
         );
@@ -108,11 +108,11 @@ public class PostCodeCourtService {
                     && (s.getEffectiveTo() == null || !s.getEffectiveTo().isBefore(currentDate)))
             .toList();
         if (liveEpimId.isEmpty()) {
-            log.warn("EpimId not Live for postcode {}", results.getFirst().getId().getPostCode());
+            log.warn("EpimId not Live for postcode: {}", results.getFirst().getId().getPostCode());
             return List.of();
         }
         if (liveEpimId.size() > 1) {
-            log.error("Multiple Live EpimId's found for postcode {}", results.getFirst().getId().getPostCode());
+            log.error("Multiple Live EpimId's found for postcode: {}", results.getFirst().getId().getPostCode());
             return List.of();
         }
         return liveEpimId;
