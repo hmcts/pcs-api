@@ -20,6 +20,7 @@ public class HighLevelDataSetupApp extends DataLoaderToDefinitionStore {
 
     private static final CcdRoleConfig[] CCD_ROLES = {
         new CcdRoleConfig("caseworker-civil", "PUBLIC"),
+        new CcdRoleConfig("citizen", "PUBLIC")
     };
 
 
@@ -31,6 +32,7 @@ public class HighLevelDataSetupApp extends DataLoaderToDefinitionStore {
     }
 
     public static void main(String[] args) throws Throwable {
+        Thread.sleep(30_000);
         DataLoaderToDefinitionStore.main(HighLevelDataSetupApp.class, args);
     }
 
