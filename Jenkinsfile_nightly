@@ -25,24 +25,29 @@ withNightlyPipeline(type, product, component) {
     loadVaultSecrets(secrets)
     afterAlways('DependencyCheckNightly') {
     env.TEST_E2E_URL_EXUI = "https://manage-case.aat.platform.hmcts.net/"
-    runE2eTests(env.ENVIRONMENT)
+    runE2ETestsForBrowser('Chrome')
   }
 }
 
-def runE2eTests(String context) {
-  try {
-    stage('E2E Test - ' + context) {
-      sh './gradlew runE2eTests'
+def runE2ETestsForBrowser(String browser) {
+  stage("Full E2E Test - ${browser}") {
+    try {
+      sh "./gradlew runE2e${browser}Tests"
+    } catch (Error) {
+      unstable(message: "${STAGE_NAME} is unstable: " + Error.toString())
+    } finally {
+      publishHTML([
+        allowMissing: true,
+        alwaysLinkToLastBuild: true,
+        keepAll: true,
+        reportDir: "src/e2eTest/playwright-report",
+        reportFiles: 'index.html',
+        reportName: "Full EXUI E2E Test Report"
+      ])
+      steps.archiveArtifacts(
+        allowEmptyArchive: true,
+        artifacts: 'definitions/test/playwright-report/**'
+      )
     }
-  } finally {
-    publishHTML([
-      allowMissing: true,
-      alwaysLinkToLastBuild: true,
-      keepAll: true,
-      reportDir: "src/e2eTest/playwright-report",
-      reportFiles: 'index.html',
-      reportName: 'E2E Test Report'
-    ])
-    steps.archiveArtifacts allowEmptyArchive: true, artifacts: 'definitions/test/playwright-report/**'
   }
 }

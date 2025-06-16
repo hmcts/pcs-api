@@ -1,7 +1,7 @@
 
 export const caseData = {
-  jurisdiction: 'Civil Possessions',
-  caseType: 'Civil Possessions 254',
+  jurisdiction: 'Possessions',
+  caseType: 'Civil Possessions',
   event: 'Make a claim',
   postcode: 'W3 7RX',
   addressIndex: 1,
@@ -14,3 +14,4 @@ export const caseData = {
   manualPostcode: 'MT1 2AB',
   manualCountry: 'United Kingdom',
 };
+//need to change
