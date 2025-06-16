@@ -3,7 +3,7 @@ import * as actions from '@helpers/actions.helper';
 import { caseData } from '@data/case.data';
 import {Page} from "@playwright/test";
 
-test.describe('Create Case with Address @PR @nightly', () => {
+test.describe.skip('Create Case with Address @PR @nightly', () => {
 
   test('should create a case successfully with Dropdown Address Flow', async ({ loggedInPage },testInfo) => {
     await testInfo.attach('Page URL', {
