@@ -32,6 +32,7 @@ public class HighLevelDataSetupApp extends DataLoaderToDefinitionStore {
     }
 
     public static void main(String[] args) throws Throwable {
+        Thread.sleep(30_000);
         DataLoaderToDefinitionStore.main(HighLevelDataSetupApp.class, args);
     }
 
