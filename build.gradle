@@ -445,22 +445,6 @@ tasks.register('highLevelDataSetup', JavaExec) {
   mainClass.set("uk.gov.hmcts.reform.pcs.ccd.config.HighLevelDataSetupApp")
   classpath += sourceSets.main.runtimeClasspath
   jvmArgs = ['--add-opens=java.base/java.lang.reflect=ALL-UNNAMED']
-  
-  environment 'DEFINITION_STORE_HOST', System.getenv().getOrDefault("DEFINITION_STORE_HOST", "http://localhost:4451")
-  environment 'CCD_DEFINITION_STORE_URL', System.getenv().getOrDefault("CCD_DEFINITION_STORE_URL", "http://localhost:4451")
-  environment 'IDAM_API_URL', System.getenv().getOrDefault("IDAM_API_URL", "http://localhost:5062")
-  environment 'IDAM_S2S_AUTH_URL', System.getenv().getOrDefault("IDAM_S2S_AUTH_URL", "http://localhost:4502")
-  
-  environment 'PCS_DB_HOST', System.getenv().getOrDefault("PCS_DB_HOST", "localhost")
-  environment 'PCS_DB_NAME', System.getenv().getOrDefault("PCS_DB_NAME", "pcs")
-  environment 'PCS_DB_USER_NAME', System.getenv().getOrDefault("PCS_DB_USER_NAME", "postgres")
-  environment 'PCS_DB_PASSWORD', System.getenv().getOrDefault("PCS_DB_PASSWORD", "postgres")
-  environment 'DB_PORT', System.getenv().getOrDefault("DB_PORT", "5432")
-  
-  environment 'SPRING_FLYWAY_ENABLED', 'true'
-  environment 'FLYWAY_NOOP_STRATEGY', 'false'
-  
-  args System.getenv().getOrDefault("ENV", "preview")
 }
 
 // Ensure we cover Cftlib dev & test with our CI checks

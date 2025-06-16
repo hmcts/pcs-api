@@ -2,6 +2,8 @@ package uk.gov.hmcts.reform.pcs.ccd.config;
 
 import java.util.List;
 import java.util.Locale;
+import javax.crypto.AEADBadTagException;
+import javax.net.ssl.SSLException;
 import org.apache.http.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,7 +36,18 @@ public class HighLevelDataSetupApp extends DataLoaderToDefinitionStore {
 
     @Override
     public void addCcdRoles() {
-        logger.info("Skipping CCD role creation in decentralised mode");
+        for (CcdRoleConfig roleConfig : CCD_ROLES) {
+            try {
+                logger.info("\n\nAdding CCD Role {}.", roleConfig);
+                addCcdRole(roleConfig);
+                logger.info("\n\nAdded CCD Role {}.", roleConfig);
+            } catch (Exception e) {
+                logger.error("\n\nCouldn't add CCD Role {}.\n\n", roleConfig, e);
+                if (!shouldTolerateDataSetupFailure()) {
+                    throw e;
+                }
+            }
+        }
     }
 
     @Override
@@ -53,12 +66,18 @@ public class HighLevelDataSetupApp extends DataLoaderToDefinitionStore {
 
     @Override
     protected boolean shouldTolerateDataSetupFailure() {
-        return true;
+        var env = getDataSetupEnvironment();
+        return CcdEnvironment.PERFTEST == env || CcdEnvironment.DEMO == env || CcdEnvironment.ITHC == env;
     }
 
     @Override
     protected boolean shouldTolerateDataSetupFailure(Throwable e) {
-        return true;
+        return switch (e) {
+            case ImportException importException -> isGatewayTimeout(importException);
+            case SSLException sslException -> true;
+            case AEADBadTagException aeadBadTagException -> true;
+            default -> shouldTolerateDataSetupFailure();
+        };
     }
 
     private boolean isGatewayTimeout(ImportException importException) {
