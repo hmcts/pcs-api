@@ -19,8 +19,8 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
     private static final String CASE_TYPE_ID = "PCS";
     private static final String CASE_TYPE_NAME = "Civil Possessions";
     private static final String CASE_TYPE_DESCRIPTION = "Civil Possessions Case Type";
-    private static final String JURISDICTION_ID = "PCS";
-    private static final String JURISDICTION_NAME = "Possessions";
+    private static final String JURISDICTION_ID = "CIVIL";
+    private static final String JURISDICTION_NAME = "Civil Possessions";
     private static final String JURISDICTION_DESCRIPTION = "Civil Possessions Jurisdiction";
 
     public static String getCaseType() {
