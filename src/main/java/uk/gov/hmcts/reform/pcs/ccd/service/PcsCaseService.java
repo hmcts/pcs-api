@@ -7,6 +7,8 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 
+import java.util.Optional;
+
 @Service
 @AllArgsConstructor
 public class PcsCaseService {
@@ -14,10 +16,18 @@ public class PcsCaseService {
     private final PcsCaseRepository pcsCaseRepository;
 
     public void createCase(long caseReference, PCSCase pcsCase) {
-        PcsCaseEntity pcsCaseEntity = new PcsCaseEntity();
-        pcsCaseEntity.setCaseReference(caseReference);
+        Optional<PcsCaseEntity> existingCase = pcsCaseRepository.findByCaseReference(caseReference);
+        
+        PcsCaseEntity pcsCaseEntity;
+        if (existingCase.isPresent()) {
+            pcsCaseEntity = existingCase.get();
+        } else {
+            pcsCaseEntity = new PcsCaseEntity();
+            pcsCaseEntity.setCaseReference(caseReference);
+        }
+        
         pcsCaseEntity.setApplicantForename(pcsCase.getApplicantForename());
-
+        
         pcsCaseRepository.save(pcsCaseEntity);
     }
 
@@ -29,5 +39,4 @@ public class PcsCaseService {
             .applicantForename(pcsCaseEntity.getApplicantForename())
             .build();
     }
-
 }

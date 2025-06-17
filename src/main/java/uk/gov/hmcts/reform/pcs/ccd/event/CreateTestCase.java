@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.event;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CCDConfig;
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
@@ -9,9 +10,14 @@ import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.UserRole;
+import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 
 @Component
 public class CreateTestCase implements CCDConfig<PCSCase, State, UserRole> {
+
+    @Autowired
+    private PcsCaseService pcsCaseService;
+
     @Override
     public void configure(ConfigBuilder<PCSCase, State, UserRole> configBuilder) {
         configBuilder
@@ -38,7 +44,9 @@ public class CreateTestCase implements CCDConfig<PCSCase, State, UserRole> {
 
     public AboutToStartOrSubmitResponse<PCSCase, State> aboutToSubmit(CaseDetails<PCSCase, State> details,
                                                                        CaseDetails<PCSCase, State> beforeDetails) {
-        // TODO: Whatever you need.
+        Long caseReference = details.getId();
+        pcsCaseService.createCase(caseReference, details.getData());
+        
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
             .data(details.getData())
             .build();
