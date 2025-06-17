@@ -265,11 +265,11 @@ class PostCodeCourtServiceTest {
 
 
     private PostCodeCourtEntity createEntityWithActiveEpimId(String postCode, int epimId) {
-        PostCodeCourtEntity PostCodeCourtEntity = new PostCodeCourtEntity();
-        PostCodeCourtEntity.setId(new PostCodeCourtKey(postCode, epimId));
-        PostCodeCourtEntity.setEffectiveFrom(LocalDate.now().minusDays(4));
-        PostCodeCourtEntity.setEffectiveTo(LocalDate.now().plusDays(6));
+        PostCodeCourtEntity postCodeCourtEntity = new PostCodeCourtEntity();
+        postCodeCourtEntity.setId(new PostCodeCourtKey(postCode, epimId));
+        postCodeCourtEntity.setEffectiveFrom(LocalDate.now().minusDays(4));
+        postCodeCourtEntity.setEffectiveTo(LocalDate.now().plusDays(6));
 
-        return PostCodeCourtEntity;
+        return postCodeCourtEntity;
     }
 }
