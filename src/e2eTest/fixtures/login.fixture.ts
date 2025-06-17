@@ -3,6 +3,8 @@ import {ConfigData} from "@data/config.data";
 import * as actions from "@helpers/actions.helper";
 import * as idamHelper from '@helpers/idam-helpers/idam.helper';
 
+let Username: string | undefined;
+
 type MyFixtures = {
   loggedInPage: Page;
   username?: string;
@@ -21,7 +23,6 @@ export const test = baseTest.extend<MyFixtures>({
 
     // if credentials are provided then do not create new user
     if (!Username || !Password) {
-        userCreated = true;
         const { userData, password: generatedPassword } = await idamHelper.createUser(ConfigData.iDam.roles);
         Username = userData.user.email;
         Password = generatedPassword;
@@ -34,16 +35,7 @@ export const test = baseTest.extend<MyFixtures>({
     await actions.clickButton(page, 'Sign in');
 
     await use(page);
-
-    // Delete if we created the user
-    if (userCreated && Username) {
-      try {
-        await idamHelper.deleteAccount(Username);
-      } catch (err) {
-        console.warn(`Teardown failed for user ${Username}:`, err);
-      }
-    }
   }
 });
-
+export { Username };
 export const expect = baseExpect;
