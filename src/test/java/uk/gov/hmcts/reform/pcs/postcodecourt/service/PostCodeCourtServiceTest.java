@@ -55,7 +55,7 @@ class PostCodeCourtServiceTest {
         String postCode = " W3 7RX ";
         String trimmedPostcode = "W37RX";
         int expectedEpimId = 20262;
-        PostCodeCourtEntity postCodeCourtEntity = createEntityWithActiveEpimId(postCode, expectedEpimId);
+        PostCodeCourtEntity postCodeCourtEntity = createPostCodeCourtEntity(postCode, expectedEpimId, true);
         List<String> postcodes = getPostCodeCandidates(trimmedPostcode);
 
         when(postCodeCourtRepository.findByIdPostCodeIn(postcodes)).thenReturn(List.of(postCodeCourtEntity));
@@ -97,7 +97,7 @@ class PostCodeCourtServiceTest {
         String postCode = "W37RX";
         String partialPostcode = "W37R";
         int expectedEpimId = 76598;
-        PostCodeCourtEntity postCodeCourtEntity = createEntityWithActiveEpimId(partialPostcode, expectedEpimId);
+        PostCodeCourtEntity postCodeCourtEntity = createPostCodeCourtEntity(partialPostcode, expectedEpimId, true);
         List<String> postcodes = getPostCodeCandidates(postCode);
 
         when(postCodeCourtRepository.findByIdPostCodeIn(postcodes)).thenReturn(List.of(postCodeCourtEntity));
@@ -137,7 +137,7 @@ class PostCodeCourtServiceTest {
     void shouldReturnPostcodeCourtMappingWhenEpimIdIsActive() {
         String postCode = "W37RX";
         int activeEpimId = 76598;
-        PostCodeCourtEntity postCodeCourtEntity = createEntityWithActiveEpimId(postCode, activeEpimId);
+        PostCodeCourtEntity postCodeCourtEntity = createPostCodeCourtEntity(postCode, activeEpimId, true);
         List<String> postcodes = getPostCodeCandidates(postCode);
 
         when(postCodeCourtRepository.findByIdPostCodeIn(postcodes)).thenReturn(List.of(postCodeCourtEntity));
@@ -158,7 +158,7 @@ class PostCodeCourtServiceTest {
     void shouldReturnActiveEpimIdWhenEffectiveToDateIsNull() {
         String postCode = "W37RX";
         int activeEpimId = 76598;
-        PostCodeCourtEntity postCodeCourtEntity = createEntityWithActiveEpimId(postCode, activeEpimId);
+        PostCodeCourtEntity postCodeCourtEntity = createPostCodeCourtEntity(postCode, activeEpimId, true);
         postCodeCourtEntity.setEffectiveTo(null);
         List<String> postcodes = getPostCodeCandidates(postCode);
 
@@ -181,7 +181,7 @@ class PostCodeCourtServiceTest {
     void shouldReturnEmptyListWhenEpimIdIsNotActive() {
         String postCode = "W37RX";
         int expectedEpimId = 76598;
-        PostCodeCourtEntity postCodeCourtEntity = createEntityWithNonActiveEpimId(postCode, expectedEpimId);
+        PostCodeCourtEntity postCodeCourtEntity = createPostCodeCourtEntity(postCode, expectedEpimId, false);
         List<String> postcodes = getPostCodeCandidates(postCode);
 
         when(postCodeCourtRepository.findByIdPostCodeIn(postcodes)).thenReturn(List.of(postCodeCourtEntity));
@@ -199,10 +199,10 @@ class PostCodeCourtServiceTest {
     void shouldReturnActiveEpimIdWhenMultipleEpimIdsFound() {
         String postCode = "W37RX";
         int nonActiveEpimId = 76598;
-        PostCodeCourtEntity nonActivePostCodeCourtEntity = createEntityWithNonActiveEpimId(postCode, nonActiveEpimId);
+        PostCodeCourtEntity nonActivePostCodeCourtEntity = createPostCodeCourtEntity(postCode, nonActiveEpimId, false);
 
         int activeEpimId = 89567;
-        PostCodeCourtEntity activePostCodeCourtEntity = createEntityWithActiveEpimId(postCode, activeEpimId);
+        PostCodeCourtEntity activePostCodeCourtEntity = createPostCodeCourtEntity(postCode, activeEpimId, true);
 
         List<String> postcodes = getPostCodeCandidates(postCode);
         when(postCodeCourtRepository.findByIdPostCodeIn(postcodes)).thenReturn(List.of(
@@ -229,8 +229,8 @@ class PostCodeCourtServiceTest {
         int firstActiveEpimId = 76598;
         int secondActiveEpimId = 76536;
 
-        PostCodeCourtEntity firstActiveEntity = createEntityWithActiveEpimId(postCode, firstActiveEpimId);
-        PostCodeCourtEntity secondActiveEntity = createEntityWithActiveEpimId(postCode, secondActiveEpimId);
+        PostCodeCourtEntity firstActiveEntity = createPostCodeCourtEntity(postCode, firstActiveEpimId, true);
+        PostCodeCourtEntity secondActiveEntity = createPostCodeCourtEntity(postCode, secondActiveEpimId, true);
 
         List<String> postcodes = getPostCodeCandidates(postCode);
         when(postCodeCourtRepository.findByIdPostCodeIn(postcodes)).thenReturn(List.of(
@@ -254,22 +254,16 @@ class PostCodeCourtServiceTest {
         return postCodes;
     }
 
-    private PostCodeCourtEntity createEntityWithNonActiveEpimId(String postCode, int epimId) {
-        PostCodeCourtEntity postCodeCourtEntity = new PostCodeCourtEntity();
-        postCodeCourtEntity.setId(new PostCodeCourtKey(postCode, epimId));
-        postCodeCourtEntity.setEffectiveFrom(LocalDate.now().minusDays(4));
-        postCodeCourtEntity.setEffectiveTo(LocalDate.now().minusDays(1));
+    private PostCodeCourtEntity createPostCodeCourtEntity(String postCode, int epimId, boolean isActive) {
+        LocalDate from = LocalDate.now().minusDays(4);
+        LocalDate to = isActive ? LocalDate.now().plusDays(6) : LocalDate.now().minusDays(1);
 
-        return postCodeCourtEntity;
+        PostCodeCourtEntity entity = new PostCodeCourtEntity();
+        entity.setId(new PostCodeCourtKey(postCode, epimId));
+        entity.setEffectiveFrom(from);
+        entity.setEffectiveTo(to);
+
+        return entity;
     }
 
-
-    private PostCodeCourtEntity createEntityWithActiveEpimId(String postCode, int epimId) {
-        PostCodeCourtEntity postCodeCourtEntity = new PostCodeCourtEntity();
-        postCodeCourtEntity.setId(new PostCodeCourtKey(postCode, epimId));
-        postCodeCourtEntity.setEffectiveFrom(LocalDate.now().minusDays(4));
-        postCodeCourtEntity.setEffectiveTo(LocalDate.now().plusDays(6));
-
-        return postCodeCourtEntity;
-    }
 }
