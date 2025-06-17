@@ -102,20 +102,20 @@ public class PostCodeCourtService {
 
     private List<PostCodeCourtEntity> getActiveEpimId(List<PostCodeCourtEntity> results) {
         LocalDate currentDate = LocalDate.now();
-        List<PostCodeCourtEntity> liveEpimId = results.stream().filter(
+        List<PostCodeCourtEntity> activeEpimId = results.stream().filter(
                 s -> !s.getEffectiveFrom().isAfter(currentDate)
                     && (s.getEffectiveTo() == null || !s.getEffectiveTo().isBefore(currentDate)))
             .toList();
         String postCode = results.getFirst().getId().getPostCode();
-        if (liveEpimId.isEmpty()) {
+        if (activeEpimId.isEmpty()) {
             log.warn("EpimId not active for postcode: {}", postCode);
             return List.of();
         }
-        if (liveEpimId.size() > 1) {
-            log.error("Multiple active EpimId's found for postcode: {} count: {}", postCode, liveEpimId.size());
+        if (activeEpimId.size() > 1) {
+            log.error("Multiple active EpimId's found for postcode: {} count: {}", postCode, activeEpimId.size());
             return List.of();
         }
-        return liveEpimId;
+        return activeEpimId;
     }
 
 }
