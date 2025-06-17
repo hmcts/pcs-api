@@ -6,15 +6,24 @@ global:
   idamApiUrl: https://idam-api.aat.platform.hmcts.net
   idamWebUrl: https://idam-web-public.aat.platform.hmcts.net
   s2sUrl: http://rpe-service-auth-provider-aat.service.core-compute-aat.internal
-  postgresSecret: ${SERVICE_NAME}-postgresql
-  postgresHostname: ${SERVICE_NAME}-postgresql
-  postgresUsername: "javapostgres"
+  postgresSecret: postgres
+  postgresHostname: "pcs-preview.postgres.database.azure.com"
+  postgresUsername: "hmcts"
   amRoleAssignmentServiceUrl: http://am-role-assignment-service-aat.service.core-compute-aat.internal
+  databaseNamePrefix: "pr-${CHANGE_ID}-"
 
 java:
   environment:
     CHANGE_ID: ${CHANGE_ID}
+    PCS_DB_NAME: "{{ .Values.global.databaseNamePrefix }}pcs"
+    PCS_DB_HOST: '{{ tpl .Values.global.postgresHostname $}}'
+    PCS_DB_USER_NAME: "{{ .Values.global.postgresUsername}}"
+  secrets:
+    PCS_DB_PASSWORD:
+      secretRef: "{{ .Values.global.postgresSecret }}"
+      key: PASSWORD
   postgresql:
+    enabled: false
     image:
       debug: true
     primary:
@@ -23,6 +32,14 @@ java:
           init.sql: |-
             CREATE DATABASE "data-store" WITH OWNER = javapostgres ENCODING = 'UTF-8' CONNECTION LIMIT = -1;
             CREATE DATABASE "definition-store" WITH OWNER = javapostgres ENCODING = 'UTF-8' CONNECTION LIMIT = -1;
+postgresql:
+  enabled: true
+  flexibleserver: pcs-preview
+  setup:
+    databases:
+      - name: "pr-${CHANGE_ID}-data-store"
+      - name: "pr-${CHANGE_ID}-definition-store"
+      - name: "pr-${CHANGE_ID}-pcs"
 ccd:
   enabled: true
   ccd:
@@ -53,12 +70,8 @@ ccd:
         DEFINITION_STORE_TX_TIMEOUT_DEFAULT: 360
         ELASTIC_SEARCH_ENABLED: false
         WELSH_TRANSLATION_ENABLED: false
-        DEFINITION_STORE_DB_USERNAME: "{{ .Values.postgresql.auth.username}}"
+        DEFINITION_STORE_DB_USERNAME: "{{ .Values.global.postgresUsername}}"
         DEFINITION_STORE_DB_OPTIONS: ""
-      secrets:
-        DEFINITION_STORE_DB_PASSWORD:
-          key: password
-          disabled: false
       ingressHost: ccd-definition-store-${SERVICE_FQDN}
       keyVaults:
         ccd:
@@ -72,7 +85,7 @@ ccd:
       devcpuRequests: '500m'
       environment:
         DATA_STORE_DB_HOST: '{{ tpl .Values.global.postgresHostname $}}'
-        DATA_STORE_DB_USERNAME: "{{ .Values.postgresql.auth.username}}"
+        DATA_STORE_DB_USERNAME: "{{ .Values.global.postgresUsername}}"
         IDAM_API_BASE_URL: https://idam-api.aat.platform.hmcts.net
         IDAM_OIDC_URL: https://idam-web-public.aat.platform.hmcts.net
         DATA_STORE_CROSS_JURISDICTIONAL_ROLES: caseworker-caa,caseworker-approver
@@ -82,10 +95,6 @@ ccd:
         DATA_STORE_DB_MAX_POOL_SIZE: 80
         DATA_STORE_DB_OPTIONS: "?stringtype=unspecified"
         CCD_DOCUMENT_URL_PATTERN: ^https?://(((?:dm-store-aat\.service\.core-compute-aat\.internal(?::\d+)?)\/documents\/[A-Za-z0-9-]+(?:\/binary)?))
-      secrets:
-        DATA_STORE_DB_PASSWORD:
-          key: password
-          disabled: false
       ingressHost: ccd-data-store-api-${SERVICE_FQDN}
       autoscaling:
         enabled: false
