@@ -12,10 +12,8 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 
-import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.State.Draft;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.caseworkerCreateApplication;
-import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.citizenCreateApplication;
 
 @Component
 @Slf4j
