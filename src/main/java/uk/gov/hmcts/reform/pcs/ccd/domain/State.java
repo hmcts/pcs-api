@@ -14,7 +14,7 @@ public enum State {
 
     @CCD(
         label = "Draft",
-        access = {CitizenAccess.class, CaseworkerAccess.class}
+        access = {CitizenAccess.class}
     )
     Draft,
 
