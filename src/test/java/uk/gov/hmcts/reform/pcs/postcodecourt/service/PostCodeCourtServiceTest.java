@@ -142,13 +142,13 @@ class PostCodeCourtServiceTest {
 
         when(postCodeCourtRepository.findByIdPostCodeIn(postcodes)).thenReturn(List.of(postCodeCourtEntity));
         when(locationReferenceService.getCountyCourts(SYSTEM_USER_TOKEN, List.of(liveEpimId)))
-            .thenReturn(List.of(new CourtVenue(liveEpimId, 303, "Main Court of Justice")));
+            .thenReturn(List.of(new CourtVenue(liveEpimId, 458, "Central County Court")));
 
         List<Court> response = underTest.getCountyCourtsByPostCode(postCode);
 
         assertThat(response)
             .isNotEmpty()
-            .isEqualTo(List.of(new Court(303, "Main Court of Justice", liveEpimId)));
+            .isEqualTo(List.of(new Court(458, "Central County Court", liveEpimId)));
         verify(postCodeCourtRepository).findByIdPostCodeIn(postcodes);
         verify(locationReferenceService).getCountyCourts(SYSTEM_USER_TOKEN, List.of(liveEpimId));
     }
@@ -164,13 +164,13 @@ class PostCodeCourtServiceTest {
 
         when(postCodeCourtRepository.findByIdPostCodeIn(postcodes)).thenReturn(List.of(postCodeCourtEntity));
         when(locationReferenceService.getCountyCourts(SYSTEM_USER_TOKEN, List.of(liveEpimId)))
-            .thenReturn(List.of(new CourtVenue(liveEpimId, 303, "Main Court of Justice")));
+            .thenReturn(List.of(new CourtVenue(liveEpimId, 265, "City Centre Main Court")));
 
         List<Court> response = underTest.getCountyCourtsByPostCode(postCode);
 
         assertThat(response)
             .isNotEmpty()
-            .isEqualTo(List.of(new Court(303, "Main Court of Justice", liveEpimId)));
+            .isEqualTo(List.of(new Court(265, "City Centre Main Court", liveEpimId)));
         verify(postCodeCourtRepository).findByIdPostCodeIn(postcodes);
         verify(locationReferenceService).getCountyCourts(SYSTEM_USER_TOKEN, List.of(liveEpimId));
 
@@ -186,7 +186,7 @@ class PostCodeCourtServiceTest {
 
         when(postCodeCourtRepository.findByIdPostCodeIn(postcodes)).thenReturn(List.of(postCodeCourtEntity));
         when(locationReferenceService.getCountyCourts(SYSTEM_USER_TOKEN, List.of(expectedEpimId)))
-            .thenReturn(List.of(new CourtVenue(expectedEpimId, 303, "Main Court of Justice")));
+            .thenReturn(List.of(new CourtVenue(expectedEpimId, 458, "Central County Court")));
 
         List<Court> response = underTest.getCountyCourtsByPostCode(postCode);
 
@@ -195,8 +195,8 @@ class PostCodeCourtServiceTest {
     }
 
     @Test
-    @DisplayName("Should return live EpimId when multilple EpimId's are found")
-    void shouldReturnLiveEpimIdWhenMultilpleEpimIdsFound() {
+    @DisplayName("Should return live EpimId when multiple EpimId's are found")
+    void shouldReturnLiveEpimIdWhenMultipleEpimIdsFound() {
         String postCode = "W37RX";
         int nonLiveEpimId = 76598;
         PostCodeCourtEntity nonLivePostCodeCourtEntity = createEntityWithNonLiveEpimId(postCode, nonLiveEpimId);
@@ -211,13 +211,13 @@ class PostCodeCourtServiceTest {
         ));
 
         when(locationReferenceService.getCountyCourts(SYSTEM_USER_TOKEN, List.of(liveEpimId)))
-            .thenReturn(List.of(new CourtVenue(liveEpimId, 303, "Main Court of Justice")));
+            .thenReturn(List.of(new CourtVenue(liveEpimId, 505, "Town Hall Court")));
 
         List<Court> response = underTest.getCountyCourtsByPostCode(postCode);
 
         assertThat(response)
             .isNotEmpty()
-            .isEqualTo(List.of(new Court(303, "Main Court of Justice", liveEpimId)));
+            .isEqualTo(List.of(new Court(505, "Town Hall Court", liveEpimId)));
         verify(postCodeCourtRepository).findByIdPostCodeIn(postcodes);
         verify(locationReferenceService).getCountyCourts(SYSTEM_USER_TOKEN, List.of(liveEpimId));
     }
@@ -225,7 +225,6 @@ class PostCodeCourtServiceTest {
     @Test
     @DisplayName("Should return empty list when multiple live EpimId's are found")
     void shouldReturnEmptyListWhenMultipleLiveEpimIdsFound() {
-
         String postCode = "W37RX";
         int firstLiveEpimId = 76598;
         int secondLiveEpimId = 76536;
