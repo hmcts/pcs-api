@@ -68,15 +68,11 @@ public class PostCodeCourtService {
             .map(e -> e.getId().getPostCode())
             .max(Comparator.comparingInt(String::length))
             .orElse("");
-
         List<PostCodeCourtEntity> filteredResults = results.stream()
             .filter(e -> e.getId().getPostCode().equals(longestPostcodeMatch))
             .toList();
-        log.info(
-            "Found court mapping of {} for postcode: {}",
-            filteredResults.getFirst().getId().getPostCode(),
-            postcode
-        );
+
+        log.info("Found court mapping of {} for postcode: {}", longestPostcodeMatch, postcode);
         return getActiveEpimId(filteredResults);
     }
 
@@ -106,16 +102,15 @@ public class PostCodeCourtService {
                 s -> !s.getEffectiveFrom().isAfter(currentDate)
                     && (s.getEffectiveTo() == null || !s.getEffectiveTo().isBefore(currentDate)))
             .toList();
-        String postCode = results.getFirst().getId().getPostCode();
+        String postCodeMatch = results.getFirst().getId().getPostCode();
         if (activeEpimId.isEmpty()) {
-            log.warn("EpimId not active for postcode: {}", postCode);
+            log.warn("EpimId not active for postcode: {}", postCodeMatch);
             return List.of();
         }
         if (activeEpimId.size() > 1) {
-            log.error("Multiple active EpimId's found for postcode: {} count: {}", postCode, activeEpimId.size());
+            log.error("Multiple active EpimId's found for postcode: {} count: {}", postCodeMatch, activeEpimId.size());
             return List.of();
         }
         return activeEpimId;
     }
-
 }
