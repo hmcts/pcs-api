@@ -4,7 +4,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.test.context.ActiveProfiles;
 import uk.gov.hmcts.reform.pcs.audit.Audit;
 import uk.gov.hmcts.reform.pcs.config.AbstractPostgresContainerIT;
@@ -23,9 +22,6 @@ public class PostCodeCourtRepositoryIT extends AbstractPostgresContainerIT {
 
     @Autowired
     private PostCodeCourtRepository repository;
-
-    @Autowired
-    private JdbcClient jdbcClient;
 
     private final LocalDate currentDate = LocalDate.now(ZoneId.of("Europe/London"));
 
