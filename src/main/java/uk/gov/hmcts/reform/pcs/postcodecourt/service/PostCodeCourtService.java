@@ -13,6 +13,7 @@ import uk.gov.hmcts.reform.pcs.postcodecourt.model.Court;
 import uk.gov.hmcts.reform.pcs.postcodecourt.repository.PostCodeCourtRepository;
 
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -58,7 +59,9 @@ public class PostCodeCourtService {
         postcode = postcode.replaceAll("\\s", "").toUpperCase(Locale.ROOT);
 
         List<String> postcodes = getPostCodeLookupCandidates(postcode);
-        List<PostCodeCourtEntity> results = postCodeCourtRepository.findByIdPostCodeIn(postcodes);
+
+        LocalDate currentDate = LocalDate.now(ZoneId.of("Europe/London"));
+        List<PostCodeCourtEntity> results = postCodeCourtRepository.findByIdPostCodeIn(postcodes, currentDate);
         if (results.isEmpty()) {
             log.warn("Postcode court mapping not found for postcode {}", postcode);
             return List.of();
@@ -72,8 +75,16 @@ public class PostCodeCourtService {
             .filter(e -> e.getId().getPostCode().equals(longestPostcodeMatch))
             .toList();
 
+        if (filteredResults.size() > 1) {
+            log.error(
+                "Multiple active EpimId's found for postcode:{} count:{}",
+                longestPostcodeMatch,
+                filteredResults.size()
+            );
+            return List.of();
+        }
         log.info("Found court mapping of {} for postcode: {}", longestPostcodeMatch, postcode);
-        return getActiveEpimId(filteredResults);
+        return filteredResults;
     }
 
     private List<String> getPostCodeLookupCandidates(String postcode) {
@@ -96,21 +107,4 @@ public class PostCodeCourtService {
                 .getOrElse(Collections.emptyList());
     }
 
-    private List<PostCodeCourtEntity> getActiveEpimId(List<PostCodeCourtEntity> results) {
-        LocalDate currentDate = LocalDate.now();
-        List<PostCodeCourtEntity> activeEpimId = results.stream().filter(
-                s -> !s.getEffectiveFrom().isAfter(currentDate)
-                    && (s.getEffectiveTo() == null || !s.getEffectiveTo().isBefore(currentDate)))
-            .toList();
-        String postCodeMatch = results.getFirst().getId().getPostCode();
-        if (activeEpimId.isEmpty()) {
-            log.warn("EpimId not active for postcode: {}", postCodeMatch);
-            return List.of();
-        }
-        if (activeEpimId.size() > 1) {
-            log.error("Multiple active EpimId's found for postcode: {} count: {}", postCodeMatch, activeEpimId.size());
-            return List.of();
-        }
-        return activeEpimId;
-    }
 }
