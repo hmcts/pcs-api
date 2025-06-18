@@ -1,21 +1,25 @@
 {
-  "name": "project-e2e-tests",
+  "name": "pcs-exui-e2e-tests",
   "version": "1.0.0",
   "private": true,
   "engines": {
     "node": ">=18.0.0"
   },
   "scripts": {
-    "test:functional": "NODE_TLS_REJECT_UNAUTHORIZED=0 yarn playwright install && yarn playwright test --project chromium --grep @PR",
-    "test:chrome": "NODE_TLS_REJECT_UNAUTHORIZED=0 yarn playwright install && yarn playwright test --project chromium --grep @nightly",
-    "test:firefox": "NODE_TLS_REJECT_UNAUTHORIZED=0 yarn playwright install && yarn playwright test --project firefox --grep @nightly",
-    "test:changed": "NODE_TLS_REJECT_UNAUTHORIZED=0 yarn playwright install && tsx ./helpers/runChangedTestHelper.ts"
+    "test:functional": "NODE_TLS_REJECT_UNAUTHORIZED=0 yarn playwright install && yarn playwright test --project chrome --grep @Master",
+    "test:chrome": "NODE_TLS_REJECT_UNAUTHORIZED=0 yarn playwright install && yarn playwright test --project chrome --grep @nightly",
+    "test:changed": "NODE_TLS_REJECT_UNAUTHORIZED=0 yarn playwright install && tsx ./helpers/runChangedTest.helper.ts --project chrome"
   },
   "devDependencies": {
     "@playwright/test": "^1.49.0",
-    "@types/node": "^22.10.1",
+    "@types/node": "^22.15.31",
     "simple-git": "^3.27.0",
     "tsx": "^4.19.2",
     "typescript": "^5.7.2"
+  },
+  "dependencies": {
+    "@axe-core/playwright": "^4.10.2",
+    "oauth4webapi": "^3.5.1",
+    "uuid": "^11.1.0"
   }
 }
