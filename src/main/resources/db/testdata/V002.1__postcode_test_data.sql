@@ -7,7 +7,6 @@ INSERT INTO postcode_court_mapping (postcode, epimid, legislative_country, effec
     ('SW4 7R', 36791, 'England', '2025-05-01', '2035-04-01', '{"created_by": "admin", "change_reason": "initial insert"}'::jsonb),
     ('W5 7', 144641, 'England', '2025-05-01', '2035-04-01', '{"created_by": "admin", "change_reason": "initial insert"}'::jsonb),
     ('UB2', 20262, 'England', '2025-05-01', '2035-04-01', '{"created_by": "admin", "change_reason": "initial insert"}'::jsonb),
-    ('W3 7RX', 20262, 'England', '2025-01-01', '2035-04-01', '{"created_by": "admin", "change_reason": "initial insert"}'::jsonb),
     ('SW1 1AA', 817113, 'England', '2025-06-16', NULL, '{"created_by": "admin", "change_reason": "initial insert"}'::jsonb),
     ('SW1 1AA', 817114, 'England', '2025-06-01', NULL, '{"created_by": "admin", "change_reason": "initial insert"}'::jsonb),
     ('W95', 20263, 'England', '2025-06-01', '2025-06-10', '{"created_by": "admin", "change_reason": "initial insert"}'::jsonb),
