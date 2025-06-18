@@ -12,8 +12,8 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 
-import static uk.gov.hmcts.reform.pcs.ccd.domain.State.Submitted;
-import static uk.gov.hmcts.reform.pcs.ccd.domain.UserRole.CIVIL_CASE_WORKER;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.State.CASE_ISSUED;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.UserRole.PCS_CASE_WORKER;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.caseworkerUpdateApplication;
 
 @Component
@@ -27,10 +27,10 @@ public class CaseworkerUpdateApplication implements CCDConfig<PCSCase, State, Us
     public void configure(final ConfigBuilder<PCSCase, State, UserRole> configBuilder) {
         configBuilder
             .decentralisedEvent(caseworkerUpdateApplication.name(), this::submit)
-            .forStates(Submitted)
+            .forStates(CASE_ISSUED)
             .name("Update case")
             .description("Update a possession case")
-            .grant(Permission.CRU, CIVIL_CASE_WORKER)
+            .grant(Permission.CRU, PCS_CASE_WORKER)
             .fields()
             .page("page-1")
                 .mandatory(PCSCase::getApplicantForename)

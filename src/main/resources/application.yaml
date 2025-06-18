@@ -108,7 +108,13 @@ location-reference:
 
 notify:
   api-key: ${PCS_NOTIFY_API_KEY:AAAAAAAA-AAAA-AAAA-AAAA-AAAAAAAAAAAA}
-  status-check-delay-millis: ${NOTIFY_STATUS_CHECK_DELAY:3000}
+  send-email:
+    max-retries: ${NOTIFY_SEND_EMAIL_MAX_RETRIES:5}
+    backoff-delay-seconds: ${NOTIFY_SEND_EMAIL_BACKOFF_DELAY_SECONDS:300s}
+  check-status:
+    max-retries: ${NOTIFY_CHECK_STATUS_MAX_RETRIES:5}
+    task-delay-seconds: ${NOTIFY_CHECK_STATUS_DELAY_SECONDS:60s}
+    backoff-delay-seconds: ${NOTIFY_CHECK_STATUS_BACKOFF_DELAY_SECONDS:3600s}
 
 testing-support:
   enabled: ${ENABLE_TESTING_SUPPORT:true}

@@ -11,8 +11,8 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.UserRole;
 
-import static uk.gov.hmcts.reform.pcs.ccd.domain.State.Draft;
-import static uk.gov.hmcts.reform.pcs.ccd.domain.State.Submitted;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.State.AWAITING_SUBMISSION_TO_HMCTS;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.State.CASE_ISSUED;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.UserRole.CREATOR;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.citizenSubmitApplication;
 
@@ -24,12 +24,12 @@ public class CitizenSubmitApplication implements CCDConfig<PCSCase, State, UserR
     public void configure(final ConfigBuilder<PCSCase, State, UserRole> configBuilder) {
         configBuilder
             .decentralisedEvent(citizenSubmitApplication.name(), this::submit)
-            .forStateTransition(Draft, Submitted)
+            .forStateTransition(AWAITING_SUBMISSION_TO_HMCTS, CASE_ISSUED)
             .showCondition(ShowConditions.NEVER_SHOW)
             .name("Submit case")
             .description("Submit the possession case")
             .grant(Permission.CRU, CREATOR)
-            .grant(Permission.R, UserRole.CIVIL_CASE_WORKER);
+            .grant(Permission.R, UserRole.PCS_CASE_WORKER);
     }
 
     private void submit(EventPayload<PCSCase, State> eventPayload) {

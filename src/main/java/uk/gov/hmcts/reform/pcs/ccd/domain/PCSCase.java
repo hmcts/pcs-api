@@ -25,9 +25,9 @@ public class PCSCase {
     private String applicantSurname;
 
     @CCD(
-        label = "Applicant's address",
+        label = "Property address",
         access = {CitizenAccess.class, CaseworkerAccess.class}
     )
-    private AddressUK applicantAddress;
+    private AddressUK propertyAddress;
 
 }

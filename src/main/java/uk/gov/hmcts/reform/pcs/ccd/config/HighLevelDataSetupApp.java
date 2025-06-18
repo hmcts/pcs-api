@@ -1,9 +1,5 @@
 package uk.gov.hmcts.reform.pcs.ccd.config;
 
-import java.util.List;
-import java.util.Locale;
-import javax.crypto.AEADBadTagException;
-import javax.net.ssl.SSLException;
 import org.apache.http.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,12 +10,17 @@ import uk.gov.hmcts.befta.exception.ImportException;
 import uk.gov.hmcts.befta.util.BeftaUtils;
 import uk.gov.hmcts.reform.pcs.ccd.CaseType;
 
+import javax.crypto.AEADBadTagException;
+import javax.net.ssl.SSLException;
+import java.util.List;
+import java.util.Locale;
+
 public class HighLevelDataSetupApp extends DataLoaderToDefinitionStore {
 
     private static final Logger logger = LoggerFactory.getLogger(HighLevelDataSetupApp.class);
 
     private static final CcdRoleConfig[] CCD_ROLES = {
-        new CcdRoleConfig("caseworker-civil", "PUBLIC"),
+        new CcdRoleConfig("caseworker-pcs", "PUBLIC"),
         new CcdRoleConfig("citizen", "PUBLIC")
     };
 
@@ -32,7 +33,6 @@ public class HighLevelDataSetupApp extends DataLoaderToDefinitionStore {
     }
 
     public static void main(String[] args) throws Throwable {
-        Thread.sleep(30_000);
         DataLoaderToDefinitionStore.main(HighLevelDataSetupApp.class, args);
     }
 

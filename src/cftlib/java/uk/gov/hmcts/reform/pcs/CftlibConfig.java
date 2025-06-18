@@ -41,32 +41,24 @@ public class CftlibConfig implements CFTLibConfigurer {
     public void configure(CFTLib lib) throws Exception {
 
         var users = Map.of(
-            "caseworker@pcs.com", List.of("caseworker", "caseworker-civil"),
-            "applicant-solicitor@pcs.com", List.of("caseworker"),
-            "respondent-solicitor@pcs.com", List.of("caseworker"),
-            "judge@pcs.com", List.of("caseworker"),
-            "citizen1@pcs.com", List.of("citizen"),
-            "data.store.idam.system.user@gmail.com", List.of()
+            "caseworker@pcs.com", List.of("caseworker", "caseworker-pcs"),
+            "citizen@pcs.com", List.of("citizen")
         );
+
+        dumpUserIds(users.keySet());
 
         /*
             #### User ID for caseworker@pcs.com will be 74e702fa-e20f-3a40-bc1d-d915f0874d00
-            #### User ID for applicant-solicitor@pcs.com will be 4751c408-6d6c-334c-acb7-cba80f76374c
-            #### User ID for respondent-solicitor@pcs.com will be 0a7b40c5-c450-3f1e-84e5-2f99cef415ce
-            #### User ID for judge@pcs.com will be 749ce9f7-535a-3cf5-ba07-f66e6d55c5fa
-            #### User ID for citizen1@pcs.com will be 99b9ddc9-fb52-341d-800c-db7b7e47e8c2
+            #### User ID for citizen@pcs.com will be 355fe639-be35-3723-b802-c91d3a9372e7
          */
-
-        dumpUserIds(users.keySet());
 
         // Create users and roles including in idam simulator
         for (var entry : users.entrySet()) {
             lib.createIdamUser(entry.getKey(), entry.getValue().toArray(new String[0]));
-            lib.createProfile(entry.getKey(), "CIVIL", "PCS", State.Submitted.name());
+            lib.createProfile(entry.getKey(), "CIVIL", "PCS", State.CASE_ISSUED.name());
         }
 
         createAccessProfiles(lib);
-
         createRoleAssignments(lib);
 
         // Generate CCD definitions

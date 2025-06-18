@@ -6,16 +6,25 @@ global:
   idamApiUrl: https://idam-api.aat.platform.hmcts.net
   idamWebUrl: https://idam-web-public.aat.platform.hmcts.net
   s2sUrl: http://rpe-service-auth-provider-aat.service.core-compute-aat.internal
-  postgresSecret: ${SERVICE_NAME}-postgresql
-  postgresHostname: ${SERVICE_NAME}-postgresql
-  postgresUsername: "javapostgres"
+  postgresSecret: postgres
+  postgresHostname: "pcs-preview.postgres.database.azure.com"
+  postgresUsername: "hmcts"
   amRoleAssignmentServiceUrl: http://am-role-assignment-service-aat.service.core-compute-aat.internal
+  databaseNamePrefix: "pr-${CHANGE_ID}-"
 
 java:
   environment:
     CHANGE_ID: ${CHANGE_ID}
+    PCS_DB_NAME: "{{ .Values.global.databaseNamePrefix }}pcs"
+    PCS_DB_HOST: '{{ tpl .Values.global.postgresHostname $}}'
+    PCS_DB_USER_NAME: "{{ .Values.global.postgresUsername}}"
     ELASTIC_SEARCH_HOSTS: "http://{{ .Release.Name }}-es-master:9200"
+  secrets:
+    PCS_DB_PASSWORD:
+      secretRef: "{{ .Values.global.postgresSecret }}"
+      key: PASSWORD
   postgresql:
+    enabled: false
     image:
       debug: true
     primary:
@@ -24,6 +33,14 @@ java:
           init.sql: |-
             CREATE DATABASE "data-store" WITH OWNER = javapostgres ENCODING = 'UTF-8' CONNECTION LIMIT = -1;
             CREATE DATABASE "definition-store" WITH OWNER = javapostgres ENCODING = 'UTF-8' CONNECTION LIMIT = -1;
+postgresql:
+  enabled: true
+  flexibleserver: pcs-preview
+  setup:
+    databases:
+      - name: "pr-${CHANGE_ID}-data-store"
+      - name: "pr-${CHANGE_ID}-definition-store"
+      - name: "pr-${CHANGE_ID}-pcs"
 ccd:
   enabled: true
   ccd:
@@ -57,12 +74,8 @@ ccd:
         ELASTIC_SEARCH_ENABLED: true
         ELASTIC_SEARCH_HOST: "{{ .Release.Name }}-es-master"
         WELSH_TRANSLATION_ENABLED: false
-        DEFINITION_STORE_DB_USERNAME: "{{ .Values.postgresql.auth.username}}"
+        DEFINITION_STORE_DB_USERNAME: "{{ .Values.global.postgresUsername}}"
         DEFINITION_STORE_DB_OPTIONS: ""
-      secrets:
-        DEFINITION_STORE_DB_PASSWORD:
-          key: password
-          disabled: false
       ingressHost: ccd-definition-store-${SERVICE_FQDN}
       keyVaults:
         ccd:
@@ -78,7 +91,7 @@ ccd:
       devcpuRequests: '500m'
       environment:
         DATA_STORE_DB_HOST: '{{ tpl .Values.global.postgresHostname $}}'
-        DATA_STORE_DB_USERNAME: "{{ .Values.postgresql.auth.username}}"
+        DATA_STORE_DB_USERNAME: "{{ .Values.global.postgresUsername}}"
         IDAM_API_BASE_URL: https://idam-api.aat.platform.hmcts.net
         IDAM_OIDC_URL: https://idam-web-public.aat.platform.hmcts.net
         DATA_STORE_CROSS_JURISDICTIONAL_ROLES: caseworker-caa,caseworker-approver
@@ -89,14 +102,9 @@ ccd:
         DATA_STORE_DB_OPTIONS: "?stringtype=unspecified"
         CCD_DOCUMENT_URL_PATTERN: ^https?://(((?:dm-store-aat\.service\.core-compute-aat\.internal(?::\d+)?)\/documents\/[A-Za-z0-9-]+(?:\/binary)?))
         POC_APIS_URL: https://${SERVICE_FQDN}
-        DATA_STORE_S2S_AUTHORISED_SERVICES: "ccd_data,ccd_gw,ccd_ps,probate_backend,divorce_ccd_submission,sscs,sscs_bulkscan,cmc,cmc_claim_store,cmc_claim_external_api,jui_webapp,pui_webapp,bulk_scan_orchestrator,fpl_case_service,iac,finrem_ccd_data_migrator,finrem_case_orchestration,employment_tribunals,ethos_repl_service,ccpay_bubble,ctsc_work_allocation,em_ccd_orchestrator,xui_webapp,bulk_scan_payment_processor,pcq_consolidation_service,em_npa_app,ecm_consumer,aac_manage_case_assignment,unspec_service,divorce_frontend,wa_task_configuration_api,wa_task_monitor,ccd_case_document_am_api,hmc_cft_hearing_service,prl_citizen_frontend,prl_cos_api,et_cos,et_msg_handler,ccd_next_hearing_date_updater,et_sya_api,sptribs_case_api,civil_general_applications,fis_ds_update_web,pcs_api,pcs_frontend"
         ELASTIC_SEARCH_ENABLED: true
         ELASTIC_SEARCH_DATA_NODES_HOSTS: "http://{{ .Release.Name }}-es-master:9200"
         ELASTIC_SEARCH_HOSTS: "http://{{ .Release.Name }}-es-master:9200"
-      secrets:
-        DATA_STORE_DB_PASSWORD:
-          key: password
-          disabled: false
       ingressHost: ccd-data-store-api-${SERVICE_FQDN}
       autoscaling:
         enabled: false
@@ -171,156 +179,6 @@ ccd:
     imageTag: "7.16.1"
     imagePullPolicy: "IfNotPresent"
     logstashJavaOpts: "-Xmx1g -Xms512M"
-    extraInitContainers: |
-      - name: download-postgres-jdbc
-        image: hmctspublic.azurecr.io/curl:7.70.0
-        command: ['curl', '-L', 'https://jdbc.postgresql.org/download/postgresql-42.2.18.jar', '-o', '/logstash-lib/postgresql.jar']
-        volumeMounts:
-        - name: logstash-lib
-          mountPath: /logstash-lib
-    extraVolumes: |
-      - name: logstash-lib
-        emptyDir: {}
-    extraVolumeMounts: |
-      - name: logstash-lib
-        mountPath: /usr/share/logstash/ccd
-    logstashConfig:
-      logstash.yml: |
-        http.host: 0.0.0.0
-        xpack.monitoring.enabled: false
-        xpack.monitoring.elasticsearch.hosts: ["http://{{ .Release.Name }}-es:9200"]
-        queue.type: persisted
-        dead_letter_queue.enable: true
-      pipelines.yml: |
-        - pipeline.id: main
-          path.config: "/usr/share/logstash/pipeline/{01_input,02_filter,03_output}.conf"
-          queue.type: persisted
-    logstashPipeline:
-      01_input.conf: |
-        input  {
-          jdbc {
-            jdbc_connection_string => "jdbc:postgresql://{{ .Release.Name }}-postgresql:5432/javadatabase?stringtype=unspecified"
-            jdbc_user => "javapostgres"
-            jdbc_password => "javapassword"
-            jdbc_validate_connection => true
-            jdbc_driver_library => "/usr/share/logstash/ccd/postgresql.jar"
-            jdbc_driver_class => "org.postgresql.Driver"
-            jdbc_default_timezone => "UTC"
-            statement => "UPDATE case_data SET marked_by_logstash = true WHERE marked_by_logstash = false RETURNING id, created_date, last_modified, jurisdiction, case_type_id, state, last_state_modified_date, data::TEXT as json_data, data_classification::TEXT as json_data_classification, reference, security_classification, supplementary_data::TEXT as json_supplementary_data"
-            clean_run => false
-            schedule => "* * * * * *"
-          }
-        }
-      02_filter.conf: |
-        filter{
-          json{
-              source => "json_data"
-              target => "data"
-              remove_field => ["json_data"]
-              }
-              json{
-                  source => "json_supplementary_data"
-                  target => "supplementary_data"
-                  remove_field => ["json_supplementary_data"]
-              }
-              json{
-                  source => "json_data_classification"
-                  target => "data_classification"
-                  remove_field => ["json_data_classification"]
-              }
-              if [data][SearchCriteria] {
-                  clone {
-                      clones => ["SearchCriteria"]
-                  }
-              }
-              if [type] == "SearchCriteria" {
-                  if [data][SearchCriteria] {
-                      mutate {
-                        rename => {"[data][SearchCriteria]" => "[data_new][SearchCriteria]" }
-                      }
-                  }
-                  if [data][caseManagementLocation] {
-                      mutate {
-                        rename => {"[data][caseManagementLocation]" => "[data_new][caseManagementLocation]" }
-                      }
-                  }
-                  if [data][CaseAccessCategory] {
-                    mutate {
-                        rename => {"[data][CaseAccessCategory]" => "[data_new][CaseAccessCategory]" }
-                    }
-                  }
-                  if [data][caseNameHmctsInternal] {
-                      mutate {
-                        rename => {"[data][caseNameHmctsInternal]" => "[data_new][caseNameHmctsInternal]" }
-                      }
-                  }
-                  if [data][caseManagementCategory] {
-                      mutate {
-                        rename => {"[data][caseManagementCategory]" => "[data_new][caseManagementCategory]" }
-                      }
-                  }
-                  if [supplementary_data][HMCTSServiceId] {
-                      mutate {
-                        rename => {"[supplementary_data][HMCTSServiceId]" => "[supplementary_data_new][HMCTSServiceId]" }
-                      }
-                  }
-                  if [data_classification][SearchCriteria] {
-                      mutate {
-                        rename => {"[data_classification][SearchCriteria]" => "[data_classification_new][SearchCriteria]" }
-                      }
-                  }
-                  if [data_classification][CaseAccessCategory] {
-                    mutate {
-                          rename => {"[data_classification][CaseAccessCategory]" => "[data_classification_new][CaseAccessCategory]" }
-                    }
-                  }
-                  if [data_classification][caseManagementLocation] {
-                    mutate {
-                        rename => {"[data_classification][caseManagementLocation]" => "[data_classification_new][caseManagementLocation]" }
-                    }
-                  }
-                  if [data_classification][caseNameHmctsInternal] {
-                      mutate {
-                        rename => {"[data_classification][caseNameHmctsInternal]" => "[data_classification_new][caseNameHmctsInternal]" }
-                      }
-                  }
-                  if [data_classification][caseManagementCategory] {
-                      mutate {
-                        rename => {"[data_classification][caseManagementCategory]" => "[data_classification_new][caseManagementCategory]" }
-                      }
-                  }
-                  mutate { remove_field =>[ "data" ,"supplementary_data", "data_classification", "last_state_modified_date", "type","last_modified", "created_date" ] }
-                  mutate {
-                          rename => { "[data_new]" => "data" }
-                          rename => { "[supplementary_data_new]"  => "supplementary_data" }
-                          rename => { "[data_classification_new]"  => "data_classification" }
-                  }
-                  mutate {
-                    add_field => { "index_id" => "global_search" }
-                  }
-                  mutate {
-                    lowercase => [ "index_id" ]
-                  }
-              } else {
-                  mutate {
-                      add_field => { "index_id" => "%{case_type_id}_cases" }
-                }
-              mutate {
-                lowercase => [ "index_id" ]
-              }
-              }
-        }
-      03_output.conf: |
-        output {
-            elasticsearch {
-                hosts => ["http://{{ .Release.Name }}-es:9200"]
-                sniffing => false
-                index => "%{[index_id]}"
-                document_type => "_doc"
-                document_id => "%{id}"
-                timeout => 60
-            }
-        }
 xui-webapp:
   enabled: true
   nodejs:
@@ -340,7 +198,7 @@ xui-webapp:
       SERVICES_CCD_DATA_STORE_API: http://${SERVICE_NAME}-ccd-data-store-api
       SERVICES_TERMS_AND_CONDITIONS: http://xui-terms-and-conditions-aat.service.core-compute-aat.internal
       SERVICES_HEARINGS_COMPONENT_API: http://jurisdiction-hearings-api-aat.service.core-compute-aat.internal
-      JURISDICTIONS: CIVIL
+      JURISDICTIONS: PCS
       FEATURE_REDIS_ENABLED: false
       REDISCLOUD_URL: http://dummyrediscloudurl
       FEATURE_APP_INSIGHTS_ENABLED: false
@@ -359,4 +217,3 @@ xui-webapp:
           - mc-idam-client-secret
           - system-user-name
           - system-user-password
-

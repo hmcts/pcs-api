@@ -19,7 +19,7 @@ public class PcsCaseService {
     private final PcsCaseRepository pcsCaseRepository;
 
     public void createCase(long caseReference, PCSCase pcsCase) {
-        AddressUK applicantAddress = pcsCase.getApplicantAddress();
+        AddressUK applicantAddress = pcsCase.getPropertyAddress();
 
         AddressEntity addressEntity = applicantAddress != null
             ? modelMapper.map(applicantAddress, AddressEntity.class) : null;
@@ -46,8 +46,8 @@ public class PcsCaseService {
             pcsCaseEntity.setApplicantSurname(pcsCase.getApplicantSurname());
         }
 
-        if (pcsCase.getApplicantAddress() != null) {
-            AddressEntity addressEntity = modelMapper.map(pcsCase.getApplicantAddress(), AddressEntity.class);
+        if (pcsCase.getPropertyAddress() != null) {
+            AddressEntity addressEntity = modelMapper.map(pcsCase.getPropertyAddress(), AddressEntity.class);
             pcsCaseEntity.setApplicantAddress(addressEntity);
         }
 

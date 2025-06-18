@@ -1,5 +1,8 @@
 package uk.gov.hmcts.reform.pcs.notify.model;
 
+import lombok.Getter;
+
+@Getter
 public enum NotificationStatus {
     CREATED("created"),
     SENDING("sending"),
@@ -7,18 +10,14 @@ public enum NotificationStatus {
     PERMANENT_FAILURE("permanent-failure"),
     TEMPORARY_FAILURE("temporary-failure"),
     TECHNICAL_FAILURE("technical-failure"),
-    SCHEDULE("scheduled"),
-    PENDING_SCHEDULE("pending-schedule"), 
+    SCHEDULED("scheduled"),
+    PENDING_SCHEDULE("pending-schedule"),
     SUBMITTED("submitted");
 
     private final String value;
 
     NotificationStatus(String value) {
         this.value = value;
-    }
-
-    public String getValue() {
-        return value;
     }
 
     @Override

@@ -13,15 +13,16 @@ import uk.gov.hmcts.ccd.sdk.api.CCD;
 public enum State {
 
     @CCD(
-        label = "Draft",
+        label = "Awaiting Submission to HMCTS",
         access = {CitizenAccess.class}
     )
-    Draft,
+    AWAITING_SUBMISSION_TO_HMCTS,
 
     @CCD(
-        label = "Submitted",
+        label = "Case Issued",
         access = {CaseworkerAccess.class}
     )
-    Submitted
+    CASE_ISSUED
+
 }
 

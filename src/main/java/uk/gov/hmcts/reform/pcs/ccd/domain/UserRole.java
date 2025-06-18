@@ -20,7 +20,7 @@ public enum UserRole implements HasRole {
 
     CITIZEN("citizen", Permission.CRU, IDAM),
     CREATOR("[CREATOR]", Permission.CRU, RAS),
-    CIVIL_CASE_WORKER("caseworker-civil", Permission.CRUD, IDAM);
+    PCS_CASE_WORKER("caseworker-pcs", Permission.CRUD, IDAM);
 
     @JsonValue
     private final String role;

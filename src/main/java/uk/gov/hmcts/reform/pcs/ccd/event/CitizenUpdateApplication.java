@@ -13,7 +13,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 
-import static uk.gov.hmcts.reform.pcs.ccd.domain.State.Draft;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.State.AWAITING_SUBMISSION_TO_HMCTS;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.UserRole.CREATOR;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.citizenUpdateApplication;
 
@@ -28,12 +28,12 @@ public class CitizenUpdateApplication implements CCDConfig<PCSCase, State, UserR
     public void configure(final ConfigBuilder<PCSCase, State, UserRole> configBuilder) {
         configBuilder
             .decentralisedEvent(citizenUpdateApplication.name(), this::submit)
-            .forStates(Draft)
+            .forStates(AWAITING_SUBMISSION_TO_HMCTS)
             .showCondition(ShowConditions.NEVER_SHOW)
             .name("Patch case")
             .description("Patch a possession case")
             .grant(Permission.CRU, CREATOR)
-            .grant(Permission.R, UserRole.CIVIL_CASE_WORKER);
+            .grant(Permission.R, UserRole.PCS_CASE_WORKER);
     }
 
     private void submit(EventPayload<PCSCase, State> eventPayload) {

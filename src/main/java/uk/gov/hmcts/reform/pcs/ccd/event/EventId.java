@@ -5,6 +5,7 @@ public enum EventId {
     caseworkerUpdateApplication,
     citizenCreateApplication,
     citizenSubmitApplication,
-    citizenUpdateApplication
+    citizenUpdateApplication,
+    createTestApplication
 
 }

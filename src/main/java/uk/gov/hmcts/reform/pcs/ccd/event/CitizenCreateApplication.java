@@ -13,7 +13,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
-import static uk.gov.hmcts.reform.pcs.ccd.domain.State.Draft;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.State.AWAITING_SUBMISSION_TO_HMCTS;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.citizenCreateApplication;
 
 @Component
@@ -27,12 +27,12 @@ public class CitizenCreateApplication implements CCDConfig<PCSCase, State, UserR
     public void configure(final ConfigBuilder<PCSCase, State, UserRole> configBuilder) {
         configBuilder
             .decentralisedEvent(citizenCreateApplication.name(), this::submit)
-            .initialState(Draft)
+            .initialState(AWAITING_SUBMISSION_TO_HMCTS)
             .showCondition(NEVER_SHOW)
             .name("Create draft case")
             .description("Create a draft possession claim")
             .grant(Permission.CRU, UserRole.CITIZEN)
-            .grant(Permission.R, UserRole.CIVIL_CASE_WORKER);
+            .grant(Permission.R, UserRole.PCS_CASE_WORKER);
     }
 
     private void submit(EventPayload<PCSCase, State> eventPayload) {
