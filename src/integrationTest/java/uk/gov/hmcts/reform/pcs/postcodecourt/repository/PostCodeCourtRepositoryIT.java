@@ -26,33 +26,36 @@ public class PostCodeCourtRepositoryIT extends AbstractPostgresContainerIT {
     private final LocalDate currentDate = LocalDate.now(ZoneId.of("Europe/London"));
 
     @Test
-    @DisplayName("Should return only active postcode court mapping when multiple entries exist")
-    void shouldReturnOnlyActivePostcodeCourtMapping() {
-
+    @DisplayName("Should return only active postcode court mappings for full & partial postcodes")
+    void shouldReturnOnlyActivePostcodeCourtMappings() {
         String postcode = "PES123";
-        int activeEpimID = 111;
+        String partialPostcode = "PES12";
+        int activeEpimID = 7852;
+        int activePartialEpimID = 3698;
+
         PostCodeCourtEntity activeEntity = createTestEntity(postcode, activeEpimID, currentDate, true);
         PostCodeCourtEntity nonActiveEntity = createTestEntity(postcode, 222, currentDate, false);
+        PostCodeCourtEntity partialEntity = createTestEntity(partialPostcode, activePartialEpimID, currentDate, true);
+        repository.saveAll(List.of(activeEntity, nonActiveEntity, partialEntity));
 
-        repository.saveAll(List.of(activeEntity, nonActiveEntity));
-
-        List<PostCodeCourtEntity> results = repository.findByIdPostCodeIn(List.of(postcode), currentDate);
+        List<PostCodeCourtEntity> results = repository
+                .findByIdPostCodeIn(List.of(postcode, partialPostcode), currentDate);
 
         assertThat(results)
-                .hasSize(1);
-        assertThat(results.getFirst().getId().getEpimId()).isEqualTo(activeEpimID);
+                .hasSize(2);
+        assertThat(results).contains(activeEntity, partialEntity);
     }
 
     @Test
-    @DisplayName("Should return active postcode court mapping when effectiveTo date is null")
+    @DisplayName("Should return active postcode court mapping when effective to date is null")
     void shouldReturnActivePostcodeCourtMappingWhenEffectiveToDateIsNull() {
+        String postcode = "NAS45R";
+        int activeEpimID = 8954;
 
-        String postcode = "PES123";
-        int activeEpimID = 111;
         PostCodeCourtEntity activeEntity = createTestEntity(postcode, activeEpimID, currentDate, true);
         activeEntity.setEffectiveTo(null);
 
-        repository.saveAll(List.of(activeEntity));
+        repository.save(activeEntity);
 
         List<PostCodeCourtEntity> results = repository.findByIdPostCodeIn(List.of(postcode), currentDate);
 
@@ -67,7 +70,7 @@ public class PostCodeCourtRepositoryIT extends AbstractPostgresContainerIT {
         String postcode = "V5S9H";
         PostCodeCourtEntity inactiveEntity = createTestEntity(postcode, 345, currentDate, false);
 
-        repository.saveAll(List.of(inactiveEntity));
+        repository.save(inactiveEntity);
 
         List<PostCodeCourtEntity> results = repository.findByIdPostCodeIn(List.of(postcode), currentDate);
 
