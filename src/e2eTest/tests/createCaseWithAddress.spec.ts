@@ -4,7 +4,7 @@ import { test, Username } from '@fixtures/login.fixture';
 
 
 
-test.describe.skip('Create Case with Address @Master @nightly', () => {
+test.describe('Create Case with Address @Master @nightly', () => {
 
   test('should create a case successfully with Dropdown Address Flow', async ({ loggedInPage }, testInfo) => {
     await testInfo.attach('Page URL', {
