@@ -25,6 +25,8 @@ import java.util.Locale;
 @Slf4j
 public class PostCodeCourtService {
 
+    private static final ZoneId UK_ZONE_ID = ZoneId.of("Europe/London");
+
     private final PostCodeCourtRepository postCodeCourtRepository;
     private final LocationReferenceService locationReferenceService;
     private final IdamService idamService;
@@ -60,7 +62,7 @@ public class PostCodeCourtService {
 
         List<String> postcodes = getPostCodeLookupCandidates(postcode);
 
-        LocalDate currentDate = LocalDate.now(ZoneId.of("Europe/London"));
+        LocalDate currentDate = LocalDate.now(UK_ZONE_ID);
         List<PostCodeCourtEntity> results = postCodeCourtRepository.findByIdPostCodeIn(postcodes, currentDate);
         if (results.isEmpty()) {
             log.warn("Postcode court mapping not found for postcode {}", postcode);
