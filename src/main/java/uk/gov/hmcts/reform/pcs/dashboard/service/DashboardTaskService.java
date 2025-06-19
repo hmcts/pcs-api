@@ -43,22 +43,22 @@ public class DashboardTaskService {
                 Task.builder()
                     .templateId("Task.AAA6.Claim.ViewClaim")
                     .templateValues(Map.of())
-                    .status("AVAILABLE")
+                    .status("NOT_AVAILABLE")
                     .build(),
                 Task.builder()
                     .templateId("Task.AAA6.Claim.Adjustments")
                     .templateValues(Map.of())
-                    .status("AVAILABLE")
+                    .status("NOT_AVAILABLE")
                     .build(),
                 Task.builder()
                     .templateId("Task.AAA6.Claim.Equality")
                     .templateValues(Map.of())
-                    .status("AVAILABLE")
+                    .status("NOT_AVAILABLE")
                     .build(),
                 Task.builder()
                     .templateId("Task.AAA6.Claim.Information")
                     .templateValues(Map.of())
-                    .status("AVAILABLE")
+                    .status("NOT_AVAILABLE")
                     .build()
             ))
             .build();
@@ -87,18 +87,18 @@ public class DashboardTaskService {
                 Task.builder()
                     .templateId("Task.AAA6.Hearing.ViewHearing")
                     .templateValues(Map.of())
-                    .status("AVAILABLE")
+                    .status("NOT_AVAILABLE")
                     .build(),
                 Task.builder()
                     .templateId("Task.AAA6.Hearing.UploadDocuments")
                     .templateValues(Map.of(
                         "deadline", ZonedDateTime.of(
-                            LocalDate.of(2025, 5, 20), 
-                            LocalTime.of(15, 0, 0), 
+                            LocalDate.of(2025, 5, 20),
+                            LocalTime.of(15, 0, 0),
                             ZoneId.of("UTC")
                         )
                     ))
-                    .status("ACTION_NEEDED")
+                    .status("NOT_AVAILABLE")
                     .build(),
                 Task.builder()
                     .templateId("Task.AAA6.Hearing.ViewDocuments")
@@ -119,7 +119,7 @@ public class DashboardTaskService {
                             ZoneId.of("UTC")
                             )
                     ))
-                    .status("ACTION_NEEDED")
+                    .status("NOT_AVAILABLE")
                     .build(),
                 Task.builder()
                     .templateId("Task.AAA6.Hearing.ViewBundle")
@@ -136,7 +136,7 @@ public class DashboardTaskService {
                 Task.builder()
                     .templateId("Task.AAA6.Notice.ViewNotices")
                     .templateValues(Map.of())
-                    .status("AVAILABLE")
+                    .status("NOT_AVAILABLE")
                     .build()
             ))
             .build();
@@ -160,22 +160,22 @@ public class DashboardTaskService {
                 Task.builder()
                     .templateId("Task.AAA6.Applications.Contact")
                     .templateValues(Map.of())
-                    .status("OPTIONAL")
+                    .status("NOT_AVAILABLE")
                     .build(),
                 Task.builder()
                     .templateId("Task.AAA6.Applications.ViewApplications")
                     .templateValues(Map.of())
-                    .status("IN_PROGRESS")
+                    .status("NOT_AVAILABLE")
                     .build()
             ))
             .build();
 
         return List.of(
-            claimGroup, 
-            responseGroup, 
-            hearingGroup, 
-            noticeGroup, 
-            judgementGroup, 
+            claimGroup,
+            responseGroup,
+            hearingGroup,
+            noticeGroup,
+            judgementGroup,
             applicationsGroup
         );
     }
