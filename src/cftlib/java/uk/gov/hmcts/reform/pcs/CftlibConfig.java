@@ -7,8 +7,8 @@ import org.springframework.core.io.ResourceLoader;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.CCDDefinitionGenerator;
 import uk.gov.hmcts.reform.pcs.ccd.CaseType;
-import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
+import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.rse.ccd.lib.api.CFTLib;
 import uk.gov.hmcts.rse.ccd.lib.api.CFTLibConfigurer;
 
@@ -19,8 +19,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
 
 import static java.util.stream.Collectors.toCollection;
 
@@ -45,11 +43,6 @@ public class CftlibConfig implements CFTLibConfigurer {
             "citizen@pcs.com", List.of("citizen"),
             "data.store.idam.system.user@gmail.com", List.of()
         );
-
-        /*
-            #### User ID for caseworker@pcs.com will be 74e702fa-e20f-3a40-bc1d-d915f0874d00
-            #### User ID for citizen@pcs.com will be 355fe639-be35-3723-b802-c91d3a9372e7
-         */
 
         // Create users and roles including in idam simulator
         for (var entry : users.entrySet()) {

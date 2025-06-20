@@ -42,7 +42,7 @@ public class CaseworkerUpdateApplication implements CCDConfig<PCSCase, State, Us
         long caseReference = eventPayload.caseReference();
         PCSCase pcsCase = eventPayload.caseData();
 
-        log.info("Caseworked updated case {}", caseReference);
+        log.info("Caseworker updated case {}", caseReference);
 
         pcsCaseService.patchCase(caseReference, pcsCase);
     }
