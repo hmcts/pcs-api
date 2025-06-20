@@ -11,6 +11,14 @@ def type = "java"
 def product = "pcs"
 def component = "api"
 
+static Map<String, Object> secret(String secretName, String envVariable) {
+  [$class     : 'AzureKeyVaultSecret',
+    secretType : 'Secret',
+    name       : secretName,
+    envVariable: envVariable
+  ]
+}
+
 def secrets = [
   'pcs-${env}': [
     secret('pcs-api-idam-secret', 'PCS_API_IDAM_SECRET'),
