@@ -25,10 +25,6 @@ class CourtsEndpointTests {
         apiSteps.setUp();
     }
 
-    // Currently, postcode is hardcoded to check that API return a 200 response with Valid response which is also
-    // hardcoded. Once real data is available, DB connections needs to be established to identify the postcode to
-    // be used and to construct expected response Test is written with an assumption of single set of data in response,
-    // need improvements when more than one court name can be returned
     @Title("Courts endpoint - returns 200 and expected court data with active dates for a valid postcode")
     @Test
     void shouldReturnExpectedCourtForPostcode() {
@@ -66,7 +62,7 @@ class CourtsEndpointTests {
         apiSteps.theResponseBodyMatchesTheExpectedList(CourtConstants.EXPECTED_COURT_LIST);
     }
 
-    @Title("Courts endpoint - returns 200 and empty list for epimID that has inactive dates")
+    @Title("Courts endpoint - returns 200 and empty list for an epimID that has no active dates")
     @Test
     void shouldReturnEmptyListForInactiveDates() {
         apiSteps.requestIsPreparedWithAppropriateValues();
