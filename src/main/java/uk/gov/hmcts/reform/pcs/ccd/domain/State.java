@@ -3,6 +3,8 @@ package uk.gov.hmcts.reform.pcs.ccd.domain;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseworkerAccess;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenAccess;
 
 /**
  * All possible PCS case states.
@@ -13,9 +15,16 @@ import uk.gov.hmcts.ccd.sdk.api.CCD;
 public enum State {
 
     @CCD(
-        label = "Open",
-        access = {DefaultStateAccess.class}
+        label = "Awaiting Submission to HMCTS",
+        access = {CitizenAccess.class}
     )
-    Open;
+    AWAITING_SUBMISSION_TO_HMCTS,
+
+    @CCD(
+        label = "Case Issued",
+        access = {CaseworkerAccess.class}
+    )
+    CASE_ISSUED
+
 }
 
