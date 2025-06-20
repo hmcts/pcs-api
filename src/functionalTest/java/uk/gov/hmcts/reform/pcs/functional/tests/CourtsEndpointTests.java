@@ -25,11 +25,7 @@ class CourtsEndpointTests {
         apiSteps.setUp();
     }
 
-    // Currently, postcode is hardcoded to check that API return a 200 response with Valid response which is also
-    // hardcoded. Once real data is available, DB connections needs to be established to identify the postcode to
-    // be used and to construct expected response Test is written with an assumption of single set of data in response,
-    // need improvements when more than one court name can be returned
-    @Title("Courts endpoint - returns 200 and expected court data for valid postcode")
+    @Title("Courts endpoint - returns 200 and expected court data with active dates for a valid postcode")
     @Test
     void shouldReturnExpectedCourtForPostcode() {
         apiSteps.requestIsPreparedWithAppropriateValues();
@@ -64,6 +60,18 @@ class CourtsEndpointTests {
         apiSteps.callIsSubmittedToTheEndpoint("Courts", "GET");
         apiSteps.checkStatusCode(200);
         apiSteps.theResponseBodyMatchesTheExpectedList(CourtConstants.EXPECTED_COURT_LIST);
+    }
+
+    @Title("Courts endpoint - returns 200 and empty list for an epimID that has no active dates")
+    @Test
+    void shouldReturnEmptyListForInactiveDates() {
+        apiSteps.requestIsPreparedWithAppropriateValues();
+        apiSteps.theRequestContainsValidServiceToken(TestConstants.PCS_API);
+        apiSteps.theRequestContainsValidIdamToken();
+        apiSteps.theRequestContainsTheQueryParameter("postcode", CourtConstants.POSTCODE_INACTIVE_DATES);
+        apiSteps.callIsSubmittedToTheEndpoint("Courts", "GET");
+        apiSteps.checkStatusCode(200);
+        apiSteps.theResponseBodyIsAnEmptyArray();
     }
 
     @Title("Courts endpoint - return 403 Forbidden when the request uses an unauthorised S2S token")
