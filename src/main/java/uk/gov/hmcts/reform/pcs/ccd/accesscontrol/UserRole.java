@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.ccd.domain;
+package uk.gov.hmcts.reform.pcs.ccd.accesscontrol;
 
 import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.AllArgsConstructor;
@@ -8,8 +8,8 @@ import uk.gov.hmcts.ccd.sdk.api.Permission;
 
 import java.util.Set;
 
-import static uk.gov.hmcts.reform.pcs.ccd.domain.RoleType.IDAM;
-import static uk.gov.hmcts.reform.pcs.ccd.domain.RoleType.RAS;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.RoleType.IDAM;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.RoleType.RAS;
 
 /**
  * All the different roles for a PCS case.

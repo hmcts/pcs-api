@@ -33,7 +33,7 @@ public class CCDCaseRepository extends DecentralisedCaseRepository<PCSCase> {
         return PCSCase.builder()
             .applicantForename(pcsCaseEntity.getApplicantForename())
             .applicantSurname(pcsCaseEntity.getApplicantSurname())
-            .propertyAddress(convertAddress(pcsCaseEntity.getApplicantAddress()))
+            .propertyAddress(convertAddress(pcsCaseEntity.getPropertyAddress()))
             .build();
     }
 

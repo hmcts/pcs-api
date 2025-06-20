@@ -3,7 +3,6 @@ package uk.gov.hmcts.reform.pcs.ccd.service;
 import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
@@ -15,8 +14,8 @@ import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 @AllArgsConstructor
 public class PcsCaseService {
 
-    private final ModelMapper modelMapper;
     private final PcsCaseRepository pcsCaseRepository;
+    private final ModelMapper modelMapper;
 
     public void createCase(long caseReference, PCSCase pcsCase) {
         AddressUK applicantAddress = pcsCase.getPropertyAddress();
@@ -28,12 +27,11 @@ public class PcsCaseService {
         pcsCaseEntity.setCaseReference(caseReference);
         pcsCaseEntity.setApplicantForename(pcsCase.getApplicantForename());
         pcsCaseEntity.setApplicantSurname(pcsCase.getApplicantSurname());
-        pcsCaseEntity.setApplicantAddress(addressEntity);
+        pcsCaseEntity.setPropertyAddress(addressEntity);
 
         pcsCaseRepository.save(pcsCaseEntity);
     }
 
-    @Transactional
     public void patchCase(long caseReference, PCSCase pcsCase) {
         PcsCaseEntity pcsCaseEntity = pcsCaseRepository.findByCaseReference(caseReference)
             .orElseThrow(() -> new CaseNotFoundException(caseReference));
@@ -48,7 +46,7 @@ public class PcsCaseService {
 
         if (pcsCase.getPropertyAddress() != null) {
             AddressEntity addressEntity = modelMapper.map(pcsCase.getPropertyAddress(), AddressEntity.class);
-            pcsCaseEntity.setApplicantAddress(addressEntity);
+            pcsCaseEntity.setPropertyAddress(addressEntity);
         }
 
         pcsCaseRepository.save(pcsCaseEntity);

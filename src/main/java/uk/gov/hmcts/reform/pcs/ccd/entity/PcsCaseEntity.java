@@ -30,6 +30,6 @@ public class PcsCaseEntity {
     private String applicantSurname;
 
     @OneToOne(cascade = ALL)
-    private AddressEntity applicantAddress;
+    private AddressEntity propertyAddress;
 
 }

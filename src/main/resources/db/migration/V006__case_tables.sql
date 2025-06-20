@@ -11,10 +11,10 @@ create table address (
 );
 
 create table pcs_case (
-  id                   uuid primary key,
-  version              integer,
-  case_reference       bigint unique,
-  applicant_forename   varchar(100),
-  applicant_surname    varchar(100),
-  applicant_address_id uuid references address (id)
+  id                  uuid primary key,
+  version             integer,
+  case_reference      bigint unique,
+  applicant_forename  varchar(100),
+  applicant_surname   varchar(100),
+  property_address_id uuid references address (id)
 );

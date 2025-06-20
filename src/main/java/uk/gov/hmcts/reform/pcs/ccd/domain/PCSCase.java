@@ -4,6 +4,8 @@ import lombok.Builder;
 import lombok.Data;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseworkerAccess;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenAccess;
 
 /**
  * The main domain model representing a possessions case.
@@ -13,7 +15,7 @@ import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 public class PCSCase {
 
     @CCD(
-        label = "Applicant's forname",
+        label = "Applicant's forename",
         access = {CitizenAccess.class, CaseworkerAccess.class}
     )
     private String applicantForename;
