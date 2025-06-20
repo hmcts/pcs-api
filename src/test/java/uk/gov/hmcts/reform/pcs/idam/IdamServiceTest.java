@@ -1,6 +1,8 @@
 package uk.gov.hmcts.reform.pcs.idam;
 
 
+import feign.FeignException;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -10,23 +12,19 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
+import uk.gov.hmcts.reform.idam.client.models.TokenResponse;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
+import uk.gov.hmcts.reform.pcs.exception.IdamException;
 import uk.gov.hmcts.reform.pcs.exception.InvalidAuthTokenException;
 
+import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
+import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.verify;
-
-import feign.FeignException;
-import org.junit.jupiter.api.BeforeEach;
-import uk.gov.hmcts.reform.idam.client.models.TokenResponse;
-import uk.gov.hmcts.reform.pcs.exception.IdamException;
-
-import static org.assertj.core.api.Assertions.catchThrowable;
-import static org.mockito.BDDMockito.given;
 
 
 @ExtendWith(MockitoExtension.class)
@@ -79,7 +77,7 @@ class IdamServiceTest {
     @NullAndEmptySource
     @DisplayName("Should throw InvalidAuthTokenException when token is null or blank")
     void shouldThrowInvalidAuthTokenExceptionWhenAuthTokenIsNullOrBlank(String authToken) {
-        assertThatThrownBy(() -> underTest.validateAuthToken(null))
+        assertThatThrownBy(() -> underTest.validateAuthToken(authToken))
             .isInstanceOf(InvalidAuthTokenException.class)
                 .hasMessage("Authorization token is null or blank");
 

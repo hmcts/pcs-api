@@ -15,6 +15,8 @@ import uk.gov.hmcts.reform.pcs.postcodecourt.exception.InvalidPostCodeException;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.Court;
 import uk.gov.hmcts.reform.pcs.postcodecourt.repository.PostCodeCourtRepository;
 
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,6 +32,7 @@ import static org.mockito.Mockito.when;
 class PostCodeCourtServiceTest {
 
     private static final String SYSTEM_USER_TOKEN = "some system user token";
+    private static final LocalDate CURRENT_DATE = LocalDate.now(ZoneId.of("Europe/London"));
 
     @Mock
     private PostCodeCourtRepository postCodeCourtRepository;
@@ -54,11 +57,13 @@ class PostCodeCourtServiceTest {
         String postCode = " W3 7RX ";
         String trimmedPostcode = "W37RX";
         int expectedEpimId = 20262;
+        PostCodeCourtEntity postCodeCourtEntity = createPostCodeCourtEntity(postCode, expectedEpimId);
         List<String> postcodes = getPostCodeCandidates(trimmedPostcode);
 
-        PostCodeCourtEntity postCodeCourtEntity = new PostCodeCourtEntity();
-        postCodeCourtEntity.setId(new PostCodeCourtKey(postCode, expectedEpimId));
-        when(postCodeCourtRepository.findByIdPostCodeIn(postcodes)).thenReturn(List.of(postCodeCourtEntity));
+        when(postCodeCourtRepository.findByIdPostCodeIn(
+            postcodes,
+            CURRENT_DATE
+        )).thenReturn(List.of(postCodeCourtEntity));
         when(locationReferenceService.getCountyCourts(SYSTEM_USER_TOKEN, List.of(expectedEpimId)))
             .thenReturn(List.of(new CourtVenue(expectedEpimId, 101, "Royal Courts of Justice (Main Building)")));
 
@@ -73,7 +78,7 @@ class PostCodeCourtServiceTest {
                     assertThat(court.name()).isEqualTo("Royal Courts of Justice (Main Building)");
                 });
 
-        verify(postCodeCourtRepository).findByIdPostCodeIn(postcodes);
+        verify(postCodeCourtRepository).findByIdPostCodeIn(postcodes, CURRENT_DATE);
         verify(locationReferenceService).getCountyCourts(SYSTEM_USER_TOKEN, List.of(expectedEpimId));
     }
 
@@ -83,35 +88,41 @@ class PostCodeCourtServiceTest {
         String nonExistentPostCode = "XY1 2AB";
         String trimmedPostcode = "XY12AB";
         List<String> postcodes = getPostCodeCandidates(trimmedPostcode);
-        when(postCodeCourtRepository.findByIdPostCodeIn(postcodes)).thenReturn(List.of());
+        when(postCodeCourtRepository.findByIdPostCodeIn(postcodes, CURRENT_DATE)).thenReturn(List.of());
 
         final List<Court> response = underTest.getCountyCourtsByPostCode(nonExistentPostCode);
 
         assertThat(response).isEmpty();
-        verify(postCodeCourtRepository).findByIdPostCodeIn(postcodes);
+        verify(postCodeCourtRepository).findByIdPostCodeIn(postcodes, CURRENT_DATE);
     }
 
     @Test
-    @DisplayName("Should return a partial match if available when no full match is found")
-    void shouldReturnPartiallyMatchedPostCode() {
+    @DisplayName("Should return the longest active partial code when no full match is found")
+    void shouldReturnTheLongestActivePartialCodeWhenNoFullMatchIsFound() {
         String postCode = "W37RX";
         String partialPostcode = "W37R";
-        int expectedEpimId = 76598;
-        PostCodeCourtEntity postCodeCourtEntity = new PostCodeCourtEntity();
-        postCodeCourtEntity.setId(new PostCodeCourtKey(partialPostcode, expectedEpimId));
+        String secondPartialPostcode = "W37";
+        int epimId = 76598;
+        int secondEpimId = 89567;
+        PostCodeCourtEntity partialEntity = createPostCodeCourtEntity(partialPostcode, epimId);
+        PostCodeCourtEntity partialEntity2 = createPostCodeCourtEntity(secondPartialPostcode, secondEpimId);
+
         List<String> postcodes = getPostCodeCandidates(postCode);
 
-        when(postCodeCourtRepository.findByIdPostCodeIn(postcodes)).thenReturn(List.of(postCodeCourtEntity));
-        when(locationReferenceService.getCountyCourts(SYSTEM_USER_TOKEN, List.of(expectedEpimId)))
-            .thenReturn(List.of(new CourtVenue(expectedEpimId, 303, "Main Court of Justice")));
+        when(postCodeCourtRepository.findByIdPostCodeIn(
+            postcodes,
+            CURRENT_DATE
+        )).thenReturn(List.of(partialEntity, partialEntity2));
+        when(locationReferenceService.getCountyCourts(SYSTEM_USER_TOKEN, List.of(epimId)))
+            .thenReturn(List.of(new CourtVenue(epimId, 303, "Main Court of Justice")));
 
         List<Court> response = underTest.getCountyCourtsByPostCode(postCode);
 
         assertThat(response)
             .isNotEmpty()
-            .isEqualTo(List.of(new Court(303, "Main Court of Justice", expectedEpimId)));
-        verify(postCodeCourtRepository).findByIdPostCodeIn(postcodes);
-        verify(locationReferenceService).getCountyCourts(SYSTEM_USER_TOKEN, List.of(expectedEpimId));
+            .isEqualTo(List.of(new Court(303, "Main Court of Justice", epimId)));
+        verify(postCodeCourtRepository).findByIdPostCodeIn(postcodes, CURRENT_DATE);
+        verify(locationReferenceService).getCountyCourts(SYSTEM_USER_TOKEN, List.of(epimId));
     }
 
     @Test
@@ -121,7 +132,7 @@ class PostCodeCourtServiceTest {
         assertThatThrownBy(() -> underTest.getCountyCourtsByPostCode(emptyPostCode)).isInstanceOf(
                 InvalidPostCodeException.class)
             .hasMessage("Postcode can't be empty or null");
-        verify(postCodeCourtRepository, never()).findByIdPostCodeIn(any());
+        verify(postCodeCourtRepository, never()).findByIdPostCodeIn(any(), any());
     }
 
     @Test
@@ -130,7 +141,69 @@ class PostCodeCourtServiceTest {
         assertThatThrownBy(() -> underTest.getCountyCourtsByPostCode(null)).isInstanceOf(
                 InvalidPostCodeException.class)
             .hasMessage("Postcode can't be empty or null");
-        verify(postCodeCourtRepository, never()).findByIdPostCodeIn(any());
+        verify(postCodeCourtRepository, never()).findByIdPostCodeIn(any(), any());
+    }
+
+    @Test
+    @DisplayName("Should return postcode court mapping when EpimId is active")
+    void shouldReturnPostcodeCourtMappingWhenEpimIdIsActive() {
+        String postCode = "W37RX";
+        int activeEpimId = 76598;
+        PostCodeCourtEntity postCodeCourtEntity = createPostCodeCourtEntity(postCode, activeEpimId);
+        List<String> postcodes = getPostCodeCandidates(postCode);
+
+        when(postCodeCourtRepository.findByIdPostCodeIn(
+            postcodes,
+            CURRENT_DATE
+        )).thenReturn(List.of(postCodeCourtEntity));
+        when(locationReferenceService.getCountyCourts(SYSTEM_USER_TOKEN, List.of(activeEpimId)))
+            .thenReturn(List.of(new CourtVenue(activeEpimId, 458, "Central County Court")));
+
+        List<Court> response = underTest.getCountyCourtsByPostCode(postCode);
+
+        assertThat(response)
+            .isNotEmpty()
+            .isEqualTo(List.of(new Court(458, "Central County Court", activeEpimId)));
+        verify(postCodeCourtRepository).findByIdPostCodeIn(postcodes, CURRENT_DATE);
+        verify(locationReferenceService).getCountyCourts(SYSTEM_USER_TOKEN, List.of(activeEpimId));
+    }
+
+    @Test
+    @DisplayName("Should return empty list when EpimId is not active")
+    void shouldReturnEmptyListWhenEpimIdIsNotActive() {
+        String postCode = "W37RX";
+        List<String> postcodes = getPostCodeCandidates(postCode);
+
+        when(postCodeCourtRepository.findByIdPostCodeIn(
+            postcodes,
+            CURRENT_DATE
+        )).thenReturn(List.of());
+
+        List<Court> response = underTest.getCountyCourtsByPostCode(postCode);
+
+        assertThat(response).isEmpty();
+        verify(postCodeCourtRepository).findByIdPostCodeIn(postcodes, CURRENT_DATE);
+    }
+
+    @Test
+    @DisplayName("Should return empty list when multiple active EpimId's are found")
+    void shouldReturnEmptyListWhenMultipleActiveEpimIdsFound() {
+        String postCode = "W37RX";
+        int firstActiveEpimId = 76598;
+        int secondActiveEpimId = 76536;
+
+        PostCodeCourtEntity firstActiveEntity = createPostCodeCourtEntity(postCode, firstActiveEpimId);
+        PostCodeCourtEntity secondActiveEntity = createPostCodeCourtEntity(postCode, secondActiveEpimId);
+
+        List<String> postcodes = getPostCodeCandidates(postCode);
+        when(postCodeCourtRepository.findByIdPostCodeIn(postcodes, CURRENT_DATE)).thenReturn(List.of(
+            firstActiveEntity,
+            secondActiveEntity
+        ));
+
+        List<Court> response = underTest.getCountyCourtsByPostCode(postCode);
+        assertThat(response).isEmpty();
+        verify(postCodeCourtRepository).findByIdPostCodeIn(postcodes, CURRENT_DATE);
     }
 
     private List<String> getPostCodeCandidates(String postCode) {
@@ -142,6 +215,13 @@ class PostCodeCourtServiceTest {
             postCodes.add(partialPostcode);
         }
         return postCodes;
+    }
+
+    private PostCodeCourtEntity createPostCodeCourtEntity(String postCode, int epimId) {
+        PostCodeCourtEntity entity = new PostCodeCourtEntity();
+        entity.setId(new PostCodeCourtKey(postCode, epimId));
+
+        return entity;
     }
 
 }
