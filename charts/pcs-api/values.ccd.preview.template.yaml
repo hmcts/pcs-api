@@ -149,7 +149,7 @@ ccd:
             - microservicekey-ccd-admin
             - ccd-admin-web-oauth2-client-secret
   elasticsearch:
-    nameOverride: {{ .Release.Name }}-es
+    nameOverride: "{{ .Release.Name }}-es"
     clusterName: "es"
     replicas: 1
     minimumMasterNodes: 1
