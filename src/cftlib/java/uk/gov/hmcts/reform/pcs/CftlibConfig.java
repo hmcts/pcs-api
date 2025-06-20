@@ -46,8 +46,6 @@ public class CftlibConfig implements CFTLibConfigurer {
             "data.store.idam.system.user@gmail.com", List.of()
         );
 
-        dumpUserIds(users.keySet());
-
         /*
             #### User ID for caseworker@pcs.com will be 74e702fa-e20f-3a40-bc1d-d915f0874d00
             #### User ID for citizen@pcs.com will be 355fe639-be35-3723-b802-c91d3a9372e7
@@ -84,16 +82,6 @@ public class CftlibConfig implements CFTLibConfigurer {
         var json = IOUtils.toString(resourceLoader.getResource("classpath:cftlib-am-role-assignments.json")
                                         .getInputStream(), Charset.defaultCharset());
         lib.configureRoleAssignments(json);
-    }
-
-    private void dumpUserIds(Set<String> userEmails) {
-        userEmails
-            .forEach(
-                userEmail -> {
-                    String idamSimulatorUserId = UUID.nameUUIDFromBytes(userEmail.getBytes()).toString();
-                    System.out.printf("#### User ID for %s will be %s%n", userEmail, idamSimulatorUserId);
-                }
-        );
     }
 
 }
