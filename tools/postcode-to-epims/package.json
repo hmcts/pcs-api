@@ -10,7 +10,6 @@
   },
   "dependencies": {
     "csv-parse": "^5.6.0",
-    "luxon": "^3.6.1",
-    "nunjucks": "^3.2.4"
+    "luxon": "^3.6.1"
   }
 }
