@@ -134,6 +134,77 @@ class TestingSupportControllerTest {
         assertThat(capturedRequest.getFormPayload()).containsKey("ccdCaseReference");
         assertThat(capturedRequest.getFormPayload()).containsKey("caseName");
         assertThat(capturedRequest.getFormPayload()).containsKey("descriptionOfClaim");
+        assertThat(capturedRequest.getTemplateId()).isNull();
+    }
+
+    @Test
+    void testGenerateDocument_WithCustomTemplateId() {
+        final DocAssemblyRequest request = new DocAssemblyRequest();
+        Map<String, Object> formPayload = new HashMap<>();
+        formPayload.put("ccdCaseReference", "PCS-123456789");
+        formPayload.put("caseName", "Test Case");
+        formPayload.put("descriptionOfClaim", "Test claim description");
+        
+        request.setFormPayload(formPayload);
+        request.setTemplateId("CUSTOM-TEMPLATE-123.docx");
+        request.setOutputType("DOCX");
+
+        String expectedDocumentUrl = "http://dm-store/documents/456";
+        when(docAssemblyService.generateDocument(any(DocAssemblyRequest.class), anyString(), anyString()))
+            .thenReturn(expectedDocumentUrl);
+
+        ResponseEntity<String> response = underTest.generateDocument(
+            "Bearer token",
+            "ServiceAuthToken",
+            request
+        );
+
+        assertThat(response).isNotNull();
+        assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
+        assertThat(response.getBody()).isEqualTo(expectedDocumentUrl);
+        
+        // Verify the request was passed correctly with custom template
+        ArgumentCaptor<DocAssemblyRequest> requestCaptor = ArgumentCaptor.forClass(DocAssemblyRequest.class);
+        verify(docAssemblyService).generateDocument(requestCaptor.capture(), anyString(), anyString());
+        
+        DocAssemblyRequest capturedRequest = requestCaptor.getValue();
+        assertThat(capturedRequest.getTemplateId()).isEqualTo("CUSTOM-TEMPLATE-123.docx");
+        assertThat(capturedRequest.getOutputType()).isEqualTo("DOCX");
+        assertThat(capturedRequest.getFormPayload()).containsKey("ccdCaseReference");
+    }
+
+    @Test
+    void testGenerateDocument_WithEmptyTemplateId() {
+        final DocAssemblyRequest request = new DocAssemblyRequest();
+        Map<String, Object> formPayload = new HashMap<>();
+        formPayload.put("ccdCaseReference", "PCS-123456789");
+        formPayload.put("caseName", "Test Case");
+        formPayload.put("descriptionOfClaim", "Test claim description");
+        
+        request.setFormPayload(formPayload);
+        request.setTemplateId(""); // Empty template ID should use default
+
+        String expectedDocumentUrl = "http://dm-store/documents/789";
+        when(docAssemblyService.generateDocument(any(DocAssemblyRequest.class), anyString(), anyString()))
+            .thenReturn(expectedDocumentUrl);
+
+        ResponseEntity<String> response = underTest.generateDocument(
+            "Bearer token",
+            "ServiceAuthToken",
+            request
+        );
+
+        assertThat(response).isNotNull();
+        assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
+        assertThat(response.getBody()).isEqualTo(expectedDocumentUrl);
+        
+        // Verify the request was passed correctly with empty template ID
+        ArgumentCaptor<DocAssemblyRequest> requestCaptor = ArgumentCaptor.forClass(DocAssemblyRequest.class);
+        verify(docAssemblyService).generateDocument(requestCaptor.capture(), anyString(), anyString());
+        
+        DocAssemblyRequest capturedRequest = requestCaptor.getValue();
+        assertThat(capturedRequest.getTemplateId()).isEmpty();
+        assertThat(capturedRequest.getFormPayload()).containsKey("ccdCaseReference");
     }
 
     @Test
