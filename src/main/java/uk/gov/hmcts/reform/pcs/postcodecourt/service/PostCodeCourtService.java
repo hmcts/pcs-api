@@ -12,6 +12,8 @@ import uk.gov.hmcts.reform.pcs.postcodecourt.exception.InvalidPostCodeException;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.Court;
 import uk.gov.hmcts.reform.pcs.postcodecourt.repository.PostCodeCourtRepository;
 
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -22,6 +24,8 @@ import java.util.Locale;
 @AllArgsConstructor
 @Slf4j
 public class PostCodeCourtService {
+
+    private static final ZoneId UK_ZONE_ID = ZoneId.of("Europe/London");
 
     private final PostCodeCourtRepository postCodeCourtRepository;
     private final LocationReferenceService locationReferenceService;
@@ -57,16 +61,32 @@ public class PostCodeCourtService {
         postcode = postcode.replaceAll("\\s", "").toUpperCase(Locale.ROOT);
 
         List<String> postcodes = getPostCodeLookupCandidates(postcode);
-        List<PostCodeCourtEntity> results = postCodeCourtRepository.findByIdPostCodeIn(postcodes);
+
+        LocalDate currentDate = LocalDate.now(UK_ZONE_ID);
+        List<PostCodeCourtEntity> results = postCodeCourtRepository.findByIdPostCodeIn(postcodes, currentDate);
         if (results.isEmpty()) {
             log.warn("Postcode court mapping not found for postcode {}", postcode);
             return List.of();
         }
-        PostCodeCourtEntity postCodeMatch = results.stream()
-            .max(Comparator.comparingInt(e -> e.getId().getPostCode().length()))
-            .get();
-        log.info("Found court mapping for postcode {} as {}", postcode, postCodeMatch.getId().getPostCode());
-        return List.of(postCodeMatch);
+
+        String longestPostcodeMatch = results.stream()
+            .map(e -> e.getId().getPostCode())
+            .max(Comparator.comparingInt(String::length))
+            .orElse("");
+        List<PostCodeCourtEntity> filteredResults = results.stream()
+            .filter(e -> e.getId().getPostCode().equals(longestPostcodeMatch))
+            .toList();
+
+        if (filteredResults.size() > 1) {
+            log.error(
+                "Multiple active EpimId's found for postcode:{} count:{}",
+                longestPostcodeMatch,
+                filteredResults.size()
+            );
+            return List.of();
+        }
+        log.info("Found court mapping of {} for postcode: {}", longestPostcodeMatch, postcode);
+        return filteredResults;
     }
 
     private List<String> getPostCodeLookupCandidates(String postcode) {
