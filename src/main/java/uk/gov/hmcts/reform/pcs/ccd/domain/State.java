@@ -16,6 +16,18 @@ public enum State {
         label = "Open",
         access = {DefaultStateAccess.class}
     )
-    Open;
+    Open,
+
+    @CCD(
+        label = "Draft",
+        access = {DefaultStateAccess.class}
+    )
+    Draft,
+
+    @CCD(
+        label = "Submitted",
+        access = {DefaultStateAccess.class}
+    )
+    Submitted;
 }
 

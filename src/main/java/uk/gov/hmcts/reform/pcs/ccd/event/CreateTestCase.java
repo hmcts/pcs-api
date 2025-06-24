@@ -2,23 +2,33 @@ package uk.gov.hmcts.reform.pcs.ccd.event;
 
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CCDConfig;
-import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
 import uk.gov.hmcts.ccd.sdk.api.ConfigBuilder;
+import uk.gov.hmcts.ccd.sdk.api.EventPayload;
 import uk.gov.hmcts.ccd.sdk.api.Permission;
-import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.UserRole;
+import uk.gov.hmcts.reform.pcs.ccd.entity.PCS;
+import uk.gov.hmcts.reform.pcs.ccd.repository.PCSCaseRepository;
+import uk.gov.hmcts.reform.pcs.ccd.service.PCSCaseService;
 
 @Component
 public class CreateTestCase implements CCDConfig<PCSCase, State, UserRole> {
+
+
+    private final PCSCaseRepository repository;
+    private final PCSCaseService pcsCaseService;
+
+    public CreateTestCase(PCSCaseRepository repository, PCSCaseService pcsCaseService) {
+        this.repository = repository;
+        this.pcsCaseService = pcsCaseService;
+    }
+
     @Override
     public void configure(ConfigBuilder<PCSCase, State, UserRole> configBuilder) {
-        configBuilder
-            .event("createTestApplication")
+        configBuilder.decentralisedEvent("createTestApplication", this::submit)
             .initialState(State.Open)
             .name("Make a claim")
-            .aboutToSubmitCallback(this::aboutToSubmit)
             .grant(Permission.CRUD, UserRole.CASE_WORKER)
             .fields()
             .page("Make a claim")
@@ -27,24 +37,27 @@ public class CreateTestCase implements CCDConfig<PCSCase, State, UserRole> {
             .mandatory(PCSCase::getPropertyAddress)
             .page("claimant information")
             .pageLabel("Please enter applicant's name")
-                .mandatory(PCSCase::getApplicantForename)
+            .mandatory(PCSCase::getApplicantForename)
                 .done();
     }
 
-    private AboutToStartOrSubmitResponse<PCSCase, State> start(CaseDetails<PCSCase, State> caseDetails) {
+    /**
+     private AboutToStartOrSubmitResponse PCSCase, State  start(CaseDetails PCSCase, State caseDetails) {
         PCSCase data = caseDetails.getData();
         data.setApplicantForename("Preset value");
 
-        return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
+     return AboutToStartOrSubmitResponse.PCSCase, State>builder()
             .data(caseDetails.getData())
             .build();
     }
-
-    public AboutToStartOrSubmitResponse<PCSCase, State> aboutToSubmit(CaseDetails<PCSCase, State> details,
-                                                                       CaseDetails<PCSCase, State> beforeDetails) {
-        // TODO: Whatever you need.
-        return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
-            .data(details.getData())
+     */
+    private void submit(EventPayload<PCSCase, State> eventPayload) {
+        var pcsCase = PCS.builder()
+            .ccdCaseReference(eventPayload.caseReference())
             .build();
+
+
+        PCS saved = repository.save(pcsCase);
     }
+
 }
