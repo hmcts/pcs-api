@@ -7,6 +7,7 @@ public class CourtConstants {
     public static final String POSTCODE_VALID = "W3 7RX";
     public static final String PARTIAL_POSTCODE_VALID = "UB2 9HS";
     public static final String POSTCODE_INVALID = "W3 7RY";
+    public static final String POSTCODE_INACTIVE_DATES = "RG6 1JS";
     public static final Map<String, Object> EXPECTED_COURT_MAP = Map.of(
         "id", 40827,
         "name", "Central London County Court",
