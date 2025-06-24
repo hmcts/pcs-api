@@ -1,8 +1,11 @@
 import { startCaseCreation,selectAddress,enterApplicantDetails,submitCaseCreation } from '../commonSteps/caseCreation';
 import * as idamHelper from "@helpers/idam-helpers/idam.helper";
 import { test, Username } from '@fixtures/login.fixture';
+import * as allure from 'allure-js-commons';
 
-
+test.beforeEach(async ({ page }) => {
+  await allure.parentSuite('Create Case');
+});
 
 test.describe('Create Case with Address @Master @nightly', () => {
 
