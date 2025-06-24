@@ -42,9 +42,11 @@ function convertRowsToMappings(rows, warnings) {
 
     mapping.effectiveFrom = convertToDateTime(sourceEffectiveFrom);
     if (!mapping.effectiveFrom) {
-      warnings.push(`Row ${warningRowNumber}: Missing mandatory Effective From date ${sourceEffectiveFrom}`);
+      warnings.push(`Row ${warningRowNumber}: Missing mandatory Effective From date. Row will be omitted.`);
+      mapping.excludeFromSql = true;
     } else if (!mapping.effectiveFrom.isValid) {
-      warnings.push(`Row ${warningRowNumber}: Invalid Effective From date ${sourceEffectiveFrom}`);
+      mapping.excludeFromSql = true;
+      warnings.push(`Row ${warningRowNumber}: Invalid Effective From date: ${sourceEffectiveFrom}. Row will be omitted.`);
     }
 
     mapping.effectiveTo = convertToDateTime(sourceEffectiveTo);

@@ -26,6 +26,11 @@ export const writeMappingsToSql = (mappings, sqlOutputFile) => {
 
   for (let i = 0; i < mappings.length; i++) {
     const mapping = mappings[i];
+
+    if (mapping.excludeFromSql) {
+      continue;
+    }
+
     const effectiveFrom = convertToSqlDateString(mapping.effectiveFrom);
     const effectiveTo = convertToSqlDateString(mapping.effectiveTo);
     const auditJson = `{"created_by": "${userInfo().username}", "generated": "${currentDateTime.toISO()}"}`;
