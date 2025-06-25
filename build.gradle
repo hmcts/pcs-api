@@ -339,7 +339,7 @@ dependencies {
   functionalTestImplementation sourceSets.main.runtimeClasspath
   functionalTestImplementation sourceSets.test.runtimeClasspath
 
-  testImplementation group: 'org.junit.platform', name: 'junit-platform-suite-api', version: '1.13.1'
+  testImplementation group: 'org.junit.platform', name: 'junit-platform-suite-api', version: '1.13.2'
 
   contractTestImplementation group: 'au.com.dius.pact.consumer', name: 'junit5', version: pactVersion
   contractTestImplementation group: 'org.hamcrest', name: 'java-hamcrest', version: '2.0.0.0'
