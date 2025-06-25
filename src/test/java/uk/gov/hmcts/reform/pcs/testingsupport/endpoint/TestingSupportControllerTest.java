@@ -10,7 +10,6 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.client.RestTemplate;
 import uk.gov.hmcts.reform.pcs.document.service.DocAssemblyService;
 import uk.gov.hmcts.reform.pcs.testingsupport.model.DocAssemblyRequest;
 
@@ -37,9 +36,6 @@ class TestingSupportControllerTest {
 
     @Mock
     private DocAssemblyService docAssemblyService;
-
-    @Mock
-    private RestTemplate restTemplate;
 
     private TestingSupportController underTest;
 
