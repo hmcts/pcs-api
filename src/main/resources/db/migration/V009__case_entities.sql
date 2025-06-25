@@ -6,7 +6,7 @@ CREATE TABLE pcs (
 
 CREATE TABLE address (
                        id UUID PRIMARY KEY,
-                       case_id UUID UNIQUE NOT NULL REFERENCES pcs(id) ON DELETE CASCADE,
+                       case_id UUID UNIQUE NOT NULL REFERENCES pcs(id),
                        address_line1 VARCHAR(255),
                        address_line2 VARCHAR(255),
                        address_line3 VARCHAR(255),
@@ -18,13 +18,12 @@ CREATE TABLE address (
 
 CREATE TABLE gen_application (
                                id UUID PRIMARY KEY,
-                               application_id BIGINT NOT NULL,
-                               parent_case_id UUID NOT NULL REFERENCES pcs(id) ON DELETE CASCADE,
+                               parent_case_id UUID NOT NULL REFERENCES pcs(id),
                                adjustment TEXT,
+                               additional_information TEXT,
                                status VARCHAR(255)
 
 );
 
--- Create indexes for foreign keys
 CREATE INDEX idx_address_case_id ON address(case_id);
 CREATE INDEX idx_gen_application_parent_case_id ON gen_application(parent_case_id);

@@ -4,8 +4,11 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenApplication;
 
 import java.util.List;
+import java.util.UUID;
 
-public interface GeneralApplicationRepository extends JpaRepository<GenApplication, Long> {
+public interface GeneralApplicationRepository extends JpaRepository<GenApplication, UUID> {
 
-    List<GenApplication> findByPcsCase_CcdCaseReference(Long caseReference);
+    List<GenApplication> findByPcsCase_CcdCaseReference(long caseReference);
+
+    void deleteById(UUID applicationId);
 }

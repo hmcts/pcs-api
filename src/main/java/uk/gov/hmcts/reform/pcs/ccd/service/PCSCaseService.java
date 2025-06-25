@@ -1,7 +1,9 @@
 package uk.gov.hmcts.reform.pcs.ccd.service;
 
+import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
+import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.GeneralApplication;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.entity.Address;
@@ -13,26 +15,37 @@ import java.util.stream.Collectors;
 @Service
 public class PCSCaseService {
 
+    private final ModelMapper modelMapper;
+
+    public PCSCaseService(ModelMapper modelMapper) {
+        this.modelMapper = modelMapper;
+    }
+
     public PCSCase convertToPCSCase(PCS pcs) {
-        if (pcs == null) {
-            return null;
-        }
         PCSCase.PCSCaseBuilder builder = PCSCase.builder()
             .ccdCaseReference(pcs.getCcdCaseReference());
-        if (pcs.getAddress() != null) {
-            builder.propertyAddress(convertAddress(pcs.getAddress()));
+        if (pcs.getPropertyAddress() != null) {
+            builder.propertyAddress(convertAddress(pcs.getPropertyAddress()));
         }
-
         if (pcs.getGeneralApplications() != null) {
-            builder.generalApplicationList(
+            builder.generalApplications(
                 pcs.getGeneralApplications().stream()
-                    .map(this::convertGenApplication)
+                    .map(ga -> {
+                        GeneralApplication dto = convertGenApplication(ga);
+                        return ListValue.<GeneralApplication>builder()
+                            .id(ga.getId().toString())
+                            .value(dto)
+                            .build();
+                    })
                     .collect(Collectors.toList())
             );
         }
         return builder.build();
     }
 
+    public PCS convertToPCSEntity(PCSCase pcsCase) {
+        return modelMapper.map(pcsCase, PCS.class);
+    }
     private AddressUK convertAddress(Address address) {
         return AddressUK.builder()
             .addressLine1(address.getAddressLine1())
@@ -46,9 +59,9 @@ public class PCSCaseService {
 
     private GeneralApplication convertGenApplication(GenApplication ga) {
         return GeneralApplication.builder()
-            .parentCaseReference(ga.getPcsCase().getCcdCaseReference())
-            .applicationId(ga.getApplicationId())
-            .adjustment(ga.getAdjustment()) // what about applicationID?
+            .id(ga.getId())
+            .adjustment(ga.getAdjustment())
+            .additionalInformation(ga.getAdditionalInformation())
             .status(ga.getStatus())
             .build();
     }

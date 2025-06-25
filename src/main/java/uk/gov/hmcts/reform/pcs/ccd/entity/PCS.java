@@ -30,10 +30,10 @@ public class PCS {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    private long ccdCaseReference;
+    private Long ccdCaseReference;
 
     @OneToOne(mappedBy = "pcsCase", cascade = ALL)
-    private Address address;
+    private Address propertyAddress;
 
     @OneToMany(mappedBy = "pcsCase", cascade = ALL, orphanRemoval = true)
     @Builder.Default

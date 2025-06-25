@@ -33,18 +33,15 @@ public class CCDCaseRepository extends DecentralisedCaseRepository<PCSCase> {
     @Override
     public PCSCase getCase(long caseRef) {
         PCS pcsCase = loadCaseData(caseRef);
-
-        List<GenApplication> allApplications = generalApplicationRepository.findByPcsCase_CcdCaseReference(caseRef);
-        populateGAlists(pcsCase, allApplications);
         return pcsCaseService.convertToPCSCase(pcsCase);
     }
 
     private PCS loadCaseData(long caseRef) {
-        return pcsCaseRepository.findByCcdCaseReference(caseRef);
-        //error handling
+        return pcsCaseRepository.findByCcdCaseReference(caseRef)
+                .orElseThrow(() -> new IllegalStateException("Parent case not found"));
     }
 
-    private static void populateGAlists(PCS pcsCase, List<GenApplication> applications) {
+    private static void populateGALists(PCS pcsCase, List<GenApplication> applications) {
         // maybe extra logic is needed
         pcsCase.getGeneralApplications().clear();
         pcsCase.getGeneralApplications().addAll(applications);

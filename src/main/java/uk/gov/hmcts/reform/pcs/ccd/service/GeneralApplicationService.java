@@ -1,27 +1,30 @@
 package uk.gov.hmcts.reform.pcs.ccd.service;
 
+import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.pcs.ccd.domain.GeneralApplication;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenApplication;
-import uk.gov.hmcts.reform.pcs.ccd.entity.PCS;
 import uk.gov.hmcts.reform.pcs.ccd.repository.GeneralApplicationRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PCSCaseRepository;
 
 import java.util.List;
+import java.util.UUID;
 
 @Service
 public class GeneralApplicationService {
     private final GeneralApplicationRepository generalApplicationRepository;
     private final PCSCaseRepository pcsCaseRepository;
     private final PCSCaseService pcsCaseService;
+    private final ModelMapper modelMapper;
 
     public GeneralApplicationService(GeneralApplicationRepository generalApplicationRepository,
                                      PCSCaseRepository pcsCaseRepository,
-                                     PCSCaseService pcsCaseService) {
+                                     PCSCaseService pcsCaseService, ModelMapper modelMapper) {
         this.generalApplicationRepository = generalApplicationRepository;
         this.pcsCaseRepository = pcsCaseRepository;
         this.pcsCaseService = pcsCaseService;
+        this.modelMapper = modelMapper;
     }
 
     public void saveDraft(GenApplication ga) {
@@ -30,34 +33,16 @@ public class GeneralApplicationService {
 
     }
 
-    public void deleteDraft(long gaId) {
+    public void deleteDraft(UUID gaId) {
         generalApplicationRepository.deleteById(gaId);
     }
 
     public List<GenApplication> findByParentCase(long parentCaseId) {
-        return generalApplicationRepository.findByPcsCase_CcdCaseReference(parentCaseId);
+        return generalApplicationRepository.findByPcsCase_CcdCaseReference(parentCaseId); //pcs repo?
     }
 
-    private GenApplication convertToGAEntity(GeneralApplication gaCase) {
-        if (gaCase == null) {
-            return null;
-        }
-        GenApplication.GenApplicationBuilder builder = GenApplication.builder()
-            .applicationId(gaCase.getApplicationId());
-        if (gaCase.getStatus() != null) {
-            builder.status(gaCase.getStatus());
-        }
-
-        if (gaCase.getParentCaseReference() != null) {
-            PCS parentCase = pcsCaseRepository.findByCcdCaseReference(gaCase.getParentCaseReference());
-            builder.pcsCase(parentCase);
-        }
-
-        if (gaCase.getAdjustment() != null) {
-            builder.adjustment(gaCase.getAdjustment());
-        }
-
-        return builder.build();
+    public GenApplication convertToGAEntity(GeneralApplication gaCase) {
+        return modelMapper.map(gaCase, GenApplication.class);
     }
 
 

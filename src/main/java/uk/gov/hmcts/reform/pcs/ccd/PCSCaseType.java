@@ -47,6 +47,7 @@ public class PCSCaseType implements CCDConfig<PCSCase, State, UserRole> {
         var nameLabel = "Applicant's first name";
         var addressLabel = "Property Address";
         var claimantLabel = "Claimant Information";
+        var genAppsLabel = "General Applications";
         builder.searchInputFields()
             .field(PCSCase::getApplicantForename, nameLabel);
 
@@ -70,50 +71,7 @@ public class PCSCaseType implements CCDConfig<PCSCase, State, UserRole> {
         builder.tab("propertyAddress", addressLabel)
             .field(PCSCase::getPropertyAddress);
 
-        builder.tab("generalApplicationsTab", "General Applications")
-            .field(PCSCase::getGeneralApplicationList);
-
-
-        /**
-         *  builder.tab("generalApplicationsTab", "General Applications")
-         *  .collection(PCSCase::getGeneralApplicationList, "General Applications")
-         *  .field(GeneralApplication::getAdjustment);
-         *
-         * need wrapper class to make this work e.g. GeneralApplicationwWrapper with
-         * fields of case reference and adjustment
-         * Pcs list of this wrapper that we populate rather than the gen app list
-         */
-
+        builder.tab("General Applications", genAppsLabel)
+            .field(PCSCase::getGeneralApplications);
     }
-    /**
-     * private void createGeneralApplicationEvent(ConfigBuilder<PCSCase, State, UserRole> builder) {
-     builder.event("createGeneralApplication")
-     .initialState(State.Submitted)
-     .name("Create Draft General Application")
-     .showSummary()
-     .showEventNotes()
-     .grant(Permission.CRUD, UserRole.CASE_WORKER)
-     .aboutToSubmitCallback(this::createDraftGA);
-     }
-
-     private void submitGeneralApplicationEvent(ConfigBuilder<PCSCase, State, UserRole> builder) {
-     builder.event("submitGeneralApplication")
-     .initialState(State.Submitted)
-     .name("Submit General Application")
-     .showSummary()
-     .showEventNotes()
-     .grant(Permission.CRUD, UserRole.CASE_WORKER)
-     .aboutToSubmitCallback(this::submitDraftGA);
-     }
-
-     private void deleteGeneralApplicationEvent(ConfigBuilder<PCSCase, State, UserRole> builder) {
-     builder.event("deleteGeneralApplication")
-     .initialState(State.Submitted)
-     .name("Delete Draft General Application")
-     .showSummary()
-     .showEventNotes()
-     .grant(Permission.CRUD, UserRole.CASE_WORKER)
-     .aboutToSubmitCallback(this::deleteDraftGA);
-     }
-     */
 }

@@ -30,9 +30,9 @@ public class GenApplication {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    private long applicationId;
-
     private String adjustment;
+
+    private String additionalInformation;
 
     @Enumerated(EnumType.STRING)
     private State status;
