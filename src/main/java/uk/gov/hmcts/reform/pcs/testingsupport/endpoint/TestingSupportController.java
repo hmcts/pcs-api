@@ -73,8 +73,6 @@ public class TestingSupportController {
     @Operation(summary = "Generate a document using Doc Assembly API")
     @PostMapping(value = "/generate-document", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<String> generateDocument(
-        @RequestHeader(value = AUTHORIZATION) String authorisation,
-        @RequestHeader(value = "ServiceAuthorization") String serviceAuthorization,
         @RequestBody DocAssemblyRequest request
     ) {
         try {
@@ -82,7 +80,7 @@ public class TestingSupportController {
                 return ResponseEntity.badRequest().body("formPayload is required");
             }
             
-            String documentUrl = docAssemblyService.generateDocument(request, authorisation, serviceAuthorization);
+            String documentUrl = docAssemblyService.generateDocument(request);
             return ResponseEntity.created(URI.create(documentUrl)).body(documentUrl);
         } catch (Exception e) {
             log.error("Failed to generate document", e);
