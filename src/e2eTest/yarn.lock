@@ -147,11 +147,11 @@
   integrity sha512-GaHYm+c0O9MjZRu0ongGBRbinu8gVAMd2UZjji6jVmqKtZluZnptXGWhz1E8j8D2HJ3f/yMxKAUC0b+57wncIw==
 
 "@playwright/test@^1.49.0":
-  version "1.53.0"
-  resolved "https://registry.npmjs.org/@playwright/test/-/test-1.53.0.tgz"
+  version "1.53.1"
+  resolved "https://registry.npmjs.org/@playwright/test/-/test-1.53.1.tgz"
   integrity sha512-15hjKreZDcp7t6TL/7jkAo6Df5STZN09jGiv5dbP9A6vMVncXRqE7/B2SncsyOwrkZRBH2i6/TPOL8BVmm3c7w==
   dependencies:
-    playwright "1.53.0"
+    playwright "1.53.1"
 
 "@types/node@^22.15.31":
   version "22.15.32"
@@ -273,17 +273,17 @@ oauth4webapi@^3.5.1:
   resolved "https://registry.npmjs.org/oauth4webapi/-/oauth4webapi-3.5.3.tgz"
   integrity sha512-2bnHosmBLAQpXNBLOvaJMyMkr4Yya5ohE5Q9jqyxiN+aa7GFCzvDN1RRRMrp0NkfqRR2MTaQNkcSUCCjILD9oQ==
 
-playwright-core@1.53.0:
-  version "1.53.0"
-  resolved "https://registry.npmjs.org/playwright-core/-/playwright-core-1.53.0.tgz"
+playwright-core@1.53.1:
+  version "1.53.1"
+  resolved "https://registry.npmjs.org/playwright-core/-/playwright-core-1.53.1.tgz"
   integrity sha512-mGLg8m0pm4+mmtB7M89Xw/GSqoNC+twivl8ITteqvAndachozYe2ZA7srU6uleV1vEdAHYqjq+SV8SNxRRFYBw==
 
-playwright@1.53.0:
-  version "1.53.0"
-  resolved "https://registry.npmjs.org/playwright/-/playwright-1.53.0.tgz"
+playwright@1.53.1:
+  version "1.53.1"
+  resolved "https://registry.npmjs.org/playwright/-/playwright-1.53.1.tgz"
   integrity sha512-ghGNnIEYZC4E+YtclRn4/p6oYbdPiASELBIYkBXfaTVKreQUYbMUYQDwS12a8F0/HtIjr/CkGjtwABeFPGcS4Q==
   dependencies:
-    playwright-core "1.53.0"
+    playwright-core "1.53.1"
   optionalDependencies:
     fsevents "2.3.2"
 
