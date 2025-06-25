@@ -3,7 +3,7 @@ import * as idamHelper from "@helpers/idam-helpers/idam.helper";
 import { test, Username } from '@fixtures/login.fixture';
 import * as allure from 'allure-js-commons';
 
-test.beforeEach(async ({ page }) => {
+test.beforeAll(async () => {
   await allure.parentSuite('Create Case');
 });
 

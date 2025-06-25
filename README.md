@@ -149,6 +149,7 @@ There are also several custom test scripts available:
 
 - `yarn test:changed` - runs only changed spec files
 - `yarn test:chrome` - runs the full E2E suite in Chrome
+- `yarn test:openAllureReport` - to view already generated an allure report in browser
 
 ### Running pcs-api with local CCD
 

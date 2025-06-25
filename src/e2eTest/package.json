@@ -6,10 +6,10 @@
     "node": ">=18.0.0"
   },
   "scripts": {
-    "test:functional": "NODE_TLS_REJECT_UNAUTHORIZED=0 yarn playwright install && yarn playwright test || true && allure generate ./allure-results --clean && --project chrome --grep @Master",
-    "test:chrome": "NODE_TLS_REJECT_UNAUTHORIZED=0 yarn playwright install && yarn playwright test --project chrome --grep @nightly",
-    "test:changed": "NODE_TLS_REJECT_UNAUTHORIZED=0 yarn playwright install && tsx ./helpers/runChangedTest.helper.ts --project chrome",
-    "test:openallurereport": "yarn allure open allure-report"
+    "test:functional": "NODE_TLS_REJECT_UNAUTHORIZED=0 yarn playwright install && yarn playwright test  --project chrome --grep @Master || true && allure generate ./allure-results --clean",
+    "test:chrome": "NODE_TLS_REJECT_UNAUTHORIZED=0 yarn playwright install && yarn playwright test --project chrome --grep @nightly || true && allure generate ./allure-results --clean",
+    "test:changed": "NODE_TLS_REJECT_UNAUTHORIZED=0 yarn playwright install && tsx ./helpers/runChangedTest.helper.ts --project chrome || true && allure generate ./allure-results --clean",
+    "test:openAllureReport": "yarn allure open allure-report"
   },
   "devDependencies": {
     "@playwright/test": "^1.49.0",
