@@ -252,4 +252,93 @@ class TestingSupportControllerTest {
         assertThat(response.getStatusCode().is5xxServerError()).isTrue();
         assertThat(response.getBody()).contains("An error occurred while processing your request.");
     }
+
+    @Test
+    void testGenerateDocument_NullRequest() {
+        ResponseEntity<String> response = underTest.generateDocument(
+            "Bearer token",
+            "ServiceAuthToken",
+            null
+        );
+        assertThat(response.getStatusCode().is5xxServerError()).isTrue();
+        assertThat(response.getBody()).contains("An error occurred while processing your request.");
+    }
+
+    @Test
+    void testGenerateDocument_NullAuthorization() {
+        final DocAssemblyRequest request = new DocAssemblyRequest();
+        request.setFormPayload(new HashMap<>());
+        ResponseEntity<String> response = underTest.generateDocument(
+            null,
+            "ServiceAuthToken",
+            request
+        );
+        assertThat(response.getStatusCode().is5xxServerError()).isTrue();
+        assertThat(response.getBody()).contains("An error occurred while processing your request.");
+    }
+
+    @Test
+    void testGenerateDocument_EmptyAuthorization() {
+        final DocAssemblyRequest request = new DocAssemblyRequest();
+        request.setFormPayload(new HashMap<>());
+        ResponseEntity<String> response = underTest.generateDocument(
+            "",
+            "ServiceAuthToken",
+            request
+        );
+        assertThat(response.getStatusCode().is5xxServerError()).isTrue();
+        assertThat(response.getBody()).contains("An error occurred while processing your request.");
+    }
+
+    @Test
+    void testGenerateDocument_WhitespaceAuthorization() {
+        final DocAssemblyRequest request = new DocAssemblyRequest();
+        request.setFormPayload(new HashMap<>());
+        ResponseEntity<String> response = underTest.generateDocument(
+            "   ",
+            "ServiceAuthToken",
+            request
+        );
+        assertThat(response.getStatusCode().is5xxServerError()).isTrue();
+        assertThat(response.getBody()).contains("An error occurred while processing your request.");
+    }
+
+    @Test
+    void testGenerateDocument_NullServiceAuthorization() {
+        final DocAssemblyRequest request = new DocAssemblyRequest();
+        request.setFormPayload(new HashMap<>());
+        ResponseEntity<String> response = underTest.generateDocument(
+            "Bearer token",
+            null,
+            request
+        );
+        assertThat(response.getStatusCode().is5xxServerError()).isTrue();
+        assertThat(response.getBody()).contains("An error occurred while processing your request.");
+    }
+
+    @Test
+    void testGenerateDocument_EmptyServiceAuthorization() {
+        final DocAssemblyRequest request = new DocAssemblyRequest();
+        request.setFormPayload(new HashMap<>());
+        ResponseEntity<String> response = underTest.generateDocument(
+            "Bearer token",
+            "",
+            request
+        );
+        assertThat(response.getStatusCode().is5xxServerError()).isTrue();
+        assertThat(response.getBody()).contains("An error occurred while processing your request.");
+    }
+
+    @Test
+    void testGenerateDocument_WhitespaceServiceAuthorization() {
+        final DocAssemblyRequest request = new DocAssemblyRequest();
+        request.setFormPayload(new HashMap<>());
+        ResponseEntity<String> response = underTest.generateDocument(
+            "Bearer token",
+            "   ",
+            request
+        );
+        assertThat(response.getStatusCode().is5xxServerError()).isTrue();
+        assertThat(response.getBody()).contains("An error occurred while processing your request.");
+    }
 }

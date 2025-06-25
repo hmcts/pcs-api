@@ -17,6 +17,16 @@ public class DocAssemblyService {
     }
 
     public String generateDocument(DocAssemblyRequest request, String authorization, String serviceAuthorization) {
+        if (request == null) {
+            throw new IllegalArgumentException("Request cannot be null");
+        }
+        if (authorization == null || authorization.trim().isEmpty()) {
+            throw new IllegalArgumentException("Authorization header is required");
+        }
+        if (serviceAuthorization == null || serviceAuthorization.trim().isEmpty()) {
+            throw new IllegalArgumentException("ServiceAuthorization header is required");
+        }
+        
         // Use templateId from request, or default if not provided
         if (request.getTemplateId() == null || request.getTemplateId().trim().isEmpty()) {
             request.setTemplateId(DEFAULT_TEMPLATE_ID);
