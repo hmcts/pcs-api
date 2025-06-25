@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 import uk.gov.hmcts.reform.pcs.document.service.DocAssemblyService;
 import uk.gov.hmcts.reform.pcs.testingsupport.model.DocAssemblyRequest;
 
+import java.net.URI;
 import java.time.Instant;
 import java.util.UUID;
 
@@ -82,11 +83,11 @@ public class TestingSupportController {
             }
             
             String documentUrl = docAssemblyService.generateDocument(request, authorisation, serviceAuthorization);
-            return ResponseEntity.ok(documentUrl);
+            return ResponseEntity.created(URI.create(documentUrl)).body(documentUrl);
         } catch (Exception e) {
             log.error("Failed to generate document", e);
             return ResponseEntity.internalServerError()
-                .body("Failed to generate document: " + e.getMessage());
+                .body("An error occurred while processing your request.");
         }
     }
 }

@@ -123,8 +123,9 @@ class TestingSupportControllerTest {
         );
 
         assertThat(response).isNotNull();
-        assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
+        assertThat(response.getStatusCodeValue()).isEqualTo(201);
         assertThat(response.getBody()).isEqualTo(expectedDocumentUrl);
+        assertThat(response.getHeaders().getLocation()).isEqualTo(java.net.URI.create(expectedDocumentUrl));
         
         // Verify the request was passed correctly
         ArgumentCaptor<DocAssemblyRequest> requestCaptor = ArgumentCaptor.forClass(DocAssemblyRequest.class);
@@ -160,8 +161,9 @@ class TestingSupportControllerTest {
         );
 
         assertThat(response).isNotNull();
-        assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
+        assertThat(response.getStatusCodeValue()).isEqualTo(201);
         assertThat(response.getBody()).isEqualTo(expectedDocumentUrl);
+        assertThat(response.getHeaders().getLocation()).isEqualTo(java.net.URI.create(expectedDocumentUrl));
         
         // Verify the request was passed correctly with custom template
         ArgumentCaptor<DocAssemblyRequest> requestCaptor = ArgumentCaptor.forClass(DocAssemblyRequest.class);
@@ -195,8 +197,9 @@ class TestingSupportControllerTest {
         );
 
         assertThat(response).isNotNull();
-        assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
+        assertThat(response.getStatusCodeValue()).isEqualTo(201);
         assertThat(response.getBody()).isEqualTo(expectedDocumentUrl);
+        assertThat(response.getHeaders().getLocation()).isEqualTo(java.net.URI.create(expectedDocumentUrl));
         
         // Verify the request was passed correctly with empty template ID
         ArgumentCaptor<DocAssemblyRequest> requestCaptor = ArgumentCaptor.forClass(DocAssemblyRequest.class);
@@ -227,8 +230,9 @@ class TestingSupportControllerTest {
         );
 
         assertThat(response).isNotNull();
-        assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
+        assertThat(response.getStatusCodeValue()).isEqualTo(201);
         assertThat(response.getBody()).isEqualTo(expectedDocumentUrl);
+        assertThat(response.getHeaders().getLocation()).isEqualTo(java.net.URI.create(expectedDocumentUrl));
         verify(docAssemblyService).generateDocument(request, "Bearer token", "ServiceAuthToken");
     }
 
@@ -250,7 +254,6 @@ class TestingSupportControllerTest {
 
         assertThat(response).isNotNull();
         assertThat(response.getStatusCode().is5xxServerError()).isTrue();
-        assertThat(response.getBody()).contains("Failed to generate document");
-        assertThat(response.getBody()).contains("Document generation failed");
+        assertThat(response.getBody()).contains("An error occurred while processing your request.");
     }
 }
