@@ -1,7 +1,7 @@
 
 export const caseData = {
   jurisdiction: 'Possessions',
-  caseType: 'Civil Possessions',
+  caseType: 'Civil Possessions 310',
   event: 'Make a claim',
   postcode: 'W3 7RX',
   addressIndex: 1,
