@@ -6,13 +6,16 @@
     "node": ">=18.0.0"
   },
   "scripts": {
-    "test:functional": "NODE_TLS_REJECT_UNAUTHORIZED=0 yarn playwright install && yarn playwright test --project chrome --grep @Master",
-    "test:chrome": "NODE_TLS_REJECT_UNAUTHORIZED=0 yarn playwright install && yarn playwright test --project chrome --grep @nightly",
-    "test:changed": "NODE_TLS_REJECT_UNAUTHORIZED=0 yarn playwright install && tsx ./helpers/runChangedTest.helper.ts --project chrome"
+    "test:functional": "NODE_TLS_REJECT_UNAUTHORIZED=0 yarn playwright install && yarn playwright test  --project chrome --grep @Master || true && allure generate ./allure-results --clean && yarn allure open allure-report",
+    "test:chrome": "NODE_TLS_REJECT_UNAUTHORIZED=0 yarn playwright install && yarn playwright test --project chrome --grep @nightly || true && allure generate ./allure-results --clean && yarn allure open allure-report",
+    "test:changed": "NODE_TLS_REJECT_UNAUTHORIZED=0 yarn playwright install && tsx ./helpers/runChangedTest.helper.ts --project chrome || true && allure generate ./allure-results --clean && yarn allure open allure-report"
   },
   "devDependencies": {
     "@playwright/test": "^1.49.0",
     "@types/node": "^22.15.31",
+    "allure-commandline": "^2.34.1",
+    "allure-js-commons": "^3.3.0",
+    "allure-playwright": "^3.3.0",
     "simple-git": "^3.27.0",
     "tsx": "^4.19.2",
     "typescript": "^5.7.2"
