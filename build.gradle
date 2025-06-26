@@ -313,7 +313,8 @@ dependencies {
   implementation platform(group: 'com.azure.spring', name :'spring-cloud-azure-dependencies', version :'5.22.0')
   implementation "com.azure.spring:spring-cloud-azure-starter-servicebus-jms"
   implementation 'org.modelmapper:modelmapper:3.2.0'
-  
+  implementation 'io.pebbletemplates:pebble-spring-boot-starter:3.2.2'
+
   implementation group: 'com.github.hmcts.java-logging', name: 'logging', version: '6.1.9'
   implementation group: 'com.github.hmcts', name: 'core-case-data-store-client', version: '5.1.0'
   implementation group: 'com.github.hmcts', name: 'idam-java-client', version: '3.0.4'

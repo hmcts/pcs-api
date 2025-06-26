@@ -10,5 +10,5 @@ public interface GeneralApplicationRepository extends JpaRepository<GenApplicati
 
     List<GenApplication> findByPcsCase_CcdCaseReference(long caseReference);
 
-    void deleteById(UUID applicationId);
+    void deleteByApplicationId(String applicationId);
 }

@@ -71,7 +71,8 @@ public class PCSCaseType implements CCDConfig<PCSCase, State, UserRole> {
         builder.tab("propertyAddress", addressLabel)
             .field(PCSCase::getPropertyAddress);
 
-        builder.tab("General Applications", genAppsLabel)
-            .field(PCSCase::getGeneralApplications);
+        builder.tab("General Applications", "General Applications (Markdown)")
+            .label("generalApplicationsMarkdownLabel", null, "${generalApplicationsSummaryMarkdown}")
+            .field("generalApplicationsSummaryMarkdown", "[STATE]=\"NEVER_SHOW\"");
     }
 }

@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.entity;
 
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -30,6 +31,9 @@ public class GenApplication {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
+    @Column(unique = true, nullable = false)
+    private String applicationId;
+    
     private String adjustment;
 
     private String additionalInformation;

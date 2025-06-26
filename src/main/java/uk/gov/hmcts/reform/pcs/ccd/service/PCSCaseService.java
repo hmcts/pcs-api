@@ -9,6 +9,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.entity.Address;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenApplication;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PCS;
+import uk.gov.hmcts.reform.pcs.ccd.repository.PCSCaseRepository;
 
 import java.util.stream.Collectors;
 
@@ -16,9 +17,11 @@ import java.util.stream.Collectors;
 public class PCSCaseService {
 
     private final ModelMapper modelMapper;
+    private final PCSCaseRepository pcsCaseRepository;
 
-    public PCSCaseService(ModelMapper modelMapper) {
+    public PCSCaseService(ModelMapper modelMapper, PCSCaseRepository pcsCaseRepository) {
         this.modelMapper = modelMapper;
+        this.pcsCaseRepository = pcsCaseRepository;
     }
 
     public PCSCase convertToPCSCase(PCS pcs) {
@@ -46,6 +49,7 @@ public class PCSCaseService {
     public PCS convertToPCSEntity(PCSCase pcsCase) {
         return modelMapper.map(pcsCase, PCS.class);
     }
+
     private AddressUK convertAddress(Address address) {
         return AddressUK.builder()
             .addressLine1(address.getAddressLine1())
@@ -59,10 +63,15 @@ public class PCSCaseService {
 
     private GeneralApplication convertGenApplication(GenApplication ga) {
         return GeneralApplication.builder()
-            .id(ga.getId())
+            .applicationId(ga.getApplicationId())
             .adjustment(ga.getAdjustment())
             .additionalInformation(ga.getAdditionalInformation())
             .status(ga.getStatus())
             .build();
+    }
+
+    public PCS findParentCase(Long caseReference) {
+        return pcsCaseRepository.findByCcdCaseReference(caseReference)
+            .orElseThrow(() -> new IllegalStateException("Parent case not found"));
     }
 }

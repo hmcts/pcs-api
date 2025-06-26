@@ -43,4 +43,6 @@ public class PCSCase {
 
     private GeneralApplication generalApplicationToDelete;
 
+    private String generalApplicationsSummaryMarkdown;
+
 }

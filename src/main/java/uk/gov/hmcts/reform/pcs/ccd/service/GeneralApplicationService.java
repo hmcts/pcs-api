@@ -45,5 +45,9 @@ public class GeneralApplicationService {
         return modelMapper.map(gaCase, GenApplication.class);
     }
 
+    public GeneralApplication convertToGA(GenApplication gaCase) {
+        return modelMapper.map(gaCase, GeneralApplication.class);
+    }
+
 
 }

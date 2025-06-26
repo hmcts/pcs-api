@@ -18,8 +18,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.PCSCaseService;
 @Slf4j
 @Component
 public class CreateTestCase implements CCDConfig<PCSCase, State, UserRole> {
-
-
+    
     private final PCSCaseRepository pcsRepository;
     private final PCSCaseService pcsCaseService;
     private final ModelMapper modelMapper;
@@ -53,8 +52,8 @@ public class CreateTestCase implements CCDConfig<PCSCase, State, UserRole> {
         Address addressEntity = createAddressEntity(pcsCase);
         addressEntity.setPcsCase(pcsEntity);
         pcsEntity.setPropertyAddress(addressEntity);
-        log.info("Main case about to be saved: {}---- {}", caseReference, pcsEntity.getCcdCaseReference());
         pcsRepository.save(pcsEntity);
+        pcsCase.setCcdCaseReference(caseReference);
     }
 
     private Address createAddressEntity(PCSCase pcsCase) {
