@@ -14,7 +14,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.pcs.notify.config.NotificationErrorHandler;
 import uk.gov.hmcts.reform.pcs.notify.config.NotificationErrorHandler.NotificationStatusUpdate;
-import uk.gov.hmcts.reform.pcs.notify.domain.CaseNotification;
+import uk.gov.hmcts.reform.pcs.notify.entities.CaseNotification;
 import uk.gov.hmcts.reform.pcs.notify.model.EmailState;
 import uk.gov.hmcts.reform.pcs.notify.exception.PermanentNotificationException;
 import uk.gov.hmcts.reform.pcs.notify.exception.TemporaryNotificationException;
@@ -116,8 +116,8 @@ public class SendEmailTaskComponent {
                     if (response.getNotificationId() == null) {
                         log.error("Email service returned null notification ID for task: {}", emailState.getId());
                         throw new PermanentNotificationException("Null notification ID from email service",
-                                                                 new IllegalStateException(
-                                                                     "Email service returned null notification ID"));
+                                                                    new IllegalStateException(
+                                                                        "Email service returned null notification ID"));
                     }
 
                     notificationService.updateNotificationAfterSending(

@@ -5,7 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.pcs.notify.task.SendEmailTaskComponent;
-import uk.gov.hmcts.reform.pcs.notify.domain.CaseNotification;
+import uk.gov.hmcts.reform.pcs.notify.entities.CaseNotification;
 import uk.gov.hmcts.reform.pcs.notify.exception.NotificationException;
 import uk.gov.hmcts.reform.pcs.notify.model.EmailNotificationRequest;
 import uk.gov.hmcts.reform.pcs.notify.model.EmailNotificationResponse;
@@ -14,7 +14,6 @@ import uk.gov.hmcts.reform.pcs.notify.model.NotificationStatus;
 import uk.gov.hmcts.reform.pcs.notify.repository.NotificationRepository;
 
 import java.time.Instant;
-import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -202,14 +201,14 @@ public class NotificationService {
 
         try {
             notification.setStatus(status);
-            notification.setLastUpdatedAt(LocalDateTime.now());
+            notification.setLastUpdatedAt(Instant.now());
 
             if (providerNotificationId != null) {
                 notification.setProviderNotificationId(providerNotificationId);
             }
 
             if (status == NotificationStatus.SENDING) {
-                notification.setSubmittedAt(LocalDateTime.now());
+                notification.setSubmittedAt(Instant.now());
             }
 
             notificationRepository.save(notification);
