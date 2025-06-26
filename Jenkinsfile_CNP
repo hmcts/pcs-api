@@ -123,11 +123,10 @@ def runE2eTests(String context) {
       allowMissing: true,
       alwaysLinkToLastBuild: true,
       keepAll: true,
-      reportDir: "src/e2eTest/playwright-report",
+      reportDir: "src/e2eTest/allure-report",
       reportFiles: 'index.html',
       reportName: 'EXUI E2E Test Report'
     ])
-    steps.archiveArtifacts allowEmptyArchive: true, artifacts: 'definitions/test/playwright-report/**'
   }
 }
 

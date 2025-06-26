@@ -160,10 +160,39 @@
   dependencies:
     undici-types "~6.21.0"
 
+allure-commandline@^2.34.1:
+  version "2.34.1"
+  resolved "https://registry.yarnpkg.com/allure-commandline/-/allure-commandline-2.34.1.tgz#cdc1361c0b1f85d917b72f80d7131fd7dbfddd11"
+  integrity sha512-l42csZ2bz7FdtJI1t5zA3IXtOZ0YJaP/+JMRC9gt6aBHRVUIu+6r+3F7KRyshQ79osLz9/MHlGqAjBPRqH0QFw==
+
+allure-js-commons@3.3.0, allure-js-commons@^3.3.0:
+  version "3.3.0"
+  resolved "https://registry.yarnpkg.com/allure-js-commons/-/allure-js-commons-3.3.0.tgz#2e7060bd3b82f34d9dc20c01cdae7c795b611dcf"
+  integrity sha512-EAIfpBFk6m7Q4KfyuAL3cAqVGv0dLWCT9359BmVGhO5ANKCwuU6U+DJBs3dLYo+MDUF7vlmwWPpvv4lAvdcVtA==
+  dependencies:
+    md5 "^2.3.0"
+
+allure-playwright@^3.3.0:
+  version "3.3.0"
+  resolved "https://registry.yarnpkg.com/allure-playwright/-/allure-playwright-3.3.0.tgz#5bcb6709126095b2d5762e5b1853069ce4ac2641"
+  integrity sha512-zzucWHfY63+oUS7peH9iLmZAHBwojg4mJl1W0rMCnUkCQNWMDMze24priEtaqGYwH5BITQp8Egv38I/UjMBR/A==
+  dependencies:
+    allure-js-commons "3.3.0"
+
 axe-core@~4.10.3:
   version "4.10.3"
   resolved "https://registry.npmjs.org/axe-core/-/axe-core-4.10.3.tgz"
   integrity sha512-Xm7bpRXnDSX2YE2YFfBk2FnF0ep6tmG7xPh8iHee8MIcrgq762Nkce856dYtJYLkuIoYZvGfTs/PbZhideTcEg==
+
+charenc@0.0.2:
+  version "0.0.2"
+  resolved "https://registry.yarnpkg.com/charenc/-/charenc-0.0.2.tgz#c0a1d2f3a7092e03774bfa83f14c0fc5790a8667"
+  integrity sha512-yrLQ/yVUFXkzg7EDQsPieE/53+0RlaWTs+wBrvW36cyilJ2SaDWfl4Yj7MtLTXleV9uEKefbAGUPv2/iWSooRA==
+
+crypt@0.0.2:
+  version "0.0.2"
+  resolved "https://registry.yarnpkg.com/crypt/-/crypt-0.0.2.tgz#88d7ff7ec0dfb86f713dc87bbb42d044d3e6c41b"
+  integrity sha512-mCxBlsHFYh9C+HVpiEacem8FEBnMXgU9gy4zmNC+SXAZNB/1idgp/aulFJ4FgCi7GPEVbfyng092GqL2k2rmow==
 
 debug@^4.1.1, debug@^4.4.0:
   version "4.4.1"
@@ -219,6 +248,20 @@ get-tsconfig@^4.7.5:
   integrity sha512-auHyJ4AgMz7vgS8Hp3N6HXSmlMdUyhSUrfBF16w153rxtLIEOE+HGqaBppczZvnHLqQJfiHotCYpNhl0lUROFQ==
   dependencies:
     resolve-pkg-maps "^1.0.0"
+
+is-buffer@~1.1.6:
+  version "1.1.6"
+  resolved "https://registry.yarnpkg.com/is-buffer/-/is-buffer-1.1.6.tgz#efaa2ea9daa0d7ab2ea13a97b2b8ad51fefbe8be"
+  integrity sha512-NcdALwpXkTm5Zvvbk7owOUSvVvBKDgKP5/ewfXEznmQFfs4ZRmanOeKBTjRVjka3QFoN6XJ+9F3USqfHqTaU5w==
+
+md5@^2.3.0:
+  version "2.3.0"
+  resolved "https://registry.yarnpkg.com/md5/-/md5-2.3.0.tgz#c3da9a6aae3a30b46b7b0c349b87b110dc3bda4f"
+  integrity sha512-T1GITYmFaKuO91vxyoQMFETst+O71VUPEU3ze5GNzDm0OWdP8v1ziTaAEPUr/3kLsY3Sftgz242A1SetQiDL7g==
+  dependencies:
+    charenc "0.0.2"
+    crypt "0.0.2"
+    is-buffer "~1.1.6"
 
 ms@^2.1.3:
   version "2.1.3"
