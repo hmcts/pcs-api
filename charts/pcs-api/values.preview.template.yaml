@@ -32,9 +32,9 @@ java:
     DOC_ASSEMBLY_URL: http://dg-docassembly-aat.service.core-compute-aat.internal
     IDAM_API_URL: https://idam-api.aat.platform.hmcts.net
     IDAM_S2S_AUTH_URL: http://rpe-service-auth-provider-aat.service.core-compute-aat.internal
-    PCS_IDAM_SYSTEM_USERNAME: <aat-system-user>
-    PCS_IDAM_SYSTEM_PASSWORD: <aat-system-user-password>
-    PCS_API_S2S_SECRET: <aat-s2s-secret>
+    PCS_IDAM_SYSTEM_USERNAME: ${PCS_IDAM_SYSTEM_USERNAME}
+    PCS_IDAM_SYSTEM_PASSWORD: ${PCS_IDAM_SYSTEM_PASSWORD}
+    PCS_API_S2S_SECRET: ${PCS_API_S2S_SECRET}
   secrets:
     PCS_DB_PASSWORD:
       secretRef: "{{ .Values.global.postgresSecret }}"
@@ -42,5 +42,4 @@ java:
   postgresql:
     enabled: true
     image:
-      tag: '16.0.0'
-
+      tag: "16.0.0"
