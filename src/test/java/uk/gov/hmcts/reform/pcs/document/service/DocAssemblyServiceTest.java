@@ -13,6 +13,7 @@ import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.pcs.idam.IdamService;
 import uk.gov.hmcts.reform.pcs.testingsupport.model.DocAssemblyRequest;
 
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -75,7 +76,9 @@ class DocAssemblyServiceTest {
         verify(docAssemblyApi).generateDocument(eq(SYSTEM_USER_TOKEN), eq(SERVICE_AUTH_TOKEN), requestCaptor.capture());
         
         DocAssemblyRequest capturedRequest = requestCaptor.getValue();
-        assertThat(capturedRequest.getTemplateId()).isEqualTo("CV-SPC-CLM-ENG-01356.docx");
+        assertThat(capturedRequest.getTemplateId()).isEqualTo(
+            Base64.getEncoder().encodeToString("CV-SPC-CLM-ENG-01356.docx".getBytes())
+        );
         assertThat(capturedRequest.getOutputType()).isEqualTo("PDF");
         assertThat(capturedRequest.getFormPayload()).isEqualTo(formPayload);
     }
@@ -101,7 +104,9 @@ class DocAssemblyServiceTest {
         verify(docAssemblyApi).generateDocument(eq(SYSTEM_USER_TOKEN), eq(SERVICE_AUTH_TOKEN), requestCaptor.capture());
         
         DocAssemblyRequest capturedRequest = requestCaptor.getValue();
-        assertThat(capturedRequest.getTemplateId()).isEqualTo("custom-template.docx");
+        assertThat(capturedRequest.getTemplateId()).isEqualTo(
+            Base64.getEncoder().encodeToString("custom-template.docx".getBytes())
+        );
         assertThat(capturedRequest.getOutputType()).isEqualTo("DOCX");
         assertThat(capturedRequest.getFormPayload()).isEqualTo(formPayload);
     }
@@ -127,7 +132,9 @@ class DocAssemblyServiceTest {
         verify(docAssemblyApi).generateDocument(eq(SYSTEM_USER_TOKEN), eq(SERVICE_AUTH_TOKEN), requestCaptor.capture());
         
         DocAssemblyRequest capturedRequest = requestCaptor.getValue();
-        assertThat(capturedRequest.getTemplateId()).isEqualTo("CV-SPC-CLM-ENG-01356.docx");
+        assertThat(capturedRequest.getTemplateId()).isEqualTo(
+            Base64.getEncoder().encodeToString("CV-SPC-CLM-ENG-01356.docx".getBytes())
+        );
     }
 
     @ParameterizedTest
@@ -173,7 +180,9 @@ class DocAssemblyServiceTest {
         verify(docAssemblyApi).generateDocument(eq(SYSTEM_USER_TOKEN), eq(SERVICE_AUTH_TOKEN), requestCaptor.capture());
         
         DocAssemblyRequest capturedRequest = requestCaptor.getValue();
-        assertThat(capturedRequest.getTemplateId()).isEqualTo("existing-template.docx");
+        assertThat(capturedRequest.getTemplateId()).isEqualTo(
+            Base64.getEncoder().encodeToString("existing-template.docx".getBytes())
+        );
     }
 
     @Test

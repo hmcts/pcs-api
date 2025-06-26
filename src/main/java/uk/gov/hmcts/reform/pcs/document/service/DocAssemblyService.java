@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.pcs.testingsupport.model.DocAssemblyRequest;
 import uk.gov.hmcts.reform.pcs.idam.IdamService;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
+import java.util.Base64;
 
 @Slf4j
 @Service
@@ -36,6 +37,11 @@ public class DocAssemblyService {
         if (request.getOutputType() == null || request.getOutputType().trim().isEmpty()) {
             request.setOutputType("PDF");
         }
+        
+        // Encode template ID to base64 as required by Doc Assembly service
+        String encodedTemplateId = Base64.getEncoder().encodeToString(request.getTemplateId().getBytes());
+        request.setTemplateId(encodedTemplateId);
+        
         String authorization = idamService.getSystemUserAuthorisation();
         String serviceAuthorization = authTokenGenerator.generate();
         return docAssemblyApi.generateDocument(
