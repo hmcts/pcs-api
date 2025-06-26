@@ -3,6 +3,8 @@ package uk.gov.hmcts.reform.pcs.testingsupport.endpoint;
 import com.github.kagkarlsson.scheduler.SchedulerClient;
 import com.github.kagkarlsson.scheduler.task.Task;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -70,16 +72,25 @@ public class TestingSupportController {
         }
     }
 
-    @Operation(summary = "Generate a document using Doc Assembly API")
+    @Operation(
+        summary = "Generate a document using Doc Assembly API",
+        security = {
+            @SecurityRequirement(name = "AuthorizationToken"),
+            @SecurityRequirement(name = "ServiceAuthorization")
+        }
+    )
     @PostMapping(value = "/generate-document", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<String> generateDocument(
+        @Parameter(description = "Bearer token", required = true)
+        @RequestHeader(value = "Authorization") String authorization,
+        @Parameter(description = "S2S token", required = true)
+        @RequestHeader(value = "ServiceAuthorization") String serviceAuthorization,
         @RequestBody DocAssemblyRequest request
     ) {
         try {
             if (request.getFormPayload() == null) {
                 return ResponseEntity.badRequest().body("formPayload is required");
             }
-            
             String documentUrl = docAssemblyService.generateDocument(request);
             return ResponseEntity.created(URI.create(documentUrl)).body(documentUrl);
         } catch (Exception e) {
