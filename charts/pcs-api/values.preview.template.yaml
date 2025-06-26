@@ -29,7 +29,7 @@ java:
     SPRING_LOGGING_LEVEL_ROOT: "DEBUG"
     ENABLE_TESTING_SUPPORT: true
     DB_SCHEDULER_EXECUTOR_ENABLED: true
-    DOC_ASSEMBLY_URL: http://dg-docassembly-preview.service.core-compute-preview.internal
+    DOC_ASSEMBLY_URL: http://dg-docassembly-aat.service.core-compute-aat.internal
   secrets:
     PCS_DB_PASSWORD:
       secretRef: "{{ .Values.global.postgresSecret }}"
