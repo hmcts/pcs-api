@@ -130,7 +130,7 @@ def runE2eTests(String context) {
       reportFiles: 'index.html',
       reportName: 'EXUI E2E Test Report'
     ])
-    steps.archiveArtifacts allowEmptyArchive: true, artifacts: 'definitions/test/allure-report/**'
+    archiveArtifacts allowEmptyArchive: true, artifacts: 'src/e2eTest/allure-report/*'
   }
 }
 
