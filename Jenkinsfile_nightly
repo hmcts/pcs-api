@@ -52,10 +52,6 @@ def runE2ETestsForBrowser(String browser) {
         reportFiles: 'index.html',
         reportName: "Full EXUI E2E Test Report"
       ])
-      steps.archiveArtifacts(
-        allowEmptyArchive: true,
-        artifacts: 'definitions/test/allure-report/**'
-      )
     }
   }
 }
