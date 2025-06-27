@@ -1,0 +1,15 @@
+{
+  "name": "postcode-to-epims",
+  "version": "1.0.0",
+  "description": "A script to convert a postcode to court ePIMS CSV into SQL insert statements",
+  "main": "src/index.js",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "generate-sql": "node src/index.js"
+  },
+  "dependencies": {
+    "csv-parse": "^5.6.0",
+    "luxon": "^3.6.1"
+  }
+}
