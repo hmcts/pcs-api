@@ -10,7 +10,9 @@ import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.renderer.NextStepsRenderer;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
+import uk.gov.hmcts.reform.pcs.ccd.service.DraftEventService;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 
 import java.util.Optional;
@@ -29,12 +31,16 @@ class CCDCaseRepositoryTest {
     private PcsCaseRepository pcsCaseRepository;
     @Mock
     private ModelMapper modelMapper;
+    @Mock
+    private DraftEventService draftEventService;
+    @Mock
+    private NextStepsRenderer nextStepsRenderer;
 
     private CCDCaseRepository underTest;
 
     @BeforeEach
     void setUp() {
-        underTest = new CCDCaseRepository(pcsCaseRepository, modelMapper);
+        underTest = new CCDCaseRepository(pcsCaseRepository, modelMapper, draftEventService, nextStepsRenderer);
     }
 
     @Test

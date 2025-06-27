@@ -251,12 +251,7 @@ sonarqube {
       "**/*Constants.java," +
       "**/model/*.java," +
       "**/uk/gov/hmcts/reform/pcs/Application.java," +
-      "**/uk/gov/hmcts/reform/pcs/ccd/CaseType.java," +
-      "**/uk/gov/hmcts/reform/pcs/ccd/accesscontrol/**/*.java," +
-      "**/uk/gov/hmcts/reform/pcs/ccd/config/HighLevelDataSetupApp.java," +
-      "**/uk/gov/hmcts/reform/pcs/ccd/domain/**/*.java," +
-      "**/uk/gov/hmcts/reform/pcs/ccd/entity/**/*.java" +
-      "**/entities/**," + "**/model/**"
+      "**/uk/gov/hmcts/reform/pcs/**/*.java"
   }
 }
 
@@ -327,6 +322,7 @@ dependencies {
   implementation group: 'org.projectlombok', name: 'lombok', version: lombokVersion
   implementation group: 'io.vavr', name: 'vavr', version: '0.10.6'
   implementation group: 'com.github.kagkarlsson', name: 'db-scheduler-spring-boot-starter', version: '15.6.0'
+  implementation group: 'io.pebbletemplates', name: 'pebble-spring-boot-starter', version: '3.2.4'
   annotationProcessor group: 'org.projectlombok', name: 'lombok', version: lombokVersion
 
   testImplementation group: 'io.rest-assured', name: 'rest-assured', version: '5.5.5'
@@ -417,6 +413,7 @@ tasks.withType(CftlibExec).configureEach {
   environment 'POC_APIS_URL', 'http://localhost:3206'
   environment 'SPRING_FLYWAY_ENABLED', 'true'
   environment 'SPRING_PROFILES_ACTIVE', 'dev'
+  environment 'XUI_JURISDICTIONS', 'PCS'
 }
 
 tasks.register('highLevelDataSetup', JavaExec) {

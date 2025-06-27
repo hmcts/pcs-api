@@ -2,13 +2,15 @@ package uk.gov.hmcts.reform.pcs.idam;
 
 import com.nimbusds.oauth2.sdk.util.StringUtils;
 import feign.FeignException;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
-import uk.gov.hmcts.reform.pcs.exception.InvalidAuthTokenException;
-import org.springframework.beans.factory.annotation.Value;
 import uk.gov.hmcts.reform.idam.client.models.TokenResponse;
 import uk.gov.hmcts.reform.pcs.exception.IdamException;
+import uk.gov.hmcts.reform.pcs.exception.InvalidAuthTokenException;
 
 @Service
 @Slf4j
@@ -18,14 +20,17 @@ public class IdamService {
     private final IdamClient idamClient;
     private final String idamSystemUsername;
     private final String idamSystemPassword;
+    private final HttpServletRequest httpServletRequest;
 
     public IdamService(IdamClient idamClient,
                        @Value("${idam.system-user.username}") String idamSystemUsername,
-                       @Value("${idam.system-user.password}") String idamSystemPassword) {
+                       @Value("${idam.system-user.password}") String idamSystemPassword,
+                       HttpServletRequest httpServletRequest) {
 
         this.idamClient = idamClient;
         this.idamSystemUsername = idamSystemUsername;
         this.idamSystemPassword = idamSystemPassword;
+        this.httpServletRequest = httpServletRequest;
     }
 
     public User validateAuthToken(String authorisation) {
@@ -60,6 +65,12 @@ public class IdamService {
     public String getSystemUserAuthorisation() {
         TokenResponse accessTokenResponse = getAccessTokenResponse();
         return BEARER_PREFIX + accessTokenResponse.idToken;
+    }
+
+    // For a non-POC we might cache these results in a short lived local cache
+    public User getCurrentUser() {
+        String authorisation = httpServletRequest.getHeader(HttpHeaders.AUTHORIZATION);
+        return authorisation != null ? retrieveUser(authorisation) : null;
     }
 
     private TokenResponse getAccessTokenResponse() {
