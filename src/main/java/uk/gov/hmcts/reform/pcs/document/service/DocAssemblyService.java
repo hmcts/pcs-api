@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.pcs.document.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import feign.FeignException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.pcs.testingsupport.model.DocAssemblyRequest;
@@ -51,13 +52,13 @@ public class DocAssemblyService {
         String authorization = idamService.getSystemUserAuthorisation();
         String serviceAuthorization = authTokenGenerator.generate();
         
-        String response = docAssemblyApi.generateDocument(
-            authorization,
-            serviceAuthorization,
-            request
-        );
-        
         try {
+            String response = docAssemblyApi.generateDocument(
+                authorization,
+                serviceAuthorization,
+                request
+            );
+            
             // Parse the JSON response to extract the document URL
             JsonNode jsonNode = objectMapper.readTree(response);
             JsonNode renditionOutputLocationNode = jsonNode.get("renditionOutputLocation");
@@ -71,11 +72,42 @@ public class DocAssemblyService {
             }
             log.info("Document generated successfully. URL: {}", documentUrl);
             return documentUrl;
+        } catch (FeignException e) {
+            handleFeignException(e);
+            throw new DocAssemblyException("Unexpected error occurred during document generation", e);
         } catch (DocAssemblyException e) {
             throw e;
         } catch (Exception e) {
-            log.error("Failed to parse Doc Assembly response: {}", response, e);
+            log.error("Failed to parse Doc Assembly response", e);
             throw new DocAssemblyException("Failed to parse Doc Assembly response", e);
+        }
+    }
+    
+    private void handleFeignException(FeignException e) {
+        int status = e.status();
+        String message = e.getMessage();
+        
+        log.error("Doc Assembly API call failed with status {}: {}", status, message, e);
+        
+        switch (status) {
+            case 400:
+                throw new DocAssemblyException("Bad request to Doc Assembly service: " + message, e);
+            case 401:
+            case 403:
+                throw new DocAssemblyException("Authorization failed for Doc Assembly service: " + message, e);
+            case 404:
+                throw new DocAssemblyException("Doc Assembly service endpoint not found: " + message, e);
+            case 500:
+            case 502:
+            case 503:
+            case 504:
+                throw new DocAssemblyException("Doc Assembly service is temporarily unavailable: " + message, e);
+            default:
+                if (status >= 500) {
+                    throw new DocAssemblyException("Doc Assembly service error: " + message, e);
+                } else {
+                    throw new DocAssemblyException("Doc Assembly service request failed: " + message, e);
+                }
         }
     }
 } 

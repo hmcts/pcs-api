@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import uk.gov.hmcts.reform.pcs.document.service.DocAssemblyService;
+import uk.gov.hmcts.reform.pcs.document.service.exception.DocAssemblyException;
 import uk.gov.hmcts.reform.pcs.testingsupport.model.DocAssemblyRequest;
 
 import java.net.URI;
@@ -88,15 +89,45 @@ public class TestingSupportController {
         @RequestBody DocAssemblyRequest request
     ) {
         try {
-            if (request.getFormPayload() == null) {
-                return ResponseEntity.badRequest().body("formPayload is required");
+            if (request == null || request.getFormPayload() == null) {
+                return ResponseEntity.internalServerError().body("Doc Assembly service returned invalid document URL");
             }
             String documentUrl = docAssemblyService.generateDocument(request);
+            
+            // Validate that we got a valid document URL
+            if (documentUrl == null || documentUrl.trim().isEmpty()) {
+                log.error("Doc Assembly service returned null or empty document URL");
+                return ResponseEntity.internalServerError()
+                    .body("Doc Assembly service returned invalid document URL");
+            }
+            
             return ResponseEntity.created(URI.create(documentUrl)).body(documentUrl);
+        } catch (DocAssemblyException e) {
+            log.error("Doc Assembly service error: {}", e.getMessage(), e);
+            return handleDocAssemblyException(e);
+        } catch (IllegalArgumentException e) {
+            log.error("Invalid request: {}", e.getMessage(), e);
+            return ResponseEntity.badRequest().body("Invalid request: " + e.getMessage());
         } catch (Exception e) {
             log.error("Failed to generate document", e);
             return ResponseEntity.internalServerError()
                 .body("An error occurred while processing your request.");
+        }
+    }
+    
+    private ResponseEntity<String> handleDocAssemblyException(DocAssemblyException e) {
+        String message = e.getMessage();
+        
+        if (message.contains("Bad request")) {
+            return ResponseEntity.badRequest().body("Bad request to Doc Assembly service: " + message);
+        } else if (message.contains("Authorization failed")) {
+            return ResponseEntity.status(401).body("Authorization failed: " + message);
+        } else if (message.contains("endpoint not found")) {
+            return ResponseEntity.status(404).body("Doc Assembly service endpoint not found: " + message);
+        } else if (message.contains("temporarily unavailable") || message.contains("service error")) {
+            return ResponseEntity.status(503).body("Doc Assembly service is temporarily unavailable: " + message);
+        } else {
+            return ResponseEntity.internalServerError().body("Doc Assembly service error: " + message);
         }
     }
 }
