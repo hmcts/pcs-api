@@ -60,15 +60,19 @@ public class DocAssemblyService {
         try {
             // Parse the JSON response to extract the document URL
             JsonNode jsonNode = objectMapper.readTree(response);
-            String documentUrl = jsonNode.get("renditionOutputLocation").asText();
-            
+            JsonNode renditionOutputLocationNode = jsonNode.get("renditionOutputLocation");
+            String documentUrl = null;
+            if (renditionOutputLocationNode != null && !renditionOutputLocationNode.isNull()) {
+                documentUrl = renditionOutputLocationNode.asText();
+            }
             if (documentUrl == null || documentUrl.isEmpty()) {
-                log.error("No renditionOutputLocation found in Doc Assembly response: {}", response);
+                log.error("No or empty renditionOutputLocation found in Doc Assembly response: {}", response);
                 throw new DocAssemblyException("No document URL returned from Doc Assembly service");
             }
-            
             log.info("Document generated successfully. URL: {}", documentUrl);
             return documentUrl;
+        } catch (DocAssemblyException e) {
+            throw e;
         } catch (Exception e) {
             log.error("Failed to parse Doc Assembly response: {}", response, e);
             throw new DocAssemblyException("Failed to parse Doc Assembly response", e);
