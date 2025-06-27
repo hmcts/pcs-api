@@ -48,15 +48,15 @@ class IdamServiceTest {
     @Test
     @DisplayName("Should get the ID token for the system user")
     void shouldGetSystemUserToken() {
-        String expectedIdToken = "some id token";
-        TokenResponse tokenResponse = new TokenResponse("some access token", "expires",
-                expectedIdToken, "some refresh token",
+        String expectedAccessToken = "some access token";
+        TokenResponse tokenResponse = new TokenResponse(expectedAccessToken, "expires",
+                "some id token", "some refresh token",
                 "some scope", "some token type");
 
         given(idamClient.getAccessTokenResponse(SYSTEM_USERNAME, SYSTEM_PASSWORD)).willReturn(tokenResponse);
         String systemUserToken = underTest.getSystemUserAuthorisation();
 
-        assertThat(systemUserToken).isEqualTo("Bearer %s", expectedIdToken);
+        assertThat(systemUserToken).isEqualTo("Bearer %s", expectedAccessToken);
     }
 
     @Test
