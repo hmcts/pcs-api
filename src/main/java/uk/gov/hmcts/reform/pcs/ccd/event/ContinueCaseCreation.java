@@ -53,7 +53,7 @@ public class ContinueCaseCreation implements CCDConfig<PCSCase, State, UserRole>
             .forStateTransition(PARTIALLY_CREATED, AWAITING_SUBMISSION_TO_HMCTS)
             .name("Make a claim")
             .showCondition(NEVER_SHOW)
-            .grant(Permission.CRUD, UserRole.HOUSING_PROVIDER)
+            .grant(Permission.CRUD, UserRole.PCS_CASE_WORKER, UserRole.HOUSING_PROVIDER)
             .showSummary()
             .endButtonLabel("Submit your claim details")
             .fields()
