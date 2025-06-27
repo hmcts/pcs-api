@@ -4,6 +4,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.CCDDefinitionGenerator;
+import uk.gov.hmcts.reform.pcs.ccd.GeneralApplicationCaseType;
 import uk.gov.hmcts.reform.pcs.ccd.PCSCaseType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.rse.ccd.lib.api.CFTLib;
@@ -17,7 +18,7 @@ import java.util.Map;
  * Configures the CFTLib with the required users, roles and CCD definitions.
  * The Cftlib will find and execute this configuration class once all services are ready.
  */
-@Import(PCSCaseType.class)
+@Import({PCSCaseType.class, GeneralApplicationCaseType.class})
 @Component
 public class CftlibConfig implements CFTLibConfigurer {
 
@@ -51,6 +52,6 @@ public class CftlibConfig implements CFTLibConfigurer {
 
         // Import CCD definitions
         lib.importJsonDefinition(new File("build/definitions/" + PCSCaseType.getCaseType()));
-        //lib.importJsonDefinition(new File("build/definitions/GENERALAPPLICATION"));
+        lib.importJsonDefinition(new File("build/definitions/" + GeneralApplicationCaseType.getCaseType()));
     }
 }

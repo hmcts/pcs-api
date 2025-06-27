@@ -1,6 +1,5 @@
 package uk.gov.hmcts.reform.pcs.ccd.event;
 
-import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CCDConfig;
@@ -15,10 +14,9 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PCS;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PCSCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.PCSCaseService;
 
-@Slf4j
 @Component
 public class CreateTestCase implements CCDConfig<PCSCase, State, UserRole> {
-    
+
     private final PCSCaseRepository pcsRepository;
     private final PCSCaseService pcsCaseService;
     private final ModelMapper modelMapper;

@@ -316,7 +316,7 @@ dependencies {
   implementation 'io.pebbletemplates:pebble-spring-boot-starter:3.2.2'
 
   implementation group: 'com.github.hmcts.java-logging', name: 'logging', version: '6.1.9'
-  implementation group: 'com.github.hmcts', name: 'core-case-data-store-client', version: '5.1.0'
+  implementation group: 'com.github.hmcts', name: 'core-case-data-store-client', version: '5.1.1'
   implementation group: 'com.github.hmcts', name: 'idam-java-client', version: '3.0.4'
 
   implementation group: 'org.apache.logging.log4j', name: 'log4j-api', version: log4JVersion
@@ -419,6 +419,7 @@ tasks.withType(CftlibExec).configureEach {
   environment 'SPRING_PROFILES_ACTIVE', 'dev'
   environment 'RSE_LIB_ADDITIONAL_DATABASES', 'pcs'
   environment 'POC_APIS_URL', 'http://localhost:3206'
+  environment 'XUI_JURISDICTIONS', 'PCS'
 }
 
 tasks.register('highLevelDataSetup', JavaExec) {

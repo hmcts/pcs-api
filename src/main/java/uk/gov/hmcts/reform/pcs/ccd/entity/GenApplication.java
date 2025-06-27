@@ -33,7 +33,7 @@ public class GenApplication {
 
     @Column(unique = true, nullable = false)
     private String applicationId;
-    
+
     private String adjustment;
 
     private String additionalInformation;

@@ -26,5 +26,4 @@ public class GeneralApplication {
     @CCD(label = "status")
     private State status;
 
-
 }

@@ -11,10 +11,10 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.PCSCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.GeneralApplicationService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PCSCaseService;
 
-import java.util.List;
+import java.util.Optional;
 
 @Component
-public class CCDCaseRepository extends DecentralisedCaseRepository<PCSCase> {
+public class CCDCaseRepository extends DecentralisedCaseRepository<Object> {
 
     private final PCSCaseRepository pcsCaseRepository;
     private final GeneralApplicationRepository generalApplicationRepository;
@@ -34,25 +34,23 @@ public class CCDCaseRepository extends DecentralisedCaseRepository<PCSCase> {
     }
 
     @Override
-    public PCSCase getCase(long caseRef) {
-        PCS pcsEntity = loadCaseData(caseRef);
-
-        PCSCase pcsCase = pcsCaseService.convertToPCSCase(pcsEntity);
-        pcsCase.setGeneralApplicationsSummaryMarkdown(genAppRenderer.render(pcsCase.getGeneralApplications(), caseRef));
-        return pcsCase;
+    public Object getCase(long caseRef) {
+        // Try PCS first
+        Optional<PCS> pcs = pcsCaseRepository.findByCcdCaseReference(caseRef);
+        if (pcs.isPresent()) {
+            PCSCase pcsCase = pcsCaseService.convertToPCSCase(pcs.get());
+            pcsCase.setGeneralApplicationsSummaryMarkdown(genAppRenderer.render(
+                pcsCase.getGeneralApplications(),
+                caseRef
+            ));
+            return pcsCase;
+        }
+        // Else try GA
+        Optional<GenApplication> ga = generalApplicationRepository.findByApplicationId(String.valueOf(caseRef));
+        if (ga.isPresent()) {
+            return generalApplicationService.convertToGA(ga.get());
+        }
+        return pcs;
     }
-
-    private PCS loadCaseData(long caseRef) {
-        return pcsCaseRepository.findByCcdCaseReference(caseRef)
-                .orElseThrow(() -> new IllegalStateException("Parent case not found"));
-    }
-
-    private static void populateGALists(PCS pcsCase, List<GenApplication> applications) {
-        // maybe extra logic is needed
-        pcsCase.getGeneralApplications().clear();
-        pcsCase.getGeneralApplications().addAll(applications);
-    }
-
-
 
 }

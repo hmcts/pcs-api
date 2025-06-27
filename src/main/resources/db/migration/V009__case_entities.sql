@@ -19,7 +19,7 @@ CREATE TABLE address (
 CREATE TABLE gen_application (
                                id UUID PRIMARY KEY,
                                application_id TEXT,
-                               parent_case_id UUID NOT NULL REFERENCES pcs(id),
+                               parent_case_id UUID REFERENCES pcs(id),
                                adjustment TEXT,
                                additional_information TEXT,
                                status VARCHAR(255)

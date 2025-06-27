@@ -66,12 +66,15 @@ public class DeleteDraftGeneralApplication implements CCDConfig<PCSCase, State, 
         }
         gaRepository.deleteByApplicationId(genAppIdToDelete);
         PCS parentCase = pcsRepository.findByCcdCaseReference(caseReference)
-            .orElseThrow(() -> new IllegalStateException("Parent case not found"));
+            .orElseThrow(() -> new IllegalStateException("Pcs case not found"));
+
         if (parentCase.getGeneralApplications() != null) {
             parentCase.getGeneralApplications().removeIf(ga -> genAppIdToDelete.equals(ga.getApplicationId()));
         }
         pcsRepository.save(parentCase);
         if (pcsCase.getGeneralApplications() != null) {
+
+
             pcsCase.getGeneralApplications().removeIf(ga -> genAppIdToDelete.equals(ga.getValue().getApplicationId()));
         }
         pcsCase.setGeneralApplicationToDelete(null);
