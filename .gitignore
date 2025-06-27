@@ -47,3 +47,5 @@ applicationinsights-agent-*.jar
 /target/
 /pacts/
 /cftlib_log_file_IS_UNDEFINED
+
+node_modules
