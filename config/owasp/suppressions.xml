@@ -12,6 +12,7 @@
     <cve>CVE-2023-36414</cve>
     <cve>CVE-2023-36415</cve>
     <cve>CVE-2024-35255</cve>
+    <cve>CVE-2025-1686</cve> <!-- Pebble Templates -->
   </suppress>
   <!--End of false positives section -->
 </suppressions>

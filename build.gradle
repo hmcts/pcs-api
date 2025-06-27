@@ -251,9 +251,7 @@ sonarqube {
       "**/*Constants.java," +
       "**/model/*.java," +
       "**/uk/gov/hmcts/reform/pcs/Application.java," +
-      "**/uk/gov/hmcts/reform/pcs/ccd/CaseType.java," +
-      "**/uk/gov/hmcts/reform/pcs/ccd/accesscontrol/**/*.java," +
-      "**/uk/gov/hmcts/reform/pcs/ccd/config/HighLevelDataSetupApp.java," +
+      "**/uk/gov/hmcts/reform/pcs/ccd/**/*.java" +
       "**/uk/gov/hmcts/reform/pcs/ccd/domain/**/*.java," +
       "**/uk/gov/hmcts/reform/pcs/ccd/entity/**/*.java"
   }
