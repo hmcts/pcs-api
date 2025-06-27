@@ -4,7 +4,7 @@ import uk.gov.hmcts.rse.CftlibExec
 
 buildscript {
   ext {
-    flywayVersion = '11.9.1'
+    flywayVersion = '11.10.0'
     serenityBddVersion = '4.2.33'
   }
   dependencies {
@@ -306,7 +306,7 @@ dependencies {
   implementation group: 'uk.gov.service.notify', name: 'notifications-java-client', version: '5.2.1-RELEASE'
   implementation platform(group: 'com.azure.spring', name :'spring-cloud-azure-dependencies', version :'5.22.0')
   implementation "com.azure.spring:spring-cloud-azure-starter-servicebus-jms"
-  implementation group: 'org.modelmapper', name: 'modelmapper', version: '3.2.3'
+  implementation group: 'org.modelmapper', name: 'modelmapper', version: '3.2.4'
 
   implementation group: 'com.github.hmcts.java-logging', name: 'logging', version: '6.1.9'
   implementation group: 'com.github.hmcts', name: 'core-case-data-store-client', version: '5.1.1'
