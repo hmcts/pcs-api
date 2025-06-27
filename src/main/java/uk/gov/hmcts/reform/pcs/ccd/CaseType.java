@@ -3,12 +3,16 @@ package uk.gov.hmcts.reform.pcs.ccd;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CCDConfig;
 import uk.gov.hmcts.ccd.sdk.api.ConfigBuilder;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 
 import static java.lang.System.getenv;
 import static java.util.Optional.ofNullable;
+import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
+import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.stateIs;
+import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.stateIsNot;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.State.PARTIALLY_CREATED;
 
 /**
  * Setup some common possessions case type configuration.
@@ -63,17 +67,24 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
             .field(PCSCase::getApplicantSurname, surnameLabel);
         builder.workBasketResultFields()
             .caseReferenceField()
-            .field(PCSCase::getApplicantForename, forenameLabel)
-            .field(PCSCase::getApplicantSurname, surnameLabel);
+            .stateField();
+
+        builder.tab("finishCaseCreation", "Next Steps")
+            .showCondition(stateIs(PARTIALLY_CREATED))
+            .label("nextStepsLabel", null, "${nextSteps}")
+            .field("nextSteps", NEVER_SHOW);
 
         builder.tab("claimantInformation", "Claimant Details")
+            .showCondition(stateIsNot(PARTIALLY_CREATED))
             .field(PCSCase::getApplicantForename)
             .field(PCSCase::getApplicantSurname);
 
         builder.tab("summary", "Property Details")
+            .showCondition(stateIsNot(PARTIALLY_CREATED))
             .field(PCSCase::getPropertyAddress);
 
         builder.tab("CaseHistory", "History")
+            .showCondition(stateIsNot(PARTIALLY_CREATED))
             .field("caseHistory");
 
     }

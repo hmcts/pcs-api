@@ -2,13 +2,13 @@ package uk.gov.hmcts.reform.pcs.idam;
 
 
 import feign.FeignException;
+import jakarta.servlet.http.HttpServletRequest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.NullAndEmptySource;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
@@ -36,13 +36,14 @@ class IdamServiceTest {
 
     @Mock
     private IdamClient idamClient;
+    @Mock
+    private HttpServletRequest httpServletResponse;
 
-    @InjectMocks
     private IdamService underTest;
 
     @BeforeEach
     void setUp() {
-        underTest = new IdamService(idamClient, SYSTEM_USERNAME, SYSTEM_PASSWORD);
+        underTest = new IdamService(idamClient, SYSTEM_USERNAME, SYSTEM_PASSWORD, httpServletResponse);
     }
 
     @Test

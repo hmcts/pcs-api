@@ -40,6 +40,7 @@ public class CftlibConfig implements CFTLibConfigurer {
 
         var users = Map.of(
             "caseworker@pcs.com", List.of("caseworker", "caseworker-pcs"),
+            "housing-provider@pcs.com", List.of("caseworker", "caseworker-pcs", "housing-provider"),
             "citizen@pcs.com", List.of("citizen"),
             "data.store.idam.system.user@gmail.com", List.of()
         );
@@ -47,7 +48,7 @@ public class CftlibConfig implements CFTLibConfigurer {
         // Create users and roles including in idam simulator
         for (var entry : users.entrySet()) {
             lib.createIdamUser(entry.getKey(), entry.getValue().toArray(new String[0]));
-            lib.createProfile(entry.getKey(), "CIVIL", "PCS", State.CASE_ISSUED.name());
+            lib.createProfile(entry.getKey(), "PCS", "PCS", State.CASE_ISSUED.name());
         }
 
         createAccessProfiles(lib);

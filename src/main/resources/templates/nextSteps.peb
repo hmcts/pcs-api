@@ -1,0 +1,10 @@
+<h2 class="govuk-heading-m">Please provide some more details about your claim</h2>
+
+<p class="govuk-body">Your answers will be saved as you go along so you may leave the process
+at any stage and return to it later.
+</p>
+<br>
+<br>
+<a href="/cases/case-details/${[CASE_REFERENCE]}/trigger/{{continueEvent}}" role="button" class="govuk-button">
+  {% if draftExists %}Resume{% else %}Continue{% endif %}
+</a>

@@ -15,8 +15,14 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenAccess;
 public enum State {
 
     @CCD(
+        label = "Partially Created",
+        access = {CaseworkerAccess.class}
+    )
+    PARTIALLY_CREATED,
+
+    @CCD(
         label = "Awaiting Submission to HMCTS",
-        access = {CitizenAccess.class}
+        access = {CitizenAccess.class, CaseworkerAccess.class}
     )
     AWAITING_SUBMISSION_TO_HMCTS,
 
