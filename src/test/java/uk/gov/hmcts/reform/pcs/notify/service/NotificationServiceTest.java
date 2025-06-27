@@ -10,13 +10,15 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.dao.DataAccessException;
-import uk.gov.hmcts.reform.pcs.notify.domain.CaseNotification;
+import uk.gov.hmcts.reform.pcs.notify.entities.CaseNotification;
 import uk.gov.hmcts.reform.pcs.notify.exception.NotificationException;
 import uk.gov.hmcts.reform.pcs.notify.model.EmailNotificationRequest;
 import uk.gov.hmcts.reform.pcs.notify.model.EmailNotificationResponse;
 import uk.gov.hmcts.reform.pcs.notify.model.NotificationStatus;
 import uk.gov.hmcts.reform.pcs.notify.repository.NotificationRepository;
 
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -24,6 +26,8 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.within;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThatCode;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -287,6 +291,43 @@ class NotificationServiceTest {
 
             assertThat(service).isNotNull();
         }
+    }
+
+    @Test
+    @DisplayName("Should set submittedAt when status is SENDING")
+    void shouldSetSubmittedAtWhenStatusIsSending() {
+        CaseNotification notification = createCaseNotification();
+        notification.setSubmittedAt(null);
+
+        when(notificationRepository.findById(NOTIFICATION_ID)).thenReturn(Optional.of(notification));
+        when(notificationRepository.save(any(CaseNotification.class))).thenReturn(notification);
+
+        notificationService.updateNotificationStatus(NOTIFICATION_ID, "SENDING");
+
+        verify(notificationRepository).findById(NOTIFICATION_ID);
+
+        ArgumentCaptor<CaseNotification> notificationCaptor = ArgumentCaptor.forClass(CaseNotification.class);
+        verify(notificationRepository).save(notificationCaptor.capture());
+
+        CaseNotification savedNotification = notificationCaptor.getValue();
+        assertThat(savedNotification.getSubmittedAt()).isNotNull();
+        assertThat(savedNotification.getSubmittedAt()).isCloseTo(Instant.now(), within(1, ChronoUnit.SECONDS));
+    }
+
+    @Test
+    @DisplayName("Should handle exception when saving notification status update")
+    void shouldHandleExceptionWhenSavingNotificationStatusUpdate() {
+        CaseNotification notification = createCaseNotification();
+
+        when(notificationRepository.findById(NOTIFICATION_ID)).thenReturn(Optional.of(notification));
+        when(notificationRepository.save(any(CaseNotification.class)))
+            .thenThrow(new DataAccessException("Database error") {});
+
+        assertThatCode(() -> notificationService.updateNotificationStatus(NOTIFICATION_ID, STATUS_STRING))
+            .doesNotThrowAnyException();
+
+        verify(notificationRepository).findById(NOTIFICATION_ID);
+        verify(notificationRepository).save(any(CaseNotification.class));
     }
 
     private EmailNotificationRequest createValidEmailRequest() {
