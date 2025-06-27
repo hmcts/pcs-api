@@ -3,6 +3,8 @@
 !gradle/wrapper/gradle-wrapper.jar
 *.class
 bin/main/application.yaml
+bin/
+BOOT-INF/
 
 ### STS ###
 .apt_generated

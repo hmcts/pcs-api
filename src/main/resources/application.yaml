@@ -125,3 +125,8 @@ db-scheduler:
   executor-enabled: ${DB_SCHEDULER_EXECUTOR_ENABLED:true}
   polling-interval-seconds: 10
   threads: 10
+
+doc-assembly:
+  url: ${DOC_ASSEMBLY_URL:http://localhost:8080}
+  s2s-authorised:
+    services: pcs_api,ccd_data,ccd_gw,ccd_case_document_am_api,ccd_definition,ccd_admin,ccd_ps,ccd

@@ -32,6 +32,13 @@ public class OpenAPIConfiguration {
                                     .bearerFormat("JWT")
                                     .in(SecurityScheme.In.HEADER)
                                     .name("Authorization")
+                            )
+                            .addSecuritySchemes(
+                                "ServiceAuthorization",
+                                new SecurityScheme()
+                                    .type(SecurityScheme.Type.APIKEY)
+                                    .in(SecurityScheme.In.HEADER)
+                                    .name("ServiceAuthorization")
                             ));
     }
 
