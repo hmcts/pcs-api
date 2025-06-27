@@ -59,7 +59,7 @@ public class IdamService {
 
     public String getSystemUserAuthorisation() {
         TokenResponse accessTokenResponse = getAccessTokenResponse();
-        return BEARER_PREFIX + accessTokenResponse.idToken;
+        return BEARER_PREFIX + accessTokenResponse.accessToken;
     }
 
     private TokenResponse getAccessTokenResponse() {
