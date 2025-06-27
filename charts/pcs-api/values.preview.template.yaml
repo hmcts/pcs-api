@@ -29,6 +29,7 @@ java:
     SPRING_LOGGING_LEVEL_ROOT: "DEBUG"
     ENABLE_TESTING_SUPPORT: true
     DB_SCHEDULER_EXECUTOR_ENABLED: true
+    CCD_SDK_DECENTRALISED: "true"
   secrets:
     PCS_DB_PASSWORD:
       secretRef: "{{ .Values.global.postgresSecret }}"
