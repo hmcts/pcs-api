@@ -1,5 +1,7 @@
 package uk.gov.hmcts.reform.pcs.document.service;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -40,21 +42,36 @@ class DocAssemblyServiceTest {
     @Mock
     private AuthTokenGenerator authTokenGenerator;
 
+    @Mock
+    private ObjectMapper objectMapper;
+
     private DocAssemblyService docAssemblyService;
 
     @BeforeEach
     void setUp() {
-        docAssemblyService = new DocAssemblyService(docAssemblyApi, idamService, authTokenGenerator);
+        docAssemblyService = new DocAssemblyService(docAssemblyApi, idamService, authTokenGenerator, objectMapper);
         
         // Setup default token generation with lenient stubbing
         lenient().when(idamService.getSystemUserAuthorisation()).thenReturn(SYSTEM_USER_TOKEN);
         lenient().when(authTokenGenerator.generate()).thenReturn(SERVICE_AUTH_TOKEN);
-        // Default stub for all tests
+        
+        // Mock JSON response parsing
+        String jsonResponse = "{\"renditionOutputLocation\":\"" + EXPECTED_DOCUMENT_URL + "\"}";
         lenient().when(docAssemblyApi.generateDocument(
             eq(SYSTEM_USER_TOKEN), 
             eq(SERVICE_AUTH_TOKEN), 
             any(DocAssemblyRequest.class)
-        )).thenReturn(EXPECTED_DOCUMENT_URL);
+        )).thenReturn(jsonResponse);
+        
+        // Mock ObjectMapper to return the expected URL
+        try {
+            JsonNode mockJsonNode = org.mockito.Mockito.mock(JsonNode.class);
+            lenient().when(mockJsonNode.get("renditionOutputLocation")).thenReturn(mockJsonNode);
+            lenient().when(mockJsonNode.asText()).thenReturn(EXPECTED_DOCUMENT_URL);
+            lenient().when(objectMapper.readTree(jsonResponse)).thenReturn(mockJsonNode);
+        } catch (Exception e) {
+            // Ignore exception in test setup
+        }
     }
 
     @Test
