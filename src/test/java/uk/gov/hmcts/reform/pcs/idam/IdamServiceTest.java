@@ -46,8 +46,8 @@ class IdamServiceTest {
     }
 
     @Test
-    @DisplayName("Should get the ID token for the system user")
-    void shouldGetSystemUserToken() {
+    @DisplayName("Should get the access token for the system user")
+    void shouldGetSystemUserAccessToken() {
         String expectedAccessToken = "some access token";
         TokenResponse tokenResponse = new TokenResponse(expectedAccessToken, "expires",
                 "some id token", "some refresh token",
