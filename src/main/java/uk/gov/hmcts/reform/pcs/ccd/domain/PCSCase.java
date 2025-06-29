@@ -1,6 +1,5 @@
 package uk.gov.hmcts.reform.pcs.ccd.domain;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -24,24 +23,26 @@ import java.util.List;
 
 public class PCSCase {
 
-    @CCD(ignore = true)
-    @JsonIgnore
-    private Long ccdCaseReference;
+    @CCD(label = "Case reference")
+    private Long caseReference;
 
     @CCD(label = "Applicant's first name")
     private String applicantForename;
+
+    @CCD(label = "Applicant's last name")
+    private String applicantSurname;
 
     private AddressUK propertyAddress;
 
     @CCD(label = "General Applications",
         typeOverride = FieldType.Collection,
-        typeParameterOverride = "GeneralApplication" //must be class name
+        typeParameterOverride = "GACase" //must be class name
     )
-    private List<ListValue<GeneralApplication>> generalApplications;
+    private List<ListValue<GACase>> generalApplications;
 
-    private GeneralApplication currentGeneralApplication;
+    private GACase currentGeneralApplication;
 
-    private GeneralApplication generalApplicationToDelete;
+    private GACase generalApplicationToDelete;
 
     private String generalApplicationsSummaryMarkdown;
 

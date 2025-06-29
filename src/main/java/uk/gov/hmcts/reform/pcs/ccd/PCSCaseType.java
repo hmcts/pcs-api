@@ -44,35 +44,51 @@ public class PCSCaseType implements CCDConfig<PCSCase, State, UserRole> {
         builder.decentralisedCaseType(getCaseType(), getCaseTypeName(), CASE_TYPE_DESCRIPTION);
         builder.jurisdiction(JURISDICTION_ID, JURISDICTION_NAME, JURISDICTION_DESCRIPTION);
 
-        var nameLabel = "Applicant's first name";
+        var forenameLabel = "Applicant's first name";
+        var surnameLabel = "Applicant's last name";
         var addressLabel = "Property Address";
         var claimantLabel = "Claimant Information";
         var genAppsLabel = "General Applications";
+        var caseReferenceLabel = "Case Reference";
         builder.searchInputFields()
-            .field(PCSCase::getApplicantForename, nameLabel);
+            .field(PCSCase::getCaseReference, caseReferenceLabel)
+            .field(PCSCase::getApplicantForename, forenameLabel)
+            .field(PCSCase::getApplicantSurname, surnameLabel);
 
         builder.searchCasesFields()
-            .field(PCSCase::getApplicantForename, nameLabel);
+            .field(PCSCase::getCaseReference, caseReferenceLabel)
+            .field(PCSCase::getApplicantForename, forenameLabel);
+
 
         builder.searchResultFields()
-            .field(PCSCase::getApplicantForename, nameLabel)
-            .field(PCSCase::getPropertyAddress, addressLabel);
+            .field(PCSCase::getCaseReference, caseReferenceLabel)
+            .field(PCSCase::getApplicantForename, forenameLabel)
+            .field(PCSCase::getApplicantSurname, surnameLabel);
+
 
         builder.workBasketInputFields()
-            .field(PCSCase::getApplicantForename, nameLabel);
+            .field(PCSCase::getCaseReference, caseReferenceLabel)
+            .field(PCSCase::getApplicantForename, forenameLabel)
+            .field(PCSCase::getApplicantSurname, surnameLabel);
+
 
         builder.workBasketResultFields()
-            .field(PCSCase::getApplicantForename, nameLabel)
-            .field(PCSCase::getPropertyAddress, addressLabel);
+            .field(PCSCase::getCaseReference, caseReferenceLabel)
+            .field(PCSCase::getApplicantForename, forenameLabel)
+            .field(PCSCase::getApplicantSurname, surnameLabel);
+
 
         builder.tab("claimantInformation", claimantLabel)
-            .field(PCSCase::getApplicantForename);
+            .field(PCSCase::getApplicantForename)
+            .field(PCSCase::getApplicantSurname);
 
         builder.tab("propertyAddress", addressLabel)
             .field(PCSCase::getPropertyAddress);
 
-        builder.tab("General Applications", "General Applications (Markdown)")
+        builder.tab("General Applications", genAppsLabel)
             .label("generalApplicationsMarkdownLabel", null, "${generalApplicationsSummaryMarkdown}")
             .field("generalApplicationsSummaryMarkdown", "[STATE]=\"NEVER_SHOW\"");
     }
+
+
 }

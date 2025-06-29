@@ -9,7 +9,7 @@
 |Application ID | Adjustments | Status | Actions |
 |--------|----------|--------|-------------|
 {% for genApp in generalApplications %}
-| {{ genApp.value.applicationId }} | {{ genApp.value.adjustment }} | {{ genApp.value.status }} |
+| {{ genApp.value.caseReference }} | {{ genApp.value.adjustment }} | {{ genApp.value.status }} |
  {% if genApp.value.status == "Draft" %} {{ showDeleteAction(genApp, _context) }}
  {% endif %} |
 {% endfor %}

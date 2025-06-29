@@ -1,11 +1,11 @@
 package uk.gov.hmcts.reform.pcs.ccd.entity;
 
-
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -13,11 +13,10 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.UUID;
 
-import static jakarta.persistence.CascadeType.ALL;
+import static jakarta.persistence.FetchType.LAZY;
+
 
 @Entity
 @Getter
@@ -25,22 +24,19 @@ import static jakarta.persistence.CascadeType.ALL;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class PCS {
+public class ClaimantInfo {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    private Long caseReference;
+    private String forename;
 
-    @OneToOne(mappedBy = "pcsCase", cascade = ALL)
-    private Address propertyAddress;
+    private String surname;
 
-    @OneToOne(mappedBy = "pcsCase", cascade = ALL)
-    private ClaimantInfo claimantInfo;
-
-    @OneToMany(mappedBy = "pcsCase", cascade = ALL, orphanRemoval = true)
-    @Builder.Default
-    private List<GA> generalApplications = new ArrayList<>();
-
+    @OneToOne(fetch = LAZY)
+    @JoinColumn(name = "parent_case_id")
+    @JsonBackReference
+    private PCS pcsCase;
 
 }
+

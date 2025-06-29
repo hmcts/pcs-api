@@ -12,10 +12,10 @@ import uk.gov.hmcts.ccd.sdk.api.CCD;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class GeneralApplication {
+public class GACase {
 
-    @CCD(label = "Application ID")
-    private String applicationId;
+    @CCD(label = "Case reference")
+    private Long caseReference;
 
     @CCD(label = "Adjustments")
     private String adjustment;

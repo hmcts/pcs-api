@@ -5,15 +5,15 @@ import uk.gov.hmcts.ccd.sdk.api.CCDConfig;
 import uk.gov.hmcts.ccd.sdk.api.ConfigBuilder;
 import uk.gov.hmcts.ccd.sdk.api.EventPayload;
 import uk.gov.hmcts.ccd.sdk.api.Permission;
-import uk.gov.hmcts.reform.pcs.ccd.domain.GeneralApplication;
+import uk.gov.hmcts.reform.pcs.ccd.domain.GACase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.UserRole;
-import uk.gov.hmcts.reform.pcs.ccd.entity.GenApplication;
+import uk.gov.hmcts.reform.pcs.ccd.entity.GA;
 import uk.gov.hmcts.reform.pcs.ccd.repository.GeneralApplicationRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.GeneralApplicationService;
 
 @Component
-public class CreateGeneralApplication implements CCDConfig<GeneralApplication, State, UserRole> {
+public class CreateGeneralApplication implements CCDConfig<GACase, State, UserRole> {
 
     private final GeneralApplicationRepository genAppRepository;
     private final GeneralApplicationService genAppService;
@@ -25,29 +25,29 @@ public class CreateGeneralApplication implements CCDConfig<GeneralApplication, S
 
 
     @Override
-    public void configure(ConfigBuilder<GeneralApplication, State, UserRole> builder) {
+    public void configure(ConfigBuilder<GACase, State, UserRole> builder) {
         builder.decentralisedEvent(EventId.createGeneralApplication.name(), this::submit)
             .initialState(State.Draft)
-            .name("create General Application")
+            .name("Make General Application")
             .grant(Permission.CRUD, UserRole.CASE_WORKER)
             .fields()
-            .mandatory(GeneralApplication::getAdjustment)
-            .optional(GeneralApplication::getAdditionalInformation)
+            .mandatory(GACase::getAdjustment)
+            .optional(GACase::getAdditionalInformation)
             .done();
     }
 
-    private void submit(EventPayload<GeneralApplication, State> eventPayload) {
-        GeneralApplication ga = eventPayload.caseData();
+    private void submit(EventPayload<GACase, State> eventPayload) {
+        GACase ga = eventPayload.caseData();
         if (ga.getStatus() == null) {
             ga.setStatus(State.Draft);
         }
         // Convert to entity and save
-        GenApplication entity = genAppService.convertToGAEntity(ga);
-        entity.setApplicationId(eventPayload.caseReference().toString()); // application id not being mapped
+        GA entity = genAppService.convertToGAEntity(ga);
+        entity.setCaseReference(eventPayload.caseReference()); // application id not being mapped
         genAppRepository.save(entity);
-        // Update domain object with generated ID if needed
 
-        ga.setApplicationId(eventPayload.caseReference().toString());
+        // Update domain object with generated ID if needed
+        ga.setCaseReference(eventPayload.caseReference());
 
     }
 }

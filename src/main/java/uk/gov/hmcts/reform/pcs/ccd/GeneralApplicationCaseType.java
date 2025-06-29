@@ -3,7 +3,7 @@ package uk.gov.hmcts.reform.pcs.ccd;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CCDConfig;
 import uk.gov.hmcts.ccd.sdk.api.ConfigBuilder;
-import uk.gov.hmcts.reform.pcs.ccd.domain.GeneralApplication;
+import uk.gov.hmcts.reform.pcs.ccd.domain.GACase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.UserRole;
 
@@ -12,7 +12,7 @@ import static java.util.Optional.ofNullable;
 
 
 @Component
-public class GeneralApplicationCaseType implements CCDConfig<GeneralApplication, State, UserRole> {
+public class GeneralApplicationCaseType implements CCDConfig<GACase, State, UserRole> {
     private static final String CASE_TYPE_ID = "GA";
     private static final String CASE_TYPE_NAME = "Possessions Gen Application";
     private static final String CASE_TYPE_DESCRIPTION = "General Application Case Type";
@@ -35,7 +35,7 @@ public class GeneralApplicationCaseType implements CCDConfig<GeneralApplication,
             .orElse(base);
     }
     @Override
-    public void configure(ConfigBuilder<GeneralApplication, State, UserRole> configBuilder) {
+    public void configure(ConfigBuilder<GACase, State, UserRole> configBuilder) {
         configBuilder.setCallbackHost(getenv().getOrDefault("CASE_API_URL", "http://localhost:3206"));
 
         configBuilder.decentralisedCaseType(getCaseType(), getCaseTypeName(), CASE_TYPE_DESCRIPTION);
@@ -43,29 +43,38 @@ public class GeneralApplicationCaseType implements CCDConfig<GeneralApplication,
 
         var applicationLabel = "Applicantion ID";
         var adjustmentLabel = "Adjusments";
+        var additionalInfoLabel = "Additional Info";
         var statusLabel = "Status";
 
         configBuilder.searchInputFields()
-            .field(GeneralApplication::getApplicationId, applicationLabel);
+            .field(GACase::getCaseReference, applicationLabel);
 
         configBuilder.searchCasesFields()
-            .field(GeneralApplication::getApplicationId, applicationLabel);
+            .field(GACase::getCaseReference, applicationLabel);
 
         configBuilder.searchResultFields()
-            .field(GeneralApplication::getApplicationId, applicationLabel)
-            .field(GeneralApplication::getApplicationId, adjustmentLabel)
-            .field(GeneralApplication::getStatus, statusLabel);
+            .field(GACase::getCaseReference, applicationLabel)
+            .field(GACase::getCaseReference, adjustmentLabel)
+            .field(GACase::getStatus, statusLabel);
 
         configBuilder.searchResultFields()
-            .field(GeneralApplication::getApplicationId, applicationLabel)
-            .field(GeneralApplication::getApplicationId, adjustmentLabel);
+            .field(GACase::getCaseReference, applicationLabel)
+            .field(GACase::getAdjustment, adjustmentLabel);
 
         configBuilder.workBasketInputFields()
-            .field(GeneralApplication::getApplicationId, applicationLabel);
+            .field(GACase::getCaseReference, applicationLabel)
+            .field(GACase::getAdjustment, adjustmentLabel);
 
         configBuilder.workBasketResultFields()
-            .field(GeneralApplication::getApplicationId, applicationLabel)
-            .field(GeneralApplication::getApplicationId, adjustmentLabel);
+            .field(GACase::getCaseReference, applicationLabel)
+            .field(GACase::getAdjustment, adjustmentLabel);
+
+        configBuilder.tab("Adjustments", adjustmentLabel)
+            .field(GACase::getAdjustment);
+
+        configBuilder.tab("AdditionalInfo", additionalInfoLabel)
+            .field(GACase::getAdditionalInformation);
+        //.field("generalApplicationsSummaryMarkdown", "[STATE]=\"NEVER_SHOW\"");
 
 
 

@@ -15,7 +15,7 @@ import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.ccd.client.model.Event;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
 import uk.gov.hmcts.reform.pcs.ccd.PCSCaseType;
-import uk.gov.hmcts.reform.pcs.ccd.domain.GeneralApplication;
+import uk.gov.hmcts.reform.pcs.ccd.domain.GACase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.rse.ccd.lib.test.CftlibTest;
@@ -53,8 +53,8 @@ public class TestWithCCD extends CftlibTest {
     public void createsTestCase() {
         var r = ccdApi.startCase(idamToken, s2sToken, PCSCaseType.getCaseType(), "createTestApplication");
 
-        GeneralApplication generalApp = GeneralApplication.builder()
-            .applicationId("123")
+        GACase generalApp = GACase.builder()
+            .caseReference(1L)
             .adjustment("Wheelchair access")
             .additionalInformation("Requires support dog")
             .status(State.Draft) // or whatever state is valid
@@ -70,10 +70,10 @@ public class TestWithCCD extends CftlibTest {
                                  .postCode("NW1 6XE")
                                  .build())
             .generalApplications(List.of(
-                ListValue.<GeneralApplication>builder()
+                ListValue.<GACase>builder()
                     .id(UUID.randomUUID().toString())
-                    .value(GeneralApplication.builder()
-                               .applicationId("GA-123")
+                    .value(GACase.builder()
+                               .caseReference(1L)
                                .adjustment("Wheelchair access")
                                .additionalInformation("Requires interpreter")
                                .status(State.Draft)
@@ -89,5 +89,5 @@ public class TestWithCCD extends CftlibTest {
         );
         assertThat(caseDetails.getId()).isNotNull();
     }
-    
+
 }

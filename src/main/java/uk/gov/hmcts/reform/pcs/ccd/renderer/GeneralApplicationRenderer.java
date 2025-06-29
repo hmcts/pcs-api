@@ -4,7 +4,7 @@ import io.pebbletemplates.pebble.PebbleEngine;
 import io.pebbletemplates.pebble.template.PebbleTemplate;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
-import uk.gov.hmcts.reform.pcs.ccd.domain.GeneralApplication;
+import uk.gov.hmcts.reform.pcs.ccd.domain.GACase;
 import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
 
 import java.io.IOException;
@@ -24,7 +24,7 @@ public class GeneralApplicationRenderer {
         this.pebbleEngine = pebbleEngine;
     }
 
-    public String render(List<ListValue<GeneralApplication>> genAppList, Long caseReference) {
+    public String render(List<ListValue<GACase>> genAppList, Long caseReference) {
         PebbleTemplate compiledTemplate = pebbleEngine.getTemplate("generalApplication");
         Writer writer = new StringWriter();
 

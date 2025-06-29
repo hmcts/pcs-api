@@ -1,7 +1,7 @@
--- Create PCS table (parent entity)
+
 CREATE TABLE pcs (
-                   id UUID PRIMARY KEY,
-                   ccd_case_reference BIGINT NOT NULL
+                       id UUID PRIMARY KEY,
+                       case_reference BIGINT NOT NULL
 );
 
 CREATE TABLE address (
@@ -16,15 +16,21 @@ CREATE TABLE address (
                        country VARCHAR(100)
 );
 
-CREATE TABLE gen_application (
-                               id UUID PRIMARY KEY,
-                               application_id TEXT,
-                               parent_case_id UUID REFERENCES pcs(id),
-                               adjustment TEXT,
-                               additional_information TEXT,
-                               status VARCHAR(255)
+CREATE TABLE claimant_info (
+                        id UUID PRIMARY KEY,
+                        forename VARCHAR(255),
+                        surname VARCHAR(255),
+                        parent_case_id UUID REFERENCES pcs(id)
+);
 
+CREATE TABLE general_application (
+                        id UUID PRIMARY KEY,
+                        case_reference BIGINT NOT NULL,
+                        parent_case_id UUID REFERENCES pcs(id),
+                        adjustment TEXT,
+                        additional_information TEXT,
+                        status VARCHAR(255)
 );
 
 CREATE INDEX idx_address_case_id ON address(case_id);
-CREATE INDEX idx_gen_application_parent_case_id ON gen_application(parent_case_id);
+CREATE INDEX idx_general_application_parent_case_id ON general_application(parent_case_id);

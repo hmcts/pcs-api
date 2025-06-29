@@ -28,6 +28,12 @@ public enum State {
         label = "Submitted",
         access = {DefaultStateAccess.class}
     )
-    Submitted;
+    Submitted,
+
+    @CCD(
+        label = "Withdrawn",
+        access = {DefaultStateAccess.class}
+    )
+    Withdrawn;
 }
 

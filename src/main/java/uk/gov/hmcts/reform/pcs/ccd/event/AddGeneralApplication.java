@@ -5,11 +5,11 @@ import uk.gov.hmcts.ccd.sdk.api.CCDConfig;
 import uk.gov.hmcts.ccd.sdk.api.ConfigBuilder;
 import uk.gov.hmcts.ccd.sdk.api.EventPayload;
 import uk.gov.hmcts.ccd.sdk.api.Permission;
-import uk.gov.hmcts.reform.pcs.ccd.domain.GeneralApplication;
+import uk.gov.hmcts.reform.pcs.ccd.domain.GACase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.UserRole;
-import uk.gov.hmcts.reform.pcs.ccd.entity.GenApplication;
+import uk.gov.hmcts.reform.pcs.ccd.entity.GA;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PCS;
 import uk.gov.hmcts.reform.pcs.ccd.repository.GeneralApplicationRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PCSCaseRepository;
@@ -43,46 +43,38 @@ public class AddGeneralApplication implements CCDConfig<PCSCase, State, UserRole
             .fields()
             .page("General Application Details")
             .complex(PCSCase::getCurrentGeneralApplication)
-            .mandatory(GeneralApplication::getAdjustment)
-            .optional(GeneralApplication::getAdditionalInformation)
+            .mandatory(GACase::getAdjustment)
+            .optional(GACase::getAdditionalInformation)
             .done();
     }
 
     private void aboutToSubmit(EventPayload<PCSCase, State> eventPayload) {
         Long caseReference = eventPayload.caseReference();
         PCSCase caseData = eventPayload.caseData();
-        GeneralApplication newApp = caseData.getCurrentGeneralApplication();
-        //newApp.setApplicationId(UUID.randomUUID().toString());
+        GACase newApp = caseData.getCurrentGeneralApplication();
 
         if (newApp != null) {
-            GeneralApplication gaData = GeneralApplication.builder()
+            GACase gaData = GACase.builder()
                 .adjustment(newApp.getAdjustment())
                 .additionalInformation(newApp.getAdditionalInformation())
                 .build();
 
-//            gaData.put("parentCase", caseReference.toString());
-//            gaData.put("status", State.Draft);
-
-            //String userAuthToken = eventPayload.urlParams().getFirst("Authorization");
-            String gaCcdReference = genAppService.createGeneralApplicationInCCD(
+            Long gaCaseReference = genAppService.createGeneralApplicationInCCD(
                 gaData,
                 EventId.createGeneralApplication.name()
             );
 
             // Retrieve saved entity
-            GenApplication genApp = genAppRepository.findByApplicationId(gaCcdReference)
-                .orElseThrow(() -> new IllegalStateException("GA entity not found"));
-
+            GA genApp = genAppService.findByCaseReference(gaCaseReference);
             // Link to parent case
-            PCS parentCase = pcsCaseRepository.findByCcdCaseReference(caseReference)
-                .orElseThrow(() -> new IllegalStateException("Parent case not found"));
+            PCS parentCase = pcsCaseService.findPCSCase(caseReference);
 
             genApp.setPcsCase(parentCase);
             parentCase.getGeneralApplications().add(genApp);
 
             pcsCaseRepository.save(parentCase);//cascades and saves the child also
 
-            newApp.setApplicationId(genApp.getApplicationId());
+            newApp.setCaseReference(genApp.getCaseReference());
             caseData.setCurrentGeneralApplication(null);
         }
     }

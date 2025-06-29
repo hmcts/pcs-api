@@ -4,10 +4,10 @@ import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
-import uk.gov.hmcts.reform.pcs.ccd.domain.GeneralApplication;
+import uk.gov.hmcts.reform.pcs.ccd.domain.GACase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.entity.Address;
-import uk.gov.hmcts.reform.pcs.ccd.entity.GenApplication;
+import uk.gov.hmcts.reform.pcs.ccd.entity.GA;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PCS;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PCSCaseRepository;
 
@@ -26,16 +26,20 @@ public class PCSCaseService {
 
     public PCSCase convertToPCSCase(PCS pcs) {
         PCSCase.PCSCaseBuilder builder = PCSCase.builder()
-            .ccdCaseReference(pcs.getCcdCaseReference());
+            .caseReference(pcs.getCaseReference());
         if (pcs.getPropertyAddress() != null) {
             builder.propertyAddress(convertAddress(pcs.getPropertyAddress()));
+        }
+        if (pcs.getClaimantInfo() != null) {
+            builder.applicantForename(pcs.getClaimantInfo().getForename());
+            builder.applicantSurname(pcs.getClaimantInfo().getSurname());
         }
         if (pcs.getGeneralApplications() != null) {
             builder.generalApplications(
                 pcs.getGeneralApplications().stream()
                     .map(ga -> {
-                        GeneralApplication dto = convertGenApplication(ga);
-                        return ListValue.<GeneralApplication>builder()
+                        GACase dto = convertGenApplication(ga);
+                        return ListValue.<GACase>builder()
                             .id(ga.getId().toString())
                             .value(dto)
                             .build();
@@ -61,17 +65,17 @@ public class PCSCaseService {
             .build();
     }
 
-    private GeneralApplication convertGenApplication(GenApplication ga) {
-        return GeneralApplication.builder()
-            .applicationId(ga.getApplicationId())
+    private GACase convertGenApplication(GA ga) {
+        return GACase.builder()
+            .caseReference(ga.getCaseReference())
             .adjustment(ga.getAdjustment())
             .additionalInformation(ga.getAdditionalInformation())
             .status(ga.getStatus())
             .build();
     }
 
-    public PCS findParentCase(Long caseReference) {
-        return pcsCaseRepository.findByCcdCaseReference(caseReference)
-            .orElseThrow(() -> new IllegalStateException("Parent case not found"));
+    public PCS findPCSCase(Long caseReference) {
+        return pcsCaseRepository.findByCaseReference(caseReference)
+            .orElseThrow(() -> new IllegalStateException("PCS case not found"));
     }
 }

@@ -8,5 +8,5 @@ import java.util.UUID;
 
 public interface PCSCaseRepository extends JpaRepository<PCS, UUID> {
 
-    Optional<PCS> findByCcdCaseReference(Long caseReference);
+    Optional<PCS> findByCaseReference(Long caseReference);
 }
