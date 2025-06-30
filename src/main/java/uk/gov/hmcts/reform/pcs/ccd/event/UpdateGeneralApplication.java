@@ -8,20 +8,21 @@ import uk.gov.hmcts.ccd.sdk.api.Permission;
 import uk.gov.hmcts.reform.pcs.ccd.domain.GACase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.UserRole;
+import uk.gov.hmcts.reform.pcs.ccd.entity.GA;
 import uk.gov.hmcts.reform.pcs.ccd.repository.GeneralApplicationRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PCSCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.GeneralApplicationService;
 
 @Component
-public class DeleteDraftGeneralApplication implements CCDConfig<GACase, State, UserRole> {
+public class UpdateGeneralApplication implements CCDConfig<GACase, State, UserRole> {
 
     private final PCSCaseRepository pcsRepository;
     private final GeneralApplicationRepository gaRepository;
     private final GeneralApplicationService gaService;
 
-    public DeleteDraftGeneralApplication(PCSCaseRepository pcsRepository,
-                                         GeneralApplicationRepository gaRepository,
-                                         GeneralApplicationService gaService) {
+    public UpdateGeneralApplication(PCSCaseRepository pcsRepository,
+                                      GeneralApplicationRepository gaRepository,
+                                      GeneralApplicationService gaService) {
         this.pcsRepository = pcsRepository;
         this.gaRepository = gaRepository;
         this.gaService = gaService;
@@ -29,30 +30,26 @@ public class DeleteDraftGeneralApplication implements CCDConfig<GACase, State, U
 
     @Override
     public void configure(ConfigBuilder<GACase, State, UserRole> builder) {
-        builder.decentralisedEvent("deleteDraftGeneralApplication", this::aboutToSubmit)
+        builder.decentralisedEvent(EventId.updateGeneralApplication.name(), this::aboutToSubmit)
             .forStateTransition(State.Draft, State.Withdrawn)
-            .name("Delete Draft Gen App")
-            .description("Delete Draft Gen App")
+            .name("Withdraw Draft Gen App")
             .grant(Permission.CRUD, UserRole.CASE_WORKER)
             .fields()
             .page("Delete draft general application")
-            .pageLabel("Are you sure you want to delete this draft application?")
+            .pageLabel("Are you sure you want to withdraw this draft application?")
             .label("lineSeparator", "---")
+            .readonly(GACase::getStatus, "[STATE]=\"NEVER_SHOW\"")
             .done();
     }
 
-    private GACase aboutToSubmit(EventPayload<GACase, State> payload) {
-        GACase genApp = payload.caseData();
-
-        long caseReference = payload.caseReference();
-
-        if (genApp.getCaseReference() == null) {
-            throw new IllegalStateException("ID IS null");
-        }
-        genApp.setStatus(State.Withdrawn);
-        gaRepository.deleteByCaseReference(genApp.getCaseReference());
-        return genApp;
+    private void aboutToSubmit(EventPayload<GACase, State> payload) {
+        GA toUpdate = gaRepository.findByCaseReference(payload.caseReference()).get();
+        toUpdate.setStatus(State.Withdrawn);
+        gaRepository.save(toUpdate);
     }
 
-
 }
+
+
+
+

@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.entity;
 
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -30,6 +31,7 @@ public class PCS {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
+    @Column(nullable = false)
     private Long caseReference;
 
     @OneToOne(mappedBy = "pcsCase", cascade = ALL)

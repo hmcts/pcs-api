@@ -1,5 +1,5 @@
 {% macro showDeleteAction(genApp, _context) %}
-[Delete](/cases/case-details/{{_context.caseReference}}/trigger/{{_context.deleteDraftGeneralApplication}}?genAppId={{genApp.value.applicationId}})
+[Withdraw](/cases/case-details/{{_context.caseReference}}/trigger/{{_context.withdrawGeneralApplication}}?genAppId={{genApp.value.applicationId}})
 {% endmacro %}
 
 ## General Applications
@@ -9,7 +9,7 @@
 |Application ID | Adjustments | Status | Actions |
 |--------|----------|--------|-------------|
 {% for genApp in generalApplications %}
-| {{ genApp.value.caseReference }} | {{ genApp.value.adjustment }} | {{ genApp.value.status }} |
+| {{ genApp.value.applicationId }} | {{ genApp.value.adjustment }} | {{ genApp.value.status }} |
  {% if genApp.value.status == "Draft" %} {{ showDeleteAction(genApp, _context) }}
  {% endif %} |
 {% endfor %}

@@ -49,7 +49,7 @@ public class CreateTestCase implements CCDConfig<PCSCase, State, UserRole> {
     }
 
     private void submit(EventPayload<PCSCase, State> eventPayload) {
-        long caseReference = eventPayload.caseReference();
+        Long caseReference = eventPayload.caseReference();
         PCSCase pcsCase = eventPayload.caseData();
         var pcsEntity = PCS.builder()
             .caseReference(caseReference)
@@ -62,8 +62,8 @@ public class CreateTestCase implements CCDConfig<PCSCase, State, UserRole> {
         pcsEntity.setPropertyAddress(addressEntity);
         pcsEntity.setClaimantInfo(claimantInfoEntity);
 
-        pcsRepository.save(pcsEntity);
-        pcsCase.setCaseReference(caseReference);
+        PCS savedEntity = pcsRepository.save(pcsEntity);
+        pcsCase.setCaseId(savedEntity.getId().toString());
     }
 
     private Address createAddressEntity(PCSCase pcsCase) {

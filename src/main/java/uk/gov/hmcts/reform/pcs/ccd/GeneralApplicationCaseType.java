@@ -34,6 +34,7 @@ public class GeneralApplicationCaseType implements CCDConfig<GACase, State, User
             .map(changeId -> base + separator + changeId)
             .orElse(base);
     }
+
     @Override
     public void configure(ConfigBuilder<GACase, State, UserRole> configBuilder) {
         configBuilder.setCallbackHost(getenv().getOrDefault("CASE_API_URL", "http://localhost:3206"));
@@ -41,42 +42,38 @@ public class GeneralApplicationCaseType implements CCDConfig<GACase, State, User
         configBuilder.decentralisedCaseType(getCaseType(), getCaseTypeName(), CASE_TYPE_DESCRIPTION);
         configBuilder.jurisdiction(JURISDICTION_ID, JURISDICTION_NAME, JURISDICTION_DESCRIPTION);
 
-        var applicationLabel = "Applicantion ID";
-        var adjustmentLabel = "Adjusments";
-        var additionalInfoLabel = "Additional Info";
+        var caseRefLabel = "Case reference";
+        var overview = "Overview";
+        var gaTypeLabel = "Type";
         var statusLabel = "Status";
+        var parentCaseLabel = "Parent case";
 
         configBuilder.searchInputFields()
-            .field(GACase::getCaseReference, applicationLabel);
+            .field(GACase::getGaType, gaTypeLabel);
 
         configBuilder.searchCasesFields()
-            .field(GACase::getCaseReference, applicationLabel);
+   
+            .field(GACase::getGaType, gaTypeLabel);
 
         configBuilder.searchResultFields()
-            .field(GACase::getCaseReference, applicationLabel)
-            .field(GACase::getCaseReference, adjustmentLabel)
-            .field(GACase::getStatus, statusLabel);
 
-        configBuilder.searchResultFields()
-            .field(GACase::getCaseReference, applicationLabel)
-            .field(GACase::getAdjustment, adjustmentLabel);
+            .field(GACase::getGaType, gaTypeLabel)
+            .field(GACase::getStatus, statusLabel)
+            .field(GACase::getCaseLink, parentCaseLabel);
 
         configBuilder.workBasketInputFields()
-            .field(GACase::getCaseReference, applicationLabel)
-            .field(GACase::getAdjustment, adjustmentLabel);
+            .field(GACase::getGaType, gaTypeLabel);
 
         configBuilder.workBasketResultFields()
-            .field(GACase::getCaseReference, applicationLabel)
-            .field(GACase::getAdjustment, adjustmentLabel);
 
-        configBuilder.tab("Adjustments", adjustmentLabel)
-            .field(GACase::getAdjustment);
+            .field(GACase::getGaType, gaTypeLabel)
+            .field(GACase::getStatus, statusLabel)
+            .field(GACase::getCaseLink, parentCaseLabel);
 
-        configBuilder.tab("AdditionalInfo", additionalInfoLabel)
-            .field(GACase::getAdditionalInformation);
-        //.field("generalApplicationsSummaryMarkdown", "[STATE]=\"NEVER_SHOW\"");
+        configBuilder.tab("Overview", overview)
 
-
-
+            .field(GACase::getGaType)
+            .field(GACase::getStatus)
+            .field(GACase::getCaseLink);
     }
 }

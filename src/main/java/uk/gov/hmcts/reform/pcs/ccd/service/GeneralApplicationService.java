@@ -4,9 +4,11 @@ import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDataContent;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
+import uk.gov.hmcts.reform.ccd.client.model.CaseResource;
 import uk.gov.hmcts.reform.ccd.client.model.Event;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.GACase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GA;
 import uk.gov.hmcts.reform.pcs.ccd.repository.GeneralApplicationRepository;
 
@@ -30,10 +32,6 @@ public class GeneralApplicationService {
         this.modelMapper = modelMapper;
     }
 
-    public void deleteDraft(Long gaCaseReference) {
-        genAppRepository.deleteByCaseReference(gaCaseReference);
-    }
-
     public List<GA> findByParentCase(Long parentCaseId) {
         return genAppRepository.findByPcsCase_CaseReference(parentCaseId); //pcs repo?
     }
@@ -49,6 +47,18 @@ public class GeneralApplicationService {
 
     public GACase convertToGA(GA gaCase) {
         return modelMapper.map(gaCase, GACase.class);
+    }
+
+    public void updateGA(Long caseRef) {
+        genAppRepository.findByCaseReference(caseRef)
+            .ifPresent(ga -> {
+                ga.setStatus(State.Withdrawn);
+                genAppRepository.save(ga);
+            });
+    }
+
+    public CaseDetails getCase(String caseId) {
+        return coreCaseDataService.getCase(caseId);
     }
 
     public Long createGeneralApplicationInCCD(GACase gaData, String eventId) {
@@ -70,8 +80,29 @@ public class GeneralApplicationService {
             CASE_TYPE,
             caseDataContent
         );
-
         return createdCase.getId();
     }
+
+    public CaseResource updateGeneralApplicationInCCD(String caseId, String eventId, GACase existingCase) {
+
+        StartEventResponse eventToken = coreCaseDataService.startEvent(
+            caseId,
+            eventId
+        );
+        CaseDataContent caseDataContent = CaseDataContent.builder()
+            .eventToken(eventToken.getToken())
+            .event(Event.builder()
+                       .id(eventId)
+                       .build())
+            .data(existingCase)
+            .build();
+
+        CaseResource updated = coreCaseDataService.submitEvent(
+            caseId,
+            caseDataContent
+        );
+        return updated;
+    }
+
 
 }

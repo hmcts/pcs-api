@@ -1,15 +1,14 @@
 package uk.gov.hmcts.reform.pcs.ccd.service;
 
-import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.ccd.client.CoreCaseDataApi;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDataContent;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
+import uk.gov.hmcts.reform.ccd.client.model.CaseResource;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
-import uk.gov.hmcts.reform.pcs.ccd.repository.GeneralApplicationRepository;
 import uk.gov.hmcts.reform.pcs.idam.IdamService;
 
 @Service
@@ -19,19 +18,14 @@ public class CoreCaseDataService {
     private IdamClient idamClient;
 
     private final CoreCaseDataApi coreCaseDataApi;
-    private final GeneralApplicationRepository generalApplicationRepository;
-    private final ModelMapper modelMapper;
     private final AuthTokenGenerator serviceAuthTokenGenerator;
     private final IdamService idamService;
-// private final AuthTokenGenerator serviceAuthTokenGenerator;
+
 
     public CoreCaseDataService(CoreCaseDataApi coreCaseDataApi,
-                               GeneralApplicationRepository generalApplicationRepository,
-                               ModelMapper modelMapper, AuthTokenGenerator serviceAuthTokenGenerator,
+                               AuthTokenGenerator serviceAuthTokenGenerator,
                                IdamService idamService) {
         this.coreCaseDataApi = coreCaseDataApi;
-        this.generalApplicationRepository = generalApplicationRepository;
-        this.modelMapper = modelMapper;
         this.serviceAuthTokenGenerator = serviceAuthTokenGenerator;
         this.idamService = idamService;
     }
@@ -48,7 +42,7 @@ public class CoreCaseDataService {
 
     public CaseDetails submitCaseCreation(String caseType, CaseDataContent caseDataContent) {
 
-       return coreCaseDataApi.submitCaseCreation(
+        return coreCaseDataApi.submitCaseCreation(
             getAuthToken(),
             getServiceToken(),
             caseType,
@@ -57,28 +51,49 @@ public class CoreCaseDataService {
 
     }
 
-    public CaseDetails submitCaseUpdate(String caseId, CaseDataContent caseDataContent) {
+    public StartEventResponse startEvent(String caseId, String eventId) {
 
-//        return coreCaseDataApi.startEvent(
-//            getServiceToken(),
-//            getServiceToken(),
-//            caseType,
-//            caseDataContent
-//
-//        )
-        return null;
-    }
-    private String getAuthToken(){
-       return idamClient.getAccessToken("caseworker@pcs.com", "password");
+        return coreCaseDataApi.startEvent(
+            getAuthToken(),
+            getServiceToken(),
+            caseId,
+            eventId
+        );
+
     }
 
-    //String userAuthToken = idamService.getSystemUserAuthorisation();
-    //String serviceToken = serviceAuthTokenGenerator.generate();
-    //String userId = idamService.validateAuthToken(userAuthToken).getUserDetails().getUid();
+    public CaseResource submitEvent(String caseId, CaseDataContent caseDataContent) {
+        return coreCaseDataApi.createEvent(
+            getAuthToken(),
+            getServiceToken(),
+            caseId,
+            caseDataContent
+        );
 
-    private String getServiceToken(){
-        return "Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJjY2RfZ3ciLCJpYXQiOjE2" +
-            "ODAwMDAwMDB9.4QdWwz5ZQ5p5v3cJXkQ4lQwQkR2o9Yw5Qw8yQw8yQw8";
     }
+
+    public CaseDetails getCase(String caseId) {
+
+        return coreCaseDataApi.getCase(
+            getAuthToken(),
+            getServiceToken(),
+            caseId
+        );
+    }
+
+    private String getAuthToken() {
+        return idamService.getSystemUserAuthorisation();
+    }
+
+    private String getUserId(String authToken) {
+        String userId = idamService.validateAuthToken(authToken).getUserDetails().getUid();
+        return userId;
+    }
+
+    private String getServiceToken() {
+        return "Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJjY2RfZ3ciLCJpYXQiOjE2"
+            + "ODAwMDAwMDB9.4QdWwz5ZQ5p5v3cJXkQ4lQwQkR2o9Yw5Qw8yQw8yQw8";
+    }
+
 
 }

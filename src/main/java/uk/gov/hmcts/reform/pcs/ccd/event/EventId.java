@@ -4,7 +4,7 @@ public enum EventId {
 
     createGeneralApplication,
     addGeneralApplication,
-    editGeneralApplication,
-    deleteDraftGeneralApplication,
+    withdrawGeneralApplication,
+    updateGeneralApplication,
 
 }

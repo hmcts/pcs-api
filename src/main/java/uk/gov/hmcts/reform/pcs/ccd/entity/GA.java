@@ -17,6 +17,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import uk.gov.hmcts.reform.pcs.ccd.domain.GAType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 
 import java.util.UUID;
@@ -34,8 +35,11 @@ public class GA {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @Column(unique = true, nullable = false)
+    @Column(nullable = false)
     private Long caseReference;
+
+    @Enumerated(EnumType.STRING)
+    private GAType gaType;
 
     private String adjustment;
 

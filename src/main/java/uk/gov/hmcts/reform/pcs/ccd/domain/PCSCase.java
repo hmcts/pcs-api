@@ -23,8 +23,8 @@ import java.util.List;
 
 public class PCSCase {
 
-    @CCD(label = "Case reference")
-    private Long caseReference;
+    @CCD(label = "Case Id")
+    private String caseId;
 
     @CCD(label = "Applicant's first name")
     private String applicantForename;

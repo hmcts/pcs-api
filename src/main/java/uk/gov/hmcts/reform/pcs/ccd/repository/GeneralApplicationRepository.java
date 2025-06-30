@@ -9,9 +9,9 @@ import java.util.UUID;
 
 public interface GeneralApplicationRepository extends JpaRepository<GA, UUID> {
 
-    List<GA> findByPcsCase_CaseReference(long caseReference);
-
-    void deleteByCaseReference(Long caseReference);
+    List<GA> findByPcsCase_CaseReference(Long caseReference);
 
     Optional<GA> findByCaseReference(Long caseRef);
+
+    Optional<GA> findById(UUID id);
 }

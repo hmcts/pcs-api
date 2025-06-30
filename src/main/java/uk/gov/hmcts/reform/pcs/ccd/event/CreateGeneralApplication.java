@@ -18,7 +18,8 @@ public class CreateGeneralApplication implements CCDConfig<GACase, State, UserRo
     private final GeneralApplicationRepository genAppRepository;
     private final GeneralApplicationService genAppService;
 
-    public CreateGeneralApplication(GeneralApplicationRepository genAppRepository, GeneralApplicationService genAppService) {
+    public CreateGeneralApplication(GeneralApplicationRepository genAppRepository,
+                                    GeneralApplicationService genAppService) {
         this.genAppRepository = genAppRepository;
         this.genAppService = genAppService;
     }
@@ -31,23 +32,24 @@ public class CreateGeneralApplication implements CCDConfig<GACase, State, UserRo
             .name("Make General Application")
             .grant(Permission.CRUD, UserRole.CASE_WORKER)
             .fields()
+            .mandatory(GACase::getGaType)
             .mandatory(GACase::getAdjustment)
             .optional(GACase::getAdditionalInformation)
+            .optional(GACase::getCaseLink)
+            .optional(GACase::getStatus)
+            .optional(GACase::getApplicationId)
             .done();
     }
 
     private void submit(EventPayload<GACase, State> eventPayload) {
         GACase ga = eventPayload.caseData();
-        if (ga.getStatus() == null) {
-            ga.setStatus(State.Draft);
-        }
-        // Convert to entity and save
-        GA entity = genAppService.convertToGAEntity(ga);
-        entity.setCaseReference(eventPayload.caseReference()); // application id not being mapped
-        genAppRepository.save(entity);
 
-        // Update domain object with generated ID if needed
-        ga.setCaseReference(eventPayload.caseReference());
+       
+        GA entity = genAppService.convertToGAEntity(ga);
+        entity.setCaseReference(eventPayload.caseReference());//
+        GA savedEntity = genAppRepository.save(entity);
+
+        ga.setApplicationId(savedEntity.getId().toString());
 
     }
 }

@@ -5,6 +5,7 @@ import uk.gov.hmcts.ccd.sdk.api.CCDConfig;
 import uk.gov.hmcts.ccd.sdk.api.ConfigBuilder;
 import uk.gov.hmcts.ccd.sdk.api.EventPayload;
 import uk.gov.hmcts.ccd.sdk.api.Permission;
+import uk.gov.hmcts.ccd.sdk.type.CaseLink;
 import uk.gov.hmcts.reform.pcs.ccd.domain.GACase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
@@ -43,8 +44,11 @@ public class AddGeneralApplication implements CCDConfig<PCSCase, State, UserRole
             .fields()
             .page("General Application Details")
             .complex(PCSCase::getCurrentGeneralApplication)
+            .mandatory(GACase::getGaType)
             .mandatory(GACase::getAdjustment)
             .optional(GACase::getAdditionalInformation)
+            .optional(GACase::getCaseLink, "[STATE]=\"NEVER_SHOW\"")
+            .optional(GACase::getStatus, "[STATE]=\"NEVER_SHOW\"")
             .done();
     }
 
@@ -53,9 +57,14 @@ public class AddGeneralApplication implements CCDConfig<PCSCase, State, UserRole
         PCSCase caseData = eventPayload.caseData();
         GACase newApp = caseData.getCurrentGeneralApplication();
 
+        CaseLink caseLink = new CaseLink().builder().caseReference(caseReference.toString()).build();
+
         if (newApp != null) {
             GACase gaData = GACase.builder()
+                .caseLink(caseLink)
+                .gaType(newApp.getGaType())
                 .adjustment(newApp.getAdjustment())
+                .status(State.Draft)
                 .additionalInformation(newApp.getAdditionalInformation())
                 .build();
 
@@ -72,9 +81,9 @@ public class AddGeneralApplication implements CCDConfig<PCSCase, State, UserRole
             genApp.setPcsCase(parentCase);
             parentCase.getGeneralApplications().add(genApp);
 
-            pcsCaseRepository.save(parentCase);//cascades and saves the child also
+            pcsCaseRepository.save(parentCase);
 
-            newApp.setCaseReference(genApp.getCaseReference());
+            newApp.setApplicationId(genApp.getId().toString());
             caseData.setCurrentGeneralApplication(null);
         }
     }

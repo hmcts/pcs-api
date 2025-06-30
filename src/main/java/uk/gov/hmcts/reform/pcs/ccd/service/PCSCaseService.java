@@ -26,7 +26,7 @@ public class PCSCaseService {
 
     public PCSCase convertToPCSCase(PCS pcs) {
         PCSCase.PCSCaseBuilder builder = PCSCase.builder()
-            .caseReference(pcs.getCaseReference());
+            .caseId(pcs.getId().toString());
         if (pcs.getPropertyAddress() != null) {
             builder.propertyAddress(convertAddress(pcs.getPropertyAddress()));
         }
@@ -67,7 +67,7 @@ public class PCSCaseService {
 
     private GACase convertGenApplication(GA ga) {
         return GACase.builder()
-            .caseReference(ga.getCaseReference())
+            .applicationId(ga.getId().toString())
             .adjustment(ga.getAdjustment())
             .additionalInformation(ga.getAdditionalInformation())
             .status(ga.getStatus())
