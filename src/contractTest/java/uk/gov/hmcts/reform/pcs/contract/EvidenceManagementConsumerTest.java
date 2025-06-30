@@ -6,6 +6,7 @@ import au.com.dius.pact.consumer.junit5.PactConsumerTestExt;
 import au.com.dius.pact.consumer.junit5.PactTestFor;
 import au.com.dius.pact.core.model.V4Pact;
 import au.com.dius.pact.core.model.annotations.Pact;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,6 +34,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @ExtendWith(SpringExtension.class)
 @PactTestFor(providerName = "em_docAssembly", port = "8080")
 
+@Disabled("Do not publish this pact until provider tests are implemented - EM-6526")
 public class EvidenceManagementConsumerTest {
 
     private static final String TEMPLATE_ID = "CV-SPC-CLM-ENG-01356.docx";
