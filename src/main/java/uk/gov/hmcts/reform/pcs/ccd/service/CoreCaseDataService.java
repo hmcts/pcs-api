@@ -91,8 +91,7 @@ public class CoreCaseDataService {
     }
 
     private String getServiceToken() {
-        return "Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJjY2RfZ3ciLCJpYXQiOjE2"
-            + "ODAwMDAwMDB9.4QdWwz5ZQ5p5v3cJXkQ4lQwQkR2o9Yw5Qw8yQw8yQw8";
+        return "token";
     }
 
 
