@@ -15,6 +15,9 @@ management:
       base-path: /
       exposure:
         include: health, info, prometheus
+  health:
+    elasticsearch:
+      enabled: false
 
 springdoc:
   packages-to-scan:
@@ -124,6 +127,6 @@ db-scheduler:
   threads: 10
 
 doc-assembly:
-  url: ${DOC_ASSEMBLY_URL:http://localhost:8081}
+  url: ${DOC_ASSEMBLY_URL:http://localhost:8080}
   s2s-authorised:
     services: pcs_api,ccd_data,ccd_gw,ccd_case_document_am_api,ccd_definition,ccd_admin,ccd_ps,ccd

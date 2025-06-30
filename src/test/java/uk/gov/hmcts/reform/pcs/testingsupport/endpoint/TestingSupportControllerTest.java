@@ -112,10 +112,10 @@ class TestingSupportControllerTest {
         when(docAssemblyService.generateDocument(any(DocAssemblyRequest.class)))
             .thenReturn(expectedDocumentUrl);
 
-        ResponseEntity<String> response = underTest.generateDocument(request);
+        ResponseEntity<String> response = underTest.generateDocument("test-auth", "test-s2s", request);
 
         assertThat(response).isNotNull();
-        assertThat(response.getStatusCodeValue()).isEqualTo(201);
+        assertThat(response.getStatusCode().value()).isEqualTo(201);
         assertThat(response.getBody()).isEqualTo(expectedDocumentUrl);
         assertThat(response.getHeaders().getLocation()).isEqualTo(java.net.URI.create(expectedDocumentUrl));
         
@@ -146,10 +146,10 @@ class TestingSupportControllerTest {
         when(docAssemblyService.generateDocument(any(DocAssemblyRequest.class)))
             .thenReturn(expectedDocumentUrl);
 
-        ResponseEntity<String> response = underTest.generateDocument(request);
+        ResponseEntity<String> response = underTest.generateDocument("test-auth", "test-s2s", request);
 
         assertThat(response).isNotNull();
-        assertThat(response.getStatusCodeValue()).isEqualTo(201);
+        assertThat(response.getStatusCode().value()).isEqualTo(201);
         assertThat(response.getBody()).isEqualTo(expectedDocumentUrl);
         assertThat(response.getHeaders().getLocation()).isEqualTo(java.net.URI.create(expectedDocumentUrl));
         
@@ -178,10 +178,10 @@ class TestingSupportControllerTest {
         when(docAssemblyService.generateDocument(any(DocAssemblyRequest.class)))
             .thenReturn(expectedDocumentUrl);
 
-        ResponseEntity<String> response = underTest.generateDocument(request);
+        ResponseEntity<String> response = underTest.generateDocument("test-auth", "test-s2s", request);
 
         assertThat(response).isNotNull();
-        assertThat(response.getStatusCodeValue()).isEqualTo(201);
+        assertThat(response.getStatusCode().value()).isEqualTo(201);
         assertThat(response.getBody()).isEqualTo(expectedDocumentUrl);
         assertThat(response.getHeaders().getLocation()).isEqualTo(java.net.URI.create(expectedDocumentUrl));
         
@@ -207,10 +207,10 @@ class TestingSupportControllerTest {
         when(docAssemblyService.generateDocument(any(DocAssemblyRequest.class)))
             .thenReturn(expectedDocumentUrl);
 
-        ResponseEntity<String> response = underTest.generateDocument(request);
+        ResponseEntity<String> response = underTest.generateDocument("test-auth", "test-s2s", request);
 
         assertThat(response).isNotNull();
-        assertThat(response.getStatusCodeValue()).isEqualTo(201);
+        assertThat(response.getStatusCode().value()).isEqualTo(201);
         assertThat(response.getBody()).isEqualTo(expectedDocumentUrl);
         assertThat(response.getHeaders().getLocation()).isEqualTo(java.net.URI.create(expectedDocumentUrl));
         verify(docAssemblyService).generateDocument(request);
@@ -226,7 +226,7 @@ class TestingSupportControllerTest {
         when(docAssemblyService.generateDocument(any(DocAssemblyRequest.class)))
             .thenThrow(new RuntimeException("Document generation failed"));
 
-        ResponseEntity<String> response = underTest.generateDocument(request);
+        ResponseEntity<String> response = underTest.generateDocument("test-auth", "test-s2s", request);
 
         assertThat(response).isNotNull();
         assertThat(response.getStatusCode().is5xxServerError()).isTrue();
@@ -235,7 +235,7 @@ class TestingSupportControllerTest {
 
     @Test
     void testGenerateDocument_NullRequest() {
-        ResponseEntity<String> response = underTest.generateDocument(null);
+        ResponseEntity<String> response = underTest.generateDocument("test-auth", "test-s2s", null);
         assertThat(response.getStatusCode().is5xxServerError()).isTrue();
         assertThat(response.getBody()).contains("An error occurred while processing your request.");
     }
@@ -244,7 +244,7 @@ class TestingSupportControllerTest {
     void testGenerateDocument_NullAuthorization() {
         final DocAssemblyRequest request = new DocAssemblyRequest();
         request.setFormPayload(new HashMap<>());
-        ResponseEntity<String> response = underTest.generateDocument(request);
+        ResponseEntity<String> response = underTest.generateDocument("test-auth", "test-s2s", request);
         assertThat(response.getStatusCode().is5xxServerError()).isTrue();
         assertThat(response.getBody()).contains("An error occurred while processing your request.");
     }
@@ -253,7 +253,7 @@ class TestingSupportControllerTest {
     void testGenerateDocument_EmptyAuthorization() {
         final DocAssemblyRequest request = new DocAssemblyRequest();
         request.setFormPayload(new HashMap<>());
-        ResponseEntity<String> response = underTest.generateDocument(request);
+        ResponseEntity<String> response = underTest.generateDocument("test-auth", "test-s2s", request);
         assertThat(response.getStatusCode().is5xxServerError()).isTrue();
         assertThat(response.getBody()).contains("An error occurred while processing your request.");
     }
@@ -262,7 +262,7 @@ class TestingSupportControllerTest {
     void testGenerateDocument_WhitespaceAuthorization() {
         final DocAssemblyRequest request = new DocAssemblyRequest();
         request.setFormPayload(new HashMap<>());
-        ResponseEntity<String> response = underTest.generateDocument(request);
+        ResponseEntity<String> response = underTest.generateDocument("test-auth", "test-s2s", request);
         assertThat(response.getStatusCode().is5xxServerError()).isTrue();
         assertThat(response.getBody()).contains("An error occurred while processing your request.");
     }
@@ -271,7 +271,7 @@ class TestingSupportControllerTest {
     void testGenerateDocument_NullServiceAuthorization() {
         final DocAssemblyRequest request = new DocAssemblyRequest();
         request.setFormPayload(new HashMap<>());
-        ResponseEntity<String> response = underTest.generateDocument(request);
+        ResponseEntity<String> response = underTest.generateDocument("test-auth", "test-s2s", request);
         assertThat(response.getStatusCode().is5xxServerError()).isTrue();
         assertThat(response.getBody()).contains("An error occurred while processing your request.");
     }
@@ -280,7 +280,7 @@ class TestingSupportControllerTest {
     void testGenerateDocument_EmptyServiceAuthorization() {
         final DocAssemblyRequest request = new DocAssemblyRequest();
         request.setFormPayload(new HashMap<>());
-        ResponseEntity<String> response = underTest.generateDocument(request);
+        ResponseEntity<String> response = underTest.generateDocument("test-auth", "test-s2s", request);
         assertThat(response.getStatusCode().is5xxServerError()).isTrue();
         assertThat(response.getBody()).contains("An error occurred while processing your request.");
     }
@@ -289,7 +289,7 @@ class TestingSupportControllerTest {
     void testGenerateDocument_WhitespaceServiceAuthorization() {
         final DocAssemblyRequest request = new DocAssemblyRequest();
         request.setFormPayload(new HashMap<>());
-        ResponseEntity<String> response = underTest.generateDocument(request);
+        ResponseEntity<String> response = underTest.generateDocument("test-auth", "test-s2s", request);
         assertThat(response.getStatusCode().is5xxServerError()).isTrue();
         assertThat(response.getBody()).contains("An error occurred while processing your request.");
     }

@@ -3,6 +3,10 @@ package uk.gov.hmcts.reform.pcs.testingsupport.endpoint;
 import com.github.kagkarlsson.scheduler.SchedulerClient;
 import com.github.kagkarlsson.scheduler.task.Task;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -45,10 +49,38 @@ public class TestingSupportController {
         this.docAssemblyService = docAssemblyService;
     }
 
+    @Operation(
+        summary = "Schedule a Hello World task",
+        description = "Schedules a Hello World task to be executed after a specified delay. "
+            + "This endpoint is used for testing the database scheduler functionality.",
+        security = {
+            @SecurityRequirement(name = "AuthorizationToken"),
+            @SecurityRequirement(name = "ServiceAuthorization")
+        }
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Task scheduled successfully"),
+        @ApiResponse(responseCode = "401", description = "Unauthorized - Invalid or missing authorization token"),
+        @ApiResponse(responseCode = "403", description = "Forbidden - Invalid or missing service authorization token"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
     @PostMapping("/db-scheduler-test")
     public ResponseEntity<String> scheduleHelloWorldTask(
+        @Parameter(
+            description = "Delay in seconds before task execution (default: 1)",
+            example = "5"
+        )
         @RequestParam(value = "delaySeconds", defaultValue = "1") int delaySeconds,
+        @Parameter(
+            description = "Bearer token for user authentication (default: DummyId)",
+            example = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+        )
         @RequestHeader(value = AUTHORIZATION, defaultValue = "DummyId") String authorisation,
+        @Parameter(
+            description = "Service-to-Service (S2S) authorization token",
+            example = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+            required = true
+        )
         @RequestHeader(value = "ServiceAuthorization") String serviceAuthorization) {
         try {
             String taskId = "helloWorld-" + UUID.randomUUID();
@@ -70,16 +102,46 @@ public class TestingSupportController {
         }
     }
 
-    @Operation(summary = "Generate a document using Doc Assembly API")
+    @Operation(
+        summary = "Generate a document using Doc Assembly API",
+        description = "Generates a document by sending a request to the Doc Assembly service "
+            + "with template ID and form payload. Returns the URL of the generated document.",
+        security = {
+            @SecurityRequirement(name = "AuthorizationToken"),
+            @SecurityRequirement(name = "ServiceAuthorization")
+        }
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "201", description = "Document generated successfully"),
+        @ApiResponse(responseCode = "400", description = "Bad request - formPayload is required"),
+        @ApiResponse(responseCode = "401", description = "Unauthorized - Invalid or missing authorization token"),
+        @ApiResponse(responseCode = "403", description = "Forbidden - Invalid or missing service authorization token"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
     @PostMapping(value = "/generate-document", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<String> generateDocument(
+        @Parameter(
+            description = "Bearer token for user authentication", 
+            required = true,
+            example = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+        )
+        @RequestHeader(value = "Authorization") String authorization,
+        @Parameter(
+            description = "Service-to-Service (S2S) authorization token", 
+            required = true,
+            example = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+        )
+        @RequestHeader(value = "ServiceAuthorization") String serviceAuthorization,
+        @Parameter(
+            description = "Document generation request containing template ID and form data",
+            required = true
+        )
         @RequestBody DocAssemblyRequest request
     ) {
         try {
             if (request.getFormPayload() == null) {
                 return ResponseEntity.badRequest().body("formPayload is required");
             }
-            
             String documentUrl = docAssemblyService.generateDocument(request);
             return ResponseEntity.created(URI.create(documentUrl)).body(documentUrl);
         } catch (Exception e) {
