@@ -10,7 +10,6 @@ import uk.gov.hmcts.ccd.sdk.api.CCD;
 @Builder
 @Data
 public class PCSCase {
-    @CCD(label = "Description of this case")
     private String caseDescription;
 
     // Markdown string making up the 'example' tab in XUI.

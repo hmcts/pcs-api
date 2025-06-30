@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.event;
 
+import lombok.Data;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CCDConfig;
@@ -20,27 +21,33 @@ public class CreateTestCaseDecentralised implements CCDConfig<PCSCase, State, Us
     @Override
     public void configure(ConfigBuilder<PCSCase, State, UserRole> configBuilder) {
         configBuilder
-            .decentralisedEvent("createTestApplicationDecentralised", this::submit, this::start)
+            .decentralisedEvent("createTestApplication", this::submit, this::start)
             .initialState(State.Open)
             .name("Create test case")
             .grant(Permission.CRUD, UserRole.CASE_WORKER)
             .fields()
             .page("Create test case")
-                .mandatory(PCSCase::getCaseDescription)
-                .done();
+            .mandatory(CreateTestCase.MyDTO::getCaseDescription)
+            .done();
     }
 
-    private PCSCase start(EventPayload<PCSCase, State> p) {
-        p.caseData().setCaseDescription("Acme Corporation v. Smith");
-
-        return p.caseData();
+    private CreateTestCase.MyDTO start(EventPayload<CreateTestCase.MyDTO, State> p) {
+        var result = p.caseData();
+        result.setCaseDescription("Acme Corporation v. Smith");
+        return result;
     }
 
-    public void submit(EventPayload<PCSCase, State> p) {
+    public void submit(EventPayload<CreateTestCase.MyDTO, State> p) {
         var c = PcsCase.builder()
             .reference(p.caseReference())
             .caseDescription(p.caseData().getCaseDescription())
             .build();
         repository.save(c);
     }
+
+    @Data
+    public static class Payload {
+        private String caseDescription;
+    }
+
 }
