@@ -13,8 +13,8 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.entity.Address;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimantInfo;
-import uk.gov.hmcts.reform.pcs.ccd.entity.PCS;
-import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
+import uk.gov.hmcts.reform.pcs.ccd.entity.PCSCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.repository.PCSCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.PCaseService;
 
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.createTestApplication;
@@ -25,11 +25,11 @@ import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.createTestApplication;
 public class CreateTestCase implements CCDConfig<PCSCase, State, UserRole> {
 
 
-    private final PcsCaseRepository pcsRepository;
+    private final PCSCaseRepository pcsRepository;
     private final PCaseService pcsCaseService;
     private final ModelMapper modelMapper;
 
-    public CreateTestCase(PcsCaseRepository pcsRepository, PCaseService pcsCaseService, ModelMapper modelMapper) {
+    public CreateTestCase(PCSCaseRepository pcsRepository, PCaseService pcsCaseService, ModelMapper modelMapper) {
         this.pcsRepository = pcsRepository;
         this.pcsCaseService = pcsCaseService;
         this.modelMapper = modelMapper;
@@ -59,7 +59,7 @@ public class CreateTestCase implements CCDConfig<PCSCase, State, UserRole> {
     private void submit(EventPayload<PCSCase, State> eventPayload) {
         Long caseReference = eventPayload.caseReference();
         PCSCase pcsCase = eventPayload.caseData();
-        var pcsEntity = PCS.builder()
+        var pcsEntity = PCSCaseEntity.builder()
             .caseReference(caseReference)
             .build();
         Address addressEntity = createAddressEntity(pcsCase);
@@ -70,7 +70,7 @@ public class CreateTestCase implements CCDConfig<PCSCase, State, UserRole> {
         pcsEntity.setPropertyAddress(addressEntity);
         pcsEntity.setClaimantInfo(claimantInfoEntity);
 
-        PCS savedEntity = pcsRepository.save(pcsEntity);
+        PCSCaseEntity savedEntity = pcsRepository.save(pcsEntity);
         pcsCase.setCaseReference(savedEntity.getCaseReference());
     }
 

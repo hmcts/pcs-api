@@ -10,7 +10,7 @@ import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.pcs.ccd.GeneralApplicationCaseType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.GACase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.entity.GA;
+import uk.gov.hmcts.reform.pcs.ccd.entity.GACaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.GeneralApplicationRepository;
 
 import java.util.List;
@@ -31,20 +31,20 @@ public class GeneralApplicationService {
         this.modelMapper = modelMapper;
     }
 
-    public List<GA> findByParentCase(Long parentCaseId) {
+    public List<GACaseEntity> findByParentCase(Long parentCaseId) {
         return genAppRepository.findByPcsCase_CaseReference(parentCaseId); //pcs repo?
     }
 
-    public GA findByCaseReference(Long gaCaseReference) {
+    public GACaseEntity findByCaseReference(Long gaCaseReference) {
         return genAppRepository.findByCaseReference(gaCaseReference)
             .orElseThrow(() -> new IllegalStateException("General Application not found"));
     }
 
-    public GA convertToGAEntity(GACase gaCase) {
-        return modelMapper.map(gaCase, GA.class);
+    public GACaseEntity convertToGAEntity(GACase gaCase) {
+        return modelMapper.map(gaCase, GACaseEntity.class);
     }
 
-    public GACase convertToGA(GA gaCase) {
+    public GACase convertToGA(GACaseEntity gaCase) {
         return modelMapper.map(gaCase, GACase.class);
     }
 

@@ -10,8 +10,8 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.GACase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.UserRole;
-import uk.gov.hmcts.reform.pcs.ccd.entity.GA;
-import uk.gov.hmcts.reform.pcs.ccd.entity.PCS;
+import uk.gov.hmcts.reform.pcs.ccd.entity.GACaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.PCSCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.GeneralApplicationRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PCSCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.GeneralApplicationService;
@@ -74,9 +74,9 @@ public class AddGeneralApplication implements CCDConfig<PCSCase, State, UserRole
             );
 
             // Retrieve saved entity
-            GA genApp = genAppService.findByCaseReference(gaCaseReference);
+            GACaseEntity genApp = genAppService.findByCaseReference(gaCaseReference);
             // Link to parent case
-            PCS parentCase = pcsCaseService.findPCSCase(caseReference);
+            PCSCaseEntity parentCase = pcsCaseService.findPCSCase(caseReference);
 
             genApp.setPcsCase(parentCase);
             parentCase.getGeneralApplications().add(genApp);

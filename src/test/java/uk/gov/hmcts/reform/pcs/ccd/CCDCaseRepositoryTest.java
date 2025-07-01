@@ -8,9 +8,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.modelmapper.ModelMapper;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
+import uk.gov.hmcts.reform.pcs.ccd.repository.PCSCaseRepository;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 
 import java.util.Optional;
@@ -26,7 +24,7 @@ class CCDCaseRepositoryTest {
     private static final long CASE_REFERENCE = 1234L;
 
     @Mock
-    private PcsCaseRepository pcsCaseRepository;
+    private PCSCaseRepository pcsCaseRepository;
     @Mock
     private ModelMapper modelMapper;
 
@@ -57,7 +55,7 @@ class CCDCaseRepositoryTest {
         String expectedForename = "Test forename";
         String expectedSurname = "Test surname";
 
-        PcsCaseEntity pcsCaseEntity = mock(PcsCaseEntity.class);
+        PCSCaseEntity pcsCaseEntity = mock(PCSCaseEntity.class);
         when(pcsCaseEntity.getApplicantForename()).thenReturn(expectedForename);
         when(pcsCaseEntity.getApplicantSurname()).thenReturn(expectedSurname);
 
@@ -75,7 +73,7 @@ class CCDCaseRepositoryTest {
     @Test
     void shouldMapPropertyAddress() {
         // Given
-        PcsCaseEntity pcsCaseEntity = mock(PcsCaseEntity.class);
+        PCSCaseEntity pcsCaseEntity = mock(PCSCaseEntity.class);
         AddressEntity addressEntity = mock(AddressEntity.class);
         when(pcsCaseEntity.getPropertyAddress()).thenReturn(addressEntity);
 

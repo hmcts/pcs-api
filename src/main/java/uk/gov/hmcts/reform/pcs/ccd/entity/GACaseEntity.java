@@ -30,7 +30,7 @@ import java.util.UUID;
 @AllArgsConstructor
 
 @Table(name = "general_application")
-public class GA {
+public class GACaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
@@ -50,5 +50,5 @@ public class GA {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "parent_case_id")
-    private PCS pcsCase;
+    private PCSCaseEntity pcsCase;
 }

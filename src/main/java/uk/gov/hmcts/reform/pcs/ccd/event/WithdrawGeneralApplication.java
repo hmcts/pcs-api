@@ -9,7 +9,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.GACase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.UserRole;
-import uk.gov.hmcts.reform.pcs.ccd.entity.GA;
+import uk.gov.hmcts.reform.pcs.ccd.entity.GACaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.GeneralApplicationRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PCSCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.CoreCaseDataService;
@@ -17,7 +17,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.GeneralApplicationService;
 
 @Component
 public class WithdrawGeneralApplication implements CCDConfig<PCSCase, State, UserRole> {
-    
+
     private final PCSCaseRepository pcsRepository;
     private final GeneralApplicationRepository gaRepository;
     private final GeneralApplicationService gaService;
@@ -50,7 +50,7 @@ public class WithdrawGeneralApplication implements CCDConfig<PCSCase, State, Use
 
         String genAppRef = payload.urlParams().getFirst("genAppId");
 
-        GA toUpdate = gaRepository.findByCaseReference(Long.valueOf(genAppRef)).get();
+        GACaseEntity toUpdate = gaRepository.findByCaseReference(Long.valueOf(genAppRef)).get();
 
         //Map<String, Object> existingCase = gaService.getCase(toUpdate.getCaseReference().toString()).getData();
         //existingCase.put("status", State.Withdrawn.toString());

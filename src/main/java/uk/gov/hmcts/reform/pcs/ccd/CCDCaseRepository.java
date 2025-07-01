@@ -3,11 +3,11 @@ package uk.gov.hmcts.reform.pcs.ccd;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.DecentralisedCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.entity.GA;
-import uk.gov.hmcts.reform.pcs.ccd.entity.PCS;
+import uk.gov.hmcts.reform.pcs.ccd.entity.GACaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.PCSCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.renderer.GeneralApplicationRenderer;
 import uk.gov.hmcts.reform.pcs.ccd.repository.GeneralApplicationRepository;
-import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
+import uk.gov.hmcts.reform.pcs.ccd.repository.PCSCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.GeneralApplicationService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PCaseService;
 
@@ -16,13 +16,13 @@ import java.util.Optional;
 @Component
 public class CCDCaseRepository extends DecentralisedCaseRepository<Object> {
 
-    private final PcsCaseRepository pcsCaseRepository;
+    private final PCSCaseRepository pcsCaseRepository;
     private final GeneralApplicationRepository generalApplicationRepository;
     private final GeneralApplicationService generalApplicationService;
     private final PCaseService pcsCaseService;
     private final GeneralApplicationRenderer genAppRenderer;
 
-    public CCDCaseRepository(PcsCaseRepository pcsCaseRepository,
+    public CCDCaseRepository(PCSCaseRepository pcsCaseRepository,
                              GeneralApplicationRepository generalApplicationRepository,
                              GeneralApplicationService generalApplicationService,
                              PCaseService pcsCaseService, GeneralApplicationRenderer genAppRenderer) {
@@ -36,7 +36,7 @@ public class CCDCaseRepository extends DecentralisedCaseRepository<Object> {
     @Override
     public Object getCase(long caseRef) {
         // Try PCS first
-        Optional<PCS> pcs = pcsCaseRepository.findByCaseReference(caseRef);
+        Optional<PCSCaseEntity> pcs = pcsCaseRepository.findByCaseReference(caseRef);
         if (pcs.isPresent()) {
             PCSCase pcsCase = pcsCaseService.convertToPCSCase(pcs.get());
             pcsCase.setGeneralApplicationsSummaryMarkdown(genAppRenderer.render(
@@ -46,7 +46,7 @@ public class CCDCaseRepository extends DecentralisedCaseRepository<Object> {
             return pcsCase;
         }
         // Else try GA
-        Optional<GA> ga = generalApplicationRepository.findByCaseReference(caseRef);
+        Optional<GACaseEntity> ga = generalApplicationRepository.findByCaseReference(caseRef);
         if (ga.isPresent()) {
             return generalApplicationService.convertToGA(ga.get());
         }

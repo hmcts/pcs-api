@@ -9,11 +9,10 @@ import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.FieldType;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
-
-import java.util.List;
-
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseworkerAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenAccess;
+
+import java.util.List;
 
 
 /**
@@ -28,15 +27,15 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenAccess;
 public class PCSCase {
 
     @CCD(label = "Case Id",
-        access = {CitizenAccess.class, CaseworkerAccess.class)
+        access = {CitizenAccess.class, CaseworkerAccess.class})
     private Long caseReference;
 
     @CCD(label = "Applicant's forename",
-        access = {CitizenAccess.class, CaseworkerAccess.class)
+        access = {CitizenAccess.class, CaseworkerAccess.class})
     private String applicantForename;
 
     @CCD(label = "Applicant's surname",
-        access = {CitizenAccess.class, CaseworkerAccess.class)
+        access = {CitizenAccess.class, CaseworkerAccess.class})
     private String applicantSurname;
 
     @CCD(

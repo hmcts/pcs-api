@@ -2,18 +2,18 @@ package uk.gov.hmcts.reform.pcs.ccd.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
-import uk.gov.hmcts.reform.pcs.ccd.entity.GA;
+import uk.gov.hmcts.reform.pcs.ccd.entity.GACaseEntity;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 @Repository
-public interface GeneralApplicationRepository extends JpaRepository<GA, UUID> {
+public interface GeneralApplicationRepository extends JpaRepository<GACaseEntity, UUID> {
 
-    List<GA> findByPcsCase_CaseReference(Long caseReference);
+    List<GACaseEntity> findByPcsCase_CaseReference(Long caseReference);
 
-    Optional<GA> findByCaseReference(Long caseRef);
+    Optional<GACaseEntity> findByCaseReference(Long caseRef);
 
-    Optional<GA> findById(UUID id);
+    Optional<GACaseEntity> findById(UUID id);
 }

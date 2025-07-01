@@ -8,7 +8,7 @@ import uk.gov.hmcts.ccd.sdk.api.Permission;
 import uk.gov.hmcts.reform.pcs.ccd.domain.GACase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.UserRole;
-import uk.gov.hmcts.reform.pcs.ccd.entity.GA;
+import uk.gov.hmcts.reform.pcs.ccd.entity.GACaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.GeneralApplicationRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.GeneralApplicationService;
 
@@ -45,9 +45,9 @@ public class CreateGeneralApplication implements CCDConfig<GACase, State, UserRo
         GACase ga = eventPayload.caseData();
 
 
-        GA entity = genAppService.convertToGAEntity(ga);
+        GACaseEntity entity = genAppService.convertToGAEntity(ga);
         entity.setCaseReference(eventPayload.caseReference());//
-        GA savedEntity = genAppRepository.save(entity);
+        GACaseEntity savedEntity = genAppRepository.save(entity);
 
         //  ga.setCaseReference(eventPayload.caseReference());
 

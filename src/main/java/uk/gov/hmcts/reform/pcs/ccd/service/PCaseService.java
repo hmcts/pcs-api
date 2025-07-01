@@ -7,8 +7,8 @@ import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.GACase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.entity.Address;
-import uk.gov.hmcts.reform.pcs.ccd.entity.GA;
-import uk.gov.hmcts.reform.pcs.ccd.entity.PCS;
+import uk.gov.hmcts.reform.pcs.ccd.entity.GACaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.PCSCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PCSCaseRepository;
 
 import java.util.stream.Collectors;
@@ -24,7 +24,7 @@ public class PCaseService {
         this.pcsCaseRepository = pcsCaseRepository;
     }
 
-    public PCSCase convertToPCSCase(PCS pcs) {
+    public PCSCase convertToPCSCase(PCSCaseEntity pcs) {
         PCSCase.PCSCaseBuilder builder = PCSCase.builder()
             .caseReference(pcs.getCaseReference());
         if (pcs.getPropertyAddress() != null) {
@@ -50,8 +50,8 @@ public class PCaseService {
         return builder.build();
     }
 
-    public PCS convertToPCSEntity(PCSCase pcsCase) {
-        return modelMapper.map(pcsCase, PCS.class);
+    public PCSCaseEntity convertToPCSEntity(PCSCase pcsCase) {
+        return modelMapper.map(pcsCase, PCSCaseEntity.class);
     }
 
     private AddressUK convertAddress(Address address) {
@@ -65,7 +65,7 @@ public class PCaseService {
             .build();
     }
 
-    private GACase convertGenApplication(GA ga) {
+    private GACase convertGenApplication(GACaseEntity ga) {
         return GACase.builder()
             .caseReference(ga.getCaseReference())
             .adjustment(ga.getAdjustment())
@@ -74,7 +74,7 @@ public class PCaseService {
             .build();
     }
 
-    public PCS findPCSCase(Long caseReference) {
+    public PCSCaseEntity findPCSCase(Long caseReference) {
         return pcsCaseRepository.findByCaseReference(caseReference)
             .orElseThrow(() -> new IllegalStateException("PCS case not found"));
     }

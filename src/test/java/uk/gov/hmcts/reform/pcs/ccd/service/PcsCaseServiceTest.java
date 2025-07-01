@@ -10,9 +10,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.modelmapper.ModelMapper;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
+import uk.gov.hmcts.reform.pcs.ccd.repository.PCSCaseRepository;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 
 import java.util.Optional;
@@ -31,11 +29,11 @@ class PcsCaseServiceTest {
     private static final long CASE_REFERENCE = 1234L;
 
     @Mock
-    private PcsCaseRepository pcsCaseRepository;
+    private PCSCaseRepository pcsCaseRepository;
     @Mock
     private ModelMapper modelMapper;
     @Captor
-    private ArgumentCaptor<PcsCaseEntity> pcsCaseEntityCaptor;
+    private ArgumentCaptor<PCSCaseEntity> pcsCaseEntityCaptor;
 
     private PcsCaseService underTest;
 
@@ -55,7 +53,7 @@ class PcsCaseServiceTest {
         // Then
         verify(pcsCaseRepository).save(pcsCaseEntityCaptor.capture());
 
-        PcsCaseEntity savedEntity = pcsCaseEntityCaptor.getValue();
+        PCSCaseEntity savedEntity = pcsCaseEntityCaptor.getValue();
         assertThat(savedEntity.getApplicantForename()).isNull();
         assertThat(savedEntity.getApplicantSurname()).isNull();
         assertThat(savedEntity.getPropertyAddress()).isNull();
@@ -81,7 +79,7 @@ class PcsCaseServiceTest {
         // Then
         verify(pcsCaseRepository).save(pcsCaseEntityCaptor.capture());
 
-        PcsCaseEntity savedEntity = pcsCaseEntityCaptor.getValue();
+        PCSCaseEntity savedEntity = pcsCaseEntityCaptor.getValue();
         assertThat(savedEntity.getApplicantForename()).isEqualTo(expectedForename);
         assertThat(savedEntity.getApplicantSurname()).isEqualTo(expectedSurname);
         assertThat(savedEntity.getPropertyAddress()).isEqualTo(propertyAddressEntity);
@@ -106,7 +104,7 @@ class PcsCaseServiceTest {
     void shouldLeaveFieldsUnchangedWhenPatchingCaseWithNoData() {
         // Given
         PCSCase pcsCase = mock(PCSCase.class);
-        PcsCaseEntity existingPcsCaseEntity = mock(PcsCaseEntity.class);
+        PCSCaseEntity existingPcsCaseEntity = mock(PCSCaseEntity.class);
 
         when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(existingPcsCaseEntity));
 
@@ -116,7 +114,7 @@ class PcsCaseServiceTest {
         // Then
         verify(pcsCaseRepository).save(pcsCaseEntityCaptor.capture());
 
-        PcsCaseEntity savedEntity = pcsCaseEntityCaptor.getValue();
+        PCSCaseEntity savedEntity = pcsCaseEntityCaptor.getValue();
         assertThat(savedEntity).isSameAs(existingPcsCaseEntity);
         verify(existingPcsCaseEntity, never()).setApplicantForename(any());
         verify(existingPcsCaseEntity, never()).setApplicantSurname(any());
@@ -133,7 +131,7 @@ class PcsCaseServiceTest {
         AddressUK updatedPropertyAddress = mock(AddressUK.class);
         final AddressEntity updatedAddressEntity = stubAddressUKModelMapper(updatedPropertyAddress);
 
-        PcsCaseEntity existingPcsCaseEntity = mock(PcsCaseEntity.class);
+        PCSCaseEntity existingPcsCaseEntity = mock(PCSCaseEntity.class);
         when(pcsCase.getApplicantForename()).thenReturn(updatedForename);
         when(pcsCase.getApplicantSurname()).thenReturn(updatedSurname);
         when(pcsCase.getPropertyAddress()).thenReturn(updatedPropertyAddress);
@@ -146,7 +144,7 @@ class PcsCaseServiceTest {
         // Then
         verify(pcsCaseRepository).save(pcsCaseEntityCaptor.capture());
 
-        PcsCaseEntity savedEntity = pcsCaseEntityCaptor.getValue();
+        PCSCaseEntity savedEntity = pcsCaseEntityCaptor.getValue();
         assertThat(savedEntity).isSameAs(existingPcsCaseEntity);
         verify(existingPcsCaseEntity).setApplicantForename(updatedForename);
         verify(existingPcsCaseEntity).setApplicantSurname(updatedSurname);

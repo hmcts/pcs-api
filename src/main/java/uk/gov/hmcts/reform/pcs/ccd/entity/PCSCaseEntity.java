@@ -26,7 +26,7 @@ import static jakarta.persistence.CascadeType.ALL;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class PCS {
+public class PCSCaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
@@ -42,7 +42,7 @@ public class PCS {
 
     @OneToMany(mappedBy = "pcsCase", cascade = ALL, orphanRemoval = true)
     @Builder.Default
-    private List<GA> generalApplications = new ArrayList<>();
+    private List<GACaseEntity> generalApplications = new ArrayList<>();
 
 
 }

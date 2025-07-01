@@ -5,16 +5,14 @@ import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
+import uk.gov.hmcts.reform.pcs.ccd.repository.PCSCaseRepository;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 
 @Service
 @AllArgsConstructor
 public class PcsCaseService {
 
-    private final PcsCaseRepository pcsCaseRepository;
+    private final PCSCaseRepository pcsCaseRepository;
     private final ModelMapper modelMapper;
 
     public void createCase(long caseReference, PCSCase pcsCase) {
@@ -23,7 +21,7 @@ public class PcsCaseService {
         AddressEntity addressEntity = applicantAddress != null
             ? modelMapper.map(applicantAddress, AddressEntity.class) : null;
 
-        PcsCaseEntity pcsCaseEntity = new PcsCaseEntity();
+        PCSCaseEntity pcsCaseEntity = new PCSCaseEntity();
         pcsCaseEntity.setCaseReference(caseReference);
         pcsCaseEntity.setApplicantForename(pcsCase.getApplicantForename());
         pcsCaseEntity.setApplicantSurname(pcsCase.getApplicantSurname());
@@ -33,7 +31,7 @@ public class PcsCaseService {
     }
 
     public void patchCase(long caseReference, PCSCase pcsCase) {
-        PcsCaseEntity pcsCaseEntity = pcsCaseRepository.findByCaseReference(caseReference)
+        PCSCaseEntity pcsCaseEntity = pcsCaseRepository.findByCaseReference(caseReference)
             .orElseThrow(() -> new CaseNotFoundException(caseReference));
 
         if (pcsCase.getApplicantForename() != null) {

@@ -36,7 +36,7 @@ public class ClaimantInfo {
     @OneToOne(fetch = LAZY)
     @JoinColumn(name = "parent_case_id")
     @JsonBackReference
-    private PCS pcsCase;
+    private PCSCaseEntity pcsCase;
 
 }
 

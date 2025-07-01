@@ -8,7 +8,7 @@ import uk.gov.hmcts.ccd.sdk.api.Permission;
 import uk.gov.hmcts.reform.pcs.ccd.domain.GACase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.UserRole;
-import uk.gov.hmcts.reform.pcs.ccd.entity.GA;
+import uk.gov.hmcts.reform.pcs.ccd.entity.GACaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.GeneralApplicationRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PCSCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.GeneralApplicationService;
@@ -43,7 +43,7 @@ public class UpdateGeneralApplication implements CCDConfig<GACase, State, UserRo
     }
 
     private void aboutToSubmit(EventPayload<GACase, State> payload) {
-        GA toUpdate = gaRepository.findByCaseReference(payload.caseReference()).get();
+        GACaseEntity toUpdate = gaRepository.findByCaseReference(payload.caseReference()).get();
         toUpdate.setStatus(State.Withdrawn);
         gaRepository.save(toUpdate);
     }
