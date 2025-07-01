@@ -2,7 +2,9 @@ package uk.gov.hmcts.reform.pcs.document.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import feign.FeignException;
+
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.pcs.testingsupport.model.DocAssemblyRequest;
@@ -58,7 +60,6 @@ public class DocAssemblyService {
                 serviceAuthorization,
                 request
             );
-            
             // Parse the JSON response to extract the document URL
             JsonNode jsonNode = objectMapper.readTree(response);
             JsonNode renditionOutputLocationNode = jsonNode.get("renditionOutputLocation");
@@ -72,6 +73,7 @@ public class DocAssemblyService {
             }
             log.info("Document generated successfully. URL: {}", documentUrl);
             return documentUrl;
+
         } catch (FeignException e) {
             handleFeignException(e);
             throw new DocAssemblyException("Unexpected error occurred during document generation", e);
@@ -108,6 +110,13 @@ public class DocAssemblyService {
                 } else {
                     throw new DocAssemblyException("Doc Assembly service request failed: " + message, e);
                 }
+        }
+    }
+        } catch (DocAssemblyException e) {
+            throw e;
+        } catch (Exception e) {
+            log.error("Failed to parse Doc Assembly response: {}", response, e);
+            throw new DocAssemblyException("Failed to parse Doc Assembly response", e);
         }
     }
 } 

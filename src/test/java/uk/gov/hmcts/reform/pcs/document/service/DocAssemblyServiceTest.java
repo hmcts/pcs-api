@@ -15,6 +15,7 @@ import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.pcs.idam.IdamService;
 import uk.gov.hmcts.reform.pcs.testingsupport.model.DocAssemblyRequest;
 import uk.gov.hmcts.reform.pcs.document.service.exception.DocAssemblyException;
+
 import feign.FeignException;
 import org.mockito.Mockito;
 
@@ -390,6 +391,7 @@ class DocAssemblyServiceTest {
         // Then
         assertThat(result).isEqualTo(EXPECTED_DOCUMENT_URL);
     }
+
 
     @Test
     void shouldThrowDocAssemblyExceptionWhenFeignException400Occurs() {

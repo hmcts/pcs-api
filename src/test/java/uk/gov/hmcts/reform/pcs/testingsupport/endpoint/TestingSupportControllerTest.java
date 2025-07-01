@@ -12,7 +12,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.ResponseEntity;
 import uk.gov.hmcts.reform.pcs.document.service.DocAssemblyService;
 import uk.gov.hmcts.reform.pcs.testingsupport.model.DocAssemblyRequest;
+
 import uk.gov.hmcts.reform.pcs.document.service.exception.DocAssemblyException;
+
 
 import java.time.Instant;
 import java.util.HashMap;
@@ -238,19 +240,24 @@ class TestingSupportControllerTest {
     void testGenerateDocument_NullRequest() {
         ResponseEntity<String> response = underTest.generateDocument("test-auth", "test-s2s", null);
         assertThat(response.getStatusCode().is5xxServerError()).isTrue();
-        assertThat(response.getBody()).contains("Doc Assembly service returned invalid document URL");
+
+        assertThat(response.getBody()).contains("An error occurred while processing your request.");
+
     }
 
     @Test
     void testGenerateDocument_NullAuthorization() {
         final DocAssemblyRequest request = new DocAssemblyRequest();
         request.setFormPayload(new HashMap<>());
+
         // Mock the service to return null, which triggers the invalid document URL error
         when(docAssemblyService.generateDocument(any(DocAssemblyRequest.class)))
             .thenReturn(null);
+       
         ResponseEntity<String> response = underTest.generateDocument("test-auth", "test-s2s", request);
         assertThat(response.getStatusCode().is5xxServerError()).isTrue();
-        assertThat(response.getBody()).contains("Doc Assembly service returned invalid document URL");
+        assertThat(response.getBody()).contains("An error occurred while processing your request.");
+
     }
 
     @Test
@@ -260,51 +267,61 @@ class TestingSupportControllerTest {
         // Mock the service to return empty string, which triggers the invalid document URL error
         when(docAssemblyService.generateDocument(any(DocAssemblyRequest.class)))
             .thenReturn("");
+       
         ResponseEntity<String> response = underTest.generateDocument("test-auth", "test-s2s", request);
         assertThat(response.getStatusCode().is5xxServerError()).isTrue();
-        assertThat(response.getBody()).contains("Doc Assembly service returned invalid document URL");
+        assertThat(response.getBody()).contains("An error occurred while processing your request.");
     }
 
     @Test
     void testGenerateDocument_WhitespaceAuthorization() {
         final DocAssemblyRequest request = new DocAssemblyRequest();
         request.setFormPayload(new HashMap<>());
+
         // Mock the service to return whitespace, which triggers the invalid document URL error
         when(docAssemblyService.generateDocument(any(DocAssemblyRequest.class)))
             .thenReturn("   ");
+       
         ResponseEntity<String> response = underTest.generateDocument("test-auth", "test-s2s", request);
         assertThat(response.getStatusCode().is5xxServerError()).isTrue();
-        assertThat(response.getBody()).contains("Doc Assembly service returned invalid document URL");
+        assertThat(response.getBody()).contains("An error occurred while processing your request.");
+
     }
 
     @Test
     void testGenerateDocument_NullServiceAuthorization() {
         final DocAssemblyRequest request = new DocAssemblyRequest();
         request.setFormPayload(new HashMap<>());
+
         // Mock the service to return null, which triggers the invalid document URL error
         when(docAssemblyService.generateDocument(any(DocAssemblyRequest.class)))
             .thenReturn(null);
+        
         ResponseEntity<String> response = underTest.generateDocument("test-auth", "test-s2s", request);
         assertThat(response.getStatusCode().is5xxServerError()).isTrue();
-        assertThat(response.getBody()).contains("Doc Assembly service returned invalid document URL");
+        assertThat(response.getBody()).contains("An error occurred while processing your request.");
     }
 
     @Test
     void testGenerateDocument_EmptyServiceAuthorization() {
         final DocAssemblyRequest request = new DocAssemblyRequest();
         request.setFormPayload(new HashMap<>());
+
         // Mock the service to return empty string, which triggers the invalid document URL error
         when(docAssemblyService.generateDocument(any(DocAssemblyRequest.class)))
             .thenReturn("");
+       
         ResponseEntity<String> response = underTest.generateDocument("test-auth", "test-s2s", request);
         assertThat(response.getStatusCode().is5xxServerError()).isTrue();
-        assertThat(response.getBody()).contains("Doc Assembly service returned invalid document URL");
+        assertThat(response.getBody()).contains("An error occurred while processing your request.");
+
     }
 
     @Test
     void testGenerateDocument_WhitespaceServiceAuthorization() {
         final DocAssemblyRequest request = new DocAssemblyRequest();
         request.setFormPayload(new HashMap<>());
+
         // Mock the service to return whitespace, which triggers the invalid document URL error
         when(docAssemblyService.generateDocument(any(DocAssemblyRequest.class)))
             .thenReturn("   ");
@@ -438,5 +455,9 @@ class TestingSupportControllerTest {
         assertThat(response).isNotNull();
         assertThat(response.getStatusCode().value()).isEqualTo(400);
         assertThat(response.getBody()).contains("Invalid request: Request cannot be null");
+
+        ResponseEntity<String> response = underTest.generateDocument("test-auth", "test-s2s", request);
+        assertThat(response.getStatusCode().is5xxServerError()).isTrue();
+        assertThat(response.getBody()).contains("An error occurred while processing your request.");
     }
 }

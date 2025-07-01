@@ -20,7 +20,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import uk.gov.hmcts.reform.pcs.document.service.DocAssemblyService;
+
 import uk.gov.hmcts.reform.pcs.document.service.exception.DocAssemblyException;
+
 import uk.gov.hmcts.reform.pcs.testingsupport.model.DocAssemblyRequest;
 
 import java.net.URI;
@@ -159,12 +161,20 @@ public class TestingSupportController {
         } catch (IllegalArgumentException e) {
             log.error("Invalid request: {}", e.getMessage(), e);
             return ResponseEntity.badRequest().body("Invalid request: " + e.getMessage());
+          
+            if (request.getFormPayload() == null) {
+                return ResponseEntity.badRequest().body("formPayload is required");
+            }
+            String documentUrl = docAssemblyService.generateDocument(request);
+            return ResponseEntity.created(URI.create(documentUrl)).body(documentUrl);
+
         } catch (Exception e) {
             log.error("Failed to generate document", e);
             return ResponseEntity.internalServerError()
                 .body("An error occurred while processing your request.");
         }
     }
+
     
     private ResponseEntity<String> handleDocAssemblyException(DocAssemblyException e) {
         String message = e.getMessage();
