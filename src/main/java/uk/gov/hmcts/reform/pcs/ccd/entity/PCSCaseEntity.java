@@ -35,7 +35,7 @@ public class PCSCaseEntity {
     private Long caseReference;
 
     @OneToOne(mappedBy = "pcsCase", cascade = ALL)
-    private Address propertyAddress;
+    private AddressEntity propertyAddress;
 
     @OneToOne(mappedBy = "pcsCase", cascade = ALL)
     private ClaimantInfo claimantInfo;

@@ -5,9 +5,9 @@ import uk.gov.hmcts.ccd.sdk.api.CCDConfig;
 import uk.gov.hmcts.ccd.sdk.api.ConfigBuilder;
 import uk.gov.hmcts.ccd.sdk.api.EventPayload;
 import uk.gov.hmcts.ccd.sdk.api.Permission;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.GACase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.domain.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GACaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.GeneralApplicationRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.GeneralApplicationService;
@@ -28,9 +28,9 @@ public class CreateGeneralApplication implements CCDConfig<GACase, State, UserRo
     @Override
     public void configure(ConfigBuilder<GACase, State, UserRole> builder) {
         builder.decentralisedEvent(EventId.createGeneralApplication.name(), this::submit)
-            .initialState(State.Draft)
+            .initialState(State.DRAFT)
             .name("Make General Application")
-            .grant(Permission.CRUD, UserRole.CASE_WORKER)
+            .grant(Permission.CRUD, UserRole.PCS_CASE_WORKER)
             .fields()
             .mandatory(GACase::getGaType)
             .mandatory(GACase::getAdjustment)

@@ -6,27 +6,27 @@ import uk.gov.hmcts.ccd.sdk.api.ConfigBuilder;
 import uk.gov.hmcts.ccd.sdk.api.EventPayload;
 import uk.gov.hmcts.ccd.sdk.api.Permission;
 import uk.gov.hmcts.ccd.sdk.type.CaseLink;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.GACase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.domain.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GACaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PCSCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.GeneralApplicationRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PCSCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.GeneralApplicationService;
-import uk.gov.hmcts.reform.pcs.ccd.service.PCaseService;
+import uk.gov.hmcts.reform.pcs.ccd.service.PCSCaseService;
 
 @Component
 public class AddGeneralApplication implements CCDConfig<PCSCase, State, UserRole> {
 
     private final GeneralApplicationRepository genAppRepository;
     private final GeneralApplicationService genAppService;
-    private final PCaseService pcsCaseService;
+    private final PCSCaseService pcsCaseService;
     private final PCSCaseRepository pcsCaseRepository;
 
     public AddGeneralApplication(GeneralApplicationRepository genAppRepository,
-                                 GeneralApplicationService genAppService, PCaseService pcsCaseService,
+                                 GeneralApplicationService genAppService, PCSCaseService pcsCaseService,
                                  PCSCaseRepository pcsCaseRepository) {
         this.genAppRepository = genAppRepository;
         this.genAppService = genAppService;
@@ -37,10 +37,10 @@ public class AddGeneralApplication implements CCDConfig<PCSCase, State, UserRole
     @Override
     public void configure(ConfigBuilder<PCSCase, State, UserRole> builder) {
         builder.decentralisedEvent(EventId.addGeneralApplication.name(), this::aboutToSubmit)
-            .forStates(State.Submitted, State.Open)
+            .forStates(State.CASE_ISSUED)
             .name("Make General Application")
             .showSummary()
-            .grant(Permission.CRUD, UserRole.CASE_WORKER)
+            .grant(Permission.CRUD, UserRole.PCS_CASE_WORKER)
             .fields()
             .page("General Application Details")
             .complex(PCSCase::getCurrentGeneralApplication)
@@ -64,7 +64,7 @@ public class AddGeneralApplication implements CCDConfig<PCSCase, State, UserRole
                 .caseLink(caseLink)
                 .gaType(newApp.getGaType())
                 .adjustment(newApp.getAdjustment())
-                .status(State.Draft)
+                .status(State.DRAFT)
                 .additionalInformation(newApp.getAdditionalInformation())
                 .build();
 

@@ -33,8 +33,7 @@ public enum State {
     DRAFT,
 
     @CCD(
-        label = "Withdrawn",
-        access = {CaseworkerAccess.class}
+        label = "Withdrawn"
     )
     WITHDRAWN;
 

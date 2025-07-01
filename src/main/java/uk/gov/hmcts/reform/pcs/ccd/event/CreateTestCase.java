@@ -1,7 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.event;
 
 
-import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CCDConfig;
@@ -11,25 +10,24 @@ import uk.gov.hmcts.ccd.sdk.api.Permission;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.entity.Address;
+import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimantInfo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PCSCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PCSCaseRepository;
-import uk.gov.hmcts.reform.pcs.ccd.service.PCaseService;
+import uk.gov.hmcts.reform.pcs.ccd.service.PCSCaseService;
 
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.createTestApplication;
 
 
 @Component
-@AllArgsConstructor
 public class CreateTestCase implements CCDConfig<PCSCase, State, UserRole> {
 
 
     private final PCSCaseRepository pcsRepository;
-    private final PCaseService pcsCaseService;
+    private final PCSCaseService pcsCaseService;
     private final ModelMapper modelMapper;
 
-    public CreateTestCase(PCSCaseRepository pcsRepository, PCaseService pcsCaseService, ModelMapper modelMapper) {
+    public CreateTestCase(PCSCaseRepository pcsRepository, PCSCaseService pcsCaseService, ModelMapper modelMapper) {
         this.pcsRepository = pcsRepository;
         this.pcsCaseService = pcsCaseService;
         this.modelMapper = modelMapper;
@@ -38,7 +36,7 @@ public class CreateTestCase implements CCDConfig<PCSCase, State, UserRole> {
     @Override
     public void configure(ConfigBuilder<PCSCase, State, UserRole> configBuilder) {
         configBuilder
-            .decentralisedEvent(createTestApplication.name(), this::submit, this::start)
+            .decentralisedEvent(createTestApplication.name(), this::submit)
             .initialState(State.CASE_ISSUED)
             .name("Make a claim")
             .grant(Permission.CRUD, UserRole.PCS_CASE_WORKER)
@@ -62,7 +60,7 @@ public class CreateTestCase implements CCDConfig<PCSCase, State, UserRole> {
         var pcsEntity = PCSCaseEntity.builder()
             .caseReference(caseReference)
             .build();
-        Address addressEntity = createAddressEntity(pcsCase);
+        AddressEntity addressEntity = createAddressEntity(pcsCase);
         addressEntity.setPcsCase(pcsEntity);
         ClaimantInfo claimantInfoEntity = createClaimantInfoEntity(pcsCase);
         claimantInfoEntity.setPcsCase(pcsEntity);
@@ -74,8 +72,8 @@ public class CreateTestCase implements CCDConfig<PCSCase, State, UserRole> {
         pcsCase.setCaseReference(savedEntity.getCaseReference());
     }
 
-    private Address createAddressEntity(PCSCase pcsCase) {
-        return modelMapper.map(pcsCase.getPropertyAddress(), Address.class);
+    private AddressEntity createAddressEntity(PCSCase pcsCase) {
+        return modelMapper.map(pcsCase.getPropertyAddress(), AddressEntity.class);
     }
 
     private ClaimantInfo createClaimantInfoEntity(PCSCase pcsCase) {
@@ -84,18 +82,6 @@ public class CreateTestCase implements CCDConfig<PCSCase, State, UserRole> {
         return claimantInfo;
     }
 
-    private PCSCase start(EventPayload<PCSCase, State> eventPayload) {
-        PCSCase caseData = eventPayload.caseData();
-        caseData.setApplicantForename("Preset value");
-        return caseData;
-    }
-
-    private void submit(EventPayload<PCSCase, State> eventPayload) {
-        long caseReference = eventPayload.caseReference();
-        PCSCase pcsCase = eventPayload.caseData();
-
-        pcsCaseService.createCase(caseReference, pcsCase);
-
-    }
-
 }
+
+

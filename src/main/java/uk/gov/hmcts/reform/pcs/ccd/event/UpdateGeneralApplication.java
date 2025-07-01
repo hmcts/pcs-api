@@ -5,9 +5,9 @@ import uk.gov.hmcts.ccd.sdk.api.CCDConfig;
 import uk.gov.hmcts.ccd.sdk.api.ConfigBuilder;
 import uk.gov.hmcts.ccd.sdk.api.EventPayload;
 import uk.gov.hmcts.ccd.sdk.api.Permission;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.GACase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.domain.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GACaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.GeneralApplicationRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PCSCaseRepository;
@@ -31,9 +31,9 @@ public class UpdateGeneralApplication implements CCDConfig<GACase, State, UserRo
     @Override
     public void configure(ConfigBuilder<GACase, State, UserRole> builder) {
         builder.decentralisedEvent(EventId.updateGeneralApplication.name(), this::aboutToSubmit)
-            .forStateTransition(State.Draft, State.Withdrawn)
+            .forStateTransition(State.DRAFT, State.WITHDRAWN)
             .name("Withdraw Draft Gen App")
-            .grant(Permission.CRUD, UserRole.CASE_WORKER)
+            .grant(Permission.CRUD, UserRole.PCS_CASE_WORKER)
             .fields()
             .page("Delete draft general application")
             .pageLabel("Are you sure you want to withdraw this draft application?")
@@ -44,7 +44,7 @@ public class UpdateGeneralApplication implements CCDConfig<GACase, State, UserRo
 
     private void aboutToSubmit(EventPayload<GACase, State> payload) {
         GACaseEntity toUpdate = gaRepository.findByCaseReference(payload.caseReference()).get();
-        toUpdate.setStatus(State.Withdrawn);
+        toUpdate.setStatus(State.WITHDRAWN);
         gaRepository.save(toUpdate);
     }
 

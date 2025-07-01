@@ -8,7 +8,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.modelmapper.ModelMapper;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.repository.GeneralApplicationRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PCSCaseRepository;
+import uk.gov.hmcts.reform.pcs.ccd.service.PCSCaseService;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 
 import java.util.Optional;
@@ -25,6 +27,13 @@ class CCDCaseRepositoryTest {
 
     @Mock
     private PCSCaseRepository pcsCaseRepository;
+
+    @Mock
+    private GeneralApplicationRepository generalApplicationRepository;
+
+    @Mock
+    private PCSCaseService pcsCaseService;
+
     @Mock
     private ModelMapper modelMapper;
 
@@ -32,7 +41,7 @@ class CCDCaseRepositoryTest {
 
     @BeforeEach
     void setUp() {
-        underTest = new CCDCaseRepository(pcsCaseRepository, modelMapper);
+        underTest = new CCDCaseRepository(pcsCaseRepository, generalApplicationRepository);
     }
 
     @Test

@@ -51,7 +51,7 @@ public class GeneralApplicationService {
     public void updateGA(Long caseRef) {
         genAppRepository.findByCaseReference(caseRef)
             .ifPresent(ga -> {
-                ga.setStatus(State.Withdrawn);
+                ga.setStatus(State.WITHDRAWN);
                 genAppRepository.save(ga);
             });
     }

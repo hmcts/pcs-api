@@ -5,10 +5,10 @@ import uk.gov.hmcts.ccd.sdk.api.CCDConfig;
 import uk.gov.hmcts.ccd.sdk.api.ConfigBuilder;
 import uk.gov.hmcts.ccd.sdk.api.EventPayload;
 import uk.gov.hmcts.ccd.sdk.api.Permission;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.GACase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.domain.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GACaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.GeneralApplicationRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PCSCaseRepository;
@@ -37,7 +37,7 @@ public class WithdrawGeneralApplication implements CCDConfig<PCSCase, State, Use
         builder.decentralisedEvent(EventId.withdrawGeneralApplication.name(), this::aboutToSubmit)
                 .forAllStates()
                 .name("Withdraw Draft Gen App")
-                .grant(Permission.CRUD, UserRole.CASE_WORKER)
+            .grant(Permission.CRUD, UserRole.PCS_CASE_WORKER)
                 .fields()
                 .page("Withdraw draft general application")
                 .pageLabel("Are you sure you want to withdraw this draft application?")
@@ -59,7 +59,7 @@ public class WithdrawGeneralApplication implements CCDConfig<PCSCase, State, Use
                 GACase.builder().adjustment(toUpdate.getAdjustment())
                         .additionalInformation(toUpdate.getAdditionalInformation())
                     .caseReference(toUpdate.getCaseReference())
-                        .status(State.Withdrawn).build();
+                    .status(State.WITHDRAWN).build();
 
         gaService.updateGeneralApplicationInCCD(
                 toUpdate.getCaseReference().toString(),

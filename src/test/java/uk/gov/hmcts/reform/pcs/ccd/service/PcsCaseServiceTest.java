@@ -10,6 +10,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.modelmapper.ModelMapper;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.entity.PCSCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PCSCaseRepository;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 
@@ -35,11 +36,11 @@ class PcsCaseServiceTest {
     @Captor
     private ArgumentCaptor<PCSCaseEntity> pcsCaseEntityCaptor;
 
-    private PcsCaseService underTest;
+    private PCSCaseService underTest;
 
     @BeforeEach
     void setUp() {
-        underTest = new PcsCaseService(pcsCaseRepository, modelMapper);
+        underTest = new PCSCaseService(modelMapper, pcsCaseRepository);
     }
 
     @Test
