@@ -2,16 +2,15 @@ package uk.gov.hmcts.reform.pcs.document.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import feign.FeignException;
-
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import uk.gov.hmcts.reform.pcs.testingsupport.model.DocAssemblyRequest;
-import uk.gov.hmcts.reform.pcs.idam.IdamService;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
-import java.util.Base64;
 import uk.gov.hmcts.reform.pcs.document.service.exception.DocAssemblyException;
+import uk.gov.hmcts.reform.pcs.idam.IdamService;
+import uk.gov.hmcts.reform.pcs.testingsupport.model.DocAssemblyRequest;
+
+import java.util.Base64;
 
 @Slf4j
 @Service
@@ -46,14 +45,14 @@ public class DocAssemblyService {
         if (request.getOutputType() == null || request.getOutputType().trim().isEmpty()) {
             request.setOutputType("PDF");
         }
-        
+
         // Encode template ID to base64 as required by Doc Assembly service
         String encodedTemplateId = Base64.getEncoder().encodeToString(request.getTemplateId().getBytes());
         request.setTemplateId(encodedTemplateId);
-        
+
         String authorization = idamService.getSystemUserAuthorisation();
         String serviceAuthorization = authTokenGenerator.generate();
-        
+
         try {
             String response = docAssemblyApi.generateDocument(
                 authorization,
@@ -84,13 +83,13 @@ public class DocAssemblyService {
             throw new DocAssemblyException("Failed to parse Doc Assembly response", e);
         }
     }
-    
+
     private void handleFeignException(FeignException e) {
         int status = e.status();
         String message = e.getMessage();
-        
+
         log.error("Doc Assembly API call failed with status {}: {}", status, message, e);
-        
+
         switch (status) {
             case 400:
                 throw new DocAssemblyException("Bad request to Doc Assembly service: " + message, e);
@@ -112,11 +111,5 @@ public class DocAssemblyService {
                 }
         }
     }
-        } catch (DocAssemblyException e) {
-            throw e;
-        } catch (Exception e) {
-            log.error("Failed to parse Doc Assembly response: {}", response, e);
-            throw new DocAssemblyException("Failed to parse Doc Assembly response", e);
-        }
-    }
-} 
+
+}
