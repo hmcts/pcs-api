@@ -16,7 +16,7 @@ import uk.gov.hmcts.ccd.sdk.type.CaseLink;
 public class GACase {
 
     @CCD(label = "Application Id")
-    private String applicationId;
+    private Long caseReference;
 
     @CCD(label = "General application type")
     private GAType gaType;
@@ -30,7 +30,7 @@ public class GACase {
     @CCD(label = "Additional information")
     private String additionalInformation;
 
-    @CCD(label = "status")
+    @CCD(label = "Status")
     private State status;
 
 }

@@ -24,7 +24,7 @@ import java.util.List;
 public class PCSCase {
 
     @CCD(label = "Case Id")
-    private String caseId;
+    private Long caseReference;
 
     @CCD(label = "Applicant's first name")
     private String applicantForename;

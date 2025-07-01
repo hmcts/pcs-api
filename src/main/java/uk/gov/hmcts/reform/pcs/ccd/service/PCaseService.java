@@ -14,19 +14,19 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.PCSCaseRepository;
 import java.util.stream.Collectors;
 
 @Service
-public class PCSCaseService {
+public class PCaseService {
 
     private final ModelMapper modelMapper;
     private final PCSCaseRepository pcsCaseRepository;
 
-    public PCSCaseService(ModelMapper modelMapper, PCSCaseRepository pcsCaseRepository) {
+    public PCaseService(ModelMapper modelMapper, PCSCaseRepository pcsCaseRepository) {
         this.modelMapper = modelMapper;
         this.pcsCaseRepository = pcsCaseRepository;
     }
 
     public PCSCase convertToPCSCase(PCS pcs) {
         PCSCase.PCSCaseBuilder builder = PCSCase.builder()
-            .caseId(pcs.getId().toString());
+            .caseReference(pcs.getCaseReference());
         if (pcs.getPropertyAddress() != null) {
             builder.propertyAddress(convertAddress(pcs.getPropertyAddress()));
         }
@@ -67,7 +67,7 @@ public class PCSCaseService {
 
     private GACase convertGenApplication(GA ga) {
         return GACase.builder()
-            .applicationId(ga.getId().toString())
+            .caseReference(ga.getCaseReference())
             .adjustment(ga.getAdjustment())
             .additionalInformation(ga.getAdditionalInformation())
             .status(ga.getStatus())

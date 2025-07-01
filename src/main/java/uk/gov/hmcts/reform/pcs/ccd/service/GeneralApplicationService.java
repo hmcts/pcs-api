@@ -7,6 +7,7 @@ import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.ccd.client.model.CaseResource;
 import uk.gov.hmcts.reform.ccd.client.model.Event;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
+import uk.gov.hmcts.reform.pcs.ccd.GeneralApplicationCaseType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.GACase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GA;
@@ -17,8 +18,6 @@ import java.util.List;
 
 @Service
 public class GeneralApplicationService {
-
-    private static final String CASE_TYPE = "GA";
 
     private final CoreCaseDataService coreCaseDataService;
     private final GeneralApplicationRepository genAppRepository;
@@ -64,7 +63,7 @@ public class GeneralApplicationService {
     public Long createGeneralApplicationInCCD(GACase gaData, String eventId) {
 
         StartEventResponse startEventResponse = coreCaseDataService.startCase(
-            CASE_TYPE,
+            GeneralApplicationCaseType.CASE_TYPE_ID,
             eventId
         );
 
@@ -77,7 +76,7 @@ public class GeneralApplicationService {
             .build();
 
         CaseDetails createdCase = coreCaseDataService.submitCaseCreation(
-            CASE_TYPE,
+            GeneralApplicationCaseType.CASE_TYPE_ID,
             caseDataContent
         );
         return createdCase.getId();

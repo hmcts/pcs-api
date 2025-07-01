@@ -235,10 +235,6 @@ jacocoTestReport {
     html.required = true
   }
 }
-tasks.named('cftlibTest') {
-  jacoco.enabled = false
-}
-
 
 tasks.named('sonarqube') {
   dependsOn jacocoTestReport

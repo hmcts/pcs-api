@@ -37,19 +37,19 @@ public class CreateGeneralApplication implements CCDConfig<GACase, State, UserRo
             .optional(GACase::getAdditionalInformation)
             .optional(GACase::getCaseLink)
             .optional(GACase::getStatus)
-            .optional(GACase::getApplicationId)
+            .optional(GACase::getCaseReference)
             .done();
     }
 
     private void submit(EventPayload<GACase, State> eventPayload) {
         GACase ga = eventPayload.caseData();
 
-       
+
         GA entity = genAppService.convertToGAEntity(ga);
         entity.setCaseReference(eventPayload.caseReference());//
         GA savedEntity = genAppRepository.save(entity);
 
-        ga.setApplicationId(savedEntity.getId().toString());
+        //  ga.setCaseReference(eventPayload.caseReference());
 
     }
 }

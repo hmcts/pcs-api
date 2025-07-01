@@ -15,18 +15,18 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PCS;
 import uk.gov.hmcts.reform.pcs.ccd.repository.GeneralApplicationRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PCSCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.GeneralApplicationService;
-import uk.gov.hmcts.reform.pcs.ccd.service.PCSCaseService;
+import uk.gov.hmcts.reform.pcs.ccd.service.PCaseService;
 
 @Component
 public class AddGeneralApplication implements CCDConfig<PCSCase, State, UserRole> {
 
     private final GeneralApplicationRepository genAppRepository;
     private final GeneralApplicationService genAppService;
-    private final PCSCaseService pcsCaseService;
+    private final PCaseService pcsCaseService;
     private final PCSCaseRepository pcsCaseRepository;
 
     public AddGeneralApplication(GeneralApplicationRepository genAppRepository,
-                                 GeneralApplicationService genAppService, PCSCaseService pcsCaseService,
+                                 GeneralApplicationService genAppService, PCaseService pcsCaseService,
                                  PCSCaseRepository pcsCaseRepository) {
         this.genAppRepository = genAppRepository;
         this.genAppService = genAppService;
@@ -47,8 +47,8 @@ public class AddGeneralApplication implements CCDConfig<PCSCase, State, UserRole
             .mandatory(GACase::getGaType)
             .mandatory(GACase::getAdjustment)
             .optional(GACase::getAdditionalInformation)
-            .optional(GACase::getCaseLink, "[STATE]=\"NEVER_SHOW\"")
-            .optional(GACase::getStatus, "[STATE]=\"NEVER_SHOW\"")
+            .readonly(GACase::getCaseLink, "[STATE]=\"NEVER_SHOW\"")
+            .readonly(GACase::getStatus, "[STATE]=\"NEVER_SHOW\"")
             .done();
     }
 
@@ -57,7 +57,7 @@ public class AddGeneralApplication implements CCDConfig<PCSCase, State, UserRole
         PCSCase caseData = eventPayload.caseData();
         GACase newApp = caseData.getCurrentGeneralApplication();
 
-        CaseLink caseLink = new CaseLink().builder().caseReference(caseReference.toString()).build();
+        CaseLink caseLink = new CaseLink().builder().caseReference(caseReference.toString()).caseType("PCS").build();
 
         if (newApp != null) {
             GACase gaData = GACase.builder()
@@ -83,7 +83,7 @@ public class AddGeneralApplication implements CCDConfig<PCSCase, State, UserRole
 
             pcsCaseRepository.save(parentCase);
 
-            newApp.setApplicationId(genApp.getId().toString());
+            newApp.setCaseReference(gaCaseReference);
             caseData.setCurrentGeneralApplication(null);
         }
     }

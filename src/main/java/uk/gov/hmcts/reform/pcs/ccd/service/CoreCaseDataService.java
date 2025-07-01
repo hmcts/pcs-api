@@ -85,13 +85,8 @@ public class CoreCaseDataService {
         return idamService.getSystemUserAuthorisation();
     }
 
-    private String getUserId(String authToken) {
-        String userId = idamService.validateAuthToken(authToken).getUserDetails().getUid();
-        return userId;
-    }
-
     private String getServiceToken() {
-        return "token";
+        return serviceAuthTokenGenerator.generate();
     }
 
 

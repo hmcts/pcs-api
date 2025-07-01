@@ -13,7 +13,7 @@ import static java.util.Optional.ofNullable;
 
 @Component
 public class GeneralApplicationCaseType implements CCDConfig<GACase, State, UserRole> {
-    private static final String CASE_TYPE_ID = "GA";
+    public static final String CASE_TYPE_ID = "PCS-GA";
     private static final String CASE_TYPE_NAME = "Possessions Gen Application";
     private static final String CASE_TYPE_DESCRIPTION = "General Application Case Type";
     private static final String JURISDICTION_ID = "PCS";
@@ -52,7 +52,7 @@ public class GeneralApplicationCaseType implements CCDConfig<GACase, State, User
             .field(GACase::getGaType, gaTypeLabel);
 
         configBuilder.searchCasesFields()
-   
+
             .field(GACase::getGaType, gaTypeLabel);
 
         configBuilder.searchResultFields()
@@ -62,7 +62,7 @@ public class GeneralApplicationCaseType implements CCDConfig<GACase, State, User
             .field(GACase::getCaseLink, parentCaseLabel);
 
         configBuilder.workBasketInputFields()
-            .field(GACase::getGaType, gaTypeLabel);
+            .field(GACase::getCaseReference, caseRefLabel);
 
         configBuilder.workBasketResultFields()
 
@@ -74,6 +74,8 @@ public class GeneralApplicationCaseType implements CCDConfig<GACase, State, User
 
             .field(GACase::getGaType)
             .field(GACase::getStatus)
+            .field(GACase::getAdjustment)
+            .field(GACase::getAdditionalInformation)
             .field(GACase::getCaseLink);
     }
 }

@@ -9,7 +9,7 @@ import uk.gov.hmcts.reform.pcs.ccd.renderer.GeneralApplicationRenderer;
 import uk.gov.hmcts.reform.pcs.ccd.repository.GeneralApplicationRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PCSCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.GeneralApplicationService;
-import uk.gov.hmcts.reform.pcs.ccd.service.PCSCaseService;
+import uk.gov.hmcts.reform.pcs.ccd.service.PCaseService;
 
 import java.util.Optional;
 
@@ -19,13 +19,13 @@ public class CCDCaseRepository extends DecentralisedCaseRepository<Object> {
     private final PCSCaseRepository pcsCaseRepository;
     private final GeneralApplicationRepository generalApplicationRepository;
     private final GeneralApplicationService generalApplicationService;
-    private final PCSCaseService pcsCaseService;
+    private final PCaseService pcsCaseService;
     private final GeneralApplicationRenderer genAppRenderer;
 
     public CCDCaseRepository(PCSCaseRepository pcsCaseRepository,
                              GeneralApplicationRepository generalApplicationRepository,
                              GeneralApplicationService generalApplicationService,
-                             PCSCaseService pcsCaseService, GeneralApplicationRenderer genAppRenderer) {
+                             PCaseService pcsCaseService, GeneralApplicationRenderer genAppRenderer) {
         this.pcsCaseRepository = pcsCaseRepository;
         this.generalApplicationRepository = generalApplicationRepository;
         this.generalApplicationService = generalApplicationService;

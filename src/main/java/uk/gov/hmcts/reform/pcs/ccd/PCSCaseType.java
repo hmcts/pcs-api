@@ -51,25 +51,25 @@ public class PCSCaseType implements CCDConfig<PCSCase, State, UserRole> {
         var genAppsLabel = "General Applications";
         var caseReferenceLabel = "Case Reference";
         builder.searchInputFields()
-            .field(PCSCase::getCaseId, caseReferenceLabel)
+            .field(PCSCase::getCaseReference, caseReferenceLabel)
             .field(PCSCase::getApplicantForename, forenameLabel)
             .field(PCSCase::getApplicantSurname, surnameLabel);
 
         builder.searchCasesFields()
-            .field(PCSCase::getCaseId, caseReferenceLabel)
+            .field(PCSCase::getCaseReference, caseReferenceLabel)
             .field(PCSCase::getApplicantForename, forenameLabel);
 
         builder.searchResultFields()
-            .field(PCSCase::getCaseId, caseReferenceLabel)
+            .field(PCSCase::getCaseReference, caseReferenceLabel)
             .field(PCSCase::getApplicantForename, forenameLabel)
             .field(PCSCase::getApplicantSurname, surnameLabel);
 
         builder.workBasketInputFields()
-            .field(PCSCase::getCaseId, caseReferenceLabel)
+            .field(PCSCase::getCaseReference, caseReferenceLabel)
             .field(PCSCase::getApplicantForename, forenameLabel);
 
         builder.workBasketResultFields()
-            .field(PCSCase::getCaseId, caseReferenceLabel)
+            .field(PCSCase::getCaseReference, caseReferenceLabel)
             .field(PCSCase::getApplicantForename, forenameLabel)
             .field(PCSCase::getApplicantSurname, surnameLabel);
 
