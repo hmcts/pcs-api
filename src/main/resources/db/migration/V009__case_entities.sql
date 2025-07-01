@@ -26,6 +26,7 @@ CREATE TABLE claimant_info (
 CREATE TABLE general_application (
                         id UUID PRIMARY KEY,
                         case_reference BIGINT,
+                        parent_case_reference BIGINT,
                         parent_case_id UUID REFERENCES pcs(id),
                         ga_type VARCHAR(100),
                         adjustment TEXT,

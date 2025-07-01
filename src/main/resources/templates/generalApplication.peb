@@ -1,23 +1,26 @@
 {% macro showActions(genApp, _context) %}
 [View](/cases/case-details/{{ genApp.value.caseReference }})<br>
-[Withdraw](/cases/case-details/{{_context.caseReference}}/trigger/{{_context.withdrawGeneralApplication}}?genAppId={{genApp.value.caseReference}})<br>
+[Withdraw](/cases/case-details/{{ _context.caseReference }}/trigger/{{ _context.withdrawGeneralApplication }}?genAppId={{ genApp.value.caseReference }})
 {% endmacro %}
 
 ## General Applications
 
 {% if generalApplications | length > 0 %}
 
-|Application ID | Status | Actions
-|--------|---------|-------
+| Application ID | Status | Actions |
+|----------------|--------|---------|
 {% for genApp in generalApplications %}
-{% if genApp.status != "Deleted" %}
 | {{ genApp.value.caseReference }} | {{ genApp.value.status }} |
- {% if genApp.value.status == "Draft" %} {{ showActions(genApp, _context) }}
- {% endif %} |
-  {% endif %} |
+{% if genApp.value.status == "Draft" %}
+{{ showActions(genApp, _context) }}
+{% else %}
+No actions
+{% endif %} |
 {% endfor %}
 
 {% else %}
 _No general applications have been added to this case._
 {% endif %}
+
+
 

@@ -14,12 +14,12 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.PCSCaseRepository;
 import java.util.stream.Collectors;
 
 @Service
-public class PCaseService {
+public class PCSCaseService {
 
     private final ModelMapper modelMapper;
     private final PCSCaseRepository pcsCaseRepository;
 
-    public PCaseService(ModelMapper modelMapper, PCSCaseRepository pcsCaseRepository) {
+    public PCSCaseService(ModelMapper modelMapper, PCSCaseRepository pcsCaseRepository) {
         this.modelMapper = modelMapper;
         this.pcsCaseRepository = pcsCaseRepository;
     }

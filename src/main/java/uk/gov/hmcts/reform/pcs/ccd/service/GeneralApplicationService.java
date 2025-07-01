@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.pcs.ccd.service;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
+import uk.gov.hmcts.ccd.sdk.type.CaseLink;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDataContent;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.ccd.client.model.CaseResource;
@@ -44,8 +45,11 @@ public class GeneralApplicationService {
         return modelMapper.map(gaCase, GA.class);
     }
 
-    public GACase convertToGA(GA gaCase) {
-        return modelMapper.map(gaCase, GACase.class);
+    public GACase convertToGA(GA gaCaseEntity) {
+        GACase gaCase = modelMapper.map(gaCaseEntity, GACase.class);
+        CaseLink caseLink = CaseLink.builder().caseType("PCS").caseReference(gaCaseEntity.getCaseReference().toString()).build();
+        gaCase.setCaseLink(caseLink);
+        return gaCase;
     }
 
     public void updateGA(Long caseRef) {

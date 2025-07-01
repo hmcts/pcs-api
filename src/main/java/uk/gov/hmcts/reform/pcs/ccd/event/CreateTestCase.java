@@ -13,16 +13,16 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.Address;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimantInfo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PCS;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PCSCaseRepository;
-import uk.gov.hmcts.reform.pcs.ccd.service.PCaseService;
+import uk.gov.hmcts.reform.pcs.ccd.service.PCSCaseService;
 
 @Component
 public class CreateTestCase implements CCDConfig<PCSCase, State, UserRole> {
 
     private final PCSCaseRepository pcsRepository;
-    private final PCaseService pcsCaseService;
+    private final PCSCaseService pcsCaseService;
     private final ModelMapper modelMapper;
 
-    public CreateTestCase(PCSCaseRepository pcsRepository, PCaseService pcsCaseService, ModelMapper modelMapper) {
+    public CreateTestCase(PCSCaseRepository pcsRepository, PCSCaseService pcsCaseService, ModelMapper modelMapper) {
         this.pcsRepository = pcsRepository;
         this.pcsCaseService = pcsCaseService;
         this.modelMapper = modelMapper;

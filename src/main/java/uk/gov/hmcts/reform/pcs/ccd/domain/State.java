@@ -32,7 +32,7 @@ public enum State {
 
     @CCD(
         label = "Withdrawn",
-        access = {DefaultStateAccess.class}
+        access = {WithdrawStateAccess.class}
     )
     Withdrawn;
 }

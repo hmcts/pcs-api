@@ -15,18 +15,18 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PCS;
 import uk.gov.hmcts.reform.pcs.ccd.repository.GeneralApplicationRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PCSCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.GeneralApplicationService;
-import uk.gov.hmcts.reform.pcs.ccd.service.PCaseService;
+import uk.gov.hmcts.reform.pcs.ccd.service.PCSCaseService;
 
 @Component
 public class AddGeneralApplication implements CCDConfig<PCSCase, State, UserRole> {
 
     private final GeneralApplicationRepository genAppRepository;
     private final GeneralApplicationService genAppService;
-    private final PCaseService pcsCaseService;
+    private final PCSCaseService pcsCaseService;
     private final PCSCaseRepository pcsCaseRepository;
 
     public AddGeneralApplication(GeneralApplicationRepository genAppRepository,
-                                 GeneralApplicationService genAppService, PCaseService pcsCaseService,
+                                 GeneralApplicationService genAppService, PCSCaseService pcsCaseService,
                                  PCSCaseRepository pcsCaseRepository) {
         this.genAppRepository = genAppRepository;
         this.genAppService = genAppService;
