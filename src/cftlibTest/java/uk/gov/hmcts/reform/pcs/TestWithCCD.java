@@ -2,7 +2,6 @@ package uk.gov.hmcts.reform.pcs;
 
 
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,7 +34,6 @@ public class TestWithCCD extends CftlibTest {
         userId = idamClient.getUserInfo(idamToken).getUid();
     }
 
-    @Order(1)
     @Test
     public void createsTestCase() {
 

@@ -12,6 +12,10 @@ import uk.gov.hmcts.ccd.sdk.type.ListValue;
 
 import java.util.List;
 
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseworkerAccess;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenAccess;
+
+
 /**
  * The main domain model representing a possessions case.
  */
@@ -23,20 +27,28 @@ import java.util.List;
 
 public class PCSCase {
 
-    @CCD(label = "Case Id")
+    @CCD(label = "Case Id",
+        access = {CitizenAccess.class, CaseworkerAccess.class)
     private Long caseReference;
 
-    @CCD(label = "Applicant's first name")
+    @CCD(label = "Applicant's forename",
+        access = {CitizenAccess.class, CaseworkerAccess.class)
     private String applicantForename;
 
-    @CCD(label = "Applicant's last name")
+    @CCD(label = "Applicant's surname",
+        access = {CitizenAccess.class, CaseworkerAccess.class)
     private String applicantSurname;
 
+    @CCD(
+        label = "Property address",
+        access = {CitizenAccess.class, CaseworkerAccess.class}
+    )
     private AddressUK propertyAddress;
 
     @CCD(label = "General Applications",
         typeOverride = FieldType.Collection,
-        typeParameterOverride = "GACase" //must be class name
+        typeParameterOverride = "GACase",
+        access = {CitizenAccess.class, CaseworkerAccess.class} //must be class name
     )
     private List<ListValue<GACase>> generalApplications;
 

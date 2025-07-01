@@ -1,28 +1,35 @@
 package uk.gov.hmcts.reform.pcs.ccd.event;
 
+
+import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CCDConfig;
 import uk.gov.hmcts.ccd.sdk.api.ConfigBuilder;
 import uk.gov.hmcts.ccd.sdk.api.EventPayload;
 import uk.gov.hmcts.ccd.sdk.api.Permission;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.domain.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.entity.Address;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimantInfo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PCS;
-import uk.gov.hmcts.reform.pcs.ccd.repository.PCSCaseRepository;
+import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.PCaseService;
 
+import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.createTestApplication;
+
+
 @Component
+@AllArgsConstructor
 public class CreateTestCase implements CCDConfig<PCSCase, State, UserRole> {
 
-    private final PCSCaseRepository pcsRepository;
+
+    private final PcsCaseRepository pcsRepository;
     private final PCaseService pcsCaseService;
     private final ModelMapper modelMapper;
 
-    public CreateTestCase(PCSCaseRepository pcsRepository, PCaseService pcsCaseService, ModelMapper modelMapper) {
+    public CreateTestCase(PcsCaseRepository pcsRepository, PCaseService pcsCaseService, ModelMapper modelMapper) {
         this.pcsRepository = pcsRepository;
         this.pcsCaseService = pcsCaseService;
         this.modelMapper = modelMapper;
@@ -30,10 +37,11 @@ public class CreateTestCase implements CCDConfig<PCSCase, State, UserRole> {
 
     @Override
     public void configure(ConfigBuilder<PCSCase, State, UserRole> configBuilder) {
-        configBuilder.decentralisedEvent("createTestApplication", this::submit)
-            .initialState(State.Open)
+        configBuilder
+            .decentralisedEvent(createTestApplication.name(), this::submit, this::start)
+            .initialState(State.CASE_ISSUED)
             .name("Make a claim")
-            .grant(Permission.CRUD, UserRole.CASE_WORKER)
+            .grant(Permission.CRUD, UserRole.PCS_CASE_WORKER)
             .fields()
             .page("claimant information")
             .pageLabel("Please enter applicant's name")
@@ -75,4 +83,19 @@ public class CreateTestCase implements CCDConfig<PCSCase, State, UserRole> {
             .surname(pcsCase.getApplicantSurname()).build();
         return claimantInfo;
     }
+
+    private PCSCase start(EventPayload<PCSCase, State> eventPayload) {
+        PCSCase caseData = eventPayload.caseData();
+        caseData.setApplicantForename("Preset value");
+        return caseData;
+    }
+
+    private void submit(EventPayload<PCSCase, State> eventPayload) {
+        long caseReference = eventPayload.caseReference();
+        PCSCase pcsCase = eventPayload.caseData();
+
+        pcsCaseService.createCase(caseReference, pcsCase);
+
+    }
+
 }

@@ -3,9 +3,9 @@ package uk.gov.hmcts.reform.pcs.ccd;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CCDConfig;
 import uk.gov.hmcts.ccd.sdk.api.ConfigBuilder;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.domain.UserRole;
 
 import static java.lang.System.getenv;
 import static java.util.Optional.ofNullable;
@@ -74,16 +74,16 @@ public class PCSCaseType implements CCDConfig<PCSCase, State, UserRole> {
             .field(PCSCase::getApplicantSurname, surnameLabel);
 
 
-        builder.tab("claimantInformation", claimantLabel)
-            .field(PCSCase::getApplicantForename)
-            .field(PCSCase::getApplicantSurname);
-
-        builder.tab("propertyAddress", addressLabel)
-            .field(PCSCase::getPropertyAddress);
+        builder.tab("claimantInformation", claimantLabel);
 
         builder.tab("General Applications", genAppsLabel)
             .label("generalApplicationsMarkdownLabel", null, "${generalApplicationsSummaryMarkdown}")
             .field("generalApplicationsSummaryMarkdown", "[STATE]=\"NEVER_SHOW\"");
+
+        builder.tab("CaseHistory", "History")
+            .field("caseHistory");
+
+
     }
 
 

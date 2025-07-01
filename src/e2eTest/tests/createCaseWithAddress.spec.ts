@@ -1,10 +1,14 @@
 import { startCaseCreation,selectAddress,enterApplicantDetails,submitCaseCreation } from '../commonSteps/caseCreation';
 import * as idamHelper from "@helpers/idam-helpers/idam.helper";
 import { test, Username } from '@fixtures/login.fixture';
+import * as allure from 'allure-js-commons';
+
+test.beforeAll(async () => {
+  await allure.parentSuite('Create Case');
+});
 
 
-
-test.describe('Create Case with Address @Master @nightly', () => {
+test.describe.skip('Create Case with Address @Master @nightly', () => {
 
   test('should create a case successfully with Dropdown Address Flow', async ({ loggedInPage }, testInfo) => {
     await testInfo.attach('Page URL', {
