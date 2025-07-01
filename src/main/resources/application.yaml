@@ -120,6 +120,7 @@ testing-support:
   enabled: ${ENABLE_TESTING_SUPPORT:true}
 
 # Below sets if DB scheduler can execute on the current instance of the API.
+# Below sets if DB scheduler can execute on the current instance of the API.
 db-scheduler:
   enabled: false # This disables the autoconfiguration of DB Scheduler. Always off.
   executor-enabled: ${DB_SCHEDULER_EXECUTOR_ENABLED:true}
