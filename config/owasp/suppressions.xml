@@ -21,4 +21,10 @@
     <cve>CVE-2025-1686</cve>
   </suppress>
 
+  <suppress>
+    <notes>Temporarily suppressing CVE-2025-1686 for pebble-spring-boot-starter</notes>
+    <packageUrl regex="true">^pkg:maven/io\.pebbletemplates/pebble-spring-boot-starter@3\.2\.2$</packageUrl>
+    <cve>CVE-2025-1686</cve>
+  </suppress>
+
 </suppressions>
