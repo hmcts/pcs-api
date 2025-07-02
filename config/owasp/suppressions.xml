@@ -17,7 +17,7 @@
 
   <suppress>
     <cve>CVE-2025-1686</cve>
-    <gav>io.pebbletemplates:pebble-spring-boot-starter</gav>
+    <packageUrl regex="true">^pkg:maven/io\.pebbletemplates/pebble-spring-boot-starter@.*$</packageUrl>
   </suppress>
 
 </suppressions>
