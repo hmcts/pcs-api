@@ -93,10 +93,6 @@ public class PCSCaseService {
         pcsCaseRepository.save(pcsCaseEntity);
     }
 
-    public PcsCaseEntity convertToPCSEntity(PCSCase pcsCase) {
-        return modelMapper.map(pcsCase, PcsCaseEntity.class);
-    }
-
     private AddressUK convertAddress(AddressEntity address) {
         return AddressUK.builder()
             .addressLine1(address.getAddressLine1())
@@ -111,6 +107,7 @@ public class PCSCaseService {
     private GACase convertGenApplication(GACaseEntity ga) {
         return GACase.builder()
             .caseReference(ga.getCaseReference())
+            .gaType(ga.getGaType())
             .adjustment(ga.getAdjustment())
             .additionalInformation(ga.getAdditionalInformation())
             .status(ga.getStatus())
@@ -120,6 +117,10 @@ public class PCSCaseService {
     public PcsCaseEntity findPCSCase(Long caseReference) {
         return pcsCaseRepository.findByCaseReference(caseReference)
             .orElseThrow(() -> new IllegalStateException("PCS case not found"));
+    }
+
+    public PcsCaseEntity savePCSCase(PcsCaseEntity pcsCase) {
+        return pcsCaseRepository.save(pcsCase);
     }
 
     public ClaimantInfo createClaimantInfoEntity(PCSCase pcsCase) {

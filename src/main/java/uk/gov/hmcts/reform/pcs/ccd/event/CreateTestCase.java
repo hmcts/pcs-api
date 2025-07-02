@@ -13,7 +13,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimantInfo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.repository.PCSCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.PCSCaseService;
 
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.createTestApplication;
@@ -22,13 +21,10 @@ import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.createTestApplication;
 @Component
 public class CreateTestCase implements CCDConfig<PCSCase, State, UserRole> {
 
-
-    private final PCSCaseRepository pcsRepository;
     private final PCSCaseService pcsCaseService;
     private final ModelMapper modelMapper;
 
-    public CreateTestCase(PCSCaseRepository pcsRepository, PCSCaseService pcsCaseService, ModelMapper modelMapper) {
-        this.pcsRepository = pcsRepository;
+    public CreateTestCase(PCSCaseService pcsCaseService, ModelMapper modelMapper) {
         this.pcsCaseService = pcsCaseService;
         this.modelMapper = modelMapper;
     }
@@ -51,7 +47,6 @@ public class CreateTestCase implements CCDConfig<PCSCase, State, UserRole> {
             .mandatory(PCSCase::getPropertyAddress)
             .page("claimant information")
             .done();
-
     }
 
     private void submit(EventPayload<PCSCase, State> eventPayload) {
@@ -62,24 +57,18 @@ public class CreateTestCase implements CCDConfig<PCSCase, State, UserRole> {
             .build();
         AddressEntity addressEntity = createAddressEntity(pcsCase);
         addressEntity.setPcsCase(pcsEntity);
-        ClaimantInfo claimantInfoEntity = createClaimantInfoEntity(pcsCase);
+        ClaimantInfo claimantInfoEntity = pcsCaseService.createClaimantInfoEntity(pcsCase);
         claimantInfoEntity.setPcsCase(pcsEntity);
 
         pcsEntity.setPropertyAddress(addressEntity);
         pcsEntity.setClaimantInfo(claimantInfoEntity);
 
-        PcsCaseEntity savedEntity = pcsRepository.save(pcsEntity);
+        PcsCaseEntity savedEntity = pcsCaseService.savePCSCase(pcsEntity);
         pcsCase.setCaseReference(savedEntity.getCaseReference());
     }
 
     private AddressEntity createAddressEntity(PCSCase pcsCase) {
         return modelMapper.map(pcsCase.getPropertyAddress(), AddressEntity.class);
-    }
-
-    private ClaimantInfo createClaimantInfoEntity(PCSCase pcsCase) {
-        ClaimantInfo claimantInfo = ClaimantInfo.builder().forename(pcsCase.getApplicantForename())
-            .surname(pcsCase.getApplicantSurname()).build();
-        return claimantInfo;
     }
 
 }

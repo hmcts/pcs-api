@@ -31,9 +31,10 @@ public class GeneralApplicationRenderer {
         Map<String, Object> context = Map.of(// things to add to context for template to pickup
                                              "caseReference", caseReference,
                                              "generalApplications", genAppList,
-                                             "withdrawGeneralApplication", EventId.withdrawGeneralApplication
+                                             "withdrawGeneralApplication", EventId.withdrawGeneralApplication,
+                                             "deleteGeneralApplication", EventId.deleteGeneralApplication
         );
-
+        
         try {
             compiledTemplate.evaluate(writer, context);
         } catch (IOException e) {

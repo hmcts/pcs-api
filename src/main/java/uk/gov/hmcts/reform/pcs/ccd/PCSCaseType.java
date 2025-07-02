@@ -9,6 +9,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 
 import static java.lang.System.getenv;
 import static java.util.Optional.ofNullable;
+import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 
 /**
  * Setup some common possessions case type configuration.
@@ -18,7 +19,7 @@ public class PCSCaseType implements CCDConfig<PCSCase, State, UserRole> {
 
     private static final String CASE_TYPE_ID = "PCS";
     private static final String CASE_TYPE_NAME = "Civil Possessions";
-    private static final String CASE_TYPE_DESCRIPTION = "Civil Possessions Case Type";
+    private static final String CASE_TYPE_DESCRIPTION = "Civil Possessions";
     private static final String JURISDICTION_ID = "PCS";
     private static final String JURISDICTION_NAME = "Possessions";
     private static final String JURISDICTION_DESCRIPTION = "Possessions Jurisdiction";
@@ -71,6 +72,8 @@ public class PCSCaseType implements CCDConfig<PCSCase, State, UserRole> {
             .field(PCSCase::getApplicantForename, forenameLabel)
             .field(PCSCase::getApplicantSurname, surnameLabel);
 
+        builder.tab("CaseHistory", "History")
+            .field("caseHistory");
 
         builder.tab("claimantInformation", "Claimant Information")
             .field(PCSCase::getApplicantForename)
@@ -78,11 +81,7 @@ public class PCSCaseType implements CCDConfig<PCSCase, State, UserRole> {
 
         builder.tab("General Applications", "General Applications")
             .label("generalApplicationsMarkdownLabel", null, "${generalApplicationsSummaryMarkdown}")
-            .field("generalApplicationsSummaryMarkdown", "[STATE]=\"NEVER_SHOW\"");
-
-        builder.tab("CaseHistory", "History")
-            .field("caseHistory");
-
+            .field("generalApplicationsSummaryMarkdown", NEVER_SHOW);
 
     }
 

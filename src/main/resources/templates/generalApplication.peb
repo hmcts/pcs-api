@@ -1,20 +1,20 @@
 {% macro showActions(genApp, _context) %}
-[View](/cases/case-details/{{ genApp.value.caseReference }})<br>
-[Withdraw](/cases/case-details/{{_context.caseReference}}/trigger/{{_context.withdrawGeneralApplication}}?genAppId={{genApp.value.caseReference}})<br>
+[View](/cases/case-details/{{genApp.value.caseReference}})<br>[Withdraw](/cases/case-details/{{_context.caseReference}}/trigger/{{_context.withdrawGeneralApplication}}?genAppId={{genApp.value.caseReference}})<br>[Delete](/cases/case-details/{{_context.caseReference}}/trigger/{{_context.deleteGeneralApplication}}?genAppId={{genApp.value.caseReference}})<br>
 {% endmacro %}
 
 ## General Applications
 
 {% if generalApplications | length > 0 %}
 
-|Application ID | Status | Actions
-|--------|---------|-------
+| Application ID | Type | Status | Actions |
+|----------------|----- |--------|---------|
 {% for genApp in generalApplications %}
-{% if genApp.status != "Deleted" %}
-| {{ genApp.value.caseReference }} | {{ genApp.value.status }} |
- {% if genApp.value.status == "Draft" %} {{ showActions(genApp, _context) }}
- {% endif %} |
-  {% endif %} |
+{% if genApp.value.status != "DRAFT_WITHDRAWN" %}
+| {{ genApp.value.caseReference }} | {{ genApp.value.gaType }} |{{ genApp.value.status }} |{% if genApp.value.status == "DRAFT" %}{{ showActions(genApp, _context) }}
+{% else %}
+No actions
+{% endif %}
+{% endif %}
 {% endfor %}
 
 {% else %}

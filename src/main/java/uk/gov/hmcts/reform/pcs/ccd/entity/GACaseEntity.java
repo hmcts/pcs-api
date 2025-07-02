@@ -38,6 +38,8 @@ public class GACaseEntity {
     @Column(nullable = false)
     private Long caseReference;
 
+    private Long parentCaseReference;
+
     @Enumerated(EnumType.STRING)
     private GAType gaType;
 

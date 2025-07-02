@@ -16,4 +16,6 @@ public interface GeneralApplicationRepository extends JpaRepository<GACaseEntity
     Optional<GACaseEntity> findByCaseReference(Long caseRef);
 
     Optional<GACaseEntity> findById(UUID id);
+
+    void deleteByCaseReference(Long caseReference);
 }

@@ -1,7 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.event;
 
 public enum EventId {
-    
+
     createGeneralApplication,
     addGeneralApplication,
     withdrawGeneralApplication,
@@ -10,7 +10,8 @@ public enum EventId {
     citizenCreateApplication,
     citizenSubmitApplication,
     citizenUpdateApplication,
-    createTestApplication
+    createTestApplication,
+    deleteGeneralApplication
 
 
 }

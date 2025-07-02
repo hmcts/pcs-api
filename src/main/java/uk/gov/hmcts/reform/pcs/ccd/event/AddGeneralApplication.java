@@ -12,8 +12,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GACaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.repository.GeneralApplicationRepository;
-import uk.gov.hmcts.reform.pcs.ccd.repository.PCSCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.GeneralApplicationService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PCSCaseService;
 
@@ -22,18 +20,12 @@ import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 @Component
 public class AddGeneralApplication implements CCDConfig<PCSCase, State, UserRole> {
 
-    private final GeneralApplicationRepository genAppRepository;
     private final GeneralApplicationService genAppService;
     private final PCSCaseService pcsCaseService;
-    private final PCSCaseRepository pcsCaseRepository;
 
-    public AddGeneralApplication(GeneralApplicationRepository genAppRepository,
-                                 GeneralApplicationService genAppService, PCSCaseService pcsCaseService,
-                                 PCSCaseRepository pcsCaseRepository) {
-        this.genAppRepository = genAppRepository;
+    public AddGeneralApplication(GeneralApplicationService genAppService, PCSCaseService pcsCaseService) {
         this.genAppService = genAppService;
         this.pcsCaseService = pcsCaseService;
-        this.pcsCaseRepository = pcsCaseRepository;
     }
 
     @Override
@@ -79,11 +71,9 @@ public class AddGeneralApplication implements CCDConfig<PCSCase, State, UserRole
             GACaseEntity genApp = genAppService.findByCaseReference(gaCaseReference);
             // Link to parent case
             PcsCaseEntity parentCase = pcsCaseService.findPCSCase(caseReference);
-
             genApp.setPcsCase(parentCase);
             parentCase.getGeneralApplications().add(genApp);
-
-            pcsCaseRepository.save(parentCase);
+            pcsCaseService.savePCSCase(parentCase);
 
             newApp.setCaseReference(gaCaseReference);
             caseData.setCurrentGeneralApplication(null);

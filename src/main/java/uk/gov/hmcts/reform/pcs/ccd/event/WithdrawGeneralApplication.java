@@ -10,9 +10,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.GACase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GACaseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.repository.GeneralApplicationRepository;
-import uk.gov.hmcts.reform.pcs.ccd.repository.PCSCaseRepository;
-import uk.gov.hmcts.reform.pcs.ccd.service.CoreCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.GeneralApplicationService;
 
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
@@ -20,18 +17,10 @@ import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 @Component
 public class WithdrawGeneralApplication implements CCDConfig<PCSCase, State, UserRole> {
 
-    private final PCSCaseRepository pcsRepository;
-    private final GeneralApplicationRepository gaRepository;
     private final GeneralApplicationService gaService;
-    private final CoreCaseDataService coreCaseDataService;
 
-    public WithdrawGeneralApplication(PCSCaseRepository pcsRepository,
-                                      GeneralApplicationRepository gaRepository,
-                                      GeneralApplicationService gaService, CoreCaseDataService coreCaseDataService) {
-        this.pcsRepository = pcsRepository;
-        this.gaRepository = gaRepository;
+    public WithdrawGeneralApplication(GeneralApplicationService gaService) {
         this.gaService = gaService;
-        this.coreCaseDataService = coreCaseDataService;
     }
 
     @Override
@@ -40,7 +29,7 @@ public class WithdrawGeneralApplication implements CCDConfig<PCSCase, State, Use
                 .forAllStates()
                 .showCondition(NEVER_SHOW)
                 .name("Withdraw Draft Gen App")
-            .grant(Permission.CRUD, UserRole.PCS_CASE_WORKER)
+                .grant(Permission.CRUD, UserRole.PCS_CASE_WORKER)
                 .fields()
                 .page("Withdraw draft general application")
                 .pageLabel("Are you sure you want to withdraw this draft application?")
@@ -49,28 +38,22 @@ public class WithdrawGeneralApplication implements CCDConfig<PCSCase, State, Use
     }
 
     private void aboutToSubmit(EventPayload<PCSCase, State> payload) {
-        PCSCase pcsCase = payload.caseData();
 
-        String genAppRef = payload.urlParams().getFirst("genAppId");
+        String genAppRef = payload.urlParams().getFirst("genAppId").replace("-", "");
 
-        GACaseEntity toUpdate = gaRepository.findByCaseReference(Long.valueOf(genAppRef)).get();
-
-        //Map<String, Object> existingCase = gaService.getCase(toUpdate.getCaseReference().toString()).getData();
-        //existingCase.put("status", State.Withdrawn.toString());
+        GACaseEntity toUpdate = gaService.findByCaseReference(Long.valueOf(genAppRef));
 
         GACase gaData =
                 GACase.builder().adjustment(toUpdate.getAdjustment())
                         .additionalInformation(toUpdate.getAdditionalInformation())
-                    .caseReference(toUpdate.getCaseReference())
-                    .status(State.WITHDRAWN).build();
+                        .caseReference(toUpdate.getCaseReference())
+                        .status(State.DRAFT_WITHDRAWN).build();
 
         gaService.updateGeneralApplicationInCCD(
                 toUpdate.getCaseReference().toString(),
                 EventId.updateGeneralApplication.name(),
                 gaData
         );
-
     }
-
 
 }

@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.pcs.ccd.service;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
+import uk.gov.hmcts.ccd.sdk.type.CaseLink;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDataContent;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.ccd.client.model.CaseResource;
@@ -9,11 +10,8 @@ import uk.gov.hmcts.reform.ccd.client.model.Event;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.pcs.ccd.GeneralApplicationCaseType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.GACase;
-import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GACaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.GeneralApplicationRepository;
-
-import java.util.List;
 
 
 @Service
@@ -31,29 +29,21 @@ public class GeneralApplicationService {
         this.modelMapper = modelMapper;
     }
 
-    public List<GACaseEntity> findByParentCase(Long parentCaseId) {
-        return genAppRepository.findByPcsCase_CaseReference(parentCaseId); //pcs repo?
-    }
-
     public GACaseEntity findByCaseReference(Long gaCaseReference) {
         return genAppRepository.findByCaseReference(gaCaseReference)
-            .orElseThrow(() -> new IllegalStateException("General Application not found"));
+                .orElseThrow(() -> new IllegalStateException("General Application not found"));
     }
 
     public GACaseEntity convertToGAEntity(GACase gaCase) {
         return modelMapper.map(gaCase, GACaseEntity.class);
     }
 
-    public GACase convertToGA(GACaseEntity gaCase) {
-        return modelMapper.map(gaCase, GACase.class);
-    }
-
-    public void updateGA(Long caseRef) {
-        genAppRepository.findByCaseReference(caseRef)
-            .ifPresent(ga -> {
-                ga.setStatus(State.WITHDRAWN);
-                genAppRepository.save(ga);
-            });
+    public GACase convertToGA(GACaseEntity gaCaseEntity) {
+        GACase gaCase = modelMapper.map(gaCaseEntity, GACase.class);
+        CaseLink caseLink = CaseLink.builder().caseType("PCS")
+                .caseReference(gaCaseEntity.getParentCaseReference().toString()).build();
+        gaCase.setCaseLink(caseLink);
+        return gaCase;
     }
 
     public CaseDetails getCase(String caseId) {
@@ -63,21 +53,21 @@ public class GeneralApplicationService {
     public Long createGeneralApplicationInCCD(GACase gaData, String eventId) {
 
         StartEventResponse startEventResponse = coreCaseDataService.startCase(
-            GeneralApplicationCaseType.CASE_TYPE_ID,
-            eventId
+                GeneralApplicationCaseType.CASE_TYPE_ID,
+                eventId
         );
 
         CaseDataContent caseDataContent = CaseDataContent.builder()
-            .eventToken(startEventResponse.getToken())
-            .event(Event.builder()
-                       .id(eventId)
-                       .build())
-            .data(gaData)
-            .build();
+                .eventToken(startEventResponse.getToken())
+                .event(Event.builder()
+                        .id(eventId)
+                        .build())
+                .data(gaData)
+                .build();
 
         CaseDetails createdCase = coreCaseDataService.submitCaseCreation(
-            GeneralApplicationCaseType.CASE_TYPE_ID,
-            caseDataContent
+                GeneralApplicationCaseType.CASE_TYPE_ID,
+                caseDataContent
         );
         return createdCase.getId();
     }
@@ -85,23 +75,29 @@ public class GeneralApplicationService {
     public CaseResource updateGeneralApplicationInCCD(String caseId, String eventId, GACase existingCase) {
 
         StartEventResponse eventToken = coreCaseDataService.startEvent(
-            caseId,
-            eventId
+                caseId,
+                eventId
         );
         CaseDataContent caseDataContent = CaseDataContent.builder()
-            .eventToken(eventToken.getToken())
-            .event(Event.builder()
-                       .id(eventId)
-                       .build())
-            .data(existingCase)
-            .build();
+                .eventToken(eventToken.getToken())
+                .event(Event.builder()
+                        .id(eventId)
+                        .build())
+                .data(existingCase)
+                .build();
 
         CaseResource updated = coreCaseDataService.submitEvent(
-            caseId,
-            caseDataContent
+                caseId,
+                caseDataContent
         );
         return updated;
     }
 
+    public void deleteGenApp(Long caseRef) {
+        genAppRepository.deleteByCaseReference(caseRef);
+    }
 
+    public void saveGaApp(GACaseEntity gaEntity) {
+        genAppRepository.save(gaEntity);
+    }
 }
