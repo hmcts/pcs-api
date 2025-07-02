@@ -14,8 +14,8 @@ import static java.util.Optional.ofNullable;
 @Component
 public class GeneralApplicationCaseType implements CCDConfig<GACase, State, UserRole> {
     public static final String CASE_TYPE_ID = "PCS-GA";
-    private static final String CASE_TYPE_NAME = "Possessions Gen Application";
-    private static final String CASE_TYPE_DESCRIPTION = "General Application Case Type";
+    private static final String CASE_TYPE_NAME = "Possessions Gen App";
+    private static final String CASE_TYPE_DESCRIPTION = "Gen App Case Type";
     private static final String JURISDICTION_ID = "PCS";
     private static final String JURISDICTION_NAME = "Possessions";
     private static final String JURISDICTION_DESCRIPTION = "Possessions Jurisdiction";

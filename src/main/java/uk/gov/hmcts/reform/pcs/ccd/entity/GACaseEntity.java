@@ -50,5 +50,5 @@ public class GACaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "parent_case_id")
-    private PCSCaseEntity pcsCase;
+    private PcsCaseEntity pcsCase;
 }

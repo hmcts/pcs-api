@@ -47,8 +47,6 @@ public class PCSCaseType implements CCDConfig<PCSCase, State, UserRole> {
         var forenameLabel = "Applicant's first name";
         var surnameLabel = "Applicant's last name";
         var addressLabel = "Property Address";
-        var claimantLabel = "Claimant Information";
-        var genAppsLabel = "General Applications";
         var caseReferenceLabel = "Case Reference";
         builder.searchInputFields()
             .field(PCSCase::getCaseReference, caseReferenceLabel)
@@ -74,9 +72,11 @@ public class PCSCaseType implements CCDConfig<PCSCase, State, UserRole> {
             .field(PCSCase::getApplicantSurname, surnameLabel);
 
 
-        builder.tab("claimantInformation", claimantLabel);
+        builder.tab("claimantInformation", "Claimant Information")
+            .field(PCSCase::getApplicantForename)
+            .field(PCSCase::getApplicantSurname);
 
-        builder.tab("General Applications", genAppsLabel)
+        builder.tab("General Applications", "General Applications")
             .label("generalApplicationsMarkdownLabel", null, "${generalApplicationsSummaryMarkdown}")
             .field("generalApplicationsSummaryMarkdown", "[STATE]=\"NEVER_SHOW\"");
 

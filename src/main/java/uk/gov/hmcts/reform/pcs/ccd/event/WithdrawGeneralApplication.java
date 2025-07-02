@@ -15,6 +15,8 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.PCSCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.CoreCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.GeneralApplicationService;
 
+import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
+
 @Component
 public class WithdrawGeneralApplication implements CCDConfig<PCSCase, State, UserRole> {
 
@@ -36,6 +38,7 @@ public class WithdrawGeneralApplication implements CCDConfig<PCSCase, State, Use
     public void configure(ConfigBuilder<PCSCase, State, UserRole> builder) {
         builder.decentralisedEvent(EventId.withdrawGeneralApplication.name(), this::aboutToSubmit)
                 .forAllStates()
+                .showCondition(NEVER_SHOW)
                 .name("Withdraw Draft Gen App")
             .grant(Permission.CRUD, UserRole.PCS_CASE_WORKER)
                 .fields()

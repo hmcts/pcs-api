@@ -4,7 +4,7 @@ import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.DecentralisedCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GACaseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.PCSCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.renderer.GeneralApplicationRenderer;
 import uk.gov.hmcts.reform.pcs.ccd.repository.GeneralApplicationRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PCSCaseRepository;
@@ -36,7 +36,7 @@ public class CCDCaseRepository extends DecentralisedCaseRepository<Object> {
     @Override
     public Object getCase(long caseRef) {
         // Try PCS first
-        Optional<PCSCaseEntity> pcs = pcsCaseRepository.findByCaseReference(caseRef);
+        Optional<PcsCaseEntity> pcs = pcsCaseRepository.findByCaseReference(caseRef);
         if (pcs.isPresent()) {
             PCSCase pcsCase = pcsCaseService.convertToPCSCase(pcs.get());
             pcsCase.setGeneralApplicationsSummaryMarkdown(genAppRenderer.render(

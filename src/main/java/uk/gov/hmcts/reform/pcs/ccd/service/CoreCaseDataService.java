@@ -82,11 +82,14 @@ public class CoreCaseDataService {
     }
 
     private String getAuthToken() {
-        return idamService.getSystemUserAuthorisation();
+        //return idamService.getSystemUserAuthorisation();
+        return idamClient.getAccessToken("caseworker@pcs.com", "password");
     }
 
     private String getServiceToken() {
-        return serviceAuthTokenGenerator.generate();
+        //return serviceAuthTokenGenerator.generate();
+        return "Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJjY2RfZ3ciLCJpYXQiOjE2"
+            + "ODAwMDAwMDB9.4QdWwz5ZQ5p5v3cJXkQ4lQwQkR2o9Yw5Qw8yQw8yQw8";
     }
 
 

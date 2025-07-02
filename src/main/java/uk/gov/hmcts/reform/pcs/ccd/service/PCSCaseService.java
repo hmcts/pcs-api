@@ -9,7 +9,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimantInfo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GACaseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.PCSCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PCSCaseRepository;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 
@@ -28,7 +28,7 @@ public class PCSCaseService {
         this.pcsCaseRepository = pcsCaseRepository;
     }
 
-    public PCSCase convertToPCSCase(PCSCaseEntity pcs) {
+    public PCSCase convertToPCSCase(PcsCaseEntity pcs) {
         PCSCase.PCSCaseBuilder builder = PCSCase.builder()
             .caseReference(pcs.getCaseReference());
         if (pcs.getPropertyAddress() != null) {
@@ -60,7 +60,7 @@ public class PCSCaseService {
         AddressEntity addressEntity = applicantAddress != null
             ? modelMapper.map(applicantAddress, AddressEntity.class) : null;
         ClaimantInfo claimantInfo = createClaimantInfoEntity(pcsCase);
-        PCSCaseEntity pcsCaseEntity = new PCSCaseEntity();
+        PcsCaseEntity pcsCaseEntity = new PcsCaseEntity();
         pcsCaseEntity.setCaseReference(caseReference);
         pcsCaseEntity.setClaimantInfo(claimantInfo);
         ;
@@ -70,7 +70,7 @@ public class PCSCaseService {
     }
 
     public void patchCase(long caseReference, PCSCase pcsCase) {
-        PCSCaseEntity pcsCaseEntity = pcsCaseRepository.findByCaseReference(caseReference)
+        PcsCaseEntity pcsCaseEntity = pcsCaseRepository.findByCaseReference(caseReference)
             .orElseThrow(() -> new CaseNotFoundException(caseReference));
 
         ClaimantInfo claimantInfo = new ClaimantInfo();
@@ -93,8 +93,8 @@ public class PCSCaseService {
         pcsCaseRepository.save(pcsCaseEntity);
     }
 
-    public PCSCaseEntity convertToPCSEntity(PCSCase pcsCase) {
-        return modelMapper.map(pcsCase, PCSCaseEntity.class);
+    public PcsCaseEntity convertToPCSEntity(PCSCase pcsCase) {
+        return modelMapper.map(pcsCase, PcsCaseEntity.class);
     }
 
     private AddressUK convertAddress(AddressEntity address) {
@@ -117,7 +117,7 @@ public class PCSCaseService {
             .build();
     }
 
-    public PCSCaseEntity findPCSCase(Long caseReference) {
+    public PcsCaseEntity findPCSCase(Long caseReference) {
         return pcsCaseRepository.findByCaseReference(caseReference)
             .orElseThrow(() -> new IllegalStateException("PCS case not found"));
     }

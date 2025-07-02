@@ -12,7 +12,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimantInfo;
-import uk.gov.hmcts.reform.pcs.ccd.entity.PCSCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PCSCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.PCSCaseService;
 
@@ -57,7 +57,7 @@ public class CreateTestCase implements CCDConfig<PCSCase, State, UserRole> {
     private void submit(EventPayload<PCSCase, State> eventPayload) {
         Long caseReference = eventPayload.caseReference();
         PCSCase pcsCase = eventPayload.caseData();
-        var pcsEntity = PCSCaseEntity.builder()
+        var pcsEntity = PcsCaseEntity.builder()
             .caseReference(caseReference)
             .build();
         AddressEntity addressEntity = createAddressEntity(pcsCase);
@@ -68,7 +68,7 @@ public class CreateTestCase implements CCDConfig<PCSCase, State, UserRole> {
         pcsEntity.setPropertyAddress(addressEntity);
         pcsEntity.setClaimantInfo(claimantInfoEntity);
 
-        PCSCaseEntity savedEntity = pcsRepository.save(pcsEntity);
+        PcsCaseEntity savedEntity = pcsRepository.save(pcsEntity);
         pcsCase.setCaseReference(savedEntity.getCaseReference());
     }
 

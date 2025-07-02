@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -13,6 +14,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
 import uk.gov.hmcts.reform.pcs.config.AbstractPostgresContainerIT;
+import uk.gov.hmcts.reform.pcs.config.TestBeansConfig;
 import uk.gov.hmcts.reform.pcs.hearings.model.DeleteHearingRequest;
 import uk.gov.hmcts.reform.pcs.hearings.model.HearingRequest;
 import uk.gov.hmcts.reform.pcs.hearings.model.UpdateHearingRequest;
@@ -30,6 +32,7 @@ import static uk.gov.hmcts.reform.pcs.hearings.constants.HearingConstants.SERVIC
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("integration")
+@Import(TestBeansConfig.class)
 class HearingsControllerIT extends AbstractPostgresContainerIT {
 
     private static final String AUTH_HEADER = "Bearer token";
@@ -40,7 +43,6 @@ class HearingsControllerIT extends AbstractPostgresContainerIT {
     private MockMvc mockMvc;
     @Autowired
     private ObjectMapper objectMapper;
-
     @MockitoBean
     private AuthTokenGenerator authTokenGenerator;
     @MockitoBean

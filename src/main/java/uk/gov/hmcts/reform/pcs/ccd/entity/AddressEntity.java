@@ -33,7 +33,7 @@ public class AddressEntity {
     @OneToOne(fetch = LAZY)
     @JoinColumn(name = "case_id")
     @JsonBackReference
-    private PCSCaseEntity pcsCase;
+    private PcsCaseEntity pcsCase;
 
     private String addressLine1;
 

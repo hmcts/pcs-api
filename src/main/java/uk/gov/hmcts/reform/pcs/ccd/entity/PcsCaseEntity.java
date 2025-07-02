@@ -26,7 +26,7 @@ import static jakarta.persistence.CascadeType.ALL;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class PCSCaseEntity {
+public class PcsCaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;

@@ -11,11 +11,13 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.GACase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GACaseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.PCSCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.GeneralApplicationRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PCSCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.GeneralApplicationService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PCSCaseService;
+
+import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 
 @Component
 public class AddGeneralApplication implements CCDConfig<PCSCase, State, UserRole> {
@@ -47,8 +49,8 @@ public class AddGeneralApplication implements CCDConfig<PCSCase, State, UserRole
             .mandatory(GACase::getGaType)
             .mandatory(GACase::getAdjustment)
             .optional(GACase::getAdditionalInformation)
-            .readonly(GACase::getCaseLink, "[STATE]=\"NEVER_SHOW\"")
-            .readonly(GACase::getStatus, "[STATE]=\"NEVER_SHOW\"")
+            .readonly(GACase::getCaseLink, NEVER_SHOW)
+            .readonly(GACase::getStatus, NEVER_SHOW)
             .done();
     }
 
@@ -76,7 +78,7 @@ public class AddGeneralApplication implements CCDConfig<PCSCase, State, UserRole
             // Retrieve saved entity
             GACaseEntity genApp = genAppService.findByCaseReference(gaCaseReference);
             // Link to parent case
-            PCSCaseEntity parentCase = pcsCaseService.findPCSCase(caseReference);
+            PcsCaseEntity parentCase = pcsCaseService.findPCSCase(caseReference);
 
             genApp.setPcsCase(parentCase);
             parentCase.getGeneralApplications().add(genApp);
