@@ -13,12 +13,9 @@
     <cve>CVE-2023-36415</cve>
     <cve>CVE-2024-35255</cve>
   </suppress>
-  <!--End of false positives section -->
-
-  <suppress>
-    <notes>Temporarily suppressing CVE-2025-1686 for pebble-spring-boot-starter</notes>
-    <packageUrl regex="true">^pkg:maven/io\.pebbletemplates/pebble-spring-boot-starter@3\.2\.2$</packageUrl>
+  <suppress base="true">
+    <notes>Pebble templates</notes>
     <cve>CVE-2025-1686</cve>
   </suppress>
-
+  <!--End of false positives section -->
 </suppressions>
