@@ -25,7 +25,7 @@ public class WithdrawGeneralApplication implements CCDConfig<PCSCase, State, Use
 
     @Override
     public void configure(ConfigBuilder<PCSCase, State, UserRole> builder) {
-        builder.decentralisedEvent(EventId.withdrawGeneralApplication.name(), this::aboutToSubmit)
+        builder.decentralisedEvent(EventId.withdrawGeneralApplication.name(), this::submit)
                 .forAllStates()
                 .showCondition(NEVER_SHOW)
                 .name("Withdraw Draft Gen App")
@@ -37,7 +37,7 @@ public class WithdrawGeneralApplication implements CCDConfig<PCSCase, State, Use
                 .done();
     }
 
-    private void aboutToSubmit(EventPayload<PCSCase, State> payload) {
+    private void submit(EventPayload<PCSCase, State> payload) {
 
         String genAppRef = payload.urlParams().getFirst("genAppId").replace("-", "");
 

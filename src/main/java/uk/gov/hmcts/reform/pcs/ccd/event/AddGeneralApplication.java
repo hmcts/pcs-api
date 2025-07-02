@@ -30,7 +30,7 @@ public class AddGeneralApplication implements CCDConfig<PCSCase, State, UserRole
 
     @Override
     public void configure(ConfigBuilder<PCSCase, State, UserRole> builder) {
-        builder.decentralisedEvent(EventId.addGeneralApplication.name(), this::aboutToSubmit)
+        builder.decentralisedEvent(EventId.addGeneralApplication.name(), this::submit)
             .forStates(State.CASE_ISSUED)
             .name("Make General Application")
             .showSummary()
@@ -46,12 +46,12 @@ public class AddGeneralApplication implements CCDConfig<PCSCase, State, UserRole
             .done();
     }
 
-    private void aboutToSubmit(EventPayload<PCSCase, State> eventPayload) {
+    private void submit(EventPayload<PCSCase, State> eventPayload) {
         Long caseReference = eventPayload.caseReference();
         PCSCase caseData = eventPayload.caseData();
         GACase newApp = caseData.getCurrentGeneralApplication();
 
-        CaseLink caseLink = new CaseLink().builder().caseReference(caseReference.toString()).caseType("PCS").build();
+        CaseLink caseLink = CaseLink.builder().caseReference(caseReference.toString()).caseType("PCS").build();
 
         if (newApp != null) {
             GACase gaData = GACase.builder()

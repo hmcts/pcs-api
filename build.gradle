@@ -422,7 +422,11 @@ tasks.withType(CftlibExec).configureEach {
   environment 'SPRING_PROFILES_ACTIVE', 'dev'
   environment 'RSE_LIB_ADDITIONAL_DATABASES', 'pcs'
   environment 'POC_APIS_URL', 'http://localhost:3206'
+  environment 'SPRING_FLYWAY_ENABLED', 'true'
+  environment 'SPRING_PROFILES_ACTIVE', 'dev'
+  environment 'CCD_SDK_DECENTRALISED', 'true'
   environment 'XUI_JURISDICTIONS', 'PCS'
+  environment 'DATA_STORE_S2S_AUTHORISED_SERVICES', 'ccd_data,ccd_gw,ccd_ps,xui_webapp,aac_manage_case_assignment,wa_task_configuration_api,wa_task_monitor,wa_task_management_api,ccd_case_document_am_api,ccd_next_hearing_date_updater, pcs_frontend,pcs_api'
 }
 
 tasks.register('highLevelDataSetup', JavaExec) {
