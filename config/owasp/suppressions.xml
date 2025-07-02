@@ -14,4 +14,10 @@
     <cve>CVE-2024-35255</cve>
   </suppress>
   <!--End of false positives section -->
+
+  <suppress>
+    <cve>CVE-2025-1686</cve>
+    <gav>io.pebbletemplates:pebble-spring-boot-starter</gav>
+  </suppress>
+
 </suppressions>
