@@ -56,7 +56,7 @@ public class GeneralApplicationCaseType implements CCDConfig<GACase, State, User
             .field(GACase::getGaType, gaTypeLabel);
 
         configBuilder.searchResultFields()
-
+                .field(GACase::getCaseReference, caseRefLabel)
             .field(GACase::getGaType, gaTypeLabel)
             .field(GACase::getStatus, statusLabel)
             .field(GACase::getCaseLink, parentCaseLabel);
@@ -65,7 +65,7 @@ public class GeneralApplicationCaseType implements CCDConfig<GACase, State, User
             .field(GACase::getCaseReference, caseRefLabel);
 
         configBuilder.workBasketResultFields()
-
+                .field(GACase::getCaseReference, caseRefLabel)
             .field(GACase::getGaType, gaTypeLabel)
             .field(GACase::getStatus, statusLabel)
             .field(GACase::getCaseLink, parentCaseLabel);
@@ -77,5 +77,6 @@ public class GeneralApplicationCaseType implements CCDConfig<GACase, State, User
             .field(GACase::getAdjustment)
             .field(GACase::getAdditionalInformation)
             .field(GACase::getCaseLink);
+        
     }
 }

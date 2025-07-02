@@ -6,5 +6,6 @@ public enum EventId {
     addGeneralApplication,
     withdrawGeneralApplication,
     updateGeneralApplication,
+    deleteGeneralApplication,
 
 }

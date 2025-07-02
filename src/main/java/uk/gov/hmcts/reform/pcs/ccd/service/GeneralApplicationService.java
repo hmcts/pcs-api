@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.service;
 
+import jakarta.transaction.Transactional;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.ccd.sdk.type.CaseLink;
@@ -13,8 +14,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.GACase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GA;
 import uk.gov.hmcts.reform.pcs.ccd.repository.GeneralApplicationRepository;
-
-import java.util.List;
 
 
 @Service
@@ -32,10 +31,6 @@ public class GeneralApplicationService {
         this.modelMapper = modelMapper;
     }
 
-    public List<GA> findByParentCase(Long parentCaseId) {
-        return genAppRepository.findByPcsCase_CaseReference(parentCaseId); //pcs repo?
-    }
-
     public GA findByCaseReference(Long gaCaseReference) {
         return genAppRepository.findByCaseReference(gaCaseReference)
             .orElseThrow(() -> new IllegalStateException("General Application not found"));
@@ -47,7 +42,7 @@ public class GeneralApplicationService {
 
     public GACase convertToGA(GA gaCaseEntity) {
         GACase gaCase = modelMapper.map(gaCaseEntity, GACase.class);
-        CaseLink caseLink = CaseLink.builder().caseType("PCS").caseReference(gaCaseEntity.getCaseReference().toString()).build();
+        CaseLink caseLink = CaseLink.builder().caseType("PCS").caseReference(gaCaseEntity.getParentCaseReference().toString()).build();
         gaCase.setCaseLink(caseLink);
         return gaCase;
     }
@@ -107,5 +102,9 @@ public class GeneralApplicationService {
         return updated;
     }
 
+    @Transactional
+    public void deleteGenApp(Long caseRef) {
+        genAppRepository.deleteByCaseReference(caseRef);
+    }
 
 }

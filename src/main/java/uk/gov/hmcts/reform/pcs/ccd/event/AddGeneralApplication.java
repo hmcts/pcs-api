@@ -17,6 +17,8 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.PCSCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.GeneralApplicationService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PCSCaseService;
 
+import static uk.gov.hmcts.reform.pcs.ccd.domain.ShowConditions.NEVER_SHOW;
+
 @Component
 public class AddGeneralApplication implements CCDConfig<PCSCase, State, UserRole> {
 
@@ -47,8 +49,8 @@ public class AddGeneralApplication implements CCDConfig<PCSCase, State, UserRole
             .mandatory(GACase::getGaType)
             .mandatory(GACase::getAdjustment)
             .optional(GACase::getAdditionalInformation)
-            .readonly(GACase::getCaseLink, "[STATE]=\"NEVER_SHOW\"")
-            .readonly(GACase::getStatus, "[STATE]=\"NEVER_SHOW\"")
+            .readonly(GACase::getCaseLink, NEVER_SHOW)
+            .readonly(GACase::getStatus, NEVER_SHOW)
             .done();
     }
 

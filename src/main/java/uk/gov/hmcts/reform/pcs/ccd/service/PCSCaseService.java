@@ -68,6 +68,7 @@ public class PCSCaseService {
     private GACase convertGenApplication(GA ga) {
         return GACase.builder()
             .caseReference(ga.getCaseReference())
+                .gaType(ga.getGaType())
             .adjustment(ga.getAdjustment())
             .additionalInformation(ga.getAdditionalInformation())
             .status(ga.getStatus())

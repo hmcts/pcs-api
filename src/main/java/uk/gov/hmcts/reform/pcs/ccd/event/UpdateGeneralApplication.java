@@ -13,6 +13,8 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.GeneralApplicationRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PCSCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.GeneralApplicationService;
 
+import static uk.gov.hmcts.reform.pcs.ccd.domain.ShowConditions.NEVER_SHOW;
+
 @Component
 public class UpdateGeneralApplication implements CCDConfig<GACase, State, UserRole> {
 
@@ -38,7 +40,7 @@ public class UpdateGeneralApplication implements CCDConfig<GACase, State, UserRo
             .page("Delete draft general application")
             .pageLabel("Are you sure you want to withdraw this draft application?")
             .label("lineSeparator", "---")
-            .readonly(GACase::getStatus, "[STATE]=\"NEVER_SHOW\"")
+                .readonly(GACase::getStatus, NEVER_SHOW)
             .done();
     }
 

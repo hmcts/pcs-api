@@ -5,6 +5,7 @@ import io.pebbletemplates.pebble.template.PebbleTemplate;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.GACase;
+import uk.gov.hmcts.reform.pcs.ccd.event.DeleteGeneralApplication;
 import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
 
 import java.io.IOException;
@@ -18,10 +19,12 @@ import java.util.Map;
 public class GeneralApplicationRenderer {
 
     private final PebbleEngine pebbleEngine;
+    private final DeleteGeneralApplication deleteGeneralApplication;
 
     public GeneralApplicationRenderer(
-                                      PebbleEngine pebbleEngine) {
+        PebbleEngine pebbleEngine, DeleteGeneralApplication deleteGeneralApplication) {
         this.pebbleEngine = pebbleEngine;
+        this.deleteGeneralApplication = deleteGeneralApplication;
     }
 
     public String render(List<ListValue<GACase>> genAppList, Long caseReference) {
@@ -31,7 +34,8 @@ public class GeneralApplicationRenderer {
         Map<String, Object> context = Map.of(// things to add to context for template to pickup
                                              "caseReference", caseReference,
                                              "generalApplications", genAppList,
-                                             "withdrawGeneralApplication", EventId.withdrawGeneralApplication
+                                             "withdrawGeneralApplication", EventId.withdrawGeneralApplication,
+                                             "deleteGeneralApplication", EventId.deleteGeneralApplication
         );
 
         try {
