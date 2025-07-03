@@ -16,8 +16,7 @@ export class loginHelper {
     await performAction('fill', 'Email address', userData.user.email);
     await performAction('fill', 'Password', password);
     await performAction('click', 'Sign in');
-    console.log("Email Address", userData.user.email);
-    console.log("User Roles", userData.user.roleNames);
+    console.log("User "+ userData.user.email + " has IDAM Roles:", userData.user.roleNames);
     return userData.user.email;
   }
 }

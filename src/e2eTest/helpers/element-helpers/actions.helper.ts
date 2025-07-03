@@ -1,10 +1,16 @@
 import { Page } from '@playwright/test';
+type StepFunction = (name: string, fn: () => Promise<void>) => Promise<void>;
 
 class ActionHelper {
   private static currentPage: Page | null = null;
+  private static stepFunction: StepFunction | null = null;
 
   static initialize(page: Page): void {
     ActionHelper.currentPage = page;
+  }
+
+  static setStepFunction(stepFn: StepFunction) {
+    ActionHelper.stepFunction = stepFn;
   }
 
   private static getActivePage(): Page {
@@ -14,9 +20,18 @@ class ActionHelper {
     return ActionHelper.currentPage;
   }
 
+  private static async runStep(name: string, fn: () => Promise<void>): Promise<void> {
+    if (ActionHelper.stepFunction) {
+      return await ActionHelper.stepFunction(name, fn);
+    } else {
+      return await fn();
+    }
+  }
+
   private static actions = {
     fill: async (identifier: string, value: string): Promise<void> => {
-      await ActionHelper.getActivePage()
+      await ActionHelper.runStep(`Fill "${identifier}" with "${value}"`, async () => {
+          await ActionHelper.getActivePage()
         .locator(
           `label:has-text("${identifier}") + input,
            label:has-text("${identifier}") ~ input,
@@ -25,9 +40,11 @@ class ActionHelper {
         )
         .first()
         .fill(value);
+      });
     },
     click: async (identifier: string): Promise<void> => {
-      await ActionHelper.getActivePage()
+      await ActionHelper.runStep(`Click "${identifier}"`, async () => {
+          await ActionHelper.getActivePage()
         .locator(
           `button:has-text("${identifier}"),
            [value="${identifier}"],
@@ -39,9 +56,11 @@ class ActionHelper {
         )
         .first()
         .click();
+      });
     },
     check: async (identifier: string): Promise<void> => {
-      await ActionHelper.getActivePage()
+        await ActionHelper.runStep(`Check checkbox "${identifier}"`, async () => {
+          await ActionHelper.getActivePage()
         .locator(
           `input[type="checkbox"][aria-label="${identifier}"],
            input[type="checkbox"][name="${identifier}"],
@@ -49,13 +68,15 @@ class ActionHelper {
         )
         .first()
         .check();
+      });
     },
     select: async (identifier: string, option: string | number): Promise<void> => {
-      const locator = ActionHelper.getActivePage().locator(
-        `label:has-text("${identifier}") + select,
-     label:has-text("${identifier}") ~ select,
-     [aria-label="${identifier}"],
-     select[name="${identifier}"]`
+      await ActionHelper.runStep(`Select "${option}" in dropdown "${identifier}"`, async () => {
+        const locator = ActionHelper.getActivePage().locator(
+           `label:has-text("${identifier}") + select,
+            label:has-text("${identifier}") ~ select,
+            [aria-label="${identifier}"],
+            select[name="${identifier}"]`
       ).first();
 
       if (typeof option === 'number') {
@@ -63,6 +84,7 @@ class ActionHelper {
       } else {
         await locator.selectOption(option);
       }
+      });
     },
   };
 
@@ -94,3 +116,4 @@ class ActionHelper {
 
 export const performAction = ActionHelper.performAction;
 export const initActionHelper = ActionHelper.initialize;
+export const setStepFunction = ActionHelper.setStepFunction;

@@ -64,7 +64,7 @@ export async function deleteAccount(email: string): Promise<void> {
       method
     );
     // eslint-disable-next-line no-console
-    console.log('Account deleted: ' + email);
+    console.log('Account deleted post test completion: ' + email);
   } catch (error) {
     // eslint-disable-next-line no-console
     console.error('Error deleting account:', error);

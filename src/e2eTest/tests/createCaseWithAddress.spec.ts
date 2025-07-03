@@ -5,7 +5,7 @@ import ConfigData from "@data/config.data";
 import {caseData} from "@data/case.data";
 import {assertAlertMessageMatches, initAssertionHelper, loginHelper} from '@helpers/index';
 import { deleteAccount }from 'helpers/idam-helpers/idam.helper';
-import {initActionHelper, performAction} from "helpers";
+import {initActionHelper, performAction,setStepFunction} from "helpers";
 import { attachTestMetadata } from '@helpers/testMetaData.helper';
 
 
@@ -14,6 +14,7 @@ let email: string;
 test.beforeEach(async ({ page }) => {
   initActionHelper(page);
   initAssertionHelper(page);
+  setStepFunction(test.step.bind(test));
   await parentSuite('Create Case');
   await page.goto(ConfigData.manageCasesBaseURL);
   // @ts-ignore
