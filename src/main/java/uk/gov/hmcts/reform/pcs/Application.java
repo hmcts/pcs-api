@@ -12,16 +12,16 @@ import uk.gov.hmcts.reform.pcs.location.service.api.LocationReferenceApi;
 @SpringBootApplication(
     scanBasePackages = {
         "uk.gov.hmcts.reform.pcs",
-        "uk.gov.hmcts.ccd.sdk"
+        "uk.gov.hmcts.ccd.sdk",
+        "uk.gov.hmcts.reform.ccd.client"
     })
 @SuppressWarnings("HideUtilityClassConstructor") // Spring needs a constructor, its not a utility class
-@EnableFeignClients(basePackages = (
-    "uk.gov.hmcts.reform.pcs.client"),
+@EnableFeignClients(
     clients = {
         HmcHearingApi.class,
         LocationReferenceApi.class,
         IdamApi.class,
-        DocAssemblyApi.class
+        DocAssemblyApi.class,
     }
 )
 @EnableJms
