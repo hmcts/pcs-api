@@ -29,6 +29,9 @@ java:
     SPRING_LOGGING_LEVEL_ROOT: "DEBUG"
     ENABLE_TESTING_SUPPORT: true
     DB_SCHEDULER_EXECUTOR_ENABLED: true
+    DOC_ASSEMBLY_URL: http://dg-docassembly-aat.service.core-compute-aat.internal
+    IDAM_API_URL: https://idam-api.aat.platform.hmcts.net
+    IDAM_S2S_AUTH_URL: http://rpe-service-auth-provider-aat.service.core-compute-aat.internal
     CCD_SDK_DECENTRALISED: "true"
   secrets:
     PCS_DB_PASSWORD:
@@ -37,5 +40,4 @@ java:
   postgresql:
     enabled: true
     image:
-      tag: '16.0.0'
-
+      tag: "16.0.0"

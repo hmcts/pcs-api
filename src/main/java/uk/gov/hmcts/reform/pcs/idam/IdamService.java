@@ -43,7 +43,7 @@ public class IdamService {
             return user;
         } catch (FeignException.Unauthorized ex) {
             log.error("The Authorization token provided is expired or invalid", ex);
-            throw new InvalidAuthTokenException("The Authorization token provided is expired or invalid");
+            throw new InvalidAuthTokenException("The Authorization token provided is expired or invalid", ex);
         } catch (Exception ex) {
             log.error("Unexpected error while validating Authorization token", ex);
             throw new InvalidAuthTokenException("Unexpected error while validating token", ex);
@@ -59,7 +59,7 @@ public class IdamService {
 
     public String getSystemUserAuthorisation() {
         TokenResponse accessTokenResponse = getAccessTokenResponse();
-        return BEARER_PREFIX + accessTokenResponse.idToken;
+        return BEARER_PREFIX + accessTokenResponse.accessToken;
     }
 
     private TokenResponse getAccessTokenResponse() {
