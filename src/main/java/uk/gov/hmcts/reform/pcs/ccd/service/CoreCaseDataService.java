@@ -17,15 +17,14 @@ public class CoreCaseDataService {
     @Autowired
     private IdamClient idamClient;
 
-    @Autowired
-    private CoreCaseDataApi coreCaseDataApi;
-
+    private final CoreCaseDataApi coreCaseDataApi;
     private final AuthTokenGenerator serviceAuthTokenGenerator;
     private final IdamService idamService;
 
     public CoreCaseDataService(
-                               AuthTokenGenerator serviceAuthTokenGenerator,
-                               IdamService idamService) {
+        CoreCaseDataApi coreCaseDataApi, AuthTokenGenerator serviceAuthTokenGenerator,
+        IdamService idamService) {
+        this.coreCaseDataApi = coreCaseDataApi;
 
         this.serviceAuthTokenGenerator = serviceAuthTokenGenerator;
         this.idamService = idamService;
@@ -35,7 +34,7 @@ public class CoreCaseDataService {
         if (coreCaseDataApi == null) {
             throw new IllegalStateException("CoreCaseDataApi bean not found");
         }
-        
+
         return  coreCaseDataApi.startCase(
             getAuthToken(),
             getServiceToken(),
