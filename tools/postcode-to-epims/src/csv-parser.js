@@ -42,25 +42,25 @@ function convertRowsToMappings(rows, warnings) {
 
     mapping.effectiveFrom = convertToDateTime(sourceEffectiveFrom);
     if (!mapping.effectiveFrom) {
-      warnings.push(`Row ${warningRowNumber}: Missing mandatory Effective From date. Row will be omitted.`);
+      warnings.push(`Row ${warningRowNumber}: Mapping for ${mapping.postCode} is missing mandatory Effective From date. Row will be omitted from the generated SQL.`);
       mapping.excludeFromSql = true;
     } else if (!mapping.effectiveFrom.isValid) {
       mapping.excludeFromSql = true;
-      warnings.push(`Row ${warningRowNumber}: Invalid Effective From date: ${sourceEffectiveFrom}. Row will be omitted.`);
+      warnings.push(`Row ${warningRowNumber}: Mapping for ${mapping.postCode} has an invalid Effective From date '${sourceEffectiveFrom}'. Row will be omitted from the generated SQL.`);
     }
 
     mapping.effectiveTo = convertToDateTime(sourceEffectiveTo);
     if (mapping.effectiveTo && !mapping.effectiveTo.isValid) {
-      warnings.push(`Row ${warningRowNumber}: Invalid Effective To date ${sourceEffectiveTo}`);
+      warnings.push(`Row ${warningRowNumber}: Mapping for ${mapping.postCode} has an invalid Effective To date '${sourceEffectiveTo}'.`);
     }
 
     if (mapping.effectiveFrom && mapping.effectiveTo && mapping.effectiveFrom > mapping.effectiveTo) {
-      warnings.push(`Row ${warningRowNumber}: Effective From date ${sourceEffectiveFrom} is after Effective To date ${sourceEffectiveTo}`);
+      warnings.push(`Row ${warningRowNumber}: Mapping for ${mapping.postCode} has an Effective From date ${sourceEffectiveFrom} that is after Effective To date ${sourceEffectiveTo}.`);
     }
 
     if (mapping.effectiveTo && mapping.effectiveTo < DateTime.now().startOf('day')) {
       mapping.excludeFromSql = true;
-      warnings.push(`Mapping for ${mapping.postCode} expired on ${mapping.effectiveTo.toLocaleString()}. Row will be omitted`);
+      warnings.push(`Row ${warningRowNumber}: Mapping for ${mapping.postCode} expired on ${mapping.effectiveTo.toLocaleString()}. Row will be omitted from the generated SQL.`);
     }
 
     warningRowNumber++;
