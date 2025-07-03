@@ -58,6 +58,11 @@ function convertRowsToMappings(rows, warnings) {
       warnings.push(`Row ${warningRowNumber}: Effective From date ${sourceEffectiveFrom} is after Effective To date ${sourceEffectiveTo}`);
     }
 
+    if (mapping.effectiveTo && mapping.effectiveTo < DateTime.now().startOf('day')) {
+      mapping.excludeFromSql = true;
+      warnings.push(`Mapping for ${mapping.postCode} expired on ${mapping.effectiveTo.toLocaleString()}. Row will be omitted`);
+    }
+
     warningRowNumber++;
     return mapping;
   });
