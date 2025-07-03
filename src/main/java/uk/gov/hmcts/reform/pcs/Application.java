@@ -5,18 +5,18 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.jms.annotation.EnableJms;
 import uk.gov.hmcts.reform.idam.client.IdamApi;
+import uk.gov.hmcts.reform.pcs.document.service.DocAssemblyApi;
 import uk.gov.hmcts.reform.pcs.hearings.service.api.HmcHearingApi;
 import uk.gov.hmcts.reform.pcs.location.service.api.LocationReferenceApi;
-import uk.gov.hmcts.reform.pcs.document.service.DocAssemblyApi;
 
 @SpringBootApplication(
     scanBasePackages = {
         "uk.gov.hmcts.reform.pcs",
-        "uk.gov.hmcts.ccd.sdk",
-        "uk.gov.hmcts.reform.ccd.client"
+        "uk.gov.hmcts.ccd.sdk"
     })
 @SuppressWarnings("HideUtilityClassConstructor") // Spring needs a constructor, its not a utility class
-@EnableFeignClients(
+@EnableFeignClients(basePackages = (
+    "uk.gov.hmcts.reform.pcs.client"),
     clients = {
         HmcHearingApi.class,
         LocationReferenceApi.class,

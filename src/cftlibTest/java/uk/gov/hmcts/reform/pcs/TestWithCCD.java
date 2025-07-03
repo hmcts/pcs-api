@@ -31,7 +31,7 @@ public class TestWithCCD extends CftlibTest {
     String idamToken;
     String s2sToken;
     String userId;
-    
+
     @BeforeAll
     public void setup() {
         idamToken = idamClient.getAccessToken("caseworker@pcs.com", "password");
