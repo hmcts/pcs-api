@@ -3,15 +3,17 @@ import { test } from '@playwright/test';
 import { parentSuite } from 'allure-js-commons';
 import ConfigData from "@data/config.data";
 import {caseData} from "@data/case.data";
-import { loginHelper } from '@helpers/index';
+import {assertAlertMessageMatches, initAssertionHelper, loginHelper} from '@helpers/index';
 import { deleteAccount }from 'helpers/idam-helpers/idam.helper';
 import {initActionHelper, performAction} from "helpers";
 import { attachTestMetadata } from '@helpers/testMetaData.helper';
+
 
 let email: string;
 
 test.beforeEach(async ({ page }) => {
   initActionHelper(page);
+  initAssertionHelper(page);
   await parentSuite('Create Case');
   await page.goto(ConfigData.manageCasesBaseURL);
   // @ts-ignore
@@ -41,10 +43,8 @@ test.describe('Create Case with Address @Master @nightly', async () => {
 
     await performAction('click', 'Submit');
 
-    //await performVerification('expectAlertTextMatches', /^Case #\d{4}-\d{4}-\d{4}-\d{4} has been created\.$/);
-
-    //await actions.expectAlertTextMatches(loggedInPage, /^Case #\d{4}-\d{4}-\d{4}-\d{4} has been created\.$/);
-  }
+    await assertAlertMessageMatches(/^Case #\d{4}-\d{4}-\d{4}-\d{4} has been created\.$/);
+    }
   );
   test('should create a case successfully with Manual Address Flow', async ({page},testInfo) => {
 
@@ -72,8 +72,7 @@ test.describe('Create Case with Address @Master @nightly', async () => {
 
     await performAction('click', 'Submit');
 
-    //await performVerification('expectAlertTextMatches', /^Case #\d{4}-\d{4}-\d{4}-\d{4} has been created\.$/);
-    //await actions.expectAlertTextMatches(loggedInPage, /^Case #\d{4}-\d{4}-\d{4}-\d{4} has been created\.$/);
+    await assertAlertMessageMatches(/^Case #\d{4}-\d{4}-\d{4}-\d{4} has been created\.$/);
 
   });
 
