@@ -116,7 +116,7 @@ public class PCSCaseService {
 
     public PcsCaseEntity findPCSCase(Long caseReference) {
         return pcsCaseRepository.findByCaseReference(caseReference)
-            .orElseThrow(() -> new IllegalStateException("PCS case not found"));
+            .orElseThrow(() -> new CaseNotFoundException(caseReference));
     }
 
     public PcsCaseEntity savePCSCase(PcsCaseEntity pcsCase) {

@@ -12,6 +12,7 @@ import uk.gov.hmcts.reform.pcs.ccd.GeneralApplicationCaseType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.GACase;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GACaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.GeneralApplicationRepository;
+import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 
 
 @Service
@@ -31,7 +32,7 @@ public class GeneralApplicationService {
 
     public GACaseEntity findByCaseReference(Long gaCaseReference) {
         return genAppRepository.findByCaseReference(gaCaseReference)
-                .orElseThrow(() -> new IllegalStateException("General Application not found"));
+            .orElseThrow(() -> new CaseNotFoundException(gaCaseReference));
     }
 
     public GACaseEntity convertToGAEntity(GACase gaCase) {

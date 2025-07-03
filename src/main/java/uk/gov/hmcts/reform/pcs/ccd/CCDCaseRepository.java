@@ -39,10 +39,12 @@ public class CCDCaseRepository extends DecentralisedCaseRepository<Object> {
         Optional<PcsCaseEntity> pcs = pcsCaseRepository.findByCaseReference(caseRef);
         if (pcs.isPresent()) {
             PCSCase pcsCase = pcsCaseService.convertToPCSCase(pcs.get());
-            pcsCase.setGeneralApplicationsSummaryMarkdown(genAppRenderer.render(
-                pcsCase.getGeneralApplications(),
-                caseRef
-            ));
+            if (pcsCase != null) {
+                pcsCase.setGeneralApplicationsSummaryMarkdown(genAppRenderer.render(
+                    pcsCase.getGeneralApplications(),
+                    caseRef
+                ));
+            }
             return pcsCase;
         }
         // Else try GA
