@@ -82,7 +82,7 @@ public class CoreCaseDataService {
     }
 
     private String getAuthToken() {
-        return idamClient.getAccessToken("caseworker@pcs.com", "password");
+        return idamService.getSystemUserAuthorisation();
     }
 
     private String getServiceToken() {
