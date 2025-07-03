@@ -3,9 +3,9 @@ import { test } from '@playwright/test';
 import { parentSuite } from 'allure-js-commons';
 import ConfigData from "@data/config.data";
 import {caseData} from "@data/case.data";
-import { loginHelper } from 'helpers';
+import { loginHelper } from '@helpers/index';
 import { deleteAccount }from 'helpers/idam-helpers/idam.helper';
-import {initActionHelper, performAction} from "helpers/element-helpers";
+import {initActionHelper, performAction} from "helpers";
 import { attachTestMetadata } from '@helpers/testMetaData.helper';
 
 let email: string;

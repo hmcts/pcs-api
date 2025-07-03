@@ -1,7 +1,7 @@
 import { Page } from '@playwright/test';
 import ConfigData from "@data/config.data";
 
-import { initActionHelper, performAction } from './element-helpers';
+import { initActionHelper, performAction } from '../helpers';
 import * as idamHelper from './idam-helpers/idam.helper';
 import { buildUserDataWithRole } from './idam-helpers/testConfig';
 
