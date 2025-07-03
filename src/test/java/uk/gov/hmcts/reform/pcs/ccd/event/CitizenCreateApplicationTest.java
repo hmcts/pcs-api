@@ -25,7 +25,7 @@ import static uk.gov.hmcts.ccd.sdk.api.Permission.U;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.State.AWAITING_SUBMISSION_TO_HMCTS;
 
 @ExtendWith(MockitoExtension.class)
-class CitizenCreateApplicationTest extends BaseEventTest {
+class CitizenCreateApplicationTest extends PCSBaseEventTest {
 
     @Mock
     private PCSCaseService pcsCaseService;

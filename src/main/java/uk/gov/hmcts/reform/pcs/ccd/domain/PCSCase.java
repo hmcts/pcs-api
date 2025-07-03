@@ -10,6 +10,8 @@ import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.FieldType;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseworkerAccess;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenAccess;
 
 import java.util.List;
 
@@ -29,17 +31,28 @@ public class PCSCase {
     @CCD(label = "Case Id")
     private Long caseReference;
 
-    @CCD(label = "Applicant's first name")
+    @CCD(
+        label = "Applicant's forename",
+        access = {CitizenAccess.class, CaseworkerAccess.class}
+    )
     private String applicantForename;
 
-    @CCD(label = "Applicant's last name")
+    @CCD(
+        label = "Applicant's surname",
+        access = {CitizenAccess.class, CaseworkerAccess.class}
+    )
     private String applicantSurname;
 
+    @CCD(
+        label = "Property address",
+        access = {CitizenAccess.class, CaseworkerAccess.class}
+    )
     private AddressUK propertyAddress;
 
     @CCD(label = "General Applications",
         typeOverride = FieldType.Collection,
-        typeParameterOverride = "GACase" //must be class name
+        typeParameterOverride = "GACase",
+        access = {CitizenAccess.class, CaseworkerAccess.class}
     )
     private List<ListValue<GACase>> generalApplications;
 
