@@ -24,10 +24,10 @@ public class UpdateGeneralApplication implements CCDConfig<GACase, State, UserRo
 
     @Override
     public void configure(ConfigBuilder<GACase, State, UserRole> builder) {
-        builder.decentralisedEvent(EventId.updateGeneralApplication.name(), this::aboutToSubmit)
+        builder.decentralisedEvent(EventId.updateGeneralApplication.name(), this::submit)
             .forStateTransition(State.DRAFT, State.DRAFT_WITHDRAWN)
             .name("Withdraw Draft Gen App")
-            .grant(Permission.CRUD, UserRole.PCS_CASE_WORKER)
+                .grant(Permission.CRUD, UserRole.CASE_ADMIN)
             .fields()
             .page("Delete draft general application")
             .pageLabel("Are you sure you want to withdraw this draft application?")
@@ -36,7 +36,7 @@ public class UpdateGeneralApplication implements CCDConfig<GACase, State, UserRo
             .done();
     }
 
-    private void aboutToSubmit(EventPayload<GACase, State> payload) {
+    private void submit(EventPayload<GACase, State> payload) {
         GACaseEntity toUpdate = gaService.findByCaseReference(payload.caseReference());
         toUpdate.setStatus(State.DRAFT_WITHDRAWN);
         gaService.saveGaApp(toUpdate);

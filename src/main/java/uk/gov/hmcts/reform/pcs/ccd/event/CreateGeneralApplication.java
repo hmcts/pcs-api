@@ -25,7 +25,7 @@ public class CreateGeneralApplication implements CCDConfig<GACase, State, UserRo
         builder.decentralisedEvent(EventId.createGeneralApplication.name(), this::submit)
                 .initialState(State.DRAFT)
                 .name("Make General Application")
-                .grant(Permission.CRUD, UserRole.PCS_CASE_WORKER)
+            .grant(Permission.CRUD, UserRole.CASE_ADMIN)
                 .fields()
                 .mandatory(GACase::getGaType)
                 .mandatory(GACase::getAdjustment)
