@@ -428,18 +428,18 @@ tasks.register('highLevelDataSetup', JavaExec) {
 // Ensure we cover Cftlib dev & test with our CI checks
 check.dependsOn cftlibTest
 
-rootProject.tasks.named("processIntegrationTestResources") {
+tasks.named("processIntegrationTestResources") {
   duplicatesStrategy = 'include'
 }
 
-rootProject.tasks.named("processContractTestResources") {
+tasks.named("processContractTestResources") {
   duplicatesStrategy = 'include'
 }
 
-rootProject.tasks.named("processFunctionalTestResources") {
+tasks.named("processFunctionalTestResources") {
   duplicatesStrategy = 'include'
 }
 
-wrapper {
+tasks.withType(Wrapper) {
   distributionType = Wrapper.DistributionType.ALL
 }
