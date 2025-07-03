@@ -1,7 +1,7 @@
 
 export const caseData = {
   jurisdiction: 'Possessions',
-  caseType: 'Civil Possessions',
+  caseType: process.env.CHANGE_ID ? 'Civil Possessions ${process.env.CHANGE_ID}' : 'Civil Possessions',
   event: 'Make a claim',
   postcode: 'W3 7RX',
   addressIndex: 1,
