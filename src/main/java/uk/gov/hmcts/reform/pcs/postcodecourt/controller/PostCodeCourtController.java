@@ -31,8 +31,11 @@ public class PostCodeCourtController {
 
     @Operation(summary = "Get courts by postcode",
         description = "Returns a list of courts matching the given postcode",
-        security = @SecurityRequirement(name = "AuthorizationToken"
-        ))
+        security = {
+            @SecurityRequirement(name = "AuthorizationToken"),
+            @SecurityRequirement(name = "ServiceAuthorization")
+        }
+    )
     @ApiResponse(responseCode = "200",
         description = "Successful response with list of courts or empty list if no match found",
         content =

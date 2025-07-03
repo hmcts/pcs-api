@@ -1,5 +1,7 @@
 package uk.gov.hmcts.reform.pcs.hearings.endpoint;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -36,6 +38,12 @@ public class HearingsController {
         this.hmcHearingService = hmcHearingService;
     }
 
+    @Operation(summary = "Create a hearing",
+        security = {
+            @SecurityRequirement(name = "AuthorizationToken"),
+            @SecurityRequirement(name = "ServiceAuthorization")
+        }
+    )
     @PostMapping(value = "/", consumes = MediaType.APPLICATION_JSON_VALUE)
     HearingResponse createHearing(
         @RequestHeader(AUTHORIZATION) String authorisation,
@@ -44,6 +52,12 @@ public class HearingsController {
         return hmcHearingService.createHearing(hearingPayload);
     }
 
+    @Operation(summary = "Update a hearing",
+        security = {
+            @SecurityRequirement(name = "AuthorizationToken"),
+            @SecurityRequirement(name = "ServiceAuthorization")
+        }
+    )
     @PutMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
     HearingResponse updateHearing(
         @RequestHeader(AUTHORIZATION) String authorisation,
@@ -53,6 +67,12 @@ public class HearingsController {
         return hmcHearingService.updateHearing(id, hearingPayload);
     }
 
+    @Operation(summary = "Delete a hearing",
+        security = {
+            @SecurityRequirement(name = "AuthorizationToken"),
+            @SecurityRequirement(name = "ServiceAuthorization")
+        }
+    )
     @DeleteMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
     HearingResponse deleteHearing(
         @RequestHeader(AUTHORIZATION) String authorisation,
@@ -62,6 +82,12 @@ public class HearingsController {
         return hmcHearingService.deleteHearing(id, hearingDeletePayload);
     }
 
+    @Operation(summary = "Get a hearing",
+        security = {
+            @SecurityRequirement(name = "AuthorizationToken"),
+            @SecurityRequirement(name = "ServiceAuthorization")
+        }
+    )
     @GetMapping(value = "/{id}")
     GetHearingsResponse getHearing(
         @RequestHeader(AUTHORIZATION) String authorisation,

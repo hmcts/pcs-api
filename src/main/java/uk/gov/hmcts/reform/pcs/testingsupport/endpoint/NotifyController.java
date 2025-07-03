@@ -1,5 +1,7 @@
 package uk.gov.hmcts.reform.pcs.testingsupport.endpoint;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.MediaType;
@@ -27,6 +29,13 @@ public class NotifyController {
         this.notificationService = notificationService;
     }
 
+    @Operation(
+        summary = "Send email notification",
+        security = {
+            @SecurityRequirement(name = "AuthorizationToken"),
+            @SecurityRequirement(name = "ServiceAuthorization")
+        }
+    )
     @PostMapping(value = "/send-email", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<EmailNotificationResponse> sendEmail(
         @RequestHeader(value = AUTHORIZATION, defaultValue = "DummyId") String authorisation,
