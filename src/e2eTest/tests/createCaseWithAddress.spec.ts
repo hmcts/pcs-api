@@ -37,7 +37,7 @@ test.describe('Create Case with Address @Master @nightly', async () => {
     await performAction('fill', 'County', caseData.county);
     await performAction('click', 'Continue');
 
-    await performAction('fill', "Applicant's first name", caseData.applicantFirstName);
+    await performAction('fill', "Applicant's forename", caseData.applicantFirstName);
 
     await performAction('click', 'Submit');
 
@@ -68,7 +68,8 @@ test.describe('Create Case with Address @Master @nightly', async () => {
 
     await performAction('click','Continue');
 
-    await performAction('fill', "Applicant's first name", caseData.applicantFirstName);
+    await performAction('fill', "Applicant's forename", caseData.applicantFirstName);
+
     await performAction('click', 'Submit');
 
     //await performVerification('expectAlertTextMatches', /^Case #\d{4}-\d{4}-\d{4}-\d{4} has been created\.$/);
