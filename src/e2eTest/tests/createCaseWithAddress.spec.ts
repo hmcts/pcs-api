@@ -23,7 +23,6 @@ test.describe('Create Case with Address @Master @nightly', async () => {
   test('should create a case successfully with Dropdown Address Flow', async ({page},testInfo) => {
     await attachTestMetadata(testInfo, page, email);
 
-
     await performAction('click','Create case');
     await performAction('select','Jurisdiction', caseData.jurisdiction);
     await performAction('select', 'Case type', caseData.caseType);
@@ -50,11 +49,6 @@ test.describe('Create Case with Address @Master @nightly', async () => {
   test('should create a case successfully with Manual Address Flow', async ({page},testInfo) => {
 
     await attachTestMetadata(testInfo, page, email);
-
-    await testInfo.attach('User for Login', {
-      body: email,
-      contentType: 'text/plain',
-    });
 
     await performAction('click','Create case');
     await performAction('select','Jurisdiction', caseData.jurisdiction);
