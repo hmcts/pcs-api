@@ -2,7 +2,7 @@ import ConfigData from "@data/config.data";
 import { TokenEndpointResponse } from 'oauth4webapi';
 
 import { request, retriedRequest } from './rest.helper';
-import { TestConfig, UserData } from './testConfig';
+import { UserData } from './testConfig';
 
 const testConfig = ConfigData.iDam;
 const username = process.env.IDAM_SYSTEM_USERNAME as string;
