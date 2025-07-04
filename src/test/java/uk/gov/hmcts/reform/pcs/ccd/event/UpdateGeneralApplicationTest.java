@@ -43,7 +43,7 @@ class UpdateGeneralApplicationTest extends GABaseEventTest {
     void shouldSetEventPermissions() {
         SetMultimap<UserRole, Permission> grants = configuredEvent.getGrants();
         assertThat(grants.keySet()).hasSize(1);
-        assertThat(grants.get(UserRole.CASE_ADMIN)).contains(C, R, U, D);
+        assertThat(grants.get(UserRole.PCS_CASE_WORKER)).contains(C, R, U, D);
     }
 
     @Test
