@@ -60,7 +60,7 @@ function convertRowsToMappings(rows, warnings) {
 
     if (mapping.effectiveTo && mapping.effectiveTo < DateTime.now().startOf('day')) {
       mapping.excludeFromSql = true;
-      warnings.push(`Row ${warningRowNumber}: Mapping for ${mapping.postCode} expired on ${mapping.effectiveTo.toLocaleString()}. Row will be omitted from the generated SQL.`);
+      warnings.push(`Row ${warningRowNumber}: Mapping for ${mapping.postCode} expired on ${mapping.effectiveTo.toFormat('dd/MM/yyyy')}. Row will be omitted from the generated SQL.`);
     }
 
     warningRowNumber++;
