@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.dashboard.endpoint;
 
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -33,6 +34,7 @@ public class DashboardController {
     @GetMapping(value = "/{caseReference}/notifications",
         produces = MediaType.APPLICATION_JSON_VALUE
     )
+    @Operation(summary = "Get the active dashboard notifications for a case")
     @ApiResponse(responseCode = "200", description = "Request successful",
         content = {
             @Content(
@@ -66,6 +68,7 @@ public class DashboardController {
     @GetMapping(value = "/{caseReference}/tasks",
         produces = MediaType.APPLICATION_JSON_VALUE
     )
+    @Operation(summary = "Get the tasks associated with the dashboard for a case")
     @ApiResponse(responseCode = "200", description = "Request successful",
         content = {
             @Content(
