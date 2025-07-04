@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.service;
 
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
@@ -20,13 +21,15 @@ public class CoreCaseDataService {
     private final CoreCaseDataApi coreCaseDataApi;
     private final AuthTokenGenerator serviceAuthTokenGenerator;
     private final IdamService idamService;
+    private final HttpServletRequest request;
 
     public CoreCaseDataService(
         CoreCaseDataApi coreCaseDataApi, AuthTokenGenerator serviceAuthTokenGenerator,
-        IdamService idamService) {
+        IdamService idamService, HttpServletRequest request) {
         this.coreCaseDataApi = coreCaseDataApi;
         this.serviceAuthTokenGenerator = serviceAuthTokenGenerator;
         this.idamService = idamService;
+        this.request = request;
     }
 
     public StartEventResponse startCase(String caseType, String eventId) {
@@ -35,7 +38,7 @@ public class CoreCaseDataService {
         }
 
         return  coreCaseDataApi.startCase(
-            getAuthToken(),
+            getUserAuthToken(),
             getServiceToken(),
             caseType,
             eventId
@@ -45,7 +48,7 @@ public class CoreCaseDataService {
     public CaseDetails submitCaseCreation(String caseType, CaseDataContent caseDataContent) {
 
         return coreCaseDataApi.submitCaseCreation(
-            getAuthToken(),
+            getUserAuthToken(),
             getServiceToken(),
             caseType,
             caseDataContent
@@ -56,7 +59,7 @@ public class CoreCaseDataService {
     public StartEventResponse startEvent(String caseId, String eventId) {
 
         return coreCaseDataApi.startEvent(
-            getAuthToken(),
+            getUserAuthToken(),
             getServiceToken(),
             caseId,
             eventId
@@ -66,7 +69,7 @@ public class CoreCaseDataService {
 
     public CaseResource submitEvent(String caseId, CaseDataContent caseDataContent) {
         return coreCaseDataApi.createEvent(
-            getAuthToken(),
+            getUserAuthToken(),
             getServiceToken(),
             caseId,
             caseDataContent
@@ -77,14 +80,14 @@ public class CoreCaseDataService {
     public CaseDetails getCase(String caseId) {
 
         return coreCaseDataApi.getCase(
-            getAuthToken(),
+            getUserAuthToken(),
             getServiceToken(),
             caseId
         );
     }
 
-    private String getAuthToken() {
-        return idamService.getSystemUserAuthorisation();
+    private String getUserAuthToken() {
+        return request.getHeader("Authorization");
     }
 
     private String getServiceToken() {

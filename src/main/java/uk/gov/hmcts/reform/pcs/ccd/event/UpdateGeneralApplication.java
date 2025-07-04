@@ -27,7 +27,7 @@ public class UpdateGeneralApplication implements CCDConfig<GACase, State, UserRo
         builder.decentralisedEvent(EventId.updateGeneralApplication.name(), this::submit)
             .forStateTransition(State.DRAFT, State.DRAFT_WITHDRAWN)
             .name("Withdraw Draft Gen App")
-                .grant(Permission.CRUD, UserRole.CASE_ADMIN)
+                .grant(Permission.CRUD, UserRole.PCS_CASE_WORKER)
             .fields()
             .page("Delete draft general application")
             .pageLabel("Are you sure you want to withdraw this draft application?")

@@ -10,7 +10,7 @@
 |----------------|----- |--------|---------|
 {% for genApp in generalApplications %}
 {% if genApp.value.status != "DRAFT_WITHDRAWN" %}
-| {{ genApp.value.caseReference }} | {{ genApp.value.gaType }} |{{ genApp.value.status }} |{% if genApp.value.status == "DRAFT" %}{{ showActions(genApp, _context) }}
+| {{ genApp.value.caseReference }} | {{ genApp.value.gaType.getLabel() }} |{{ genApp.value.status }} |{% if genApp.value.status == "DRAFT" %}{{ showActions(genApp, _context) }}
 {% else %}
 No actions
 {% endif %}
