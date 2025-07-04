@@ -59,7 +59,8 @@ public class HighLevelDataSetupApp extends DataLoaderToDefinitionStore {
         String environmentName = environment.name().toLowerCase(Locale.UK);
         return List.of(
             "build/definitions/CCD_Definition_" + PCSCaseType.getCaseType() + "_" + environmentName + ".xlsx",
-            "build/definitions/CCD_Definition_" + GeneralApplicationCaseType.getCaseType() + "_" + environmentName + ".xlsx"
+            "build/definitions/CCD_Definition_"
+                + GeneralApplicationCaseType.getCaseType() + "_" + environmentName + ".xlsx"
         );
     }
 
