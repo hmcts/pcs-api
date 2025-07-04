@@ -20,7 +20,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.domain.State.CASE_ISSUED;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.citizenSubmitApplication;
 
 @ExtendWith(MockitoExtension.class)
-class CitizenSubmitApplicationTest extends BaseEventTest {
+class CitizenSubmitApplicationTest extends PCSBaseEventTest {
 
     private Event<PCSCase, UserRole, State> configuredEvent;
 

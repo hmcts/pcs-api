@@ -3,22 +3,23 @@ package uk.gov.hmcts.reform.pcs.ccd;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CCDConfig;
 import uk.gov.hmcts.ccd.sdk.api.ConfigBuilder;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 
 import static java.lang.System.getenv;
 import static java.util.Optional.ofNullable;
+import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 
 /**
  * Setup some common possessions case type configuration.
  */
 @Component
-public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
+public class PCSCaseType implements CCDConfig<PCSCase, State, UserRole> {
 
     private static final String CASE_TYPE_ID = "PCS";
     private static final String CASE_TYPE_NAME = "Civil Possessions";
-    private static final String CASE_TYPE_DESCRIPTION = "Civil Possessions Case Type";
+    private static final String CASE_TYPE_DESCRIPTION = "Civil Possessions";
     private static final String JURISDICTION_ID = "PCS";
     private static final String JURISDICTION_NAME = "Possessions";
     private static final String JURISDICTION_DESCRIPTION = "Possessions Jurisdiction";
@@ -44,37 +45,45 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
         builder.decentralisedCaseType(getCaseType(), getCaseTypeName(), CASE_TYPE_DESCRIPTION);
         builder.jurisdiction(JURISDICTION_ID, JURISDICTION_NAME, JURISDICTION_DESCRIPTION);
 
-        String forenameLabel = "Applicant Forename";
-        String surnameLabel = "Applicant Surname";
+        var forenameLabel = "Applicant's first name";
+        var surnameLabel = "Applicant's last name";
+        var addressLabel = "Property Address";
+        var caseReferenceLabel = "Case Reference";
         builder.searchInputFields()
-            .caseReferenceField()
-            .field(PCSCase::getApplicantForename, forenameLabel);
+            .field(PCSCase::getCaseReference, caseReferenceLabel)
+            .field(PCSCase::getApplicantForename, forenameLabel)
+            .field(PCSCase::getApplicantSurname, surnameLabel);
+
         builder.searchCasesFields()
-            .caseReferenceField()
+            .field(PCSCase::getCaseReference, caseReferenceLabel)
             .field(PCSCase::getApplicantForename, forenameLabel);
 
         builder.searchResultFields()
-            .caseReferenceField()
+            .field(PCSCase::getCaseReference, caseReferenceLabel)
             .field(PCSCase::getApplicantForename, forenameLabel)
             .field(PCSCase::getApplicantSurname, surnameLabel);
+
         builder.workBasketInputFields()
-            .caseReferenceField()
-            .field(PCSCase::getApplicantForename, forenameLabel)
-            .field(PCSCase::getApplicantSurname, surnameLabel);
+            .field(PCSCase::getCaseReference, caseReferenceLabel)
+            .field(PCSCase::getApplicantForename, forenameLabel);
+
         builder.workBasketResultFields()
-            .caseReferenceField()
+            .field(PCSCase::getCaseReference, caseReferenceLabel)
             .field(PCSCase::getApplicantForename, forenameLabel)
             .field(PCSCase::getApplicantSurname, surnameLabel);
-
-        builder.tab("claimantInformation", "Claimant Details")
-            .field(PCSCase::getApplicantForename)
-            .field(PCSCase::getApplicantSurname);
-
-        builder.tab("summary", "Property Details")
-            .field(PCSCase::getPropertyAddress);
 
         builder.tab("CaseHistory", "History")
             .field("caseHistory");
 
+        builder.tab("claimantInformation", "Claimant Information")
+            .field(PCSCase::getApplicantForename)
+            .field(PCSCase::getApplicantSurname);
+
+        builder.tab("General Applications", "General Applications")
+            .label("generalApplicationsMarkdownLabel", null, "${generalApplicationsSummaryMarkdown}")
+            .field("generalApplicationsSummaryMarkdown", NEVER_SHOW);
+
     }
+
+
 }

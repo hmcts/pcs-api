@@ -11,9 +11,12 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
+import uk.gov.hmcts.reform.ccd.client.CoreCaseDataApi;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 import uk.gov.hmcts.reform.pcs.Application;
+import uk.gov.hmcts.reform.pcs.ccd.CCDCaseRepository;
+import uk.gov.hmcts.reform.pcs.ccd.service.CoreCaseDataService;
 import uk.gov.hmcts.reform.pcs.config.AbstractPostgresContainerIT;
 import uk.gov.hmcts.reform.pcs.exception.InvalidAuthTokenException;
 import uk.gov.hmcts.reform.pcs.idam.IdamService;
@@ -64,6 +67,12 @@ class PostCodeCourtControllerIT extends AbstractPostgresContainerIT {
     private LocationReferenceApi locationReferenceApi;
     @MockitoBean
     private IdamService idamService;
+    @MockitoBean
+    private CoreCaseDataApi coreCaseDataApi;
+    @MockitoBean
+    private CCDCaseRepository ccdCaseRepository;
+    @MockitoBean
+    private CoreCaseDataService coreCaseDataService;
 
     @BeforeEach
     void setUp() {
