@@ -54,7 +54,7 @@ public class GeneralApplicationService {
     public Long createGeneralApplicationInCCD(GACase gaData, String eventId) {
 
         StartEventResponse startEventResponse = coreCaseDataService.startCase(
-                GeneralApplicationCaseType.CASE_TYPE_ID,
+                GeneralApplicationCaseType.getCaseType(),
                 eventId
         );
 
@@ -67,7 +67,7 @@ public class GeneralApplicationService {
                 .build();
 
         CaseDetails createdCase = coreCaseDataService.submitCaseCreation(
-                GeneralApplicationCaseType.CASE_TYPE_ID,
+                GeneralApplicationCaseType.getCaseType(),
                 caseDataContent
         );
         return createdCase.getId();
