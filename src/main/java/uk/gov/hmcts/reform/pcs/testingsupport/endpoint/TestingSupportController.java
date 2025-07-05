@@ -6,7 +6,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -53,11 +52,7 @@ public class TestingSupportController {
     @Operation(
         summary = "Schedule a Hello World task",
         description = "Schedules a Hello World task to be executed after a specified delay. "
-            + "This endpoint is used for testing the database scheduler functionality.",
-        security = {
-            @SecurityRequirement(name = "AuthorizationToken"),
-            @SecurityRequirement(name = "ServiceAuthorization")
-        }
+            + "This endpoint is used for testing the database scheduler functionality."
     )
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Task scheduled successfully"),
@@ -106,11 +101,7 @@ public class TestingSupportController {
     @Operation(
         summary = "Generate a document using Doc Assembly API",
         description = "Generates a document by sending a request to the Doc Assembly service "
-            + "with template ID and form payload. Returns the URL of the generated document.",
-        security = {
-            @SecurityRequirement(name = "AuthorizationToken"),
-            @SecurityRequirement(name = "ServiceAuthorization")
-        }
+            + "with template ID and form payload. Returns the URL of the generated document."
     )
     @ApiResponses(value = {
         @ApiResponse(responseCode = "201", description = "Document generated successfully"),

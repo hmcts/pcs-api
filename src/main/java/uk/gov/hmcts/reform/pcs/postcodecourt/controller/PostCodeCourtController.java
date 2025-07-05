@@ -6,7 +6,6 @@ import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -30,9 +29,8 @@ public class PostCodeCourtController {
     private final PostCodeCourtService postCodeCourtService;
 
     @Operation(summary = "Get courts by postcode",
-        description = "Returns a list of courts matching the given postcode",
-        security = @SecurityRequirement(name = "AuthorizationToken"
-        ))
+        description = "Returns a list of courts matching the given postcode"
+    )
     @ApiResponse(responseCode = "200",
         description = "Successful response with list of courts or empty list if no match found",
         content =
