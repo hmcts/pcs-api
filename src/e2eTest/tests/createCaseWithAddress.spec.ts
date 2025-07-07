@@ -3,7 +3,7 @@ import { parentSuite } from 'allure-js-commons';
 import {caseData} from "../utils/data/case.data";
 import {initializeExecutor, performAction, performValidation} from '../utils/test-executor';
 
-test.beforeEach(async ({ page },testInfo) => {
+test.beforeEach(async ({ page }) => {
 
   initializeExecutor(page);
   await parentSuite('Create Case');
@@ -63,6 +63,6 @@ test.describe('Create Case with Address @Master @nightly', async () => {
   });
 
   test.afterEach(async () => {
-
+    await performAction('click', 'Sign out');
   });
 });

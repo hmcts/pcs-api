@@ -21,7 +21,7 @@ class TestExecutor {
   constructor(page: Page) {
     this.page = page;
   }
-  async performAction(action: string, fieldName?: string, value?: string | number): Promise<void> {
+  async performAction(action: string, fieldName: string, value?: string | number): Promise<void> {
     const actionInstance = ActionRegistry.getAction(action);
     await test.step(`Perform action: [${action}] on "${fieldName}"${value !== undefined ? ` with value "${value}"` : ''}`, async () => {
       await actionInstance.execute(this.page, fieldName, value);
@@ -83,7 +83,7 @@ export function initializeExecutor(page: Page): void {
   testExecutor = new TestExecutor(page);
 }
 // Global function to execute actions
-export async function performAction(action: string, fieldName?: string, value?: string | number): Promise<void> {
+export async function performAction(action: string, fieldName: string, value?: string | number): Promise<void> {
   if (!testExecutor) {
     throw new Error('Test executor not initialized. Call initializeExecutor(page) first.');
   }
