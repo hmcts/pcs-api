@@ -4,7 +4,7 @@ import uk.gov.hmcts.rse.CftlibExec
 
 buildscript {
   ext {
-    flywayVersion = '11.10.0'
+    flywayVersion = '11.10.1'
     serenityBddVersion = '4.2.33'
   }
   dependencies {
@@ -28,7 +28,7 @@ plugins {
     Applies analysis tools including checkstyle and OWASP Dependency checker.
     See https://github.com/hmcts/gradle-java-plugin
  */
-  id 'uk.gov.hmcts.java' version '0.12.66'
+  id 'uk.gov.hmcts.java' version '0.12.67'
 }
 
 group = 'uk.gov.hmcts.reform'
@@ -322,8 +322,9 @@ dependencies {
   implementation group: 'ch.qos.logback', name: 'logback-classic', version: logbackVersion
   implementation group: 'ch.qos.logback', name: 'logback-core', version: logbackVersion
   implementation group: 'org.postgresql', name: 'postgresql', version: '42.7.7'
-  implementation group: 'com.github.hmcts', name: 'service-auth-provider-java-client', version: '5.3.2'
+  implementation group: 'com.github.hmcts', name: 'service-auth-provider-java-client', version: '5.3.3'
   implementation group: 'org.springframework.cloud', name: 'spring-cloud-starter-openfeign', version: '4.2.1'
+  implementation group: 'commons-fileupload', name: 'commons-fileupload', version: '1.6.0'
   implementation group: 'org.projectlombok', name: 'lombok', version: lombokVersion
   implementation group: 'io.vavr', name: 'vavr', version: '0.10.6'
   implementation group: 'com.github.kagkarlsson', name: 'db-scheduler-spring-boot-starter', version: '15.6.0'
@@ -345,15 +346,15 @@ dependencies {
   functionalTestImplementation sourceSets.main.runtimeClasspath
   functionalTestImplementation sourceSets.test.runtimeClasspath
 
-  testImplementation group: 'org.junit.platform', name: 'junit-platform-suite-api', version: '1.13.2'
+  testImplementation group: 'org.junit.platform', name: 'junit-platform-suite-api', version: '1.13.3'
 
   contractTestImplementation group: 'au.com.dius.pact.consumer', name: 'junit5', version: pactVersion
   contractTestImplementation group: 'org.hamcrest', name: 'java-hamcrest', version: '2.0.0.0'
-  contractTestImplementation('org.junit.jupiter:junit-jupiter-api:5.13.2')
+  contractTestImplementation('org.junit.jupiter:junit-jupiter-api:5.13.3')
   contractTestImplementation sourceSets.main.runtimeClasspath
   contractTestImplementation sourceSets.test.runtimeClasspath
 
-  testImplementation(platform('org.junit:junit-bom:5.13.2'))
+  testImplementation(platform('org.junit:junit-bom:5.13.3'))
   testImplementation group: 'org.springframework.security', name: 'spring-security-test', version: springSecurityVersion
   testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'
   testImplementation(group: 'org.springframework.boot', name: 'spring-boot-starter-test', version: springFrameworkBootVersion) {
@@ -428,18 +429,18 @@ tasks.register('highLevelDataSetup', JavaExec) {
 // Ensure we cover Cftlib dev & test with our CI checks
 check.dependsOn cftlibTest
 
-rootProject.tasks.named("processIntegrationTestResources") {
+tasks.named("processIntegrationTestResources") {
   duplicatesStrategy = 'include'
 }
 
-rootProject.tasks.named("processContractTestResources") {
+tasks.named("processContractTestResources") {
   duplicatesStrategy = 'include'
 }
 
-rootProject.tasks.named("processFunctionalTestResources") {
+tasks.named("processFunctionalTestResources") {
   duplicatesStrategy = 'include'
 }
 
-wrapper {
+tasks.withType(Wrapper) {
   distributionType = Wrapper.DistributionType.ALL
 }
