@@ -8,13 +8,13 @@ import uk.gov.hmcts.ccd.sdk.api.ConfigBuilder;
 import uk.gov.hmcts.ccd.sdk.api.EventPayload;
 import uk.gov.hmcts.ccd.sdk.api.Permission;
 import uk.gov.hmcts.reform.pcs.ccd.ShowConditions;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
-import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
+import uk.gov.hmcts.reform.pcs.ccd.service.PCSCaseService;
 
-import static uk.gov.hmcts.reform.pcs.ccd.domain.State.AWAITING_SUBMISSION_TO_HMCTS;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.CREATOR;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.State.AWAITING_SUBMISSION_TO_HMCTS;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.citizenUpdateApplication;
 
 @Component
@@ -22,7 +22,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.citizenUpdateApplication
 @AllArgsConstructor
 public class CitizenUpdateApplication implements CCDConfig<PCSCase, State, UserRole> {
 
-    private final PcsCaseService pcsCaseService;
+    private final PCSCaseService pcsCaseService;
 
     @Override
     public void configure(final ConfigBuilder<PCSCase, State, UserRole> configBuilder) {

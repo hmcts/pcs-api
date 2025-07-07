@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseworkerAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenAccess;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.WithdrawnStateAccess;
 
 /**
  * All possible PCS case states.
@@ -24,7 +25,19 @@ public enum State {
         label = "Case Issued",
         access = {CaseworkerAccess.class}
     )
-    CASE_ISSUED
+    CASE_ISSUED,
+
+    @CCD(
+        label = "Draft",
+        access = {CaseworkerAccess.class}
+    )
+    DRAFT,
+
+    @CCD(
+        label = "Draft Withdrawn",
+        access = {WithdrawnStateAccess.class}
+    )
+    DRAFT_WITHDRAWN;
 
 }
 

@@ -40,7 +40,6 @@ class HearingsControllerIT extends AbstractPostgresContainerIT {
     private MockMvc mockMvc;
     @Autowired
     private ObjectMapper objectMapper;
-
     @MockitoBean
     private AuthTokenGenerator authTokenGenerator;
     @MockitoBean

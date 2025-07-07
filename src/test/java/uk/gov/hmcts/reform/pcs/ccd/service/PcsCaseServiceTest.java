@@ -12,7 +12,7 @@ import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
+import uk.gov.hmcts.reform.pcs.ccd.repository.PCSCaseRepository;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 
 import java.util.Optional;
@@ -31,17 +31,17 @@ class PcsCaseServiceTest {
     private static final long CASE_REFERENCE = 1234L;
 
     @Mock
-    private PcsCaseRepository pcsCaseRepository;
+    private PCSCaseRepository pcsCaseRepository;
     @Mock
     private ModelMapper modelMapper;
     @Captor
     private ArgumentCaptor<PcsCaseEntity> pcsCaseEntityCaptor;
 
-    private PcsCaseService underTest;
+    private PCSCaseService underTest;
 
     @BeforeEach
     void setUp() {
-        underTest = new PcsCaseService(pcsCaseRepository, modelMapper);
+        underTest = new PCSCaseService(modelMapper, pcsCaseRepository);
     }
 
     @Test
@@ -56,8 +56,8 @@ class PcsCaseServiceTest {
         verify(pcsCaseRepository).save(pcsCaseEntityCaptor.capture());
 
         PcsCaseEntity savedEntity = pcsCaseEntityCaptor.getValue();
-        assertThat(savedEntity.getApplicantForename()).isNull();
-        assertThat(savedEntity.getApplicantSurname()).isNull();
+        assertThat(savedEntity.getClaimantInfo().getForename()).isNull();
+        assertThat(savedEntity.getClaimantInfo().getSurname()).isNull();
         assertThat(savedEntity.getPropertyAddress()).isNull();
     }
 
@@ -82,8 +82,8 @@ class PcsCaseServiceTest {
         verify(pcsCaseRepository).save(pcsCaseEntityCaptor.capture());
 
         PcsCaseEntity savedEntity = pcsCaseEntityCaptor.getValue();
-        assertThat(savedEntity.getApplicantForename()).isEqualTo(expectedForename);
-        assertThat(savedEntity.getApplicantSurname()).isEqualTo(expectedSurname);
+        assertThat(savedEntity.getClaimantInfo().getForename()).isEqualTo(expectedForename);
+        assertThat(savedEntity.getClaimantInfo().getSurname()).isEqualTo(expectedSurname);
         assertThat(savedEntity.getPropertyAddress()).isEqualTo(propertyAddressEntity);
     }
 
@@ -118,8 +118,7 @@ class PcsCaseServiceTest {
 
         PcsCaseEntity savedEntity = pcsCaseEntityCaptor.getValue();
         assertThat(savedEntity).isSameAs(existingPcsCaseEntity);
-        verify(existingPcsCaseEntity, never()).setApplicantForename(any());
-        verify(existingPcsCaseEntity, never()).setApplicantSurname(any());
+        verify(existingPcsCaseEntity, never()).setClaimantInfo(any());
         verify(existingPcsCaseEntity, never()).setPropertyAddress(any());
     }
 
@@ -148,8 +147,6 @@ class PcsCaseServiceTest {
 
         PcsCaseEntity savedEntity = pcsCaseEntityCaptor.getValue();
         assertThat(savedEntity).isSameAs(existingPcsCaseEntity);
-        verify(existingPcsCaseEntity).setApplicantForename(updatedForename);
-        verify(existingPcsCaseEntity).setApplicantSurname(updatedSurname);
         verify(existingPcsCaseEntity).setPropertyAddress(updatedAddressEntity);
     }
 

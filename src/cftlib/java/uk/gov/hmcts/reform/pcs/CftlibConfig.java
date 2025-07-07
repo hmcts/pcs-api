@@ -1,12 +1,15 @@
 package uk.gov.hmcts.reform.pcs;
 
+
 import io.micrometer.core.instrument.util.IOUtils;
+import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.CCDDefinitionGenerator;
-import uk.gov.hmcts.reform.pcs.ccd.CaseType;
+import uk.gov.hmcts.reform.pcs.ccd.GeneralApplicationCaseType;
+import uk.gov.hmcts.reform.pcs.ccd.PCSCaseType;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.rse.ccd.lib.api.CFTLib;
@@ -26,6 +29,7 @@ import static java.util.stream.Collectors.toCollection;
  * Configures the CFTLib with the required users, roles and CCD definitions.
  * The Cftlib will find and execute this configuration class once all services are ready.
  */
+@Import({PCSCaseType.class, GeneralApplicationCaseType.class})
 @Component
 public class CftlibConfig implements CFTLibConfigurer {
 
@@ -41,14 +45,16 @@ public class CftlibConfig implements CFTLibConfigurer {
         var users = Map.of(
             "caseworker@pcs.com", List.of("caseworker", "caseworker-pcs"),
             "citizen@pcs.com", List.of("citizen"),
-            "data.store.idam.system.user@gmail.com", List.of()
+            "data.store.idam.system.user@gmail.com", List.of(),
+            "pcs-system-user@localhost", List.of("caseworker", "caseworker-pcs", "case-admin")
         );
-
         // Create users and roles including in idam simulator
         for (var entry : users.entrySet()) {
             lib.createIdamUser(entry.getKey(), entry.getValue().toArray(new String[0]));
-            lib.createProfile(entry.getKey(), "CIVIL", "PCS", State.CASE_ISSUED.name());
+            lib.createProfile(entry.getKey(), "PCS", "PCS", State.CASE_ISSUED.name());
+            lib.createProfile(entry.getKey(), "PCS", "PCS-GA", State.DRAFT.name());
         }
+
 
         createAccessProfiles(lib);
         createRoleAssignments(lib);
@@ -57,7 +63,8 @@ public class CftlibConfig implements CFTLibConfigurer {
         configWriter.generateAllCaseTypesToJSON(new File("build/definitions"));
 
         // Import CCD definitions
-        lib.importJsonDefinition(new File("build/definitions/" + CaseType.getCaseType()));
+        lib.importJsonDefinition(new File("build/definitions/" + PCSCaseType.getCaseType()));
+        lib.importJsonDefinition(new File("build/definitions/" + GeneralApplicationCaseType.getCaseType()));
     }
 
     private void createAccessProfiles(CFTLib lib) {
@@ -72,8 +79,10 @@ public class CftlibConfig implements CFTLibConfigurer {
 
     private void createRoleAssignments(CFTLib lib) throws IOException {
         ResourceLoader resourceLoader = new DefaultResourceLoader();
-        var json = IOUtils.toString(resourceLoader.getResource("classpath:cftlib-am-role-assignments.json")
-                                        .getInputStream(), Charset.defaultCharset());
+        var json = IOUtils.toString(
+            resourceLoader.getResource("classpath:cftlib-am-role-assignments.json")
+                .getInputStream(), Charset.defaultCharset()
+        );
         lib.configureRoleAssignments(json);
     }
 

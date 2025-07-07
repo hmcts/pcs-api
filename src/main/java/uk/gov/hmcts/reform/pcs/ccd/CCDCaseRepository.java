@@ -1,53 +1,59 @@
 package uk.gov.hmcts.reform.pcs.ccd;
 
-import lombok.AllArgsConstructor;
-import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.DecentralisedCaseRepository;
-import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.GACaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
-import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
+import uk.gov.hmcts.reform.pcs.ccd.renderer.GeneralApplicationRenderer;
+import uk.gov.hmcts.reform.pcs.ccd.repository.GeneralApplicationRepository;
+import uk.gov.hmcts.reform.pcs.ccd.repository.PCSCaseRepository;
+import uk.gov.hmcts.reform.pcs.ccd.service.GeneralApplicationService;
+import uk.gov.hmcts.reform.pcs.ccd.service.PCSCaseService;
 
-/**
- * Invoked by CCD to load PCS cases under the decentralised model.
- */
+import java.util.Optional;
+
 @Component
-@AllArgsConstructor
-public class CCDCaseRepository extends DecentralisedCaseRepository<PCSCase> {
+public class CCDCaseRepository extends DecentralisedCaseRepository<Object> {
 
-    private final PcsCaseRepository pcsCaseRepository;
-    private final ModelMapper modelMapper;
+    private final PCSCaseRepository pcsCaseRepository;
+    private final GeneralApplicationRepository generalApplicationRepository;
+    private final GeneralApplicationService generalApplicationService;
+    private final PCSCaseService pcsCaseService;
+    private final GeneralApplicationRenderer genAppRenderer;
 
-    /**
-     * Invoked by CCD to load PCS cases by reference.
-     * @param caseReference The CCD case reference to load
-     */
+    public CCDCaseRepository(PCSCaseRepository pcsCaseRepository,
+                             GeneralApplicationRepository generalApplicationRepository,
+                             GeneralApplicationService generalApplicationService,
+                             PCSCaseService pcsCaseService, GeneralApplicationRenderer genAppRenderer) {
+        this.pcsCaseRepository = pcsCaseRepository;
+        this.generalApplicationRepository = generalApplicationRepository;
+        this.generalApplicationService = generalApplicationService;
+        this.pcsCaseService = pcsCaseService;
+        this.genAppRenderer = genAppRenderer;
+    }
+
     @Override
-    public PCSCase getCase(long caseReference) {
-
-        PcsCaseEntity pcsCaseEntity = loadCaseData(caseReference);
-
-        return PCSCase.builder()
-            .applicantForename(pcsCaseEntity.getApplicantForename())
-            .applicantSurname(pcsCaseEntity.getApplicantSurname())
-            .propertyAddress(convertAddress(pcsCaseEntity.getPropertyAddress()))
-            .build();
-    }
-
-    private AddressUK convertAddress(AddressEntity address) {
-        if (address == null) {
-            return null;
+    public Object getCase(long caseRef) {
+        // Try PCS first
+        Optional<PcsCaseEntity> pcs = pcsCaseRepository.findByCaseReference(caseRef);
+        if (pcs.isPresent()) {
+            PCSCase pcsCase = pcsCaseService.convertToPCSCase(pcs.get());
+            if (pcsCase != null) {
+                pcsCase.setGeneralApplicationsSummaryMarkdown(genAppRenderer.render(
+                    pcsCase.getGeneralApplications(),
+                    caseRef
+                ));
+            }
+            return pcsCase;
         }
+        // Else try GA
+        Optional<GACaseEntity> ga = generalApplicationRepository.findByCaseReference(caseRef);
+        if (ga.isPresent()) {
+            return generalApplicationService.convertToGA(ga.get());
+        }
+        return pcs;
 
-        return modelMapper.map(address, AddressUK.class);
-    }
-
-    private PcsCaseEntity loadCaseData(long caseRef) {
-        return pcsCaseRepository.findByCaseReference(caseRef)
-            .orElseThrow(() -> new CaseNotFoundException(caseRef));
     }
 
 }

@@ -11,7 +11,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 
 import java.util.Map;
 
-class BaseEventTest {
+class PCSBaseEventTest {
 
     protected ResolvedCCDConfig<PCSCase, State, UserRole> buildEventConfig(
         CCDConfig<PCSCase, State, UserRole> eventConfig) {
