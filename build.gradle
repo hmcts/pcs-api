@@ -4,7 +4,7 @@ import uk.gov.hmcts.rse.CftlibExec
 
 buildscript {
   ext {
-    flywayVersion = '11.10.0'
+    flywayVersion = '11.10.1'
     serenityBddVersion = '4.2.33'
   }
   dependencies {
@@ -28,7 +28,7 @@ plugins {
     Applies analysis tools including checkstyle and OWASP Dependency checker.
     See https://github.com/hmcts/gradle-java-plugin
  */
-  id 'uk.gov.hmcts.java' version '0.12.66'
+  id 'uk.gov.hmcts.java' version '0.12.67'
 }
 
 group = 'uk.gov.hmcts.reform'
@@ -429,18 +429,18 @@ tasks.register('highLevelDataSetup', JavaExec) {
 // Ensure we cover Cftlib dev & test with our CI checks
 check.dependsOn cftlibTest
 
-rootProject.tasks.named("processIntegrationTestResources") {
+tasks.named("processIntegrationTestResources") {
   duplicatesStrategy = 'include'
 }
 
-rootProject.tasks.named("processContractTestResources") {
+tasks.named("processContractTestResources") {
   duplicatesStrategy = 'include'
 }
 
-rootProject.tasks.named("processFunctionalTestResources") {
+tasks.named("processFunctionalTestResources") {
   duplicatesStrategy = 'include'
 }
 
-wrapper {
+tasks.withType(Wrapper) {
   distributionType = Wrapper.DistributionType.ALL
 }
