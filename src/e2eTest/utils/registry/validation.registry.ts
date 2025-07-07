@@ -1,4 +1,4 @@
-// validation-registry.ts
+// validation.registry.ts
 import { IValidation } from '../interfaces/validation.interface';
 import { TextValidation } from '../validations/element-validations/text.validation';
 import { ValueValidation } from '../validations/element-validations/value.validation';

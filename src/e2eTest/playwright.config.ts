@@ -16,8 +16,8 @@ module.exports = defineConfig({
   /* Report slow tests if they take longer than 5 mins */
   reportSlowTests: { max: 15, threshold: 5 * 60 * 1000 },
   workers: process.env.FUNCTIONAL_TESTS_WORKERS ? parseInt(process.env.FUNCTIONAL_TESTS_WORKERS) : 4,
-  globalSetup: require.resolve('./global-setup'),
-  globalTeardown: require.resolve('./global-teardown'),
+  globalSetup: require.resolve('./config/global-setup.config'),
+  globalTeardown: require.resolve('./config/global-teardown.config'),
   reporter: [
     ['list'],
       [

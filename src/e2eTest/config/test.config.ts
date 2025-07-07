@@ -1,4 +1,4 @@
-export class ConfigData {
+export class TestConfig {
   public static readonly manageCasesBaseURL: string =
     process.env.TEST_E2E_URL_EXUI || "http://localhost:3000";
 
@@ -13,4 +13,4 @@ export class ConfigData {
   };
 }
 
-export default ConfigData;
+export default TestConfig;

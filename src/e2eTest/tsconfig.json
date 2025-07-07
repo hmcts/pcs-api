@@ -13,8 +13,8 @@
     "resolveJsonModule": true,
     "baseUrl": ".",
     "paths": {
-      "@fixtures/*": ["fixtures/*"],
-      "@helpers/*": ["helpers/*"],
+      "@utils/*": ["utils/*"],
+      "@config/*": ["config/*"],
       "@data/*": ["data/*"]
     }
   },
