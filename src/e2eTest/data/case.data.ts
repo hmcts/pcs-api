@@ -4,7 +4,7 @@ export const caseData = {
   caseType: process.env.CHANGE_ID
     ? `Civil Possessions ${process.env.CHANGE_ID}`
     : 'Civil Possessions',
-  event: 'Make a claim',
+  event: 'Make a claim xxx',
   postcode: 'W3 7RX',
   addressIndex: 1,
   addressLine2: 'address2',
