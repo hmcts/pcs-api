@@ -6,10 +6,19 @@ import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.DecentralisedCaseRepository;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.renderer.AdminTabRenderer;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
+import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
+
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.UUID;
 
 /**
  * Invoked by CCD to load PCS cases under the decentralised model.
@@ -19,6 +28,8 @@ import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 public class CCDCaseRepository extends DecentralisedCaseRepository<PCSCase> {
 
     private final PcsCaseRepository pcsCaseRepository;
+    private final AdminTabRenderer adminTabRenderer;
+    private final SecurityContextService securityContextService;
     private final ModelMapper modelMapper;
 
     /**
@@ -30,11 +41,40 @@ public class CCDCaseRepository extends DecentralisedCaseRepository<PCSCase> {
 
         PcsCaseEntity pcsCaseEntity = loadCaseData(caseReference);
 
-        return PCSCase.builder()
+        PCSCase pcsCase = PCSCase.builder()
             .applicantForename(pcsCaseEntity.getApplicantForename())
             .applicantSurname(pcsCaseEntity.getApplicantSurname())
             .propertyAddress(convertAddress(pcsCaseEntity.getPropertyAddress()))
             .build();
+
+        setDerivedProperties(pcsCase, pcsCaseEntity);
+        renderMarkdownFields(pcsCase, pcsCaseEntity);
+
+        return pcsCase;
+    }
+
+    private void setDerivedProperties(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {
+        findPartyForCurrentUser(pcsCaseEntity)
+            .ifPresent(party -> pcsCase.setUserPcqId(Objects.toString(party.getPcqId(), null)));
+    }
+
+    private void renderMarkdownFields(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {
+        List<Party> parties = pcsCaseEntity.getParties().stream()
+            .map(partyEntity -> modelMapper.map(partyEntity, Party.class))
+            .toList();
+        pcsCase.setAdminTabMarkdown(adminTabRenderer.render(parties));
+    }
+
+    private Optional<PartyEntity> findPartyForCurrentUser(PcsCaseEntity pcsCaseEntity) {
+        UUID userId = securityContextService.getCurrentUserId();
+
+        if (userId != null) {
+            return pcsCaseEntity.getParties().stream()
+                .filter(party -> userId.equals(party.getIdamId()))
+                .findFirst();
+        } else {
+            return Optional.empty();
+        }
     }
 
     private AddressUK convertAddress(AddressEntity address) {
