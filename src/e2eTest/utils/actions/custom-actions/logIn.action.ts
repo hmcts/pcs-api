@@ -1,12 +1,13 @@
 import { IAction } from '../../interfaces/action.interface';
 import { Page } from '@playwright/test';
 import { performAction } from '../../test-executor';
-import { userStore } from '../../data/user-store';
+import {getUser} from '../../helpers/test-accounts';
 import configData from "../../data/config.data";
 
-export class LogInNewAction implements IAction {
+export class LogInAction implements IAction {
   async execute(page: Page, fieldName?: string): Promise<void> {
-    const userCreds = fieldName && userStore[fieldName];
+
+    const userCreds = getUser('caseworker');
     if (!userCreds) {
       throw new Error(`No credentials found for key: ${fieldName}`);
     }

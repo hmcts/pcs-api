@@ -3,12 +3,12 @@ import { parentSuite } from 'allure-js-commons';
 import {caseData} from "../utils/data/case.data";
 import {initializeExecutor, performAction, performValidation} from '../utils/test-executor';
 
+
 test.beforeEach(async ({ page }) => {
 
   initializeExecutor(page);
   await parentSuite('Create Case');
-  await performAction('login', 'newIdamUser');
-
+  await performAction('logIn', 'caseworker');
 });
 
 test.describe('Create Case with Address @Master @nightly', async () => {

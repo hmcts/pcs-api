@@ -5,6 +5,7 @@ import { IValidation, ValidationData } from '../../interfaces/validation.interfa
 export class AlertValidation implements IValidation {
   async validate(page: Page, fieldName: string, data: ValidationData & { description?: string }): Promise<void> {
 
+    await test.step('Validate alert message', async () => {
     const locator = page.locator(`div.${fieldName}`);
 
     const text = await locator.textContent();
@@ -26,6 +27,7 @@ export class AlertValidation implements IValidation {
     } else {
       throw new Error(`AlertValidation requires 'expected' or 'pattern' in data.`);
     }
+    });
     });
   }
 }
