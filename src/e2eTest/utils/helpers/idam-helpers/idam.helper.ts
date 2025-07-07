@@ -1,4 +1,4 @@
-import ConfigData from "@data/config.data";
+import ConfigData from "../../data/config.data";
 import { TokenEndpointResponse } from 'oauth4webapi';
 
 import { request, retriedRequest } from './rest.helper';
