@@ -1,7 +1,7 @@
 import { test } from '@playwright/test';
 import { parentSuite } from 'allure-js-commons';
-import {caseData} from "../utils/data/case.data";
-import {initializeExecutor, performAction, performValidation} from '../utils/test-executor';
+import {initializeExecutor, performAction, performValidation} from '@utils/controller';
+import {caseData} from "@data/case.data";
 
 
 test.beforeEach(async ({ page }) => {

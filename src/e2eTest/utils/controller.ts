@@ -1,7 +1,7 @@
 
 import {Page, test} from '@playwright/test';
-import { ActionRegistry } from './registry/action-registry';
-import { ValidationRegistry } from './registry/validation-registry';
+import { ActionRegistry } from './registry/action.registry';
+import { ValidationRegistry } from './registry/validation.registry';
 import { IAction } from './interfaces/action.interface';
 import { IValidation, ValidationData } from './interfaces/validation.interface';
 type ActionStep = {
@@ -16,7 +16,7 @@ type ValidationStep = {
 };
 type ActionTuple = [string, string] | [string, string, string];
 type ValidationTuple = [string, string, ValidationData];
-class TestExecutor {
+class Controller {
   private page: Page;
   constructor(page: Page) {
     this.page = page;
@@ -77,10 +77,10 @@ class TestExecutor {
   }
 }
 // Global executor instance
-let testExecutor: TestExecutor;
+let testExecutor: Controller;
 // Global function to initialize the executor
 export function initializeExecutor(page: Page): void {
-  testExecutor = new TestExecutor(page);
+  testExecutor = new Controller(page);
 }
 // Global function to execute actions
 export async function performAction(action: string, fieldName: string, value?: string | number): Promise<void> {

@@ -1,4 +1,4 @@
-// action-registry.ts
+// action.registry.ts
 import { IAction } from '../interfaces/action.interface';
 import { ClickAction } from '../actions/element-actions/click.action';
 import { FillAction } from '../actions/element-actions/fill.action';
@@ -6,8 +6,8 @@ import { ClearAction } from '../actions/element-actions/clear.action';
 import { CheckAction } from '../actions/element-actions/check.action';
 import { DoubleClickAction } from '../actions/element-actions/double-click.action';
 import { SelectAction } from '../actions/element-actions/select.action';
-import { LogOutAction } from '../actions/custom-actions/logOut.action';
-import {LogInAction} from "../actions/custom-actions/logIn.action";
+import { LogoutAction } from '../actions/custom-actions/logout.action';
+import {LoginAction} from "../actions/custom-actions/login.action";
 
 export class ActionRegistry {
   private static actions: Map<string, IAction> = new Map([
@@ -17,8 +17,8 @@ export class ActionRegistry {
     ['check', new CheckAction()],
     ['select', new SelectAction()],
     ['doubleClick', new DoubleClickAction()],
-    ['logIn', new LogInAction()],
-    ['logOut', new LogOutAction()],
+    ['logIn', new LoginAction()],
+    ['logOut', new LogoutAction()],
   ]);
 
   static getAction(actionName: string): IAction {
