@@ -4,11 +4,13 @@ import { parseCsv } from './csv-parser.js';
 
 function logWarnings(warnings) {
   if (warnings.length) {
-    console.warn(`WARNINGS:\n`);
+    console.warn(`\nWARNINGS:\n=========\n`);
 
     warnings.forEach(warning => {
       console.warn(' - ' + warning);
     })
+
+    console.log('\n');
   }
 }
 
