@@ -42,10 +42,13 @@ public class PCSCase {
 
     @CCD(
         searchable = false,
-        access = {CitizenAccess.class, CaseworkerAccess.class}
+        access = {CitizenAccess.class}
     )
     @External
     private String userPcqId;
+
+    @CCD(searchable = false, access = {CitizenAccess.class})
+    private YesOrNo userPcqIdSet;
 
     @CCD(searchable = false)
     @External

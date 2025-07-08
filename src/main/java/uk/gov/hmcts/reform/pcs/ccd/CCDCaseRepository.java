@@ -5,6 +5,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.DecentralisedCaseRepository;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
@@ -16,7 +17,6 @@ import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -54,8 +54,11 @@ public class CCDCaseRepository extends DecentralisedCaseRepository<PCSCase> {
     }
 
     private void setDerivedProperties(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {
-        findPartyForCurrentUser(pcsCaseEntity)
-            .ifPresent(party -> pcsCase.setUserPcqId(Objects.toString(party.getPcqId(), null)));
+        boolean pcqIdSet = findPartyForCurrentUser(pcsCaseEntity)
+            .map(party -> party.getPcqId() != null)
+            .orElse(false);
+
+        pcsCase.setUserPcqIdSet(YesOrNo.from(pcqIdSet));
     }
 
     private void renderMarkdownFields(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {
