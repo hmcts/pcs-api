@@ -7,6 +7,8 @@ import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseworkerAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenAccess;
 
+import static uk.gov.hmcts.ccd.sdk.type.FieldType.FixedRadioList;
+
 /**
  * The main domain model representing a possessions case.
  */
@@ -31,5 +33,14 @@ public class PCSCase {
         access = {CitizenAccess.class, CaseworkerAccess.class}
     )
     private AddressUK propertyAddress;
+
+    @CCD(
+        label = "Which type of claimant are you?",
+        hint = "If you’re a legal representative, you should select the type of claimant you’re representing.",
+        typeOverride = FixedRadioList,
+        typeParameterOverride = "ClaimantType",
+        access = {CitizenAccess.class, CaseworkerAccess.class}
+    )
+    private ClaimantType claimantType;
 
 }

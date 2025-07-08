@@ -28,13 +28,54 @@ public class CreateTestCase implements CCDConfig<PCSCase, State, UserRole> {
             .grant(Permission.CRUD, UserRole.PCS_CASE_WORKER)
             .fields()
             .page("Make a claim")
-            .pageLabel("What is the address of the property you're claiming possession of?")
-            .label("lineSeparator", "---")
-            .mandatory(PCSCase::getPropertyAddress)
+                .pageLabel("What is the address of the property you're claiming possession of?")
+                .label("lineSeparator", "---")
+                .mandatory(PCSCase::getPropertyAddress)
+            .page("landing page")
+                .pageLabel("Make a housing possession claim")
+                .label("BeforeYouStartMainBody",
+                        """
+                                You can use this online service if you're a registered provider of social housing or \
+                                a community landlord and the property you want to claim possession of is in England \
+                                or Wales.
+                                <br>
+                                <br>
+                                This service is also available in Welsh (Cymraeg).
+                                <br>
+                                <br>
+                                We’ll check your eligibility by asking for the property’s address.
+                                <br>
+                                <br>
+                                The claim fee is £404.
+                                <br>
+                                <h2> What you'll need </h2>
+                                Before you start, make sure you have the following information:
+                                <br>
+                                <ul>
+                                    <li>details of the tenancy, contract, licence or mortgage agreement</li>
+                                    <li>the defendants’ details (the people you’re making the claim against)</li>
+                                    <li>copies of any relevant documents. You can either upload documents now or \
+                                    closer to the hearing date. Any documents you upload now will be included in the \
+                                    pack of documents that a judge will receive before the hearing (the bundle)</li>
+                                </ul>
+                                Once you’ve finished answering the questions, you can either:
+                                <br>
+                                <ul>
+                                    <li>sign, submit and pay for your claim now, or</li>
+                                    <li>save it as a draft. You can then sign, submit and pay at a later date</li>
+                                </ul>
+                            """)
+            .page("claimant types")
+                .pageLabel("Claimant type")
+                .label("lineSeparator", "---")
+                .label("claimantTypeMainBody", """
+                    A claimant is the person or organisation who is making the possession claim.
+                    """)
+                .mandatoryWithLabel(PCSCase::getClaimantType, "Which type of claimant are you?")
             .page("claimant information")
-            .pageLabel("Please enter applicant's name")
+                .pageLabel("Please enter applicant's name")
                 .mandatory(PCSCase::getApplicantForename)
-                .done();
+            .done();
     }
 
     private PCSCase start(EventPayload<PCSCase, State> eventPayload) {
