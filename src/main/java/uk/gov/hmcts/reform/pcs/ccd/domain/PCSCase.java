@@ -50,8 +50,4 @@ public class PCSCase {
     @CCD(searchable = false, access = {CitizenAccess.class})
     private YesOrNo userPcqIdSet;
 
-    @CCD(searchable = false)
-    @External
-    private String adminTabMarkdown;
-
 }

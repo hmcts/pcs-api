@@ -10,7 +10,6 @@ import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.renderer.AdminTabRenderer;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
@@ -30,8 +29,6 @@ class CCDCaseRepositoryTest {
     @Mock
     private PcsCaseRepository pcsCaseRepository;
     @Mock
-    private AdminTabRenderer adminTabRenderer;
-    @Mock
     private SecurityContextService securityContextService;
     @Mock
     private ModelMapper modelMapper;
@@ -40,7 +37,7 @@ class CCDCaseRepositoryTest {
 
     @BeforeEach
     void setUp() {
-        underTest = new CCDCaseRepository(pcsCaseRepository, adminTabRenderer, securityContextService, modelMapper);
+        underTest = new CCDCaseRepository(pcsCaseRepository, securityContextService, modelMapper);
     }
 
     @Test

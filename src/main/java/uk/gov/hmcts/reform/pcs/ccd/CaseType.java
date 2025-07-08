@@ -3,13 +3,12 @@ package uk.gov.hmcts.reform.pcs.ccd;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CCDConfig;
 import uk.gov.hmcts.ccd.sdk.api.ConfigBuilder;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 
 import static java.lang.System.getenv;
 import static java.util.Optional.ofNullable;
-import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 
 /**
  * Setup some common possessions case type configuration.
@@ -73,11 +72,6 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
 
         builder.tab("summary", "Property Details")
             .field(PCSCase::getPropertyAddress);
-
-        builder.tab("admin", "Admin")
-            .field(PCSCase::getUserPcqId)
-            .label("adminTabMarkdownLabel", null, "${adminTabMarkdown}")
-            .field("adminTabMarkdown", NEVER_SHOW);
 
         builder.tab("CaseHistory", "History")
             .field("caseHistory");

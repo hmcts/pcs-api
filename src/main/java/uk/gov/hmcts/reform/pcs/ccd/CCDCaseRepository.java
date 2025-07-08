@@ -7,16 +7,13 @@ import uk.gov.hmcts.ccd.sdk.DecentralisedCaseRepository;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.renderer.AdminTabRenderer;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -28,7 +25,6 @@ import java.util.UUID;
 public class CCDCaseRepository extends DecentralisedCaseRepository<PCSCase> {
 
     private final PcsCaseRepository pcsCaseRepository;
-    private final AdminTabRenderer adminTabRenderer;
     private final SecurityContextService securityContextService;
     private final ModelMapper modelMapper;
 
@@ -48,7 +44,6 @@ public class CCDCaseRepository extends DecentralisedCaseRepository<PCSCase> {
             .build();
 
         setDerivedProperties(pcsCase, pcsCaseEntity);
-        renderMarkdownFields(pcsCase, pcsCaseEntity);
 
         return pcsCase;
     }
@@ -59,13 +54,6 @@ public class CCDCaseRepository extends DecentralisedCaseRepository<PCSCase> {
             .orElse(false);
 
         pcsCase.setUserPcqIdSet(YesOrNo.from(pcqIdSet));
-    }
-
-    private void renderMarkdownFields(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {
-        List<Party> parties = pcsCaseEntity.getParties().stream()
-            .map(partyEntity -> modelMapper.map(partyEntity, Party.class))
-            .toList();
-        pcsCase.setAdminTabMarkdown(adminTabRenderer.render(parties));
     }
 
     private Optional<PartyEntity> findPartyForCurrentUser(PcsCaseEntity pcsCaseEntity) {
