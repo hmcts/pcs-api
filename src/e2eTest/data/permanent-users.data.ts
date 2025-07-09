@@ -10,5 +10,6 @@ export const permanentUsersData: Record<string, UserCredentials> = {
     password: process.env.PCS_IDAM_TEST_USER_PASSWORD || '',
     temp: false,
     roles: ['caseworker', 'caseworker-pcs'],
-  }//sample user provided for reference-need to be updated with valid permanent users
+  }
 };
+//sample test user provided for reference, need to be updated with valid permanent users when available.

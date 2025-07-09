@@ -1,9 +1,8 @@
-
-import {Page, test} from '@playwright/test';
-import { IAction } from './interfaces/action.interface';
-import { IValidation, ValidationData } from './interfaces/validation.interface';
+import { Page, test } from '@playwright/test';
+import { ValidationData } from './interfaces/validation.interface';
 import { ActionRegistry } from './registry/action.registry';
 import { ValidationRegistry } from './registry/validation.registry';
+
 type ActionStep = {
   action: string;
   fieldName: string;
@@ -21,7 +20,11 @@ class Controller {
   constructor(page: Page) {
     this.page = page;
   }
-  async performAction(action: string, fieldName: string, value?: string | number | boolean | object ): Promise<void> {
+  async performAction(
+    action: string,
+    fieldName: string,
+    value?: string | number | boolean | string[] | object
+  ): Promise<void> {
     const actionInstance = ActionRegistry.getAction(action);
     await test.step(`Perform action: [${action}] on "${fieldName}"${value !== undefined ? ` with value "${value}"` : ''}`, async () => {
       await actionInstance.execute(this.page, fieldName, value);
@@ -30,23 +33,20 @@ class Controller {
   async performValidation(validationType: string, fieldName?: string, data?: ValidationData): Promise<void> {
     const validationInstance = ValidationRegistry.getValidation(validationType);
     await test.step(`Perform validation on [${validationType}]`, async () => {
-      await validationInstance.validate(this.page, fieldName,data);
+      await validationInstance.validate(this.page, fieldName, data);
     });
   }
-  // Original object-based approach for actions
   async performActionGroupWithObjects(groupName: string, ...actions: ActionStep[]): Promise<void> {
     for (const step of actions) {
       await this.performAction(step.action, step.fieldName, step.value);
     }
   }
-  // New tuple-based approach for actions
   async performActionGroupWithTuples(groupName: string, ...actions: ActionTuple[]): Promise<void> {
     for (const tuple of actions) {
       const [action, fieldName, value] = tuple;
       await this.performAction(action, fieldName, value);
     }
   }
-  // Object-based approach for validations
   async performValidationGroupWithObjects(groupName: string, validations: ValidationStep[]): Promise<void> {
     for (const step of validations) {
       await this.performValidation(step.validationType, step.fieldName, step.data);
@@ -73,7 +73,11 @@ export function initializeExecutor(page: Page): void {
   testExecutor = new Controller(page);
 }
 // Global function to execute actions
-export async function performAction(action: string, fieldName: string, value?: string | number | boolean | string[] | object): Promise<void> {
+export async function performAction(
+  action: string,
+  fieldName: string,
+  value?: string | number | boolean | string[] | object
+): Promise<void> {
   if (!testExecutor) {
     throw new Error('Test executor not initialized. Call initializeExecutor(page) first.');
   }
@@ -89,9 +93,7 @@ export async function performValidation(
     throw new Error('Test executor not initialized. Call initializeExecutor(page) first.');
   }
 
-  const [fieldName, data] = typeof inputFieldName === 'string'
-    ? [inputFieldName, inputData]
-    : ['', inputFieldName];
+  const [fieldName, data] = typeof inputFieldName === 'string' ? [inputFieldName, inputData] : ['', inputFieldName];
 
   if (!data) {
     throw new Error('Validation data must be provided');
@@ -100,7 +102,10 @@ export async function performValidation(
   await testExecutor.performValidation(validationType, fieldName, data);
 }
 // Global function to execute action groups (object-based)
-export async function performActionGroup(groupName: string, ...actions: Array<{ action: string, fieldName: string, value?: string | number | boolean | string[] | object}>): Promise<void> {
+export async function performActionGroup(
+  groupName: string,
+  ...actions: { action: string; fieldName: string; value?: string | number | boolean | string[] | object }[]
+): Promise<void> {
   if (!testExecutor) {
     throw new Error('Test executor not initialized. Call initializeExecutor(page) first.');
   }
@@ -109,7 +114,10 @@ export async function performActionGroup(groupName: string, ...actions: Array<{ 
   });
 }
 // Global function to execute action groups (tuple-based)
-export async function performActions(groupName: string, ...actions: Array<[string, string] | [string, string, string | number | boolean | string[] | object]>): Promise<void> {
+export async function performActions(
+  groupName: string,
+  ...actions: ([string, string] | [string, string, string | number | boolean | string[] | object])[]
+): Promise<void> {
   if (!testExecutor) {
     throw new Error('Test executor not initialized. Call initializeExecutor(page) first.');
   }
@@ -118,7 +126,10 @@ export async function performActions(groupName: string, ...actions: Array<[strin
   });
 }
 // Global function to execute validation groups (object-based)
-export async function performValidationGroup(groupName: string, validations: { validationType: string; fieldName: string; data: ValidationData }[]): Promise<void> {
+export async function performValidationGroup(
+  groupName: string,
+  validations: { validationType: string; fieldName: string; data: ValidationData }[]
+): Promise<void> {
   if (!testExecutor) {
     throw new Error('Test executor not initialized. Call initializeExecutor(page) first.');
   }
@@ -133,12 +144,4 @@ export async function performValidations(
     throw new Error('Test executor not initialized. Call initializeExecutor(page) first.');
   }
   await testExecutor.performValidationGroupWithTuples(groupName, ...validations);
-}
-// Function to register custom-actions
-export function registerCustomAction(actionName: string, action: IAction): void {
-  ActionRegistry.registerAction(actionName, action);
-}
-// Function to register custom validations
-export function registerCustomValidation(validationType: string, validation: IValidation): void {
-  ValidationRegistry.registerValidation(validationType, validation);
 }

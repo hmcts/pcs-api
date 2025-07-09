@@ -27,10 +27,6 @@ export class ActionRegistry {
     return action;
   }
 
-  static registerAction(actionName: string, action: IAction): void {
-    this.actions.set(actionName, action);
-  }
-
   static getAvailableActions(): string[] {
     return Array.from(this.actions.keys());
   }

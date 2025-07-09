@@ -32,10 +32,6 @@ export class ValidationRegistry {
     return validation;
   }
 
-  static registerValidation(validationType: string, validation: IValidation): void {
-    this.validations.set(validationType, validation);
-  }
-
   static getAvailableValidations(): string[] {
     return Array.from(this.validations.keys());
   }

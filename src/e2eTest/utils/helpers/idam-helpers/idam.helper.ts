@@ -1,11 +1,10 @@
+import * as fs from 'fs';
+import * as path from 'path';
 import TestConfig from "../../../config/test.config";
 import { TokenEndpointResponse } from 'oauth4webapi';
 import { request, retriedRequest } from './rest.helper';
 import {buildUserDataWithRole, UserData} from './testConfig';
 import {permanentUsersData} from "@data/permanent-users.data";
-
-import * as fs from 'fs';
-import * as path from 'path';
 
 const testConfig = TestConfig.iDam;
 const username = process.env.IDAM_SYSTEM_USERNAME as string;
@@ -26,8 +25,6 @@ export async function createTempUser(
     temp: true,
     roles,
   });
-
-  console.log(`Created temp user "${userData.user.email}" with roles: ${roles.join(', ')}`);
 }
 
 export async function cleanupTempUsers(): Promise<void> {
@@ -36,10 +33,8 @@ export async function cleanupTempUsers(): Promise<void> {
     if (creds.temp) {
       try {
         await deleteAccount(creds.email);
-        console.log(`Deleted temp user ${creds.email}`);
         deleteTempUser(key);
       } catch (err) {
-        console.warn(`Could not delete temp user ${creds.email}`, err);
       }
     }
   }
@@ -56,7 +51,6 @@ export async function createAccount(userData: UserData): Promise<Response | unkn
       return response.json();
     });
   } catch (error) {
-    console.error('Error creating account:', error);
     throw error;
   }
 }
@@ -70,9 +64,7 @@ export async function deleteAccount(email: string): Promise<void> {
       undefined,
       method
     );
-    console.log('Account deleted post test completion: ' + email);
   } catch (error) {
-    console.error('Error deleting account:', error);
     throw error;
   }
 }
@@ -98,7 +90,6 @@ export async function getAccessTokenFromIdam(): Promise<string> {
     'Content-Type': 'application/x-www-form-urlencoded',
   };
   const url = `${testConfig.idamUrl}/${testConfig.loginEndpoint}`; // https://idam-api.aat.platform.hmcts.net/o/token
-  //let responsePromise = await retriedRequest(url, headers, body, 'POST', 200);
   return request(url, headers, body)
     .then(response => response.json())
     .then((data: TokenEndpointResponse) => {
@@ -116,10 +107,8 @@ export interface UserCredentials {
 
 const storePath = path.resolve(__dirname, './../../../data/.temp-users.data.json');
 
-// Holds temp users in memory
 let tempUsers: Record<string, UserCredentials> = {};
 
-// Load temp users at startup
 if (fs.existsSync(storePath)) {
   const data = fs.readFileSync(storePath, 'utf-8');
   tempUsers = JSON.parse(data);
