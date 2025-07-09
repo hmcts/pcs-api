@@ -90,6 +90,12 @@ configurations {
 
   cftlibTestImplementation.extendsFrom testImplementation
   cftlibTestRuntime.extendsFrom testRuntime
+
+  mockitoAgentConfig {
+    canBeResolved = true
+    canBeConsumed = false
+  }
+  mockitoAgent
 }
 
 ccd {
@@ -357,15 +363,21 @@ dependencies {
   testImplementation(platform('org.junit:junit-bom:5.13.2'))
   testImplementation group: 'org.springframework.security', name: 'spring-security-test', version: springSecurityVersion
   testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'
+  testImplementation 'org.mockito:mockito-core'
   testImplementation(group: 'org.springframework.boot', name: 'spring-boot-starter-test', version: springFrameworkBootVersion) {
     exclude group: 'junit', module: 'junit'
     exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
+    exclude group: 'org.mockito', module: 'mockito-core'
   }
   testImplementation 'org.springframework.boot:spring-boot-starter-webflux'
   testImplementation group: 'org.testcontainers', name: 'testcontainers', version: testcontainersVersion
   testImplementation group: 'org.testcontainers', name: 'junit-jupiter', version: testcontainersVersion
   testImplementation group: 'org.testcontainers', name: 'postgresql', version: testcontainersVersion
 
+  add('mockitoAgentConfig', 'org.mockito:mockito-inline:5.2.0')
+  add('mockitoAgent', 'org.mockito:mockito-core') {
+    transitive = false
+  }
 
   // Allow fast reloading during dev; recompile a class to trigger fast reload + definition reimport.
   cftlibImplementation 'org.springframework.boot:spring-boot-devtools'
@@ -411,6 +423,15 @@ project.tasks.named("processSmokeTestResources") {
 tasks.withType(CftlibExec).configureEach {
   group = 'ccd tasks'
   authMode = AuthMode.Local
+
+  //Attach mockito agent for inline mocking to remove warning in logs
+  classpath += configurations.mockitoAgentConfig
+  doFirst {
+    def mockitoAgentJar = configurations.mockitoAgent.singleFile
+    jvmArgs += ["-javaagent:${mockitoAgentJar}", "-Xshare:off"]
+    logger.quiet("Attaching Mockito Java agent for inline mocking")
+  }
+
   environment 'RSE_LIB_ADDITIONAL_DATABASES', 'pcs'
   environment 'PCS_DB_USER_NAME', 'postgres'
   environment 'PCS_DB_PASSWORD', 'postgres'
