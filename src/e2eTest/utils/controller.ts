@@ -1,20 +1,20 @@
 
 import {Page, test} from '@playwright/test';
-import { ActionRegistry } from './registry/action.registry';
-import { ValidationRegistry } from './registry/validation.registry';
 import { IAction } from './interfaces/action.interface';
 import { IValidation, ValidationData } from './interfaces/validation.interface';
+import { ActionRegistry } from './registry/action.registry';
+import { ValidationRegistry } from './registry/validation.registry';
 type ActionStep = {
   action: string;
   fieldName: string;
-  value?: string | number;
+  value?: string | number | boolean | string[] | object;
 };
 type ValidationStep = {
   validationType: string;
   fieldName: string;
   data: ValidationData;
 };
-type ActionTuple = [string, string] | [string, string, string | number];
+type ActionTuple = [string, string] | [string, string, string | number | boolean | string[] | object];
 type ValidationTuple = [string, string, ValidationData];
 class Controller {
   private page: Page;
@@ -27,20 +27,17 @@ class Controller {
       await actionInstance.execute(this.page, fieldName, value);
     });
   }
-  async performValidation(validationType: string, data: ValidationData,fieldName?: string, groupName?: string): Promise<void> {
+  async performValidation(validationType: string, fieldName?: string, data?: ValidationData): Promise<void> {
     const validationInstance = ValidationRegistry.getValidation(validationType);
     await test.step(`Perform validation on [${validationType}]`, async () => {
-      await validationInstance.validate(this.page, data, fieldName, groupName);
+      await validationInstance.validate(this.page, fieldName,data);
     });
   }
   // Original object-based approach for actions
   async performActionGroupWithObjects(groupName: string, ...actions: ActionStep[]): Promise<void> {
-    console.log(`Starting action group: ${groupName}`);
     for (const step of actions) {
-      console.log(`  Performing ${step.action} on ${step.fieldName}${step.value ? ` with value: ${step.value}` : ''}`);
       await this.performAction(step.action, step.fieldName, step.value);
     }
-    console.log(`Completed action group: ${groupName}`);
   }
   // New tuple-based approach for actions
   async performActionGroupWithTuples(groupName: string, ...actions: ActionTuple[]): Promise<void> {
@@ -51,22 +48,16 @@ class Controller {
   }
   // Object-based approach for validations
   async performValidationGroupWithObjects(groupName: string, validations: ValidationStep[]): Promise<void> {
-    console.log(`Starting validation group: ${groupName}`);
     for (const step of validations) {
-      console.log(`  Validating ${step.validationType} on ${step.fieldName} with data: ${JSON.stringify(step.data)}`);
-      await this.performValidation(step.validationType, step.data, step.fieldName, groupName);
+      await this.performValidation(step.validationType, step.fieldName, step.data);
     }
-    console.log(`Completed validation group: ${groupName}`);
   }
   // Tuple-based approach for validations
   async performValidationGroupWithTuples(groupName: string, ...validations: ValidationTuple[]): Promise<void> {
-    console.log(`Starting validation group: ${groupName}`);
     for (const tuple of validations) {
       const [validationType, fieldName, data] = tuple;
-      console.log(`  Validating ${validationType} on ${fieldName} with data: ${JSON.stringify(data)}`);
-      await this.performValidation(validationType, data, fieldName, groupName);
+      await this.performValidation(validationType, fieldName, data);
     }
-    console.log(`Completed validation group: ${groupName}`);
   }
   getAvailableActions(): string[] {
     return ActionRegistry.getAvailableActions();
@@ -82,22 +73,34 @@ export function initializeExecutor(page: Page): void {
   testExecutor = new Controller(page);
 }
 // Global function to execute actions
-export async function performAction(action: string, fieldName: string, value?: string | number | boolean | object): Promise<void> {
+export async function performAction(action: string, fieldName: string, value?: string | number | boolean | string[] | object): Promise<void> {
   if (!testExecutor) {
     throw new Error('Test executor not initialized. Call initializeExecutor(page) first.');
   }
   await testExecutor.performAction(action, fieldName, value);
 }
 // Global function to execute validations
-export async function performValidation(validationType: string, data: ValidationData, fieldName?: string, groupName?: string
+export async function performValidation(
+  validationType: string,
+  inputFieldName: string | ValidationData,
+  inputData?: ValidationData
 ): Promise<void> {
   if (!testExecutor) {
     throw new Error('Test executor not initialized. Call initializeExecutor(page) first.');
   }
-  await testExecutor.performValidation(validationType, data, fieldName, groupName);
+
+  const [fieldName, data] = typeof inputFieldName === 'string'
+    ? [inputFieldName, inputData]
+    : ['', inputFieldName];
+
+  if (!data) {
+    throw new Error('Validation data must be provided');
+  }
+
+  await testExecutor.performValidation(validationType, fieldName, data);
 }
 // Global function to execute action groups (object-based)
-export async function performActionGroup(groupName: string, ...actions: Array<{ action: string, fieldName: string, value?: string | number}>): Promise<void> {
+export async function performActionGroup(groupName: string, ...actions: Array<{ action: string, fieldName: string, value?: string | number | boolean | string[] | object}>): Promise<void> {
   if (!testExecutor) {
     throw new Error('Test executor not initialized. Call initializeExecutor(page) first.');
   }
@@ -106,7 +109,7 @@ export async function performActionGroup(groupName: string, ...actions: Array<{ 
   });
 }
 // Global function to execute action groups (tuple-based)
-export async function performActions(groupName: string, ...actions: Array<[string, string] | [string, string, string | number]>): Promise<void> {
+export async function performActions(groupName: string, ...actions: Array<[string, string] | [string, string, string | number | boolean | string[] | object]>): Promise<void> {
   if (!testExecutor) {
     throw new Error('Test executor not initialized. Call initializeExecutor(page) first.');
   }
@@ -115,20 +118,23 @@ export async function performActions(groupName: string, ...actions: Array<[strin
   });
 }
 // Global function to execute validation groups (object-based)
-export async function performValidationGroup(groupName: string, validations: Array<{ validationType: string, fieldName: string, data: ValidationData }>): Promise<void> {
+export async function performValidationGroup(groupName: string, validations: { validationType: string; fieldName: string; data: ValidationData }[]): Promise<void> {
   if (!testExecutor) {
     throw new Error('Test executor not initialized. Call initializeExecutor(page) first.');
   }
   await testExecutor.performValidationGroupWithObjects(groupName, validations);
 }
-// Global function to execute validation groups (tuple-based)
-export async function performValidations(groupName: string, ...validations: Array<[string, string, ValidationData]>): Promise<void> {
+// Global function to execute validation groups (tuple-based) - NEW!
+export async function performValidations(
+  groupName: string,
+  ...validations: [string, string, ValidationData][]
+): Promise<void> {
   if (!testExecutor) {
     throw new Error('Test executor not initialized. Call initializeExecutor(page) first.');
   }
   await testExecutor.performValidationGroupWithTuples(groupName, ...validations);
 }
-// Function to register custom actions
+// Function to register custom-actions
 export function registerCustomAction(actionName: string, action: IAction): void {
   ActionRegistry.registerAction(actionName, action);
 }

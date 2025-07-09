@@ -6,7 +6,6 @@ import { ClearAction } from '../actions/element-actions/clear.action';
 import { CheckAction } from '../actions/element-actions/check.action';
 import { DoubleClickAction } from '../actions/element-actions/double-click.action';
 import { SelectAction } from '../actions/element-actions/select.action';
-import { LogoutAction } from '../actions/custom-actions/logout.action';
 import {LoginAction} from "../actions/custom-actions/login.action";
 
 export class ActionRegistry {
@@ -17,8 +16,7 @@ export class ActionRegistry {
     ['check', new CheckAction()],
     ['select', new SelectAction()],
     ['doubleClick', new DoubleClickAction()],
-    ['login', new LoginAction()],
-    ['logout', new LogoutAction()],
+    ['login', new LoginAction()]
   ]);
 
   static getAction(actionName: string): IAction {

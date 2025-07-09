@@ -12,8 +12,6 @@ const username = process.env.IDAM_SYSTEM_USERNAME as string;
 const password = process.env.IDAM_SYSTEM_USER_PASSWORD as string;
 const clientSecret = process.env.PCS_API_IDAM_SECRET as string;
 
-
-
 export async function createTempUser(
   key: string,
   roles: string[]
@@ -47,6 +45,38 @@ export async function cleanupTempUsers(): Promise<void> {
   }
 }
 
+export async function createAccount(userData: UserData): Promise<Response | unknown> {
+  try {
+    const authToken = await getAccessTokenFromIdam();
+    return retriedRequest(
+      `${testConfig.idamTestingSupportUrl}/test/idam/users`,
+      { 'Content-Type': 'application/json', Authorization: `Bearer ${authToken}` },
+      JSON.stringify(userData) as BodyInit
+    ).then(response => {
+      return response.json();
+    });
+  } catch (error) {
+    console.error('Error creating account:', error);
+    throw error;
+  }
+}
+
+export async function deleteAccount(email: string): Promise<void> {
+  try {
+    const method = 'DELETE';
+    await request(
+      `${testConfig.idamTestingSupportUrl}/testing-support/accounts/${email}`,
+      { 'Content-Type': 'application/json' },
+      undefined,
+      method
+    );
+    console.log('Account deleted post test completion: ' + email);
+  } catch (error) {
+    console.error('Error deleting account:', error);
+    throw error;
+  }
+}
+
 export async function getAccessTokenFromIdam(): Promise<string> {
   const details = {
     username,
@@ -75,40 +105,7 @@ export async function getAccessTokenFromIdam(): Promise<string> {
       return data.access_token;
     });
 }
-export async function createAccount(userData: UserData): Promise<Response | unknown> {
-  try {
-    const authToken = await getAccessTokenFromIdam();
-    return retriedRequest(
-      `${testConfig.idamTestingSupportUrl}/test/idam/users`,
-      { 'Content-Type': 'application/json', Authorization: `Bearer ${authToken}` },
-      JSON.stringify(userData) as BodyInit
-    ).then(response => {
-      return response.json();
-    });
-  } catch (error) {
-    // eslint-disable-next-line no-console
-    console.error('Error creating account:', error);
-    throw error;
-  }
-}
 
-export async function deleteAccount(email: string): Promise<void> {
-  try {
-    const method = 'DELETE';
-    await request(
-      `${testConfig.idamTestingSupportUrl}/testing-support/accounts/${email}`,
-      { 'Content-Type': 'application/json' },
-      undefined,
-      method
-    );
-    // eslint-disable-next-line no-console
-    console.log('Account deleted post test completion: ' + email);
-  } catch (error) {
-    // eslint-disable-next-line no-console
-    console.error('Error deleting account:', error);
-    throw error;
-  }
-}
 
 export interface UserCredentials {
   email: string;
@@ -117,7 +114,7 @@ export interface UserCredentials {
   roles: string[];
 }
 
-const storePath = path.resolve(__dirname, './../../../data/.temp-users.json');
+const storePath = path.resolve(__dirname, './../../../data/.temp-users.data.json');
 
 // Holds temp users in memory
 let tempUsers: Record<string, UserCredentials> = {};

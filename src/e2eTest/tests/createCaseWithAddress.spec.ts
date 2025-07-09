@@ -78,6 +78,5 @@ test.describe('Create Case with Address @Master @nightly', async () => {
 
   test.afterEach(async () => {
     await performAction('click', 'Sign out');
-    //await performAction('logout');//one parameter
   });
 });

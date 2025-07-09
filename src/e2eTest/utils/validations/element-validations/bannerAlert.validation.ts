@@ -3,9 +3,8 @@ import { Page, expect, test } from '@playwright/test';
 import { IValidation, ValidationData } from '../../interfaces/validation.interface';
 
 export class BannerAlertValidation implements IValidation {
-  async validate(page: Page, data: ValidationData, fieldName?: string, groupName?: string): Promise<void> {
+  async validate(page: Page, fieldName: string, data: ValidationData): Promise<void> {
     const locator = page.locator('div.alert-message');
-    //const locator = page.locator('div.alert-message', { hasText: message });
 
       const alertText = (await locator.textContent())?.trim();
 
