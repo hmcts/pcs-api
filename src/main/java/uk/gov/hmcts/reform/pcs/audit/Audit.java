@@ -5,6 +5,8 @@ import lombok.Data;
 
 @Data
 public class Audit {
+
+
     @JsonProperty("created_by")
     private String createdBy;
     @JsonProperty("change_reason")
