@@ -372,13 +372,13 @@ dependencies {
   testImplementation group: 'org.testcontainers', name: 'junit-jupiter', version: testcontainersVersion
   testImplementation group: 'org.testcontainers', name: 'postgresql', version: testcontainersVersion
 
+  // Allow fast reloading during dev; recompile a class to trigger fast reload + definition reimport.
+  cftlibImplementation 'org.springframework.boot:spring-boot-devtools'
+
   add('mockitoAgentConfig', 'org.mockito:mockito-inline:5.2.0')
   add('mockitoAgent', 'org.mockito:mockito-core') {
     transitive = false
   }
-
-  // Allow fast reloading during dev; recompile a class to trigger fast reload + definition reimport.
-  cftlibImplementation 'org.springframework.boot:spring-boot-devtools'
 }
 
 application {
