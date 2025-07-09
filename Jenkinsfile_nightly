@@ -32,7 +32,7 @@ withNightlyPipeline(type, product, component) {
     enableSlackNotifications('#pcs-tech')
     loadVaultSecrets(secrets)
     afterAlways('DependencyCheckNightly') {
-    env.TEST_E2E_URL_EXUI = "https://manage-case.aat.platform.hmcts.net/"
+    env.MANAGE_CASE_BASE_URL = "https://manage-case.aat.platform.hmcts.net/"
     runE2ETestsForBrowser('Chrome')
   }
 }

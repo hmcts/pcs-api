@@ -9,7 +9,7 @@ import { CountValidation } from '../validations/element-validations/count.valida
 import { AttributeValidation } from '../validations/element-validations/attribute.validation';
 import { ContainsTextValidation } from '../validations/element-validations/contains-text.validation';
 import { CssValidation } from '../validations/element-validations/css.validation';
-import {AlertValidation} from "../validations/element-validations/alert.validation";
+import {BannerAlertValidation} from "@utils/validations/element-validations/bannerAlert.validation";
 
 export class ValidationRegistry {
   private static validations: Map<string, IValidation> = new Map([
@@ -22,7 +22,7 @@ export class ValidationRegistry {
     ['attribute', new AttributeValidation()],
     ['containsText', new ContainsTextValidation()],
     ['css', new CssValidation()],
-    ['alert', new AlertValidation()]
+    ['bannerAlert', new BannerAlertValidation()]
   ]);
 
   static getValidation(validationType: string): IValidation {

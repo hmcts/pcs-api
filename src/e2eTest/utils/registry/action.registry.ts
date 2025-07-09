@@ -17,8 +17,8 @@ export class ActionRegistry {
     ['check', new CheckAction()],
     ['select', new SelectAction()],
     ['doubleClick', new DoubleClickAction()],
-    ['logIn', new LoginAction()],
-    ['logOut', new LogoutAction()],
+    ['login', new LoginAction()],
+    ['logout', new LogoutAction()],
   ]);
 
   static getAction(actionName: string): IAction {

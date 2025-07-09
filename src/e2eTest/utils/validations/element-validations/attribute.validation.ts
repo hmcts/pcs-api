@@ -3,7 +3,7 @@ import { Page, expect } from '@playwright/test';
 import {IValidation, ValidationData} from "../../interfaces/validation.interface";
 
 export class AttributeValidation implements IValidation {
-  async validate(page: Page, fieldName: string, data: ValidationData): Promise<void> {
+  async validate(page: Page, data: ValidationData, fieldName?: string, groupName?: string): Promise<void> {
     const locator = page.locator(`[data-testid="${fieldName}"]`);
 
     if ('attribute' in data && 'value' in data) {

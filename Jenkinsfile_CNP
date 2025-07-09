@@ -89,12 +89,12 @@ withPipeline(type, product, component) {
 
 def setPreviewEnvVars() {
   // TODO: Update URL to include XUI when available
-  env.TEST_E2E_URL_EXUI = "https://xui-pcs-api-pr-${CHANGE_ID}.preview.platform.hmcts.net"
+  env.MANAGE_CASE_BASE_URL = "https://xui-pcs-api-pr-${CHANGE_ID}.preview.platform.hmcts.net"
   env.ENVIRONMENT= "preview"
 }
 
 def setAatEnvVars() {
-  env.TEST_E2E_URL_EXUI = "https://manage-case.aat.platform.hmcts.net/"
+  env.MANAGE_CASE_BASE_URL = "https://manage-case.aat.platform.hmcts.net/"
   env.ENVIRONMENT= "aat"
 }
 
