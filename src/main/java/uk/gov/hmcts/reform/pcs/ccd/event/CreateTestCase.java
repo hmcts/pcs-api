@@ -32,8 +32,7 @@ public class CreateTestCase implements CCDConfig<PCSCase, State, UserRole> {
                 .name("Make a claim")
                 .grant(Permission.CRUD, UserRole.PCS_CASE_WORKER);
 
-        PageBuilder pageBuilder = new PageBuilder(eventBuilder);
-        pageBuilder
+        new PageBuilder(eventBuilder)
             .add(new MakeAClaim())
             .add(new ClaimantInformation());
     }
