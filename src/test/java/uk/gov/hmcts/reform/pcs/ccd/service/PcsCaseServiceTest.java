@@ -23,10 +23,9 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -124,9 +123,7 @@ class PcsCaseServiceTest {
 
         PcsCaseEntity savedEntity = pcsCaseEntityCaptor.getValue();
         assertThat(savedEntity).isSameAs(existingPcsCaseEntity);
-        verify(existingPcsCaseEntity, never()).setApplicantForename(any());
-        verify(existingPcsCaseEntity, never()).setApplicantSurname(any());
-        verify(existingPcsCaseEntity, never()).setPropertyAddress(any());
+        verifyNoInteractions(existingPcsCaseEntity);
     }
 
     @Test
