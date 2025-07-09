@@ -363,11 +363,9 @@ dependencies {
   testImplementation(platform('org.junit:junit-bom:5.13.2'))
   testImplementation group: 'org.springframework.security', name: 'spring-security-test', version: springSecurityVersion
   testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'
-  testImplementation 'org.mockito:mockito-core'
   testImplementation(group: 'org.springframework.boot', name: 'spring-boot-starter-test', version: springFrameworkBootVersion) {
     exclude group: 'junit', module: 'junit'
     exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
-    exclude group: 'org.mockito', module: 'mockito-core'
   }
   testImplementation 'org.springframework.boot:spring-boot-starter-webflux'
   testImplementation group: 'org.testcontainers', name: 'testcontainers', version: testcontainersVersion
