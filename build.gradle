@@ -95,7 +95,9 @@ configurations {
     canBeResolved = true
     canBeConsumed = false
   }
-  mockitoAgent
+  mockitoAgent {
+    transitive = false
+  }
 }
 
 ccd {
@@ -375,10 +377,9 @@ dependencies {
   // Allow fast reloading during dev; recompile a class to trigger fast reload + definition reimport.
   cftlibImplementation 'org.springframework.boot:spring-boot-devtools'
 
-  add('mockitoAgentConfig', 'org.mockito:mockito-inline:5.2.0')
-  add('mockitoAgent', 'org.mockito:mockito-core') {
-    transitive = false
-  }
+  mockitoAgentConfig 'org.mockito:mockito-inline:5.2.0'
+  mockitoAgent 'org.mockito:mockito-core'
+
 }
 
 application {
