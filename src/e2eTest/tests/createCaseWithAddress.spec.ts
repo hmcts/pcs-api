@@ -14,7 +14,7 @@ test.beforeEach(async ({ page }, testInfo) => {
 
   initializeExecutor(page);
   await parentSuite('Case Creation');
-  await performAction('navigateToURL',configData.manageCasesBaseURL);
+  await performAction('navigateToUrl',configData.manageCasesBaseURL);
   await performAction('login', 'exuiUser');
 
   await testInfo.attach('Page URL', {
