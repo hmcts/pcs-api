@@ -91,10 +91,7 @@ configurations {
   cftlibTestImplementation.extendsFrom testImplementation
   cftlibTestRuntime.extendsFrom testRuntime
 
-  mockitoAgentConfig {
-    canBeResolved = true
-    canBeConsumed = false
-  }
+  mockitoAgentConfig
   mockitoAgent {
     transitive = false
   }
