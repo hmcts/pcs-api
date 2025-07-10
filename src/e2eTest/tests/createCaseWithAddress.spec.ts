@@ -7,18 +7,25 @@ import {
   performValidation
 } from '@utils/controller';
 import {caseData} from "@data/case.data";
+import configData from "@config/test.config";
 
 
-test.beforeEach(async ({ page }) => {
+test.beforeEach(async ({ page }, testInfo) => {
 
   initializeExecutor(page);
-  await parentSuite('Create Case');
-  await performAction('login', 'caseworker');
+  await parentSuite('Case Creation');
+  await performAction('navigateToURL',configData.manageCasesBaseURL);
+  await performAction('login', 'exuiUser');
+
+  await testInfo.attach('Page URL', {
+    body: page.url(),
+    contentType: 'text/plain',
+  });
 });
 
-test.describe('Create Case with Address @Master @nightly', async () => {
+test.describe('[Create Case Flow With Address]  @Master @nightly', async () => {
 
-  test('should create a case successfully with Dropdown Address Flow', async () => {
+  test('Dropdown Address Selection Flow - should create case sucessfully', async () => {
     await performAction('click','Create case');
 
     await performActions('Case option selection'
@@ -46,7 +53,7 @@ test.describe('Create Case with Address @Master @nightly', async () => {
     }
   );
 
-  test('should create a case successfully with Manual Address Flow', async () => {
+  test('Manual Address Input Flow - should create case sucessfully', async () => {
     await performAction('click', 'Create case');
 
     await performActions('Case option selection'

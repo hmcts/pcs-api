@@ -1,6 +1,7 @@
 // validations/banner-alert.validation.ts
 import { Page, expect, test } from '@playwright/test';
 import { IValidation, ValidationData } from '../../interfaces/validation.interface';
+import {attachment} from "allure-js-commons";
 
 export class BannerAlertValidation implements IValidation {
   async validate(page: Page, fieldName: string, data: ValidationData): Promise<void> {
@@ -30,6 +31,7 @@ export class BannerAlertValidation implements IValidation {
         } else {
           expect(alertText, `Alert should exactly match`).toBe(message);
         }
+        attachment(alertText,await page.screenshot(),'image/png')
       });
   }
 }

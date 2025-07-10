@@ -6,7 +6,8 @@ import { ClearAction } from '../actions/element-actions/clear.action';
 import { CheckAction } from '../actions/element-actions/check.action';
 import { DoubleClickAction } from '../actions/element-actions/double-click.action';
 import { SelectAction } from '../actions/element-actions/select.action';
-import {LoginAction} from "../actions/custom-actions/login.action";
+import { LoginAction } from "../actions/custom-actions/login.action";
+import {navigateToURL} from "@utils/actions/custom-actions/navigateToURL.action";
 
 export class ActionRegistry {
   private static actions: Map<string, IAction> = new Map([
@@ -16,7 +17,8 @@ export class ActionRegistry {
     ['check', new CheckAction()],
     ['select', new SelectAction()],
     ['doubleClick', new DoubleClickAction()],
-    ['login', new LoginAction()]
+    ['login', new LoginAction()],
+    ['navigateToURL', new navigateToURL()]
   ]);
 
   static getAction(actionName: string): IAction {

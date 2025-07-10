@@ -12,16 +12,16 @@ const password = process.env.IDAM_SYSTEM_USER_PASSWORD as string;
 const clientSecret = process.env.PCS_API_IDAM_SECRET as string;
 
 export async function createTempUser(
-  key: string,
+  userKey: string,
   roles: string[]
 ): Promise<void> {
-  const Password = process.env.PCS_IDAM_TEST_USER_PASSWORD || '';
-  const userData = buildUserDataWithRole(roles, Password);
+  const tempPassword = process.env.PCS_IDAM_TEST_USER_PASSWORD || '';
+  const userData = buildUserDataWithRole(roles, tempPassword,userKey);
   await createAccount(userData);
 
-  setTempUser(key, {
+  setTempUser(userKey, {
     email: userData.user.email,
-    password: Password,
+    password: tempPassword,
     temp: true,
     roles,
   });
