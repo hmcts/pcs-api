@@ -4,7 +4,6 @@ import {ValueValidation} from "@utils/validations/element-validations/value.vali
 import {EnabledValidation} from "@utils/validations/element-validations/enabled.validation";
 import {CssValidation} from "@utils/validations/element-validations/css.validation";
 import {CheckedValidation} from "@utils/validations/element-validations/checked.validation";
-import {ContainsTextValidation} from "@utils/validations/element-validations/contains-text.validation";
 import {BannerAlertValidation} from "@utils/validations/element-validations/bannerAlert.validation";
 import {AttributeValidation} from "@utils/validations/element-validations/attribute.validation";
 import {CountValidation} from "@utils/validations/element-validations/count.validation";
@@ -19,7 +18,6 @@ export class ValidationRegistry {
     ['checked', new CheckedValidation()],
     ['count', new CountValidation()],
     ['attribute', new AttributeValidation()],
-    ['containsText', new ContainsTextValidation()],
     ['css', new CssValidation()],
     ['bannerAlert', new BannerAlertValidation()]
   ]);

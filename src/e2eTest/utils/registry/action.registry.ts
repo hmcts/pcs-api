@@ -7,7 +7,7 @@ import { CheckAction } from '../actions/element-actions/check.action';
 import { DoubleClickAction } from '../actions/element-actions/double-click.action';
 import { SelectAction } from '../actions/element-actions/select.action';
 import { LoginAction } from "../actions/custom-actions/login.action";
-import {navigateToUrl} from "@utils/actions/custom-actions/navigateToUrl.action";
+import { navigateToUrl } from "@utils/actions/custom-actions/navigateToUrl.action";
 
 export class ActionRegistry {
   private static actions: Map<string, IAction> = new Map([
