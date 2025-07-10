@@ -374,7 +374,7 @@ dependencies {
   // Allow fast reloading during dev; recompile a class to trigger fast reload + definition reimport.
   cftlibImplementation 'org.springframework.boot:spring-boot-devtools'
 
-  mockitoAgentConfig 'org.mockito:mockito-inline:5.2.0'
+  mockitoAgentConfig group: 'org.mockito', name: 'mockito-inline', version: '5.2.0'
   mockitoAgent 'org.mockito:mockito-core'
 
 }
