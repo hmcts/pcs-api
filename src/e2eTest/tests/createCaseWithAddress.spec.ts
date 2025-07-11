@@ -80,7 +80,6 @@ test.describe.skip('[Create Case Flow With Address]  @Master @nightly', async ()
     await performAction('click', 'Submit');
 
     await performValidation("bannerAlert", {message: "Case #.* has been created."});
-
   });
 
   test.afterEach(async () => {
