@@ -7,7 +7,7 @@ export interface UserCredentials {
 export const permanentUsersData: Record<string, UserCredentials> = {
   superUser: {
     email: process.env.PCS_CASEWORKER_USERNAME || '',
-    password: process.env.PCS_CASEWORKER_USERNAMEPASSWORD || '',
+    password: process.env.PCS_CASEWORKER_PASSWORD || '',
     temp: false,
     roles: ['caseworker', 'caseworker-pcs'],
   }
