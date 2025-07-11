@@ -16,7 +16,9 @@ def secrets = [
     secret('idam-system-user-name', 'IDAM_SYSTEM_USERNAME'),
     secret('idam-system-user-password', 'IDAM_SYSTEM_USER_PASSWORD'),
     secret('pcs-api-idam-secret', 'PCS_API_IDAM_SECRET'),
-    secret('pcs-frontend-idam-user-temp-password', 'PCS_FRONTEND_IDAM_USER_TEMP_PASSWORD'),
+    secret('pcs-idam-test-user-password', 'PCS_IDAM_TEST_USER_PASSWORD'),
+    secret('pcs-caseworker-username', 'PCS_CASEWORKER_USERNAME'),
+    secret('pcs-caseworker-password', 'PCS_CASEWORKER_PASSWORD'),
   ]
 ]
 
@@ -45,6 +47,9 @@ withPipeline(type, product, component) {
     if (githubApi.getLabelsbyPattern(env.BRANCH_NAME, "pr-values:ccd").size() > 0) {
       enableHighLevelDataSetup()
     }
+    afterSuccess('smoketest:preview') {
+          runE2eTests(env.ENVIRONMENT)
+        }
   }
 
   onMaster() {
@@ -86,12 +91,12 @@ withPipeline(type, product, component) {
 
 def setPreviewEnvVars() {
   // TODO: Update URL to include XUI when available
-  env.TEST_E2E_URL_EXUI = "https://xui-pcs-api-pr-${CHANGE_ID}.preview.platform.hmcts.net"
+  env.MANAGE_CASE_BASE_URL = "https://xui-pcs-api-pr-${CHANGE_ID}.preview.platform.hmcts.net"
   env.ENVIRONMENT= "preview"
 }
 
 def setAatEnvVars() {
-  env.TEST_E2E_URL_EXUI = "https://manage-case.aat.platform.hmcts.net/"
+  env.MANAGE_CASE_BASE_URL = "https://manage-case.aat.platform.hmcts.net/"
   env.ENVIRONMENT= "aat"
 }
 
