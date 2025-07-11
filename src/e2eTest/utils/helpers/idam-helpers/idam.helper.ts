@@ -32,7 +32,6 @@ export async function cleanupTempUsers(): Promise<void> {
   for (const [key, creds] of Object.entries(all)) {
     if (creds.temp) {
       try {
-        await deleteAccount(creds.email);
         deleteTempUser(key);
       } catch (err) {
       }
@@ -55,19 +54,6 @@ export async function createAccount(userData: UserData): Promise<Response | unkn
   }
 }
 
-export async function deleteAccount(email: string): Promise<void> {
-  try {
-    const method = 'DELETE';
-    await request(
-      `${testConfig.idamTestingSupportUrl}/testing-support/accounts/${email}`,
-      { 'Content-Type': 'application/json' },
-      undefined,
-      method
-    );
-  } catch (error) {
-    throw error;
-  }
-}
 
 export async function getAccessTokenFromIdam(): Promise<string> {
   const details = {
@@ -98,7 +84,7 @@ export async function getAccessTokenFromIdam(): Promise<string> {
 }
 
 
-export interface UserCredentials {
+export interface UserDetails {
   email: string;
   password: string;
   temp?: boolean;
@@ -107,7 +93,7 @@ export interface UserCredentials {
 
 const storePath = path.resolve(__dirname, './../../../data/.temp-users.data.json');
 
-let tempUsers: Record<string, UserCredentials> = {};
+let tempUsers: Record<string, UserDetails> = {};
 
 if (fs.existsSync(storePath)) {
   const data = fs.readFileSync(storePath, 'utf-8');
@@ -118,7 +104,7 @@ function saveTempUsers() {
   fs.writeFileSync(storePath, JSON.stringify(tempUsers, null, 2));
 }
 
-export function setTempUser(key: string, creds: UserCredentials) {
+export function setTempUser(key: string, creds: UserDetails) {
   tempUsers[key] = creds;
   saveTempUsers();
 }
@@ -128,10 +114,10 @@ export function deleteTempUser(key: string) {
   saveTempUsers();
 }
 
-export function getUser(key: string): UserCredentials | undefined {
+export function getUser(key: string): UserDetails | undefined {
   return tempUsers[key] || permanentUsersData[key];
 }
 
-export function getAllUsers(): Record<string, UserCredentials> {
+export function getAllUsers(): Record<string, UserDetails> {
   return { ...permanentUsersData, ...tempUsers };
 }

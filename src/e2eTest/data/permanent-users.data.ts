@@ -6,10 +6,10 @@ export interface UserCredentials {
 }
 export const permanentUsersData: Record<string, UserCredentials> = {
   superUser: {
-    email: 'testuser@test.aat',
-    password: process.env.PCS_IDAM_TEST_USER_PASSWORD || '',
+    email: process.env.PCS_CASEWORKER_USERNAME || '',
+    password: process.env.PCS_CASEWORKER_USERNAMEPASSWORD || '',
     temp: false,
     roles: ['caseworker', 'caseworker-pcs'],
   }
 };
-//sample test user provided for reference, need to be updated with valid permanent users when available.
+//sample test user provided for reference from civil, need to be updated with valid PCS permanent users when available.
