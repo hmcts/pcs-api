@@ -13,9 +13,8 @@
     "resolveJsonModule": true,
     "baseUrl": ".",
     "paths": {
-      "@fixtures/*": ["fixtures/*"],
-      "@pages/*": ["pages/*"],
-      "@helpers/*": ["helpers/*"],
+      "@utils/*": ["utils/*"],
+      "@config/*": ["config/*"],
       "@data/*": ["data/*"]
     }
   },
