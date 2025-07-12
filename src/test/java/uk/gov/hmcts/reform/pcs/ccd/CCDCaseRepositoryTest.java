@@ -12,6 +12,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
+import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.util.Optional;
 
@@ -28,13 +29,15 @@ class CCDCaseRepositoryTest {
     @Mock
     private PcsCaseRepository pcsCaseRepository;
     @Mock
+    private SecurityContextService securityContextService;
+    @Mock
     private ModelMapper modelMapper;
 
     private CCDCaseRepository underTest;
 
     @BeforeEach
     void setUp() {
-        underTest = new CCDCaseRepository(pcsCaseRepository, modelMapper);
+        underTest = new CCDCaseRepository(pcsCaseRepository, securityContextService, modelMapper);
     }
 
     @Test
