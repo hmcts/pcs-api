@@ -1,19 +1,15 @@
 // validations/text.validation.ts
-import {Page, expect, test} from '@playwright/test';
+import { Page, expect } from '@playwright/test';
 import {IValidation, ValidationData} from "../../interfaces/validation.interface";
 
 export class TextValidation implements IValidation {
   async validate(page: Page, fieldName: string, data: ValidationData): Promise<void> {
-    const textLocator = page.locator(`a[aria-label$="${data.content}"]`);
-    const text = (await textLocator.innerText())?.trim();
-    if (!text) {
-      throw new Error('text is not present or empty.');
+    const locator = page.locator(`[data-testid="${fieldName}"]`);
+
+    if ('expected' in data) {
+      await expect(locator).toHaveText(String(data.expected));
+    } else {
+      throw new Error('TextValidation requires "expected" property in data');
     }
-    await test.step(`Found text: "${text}"`, async () => {
-      if (!data) {
-        throw new Error('data is required for TextValidation');
-      }
-      expect(text, `text is not matching with provided data`).toBe(data.content);
-    });
   }
 }

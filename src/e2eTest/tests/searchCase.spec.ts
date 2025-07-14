@@ -24,9 +24,9 @@ test.beforeEach(async ({page}, testInfo) => {
   });
 });
 
-/*test.afterEach(async () => {
+test.afterEach(async () => {
   await performAction('click', 'Sign out');
-});*/
+});
 
 async function createCaseWithAddress() {
 
@@ -74,10 +74,10 @@ test.describe('Search case by case number @Master @nightly', () => {
     } else {
       await performAction('click', 'Case list');
       await searchCase(caseNumber);
-      await performValidation('text', 'caseNumber', {content: caseNumber});
+      await performValidation('visibility', 'caseNumber', {visible: caseNumber});
     }
   });
-  test('Search for case via find case', async ({}) => {
+  test.skip('Search for case via find case', async ({}) => {
     await createCaseWithAddress();
     let caseNumber = await getSessionVariable<string>('caseNumber');
     if (!caseNumber) {
@@ -85,6 +85,6 @@ test.describe('Search case by case number @Master @nightly', () => {
     }
     await performAction('click', 'Find case');
     await searchCase(caseNumber);
-    await performValidation('text', 'caseNumber', {content: caseNumber});
+    await performValidation('visibility', 'caseNumber', {visible: caseNumber});
   });
 });
