@@ -37,7 +37,7 @@ public class CreateTestCase implements CCDConfig<PCSCase, State, UserRole> {
         new PageBuilder(eventBuilder)
             .add(new ClaimantInformation())
             .add(new AddressPage())
-            .add(new PartyPage())
+            .add(new PartyPage());
     }
 
     private PCSCase start(EventPayload<PCSCase, State> eventPayload) {
