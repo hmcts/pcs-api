@@ -7,14 +7,13 @@ export class TextValidation implements IValidation {
     const textLocator = page.locator(`a[aria-label$="${data.content}"]`);
     const text = (await textLocator.innerText())?.trim();
     if (!text) {
-      throw new Error('Table column is not present or empty.');
+      throw new Error('text is not present or empty.');
     }
-    await test.step(`Found number: "${text}"`, async () => {
+    await test.step(`Found text: "${text}"`, async () => {
       if (!data) {
-        throw new Error('table column requires case number');
+        throw new Error('data is required for TextValidation');
       }
-      console.log(`Table column ${data.content}`);
-      expect(text, `Table column should exactly match`).toBe(data.content);
+      expect(text, `text is not matching with provided data`).toBe(data.content);
     });
   }
 }
