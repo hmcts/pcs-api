@@ -78,7 +78,6 @@ test.describe('Search case by case number @Master @nightly', () => {
     }
   });
   test('Search for case via find case', async ({}) => {
-    await createCaseWithAddress();
     let caseNumber = await getSessionVariable<string>('caseNumber');
     if (!caseNumber) {
       throw new Error('Case number not found in session variable');
