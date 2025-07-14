@@ -2,6 +2,7 @@ import { Page, test } from '@playwright/test';
 import { ValidationData } from './interfaces/validation.interface';
 import { ActionRegistry } from './registry/action.registry';
 import { ValidationRegistry } from './registry/validation.registry';
+import { SessionManager, SessionValue } from './helpers/SessionManager';
 
 type ActionStep = {
   action: string;
@@ -16,15 +17,18 @@ type ValidationStep = {
 type ActionTuple = [string, string] | [string, string, string | number | boolean | string[] | object];
 type ValidationTuple = [string, string, ValidationData];
 class Controller {
+  private sessionManager: SessionManager;
   private page: Page;
   constructor(page: Page) {
     this.page = page;
+    this.sessionManager = SessionManager.getInstance();
   }
   async performAction(
     action: string,
     fieldName: string,
     value?: string | number | boolean | string[] | object
   ): Promise<void> {
+
     const actionInstance = ActionRegistry.getAction(action);
     await test.step(`Perform action: [${action}] on "${fieldName}"${value !== undefined ? ` with value "${value}"` : ''}`, async () => {
       await actionInstance.execute(this.page, fieldName, value);
@@ -65,6 +69,13 @@ class Controller {
   getAvailableValidations(): string[] {
     return ValidationRegistry.getAvailableValidations();
   }
+
+  setSessionVariable(key: string, value: SessionValue): void {
+    this.sessionManager.set(key, value);
+  }
+  getSessionVariable<T = SessionValue>(key: string): T | undefined {
+    return this.sessionManager.get<T>(key);
+  }
 }
 // Global executor instance
 let testExecutor: Controller;
@@ -72,6 +83,15 @@ let testExecutor: Controller;
 export function initializeExecutor(page: Page): void {
   testExecutor = new Controller(page);
 }
+
+export async function setSessionVariable(key: string, value: SessionValue): Promise<void> {
+  testExecutor.setSessionVariable(key, value);
+}
+
+export async function getSessionVariable<T = SessionValue>(key: string): Promise<T | undefined> {
+  return testExecutor.getSessionVariable<T>(key);
+}
+
 // Global function to execute actions
 export async function performAction(
   action: string,
