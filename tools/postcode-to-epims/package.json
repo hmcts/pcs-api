@@ -9,7 +9,7 @@
     "generate-sql": "node src/index.js"
   },
   "dependencies": {
-    "csv-parse": "^5.6.0",
+    "csv-parse": "^6.0.0",
     "luxon": "^3.6.1"
   }
 }
