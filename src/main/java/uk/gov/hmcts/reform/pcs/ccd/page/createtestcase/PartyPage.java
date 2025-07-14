@@ -9,9 +9,9 @@ public class PartyPage implements CcdPageConfiguration {
     @Override
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
-            .page("Party Page") //this is never seen?
-            .pageLabel("Select your Party.")
-            .label("lineSeparator", "---")
-            .mandatory(PCSCase::getApplicantMiddlename);
+            .page("Party Page") //only seen in json, not on page
+            .pageLabel("Select your Party.") //only seen in json, not on page
+//            .label("lineSeparator2", "---") //has to be unique id to be seen.
+            .mandatory(PCSCase::getPartyType);
     }
 }
