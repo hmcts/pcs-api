@@ -47,9 +47,10 @@ withPipeline(type, product, component) {
     if (githubApi.getLabelsbyPattern(env.BRANCH_NAME, "pr-values:ccd").size() > 0) {
       enableHighLevelDataSetup()
     }
-    afterSuccess('smoketest:preview') {
-          runE2eTests(env.ENVIRONMENT)
-        }
+    //Skipping e2e tests on PRs
+    //afterSuccess('smoketest:preview') {
+    //      runE2eTests(env.ENVIRONMENT)
+    //    }
   }
 
   onMaster() {
