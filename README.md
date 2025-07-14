@@ -189,7 +189,19 @@ with
 authMode = AuthMode.AAT
 ```
 
-Then run the service with the `bootWithCCD` task as above.
+Then set the following environment variables based on the value below or named secret
+from the PCS AAT key vault:
+
+| Environment Variable     | Value or Secret Name                                             |
+|--------------------------|------------------------------------------------------------------|
+| LOCATION_REF_URL         | http://rd-location-ref-api-aat.service.core-compute-aat.internal |
+| PCS_API_S2S_SECRET       | secret: pcs-api-s2s-secret                                       |
+| IDAM_CLIENT_SECRET       | secret: pcs-api-idam-secret                                      |
+| PCS_IDAM_SYSTEM_USERNAME | secret: idam-system-user-name                                    |
+| PCS_IDAM_SYSTEM_PASSWORD | secret: idam-system-user-password                                |
+
+
+Finally, run the service with the `bootWithCCD` task as above.
 
 ## License
 
