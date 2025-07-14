@@ -3,6 +3,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
+/**
+ * Enum representing which party the user is of.
+ */
 @Getter
 @AllArgsConstructor
 public enum PartyType {
