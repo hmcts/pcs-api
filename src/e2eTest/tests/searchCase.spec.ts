@@ -59,7 +59,7 @@ async function searchCase(caseNumber: string) {
   );
 }
 
-test.describe('Search case by case number @nightly', () => {
+test.describe('Search case by case number @PR @nightly', () => {
   test('Search for case via caselist', async ({}) => {
     await createCaseWithAddress();
     let caseNumber = await getSessionVariable<string>('caseNumber');
