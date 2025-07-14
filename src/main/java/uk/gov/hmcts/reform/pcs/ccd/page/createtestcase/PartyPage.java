@@ -12,6 +12,6 @@ public class PartyPage implements CcdPageConfiguration {
             .page("Party Page") //this is never seen?
             .pageLabel("Select your Party.")
             .label("lineSeparator", "---")
-            .mandatory(PCSCase::getApplicantMiddlename).done();
+            .mandatory(PCSCase::getApplicantMiddlename);
     }
 }
