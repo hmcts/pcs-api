@@ -1,6 +1,6 @@
-export class ConfigData {
+export class TestConfig {
   public static readonly manageCasesBaseURL: string =
-    process.env.TEST_E2E_URL_EXUI || "http://localhost:3000";
+    process.env.MANAGE_CASE_BASE_URL || "http://localhost:3000";
 
   public static readonly iDam = {
     "idamUrl": "https://idam-api.aat.platform.hmcts.net",
@@ -13,4 +13,4 @@ export class ConfigData {
   };
 }
 
-export default ConfigData;
+export default TestConfig;
