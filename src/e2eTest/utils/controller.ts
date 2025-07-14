@@ -52,7 +52,6 @@ class Controller {
       await this.performValidation(step.validationType, step.fieldName, step.data);
     }
   }
-  // Tuple-based approach for validations
   async performValidationGroupWithTuples(groupName: string, ...validations: ValidationTuple[]): Promise<void> {
     for (const tuple of validations) {
       const [validationType, fieldName, data] = tuple;
@@ -66,13 +65,10 @@ class Controller {
     return ValidationRegistry.getAvailableValidations();
   }
 }
-// Global executor instance
 let testExecutor: Controller;
-// Global function to initialize the executor
 export function initializeExecutor(page: Page): void {
   testExecutor = new Controller(page);
 }
-// Global function to execute actions
 export async function performAction(
   action: string,
   fieldName: string,
@@ -83,7 +79,6 @@ export async function performAction(
   }
   await testExecutor.performAction(action, fieldName, value);
 }
-// Global function to execute validations
 export async function performValidation(
   validationType: string,
   inputFieldName: string | ValidationData,
@@ -94,14 +89,8 @@ export async function performValidation(
   }
 
   const [fieldName, data] = typeof inputFieldName === 'string' ? [inputFieldName, inputData] : ['', inputFieldName];
-
-  if (!data) {
-    throw new Error('Validation data must be provided');
-  }
-
   await testExecutor.performValidation(validationType, fieldName, data);
 }
-// Global function to execute action groups (object-based)
 export async function performActionGroup(
   groupName: string,
   ...actions: { action: string; fieldName: string; value?: string | number | boolean | string[] | object }[]
@@ -113,7 +102,6 @@ export async function performActionGroup(
     await testExecutor.performActionGroupWithObjects(groupName, ...actions);
   });
 }
-// Global function to execute action groups (tuple-based)
 export async function performActions(
   groupName: string,
   ...actions: ([string, string] | [string, string, string | number | boolean | string[] | object])[]
@@ -125,7 +113,6 @@ export async function performActions(
     await testExecutor.performActionGroupWithTuples(groupName, ...actions);
   });
 }
-// Global function to execute validation groups (object-based)
 export async function performValidationGroup(
   groupName: string,
   validations: { validationType: string; fieldName: string; data: ValidationData }[]
@@ -135,7 +122,6 @@ export async function performValidationGroup(
   }
   await testExecutor.performValidationGroupWithObjects(groupName, validations);
 }
-// Global function to execute validation groups (tuple-based) - NEW!
 export async function performValidations(
   groupName: string,
   ...validations: [string, string, ValidationData][]
