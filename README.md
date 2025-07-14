@@ -173,6 +173,24 @@ Above command starts PCS API + CCD & all dependencies
 Once successfully loaded open XUI at http://localhost:3000
 See CftlibConfig.java for users and login details.
 
+By default, this runs with local instance of IDAM and
+S2S services. However sometimes it may be required to run
+with the AAT instances of those services, (for example when running both pcs-frontend and pcs-api locally).
+
+To do this, edit the `build.gradle` file before running the `bootWithCCD` task and replace
+
+```
+authMode = AuthMode.Local
+```
+
+with
+
+```
+authMode = AuthMode.AAT
+```
+
+Then run the service with the `bootWithCCD` task as above.
+
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details
