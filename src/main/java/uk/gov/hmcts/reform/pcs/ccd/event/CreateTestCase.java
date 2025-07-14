@@ -31,12 +31,13 @@ public class CreateTestCase implements CCDConfig<PCSCase, State, UserRole> {
                 .decentralisedEvent(createTestApplication.name(), this::submit, this::start)
                 .initialState(State.CASE_ISSUED)
                 .name("Make a claim")
+                .showSummary()
                 .grant(Permission.CRUD, UserRole.PCS_CASE_WORKER);
 
         new PageBuilder(eventBuilder)
             .add(new ClaimantInformation())
             .add(new AddressPage())
-            .add(new PartyPage());
+            .add(new PartyPage())
     }
 
     private PCSCase start(EventPayload<PCSCase, State> eventPayload) {
