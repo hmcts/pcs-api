@@ -21,6 +21,12 @@ public class PCSCase {
     private String applicantForename;
 
     @CCD(
+        label = "Applicant's middleName",
+        access = {CitizenAccess.class, CaseworkerAccess.class}
+    )
+    private String applicantMiddlename;
+
+    @CCD(
         label = "Applicant's surname",
         access = {CitizenAccess.class, CaseworkerAccess.class}
     )
