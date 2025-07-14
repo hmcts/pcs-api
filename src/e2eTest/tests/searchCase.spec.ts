@@ -13,7 +13,7 @@ import { caseData } from '@data/case.data';
 test.beforeEach(async ({ page }) => {
   initializeExecutor(page);
   await parentSuite('Create Case');
-  await performAction('login', 'caseworker');
+  await performAction('login', 'exuiUser');
 });
 
 test.afterEach(async () => {
