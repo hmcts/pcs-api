@@ -5,7 +5,6 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -19,17 +18,24 @@ import uk.gov.hmcts.reform.pcs.idam.User;
 
 import java.io.IOException;
 import java.util.Collections;
+import java.util.List;
 
 @Slf4j
 @Component
 public class IdamAuthenticationFilter extends OncePerRequestFilter {
 
-    @Autowired
-    private  IdamService idamService;
+    private static final List<String> FILTER_PATHS = List.of("/courts", "/ccd");
+
+    private final IdamService idamService;
+
+    public IdamAuthenticationFilter(IdamService idamService) {
+        this.idamService = idamService;
+    }
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
-        return !request.getRequestURI().startsWith("/courts");
+        return FILTER_PATHS.stream()
+            .noneMatch(path -> request.getRequestURI().startsWith(path));
     }
 
     @Override
