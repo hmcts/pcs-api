@@ -32,4 +32,6 @@ public class PcsCaseEntity {
     @OneToOne(cascade = ALL)
     private AddressEntity propertyAddress;
 
+    private String userType;
+
 }

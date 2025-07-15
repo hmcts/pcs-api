@@ -4,14 +4,13 @@ import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 
-public class ClaimantInformation implements CcdPageConfiguration {
+public class UserType implements CcdPageConfiguration {
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
-            .page("claimant information")
-            .pageLabel("Please enter applicant's name")
-            .mandatory(PCSCase::getApplicantForename)
-            .mandatory(PCSCase::getApplicantSurname);
+                .page("User Type Page")
+                .pageLabel("Please select which applies to you")
+                .mandatory(PCSCase::getUserType);
     }
 }

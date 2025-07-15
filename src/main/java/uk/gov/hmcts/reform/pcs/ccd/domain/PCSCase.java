@@ -4,8 +4,10 @@ import lombok.Builder;
 import lombok.Data;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
+import uk.gov.hmcts.ccd.sdk.type.FieldType;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseworkerAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenAccess;
+import uk.gov.hmcts.reform.pcs.ccd.domain.UserType;
 
 /**
  * The main domain model representing a possessions case.
@@ -31,5 +33,13 @@ public class PCSCase {
         access = {CitizenAccess.class, CaseworkerAccess.class}
     )
     private AddressUK propertyAddress;
+
+    @CCD(
+        label = "What type of user are you?", 
+        typeOverride = FieldType.FixedRadioList, 
+        typeParameterOverride = "UserType", 
+        access = { CitizenAccess.class, CaseworkerAccess.class })
+
+    private UserType userType;
 
 }

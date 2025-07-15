@@ -13,6 +13,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.page.createtestcase.ClaimantInformation;
 import uk.gov.hmcts.reform.pcs.ccd.page.createtestcase.MakeAClaim;
+import uk.gov.hmcts.reform.pcs.ccd.page.createtestcase.UserType;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.createTestApplication;
@@ -30,11 +31,13 @@ public class CreateTestCase implements CCDConfig<PCSCase, State, UserRole> {
                 .decentralisedEvent(createTestApplication.name(), this::submit, this::start)
                 .initialState(State.CASE_ISSUED)
                 .name("Make a claim")
+                .showSummary()
                 .grant(Permission.CRUD, UserRole.PCS_CASE_WORKER);
 
         new PageBuilder(eventBuilder)
-            .add(new MakeAClaim())
-            .add(new ClaimantInformation());
+                .add(new MakeAClaim())
+                .add(new ClaimantInformation())
+                .add(new UserType());
     }
 
     private PCSCase start(EventPayload<PCSCase, State> eventPayload) {

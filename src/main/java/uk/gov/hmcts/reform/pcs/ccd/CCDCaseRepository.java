@@ -6,6 +6,7 @@ import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.DecentralisedCaseRepository;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.UserType;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
@@ -28,12 +29,15 @@ public class CCDCaseRepository extends DecentralisedCaseRepository<PCSCase> {
     @Override
     public PCSCase getCase(long caseReference) {
 
+        //Load case data from database
         PcsCaseEntity pcsCaseEntity = loadCaseData(caseReference);
 
+        //Convert database entity to CCD domain object
         return PCSCase.builder()
             .applicantForename(pcsCaseEntity.getApplicantForename())
             .applicantSurname(pcsCaseEntity.getApplicantSurname())
             .propertyAddress(convertAddress(pcsCaseEntity.getPropertyAddress()))
+            .userType(convertUserType(pcsCaseEntity.getUserType()))
             .build();
     }
 
@@ -43,6 +47,13 @@ public class CCDCaseRepository extends DecentralisedCaseRepository<PCSCase> {
         }
 
         return modelMapper.map(address, AddressUK.class);
+    }
+
+    private UserType convertUserType(String userTypeString) {
+        if (userTypeString == null) {
+            return null;
+        }
+        return UserType.valueOf(userTypeString);
     }
 
     private PcsCaseEntity loadCaseData(long caseRef) {

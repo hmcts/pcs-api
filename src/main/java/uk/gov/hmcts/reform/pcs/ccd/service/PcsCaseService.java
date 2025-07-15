@@ -17,17 +17,24 @@ public class PcsCaseService {
     private final PcsCaseRepository pcsCaseRepository;
     private final ModelMapper modelMapper;
 
+
     public void createCase(long caseReference, PCSCase pcsCase) {
+        // Convert the CCD domain object to a database entity
         AddressUK applicantAddress = pcsCase.getPropertyAddress();
 
         AddressEntity addressEntity = applicantAddress != null
             ? modelMapper.map(applicantAddress, AddressEntity.class) : null;
+
+        // Convert the user type to a string
+        String userTypeString = pcsCase.getUserType() != null
+            ? pcsCase.getUserType().name() : null;
 
         PcsCaseEntity pcsCaseEntity = new PcsCaseEntity();
         pcsCaseEntity.setCaseReference(caseReference);
         pcsCaseEntity.setApplicantForename(pcsCase.getApplicantForename());
         pcsCaseEntity.setApplicantSurname(pcsCase.getApplicantSurname());
         pcsCaseEntity.setPropertyAddress(addressEntity);
+        pcsCaseEntity.setUserType(userTypeString);
 
         pcsCaseRepository.save(pcsCaseEntity);
     }
@@ -47,6 +54,10 @@ public class PcsCaseService {
         if (pcsCase.getPropertyAddress() != null) {
             AddressEntity addressEntity = modelMapper.map(pcsCase.getPropertyAddress(), AddressEntity.class);
             pcsCaseEntity.setPropertyAddress(addressEntity);
+        }
+
+        if (pcsCase.getUserType() != null) {
+            pcsCaseEntity.setUserType(pcsCase.getUserType().name());
         }
 
         pcsCaseRepository.save(pcsCaseEntity);
