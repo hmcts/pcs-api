@@ -29,6 +29,8 @@ public class PcsCaseEntity {
 
     private String applicantSurname;
 
+    private String party;
+
     @OneToOne(cascade = ALL)
     private AddressEntity propertyAddress;
 

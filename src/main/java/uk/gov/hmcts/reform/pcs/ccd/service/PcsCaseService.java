@@ -27,6 +27,7 @@ public class PcsCaseService {
         pcsCaseEntity.setCaseReference(caseReference);
         pcsCaseEntity.setApplicantForename(pcsCase.getApplicantForename());
         pcsCaseEntity.setApplicantSurname(pcsCase.getApplicantSurname());
+        pcsCaseEntity.setParty(pcsCase.getPartyType().toString());
         pcsCaseEntity.setPropertyAddress(addressEntity);
 
         pcsCaseRepository.save(pcsCaseEntity);
