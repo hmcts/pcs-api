@@ -8,6 +8,7 @@ import { DoubleClickAction } from '../actions/element-actions/double-click.actio
 import { SelectAction } from '../actions/element-actions/select.action';
 import { LoginAction } from "../actions/custom-actions/login.action";
 import { navigateToUrl } from "@utils/actions/custom-actions/navigateToUrl.action";
+import { CaseNumberAction } from "@utils/actions/custom-actions/caseNumber.action";
 
 export class ActionRegistry {
   private static actions: Map<string, IAction> = new Map([
@@ -19,6 +20,7 @@ export class ActionRegistry {
     ['doubleClick', new DoubleClickAction()],
     ['login', new LoginAction()],
     ['navigateToUrl', new navigateToUrl()],
+    ['caseNumber', new CaseNumberAction()],
   ]);
 
   static getAction(actionName: string): IAction {
