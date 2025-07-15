@@ -4,7 +4,7 @@ import uk.gov.hmcts.rse.CftlibExec
 
 buildscript {
   ext {
-    flywayVersion = '11.10.1'
+    flywayVersion = '11.10.2'
     serenityBddVersion = '4.2.33'
   }
   dependencies {
@@ -21,7 +21,7 @@ plugins {
   id 'org.flywaydb.flyway' version "$flywayVersion"
   id 'org.sonarqube' version '6.2.0.5505'
   id 'net.serenity-bdd.serenity-gradle-plugin' version "$serenityBddVersion"
-  id 'com.github.hmcts.rse-cft-lib' version '0.20.0-alpha.29'
+  id 'com.github.hmcts.rse-cft-lib' version '0.20.0-alpha.31'
   id 'io.freefair.lombok' version '8.14'
   id 'au.com.dius.pact' version '4.6.17'
   /*
@@ -90,6 +90,11 @@ configurations {
 
   cftlibTestImplementation.extendsFrom testImplementation
   cftlibTestRuntime.extendsFrom testRuntime
+
+  mockitoAgentConfig
+  mockitoAgent {
+    transitive = false
+  }
 }
 
 ccd {
@@ -284,7 +289,7 @@ repositories {
 }
 
 ext {
-  log4JVersion = "2.25.0"
+  log4JVersion = "2.25.1"
   logbackVersion = "1.5.18"
   testcontainersVersion = "1.21.3"
   springFrameworkBootVersion = "3.4.7"
@@ -366,9 +371,12 @@ dependencies {
   testImplementation group: 'org.testcontainers', name: 'junit-jupiter', version: testcontainersVersion
   testImplementation group: 'org.testcontainers', name: 'postgresql', version: testcontainersVersion
 
-
   // Allow fast reloading during dev; recompile a class to trigger fast reload + definition reimport.
   cftlibImplementation 'org.springframework.boot:spring-boot-devtools'
+
+  mockitoAgentConfig group: 'org.mockito', name: 'mockito-inline', version: '5.2.0'
+  mockitoAgent 'org.mockito:mockito-core'
+
 }
 
 application {
@@ -411,6 +419,15 @@ project.tasks.named("processSmokeTestResources") {
 tasks.withType(CftlibExec).configureEach {
   group = 'ccd tasks'
   authMode = AuthMode.Local
+
+  //Attach mockito agent for inline mocking to remove warning in logs
+  classpath += configurations.mockitoAgentConfig
+  doFirst {
+    def mockitoAgentJar = configurations.mockitoAgent.singleFile
+    jvmArgs += ["-javaagent:${mockitoAgentJar}", "-Xshare:off"]
+    logger.quiet("Attaching Mockito Java agent for inline mocking")
+  }
+
   environment 'RSE_LIB_ADDITIONAL_DATABASES', 'pcs'
   environment 'PCS_DB_USER_NAME', 'postgres'
   environment 'PCS_DB_PASSWORD', 'postgres'
@@ -418,6 +435,7 @@ tasks.withType(CftlibExec).configureEach {
   environment 'POC_APIS_URL', 'http://localhost:3206'
   environment 'SPRING_FLYWAY_ENABLED', 'true'
   environment 'SPRING_PROFILES_ACTIVE', 'dev'
+  environment 'XUI_JURISDICTIONS', 'PCS'
 }
 
 tasks.register('highLevelDataSetup', JavaExec) {

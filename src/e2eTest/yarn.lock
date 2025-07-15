@@ -147,16 +147,16 @@
   integrity sha512-GaHYm+c0O9MjZRu0ongGBRbinu8gVAMd2UZjji6jVmqKtZluZnptXGWhz1E8j8D2HJ3f/yMxKAUC0b+57wncIw==
 
 "@playwright/test@^1.49.0":
-  version "1.53.2"
-  resolved "https://registry.yarnpkg.com/@playwright/test/-/test-1.53.2.tgz#fafb8dd5e109fc238c4580f82bebc2618f929f77"
-  integrity sha512-tEB2U5z74ebBeyfGNZ3Jfg29AnW+5HlWhvHtb/Mqco9pFdZU1ZLNdVb2UtB5CvmiilNr2ZfVH/qMmAROG/XTzw==
+  version "1.54.1"
+  resolved "https://registry.yarnpkg.com/@playwright/test/-/test-1.54.1.tgz#a76333e5c2cba5f12f96a6da978bba3ab073c7e6"
+  integrity sha512-FS8hQ12acieG2dYSksmLOF7BNxnVf2afRJdCuM1eMSxj6QTSE6G4InGF7oApGgDb65MX7AwMVlIkpru0yZA4Xw==
   dependencies:
-    playwright "1.53.2"
+    playwright "1.54.1"
 
 "@types/node@^22.15.31":
-  version "22.16.2"
-  resolved "https://registry.yarnpkg.com/@types/node/-/node-22.16.2.tgz#0a7b5b852105fb3f5019134f87fa859d5abcab9b"
-  integrity sha512-Cdqa/eJTvt4fC4wmq1Mcc0CPUjp/Qy2FGqLza3z3pKymsI969TcZ54diNJv8UYUgeWxyb8FSbCkhdR6WqmUFhA==
+  version "22.16.4"
+  resolved "https://registry.yarnpkg.com/@types/node/-/node-22.16.4.tgz#00c763ad4d4e45f62d5a270c040ae1a799c7e38a"
+  integrity sha512-PYRhNtZdm2wH/NT2k/oAJ6/f2VD2N2Dag0lGlx2vWgMSJXGNmlce5MiTQzoWAiIJtso30mjnfQCOKVH+kAQC/g==
   dependencies:
     undici-types "~6.21.0"
 
@@ -165,10 +165,17 @@ allure-commandline@^2.34.1:
   resolved "https://registry.yarnpkg.com/allure-commandline/-/allure-commandline-2.34.1.tgz#cdc1361c0b1f85d917b72f80d7131fd7dbfddd11"
   integrity sha512-l42csZ2bz7FdtJI1t5zA3IXtOZ0YJaP/+JMRC9gt6aBHRVUIu+6r+3F7KRyshQ79osLz9/MHlGqAjBPRqH0QFw==
 
-allure-js-commons@3.3.0, allure-js-commons@^3.3.0:
+allure-js-commons@3.3.0:
   version "3.3.0"
   resolved "https://registry.yarnpkg.com/allure-js-commons/-/allure-js-commons-3.3.0.tgz#2e7060bd3b82f34d9dc20c01cdae7c795b611dcf"
   integrity sha512-EAIfpBFk6m7Q4KfyuAL3cAqVGv0dLWCT9359BmVGhO5ANKCwuU6U+DJBs3dLYo+MDUF7vlmwWPpvv4lAvdcVtA==
+  dependencies:
+    md5 "^2.3.0"
+
+allure-js-commons@^3.3.0:
+  version "3.3.1"
+  resolved "https://registry.yarnpkg.com/allure-js-commons/-/allure-js-commons-3.3.1.tgz#092b9712f59f016639de86e27fbe9a2d9e0c368d"
+  integrity sha512-7czRvcYQ3YNDsctvlqkUfh+0BbdlThUzzErojqngXRhd8wbOhiS5YfFrOPB2ab/PcJhjPjGmalcCmWFQS+zw5g==
   dependencies:
     md5 "^2.3.0"
 
@@ -273,17 +280,17 @@ oauth4webapi@^3.5.1:
   resolved "https://registry.yarnpkg.com/oauth4webapi/-/oauth4webapi-3.5.5.tgz#8568c6f84e4e3864aac7f0d9b32a285c46cc6abd"
   integrity sha512-1K88D2GiAydGblHo39NBro5TebGXa+7tYoyIbxvqv3+haDDry7CBE1eSYuNbOSsYCCU6y0gdynVZAkm4YPw4hg==
 
-playwright-core@1.53.2:
-  version "1.53.2"
-  resolved "https://registry.yarnpkg.com/playwright-core/-/playwright-core-1.53.2.tgz#78f71e2f727713daa8d360dc11c460022c13cf91"
-  integrity sha512-ox/OytMy+2w1jcYEYlOo1Hhp8hZkLCximMTUTMBXjGUA1KoFfiSZ+DU+3a739jsPY0yoKH2TFy9S2fsJas8yAw==
+playwright-core@1.54.1:
+  version "1.54.1"
+  resolved "https://registry.yarnpkg.com/playwright-core/-/playwright-core-1.54.1.tgz#d32edcce048c9d83ceac31e294a7b60ef586960b"
+  integrity sha512-Nbjs2zjj0htNhzgiy5wu+3w09YetDx5pkrpI/kZotDlDUaYk0HVA5xrBVPdow4SAUIlhgKcJeJg4GRKW6xHusA==
 
-playwright@1.53.2:
-  version "1.53.2"
-  resolved "https://registry.yarnpkg.com/playwright/-/playwright-1.53.2.tgz#cc2ef4a22da1ae562e0ed91edb9e22a7c4371305"
-  integrity sha512-6K/qQxVFuVQhRQhFsVZ9fGeatxirtrpPgxzBYWyZLEXJzqYwuL4fuNmfOfD5et1tJE4GScKyPNeLhZeRwuTU3A==
+playwright@1.54.1:
+  version "1.54.1"
+  resolved "https://registry.yarnpkg.com/playwright/-/playwright-1.54.1.tgz#128d66a8d5182b5330e6440be3a72ca313362788"
+  integrity sha512-peWpSwIBmSLi6aW2auvrUtf2DqY16YYcCMO8rTVx486jKmDTJg7UAhyrraP98GB8BoPURZP8+nxO7TSd4cPr5g==
   dependencies:
-    playwright-core "1.53.2"
+    playwright-core "1.54.1"
   optionalDependencies:
     fsevents "2.3.2"
 
