@@ -9,20 +9,23 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.modelmapper.ModelMapper;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
+import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
+import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.util.Optional;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -33,6 +36,8 @@ class PcsCaseServiceTest {
     @Mock
     private PcsCaseRepository pcsCaseRepository;
     @Mock
+    private SecurityContextService securityContextService;
+    @Mock
     private ModelMapper modelMapper;
     @Captor
     private ArgumentCaptor<PcsCaseEntity> pcsCaseEntityCaptor;
@@ -41,7 +46,7 @@ class PcsCaseServiceTest {
 
     @BeforeEach
     void setUp() {
-        underTest = new PcsCaseService(pcsCaseRepository, modelMapper);
+        underTest = new PcsCaseService(pcsCaseRepository, securityContextService, modelMapper);
     }
 
     @Test
@@ -118,9 +123,7 @@ class PcsCaseServiceTest {
 
         PcsCaseEntity savedEntity = pcsCaseEntityCaptor.getValue();
         assertThat(savedEntity).isSameAs(existingPcsCaseEntity);
-        verify(existingPcsCaseEntity, never()).setApplicantForename(any());
-        verify(existingPcsCaseEntity, never()).setApplicantSurname(any());
-        verify(existingPcsCaseEntity, never()).setPropertyAddress(any());
+        verifyNoInteractions(existingPcsCaseEntity);
     }
 
     @Test
@@ -151,6 +154,81 @@ class PcsCaseServiceTest {
         verify(existingPcsCaseEntity).setApplicantForename(updatedForename);
         verify(existingPcsCaseEntity).setApplicantSurname(updatedSurname);
         verify(existingPcsCaseEntity).setPropertyAddress(updatedAddressEntity);
+    }
+
+    @Test
+    void shouldCreatePartyWithPcqIdForCurrentUser() {
+        UUID userId = UUID.randomUUID();
+        UUID expectedPcqId = UUID.randomUUID();
+        String expectedForename = "some forename";
+        String expectedSurname = "some surname";
+
+        PCSCase pcsCase = mock(PCSCase.class);
+        when(pcsCase.getUserPcqId()).thenReturn(expectedPcqId.toString());
+
+        UserInfo userDetails = mock(UserInfo.class);
+        when(userDetails.getUid()).thenReturn(userId.toString());
+        when(userDetails.getGivenName()).thenReturn(expectedForename);
+        when(userDetails.getFamilyName()).thenReturn(expectedSurname);
+        when(securityContextService.getCurrentUserDetails()).thenReturn(userDetails);
+
+        PcsCaseEntity existingPcsCaseEntity = new PcsCaseEntity();
+
+        when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(existingPcsCaseEntity));
+
+        // When
+        underTest.patchCase(CASE_REFERENCE, pcsCase);
+
+        // Then
+        verify(pcsCaseRepository).save(pcsCaseEntityCaptor.capture());
+        PcsCaseEntity savedEntity = pcsCaseEntityCaptor.getValue();
+        assertThat(savedEntity.getParties())
+            .hasSize(1)
+            .allSatisfy(party -> {
+                assertThat(party.getIdamId()).isEqualTo(userId);
+                assertThat(party.getPcqId()).isEqualTo(expectedPcqId);
+                assertThat(party.getForename()).isEqualTo(expectedForename);
+                assertThat(party.getSurname()).isEqualTo(expectedSurname);
+            });
+
+    }
+
+    @Test
+    void shouldUpdateExistingPartyWithPcqIdForCurrentUser() {
+        final UUID userId = UUID.randomUUID();
+        final UUID expectedPcqId = UUID.randomUUID();
+        final UUID existingPartyId = UUID.randomUUID();
+
+        PCSCase pcsCase = mock(PCSCase.class);
+        when(pcsCase.getUserPcqId()).thenReturn(expectedPcqId.toString());
+
+        UserInfo userDetails = mock(UserInfo.class);
+        when(userDetails.getUid()).thenReturn(userId.toString());
+        when(securityContextService.getCurrentUserDetails()).thenReturn(userDetails);
+
+        PcsCaseEntity existingPcsCaseEntity = new PcsCaseEntity();
+        PartyEntity existingPartyEntity = new PartyEntity();
+        existingPartyEntity.setId(existingPartyId);
+        existingPartyEntity.setIdamId(userId);
+        existingPcsCaseEntity.addParty(existingPartyEntity);
+
+        when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(existingPcsCaseEntity));
+
+        // When
+        underTest.patchCase(CASE_REFERENCE, pcsCase);
+
+        // Then
+        verify(pcsCaseRepository).save(pcsCaseEntityCaptor.capture());
+        PcsCaseEntity savedEntity = pcsCaseEntityCaptor.getValue();
+        assertThat(savedEntity.getParties())
+            .hasSize(1)
+            .allSatisfy(
+                party -> {
+                    assertThat(party.getId()).isEqualTo(existingPartyId);
+                    assertThat(party.getPcqId()).isEqualTo(expectedPcqId);
+                }
+            );
+
     }
 
     private AddressEntity stubAddressUKModelMapper(AddressUK addressUK) {
