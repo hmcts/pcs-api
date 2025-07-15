@@ -435,6 +435,7 @@ tasks.withType(CftlibExec).configureEach {
   environment 'POC_APIS_URL', 'http://localhost:3206'
   environment 'SPRING_FLYWAY_ENABLED', 'true'
   environment 'SPRING_PROFILES_ACTIVE', 'dev'
+  environment 'XUI_JURISDICTIONS', 'PCS'
 }
 
 tasks.register('highLevelDataSetup', JavaExec) {
