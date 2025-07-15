@@ -23,7 +23,7 @@ test.beforeEach(async ({ page }, testInfo) => {
   });
 });
 
-test.describe.skip('[Create Case Flow With Address]  @Master @nightly', async () => {
+test.describe('[Create Case Flow With Address]  @Master @nightly', async () => {
 
   test('Dropdown Address Selection Flow - should create case sucessfully', async () => {
     await performAction('click','Create case');
@@ -43,13 +43,13 @@ test.describe.skip('[Create Case Flow With Address]  @Master @nightly', async ()
     await performAction('fill', "Applicant's forename", caseData.applicantFirstName);
     await performAction('click', 'Submit');
     await performValidation("bannerAlert", {message: "Case #.* has been created."});
-    await performValidation('formLabel', "Applicant's forename", {value:'AutomationTestUser'});
+    await performValidation('formLabelValue', "Applicant's forename", {value:'AutomationTestUser'});
     await performAction('clickTab', 'Property Details');
-    await performValidation('formLabelValueNotNull', 'Building and Street');
-    await performValidation('formLabelValueNotNull', 'Address Line 2');
-    await performValidation('formLabelValueNotNull', 'Town or City');
-    await performValidation('formLabelValueNotNull', 'Postcode/Zipcode');
-    await performValidation('formLabelValueNotNull', 'Country');
+    await performValidation('formLabelValue', 'Building and Street');
+    await performValidation('formLabelValue', 'Address Line 2');
+    await performValidation('formLabelValue', 'Town or City');
+    await performValidation('formLabelValue', 'Postcode/Zipcode');
+    await performValidation('formLabelValue', 'Country');
     }
   );
 
@@ -73,16 +73,12 @@ test.describe.skip('[Create Case Flow With Address]  @Master @nightly', async ()
     await performAction('fill', "Applicant's forename", caseData.applicantFirstName);
     await performAction('click', 'Submit');
     await performValidation("bannerAlert", {message: "Case #.* has been created."});
-    await performValidation('formLabel', "Applicant's forename", {value:'AutomationTestUser'});
+    await performValidation('formLabelValue', "Applicant's forename", {value:'AutomationTestUser'});
     await performAction('clickTab', 'Property Details');
-    await performValidation('formLabel', 'Building and Street', {value:caseData.manualBuildingAndStreet});
-    await performValidation('formLabel', 'Address Line 2', {value:caseData.addressLine2});
-    await performValidation('formLabel', 'Town or City', {value:caseData.manualTownOrCity});
-    await performValidation('formLabel', 'Postcode/Zipcode', {value:caseData.manualPostcode});
-    await performValidation('formLabel', 'Country', {value:caseData.manualCountry});
-  });
-
-  test.afterEach(async () => {
-    await performAction('click', 'Sign out');
+    await performValidation('formLabelValue', 'Building and Street', {value:caseData.manualBuildingAndStreet});
+    await performValidation('formLabelValue', 'Address Line 2', {value:caseData.addressLine2});
+    await performValidation('formLabelValue', 'Town or City', {value:caseData.manualTownOrCity});
+    await performValidation('formLabelValue', 'Postcode/Zipcode', {value:caseData.manualPostcode});
+    await performValidation('formLabelValue', 'Country', {value:caseData.manualCountry});
   });
 });

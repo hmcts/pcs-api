@@ -9,7 +9,6 @@ import {AttributeValidation} from "@utils/validations/element-validations/attrib
 import {CountValidation} from "@utils/validations/element-validations/count.validation";
 import {VisibilityValidation} from "@utils/validations/element-validations/visibility.validation";
 import {FormLabelValueValidation} from "@utils/validations/element-validations/formLabelValue.validation";
-import {FormLabelValueNullValidation} from "@utils/validations/element-validations/formLabelValueNotNull.validation";
 
 export class ValidationRegistry {
   private static validations: Map<string, IValidation> = new Map([
@@ -22,8 +21,7 @@ export class ValidationRegistry {
     ['attribute', new AttributeValidation()],
     ['css', new CssValidation()],
     ['bannerAlert', new BannerAlertValidation()],
-    ['formLabel', new FormLabelValueValidation()],
-    ['formLabelValueNotNull', new FormLabelValueNullValidation()]
+    ['formLabelValue', new FormLabelValueValidation()],
   ]);
 
   static getValidation(validationType: string): IValidation {

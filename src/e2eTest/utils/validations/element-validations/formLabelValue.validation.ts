@@ -2,9 +2,17 @@ import { Page, expect, Locator } from '@playwright/test';
 import { IValidation, ValidationData } from '../../interfaces/validation.interface';
 
 export class FormLabelValueValidation implements IValidation {
-  async validate(page: Page, fieldName: string, data: ValidationData): Promise<void> {
+  async validate(page: Page, fieldName: string, data?: ValidationData): Promise<void> {
     const valueLocator = await this.findFieldValueLocator(page, fieldName);
-    await expect(valueLocator).toHaveText(String(data.value));
+
+    if (data?.value !== undefined) {
+      await expect(valueLocator).toHaveText(String(data.value));
+    } else {
+      const value = await valueLocator.textContent();
+      if (!value?.trim()) {
+        throw new Error(`Value for "${fieldName}" is empty`);
+      }
+    }
   }
 
   private async findFieldValueLocator(page: Page, fieldName: string): Promise<Locator> {
