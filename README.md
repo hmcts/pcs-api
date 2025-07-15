@@ -20,6 +20,17 @@ To build the project execute the following command:
 ```
 Above command starts PCS API + CCD & all dependencies
 
+This will start several containers:
+
+| Container                         | Port |
+|-----------------------------------|------|
+| PCS-API                           | 3206 |
+| XUI Manage case (UI Access point) | 3000 |
+| Elastic search                    | 9200 |
+| Postgres Database                 | 6432 |
+| IDAM Simulator                    | 5062 |
+| XUI Manage org                    | 3001 |
+
 Once successfully loaded open XUI at http://localhost:3000
 See CftlibConfig.java for users and login details.
 
@@ -52,17 +63,6 @@ from the PCS AAT key vault:
 
 
 Finally, run the service with the `bootWithCCD` task as above.
-
-This will start several containers:
-
-| Container                         | Port |
-|-----------------------------------|------|
-| PCS-API                           | 3206 |
-| XUI Manage case (UI Access point) | 3000 |
-| Elastic search                    | 9200 |
-| Postgres Database                 | 6432 |
-| IDAM Simulator                    | 5062 |
-| XUI Manage org                    | 3001 |
 
 In order to test if the API is healthy, you can call its health endpoint:
 
