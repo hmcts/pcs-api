@@ -173,6 +173,36 @@ Above command starts PCS API + CCD & all dependencies
 Once successfully loaded open XUI at http://localhost:3000
 See CftlibConfig.java for users and login details.
 
+By default, this runs with local instance of IDAM and
+S2S services. However sometimes it may be required to run
+with the AAT instances of those services, (for example when running both pcs-frontend and pcs-api locally).
+
+To do this, edit the `build.gradle` file before running the `bootWithCCD` task and replace
+
+```
+authMode = AuthMode.Local
+```
+
+with
+
+```
+authMode = AuthMode.AAT
+```
+
+Then set the following environment variables based on the value below or named secret
+from the PCS AAT key vault:
+
+| Environment Variable     | Value or Secret Name                                             |
+|--------------------------|------------------------------------------------------------------|
+| LOCATION_REF_URL         | http://rd-location-ref-api-aat.service.core-compute-aat.internal |
+| PCS_API_S2S_SECRET       | secret: pcs-api-s2s-secret                                       |
+| IDAM_CLIENT_SECRET       | secret: pcs-api-idam-secret                                      |
+| PCS_IDAM_SYSTEM_USERNAME | secret: idam-system-user-name                                    |
+| PCS_IDAM_SYSTEM_PASSWORD | secret: idam-system-user-password                                |
+
+
+Finally, run the service with the `bootWithCCD` task as above.
+
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details
