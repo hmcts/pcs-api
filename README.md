@@ -136,9 +136,10 @@ The following environment variables are needed to run the tests:
 
 - IDAM_SYSTEM_USERNAME
 - IDAM_SYSTEM_USER_PASSWORD
-- PCS_FRONTEND_IDAM_USER_TEMP_PASSWORD
+- PCS_IDAM_TEST_USER_PASSWORD
 - PCS_API_IDAM_SECRET
-- TEST_E2E_URL_EXUI
+- MANAGE_CASE_BASE_URL
+- CHANGE_ID (same as PR number - Required only pointing to Preview env)
 
 The e2e suite can be run with the following command:
 
@@ -149,6 +150,18 @@ There are also several custom test scripts available:
 
 - `yarn test:changed` - runs only changed spec files
 - `yarn test:chrome` - runs the full E2E suite in Chrome
+
+To open generated Allure report
+
+```bash
+yarn test:openAllureReport
+```
+Permanent IDAM Users:
+All permanent users needs to be added to ./data/permanent-users.data
+Temporary IDAM Users:
+During test execution, temporary users are automatically created and tracked in a file ./data/.temp-users.data.json
+Update ./config/global-setup.config with list of roles for which temporary users needs to be created along with the key/name to
+identify them.
 
 ### Running pcs-api with local CCD
 
