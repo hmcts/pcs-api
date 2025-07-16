@@ -1,17 +1,11 @@
 package uk.gov.hmcts.reform.pcs.ccd.entity;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.NamedAttributeNode;
-import jakarta.persistence.NamedEntityGraph;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.OneToOne;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.data.jpa.repository.EntityGraph;
+import uk.gov.hmcts.reform.pcs.ccd.domain.PaymentStatus;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -44,6 +38,11 @@ public class PcsCaseEntity {
 
     @OneToOne(cascade = ALL)
     private AddressEntity propertyAddress;
+
+    private Integer caseManagementLocation;
+
+    @Enumerated(EnumType.STRING)
+    private PaymentStatus paymentStatus;
 
     @OneToMany(mappedBy = "pcsCase", fetch = LAZY, cascade = ALL)
     @JsonManagedReference

@@ -56,6 +56,9 @@ public class PostCodeCourtService {
             .toList();
     }
 
+    public List<PostCodeCourtEntity> findPostCodeEpimId(String postcode){
+        return getPostcodeCourtMappings(postcode);
+    }
     private List<PostCodeCourtEntity> getPostcodeCourtMappings(String postcode) {
 
         postcode = postcode.replaceAll("\\s", "").toUpperCase(Locale.ROOT);

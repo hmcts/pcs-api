@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.PaymentStatus;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
@@ -34,6 +35,7 @@ public class PcsCaseService {
         pcsCaseEntity.setApplicantForename(pcsCase.getApplicantForename());
         pcsCaseEntity.setApplicantSurname(pcsCase.getApplicantSurname());
         pcsCaseEntity.setPropertyAddress(addressEntity);
+        pcsCaseEntity.setPaymentStatus(pcsCase.getPaymentStatus());
 
         pcsCaseRepository.save(pcsCaseEntity);
     }
@@ -58,6 +60,13 @@ public class PcsCaseService {
         if (pcsCase.getUserPcqId() != null) {
             UUID pcqId = UUID.fromString(pcsCase.getUserPcqId());
             setPcqIdForCurrentUser(pcqId, pcsCaseEntity);
+        }
+
+        if (pcsCase.getPaymentStatus() != null) {
+            pcsCaseEntity.setPaymentStatus(pcsCase.getPaymentStatus());
+        }
+        if(pcsCase.getCaseManagementLocation() != null) {
+            pcsCaseEntity.setCaseManagementLocation(pcsCase.getCaseManagementLocation());
         }
 
         pcsCaseRepository.save(pcsCaseEntity);
