@@ -164,6 +164,8 @@ ccd:
         value: .security*,.watches,.triggered_watches,.watcher-history-*,.logstash_dead_letter,.ml*
     persistence:
       enabled: true
+    volumeClaimTemplate:
+      storageClassName: azurefile-csi
     ingress:
       enabled: false
   logstash:
