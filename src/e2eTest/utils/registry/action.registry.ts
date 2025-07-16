@@ -1,6 +1,6 @@
-// action.registry.ts
 import { IAction } from '../interfaces/action.interface';
 import { ClickAction } from '../actions/element-actions/click.action';
+import { ClickTabAction } from '../actions/element-actions/clickTab.action';
 import { FillAction } from '../actions/element-actions/fill.action';
 import { ClearAction } from '../actions/element-actions/clear.action';
 import { CheckAction } from '../actions/element-actions/check.action';
@@ -12,6 +12,7 @@ import { navigateToUrl } from "@utils/actions/custom-actions/navigateToUrl.actio
 export class ActionRegistry {
   private static actions: Map<string, IAction> = new Map([
     ['click', new ClickAction()],
+    ['clickTab', new ClickTabAction()],
     ['fill', new FillAction()],
     ['clear', new ClearAction()],
     ['check', new CheckAction()],
