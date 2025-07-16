@@ -1,4 +1,3 @@
-// actions/click.action.ts
 import { Page } from '@playwright/test';
 import { IAction } from '../../interfaces/action.interface';
 
