@@ -21,7 +21,6 @@ java:
         - name: idam-system-user-password
           alias: PCS_IDAM_SYSTEM_PASSWORD
   environment:
-    DB_PORT: "5432"
     PCS_DB_HOST: "{{ .Release.Name }}-postgresql"
     PCS_DB_USER_NAME: "{{ .Values.postgresql.auth.username}}"
     PCS_DB_NAME: "{{ .Values.postgresql.auth.database}}"
