@@ -165,6 +165,9 @@ ccd:
     persistence:
       enabled: true
     volumeClaimTemplate:
+      resources:
+        requests:
+          storage: 1Gi
       storageClassName: azurefile-csi
     ingress:
       enabled: false
