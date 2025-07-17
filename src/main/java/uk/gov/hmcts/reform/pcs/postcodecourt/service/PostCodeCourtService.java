@@ -56,7 +56,7 @@ public class PostCodeCourtService {
             .toList();
     }
 
-      private List<PostCodeCourtEntity> getPostcodeCourtMappings(String postcode) {
+    private List<PostCodeCourtEntity> getPostcodeCourtMappings(String postcode) {
 
         postcode = postcode.replaceAll("\\s", "").toUpperCase(Locale.ROOT);
 
