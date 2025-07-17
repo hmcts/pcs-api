@@ -35,7 +35,6 @@ public class ProcessClaimPaymentTest extends BaseEventTest {
     @Mock
     private PcsCaseService pcsCaseService;
 
-
     private Event<PCSCase, UserRole, State> configuredEvent;
 
     @BeforeEach
@@ -64,7 +63,7 @@ public class ProcessClaimPaymentTest extends BaseEventTest {
         AddressUK propertyAddress = mock(AddressUK.class);
 
         when(caseData.getPropertyAddress()).thenReturn(propertyAddress);
-        when(propertyAddress.getPostCode()).thenReturn("AB1 2CD");
+        when(propertyAddress.getPostCode()).thenReturn("M37 5SF");
 
         EventPayload<PCSCase, State> eventPayload = new EventPayload<>(caseReference, caseData, null);
 

@@ -50,9 +50,6 @@ public class PCSCase {
     @CCD(searchable = false, access = {CitizenAccess.class})
     private YesOrNo userPcqIdSet;
 
-    @CCD
-    private String pageHeadingMarkdown;
-
     @CCD(
         label = "Case management location",
         access = {CitizenAccess.class, CaseworkerAccess.class}
@@ -71,6 +68,8 @@ public class PCSCase {
         access = {CitizenAccess.class, CaseworkerAccess.class}
     )
     private PaymentType paymentType;
+
+    private String pageHeadingMarkdown;
 
     private String claimPaymentTabMarkdown;
 

@@ -68,7 +68,7 @@ public class ProcessClaimPayment implements CCDConfig<PCSCase, State, UserRole> 
             log.error("Case management location couldn't be allocated for postcode: {}", postCode);
             return null;
         }
-        log.info("Case management venue allocation found for PostCode {}", postCode);
+        log.info("Case management location allocated found for PostCode {}", postCode);
         return results.getFirst().epimId();
     }
 }
