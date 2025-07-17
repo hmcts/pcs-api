@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.pcs.ccd.domain;
 
 import lombok.Builder;
 import lombok.Data;
+import lombok.ToString;
 import uk.gov.hmcts.ccd.sdk.External;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
@@ -69,8 +70,10 @@ public class PCSCase {
     )
     private PaymentType paymentType;
 
+    @ToString.Exclude
     private String pageHeadingMarkdown;
 
+    @ToString.Exclude
     private String claimPaymentTabMarkdown;
 
 }
