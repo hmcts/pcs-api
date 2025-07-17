@@ -304,6 +304,8 @@ dependencies {
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-security', version: springFrameworkBootVersion
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-data-jpa', version: springFrameworkBootVersion
 
+  implementation 'io.pebbletemplates:pebble-spring-boot-starter:3.2.2'
+
   runtimeOnly group: 'org.flywaydb', name: 'flyway-database-postgresql', version: flywayVersion
 
   implementation group: 'org.flywaydb', name: 'flyway-core', version: flywayVersion
@@ -384,9 +386,12 @@ bootJar {
 }
 
 flyway {
-  url = System.getenv('FLYWAY_URL')
-  user = System.getenv('FLYWAY_USER')
-  password = System.getenv('FLYWAY_PASSWORD')
+//  url = System.getenv('FLYWAY_URL')
+//  user = System.getenv('FLYWAY_USER')
+//  password = System.getenv('FLYWAY_PASSWORD')
+  url = 'jdbc:postgresql://localhost:6432/postgres'
+  user = 'postgres'
+  password = ''
   baselineOnMigrate = true
   baselineVersion = '000'
 }

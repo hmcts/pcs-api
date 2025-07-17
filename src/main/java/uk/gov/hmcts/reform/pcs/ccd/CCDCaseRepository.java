@@ -8,6 +8,7 @@ import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.renderer.TrialTemplateRenderer;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 
@@ -20,6 +21,7 @@ public class CCDCaseRepository extends DecentralisedCaseRepository<PCSCase> {
 
     private final PcsCaseRepository pcsCaseRepository;
     private final ModelMapper modelMapper;
+    private final TrialTemplateRenderer trialTemplateRenderer;
 
     /**
      * Invoked by CCD to load PCS cases by reference.
@@ -30,11 +32,15 @@ public class CCDCaseRepository extends DecentralisedCaseRepository<PCSCase> {
 
         PcsCaseEntity pcsCaseEntity = loadCaseData(caseReference);
 
-        return PCSCase.builder()
+        PCSCase pcsCase = PCSCase.builder()
             .applicantForename(pcsCaseEntity.getApplicantForename())
             .applicantSurname(pcsCaseEntity.getApplicantSurname())
             .propertyAddress(convertAddress(pcsCaseEntity.getPropertyAddress()))
             .build();
+
+        pcsCase.setMarkdown(trialTemplateRenderer.render());
+
+        return pcsCase;
     }
 
     private AddressUK convertAddress(AddressEntity address) {

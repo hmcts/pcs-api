@@ -73,6 +73,9 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
         builder.tab("summary", "Property Details")
             .field(PCSCase::getPropertyAddress);
 
+        builder.tab("party", "Party Details")
+                .field("markdown");
+
         builder.tab("CaseHistory", "History")
             .field("caseHistory");
 

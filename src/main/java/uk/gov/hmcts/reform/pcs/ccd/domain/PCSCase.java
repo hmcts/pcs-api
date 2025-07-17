@@ -41,4 +41,6 @@ public class PCSCase {
         access = {CitizenAccess.class, CaseworkerAccess.class}
     )
     private PartyType partyType;
+    private String markdown;
+
 }
