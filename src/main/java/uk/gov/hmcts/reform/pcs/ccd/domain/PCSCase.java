@@ -70,10 +70,8 @@ public class PCSCase {
     )
     private PaymentType paymentType;
 
-    @ToString.Exclude
     private String pageHeadingMarkdown;
 
-    @ToString.Exclude
     private String claimPaymentTabMarkdown;
 
 }
