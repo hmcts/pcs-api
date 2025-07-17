@@ -168,7 +168,7 @@ ccd:
       resources:
         requests:
           storage: 1Gi
-      storageClassName: managed-LRS
+      storageClassName: managed-lrs
     ingress:
       enabled: false
   logstash:
