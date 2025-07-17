@@ -77,7 +77,7 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
         builder.tab("CaseHistory", "History")
             .field("caseHistory");
 
-        builder.tab("ClaimPayment", "Payment")
+        builder.tab("ClaimPayment", "Service Request")
             .field(PCSCase::getUserPcqId)
             .label("claimPaymentTabMarkdownLabel", null, "${claimPaymentTabMarkdown}")
             .field("claimPaymentTabMarkdown", NEVER_SHOW);

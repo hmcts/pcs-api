@@ -114,6 +114,7 @@ class PcsCaseServiceTest {
         PcsCaseEntity existingPcsCaseEntity = mock(PcsCaseEntity.class);
 
         when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(existingPcsCaseEntity));
+        when(pcsCase.getCaseManagementLocation()).thenReturn(null);
 
         // When
         underTest.patchCase(CASE_REFERENCE, pcsCase);

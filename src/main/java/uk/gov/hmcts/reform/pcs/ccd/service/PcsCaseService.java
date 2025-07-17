@@ -6,7 +6,6 @@ import org.springframework.stereotype.Service;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.domain.PaymentStatus;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
@@ -65,7 +64,8 @@ public class PcsCaseService {
         if (pcsCase.getPaymentStatus() != null) {
             pcsCaseEntity.setPaymentStatus(pcsCase.getPaymentStatus());
         }
-        if(pcsCase.getCaseManagementLocation() != null) {
+
+        if (pcsCase.getCaseManagementLocation() != null) {
             pcsCaseEntity.setCaseManagementLocation(pcsCase.getCaseManagementLocation());
         }
 

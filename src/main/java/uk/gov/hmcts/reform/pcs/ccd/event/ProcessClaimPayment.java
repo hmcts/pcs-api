@@ -3,7 +3,12 @@ package uk.gov.hmcts.reform.pcs.ccd.event;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
-import uk.gov.hmcts.ccd.sdk.api.*;
+
+import uk.gov.hmcts.ccd.sdk.api.CCDConfig;
+import uk.gov.hmcts.ccd.sdk.api.ConfigBuilder;
+import uk.gov.hmcts.ccd.sdk.api.Event;
+import uk.gov.hmcts.ccd.sdk.api.EventPayload;
+import uk.gov.hmcts.ccd.sdk.api.Permission;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
@@ -12,6 +17,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.claimpayment.ClaimPayment;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.postcodecourt.entity.PostCodeCourtEntity;
+import uk.gov.hmcts.reform.pcs.postcodecourt.model.Court;
 import uk.gov.hmcts.reform.pcs.postcodecourt.service.PostCodeCourtService;
 
 import java.util.List;
@@ -44,7 +50,7 @@ public class ProcessClaimPayment implements CCDConfig<PCSCase, State, UserRole> 
             .add(new ClaimPayment());
     }
 
-    private void submit(EventPayload<PCSCase, State>  payload){
+    private void submit(EventPayload<PCSCase, State> payload) {
 
         PCSCase pcsCase = payload.caseData();
         pcsCase.setPaymentStatus(PaymentStatus.PAID);
@@ -56,13 +62,14 @@ public class ProcessClaimPayment implements CCDConfig<PCSCase, State, UserRole> 
 
     private Integer getCourtManagementLocation(String postCode) {
 
-        List<PostCodeCourtEntity> results = postCodeCourtService.findPostCodeEpimId(postCode);
+        List<Court> results = postCodeCourtService.getCountyCourtsByPostCode(
+            postCode);
 
         if (results.isEmpty()) {
             log.error("Case management location couldn't be allocated for postcode: {}", postCode);
             return null;
         }
         log.info("Case management venue allocation found for PostCode {}", postCode);
-        return results.getFirst().getId().getEpimId();
+        return results.getFirst().epimId();
     }
 }

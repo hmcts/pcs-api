@@ -61,8 +61,8 @@ public class CCDCaseRepository extends DecentralisedCaseRepository<PCSCase> {
             .orElse(false);
 
         pcsCase.setUserPcqIdSet(YesOrNo.from(pcqIdSet));
-        pcsCase.setClaimPaymentTabMarkdown(claimPaymentTabRenderer.render
-            (caseRef,pcsCaseEntity.getPaymentStatus().getLabel()));
+        pcsCase.setClaimPaymentTabMarkdown(claimPaymentTabRenderer.render(
+            caseRef,pcsCaseEntity.getPaymentStatus().getLabel()));
         String formattedAddress = formatAddress(pcsCase.getPropertyAddress());
         pcsCase.setPageHeadingMarkdown("""
                                        <h3 class="govuk-heading-s">
@@ -97,6 +97,7 @@ public class CCDCaseRepository extends DecentralisedCaseRepository<PCSCase> {
         return pcsCaseRepository.findByCaseReference(caseRef)
             .orElseThrow(() -> new CaseNotFoundException(caseRef));
     }
+
     private String formatAddress(AddressUK address) {
         if (address == null) {
             return null;
