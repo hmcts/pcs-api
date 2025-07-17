@@ -61,14 +61,13 @@ public class ProcessClaimPayment implements CCDConfig<PCSCase, State, UserRole> 
 
     private Integer getCourtManagementLocation(String postCode) {
 
-        List<Court> results = postCodeCourtService.getCountyCourtsByPostCode(
-            postCode);
+        List<Court> results = postCodeCourtService.getCountyCourtsByPostCode(postCode);
 
         if (results.isEmpty()) {
             log.error("Case management location couldn't be allocated for postcode: {}", postCode);
             return null;
         }
-        log.info("Case management location allocated found for PostCode {}", postCode);
+        log.info("Case management location allocated for postcode {}", postCode);
         return results.getFirst().epimId();
     }
 }
