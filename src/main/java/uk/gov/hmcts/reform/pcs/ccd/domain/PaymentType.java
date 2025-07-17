@@ -13,8 +13,4 @@ public enum PaymentType implements HasLabel {
 
     private final String label;
 
-    @Override
-    public String getLabel() {
-        return label;
-    }
 }

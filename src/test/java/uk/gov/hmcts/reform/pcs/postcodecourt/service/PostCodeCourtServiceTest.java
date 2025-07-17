@@ -206,6 +206,39 @@ class PostCodeCourtServiceTest {
         verify(postCodeCourtRepository).findByIdPostCodeIn(postcodes, CURRENT_DATE);
     }
 
+    @Test
+    @DisplayName("Should return epimId for case management location")
+    void shoudReturnEpimIdForCaseManagementLocation() {
+        String postCode = "W37RX";
+        int activeEpimId = 76598;
+        PostCodeCourtEntity activeEntity = createPostCodeCourtEntity(postCode, activeEpimId);
+
+        List<String> postcodes = getPostCodeCandidates(postCode);
+
+        when(postCodeCourtRepository.findByIdPostCodeIn(postcodes, CURRENT_DATE))
+            .thenReturn(List.of(activeEntity));
+
+        Integer response = underTest.getCourtManagementLocation(postCode);
+
+        verify(postCodeCourtRepository).findByIdPostCodeIn(postcodes, CURRENT_DATE);
+        assertThat(response).isEqualTo(activeEpimId);
+    }
+
+    @Test
+    @DisplayName("Should return null when epimId not found for case management location")
+    void shouldReturnNullWhenEpimIdNotFoundForCaseManagementLocation() {
+        String postCode = "W37RX";
+
+        List<String> postcodes = getPostCodeCandidates(postCode);
+        when(postCodeCourtRepository.findByIdPostCodeIn(postcodes, CURRENT_DATE))
+            .thenReturn(List.of());
+
+        Integer response = underTest.getCourtManagementLocation(postCode);
+
+        verify(postCodeCourtRepository).findByIdPostCodeIn(postcodes, CURRENT_DATE);
+        assertThat(response).isNull();
+    }
+
     private List<String> getPostCodeCandidates(String postCode) {
         String partialPostcode = postCode;
         List<String> postCodes = new ArrayList<>();

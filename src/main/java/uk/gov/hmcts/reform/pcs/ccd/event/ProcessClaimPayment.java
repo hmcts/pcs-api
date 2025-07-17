@@ -16,10 +16,8 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PaymentStatus;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.claimpayment.ClaimPayment;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
-import uk.gov.hmcts.reform.pcs.postcodecourt.model.Court;
 import uk.gov.hmcts.reform.pcs.postcodecourt.service.PostCodeCourtService;
 
-import java.util.List;
 
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.PCS_CASE_WORKER;
@@ -53,21 +51,9 @@ public class ProcessClaimPayment implements CCDConfig<PCSCase, State, UserRole> 
 
         PCSCase pcsCase = payload.caseData();
         pcsCase.setPaymentStatus(PaymentStatus.PAID);
-        Integer epimId = getCourtManagementLocation(pcsCase.getPropertyAddress().getPostCode());
+        Integer epimId = postCodeCourtService.getCourtManagementLocation(pcsCase.getPropertyAddress().getPostCode());
         pcsCase.setCaseManagementLocation(epimId);
         pcsCaseService.patchCase(payload.caseReference(), pcsCase);
-
     }
 
-    private Integer getCourtManagementLocation(String postCode) {
-
-        List<Court> results = postCodeCourtService.getCountyCourtsByPostCode(postCode);
-
-        if (results.isEmpty()) {
-            log.error("Case management location couldn't be allocated for postcode: {}", postCode);
-            return null;
-        }
-        log.info("Case management location allocated for postcode {}", postCode);
-        return results.getFirst().epimId();
-    }
 }

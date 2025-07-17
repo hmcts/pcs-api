@@ -12,9 +12,5 @@ public enum PaymentStatus implements HasLabel  {
     UNPAID("Unpaid");
 
     private final String label;
-
-    @Override
-    public String getLabel() {
-        return label;
-    }
+    
 }
