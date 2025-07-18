@@ -167,7 +167,7 @@ ccd:
     volumeClaimTemplate:
       resources:
         requests:
-          storage: 1Gi
+          storage: 500Mi
       storageClassName: managed-lrs
     ingress:
       enabled: false
