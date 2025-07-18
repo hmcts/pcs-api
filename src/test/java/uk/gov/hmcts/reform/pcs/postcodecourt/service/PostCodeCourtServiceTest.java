@@ -207,8 +207,8 @@ class PostCodeCourtServiceTest {
     }
 
     @Test
-    @DisplayName("Should return epimId for case management location")
-    void shoudReturnEpimIdForCaseManagementLocation() {
+    @DisplayName("Should return active EpimId for case management location")
+    void shoudReturnActiveEpimIdForCaseManagementLocation() {
         String postCode = "W37RX";
         int activeEpimId = 76598;
         PostCodeCourtEntity activeEntity = createPostCodeCourtEntity(postCode, activeEpimId);
@@ -225,7 +225,7 @@ class PostCodeCourtServiceTest {
     }
 
     @Test
-    @DisplayName("Should return null when epimId not found for case management location")
+    @DisplayName("Should return null when EpimId not found for case management location")
     void shouldReturnNullWhenEpimIdNotFoundForCaseManagementLocation() {
         String postCode = "W37RX";
 
