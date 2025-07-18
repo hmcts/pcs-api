@@ -4,10 +4,13 @@ import lombok.Builder;
 import lombok.Data;
 import uk.gov.hmcts.ccd.sdk.External;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
+import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseworkerAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenAccess;
+
+import java.util.List;
 
 /**
  * The main domain model representing a possessions case.
@@ -49,5 +52,11 @@ public class PCSCase {
 
     @CCD(searchable = false, access = {CitizenAccess.class})
     private YesOrNo userPcqIdSet;
+
+    @CCD(
+        label = "Supporting documents",
+        access = {CitizenAccess.class, CaseworkerAccess.class}
+    )
+    private List<Document> supportingDocuments;
 
 }

@@ -12,6 +12,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.page.createtestcase.ClaimantInformation;
+import uk.gov.hmcts.reform.pcs.ccd.page.createtestcase.DocumentUpload;
 import uk.gov.hmcts.reform.pcs.ccd.page.createtestcase.MakeAClaim;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 
@@ -34,7 +35,8 @@ public class CreateTestCase implements CCDConfig<PCSCase, State, UserRole> {
 
         new PageBuilder(eventBuilder)
             .add(new MakeAClaim())
-            .add(new ClaimantInformation());
+            .add(new ClaimantInformation())
+            .add(new DocumentUpload());
     }
 
     private PCSCase start(EventPayload<PCSCase, State> eventPayload) {
