@@ -38,7 +38,7 @@ function convertRowsToMappings(rows, warnings) {
 
     let sourceEffectiveFrom;
     let sourceEffectiveTo;
-    [mapping.postCode, mapping.epimId, mapping.legislativeCountry, sourceEffectiveFrom, sourceEffectiveTo] = row;
+    [mapping.postCode, mapping.epimsId, mapping.legislativeCountry, sourceEffectiveFrom, sourceEffectiveTo] = row;
 
     mapping.effectiveFrom = convertToDateTime(sourceEffectiveFrom);
     if (!mapping.effectiveFrom) {
