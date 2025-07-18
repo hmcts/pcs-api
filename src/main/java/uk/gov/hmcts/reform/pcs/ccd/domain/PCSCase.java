@@ -50,4 +50,27 @@ public class PCSCase {
     @CCD(searchable = false, access = {CitizenAccess.class})
     private YesOrNo userPcqIdSet;
 
+    @CCD(
+        label = "Case management location",
+        access = {CitizenAccess.class, CaseworkerAccess.class}
+    )
+    private Integer caseManagementLocation;
+
+    @CCD(
+        label = "Payment status",
+        access = {CitizenAccess.class, CaseworkerAccess.class}
+    )
+    private PaymentStatus paymentStatus;
+
+    @CCD(
+        label = "Amount to pay",
+        hint = "£400",
+        access = {CitizenAccess.class, CaseworkerAccess.class}
+    )
+    private PaymentType paymentType;
+
+    private String pageHeadingMarkdown;
+
+    private String claimPaymentTabMarkdown;
+
 }

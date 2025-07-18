@@ -56,6 +56,18 @@ public class PostCodeCourtService {
             .toList();
     }
 
+    public Integer getCourtManagementLocation(String postCode) {
+
+        List<PostCodeCourtEntity> results = getPostcodeCourtMappings(postCode);
+
+        if (results.isEmpty()) {
+            log.error("Case management location couldn't be allocated for postcode: {}", postCode);
+            return null;
+        }
+        log.info("Case management location allocated for postcode {}", postCode);
+        return results.getFirst().getId().getEpimId();
+    }
+
     private List<PostCodeCourtEntity> getPostcodeCourtMappings(String postcode) {
 
         postcode = postcode.replaceAll("\\s", "").toUpperCase(Locale.ROOT);
