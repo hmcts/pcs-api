@@ -8,6 +8,7 @@ import {BannerAlertValidation} from "@utils/validations/element-validations/bann
 import {AttributeValidation} from "@utils/validations/element-validations/attribute.validation";
 import {CountValidation} from "@utils/validations/element-validations/count.validation";
 import {VisibilityValidation} from "@utils/validations/element-validations/visibility.validation";
+import { PageTitleValidation } from "@utils/validations/element-validations/pageTitle.validation";
 
 export class ValidationRegistry {
   private static validations: Map<string, IValidation> = new Map([
@@ -19,7 +20,8 @@ export class ValidationRegistry {
     ['count', new CountValidation()],
     ['attribute', new AttributeValidation()],
     ['css', new CssValidation()],
-    ['bannerAlert', new BannerAlertValidation()]
+    ['bannerAlert', new BannerAlertValidation()],
+    ['pageTitle', new PageTitleValidation()]
   ]);
 
   static getValidation(validationType: string): IValidation {

@@ -7,6 +7,7 @@ import {
   performValidation
 } from '@utils/controller';
 import {caseData} from "@data/case.data";
+import {pageHeader} from "@data/constants.data";
 import configData from "@config/test.config";
 
 
@@ -87,3 +88,33 @@ test.describe.skip('[Create Case Flow With Address]  @Master @nightly', async ()
     await performAction('click', 'Sign out');
   });
 });
+test('Claim type screen - View Claim type screen and click Yes', async () => {
+  //1274 user has selected options on claimant type screen
+  await performAction('click','Continue');
+  await performValidation('pageTitle', { title: pageHeader.claimTypePageHeader });
+  await performValidation('text', 'h1', { expected: pageHeader.claimTypePageHeader });
+
+  //select claim type yes
+  await performAction('click','Yes');
+  await performAction('click','Continue');
+});
+
+test('Claim type screen - View Claim type screen and click No', async () => {
+  //1274 user has selected options on claimant type screen
+  await performAction('click','Continue');
+  //select claim type yes
+  await performAction('click','No');
+  await performAction('click','Continue');
+});
+
+test('Claimant Name page - View the page and verify the case reference number and options on tge page', async () => {
+//Navigate to the page???????????????????????????????
+
+  await performValidation('pageTitle', { title: pageHeader.claimantNamePageHeader });
+  await performValidation('text', 'h1', { expected: pageHeader.claimantNamePageHeader });
+
+})
+
+
+
+
