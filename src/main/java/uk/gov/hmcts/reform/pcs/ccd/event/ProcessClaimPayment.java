@@ -25,7 +25,6 @@ import static uk.gov.hmcts.reform.pcs.ccd.domain.State.CASE_ISSUED;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.processClaimPayment;
 
 @Component
-@Slf4j
 @AllArgsConstructor
 public class ProcessClaimPayment implements CCDConfig<PCSCase, State, UserRole> {
 

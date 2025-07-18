@@ -225,7 +225,7 @@ class PostCodeCourtServiceTest {
     }
 
     @Test
-    @DisplayName("Should return null when EpimId not found for case management location")
+    @DisplayName("Should return null when active EpimId not found for case management location")
     void shouldReturnNullWhenEpimIdNotFoundForCaseManagementLocation() {
         String postCode = "W37RX";
 
