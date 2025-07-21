@@ -169,6 +169,30 @@ ccd:
         requests:
           storage: 500Mi
       storageClassName: managed-lrs
+    lifecycle:
+      postStart:
+        exec:
+          command:
+            - bash
+            - -c
+            - |
+              #!/bin/bash
+              # Add a template to adjust number of shards/replicas for ephemeral single-node cluster
+              TEMPLATE_NAME=default_ephemeral_template
+              INDEX_PATTERN="*"
+              SHARD_COUNT=1
+              REPLICA_COUNT=0
+              ES_URL=http://localhost:9200
+              while [[ "$(curl -s -o /dev/null -w '%{http_code}' $ES_URL)" != "200" ]]; do sleep 1; done
+              curl -XPUT "$ES_URL/_template/$TEMPLATE_NAME" \
+                -H 'Content-Type: application/json' \
+                -d'{
+                  "index_patterns": ["'"$INDEX_PATTERN"'"],
+                  "settings": {
+                    "number_of_shards": '"$SHARD_COUNT"',
+                    "number_of_replicas": '"$REPLICA_COUNT"'
+                  }
+                }'
     ingress:
       enabled: false
   logstash:
