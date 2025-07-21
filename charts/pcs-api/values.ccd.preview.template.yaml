@@ -158,8 +158,6 @@ ccd:
     extraEnvs:
       - name: discovery.type
         value: single-node
-      - name: cluster.initial_master_nodes
-        value: ""
       - name: action.auto_create_index
         value: .security*,.watches,.triggered_watches,.watcher-history-*,.logstash_dead_letter,.ml*
     persistence:
@@ -169,6 +167,7 @@ ccd:
         requests:
           storage: 500Mi
       storageClassName: managed-lrs
+    clusterHealthCheckParams: "wait_for_status=yellow&timeout=5s"
     lifecycle:
       postStart:
         exec:
