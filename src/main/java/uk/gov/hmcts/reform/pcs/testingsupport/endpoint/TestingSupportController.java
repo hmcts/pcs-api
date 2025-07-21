@@ -1,6 +1,5 @@
 package uk.gov.hmcts.reform.pcs.testingsupport.endpoint;
 
-import com.azure.core.annotation.QueryParam;
 import com.github.kagkarlsson.scheduler.SchedulerClient;
 import com.github.kagkarlsson.scheduler.task.Task;
 import io.swagger.v3.oas.annotations.Operation;
@@ -13,7 +12,6 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -22,9 +20,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import uk.gov.hmcts.reform.pcs.document.service.DocAssemblyService;
 import uk.gov.hmcts.reform.pcs.document.service.exception.DocAssemblyException;
-import uk.gov.hmcts.reform.pcs.postcodecourt.model.EligibilityResult;
-import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
-import uk.gov.hmcts.reform.pcs.postcodecourt.service.EligibilityService;
 import uk.gov.hmcts.reform.pcs.testingsupport.model.DocAssemblyRequest;
 
 import java.net.URI;
@@ -43,18 +38,15 @@ public class TestingSupportController {
     private final SchedulerClient schedulerClient;
     private final Task<Void> helloWorldTask;
     private final DocAssemblyService docAssemblyService;
-    private final EligibilityService eligibilityService;
 
     public TestingSupportController(
         SchedulerClient schedulerClient,
         @Qualifier("helloWorldTask") Task<Void> helloWorldTask,
-        DocAssemblyService docAssemblyService,
-        EligibilityService eligibilityService
+        DocAssemblyService docAssemblyService
     ) {
         this.schedulerClient = schedulerClient;
         this.helloWorldTask = helloWorldTask;
         this.docAssemblyService = docAssemblyService;
-        this.eligibilityService = eligibilityService;
     }
 
     @Operation(
@@ -165,28 +157,6 @@ public class TestingSupportController {
         }
     }
 
-
-    @Operation(
-        summary = "Checks the eligibility for a given property postcode",
-        description = "Checks the eligibility for a given property postcode, and returns a payload "
-            + "with an eligibility status."
-    )
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Eligibilty check completed successfully"),
-        @ApiResponse(responseCode = "500", description = "Internal server error")
-    })
-    @GetMapping(value = "/claim-eligibility", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public EligibilityResult getPostcodeEligibility(
-        @Parameter(
-            description = "Property postcode to check eligibility for",
-            required = true
-        )
-        @QueryParam("postcode") String postcode,
-        @Parameter(description = "Legislative country for property, (for use with cross border postcodes)")
-        @QueryParam("legislativeCountry") LegislativeCountry legislativeCountry
-    ) {
-        return eligibilityService.checkEligibility(postcode, legislativeCountry);
-    }
 
     private ResponseEntity<String> handleDocAssemblyException(DocAssemblyException e) {
         String message = e.getMessage();
