@@ -13,7 +13,6 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
