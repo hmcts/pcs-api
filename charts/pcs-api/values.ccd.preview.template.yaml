@@ -183,16 +183,28 @@ ccd:
               SHARD_COUNT=1
               REPLICA_COUNT=0
               ES_URL=http://localhost:9200
-              while [[ "$(curl -s -o /dev/null -w '%{http_code}' $ES_URL)" != "200" ]]; do sleep 1; done
-              curl -XPUT "$ES_URL/_template/$TEMPLATE_NAME" \
-                -H 'Content-Type: application/json' \
-                -d'{
-                  "index_patterns": ["'"$INDEX_PATTERN"'"],
-                  "settings": {
-                    "number_of_shards": '"$SHARD_COUNT"',
-                    "number_of_replicas": '"$REPLICA_COUNT"'
-                  }
-                }'
+
+              # Wait up to 60 seconds for Elasticsearch to be available
+              for i in {1..60}; do
+                STATUS=$(curl -s -o /dev/null -w '%{http_code}' $ES_URL)
+                if [ "$STATUS" == "200" ]; then
+                  echo "Elasticsearch is up. Applying index template..."
+                  curl -XPUT "$ES_URL/_template/$TEMPLATE_NAME" \
+                    -H 'Content-Type: application/json' \
+                    -d '{
+                      "index_patterns": ["'"$INDEX_PATTERN"'"],
+                      "settings": {
+                        "number_of_shards": '"$SHARD_COUNT"',
+                        "number_of_replicas": '"$REPLICA_COUNT"'
+                      }
+                    }'
+                  exit 0
+                fi
+                sleep 1
+              done
+
+              echo "Elasticsearch did not become available in time. Skipping template setup."
+              exit 0
     ingress:
       enabled: false
   logstash:
