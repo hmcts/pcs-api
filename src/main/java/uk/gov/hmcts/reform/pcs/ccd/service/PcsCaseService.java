@@ -34,7 +34,6 @@ public class PcsCaseService {
         pcsCaseEntity.setApplicantForename(pcsCase.getApplicantForename());
         pcsCaseEntity.setApplicantSurname(pcsCase.getApplicantSurname());
         pcsCaseEntity.setPropertyAddress(addressEntity);
-        pcsCaseEntity.setPaymentStatus(pcsCase.getPaymentStatus());
 
         pcsCaseRepository.save(pcsCaseEntity);
     }
@@ -59,14 +58,6 @@ public class PcsCaseService {
         if (pcsCase.getUserPcqId() != null) {
             UUID pcqId = UUID.fromString(pcsCase.getUserPcqId());
             setPcqIdForCurrentUser(pcqId, pcsCaseEntity);
-        }
-
-        if (pcsCase.getPaymentStatus() != null) {
-            pcsCaseEntity.setPaymentStatus(pcsCase.getPaymentStatus());
-        }
-
-        if (pcsCase.getCaseManagementLocation() != null) {
-            pcsCaseEntity.setCaseManagementLocation(pcsCase.getCaseManagementLocation());
         }
 
         pcsCaseRepository.save(pcsCaseEntity);
