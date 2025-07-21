@@ -22,6 +22,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.createTestApplication;
 public class CreateTestCase implements CCDConfig<PCSCase, State, UserRole> {
 
     private final PcsCaseService pcsCaseService;
+    private ClaimantInformation claimantInformationPage;
 
     @Override
     public void configure(ConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -34,7 +35,7 @@ public class CreateTestCase implements CCDConfig<PCSCase, State, UserRole> {
 
         new PageBuilder(eventBuilder)
             .add(new MakeAClaim())
-            .add(new ClaimantInformation());
+            .add(claimantInformationPage);
     }
 
     private PCSCase start(EventPayload<PCSCase, State> eventPayload) {
