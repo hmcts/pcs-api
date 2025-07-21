@@ -5,4 +5,5 @@ CREATE TABLE eligibility_whitelisted_epim (
     PRIMARY KEY (epims_id)
 );
 
-CREATE INDEX idx_eligibility_whitelisted_epim_eligible_from ON eligibility_whitelisted_epim(eligible_from); 
+CREATE INDEX idx_eligibility_whitelisted_epim_eligible_from ON eligibility_whitelisted_epim(eligible_from);
+
