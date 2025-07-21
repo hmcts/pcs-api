@@ -10,8 +10,6 @@ import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseworkerAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenAccess;
 
-import java.util.List;
-
 /**
  * The main domain model representing a possessions case.
  */
@@ -57,6 +55,6 @@ public class PCSCase {
         label = "Supporting documents",
         access = {CitizenAccess.class, CaseworkerAccess.class}
     )
-    private List<Document> supportingDocuments;
+    private Document supportingDocuments;
 
 }
