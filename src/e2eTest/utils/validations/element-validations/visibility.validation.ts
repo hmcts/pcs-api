@@ -4,7 +4,7 @@ import {IValidation, ValidationData} from "../../interfaces/validation.interface
 
 export class VisibilityValidation implements IValidation {
   async validate(page: Page, fieldName: string, data: ValidationData): Promise<void> {
-    const locator = page.locator(`[data-testid="${fieldName}"]`);
+    const locator = page.locator(fieldName);
 
     if ('visible' in data) {
       if (data.visible) {
