@@ -6,3 +6,4 @@ CREATE TABLE eligibility_whitelisted_epim (
 );
 
 CREATE INDEX idx_eligibility_whitelisted_epim_eligible_from ON eligibility_whitelisted_epim(eligible_from);
+
