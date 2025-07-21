@@ -4,12 +4,12 @@ import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
+import uk.gov.hmcts.reform.pcs.dto.OrganisationDto;
 
 @Service
 public class ProfessionalOrganisationRetriever {
     private static final String SERVICE_AUTHORIZATION = "ServiceAuthorization";
     private final AuthTokenGenerator serviceAuthTokenGenerator;
-    private String debugAccessToken = "X";
 
     public ProfessionalOrganisationRetriever(AuthTokenGenerator serviceAuthTokenGenerator){
         this.serviceAuthTokenGenerator = serviceAuthTokenGenerator;
@@ -17,7 +17,7 @@ public class ProfessionalOrganisationRetriever {
 
     public void retrieve(){
         //get tokens for request
-        final String serviceAuthorizationToken = serviceAuthTokenGenerator.generate();
+        final String serviceAuthorizationToken = serviceAuthTokenGenerator.generate().split(" ")[1];
         //using hardcoded user token for poc.
 
         HttpHeaders headers = new HttpHeaders();
@@ -28,12 +28,12 @@ public class ProfessionalOrganisationRetriever {
 
         HttpEntity<String> requestEntity = new HttpEntity<>(headers);
 
-        ResponseEntity<String> responseString =
+        ResponseEntity<OrganisationDto> responseString =
             new RestTemplate().exchange("http://rd-professional-api-aat.service.core-compute-aat.internal/refdata/external/v2/organisations",
                                         HttpMethod.GET,
                                         requestEntity,
-                                        String.class);
+                                        OrganisationDto.class);
 
-        System.out.println(responseString);
+        System.out.println(responseString.toString());
     }
 }
