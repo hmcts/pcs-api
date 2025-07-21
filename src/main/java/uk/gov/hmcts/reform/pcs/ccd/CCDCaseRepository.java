@@ -10,6 +10,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.UserType;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
+import uk.gov.hmcts.reform.pcs.ccd.renderer.UserTypeInfoRenderer;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 
 /**
@@ -21,6 +22,7 @@ public class CCDCaseRepository extends DecentralisedCaseRepository<PCSCase> {
 
     private final PcsCaseRepository pcsCaseRepository;
     private final ModelMapper modelMapper;
+    private final UserTypeInfoRenderer userTypeInfoRenderer;
 
     /**
      * Invoked by CCD to load PCS cases by reference.
@@ -33,12 +35,17 @@ public class CCDCaseRepository extends DecentralisedCaseRepository<PCSCase> {
         PcsCaseEntity pcsCaseEntity = loadCaseData(caseReference);
 
         //Convert database entity to CCD domain object
-        return PCSCase.builder()
+        PCSCase pcsCase = PCSCase.builder()
             .applicantForename(pcsCaseEntity.getApplicantForename())
             .applicantSurname(pcsCaseEntity.getApplicantSurname())
             .propertyAddress(convertAddress(pcsCaseEntity.getPropertyAddress()))
             .userType(convertUserType(pcsCaseEntity.getUserType()))
             .build();
+
+        pcsCase.setUserTypeInfoMarkdown(userTypeInfoRenderer.render(pcsCaseEntity.getUserType(), caseReference));
+
+        return pcsCase;
+
     }
 
     private AddressUK convertAddress(AddressEntity address) {

@@ -1,0 +1,21 @@
+## User Information
+
+{% if userType %}
+
+<table>
+  <tr>
+    <td><strong>User Type:</strong></td>
+    <td>{{ userType }}</td>
+  </tr>
+  <tr>
+    <td><strong>Case Reference:</strong></td>
+    <td>{{ caseReference }}</td>
+  </tr>
+</table>
+
+{% else %}
+<p>No User Type Information</p>
+
+<p>This case does not have user type information set yet</p>
+
+{% endif %} 

@@ -42,4 +42,7 @@ public class PCSCase {
 
     private UserType userType;
 
+    // Field to store the rendered userTypeInfo markdown
+    private String userTypeInfoMarkdown;
+
 }

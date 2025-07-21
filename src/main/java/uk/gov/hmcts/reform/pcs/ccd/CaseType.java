@@ -9,6 +9,7 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 
 import static java.lang.System.getenv;
 import static java.util.Optional.ofNullable;
+import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 
 /**
  * Setup some common possessions case type configuration.
@@ -72,6 +73,10 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
 
         builder.tab("summary", "Property Details")
             .field(PCSCase::getPropertyAddress);
+
+        builder.tab("userTypeInfo", "User Type Information (Markdown)")
+            .label("userTypeInfoMarkdownLabel", null, "${userTypeInfoMarkdown}")
+            .field("userTypeInfoMarkdown", NEVER_SHOW);     
 
         builder.tab("CaseHistory", "History")
             .field("caseHistory");
