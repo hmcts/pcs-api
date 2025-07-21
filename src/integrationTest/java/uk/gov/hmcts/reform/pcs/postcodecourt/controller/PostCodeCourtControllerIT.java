@@ -27,6 +27,7 @@ import uk.gov.hmcts.reform.pcs.postcodecourt.repository.PostCodeCourtRepository;
 import uk.gov.hmcts.reform.pcs.util.IdamHelper;
 
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.Collections;
 import java.util.List;
 
@@ -34,7 +35,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
-import static uk.gov.hmcts.reform.pcs.config.ClockConfiguration.UK_ZONE_ID;
 import static uk.gov.hmcts.reform.pcs.postcodecourt.controller.PostCodeCourtController.COURTS_ENDPOINT;
 import static uk.gov.hmcts.reform.pcs.postcodecourt.controller.PostCodeCourtController.POSTCODE;
 
@@ -80,7 +80,7 @@ class PostCodeCourtControllerIT extends AbstractPostgresContainerIT {
         all.forEach(postCodeCourtEntity -> when(locationReferenceApi.getCountyCourts(
             "Bearer " + SYSTEM_USER_ID_TOKEN,
             LOC_REF_SERVICE_AUTH_HEADER,
-            postCodeCourtEntity.getId().getEpimsId().toString(),
+            postCodeCourtEntity.getId().getEpimId().toString(),
             COUNTY_COURT_TYPE_ID
         )).thenReturn(Collections.emptyList()));
         assertThat(all).isNotEmpty();
@@ -98,20 +98,20 @@ class PostCodeCourtControllerIT extends AbstractPostgresContainerIT {
         final PostCodeCourtKey id2 = new PostCodeCourtKey(postCode2, 36791);
         final PostCodeCourtKey id3 = new PostCodeCourtKey(postCode3, 144641);
 
-        final Court court1 = new Court(40827, "Central London County Court", id1.getEpimsId());
-        final Court court2 = new Court(40838, "Brentford County Court And Family Court", id2.getEpimsId());
-        final Court court3 = new Court(40896, "Manchester Crown Court", id3.getEpimsId());
+        final Court court1 = new Court(40827, "Central London County Court", id1.getEpimId());
+        final Court court2 = new Court(40838, "Brentford County Court And Family Court", id2.getEpimId());
+        final Court court3 = new Court(40896, "Manchester Crown Court", id3.getEpimId());
 
         when(authTokenGenerator.generate()).thenReturn(LOC_REF_SERVICE_AUTH_HEADER);
 
         when(idamService.getSystemUserAuthorisation()).thenReturn("Bearer " + SYSTEM_USER_ID_TOKEN);
 
-        stubLocationReferenceApi(id1.getEpimsId().toString(),
-                List.of(new CourtVenue(id1.getEpimsId(), court1.id(), court1.name())));
-        stubLocationReferenceApi(id2.getEpimsId().toString(),
-                List.of(new CourtVenue(id2.getEpimsId(), court2.id(), court2.name())));
-        stubLocationReferenceApi(id3.getEpimsId().toString(),
-                List.of(new CourtVenue(id3.getEpimsId(), court3.id(), court3.name())));
+        stubLocationReferenceApi(id1.getEpimId().toString(),
+                List.of(new CourtVenue(id1.getEpimId(), court1.id(), court1.name())));
+        stubLocationReferenceApi(id2.getEpimId().toString(),
+                List.of(new CourtVenue(id2.getEpimId(), court2.id(), court2.name())));
+        stubLocationReferenceApi(id3.getEpimId().toString(),
+                List.of(new CourtVenue(id3.getEpimId(), court3.id(), court3.name())));
         stubLocationReferenceApi("990000", Collections.emptyList());
 
         assertPostcodeReturns(postCode1, court1);
@@ -158,15 +158,15 @@ class PostCodeCourtControllerIT extends AbstractPostgresContainerIT {
     void shouldThrow404NotfoundExceptionFromLocationReferenceThenReceiveEmptyListInResponse() {
         String postCode = "LE2 0QB";
         List<String> postcodes = List.of("LE2 0QB", "LE2 0Q", "LE2 0", "LE2");
-        LocalDate currentDate = LocalDate.now(UK_ZONE_ID);
-        List<PostCodeCourtEntity> all = postCodeCourtRepository.findActiveByPostCodeIn(postcodes, currentDate);
+        LocalDate currentDate = LocalDate.now(ZoneId.of("Europe/London"));
+        List<PostCodeCourtEntity> all = postCodeCourtRepository.findByIdPostCodeIn(postcodes, currentDate);
 
         when(authTokenGenerator.generate()).thenReturn(LOC_REF_SERVICE_AUTH_HEADER);
 
         all.forEach(postCodeCourtEntity -> when(locationReferenceApi.getCountyCourts(
             "Bearer " + SYSTEM_USER_ID_TOKEN,
             LOC_REF_SERVICE_AUTH_HEADER,
-            postCodeCourtEntity.getId().getEpimsId().toString(),
+            postCodeCourtEntity.getId().getEpimId().toString(),
             COUNTY_COURT_TYPE_ID
         )).thenThrow(new RuntimeException("No matching courts found for ".concat(postCode), null)));
 

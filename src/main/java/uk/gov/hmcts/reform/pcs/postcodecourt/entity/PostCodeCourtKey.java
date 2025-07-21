@@ -19,6 +19,6 @@ public class PostCodeCourtKey implements Serializable {
     @Column(name = "postcode", length = 20, nullable = false)
     private String postCode;
 
-    @Column(name = "epims_id", nullable = false)
-    private Integer epimsId;
+    @Column(name = "epimid", nullable = false)
+    private Integer epimId;
 }
