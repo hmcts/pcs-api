@@ -6,6 +6,7 @@ import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.clients.ProfessionalOrganisationRetriever;
+import uk.gov.hmcts.reform.pcs.dto.OrganisationDto;
 
 @Component
 public class ClaimantInformation implements CcdPageConfiguration {
@@ -18,11 +19,12 @@ public class ClaimantInformation implements CcdPageConfiguration {
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
-        professionalOrganisationRetriever.retrieve();
+        OrganisationDto usersOrganisation = professionalOrganisationRetriever.retrieve().getBody();
 
         pageBuilder
-            .page("claimant information")
-            .pageLabel("Please enter applicant's name")
-            .mandatory(PCSCase::getApplicantForename);
+            .page("Organisation Details")
+            .pageLabel("Organisation Details")
+            .label("OrganisationQuestion", "Are you a part of this Organisation?")
+            .label("OrganisationName", usersOrganisation.getName());
     }
 }

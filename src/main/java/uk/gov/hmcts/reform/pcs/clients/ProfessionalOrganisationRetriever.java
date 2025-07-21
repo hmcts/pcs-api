@@ -15,7 +15,7 @@ public class ProfessionalOrganisationRetriever {
         this.serviceAuthTokenGenerator = serviceAuthTokenGenerator;
     }
 
-    public void retrieve(){
+    public ResponseEntity<OrganisationDto> retrieve(){
         //get tokens for request
         final String serviceAuthorizationToken = serviceAuthTokenGenerator.generate().split(" ")[1];
         //using hardcoded user token for poc.
@@ -28,12 +28,12 @@ public class ProfessionalOrganisationRetriever {
 
         HttpEntity<String> requestEntity = new HttpEntity<>(headers);
 
-        ResponseEntity<OrganisationDto> responseString =
+        ResponseEntity<OrganisationDto> response =
             new RestTemplate().exchange("http://rd-professional-api-aat.service.core-compute-aat.internal/refdata/external/v2/organisations",
                                         HttpMethod.GET,
                                         requestEntity,
                                         OrganisationDto.class);
 
-        System.out.println(responseString.toString());
+        return response;
     }
 }
