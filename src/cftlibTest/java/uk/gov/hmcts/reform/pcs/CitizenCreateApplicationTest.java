@@ -19,7 +19,6 @@ import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
 import uk.gov.hmcts.reform.pcs.ccd.CaseType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.domain.PaymentStatus;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
 import uk.gov.hmcts.rse.ccd.lib.test.CftlibTest;
@@ -66,7 +65,6 @@ class CitizenCreateApplicationTest extends CftlibTest {
                                  .county("Greater London")
                                  .postCode("NW1 6XE")
                                  .build())
-            .paymentStatus(PaymentStatus.UNPAID)
             .build();
 
         CaseDetails caseDetails = startAndSubmitCreationEvent(citizenCreateApplication, caseData);

@@ -11,7 +11,6 @@ import org.modelmapper.ModelMapper;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.domain.PaymentStatus;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
@@ -115,7 +114,6 @@ class PcsCaseServiceTest {
         PcsCaseEntity existingPcsCaseEntity = mock(PcsCaseEntity.class);
 
         when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(existingPcsCaseEntity));
-        when(pcsCase.getCaseManagementLocation()).thenReturn(null);
 
         // When
         underTest.patchCase(CASE_REFERENCE, pcsCase);
@@ -231,44 +229,6 @@ class PcsCaseServiceTest {
                 }
             );
 
-    }
-
-    @Test
-    void shouldUpdatePaymentStatusWhenNotNull() {
-        // Given
-        PCSCase pcsCase = mock(PCSCase.class);
-        PcsCaseEntity existingPcsCaseEntity = mock(PcsCaseEntity.class);
-        PaymentStatus paymentStatus = PaymentStatus.PAID;
-
-        when(pcsCase.getPaymentStatus()).thenReturn(paymentStatus);
-        when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(existingPcsCaseEntity));
-
-        // When
-        underTest.patchCase(CASE_REFERENCE, pcsCase);
-
-        // Then
-        verify(pcsCaseRepository).save(pcsCaseEntityCaptor.capture());
-        verify(existingPcsCaseEntity).setPaymentStatus(paymentStatus);
-        assertThat(pcsCaseEntityCaptor.getValue()).isSameAs(existingPcsCaseEntity);
-    }
-
-    @Test
-    void shouldUpdateCaseManagementLocationWhenNotNull() {
-        // Given
-        PCSCase pcsCase = mock(PCSCase.class);
-        PcsCaseEntity existingPcsCaseEntity = mock(PcsCaseEntity.class);
-        Integer location = 13685;
-
-        when(pcsCase.getCaseManagementLocation()).thenReturn(location);
-        when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(existingPcsCaseEntity));
-
-        // When
-        underTest.patchCase(CASE_REFERENCE, pcsCase);
-
-        // Then
-        verify(pcsCaseRepository).save(pcsCaseEntityCaptor.capture());
-        verify(existingPcsCaseEntity).setCaseManagementLocation(location);
-        assertThat(pcsCaseEntityCaptor.getValue()).isSameAs(existingPcsCaseEntity);
     }
 
     private AddressEntity stubAddressUKModelMapper(AddressUK addressUK) {

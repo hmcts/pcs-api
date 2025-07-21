@@ -9,7 +9,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 
 import static java.lang.System.getenv;
 import static java.util.Optional.ofNullable;
-import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 
 /**
  * Setup some common possessions case type configuration.
@@ -76,14 +75,6 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
 
         builder.tab("CaseHistory", "History")
             .field("caseHistory");
-
-        builder.tab("ClaimPayment", "Payment")
-            .label("claimPaymentTabMarkdownLabel", null, "${claimPaymentTabMarkdown}")
-            .field("claimPaymentTabMarkdown", NEVER_SHOW);
-
-        builder.tab("hidden", "HiddenFields")
-            .showCondition(NEVER_SHOW)
-            .field(PCSCase::getPageHeadingMarkdown);
 
     }
 }

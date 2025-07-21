@@ -14,7 +14,6 @@ import uk.gov.hmcts.reform.ccd.client.model.Event;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
 import uk.gov.hmcts.reform.pcs.ccd.CaseType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.domain.PaymentStatus;
 import uk.gov.hmcts.rse.ccd.lib.test.CftlibTest;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -53,7 +52,6 @@ public class TestWithCCD extends CftlibTest {
                                  .county("Greater London")
                                  .postCode("NW1 6XE")
                                  .build())
-            .paymentStatus(PaymentStatus.UNPAID)
             .build();
         var content = CaseDataContent.builder()
             .data(caseData)
