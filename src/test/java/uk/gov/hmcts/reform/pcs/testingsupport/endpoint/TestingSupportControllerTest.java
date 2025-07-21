@@ -12,6 +12,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.ResponseEntity;
 import uk.gov.hmcts.reform.pcs.document.service.DocAssemblyService;
 import uk.gov.hmcts.reform.pcs.document.service.exception.DocAssemblyException;
+import uk.gov.hmcts.reform.pcs.postcodecourt.service.EligibilityService;
 import uk.gov.hmcts.reform.pcs.testingsupport.model.DocAssemblyRequest;
 
 import java.time.Instant;
@@ -31,18 +32,20 @@ class TestingSupportControllerTest {
 
     @Mock
     private SchedulerClient schedulerClient;
-
     @Mock
     private Task<Void> helloWorldTask;
-
     @Mock
     private DocAssemblyService docAssemblyService;
+    @Mock
+    private EligibilityService eligibilityService;
 
     private TestingSupportController underTest;
 
     @BeforeEach
     void setUp() {
-        underTest = new TestingSupportController(schedulerClient, helloWorldTask, docAssemblyService);
+        underTest = new TestingSupportController(schedulerClient, helloWorldTask,
+                                                 docAssemblyService, eligibilityService
+        );
     }
 
     @SuppressWarnings("unchecked")
