@@ -1,8 +1,5 @@
 package uk.gov.hmcts.reform.pcs.dto;
 
-
-import static java.util.Objects.requireNonNull;
-
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.util.List;
 import lombok.AllArgsConstructor;
@@ -11,6 +8,9 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 
+/**
+ * Represent the organisation the user belongs to.
+ */
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
@@ -25,18 +25,5 @@ public class OrganisationDto {
     private SuperUser superUser;
     private List<String> paymentAccount;
     private List<AddressUK> contactInformation;
-
-    public String getOrganisationIdentifier() {
-        requireNonNull(organisationIdentifier);
-        return organisationIdentifier;
-    }
-
-    public List<String> getPaymentAccount() {
-        return paymentAccount;
-    }
-
-    public List<AddressUK> getContactInformation() {
-        return contactInformation;
-    }
 }
 
