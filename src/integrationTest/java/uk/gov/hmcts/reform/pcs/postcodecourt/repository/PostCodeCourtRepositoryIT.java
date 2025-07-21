@@ -11,10 +11,10 @@ import uk.gov.hmcts.reform.pcs.postcodecourt.entity.PostCodeCourtEntity;
 import uk.gov.hmcts.reform.pcs.postcodecourt.entity.PostCodeCourtKey;
 
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.List;
 
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
-import static uk.gov.hmcts.reform.pcs.config.ClockConfiguration.UK_ZONE_ID;
 
 @SpringBootTest
 @ActiveProfiles("integration")
@@ -23,7 +23,7 @@ public class PostCodeCourtRepositoryIT extends AbstractPostgresContainerIT {
     @Autowired
     private PostCodeCourtRepository repository;
 
-    private final LocalDate currentDate = LocalDate.now(UK_ZONE_ID);
+    private final LocalDate currentDate = LocalDate.now(ZoneId.of("Europe/London"));
 
     @Test
     @DisplayName("Should return only active postcode court mappings for full & partial postcodes")
@@ -39,7 +39,7 @@ public class PostCodeCourtRepositoryIT extends AbstractPostgresContainerIT {
         repository.saveAll(List.of(activeEntity, nonActiveEntity, partialEntity));
 
         List<PostCodeCourtEntity> results = repository
-                .findActiveByPostCodeIn(List.of(postcode, partialPostcode), currentDate);
+                .findByIdPostCodeIn(List.of(postcode, partialPostcode), currentDate);
 
         assertThat(results)
                 .hasSize(2);
@@ -57,11 +57,11 @@ public class PostCodeCourtRepositoryIT extends AbstractPostgresContainerIT {
 
         repository.save(activeEntity);
 
-        List<PostCodeCourtEntity> results = repository.findActiveByPostCodeIn(List.of(postcode), currentDate);
+        List<PostCodeCourtEntity> results = repository.findByIdPostCodeIn(List.of(postcode), currentDate);
 
         assertThat(results)
                 .hasSize(1);
-        assertThat(results.getFirst().getId().getEpimsId()).isEqualTo(activeEpimID);
+        assertThat(results.getFirst().getId().getEpimId()).isEqualTo(activeEpimID);
     }
 
     @Test
@@ -72,7 +72,7 @@ public class PostCodeCourtRepositoryIT extends AbstractPostgresContainerIT {
 
         repository.save(inactiveEntity);
 
-        List<PostCodeCourtEntity> results = repository.findActiveByPostCodeIn(List.of(postcode), currentDate);
+        List<PostCodeCourtEntity> results = repository.findByIdPostCodeIn(List.of(postcode), currentDate);
 
         assertThat(results).isEmpty();
     }
