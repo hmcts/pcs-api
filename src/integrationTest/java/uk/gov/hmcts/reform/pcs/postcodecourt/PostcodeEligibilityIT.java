@@ -16,6 +16,7 @@ import uk.gov.hmcts.reform.pcs.config.AbstractPostgresContainerIT;
 import uk.gov.hmcts.reform.pcs.postcodecourt.entity.CourtEligibilityEntity;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.EligibilityResult;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.EligibilityStatus;
+import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.repository.CourtEligibilityRepository;
 
 import java.time.LocalDate;
@@ -48,6 +49,7 @@ class PostcodeEligibilityIT extends AbstractPostgresContainerIT {
 
         assertThat(eligibilityResult.getStatus()).isEqualTo(EligibilityStatus.ELIGIBLE);
         assertThat(eligibilityResult.getEpimsId()).isEqualTo(expectedEpimsId);
+        assertThat(eligibilityResult.getLegislativeCountry()).isEqualTo(LegislativeCountry.ENGLAND);
     }
 
     @Test
@@ -62,6 +64,21 @@ class PostcodeEligibilityIT extends AbstractPostgresContainerIT {
         EligibilityResult eligibilityResult = getEligibilityForPostcode(postcode);
 
         assertThat(eligibilityResult.getStatus()).isEqualTo(EligibilityStatus.NOT_ELIGIBLE);
+        assertThat(eligibilityResult.getEpimsId()).isEqualTo(epimsId);
+        assertThat(eligibilityResult.getLegislativeCountry()).isEqualTo(LegislativeCountry.ENGLAND);
+    }
+
+    @Test
+    @DisplayName("Returns NOT_ELIGIBLE status for postcode that is not whitelisted")
+    void shouldReturnNotEligibleForPostcodeNotWhitelisted() throws Exception {
+        String postcode = "M13 9PL";
+        int expectedEpimsId = 144641;
+
+        EligibilityResult eligibilityResult = getEligibilityForPostcode(postcode);
+
+        assertThat(eligibilityResult.getStatus()).isEqualTo(EligibilityStatus.NOT_ELIGIBLE);
+        assertThat(eligibilityResult.getEpimsId()).isEqualTo(expectedEpimsId);
+        assertThat(eligibilityResult.getLegislativeCountry()).isEqualTo(LegislativeCountry.ENGLAND);
     }
 
     private EligibilityResult getEligibilityForPostcode(String postcode) throws Exception {
@@ -84,5 +101,4 @@ class PostcodeEligibilityIT extends AbstractPostgresContainerIT {
 
         courtEligibilityRepository.save(courtEligibility);
     }
-
 }
