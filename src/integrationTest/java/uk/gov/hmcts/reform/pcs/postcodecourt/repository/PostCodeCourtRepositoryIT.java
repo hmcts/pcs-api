@@ -15,6 +15,7 @@ import java.util.List;
 
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 import static uk.gov.hmcts.reform.pcs.config.ClockConfiguration.UK_ZONE_ID;
+import static uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry.ENGLAND;
 
 @SpringBootTest
 @ActiveProfiles("integration")
@@ -83,7 +84,7 @@ public class PostCodeCourtRepositoryIT extends AbstractPostgresContainerIT {
 
         PostCodeCourtEntity entity = new PostCodeCourtEntity();
         entity.setId(new PostCodeCourtKey(postcode, epimId));
-        entity.setLegislativeCountry("England");
+        entity.setLegislativeCountry(ENGLAND);
         entity.setEffectiveFrom(from);
         entity.setEffectiveTo(to);
         entity.setAudit(createTestAudit());
