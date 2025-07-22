@@ -17,5 +17,9 @@
     <notes>Pebble templates</notes>
     <cve>CVE-2025-1686</cve>
   </suppress>
+  <suppress base="true">
+    <notes>Suppressed for demo</notes>
+    <cve>CVE-2025-48976</cve>
+  </suppress>
   <!--End of false positives section -->
 </suppressions>
