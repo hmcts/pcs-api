@@ -4,7 +4,7 @@ import {
   initializeExecutor,
   performAction,
   performActions,
-  performValidation
+  performValidation, performValidations
 } from '@utils/controller';
 import {caseData, claimantType, claimantTypeOptions} from "@data/case.data";
 import configData from "@config/test.config";
@@ -24,18 +24,18 @@ test.beforeEach(async ({ page }, testInfo) => {
   });
 });
 
-test.describe('[Create Case Flow With Address]  @Master @nightly', async () => {
+test.describe('[Create Case Flow With Address and Claimant Type]  @Master @nightly', async () => {
 
-    test('Dropdown Address Selection Flow - should create case sucessfully', async () => {
+test('Dropdown Address Selection Flow - should create case sucessfully', async () => {
 
     await performAction('click','Create case');
-    await performValidation('mainHeader', headers.createCase);
+    await performValidation('mainHeader', {expected: headers.createCase});
     await performActions('Case option selection'
       ,['select', 'Jurisdiction', caseData.jurisdiction]
       ,['select', 'Case type', caseData.caseType]
       ,['select', 'Event', caseData.event]);
     await performAction('click','Start');
-    await performValidation('mainHeader', headers.selectAddress);
+    await performValidation('mainHeader', {expected:headers.selectAddress});
     await performActions('Find Address based on postcode'
       ,['fill', 'Enter a UK postcode', caseData.englandPostcode]
       ,['click', 'Find address']
@@ -45,13 +45,19 @@ test.describe('[Create Case Flow With Address]  @Master @nightly', async () => {
       ,['fill', 'County', caseData.englandCounty]);
     await performAction('click', 'Continue');
     //HDPI-1271 Scenario 1
-    await performValidation('mainHeader', headers.claimantType);
+    await performValidation('mainHeader', {expected: headers.claimantType});
 
     //this can be converted as group validation
     await performValidation('visibility', claimantTypeOptions.england.registeredProviderForSocialHousing, { visible: true });
     await performValidation('visibility', claimantTypeOptions.england.mortgageProviderOrLender, { visible: true });
     await performValidation('visibility', claimantTypeOptions.england.privateLandlord, { visible: true });
     await performValidation('visibility', claimantTypeOptions.england.other, { visible: true });
+    //OR
+    await performValidations('Claimnat Type Options validation'
+      ,['visibility', claimantTypeOptions.england.registeredProviderForSocialHousing, { visible: true }]
+      ,['visibility', claimantTypeOptions.england.mortgageProviderOrLender, { visible: true }]
+      ,['visibility', claimantTypeOptions.england.privateLandlord, { visible: true }]
+      ,['visibility', claimantTypeOptions.england.other, { visible: true }],)
     //or
     await performValidation('validateOptionList', claimantType, { options : claimantTypeOptions.england});
     //Scenario 3
@@ -62,10 +68,20 @@ test.describe('[Create Case Flow With Address]  @Master @nightly', async () => {
       });
     //HDPI-1271 Scenario 2
     await performAction('click',claimantType,claimantTypeOptions.england.registeredProviderForSocialHousing);
+    //or
     await performAction('click',claimantTypeOptions.england.registeredProviderForSocialHousing);
     await performAction('click', 'Continue');
 
+    await performValidation('mainHeader', {expected: headers.applicantDetails});
+    await performAction('click', 'Submit');
+
+    await performValidation('errorMessage', {
+    header: 'There is a problem',
+    errorHasLink: "Applicant's first name is required",
+    });
+
     await performAction('fill', "Applicant's forename", caseData.applicantFirstName);
+
     await performAction('click', 'Submit');
     await performValidation("bannerAlert", {message: "Case #.* has been created."});
     await performValidation('formLabelValue', "Applicant's forename", {value:'AutomationTestUser'});
@@ -75,10 +91,8 @@ test.describe('[Create Case Flow With Address]  @Master @nightly', async () => {
     await performValidation('formLabelValue', 'Town or City');
     await performValidation('formLabelValue', 'Postcode/Zipcode');
     await performValidation('formLabelValue', 'Country');
-    }
-  );
-
-  test('Manual Address Input Flow - should create case sucessfully', async () => {
+    });
+test('Manual Address Input Flow - should create case sucessfully', async () => {
     await performAction('click', 'Create case');
     await performActions('Case option selection'
       ,['select', 'Jurisdiction', caseData.jurisdiction]
@@ -95,6 +109,20 @@ test.describe('[Create Case Flow With Address]  @Master @nightly', async () => {
       ,['fill', 'Postcode/Zipcode', caseData.walesPostcode]
       ,['fill', 'Country', caseData.country]);
     await performAction('click','Continue');
+
+    //Scenario 3
+    await performAction('click', 'Continue');
+    await performValidation('errorMessage', {
+      header: 'There is a problem',
+      errorHasLink: 'An address is required',
+    });
+
+    //HDPI-1271 Scenario 2
+    await performAction('click',claimantType,claimantTypeOptions.wales.registeredCommunityLandlord);
+    //or
+    await performAction('click',claimantTypeOptions.wales.registeredCommunityLandlord);
+    await performAction('click', 'Continue');
+
     await performAction('fill', "Applicant's forename", caseData.applicantFirstName);
     await performAction('click', 'Submit');
     await performValidation("bannerAlert", {message: "Case #.* has been created."});
@@ -106,4 +134,86 @@ test.describe('[Create Case Flow With Address]  @Master @nightly', async () => {
     await performValidation('formLabelValue', 'Postcode/Zipcode', {value:caseData.walesPostcode});
     await performValidation('formLabelValue', 'Country', {value:caseData.country});
   });
+
+test('Unsucessful case creation journey due to claimant type not in scope of Release1 for England', async () => {
+
+      await performAction('click','Create case');
+      await performValidation('mainHeader', {expected: headers.createCase});
+      await performActions('Case option selection'
+        ,['select', 'Jurisdiction', caseData.jurisdiction]
+        ,['select', 'Case type', caseData.caseType]
+        ,['select', 'Event', caseData.event]);
+      await performAction('click','Start');
+      await performValidation('mainHeader', headers.selectAddress);
+      await performActions('Find Address based on postcode'
+        ,['fill', 'Enter a UK postcode', caseData.englandPostcode]
+        ,['click', 'Find address']
+        ,['select', 'Select an address', caseData.addressIndex]
+        ,['fill', 'Address Line 2', caseData.addressLine2]
+        ,['fill', 'Address Line 3', caseData.addressLine3]
+        ,['fill', 'County', caseData.englandCounty]);
+      await performAction('click', 'Continue');
+      //HDPI-1271 Scenario 1
+      await performValidation('mainHeader', {expected: headers.claimantType});
+
+      //this can be converted as group validation
+      await performValidation('visibility', claimantTypeOptions.england.registeredProviderForSocialHousing, { visible: true });
+      await performValidation('visibility', claimantTypeOptions.england.mortgageProviderOrLender, { visible: true });
+      await performValidation('visibility', claimantTypeOptions.england.privateLandlord, { visible: true });
+      await performValidation('visibility', claimantTypeOptions.england.other, { visible: true });
+      //OR
+      await performValidations('Claimnat Type Options validation'
+        ,['visibility', claimantTypeOptions.england.registeredProviderForSocialHousing, { visible: true }]
+        ,['visibility', claimantTypeOptions.england.mortgageProviderOrLender, { visible: true }]
+        ,['visibility', claimantTypeOptions.england.privateLandlord, { visible: true }]
+        ,['visibility', claimantTypeOptions.england.other, { visible: true }],)
+      //or
+      await performValidation('validateOptionList', claimantType, { options : claimantTypeOptions.england});
+
+      await performAction('click',claimantTypeOptions.england.privateLandlord);
+      await performAction('click', 'Continue');
+      await performValidation('mainHeader', {expected: "You're not eligible for this online service"});
+      await performAction('click', 'Close and return to case list');
+
+    });
+test('Unsucessful case creation journey due to claimant type not in scope of Release1 for Wales', async () => {
+
+      await performAction('click','Create case');
+      await performValidation('mainHeader', {expected: headers.createCase});
+      await performActions('Case option selection'
+        ,['select', 'Jurisdiction', caseData.jurisdiction]
+        ,['select', 'Case type', caseData.caseType]
+        ,['select', 'Event', caseData.event]);
+      await performAction('click','Start');
+      await performValidation('mainHeader', headers.selectAddress);
+      await performActions('Find Address based on postcode'
+        ,['fill', 'Enter a UK postcode', caseData.walesPostcode]
+        ,['click', 'Find address']
+        ,['select', 'Select an address', caseData.addressIndex]
+        ,['fill', 'Address Line 2', caseData.addressLine2]
+        ,['fill', 'Address Line 3', caseData.addressLine3]
+        ,['fill', 'County', caseData.walesCounty]);
+      await performAction('click', 'Continue');
+      await performValidation('mainHeader', {expected: headers.claimantType});
+
+      //this can be converted as group validation
+      await performValidation('visibility', claimantTypeOptions.england.registeredProviderForSocialHousing, { visible: true });
+      await performValidation('visibility', claimantTypeOptions.england.mortgageProviderOrLender, { visible: true });
+      await performValidation('visibility', claimantTypeOptions.england.privateLandlord, { visible: true });
+      await performValidation('visibility', claimantTypeOptions.england.other, { visible: true });
+      //OR
+      await performValidations('Claimnat Type Options validation'
+        ,['visibility', claimantTypeOptions.england.registeredProviderForSocialHousing, { visible: true }]
+        ,['visibility', claimantTypeOptions.england.mortgageProviderOrLender, { visible: true }]
+        ,['visibility', claimantTypeOptions.england.privateLandlord, { visible: true }]
+        ,['visibility', claimantTypeOptions.england.other, { visible: true }],)
+      //or
+      await performValidation('validateOptionList', claimantType, { options : claimantTypeOptions.england});
+
+      await performAction('click',claimantTypeOptions.wales.privateLandlord);
+      await performAction('click', 'Continue');
+      await performValidation('mainHeader', {expected: "You're not eligible for this online service"});
+      await performAction('click', 'Close and return to case list');
+
+    });
 });

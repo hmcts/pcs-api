@@ -9,8 +9,8 @@ import {AttributeValidation} from "@utils/validations/element-validations/attrib
 import {CountValidation} from "@utils/validations/element-validations/count.validation";
 import {VisibilityValidation} from "@utils/validations/element-validations/visibility.validation";
 import {FormLabelValueValidation} from "@utils/validations/element-validations/formLabelValue.validation";
-import {optionListValidation} from "@utils/validations/custom-validation/optionList.validation";
-import {PageHeaderValidation} from "@utils/validations/element-validations/pageHeader.validation";
+import {OptionListValidation } from "@utils/validations/custom-validation/optionList.validation";
+import {MainHeaderValidation } from "@utils/validations/element-validations/pageHeader.validation";
 import {ErrorMessageValidation} from "@utils/validations/element-validations/error-message.validation";
 
 export class ValidationRegistry {
@@ -25,8 +25,8 @@ export class ValidationRegistry {
     ['css', new CssValidation()],
     ['bannerAlert', new BannerAlertValidation()],
     ['formLabelValue', new FormLabelValueValidation()],
-    ['validateOptionList', new optionListValidation()],
-    ['pageHeader', new PageHeaderValidation()],
+    ['validateOptionList', new OptionListValidation()],
+    ['mainHeader', new MainHeaderValidation()],
     ['errorMessage', new ErrorMessageValidation()]
   ]);
 

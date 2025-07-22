@@ -2,9 +2,9 @@
 import { Page, expect } from '@playwright/test';
 import {IValidation, ValidationData} from "../../interfaces/validation.interface";
 
-export class optionListValidation implements IValidation {
+export class OptionListValidation implements IValidation {
   async validate(page: Page, fieldName: string, data: ValidationData): Promise<void> {
-    if (!Array.isArray(data.allowed)) {
+    if (!Array.isArray(data.options)) {
       throw new Error(`RadioOptionsValidation requires "allowed"  in data`);
     }
 
@@ -17,7 +17,7 @@ export class optionListValidation implements IValidation {
       if (value) actual.push(value);
     }
 
-    const expected = data.allowed;
+    const expected = data.options;
     actual.sort();
     expected.sort();
 
