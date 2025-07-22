@@ -6,9 +6,13 @@ import {
   performActions,
   performValidation, performValidations
 } from '@utils/controller';
-import {caseData, claimantType, claimantTypeOptions} from "@data/case.data";
 import configData from "@config/test.config";
-import {headers} from "@data/page.header";
+import {headers} from "@data/header.data";
+import {radioButton} from "@data/common.data";
+import {caseOption} from "@data/page-data/caseOptions.data";
+import {addressDetails} from "@data/page-data/addressDetails.data";
+import {claimantTypeOptions} from "@data/page-data/claimantType.data";
+import {applicantDtails} from "@data/page-data/ApplicantDetails.data";
 
 
 test.beforeEach(async ({ page }, testInfo) => {
@@ -31,35 +35,24 @@ test('Dropdown Address Selection Flow - should create case sucessfully', async (
     await performAction('click','Create case');
     await performValidation('mainHeader', {expected: headers.createCase});
     await performActions('Case option selection'
-      ,['select', 'Jurisdiction', caseData.jurisdiction]
-      ,['select', 'Case type', caseData.caseType]
-      ,['select', 'Event', caseData.event]);
+      ,['select', 'Jurisdiction', caseOption.jurisdiction]
+      ,['select', 'Case type', caseOption.caseType]
+      ,['select', 'Event', caseOption.event]);
     await performAction('click','Start');
     await performValidation('mainHeader', {expected:headers.selectAddress});
     await performActions('Find Address based on postcode'
-      ,['fill', 'Enter a UK postcode', caseData.englandPostcode]
+      ,['fill', 'Enter a UK postcode', addressDetails.englandPostcode]
       ,['click', 'Find address']
-      ,['select', 'Select an address', caseData.addressIndex]
-      ,['fill', 'Address Line 2', caseData.addressLine2]
-      ,['fill', 'Address Line 3', caseData.addressLine3]
-      ,['fill', 'County', caseData.englandCounty]);
+      ,['select', 'Select an address', addressDetails.addressIndex]
+      ,['fill', 'Address Line 2', addressDetails.addressLine2]
+      ,['fill', 'Address Line 3', addressDetails.addressLine3]
+      ,['fill', 'County', addressDetails.englandCounty]);
     await performAction('click', 'Continue');
     //HDPI-1271 Scenario 1
     await performValidation('mainHeader', {expected: headers.claimantType});
 
-    //this can be converted as group validation
-    await performValidation('visibility', claimantTypeOptions.england.registeredProviderForSocialHousing, { visible: true });
-    await performValidation('visibility', claimantTypeOptions.england.mortgageProviderOrLender, { visible: true });
-    await performValidation('visibility', claimantTypeOptions.england.privateLandlord, { visible: true });
-    await performValidation('visibility', claimantTypeOptions.england.other, { visible: true });
-    //OR
-    await performValidations('Claimnat Type Options validation'
-      ,['visibility', claimantTypeOptions.england.registeredProviderForSocialHousing, { visible: true }]
-      ,['visibility', claimantTypeOptions.england.mortgageProviderOrLender, { visible: true }]
-      ,['visibility', claimantTypeOptions.england.privateLandlord, { visible: true }]
-      ,['visibility', claimantTypeOptions.england.other, { visible: true }],)
-    //or
-    await performValidation('validateOptionList', claimantType, { options : claimantTypeOptions.england});
+
+    await performValidation('validateOptionList', 'Claimant type or which type of claimant are you?', { elementType: radioButton,options : claimantTypeOptions.england});
     //Scenario 3
     await performAction('click', 'Continue');
     await performValidation('errorMessage', {
@@ -67,9 +60,8 @@ test('Dropdown Address Selection Flow - should create case sucessfully', async (
         errorHasLink: 'An address is required',
       });
     //HDPI-1271 Scenario 2
-    await performAction('click',claimantType,claimantTypeOptions.england.registeredProviderForSocialHousing);
+    await performAction('click','Claimant type or which type of claimant are you?',claimantTypeOptions.england.registeredProviderForSocialHousing);
     //or
-    await performAction('click',claimantTypeOptions.england.registeredProviderForSocialHousing);
     await performAction('click', 'Continue');
 
     await performValidation('mainHeader', {expected: headers.applicantDetails});
@@ -80,7 +72,7 @@ test('Dropdown Address Selection Flow - should create case sucessfully', async (
     errorHasLink: "Applicant's first name is required",
     });
 
-    await performAction('fill', "Applicant's forename", caseData.applicantFirstName);
+    await performAction('fill', "Applicant's forename", applicantDtails.applicantFirstName);
 
     await performAction('click', 'Submit');
     await performValidation("bannerAlert", {message: "Case #.* has been created."});
@@ -175,6 +167,7 @@ test('Unsucessful case creation journey due to claimant type not in scope of Rel
       await performValidation('mainHeader', {expected: "You're not eligible for this online service"});
       await performAction('click', 'Close and return to case list');
 
+
     });
 test('Unsucessful case creation journey due to claimant type not in scope of Release1 for Wales', async () => {
 
@@ -216,4 +209,86 @@ test('Unsucessful case creation journey due to claimant type not in scope of Rel
       await performAction('click', 'Close and return to case list');
 
     });
+test('Unsucessful case creation journey due to claim type not in scope of Release1 for England', async () => {
+
+    await performAction('click','Create case');
+    await performValidation('mainHeader', {expected: headers.createCase});
+    await performActions('Case option selection'
+      ,['select', 'Jurisdiction', caseData.jurisdiction]
+      ,['select', 'Case type', caseData.caseType]
+      ,['select', 'Event', caseData.event]);
+    await performAction('click','Start');
+    await performValidation('mainHeader', headers.selectAddress);
+    await performActions('Find Address based on postcode'
+      ,['fill', 'Enter a UK postcode', caseData.englandPostcode]
+      ,['click', 'Find address']
+      ,['select', 'Select an address', caseData.addressIndex]
+      ,['fill', 'Address Line 2', caseData.addressLine2]
+      ,['fill', 'Address Line 3', caseData.addressLine3]
+      ,['fill', 'County', caseData.englandCounty]);
+    await performAction('click', 'Continue');
+    //HDPI-1271 Scenario 1
+    await performValidation('mainHeader', {expected: headers.claimantType});
+
+    //this can be converted as group validation
+    await performValidation('visibility', claimantTypeOptions.england.registeredProviderForSocialHousing, { visible: true });
+    await performValidation('visibility', claimantTypeOptions.england.mortgageProviderOrLender, { visible: true });
+    await performValidation('visibility', claimantTypeOptions.england.privateLandlord, { visible: true });
+    await performValidation('visibility', claimantTypeOptions.england.other, { visible: true });
+    //OR
+    await performValidations('Claimnat Type Options validation'
+      ,['visibility', claimantTypeOptions.england.registeredProviderForSocialHousing, { visible: true }]
+      ,['visibility', claimantTypeOptions.england.mortgageProviderOrLender, { visible: true }]
+      ,['visibility', claimantTypeOptions.england.privateLandlord, { visible: true }]
+      ,['visibility', claimantTypeOptions.england.other, { visible: true }],)
+    //or
+    await performValidation('validateOptionList', claimantType, { options : claimantTypeOptions.england});
+
+    await performAction('click',claimantTypeOptions.england.privateLandlord);
+    await performAction('click', 'Continue');
+    await performValidation('mainHeader', {expected: "You're not eligible for this online service"});
+    await performAction('click', 'Close and return to case list');
+
+
+  });
+test('Unsucessful case creation journey due to claim type not in scope of Release1 for Wales', async () => {
+
+    await performAction('click','Create case');
+    await performValidation('mainHeader', {expected: headers.createCase});
+    await performActions('Case option selection'
+      ,['select', 'Jurisdiction', caseData.jurisdiction]
+      ,['select', 'Case type', caseData.caseType]
+      ,['select', 'Event', caseData.event]);
+    await performAction('click','Start');
+    await performValidation('mainHeader', headers.selectAddress);
+    await performActions('Find Address based on postcode'
+      ,['fill', 'Enter a UK postcode', caseData.walesPostcode]
+      ,['click', 'Find address']
+      ,['select', 'Select an address', caseData.addressIndex]
+      ,['fill', 'Address Line 2', caseData.addressLine2]
+      ,['fill', 'Address Line 3', caseData.addressLine3]
+      ,['fill', 'County', caseData.walesCounty]);
+    await performAction('click', 'Continue');
+    await performValidation('mainHeader', {expected: headers.claimantType});
+
+    //this can be converted as group validation
+    await performValidation('visibility', claimantTypeOptions.england.registeredProviderForSocialHousing, { visible: true });
+    await performValidation('visibility', claimantTypeOptions.england.mortgageProviderOrLender, { visible: true });
+    await performValidation('visibility', claimantTypeOptions.england.privateLandlord, { visible: true });
+    await performValidation('visibility', claimantTypeOptions.england.other, { visible: true });
+    //OR
+    await performValidations('Claimnat Type Options validation'
+      ,['visibility', claimantTypeOptions.england.registeredProviderForSocialHousing, { visible: true }]
+      ,['visibility', claimantTypeOptions.england.mortgageProviderOrLender, { visible: true }]
+      ,['visibility', claimantTypeOptions.england.privateLandlord, { visible: true }]
+      ,['visibility', claimantTypeOptions.england.other, { visible: true }],)
+    //or
+    await performValidation('validateOptionList', claimantType, { options : claimantTypeOptions.england});
+
+    await performAction('click',claimantTypeOptions.wales.privateLandlord);
+    await performAction('click', 'Continue');
+    await performValidation('mainHeader', {expected: "You're not eligible for this online service"});
+    await performAction('click', 'Close and return to case list');
+
+  });
 });

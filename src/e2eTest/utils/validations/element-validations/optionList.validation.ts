@@ -8,7 +8,8 @@ export class OptionListValidation implements IValidation {
       throw new Error(`RadioOptionsValidation requires "allowed"  in data`);
     }
 
-    const locator = page.locator(`input[type="radio"][name="${fieldName}"]`,);
+    const locator = page.locator(`input[type="${data.elementType}"][name="${fieldName}"]`,);
+
     const count = await locator.count();
     const actual: string[] = [];
 

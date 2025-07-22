@@ -9,7 +9,7 @@ import {AttributeValidation} from "@utils/validations/element-validations/attrib
 import {CountValidation} from "@utils/validations/element-validations/count.validation";
 import {VisibilityValidation} from "@utils/validations/element-validations/visibility.validation";
 import {FormLabelValueValidation} from "@utils/validations/element-validations/formLabelValue.validation";
-import {OptionListValidation } from "@utils/validations/custom-validation/optionList.validation";
+import {OptionListValidation } from "@utils/validations/element-validations/optionList.validation";
 import {MainHeaderValidation } from "@utils/validations/element-validations/pageHeader.validation";
 import {ErrorMessageValidation} from "@utils/validations/element-validations/error-message.validation";
 
