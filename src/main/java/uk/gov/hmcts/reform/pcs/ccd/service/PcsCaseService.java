@@ -69,7 +69,8 @@ public class PcsCaseService {
         if (pcsCase.getCaseManagementLocation() != null) {
             pcsCaseEntity.setCaseManagementLocation(pcsCase.getCaseManagementLocation());
         }
-        if(pcsCase.getIsClaimantName() != null) {
+
+        if (pcsCase.getClaimantName() != null) {
             pcsCaseEntity.setClaimantName(pcsCase.getClaimantName());
         }
 
