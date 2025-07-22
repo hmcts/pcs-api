@@ -177,35 +177,37 @@ ccd:
             - bash
             - -c
             - |
-              #!/bin/bash
-              # Add a template to adjust number of shards/replicas for ephemeral single-node cluster
-              TEMPLATE_NAME=default_ephemeral_template
-              INDEX_PATTERN="*"
-              SHARD_COUNT=1
-              REPLICA_COUNT=0
-              ES_URL=http://localhost:9200
+              {
+                echo "===== PostStart Hook Begin ====="
+                date
+                ES_URL=http://localhost:9200
+                # Wait for ES to be up
+                until curl -s -o /dev/null -w '%{http_code}' $ES_URL | grep -q 200; do
+                  echo "Waiting for Elasticsearch..."
+                  sleep 1
+                done
 
-              # Wait up to 60 seconds for Elasticsearch to be available
-              for i in {1..60}; do
-                STATUS=$(curl -s -o /dev/null -w '%{http_code}' $ES_URL)
-                if [ "$STATUS" == "200" ]; then
-                  echo "Elasticsearch is up. Applying index template..."
-                  curl -XPUT "$ES_URL/_template/$TEMPLATE_NAME" \
+                echo "Creating template..."
+                curl -XPUT "$ES_URL/_template/default_ephemeral_template" \
+                  -H 'Content-Type: application/json' \
+                  -d'{
+                    "index_patterns": ["*"],
+                    "settings": {
+                      "number_of_shards": 1,
+                      "number_of_replicas": 0
+                    }
+                  }'
+
+                echo "Updating existing indexes..."
+                for index in $(curl -s "$ES_URL/_cat/indices?h=index"); do
+                  echo "Updating $index..."
+                  curl -XPUT "$ES_URL/$index/_settings" \
                     -H 'Content-Type: application/json' \
-                    -d '{
-                      "index_patterns": ["'"$INDEX_PATTERN"'"],
-                      "settings": {
-                        "number_of_shards": '"$SHARD_COUNT"',
-                        "number_of_replicas": '"$REPLICA_COUNT"'
-                      }
-                    }'
-                  exit 0
-                fi
-                sleep 1
-              done
+                    -d'{"index": {"number_of_replicas": 0}}'
+                done
 
-              echo "Elasticsearch did not become available in time. Skipping template setup."
-              exit 0
+                echo "===== PostStart Hook End ====="
+              } >> /usr/share/elasticsearch/logs/poststart.log 2>&1
     ingress:
       enabled: false
   logstash:
