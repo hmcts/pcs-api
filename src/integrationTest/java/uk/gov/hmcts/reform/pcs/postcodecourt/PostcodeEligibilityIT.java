@@ -32,6 +32,9 @@ import static uk.gov.hmcts.reform.pcs.config.ClockConfiguration.UK_ZONE_ID;
 @ActiveProfiles("integration")
 class PostcodeEligibilityIT extends AbstractPostgresContainerIT {
 
+    private static final String SERVICE_AUTHORIZATION = "ServiceAuthorization";
+    private static final String PCS_SERVICE_AUTH_HEADER = "Bearer serviceToken";
+
     @Autowired
     private CourtEligibilityRepository courtEligibilityRepository;
     @Autowired
@@ -84,6 +87,7 @@ class PostcodeEligibilityIT extends AbstractPostgresContainerIT {
     private EligibilityResult getEligibilityForPostcode(String postcode) throws Exception {
         MvcResult mvcResult = mockMvc.perform(get("/testing-support/claim-eligibility")
                                                   .queryParam("postcode", postcode)
+                                                  .header(SERVICE_AUTHORIZATION, PCS_SERVICE_AUTH_HEADER)
                                                   .contentType(MediaType.APPLICATION_JSON)
             )
             .andExpect(status().isOk())

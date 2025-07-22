@@ -5,6 +5,9 @@ import com.github.kagkarlsson.scheduler.SchedulerClient;
 import com.github.kagkarlsson.scheduler.task.Task;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -172,18 +175,102 @@ public class TestingSupportController {
             + "with an eligibility status."
     )
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Eligibilty check completed successfully"),
-        @ApiResponse(responseCode = "500", description = "Internal server error")
+        @ApiResponse(responseCode = "200", description = "Eligibilty check completed successfully",
+            content = {
+                @Content(
+                    mediaType = "application/json",
+                    examples = {
+                        @ExampleObject(
+                            name = "Eligible postcode",
+                            description = "Result for a match with an eligible postcode",
+                            value = """
+                                 {
+                                       "status": "ELIGIBLE",
+                                       "epimsId": 12345,
+                                       "legislativeCountry": "England"
+                                 }
+                            """
+                            ),
+                        @ExampleObject(
+                            name = "Ineligible postcode",
+                            description = "Result for a match with an ineligible postcode",
+                            value = """
+                                {
+                                  "status": "NOT_ELIGIBLE",
+                                  "epimsId": 45678,
+                                  "legislativeCountry": "Wales"
+                                }
+                            """
+                            ),
+                        @ExampleObject(
+                            name = "Postcode that is cross-border",
+                            description = "Result for a match with a cross border postcode, that needs "
+                                + "the legistalative country to be specified as well",
+                            value = """
+                                {
+                                    "status": "LEGISLATIVE_COUNTRY_REQUIRED",
+                                    "legislativeCountries" : [
+                                        "England",
+                                        "Wales"
+                                    ]
+                                }
+                            """
+                            ),
+                        @ExampleObject(
+                            name = "No match found for postcode",
+                            description = "No match found in the DB for the provided postcode.",
+                            value = """
+                                {
+                                    "status": "NO_MATCH_FOUND"
+                                }
+                            """
+                            ),
+                        @ExampleObject(
+                            name = "Multiple matches found for postcode",
+                            description = "Multiple matches found in the DB for the provided postcode.",
+                            value = """
+                                {
+                                    "status": "MULTIPLE_MATCHES_FOUND"
+                                }
+                            """
+                            ),
+                    })
+            }),
+        @ApiResponse(
+            responseCode = "401",
+            description = "Unauthorized - Invalid or missing authorization token",
+            content = @Content()
+            ),
+        @ApiResponse(
+            responseCode = "403",
+            description = "Forbidden - Invalid or missing service authorization token",
+            content = @Content()
+            ),
+        @ApiResponse(
+            responseCode = "500",
+            description = "Internal server error",
+            content = @Content()
+            )
     })
-    @GetMapping(value = "/claim-eligibility", consumes = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = "/claim-eligibility", produces = MediaType.APPLICATION_JSON_VALUE)
     public EligibilityResult getPostcodeEligibility(
+        @Parameter(
+            description = "Service-to-Service (S2S) authorization token",
+            required = true,
+            example = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+        )
+        @RequestHeader(value = "ServiceAuthorization") String serviceAuthorization,
         @Parameter(
             description = "Property postcode to check eligibility for",
             required = true
         )
         @QueryParam("postcode") String postcode,
-        @Parameter(description = "Legislative country for property, (for use with cross border postcodes)")
-        @QueryParam("legislativeCountry") LegislativeCountry legislativeCountry
+        @Parameter(description = "Legislative country for property, (for use with cross border postcodes)",
+            allowEmptyValue = true,
+            schema = @Schema(type = "string",
+                allowableValues = { "", "England", "Scotland", "Northern Ireland", "Wales" })
+            )
+        @QueryParam(value = "legislativeCountry") LegislativeCountry legislativeCountry
     ) {
         return eligibilityService.checkEligibility(postcode, legislativeCountry);
     }

@@ -12,7 +12,7 @@ public class PostcodeCourtMapping {
 
     private final String postcode;
 
-    private final String legislativeCountry;
+    private final LegislativeCountry legislativeCountry;
 
     private final int epimsId;
 

@@ -10,7 +10,7 @@ import java.util.List;
 public final class EligibilityResult {
 
     private final EligibilityStatus status;
-    private final int epimsId;
+    private final Integer epimsId;
     private final LegislativeCountry legislativeCountry;
     private final List<LegislativeCountry> legislativeCountries;
 
