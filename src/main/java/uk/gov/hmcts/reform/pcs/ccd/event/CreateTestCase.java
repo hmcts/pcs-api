@@ -15,6 +15,7 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.page.createtestcase.ClaimantInformation;
 import uk.gov.hmcts.reform.pcs.ccd.page.createtestcase.MakeAClaim;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
+import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.createTestApplication;
 
@@ -23,6 +24,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.createTestApplication;
 public class CreateTestCase implements CCDConfig<PCSCase, State, UserRole> {
 
     private final PcsCaseService pcsCaseService;
+    private final SecurityContextService securityContextService;
 
     @Override
     public void configure(ConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -41,6 +43,11 @@ public class CreateTestCase implements CCDConfig<PCSCase, State, UserRole> {
     private PCSCase start(EventPayload<PCSCase, State> eventPayload) {
         PCSCase caseData = eventPayload.caseData();
         caseData.setApplicantForename("Preset value");
+
+        String userDetails = securityContextService.getUserDetails();
+
+        caseData.setClaimantName(userDetails);
+
         return caseData;
     }
 
@@ -48,6 +55,10 @@ public class CreateTestCase implements CCDConfig<PCSCase, State, UserRole> {
         long caseReference = eventPayload.caseReference();
         PCSCase pcsCase = eventPayload.caseData();
         pcsCase.setPaymentStatus(PaymentStatus.UNPAID);
+        if (pcsCase.getCorrectClaimantName() != null
+            && !pcsCase.getCorrectClaimantName().isBlank()) {
+            pcsCase.setClaimantName(pcsCase.getCorrectClaimantName());
+        }
 
         pcsCaseService.createCase(caseReference, pcsCase);
     }

@@ -54,6 +54,7 @@ public class TestWithCCD extends CftlibTest {
                                  .postCode("NW1 6XE")
                                  .build())
             .paymentStatus(PaymentStatus.UNPAID)
+            .claimantName("Test Claimant")
             .build();
         var content = CaseDataContent.builder()
             .data(caseData)

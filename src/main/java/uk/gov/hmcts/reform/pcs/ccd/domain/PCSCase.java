@@ -5,6 +5,7 @@ import lombok.Data;
 import uk.gov.hmcts.ccd.sdk.External;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
+import uk.gov.hmcts.ccd.sdk.type.FieldType;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseworkerAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenAccess;
@@ -68,6 +69,18 @@ public class PCSCase {
         access = {CitizenAccess.class, CaseworkerAccess.class}
     )
     private PaymentType paymentType;
+
+    private String claimantName;
+
+    private YesOrNo isClaimantName;
+
+    @CCD(
+        //label = "What is the correct claimant name?",
+        hint = "Changing your claimant name here only updates it for this claim. It does not change your "
+            + "registered claimant name on My HMCTS",
+        typeOverride = FieldType.Text
+    )
+    private String correctClaimantName;
 
     private String pageHeadingMarkdown;
 

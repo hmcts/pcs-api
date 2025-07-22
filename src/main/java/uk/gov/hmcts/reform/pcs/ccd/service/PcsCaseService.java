@@ -35,6 +35,7 @@ public class PcsCaseService {
         pcsCaseEntity.setApplicantSurname(pcsCase.getApplicantSurname());
         pcsCaseEntity.setPropertyAddress(addressEntity);
         pcsCaseEntity.setPaymentStatus(pcsCase.getPaymentStatus());
+        pcsCaseEntity.setClaimantName(pcsCase.getClaimantName());
 
         pcsCaseRepository.save(pcsCaseEntity);
     }

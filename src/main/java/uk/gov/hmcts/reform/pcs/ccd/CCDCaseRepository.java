@@ -48,6 +48,7 @@ public class CCDCaseRepository extends DecentralisedCaseRepository<PCSCase> {
             .applicantSurname(pcsCaseEntity.getApplicantSurname())
             .propertyAddress(convertAddress(pcsCaseEntity.getPropertyAddress()))
             .caseManagementLocation(pcsCaseEntity.getCaseManagementLocation())
+            .claimantName(pcsCaseEntity.getClaimantName())
             .build();
 
         setDerivedProperties(caseReference,pcsCase, pcsCaseEntity);

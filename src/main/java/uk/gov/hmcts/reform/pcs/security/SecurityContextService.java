@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.security;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -11,6 +12,7 @@ import uk.gov.hmcts.reform.pcs.idam.User;
 import java.util.UUID;
 
 @Service
+@Slf4j
 public class SecurityContextService {
 
     /**
@@ -40,6 +42,18 @@ public class SecurityContextService {
         } else {
             throw new SecurityContextException("Authentication principal is null or not of the expected type");
         }
+    }
+
+    public String getUserDetails() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        if (authentication != null && authentication.getPrincipal() instanceof User user) {
+            return user.getUserDetails().toString();
+
+        } else {
+            log.warn("No user details found");
+        }
+        return null;
     }
 
 }

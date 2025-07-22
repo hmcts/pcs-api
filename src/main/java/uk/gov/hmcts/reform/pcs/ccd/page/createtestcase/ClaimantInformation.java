@@ -9,8 +9,13 @@ public class ClaimantInformation implements CcdPageConfiguration {
     @Override
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
-            .page("claimant information")
-            .pageLabel("Please enter applicant's name")
-            .mandatory(PCSCase::getApplicantForename);
+            .page("Makes a claim")
+            .pageLabel("Claimant name")
+            .readonlyWithLabel(PCSCase::getClaimantName, "Your claimant name registered with My HMCTS is:")
+            .label("preset-claimant-label", "### Is this the correct claimant name?")
+            .mandatory(PCSCase::getIsClaimantName)
+            .label("new-claimant-name-Label", "### What is the correct claimant name?", "isClaimantName=\"No\"")
+            .mandatory(PCSCase::getCorrectClaimantName, "isClaimantName=\"No\"", false);
+
     }
 }

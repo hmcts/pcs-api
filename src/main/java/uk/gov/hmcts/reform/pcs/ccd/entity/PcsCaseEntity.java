@@ -53,6 +53,8 @@ public class PcsCaseEntity {
     @Enumerated(EnumType.STRING)
     private PaymentStatus paymentStatus;
 
+    private String claimantName;
+
     @OneToMany(mappedBy = "pcsCase", fetch = LAZY, cascade = ALL)
     @JsonManagedReference
     private Set<PartyEntity> parties = new HashSet<>();
