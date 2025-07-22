@@ -1,13 +1,11 @@
 package uk.gov.hmcts.reform.pcs.testingsupport.endpoint;
 
-import com.azure.core.annotation.QueryParam;
 import com.github.kagkarlsson.scheduler.SchedulerClient;
 import com.github.kagkarlsson.scheduler.task.Task;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
-import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -236,6 +234,10 @@ public class TestingSupportController {
                             ),
                     })
             }),
+        @ApiResponse(responseCode = "400",
+            description = "Missing or blank postcode query parameter",
+            content = @Content()
+            ),
         @ApiResponse(
             responseCode = "401",
             description = "Unauthorized - Invalid or missing authorization token",
@@ -264,13 +266,9 @@ public class TestingSupportController {
             description = "Property postcode to check eligibility for",
             required = true
         )
-        @QueryParam("postcode") String postcode,
-        @Parameter(description = "Legislative country for property, (for use with cross border postcodes)",
-            allowEmptyValue = true,
-            schema = @Schema(type = "string",
-                allowableValues = { "", "England", "Scotland", "Northern Ireland", "Wales" })
-            )
-        @QueryParam(value = "legislativeCountry") LegislativeCountry legislativeCountry
+        @RequestParam("postcode") String postcode,
+        @Parameter(description = "Legislative country for property, (for use with cross border postcodes)")
+        @RequestParam(value = "legislativeCountry", required = false) LegislativeCountry legislativeCountry
     ) {
         return eligibilityService.checkEligibility(postcode, legislativeCountry);
     }
