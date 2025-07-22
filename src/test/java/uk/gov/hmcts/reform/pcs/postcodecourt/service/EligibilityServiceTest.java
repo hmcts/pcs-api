@@ -69,14 +69,14 @@ class EligibilityServiceTest {
         List<PostcodeCourtMapping> mappings = List.of(
             PostcodeCourtMapping.builder()
                 .postcode(TEST_POSTCODE)
-                .legislativeCountry(ENGLAND.getLabel())
+                .legislativeCountry(ENGLAND)
                 .mappingEffectiveFrom(TEST_DATE.minusWeeks(2))
                 .mappingEffectiveTo(TEST_DATE.minusDays(1))
                 .build(),
             PostcodeCourtMapping.builder()
                 .postcode(TEST_POSTCODE)
                 .mappingEffectiveFrom(TEST_DATE.plusDays(1))
-                .legislativeCountry(ENGLAND.getLabel())
+                .legislativeCountry(ENGLAND)
                 .build()
         );
 
@@ -94,14 +94,14 @@ class EligibilityServiceTest {
         List<PostcodeCourtMapping> mappings = List.of(
             PostcodeCourtMapping.builder()
                 .postcode(TEST_POSTCODE)
-                .legislativeCountry(ENGLAND.getLabel())
+                .legislativeCountry(ENGLAND)
                 .mappingEffectiveFrom(TEST_DATE.minusWeeks(2))
                 .mappingEffectiveTo(TEST_DATE.plusDays(1))
                 .build(),
             PostcodeCourtMapping.builder()
                 .postcode(TEST_POSTCODE)
                 .mappingEffectiveFrom(TEST_DATE.minusDays(1))
-                .legislativeCountry(ENGLAND.getLabel())
+                .legislativeCountry(ENGLAND)
                 .build()
         );
 
@@ -121,14 +121,14 @@ class EligibilityServiceTest {
             PostcodeCourtMapping.builder()
                 .postcode(TEST_POSTCODE)
                 .mappingEffectiveFrom(TEST_DATE)
-                .legislativeCountry(ENGLAND.getLabel())
+                .legislativeCountry(ENGLAND)
                 .courtEligibleFrom(TEST_DATE)
                 .epimsId(expectedEpimsId)
                 .build(),
             PostcodeCourtMapping.builder()
                 .postcode(removeLastCharacter(TEST_POSTCODE))
                 .mappingEffectiveFrom(TEST_DATE)
-                .legislativeCountry(ENGLAND.getLabel())
+                .legislativeCountry(ENGLAND)
                 .build()
         );
 
@@ -147,17 +147,17 @@ class EligibilityServiceTest {
         List<PostcodeCourtMapping> mappings = List.of(
             PostcodeCourtMapping.builder()
                 .postcode(TEST_POSTCODE)
-                .legislativeCountry(WALES.getLabel())
+                .legislativeCountry(WALES)
                 .courtEligibleFrom(TEST_DATE)
                 .build(),
             PostcodeCourtMapping.builder()
                 .postcode(TEST_POSTCODE)
-                .legislativeCountry(ENGLAND.getLabel())
+                .legislativeCountry(ENGLAND)
                 .courtEligibleFrom(TEST_DATE)
                 .build(),
             PostcodeCourtMapping.builder()
                 .postcode(TEST_POSTCODE)
-                .legislativeCountry(ENGLAND.getLabel())
+                .legislativeCountry(ENGLAND)
                 .courtEligibleFrom(TEST_DATE)
                 .build()
         );
@@ -179,14 +179,14 @@ class EligibilityServiceTest {
             PostcodeCourtMapping.builder()
                 .postcode(TEST_POSTCODE)
                 .mappingEffectiveFrom(TEST_DATE)
-                .legislativeCountry(ENGLAND.getLabel())
+                .legislativeCountry(ENGLAND)
                 .courtEligibleFrom(TEST_DATE)
                 .epimsId(expectedEpimsId)
                 .build(),
             PostcodeCourtMapping.builder()
                 .postcode(removeLastCharacter(TEST_POSTCODE))
                 .mappingEffectiveFrom(TEST_DATE)
-                .legislativeCountry(WALES.getLabel())
+                .legislativeCountry(WALES)
                 .courtEligibleFrom(TEST_DATE)
                 .build()
         );
@@ -208,7 +208,7 @@ class EligibilityServiceTest {
             PostcodeCourtMapping.builder()
                 .postcode(TEST_POSTCODE)
                 .mappingEffectiveFrom(TEST_DATE)
-                .legislativeCountry(WALES.getLabel())
+                .legislativeCountry(WALES)
                 .courtEligibleFrom(TEST_DATE)
                 .epimsId(expectedEpimsId)
                 .build()

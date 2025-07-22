@@ -90,6 +90,7 @@ public class EligibilityService {
         return EligibilityResult.builder()
             .status(eligibilityStatus)
             .epimsId(matchedMapping.getEpimsId())
+            .legislativeCountry(matchedMapping.getLegislativeCountry())
             .build();
     }
 
@@ -154,7 +155,6 @@ public class EligibilityService {
             .map(PostcodeCourtMapping::getLegislativeCountry)
             .distinct()
             .sorted()
-            .map(LegislativeCountry::fromLabel)
             .toList();
     }
 
