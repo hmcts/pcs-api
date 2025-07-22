@@ -72,6 +72,7 @@ class PcsCaseServiceTest {
         // Given
         String expectedForename = "Test forename";
         String expectedSurname = "Test surname";
+        String presetClaimantName = "Present claimant name";
 
         PCSCase pcsCase = mock(PCSCase.class);
         AddressUK propertyAddress = mock(AddressUK.class);
@@ -80,6 +81,7 @@ class PcsCaseServiceTest {
         when(pcsCase.getApplicantForename()).thenReturn(expectedForename);
         when(pcsCase.getApplicantSurname()).thenReturn(expectedSurname);
         when(pcsCase.getPropertyAddress()).thenReturn(propertyAddress);
+        when(pcsCase.getClaimantName()).thenReturn(presetClaimantName);
 
         // When
         underTest.createCase(CASE_REFERENCE, pcsCase);
@@ -91,6 +93,7 @@ class PcsCaseServiceTest {
         assertThat(savedEntity.getApplicantForename()).isEqualTo(expectedForename);
         assertThat(savedEntity.getApplicantSurname()).isEqualTo(expectedSurname);
         assertThat(savedEntity.getPropertyAddress()).isEqualTo(propertyAddressEntity);
+        assertThat(savedEntity.getClaimantName()).isEqualTo(presetClaimantName);
     }
 
     @Test
@@ -271,6 +274,23 @@ class PcsCaseServiceTest {
         assertThat(pcsCaseEntityCaptor.getValue()).isSameAs(existingPcsCaseEntity);
     }
 
+    @Test
+    void shouldUpdateClaimantNameWhenNotNull() {
+        // Given
+        PCSCase pcsCase = mock(PCSCase.class);
+        PcsCaseEntity existingPcsCaseEntity = mock(PcsCaseEntity.class);
+        String claimantName = "claimantName";
+        when(pcsCase.getClaimantName()).thenReturn(claimantName);
+        when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(existingPcsCaseEntity));
+
+        // When
+        underTest.patchCase(CASE_REFERENCE, pcsCase);
+
+        // Then
+        verify(pcsCaseRepository).save(pcsCaseEntityCaptor.capture());
+        verify(existingPcsCaseEntity).setClaimantName(claimantName);
+        assertThat(pcsCaseEntityCaptor.getValue()).isSameAs(existingPcsCaseEntity);
+    }
     private AddressEntity stubAddressUKModelMapper(AddressUK addressUK) {
         AddressEntity addressEntity = mock(AddressEntity.class);
         when(modelMapper.map(addressUK, AddressEntity.class)).thenReturn(addressEntity);

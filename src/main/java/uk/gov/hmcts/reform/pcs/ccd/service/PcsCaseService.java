@@ -69,6 +69,9 @@ public class PcsCaseService {
         if (pcsCase.getCaseManagementLocation() != null) {
             pcsCaseEntity.setCaseManagementLocation(pcsCase.getCaseManagementLocation());
         }
+        if(pcsCase.getIsClaimantName() != null) {
+            pcsCaseEntity.setClaimantName(pcsCase.getClaimantName());
+        }
 
         pcsCaseRepository.save(pcsCaseEntity);
     }
