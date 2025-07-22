@@ -2,6 +2,8 @@ package uk.gov.hmcts.reform.pcs.ccd.entity;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -12,6 +14,7 @@ import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
+import uk.gov.hmcts.reform.pcs.ccd.domain.PaymentStatus;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -44,6 +47,11 @@ public class PcsCaseEntity {
 
     @OneToOne(cascade = ALL)
     private AddressEntity propertyAddress;
+
+    private Integer caseManagementLocation;
+
+    @Enumerated(EnumType.STRING)
+    private PaymentStatus paymentStatus;
 
     @OneToMany(mappedBy = "pcsCase", fetch = LAZY, cascade = ALL)
     @JsonManagedReference
