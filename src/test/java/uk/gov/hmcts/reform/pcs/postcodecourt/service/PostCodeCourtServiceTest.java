@@ -212,6 +212,39 @@ class PostCodeCourtServiceTest {
         verify(postCodeCourtRepository).findActiveByPostCodeIn(expectedPartialPostcodes, TEST_DATE);
     }
 
+    @Test
+    @DisplayName("Should return active EpimId for case management location")
+    void shoudReturnActiveEpimIdForCaseManagementLocation() {
+        String postCode = "W37RX";
+        int activeEpimId = 76598;
+        PostCodeCourtEntity activeEntity = createPostCodeCourtEntity(postCode, activeEpimId);
+
+        List<String> expectedPartialPostcodes = stubPartialPostcodesGenerator(postCode);
+
+        when(postCodeCourtRepository.findActiveByPostCodeIn(expectedPartialPostcodes, TEST_DATE))
+            .thenReturn(List.of(activeEntity));
+
+        Integer response = underTest.getCourtManagementLocation(postCode);
+
+        verify(postCodeCourtRepository).findActiveByPostCodeIn(expectedPartialPostcodes, TEST_DATE);
+        assertThat(response).isEqualTo(activeEpimId);
+    }
+
+    @Test
+    @DisplayName("Should return null when active EpimId not found for case management location")
+    void shouldReturnNullWhenEpimIdNotFoundForCaseManagementLocation() {
+        String postCode = "W37RX";
+
+        List<String> expectedPartialPostcodes = stubPartialPostcodesGenerator(postCode);
+        when(postCodeCourtRepository.findActiveByPostCodeIn(expectedPartialPostcodes, TEST_DATE))
+            .thenReturn(List.of());
+
+        Integer response = underTest.getCourtManagementLocation(postCode);
+
+        verify(postCodeCourtRepository).findActiveByPostCodeIn(expectedPartialPostcodes, TEST_DATE);
+        assertThat(response).isNull();
+    }
+
     private List<String> stubPartialPostcodesGenerator(String postCode) {
         List<String> expectedPartialPostcodes = List.of("A", "B", "C");
         when(partialPostcodesGenerator.generateForPostcode(postCode)).thenReturn(expectedPartialPostcodes);
