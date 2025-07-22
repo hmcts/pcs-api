@@ -32,9 +32,6 @@ import static uk.gov.hmcts.reform.pcs.config.ClockConfiguration.UK_ZONE_ID;
 @ActiveProfiles("integration")
 class PostcodeEligibilityIT extends AbstractPostgresContainerIT {
 
-    private static final String SERVICE_AUTHORIZATION = "ServiceAuthorization";
-    private static final String PCS_SERVICE_AUTH_HEADER = "Bearer serviceToken";
-
     @Autowired
     private CourtEligibilityRepository courtEligibilityRepository;
     @Autowired
@@ -48,7 +45,7 @@ class PostcodeEligibilityIT extends AbstractPostgresContainerIT {
         String postcode = "W3 7RX";
         int expectedEpimsId = 20262;
 
-        EligibilityResult eligibilityResult = getEligibilityForPostcode(postcode);
+        EligibilityResult eligibilityResult = getEligibilityForPostcode(postcode, null);
 
         assertThat(eligibilityResult.getStatus()).isEqualTo(EligibilityStatus.ELIGIBLE);
         assertThat(eligibilityResult.getEpimsId()).isEqualTo(expectedEpimsId);
@@ -64,7 +61,7 @@ class PostcodeEligibilityIT extends AbstractPostgresContainerIT {
 
         setEligibilityFromDate(epimsId, LocalDate.now(UK_ZONE_ID).plusDays(1));
 
-        EligibilityResult eligibilityResult = getEligibilityForPostcode(postcode);
+        EligibilityResult eligibilityResult = getEligibilityForPostcode(postcode, null);
 
         assertThat(eligibilityResult.getStatus()).isEqualTo(EligibilityStatus.NOT_ELIGIBLE);
         assertThat(eligibilityResult.getEpimsId()).isEqualTo(epimsId);
@@ -72,22 +69,92 @@ class PostcodeEligibilityIT extends AbstractPostgresContainerIT {
     }
 
     @Test
+    @DisplayName("Returns NO_MATCH_FOUND status for whitelisted postcode that maps to expired ePIMS ID")
+    void shouldReturnNoMatchFoundStatus() throws Exception {
+        String postcode = "W3 6RT";
+
+        EligibilityResult eligibilityResult = getEligibilityForPostcode(postcode, null);
+
+        assertThat(eligibilityResult.getStatus()).isEqualTo(EligibilityStatus.NO_MATCH_FOUND);
+    }
+
+    @Test
     @DisplayName("Returns NOT_ELIGIBLE status for postcode that is not whitelisted")
-    void shouldReturnNotEligibleForPostcodeNotWhitelisted() throws Exception {
+    void shouldReturnNotEligibleStatusForPostcodeNotWhitelisted() throws Exception {
         String postcode = "M13 9PL";
         int expectedEpimsId = 144641;
 
-        EligibilityResult eligibilityResult = getEligibilityForPostcode(postcode);
+        EligibilityResult eligibilityResult = getEligibilityForPostcode(postcode, null);
 
         assertThat(eligibilityResult.getStatus()).isEqualTo(EligibilityStatus.NOT_ELIGIBLE);
         assertThat(eligibilityResult.getEpimsId()).isEqualTo(expectedEpimsId);
         assertThat(eligibilityResult.getLegislativeCountry()).isEqualTo(LegislativeCountry.ENGLAND);
     }
 
-    private EligibilityResult getEligibilityForPostcode(String postcode) throws Exception {
+    @Test
+    @DisplayName("Returns NO_MATCH_FOUND status for postcode with no ePIMS ID match")
+    void shouldReturnNoMatchFoundStatusForPostcodeNoEpimsIdMatch() throws Exception {
+        String postcode = "NW1 1AB";
+
+        EligibilityResult eligibilityResult = getEligibilityForPostcode(postcode, null);
+
+        assertThat(eligibilityResult.getStatus()).isEqualTo(EligibilityStatus.NO_MATCH_FOUND);
+    }
+
+    @Test
+    @DisplayName("Returns MULTIPLE_MATCHES_FOUND status for postcode with multiple ePIMS ID matches")
+    void shouldReturnMultipleMatchesFoundStatusForPostcodeMultipleEpimsIdMatch() throws Exception {
+        String postcode = "RH13 5JH";
+
+        EligibilityResult eligibilityResult = getEligibilityForPostcode(postcode, null);
+
+        assertThat(eligibilityResult.getStatus()).isEqualTo(EligibilityStatus.MULTIPLE_MATCHES_FOUND);
+    }
+
+    @Test
+    @DisplayName("Returns LEGISLATIVE_COUNTRY_REQUIRED for a cross border postcode")
+    void shouldReturnLegislativeCountryRequiredStatusForCrossBorderPostcode() throws Exception {
+        String postcode = "SY132LH";
+
+        EligibilityResult eligibilityResult = getEligibilityForPostcode(postcode, null);
+
+        assertThat(eligibilityResult.getStatus()).isEqualTo(EligibilityStatus.LEGISLATIVE_COUNTRY_REQUIRED);
+        assertThat(eligibilityResult.getLegislativeCountries()).containsExactly(LegislativeCountry.ENGLAND, LegislativeCountry.WALES);
+    }
+
+    @Test
+    @DisplayName("Returns ELIGIBLE for a cross border, whitelisted postcode with legislative country value")
+    void shouldReturnEligibleStatusForWhitelistedCrossBorderPostcode() throws Exception {
+        String postcode = "SY132LH";
+        String legislativeCountry = "England";
+        int expectedEpimsId = 20262;
+
+        EligibilityResult eligibilityResult = getEligibilityForPostcode(postcode, legislativeCountry);
+
+        assertThat(eligibilityResult.getStatus()).isEqualTo(EligibilityStatus.ELIGIBLE);
+        assertThat(eligibilityResult.getEpimsId()).isEqualTo(expectedEpimsId);
+        assertThat(eligibilityResult.getLegislativeCountry()).isEqualTo(LegislativeCountry.ENGLAND);
+    }
+
+    @Test
+    @DisplayName("Returns NOT_ELIGIBLE for a cross border, non-whitelisted postcode with legislative country value")
+    void shouldReturnNotEligibleStatusForNonWhitelistedCrossBorderPostcode() throws Exception {
+        String postcode = "CH14QJ";
+        String legislativeCountry = "Wales";
+        int expectedEpimsId = 99999;
+
+        EligibilityResult eligibilityResult = getEligibilityForPostcode(postcode, legislativeCountry);
+
+        assertThat(eligibilityResult.getStatus()).isEqualTo(EligibilityStatus.NOT_ELIGIBLE);
+        assertThat(eligibilityResult.getEpimsId()).isEqualTo(expectedEpimsId);
+        assertThat(eligibilityResult.getLegislativeCountry()).isEqualTo(LegislativeCountry.WALES);
+    }
+
+    private EligibilityResult getEligibilityForPostcode(String postcode, String legislativeCountry) throws Exception {
         MvcResult mvcResult = mockMvc.perform(get("/testing-support/claim-eligibility")
+                                                  .header("serviceAuthorization", "test")
                                                   .queryParam("postcode", postcode)
-                                                  .header(SERVICE_AUTHORIZATION, PCS_SERVICE_AUTH_HEADER)
+                                                  .queryParam("legislativeCountry", legislativeCountry)
                                                   .contentType(MediaType.APPLICATION_JSON)
             )
             .andExpect(status().isOk())
