@@ -12,7 +12,6 @@ import uk.gov.hmcts.reform.pcs.idam.User;
 import java.util.UUID;
 
 @Service
-@Slf4j
 public class SecurityContextService {
 
     /**
