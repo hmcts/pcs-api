@@ -43,9 +43,7 @@ public class CreateTestCase implements CCDConfig<PCSCase, State, UserRole> {
     private PCSCase start(EventPayload<PCSCase, State> eventPayload) {
         PCSCase caseData = eventPayload.caseData();
         caseData.setApplicantForename("Preset value");
-
-        String userDetails = securityContextService.getUserDetails();
-
+        String userDetails = securityContextService.getCurrentUserDetails().getSub();
         caseData.setClaimantName(userDetails);
 
         return caseData;

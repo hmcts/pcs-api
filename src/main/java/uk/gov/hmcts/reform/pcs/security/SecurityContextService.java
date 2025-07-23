@@ -44,16 +44,4 @@ public class SecurityContextService {
         }
     }
 
-    public String getUserDetails() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-        if (authentication != null && authentication.getPrincipal() instanceof User user) {
-            return user.getUserDetails().toString();
-
-        } else {
-            log.warn("No user details found");
-        }
-        return null;
-    }
-
 }
