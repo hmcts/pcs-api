@@ -170,44 +170,39 @@ ccd:
           storage: 500Mi
       storageClassName: managed-lrs
     clusterHealthCheckParams: "wait_for_status=yellow&timeout=5s"
-    lifecycle:
-      postStart:
-        exec:
-          command:
-            - bash
-            - -c
-            - |
-              {
-                echo "===== PostStart Hook Begin ====="
-                date
-                ES_URL=http://localhost:9200
-                # Wait for ES to be up
-                until curl -s -o /dev/null -w '%{http_code}' $ES_URL | grep -q 200; do
-                  echo "Waiting for Elasticsearch..."
-                  sleep 1
-                done
+    extraInitContainers:
+      - name: configure-elasticsearch
+        image: docker.elastic.co/elasticsearch/elasticsearch:7.17.3
+        command:
+          - bash
+          - -c
+          - |
+            echo "Waiting for Elasticsearch to start..."
+            ES_URL=http://localhost:9200
+            until curl -s -o /dev/null -w '%{http_code}' $ES_URL | grep -q 200; do
+              sleep 1
+            done
 
-                echo "Creating template..."
-                curl -XPUT "$ES_URL/_template/default_ephemeral_template" \
-                  -H 'Content-Type: application/json' \
-                  -d'{
-                    "index_patterns": ["*"],
-                    "settings": {
-                      "number_of_shards": 1,
-                      "number_of_replicas": 0
-                    }
-                  }'
+            echo "Applying index template..."
+            curl -XPUT "$ES_URL/_template/default_ephemeral_template" \
+              -H 'Content-Type: application/json' \
+              -d '{
+                "index_patterns": ["*"],
+                "settings": {
+                  "number_of_shards": 1,
+                  "number_of_replicas": 0
+                }
+              }'
 
-                echo "Updating existing indexes..."
-                for index in $(curl -s "$ES_URL/_cat/indices?h=index"); do
-                  echo "Updating $index..."
-                  curl -XPUT "$ES_URL/$index/_settings" \
-                    -H 'Content-Type: application/json' \
-                    -d'{"index": {"number_of_replicas": 0}}'
-                done
-
-                echo "===== PostStart Hook End ====="
-              } >> /usr/share/elasticsearch/logs/poststart.log 2>&1
+            echo "Fixing replicas for existing indexes..."
+            for index in $(curl -s "$ES_URL/_cat/indices?h=index"); do
+              curl -XPUT "$ES_URL/$index/_settings" \
+                -H 'Content-Type: application/json' \
+                -d '{"index": {"number_of_replicas": 0}}'
+            done
+        volumeMounts:
+          - name: elasticsearch-data
+            mountPath: /usr/share/elasticsearch/data
     ingress:
       enabled: false
   logstash:
