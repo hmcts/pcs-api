@@ -20,7 +20,7 @@ public class UserTypeInfoRenderer {
     }
 
     public String render(String userType, long caseReference) {
-        PebbleTemplate compiledTemplate = pebbleEngine.getTemplate("userTypeInfo");
+        PebbleTemplate compiledTemplate = pebbleEngine.getTemplate("templates/userTypeInfo.peb");
 
         Map<String, Object> context = new HashMap<>();
         context.put("userType", userType);
