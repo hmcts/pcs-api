@@ -7,6 +7,7 @@ import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.ccd.client.CoreCaseDataApi;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDataContent;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
@@ -54,7 +55,9 @@ public class TestWithCCD extends CftlibTest {
                                  .postCode("NW1 6XE")
                                  .build())
             .paymentStatus(PaymentStatus.UNPAID)
-            .claimantName("Test Claimant")
+            .claimantName("Wrong name")
+            .isClaimantName(YesOrNo.NO)
+            .correctClaimantName("Correct name")
             .build();
         var content = CaseDataContent.builder()
             .data(caseData)
@@ -64,6 +67,10 @@ public class TestWithCCD extends CftlibTest {
         caseDetails = ccdApi.submitForCaseworker(idamToken, s2sToken, userId,
                                                  "PCS", CaseType.getCaseType(), false, content
         );
+
         assertThat(caseDetails.getId()).isNotNull();
+        assertThat(caseDetails.getData().get("applicantForename")).isEqualTo("Foo");
+        assertThat(caseDetails.getData().get("claimantName")).isEqualTo("Correct name");
     }
+
 }

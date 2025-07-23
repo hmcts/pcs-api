@@ -274,24 +274,6 @@ class PcsCaseServiceTest {
         assertThat(pcsCaseEntityCaptor.getValue()).isSameAs(existingPcsCaseEntity);
     }
 
-    @Test
-    void shouldUpdateClaimantNameWhenNotNull() {
-        // Given
-        PCSCase pcsCase = mock(PCSCase.class);
-        PcsCaseEntity existingPcsCaseEntity = mock(PcsCaseEntity.class);
-        String claimantName = "claimantName";
-        when(pcsCase.getClaimantName()).thenReturn(claimantName);
-        when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(existingPcsCaseEntity));
-
-        // When
-        underTest.patchCase(CASE_REFERENCE, pcsCase);
-
-        // Then
-        verify(pcsCaseRepository).save(pcsCaseEntityCaptor.capture());
-        verify(existingPcsCaseEntity).setClaimantName(claimantName);
-        assertThat(pcsCaseEntityCaptor.getValue()).isSameAs(existingPcsCaseEntity);
-    }
-
     private AddressEntity stubAddressUKModelMapper(AddressUK addressUK) {
         AddressEntity addressEntity = mock(AddressEntity.class);
         when(modelMapper.map(addressUK, AddressEntity.class)).thenReturn(addressEntity);
