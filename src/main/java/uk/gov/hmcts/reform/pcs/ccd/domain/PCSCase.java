@@ -21,18 +21,23 @@ public class PCSCase {
     private final YesOrNo decentralised = YesOrNo.YES;
 
     @CCD(
-        label = "Applicant's forename",
+        label = "Claimant Name",
         access = {CitizenAccess.class, CaseworkerAccess.class}
     )
     @External
-    private String applicantForename;
+    private String claimantName;
+
+    @CCD(searchable = false,
+        access = {CitizenAccess.class, CaseworkerAccess.class}
+    )
+    private YesOrNo isClaimantName;
 
     @CCD(
-        label = "Applicant's surname",
-        access = {CitizenAccess.class, CaseworkerAccess.class}
+        hint = "Changing your claimant name here only updates it for this claim. It does not change your "
+            + "registered claimant name on My HMCTS",
+        typeOverride = FieldType.Text
     )
-    @External
-    private String applicantSurname;
+    private String correctClaimantNamePlaceHolder;
 
     @CCD(
         label = "Property address",
@@ -69,18 +74,6 @@ public class PCSCase {
         access = {CitizenAccess.class, CaseworkerAccess.class}
     )
     private PaymentType paymentType;
-
-    private String claimantName;
-
-    private YesOrNo isClaimantName;
-
-    @CCD(
-        //label = "What is the correct claimant name?",
-        hint = "Changing your claimant name here only updates it for this claim. It does not change your "
-            + "registered claimant name on My HMCTS",
-        typeOverride = FieldType.Text
-    )
-    private String correctClaimantName;
 
     private String pageHeadingMarkdown;
 

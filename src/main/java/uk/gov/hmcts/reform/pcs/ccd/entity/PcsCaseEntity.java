@@ -41,9 +41,7 @@ public class PcsCaseEntity {
 
     private Long caseReference;
 
-    private String applicantForename;
-
-    private String applicantSurname;
+    private String claimantName;
 
     @OneToOne(cascade = ALL)
     private AddressEntity propertyAddress;
@@ -52,8 +50,6 @@ public class PcsCaseEntity {
 
     @Enumerated(EnumType.STRING)
     private PaymentStatus paymentStatus;
-
-    private String claimantName;
 
     @OneToMany(mappedBy = "pcsCase", fetch = LAZY, cascade = ALL)
     @JsonManagedReference

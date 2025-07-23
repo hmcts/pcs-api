@@ -42,7 +42,6 @@ public class CreateTestCase implements CCDConfig<PCSCase, State, UserRole> {
 
     private PCSCase start(EventPayload<PCSCase, State> eventPayload) {
         PCSCase caseData = eventPayload.caseData();
-        caseData.setApplicantForename("Preset value");
         String userDetails = securityContextService.getCurrentUserDetails().getSub();
         caseData.setClaimantName(userDetails);
 
@@ -53,9 +52,9 @@ public class CreateTestCase implements CCDConfig<PCSCase, State, UserRole> {
         long caseReference = eventPayload.caseReference();
         PCSCase pcsCase = eventPayload.caseData();
         pcsCase.setPaymentStatus(PaymentStatus.UNPAID);
-        if (pcsCase.getCorrectClaimantName() != null
-            && !pcsCase.getCorrectClaimantName().isBlank()) {
-            pcsCase.setClaimantName(pcsCase.getCorrectClaimantName());
+        if (pcsCase.getCorrectClaimantNamePlaceHolder() != null
+            && !pcsCase.getCorrectClaimantNamePlaceHolder().isBlank()) {
+            pcsCase.setClaimantName(pcsCase.getCorrectClaimantNamePlaceHolder());
         }
 
         pcsCaseService.createCase(caseReference, pcsCase);

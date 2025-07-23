@@ -31,8 +31,7 @@ public class PcsCaseService {
 
         PcsCaseEntity pcsCaseEntity = new PcsCaseEntity();
         pcsCaseEntity.setCaseReference(caseReference);
-        pcsCaseEntity.setApplicantForename(pcsCase.getApplicantForename());
-        pcsCaseEntity.setApplicantSurname(pcsCase.getApplicantSurname());
+        pcsCaseEntity.setClaimantName(pcsCase.getClaimantName());
         pcsCaseEntity.setPropertyAddress(addressEntity);
         pcsCaseEntity.setPaymentStatus(pcsCase.getPaymentStatus());
         pcsCaseEntity.setClaimantName(pcsCase.getClaimantName());
@@ -44,12 +43,8 @@ public class PcsCaseService {
         PcsCaseEntity pcsCaseEntity = pcsCaseRepository.findByCaseReference(caseReference)
             .orElseThrow(() -> new CaseNotFoundException(caseReference));
 
-        if (pcsCase.getApplicantForename() != null) {
-            pcsCaseEntity.setApplicantForename(pcsCase.getApplicantForename());
-        }
-
-        if (pcsCase.getApplicantSurname() != null) {
-            pcsCaseEntity.setApplicantSurname(pcsCase.getApplicantSurname());
+        if (pcsCase.getClaimantName() != null) {
+            pcsCaseEntity.setClaimantName(pcsCase.getClaimantName());
         }
 
         if (pcsCase.getPropertyAddress() != null) {

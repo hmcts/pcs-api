@@ -62,24 +62,21 @@ class PcsCaseServiceTest {
         verify(pcsCaseRepository).save(pcsCaseEntityCaptor.capture());
 
         PcsCaseEntity savedEntity = pcsCaseEntityCaptor.getValue();
-        assertThat(savedEntity.getApplicantForename()).isNull();
-        assertThat(savedEntity.getApplicantSurname()).isNull();
+        assertThat(savedEntity.getClaimantName()).isNull();
+        assertThat(savedEntity.getCaseManagementLocation()).isNull();
         assertThat(savedEntity.getPropertyAddress()).isNull();
     }
 
     @Test
     void shouldCreateCaseWithData() {
         // Given
-        String expectedForename = "Test forename";
-        String expectedSurname = "Test surname";
         String presetClaimantName = "Present claimant name";
 
         PCSCase pcsCase = mock(PCSCase.class);
         AddressUK propertyAddress = mock(AddressUK.class);
         final AddressEntity propertyAddressEntity = stubAddressUKModelMapper(propertyAddress);
 
-        when(pcsCase.getApplicantForename()).thenReturn(expectedForename);
-        when(pcsCase.getApplicantSurname()).thenReturn(expectedSurname);
+        when(pcsCase.getClaimantName()).thenReturn(presetClaimantName);
         when(pcsCase.getPropertyAddress()).thenReturn(propertyAddress);
         when(pcsCase.getClaimantName()).thenReturn(presetClaimantName);
 
@@ -90,8 +87,6 @@ class PcsCaseServiceTest {
         verify(pcsCaseRepository).save(pcsCaseEntityCaptor.capture());
 
         PcsCaseEntity savedEntity = pcsCaseEntityCaptor.getValue();
-        assertThat(savedEntity.getApplicantForename()).isEqualTo(expectedForename);
-        assertThat(savedEntity.getApplicantSurname()).isEqualTo(expectedSurname);
         assertThat(savedEntity.getPropertyAddress()).isEqualTo(propertyAddressEntity);
         assertThat(savedEntity.getClaimantName()).isEqualTo(presetClaimantName);
     }
@@ -135,15 +130,14 @@ class PcsCaseServiceTest {
     void shouldChangeFieldsWhenPatchingCase() {
         // Given
         PCSCase pcsCase = mock(PCSCase.class);
-        String updatedForename = "Updated forename";
-        String updatedSurname = "Updated surname";
+
+        String claimantName = "Updated claimant name";
 
         AddressUK updatedPropertyAddress = mock(AddressUK.class);
         final AddressEntity updatedAddressEntity = stubAddressUKModelMapper(updatedPropertyAddress);
 
         PcsCaseEntity existingPcsCaseEntity = mock(PcsCaseEntity.class);
-        when(pcsCase.getApplicantForename()).thenReturn(updatedForename);
-        when(pcsCase.getApplicantSurname()).thenReturn(updatedSurname);
+        when(pcsCase.getClaimantName()).thenReturn(claimantName);
         when(pcsCase.getPropertyAddress()).thenReturn(updatedPropertyAddress);
 
         when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(existingPcsCaseEntity));
@@ -156,8 +150,7 @@ class PcsCaseServiceTest {
 
         PcsCaseEntity savedEntity = pcsCaseEntityCaptor.getValue();
         assertThat(savedEntity).isSameAs(existingPcsCaseEntity);
-        verify(existingPcsCaseEntity).setApplicantForename(updatedForename);
-        verify(existingPcsCaseEntity).setApplicantSurname(updatedSurname);
+        verify(existingPcsCaseEntity).setClaimantName(claimantName);
         verify(existingPcsCaseEntity).setPropertyAddress(updatedAddressEntity);
     }
 

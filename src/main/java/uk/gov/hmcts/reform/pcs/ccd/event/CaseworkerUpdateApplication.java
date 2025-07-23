@@ -33,8 +33,7 @@ public class CaseworkerUpdateApplication implements CCDConfig<PCSCase, State, Us
             .grant(Permission.CRU, PCS_CASE_WORKER)
             .fields()
             .page("page-1")
-                .mandatory(PCSCase::getApplicantForename)
-                .mandatory(PCSCase::getApplicantSurname)
+                .mandatory(PCSCase::getClaimantName)
             .done();
     }
 

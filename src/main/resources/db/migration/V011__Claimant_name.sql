@@ -1,2 +1,5 @@
 ALTER TABLE public.pcs_case
-ADD COLUMN claimant_name VARCHAR(100);
+RENAME COLUMN applicant_forename TO claimant_name;
+
+ALTER TABLE pcs_case
+DROP COLUMN applicant_surname;

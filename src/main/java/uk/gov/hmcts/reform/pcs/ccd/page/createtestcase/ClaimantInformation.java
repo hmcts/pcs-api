@@ -15,7 +15,7 @@ public class ClaimantInformation implements CcdPageConfiguration {
             .label("preset-claimant-label", "### Is this the correct claimant name?")
             .mandatory(PCSCase::getIsClaimantName)
             .label("new-claimant-name-Label", "### What is the correct claimant name?", "isClaimantName=\"No\"")
-            .mandatory(PCSCase::getCorrectClaimantName, "isClaimantName=\"No\"", false);
+            .mandatory(PCSCase::getCorrectClaimantNamePlaceHolder, "isClaimantName=\"No\"", false);
 
     }
 }

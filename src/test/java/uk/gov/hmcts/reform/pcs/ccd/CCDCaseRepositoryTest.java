@@ -62,13 +62,9 @@ class CCDCaseRepositoryTest {
     @Test
     void shouldReturnCaseWithNoPropertyAddress() {
         // Given
-        String expectedForename = "Test forename";
-        String expectedSurname = "Test surname";
         String expectedClaimantName = "Test claimant name";
 
         PcsCaseEntity pcsCaseEntity = mock(PcsCaseEntity.class);
-        when(pcsCaseEntity.getApplicantForename()).thenReturn(expectedForename);
-        when(pcsCaseEntity.getApplicantSurname()).thenReturn(expectedSurname);
         when(pcsCaseEntity.getPaymentStatus()).thenReturn(PaymentStatus.UNPAID);
         when(pcsCaseEntity.getClaimantName()).thenReturn(expectedClaimantName);
 
@@ -78,8 +74,6 @@ class CCDCaseRepositoryTest {
         PCSCase pcsCase = underTest.getCase(CASE_REFERENCE);
 
         // Then
-        assertThat(pcsCase.getApplicantForename()).isEqualTo(expectedForename);
-        assertThat(pcsCase.getApplicantSurname()).isEqualTo(expectedSurname);
         assertThat(pcsCase.getClaimantName()).isEqualTo(expectedClaimantName);
         assertThat(pcsCase.getPropertyAddress()).isNull();
     }

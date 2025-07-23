@@ -53,12 +53,10 @@ class CitizenCreateApplicationTest extends CftlibTest {
     @Test
     @Order(1)
     void citizenCreatesApplication() {
-        String applicantForename = "Test Forename";
-        String applicantSurname = "Test Surname";
+        String claimantName = "Test claimant name";
 
         PCSCase caseData = PCSCase.builder()
-            .applicantForename(applicantForename)
-            .applicantSurname(applicantSurname)
+            .claimantName(claimantName)
             .propertyAddress(AddressUK.builder()
                                  .addressLine1("123 Baker Street")
                                  .addressLine2("Marylebone")
@@ -75,18 +73,17 @@ class CitizenCreateApplicationTest extends CftlibTest {
         assertThat(caseReference).isNotNull();
 
         CaseDetails retrievedCase = ccdApi.getCase(idamToken, s2sToken, Long.toString(caseReference));
-        assertThat(retrievedCase.getData().get("applicantForename")).isEqualTo(applicantForename);
-        assertThat(retrievedCase.getData().get("applicantSurname")).isEqualTo(applicantSurname);
+        assertThat(retrievedCase.getData().get("claimantName")).isEqualTo(claimantName);
         assertThat(retrievedCase.getState()).isEqualTo(State.AWAITING_SUBMISSION_TO_HMCTS.name());
     }
 
     @Test
     @Order(2)
     void citizenUpdatesApplication() {
-        String updatedForename = "Updated Forename";
+        String updatedClaimantName = "Updated claimant name";
 
         PCSCase caseData = PCSCase.builder()
-            .applicantForename(updatedForename)
+            .claimantName(updatedClaimantName)
             .build();
 
         CaseResource caseResource = startAndSubmitUpdateEvent(citizenUpdateApplication, caseData);
@@ -94,7 +91,7 @@ class CitizenCreateApplicationTest extends CftlibTest {
         assertThat(caseResource.getReference()).isNotBlank();
 
         CaseDetails retrievedCase = ccdApi.getCase(idamToken, s2sToken, Long.toString(caseReference));
-        assertThat(retrievedCase.getData().get("applicantForename")).isEqualTo(updatedForename);
+        assertThat(retrievedCase.getData().get("claimantName")).isEqualTo(updatedClaimantName);
         assertThat(retrievedCase.getState()).isEqualTo(State.AWAITING_SUBMISSION_TO_HMCTS.name());
     }
 
