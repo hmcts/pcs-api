@@ -68,7 +68,7 @@ public class TestWithCCD extends CftlibTest {
         );
 
         assertThat(caseDetails.getId()).isNotNull();
-        assertThat(caseDetails.getData().get("claimantName")).isEqualTo("Correct name");
+        assertThat(caseDetails.getData().get("claimantName")).isEqualTo("Corrected name");
     }
 
 }
