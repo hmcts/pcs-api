@@ -45,31 +45,28 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
         builder.decentralisedCaseType(getCaseType(), getCaseTypeName(), CASE_TYPE_DESCRIPTION);
         builder.jurisdiction(JURISDICTION_ID, JURISDICTION_NAME, JURISDICTION_DESCRIPTION);
 
-        String forenameLabel = "Applicant Forename";
-        String surnameLabel = "Applicant Surname";
+        String claimantNameLabel = "Claimant Name";
+
         builder.searchInputFields()
             .caseReferenceField()
-            .field(PCSCase::getApplicantForename, forenameLabel);
+            .field(PCSCase::getClaimantName, claimantNameLabel);
         builder.searchCasesFields()
             .caseReferenceField()
-            .field(PCSCase::getApplicantForename, forenameLabel);
+            .field(PCSCase::getClaimantName, claimantNameLabel);
 
         builder.searchResultFields()
             .caseReferenceField()
-            .field(PCSCase::getApplicantForename, forenameLabel)
-            .field(PCSCase::getApplicantSurname, surnameLabel);
+            .field(PCSCase::getClaimantName, claimantNameLabel);
+
         builder.workBasketInputFields()
             .caseReferenceField()
-            .field(PCSCase::getApplicantForename, forenameLabel)
-            .field(PCSCase::getApplicantSurname, surnameLabel);
+            .field(PCSCase::getClaimantName, claimantNameLabel);
         builder.workBasketResultFields()
             .caseReferenceField()
-            .field(PCSCase::getApplicantForename, forenameLabel)
-            .field(PCSCase::getApplicantSurname, surnameLabel);
+            .field(PCSCase::getClaimantName, claimantNameLabel);
 
         builder.tab("claimantInformation", "Claimant Details")
-            .field(PCSCase::getApplicantForename)
-            .field(PCSCase::getApplicantSurname);
+            .field(PCSCase::getClaimantName);
 
         builder.tab("summary", "Property Details")
             .field(PCSCase::getPropertyAddress);

@@ -41,9 +41,7 @@ public class PcsCaseEntity {
 
     private Long caseReference;
 
-    private String applicantForename;
-
-    private String applicantSurname;
+    private String claimantName;
 
     @OneToOne(cascade = ALL)
     private AddressEntity propertyAddress;

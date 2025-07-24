@@ -20,18 +20,22 @@ public class PCSCase {
     private final YesOrNo decentralised = YesOrNo.YES;
 
     @CCD(
-        label = "Applicant's forename",
+        label = "Claimant Name",
         access = {CitizenAccess.class, CaseworkerAccess.class}
     )
     @External
-    private String applicantForename;
+    private String claimantName;
 
     @CCD(
-        label = "Applicant's surname",
+        searchable = false,
         access = {CitizenAccess.class, CaseworkerAccess.class}
     )
-    @External
-    private String applicantSurname;
+    private YesOrNo isClaimantNameCorrect;
+
+    @CCD(
+        access = {CitizenAccess.class, CaseworkerAccess.class}
+    )
+    private String updatedClaimantName;
 
     @CCD(
         label = "Property address",
