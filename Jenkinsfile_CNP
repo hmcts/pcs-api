@@ -44,12 +44,13 @@ withPipeline(type, product, component) {
     // Skipping PACT publish on PRs until contracts are verified and CONSUMER_DEPLOY_CHECK can be added
     // enablePactAs([AppPipelineDsl.PactRoles.CONSUMER])
     setPreviewEnvVars()
-     afterSuccess('smoketest:aat') {
-          runE2eTests(env.ENVIRONMENT)
-        }
+
     if (githubApi.getLabelsbyPattern(env.BRANCH_NAME, "pr-values:ccd").size() > 0) {
       enableHighLevelDataSetup()
     }
+     afterSuccess('smoketest:aat') {
+              runE2eTests(env.ENVIRONMENT)
+            }
   }
 
   onMaster() {
