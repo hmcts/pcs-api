@@ -166,7 +166,8 @@ class PostcodeEligibilityIT extends AbstractPostgresContainerIT {
         EligibilityResult eligibilityResult = getEligibilityForPostcode(postcode, null);
 
         assertThat(eligibilityResult.getStatus()).isEqualTo(EligibilityStatus.LEGISLATIVE_COUNTRY_REQUIRED);
-        assertThat(eligibilityResult.getLegislativeCountries()).containsExactly(LegislativeCountry.ENGLAND, LegislativeCountry.WALES);
+        assertThat(eligibilityResult.getLegislativeCountries())
+            .containsExactly(LegislativeCountry.ENGLAND, LegislativeCountry.WALES);
     }
 
     @Test
