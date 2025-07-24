@@ -147,14 +147,15 @@ class PostcodeEligibilityIT extends AbstractPostgresContainerIT {
     @Test
     @DisplayName("Returns ELIGIBLE status for partial, cross border postcode match that maps to eligible ePIMS ID")
     void shouldReturnEligibleStatusForPartialCrossBorderPostcodeMatch() throws Exception {
-        String postcode = "TD151UU";
-        int expectedEpimsId = 425094;
+        String postcode = "CH14QT";
+        String legislativeCountry = "England";
+        int expectedEpimsId = 20262;
 
-        EligibilityResult eligibilityResult = getEligibilityForPostcode(postcode, "Scotland");
+        EligibilityResult eligibilityResult = getEligibilityForPostcode(postcode, legislativeCountry);
 
         assertThat(eligibilityResult.getStatus()).isEqualTo(EligibilityStatus.ELIGIBLE);
         assertThat(eligibilityResult.getEpimsId()).isEqualTo(expectedEpimsId);
-        assertThat(eligibilityResult.getLegislativeCountry()).isEqualTo(LegislativeCountry.SCOTLAND);
+        assertThat(eligibilityResult.getLegislativeCountry()).isEqualTo(LegislativeCountry.ENGLAND);
     }
 
     @Test
@@ -228,8 +229,9 @@ class PostcodeEligibilityIT extends AbstractPostgresContainerIT {
     @DisplayName("Returns MULTIPLE_MATCHES_FOUND status for cross border postcode with multiple ePIMS ID matches")
     void shouldReturnMultipleMatchesFoundStatusForCrossBorderPostcodeMultipleEpimsIdMatch() throws Exception {
         String postcode = "DN551P";
+        String legislativeCountry = "England";
 
-        EligibilityResult eligibilityResult = getEligibilityForPostcode(postcode, "England");
+        EligibilityResult eligibilityResult = getEligibilityForPostcode(postcode, legislativeCountry);
 
         assertThat(eligibilityResult.getStatus()).isEqualTo(EligibilityStatus.MULTIPLE_MATCHES_FOUND);
     }
@@ -240,7 +242,7 @@ class PostcodeEligibilityIT extends AbstractPostgresContainerIT {
         String postcode = "";
         String legislativeCountry = "";
 
-        MvcResult mvcResult = mockMvc.perform(get("/testing-support/claim-eligibility")
+        mockMvc.perform(get("/testing-support/claim-eligibility")
                                                   .header("serviceAuthorization", "test")
                                                   .queryParam("postcode", postcode)
                                                   .queryParam("legislativeCountry", legislativeCountry)
