@@ -27,12 +27,14 @@ public class PCSCase {
     @External
     private String claimantName;
 
-    @CCD(searchable = false,
+    @CCD(
+        searchable = false,
         access = {CitizenAccess.class, CaseworkerAccess.class}
     )
     private YesOrNo isClaimantName;
 
-    @CCD(typeOverride = FieldType.Text,
+    @CCD(
+        typeOverride = FieldType.Text,
         access = {CitizenAccess.class, CaseworkerAccess.class}
     )
     private String updatedClaimantName;

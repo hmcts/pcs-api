@@ -62,7 +62,7 @@ class CCDCaseRepositoryTest {
     @Test
     void shouldReturnCaseWithNoPropertyAddress() {
         // Given
-        String expectedClaimantName = "Test claimant name";
+        String expectedClaimantName = "Test name";
 
         PcsCaseEntity pcsCaseEntity = mock(PcsCaseEntity.class);
         when(pcsCaseEntity.getPaymentStatus()).thenReturn(PaymentStatus.UNPAID);

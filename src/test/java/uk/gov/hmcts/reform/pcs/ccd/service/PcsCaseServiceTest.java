@@ -70,15 +70,15 @@ class PcsCaseServiceTest {
     @Test
     void shouldCreateCaseWithData() {
         // Given
-        String presetClaimantName = "Present claimant name";
+        String claimantName = "Test name";
 
         PCSCase pcsCase = mock(PCSCase.class);
         AddressUK propertyAddress = mock(AddressUK.class);
         final AddressEntity propertyAddressEntity = stubAddressUKModelMapper(propertyAddress);
 
-        when(pcsCase.getClaimantName()).thenReturn(presetClaimantName);
+        when(pcsCase.getClaimantName()).thenReturn(claimantName);
         when(pcsCase.getPropertyAddress()).thenReturn(propertyAddress);
-        when(pcsCase.getClaimantName()).thenReturn(presetClaimantName);
+        when(pcsCase.getClaimantName()).thenReturn(claimantName);
 
         // When
         underTest.createCase(CASE_REFERENCE, pcsCase);
@@ -88,7 +88,7 @@ class PcsCaseServiceTest {
 
         PcsCaseEntity savedEntity = pcsCaseEntityCaptor.getValue();
         assertThat(savedEntity.getPropertyAddress()).isEqualTo(propertyAddressEntity);
-        assertThat(savedEntity.getClaimantName()).isEqualTo(presetClaimantName);
+        assertThat(savedEntity.getClaimantName()).isEqualTo(claimantName);
     }
 
     @Test
@@ -131,7 +131,7 @@ class PcsCaseServiceTest {
         // Given
         PCSCase pcsCase = mock(PCSCase.class);
 
-        String claimantName = "Updated claimant name";
+        String claimantName = "Updated name";
 
         AddressUK updatedPropertyAddress = mock(AddressUK.class);
         final AddressEntity updatedAddressEntity = stubAddressUKModelMapper(updatedPropertyAddress);

@@ -6,10 +6,10 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 
 public class ClaimantInformation implements CcdPageConfiguration {
 
-    private final String UPDATED_CLAIMANT_NAME_HINT = """
-    Changing your claimant name here only updates it for this claim.
-    It does not change your registered claimant name on My HMCTS.
-    """;
+    private final String updatedClaimantNameHint = """
+        Changing your claimant name here only updates it for this claim.
+        It does not change your registered claimant name on My HMCTS.
+        """;
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
@@ -18,8 +18,12 @@ public class ClaimantInformation implements CcdPageConfiguration {
             .pageLabel("Claimant name")
             .readonlyWithLabel(PCSCase::getClaimantName, "Your claimant name registered with My HMCTS is:")
             .mandatoryWithLabel(PCSCase::getIsClaimantName,"Is this the correct claimant name?")
-            .mandatory(PCSCase::getUpdatedClaimantName, "isClaimantName=\"No\"", null, "What is the correct claimant name?",
-                UPDATED_CLAIMANT_NAME_HINT, false);
+            .mandatory(PCSCase::getUpdatedClaimantName,
+                    "isClaimantName=\"No\"",
+                    null,
+                    "What is the correct claimant name?",
+                    updatedClaimantNameHint,
+                    false);
 
     }
 }
