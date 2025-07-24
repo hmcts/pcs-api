@@ -39,7 +39,7 @@ async function searchCase(caseNumber: string) {
         await performAction('click', 'Apply')
 }
 
-test.describe('Search case by case number @Master @nightly', () => {
+test.describe('Search case by case number @PR @Master @nightly', () => {
     test('Search for case via caselist', async ({}) => {
         await performAction('click', 'Case list');
         await searchCase(getCaseInfo().id);
