@@ -12,6 +12,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.ResponseEntity;
 import uk.gov.hmcts.reform.pcs.document.service.DocAssemblyService;
 import uk.gov.hmcts.reform.pcs.document.service.exception.DocAssemblyException;
+import uk.gov.hmcts.reform.pcs.postcodecourt.model.EligibilityResult;
+import uk.gov.hmcts.reform.pcs.postcodecourt.model.EligibilityStatus;
+import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.postcodecourt.service.EligibilityService;
 import uk.gov.hmcts.reform.pcs.testingsupport.model.DocAssemblyRequest;
 
@@ -457,5 +460,83 @@ class TestingSupportControllerTest {
         assertThat(response).isNotNull();
         assertThat(response.getStatusCode().value()).isEqualTo(400);
         assertThat(response.getBody()).contains("Invalid request: Request cannot be null");
+    }
+
+    @Test
+    void testGetPostcodeEligibility_EligiblePostcode() {
+        String serviceAuth = "Bearer serviceToken";
+        String postcode = "W3 7RX";
+        EligibilityResult expected = EligibilityResult.builder()
+            .status(EligibilityStatus.ELIGIBLE)
+            .epimsId(20262)
+            .legislativeCountry(LegislativeCountry.ENGLAND)
+            .build();
+        when(eligibilityService.checkEligibility(postcode, null)).thenReturn(expected);
+        EligibilityResult result = underTest.getPostcodeEligibility(serviceAuth, postcode, null);
+        assertThat(result).isEqualTo(expected);
+        assertThat(result.getStatus()).isEqualTo(EligibilityStatus.ELIGIBLE);
+        assertThat(result.getEpimsId()).isEqualTo(20262);
+        assertThat(result.getLegislativeCountry()).isEqualTo(LegislativeCountry.ENGLAND);
+    }
+
+    @Test
+    void testGetPostcodeEligibility_CrossBorderPostcode() {
+        String serviceAuth = "Bearer serviceToken";
+        String postcode = "CH5 1AA";
+        EligibilityResult expected = EligibilityResult.builder()
+            .status(EligibilityStatus.LEGISLATIVE_COUNTRY_REQUIRED)
+            .legislativeCountries(java.util.List.of(LegislativeCountry.ENGLAND, LegislativeCountry.WALES))
+            .build();
+        when(eligibilityService.checkEligibility(postcode, null)).thenReturn(expected);
+        EligibilityResult result = underTest.getPostcodeEligibility(serviceAuth, postcode, null);
+        assertThat(result).isEqualTo(expected);
+        assertThat(result.getStatus()).isEqualTo(EligibilityStatus.LEGISLATIVE_COUNTRY_REQUIRED);
+        assertThat(result.getLegislativeCountries())
+            .containsExactlyInAnyOrder(LegislativeCountry.ENGLAND, LegislativeCountry.WALES);
+    }
+
+    @Test
+    void testGetPostcodeEligibility_IneligiblePostcode() {
+        String serviceAuth = "Bearer serviceToken";
+        String postcode = "EH1 1AA";
+        EligibilityResult expected = EligibilityResult.builder()
+            .status(EligibilityStatus.NOT_ELIGIBLE)
+            .epimsId(45678)
+            .legislativeCountry(LegislativeCountry.SCOTLAND)
+            .build();
+        when(eligibilityService.checkEligibility(postcode, null)).thenReturn(expected);
+        EligibilityResult result = underTest.getPostcodeEligibility(serviceAuth, postcode, null);
+        assertThat(result).isEqualTo(expected);
+        assertThat(result.getStatus()).isEqualTo(EligibilityStatus.NOT_ELIGIBLE);
+        assertThat(result.getEpimsId()).isEqualTo(45678);
+        assertThat(result.getLegislativeCountry()).isEqualTo(LegislativeCountry.SCOTLAND);
+    }
+
+    @Test
+    void testGetPostcodeEligibility_WithLegislativeCountry() {
+        String serviceAuth = "Bearer serviceToken";
+        String postcode = "CH5 1AA";
+        LegislativeCountry country = LegislativeCountry.ENGLAND;
+        EligibilityResult expected = EligibilityResult.builder()
+            .status(EligibilityStatus.ELIGIBLE)
+            .epimsId(20262)
+            .legislativeCountry(LegislativeCountry.ENGLAND)
+            .build();
+        when(eligibilityService.checkEligibility(postcode, country)).thenReturn(expected);
+        EligibilityResult result = underTest.getPostcodeEligibility(serviceAuth, postcode, country);
+        assertThat(result).isEqualTo(expected);
+        assertThat(result.getStatus()).isEqualTo(EligibilityStatus.ELIGIBLE);
+        assertThat(result.getLegislativeCountry()).isEqualTo(LegislativeCountry.ENGLAND);
+    }
+
+    @Test
+    void testGetPostcodeEligibility_ServiceThrowsException() {
+        String serviceAuth = "Bearer serviceToken";
+        String postcode = "INVALID";
+        when(eligibilityService.checkEligibility(postcode, null)).thenThrow(new RuntimeException("Service error"));
+        org.assertj.core.api.Assertions.assertThatThrownBy(() ->
+            underTest.getPostcodeEligibility(serviceAuth, postcode, null)
+        ).isInstanceOf(RuntimeException.class)
+         .hasMessageContaining("Service error");
     }
 }
