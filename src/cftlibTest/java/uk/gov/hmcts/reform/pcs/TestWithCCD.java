@@ -47,7 +47,7 @@ public class TestWithCCD extends CftlibTest {
         var r = ccdApi.startCase(idamToken, s2sToken, CaseType.getCaseType(), "createTestApplication");
         PCSCase caseData = PCSCase.builder()
             .claimantName("Wrong name")
-            .isClaimantName(YesOrNo.NO)
+            .isClaimantNameCorrect(YesOrNo.NO)
             .updatedClaimantName("Corrected name")
             .propertyAddress(AddressUK.builder()
                                  .addressLine1("123 Baker Street")

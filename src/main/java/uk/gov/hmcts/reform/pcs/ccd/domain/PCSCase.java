@@ -5,7 +5,6 @@ import lombok.Data;
 import uk.gov.hmcts.ccd.sdk.External;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
-import uk.gov.hmcts.ccd.sdk.type.FieldType;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseworkerAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenAccess;
@@ -31,10 +30,9 @@ public class PCSCase {
         searchable = false,
         access = {CitizenAccess.class, CaseworkerAccess.class}
     )
-    private YesOrNo isClaimantName;
+    private YesOrNo isClaimantNameCorrect;
 
     @CCD(
-        typeOverride = FieldType.Text,
         access = {CitizenAccess.class, CaseworkerAccess.class}
     )
     private String updatedClaimantName;
