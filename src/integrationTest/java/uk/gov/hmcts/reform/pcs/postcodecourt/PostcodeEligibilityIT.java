@@ -53,8 +53,8 @@ class PostcodeEligibilityIT extends AbstractPostgresContainerIT {
     }
 
     @Test
-    @DisplayName("Returns NOT_ELIGIBLE status for postcode that is not whitelisted")
-    void shouldReturnNotEligibleStatusForPostcodeNotWhitelisted() throws Exception {
+    @DisplayName("Returns NOT_ELIGIBLE status for ePIMS ID that is not whitelisted")
+    void shouldReturnNotEligibleStatusForEpimsIdNotWhitelisted() throws Exception {
         String postcode = "M13 9PL";
         int expectedEpimsId = 144641;
 
@@ -76,8 +76,8 @@ class PostcodeEligibilityIT extends AbstractPostgresContainerIT {
     }
 
     @Test
-    @DisplayName("Returns NO_MATCH_FOUND status for non-whitelisted postcode that maps to expired ePIMS ID")
-    void shouldReturnNoMatchFoundStatusNonWhitelistedExpiredPostcode() throws Exception {
+    @DisplayName("Returns NO_MATCH_FOUND status for non-whitelisted ePIMS ID that maps to expired postcode")
+    void shouldReturnNoMatchFoundStatusNonWhitelistedEpimsIdExpiredPostcode() throws Exception {
         String postcode = "W3 6RT";
 
         EligibilityResult eligibilityResult = getEligibilityForPostcode(postcode, null);
@@ -86,8 +86,8 @@ class PostcodeEligibilityIT extends AbstractPostgresContainerIT {
     }
 
     @Test
-    @DisplayName("Returns NO_MATCH_FOUND status for whitelisted postcode that maps to expired ePIMS ID")
-    void shouldReturnNoMatchFoundStatusWhitelistedNonExpiredPostcode() throws Exception {
+    @DisplayName("Returns NO_MATCH_FOUND status for whitelisted ePIMS ID that maps to expired postcode")
+    void shouldReturnNoMatchFoundStatusWhitelistedEpimsIdNonExpiredPostcode() throws Exception {
         String postcode = "W3 6RT";
 
         EligibilityResult eligibilityResult = getEligibilityForPostcode(postcode, null);
@@ -145,9 +145,10 @@ class PostcodeEligibilityIT extends AbstractPostgresContainerIT {
     }
 
     @Test
-    @DisplayName("Returns ELIGIBLE status for partial, cross border postcode match that maps to eligible ePIMS ID")
+    @DisplayName("Returns ELIGIBLE status for partial, cross border postcode match that maps to eligible ePIMS ID"
+        + ", where the full postcode match is expired")
     void shouldReturnEligibleStatusForPartialCrossBorderPostcodeMatch() throws Exception {
-        String postcode = "CH14QT";
+        String postcode = "CH14QJ";
         String legislativeCountry = "England";
         int expectedEpimsId = 20262;
 
@@ -171,8 +172,8 @@ class PostcodeEligibilityIT extends AbstractPostgresContainerIT {
     }
 
     @Test
-    @DisplayName("Returns ELIGIBLE for a cross border, whitelisted postcode with legislative country value")
-    void shouldReturnEligibleStatusForWhitelistedCrossBorderPostcode() throws Exception {
+    @DisplayName("Returns ELIGIBLE for a cross border postcode, whitelisted ePIMS ID")
+    void shouldReturnEligibleStatusForWhitelistedEpimsIdCrossBorderPostcode() throws Exception {
         String postcode = "SY132LH";
         String legislativeCountry = "England";
         int expectedEpimsId = 20262;
@@ -185,8 +186,8 @@ class PostcodeEligibilityIT extends AbstractPostgresContainerIT {
     }
 
     @Test
-    @DisplayName("Returns NOT_ELIGIBLE for a cross border, non-whitelisted postcode with legislative country value")
-    void shouldReturnNotEligibleStatusForNonWhitelistedCrossBorderPostcode() throws Exception {
+    @DisplayName("Returns NOT_ELIGIBLE for a cross border postcode, non-whitelisted ePIMS ID ")
+    void shouldReturnNotEligibleStatusForNonWhitelistedEpimsIdCrossBorderPostcode() throws Exception {
         String postcode = "CH14QJ";
         String legislativeCountry = "Wales";
         int expectedEpimsId = 99999;
@@ -201,7 +202,7 @@ class PostcodeEligibilityIT extends AbstractPostgresContainerIT {
     @Test
     @Transactional
     @DisplayName("Returns NOT_ELIGIBLE status for cross border postcode that maps to ePIMS ID eligible from tomorrow")
-    void shouldReturnNotEligibleStatusForCrossBorderPostcodeEligibleTomorrow() throws Exception {
+    void shouldReturnNotEligibleStatusForCrossBorderPostcodeEpimsIdEligibleTomorrow() throws Exception {
         String postcode = "SY132LH";
         String legislativeCountry = "England";
         int epimsId = 20262;
@@ -216,9 +217,32 @@ class PostcodeEligibilityIT extends AbstractPostgresContainerIT {
     }
 
     @Test
-    @DisplayName("Returns NO_MATCH_FOUND for a cross border postcode that maps to expired ePIMS ID")
-    void shouldReturnNoMatchFoundStatusForCrossBorderPostcode() throws Exception {
+    @DisplayName("Returns NO_MATCH_FOUND for whitelisted ePIMS ID that maps to expired cross border postcode")
+    void shouldReturnNoMatchFoundStatusForWhitelistedEpimsIdCrossBorderPostcode() throws Exception {
         String postcode = "SY101AB";
+        String legislativeCountry = "Wales";
+
+        EligibilityResult eligibilityResult = getEligibilityForPostcode(postcode, legislativeCountry);
+
+        assertThat(eligibilityResult.getStatus()).isEqualTo(EligibilityStatus.NO_MATCH_FOUND);
+    }
+
+    @Test
+    @DisplayName("Returns NO_MATCH_FOUND for non-whitelisted ePIMS ID that maps to expired cross border postcode")
+    void shouldReturnNoMatchFoundStatusForNonWhitelistedEpimsIdCrossBorderPostcode() throws Exception {
+        String postcode = "SY101AC";
+        String legislativeCountry = "England";
+
+        EligibilityResult eligibilityResult = getEligibilityForPostcode(postcode, legislativeCountry);
+
+        assertThat(eligibilityResult.getStatus()).isEqualTo(EligibilityStatus.NO_MATCH_FOUND);
+    }
+
+    @Test
+    @DisplayName("Returns NO_MATCH_FOUND status for cross border postcode "
+        + "where the effective_from date is in the future")
+    void shouldReturnNoMatchFoundStatusForCrossBorderPostcodeEffectiveFromDateInFuture() throws Exception {
+        String postcode = "LD71AB";
         String legislativeCountry = "Wales";
 
         EligibilityResult eligibilityResult = getEligibilityForPostcode(postcode, legislativeCountry);

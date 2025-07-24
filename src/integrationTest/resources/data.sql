@@ -24,7 +24,11 @@ VALUES ('W3 7RX', 20262, 'England', '2025-01-01', '2035-04-01', '{}'::jsonb),
        ('DN551P', 40003, 'Wales', '2025-01-01', NULL, '{}'::jsonb),
        ('DN551P', 999985, 'England', '2025-01-01', NULL, '{}'::jsonb),
        ('DN551P', 999984, 'England', '2025-01-01', NULL, '{}'::jsonb),
-       ('SY10', 20262, 'Wales', '2025-01-01', '2025-06-01', '{}'::jsonb);
+       ('SY10', 28837, 'Wales', '2025-01-01', '2025-06-01', '{}'::jsonb),
+       ('SY10', 46246, 'England', '2025-01-01', '2025-06-01', '{}'::jsonb),
+       ('LD7', 28837, 'Wales', '2035-01-01', '2035-06-01', '{}'::jsonb),
+       ('LD7', 46246, 'England', '2025-01-01', '2025-06-01', '{}'::jsonb);
+;
 
 
 INSERT INTO eligibility_whitelisted_epim (epims_id, eligible_from, audit) VALUES
