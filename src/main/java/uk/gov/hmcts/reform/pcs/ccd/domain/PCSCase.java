@@ -32,7 +32,9 @@ public class PCSCase {
     )
     private YesOrNo isClaimantName;
 
-    @CCD(typeOverride = FieldType.Text)
+    @CCD(typeOverride = FieldType.Text,
+        access = {CitizenAccess.class, CaseworkerAccess.class}
+    )
     private String updatedClaimantName;
 
     @CCD(
