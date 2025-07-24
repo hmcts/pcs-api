@@ -22,6 +22,7 @@ java:
         - name: idam-system-user-password
           alias: PCS_IDAM_SYSTEM_PASSWORD
   environment:
+    PCS_DB_PORT: "5432"
     PCS_DB_USER_NAME: pgadmin
     PCS_DB_NAME: pcs
     IDAM_CLIENT_ID: "pcs-api"
