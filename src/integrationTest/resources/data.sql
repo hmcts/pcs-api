@@ -2,6 +2,8 @@ INSERT INTO postcode_court_mapping (postcode, epims_id, legislative_country, eff
 VALUES ('W3 7RX', 20262, 'England', '2025-01-01', '2035-04-01', '{}'::jsonb),
        ('W3 6RS', 36791, 'England', '2025-02-01', NULL, '{}'::jsonb),
        ('W3 6RT', 36791, 'England', '2025-02-01', '2025-07-01', '{}'::jsonb),
+       ('RH14', 20262, 'England', '2025-01-01', '2035-04-01', '{}'::jsonb),
+       ('CF61 1ZH', 28837, 'Wales', '2035-01-01', NULL, '{}'::jsonb),
        ('RH13', 20262, 'England', '2025-01-01', '2035-04-01', '{}'::jsonb),
        ('RH13', 36791, 'England', '2025-02-01', NULL, '{}'::jsonb),
        ('M13 9PL', 144641, 'England', '2025-04-01', '2035-04-01', '{}'::jsonb),
@@ -16,13 +18,13 @@ VALUES ('W3 7RX', 20262, 'England', '2025-01-01', '2035-04-01', '{}'::jsonb),
        ('CH14Q', 99999, 'Wales', '2025-01-01', NULL, '{}'::jsonb),
        ('CH14QJ', 20262, 'England', '2025-01-01', '2025-07-14', '{}'::jsonb),
        ('CH14QJ', 99999, 'Wales', '2025-01-01', NULL, '{}'::jsonb),
-       ('TD90TU', 99990, 'England', '2025-01-01', NULL, '{}'::jsonb),
-       ('TD90TU', 10101, 'Scotland', '2025-01-01', NULL, '{}'::jsonb),
        ('TD151UU', 212121, 'England', '2025-01-01', '2025-07-13', '{}'::jsonb),
        ('TD151UU', 313131, 'Scotland', '2025-01-01', NULL, '{}'::jsonb),
-       ('LL520NU', 28837, 'Wales', '2025-01-01', NULL, '{}'::jsonb),
-       ('LD37HP', 88888, 'Wales', '2025-01-01', NULL, '{}'::jsonb),
-       ('LL52', 28837, 'Wales', '2025-01-01', '2025-07-14', '{}'::jsonb);
+       ('DN551P', 40001, 'Wales', '2025-01-01', NULL, '{}'::jsonb),
+       ('DN551P', 40003, 'Wales', '2025-01-01', NULL, '{}'::jsonb),
+       ('DN551P', 999985, 'England', '2025-01-01', NULL, '{}'::jsonb),
+       ('DN551P', 999984, 'England', '2025-01-01', NULL, '{}'::jsonb),
+       ('SY10', 20262, 'Wales', '2025-01-01', '2025-06-01', '{}'::jsonb);
 
 
 INSERT INTO eligibility_whitelisted_epim (epims_id, eligible_from, audit) VALUES
