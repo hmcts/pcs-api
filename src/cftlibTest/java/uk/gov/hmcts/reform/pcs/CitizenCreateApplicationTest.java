@@ -53,7 +53,7 @@ class CitizenCreateApplicationTest extends CftlibTest {
     @Test
     @Order(1)
     void citizenCreatesApplication() {
-        String claimantName = "Test claimant name";
+        String claimantName = "Test name";
 
         PCSCase caseData = PCSCase.builder()
             .claimantName(claimantName)
@@ -80,7 +80,7 @@ class CitizenCreateApplicationTest extends CftlibTest {
     @Test
     @Order(2)
     void citizenUpdatesApplication() {
-        String updatedClaimantName = "Updated claimant name";
+        String updatedClaimantName = "Updated name";
 
         PCSCase caseData = PCSCase.builder()
             .claimantName(updatedClaimantName)

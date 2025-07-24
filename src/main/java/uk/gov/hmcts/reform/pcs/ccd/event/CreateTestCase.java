@@ -52,9 +52,10 @@ public class CreateTestCase implements CCDConfig<PCSCase, State, UserRole> {
         long caseReference = eventPayload.caseReference();
         PCSCase pcsCase = eventPayload.caseData();
         pcsCase.setPaymentStatus(PaymentStatus.UNPAID);
-        if (pcsCase.getCorrectClaimantNamePlaceHolder() != null
-            && !pcsCase.getCorrectClaimantNamePlaceHolder().isBlank()) {
-            pcsCase.setClaimantName(pcsCase.getCorrectClaimantNamePlaceHolder());
+
+        if (pcsCase.getUpdatedClaimantName() != null
+            && !pcsCase.getUpdatedClaimantName().isBlank()) {
+            pcsCase.setClaimantName(pcsCase.getUpdatedClaimantName());
         }
 
         pcsCaseService.createCase(caseReference, pcsCase);

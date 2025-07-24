@@ -32,12 +32,8 @@ public class PCSCase {
     )
     private YesOrNo isClaimantName;
 
-    @CCD(
-        hint = "Changing your claimant name here only updates it for this claim. It does not change your "
-            + "registered claimant name on My HMCTS",
-        typeOverride = FieldType.Text
-    )
-    private String correctClaimantNamePlaceHolder;
+    @CCD(typeOverride = FieldType.Text)
+    private String updatedClaimantName;
 
     @CCD(
         label = "Property address",

@@ -48,7 +48,7 @@ public class TestWithCCD extends CftlibTest {
         PCSCase caseData = PCSCase.builder()
             .claimantName("Wrong name")
             .isClaimantName(YesOrNo.NO)
-            .correctClaimantNamePlaceHolder("Corrected name")
+            .updatedClaimantName("Corrected name")
             .propertyAddress(AddressUK.builder()
                                  .addressLine1("123 Baker Street")
                                  .addressLine2("Marylebone")
