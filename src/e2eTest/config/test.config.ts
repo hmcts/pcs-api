@@ -9,8 +9,18 @@ export class TestConfig {
     "grantType": "password",
     "scope": "profile openid roles",
     "clientId": "pcs-api",
-    "roles": ['caseworker-pcs','caseworker'],
+    "roles": ['caseworker-pcs', 'caseworker'],
   };
+  public static readonly authProvider = {
+    url: 'http://rpe-service-auth-provider-aat.service.core-compute-aat.internal',
+    microservice: 'ccd_data',
+    endPoint: '/testing-support/lease',
+  }
+  public static readonly ccdCase = {
+    url: process.env.CCD_CASE_API_URL,
+    caseType: `PCS-${process.env.CHANGE_ID}`,
+    eventName:'createTestApplication'
+  }
 }
 
 export default TestConfig;

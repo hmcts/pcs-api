@@ -1,8 +1,8 @@
 import { Page, expect } from '@playwright/test';
-import { IValidation, ValidationData } from '../../interfaces/validation.interface';
+import { IValidation, validationData } from '../../interfaces/validation.interface';
 
 export class VisibilityValidation implements IValidation {
-  async validate(page: Page, fieldName: string, data: ValidationData): Promise<void> {
+  async validate(page: Page, fieldName: string, data: validationData): Promise<void> {
     const locator = page.locator(`:has-text("${data.visible}") + :is(td, div, a)`);
     console.log("data present in object"+data.visible);
     if ('visible' in data) {

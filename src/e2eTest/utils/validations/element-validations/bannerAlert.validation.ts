@@ -1,10 +1,10 @@
 // validations/banner-alert.validation.ts
 import { Page, expect, test } from '@playwright/test';
-import { IValidation, ValidationData } from '../../interfaces/validation.interface';
+import { IValidation, validationData } from '../../interfaces/validation.interface';
 import {attachment} from "allure-js-commons";
 
 export class BannerAlertValidation implements IValidation {
-  async validate(page: Page, fieldName: string, data: ValidationData): Promise<void> {
+  async validate(page: Page, fieldName: string, data: validationData): Promise<void> {
     const locator = page.locator('div.alert-message');
 
       const alertText = (await locator.textContent())?.trim();
