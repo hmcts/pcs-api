@@ -62,4 +62,6 @@ public class PcsCaseEntity {
         party.setPcsCase(this);
     }
 
+    @OneToOne(mappedBy = "pcsCase", fetch = LAZY, cascade = ALL)
+    private DocumentEntity document;
 }
