@@ -186,14 +186,16 @@ ccd:
                 sleep 1
               done
 
-              echo "Creating index template..."
-              curl -XPUT "http://localhost:9200/_template/default_ephemeral_template" \
+              echo "Creating composable index template..."
+              curl -XPUT "http://localhost:9200/_index_template/default_ephemeral_template" \
                 -H 'Content-Type: application/json' \
                 -d '{
                   "index_patterns": ["*"],
-                  "settings": {
-                    "number_of_shards": 1,
-                    "number_of_replicas": 0
+                  "template": {
+                    "settings": {
+                      "number_of_shards": '"$SHARD_COUNT"',
+                      "number_of_replicas": '"$REPLICA_COUNT"'
+                    }
                   }
                 }'
     ingress:
