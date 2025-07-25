@@ -34,7 +34,6 @@ class ClaimEligibilityTests {
         apiSteps.requestIsPreparedWithAppropriateValues();
         apiSteps.theRequestContainsValidServiceToken(TestConstants.PCS_API);
         apiSteps.theRequestContainsTheQueryParameter("postcode", "W3 7RX");
-        apiSteps.theRequestContainsTheQueryParameter("legislativeCountry", "England");
         apiSteps.callIsSubmittedToTheEndpoint("ClaimEligibility", "GET");
         apiSteps.checkStatusCode(200);
         apiSteps.theResponseBodyMatchesTheExpectedResponse(
