@@ -172,15 +172,15 @@ ccd:
     clusterHealthCheckParams: "wait_for_status=yellow&timeout=5s"
     extraInitContainers:
       - name: configure-elasticsearch
-        image: docker.elastic.co/elasticsearch/elasticsearch:7.17.3
+        image: curlimages/curl:7.85.0
         command:
-          - bash
+          - sh
           - -c
           - |
             echo "Waiting for Elasticsearch to start..."
-            ES_URL=http://localhost:9200
+            ES_URL=http://${SERVICE_NAME}-es-master:9200
             until curl -s -o /dev/null -w '%{http_code}' $ES_URL | grep -q 200; do
-              sleep 1
+              sleep 5
             done
 
             echo "Applying index template..."
@@ -200,9 +200,6 @@ ccd:
                 -H 'Content-Type: application/json' \
                 -d '{"index": {"number_of_replicas": 0}}'
             done
-        volumeMounts:
-          - name: elasticsearch-data
-            mountPath: /usr/share/elasticsearch/data
     ingress:
       enabled: false
   logstash:
