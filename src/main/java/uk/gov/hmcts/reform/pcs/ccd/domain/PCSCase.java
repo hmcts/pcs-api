@@ -58,7 +58,7 @@ public class PCSCase {
     private Document supportingDocuments;
 
     @CCD(
-        label = "Supporting documents",
+        label = "Case management location",
         access = {CitizenAccess.class, CaseworkerAccess.class}
     )
     private Integer caseManagementLocation;
