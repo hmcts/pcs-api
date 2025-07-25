@@ -171,7 +171,6 @@ ccd:
         requests:
           storage: 500Mi
       storageClassName: managed-lrs
-    clusterHealthCheckParams: "wait_for_status=yellow&timeout=5s"
     ingress:
       enabled: false
   logstash:
