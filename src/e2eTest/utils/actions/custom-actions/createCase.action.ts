@@ -6,6 +6,8 @@ import {
 } from '../../helpers/idam-helpers/idam.helper';
 import {actionData, IAction} from '../../interfaces/action.interface';
 import {Page} from '@playwright/test';
+import {initIdamAuthToken, initServiceAuthToken, getUser, createAccount} from 'utils/helpers/idam-helpers/idam.helper';
+
 
 let caseInfo: { id: string; fid: string, state: string };
 const testConfig = TestConfig.ccdCase;
@@ -18,9 +20,9 @@ export class CreateCaseAction implements IAction {
   ) {
   }
 
-  async execute(page: Page, fieldName?: actionData, value?: actionData): Promise<void> {
+  async execute(page:Page,fieldName?: actionData, value?: actionData): Promise<void> {
     if (!fieldName) throw new Error('Missing fieldName');
-    const caseApiInstance = caseApi();
+    const caseApiInstance = await dataStoreApi();
     caseInfo = await caseApiInstance.createCase(fieldName);
   }
 
@@ -58,8 +60,11 @@ export class CreateCaseAction implements IAction {
     }
   }
 }
-
-export const caseApi = (): CreateCaseAction => {
+//setup for the DataStoreApi to use the Axios instance with the correct headers and base URL
+export const dataStoreApi = async (): Promise<CreateCaseAction> => {
+  const userCreds = getUser('exuiUser');
+  await initIdamAuthToken(userCreds?.email ?? '', userCreds?.password ?? '');
+  await initServiceAuthToken();
   return new CreateCaseAction(
     Axios.create({
       baseURL: `${testConfig.url}`,

@@ -12,12 +12,12 @@ export class TestConfig {
     "roles": ['caseworker-pcs', 'caseworker'],
   };
   public static readonly authProvider = {
-    url: 'http://rpe-service-auth-provider-aat.service.core-compute-aat.internal',
+    url:process.env.IDAM_S2S_AUTH_URL,
     microservice: 'ccd_data',
     endPoint: '/testing-support/lease',
   }
   public static readonly ccdCase = {
-    url: process.env.CCD_CASE_API_URL,
+    url: process.env.DATA_STORE_URL_BASE,
     caseType: `PCS-${process.env.CHANGE_ID}`,
     eventName:'createTestApplication'
   }

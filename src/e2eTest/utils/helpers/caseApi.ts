@@ -25,20 +25,20 @@ export interface CcdV2Response {
   data: any;
 }
 
-export class CaseApi {
+export class DataStoreApi {
   constructor(
     private readonly axios: AxiosInstance,
   ) {
   }
 
-  async createCase(caseType: string, appId: string): Promise<CaseWithId> {
+  async createCase(caseType: string, eventName: string): Promise<CaseWithId> {
     console.log("axios baseURL : " + this.axios.defaults.baseURL);
-    console.log("resource Path : " + `/case-types/${caseType}/event-triggers/${appId}`);
+    console.log("resource Path : " + `/case-types/${caseType}/event-triggers/${eventName}`);
     const tokenResponse: AxiosResponse<CcdTokenResponse> = await this.axios.get(
-      `/case-types/${caseType}/event-triggers/${appId}`
+      `/case-types/${caseType}/event-triggers/${eventName}`
     );
     const token = tokenResponse.data.token;
-    const event = {id: `${appId}`};
+    const event = {id: `${eventName}`};
     const data = caseDataJson;
 
     console.log("Data to be sent: ", data);
@@ -59,13 +59,13 @@ export class CaseApi {
     }
   }
 }
-
-export const caseApi = (url: string): CaseApi => {
+//setup for the DataStoreApi to use the Axios instance with the correct headers and base URL
+export const dataStoreApi = (url: string): DataStoreApi => {
   let accessToken = getIdamAuthToken();
   let serviceAuthToken = getServiceAuthToken();
   console.log("accessToken: ", accessToken);
   console.log("serviceAuthToken: ", serviceAuthToken);
-  return new CaseApi(
+  return new DataStoreApi(
     Axios.create({
       baseURL: `${url}`,
       headers: {
