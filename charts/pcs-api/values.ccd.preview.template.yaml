@@ -177,14 +177,26 @@ ccd:
             - bash
             - -c
             - |
-              #!/bin/bash
-              # Add a template to adjust number of shards/replicas
               TEMPLATE_NAME=default_ephemeral_template
               INDEX_PATTERN="*"
               SHARD_COUNT=1
               REPLICA_COUNT=0
-              while [[ "$(curl -s -o /dev/null -w '%{http_code}\n' http://localhost:9200)" != "200" ]]; do sleep 1; done
-              curl -XPUT "http://localhost:9200/_template/$TEMPLATE_NAME" -H 'Content-Type: application/json' -d'{"index_patterns":['\""$INDEX_PATTERN"\"'],"settings":{"number_of_shards":'$SHARD_COUNT',"number_of_replicas":'$REPLICA_COUNT'}}'
+
+              echo "Waiting for Elasticsearch to start..."
+              until curl -s -o /dev/null -w '%{http_code}' http://localhost:9200 | grep -q 200; do
+                sleep 1
+              done
+
+              echo "Creating index template..."
+              curl -XPUT "http://localhost:9200/_template/${TEMPLATE_NAME}" \
+                -H 'Content-Type: application/json' \
+                -d '{
+                  "index_patterns": ["*"],
+                  "settings": {
+                    "number_of_shards": 1,
+                    "number_of_replicas": 0
+                  }
+                }'
     ingress:
       enabled: false
   logstash:
