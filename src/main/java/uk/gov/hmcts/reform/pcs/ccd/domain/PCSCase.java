@@ -41,12 +41,19 @@ public class PCSCase {
     private AddressUK propertyAddress;
 
     @CCD(
-        label = "Property country",
-        hint = "Country where the property is located",
+        label = "Is the property located in ${crossBorderCountries}?",
+        hint = "Your case could be delayed or rejected if you select the wrong country",
         access = {CitizenAccess.class, CaseworkerAccess.class}
     )
     @External
     private String propertyCountry;
+
+    @CCD(
+        label = "Cross-border countries",
+        access = {CitizenAccess.class, CaseworkerAccess.class}
+    )
+    @External
+    private String crossBorderCountries;
 
     @CCD(
         searchable = false,
