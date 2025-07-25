@@ -88,4 +88,7 @@ public class PCSCase {
 
     private String claimPaymentTabMarkdown;
 
+    @CCD(searchable = false, access = CaseworkerAccess.class)
+    private YesOrNo showCrossBorderPage;
+
 }
