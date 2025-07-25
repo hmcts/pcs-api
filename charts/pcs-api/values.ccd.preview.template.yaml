@@ -170,36 +170,21 @@ ccd:
           storage: 500Mi
       storageClassName: managed-lrs
     clusterHealthCheckParams: "wait_for_status=yellow&timeout=5s"
-    extraInitContainers:
-      - name: configure-elasticsearch
-        image: curlimages/curl:7.85.0
-        command:
-          - sh
-          - -c
-          - |
-            echo "Waiting for Elasticsearch to start..."
-            ES_URL=http://${SERVICE_NAME}-es-master:9200
-            until curl -s -o /dev/null -w '%{http_code}' http://${SERVICE_NAME}-es-master:9200 | grep -q 200; do
-              sleep 5
-            done
-
-            echo "Applying index template..."
-            curl -XPUT "http://${SERVICE_NAME}-es-master:9200/_template/default_ephemeral_template" \
-              -H 'Content-Type: application/json' \
-              -d '{
-                "index_patterns": ["*"],
-                "settings": {
-                  "number_of_shards": 1,
-                  "number_of_replicas": 0
-                }
-              }'
-
-            echo "Fixing replicas for existing indexes..."
-            for index in $(curl -s "http://${SERVICE_NAME}-es-master:9200/_cat/indices?h=index"); do
-              curl -XPUT "http://${SERVICE_NAME}-es-master:9200/$index/_settings" \
-                -H 'Content-Type: application/json' \
-                -d '{"index": {"number_of_replicas": 0}}'
-            done
+    lifecycle:
+      postStart:
+        exec:
+          command:
+            - bash
+            - -c
+            - |
+              #!/bin/bash
+              # Add a template to adjust number of shards/replicas
+              TEMPLATE_NAME=default_ephemeral_template
+              INDEX_PATTERN="*"
+              SHARD_COUNT=1
+              REPLICA_COUNT=0
+              while [[ "$(curl -s -o /dev/null -w '%{http_code}\n' http://localhost:9200)" != "200" ]]; do sleep 1; done
+              curl -XPUT "http://localhost:9200/_template/$TEMPLATE_NAME" -H 'Content-Type: application/json' -d'{"index_patterns":['\""$INDEX_PATTERN"\"'],"settings":{"number_of_shards":'$SHARD_COUNT',"number_of_replicas":'$REPLICA_COUNT'}}'
     ingress:
       enabled: false
   logstash:
