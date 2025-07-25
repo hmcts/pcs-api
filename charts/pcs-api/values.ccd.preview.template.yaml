@@ -179,12 +179,12 @@ ccd:
           - |
             echo "Waiting for Elasticsearch to start..."
             ES_URL=http://${SERVICE_NAME}-es-master:9200
-            until curl -s -o /dev/null -w '%{http_code}' $ES_URL | grep -q 200; do
+            until curl -s -o /dev/null -w '%{http_code}' http://${SERVICE_NAME}-es-master:9200 | grep -q 200; do
               sleep 5
             done
 
             echo "Applying index template..."
-            curl -XPUT "$ES_URL/_template/default_ephemeral_template" \
+            curl -XPUT "http://${SERVICE_NAME}-es-master:9200/_template/default_ephemeral_template" \
               -H 'Content-Type: application/json' \
               -d '{
                 "index_patterns": ["*"],
@@ -195,8 +195,8 @@ ccd:
               }'
 
             echo "Fixing replicas for existing indexes..."
-            for index in $(curl -s "$ES_URL/_cat/indices?h=index"); do
-              curl -XPUT "$ES_URL/$index/_settings" \
+            for index in $(curl -s "http://${SERVICE_NAME}-es-master:9200/_cat/indices?h=index"); do
+              curl -XPUT "http://${SERVICE_NAME}-es-master:9200/$index/_settings" \
                 -H 'Content-Type: application/json' \
                 -d '{"index": {"number_of_replicas": 0}}'
             done
