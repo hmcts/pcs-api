@@ -14,7 +14,13 @@ public class CrossBorderPostcodeSelection implements CcdPageConfiguration {
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
             .page("Cross Border Postcode Selection")
-            .pageLabel("Select the country where your property is located")
+            .pageLabel("Border postcode")
+            .label("explanation", "Your postcode includes properties in ${crossBorderCountries}. We need to know "
+                + "which country your property is in, as the law is different in each country.")
+            .label("landRegisterHint", "If you're not sure which country your property is in, try searching for your "
+                + "address on the land and property register.")
+            .label("warning", "Your case could be delayed or rejected if you select the wrong country.")
+            .label("question", "Is the property located in ${crossBorderCountries}?")
             .mandatory(PCSCase::getPropertyCountry);
     }
 } 
