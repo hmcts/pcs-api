@@ -177,7 +177,6 @@ ccd:
             - bash
             - -c
             - |
-              TEMPLATE_NAME=default_ephemeral_template
               INDEX_PATTERN="*"
               SHARD_COUNT=1
               REPLICA_COUNT=0
@@ -188,7 +187,7 @@ ccd:
               done
 
               echo "Creating index template..."
-              curl -XPUT "http://localhost:9200/_template/${TEMPLATE_NAME}" \
+              curl -XPUT "http://localhost:9200/_template/default_ephemeral_template" \
                 -H 'Content-Type: application/json' \
                 -d '{
                   "index_patterns": ["*"],
