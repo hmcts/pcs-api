@@ -76,6 +76,8 @@ ccd:
         WELSH_TRANSLATION_ENABLED: false
         DEFINITION_STORE_DB_USERNAME: "{{ .Values.global.postgresUsername}}"
         DEFINITION_STORE_DB_OPTIONS: ""
+        ELASTIC_SEARCH_INDEX_SHARDS: 1
+        ELASTIC_SEARCH_INDEX_SHARDS_REPLICAS: 0
       ingressHost: ccd-definition-store-${SERVICE_FQDN}
       keyVaults:
         ccd:
@@ -170,34 +172,6 @@ ccd:
           storage: 500Mi
       storageClassName: managed-lrs
     clusterHealthCheckParams: "wait_for_status=yellow&timeout=5s"
-    lifecycle:
-      postStart:
-        exec:
-          command:
-            - bash
-            - -c
-            - |
-              INDEX_PATTERN="*"
-              SHARD_COUNT=1
-              REPLICA_COUNT=0
-
-              echo "Waiting for Elasticsearch to start..."
-              until curl -s -o /dev/null -w '%{http_code}' http://localhost:9200 | grep -q 200; do
-                sleep 1
-              done
-
-              echo "Creating composable index template..."
-              curl -XPUT "http://localhost:9200/_index_template/default_ephemeral_template" \
-                -H 'Content-Type: application/json' \
-                -d '{
-                  "index_patterns": ["*"],
-                  "template": {
-                    "settings": {
-                      "number_of_shards": '"$SHARD_COUNT"',
-                      "number_of_replicas": '"$REPLICA_COUNT"'
-                    }
-                  }
-                }'
     ingress:
       enabled: false
   logstash:
