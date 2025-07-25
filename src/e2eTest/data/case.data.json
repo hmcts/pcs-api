@@ -1,0 +1,14 @@
+{
+  "data": {
+    "propertyAddress": {
+      "AddressLine1": "48 Steer Road",
+      "AddressLine2": "",
+      "AddressLine3": "",
+      "PostTown": "Swanage",
+      "County": "",
+      "PostCode": "BH19 2RX",
+      "Country": "United Kingdom"
+    },
+    "applicantForename": "Preset value"
+  }
+}

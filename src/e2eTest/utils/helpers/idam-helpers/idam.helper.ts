@@ -1,8 +1,8 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import TestConfig from "../../../config/test.config";
-import { TokenEndpointResponse } from 'oauth4webapi';
-import { request, retriedRequest } from './rest.helper';
+import {TokenEndpointResponse} from 'oauth4webapi';
+import {request, retriedRequest} from './rest.helper';
 import {buildUserDataWithRole, UserData} from './testConfig';
 import {permanentUsersData} from "@data/permanent-users.data";
 
@@ -16,7 +16,7 @@ export async function createTempUser(
   roles: string[]
 ): Promise<void> {
   const tempPassword = process.env.PCS_IDAM_TEST_USER_PASSWORD || '';
-  const userData = buildUserDataWithRole(roles, tempPassword,userKey);
+  const userData = buildUserDataWithRole(roles, tempPassword, userKey);
   await createAccount(userData);
 
   setTempUser(userKey, {
@@ -41,10 +41,10 @@ export async function cleanupTempUsers(): Promise<void> {
 
 export async function createAccount(userData: UserData): Promise<Response | unknown> {
   try {
-    const authToken = await getAccessTokenFromIdam();
+    const authToken = await getAccessTokenFromIdam(username, password);
     return retriedRequest(
       `${testConfig.idamTestingSupportUrl}/test/idam/users`,
-      { 'Content-Type': 'application/json', Authorization: `Bearer ${authToken}` },
+      {'Content-Type': 'application/json', Authorization: `Bearer ${authToken}`},
       JSON.stringify(userData) as BodyInit
     ).then(response => {
       return response.json();
@@ -55,7 +55,7 @@ export async function createAccount(userData: UserData): Promise<Response | unkn
 }
 
 
-export async function getAccessTokenFromIdam(): Promise<string> {
+export async function getAccessTokenFromIdam(username: string,password:string): Promise<string> {
   const details = {
     username,
     password,
@@ -119,5 +119,53 @@ export function getUser(key: string): UserDetails | undefined {
 }
 
 export function getAllUsers(): Record<string, UserDetails> {
-  return { ...permanentUsersData, ...tempUsers };
+  return {...permanentUsersData, ...tempUsers};
 }
+
+let result: string;
+
+export async function getS2SToken(): Promise<string> {
+  const testConfig = TestConfig.authProvider;
+  const body = JSON.stringify({microservice: `${testConfig.microservice}`});
+  const headers = {
+    'Content-Type': 'application/json',
+  };
+  const url = `${testConfig.url}/${testConfig.endPoint}`;
+  return request(url, headers, body).then(async response => {
+    if (response.status !== 200) {
+      throw new Error(`Failed to get S2S token, status code: ${response.status}`);
+    }
+    const reader = response.body?.getReader();
+    const decoder = new TextDecoder();
+    result = '';
+    let done = false;
+
+    while (!done) {
+      const {value, done: streamDone} = await reader?.read()!;
+      done = streamDone;
+      if (value) {
+        result += decoder.decode(value, {stream: true});
+      }
+    }
+    return result;
+  });
+
+};
+
+let authToken: string = '';
+export const initIdamAuthToken = async (email: string,pwd:string): Promise<void> => {
+  authToken = await getAccessTokenFromIdam(email,pwd);
+};
+
+export const getIdamAuthToken = (): string => {
+  console.log("idam token: " + authToken);
+  return authToken;
+
+};
+let s2sToken: string = '';
+export const initServiceAuthToken = async (): Promise<void> => {
+  s2sToken = await getS2SToken();
+};
+export const getServiceAuthToken = (): string => {
+  return s2sToken;
+};

@@ -1,9 +1,9 @@
 // validations/count.validation.ts
 import { Page, expect } from '@playwright/test';
-import {IValidation, ValidationData} from "../../interfaces/validation.interface";
+import {IValidation, validationData} from "../../interfaces/validation.interface";
 
 export class CountValidation implements IValidation {
-  async validate(page: Page, fieldName: string, data: ValidationData): Promise<void> {
+  async validate(page: Page, fieldName: string, data: validationData): Promise<void> {
     const locator = page.locator(`[data-testid="${fieldName}"]`);
 
     if ('count' in data) {
