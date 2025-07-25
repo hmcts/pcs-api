@@ -539,4 +539,131 @@ class TestingSupportControllerTest {
         ).isInstanceOf(RuntimeException.class)
          .hasMessageContaining("Service error");
     }
+
+    @Test
+    void testGetPostcodeEligibility_CrossBorderPostcodeWithWalesSelection() {
+        String serviceAuth = "Bearer serviceToken";
+        String postcode = "CH5 1AA";
+        LegislativeCountry country = LegislativeCountry.WALES;
+        EligibilityResult expected = EligibilityResult.builder()
+            .status(EligibilityStatus.ELIGIBLE)
+            .epimsId(67890)
+            .legislativeCountry(LegislativeCountry.WALES)
+            .build();
+        when(eligibilityService.checkEligibility(postcode, country)).thenReturn(expected);
+        EligibilityResult result = underTest.getPostcodeEligibility(serviceAuth, postcode, country);
+        assertThat(result).isEqualTo(expected);
+        assertThat(result.getStatus()).isEqualTo(EligibilityStatus.ELIGIBLE);
+        assertThat(result.getLegislativeCountry()).isEqualTo(LegislativeCountry.WALES);
+        assertThat(result.getEpimsId()).isEqualTo(67890);
+    }
+
+    @Test
+    void testGetPostcodeEligibility_CrossBorderPostcodeWithInvalidCountrySelection() {
+        String serviceAuth = "Bearer serviceToken";
+        String postcode = "CH5 1AA";
+        LegislativeCountry country = LegislativeCountry.SCOTLAND; // Invalid for this postcode
+        when(eligibilityService.checkEligibility(postcode, country))
+            .thenThrow(new RuntimeException("Invalid country selection for cross-border postcode"));
+        
+        org.assertj.core.api.Assertions.assertThatThrownBy(() ->
+            underTest.getPostcodeEligibility(serviceAuth, postcode, country)
+        ).isInstanceOf(RuntimeException.class)
+         .hasMessageContaining("Invalid country selection for cross-border postcode");
+    }
+
+    @Test
+    void testGetPostcodeEligibility_EmptyPostcode() {
+        String serviceAuth = "Bearer serviceToken";
+        String postcode = "";
+        when(eligibilityService.checkEligibility(postcode, null))
+            .thenThrow(new RuntimeException("Postcode cannot be empty"));
+        
+        org.assertj.core.api.Assertions.assertThatThrownBy(() ->
+            underTest.getPostcodeEligibility(serviceAuth, postcode, null)
+        ).isInstanceOf(RuntimeException.class)
+         .hasMessageContaining("Postcode cannot be empty");
+    }
+
+    @Test
+    void testGetPostcodeEligibility_NullPostcode() {
+        String serviceAuth = "Bearer serviceToken";
+        String postcode = null;
+        when(eligibilityService.checkEligibility(postcode, null))
+            .thenThrow(new RuntimeException("Postcode cannot be null"));
+        
+        org.assertj.core.api.Assertions.assertThatThrownBy(() ->
+            underTest.getPostcodeEligibility(serviceAuth, postcode, null)
+        ).isInstanceOf(RuntimeException.class)
+         .hasMessageContaining("Postcode cannot be null");
+    }
+
+    @Test
+    void testGetPostcodeEligibility_CrossBorderPostcodeWithMultipleCountries() {
+        String serviceAuth = "Bearer serviceToken";
+        String postcode = "CH5 1AA";
+        EligibilityResult expected = EligibilityResult.builder()
+            .status(EligibilityStatus.LEGISLATIVE_COUNTRY_REQUIRED)
+            .legislativeCountries(java.util.List.of(LegislativeCountry.ENGLAND, LegislativeCountry.WALES))
+            .build();
+        when(eligibilityService.checkEligibility(postcode, null)).thenReturn(expected);
+        EligibilityResult result = underTest.getPostcodeEligibility(serviceAuth, postcode, null);
+        assertThat(result).isEqualTo(expected);
+        assertThat(result.getStatus()).isEqualTo(EligibilityStatus.LEGISLATIVE_COUNTRY_REQUIRED);
+        assertThat(result.getLegislativeCountries()).hasSize(2);
+        assertThat(result.getLegislativeCountries())
+            .containsExactlyInAnyOrder(LegislativeCountry.ENGLAND, LegislativeCountry.WALES);
+    }
+
+    @Test
+    void testGetPostcodeEligibility_CrossBorderPostcodeEnglandScotland() {
+        String serviceAuth = "Bearer serviceToken";
+        String postcode = "TD15 1AA"; // Example cross-border postcode between England and Scotland
+        EligibilityResult expected = EligibilityResult.builder()
+            .status(EligibilityStatus.LEGISLATIVE_COUNTRY_REQUIRED)
+            .legislativeCountries(java.util.List.of(LegislativeCountry.ENGLAND, LegislativeCountry.SCOTLAND))
+            .build();
+        when(eligibilityService.checkEligibility(postcode, null)).thenReturn(expected);
+        EligibilityResult result = underTest.getPostcodeEligibility(serviceAuth, postcode, null);
+        assertThat(result).isEqualTo(expected);
+        assertThat(result.getStatus()).isEqualTo(EligibilityStatus.LEGISLATIVE_COUNTRY_REQUIRED);
+        assertThat(result.getLegislativeCountries())
+            .containsExactlyInAnyOrder(LegislativeCountry.ENGLAND, LegislativeCountry.SCOTLAND);
+    }
+
+    @Test
+    void testGetPostcodeEligibility_CrossBorderPostcodeWithScotlandSelection() {
+        String serviceAuth = "Bearer serviceToken";
+        String postcode = "TD15 1AA"; // Example cross-border postcode between England and Scotland
+        LegislativeCountry country = LegislativeCountry.SCOTLAND;
+        EligibilityResult expected = EligibilityResult.builder()
+            .status(EligibilityStatus.ELIGIBLE)
+            .epimsId(78901)
+            .legislativeCountry(LegislativeCountry.SCOTLAND)
+            .build();
+        when(eligibilityService.checkEligibility(postcode, country)).thenReturn(expected);
+        EligibilityResult result = underTest.getPostcodeEligibility(serviceAuth, postcode, country);
+        assertThat(result).isEqualTo(expected);
+        assertThat(result.getStatus()).isEqualTo(EligibilityStatus.ELIGIBLE);
+        assertThat(result.getLegislativeCountry()).isEqualTo(LegislativeCountry.SCOTLAND);
+        assertThat(result.getEpimsId()).isEqualTo(78901);
+    }
+
+    @Test
+    void testGetPostcodeEligibility_CrossBorderPostcodeWithEnglandSelection() {
+        String serviceAuth = "Bearer serviceToken";
+        String postcode = "TD15 1AA"; // Example cross-border postcode between England and Scotland
+        LegislativeCountry country = LegislativeCountry.ENGLAND;
+        EligibilityResult expected = EligibilityResult.builder()
+            .status(EligibilityStatus.ELIGIBLE)
+            .epimsId(12345)
+            .legislativeCountry(LegislativeCountry.ENGLAND)
+            .build();
+        when(eligibilityService.checkEligibility(postcode, country)).thenReturn(expected);
+        EligibilityResult result = underTest.getPostcodeEligibility(serviceAuth, postcode, country);
+        assertThat(result).isEqualTo(expected);
+        assertThat(result.getStatus()).isEqualTo(EligibilityStatus.ELIGIBLE);
+        assertThat(result.getLegislativeCountry()).isEqualTo(LegislativeCountry.ENGLAND);
+        assertThat(result.getEpimsId()).isEqualTo(12345);
+    }
 }
