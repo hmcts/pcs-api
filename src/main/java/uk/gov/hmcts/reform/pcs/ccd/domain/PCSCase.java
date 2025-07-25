@@ -41,6 +41,14 @@ public class PCSCase {
     private AddressUK propertyAddress;
 
     @CCD(
+        label = "Property country",
+        hint = "Country where the property is located",
+        access = {CitizenAccess.class, CaseworkerAccess.class}
+    )
+    @External
+    private String propertyCountry;
+
+    @CCD(
         searchable = false,
         access = {CitizenAccess.class}
     )

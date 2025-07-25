@@ -14,6 +14,7 @@ import lombok.ToString;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 import uk.gov.hmcts.reform.pcs.audit.Audit;
+import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
 import java.time.LocalDate;
 
@@ -32,7 +33,7 @@ public class PostCodeCourtEntity {
     private PostCodeCourtKey id;
 
     @Column(name = "legislative_country", length = 80, nullable = false)
-    private String legislativeCountry;
+    private LegislativeCountry legislativeCountry;
 
     @Column(name = "effective_from")
     private LocalDate effectiveFrom;

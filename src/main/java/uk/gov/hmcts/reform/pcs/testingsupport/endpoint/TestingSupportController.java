@@ -4,6 +4,8 @@ import com.github.kagkarlsson.scheduler.SchedulerClient;
 import com.github.kagkarlsson.scheduler.task.Task;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -12,6 +14,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -20,6 +23,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import uk.gov.hmcts.reform.pcs.document.service.DocAssemblyService;
 import uk.gov.hmcts.reform.pcs.document.service.exception.DocAssemblyException;
+import uk.gov.hmcts.reform.pcs.postcodecourt.model.EligibilityResult;
+import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
+import uk.gov.hmcts.reform.pcs.postcodecourt.service.EligibilityService;
 import uk.gov.hmcts.reform.pcs.testingsupport.model.DocAssemblyRequest;
 
 import java.net.URI;
@@ -38,15 +44,18 @@ public class TestingSupportController {
     private final SchedulerClient schedulerClient;
     private final Task<Void> helloWorldTask;
     private final DocAssemblyService docAssemblyService;
+    private final EligibilityService eligibilityService;
 
     public TestingSupportController(
         SchedulerClient schedulerClient,
         @Qualifier("helloWorldTask") Task<Void> helloWorldTask,
-        DocAssemblyService docAssemblyService
+        DocAssemblyService docAssemblyService,
+        EligibilityService eligibilityService
     ) {
         this.schedulerClient = schedulerClient;
         this.helloWorldTask = helloWorldTask;
         this.docAssemblyService = docAssemblyService;
+        this.eligibilityService = eligibilityService;
     }
 
     @Operation(
@@ -157,6 +166,112 @@ public class TestingSupportController {
         }
     }
 
+
+    @Operation(
+        summary = "Checks the eligibility for a given property postcode",
+        description = "Checks the eligibility for a given property postcode, and returns a payload "
+            + "with an eligibility status."
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Eligibilty check completed successfully",
+            content = {
+                @Content(
+                    mediaType = "application/json",
+                    examples = {
+                        @ExampleObject(
+                            name = "Eligible postcode",
+                            description = "Result for a match with an eligible postcode",
+                            value = """
+                                 {
+                                       "status": "ELIGIBLE",
+                                       "epimsId": 12345,
+                                       "legislativeCountry": "England"
+                                 }
+                            """
+                            ),
+                        @ExampleObject(
+                            name = "Ineligible postcode",
+                            description = "Result for a match with an ineligible postcode",
+                            value = """
+                                {
+                                  "status": "NOT_ELIGIBLE",
+                                  "epimsId": 45678,
+                                  "legislativeCountry": "Wales"
+                                }
+                            """
+                            ),
+                        @ExampleObject(
+                            name = "Postcode that is cross-border",
+                            description = "Result for a match with a cross border postcode, that needs "
+                                + "the legistalative country to be specified as well",
+                            value = """
+                                {
+                                    "status": "LEGISLATIVE_COUNTRY_REQUIRED",
+                                    "legislativeCountries" : [
+                                        "England",
+                                        "Wales"
+                                    ]
+                                }
+                            """
+                            ),
+                        @ExampleObject(
+                            name = "No match found for postcode",
+                            description = "No match found in the DB for the provided postcode.",
+                            value = """
+                                {
+                                    "status": "NO_MATCH_FOUND"
+                                }
+                            """
+                            ),
+                        @ExampleObject(
+                            name = "Multiple matches found for postcode",
+                            description = "Multiple matches found in the DB for the provided postcode.",
+                            value = """
+                                {
+                                    "status": "MULTIPLE_MATCHES_FOUND"
+                                }
+                            """
+                            ),
+                    })
+            }),
+        @ApiResponse(responseCode = "400",
+            description = "Missing or blank postcode query parameter",
+            content = @Content()
+            ),
+        @ApiResponse(
+            responseCode = "401",
+            description = "Unauthorized - Invalid or missing authorization token",
+            content = @Content()
+            ),
+        @ApiResponse(
+            responseCode = "403",
+            description = "Forbidden - Invalid or missing service authorization token",
+            content = @Content()
+            ),
+        @ApiResponse(
+            responseCode = "500",
+            description = "Internal server error",
+            content = @Content()
+            )
+    })
+    @GetMapping(value = "/claim-eligibility", produces = MediaType.APPLICATION_JSON_VALUE)
+    public EligibilityResult getPostcodeEligibility(
+        @Parameter(
+            description = "Service-to-Service (S2S) authorization token",
+            required = true,
+            example = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+        )
+        @RequestHeader(value = "ServiceAuthorization") String serviceAuthorization,
+        @Parameter(
+            description = "Property postcode to check eligibility for",
+            required = true
+        )
+        @RequestParam("postcode") String postcode,
+        @Parameter(description = "Legislative country for property, (for use with cross border postcodes)")
+        @RequestParam(value = "legislativeCountry", required = false) LegislativeCountry legislativeCountry
+    ) {
+        return eligibilityService.checkEligibility(postcode, legislativeCountry);
+    }
 
     private ResponseEntity<String> handleDocAssemblyException(DocAssemblyException e) {
         String message = e.getMessage();
