@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
 @Slf4j
-@ControllerAdvice(basePackages = "uk.gov.hmcts.reform.pcs.postcodecourt")
+@ControllerAdvice
 public class PostCodeCourtExceptionHandler {
 
     @ExceptionHandler(InvalidPostCodeException.class)
