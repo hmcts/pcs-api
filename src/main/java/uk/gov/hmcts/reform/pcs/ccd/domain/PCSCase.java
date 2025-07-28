@@ -1,7 +1,5 @@
 package uk.gov.hmcts.reform.pcs.ccd.domain;
 
-import java.util.List;
-
 import lombok.Builder;
 import lombok.Data;
 import uk.gov.hmcts.ccd.sdk.External;
@@ -11,8 +9,6 @@ import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseworkerAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenAccess;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
-import uk.gov.hmcts.reform.pcs.postcodecourt.model.EligibilityStatus;
-import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import static uk.gov.hmcts.ccd.sdk.type.FieldType.DynamicRadioList;
 
 /**

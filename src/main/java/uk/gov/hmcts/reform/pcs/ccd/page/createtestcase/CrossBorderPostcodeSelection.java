@@ -41,7 +41,9 @@ public class CrossBorderPostcodeSelection implements CcdPageConfiguration {
                   </strong>
                 </div>
 
-                <h3 class="govuk-heading-s govuk-!-font-size-19">Is the property located in ${crossBorderCountry1} or ${crossBorderCountry2}?</h3>
+                <h3 class="govuk-heading-s govuk-!-font-size-19">
+                  Is the property located in ${crossBorderCountry1} or ${crossBorderCountry2}?
+                </h3>
                 """)
             .mandatory(PCSCase::getCrossBorderCountriesList);
     }
