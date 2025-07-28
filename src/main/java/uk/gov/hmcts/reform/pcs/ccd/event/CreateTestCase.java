@@ -31,7 +31,7 @@ public class CreateTestCase implements CCDConfig<PCSCase, State, UserRole> {
             configBuilder
                 .decentralisedEvent(createTestApplication.name(), this::submit, this::start)
                 .initialState(State.CASE_ISSUED)
-                .name("Make a claim")
+                .name("Make a claim test")
                 .grant(Permission.CRUD, UserRole.PCS_CASE_WORKER);
 
         new PageBuilder(eventBuilder)
