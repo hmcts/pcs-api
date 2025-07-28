@@ -23,7 +23,7 @@ public class UploadDocumentPoc implements CCDConfig<PCSCase, State, UserRole> {
             configBuilder
                 .decentralisedEvent(uploadDocumentPoc.name(), this::submit, this::start)
                 .initialState(State.CASE_ISSUED)
-                .name("Upload Document POC")
+                .name("Upload Document - POC")
                 .grant(Permission.CRUD, UserRole.PCS_CASE_WORKER);
 
         new PageBuilder(eventBuilder)
