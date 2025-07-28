@@ -42,7 +42,7 @@ public class TestWithCCD extends CftlibTest {
     }
 
     @Test
-    public void createsTestCase() {
+    public void createsPossessionCase() {
         var r = ccdApi.startCase(idamToken, s2sToken, CaseType.getCaseType(), "createPossessionClaim");
         PCSCase caseData = PCSCase.builder()
             .propertyAddress(AddressUK.builder()
