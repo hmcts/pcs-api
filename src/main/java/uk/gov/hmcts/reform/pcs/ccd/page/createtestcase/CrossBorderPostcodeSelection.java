@@ -33,17 +33,17 @@ public class CrossBorderPostcodeSelection implements CcdPageConfiguration {
                 address on the land and property register.
                 </p>
 
-                <div class="govuk-warning-text">
+                <div class="govuk-warning-text" role="alert" aria-labelledby="warning-message">
                   <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
                   <strong class="govuk-warning-text__text">
                     <span class="govuk-warning-text__assistive">Warning</span>
-                    Your case could be delayed or rejected if you select the wrong country.
+                    <span id="warning-message">Your case could be delayed or rejected if you select the wrong country.</span>
                   </strong>
                 </div>
 
-                <h3 class="govuk-heading-s govuk-!-font-size-19">
+                <strong id="country-selection-heading" class="govuk-heading-m" style="display: block; margin-bottom: 20px;">
                   Is the property located in ${crossBorderCountry1} or ${crossBorderCountry2}?
-                </h3>
+                </strong>
                 """)
             .mandatory(PCSCase::getCrossBorderCountriesList);
     }
