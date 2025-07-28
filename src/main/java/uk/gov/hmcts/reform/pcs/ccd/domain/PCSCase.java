@@ -51,7 +51,6 @@ public class PCSCase {
     @CCD(searchable = false, access = {CitizenAccess.class})
     private YesOrNo userPcqIdSet;
 
-
     @CCD(
         label = "Supporting documents",
         access = {CitizenAccess.class, CaseworkerAccess.class}
