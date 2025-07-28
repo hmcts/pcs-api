@@ -19,7 +19,7 @@ export const writeMappingsToSql = (mappings, sqlOutputFile) => {
 
   lines.push('BEGIN;');
   lines.push('TRUNCATE postcode_court_mapping;');
-  lines.push('INSERT INTO postcode_court_mapping (postcode, epimid, legislative_country, effective_from, effective_to, audit)');
+  lines.push('INSERT INTO postcode_court_mapping (postcode, epims_id, legislative_country, effective_from, effective_to, audit)');
   lines.push('VALUES');
 
   const currentDateTime = DateTime.utc();
@@ -36,7 +36,7 @@ export const writeMappingsToSql = (mappings, sqlOutputFile) => {
     const auditJson = `{"created_by": "${userInfo().username}", "generated": "${currentDateTime.toISO()}"}`;
 
     const lineEnding = isLastElementIndex(i, mappings) ? ';' : ','
-    lines.push(`  ('${mapping.postCode}', ${mapping.epimId}, '${mapping.legislativeCountry}', `
+    lines.push(`  ('${mapping.postCode}', ${mapping.epimsId}, '${mapping.legislativeCountry}', `
      + `${effectiveFrom}, ${effectiveTo}, '${auditJson}')${lineEnding}`);
   }
 
