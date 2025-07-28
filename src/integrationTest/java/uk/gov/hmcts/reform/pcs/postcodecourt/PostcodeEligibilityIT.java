@@ -31,7 +31,6 @@ import static uk.gov.hmcts.reform.pcs.config.ClockConfiguration.UK_ZONE_ID;
 @AutoConfigureMockMvc
 @ActiveProfiles("integration")
 class PostcodeEligibilityIT extends AbstractPostgresContainerIT {
-
     @Autowired
     private CourtEligibilityRepository courtEligibilityRepository;
     @Autowired
