@@ -9,7 +9,6 @@ import uk.gov.hmcts.ccd.sdk.type.OrganisationPolicy;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseworkerAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenAccess;
-import uk.gov.hmcts.reform.pcs.dto.SuperUser;
 
 /**
  * The main domain model representing a possessions case.
@@ -51,6 +50,29 @@ public class PCSCase {
 
     @CCD(searchable = false, access = {CitizenAccess.class})
     private YesOrNo userPcqIdSet;
+
+    @CCD(
+        label = "Case management location",
+        access = {CitizenAccess.class, CaseworkerAccess.class}
+    )
+    private Integer caseManagementLocation;
+
+    @CCD(
+        label = "Payment status",
+        access = {CitizenAccess.class, CaseworkerAccess.class}
+    )
+    private PaymentStatus paymentStatus;
+
+    @CCD(
+        label = "Amount to pay",
+        hint = "£400",
+        access = {CitizenAccess.class, CaseworkerAccess.class}
+    )
+    private PaymentType paymentType;
+
+    private String pageHeadingMarkdown;
+
+    private String claimPaymentTabMarkdown;
 
     @CCD()
     private OrganisationPolicy organisationPolicy;
