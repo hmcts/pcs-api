@@ -6,7 +6,7 @@ import {
 } from '../../helpers/idam-helpers/idam.helper';
 import {actionData, IAction} from '../../interfaces/action.interface';
 import {Page} from '@playwright/test';
-import {initIdamAuthToken, initServiceAuthToken, getUser, createAccount} from 'utils/helpers/idam-helpers/idam.helper';
+import {initIdamAuthToken, initServiceAuthToken, getUser} from 'utils/helpers/idam-helpers/idam.helper';
 
 
 let caseInfo: { id: string; fid: string, state: string };
@@ -22,8 +22,8 @@ export class CreateCaseAction implements IAction {
 
   async execute(page:Page,fieldName?: actionData, value?: actionData): Promise<void> {
     if (!fieldName) throw new Error('Missing fieldName');
-    const caseApiInstance = await dataStoreApi();
-    caseInfo = await caseApiInstance.createCase(fieldName);
+    const dataStoreApiInstance = await dataStoreApi();
+    caseInfo = await dataStoreApiInstance.createCase(fieldName);
   }
 
   async getEventToken(): Promise<string> {

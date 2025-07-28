@@ -1,4 +1,4 @@
-// src/e2eTest/utils/helpers/caseApi.ts
+// src/e2eTest/utils/helpers/DataStoreApi.ts
 import Axios, {AxiosInstance, AxiosResponse} from 'axios';
 import {
   getIdamAuthToken,
