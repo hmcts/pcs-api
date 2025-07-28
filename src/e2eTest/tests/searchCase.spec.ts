@@ -1,7 +1,7 @@
 import {test} from '@playwright/test';
 import {parentSuite} from 'allure-js-commons';
 import configData from "@config/test.config";
-import caseDataWithAddress from 'data/case.data.json';
+import caseDataWithAddress from 'data/api-data/case.data.json';
 import {
     initializeExecutor,
     performAction,
