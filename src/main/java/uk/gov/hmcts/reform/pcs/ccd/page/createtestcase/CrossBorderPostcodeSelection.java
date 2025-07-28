@@ -19,12 +19,30 @@ public class CrossBorderPostcodeSelection implements CcdPageConfiguration {
             .pageLabel("Border postcode")
             .showCondition("showCrossBorderPage=\"Yes\"")
             .readonly(PCSCase::getShowCrossBorderPage, NEVER_SHOW)
-            .label("crossBorderPostcodeSelection-explanation", "Your postcode includes properties in ${crossBorderCountries}. We need to know "
-                + "which country your property is in, as the law is different in each country.")
-            .label("crossBorderPostcodeSelection-landRegisterHint", "If you're not sure which country your property is in, try searching for your "
-                + "address on the land and property register.")
-            .label("crossBorderPostcodeSelection-warning", "Your case could be delayed or rejected if you select the wrong country.")
-            .label("crossBorderPostcodeSelection-question", "Is the property located in ${crossBorderCountries}?")
-            .mandatory(PCSCase::getPropertyCountry);
+            .readonly(PCSCase::getCrossBorderCountry1, NEVER_SHOW, true)
+            .readonly(PCSCase::getCrossBorderCountry2, NEVER_SHOW, true)
+            .label("crossBorderPostcodeSelection-info", """
+                ---
+                <p class="govuk-body">
+                Your postcode includes properties in ${crossBorderCountry1} and ${crossBorderCountry2}. We need to know 
+                which country your property is in, as the law is different in each country.
+                </p>
+
+                <p class="govuk-body">
+                If you're not sure which country your property is in, try searching for your 
+                address on the land and property register.
+                </p>
+
+                <div class="govuk-warning-text">
+                  <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+                  <strong class="govuk-warning-text__text">
+                    <span class="govuk-warning-text__assistive">Warning</span>
+                    Your case could be delayed or rejected if you select the wrong country.
+                  </strong>
+                </div>
+
+                <h3 class="govuk-heading-s govuk-!-font-size-19">Is the property located in ${crossBorderCountry1} or ${crossBorderCountry2}?</h3>
+                """)
+            .mandatory(PCSCase::getCrossBorderCountriesList);
     }
 } 

@@ -1,5 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.domain;
 
+import java.util.List;
+
 import lombok.Builder;
 import lombok.Data;
 import uk.gov.hmcts.ccd.sdk.External;
@@ -8,6 +10,10 @@ import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseworkerAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenAccess;
+import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
+import uk.gov.hmcts.reform.pcs.postcodecourt.model.EligibilityStatus;
+import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
+import static uk.gov.hmcts.ccd.sdk.type.FieldType.DynamicRadioList;
 
 /**
  * The main domain model representing a possessions case.
@@ -41,19 +47,25 @@ public class PCSCase {
     private AddressUK propertyAddress;
 
     @CCD(
-        label = "Is the property located in ${crossBorderCountries}?",
-        hint = "Your case could be delayed or rejected if you select the wrong country",
+        typeOverride = DynamicRadioList,
         access = {CitizenAccess.class, CaseworkerAccess.class}
     )
     @External
-    private String propertyCountry;
+    private DynamicStringList crossBorderCountriesList;
 
     @CCD(
-        label = "Cross-border countries",
+        searchable = false,
         access = {CitizenAccess.class, CaseworkerAccess.class}
     )
     @External
-    private String crossBorderCountries;
+    private String crossBorderCountry1;
+
+    @CCD(
+        searchable = false,
+        access = {CitizenAccess.class, CaseworkerAccess.class}
+    )
+    @External
+    private String crossBorderCountry2;
 
     @CCD(
         searchable = false,
