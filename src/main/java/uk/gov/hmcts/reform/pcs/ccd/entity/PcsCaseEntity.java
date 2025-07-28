@@ -12,7 +12,10 @@ import jakarta.persistence.NamedEntityGraph;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PaymentStatus;
 
@@ -27,6 +30,9 @@ import static jakarta.persistence.FetchType.LAZY;
 @Table(name = "pcs_case")
 @Setter
 @Getter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @NamedEntityGraph(
     name = "PcsCaseEntity.parties",
     attributeNodes = {
@@ -41,9 +47,7 @@ public class PcsCaseEntity {
 
     private Long caseReference;
 
-    private String claimantName;
-
-    @OneToOne(cascade = ALL)
+    @OneToOne(cascade = ALL,orphanRemoval = true)
     private AddressEntity propertyAddress;
 
     private Integer caseManagementLocation;
@@ -52,8 +56,15 @@ public class PcsCaseEntity {
     private PaymentStatus paymentStatus;
 
     @OneToMany(mappedBy = "pcsCase", fetch = LAZY, cascade = ALL)
+    @Builder.Default
     @JsonManagedReference
     private Set<PartyEntity> parties = new HashSet<>();
+
+    @OneToMany(mappedBy = "pcsCase", fetch = LAZY, cascade = ALL)
+    @Builder.Default
+    @JsonManagedReference
+    private Set<ClaimEntity> claims = new HashSet<>();
+
 
     public void addParty(PartyEntity party) {
         parties.add(party);

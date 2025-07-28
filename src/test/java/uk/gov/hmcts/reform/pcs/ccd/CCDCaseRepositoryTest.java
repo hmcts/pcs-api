@@ -7,16 +7,22 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.modelmapper.ModelMapper;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
+import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PaymentStatus;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.renderer.ClaimPaymentTabRenderer;
+import uk.gov.hmcts.reform.pcs.ccd.repository.PartyRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
@@ -36,13 +42,15 @@ class CCDCaseRepositoryTest {
     private ModelMapper modelMapper;
     @Mock
     private ClaimPaymentTabRenderer claimPaymentTabRenderer;
+    @Mock
+    private PartyRepository partyRepository;
 
     private CCDCaseRepository underTest;
 
     @BeforeEach
     void setUp() {
         underTest = new CCDCaseRepository(pcsCaseRepository, securityContextService,
-                                          modelMapper,claimPaymentTabRenderer);
+                                          modelMapper,claimPaymentTabRenderer,partyRepository);
     }
 
     @Test
@@ -62,11 +70,8 @@ class CCDCaseRepositoryTest {
     @Test
     void shouldReturnCaseWithNoPropertyAddress() {
         // Given
-        String expectedClaimantName = "Test name";
-
         PcsCaseEntity pcsCaseEntity = mock(PcsCaseEntity.class);
         when(pcsCaseEntity.getPaymentStatus()).thenReturn(PaymentStatus.UNPAID);
-        when(pcsCaseEntity.getClaimantName()).thenReturn(expectedClaimantName);
 
         when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(pcsCaseEntity));
 
@@ -74,7 +79,6 @@ class CCDCaseRepositoryTest {
         PCSCase pcsCase = underTest.getCase(CASE_REFERENCE);
 
         // Then
-        assertThat(pcsCase.getClaimantName()).isEqualTo(expectedClaimantName);
         assertThat(pcsCase.getPropertyAddress()).isNull();
     }
 
@@ -94,6 +98,28 @@ class CCDCaseRepositoryTest {
 
         // Then
         assertThat(pcsCase.getPropertyAddress()).isEqualTo(addressUK);
+    }
+
+    @Test
+    void shouldMapPartyEntity() {
+        // Given
+        PcsCaseEntity pcsCaseEntity = mock(PcsCaseEntity.class);
+        PartyEntity partyEntity = mock(PartyEntity.class);
+        when(pcsCaseEntity.getParties()).thenReturn(Set.of(partyEntity));
+
+        Party party = mock(Party.class);
+
+        when(modelMapper.map(partyEntity, Party.class)).thenReturn(party);
+        when(pcsCaseEntity.getPaymentStatus()).thenReturn(PaymentStatus.UNPAID);
+        when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(pcsCaseEntity));
+
+        // When
+        PCSCase pcsCase = underTest.getCase(CASE_REFERENCE);
+
+        // Then
+        List<ListValue<Party>> mappedParties = pcsCase.getParties();
+        assertThat(mappedParties).hasSize(1);
+        assertThat(mappedParties.get(0).getValue()).isSameAs(party);
     }
 
     private AddressUK stubAddressEntityModelMapper(AddressEntity addressEntity) {

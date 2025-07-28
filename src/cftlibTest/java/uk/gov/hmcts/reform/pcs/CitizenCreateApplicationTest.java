@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.pcs;
 
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
 import org.junit.jupiter.api.Order;
@@ -10,6 +11,7 @@ import org.junit.jupiter.api.TestMethodOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.ccd.client.CoreCaseDataApi;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDataContent;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
@@ -40,6 +42,9 @@ class CitizenCreateApplicationTest extends CftlibTest {
     @Autowired
     private IdamClient idamClient;
 
+    @Autowired
+    private ObjectMapper objectMapper;
+
     private String idamToken;
     private String s2sToken;
     private Long caseReference;
@@ -53,10 +58,11 @@ class CitizenCreateApplicationTest extends CftlibTest {
     @Test
     @Order(1)
     void citizenCreatesApplication() {
-        String claimantName = "Test name";
 
         PCSCase caseData = PCSCase.builder()
-            .claimantName(claimantName)
+            .claimantName("Wrong Name")
+            .isClaimantNameCorrect(YesOrNo.NO)
+            .updatedClaimantName("New Name")
             .propertyAddress(AddressUK.builder()
                                  .addressLine1("123 Baker Street")
                                  .addressLine2("Marylebone")
@@ -73,17 +79,21 @@ class CitizenCreateApplicationTest extends CftlibTest {
         assertThat(caseReference).isNotNull();
 
         CaseDetails retrievedCase = ccdApi.getCase(idamToken, s2sToken, Long.toString(caseReference));
-        assertThat(retrievedCase.getData().get("claimantName")).isEqualTo(claimantName);
         assertThat(retrievedCase.getState()).isEqualTo(State.AWAITING_SUBMISSION_TO_HMCTS.name());
     }
 
     @Test
     @Order(2)
     void citizenUpdatesApplication() {
-        String updatedClaimantName = "Updated name";
-
+        AddressUK updatedAddress = AddressUK.builder()
+            .addressLine1("89 Lower Street")
+            .addressLine2("WestMinister")
+            .postTown("London")
+            .county("Greater London")
+            .postCode("W3 4FD")
+            .build();
         PCSCase caseData = PCSCase.builder()
-            .claimantName(updatedClaimantName)
+            .propertyAddress(updatedAddress)
             .build();
 
         CaseResource caseResource = startAndSubmitUpdateEvent(citizenUpdateApplication, caseData);
@@ -91,7 +101,11 @@ class CitizenCreateApplicationTest extends CftlibTest {
         assertThat(caseResource.getReference()).isNotBlank();
 
         CaseDetails retrievedCase = ccdApi.getCase(idamToken, s2sToken, Long.toString(caseReference));
-        assertThat(retrievedCase.getData().get("claimantName")).isEqualTo(updatedClaimantName);
+        AddressUK actualAddress = objectMapper.convertValue(
+            retrievedCase.getData().get("propertyAddress"),
+            AddressUK.class
+        );
+        assertThat(actualAddress).isEqualTo(updatedAddress);
         assertThat(retrievedCase.getState()).isEqualTo(State.AWAITING_SUBMISSION_TO_HMCTS.name());
     }
 

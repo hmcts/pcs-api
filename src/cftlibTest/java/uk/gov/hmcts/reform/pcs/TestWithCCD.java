@@ -46,9 +46,9 @@ public class TestWithCCD extends CftlibTest {
     public void createsTestCase() {
         var r = ccdApi.startCase(idamToken, s2sToken, CaseType.getCaseType(), "createTestApplication");
         PCSCase caseData = PCSCase.builder()
-            .claimantName("Wrong name")
+            .claimantName("Wrong Name")
             .isClaimantNameCorrect(YesOrNo.NO)
-            .updatedClaimantName("Corrected name")
+            .updatedClaimantName("Updated Name")
             .propertyAddress(AddressUK.builder()
                                  .addressLine1("123 Baker Street")
                                  .addressLine2("Marylebone")
@@ -68,7 +68,6 @@ public class TestWithCCD extends CftlibTest {
         );
 
         assertThat(caseDetails.getId()).isNotNull();
-        assertThat(caseDetails.getData().get("claimantName")).isEqualTo("Corrected name");
     }
 
 }

@@ -5,18 +5,24 @@ import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.DecentralisedCaseRepository;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
+import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.renderer.ClaimPaymentTabRenderer;
+import uk.gov.hmcts.reform.pcs.ccd.renderer.ListValueUtils;
+import uk.gov.hmcts.reform.pcs.ccd.repository.PartyRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -33,6 +39,7 @@ public class CCDCaseRepository extends DecentralisedCaseRepository<PCSCase> {
     private final SecurityContextService securityContextService;
     private final ModelMapper modelMapper;
     private final ClaimPaymentTabRenderer claimPaymentTabRenderer;
+    private final PartyRepository partyRepository;
 
     /**
      * Invoked by CCD to load PCS cases by reference.
@@ -44,7 +51,6 @@ public class CCDCaseRepository extends DecentralisedCaseRepository<PCSCase> {
         PcsCaseEntity pcsCaseEntity = loadCaseData(caseReference);
 
         PCSCase pcsCase = PCSCase.builder()
-            .claimantName(pcsCaseEntity.getClaimantName())
             .propertyAddress(convertAddress(pcsCaseEntity.getPropertyAddress()))
             .caseManagementLocation(pcsCaseEntity.getCaseManagementLocation())
             .build();
@@ -62,13 +68,15 @@ public class CCDCaseRepository extends DecentralisedCaseRepository<PCSCase> {
         pcsCase.setUserPcqIdSet(YesOrNo.from(pcqIdSet));
         pcsCase.setClaimPaymentTabMarkdown(claimPaymentTabRenderer.render(
             caseRef,pcsCaseEntity.getPaymentStatus().getLabel()));
-        String formattedAddress = formatAddress(pcsCase.getPropertyAddress());
+
+        pcsCase.setParties(mapAndWrapParties(pcsCaseEntity.getParties()));
+
         pcsCase.setPageHeadingMarkdown("""
                                        <h3 class="govuk-heading-s">
                                             %s<br>
                                             Case number: ${[CASE_REFERENCE]} <br>
                                         </h3>
-                                       """.formatted(formattedAddress));
+                                       """.formatted(formatAddress(pcsCase.getPropertyAddress())));
 
     }
 
@@ -107,6 +115,12 @@ public class CCDCaseRepository extends DecentralisedCaseRepository<PCSCase> {
             .filter(Objects::nonNull)
             .filter(Predicate.not(String::isBlank))
             .collect(Collectors.joining(", "));
+    }
+
+    private List<ListValue<Party>> mapAndWrapParties(Set<PartyEntity> partyEntities) {
+        return partyEntities.stream()
+            .map(entity -> modelMapper.map(entity, Party.class))
+            .collect(Collectors.collectingAndThen(Collectors.toList(), ListValueUtils::wrapListItems));
     }
 
 }

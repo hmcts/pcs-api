@@ -7,16 +7,25 @@ import uk.gov.hmcts.ccd.sdk.api.ConfigBuilder;
 import uk.gov.hmcts.ccd.sdk.api.Event.EventBuilder;
 import uk.gov.hmcts.ccd.sdk.api.EventPayload;
 import uk.gov.hmcts.ccd.sdk.api.Permission;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PaymentStatus;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
+import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.PartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.PartyRole;
+import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.page.createtestcase.ClaimantInformation;
 import uk.gov.hmcts.reform.pcs.ccd.page.createtestcase.MakeAClaim;
+import uk.gov.hmcts.reform.pcs.ccd.service.ClaimService;
+import uk.gov.hmcts.reform.pcs.ccd.service.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
+import java.util.UUID;
+
+import static feign.Util.isNotBlank;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.createTestApplication;
 
 @Component
@@ -25,6 +34,8 @@ public class CreateTestCase implements CCDConfig<PCSCase, State, UserRole> {
 
     private final PcsCaseService pcsCaseService;
     private final SecurityContextService securityContextService;
+    private final PartyService partyService;
+    private final ClaimService claimService;
 
     @Override
     public void configure(ConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -49,16 +60,32 @@ public class CreateTestCase implements CCDConfig<PCSCase, State, UserRole> {
     }
 
     private void submit(EventPayload<PCSCase, State> eventPayload) {
+
         long caseReference = eventPayload.caseReference();
         PCSCase pcsCase = eventPayload.caseData();
         pcsCase.setPaymentStatus(PaymentStatus.UNPAID);
 
-        if (pcsCase.getUpdatedClaimantName() != null
-            && !pcsCase.getUpdatedClaimantName().isBlank()) {
-            pcsCase.setClaimantName(pcsCase.getUpdatedClaimantName());
-        }
+        UUID userID = UUID.fromString(securityContextService.getCurrentUserDetails().getUid());
 
-        pcsCaseService.createCase(caseReference, pcsCase);
+        String claimantName = isNotBlank(pcsCase.getUpdatedClaimantName())
+            ? pcsCase.getUpdatedClaimantName() : pcsCase.getClaimantName();
+
+        PcsCaseEntity pcsCaseEntity = pcsCaseService.createCase(caseReference, pcsCase);
+        PartyEntity party = partyService.createAndLinkParty(
+            pcsCaseEntity,
+            userID,
+            claimantName,
+            null,
+            true);
+
+        ClaimEntity claimEntity = claimService.createAndLinkClaim(
+            pcsCaseEntity,
+            party,
+            "Main Claim",
+            400,
+            PartyRole.CLAIMANT);
+
+        claimService.saveClaim(claimEntity);
     }
 
 }

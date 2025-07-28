@@ -62,7 +62,6 @@ class PcsCaseServiceTest {
         verify(pcsCaseRepository).save(pcsCaseEntityCaptor.capture());
 
         PcsCaseEntity savedEntity = pcsCaseEntityCaptor.getValue();
-        assertThat(savedEntity.getClaimantName()).isNull();
         assertThat(savedEntity.getCaseManagementLocation()).isNull();
         assertThat(savedEntity.getPropertyAddress()).isNull();
     }
@@ -70,15 +69,11 @@ class PcsCaseServiceTest {
     @Test
     void shouldCreateCaseWithData() {
         // Given
-        String claimantName = "Test name";
-
         PCSCase pcsCase = mock(PCSCase.class);
         AddressUK propertyAddress = mock(AddressUK.class);
         final AddressEntity propertyAddressEntity = stubAddressUKModelMapper(propertyAddress);
 
-        when(pcsCase.getClaimantName()).thenReturn(claimantName);
         when(pcsCase.getPropertyAddress()).thenReturn(propertyAddress);
-        when(pcsCase.getClaimantName()).thenReturn(claimantName);
 
         // When
         underTest.createCase(CASE_REFERENCE, pcsCase);
@@ -88,7 +83,6 @@ class PcsCaseServiceTest {
 
         PcsCaseEntity savedEntity = pcsCaseEntityCaptor.getValue();
         assertThat(savedEntity.getPropertyAddress()).isEqualTo(propertyAddressEntity);
-        assertThat(savedEntity.getClaimantName()).isEqualTo(claimantName);
     }
 
     @Test
@@ -131,13 +125,10 @@ class PcsCaseServiceTest {
         // Given
         PCSCase pcsCase = mock(PCSCase.class);
 
-        String claimantName = "Updated name";
-
         AddressUK updatedPropertyAddress = mock(AddressUK.class);
         final AddressEntity updatedAddressEntity = stubAddressUKModelMapper(updatedPropertyAddress);
 
         PcsCaseEntity existingPcsCaseEntity = mock(PcsCaseEntity.class);
-        when(pcsCase.getClaimantName()).thenReturn(claimantName);
         when(pcsCase.getPropertyAddress()).thenReturn(updatedPropertyAddress);
 
         when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(existingPcsCaseEntity));
@@ -150,7 +141,6 @@ class PcsCaseServiceTest {
 
         PcsCaseEntity savedEntity = pcsCaseEntityCaptor.getValue();
         assertThat(savedEntity).isSameAs(existingPcsCaseEntity);
-        verify(existingPcsCaseEntity).setClaimantName(claimantName);
         verify(existingPcsCaseEntity).setPropertyAddress(updatedAddressEntity);
     }
 

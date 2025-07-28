@@ -14,7 +14,7 @@ public class ClaimantInformation implements CcdPageConfiguration {
     @Override
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
-            .page("Makes a claim")
+            .page("claimantInformation")
             .pageLabel("Claimant name")
             .readonlyWithLabel(PCSCase::getClaimantName, "Your claimant name registered with My HMCTS is:")
             .mandatoryWithLabel(PCSCase::getIsClaimantNameCorrect,"Is this the correct claimant name?")
