@@ -67,8 +67,8 @@ public class CreateTestCase implements CCDConfig<PCSCase, State, UserRole> {
 
         UUID userID = UUID.fromString(securityContextService.getCurrentUserDetails().getUid());
 
-        String claimantName = isNotBlank(pcsCase.getUpdatedClaimantName())
-            ? pcsCase.getUpdatedClaimantName() : pcsCase.getClaimantName();
+        String claimantName = isNotBlank(pcsCase.getOverriddenClaimantName())
+            ? pcsCase.getOverriddenClaimantName() : pcsCase.getClaimantName();
 
         PcsCaseEntity pcsCaseEntity = pcsCaseService.createCase(caseReference, pcsCase);
         PartyEntity party = partyService.createAndLinkParty(
@@ -82,7 +82,6 @@ public class CreateTestCase implements CCDConfig<PCSCase, State, UserRole> {
             pcsCaseEntity,
             party,
             "Main Claim",
-            400,
             PartyRole.CLAIMANT);
 
         claimService.saveClaim(claimEntity);

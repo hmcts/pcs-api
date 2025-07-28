@@ -16,7 +16,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.math.BigDecimal;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
@@ -51,8 +50,6 @@ public class ClaimEntity {
     private Set<ClaimPartyEntity> claimParties = new HashSet<>();
 
     private String summary;
-
-    private BigDecimal amount;
 
     public void addParty(PartyEntity party, PartyRole partyRole) {
         ClaimPartyEntity claimPartyEntity = ClaimPartyEntity.builder()

@@ -12,7 +12,6 @@ CREATE TABLE public.claim
     case_id uuid references public.pcs_case (id),
     created timestamp with time zone,
     summary varchar(255),
-    amount  numeric(15,2),
     state   varchar(40)
 );
 

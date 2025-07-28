@@ -39,7 +39,7 @@ public class PCSCase {
     @CCD(
         access = {CitizenAccess.class, CaseworkerAccess.class}
     )
-    private String updatedClaimantName;
+    private String overriddenClaimantName;
 
     @CCD(
         label = "Property address",

@@ -9,8 +9,6 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimRepository;
 
-import java.math.BigDecimal;
-
 @Service
 @AllArgsConstructor
 public class ClaimService {
@@ -18,10 +16,9 @@ public class ClaimService {
     private final ClaimRepository claimRepository;
 
     public ClaimEntity createAndLinkClaim(PcsCaseEntity caseEntity, PartyEntity partyEntity,
-                                          String claimName, int amount, PartyRole role) {
+                                          String claimName, PartyRole role) {
         ClaimEntity claim = ClaimEntity.builder()
             .summary(claimName)
-            .amount(BigDecimal.valueOf(amount))
             .pcsCase(caseEntity)
             .build();
 

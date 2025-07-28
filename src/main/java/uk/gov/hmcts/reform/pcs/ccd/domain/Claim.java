@@ -6,7 +6,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
-import uk.gov.hmcts.ccd.sdk.type.FieldType;
 
 import java.util.UUID;
 
@@ -22,12 +21,6 @@ public class Claim {
 
     @CCD(label = "Summary")
     private String summary;
-
-    @CCD(
-        label = "Claim Amount",
-        typeOverride = FieldType.MoneyGBP
-    )
-    private String amountInPence;
 
 }
 

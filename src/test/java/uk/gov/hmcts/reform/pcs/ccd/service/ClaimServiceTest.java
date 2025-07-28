@@ -11,8 +11,6 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimRepository;
 
-import java.math.BigDecimal;
-
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -32,14 +30,12 @@ class ClaimServiceTest {
         PcsCaseEntity caseEntity = new PcsCaseEntity();
         PartyEntity partyEntity = new PartyEntity();
         String claimName = "Main Claim";
-        int amount = 400;
 
         ClaimEntity claim = claimService.createAndLinkClaim(caseEntity, partyEntity,
-                                                            claimName, amount, PartyRole.CLAIMANT);
+                                                            claimName, PartyRole.CLAIMANT);
 
         assertThat(claim).isNotNull();
         assertThat(claim.getSummary()).isEqualTo(claimName);
-        assertThat(claim.getAmount()).isEqualByComparingTo(BigDecimal.valueOf(amount));
         assertThat(claim.getPcsCase()).isSameAs(caseEntity);
         assertThat(caseEntity.getClaims().iterator().next()).isEqualTo(claim);
         assertThat(claim.getClaimParties().iterator().next().getParty()).isEqualTo(partyEntity);
@@ -49,7 +45,6 @@ class ClaimServiceTest {
     void shouldSaveClaim() {
         ClaimEntity claim = new ClaimEntity();
         claim.setSummary("Main claim");
-        claim.setAmount(new BigDecimal("400"));
 
         when(claimRepository.save(claim)).thenReturn(claim);
 
