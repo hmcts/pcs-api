@@ -4,7 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 
 /**
- * Represents the User held within the Organisation Response
+ * Represents the User held within the Organisation Response.
  */
 @AllArgsConstructor
 @Data
