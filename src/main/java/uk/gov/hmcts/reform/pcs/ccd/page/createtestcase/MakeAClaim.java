@@ -1,12 +1,8 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.createtestcase;
 
 import lombok.extern.slf4j.Slf4j;
-
-import java.util.List;
-
-import org.springframework.stereotype.Component;
-
 import lombok.AllArgsConstructor;
+import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
@@ -19,6 +15,8 @@ import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.EligibilityResult;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.EligibilityStatus;
 import uk.gov.hmcts.reform.pcs.postcodecourt.service.EligibilityService;
+
+import java.util.List;
 
 @AllArgsConstructor
 @Component
@@ -41,23 +39,25 @@ public class MakeAClaim implements CcdPageConfiguration {
         PCSCase caseData = details.getData();
         String postcode = caseData.getPropertyAddress().getPostCode();
         EligibilityResult eligibilityResult = eligibilityService.checkEligibility(postcode, null);
+        
         if (eligibilityResult.getStatus() == EligibilityStatus.LEGISLATIVE_COUNTRY_REQUIRED) {
             caseData.setShowCrossBorderPage(YesOrNo.YES);
+            
             List<DynamicStringListElement> crossBorderCountries = eligibilityResult.getLegislativeCountries().stream()
                 .map(value -> DynamicStringListElement.builder().code(value.name()).label(value.getLabel()).build())
                 .toList();
-
             DynamicStringList crossBorderCountriesList = DynamicStringList.builder()
                 .listItems(crossBorderCountries)
                 .build();
+                
             caseData.setCrossBorderCountriesList(crossBorderCountriesList);
             
-            // Set individual cross border country fields
-            if (crossBorderCountries.size() > 0) {
+            // Set individual cross border countries
+            if (!crossBorderCountries.isEmpty()) {
                 caseData.setCrossBorderCountry1(crossBorderCountries.get(0).getLabel());
-            }
-            if (crossBorderCountries.size() > 1) {
-                caseData.setCrossBorderCountry2(crossBorderCountries.get(1).getLabel());
+                if (crossBorderCountries.size() > 1) {
+                    caseData.setCrossBorderCountry2(crossBorderCountries.get(1).getLabel());
+                }
             }
         } else {
             caseData.setShowCrossBorderPage(YesOrNo.NO);

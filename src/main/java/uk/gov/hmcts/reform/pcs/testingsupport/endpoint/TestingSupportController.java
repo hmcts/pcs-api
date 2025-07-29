@@ -215,20 +215,6 @@ public class TestingSupportController {
                             """
                             ),
                         @ExampleObject(
-                            name = "Cross-border postcode (England/Scotland)",
-                            description = "Result for a match with a cross border postcode between England and "
-                                + "Scotland, that needs the legislative country to be specified as well",
-                            value = """
-                                {
-                                    "status": "LEGISLATIVE_COUNTRY_REQUIRED",
-                                    "legislativeCountries" : [
-                                        "England",
-                                        "Scotland"
-                                    ]
-                                }
-                            """
-                            ),
-                        @ExampleObject(
                             name = "No match found for postcode",
                             description = "No match found in the DB for the provided postcode.",
                             value = """

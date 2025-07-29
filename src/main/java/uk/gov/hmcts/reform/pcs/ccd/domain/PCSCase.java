@@ -42,6 +42,9 @@ public class PCSCase {
     @External
     private AddressUK propertyAddress;
 
+    @CCD(searchable = false, access = CaseworkerAccess.class)
+    private YesOrNo showCrossBorderPage;
+    
     @CCD(
         typeOverride = DynamicRadioList,
         access = {CitizenAccess.class, CaseworkerAccess.class}
@@ -95,8 +98,5 @@ public class PCSCase {
     private String pageHeadingMarkdown;
 
     private String claimPaymentTabMarkdown;
-
-    @CCD(searchable = false, access = CaseworkerAccess.class)
-    private YesOrNo showCrossBorderPage;
 
 }
