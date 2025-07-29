@@ -86,7 +86,7 @@ public class PCSCase {
     private String legislativeCountry;
 
     @CCD(
-        label = "Which type of claimant are you?",
+        label = "Who is the claimant in this case?",
         hint = "If you’re a legal representative, you should select the type of claimant you’re representing.",
         typeOverride = DynamicRadioList,
         access = {CaseworkerAccess.class}

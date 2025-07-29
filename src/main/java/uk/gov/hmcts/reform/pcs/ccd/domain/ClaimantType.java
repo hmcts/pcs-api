@@ -16,7 +16,7 @@ public enum ClaimantType implements HasLabel {
     PRIVATE_LANDLORD("Private landlord", Set.of(ENGLAND, WALES)),
     PROVIDER_OF_SOCIAL_HOUSING("Registered provider of social housing", Set.of(ENGLAND)),
     COMMUNITY_LANDLORD("Registered community landlord", Set.of(WALES)),
-    MORTGAGE_PROVIDER("Mortgage provider or lender", Set.of(ENGLAND, WALES)),
+    MORTGAGE_LENDER("Mortgage lender", Set.of(ENGLAND, WALES)),
     OTHER("Other", Set.of(ENGLAND, WALES));
 
     private final String label;

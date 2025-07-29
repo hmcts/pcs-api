@@ -36,7 +36,7 @@ public class CreatePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             configBuilder
                 .decentralisedEvent(createPossessionClaim.name(), this::submit)
                 .initialState(State.CASE_ISSUED)
-                .name("Make a possession claim")
+                .name("Make a claim")
                 .grant(Permission.CRUD, UserRole.PCS_CASE_WORKER)
                 .showSummary();
 
