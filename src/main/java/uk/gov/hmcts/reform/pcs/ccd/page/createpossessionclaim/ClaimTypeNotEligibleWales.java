@@ -27,7 +27,7 @@ public class ClaimTypeNotEligibleWales implements CcdPageConfiguration {
 
                 <h3 class="govuk-heading-s govuk-!-font-size-19">What to do next</h3>
 
-                Use form N5W and the correct particulars of claim form.
+                Use form N5 Wales and the correct particulars of claim form.
 
                 <a href="https://www.gov.uk/government/collections/property-possession-forms" rel="noreferrer noopener"
                     target="_blank"
