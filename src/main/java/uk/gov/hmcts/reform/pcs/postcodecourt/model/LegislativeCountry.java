@@ -25,9 +25,11 @@ public enum LegislativeCountry implements HasLabel {
     }
 
     public static LegislativeCountry fromLabel(String label) {
+
         if (label == null) {
             return null;
         }
+      
         return Arrays.stream(values())
             .filter(value -> value.getLabel().equals(label))
             .findFirst()
