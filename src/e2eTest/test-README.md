@@ -8,7 +8,7 @@ A structured, maintainable test automation solution built on Playwright that:
 - Separates test logic from implementation details
 - Provides ready-to-use components for UI interactions and validations
 
-## 1.1 Folder Structure
+### 1.1 Folder Structure
 
 ```
 ui/
