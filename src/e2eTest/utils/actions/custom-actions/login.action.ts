@@ -12,8 +12,8 @@ export class LoginAction implements IAction {
     }
 
     await test.step(`Test User ${userCreds.email} logging in with roles ${userCreds.roles.join(', ')}`, async () => {
-    await performAction('fill', 'Email address', userCreds.email);
-    await performAction('fill', 'Password', userCreds.password);
+    await performAction('inputText', 'Email address', userCreds.email);
+    await performAction('inputText', 'Password', userCreds.password);
     await performAction('click', 'Sign in');
     });
   }

@@ -23,7 +23,7 @@ test.beforeEach(async ({ page }, testInfo) => {
   });
 });
 
-test.describe.skip('[Create Case Flow With Address]  @Master @nightly', async () => {
+test.describe('[Create Case Flow With Address]  @Master @nightly', async () => {
 
   test('Dropdown Address Selection Flow - should create case sucessfully', async () => {
     await performAction('click','Create case');
@@ -33,14 +33,14 @@ test.describe.skip('[Create Case Flow With Address]  @Master @nightly', async ()
       ,['select', 'Event', caseData.event]);
     await performAction('click','Start');
     await performActions('Find Address based on postcode'
-      ,['fill', 'Enter a UK postcode', caseData.postcode]
+      ,['inputText', 'Enter a UK postcode', caseData.postcode]
       ,['click', 'Find address']
       ,['select', 'Select an address', caseData.addressIndex]
-      ,['fill', 'Address Line 2', caseData.addressLine2]
-      ,['fill', 'Address Line 3', caseData.addressLine3]
-      ,['fill', 'County', caseData.county]);
+      ,['inputText', 'Address Line 2', caseData.addressLine2]
+      ,['inputText', 'Address Line 3', caseData.addressLine3]
+      ,['inputText', 'County', caseData.county]);
     await performAction('click', 'Continue');
-    await performAction('fill', "Applicant's forename", caseData.applicantFirstName);
+    await performAction('inputText', "Applicant's forename", caseData.applicantFirstName);
     await performAction('click', 'Submit');
     await performValidation("bannerAlert", {message: "Case #.* has been created."});
     await performValidation('formLabelValue', "Applicant's forename", {value:'AutomationTestUser'});
@@ -62,15 +62,15 @@ test.describe.skip('[Create Case Flow With Address]  @Master @nightly', async ()
     await performAction('click', 'Start');
     await performActions('Enter Address Manually'
       ,['click', "I can't enter a UK postcode"]
-      ,['fill', 'Building and Street', caseData.manualBuildingAndStreet]
-      ,['fill', 'Address Line 2', caseData.addressLine2]
-      ,['fill', 'Address Line 3', caseData.addressLine3]
-      ,['fill', 'Town or City', caseData.manualTownOrCity]
-      ,['fill', 'County', caseData.county]
-      ,['fill', 'Postcode/Zipcode', caseData.manualPostcode]
-      ,['fill', 'Country', caseData.manualCountry]);
+      ,['inputText', 'Building and Street', caseData.manualBuildingAndStreet]
+      ,['inputText', 'Address Line 2', caseData.addressLine2]
+      ,['inputText', 'Address Line 3', caseData.addressLine3]
+      ,['inputText', 'Town or City', caseData.manualTownOrCity]
+      ,['inputText', 'County', caseData.county]
+      ,['inputText', 'Postcode/Zipcode', caseData.manualPostcode]
+      ,['inputText', 'Country', caseData.manualCountry]);
     await performAction('click','Continue');
-    await performAction('fill', "Applicant's forename", caseData.applicantFirstName);
+    await performAction('inputText', "Applicant's forename", caseData.applicantFirstName);
     await performAction('click', 'Submit');
     await performValidation("bannerAlert", {message: "Case #.* has been created."});
     await performValidation('formLabelValue', "Applicant's forename", {value:'AutomationTestUser'});
