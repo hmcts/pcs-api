@@ -9,8 +9,18 @@ export class TestConfig {
     "grantType": "password",
     "scope": "profile openid roles",
     "clientId": "pcs-api",
-    "roles": ['caseworker-pcs','caseworker'],
+    "roles": ['caseworker-pcs', 'caseworker'],
   };
+  public static readonly authProvider = {
+    url:process.env.IDAM_S2S_AUTH_URL,
+    microservice: 'ccd_data',
+    endPoint: '/testing-support/lease',
+  }
+  public static readonly ccdCase = {
+    url: process.env.DATA_STORE_URL_BASE,
+    caseType: `PCS-${process.env.CHANGE_ID}`,
+    eventName:'createTestApplication'
+  }
 }
 
 export default TestConfig;
