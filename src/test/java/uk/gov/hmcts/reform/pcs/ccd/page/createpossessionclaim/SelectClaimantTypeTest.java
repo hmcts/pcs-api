@@ -24,7 +24,7 @@ import static org.junit.jupiter.params.provider.Arguments.arguments;
 import static uk.gov.hmcts.ccd.sdk.type.YesOrNo.NO;
 import static uk.gov.hmcts.ccd.sdk.type.YesOrNo.YES;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType.COMMUNITY_LANDLORD;
-import static uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType.MORTGAGE_PROVIDER;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType.MORTGAGE_LENDER;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType.OTHER;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType.PRIVATE_LANDLORD;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType.PROVIDER_OF_SOCIAL_HOUSING;
@@ -76,10 +76,10 @@ class SelectClaimantTypeTest extends BasePageTest {
             arguments(WALES, COMMUNITY_LANDLORD, NO, NO),
 
             arguments(ENGLAND, PRIVATE_LANDLORD, YES, NO),
-            arguments(ENGLAND, MORTGAGE_PROVIDER, YES, NO),
+            arguments(ENGLAND, MORTGAGE_LENDER, YES, NO),
             arguments(ENGLAND, OTHER, YES, NO),
             arguments(WALES, PRIVATE_LANDLORD, NO, YES),
-            arguments(WALES, MORTGAGE_PROVIDER, NO, YES),
+            arguments(WALES, MORTGAGE_LENDER, NO, YES),
             arguments(WALES, OTHER, NO, YES)
         );
 
