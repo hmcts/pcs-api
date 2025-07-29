@@ -1,9 +1,9 @@
 // validations/attribute.validation.ts
 import { Page, expect } from '@playwright/test';
-import {IValidation, ValidationData} from "../../interfaces/validation.interface";
+import {IValidation, validationData} from "../../interfaces/validation.interface";
 
 export class AttributeValidation implements IValidation {
-  async validate(page: Page, fieldName: string, data: ValidationData): Promise<void> {
+  async validate(page: Page, fieldName: string, data: validationData): Promise<void> {
     const locator = page.locator(`[data-testid="${fieldName}"]`);
 
     if ('attribute' in data && 'value' in data) {
