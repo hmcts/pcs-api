@@ -54,7 +54,7 @@ class UploadDocumentPocTest extends BaseEventTest {
         Start<PCSCase, State> startHandler = configuredEvent.getStartHandler();
         PCSCase result = startHandler.start(eventPayload);
 
-        assertThat(result.getApplicantForename()).isEqualTo("Enter your name");
+        assertThat(result.getApplicantForename()).isEqualTo("Preset value");
     }
 
     @Test

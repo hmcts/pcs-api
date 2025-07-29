@@ -9,6 +9,7 @@ import uk.gov.hmcts.ccd.sdk.api.EventPayload;
 import uk.gov.hmcts.ccd.sdk.api.Permission;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.PaymentStatus;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.page.createtestcase.ClaimantInformation;
@@ -41,13 +42,14 @@ public class UploadDocumentPoc implements CCDConfig<PCSCase, State, UserRole> {
 
     private PCSCase start(EventPayload<PCSCase, State> eventPayload) {
         PCSCase caseData = eventPayload.caseData();
-        caseData.setApplicantForename("Enter your name");
+        caseData.setApplicantForename("Preset value");
         return caseData;
     }
 
     private void submit(EventPayload<PCSCase, State> eventPayload) {
         long caseReference = eventPayload.caseReference();
         PCSCase pcsCase = eventPayload.caseData();
+        pcsCase.setPaymentStatus(PaymentStatus.UNPAID);
 
         pcsCaseService.createCase(caseReference, pcsCase);
     }
