@@ -15,6 +15,7 @@ public class ClaimantInformation implements CcdPageConfiguration {
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
             .page("claimantInformation")
+            .label("claimantInformation-separator", "---")
             .pageLabel("Claimant name")
             .readonlyWithLabel(PCSCase::getClaimantName, "Your claimant name registered with My HMCTS is:")
             .mandatoryWithLabel(PCSCase::getIsClaimantNameCorrect,"Is this the correct claimant name?")
