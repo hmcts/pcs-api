@@ -13,6 +13,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 
+import static com.fasterxml.jackson.core.JsonGenerator.Feature.AUTO_CLOSE_JSON_CONTENT;
 import static com.fasterxml.jackson.databind.MapperFeature.ACCEPT_CASE_INSENSITIVE_ENUMS;
 import static com.fasterxml.jackson.databind.MapperFeature.INFER_BUILDER_TYPE_BINDINGS;
 
@@ -25,6 +26,7 @@ public class JacksonConfiguration {
         ObjectMapper mapper = JsonMapper.builder()
             .configure(ACCEPT_CASE_INSENSITIVE_ENUMS, true)
             .enable(INFER_BUILDER_TYPE_BINDINGS)
+            .disable(AUTO_CLOSE_JSON_CONTENT)
             .serializationInclusion(JsonInclude.Include.NON_NULL)
             .build();
 
