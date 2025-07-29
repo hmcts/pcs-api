@@ -7,6 +7,7 @@ import uk.gov.hmcts.ccd.sdk.DecentralisedCaseRepository;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.PaymentStatus;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
@@ -61,8 +62,11 @@ public class CCDCaseRepository extends DecentralisedCaseRepository<PCSCase> {
             .orElse(false);
 
         pcsCase.setUserPcqIdSet(YesOrNo.from(pcqIdSet));
-        pcsCase.setClaimPaymentTabMarkdown(claimPaymentTabRenderer.render(
-            caseRef,pcsCaseEntity.getPaymentStatus().getLabel()));
+        PaymentStatus paymentStatus = pcsCaseEntity.getPaymentStatus();
+        if (paymentStatus != null) {
+            pcsCase.setClaimPaymentTabMarkdown(claimPaymentTabRenderer.render(caseRef, paymentStatus));
+        }
+
         String formattedAddress = formatAddress(pcsCase.getPropertyAddress());
         pcsCase.setPageHeadingMarkdown("""
                                        <h3 class="govuk-heading-s">

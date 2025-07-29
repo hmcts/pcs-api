@@ -51,6 +51,8 @@ public class ProcessClaimPayment implements CCDConfig<PCSCase, State, UserRole> 
         pcsCase.setPaymentStatus(PaymentStatus.PAID);
         Integer epimId = postCodeCourtService.getCourtManagementLocation(pcsCase.getPropertyAddress().getPostCode());
         pcsCase.setCaseManagementLocation(epimId);
+        // Note: For the real payment implementation, we should make the
+        // payments at the claim level rather than the case
         pcsCaseService.patchCase(payload.caseReference(), pcsCase);
     }
 
