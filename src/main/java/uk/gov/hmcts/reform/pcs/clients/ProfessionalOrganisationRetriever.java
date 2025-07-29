@@ -59,54 +59,54 @@ public class ProfessionalOrganisationRetriever {
 //        return getOrgDetails(userId, adminUserToken);
         return null;
     }
-//
-//    private String getUserId(String userToken){
-//        HttpHeaders headers = new HttpHeaders();
-//        headers.setContentType(MediaType.APPLICATION_JSON);
-//        headers.set(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
-//        headers.set(HttpHeaders.AUTHORIZATION, userToken);
-//
-//        HttpEntity<String> requestEntity = new HttpEntity<>(headers);
-//
-//        return new RestTemplate().exchange("https://idam-api.aat.platform.hmcts.net/o/userinfo?claims=" + userToken,
-//                                           HttpMethod.GET,
-//                                           requestEntity,
-//                                           String.class).getBody();
-//    }
-//
-//    private String getAdminToken(String adminEmail){
-//        HttpHeaders headers = new HttpHeaders();
-//        headers.setContentType(MediaType.APPLICATION_JSON);
-//
-//        String body = "{\"password\": \"Pa$$w0rd\",\n" +
-//            "    \"username\":\"" + adminEmail + "\"{\n" +
-//            "        \"email\":\"" + adminEmail + "\",\n" +
-//            "        \"forename\":\"x\",\n" +
-//            "        \"surname\":\"x\",\n" +
-//            "        \"roleNames\": [\n" +
-//            "            \"caseworker\"\n" +
-//            "        ]\n" +
-//            "    }}";
-//
-//        HttpEntity<String> requestEntity = new HttpEntity<>(body, headers);
-//
-//        return new RestTemplate().exchange("https://idam-api.aat.platform.hmcts.net/o/userinfo?claims=" + userToken,
-//                                           HttpMethod.GET,
-//                                           requestEntity,
-//                                           String.class).getBody();
-//    }
-//
-//    private String getOrgDetails(String userId, String adminToken){
-//        HttpHeaders headers = new HttpHeaders();
-//        headers.setContentType(MediaType.APPLICATION_JSON);
-//        headers.set(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
-//        headers.set(HttpHeaders.AUTHORIZATION, userToken);
-//
-//        HttpEntity<String> requestEntity = new HttpEntity<>(headers);
-//
-//        return new RestTemplate().exchange("https://idam-api.aat.platform.hmcts.net/o/userinfo?claims=" + userToken,
-//                                           HttpMethod.GET,
-//                                           requestEntity,
-//                                           String.class).getBody();
-//    }
+
+    private String getUserId(String userToken){
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.set(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
+        headers.set(HttpHeaders.AUTHORIZATION, userToken);
+
+        HttpEntity<String> requestEntity = new HttpEntity<>(headers);
+
+        return new RestTemplate().exchange("https://idam-api.aat.platform.hmcts.net/o/userinfo?claims=" + userToken,
+                                           HttpMethod.GET,
+                                           requestEntity,
+                                           String.class).getBody();
+    }
+
+    private String getAdminToken(String adminEmail){
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+
+        String body = "{\"password\": \"Pa$$w0rd\",\n" +
+            "    \"username\":\"" + adminEmail + "\"{\n" +
+            "        \"email\":\"" + adminEmail + "\",\n" +
+            "        \"forename\":\"x\",\n" +
+            "        \"surname\":\"x\",\n" +
+            "        \"roleNames\": [\n" +
+            "            \"caseworker\"\n" +
+            "        ]\n" +
+            "    }}";
+
+        HttpEntity<String> requestEntity = new HttpEntity<>(body, headers);
+
+        return new RestTemplate().exchange("https://idam-api.aat.platform.hmcts.net/o/userinfo?claims=" + userToken,
+                                           HttpMethod.GET,
+                                           requestEntity,
+                                           String.class).getBody();
+    }
+
+    private String getOrgDetails(String userId, String adminToken){
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.set(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
+        headers.set(HttpHeaders.AUTHORIZATION, userToken);
+
+        HttpEntity<String> requestEntity = new HttpEntity<>(headers);
+
+        return new RestTemplate().exchange("https://idam-api.aat.platform.hmcts.net/o/userinfo?claims=" + userToken,
+                                           HttpMethod.GET,
+                                           requestEntity,
+                                           String.class).getBody();
+    }
 }
