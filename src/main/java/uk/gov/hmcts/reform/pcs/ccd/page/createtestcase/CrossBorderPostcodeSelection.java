@@ -40,11 +40,7 @@ public class CrossBorderPostcodeSelection implements CcdPageConfiguration {
                     <span id="warning-message">Your case could be delayed or rejected if you select the wrong country.</span>
                   </strong>
                 </div>
-
-                <strong id="country-selection-heading" class="govuk-heading-m" style="display: block; margin-bottom: 20px;">
-                  Is the property located in ${crossBorderCountry1} or ${crossBorderCountry2}?
-                </strong>
                 """)
-            .mandatory(PCSCase::getCrossBorderCountriesList);
+            .mandatory(PCSCase::getCrossBorderCountriesList, null, null, "Is the property located in ${crossBorderCountry1} or ${crossBorderCountry2}?");
     }
-} 
+}
