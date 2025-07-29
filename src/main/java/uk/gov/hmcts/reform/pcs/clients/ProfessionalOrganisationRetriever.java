@@ -48,15 +48,16 @@ public class ProfessionalOrganisationRetriever {
 
 //        ----- Approach 2 -----
         //get ID of user
-        String userId = getUserId(userToken);
-
-       String adminEmail = ""; //pull from env variables and add role to yaml.
-
-        //get Admins user token
-        String adminUserToken = getAdminToken(adminEmail);
-
-        //get org details with user ID, authorised by prd-admin user.
-        return getOrgDetails(userId, adminUserToken);
+//        String userId = getUserId(userToken);
+//
+//       String adminEmail = ""; //pull from env variables and add role to yaml.
+//
+//        //get Admins user token
+//        String adminUserToken = getAdminToken(adminEmail);
+//
+//        //get org details with user ID, authorised by prd-admin user.
+//        return getOrgDetails(userId, adminUserToken);
+        return null;
     }
 
     private String getUserId(String userToken){

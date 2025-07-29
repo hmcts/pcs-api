@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.createtestcase;
 
 import org.springframework.stereotype.Component;
+import uk.gov.hmcts.ccd.sdk.type.Organisation;
 import uk.gov.hmcts.ccd.sdk.type.OrganisationPolicy;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
@@ -19,23 +20,18 @@ public class ClaimantInformation implements CcdPageConfiguration {
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
-//        OrganisationDto usersOrganisation = professionalOrganisationRetriever.retrieve().getBody();
-        String orgDetails = professionalOrganisationRetriever.retrieve();
-
+//        OrganisationDto usersOrganisation = professionalOrganisationRetriever.retrieve().getBody(); //approach 1
+//        String orgDetails = professionalOrganisationRetriever.retrieve(); //approach 2
 //        assert usersOrganisation != null;
+
         pageBuilder
             .page("Organisation Details")
             .pageLabel("Organisation Details")
             .label("OrganisationQuestion", "Are you a part of this Organisation?")
             .complex(PCSCase::getOrganisationPolicy)
-                .mandatory(OrganisationPolicy::getPreviousOrganisations) //returns a set
-//            .mandatory(PrepopulateToUsersOrganisation )
-//                .mandatory(OrganisationPosurelicy::getPrepopulateToUsersOrganisation) //yes or no to set the field
-//                .mandatory(OrganisationPolicy::setPrepopulateToUsersOrganisation("Y"))
-                .done();
+                .complex(OrganisationPolicy::getOrganisation)
+                    .optional(Organisation::getOrganisationId)
+            .done();
 
-
-//            .label("lol", OrganisationPolicy::getPreviousOrganisations);
-//            .label("OrganisationName", usersOrganisation.getName());
     }
 }

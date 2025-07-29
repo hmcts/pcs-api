@@ -419,7 +419,7 @@ project.tasks.named("processSmokeTestResources") {
 
 tasks.withType(CftlibExec).configureEach {
   group = 'ccd tasks'
-  authMode = AuthMode.Local
+  authMode = AuthMode.AAT
 
   //Attach mockito agent for inline mocking to remove warning in logs
   classpath += configurations.mockitoAgentConfig
