@@ -99,4 +99,7 @@ public class PCSCase {
     @CCD(searchable = false, access = CaseworkerAccess.class)
     private YesOrNo showCrossBorderPage;
 
+    @CCD(searchable = false, access = CaseworkerAccess.class)
+    private YesOrNo eligibleForClaim;
+
 }

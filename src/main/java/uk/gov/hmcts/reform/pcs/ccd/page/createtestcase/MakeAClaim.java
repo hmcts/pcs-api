@@ -51,7 +51,7 @@ public class MakeAClaim implements CcdPageConfiguration {
                 .listItems(crossBorderCountries)
                 .build();
             caseData.setCrossBorderCountriesList(crossBorderCountriesList);
-            
+
             // Set individual cross border country fields
             if (crossBorderCountries.size() > 0) {
                 caseData.setCrossBorderCountry1(crossBorderCountries.get(0).getLabel());
@@ -62,7 +62,7 @@ public class MakeAClaim implements CcdPageConfiguration {
         } else {
             caseData.setShowCrossBorderPage(YesOrNo.NO);
         }
-        
+
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
             .data(caseData)
             .build();

@@ -15,9 +15,11 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.page.createtestcase.ClaimantInformation;
 import uk.gov.hmcts.reform.pcs.ccd.page.createtestcase.CrossBorderPostcodeSelection;
 import uk.gov.hmcts.reform.pcs.ccd.page.createtestcase.MakeAClaim;
+import uk.gov.hmcts.reform.pcs.ccd.page.createtestcase.StartingTheService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.createTestApplication;
+import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 
 @Component
 @AllArgsConstructor
@@ -25,6 +27,8 @@ public class CreateTestCase implements CCDConfig<PCSCase, State, UserRole> {
 
     private final PcsCaseService pcsCaseService;
     private final MakeAClaim makeAClaim;
+    private final StartingTheService startingTheService;
+    private final CrossBorderPostcodeSelection crossBorderPostcodeSelection;
 
     @Override
     public void configure(ConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -33,12 +37,19 @@ public class CreateTestCase implements CCDConfig<PCSCase, State, UserRole> {
                 .decentralisedEvent(createTestApplication.name(), this::submit, this::start)
                 .initialState(State.CASE_ISSUED)
                 .name("Make a claim")
+                .description("Make a housing possession claim")
                 .grant(Permission.CRUD, UserRole.PCS_CASE_WORKER);
+        // Add eligibleForClaim field to the event so it can be used in show conditions
+        eventBuilder.fields()
+            .readonly(PCSCase::getEligibleForClaim, NEVER_SHOW)
+            .mandatory(PCSCase::getPropertyAddress);
 
         new PageBuilder(eventBuilder)
             .add(makeAClaim)
-            .add(new CrossBorderPostcodeSelection())
+            .add(crossBorderPostcodeSelection)
+            .add(startingTheService)
             .add(new ClaimantInformation());
+
     }
 
     private PCSCase start(EventPayload<PCSCase, State> eventPayload) {
