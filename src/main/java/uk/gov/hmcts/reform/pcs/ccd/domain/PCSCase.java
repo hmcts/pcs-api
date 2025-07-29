@@ -100,7 +100,7 @@ public class PCSCase {
     private YesOrNo showClaimantTypeNotEligibleWales;
 
     @CCD(
-        label = "Is this claim against trespassers?",
+        label = "Is this a claim against trespassers?",
         access = CaseworkerAccess.class
     )
     private VerticalYesNo claimAgainstTrespassers;

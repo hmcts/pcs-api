@@ -23,10 +23,11 @@ public class SelectClaimType implements CcdPageConfiguration {
             .pageLabel("Claim type")
             .label("selectClaimType-info", """
                         ---
-                        If you’re not sure whether your claim is a trespass claim,
+                        If you’re not sure whether your claim is against trespassers,
                         <a href="https://www.gov.uk/squatting-law/remove-squatters"
+                            rel="noreferrer noopener"
                             target="_blank"
-                            class="govuk-link">read the guidance on removing squatters (opens in a new tab).</a>
+                            class="govuk-link">read the guidance on removing squatters (opens in a new tab)</a>.
                         """)
             .mandatory(PCSCase::getClaimAgainstTrespassers);
     }
