@@ -26,7 +26,11 @@ import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -80,6 +84,40 @@ class CCDCaseRepositoryTest {
 
         // Then
         assertThat(pcsCase.getPropertyAddress()).isNull();
+    }
+
+    @Test
+    void shouldRenderClaimPaymentMarkdownWhenPaymentStatusIsNotNull() {
+        // Given
+        PcsCaseEntity pcsCaseEntity = mock(PcsCaseEntity.class);
+        when(pcsCaseEntity.getPaymentStatus()).thenReturn(PaymentStatus.UNPAID);
+
+        when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(pcsCaseEntity));
+
+        String expectedPaymentMarkdown = "payment markdown";
+        when(claimPaymentTabRenderer.render(CASE_REFERENCE, PaymentStatus.UNPAID)).thenReturn(expectedPaymentMarkdown);
+
+        // When
+        PCSCase pcsCase = underTest.getCase(CASE_REFERENCE);
+
+        // Then
+        assertThat(pcsCase.getClaimPaymentTabMarkdown()).isEqualTo(expectedPaymentMarkdown);
+    }
+
+    @Test
+    void shouldNotRenderClaimPaymentMarkdownWhenNoPaymentStatus() {
+        // Given
+        PcsCaseEntity pcsCaseEntity = mock(PcsCaseEntity.class);
+        when(pcsCaseEntity.getPaymentStatus()).thenReturn(null); // Stated for clarity
+
+        when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(pcsCaseEntity));
+
+        // When
+        PCSCase pcsCase = underTest.getCase(CASE_REFERENCE);
+
+        // Then
+        assertThat(pcsCase.getClaimPaymentTabMarkdown()).isNull();
+        verify(claimPaymentTabRenderer, never()).render(anyLong(), any());
     }
 
     @Test
