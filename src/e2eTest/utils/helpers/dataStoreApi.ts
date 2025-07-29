@@ -1,11 +1,9 @@
-// src/e2eTest/utils/helpers/DataStoreApi.ts
 import Axios, {AxiosInstance, AxiosResponse} from 'axios';
 import {
   getIdamAuthToken,
   getServiceAuthToken
 } from '../helpers/idam-helpers/idam.helper';
-import {TestConfig} from 'config/test.config';
-import caseDataJson from '../../data/case.data.json';
+import caseDataJson from '../../data/api-data/case.data.json';
 
 
 export interface CaseWithId {
@@ -63,8 +61,6 @@ export class DataStoreApi {
 export const dataStoreApi = (url: string): DataStoreApi => {
   let accessToken = getIdamAuthToken();
   let serviceAuthToken = getServiceAuthToken();
-  console.log("accessToken: ", accessToken);
-  console.log("serviceAuthToken: ", serviceAuthToken);
   return new DataStoreApi(
     Axios.create({
       baseURL: `${url}`,
