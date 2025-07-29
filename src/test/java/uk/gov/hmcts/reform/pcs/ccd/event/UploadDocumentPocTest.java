@@ -48,7 +48,6 @@ class UploadDocumentPocTest extends BaseEventTest {
     @Test
     void shouldInitializeCaseDataOnStart() {
         long caseReference = 1234L;
-        // Use the builder pattern to create a PCSCase
         PCSCase caseData = PCSCase.builder().build();
         EventPayload<PCSCase, State> eventPayload = new EventPayload<>(caseReference, caseData, null);
 
