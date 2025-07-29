@@ -41,7 +41,7 @@ public class UploadDocumentPoc implements CCDConfig<PCSCase, State, UserRole> {
 
     private PCSCase start(EventPayload<PCSCase, State> eventPayload) {
         PCSCase caseData = eventPayload.caseData();
-        caseData.setApplicantForename("Enter your name here");
+        caseData.setApplicantForename("Enter your name");
         return caseData;
     }
 
