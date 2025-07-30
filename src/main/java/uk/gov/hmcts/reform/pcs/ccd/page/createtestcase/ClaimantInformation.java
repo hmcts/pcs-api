@@ -18,6 +18,6 @@ public class ClaimantInformation implements CcdPageConfiguration {
 //            .complex(PCSCase::getOrganisationPolicy)
 //                .complex(OrganisationPolicy::getOrganisation)
 //                    .optional(Organisation::getOrganisationId)
-//                    .done();
+//        .done();
     }
 }
