@@ -1,7 +1,7 @@
 import {Locator, Page} from '@playwright/test';
 import { IAction } from '../../interfaces/action.interface';
 
-export class ClickAction implements IAction {
+export class ClickButtonAction implements IAction {
   async execute(page: Page, fieldName: string, option?: string): Promise<void> {
     let locator: Locator;
 

@@ -12,17 +12,46 @@ export const claimantTypeOptions = {
     {
       privateLandlord: 'Private landlord',
       registeredCommunityLandlord: 'Registered community landlord',
-      mortgageProviderOrLender: 'Mortgage Provider or lender',
+      mortgageLender: 'Mortgage lender',
       other: 'Other',
     },
   england:
     {
       privateLandlord: 'Private landlord',
-      registeredProviderForSocialHousing: 'Private registered provider of social housing',
-      mortgageProviderOrLender: 'Mortgage Provider or lender',
+      registeredProviderForSocialHousing: 'Registered provider of social housing',
+      mortgageProviderOrLender: 'Mortgage lender',
       other: 'Other',
     }
 };
+
+export const claimType = {
+  elementType:'radio',
+  options:
+    {
+      yes: 'Yes',
+      no: 'No',
+    }
+};
+
+export const legislativeCountry = {
+  elementType:'radio',
+  options:
+    {
+      england: 'England',
+      wales: 'Wales',
+      northernIreland: 'Northern Ireland',
+      scotland: 'Scotland',
+    }
+};
+
+export const claimantName = {
+  elementType:'radio',
+  options:
+    {
+      yes: 'Yes',
+      no: 'No',
+    }
+}
 
 export const errorMessage = {
   header: 'There is a problem',

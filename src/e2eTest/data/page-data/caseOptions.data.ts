@@ -5,11 +5,21 @@ export const pageIdentifier =
 };
 
 export const caseOption = {
-  jurisdiction: 'Possessions',
-  caseType: process.env.CHANGE_ID
-    ? `Civil Possessions ${process.env.CHANGE_ID}`
-    : 'Civil Possessions',
-  event: 'Make a claim',
+  jurisdiction:
+    {
+      posessions: 'Possessions'
+    },
+  caseType:
+    {
+      civilPosessions: process.env.CHANGE_ID
+        ? `Civil Possessions ${process.env.CHANGE_ID}`
+        : 'Civil Possessions'
+    },
+  event:
+    {
+      makeAPosessionClaim: 'Make a claim'
+    },
+
 }
 
 export const errorMessages = {

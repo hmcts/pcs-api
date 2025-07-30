@@ -3,13 +3,18 @@ import { IValidation, ValidationData } from '../../interfaces/validation.interfa
 
 export class MainHeaderValidation implements IValidation {
   async validate(page: Page, _fieldName: string, data: ValidationData): Promise<void> {
-    const locator = page.locator('h1.govuk-heading-xl');
 
-    if (!data) {
+    if (!data || !data.expected) {
       throw new Error('PageHeaderValidation requires a value');
     }
-    const text = (await locator.textContent())?.trim();
 
+    const locator = page.locator('h1,h1.govuk-heading-xl, h1.govuk-heading-l');
+
+    // ✅ Wait for the <h1> to contain the expected text
+    await expect(locator).toHaveText(String(data.expected), { timeout: 10000 });
+
+    // Optional: If you still want to manually compare
+    const text = (await locator.textContent())?.trim();
     expect(text).toBe(String(data.expected));
   }
 }

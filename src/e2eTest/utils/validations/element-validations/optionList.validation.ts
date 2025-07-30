@@ -4,12 +4,10 @@ import {IValidation, ValidationData} from "../../interfaces/validation.interface
 
 export class OptionListValidation implements IValidation {
   async validate(page: Page, fieldName: string, data: ValidationData): Promise<void> {
-    if (!Array.isArray(data.options)) {
-      throw new Error(`RadioOptionsValidation requires "allowed"  in data`);
-    }
 
+    // loop through data.options and find if the element exists in page.locator(`fieldset:has-text("${fieldName}") >> label:has-text("${data.options.option1}")`)
     const locator = page.locator(`input[type="${data.elementType}"][name="${fieldName}"]`,);
-
+    await page.locator(`fieldset:has-text("${fieldName}") >> label:has-text("${data.options}")`).click();
     const count = await locator.count();
     const actual: string[] = [];
 
@@ -18,9 +16,9 @@ export class OptionListValidation implements IValidation {
       if (value) actual.push(value);
     }
 
-    const expected = data.options;
-    actual.sort();
-    expected.sort();
+    const expected = data.options ;
+   // actual.sort();
+    //expected.sort();
 
     expect(actual).toEqual(expected);
   }
