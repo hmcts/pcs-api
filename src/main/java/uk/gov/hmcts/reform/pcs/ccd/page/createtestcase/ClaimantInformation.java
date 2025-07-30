@@ -1,11 +1,8 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.createtestcase;
 
 import org.springframework.stereotype.Component;
-import uk.gov.hmcts.ccd.sdk.type.Organisation;
-import uk.gov.hmcts.ccd.sdk.type.OrganisationPolicy;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
-import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 //import uk.gov.hmcts.reform.pcs.clients.ProfessionalOrganisationRetriever;
 //import uk.gov.hmcts.reform.pcs.dto.OrganisationDto;
 
@@ -21,6 +18,6 @@ public class ClaimantInformation implements CcdPageConfiguration {
 //            .complex(PCSCase::getOrganisationPolicy)
 //                .complex(OrganisationPolicy::getOrganisation)
 //                    .optional(Organisation::getOrganisationId)
-//            .done();
+//                    .done();
     }
 }
