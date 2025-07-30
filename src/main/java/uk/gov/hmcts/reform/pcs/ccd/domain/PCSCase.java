@@ -42,7 +42,7 @@ public class PCSCase {
     @External
     private AddressUK propertyAddress;
 
-    @CCD(searchable = false, access = CaseworkerAccess.class)
+    @CCD(searchable = false, access = {CitizenAccess.class, CaseworkerAccess.class})
     private YesOrNo showCrossBorderPage;
     
     @CCD(
