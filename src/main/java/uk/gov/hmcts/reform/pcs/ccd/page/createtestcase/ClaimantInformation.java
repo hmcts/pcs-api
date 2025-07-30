@@ -17,10 +17,10 @@ public class ClaimantInformation implements CcdPageConfiguration {
         pageBuilder
             .page("Organisation Details")
             .pageLabel("Organisation Details")
-            .label("OrganisationQuestion", "Are you a part of this Organisation?")
-            .complex(PCSCase::getOrganisationPolicy)
-                .complex(OrganisationPolicy::getOrganisation)
-                    .optional(Organisation::getOrganisationId)
-            .done();
+            .label("OrganisationQuestion", "Are you a part of this Organisation?");
+//            .complex(PCSCase::getOrganisationPolicy)
+//                .complex(OrganisationPolicy::getOrganisation)
+//                    .optional(Organisation::getOrganisationId)
+//            .done();
     }
 }
