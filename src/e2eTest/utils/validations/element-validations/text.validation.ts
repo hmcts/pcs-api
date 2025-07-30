@@ -1,8 +1,9 @@
 // validations/text.validation.ts
 import { Page, expect } from '@playwright/test';
-import {IValidation, ValidationData} from "../../interfaces/validation.interface";
+import {IValidation, validationData} from "../../interfaces/validation.interface";
 
 export class TextValidation implements IValidation {
+
   async validate(page: Page, fieldName: string, data: ValidationData): Promise<void> {
     const locator = page.locator(fieldName);
 
