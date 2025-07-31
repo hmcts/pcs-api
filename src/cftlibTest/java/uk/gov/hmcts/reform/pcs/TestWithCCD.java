@@ -58,6 +58,6 @@ public class TestWithCCD extends CftlibTest {
 //        caseDetails = ccdApi.submitForCaseworker(idamToken, s2sToken, userId,
 //                                                 "PCS", CaseType.getCaseType(), false, content
 //        );
-//        assertThat(caseDetails.getId()).isNotNull();
+    //        assertThat(caseDetails.getId()).isNotNull();
 //    }
 }
