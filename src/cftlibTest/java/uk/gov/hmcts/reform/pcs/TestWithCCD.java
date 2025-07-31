@@ -31,33 +31,4 @@ public class TestWithCCD extends CftlibTest {
         s2sToken = generateDummyS2SToken("ccd_gw");
         userId = idamClient.getUserInfo(idamToken).getUid();
     }
-
-//    @Test
-//    public void createsTestCase() {
-//        var r = ccdApi.startCase(idamToken, s2sToken, CaseType.getCaseType(), "createTestApplication");
-//        OrganisationPolicy organisationPolicy = new OrganisationPolicy();
-//        organisationPolicy.setPrepopulateToUsersOrganisation(YesOrNo.YES);
-//
-//        PCSCase caseData = PCSCase.builder()
-//            .applicantForename("Foo")
-//            .propertyAddress(AddressUK.builder()
-//                                 .addressLine1("123 Baker Street")
-//                                 .addressLine2("Marylebone")
-//                                 .postTown("London")
-//                                 .county("Greater London")
-//                                 .postCode("NW1 6XE")
-//                                 .build())
-//            .paymentStatus(PaymentStatus.UNPAID)
-//            .organisationPolicy(organisationPolicy)
-//            .build();
-//        var content = CaseDataContent.builder()
-//            .data(caseData)
-//            .event(Event.builder().id("createTestApplication").build())
-//            .eventToken(r.getToken())
-//            .build();
-//        caseDetails = ccdApi.submitForCaseworker(idamToken, s2sToken, userId,
-//                                                 "PCS", CaseType.getCaseType(), false, content
-//        );
-    //        assertThat(caseDetails.getId()).isNotNull();
-//    }
 }
