@@ -33,6 +33,7 @@ def secrets = [
 withNightlyPipeline(type, product, component) {
     enableSlackNotifications('#pcs-tech')
     loadVaultSecrets(secrets)
+    runFortifyScan()
     afterAlways('DependencyCheckNightly') {
     env.MANAGE_CASE_BASE_URL = "https://manage-case.aat.platform.hmcts.net/"
     runE2ETestsForBrowser('Chrome')
@@ -55,5 +56,13 @@ def runE2ETestsForBrowser(String browser) {
         reportName: "Full EXUI E2E Test Report"
       ])
     }
+  }
+}
+
+def runFortifyScan() {
+  enableFortifyScan()
+  afterSuccess('fortify-scan') {
+    steps.archiveArtifacts allowEmptyArchive: true,
+    artifacts: '**/Fortify Scan/**/*'
   }
 }
