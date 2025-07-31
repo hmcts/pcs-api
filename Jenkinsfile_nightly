@@ -38,7 +38,7 @@ withNightlyPipeline(type, product, component) {
       steps.archiveArtifacts allowEmptyArchive: true,
         artifacts: '**/Fortify Scan/**/*'
     }
-    afterAlways('DependencyCheckNightly') {
+    afterAlways('FortifyScan') {
     env.MANAGE_CASE_BASE_URL = "https://manage-case.aat.platform.hmcts.net/"
     runE2ETestsForBrowser('Chrome')
   }
