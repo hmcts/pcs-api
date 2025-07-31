@@ -39,12 +39,12 @@ test.describe('[Create Case Flow With Address and Claimant Type]  @Master @night
     await performAction('clickButton', 'Start');
     await performValidation('mainHeader', {expected: headers.whatIsTheAddressOfThePropertyYouAreClaimingPossessionOf});
     await performActions('Find Address based on postcode'
-      , ['fill', 'Enter a UK postcode', addressDetails.englandPostcode]
+      , ['inputText', 'Enter a UK postcode', addressDetails.englandPostcode]
       , ['clickButton', 'Find address']
       , ['select', 'Select an address', addressDetails.addressIndex]
-      , ['fill', 'Address Line 2', addressDetails.addressLine2]
-      , ['fill', 'Address Line 3', addressDetails.addressLine3]
-      , ['fill', 'County', addressDetails.englandCounty]);
+      , ['inputText', 'Address Line 2', addressDetails.addressLine2]
+      , ['inputText', 'Address Line 3', addressDetails.addressLine3]
+      , ['inputText', 'County', addressDetails.englandCounty]);
     await performAction('clickButton', 'Continue');
     await performAction('clickRadioButton', legislativeCountry.options.england);
     await performAction('clickButton', 'Continue');
@@ -81,13 +81,13 @@ test.describe('[Create Case Flow With Address and Claimant Type]  @Master @night
     await performAction('clickButton', 'Start');
     await performActions('Enter Address Manually'
       , ['clickButton', "I can't enter a UK postcode"]
-      , ['fill', 'Building and Street', addressDetails.BuildingAndStreet]
-      , ['fill', 'Address Line 2', addressDetails.addressLine2]
-      , ['fill', 'Address Line 3', addressDetails.addressLine3]
-      , ['fill', 'Town or City', addressDetails.TownOrCity]
-      , ['fill', 'County', addressDetails.walesCounty]
-      , ['fill', 'Postcode/Zipcode', addressDetails.walesPostcode]
-      , ['fill', 'Country', addressDetails.country]);
+      , ['inputText', 'Building and Street', addressDetails.BuildingAndStreet]
+      , ['inputText', 'Address Line 2', addressDetails.addressLine2]
+      , ['inputText', 'Address Line 3', addressDetails.addressLine3]
+      , ['inputText', 'Town or City', addressDetails.TownOrCity]
+      , ['inputText', 'County', addressDetails.walesCounty]
+      , ['inputText', 'Postcode/Zipcode', addressDetails.walesPostcode]
+      , ['inputText', 'Country', addressDetails.country]);
     await performAction('clickButton', 'Continue');
     await performAction('clickRadioButton', legislativeCountry.options.wales);
     await performAction('clickButton', 'Continue');
@@ -147,12 +147,12 @@ test.describe('[Create Case Flow With Address and Claimant Type]  @Master @night
     await performAction('clickButton', 'Start');
     await performValidation('mainHeader', {expected: headers.whatIsTheAddressOfThePropertyYouAreClaimingPossessionOf});
     await performActions('Find Address based on postcode'
-      , ['fill', 'Enter a UK postcode', addressDetails.walesPostcode]
+      , ['inputText', 'Enter a UK postcode', addressDetails.walesPostcode]
       , ['clickButton', 'Find address']
       , ['select', 'Select an address', addressDetails.addressIndex]
-      , ['fill', 'Address Line 2', addressDetails.addressLine2]
-      , ['fill', 'Address Line 3', addressDetails.addressLine3]
-      , ['fill', 'County', addressDetails.walesCounty]);
+      , ['inputText', 'Address Line 2', addressDetails.addressLine2]
+      , ['inputText', 'Address Line 3', addressDetails.addressLine3]
+      , ['inputText', 'County', addressDetails.walesCounty]);
     await performAction('clickButton', 'Continue');
     await performAction('clickRadioButton', legislativeCountry.options.wales);
     await performAction('clickButton', 'Continue');
