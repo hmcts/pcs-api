@@ -1,0 +1,1 @@
+ALTER TABLE pcs_case ADD COLUMN pre_action_protocol_completed VARCHAR(10);
