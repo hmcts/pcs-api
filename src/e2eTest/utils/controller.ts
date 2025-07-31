@@ -16,11 +16,8 @@ type ValidationStep = {
   data: validationData;
 };
 
-type ActionTuple =
-  | [string, string]
-  | [string, string, string | number | boolean | string[] | object];
-
-type ValidationTuple = [string, string, validationData];
+type ActionTuple = [string, string] | [string, string, string | number | boolean | string[] | object];
+type ValidationTuple = [string, string, ValidationData] | [string, string];
 
 class Controller {
   private page: Page;
@@ -136,11 +133,6 @@ export async function performValidation(
   const [fieldName, data] = typeof inputFieldName === 'string'
     ? [inputFieldName, inputData]
     : ['', inputFieldName];
-
-  if (!data) {
-    throw new Error('Validation data must be provided');
-  }
-
   await testExecutor.performValidation(validationType, fieldName, data);
 }
 
@@ -176,7 +168,9 @@ export async function performValidationGroup(
 
 export async function performValidations(
   groupName: string,
-  ...validations: ValidationTuple[]
+
+  ...validations: ([string, string, ValidationData] | [string, string])[]
+
 ): Promise<void> {
   if (!testExecutor) {
     throw new Error('Test executor not initialized. Call initializeExecutor(page) first.');
