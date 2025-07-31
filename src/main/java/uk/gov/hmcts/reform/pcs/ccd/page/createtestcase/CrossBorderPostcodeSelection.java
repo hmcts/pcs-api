@@ -76,16 +76,15 @@ public class CrossBorderPostcodeSelection implements CcdPageConfiguration {
         LegislativeCountry selectedCountry = LegislativeCountry.valueOf(countryCode);
         EligibilityResult eligibilityResult = eligibilityService.checkEligibility(postcode, selectedCountry);
 
-        log.info("Eligibility check result for postcode {} : {}", postcode, eligibilityResult.getStatus());
+        log.debug("Eligibility check result for postcode {} : {}", postcode, eligibilityResult.getStatus());
 
         if (eligibilityResult.getStatus() == EligibilityStatus.ELIGIBLE) {
-            //TODO Jira-HDPI-1271 ( Once this jira is merged to master,Make
-            // a claim-Claimant type screen will be shown)
-
-            log.info("Property is eligible for claim");
+            //TODO Jira-HDPI-1271  is claimant type page , please
+            // wire up.
+            log.debug("Property is eligible for claim");
         } else {
             //TODO Jira-HDPI-1254
-            log.info("Property is not eligible (status: {})", eligibilityResult.getStatus());
+            log.debug("Property is not eligible (status: {})", eligibilityResult.getStatus());
         }
 
         return response(caseData);
