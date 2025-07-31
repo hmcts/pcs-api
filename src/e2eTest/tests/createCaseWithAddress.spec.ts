@@ -120,12 +120,12 @@ test.describe('[Create Case Flow With Address and Claimant Type]  @Master @night
     await performAction('clickButton', 'Start');
     await performValidation('mainHeader', {expected: headers.whatIsTheAddressOfThePropertyYouAreClaimingPossessionOf});
     await performActions('Find Address based on postcode'
-      , ['fill', 'Enter a UK postcode', addressDetails.englandPostcode]
+      , ['inputText', 'Enter a UK postcode', addressDetails.englandPostcode]
       , ['clickButton', 'Find address']
       , ['select', 'Select an address', addressDetails.addressIndex]
-      , ['fill', 'Address Line 2', addressDetails.addressLine2]
-      , ['fill', 'Address Line 3', addressDetails.addressLine3]
-      , ['fill', 'County', addressDetails.englandCounty]);
+      , ['inputText', 'Address Line 2', addressDetails.addressLine2]
+      , ['inputText', 'Address Line 3', addressDetails.addressLine3]
+      , ['inputText', 'County', addressDetails.englandCounty]);
     await performAction('clickButton', 'Continue');
     await performAction('clickRadioButton', legislativeCountry.options.england);
     await performAction('clickButton', 'Continue');

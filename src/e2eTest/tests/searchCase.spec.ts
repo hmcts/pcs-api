@@ -28,12 +28,12 @@ async function searchCase(caseNumber: string) {
   await performAction('select', 'Jurisdiction', caseOption.jurisdiction.posessions);
   await performAction('select', 'Case type', caseOption.caseType.civilPosessions);
   await performAction('inputText', 'Case Number', caseNumber);
-  await performAction('click', 'Apply');
+  await performAction('clickButton', 'Apply');
 }
 
 test.describe('Search case by case number @PR @Master @nightly', () => {
   test('Search for case via caselist', async ({}) => {
-    await performAction('click', 'Case list');
+    await performAction('clickButton', 'Case list');
     await searchCase(getCaseInfo().id);
     await performValidation(
       'visibility',
@@ -42,7 +42,7 @@ test.describe('Search case by case number @PR @Master @nightly', () => {
     );
   });
   test('Search for case via find case', async ({}) => {
-    await performAction('click', 'Find case');
+    await performAction('clickButton', 'Find case');
     await searchCase(getCaseInfo().id);
     await performValidation(
       'visibility',
