@@ -4,7 +4,6 @@ import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
@@ -16,7 +15,6 @@ import uk.gov.hmcts.reform.pcs.postcodecourt.model.EligibilityResult;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.EligibilityStatus;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.postcodecourt.service.EligibilityService;
-import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 
 /**
  * CCD page configuration for cross-border postcode selection.
@@ -66,45 +64,45 @@ public class CrossBorderPostcodeSelection implements CcdPageConfiguration {
                 "Is the property located in ${crossBorderCountry1} or ${crossBorderCountry2}?");
     }
 
-    private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
-                                                                  CaseDetails<PCSCase, State> detailsBefore) {
+    private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(
+        CaseDetails<PCSCase, State> details,
+        CaseDetails<PCSCase, State> detailsBefore) {
+
         PCSCase caseData = details.getData();
 
-        // Get the selected country from the cross border countries list
-        if (caseData.getCrossBorderCountriesList() != null
-            && caseData.getCrossBorderCountriesList().getValue() != null) {
-            String countryCode = caseData.getCrossBorderCountriesList().getValue().getCode();
+        String countryCode = getSelectedCountryCode(caseData);
+        log.debug("Cross-border country code: {}", countryCode);
+        String postcode = getPostcode(caseData);
+        LegislativeCountry selectedCountry = LegislativeCountry.valueOf(countryCode);
+        EligibilityResult eligibilityResult = eligibilityService.checkEligibility(postcode, selectedCountry);
 
-            if (StringUtils.isNotBlank(countryCode)) {
-                log.warn("Cross-border country code: {})",  countryCode);
+        log.info("Eligibility check result for postcode {} : {}", postcode, eligibilityResult.getStatus());
 
-                String postcode = caseData.getPropertyAddress().getPostCode();
-                LegislativeCountry selectedCountry = LegislativeCountry.valueOf(countryCode);
-                EligibilityResult eligibilityResult = eligibilityService.checkEligibility(postcode, selectedCountry);
+        if (eligibilityResult.getStatus() == EligibilityStatus.ELIGIBLE) {
+            //TODO Jira-HDPI-1271 ( Once this jira is merged to master,Make
+            // a claim-Claimant type screen will be shown)
 
-                log.warn("Eligibility check result for postcode {} : {}",
-                    postcode, eligibilityResult.getStatus());
-
-                if (eligibilityResult.getStatus() == EligibilityStatus.ELIGIBLE) {
-                    caseData.setShowStartTheServicePage(YesOrNo.YES);
-                    log.warn("Setting showStartTheServicePage to YES - property is eligible");
-                } else {
-                    caseData.setShowStartTheServicePage(YesOrNo.NO);
-                    log.warn("Setting showStartTheServicePage to NO - property is not eligible (status: {})",
-                        eligibilityResult.getStatus());
-                }
-
-            } else {
-                log.info("Cross-border country label is blank or whitespace");
-                caseData.setShowStartTheServicePage(YesOrNo.NO);
-            }
+            log.info("Property is eligible for claim");
         } else {
-            log.info("No cross-border country selected yet");
-            caseData.setShowStartTheServicePage(YesOrNo.NO);
+            //TODO Jira-HDPI-1254
+            log.info("Property is not eligible (status: {})", eligibilityResult.getStatus());
         }
 
+        return response(caseData);
+    }
+
+    private String getSelectedCountryCode(PCSCase caseData) {
+        return caseData.getCrossBorderCountriesList().getValue().getCode();
+    }
+
+    private String getPostcode(PCSCase caseData) {
+        return caseData.getPropertyAddress().getPostCode();
+    }
+
+    private AboutToStartOrSubmitResponse<PCSCase, State> response(PCSCase caseData) {
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
             .data(caseData)
             .build();
     }
+
 }

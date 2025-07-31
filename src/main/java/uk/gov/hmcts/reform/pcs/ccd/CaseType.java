@@ -84,9 +84,6 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
 
         builder.tab("hidden", "HiddenFields")
             .showCondition(NEVER_SHOW)
-            .field(PCSCase::getPageHeadingMarkdown)
-            .field(PCSCase::getShowCrossBorderPage)
-            .field(PCSCase::getShowStartTheServicePage);
-
+            .field(PCSCase::getPageHeadingMarkdown);
     }
 }
