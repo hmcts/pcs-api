@@ -3,7 +3,7 @@ import { IValidation, validationData } from '../../interfaces/validation.interfa
 
 export class VisibilityValidation implements IValidation {
 
-  async validate(page: Page, fieldName: string, data: ValidationData): Promise<void> {
+  async validate(page: Page, fieldName: string, data: validationData): Promise<void> {
     const locator = page.locator(`label:has-text("${fieldName}")`);
     await expect(locator).toBeVisible();
 
