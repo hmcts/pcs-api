@@ -1,4 +1,4 @@
-// actions/double-click.action.ts
+// actions/double-clickButton.action.ts
 import { Page } from '@playwright/test';
 import { IAction } from '../../interfaces/action.interface';
 
