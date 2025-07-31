@@ -11,14 +11,10 @@ export const caseOption = {
         },
     caseType:
         {
-            civilPosessions: 'Civil Possessions 394'
+            civilPosessions: process.env.CHANGE_ID
+                ? `Civil Possessions ${process.env.CHANGE_ID}`
+                : 'Civil Possessions'
         },
-    // caseType:
-    //     {
-    //         civilPosessions: process.env.CHANGE_ID
-    //             ? `Civil Possessions ${process.env.CHANGE_ID}`
-    //             : 'Civil Possessions'
-    //     },
     event:
         {
             makeAPosessionClaim: 'Make a claim'

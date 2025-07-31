@@ -18,8 +18,7 @@ export class TestConfig {
   }
   public static readonly ccdCase = {
     url: process.env.DATA_STORE_URL_BASE,
-    //caseType: `PCS-${process.env.CHANGE_ID}`,
-    caseType: 'PCS-394',
+    caseType: `PCS-${process.env.CHANGE_ID}`,
     eventName:'createTestApplication'
   }
 }
