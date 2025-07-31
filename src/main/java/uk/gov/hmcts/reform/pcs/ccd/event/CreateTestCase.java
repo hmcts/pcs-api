@@ -7,6 +7,7 @@ import uk.gov.hmcts.ccd.sdk.api.ConfigBuilder;
 import uk.gov.hmcts.ccd.sdk.api.Event.EventBuilder;
 import uk.gov.hmcts.ccd.sdk.api.EventPayload;
 import uk.gov.hmcts.ccd.sdk.api.Permission;
+import uk.gov.hmcts.ccd.sdk.type.OrganisationPolicy;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
@@ -42,7 +43,13 @@ public class CreateTestCase implements CCDConfig<PCSCase, State, UserRole> {
 
     private PCSCase start(EventPayload<PCSCase, State> eventPayload) {
         PCSCase caseData = eventPayload.caseData();
-        caseData.getOrganisationPolicy().setPrepopulateToUsersOrganisation(YesOrNo.YES);
+        OrganisationPolicy organisationPolicy = new OrganisationPolicy();
+        organisationPolicy.setPrepopulateToUsersOrganisation(YesOrNo.YES);
+        caseData.setOrganisationPolicy(organisationPolicy);
+
+        //use builder maybe?
+
+        //caseData.getOrganisationPolicy().setPrepopulateToUsersOrganisation(YesOrNo.YES);
         caseData.setApplicantForename("Preset value");
         return caseData;
     }

@@ -32,7 +32,8 @@ public class PCSCase {
         access = {CitizenAccess.class, CaseworkerAccess.class}
     )
     @External
-    private String applicantSurname;
+    @Builder.Default
+    private String applicantSurname = "Plunkett";
 
     @CCD(
         label = "Property address",
@@ -76,5 +77,4 @@ public class PCSCase {
 
     @CCD()
     private OrganisationPolicy organisationPolicy;
-
 }
