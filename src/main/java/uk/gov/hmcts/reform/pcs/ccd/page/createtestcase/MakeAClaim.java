@@ -41,6 +41,7 @@ public class MakeAClaim implements CcdPageConfiguration {
         PCSCase caseData = details.getData();
         String postcode = caseData.getPropertyAddress().getPostCode();
         EligibilityResult eligibilityResult = eligibilityService.checkEligibility(postcode, null);
+
         if (eligibilityResult.getStatus() == EligibilityStatus.LEGISLATIVE_COUNTRY_REQUIRED) {
             validateLegislativeCountries(eligibilityResult.getLegislativeCountries(), postcode);
             setupCrossBorderData(caseData, eligibilityResult.getLegislativeCountries());
@@ -57,7 +58,7 @@ public class MakeAClaim implements CcdPageConfiguration {
         if (legislativeCountries == null || legislativeCountries.size() < 2) {
             throw new EligibilityCheckException(String.format(
                 "Expected at least 2 legislative countries when status is LEGISLATIVE_COUNTRY_REQUIRED, "
-                + "but got %d for postcode: %s",
+                    + "but got %d for postcode: %s",
                 legislativeCountries == null ? 0 : legislativeCountries.size(),
                 postcode
             ));
@@ -81,7 +82,7 @@ public class MakeAClaim implements CcdPageConfiguration {
     }
 
     private List<DynamicStringListElement> createCrossBorderCountriesList(
-            List<LegislativeCountry> legislativeCountries) {
+        List<LegislativeCountry> legislativeCountries) {
         return legislativeCountries.stream()
             .map(value -> DynamicStringListElement.builder()
                 .code(value.name())
