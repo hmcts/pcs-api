@@ -7,6 +7,8 @@ import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
+import uk.gov.hmcts.ccd.sdk.type.OrganisationPolicy;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.ccd.client.CoreCaseDataApi;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDataContent;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
@@ -44,6 +46,9 @@ public class TestWithCCD extends CftlibTest {
     @Test
     public void createsTestCase() {
         var r = ccdApi.startCase(idamToken, s2sToken, CaseType.getCaseType(), "createTestApplication");
+        OrganisationPolicy organisationPolicy = new OrganisationPolicy();
+        organisationPolicy.setPrepopulateToUsersOrganisation(YesOrNo.YES);
+
         PCSCase caseData = PCSCase.builder()
             .applicantForename("Foo")
             .propertyAddress(AddressUK.builder()
@@ -54,6 +59,7 @@ public class TestWithCCD extends CftlibTest {
                                  .postCode("NW1 6XE")
                                  .build())
             .paymentStatus(PaymentStatus.UNPAID)
+            .organisationPolicy(organisationPolicy)
             .build();
         var content = CaseDataContent.builder()
             .data(caseData)
