@@ -6,6 +6,7 @@ import lombok.Data;
 import uk.gov.hmcts.ccd.sdk.External;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
+import uk.gov.hmcts.ccd.sdk.type.FieldType;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseworkerAccess;
@@ -83,6 +84,28 @@ public class PCSCase {
 
     @CCD(label = "Party")
     private List<ListValue<Party>> parties;
+
+    @CCD(typeOverride = FieldType.Email)
+    private String claimantContactEmail;
+
+    private VerticalYesNo isCorrectClaimantContactEmail;
+
+    @CCD(label = "Enter email address", typeOverride = FieldType.Email)
+    private String overriddenClaimantContactEmail;
+
+    private AddressUK claimantContactAddress;
+
+    private String formattedClaimantContactAddress;
+
+    private VerticalYesNo isCorrectClaimantContactAddress;
+
+    @CCD(label = "Enter address details")
+    private AddressUK overriddenClaimantContactAddress;
+
+    private VerticalYesNo claimantProvidePhoneNumber;
+
+    @CCD(label = "Enter phone number", typeOverride = FieldType.PhoneUK)
+    private String claimantContactPhoneNumber;
 
     private String pageHeadingMarkdown;
 

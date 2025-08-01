@@ -9,6 +9,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -20,6 +21,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
+import static jakarta.persistence.CascadeType.ALL;
 import static jakarta.persistence.FetchType.LAZY;
 
 /**
@@ -49,7 +51,15 @@ public class PartyEntity {
     private Set<ClaimPartyEntity> claimParties = new HashSet<>();
 
     private String forename;
+
     private String surname;
+
+    private String contactEmail;
+
+    @OneToOne(cascade = ALL,orphanRemoval = true)
+    private AddressEntity contactAddress;
+
+    private String contactPhoneNumber;
 
     private UUID idamId;
 
