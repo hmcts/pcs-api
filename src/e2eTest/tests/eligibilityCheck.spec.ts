@@ -3,8 +3,8 @@ import {parentSuite} from 'allure-js-commons';
 import {initializeExecutor, performAction, performActions, performValidation} from '@utils/controller';
 import {borderPostcodePageData} from "../data/page-data/borderPostcode.page.data";
 import configData from "@config/test.config";
-import {caseOption} from "@data/page-data/caseOptions.data";
-import {addressDetails} from "@data/page-data/addressDetails.data";
+import {caseOption} from "@data/page-data/caseOptions.page.data";
+import {addressDetails} from "@data/page-data/addressDetails.page.data";
 
 test.beforeEach(async ({page}, testInfo) => {
     initializeExecutor(page);
