@@ -1,4 +1,8 @@
-
+export const pageIdentifier =
+  {
+    title : 'Border Postcode',
+    mainHeader : 'some header'
+  };
 export const borderPostcodePageData = {
  borderPostcodeHeader:"Border postcode",
   englandWalesParagraphContent:"Your postcode includes properties in England and Wales. We need to know which country your property is in, as the law is different in each country.",
