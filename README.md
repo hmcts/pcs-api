@@ -138,7 +138,7 @@ The following environment variables are needed to run the tests:
 The e2e suite can be run with the following command:
 
 ```bash
-yarn test:functional
+yarn test:e2e
 ```
 There are also several custom test scripts available:
 

@@ -72,12 +72,13 @@ Playwright 1.30+ | TypeScript 4.9+
 | check         | `performAction('check', 'RememberMe')`                    |
 | login         | `performAction('login', 'citizen')`                       |
 | navigateToUrl | `performAction('navigateToUrl', 'testUrl')`               |
-| click         | `performAction('click', 'buttonName')`                    |
 | clickTab      | `performAction('clickTab', 'tabName')`                    |
 | clear         | `performAction('clear', 'fieldName')`                     |
 | select        | `performAction('select', 'dropdownName', 'option')`       |
 | doubleClick   | `performAction('doubleClick', 'buttonName')`              |
 | createCase    | `performAction('createCase', 'data: caseData')`           |
+| clickButton     | `performAction('clickButton', ...)` |
+| clickRadioButton | `performAction('clickRadioButton', ...)` |
 ### Validations
 | Validation          | Example Usage |
 |------------------|---------------|
@@ -91,6 +92,9 @@ Playwright 1.30+ | TypeScript 4.9+
 | attribute          | `performValidation('attribute', 'testElement', 'attributeName')`                    |
 | bannerAlert        | `performValidation('bannerAlert', {message: "Case has been created."})`             |
 | formLabelValue     | `performValidation('formLabelValue',  "Applicant's forename", {value:'TestUser'})`  |
+| validateOptionList | `performValidation('validateOptionList', ...)` |
+| mainHeader      | `performValidation('mainHeader', ...)` |
+| errorMessage    | `performValidation('errorMessage', ...)` |
 ### Basic Test
 
 ```typescript
@@ -159,7 +163,7 @@ await performValidationGroup(
 - PCS_IDAM_TEST_USER_PASSWORD
 
 ```bash
-yarn test:functional
+yarn test:e2e
 ```
 
 ## 8. Troubleshooting
