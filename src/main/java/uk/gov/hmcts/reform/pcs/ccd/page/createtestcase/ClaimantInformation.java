@@ -15,10 +15,11 @@ public class ClaimantInformation implements CcdPageConfiguration {
         pageBuilder
             .page("Organisation Details")
             .pageLabel("Organisation Details")
-            .label("OrganisationQuestion", "Are you a part of this Organisation?")
+            .label("OrganisationQuestion", "Your claimant anme registered with My HMCTS is:")
             .complex(PCSCase::getOrganisationPolicy)
             .complex(OrganisationPolicy::getOrganisation)
-            .mandatory(Organisation::getOrganisationId)
-            .done();
+                .mandatory(Organisation::getOrganisationName)
+                .done();
+
     }
 }

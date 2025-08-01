@@ -77,4 +77,7 @@ public class PCSCase {
 
     @CCD()
     private OrganisationPolicy organisationPolicy;
+
+    @CCD()
+    private YesOrNo yesOrNo;
 }
