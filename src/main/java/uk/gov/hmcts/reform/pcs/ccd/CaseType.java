@@ -92,6 +92,11 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
             .forRoles(UserRole.CITIZEN, UserRole.PCS_CASE_WORKER)
             .field(PCSCase::getSupportingDocuments, null, "#ARGUMENT(CaseFileView)");
 
+        builder.tab("CaseFileView)", "Documents cfv")
+            .forRoles(UserRole.CITIZEN, UserRole.PCS_CASE_WORKER)
+            .field(PCSCase::getSupportingDocuments, null, "#ARGUMENT(CaseFileView)");
+
+
         builder.tab("testTab", "Test Tab")
             .field(PCSCase::getApplicantForename);
     }
@@ -102,7 +107,7 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
     }
 
     private void buildSupportingDocumentsCaseFileViewTab1(ConfigBuilder<PCSCase, State, UserRole> configBuilder) {
-        configBuilder.tab("supportingDocumentsCaseFileView", "Supporting Documents")
+        configBuilder.tab("caseFileView", "Case file view test")
             .field(PCSCase::getApplicantForename); // Use a field that definitely has data
     }
 }
