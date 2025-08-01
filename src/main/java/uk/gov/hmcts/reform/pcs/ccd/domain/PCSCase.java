@@ -74,7 +74,6 @@ public class PCSCase {
 
     private String claimPaymentTabMarkdown;
 
-
     @CCD(
         label = "Supporting documents",
         access = {CitizenAccess.class, CaseworkerAccess.class}
