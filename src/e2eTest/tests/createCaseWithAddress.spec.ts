@@ -7,10 +7,10 @@ import {
   performValidation, performValidations,
 } from '@utils/controller';
 import configData from "@config/test.config";
-import {headers} from "@data/header.data";
-import {caseOption} from "@data/page-data/caseOptions.data";
-import {addressDetails} from "@data/page-data/addressDetails.data";
-import {claimantTypeOptions, legislativeCountry} from "@data/page-data/claimantType.data";
+import {createCase} from "@data/page-data/createCase.page.data";
+import {addressDetails} from "@data/page-data/addressDetails.page.data";
+import {claimantType} from "@data/page-data/claimantType.page.data";
+import {legislativeCountry} from "@data/page-data/legislativeCountry.page.data";
 
 
 test.beforeEach(async ({page}, testInfo) => {
@@ -26,77 +26,76 @@ test.beforeEach(async ({page}, testInfo) => {
   });
 });
 
-test.describe.skip('[Create Case Flow With Address and Claimant Type]  @Master @nightly', async () => {
+test.describe('[Create Case Flow With Address and Claimant Type]  @Master @nightly', async () => {
 
   test('England - Successful case creation', async () => {
 
     await performAction('clickButton', 'Create case');
-    await performValidation('mainHeader', {expected: headers.createCase});
+    await performValidation('mainHeader', createCase.mainHeader);
     await performActions('Case option selection'
-      , ['select', 'Jurisdiction', caseOption.jurisdiction.posessions]
-      , ['select', 'Case type', caseOption.caseType.civilPosessions]
-      , ['select', 'Event', caseOption.event.makeAPosessionClaim]);
+        , ['select', 'Jurisdiction', createCase.caseOption.jurisdiction.possessions]
+        , ['select', 'Case type', createCase.caseOption.caseType.civilPossessions]
+        , ['select', 'Event', createCase.caseOption.event.makeAPossessionClaim]);
     await performAction('clickButton', 'Start');
-    await performValidation('mainHeader', {expected: headers.whatIsTheAddressOfThePropertyYouAreClaimingPossessionOf});
+    await performValidation('mainHeader', addressDetails.mainHeader);
+    await performAction('clickButton', 'Continue');
+    await performValidation('errorMessage', addressDetails.errorMessage.errorMessage);
     await performActions('Find Address based on postcode'
-      , ['inputText', 'Enter a UK postcode', addressDetails.englandPostcode]
-      , ['clickButton', 'Find address']
-      , ['select', 'Select an address', addressDetails.addressIndex]
-      , ['inputText', 'Address Line 2', addressDetails.addressLine2]
-      , ['inputText', 'Address Line 3', addressDetails.addressLine3]
-      , ['inputText', 'County', addressDetails.englandCounty]);
+        , ['inputText', 'Enter a UK postcode', addressDetails.propertyAddressSection.englandPostcode]
+        , ['clickButton', 'Find address']
+        , ['select', 'Select an address', addressDetails.propertyAddressSection.addressIndex]
+        , ['inputText', 'Address Line 2', addressDetails.propertyAddressSection.addressLine2]
+        , ['inputText', 'Address Line 3', addressDetails.propertyAddressSection.addressLine3]
+        , ['inputText', 'County', addressDetails.propertyAddressSection.englandCounty]);
     await performAction('clickButton', 'Continue');
-    await performAction('clickRadioButton', legislativeCountry.options.england);
+    await performAction('clickRadioButton', legislativeCountry.countryOptions.england);
     await performAction('clickButton', 'Continue');
-    await performValidation('mainHeader', {expected: headers.claimantType});
+    await performValidation('mainHeader',  claimantType.mainHeader);
     await performAction('clickButton', 'Continue');
-    await performValidation('errorMessage', {
-      header: 'There is a problem',
-      errorHasLink: 'Who is the claimant in this case? is required',
-    });
+    await performValidation('errorMessage', claimantType.errorMessage.errorMessage);
     await performValidations('address info is not null '
-      , ['visibility', claimantTypeOptions.england.privateLandlord]
-      , ['visibility', claimantTypeOptions.england.registeredProviderForSocialHousing]
-      , ['visibility', claimantTypeOptions.england.mortgageProviderOrLender]
-      , ['visibility', claimantTypeOptions.england.other]);
-    await performAction('clickRadioButton', claimantTypeOptions.england.registeredProviderForSocialHousing);
+        , ['visibility', claimantType.claimantTypeOptions.england.privateLandlord]
+        , ['visibility', claimantType.claimantTypeOptions.england.registeredProviderForSocialHousing]
+        , ['visibility', claimantType.claimantTypeOptions.england.mortgageProviderOrLender]
+        , ['visibility', claimantType.claimantTypeOptions.england.other]);
+    await performAction('clickRadioButton', claimantType.claimantTypeOptions.england.registeredProviderForSocialHousing);
     await performAction('clickButton', 'Continue');
     await performAction('clickButton', 'Save and continue');
     await performValidation("bannerAlert", {message: "Case #.* has been created."});
     await performAction('clickTab', 'Property Details');
     await performValidations('address info is not null '
-      , ['formLabelValue', 'Building and Street']
-      , ['formLabelValue', 'Address Line 2']
-      , ['formLabelValue', 'Address Line 2']
-      , ['formLabelValue', 'Postcode/Zipcode']
-      , ['formLabelValue', 'Country']);
+        , ['formLabelValue', 'Building and Street']
+        , ['formLabelValue', 'Address Line 2']
+        , ['formLabelValue', 'Address Line 2']
+        , ['formLabelValue', 'Postcode/Zipcode']
+        , ['formLabelValue', 'Country']);
   });
 
   test('Wales - Successful case creation', async () => {
     await performAction('clickButton', 'Create case');
     await performActions('Case option selection'
-      , ['select', 'Jurisdiction', caseOption.jurisdiction.posessions]
-      , ['select', 'Case type', caseOption.caseType.civilPosessions]
-      , ['select', 'Event', caseOption.event.makeAPosessionClaim]);
+      , ['select', 'Jurisdiction', createCase.caseOption.jurisdiction.possessions]
+      , ['select', 'Case type', createCase.caseOption.caseType.civilPossessions]
+      , ['select', 'Event', createCase.caseOption.event.makeAPossessionClaim]);
     await performAction('clickButton', 'Start');
     await performActions('Enter Address Manually'
       , ['clickButton', "I can't enter a UK postcode"]
-      , ['inputText', 'Building and Street', addressDetails.BuildingAndStreet]
-      , ['inputText', 'Address Line 2', addressDetails.addressLine2]
-      , ['inputText', 'Address Line 3', addressDetails.addressLine3]
-      , ['inputText', 'Town or City', addressDetails.TownOrCity]
-      , ['inputText', 'County', addressDetails.walesCounty]
-      , ['inputText', 'Postcode/Zipcode', addressDetails.walesPostcode]
-      , ['inputText', 'Country', addressDetails.country]);
+      , ['inputText', 'Building and Street', addressDetails.propertyAddressSection.BuildingAndStreet]
+      , ['inputText', 'Address Line 2', addressDetails.propertyAddressSection.addressLine2]
+      , ['inputText', 'Address Line 3', addressDetails.propertyAddressSection.addressLine3]
+      , ['inputText', 'Town or City', addressDetails.propertyAddressSection.TownOrCity]
+      , ['inputText', 'County', addressDetails.propertyAddressSection.walesCounty]
+      , ['inputText', 'Postcode/Zipcode', addressDetails.propertyAddressSection.walesPostcode]
+      , ['inputText', 'Country', addressDetails.propertyAddressSection.country]);
     await performAction('clickButton', 'Continue');
-    await performAction('clickRadioButton', legislativeCountry.options.wales);
+    await performAction('clickRadioButton', legislativeCountry.countryOptions.wales);
     await performAction('clickButton', 'Continue');
     await performValidations('address info is not null '
-      , ['visibility', claimantTypeOptions.wales.privateLandlord]
-      , ['visibility', claimantTypeOptions.wales.registeredCommunityLandlord]
-      , ['visibility', claimantTypeOptions.wales.mortgageLender]
-      , ['visibility', claimantTypeOptions.wales.other]);
-    await performAction('clickRadioButton', claimantTypeOptions.wales.registeredCommunityLandlord);
+      , ['visibility', claimantType.claimantTypeOptions.wales.privateLandlord]
+      , ['visibility', claimantType.claimantTypeOptions.wales.registeredCommunityLandlord]
+      , ['visibility', claimantType.claimantTypeOptions.wales.mortgageLender]
+      , ['visibility', claimantType.claimantTypeOptions.wales.other]);
+    await performAction('clickRadioButton', claimantType.claimantTypeOptions.wales.registeredCommunityLandlord);
     await performAction('clickButton', 'Continue');
     await performAction('clickButton', 'Save and continue');
     await performValidation("bannerAlert", {message: "Case #.* has been created."});
@@ -112,26 +111,24 @@ test.describe.skip('[Create Case Flow With Address and Claimant Type]  @Master @
   test('England - Unsuccessful case creation journey due to claimant type not in scope of Release1', async () => {
 
     await performAction('clickButton', 'Create case');
-    await performValidation('mainHeader', {expected: headers.createCase});
     await performActions('Case option selection'
-      , ['select', 'Jurisdiction', caseOption.jurisdiction.posessions]
-      , ['select', 'Case type', caseOption.caseType.civilPosessions]
-      , ['select', 'Event', caseOption.event.makeAPosessionClaim]);
+      , ['select', 'Jurisdiction', createCase.caseOption.jurisdiction.possessions]
+      , ['select', 'Case type', createCase.caseOption.caseType.civilPossessions]
+      , ['select', 'Event', createCase.caseOption.event.makeAPossessionClaim]);
     await performAction('clickButton', 'Start');
-    await performValidation('mainHeader', {expected: headers.whatIsTheAddressOfThePropertyYouAreClaimingPossessionOf});
     await performActions('Find Address based on postcode'
-      , ['inputText', 'Enter a UK postcode', addressDetails.englandPostcode]
+      , ['inputText', 'Enter a UK postcode', addressDetails.propertyAddressSection.englandPostcode]
       , ['clickButton', 'Find address']
-      , ['select', 'Select an address', addressDetails.addressIndex]
-      , ['inputText', 'Address Line 2', addressDetails.addressLine2]
-      , ['inputText', 'Address Line 3', addressDetails.addressLine3]
-      , ['inputText', 'County', addressDetails.englandCounty]);
+      , ['select', 'Select an address', addressDetails.propertyAddressSection.addressIndex]
+      , ['inputText', 'Address Line 2', addressDetails.propertyAddressSection.addressLine2]
+      , ['inputText', 'Address Line 3', addressDetails.propertyAddressSection.addressLine3]
+      , ['inputText', 'County', addressDetails.propertyAddressSection.englandCounty]);
     await performAction('clickButton', 'Continue');
-    await performAction('clickRadioButton', legislativeCountry.options.england);
+    await performAction('clickRadioButton', legislativeCountry.countryOptions.england);
     await performAction('clickButton', 'Continue');
-    await performAction('clickRadioButton', claimantTypeOptions.england.privateLandlord);
+    await performAction('clickRadioButton', claimantType.claimantTypeOptions.england.privateLandlord);
     await performAction('clickButton', 'Continue');
-    await performValidation('mainHeader', {expected: "You're not eligible for this online service"});
+    await performValidation('mainHeader', "You're not eligible for this online service");
     await performAction('clickButton', 'Close and return to case list');
 
   });
@@ -139,26 +136,24 @@ test.describe.skip('[Create Case Flow With Address and Claimant Type]  @Master @
   test('Wales - Unsuccessful case creation journey due to claimant type not in scope of Release1', async () => {
 
     await performAction('clickButton', 'Create case');
-    await performValidation('mainHeader', {expected: headers.createCase});
     await performActions('Case option selection'
-      , ['select', 'Jurisdiction', caseOption.jurisdiction.posessions]
-      , ['select', 'Case type', caseOption.caseType.civilPosessions]
-      , ['select', 'Event', caseOption.event.makeAPosessionClaim]);
+      , ['select', 'Jurisdiction', createCase.caseOption.jurisdiction.possessions]
+      , ['select', 'Case type', createCase.caseOption.caseType.civilPossessions]
+      , ['select', 'Event', createCase.caseOption.event.makeAPossessionClaim]);
     await performAction('clickButton', 'Start');
-    await performValidation('mainHeader', {expected: headers.whatIsTheAddressOfThePropertyYouAreClaimingPossessionOf});
     await performActions('Find Address based on postcode'
-      , ['inputText', 'Enter a UK postcode', addressDetails.walesPostcode]
+      , ['inputText', 'Enter a UK postcode', addressDetails.propertyAddressSection.walesPostcode]
       , ['clickButton', 'Find address']
-      , ['select', 'Select an address', addressDetails.addressIndex]
-      , ['inputText', 'Address Line 2', addressDetails.addressLine2]
-      , ['inputText', 'Address Line 3', addressDetails.addressLine3]
-      , ['inputText', 'County', addressDetails.walesCounty]);
+      , ['select', 'Select an address', addressDetails.propertyAddressSection.addressIndex]
+      , ['inputText', 'Address Line 2', addressDetails.propertyAddressSection.addressLine2]
+      , ['inputText', 'Address Line 3', addressDetails.propertyAddressSection.addressLine3]
+      , ['inputText', 'County', addressDetails.propertyAddressSection.walesCounty]);
     await performAction('clickButton', 'Continue');
-    await performAction('clickRadioButton', legislativeCountry.options.wales);
+    await performAction('clickRadioButton', legislativeCountry.countryOptions.wales);
     await performAction('clickButton', 'Continue');
-    await performAction('clickRadioButton', claimantTypeOptions.wales.privateLandlord);
+    await performAction('clickRadioButton', claimantType.claimantTypeOptions.wales.privateLandlord);
     await performAction('clickButton', 'Continue');
-    await performValidation('mainHeader', {expected: "You're not eligible for this online service"});
+    await performValidation('mainHeader',  "You're not eligible for this online service");
     await performAction('clickButton', 'Close and return to case list');
   });
 

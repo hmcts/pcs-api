@@ -1,5 +1,4 @@
-// validations/value.validation.ts
-import { Page, expect } from '@playwright/test';
+import {Page, expect} from '@playwright/test';
 import {IValidation, validationData} from "../../interfaces/validation.interface";
 
 export class ValueValidation implements IValidation {

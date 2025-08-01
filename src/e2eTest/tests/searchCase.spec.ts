@@ -1,13 +1,13 @@
 import {test} from '@playwright/test';
 import {parentSuite} from 'allure-js-commons';
 import configData from "@config/test.config";
-import caseDataWithAddress from 'data/api-data/case.data.json';
+import caseDataWithAddress from '@data/api-data/case.api.data.json';
 import {
   initializeExecutor,
   performAction,
   performValidation
 } from '@utils/controller';
-import {caseOption} from "@data/page-data/caseOptions.data";
+import {caseOption} from "@data/page-data/createCase.page.data";
 import {getCaseInfo} from '@utils/actions/custom-actions/createCase.action';
 
 test.beforeEach(async ({page}) => {
