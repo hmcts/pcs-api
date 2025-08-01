@@ -7,6 +7,7 @@ import uk.gov.hmcts.ccd.sdk.api.ConfigBuilder;
 import uk.gov.hmcts.ccd.sdk.api.Event.EventBuilder;
 import uk.gov.hmcts.ccd.sdk.api.EventPayload;
 import uk.gov.hmcts.ccd.sdk.api.Permission;
+import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
@@ -49,15 +50,16 @@ public class CreateTestCase implements CCDConfig<PCSCase, State, UserRole> {
 
         new PageBuilder(eventBuilder)
             .add(new EnterPropertyAddress())
-            .add(new ContactPreferences())
-            .add(new ClaimantInformation());
+            .add(new ClaimantInformation())
+            .add(new ContactPreferences());
+
     }
 
     private PCSCase start(EventPayload<PCSCase, State> eventPayload) {
         PCSCase caseData = eventPayload.caseData();
         String userDetails = securityContextService.getCurrentUserDetails().getSub();
         caseData.setClaimantName(userDetails);
-        caseData.setContactEmail(userDetails);
+        caseData.setClaimantContactEmail(userDetails);
 
         return caseData;
     }
@@ -67,12 +69,18 @@ public class CreateTestCase implements CCDConfig<PCSCase, State, UserRole> {
         long caseReference = eventPayload.caseReference();
         PCSCase pcsCase = eventPayload.caseData();
         pcsCase.setPaymentStatus(PaymentStatus.UNPAID);
-        pcsCase.setContactAddress(pcsCase.getPropertyAddress());
+        pcsCase.setClaimantContactAddress(pcsCase.getPropertyAddress());
 
         UUID userID = UUID.fromString(securityContextService.getCurrentUserDetails().getUid());
 
         String claimantName = isNotBlank(pcsCase.getOverriddenClaimantName())
             ? pcsCase.getOverriddenClaimantName() : pcsCase.getClaimantName();
+
+        AddressUK contactAddress = pcsCase.getOverriddenClaimantContactAddress() != null
+            ? pcsCase.getOverriddenClaimantContactAddress() : pcsCase.getClaimantContactAddress();
+
+        String contactEmail = isNotBlank(pcsCase.getOverriddenClaimantContactEmail())
+            ? pcsCase.getOverriddenClaimantContactEmail() : pcsCase.getClaimantContactEmail();
 
         PcsCaseEntity pcsCaseEntity = pcsCaseService.createCase(caseReference, pcsCase);
         PartyEntity party = partyService.createAndLinkParty(
@@ -80,6 +88,9 @@ public class CreateTestCase implements CCDConfig<PCSCase, State, UserRole> {
             userID,
             claimantName,
             null,
+            contactEmail,
+            contactAddress,
+            pcsCase.getClaimantContactPhoneNumber(),
             true);
 
         ClaimEntity claimEntity = claimService.createAndLinkClaim(

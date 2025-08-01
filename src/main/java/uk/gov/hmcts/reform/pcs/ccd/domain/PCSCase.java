@@ -86,26 +86,26 @@ public class PCSCase {
     private List<ListValue<Party>> parties;
 
     @CCD(typeOverride = FieldType.Email)
-    private String contactEmail;
+    private String claimantContactEmail;
 
-    private VerticalYesNo isCorrectContactEmail;
+    private VerticalYesNo isCorrectClaimantContactEmail;
 
     @CCD(label = "Enter email address", typeOverride = FieldType.Email)
-    private String updatedContactEmail;
+    private String overriddenClaimantContactEmail;
 
-    private AddressUK contactAddress;
+    private AddressUK claimantContactAddress;
 
-    private String formattedContactAddress;
+    private String formattedClaimantContactAddress;
 
-    private VerticalYesNo isCorrectContactAddress;
+    private VerticalYesNo isCorrectClaimantContactAddress;
 
     @CCD(label = "Enter address details")
-    private AddressUK updatedContactAddress;
+    private AddressUK overriddenClaimantContactAddress;
 
-    private VerticalYesNo providePhoneNumber;
+    private VerticalYesNo claimantProvidePhoneNumber;
 
     @CCD(label = "Enter phone number", typeOverride = FieldType.PhoneUK)
-    private String contactPhoneNumber;
+    private String claimantContactPhoneNumber;
 
     private String pageHeadingMarkdown;
 

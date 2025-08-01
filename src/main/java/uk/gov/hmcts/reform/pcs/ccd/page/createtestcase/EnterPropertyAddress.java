@@ -18,6 +18,7 @@ public class EnterPropertyAddress implements CcdPageConfiguration {
             .label("enterPropertyAddress-lineSeparator", "---")
             .mandatory(PCSCase::getPropertyAddress);
     }
+
     /*
     TODO: This MidEvent callback should be removed/refactored once we have integrated with MY HMCTS (Manage Org) as
      its formatting the property address to use as a placeholder for the registered contact address.
@@ -27,7 +28,7 @@ public class EnterPropertyAddress implements CcdPageConfiguration {
                                                                   CaseDetails<PCSCase, State> detailsBefore) {
         PCSCase caseData = details.getData();
         AddressUK propertyAddress = caseData.getPropertyAddress();
-        caseData.setContactAddress(propertyAddress);
+        caseData.setClaimantContactAddress(propertyAddress);
 
         String formattedAddress = String.format(
             "%s<br>%s<br>%s",
@@ -35,7 +36,7 @@ public class EnterPropertyAddress implements CcdPageConfiguration {
             propertyAddress.getPostTown(),
             propertyAddress.getPostCode()
         );
-        caseData.setFormattedContactAddress(formattedAddress);
+        caseData.setFormattedClaimantContactAddress(formattedAddress);
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
             .data(caseData)
             .build();

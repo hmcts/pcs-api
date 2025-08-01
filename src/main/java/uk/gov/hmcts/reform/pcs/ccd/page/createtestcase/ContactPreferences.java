@@ -16,8 +16,8 @@ public class ContactPreferences implements CcdPageConfiguration {
             .pageLabel("Contact Preferences")
 
             // Email section
-            .readonly(PCSCase::getContactEmail, NEVER_SHOW)
-            .label("contactPreferences-info-email", """
+            .readonly(PCSCase::getClaimantContactEmail, NEVER_SHOW)
+            .label("contactPreferences-email", """
                 ---
                 <h2 class="govuk-heading-m">Notifications</h2>
                 <p class="govuk-body-m govuk-!-margin-bottom-1">
@@ -28,7 +28,7 @@ public class ContactPreferences implements CcdPageConfiguration {
                     Your My HMCTS registered email address is:
                 </h3>
                 <p class="govuk-body-s govuk-!-margin-top-1 govuk-!-margin-bottom-1">
-                    ${contactEmail}
+                    ${claimantContactEmail}
                 </p>
                 """)
             .label("contactPreferences-email-question", """
@@ -36,11 +36,11 @@ public class ContactPreferences implements CcdPageConfiguration {
                     Do you want to use this email address for notifications?
                 </h3>
                 """)
-            .mandatory(PCSCase::getIsCorrectContactEmail)
-            .mandatory(PCSCase::getUpdatedContactEmail, "isCorrectContactEmail=\"NO\"")
+            .mandatory(PCSCase::getIsCorrectClaimantContactEmail)
+            .mandatory(PCSCase::getOverriddenClaimantContactEmail, "isCorrectClaimantContactEmail=\"NO\"")
 
             // Address section
-            .label("contactPreferences-info-address", """
+            .label("contactPreferences-address-info", """
                 ----
                 <h2 class="govuk-heading-m">Correspondence address</h2>
                 <p class="govuk-body-m">
@@ -50,13 +50,13 @@ public class ContactPreferences implements CcdPageConfiguration {
                     the address registered with My HMCTS.
                 </p>
                 """)
-            .readonly(PCSCase::getFormattedContactAddress, NEVER_SHOW)
-            .label("contactAddressSummaryLabel", """
+            .readonly(PCSCase::getFormattedClaimantContactAddress, NEVER_SHOW)
+            .label("contactPreferences-address-registered", """
                 <h3 class="govuk-heading-m govuk-!-margin-bottom-1">
                     Your My HMCTS registered address is:
                 </h3>
                 <p class="govuk-body-s govuk-!-margin-top-1 govuk-!-margin-bottom-1">
-                    ${formattedContact Address}
+                    ${formattedClaimantContactAddress}
                 </p>
                 """)
             .label("contactPreferences-address-question", """
@@ -64,11 +64,11 @@ public class ContactPreferences implements CcdPageConfiguration {
                     Do you want documents to be sent to this address?
                 </h3>
                 """)
-            .mandatory(PCSCase::getIsCorrectContactAddress)
-            .mandatory(PCSCase::getUpdatedContactAddress, "isCorrectContactAddress=\"NO\"")
+            .mandatory(PCSCase::getIsCorrectClaimantContactAddress)
+            .mandatory(PCSCase::getOverriddenClaimantContactAddress, "isCorrectClaimantContactAddress=\"NO\"")
 
             // Phone section
-            .label("contactPreferences-info-phoneNumber", """
+            .label("contactPreferences-phoneNumber-question", """
                 ----
                 <h2 class="govuk-heading-m">Contact phone number</h2>
                 <p class="govuk-body-m govuk-!-margin-bottom-1">
@@ -78,9 +78,9 @@ public class ContactPreferences implements CcdPageConfiguration {
                     Do you want to provide a contact phone number?(Optional)
                 </h3>
                 """)
-            .mandatory(PCSCase::getProvidePhoneNumber)
-            .mandatory(PCSCase::getContactPhoneNumber, "providePhoneNumber=\"YES\"")
-            .label("contactPreferences-info-separator", "---");
+            .mandatory(PCSCase::getClaimantProvidePhoneNumber)
+            .mandatory(PCSCase::getClaimantContactPhoneNumber, "claimantProvidePhoneNumber=\"YES\"")
+            .label("contactPreferences-phoneNumber-separator", "---");
     }
 
 }

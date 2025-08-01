@@ -48,7 +48,7 @@ public class EnterPropertyAddressTest extends BasePageTest {
         midEvent.handle(caseDetails, null);
 
         // Then
-        assertThat(caseData.getFormattedContactAddress()).isEqualTo(formattedAddress);
+        assertThat(caseData.getFormattedClaimantContactAddress()).isEqualTo(formattedAddress);
     }
 
     private String formattedContactAddress(AddressUK propertyAddress) {
