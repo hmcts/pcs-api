@@ -5,6 +5,7 @@ import lombok.Data;
 import uk.gov.hmcts.ccd.sdk.External;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
+import uk.gov.hmcts.ccd.sdk.type.ComponentLauncher;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseworkerAccess;
@@ -81,8 +82,9 @@ public class PCSCase {
     private Document supportingDocuments;
 
     @CCD(
-        label = "Supporting documents case file view",
+        label = "Case file view",
         access = {CitizenAccess.class, CaseworkerAccess.class}
     )
-    private String supportingDocumentsCaseFileView;
+    private ComponentLauncher caseFileView1;
+
 }

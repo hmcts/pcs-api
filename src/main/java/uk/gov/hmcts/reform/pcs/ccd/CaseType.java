@@ -45,7 +45,6 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
         builder.decentralisedCaseType(getCaseType(), getCaseTypeName(), CASE_TYPE_DESCRIPTION);
         builder.jurisdiction(JURISDICTION_ID, JURISDICTION_NAME, JURISDICTION_DESCRIPTION);
         buildSupportingDocumentsCaseFileViewTab(builder);
-        buildSupportingDocumentsCaseFileViewTab1(builder);
 
         String forenameLabel = "Applicant Forename";
         String surnameLabel = "Applicant Surname";
@@ -88,26 +87,12 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
             .showCondition(NEVER_SHOW)
             .field(PCSCase::getPageHeadingMarkdown);
 
-        builder.tab("supportingDocuments", "Documents")
-            .forRoles(UserRole.CITIZEN, UserRole.PCS_CASE_WORKER)
-            .field(PCSCase::getSupportingDocuments, null, "#ARGUMENT(CaseFileView)");
-
-        builder.tab("CaseFileView)", "Documents cfv")
-            .forRoles(UserRole.CITIZEN, UserRole.PCS_CASE_WORKER)
-            .field(PCSCase::getSupportingDocuments, null, "#ARGUMENT(CaseFileView)");
-
-
-        builder.tab("testTab", "Test Tab")
-            .field(PCSCase::getApplicantForename);
     }
 
     private void buildSupportingDocumentsCaseFileViewTab(ConfigBuilder<PCSCase, State, UserRole> configBuilder) {
-        configBuilder.tab("supportingDocuments", "Supporting Documents fn")
-            .field(PCSCase::getSupportingDocuments, null, "#ARGUMENT(CaseFileView)");
-    }
+        configBuilder.tab("caseFileView", "Supporting Documents")
+            .forRoles(UserRole.PCS_CASE_WORKER)
+            .field(PCSCase::getCaseFileView1, null, "#ARGUMENT(CaseFileView)");
 
-    private void buildSupportingDocumentsCaseFileViewTab1(ConfigBuilder<PCSCase, State, UserRole> configBuilder) {
-        configBuilder.tab("caseFileView", "Case file view test")
-            .field(PCSCase::getSupportingDocuments, null, "#ARGUMENT(CaseFileView)");
     }
 }
