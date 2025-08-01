@@ -3,7 +3,7 @@ import {
   getIdamAuthToken,
   getServiceAuthToken
 } from '../helpers/idam-helpers/idam.helper';
-import caseDataJson from '../../data/api-data/case.data.json';
+import caseDataJson from '@data/api-data/case.api.data.json';
 
 
 export interface CaseWithId {
@@ -59,7 +59,6 @@ export class DataStoreApi {
 }
 //setup for the DataStoreApi to use the Axios instance with the correct headers and base URL
 export const dataStoreApi = (url: string): DataStoreApi => {
-  let accessToken = getIdamAuthToken();
   let serviceAuthToken = getServiceAuthToken();
   return new DataStoreApi(
     Axios.create({

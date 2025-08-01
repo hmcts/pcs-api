@@ -1,18 +1,10 @@
-import { Page, expect } from '@playwright/test';
-import { IValidation, validationData } from '../../interfaces/validation.interface';
+import {Page, expect} from '@playwright/test';
+import {IValidation, validationData} from '../../interfaces/validation.interface';
 
 export class VisibilityValidation implements IValidation {
-  async validate(page: Page, fieldName: string, data: validationData): Promise<void> {
-    const locator = page.locator(`:has-text("${data.visible}") + :is(td, div, a)`);
-    console.log("data present in object"+data.visible);
-    if ('visible' in data) {
-      if (data.visible) {
+
+    async validate(page: Page, fieldName: string, data: validationData): Promise<void> {
+        const locator = page.locator(`label:has-text("${fieldName}")`);
         await expect(locator).toBeVisible();
-      } else {
-        await expect(locator).toBeHidden();
-      }
-    } else {
-      throw new Error('VisibilityValidation requires "visible" property in data');
     }
-  }
 }
