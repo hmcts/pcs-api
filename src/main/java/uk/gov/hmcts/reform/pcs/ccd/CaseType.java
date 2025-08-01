@@ -95,8 +95,6 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
 
     private void buildSupportingDocumentsCaseFileViewTab(ConfigBuilder<PCSCase, State, UserRole> configBuilder) {
         configBuilder.tab("supportingDocumentsCaseFileView", "Supporting Documents")
-            .showCondition("1=1")
-            .forRoles(UserRole.CITIZEN, UserRole.PCS_CASE_WORKER)
             .field(PCSCase::getSupportingDocumentsCaseFileView, null, "#ARGUMENT(CaseFileView)");
     }
 
