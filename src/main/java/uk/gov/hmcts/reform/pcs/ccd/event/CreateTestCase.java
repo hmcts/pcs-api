@@ -17,7 +17,8 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.page.createtestcase.ClaimantInformation;
-import uk.gov.hmcts.reform.pcs.ccd.page.createtestcase.MakeAClaim;
+import uk.gov.hmcts.reform.pcs.ccd.page.createtestcase.ContactPreferences;
+import uk.gov.hmcts.reform.pcs.ccd.page.createtestcase.EnterPropertyAddress;
 import uk.gov.hmcts.reform.pcs.ccd.service.ClaimService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
@@ -47,7 +48,8 @@ public class CreateTestCase implements CCDConfig<PCSCase, State, UserRole> {
                 .grant(Permission.CRUD, UserRole.PCS_CASE_WORKER);
 
         new PageBuilder(eventBuilder)
-            .add(new MakeAClaim())
+            .add(new EnterPropertyAddress())
+            .add(new ContactPreferences())
             .add(new ClaimantInformation());
     }
 
@@ -55,6 +57,7 @@ public class CreateTestCase implements CCDConfig<PCSCase, State, UserRole> {
         PCSCase caseData = eventPayload.caseData();
         String userDetails = securityContextService.getCurrentUserDetails().getSub();
         caseData.setClaimantName(userDetails);
+        caseData.setContactEmail(userDetails);
 
         return caseData;
     }
@@ -64,6 +67,7 @@ public class CreateTestCase implements CCDConfig<PCSCase, State, UserRole> {
         long caseReference = eventPayload.caseReference();
         PCSCase pcsCase = eventPayload.caseData();
         pcsCase.setPaymentStatus(PaymentStatus.UNPAID);
+        pcsCase.setContactAddress(pcsCase.getPropertyAddress());
 
         UUID userID = UUID.fromString(securityContextService.getCurrentUserDetails().getUid());
 
