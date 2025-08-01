@@ -1,8 +1,8 @@
 import { Page, expect, Locator } from '@playwright/test';
-import { IValidation, ValidationData } from '../../interfaces/validation.interface';
+import { IValidation, validationData } from '../../interfaces/validation.interface';
 
 export class FormLabelValueValidation implements IValidation {
-  async validate(page: Page, fieldName: string, data?: ValidationData): Promise<void> {
+  async validate(page: Page, fieldName: string, data?: validationData): Promise<void> {
     const valueLocator = await this.findFieldValueLocator(page, fieldName);
 
     if (data?.value !== undefined) {

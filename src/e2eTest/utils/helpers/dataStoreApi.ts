@@ -30,17 +30,12 @@ export class DataStoreApi {
   }
 
   async createCase(caseType: string, eventName: string): Promise<CaseWithId> {
-    console.log("axios baseURL : " + this.axios.defaults.baseURL);
-    console.log("resource Path : " + `/case-types/${caseType}/event-triggers/${eventName}`);
     const tokenResponse: AxiosResponse<CcdTokenResponse> = await this.axios.get(
       `/case-types/${caseType}/event-triggers/${eventName}`
     );
     const token = tokenResponse.data.token;
     const event = {id: `${eventName}`};
     const data = caseDataJson;
-
-    console.log("Data to be sent: ", data);
-    console.log("Event to be sent: ", event);
     try {
       const response = await this.axios.post<CcdV2Response>(`/case-types/${caseType}/cases`, {
         data: caseDataJson.data,
@@ -52,14 +47,12 @@ export class DataStoreApi {
         state: response.data.state
       };
     } catch (err) {
-      console.error("Error creating case: ", err);
       throw new Error('Case could not be created.');
     }
   }
 }
 //setup for the DataStoreApi to use the Axios instance with the correct headers and base URL
 export const dataStoreApi = (url: string): DataStoreApi => {
-  let accessToken = getIdamAuthToken();
   let serviceAuthToken = getServiceAuthToken();
   return new DataStoreApi(
     Axios.create({

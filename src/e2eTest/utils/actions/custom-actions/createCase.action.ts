@@ -16,13 +16,14 @@ export class CreateCaseAction implements IAction {
   private eventToken?: string;
 
   constructor(
-    private readonly axios: AxiosInstance,
+    private readonly axios: AxiosInstance = Axios.create()
   ) {
   }
 
   async execute(page:Page,fieldName?: actionData, value?: actionData): Promise<void> {
     if (!fieldName) throw new Error('Missing fieldName');
     const dataStoreApiInstance = await dataStoreApi();
+    await dataStoreApiInstance.execute(page, fieldName, value);
     caseInfo = await dataStoreApiInstance.createCase(fieldName);
   }
 
