@@ -86,5 +86,8 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
             .showCondition(NEVER_SHOW)
             .field(PCSCase::getPageHeadingMarkdown);
 
+        builder.tab("supportingDocuments", "Documents")
+            .forRoles(UserRole.CITIZEN, UserRole.PCS_CASE_WORKER)
+            .field(PCSCase::getSupportingDocuments, null, "#ARGUMENT(CaseFileView)");
     }
 }
