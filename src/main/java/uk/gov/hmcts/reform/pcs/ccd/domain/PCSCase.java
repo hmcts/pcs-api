@@ -6,6 +6,7 @@ import uk.gov.hmcts.ccd.sdk.External;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseworkerAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenAccess;
 
@@ -73,4 +74,10 @@ public class PCSCase {
 
     private String claimPaymentTabMarkdown;
 
+
+    @CCD(
+        label = "Supporting documents",
+        access = {CitizenAccess.class, CaseworkerAccess.class}
+    )
+    private Document supportingDocuments;
 }
