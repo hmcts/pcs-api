@@ -7,7 +7,7 @@ import {
   performAction,
   performValidation
 } from '@utils/controller';
-import {caseOption} from "@data/page-data/createCase.page.data";
+import {createCase} from "@data/page-data/createCase.page.data";
 import {getCaseInfo} from '@utils/actions/custom-actions/createCase.action';
 
 test.beforeEach(async ({page}) => {
@@ -25,8 +25,8 @@ async function createCaseWithAddress() {
 }
 
 async function searchCase(caseNumber: string) {
-  await performAction('select', 'Jurisdiction', caseOption.jurisdiction.posessions);
-  await performAction('select', 'Case type', caseOption.caseType.civilPosessions);
+  await performAction('select', 'Jurisdiction', createCase.caseOption.jurisdiction.possessions);
+  await performAction('select', 'Case type', createCase.caseOption.caseType.civilPossessions);
   await performAction('inputText', 'Case Number', caseNumber);
   await performAction('clickButton', 'Apply');
 }
