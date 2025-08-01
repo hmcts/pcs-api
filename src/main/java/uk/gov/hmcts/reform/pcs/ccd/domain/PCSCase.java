@@ -79,6 +79,13 @@ public class PCSCase {
     )
     private YesNo preActionProtocolCompleted;
 
+    @CCD(
+        label = "Are you claiming possesion because of rent arrears or breach of the tenancy(ground1)?",
+        hint = "You'll be able to add additional grounds later if you select yes.",
+        access = {CitizenAccess.class, CaseworkerAccess.class}
+    )
+    private YesOrNo groundsForPossession;
+
     private String pageHeadingMarkdown;
 
     private String claimPaymentTabMarkdown;

@@ -13,20 +13,32 @@ public class PreActionProtocol implements CcdPageConfiguration {
                 .pageLabel("Pre-action Protocol")
                 .label("preActionProtocolInfo",
                         """
-                                    Registered providers of social housing should follow the pre-action protocol before 
-                                    making a housing possession claim. You should have:
+                  ---
+                  <p class="govuk-body">
+                  Registered providers of social housing should follow the pre-action protocol
+                  before making a housing possession claim. You should have:
+                  </p>
 
-                                    Contacted, or attempted to contact, the defendants
+                  <ul class="govuk-list govuk-list--bullet">
+                      <li class="govuk-!-font-size-19">Contacted, or attempted to contact, the defendants</li>
+                      <li class="govuk-!-font-size-19">Tried to agree a repayment plan</li>
+                      <li class="govuk-!-font-size-19">Applied for arrears to be paid by the 
+                      Department for Work and Pensions (DWP) by deductions from the defendants' benefits</li>
+                      <li class="govuk-!-font-size-19">Offered to assist the defendants in a claim for 
+                      housing benefit or Universal Credit</li>
+                  </ul>
 
-                                    Tried to agree a repayment plan
+                  <div class="govuk-warning-text" role="alert" aria-labelledby="warning-message">
+                    <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+                    <strong class="govuk-warning-text__text">
+                      <span class="govuk-warning-text__assistive">Warning</span>
+                      <span id="warning-message">Your case could be delayed or rejected if you have not followed
+                      the pre-action protocol and completed all the steps.</span>
+                    </strong>
+                  </div>
 
-                                    Applied for arrears to be paid by the Department for Work and Pensions 
-                                    (DWP) by deductions from the defendants' benefits
-
-                                    Offered to assist the defendants in a claim for housing benefit or Universal Credit
-                                    Your case could be delayed or rejected if you have not followed the 
-                                    pre-action protocol and completed all the steps.
-                                """)
-                .mandatory(PCSCase::getPreActionProtocolCompleted);
+                  """)
+                .mandatoryWithLabel(PCSCase::getPreActionProtocolCompleted,
+                        "Have you followed the pre-action protocol?");
     }
 }
