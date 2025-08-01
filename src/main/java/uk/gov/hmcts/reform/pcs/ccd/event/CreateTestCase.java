@@ -47,9 +47,6 @@ public class CreateTestCase implements CCDConfig<PCSCase, State, UserRole> {
         organisationPolicy.setPrepopulateToUsersOrganisation(YesOrNo.YES);
         caseData.setOrganisationPolicy(organisationPolicy);
 
-        //use builder maybe?
-
-        //caseData.getOrganisationPolicy().setPrepopulateToUsersOrganisation(YesOrNo.YES);
         caseData.setApplicantForename("Preset value");
         return caseData;
     }
