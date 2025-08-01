@@ -64,7 +64,7 @@ test.describe('[verify cross border postcode page for england and wales]  @Maste
     );
 });
 
-test.describe.skip('[verify cross border postcode page for england and scotland]  @Master @nightly', async () => {
+test.describe('[verify cross border postcode page for england and scotland]  @Master @nightly', async () => {
     test('verify cross border postcode page redirection for england and scotland', async () => {
             await inputAddressDetails(borderPostcodePageData.enlandScotlandPostcode)
             await performValidation('text', {
