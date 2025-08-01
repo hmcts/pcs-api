@@ -79,4 +79,10 @@ public class PCSCase {
         access = {CitizenAccess.class, CaseworkerAccess.class}
     )
     private Document supportingDocuments;
+
+    @CCD(
+        label = "Supporting documents case file view",
+        access = {CitizenAccess.class, CaseworkerAccess.class}
+    )
+    private String supportingDocumentsCaseFileView;
 }
