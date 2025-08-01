@@ -7,6 +7,8 @@ import uk.gov.hmcts.ccd.sdk.api.ConfigBuilder;
 import uk.gov.hmcts.ccd.sdk.api.Event.EventBuilder;
 import uk.gov.hmcts.ccd.sdk.api.EventPayload;
 import uk.gov.hmcts.ccd.sdk.api.Permission;
+import uk.gov.hmcts.ccd.sdk.type.OrganisationPolicy;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PaymentStatus;
@@ -23,6 +25,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.createTestApplication;
 public class CreateTestCase implements CCDConfig<PCSCase, State, UserRole> {
 
     private final PcsCaseService pcsCaseService;
+    private ClaimantInformation claimantInformationPage;
 
     @Override
     public void configure(ConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -35,11 +38,15 @@ public class CreateTestCase implements CCDConfig<PCSCase, State, UserRole> {
 
         new PageBuilder(eventBuilder)
             .add(new MakeAClaim())
-            .add(new ClaimantInformation());
+            .add(claimantInformationPage);
     }
 
     private PCSCase start(EventPayload<PCSCase, State> eventPayload) {
         PCSCase caseData = eventPayload.caseData();
+        OrganisationPolicy organisationPolicy = new OrganisationPolicy();
+        organisationPolicy.setPrepopulateToUsersOrganisation(YesOrNo.YES);
+        caseData.setOrganisationPolicy(organisationPolicy);
+
         caseData.setApplicantForename("Preset value");
         return caseData;
     }
