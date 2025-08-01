@@ -43,6 +43,8 @@ public class UploadDocumentPoc implements CCDConfig<PCSCase, State, UserRole> {
     private PCSCase start(EventPayload<PCSCase, State> eventPayload) {
         PCSCase caseData = eventPayload.caseData();
         caseData.setApplicantForename("Preset value");
+
+        caseData.setSupportingDocumentsCaseFileView("test-data-to-make-tab-visible");
         return caseData;
     }
 

@@ -45,6 +45,7 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
         builder.decentralisedCaseType(getCaseType(), getCaseTypeName(), CASE_TYPE_DESCRIPTION);
         builder.jurisdiction(JURISDICTION_ID, JURISDICTION_NAME, JURISDICTION_DESCRIPTION);
         buildSupportingDocumentsCaseFileViewTab(builder);
+        buildSupportingDocumentsCaseFileViewTab1(builder);
 
         String forenameLabel = "Applicant Forename";
         String surnameLabel = "Applicant Surname";
@@ -87,11 +88,20 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
             .showCondition(NEVER_SHOW)
             .field(PCSCase::getPageHeadingMarkdown);
 
+        builder.tab("testTab", "Test Tab")
+            .field(PCSCase::getApplicantForename);
+
     }
 
     private void buildSupportingDocumentsCaseFileViewTab(ConfigBuilder<PCSCase, State, UserRole> configBuilder) {
         configBuilder.tab("supportingDocumentsCaseFileView", "Supporting Documents")
+            .showCondition("1=1")
             .forRoles(UserRole.CITIZEN, UserRole.PCS_CASE_WORKER)
             .field(PCSCase::getSupportingDocumentsCaseFileView, null, "#ARGUMENT(CaseFileView)");
+    }
+
+    private void buildSupportingDocumentsCaseFileViewTab1(ConfigBuilder<PCSCase, State, UserRole> configBuilder) {
+        configBuilder.tab("supportingDocumentsCaseFileView", "Supporting Documents")
+            .field(PCSCase::getApplicantForename); // Use a field that definitely has data
     }
 }
