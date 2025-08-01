@@ -108,6 +108,6 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
 
     private void buildSupportingDocumentsCaseFileViewTab1(ConfigBuilder<PCSCase, State, UserRole> configBuilder) {
         configBuilder.tab("caseFileView", "Case file view test")
-            .field(PCSCase::getApplicantForename); // Use a field that definitely has data
+            .field(PCSCase::getSupportingDocuments, null, "#ARGUMENT(CaseFileView)");
     }
 }
