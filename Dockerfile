@@ -2,6 +2,8 @@
 ARG APP_INSIGHTS_AGENT_VERSION=3.7.3
 FROM hmctspublic.azurecr.io/base/java:21-distroless
 
+USER hmcts
+
 COPY lib/applicationinsights.json /opt/app/
 COPY build/libs/pcs-api.jar /opt/app/
 
