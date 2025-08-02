@@ -12,6 +12,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.ResponseEntity;
 import uk.gov.hmcts.reform.pcs.document.service.DocAssemblyService;
 import uk.gov.hmcts.reform.pcs.document.service.exception.DocAssemblyException;
+import uk.gov.hmcts.reform.pcs.postcodecourt.model.EligibilityResult;
+import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.postcodecourt.service.EligibilityService;
 import uk.gov.hmcts.reform.pcs.testingsupport.model.DocAssemblyRequest;
 
@@ -457,5 +459,60 @@ class TestingSupportControllerTest {
         assertThat(response).isNotNull();
         assertThat(response.getStatusCode().value()).isEqualTo(400);
         assertThat(response.getBody()).contains("Invalid request: Request cannot be null");
+    }
+
+    @Test
+    void shouldDelegateToEligibilityServiceAndReturnResult() {
+        // Given
+        String serviceAuth = "Bearer serviceToken";
+        String postcode = "SW1A 1AA";
+        LegislativeCountry country = LegislativeCountry.ENGLAND;
+        
+        EligibilityResult expectedResult = mock(EligibilityResult.class);
+        
+        when(eligibilityService.checkEligibility(postcode, country)).thenReturn(expectedResult);
+        
+        // When
+        EligibilityResult result = underTest.getPostcodeEligibility(serviceAuth, postcode, country);
+        
+        // Then
+        assertThat(result).isSameAs(expectedResult);
+        verify(eligibilityService).checkEligibility(postcode, country);
+    }
+
+    @Test
+    void shouldDelegateToEligibilityServiceWhenCountryNotSpecified() {
+        // Given
+        String serviceAuth = "Bearer serviceToken";
+        String postcode = "CH5 1AA";
+        
+        EligibilityResult expectedResult = mock(EligibilityResult.class);
+        
+        when(eligibilityService.checkEligibility(postcode, null)).thenReturn(expectedResult);
+        
+        // When
+        EligibilityResult result = underTest.getPostcodeEligibility(serviceAuth, postcode, null);
+        
+        // Then
+        assertThat(result).isSameAs(expectedResult);
+        verify(eligibilityService).checkEligibility(postcode, null);
+    }
+
+    @Test
+    void shouldPropagateExceptionWhenEligibilityServiceFails() {
+        // Given
+        String serviceAuth = "Bearer serviceToken";
+        String postcode = "INVALID";
+        RuntimeException serviceException = new RuntimeException("Service error");
+        
+        when(eligibilityService.checkEligibility(postcode, null)).thenThrow(serviceException);
+        
+        // When/Then
+        org.assertj.core.api.Assertions.assertThatThrownBy(() ->
+            underTest.getPostcodeEligibility(serviceAuth, postcode, null)
+        ).isInstanceOf(RuntimeException.class)
+         .hasMessageContaining("Service error");
+        
+        verify(eligibilityService).checkEligibility(postcode, null);
     }
 }
