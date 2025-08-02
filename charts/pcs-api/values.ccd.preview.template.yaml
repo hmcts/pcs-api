@@ -76,6 +76,8 @@ ccd:
         WELSH_TRANSLATION_ENABLED: false
         DEFINITION_STORE_DB_USERNAME: "{{ .Values.global.postgresUsername}}"
         DEFINITION_STORE_DB_OPTIONS: ""
+        ELASTIC_SEARCH_INDEX_SHARDS: 1
+        ELASTIC_SEARCH_INDEX_SHARDS_REPLICAS: 0
       ingressHost: ccd-definition-store-${SERVICE_FQDN}
       keyVaults:
         ccd:
@@ -163,7 +165,12 @@ ccd:
       - name: action.auto_create_index
         value: .security*,.watches,.triggered_watches,.watcher-history-*,.logstash_dead_letter,.ml*
     persistence:
-      enabled: false
+      enabled: true
+    volumeClaimTemplate:
+      resources:
+        requests:
+          storage: 500Mi
+      storageClassName: managed-lrs
     ingress:
       enabled: false
   logstash:
