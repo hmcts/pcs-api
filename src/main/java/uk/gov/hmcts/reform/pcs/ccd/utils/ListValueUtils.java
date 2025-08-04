@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.ccd.renderer;
+package uk.gov.hmcts.reform.pcs.ccd.utils;
 
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 
