@@ -5,7 +5,7 @@ properties([
   pipelineTriggers([cron('H 07 * * 1-5')]),
   parameters([
     choice(
-      name: 'ENIRONMENT',
+      name: 'ENvIRONMENT',
       choices: ['aat', 'preview'],
       description: 'Environment to run the test.'
     ),
