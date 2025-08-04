@@ -25,7 +25,7 @@ export class ValidationRegistry {
     ['css', new CssValidation()],
     ['bannerAlert', new BannerAlertValidation()],
     ['formLabelValue', new FormLabelValueValidation()],
-    ['validateOptionList', new OptionListValidation()],
+    ['optionList', new OptionListValidation()],
     ['mainHeader', new MainHeaderValidation()],
     ['errorMessage', new ErrorMessageValidation()]
   ]);
