@@ -3,7 +3,7 @@ import {parentSuite} from 'allure-js-commons';
 import {initializeExecutor, performAction, performActions, performValidation} from '@utils/controller';
 import {borderPostcode} from "../data/page-data/borderPostcode.page.data";
 import configData from "@config/test.config";
-import {caseOptions} from "@data/page-data/caseOptions.page.data";
+import {caseOptions} from "@data/page-data/createCase.page.data";
 import {addressDetails} from "@data/page-data/addressDetails.page.data";
 
 test.beforeEach(async ({page}, testInfo) => {
@@ -24,13 +24,13 @@ async function selectJurisdictionCaseTypeEvent() {
 }
 
 async function inputAddressDetails(postcode: string) {
-    await performActions('Find Address based on postcode'
+    await performActions('Enter Address Manually'
         , ['inputText', 'Enter a UK postcode', postcode]
         , ['clickButton', 'Find address']
-        , ['select', 'Select an address', addressDetails.addressIndex]
-        , ['inputText', 'Address Line 2', addressDetails.addressLine2]
-        , ['inputText', 'Address Line 3', addressDetails.addressLine3]
-        , ['inputText', 'County', addressDetails.englandCounty]);
+        , ['select', 'Select an address', addressDetails.propertyAddressSection.addressIndex]
+        , ['inputText', 'Address Line 2', addressDetails.propertyAddressSection.addressLine2]
+        , ['inputText', 'Address Line 3', addressDetails.propertyAddressSection.addressLine3]
+        , ['inputText', 'County', addressDetails.propertyAddressSection.englandCounty]);
     await performAction('clickButton', 'Continue');
 }
 
