@@ -1,17 +1,30 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.createtestcase;
 
+import lombok.extern.slf4j.Slf4j;
+import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
+import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 
+@Slf4j
 public class MakeAClaim implements CcdPageConfiguration {
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
-            .page("Make a claim")
+            .page("Make a claim", this::midEvent)
             .pageLabel("What is the address of the property you're claiming possession of?")
             .label("lineSeparator", "---")
             .mandatory(PCSCase::getPropertyAddress);
+    }
+
+    private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
+                                                                  CaseDetails<PCSCase, State> detailsBefore) {
+
+        log.info("Handling midEvent for address page");
+        return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
+            .build();
     }
 }
