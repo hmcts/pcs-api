@@ -2,7 +2,29 @@
 
 properties([
   // H allow predefined but random minute see https://en.wikipedia.org/wiki/Cron#Non-standard_characters
-  pipelineTriggers([cron('H 07 * * 1-5')])
+  pipelineTriggers([cron('H 07 * * 1-5')]),
+  parameters([
+    choice(
+      name: 'ENIRONMENT',
+      choices: ['aat', 'preview'],
+      description: 'Environment to run the test.'
+    ),
+    string(
+      name: 'PR_NUMBER',
+      defaultValue: '',
+      description: 'PR number (REQUIRED if environment is preview, leave blank otherwise).'
+    ),
+    booleanParam(
+      name: 'CHROME_TESTS',
+      defaultValue: true,
+      description: 'Tick the checkbox to run E2E tests in Chrome.'
+    ),
+    booleanParam(
+      name: 'FIREFOX_TESTS',
+      defaultValue: true,
+      description: 'Tick the checkbox to run E2E tests in Firefox.'
+    ),
+  ])
 ])
 
 @Library("Infrastructure")
@@ -34,8 +56,25 @@ withNightlyPipeline(type, product, component) {
     enableSlackNotifications('#pcs-tech')
     loadVaultSecrets(secrets)
     afterAlways('DependencyCheckNightly') {
-    env.MANAGE_CASE_BASE_URL = "https://manage-case.aat.platform.hmcts.net/"
+      handleEnvironmentSetting(params.ENIRONMENT, params.PR_NUMBER)
+      runE2eTests(params.CHROME_TESTS, params.FIREFOX_TESTS)
+  }
+}
+
+def handleEnvironmentSetting(String environment, String prNumber) {
+  if (environment === 'preview' && !prNumber.isBlank()) {
+    env.MANAGE_CASE_BASE_URL = "https://xui-pcs-api-pr-${prNumber}.preview.platform.hmcts.net"
+  } else {
+    env.MANAGE_CASE_BASE_URL = "https://manage-case.${environment}.platform.hmcts.net/"
+  }
+}
+
+def runE2eTests(Boolean isChrome, Boolean isFirefox) {
+  if (isChrome) {
     runE2ETestsForBrowser('Chrome')
+  }
+  if (isFirefox) {
+    runE2ETestsForBrowser('Firefox')
   }
 }
 
