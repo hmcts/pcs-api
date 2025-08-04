@@ -56,17 +56,18 @@ withNightlyPipeline(type, product, component) {
   enableSlackNotifications('#pcs-tech')
   loadVaultSecrets(secrets)
   afterAlways('DependencyCheckNightly') {
-    handleEnvironmentSetting(params.ENVIRONMENT, params.PR_NUMBER)
-    runE2eTests(params.CHROME_TESTS, params.FIREFOX_TESTS)
-    publishE2EReport()
+    if (environment == 'preview' && prNumber == '') {
+      error(message: "Pipeline failed due to no pr number being set")
+    } else {
+      handleEnvironmentSetting(params.ENVIRONMENT, params.PR_NUMBER)
+      runE2eTests(params.CHROME_TESTS, params.FIREFOX_TESTS)
+      publishE2EReport()
+    }
   }
 }
 
 def handleEnvironmentSetting(String environment, String prNumber) {
-  if (environment == 'preview' && prNumber == '') {
-    error(message: "Pipeline failed due to no pr number being set")
-  }
-  else if (environment == 'preview' && prNumber != '') {
+  if (environment == 'preview' && prNumber != '') {
     env.MANAGE_CASE_BASE_URL = "https://xui-pcs-api-pr-${prNumber}.preview.platform.hmcts.net"
   } else {
     env.MANAGE_CASE_BASE_URL = "https://manage-case.${environment}.platform.hmcts.net/"
