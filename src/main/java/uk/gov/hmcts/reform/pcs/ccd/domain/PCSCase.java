@@ -80,4 +80,7 @@ public class PCSCase {
 
     @CCD()
     private YesOrNo yesOrNo;
+
+    @CCD
+    private String shortenedName;
 }
