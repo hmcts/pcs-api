@@ -15,6 +15,7 @@ import uk.gov.hmcts.reform.pcs.ccd.renderer.ClaimPaymentTabRenderer;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
+import uk.gov.hmcts.reform.pcs.ccd.type.YesNo;
 
 import java.util.Optional;
 
@@ -135,6 +136,47 @@ class CCDCaseRepositoryTest {
 
         // Then
         assertThat(pcsCase.getPropertyAddress()).isEqualTo(addressUK);
+    }
+
+    @Test
+    void shouldMapPreActionProtocolCompletedWhenYes() {
+        // Given
+        PcsCaseEntity pcsCaseEntity = mock(PcsCaseEntity.class);
+        when(pcsCaseEntity.getPreActionProtocolCompleted()).thenReturn("YES");
+        when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(pcsCaseEntity));
+
+        // When
+        PCSCase pcsCase = underTest.getCase(CASE_REFERENCE);
+
+        // Then
+        assertThat(pcsCase.getPreActionProtocolCompleted()).isEqualTo(YesNo.YES);
+    }
+
+    @Test
+    void shouldMapPreActionProtocolCompletedWhenNo() {
+        // Given
+        PcsCaseEntity pcsCaseEntity = mock(PcsCaseEntity.class);
+        when(pcsCaseEntity.getPreActionProtocolCompleted()).thenReturn("NO");
+        when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(pcsCaseEntity));
+        // When
+        PCSCase pcsCase = underTest.getCase(CASE_REFERENCE);
+
+        // Then
+        assertThat(pcsCase.getPreActionProtocolCompleted()).isEqualTo(YesNo.NO);
+    }
+
+    @Test
+    void shouldMapPreActionProtocolCompletedAsNullWhenNull() {
+        // Given
+        PcsCaseEntity pcsCaseEntity = mock(PcsCaseEntity.class);
+        when(pcsCaseEntity.getPreActionProtocolCompleted()).thenReturn(null);
+        when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(pcsCaseEntity));
+
+        // When
+        PCSCase pcsCase = underTest.getCase(CASE_REFERENCE);
+
+        // Then
+        assertThat(pcsCase.getPreActionProtocolCompleted()).isNull();
     }
 
     private AddressUK stubAddressEntityModelMapper(AddressEntity addressEntity) {
