@@ -1,9 +1,9 @@
 import {test} from '@playwright/test';
 import {parentSuite} from 'allure-js-commons';
 import {initializeExecutor, performAction, performActions, performValidation} from '@utils/controller';
-import {borderPostcodePageData} from "../data/page-data/borderPostcode.page.data";
+import {borderPostcode} from "../data/page-data/borderPostcode.page.data";
 import configData from "@config/test.config";
-import {caseOption} from "@data/page-data/caseOptions.page.data";
+import {caseOptions} from "@data/page-data/caseOptions.page.data";
 import {addressDetails} from "@data/page-data/addressDetails.page.data";
 
 test.beforeEach(async ({page}, testInfo) => {
@@ -17,9 +17,9 @@ test.beforeEach(async ({page}, testInfo) => {
 
 async function selectJurisdictionCaseTypeEvent() {
     await performActions('Case option selection'
-        , ['select', 'Jurisdiction', caseOption.jurisdiction.posessions]
-        , ['select', 'Case type', caseOption.caseType.civilPosessions]
-        , ['select', 'Event', caseOption.event.makeAPosessionClaim]);
+        , ['select', 'Jurisdiction', caseOptions.jurisdiction.posessions]
+        , ['select', 'Case type', caseOptions.caseType.civilPosessions]
+        , ['select', 'Event', caseOptions.event.makeAPosessionClaim]);
     await performAction('clickButton', 'Start');
 }
 
@@ -36,60 +36,60 @@ async function inputAddressDetails(postcode: string) {
 
 test.describe('[verify cross border postcode page for england and wales]  @Master @nightly', async () => {
     test('verify cross border postcode page redirection for england and wales', async ({page}) => {
-            await inputAddressDetails(borderPostcodePageData.enlandWalesPostcode)
+            await inputAddressDetails(borderPostcode.enlandWalesPostcode)
             await performValidation('text', {
-                "text": borderPostcodePageData.borderPostcodeHeader,
+                "text": borderPostcode.borderPostcodeHeader,
                 "elementType": "heading"
             });
         }
     );
 
     test('verify cross border postcode page for england and wales content', async () => {
-            await inputAddressDetails(borderPostcodePageData.enlandWalesPostcode)
+            await inputAddressDetails(borderPostcode.enlandWalesPostcode)
             await performValidation('text', {
-                "text": borderPostcodePageData.borderPostcodeHeader,
+                "text": borderPostcode.borderPostcodeHeader,
                 "elementType": "heading"
             });
             await performValidation('text', {
-                "text": borderPostcodePageData.englandWalesParagraphContent,
+                "text": borderPostcode.englandWalesParagraphContent,
                 "elementType": "paragraph"
             });
             await performValidation('text', {
-                "text": borderPostcodePageData.englandWalesInlineContent,
+                "text": borderPostcode.englandWalesInlineContent,
                 "elementType": "inlineText"
             });
-            await performValidation('text', {"text": borderPostcodePageData.continueBtn, "elementType": "button"})
-            await performValidation('text', {"text": borderPostcodePageData.cancelLink, "elementType": "link"})
+            await performValidation('text', {"text": borderPostcode.continueBtn, "elementType": "button"})
+            await performValidation('text', {"text": borderPostcode.cancelLink, "elementType": "link"})
         }
     );
 });
 
 test.describe('[verify cross border postcode page for england and scotland]  @Master @nightly', async () => {
     test('verify cross border postcode page redirection for england and scotland', async () => {
-            await inputAddressDetails(borderPostcodePageData.enlandScotlandPostcode)
+            await inputAddressDetails(borderPostcode.enlandScotlandPostcode)
             await performValidation('text', {
-                "text": borderPostcodePageData.borderPostcodeHeader,
+                "text": borderPostcode.borderPostcodeHeader,
                 "elementType": "heading"
             });
         }
     );
 
     test('verify cross border postcode page for england and scotland content', async () => {
-            await inputAddressDetails(borderPostcodePageData.enlandScotlandPostcode)
+            await inputAddressDetails(borderPostcode.enlandScotlandPostcode)
             await performValidation('text', {
-                "text": borderPostcodePageData.borderPostcodeHeader,
+                "text": borderPostcode.borderPostcodeHeader,
                 "elementType": "heading"
             });
             await performValidation('text', {
-                "text": borderPostcodePageData.englandScotlandParagraphContent,
+                "text": borderPostcode.englandScotlandParagraphContent,
                 "elementType": "paragraph"
             });
             await performValidation('text', {
-                "text": borderPostcodePageData.englandScotlandInlineContent,
+                "text": borderPostcode.englandScotlandInlineContent,
                 "elementType": "inlineText"
             });
-            await performValidation('text', {"text": borderPostcodePageData.continueBtn, "elementType": "button"})
-            await performValidation('text', {"text": borderPostcodePageData.cancelLink, "elementType": "link"})
+            await performValidation('text', {"text": borderPostcode.continueBtn, "elementType": "button"})
+            await performValidation('text', {"text": borderPostcode.cancelLink, "elementType": "link"})
         }
     );
 });

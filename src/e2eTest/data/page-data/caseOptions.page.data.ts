@@ -1,10 +1,7 @@
-export const pageIdentifier =
-    {
-        title: 'Case Options',
-        mainHeader: 'some header'
-    };
 
-export const caseOption = {
+export const caseOptions = {
+    title: 'Case Options',
+    mainHeader: 'some header',
     jurisdiction:
         {
             posessions: 'Possessions'

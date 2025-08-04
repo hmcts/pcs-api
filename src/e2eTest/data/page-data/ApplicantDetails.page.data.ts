@@ -1,3 +1,3 @@
-export const applicantDtails = {
+export const applicantDetails = {
   applicantFirstName: 'AutomationTestUser',
 };
