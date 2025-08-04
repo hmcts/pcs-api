@@ -9,9 +9,9 @@ public class PreActionProtocol implements CcdPageConfiguration {
     @Override
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
-                .page("pre action protocol")
+                .page("preActionProtocol")
                 .pageLabel("Pre-action Protocol")
-                .label("preActionProtocolInfo",
+                .label("preActionProtocol-info",
                         """
                   ---
                   <p class="govuk-body">

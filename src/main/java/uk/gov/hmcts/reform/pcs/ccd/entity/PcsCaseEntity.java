@@ -53,7 +53,7 @@ public class PcsCaseEntity {
     @Enumerated(EnumType.STRING)
     private PaymentStatus paymentStatus;
 
-    private String preActionProtocolCompleted;
+    private Boolean preActionProtocolCompleted;
 
     @OneToMany(mappedBy = "pcsCase", fetch = LAZY, cascade = ALL)
     @JsonManagedReference

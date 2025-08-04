@@ -18,7 +18,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
-import uk.gov.hmcts.reform.pcs.ccd.type.YesNo;  
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;  
 
 import java.util.Optional;
 import java.util.UUID;
@@ -74,7 +74,7 @@ class PcsCaseServiceTest {
         // Given
         String expectedForename = "Test forename";
         String expectedSurname = "Test surname";
-        YesNo preActionProtocolCompleted = YesNo.YES;
+        VerticalYesNo preActionProtocolCompleted = VerticalYesNo.YES;
 
 
         PCSCase pcsCase = mock(PCSCase.class);
@@ -96,7 +96,7 @@ class PcsCaseServiceTest {
         assertThat(savedEntity.getApplicantForename()).isEqualTo(expectedForename);
         assertThat(savedEntity.getApplicantSurname()).isEqualTo(expectedSurname);
         assertThat(savedEntity.getPropertyAddress()).isEqualTo(propertyAddressEntity);
-        assertThat(savedEntity.getPreActionProtocolCompleted()).isEqualTo(preActionProtocolCompleted.name());
+        assertThat(savedEntity.getPreActionProtocolCompleted()).isEqualTo(preActionProtocolCompleted.toBoolean());
     }
 
     @Test
@@ -282,8 +282,9 @@ class PcsCaseServiceTest {
         // Given
         PCSCase pcsCase = mock(PCSCase.class);
         PcsCaseEntity existingPcsCaseEntity = mock(PcsCaseEntity.class);
+        VerticalYesNo preActionProtocolCompleted = VerticalYesNo.YES;
 
-        when(pcsCase.getPreActionProtocolCompleted()).thenReturn(YesNo.YES);
+        when(pcsCase.getPreActionProtocolCompleted()).thenReturn(preActionProtocolCompleted);
         when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(existingPcsCaseEntity));
 
         // When
@@ -291,7 +292,7 @@ class PcsCaseServiceTest {
 
         // Then
         verify(pcsCaseRepository).save(pcsCaseEntityCaptor.capture());
-        verify(existingPcsCaseEntity).setPreActionProtocolCompleted(YesNo.YES.name());
+        verify(existingPcsCaseEntity).setPreActionProtocolCompleted(preActionProtocolCompleted.toBoolean());
         assertThat(pcsCaseEntityCaptor.getValue()).isSameAs(existingPcsCaseEntity);
     }
 

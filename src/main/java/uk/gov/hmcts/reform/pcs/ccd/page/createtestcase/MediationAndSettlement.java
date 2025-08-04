@@ -12,9 +12,9 @@ public class MediationAndSettlement implements CcdPageConfiguration {
     @Override
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
-                .page("mediation and settlement")
+                .page("mediationAndSettlement")
                 .pageLabel("Mediation and Settlement")
-                .label("mediationAndSettlementInfo", 
+                .label("mediationAndSettlement-info", 
                         """
                         ---
                         This feature is currently under development.

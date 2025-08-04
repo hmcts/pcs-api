@@ -37,7 +37,7 @@ public class PcsCaseService {
         pcsCaseEntity.setPaymentStatus(pcsCase.getPaymentStatus());
         pcsCaseEntity.setPreActionProtocolCompleted(
                 pcsCase.getPreActionProtocolCompleted() != null
-                        ? pcsCase.getPreActionProtocolCompleted().name()
+                        ? pcsCase.getPreActionProtocolCompleted().toBoolean()
                         : null);
 
         pcsCaseRepository.save(pcsCaseEntity);
@@ -74,7 +74,7 @@ public class PcsCaseService {
         }
 
         if (pcsCase.getPreActionProtocolCompleted() != null) {
-            pcsCaseEntity.setPreActionProtocolCompleted(pcsCase.getPreActionProtocolCompleted().name());
+            pcsCaseEntity.setPreActionProtocolCompleted(pcsCase.getPreActionProtocolCompleted().toBoolean());
         }
 
         pcsCaseRepository.save(pcsCaseEntity);

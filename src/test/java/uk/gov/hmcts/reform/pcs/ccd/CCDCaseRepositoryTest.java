@@ -15,7 +15,7 @@ import uk.gov.hmcts.reform.pcs.ccd.renderer.ClaimPaymentTabRenderer;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
-import uk.gov.hmcts.reform.pcs.ccd.type.YesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 
 import java.util.Optional;
 
@@ -142,27 +142,27 @@ class CCDCaseRepositoryTest {
     void shouldMapPreActionProtocolCompletedWhenYes() {
         // Given
         PcsCaseEntity pcsCaseEntity = mock(PcsCaseEntity.class);
-        when(pcsCaseEntity.getPreActionProtocolCompleted()).thenReturn("YES");
+        when(pcsCaseEntity.getPreActionProtocolCompleted()).thenReturn(true);
         when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(pcsCaseEntity));
 
         // When
         PCSCase pcsCase = underTest.getCase(CASE_REFERENCE);
 
         // Then
-        assertThat(pcsCase.getPreActionProtocolCompleted()).isEqualTo(YesNo.YES);
+        assertThat(pcsCase.getPreActionProtocolCompleted()).isEqualTo(VerticalYesNo.YES);
     }
 
     @Test
     void shouldMapPreActionProtocolCompletedWhenNo() {
         // Given
         PcsCaseEntity pcsCaseEntity = mock(PcsCaseEntity.class);
-        when(pcsCaseEntity.getPreActionProtocolCompleted()).thenReturn("NO");
+        when(pcsCaseEntity.getPreActionProtocolCompleted()).thenReturn(false);
         when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(pcsCaseEntity));
         // When
         PCSCase pcsCase = underTest.getCase(CASE_REFERENCE);
 
         // Then
-        assertThat(pcsCase.getPreActionProtocolCompleted()).isEqualTo(YesNo.NO);
+        assertThat(pcsCase.getPreActionProtocolCompleted()).isEqualTo(VerticalYesNo.NO);
     }
 
     @Test
