@@ -85,6 +85,6 @@ public class PCSCase {
         label = "Case file view",
         access = {CitizenAccess.class, CaseworkerAccess.class}
     )
-    private ComponentLauncher caseFileView1;
+    private ComponentLauncher caseFileView;
 
 }
