@@ -91,7 +91,7 @@ def runE2ETestsForBrowser(String browser) {
         keepAll: true,
         reportDir: "src/e2eTest/allure-report",
         reportFiles: 'index.html',
-        reportName: "Full EXUI E2E Test Report"
+        reportName: "Full EXUI ${browser} E2E Test Report"
       ])
     }
   }
