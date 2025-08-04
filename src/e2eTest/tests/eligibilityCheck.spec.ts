@@ -34,7 +34,7 @@ async function inputAddressDetails(postcode: string) {
     await performAction('clickButton', 'Continue');
 }
 
-test.describe('[verify cross border postcode page for england and wales]  @Master @nightly', async () => {
+test.describe('[verify cross border postcode page]  @Master @nightly', async () => {
     test('verify cross border postcode page redirection for england and wales', async ({page}) => {
             await inputAddressDetails(borderPostcode.enlandWalesPostcode)
             await performValidation('text', {
@@ -62,9 +62,8 @@ test.describe('[verify cross border postcode page for england and wales]  @Maste
             await performValidation('text', {"text": borderPostcode.cancelLink, "elementType": "link"})
         }
     );
-});
 
-test.describe('[verify cross border postcode page for england and scotland]  @Master @nightly', async () => {
+
     test('verify cross border postcode page redirection for england and scotland', async () => {
             await inputAddressDetails(borderPostcode.enlandScotlandPostcode)
             await performValidation('text', {
@@ -75,22 +74,21 @@ test.describe('[verify cross border postcode page for england and scotland]  @Ma
     );
 
     test('verify cross border postcode page for england and scotland content', async () => {
-            await inputAddressDetails(borderPostcode.enlandScotlandPostcode)
-            await performValidation('text', {
-                "text": borderPostcode.borderPostcodeHeader,
-                "elementType": "heading"
-            });
-            await performValidation('text', {
-                "text": borderPostcode.englandScotlandParagraphContent,
-                "elementType": "paragraph"
-            });
-            await performValidation('text', {
-                "text": borderPostcode.englandScotlandInlineContent,
-                "elementType": "inlineText"
-            });
-            await performValidation('text', {"text": borderPostcode.continueBtn, "elementType": "button"})
-            await performValidation('text', {"text": borderPostcode.cancelLink, "elementType": "link"})
-        }
-    );
-});
+        await inputAddressDetails(borderPostcode.enlandScotlandPostcode)
+        await performValidation('text', {
+            "text": borderPostcode.borderPostcodeHeader,
+            "elementType": "heading"
+        });
+        await performValidation('text', {
+            "text": borderPostcode.englandScotlandParagraphContent,
+            "elementType": "paragraph"
+        });
+        await performValidation('text', {
+            "text": borderPostcode.englandScotlandInlineContent,
+            "elementType": "inlineText"
+        });
+        await performValidation('text', {"text": borderPostcode.continueBtn, "elementType": "button"})
+        await performValidation('text', {"text": borderPostcode.cancelLink, "elementType": "link"})
+    });
+})
 
