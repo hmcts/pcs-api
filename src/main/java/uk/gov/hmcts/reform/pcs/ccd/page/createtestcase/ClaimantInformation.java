@@ -24,13 +24,15 @@ public class ClaimantInformation implements CcdPageConfiguration {
             .label("OrganisationQuestion", "Your claimant name registered with My HMCTS is:")
             .complex(PCSCase::getOrganisationPolicy)
             .complex(OrganisationPolicy::getOrganisation)
-            .done();
+                .mandatory(Organisation::getOrganisationName)
+                .done();
+
     }
 
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
                                                                   CaseDetails<PCSCase, State> detailsBefore) {
-
+        System.out.println("HERE");
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
-            .errors(List.of("You're not eligible for this online service"))
             .build();
-    }}
+    }
+}
