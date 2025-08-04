@@ -63,7 +63,7 @@ withNightlyPipeline(type, product, component) {
 }
 
 def handleEnvironmentSetting(String environment, String prNumber) {
-  if (environment == 'preview' && prNumber != '') {
+  if (environment == 'preview' && prNumber == '') {
     error(message: "Pipeline failed due to no pr number being set")
   }
   else if (environment == 'preview' && prNumber != '') {
