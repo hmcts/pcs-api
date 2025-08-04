@@ -24,10 +24,8 @@ public class PartyService {
                                           AddressUK contactAddress,
                                           String contactPhoneNumber,
                                           Boolean active) {
-        AddressUK applicantAddress = contactAddress;
-
         AddressEntity addressEntity = contactAddress != null
-            ? modelMapper.map(applicantAddress, AddressEntity.class) : null;
+            ? modelMapper.map(contactAddress, AddressEntity.class) : null;
 
         PartyEntity party = PartyEntity.builder()
             .idamId(userId)
