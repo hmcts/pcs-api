@@ -19,13 +19,6 @@ export class TextValidation implements IValidation {
         break;
     }
     const locator = page.locator(`${data.elementType}:has-text("${data.text}")`)
-
-    await test.step(`Found locator message: "${data.expected}"`, async () => {
-      if ('text' in data) {
         await expect(locator).toHaveText(String(data.text));
-      } else {
-        throw new Error('TextValidation requires "expected" property in data');
-      }
-    });
   }
 }
