@@ -57,7 +57,7 @@ withNightlyPipeline(type, product, component) {
   loadVaultSecrets(secrets)
   handleEnvironmentSetting()
   afterAlways('DependencyCheckNightly') {
-    runE2eTests(params.CHROME_TESTS, params.FIREFOX_TESTS)
+    runE2eTests()
     publishE2EReport()
   }
 }
@@ -72,11 +72,11 @@ def handleEnvironmentSetting() {
   }
 }
 
-def runE2eTests(Boolean isChrome, Boolean isFirefox) {
-  if (isChrome) {
+def runE2eTests() {
+  if (params.CHROME_TESTS) {
     runE2ETestForBrowser('Chrome')
   }
-  if (isFirefox) {
+  if (params.FIREFOX_TESTS) {
     runE2ETestForBrowser('Firefox')
   }
 }
