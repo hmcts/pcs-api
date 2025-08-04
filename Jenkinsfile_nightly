@@ -56,7 +56,7 @@ withNightlyPipeline(type, product, component) {
   enableSlackNotifications('#pcs-tech')
   loadVaultSecrets(secrets)
   afterAlways('DependencyCheckNightly') {
-    if (environment == 'preview' && prNumber == '') {
+    if (params.ENVIRONMENT == 'preview' && params.PR_NUMBER == '') {
       error(message: "Pipeline failed due to no pr number being set")
     } else {
       handleEnvironmentSetting(params.ENVIRONMENT, params.PR_NUMBER)
