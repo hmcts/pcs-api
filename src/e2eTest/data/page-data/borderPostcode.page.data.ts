@@ -1,6 +1,6 @@
 export const borderPostcode = {
-    title: 'Border Postcode',
-    mainHeader: 'some header',
+    title: 'Create a case - HM Courts & Tribunals Service - GOV.UK',
+    mainHeader: 'Border postcode',
     borderPostcodeHeader: "Border postcode",
     englandWalesParagraphContent: "Your postcode includes properties in England and Wales. We need to know which country your property is in, as the law is different in each country.",
     englandWalesInlineContent: "Is the property located in England or Wales?",
