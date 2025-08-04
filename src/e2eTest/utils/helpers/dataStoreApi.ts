@@ -59,7 +59,6 @@ export class DataStoreApi {
 }
 //setup for the DataStoreApi to use the Axios instance with the correct headers and base URL
 export const dataStoreApi = (url: string): DataStoreApi => {
-  let accessToken = getIdamAuthToken();
   let serviceAuthToken = getServiceAuthToken();
   return new DataStoreApi(
     Axios.create({
