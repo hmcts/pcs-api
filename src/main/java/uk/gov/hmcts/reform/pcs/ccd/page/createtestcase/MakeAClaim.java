@@ -19,8 +19,8 @@ public class MakeAClaim implements CcdPageConfiguration {
             .pageLabel("What is the address of the property you're claiming possession of?")
             .label("lineSeparator", "---")
             .mandatory(PCSCase::getPropertyAddress)
-            .complex(PCSCase::getOrganisationPolicy, ShowConditions.NEVER_SHOW)
-                .complex(OrganisationPolicy::getOrganisation, ShowConditions.NEVER_SHOW)
+            .complex(PCSCase::getOrganisationPolicy)
+                .complex(OrganisationPolicy::getOrganisation)
                 .readonly(Organisation::getOrganisationName)
                 .done()
             .done();
