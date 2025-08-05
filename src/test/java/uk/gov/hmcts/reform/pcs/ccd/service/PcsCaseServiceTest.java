@@ -27,7 +27,11 @@ import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.times;
 
 @ExtendWith(MockitoExtension.class)
 class PcsCaseServiceTest {
@@ -279,8 +283,8 @@ class PcsCaseServiceTest {
 
     @Test
     void shouldAddDocumentToCase() {
-        String fileName = "test-document.pdf";
-        String filePath = "/documents/test-document.pdf";
+        final String fileName = "test-document.pdf";
+        final String filePath = "/documents/test-document.pdf";
 
         PcsCaseEntity existingPcsCaseEntity = new PcsCaseEntity();
         existingPcsCaseEntity.setCaseReference(CASE_REFERENCE);
@@ -306,8 +310,8 @@ class PcsCaseServiceTest {
 
     @Test
     void shouldThrowExceptionWhenAddingDocumentToUnknownCase() {
-        String fileName = "test-document.docx";
-        String filePath = "/documents/test-document.docx";
+        final String fileName = "test-document.docx";
+        final String filePath = "/documents/test-document.docx";
 
         when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE)).thenReturn(Optional.empty());
 
@@ -320,10 +324,10 @@ class PcsCaseServiceTest {
 
     @Test
     void shouldAddMultipleDocumentsToCase() {
-        String fileName1 = "document1.docx";
-        String filePath1 = "/documents/document1.docx";
-        String fileName2 = "document2.docx";
-        String filePath2 = "/documents/document2.docx";
+        final String fileName1 = "document1.docx";
+        final String filePath1 = "/documents/document1.docx";
+        final String fileName2 = "document2.docx";
+        final String filePath2 = "/documents/document2.docx";
 
         PcsCaseEntity existingPcsCaseEntity = new PcsCaseEntity();
         existingPcsCaseEntity.setCaseReference(CASE_REFERENCE);
