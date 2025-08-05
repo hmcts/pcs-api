@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -25,7 +26,7 @@ import static jakarta.persistence.FetchType.LAZY;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "documents")
+@Table(name = "document")
 public class DocumentEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -33,6 +34,7 @@ public class DocumentEntity {
 
     @ManyToOne(fetch = LAZY)
     @JoinColumn(name = "case_id", referencedColumnName = "id")
+    @JsonBackReference
     private PcsCaseEntity pcsCase;
 
     @Column(name = "file_name")

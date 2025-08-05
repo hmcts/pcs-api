@@ -4,9 +4,17 @@ import lombok.Builder;
 import lombok.Data;
 import uk.gov.hmcts.ccd.sdk.External;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
-import uk.gov.hmcts.ccd.sdk.type.*;
+import uk.gov.hmcts.ccd.sdk.type.AddressUK;
+import uk.gov.hmcts.ccd.sdk.type.Document;
+import uk.gov.hmcts.ccd.sdk.type.ListValue;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.ccd.sdk.type.ComponentLauncher;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseworkerAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenAccess;
+
+import java.util.List;
+
+import static uk.gov.hmcts.ccd.sdk.type.FieldType.Collection;
 
 /**
  * The main domain model representing a possessions case.
@@ -74,9 +82,11 @@ public class PCSCase {
 
     @CCD(
         label = "Supporting documents",
+        typeOverride = Collection,
+        typeParameterOverride = "Document",
         access = {CitizenAccess.class, CaseworkerAccess.class}
     )
-    private ListValue<Document> supportingDocuments;
+    private List<ListValue<Document>> supportingDocuments;
 
     @CCD(
         label = "Case file view",

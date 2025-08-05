@@ -7,6 +7,7 @@ import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
@@ -93,6 +94,18 @@ public class PcsCaseService {
         party.setSurname(userDetails.getFamilyName());
         party.setActive(true);
         return party;
+    }
+
+    public void addDocumentToCase(long caseReference, String fileName, String filePath) {
+        PcsCaseEntity pcsCaseEntity = pcsCaseRepository.findByCaseReference(caseReference)
+            .orElseThrow(() -> new CaseNotFoundException(caseReference));
+
+        DocumentEntity document = new DocumentEntity();
+        document.setFileName(fileName);
+        document.setFilePath(filePath);
+
+        pcsCaseEntity.addDocument(document);
+        pcsCaseRepository.save(pcsCaseEntity);
     }
 
 }

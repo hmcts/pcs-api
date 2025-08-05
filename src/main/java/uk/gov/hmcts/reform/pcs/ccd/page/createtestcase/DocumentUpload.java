@@ -10,6 +10,12 @@ public class DocumentUpload implements CcdPageConfiguration {
         pageBuilder
                 .page("Document Upload")
                 .pageLabel("Upload supporting documents")
+                .label("uploadLimits", """
+                    Documents should be:
+                    * uploaded separately, not as one large file
+                    * a maximum of 100MB in size (larger files must be split)
+                    * clearly labelled, e.g. applicant-name-evidence.pdf
+                    """)
                 .mandatory(PCSCase::getSupportingDocuments);
     }
 }

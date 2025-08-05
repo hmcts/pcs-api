@@ -63,6 +63,11 @@ public class PcsCaseEntity {
     }
 
     @OneToMany(mappedBy = "pcsCase", fetch = LAZY, cascade = ALL)
-    private DocumentEntity document;
+    @JsonManagedReference
+    private Set<DocumentEntity> documents = new HashSet<>();
 
+    public void addDocument(DocumentEntity document) {
+        documents.add(document);
+        document.setPcsCase(this);
+    }
 }
