@@ -4,7 +4,7 @@ import uk.gov.hmcts.rse.CftlibExec
 
 buildscript {
   ext {
-    flywayVersion = '11.10.4'
+    flywayVersion = '11.10.5'
     serenityBddVersion = '4.2.33'
   }
   dependencies {
@@ -326,7 +326,7 @@ dependencies {
   implementation group: 'org.modelmapper', name: 'modelmapper', version: '3.2.4'
 
   implementation group: 'com.github.hmcts.java-logging', name: 'logging', version: '6.1.9'
-  implementation group: 'com.github.hmcts', name: 'core-case-data-store-client', version: '5.1.1'
+  implementation group: 'com.github.hmcts', name: 'core-case-data-store-client', version: '5.2.0'
   implementation group: 'com.github.hmcts', name: 'idam-java-client', version: '3.0.4'
 
   implementation group: 'org.apache.logging.log4j', name: 'log4j-api', version: log4JVersion
