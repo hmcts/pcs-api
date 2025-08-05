@@ -71,7 +71,7 @@ def validateInputs() {
   if (params.ENVIRONMENT == 'preview' && (!params.PR_NUMBER?.trim())) {
     error("Validation Failed: PR number is required when environment is 'preview'")
   }
-  if (!params.PR_NUMBER.trim().matches("^\\d+\$")) {
+  if (params.ENVIRONMENT == 'preview' && !params.PR_NUMBER.trim().matches("^\\d+\$")) {
     error("Validation Failed: PR number must contain only numerical values")
   }
 }
