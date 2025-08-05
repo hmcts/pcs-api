@@ -19,8 +19,8 @@ public class MakeAClaim implements CcdPageConfiguration {
             .pageLabel("What is the address of the property you're claiming possession of?")
             .label("lineSeparator", "---")
             .mandatory(PCSCase::getPropertyAddress)
-            .complex(PCSCase::getOrganisationPolicy)
-                .complex(OrganisationPolicy::getOrganisation)
+            .complex(PCSCase::getOrganisationPolicy, ShowConditions.NEVER_SHOW)
+                .complex(OrganisationPolicy::getOrganisation, ShowConditions.NEVER_SHOW)
                 .readonly(Organisation::getOrganisationName, ShowConditions.NEVER_SHOW)
                 .done()
             .done();
@@ -30,8 +30,7 @@ public class MakeAClaim implements CcdPageConfiguration {
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
                                                                   CaseDetails<PCSCase, State> detailsBefore) {
 
-        details.getData().setShortenedName(details.getData().getOrganisationPolicy()
-            .getOrganisation().getOrganisationName());
+        details.getData().setShortenedName("testshortenedname");
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder().build();
     }
