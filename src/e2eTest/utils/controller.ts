@@ -16,11 +16,8 @@ type ValidationStep = {
   data: validationData;
 };
 
-type ActionTuple =
-  | [string, string]
-  | [string, string, string | number | boolean | string[] | object];
-
-type ValidationTuple = [string, string, validationData];
+type ActionTuple = [string, string] | [string, string, string | number | boolean | string[] | object];
+type ValidationTuple = [string, string, validationData] | [string, string];
 
 class Controller {
   private page: Page;
@@ -171,7 +168,9 @@ export async function performValidationGroup(
 
 export async function performValidations(
   groupName: string,
-  ...validations: ValidationTuple[]
+
+  ...validations: ([string, string, validationData] | [string, string])[]
+
 ): Promise<void> {
   if (!testExecutor) {
     throw new Error('Test executor not initialized. Call initializeExecutor(page) first.');
