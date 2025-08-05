@@ -6,18 +6,13 @@ export const createCase =
       jurisdiction:
         {
           possessions: 'Possessions'
-         },
-
+        },
       caseType:
         {
-          civilPossessions:'Civil Possessions 407'
+          civilPossessions: process.env.CHANGE_ID
+            ? `Civil Possessions ${process.env.CHANGE_ID}`
+            : 'Civil Possessions'
         },
-      // caseType:
-      //   {
-      //     civilPossessions: process.env.CHANGE_ID
-      //       ? `Civil Possessions ${process.env.CHANGE_ID}`
-      //       : 'Civil Possessions'
-      //   },
       event:
         {
           makeAPossessionClaim: 'Make a claim'
