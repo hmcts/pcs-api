@@ -18,13 +18,6 @@ public class ClaimantInformation implements CcdPageConfiguration {
             .label("OrganisationQuestionTest3", "After shortened Name")
             .mandatory(PCSCase::getYesOrNo)
             .done();
-        // .complex(PCSCase::getOrganisationPolicy)
-        //  .complex(OrganisationPolicy::getOrganisation)
-        //  .optional(Organisation::getOrganisationName)
-        //      .done()
-        //  .done()
-        //  .mandatory(PCSCase::getYesOrNo);
-
 
         //readonly , reference field, show condititon
     }
