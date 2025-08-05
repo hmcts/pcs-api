@@ -57,9 +57,13 @@ withNightlyPipeline(type, product, component) {
   enableSlackNotifications('#pcs-tech')
   loadVaultSecrets(secrets)
   handleEnvironmentSetting()
-  afterAlways('DependencyCheckNightly') {
-    runE2eTests()
-    publishE2EReport()
+    afterSuccess('fortify-scan') {
+      steps.archiveArtifacts allowEmptyArchive: true,
+        artifacts: '**/Fortify Scan/**/*'
+    }
+    afterAlways('FortifyScan') {
+      runE2eTests()
+      publishE2EReport()
   }
 }
 
