@@ -6,17 +6,12 @@ export const caseOptions = {
         {
             posessions: 'Possessions'
         },
-   /* caseType:
+    caseType:
         {
             civilPosessions: process.env.CHANGE_ID
                 ? `Civil Possessions ${process.env.CHANGE_ID}`
                 : 'Civil Possessions'
-        },*/
-  caseType:
-    {
-      civilPosessions:
-         'Civil Possessions 405'
-    },
+        },
     event:
         {
             makeAPosessionClaim: 'Make a claim'

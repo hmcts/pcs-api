@@ -46,9 +46,6 @@ withPipeline(type, product, component) {
     setPreviewEnvVars()
     if (githubApi.getLabelsbyPattern(env.BRANCH_NAME, "pr-values:ccd").size() > 0) {
       enableHighLevelDataSetup()
-      afterSuccess('smoketest:preview') {
-            runE2eTests(env.ENVIRONMENT)
-          }
     }
   }
 
@@ -75,7 +72,7 @@ withPipeline(type, product, component) {
   before('highleveldatasetup') {
     onPR{
       env.DEFINITION_STORE_URL_BASE = "https://ccd-definition-store-pcs-api-pr-${CHANGE_ID}.preview.platform.hmcts.net"
-      env.CASE_API_URL = "https://pcs-api-pr-405.preview.platform.hmcts.net"
+      env.CASE_API_URL = "https://pcs-api-pr-${CHANGE_ID}.preview.platform.hmcts.net"
       env.DATA_STORE_URL_BASE="https://ccd-data-store-api-pcs-api-pr-${CHANGE_ID}.preview.platform.hmcts.net"
     }
     generateDefinitions(builder)
