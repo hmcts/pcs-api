@@ -92,9 +92,9 @@ Playwright 1.30+ | TypeScript 4.9+
 | attribute          | `performValidation('attribute', 'testElement', 'attributeName')`             |
 | bannerAlert        | `performValidation('bannerAlert', {message: "Case has been created."})`      |
 | formLabelValue     | `performValidation('formLabelValue',  "Applicant's forename", {value:'TestUser'})` |
-| validateOptionList | `performValidation('validateOptionList', "")`                                |
 | mainHeader         | `performValidation('mainHeader', {expected: createCase.mainHeader})`                                        |
 | errorMessage       | `performValidation('errorMessage', {header: claimantType.errorMessage.header,errorHasLink: claimantType.errorMessage.errorMessage})`|
+| optionList      | `performValidation('optionList', ...)` |
 ### Basic Test
 
 ```typescript
