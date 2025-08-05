@@ -88,6 +88,7 @@ public class PCSCase {
     @CCD(typeOverride = FieldType.Email)
     private String claimantContactEmail;
 
+    @CCD(label = "Do you want to use this email address for notifications?")
     private VerticalYesNo isCorrectClaimantContactEmail;
 
     @CCD(label = "Enter email address", typeOverride = FieldType.Email)
@@ -97,11 +98,13 @@ public class PCSCase {
 
     private String formattedClaimantContactAddress;
 
+    @CCD(label = "Do you want documents to be sent to this address?")
     private VerticalYesNo isCorrectClaimantContactAddress;
 
     @CCD(label = "Enter address details")
     private AddressUK overriddenClaimantContactAddress;
 
+    @CCD(label = "Do you want to provide a contact phone number? (Optional)")
     private VerticalYesNo claimantProvidePhoneNumber;
 
     @CCD(label = "Enter phone number", typeOverride = FieldType.PhoneUK)

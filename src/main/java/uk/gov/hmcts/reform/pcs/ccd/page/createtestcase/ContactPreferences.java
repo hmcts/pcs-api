@@ -13,7 +13,7 @@ public class ContactPreferences implements CcdPageConfiguration {
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
             .page("contactPreferences")
-            .pageLabel("Contact Preferences")
+            .pageLabel("Contact preferences")
 
             // Email section
             .readonly(PCSCase::getClaimantContactEmail, NEVER_SHOW)
@@ -27,14 +27,9 @@ public class ContactPreferences implements CcdPageConfiguration {
                   <h3 class="govuk-heading-m govuk-!-margin-top-1 govuk-!-margin-bottom-1">
                     Your My HMCTS registered email address is:
                 </h3>
-                <p class="govuk-body-s govuk-!-margin-top-1 govuk-!-margin-bottom-1">
+                <p class="govuk-body-s govuk-!-margin-top-1">
                     ${claimantContactEmail}
                 </p>
-                """)
-            .label("contactPreferences-email-question", """
-                <h3 class="govuk-heading-m govuk-!-margin-top-1 govuk-!-margin-bottom-1">
-                    Do you want to use this email address for notifications?
-                </h3>
                 """)
             .mandatory(PCSCase::getIsCorrectClaimantContactEmail)
             .mandatory(PCSCase::getOverriddenClaimantContactEmail, "isCorrectClaimantContactEmail=\"NO\"")
@@ -55,14 +50,9 @@ public class ContactPreferences implements CcdPageConfiguration {
                 <h3 class="govuk-heading-m govuk-!-margin-bottom-1">
                     Your My HMCTS registered address is:
                 </h3>
-                <p class="govuk-body-s govuk-!-margin-top-1 govuk-!-margin-bottom-1">
+                <p class="govuk-body-s govuk-!-margin-top-1">
                     ${formattedClaimantContactAddress}
                 </p>
-                """)
-            .label("contactPreferences-address-question", """
-                <h3 class="govuk-heading-m govuk-!-margin-top-1 govuk-!-margin-bottom-1">
-                    Do you want documents to be sent to this address?
-                </h3>
                 """)
             .mandatory(PCSCase::getIsCorrectClaimantContactAddress)
             .mandatory(PCSCase::getOverriddenClaimantContactAddress, "isCorrectClaimantContactAddress=\"NO\"")
@@ -71,12 +61,9 @@ public class ContactPreferences implements CcdPageConfiguration {
             .label("contactPreferences-phoneNumber-question", """
                 ----
                 <h2 class="govuk-heading-m">Contact phone number</h2>
-                <p class="govuk-body-m govuk-!-margin-bottom-1">
+                <p class="govuk-body-m ">
                     You should provide a phone number so we can contact you if there are urgent updates.
                 </p>
-                <h3 class="govuk-heading-m govuk-!-margin-top-1 govuk-!-margin-bottom-1">
-                    Do you want to provide a contact phone number?(Optional)
-                </h3>
                 """)
             .mandatory(PCSCase::getClaimantProvidePhoneNumber)
             .mandatory(PCSCase::getClaimantContactPhoneNumber, "claimantProvidePhoneNumber=\"YES\"")
