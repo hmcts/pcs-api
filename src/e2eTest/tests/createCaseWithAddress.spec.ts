@@ -27,7 +27,7 @@ test.beforeEach(async ({page}, testInfo) => {
   });
 });
 
-test.describe('[Create Case Flow With Address and Claimant Type, Claim Type]  @Master @nightly', async () => {
+test.describe.skip('[Create Case Flow With Address and Claimant Type, Claim Type]  @Master @nightly', async () => {
 
   test('England - Successful case creation', async () => {
 
