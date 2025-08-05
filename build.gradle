@@ -439,6 +439,7 @@ tasks.withType(CftlibExec).configureEach {
   environment 'SPRING_FLYWAY_ENABLED', 'true'
   environment 'SPRING_PROFILES_ACTIVE', 'dev'
   environment 'XUI_JURISDICTIONS', 'PCS'
+  environment 'XUI_DOCUMENTS_API_V2', 'http://ccd-case-document-am-api-aat.service.core-compute-aat.internal'
 }
 
 tasks.register('highLevelDataSetup', JavaExec) {
