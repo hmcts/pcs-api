@@ -21,7 +21,7 @@ public class MakeAClaim implements CcdPageConfiguration {
             .mandatory(PCSCase::getPropertyAddress)
             .complex(PCSCase::getOrganisationPolicy, ShowConditions.NEVER_SHOW)
                 .complex(OrganisationPolicy::getOrganisation, ShowConditions.NEVER_SHOW)
-                .readonly(Organisation::getOrganisationName, ShowConditions.NEVER_SHOW)
+                .readonly(Organisation::getOrganisationName)
                 .done()
             .done();
 
