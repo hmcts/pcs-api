@@ -10,9 +10,6 @@ import { LoginAction } from "../actions/custom-actions/login.action";
 import { navigateToUrl } from "@utils/actions/custom-actions/navigateToUrl.action";
 import {ClickRadioButton} from "@utils/actions/element-actions/clickRadioButton.action";
 import { CreateCaseAction } from "@utils/actions/custom-actions/createCase.action";
-import Axios, {AxiosInstance, AxiosResponse} from 'axios';
-
-
 export class ActionRegistry {
   private static actions: Map<string, IAction> = new Map([
     ['clickButton', new ClickButtonAction()],
@@ -25,9 +22,7 @@ export class ActionRegistry {
     ['login', new LoginAction()],
     ['navigateToUrl', new navigateToUrl()],
     ['clickRadioButton', new ClickRadioButton()],
-    ['createCase', new CreateCaseAction(Axios.create())]
-  ]);
-
+    ['createCase', new CreateCaseAction()]]);
 
   static getAction(actionName: string): IAction {
     const action = this.actions.get(actionName);

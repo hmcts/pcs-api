@@ -1,5 +1,5 @@
-import {Page, expect, Locator} from '@playwright/test';
-import {IValidation, validationData} from '../../interfaces/validation.interface';
+import { Page, expect, Locator } from '@playwright/test';
+import { IValidation, validationData } from '../../interfaces/validation.interface';
 
 export class FormLabelValueValidation implements IValidation {
   async validate(page: Page, fieldName: string, data?: validationData): Promise<void> {
