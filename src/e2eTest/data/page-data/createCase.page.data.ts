@@ -1,7 +1,7 @@
 
 export const caseOptions = {
-    title: 'Case Options',
-    mainHeader: 'some header',
+    title: 'Create a case - HM Courts & Tribunals Service - GOV.UK',
+    mainHeader: 'Create Case',
     jurisdiction:
         {
             posessions: 'Possessions'
