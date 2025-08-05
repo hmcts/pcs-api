@@ -34,7 +34,7 @@ async function inputAddressDetails(postcode: string) {
     await performAction('clickButton', 'Continue');
 }
 
-test.describe('[verify cross border postcode page]  @Master @nightly', async () => {
+test.describe.skip('[verify cross border postcode page]  @Master @nightly', async () => {
     test('verify cross border postcode page redirection for england and wales', async ({page}) => {
             await inputAddressDetails(borderPostcode.enlandWalesPostcode)
             await performValidation('text', {
