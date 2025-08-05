@@ -33,7 +33,12 @@ def secrets = [
 withNightlyPipeline(type, product, component) {
     enableSlackNotifications('#pcs-tech')
     loadVaultSecrets(secrets)
-    afterAlways('DependencyCheckNightly') {
+    enableFortifyScan()
+    afterSuccess('fortify-scan') {
+      steps.archiveArtifacts allowEmptyArchive: true,
+        artifacts: '**/Fortify Scan/**/*'
+    }
+    afterAlways('FortifyScan') {
     env.MANAGE_CASE_BASE_URL = "https://manage-case.aat.platform.hmcts.net/"
     runE2ETestsForBrowser('Chrome')
   }
