@@ -4,7 +4,6 @@ import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.Organisation;
 import uk.gov.hmcts.ccd.sdk.type.OrganisationPolicy;
-import uk.gov.hmcts.reform.pcs.ccd.ShowConditions;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
@@ -44,7 +43,7 @@ public class MakeAClaim implements CcdPageConfiguration {
         PCSCase casePatch = details.getData();
         pcsCaseService.patchCase(caseReference, casePatch);
 
-//        details.getData().setShortenedName("testshortenedname");
+        //        details.getData().setShortenedName("testshortenedname");
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder().build();
     }

@@ -1,6 +1,5 @@
 package uk.gov.hmcts.reform.pcs.ccd.event;
 
-import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CCDConfig;
 import uk.gov.hmcts.ccd.sdk.api.ConfigBuilder;
@@ -52,7 +51,7 @@ public class CreateTestCase implements CCDConfig<PCSCase, State, UserRole> {
         OrganisationPolicy organisationPolicy = new OrganisationPolicy();
         organisationPolicy.setPrepopulateToUsersOrganisation(YesOrNo.YES);
         caseData.setOrganisationPolicy(organisationPolicy);
-//        caseReference = eventPayload.caseReference();
+        //        caseReference = eventPayload.caseReference();
 
         //caseData.setShortenedName(caseData.getOrganisationPolicy().getOrganisation()
         //    .getOrganisationName().toUpperCase());
