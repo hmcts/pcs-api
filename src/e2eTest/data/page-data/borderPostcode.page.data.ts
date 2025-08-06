@@ -8,8 +8,8 @@ export const borderPostcode = {
     cancelLink: "Cancel",
     englandScotlandParagraphContent: "Your postcode includes properties in England and Scotland. We need to know which country your property is in, as the law is different in each country.",
     englandScotlandInlineContent: "Is the property located in England or Scotland?",
-    enlandWalesPostcode: "SY132LH",
-    enlandScotlandPostcode: "TD151",
+    englandWalesPostcode: "SY132LH",
+    englandScotlandPostcode: "TD151",
     elementType:'radio',
     countryOptions:
         {
