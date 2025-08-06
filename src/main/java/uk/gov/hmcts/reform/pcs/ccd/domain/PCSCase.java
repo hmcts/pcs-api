@@ -82,6 +82,28 @@ public class PCSCase {
     )
     private YesOrNo groundsForPossession;
 
+    @CCD(
+        access = {CitizenAccess.class, CaseworkerAccess.class}
+    )
+    private VerticalYesNo mediation;
+
+    @CCD(
+        label = "Give details about the attempted mediation and what the outcome was",
+        access = {CitizenAccess.class, CaseworkerAccess.class}
+    )
+    private String mediationDetails;
+
+    @CCD(
+        access = {CitizenAccess.class, CaseworkerAccess.class}
+    )
+    private VerticalYesNo settlement;
+
+    @CCD(
+        label = "Explain what steps you've taken to reach a settlement",
+        access = {CitizenAccess.class, CaseworkerAccess.class}
+    )
+    private String settlementDetails;
+
     private String pageHeadingMarkdown;
 
     private String claimPaymentTabMarkdown;
