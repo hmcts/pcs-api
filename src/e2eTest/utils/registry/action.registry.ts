@@ -1,5 +1,4 @@
 import { IAction } from '../interfaces/action.interface';
-import { ClickAction } from '../actions/element-actions/click.action';
 import { ClickTabAction } from '../actions/element-actions/clickTab.action';
 import { InputTextAction } from '../actions/element-actions/inputText.action';
 import { ClearAction } from '../actions/element-actions/clear.action';
@@ -13,7 +12,6 @@ import { ClickButtonAction } from "../actions/element-actions/clickButton.action
 import { ClickRadioButton } from "../actions/element-actions/clickRadioButton.action";
 export class ActionRegistry {
   private static actions: Map<string, IAction> = new Map([
-    ['click', new ClickAction()],
     ['clickButton', new ClickButtonAction()],
     ['clickTab', new ClickTabAction()],
     ['inputText', new InputTextAction()],
