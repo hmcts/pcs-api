@@ -16,7 +16,6 @@ test.beforeEach(async ({ page }, testInfo) => {
   await parentSuite('Case Creation');
   await performAction('navigateToUrl',configData.manageCasesBaseURL);
   await performAction('createUserAndLogin', ['citizen','caseworker-pcs']);
-
   await testInfo.attach('Page URL', {
     body: page.url(),
     contentType: 'text/plain',
