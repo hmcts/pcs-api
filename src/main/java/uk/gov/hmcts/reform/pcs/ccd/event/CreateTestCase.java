@@ -21,11 +21,16 @@ import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.createTestApplication;
 
 @Component
-@AllArgsConstructor
 public class CreateTestCase implements CCDConfig<PCSCase, State, UserRole> {
 
     private final PcsCaseService pcsCaseService;
     private ClaimantInformation claimantInformationPage;
+    private long caseReference;
+
+    public CreateTestCase(PcsCaseService pcsCaseService, ClaimantInformation claimantInformationPage) {
+        this.pcsCaseService = pcsCaseService;
+        this.claimantInformationPage = claimantInformationPage;
+    }
 
     @Override
     public void configure(ConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -38,8 +43,8 @@ public class CreateTestCase implements CCDConfig<PCSCase, State, UserRole> {
                 .grant(Permission.CRUD, UserRole.PCS_CASE_WORKER);
 
         new PageBuilder(eventBuilder)
-            .add(new MakeAClaim());
-        //  .add(claimantInformationPage);
+            .add(new MakeAClaim(pcsCaseService, caseReference))
+            .add(claimantInformationPage);
     }
 
     private PCSCase start(EventPayload<PCSCase, State> eventPayload) {
@@ -47,6 +52,7 @@ public class CreateTestCase implements CCDConfig<PCSCase, State, UserRole> {
         OrganisationPolicy organisationPolicy = new OrganisationPolicy();
         organisationPolicy.setPrepopulateToUsersOrganisation(YesOrNo.YES);
         caseData.setOrganisationPolicy(organisationPolicy);
+//        caseReference = eventPayload.caseReference();
 
         //caseData.setShortenedName(caseData.getOrganisationPolicy().getOrganisation()
         //    .getOrganisationName().toUpperCase());
