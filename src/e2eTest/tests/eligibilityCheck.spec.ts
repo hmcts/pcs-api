@@ -1,13 +1,13 @@
 import {test} from '@playwright/test';
 import {parentSuite} from 'allure-js-commons';
 import {initializeExecutor, performAction, performActions, performValidation} from '@utils/controller';
-import {borderPostcode} from "../data/page-data/borderPostcode.page.data";
+import {borderPostcode} from "@data/page-data/borderPostcode.page.data";
 import configData from "@config/test.config";
 import {caseOptions} from "@data/page-data/createCase.page.data";
 import {addressDetails} from "@data/page-data/addressDetails.page.data";
 import {applicantDetails} from "@data/page-data/ApplicantDetails.page.data";
 
-test.beforeEach(async ({page}, testInfo) => {
+test.beforeEach(async ({page}) => {
   initializeExecutor(page);
   await parentSuite('Eligibility Check');
   await performAction('navigateToUrl', configData.manageCasesBaseURL);
@@ -40,8 +40,8 @@ async function selectCountryRadioBtn(country: string) {
   await performAction('clickButton', borderPostcode.continueBtn);
 }
 
-test.describe('[verify cross border postcode page]  @Master @nightly', async () => {
-  test('verify cross border postcode page redirection for england and wales', async ({page}) => {
+test.describe('[Eligibility Checks for Cross border postcodes]  @Master @nightly', async () => {
+  test('verify cross border postcode eligibility check redirection and content for england&wales countries, ', async ({page}) => {
       await inputAddressDetails(borderPostcode.englandWalesPostcode)
       await performValidation('text', {
         "text": borderPostcode.borderPostcodeHeader,
@@ -62,7 +62,7 @@ test.describe('[verify cross border postcode page]  @Master @nightly', async () 
     }
   );
 
-  test('verify cross border postcode page for england and wales content', async () => {
+  test('verify content for cross border postcode page when postcode is in England&Wales', async () => {
       await inputAddressDetails(borderPostcode.englandWalesPostcode)
       await performValidation('text', {
         "text": borderPostcode.borderPostcodeHeader,
@@ -82,7 +82,7 @@ test.describe('[verify cross border postcode page]  @Master @nightly', async () 
   );
 
 
-  test('verify cross border postcode page redirection for england and scotland', async ({page}) => {
+  test('verify cross border postcode eligibility check redirection and content for england&scotland countries', async ({page}) => {
       await inputAddressDetails(borderPostcode.englandScotlandPostcode)
       await performValidation('text', {
         "text": borderPostcode.borderPostcodeHeader,
@@ -103,7 +103,7 @@ test.describe('[verify cross border postcode page]  @Master @nightly', async () 
     }
   );
 
-  test('verify cross border postcode page for england and scotland content', async () => {
+  test('verify content for cross border postcode page when postcode is in England&Scotland', async () => {
     await inputAddressDetails(borderPostcode.englandScotlandPostcode)
     await performValidation('text', {
       "text": borderPostcode.borderPostcodeHeader,
