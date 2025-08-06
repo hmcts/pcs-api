@@ -10,7 +10,7 @@ test.beforeEach(async ({page}, testInfo) => {
     initializeExecutor(page);
     await parentSuite('Case Creation');
     await performAction('navigateToUrl', configData.manageCasesBaseURL);
-    await performAction('login', 'exuiUser');
+    await performAction('createUserAndLogin', ['citizen','caseworker-pcs']);
     await performAction('clickButton', 'Create case');
     await selectJurisdictionCaseTypeEvent()
 });

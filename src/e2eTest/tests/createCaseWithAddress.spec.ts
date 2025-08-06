@@ -15,7 +15,7 @@ test.beforeEach(async ({ page }, testInfo) => {
   initializeExecutor(page);
   await parentSuite('Case Creation');
   await performAction('navigateToUrl',configData.manageCasesBaseURL);
-  await performAction('login', 'exuiUser');
+  await performAction('createUserAndLogin', ['citizen','caseworker-pcs']);
 
   await testInfo.attach('Page URL', {
     body: page.url(),
@@ -23,7 +23,7 @@ test.beforeEach(async ({ page }, testInfo) => {
   });
 });
 
-test.describe.skip('[Create Case Flow With Address]  @Master @nightly', async () => {
+test.describe('[Create Case Flow With Address]  @Master @nightly', async () => {
 
   test('Dropdown Address Selection Flow - should create case sucessfully', async () => {
     await performAction('click','Create case');
