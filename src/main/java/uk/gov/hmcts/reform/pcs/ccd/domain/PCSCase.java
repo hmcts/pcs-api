@@ -9,6 +9,7 @@ import uk.gov.hmcts.ccd.sdk.type.OrganisationPolicy;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseworkerAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenAccess;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 
 /**
  * The main domain model representing a possessions case.
@@ -76,7 +77,7 @@ public class PCSCase {
     private String claimPaymentTabMarkdown;
 
     @CCD()
-    private OrganisationPolicy organisationPolicy;
+    private OrganisationPolicy<UserRole> organisationPolicy;
 
     @CCD()
     private YesOrNo yesOrNo;

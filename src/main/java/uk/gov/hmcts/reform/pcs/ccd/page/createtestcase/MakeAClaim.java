@@ -26,25 +26,19 @@ public class MakeAClaim implements CcdPageConfiguration {
             .page("Make a claim", this::midEvent)
             .pageLabel("What is the address of the property you're claiming possession of?")
             .label("lineSeparator", "---")
-            .mandatory(PCSCase::getPropertyAddress)
+            .optional(PCSCase::getPropertyAddress)
             .complex(PCSCase::getOrganisationPolicy)
                 .complex(OrganisationPolicy::getOrganisation)
                 .readonly(Organisation::getOrganisationName)
-
-                .done()
-            .done();
+                .done();
 
     }
 
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
                                                                   CaseDetails<PCSCase, State> detailsBefore) {
 
-        details.getData().setShortenedName("testshortenedanme");
-        PCSCase casePatch = details.getData();
-        pcsCaseService.patchCase(caseReference, casePatch);
-
-        //        details.getData().setShortenedName("testshortenedname");
-
-        return AboutToStartOrSubmitResponse.<PCSCase, State>builder().build();
+        PCSCase mycase =  details.getData();
+        mycase.setShortenedName(mycase.getOrganisationPolicy().getOrganisation().getOrganisationName());
+        return AboutToStartOrSubmitResponse.<PCSCase, State>builder().data(mycase).build();
     }
 }

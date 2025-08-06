@@ -48,7 +48,7 @@ public class CreateTestCase implements CCDConfig<PCSCase, State, UserRole> {
 
     private PCSCase start(EventPayload<PCSCase, State> eventPayload) {
         PCSCase caseData = eventPayload.caseData();
-        OrganisationPolicy organisationPolicy = new OrganisationPolicy();
+        OrganisationPolicy<UserRole> organisationPolicy = new OrganisationPolicy<UserRole>();
         organisationPolicy.setPrepopulateToUsersOrganisation(YesOrNo.YES);
         caseData.setOrganisationPolicy(organisationPolicy);
         //        caseReference = eventPayload.caseReference();
