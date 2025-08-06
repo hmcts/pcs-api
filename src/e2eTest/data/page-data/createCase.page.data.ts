@@ -12,7 +12,7 @@ export const caseOptions = {
               : 'Civil Possessions'
       },*/
   caseType: {
-    civilPosessions: 412
+    civilPosessions: 'Civil Possessions 412'
   },
   event:
     {
