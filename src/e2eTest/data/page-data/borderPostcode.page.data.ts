@@ -10,5 +10,11 @@ export const borderPostcode = {
     englandScotlandInlineContent: "Is the property located in England or Scotland?",
     enlandWalesPostcode: "SY132LH",
     enlandScotlandPostcode: "TD151",
-
+    elementType:'radio',
+    countryOptions:
+        {
+            england: 'England',
+            wales: 'Wales',
+            scotland: 'Scotland',
+        }
 };

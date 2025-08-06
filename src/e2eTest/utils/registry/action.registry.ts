@@ -10,6 +10,7 @@ import { LoginAction } from "../actions/custom-actions/login.action";
 import { navigateToUrl } from "@utils/actions/custom-actions/navigateToUrl.action";
 import { CreateCaseAction } from "@utils/actions/custom-actions/createCase.action";
 import { ClickButtonAction } from "../actions/element-actions/clickButton.action";
+import { ClickRadioButton } from "../actions/element-actions/clickRadioButton.action";
 export class ActionRegistry {
   private static actions: Map<string, IAction> = new Map([
     ['click', new ClickAction()],
@@ -22,7 +23,9 @@ export class ActionRegistry {
     ['doubleClick', new DoubleClickAction()],
     ['login', new LoginAction()],
     ['navigateToUrl', new navigateToUrl()],
-    ['createCase', new CreateCaseAction()]]);
+    ['createCase', new CreateCaseAction()],
+    ['clickRadioButton', new ClickRadioButton()]
+  ]);
 
   static getAction(actionName: string): IAction {
     const action = this.actions.get(actionName);
