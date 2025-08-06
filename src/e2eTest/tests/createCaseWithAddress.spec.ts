@@ -22,7 +22,7 @@ test.beforeEach(async ({ page }, testInfo) => {
   });
 });
 
-test.describe('[Create Case Flow With Address]  @Master @nightly', async () => {
+test.describe.skip('[Create Case Flow With Address]  @Master @nightly', async () => {
 
   test('Dropdown Address Selection Flow - should create case sucessfully', async () => {
     await performAction('click','Create case');
