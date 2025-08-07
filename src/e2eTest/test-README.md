@@ -66,23 +66,24 @@ Playwright 1.30+ | TypeScript 4.9+
 ## 4. Available Actions and Validations
 
 ### Actions
-| Action          | Example Usage |
-|------------------|---------------|
-| inputText     | `performAction('inputText', 'Email', 'test@example.com')` |
-| check         | `performAction('check', 'RememberMe')`                    |
-| login         | `performAction('login', 'citizen')`                       |
-| navigateToUrl | `performAction('navigateToUrl', 'testUrl')`               |
-| clickTab      | `performAction('clickTab', 'tabName')`                    |
-| clear         | `performAction('clear', 'fieldName')`                     |
-| select        | `performAction('select', 'dropdownName', 'option')`       |
-| doubleClick   | `performAction('doubleClick', 'buttonName')`              |
-| createCase    | `performAction('createCase', 'data: caseData')`           |
-| clickButton     | `performAction('clickButton', 'buttonName)`               |
-| clickRadioButton | `performAction('clickRadioButton', 'radioButtonName')`    |
-| selectLegislativeCountry | `performAction('selectLegislativeCountry', ...)` |
-| selectClaimantType | `performAction('selectClaimantType', ...)` |
-| selectAddress   | `performAction('selectAddress', ...)` |
-| selectCaseOptions | `performAction('selectCaseOptions', ...)` |
+| Action          | Example Usage                                                                                                                                                                       |
+|------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| inputText     | `performAction('inputText', 'Email', 'test@example.com')`                                                                                                                           |
+| check         | `performAction('check', 'RememberMe')`                                                                                                                                              |
+| login         | `performAction('login', 'citizen')`                                                                                                                                                 |
+| navigateToUrl | `performAction('navigateToUrl', 'testUrl')`                                                                                                                                         |
+| clickTab      | `performAction('clickTab', 'tabName')`                                                                                                                                              |
+| clear         | `performAction('clear', 'fieldName')`                                                                                                                                               |
+| select        | `performAction('select', 'dropdownName', 'option')`                                                                                                                                 |
+| doubleClick   | `performAction('doubleClick', 'buttonName')`                                                                                                                                        |
+| createCase    | `performAction('createCase', 'data: caseData')`                                                                                                                                     |
+| clickButton     | `performAction('clickButton', 'buttonName)`                                                                                                                                         |
+| clickRadioButton | `performAction('clickRadioButton', 'radioButtonName')`                                                                                                                              |
+| selectLegislativeCountry | `performAction('selectLegislativeCountry', {country: data.country})`                                                                                                                |
+| selectClaimantType | `performAction('selectClaimantType', {claimantType : pathToDataFile.claimantTypeOption})`                                                                                           |
+| selectAddress   | `performAction('selectAddress',{postcode: pathToDataFile.englandPostcode,addressIndex: pathToDataFile.addressIndex} )`                                                              |
+| selectCaseOptions | `performAction('selectCaseOptions', {jurisdiction: pathToDataFile.possessions, caseType: pathToDataFile.civilPossessions, event: createCase.pathToDataFile.makeAPossessionClaim}})` |
+| enterAddress    | `performAction('enterAddress',{BuildingAndStreet: pathToDataFile.BuildingAndStreet,addressLine2: addressDetails.pathToDataFile.addressLine2,addressLine3: pathToDataFile.addressLine3,TownOrCity: pathToDataFile.TownOrCity,walesCounty: pathToDataFile.walesCounty,postcode: pathToDataFile.walesPostcode,country: pathToDataFile.country})`                                                                                                                                                 |
 ### Validations
 | Validation          | Example Usage |
 |------------------|---------------|

@@ -3,7 +3,6 @@ import {parentSuite} from 'allure-js-commons';
 import {
   initializeExecutor,
   performAction,
-  performActions,
   performValidation, performValidations,
 } from '@utils/controller';
 import configData from "@config/test.config";
@@ -11,7 +10,6 @@ import {createCase} from "@data/page-data/createCase.page.data";
 import {addressDetails} from "@data/page-data/addressDetails.page.data";
 import {claimantType} from "@data/page-data/claimantType.page.data";
 import {legislativeCountry} from "@data/page-data/legislativeCountry.page.data";
-
 
 test.beforeEach(async ({page}, testInfo) => {
   initializeExecutor(page);
@@ -60,16 +58,14 @@ test.describe('[Create Case Flow With Address and Claimant Type]  @Master @night
       , caseType: createCase.caseOption.caseType.civilPossessions
       , event: createCase.caseOption.event.makeAPossessionClaim
     });
-    await performActions('Enter Address Manually'
-      , ['clickButton', "I can't enter a UK postcode"]
-      , ['inputText', 'Building and Street', addressDetails.propertyAddressSection.BuildingAndStreet]
-      , ['inputText', 'Address Line 2', addressDetails.propertyAddressSection.addressLine2]
-      , ['inputText', 'Address Line 3', addressDetails.propertyAddressSection.addressLine3]
-      , ['inputText', 'Town or City', addressDetails.propertyAddressSection.TownOrCity]
-      , ['inputText', 'County', addressDetails.propertyAddressSection.walesCounty]
-      , ['inputText', 'Postcode/Zipcode', addressDetails.propertyAddressSection.walesPostcode]
-      , ['inputText', 'Country', addressDetails.propertyAddressSection.country]);
-    await performAction('clickButton', 'Continue');
+    await performAction('enterAddress', {BuildingAndStreet: addressDetails.propertyAddressSection.BuildingAndStreet
+      ,addressLine2: addressDetails.propertyAddressSection.addressLine2
+      ,addressLine3: addressDetails.propertyAddressSection.addressLine3
+      ,TownOrCity: addressDetails.propertyAddressSection.TownOrCity
+      ,walesCounty: addressDetails.propertyAddressSection.walesCounty
+      ,postcode: addressDetails.propertyAddressSection.walesPostcode
+      ,country: addressDetails.propertyAddressSection.country
+    });
     await performAction('selectLegislativeCountry', {country: legislativeCountry.countryOptions.wales});
     await performAction('selectClaimantType', {claimantType : claimantType.claimantTypeOptions.wales.registeredCommunityLandlord});
     await performAction('clickButton', 'Save and continue');

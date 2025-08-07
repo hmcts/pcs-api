@@ -19,7 +19,9 @@ export class CreateCaseAction implements IAction {
       ['selectAddress', () => this.selectAddress(fieldName)],
       ['selectLegislativeCountry', () => this.selectLegislativeCountry(fieldName)],
       ['selectClaimantType', () => this.selectClaimantType(fieldName)],
-      ['selectCaseOptions', () => this.selectCaseOptions(fieldName)]
+      ['selectCaseOptions', () => this.selectCaseOptions(fieldName)],
+      ['enterAddress', () => this.enterAddress(fieldName)]
+
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) throw new Error(`No action found for '${action}'`);
@@ -61,6 +63,22 @@ export class CreateCaseAction implements IAction {
     await performAction('clickButton', 'Start');
   }
 
+  private async enterAddress(caseData: actionData) {
+    const addressDetails = caseData as { postcode: string; country: string, walesCounty:string, TownOrCity:string, addressLine3:string
+      addressLine2:string, BuildingAndStreet:string };
+    await performActions(
+      'Enter Address Manually'
+      , ['clickButton', "I can't enter a UK postcode"]
+      , ['inputText', 'Building and Street', addressDetails.BuildingAndStreet]
+      , ['inputText', 'Address Line 2', addressDetails.addressLine2]
+      , ['inputText', 'Address Line 3', addressDetails.addressLine3]
+      , ['inputText', 'Town or City', addressDetails.TownOrCity]
+      , ['inputText', 'County', addressDetails.walesCounty]
+      , ['inputText', 'Postcode/Zipcode', addressDetails.postcode]
+      , ['inputText', 'Country', addressDetails.country]
+    );
+    await performAction('clickButton', 'Continue');
+  }
 
   async getEventToken(): Promise<string> {
     if (!this.eventToken) {
