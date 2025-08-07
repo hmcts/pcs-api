@@ -42,79 +42,79 @@ class CitizenCreateApplicationTest extends CftlibTest {
     @Test
     @Order(1)
     void citizenCreatesApplication() {
-//        String applicantForename = "Test Forename";
-//        String applicantSurname = "Test Surname";
-//
-//        PCSCase caseData = PCSCase.builder()
-//            .applicantForename(applicantForename)
-//            .applicantSurname(applicantSurname)
-//            .propertyAddress(AddressUK.builder()
-//                                 .addressLine1("123 Baker Street")
-//                                 .addressLine2("Marylebone")
-//                                 .postTown("London")
-//                                 .county("Greater London")
-//                                 .postCode("NW1 6XE")
-//                                 .build())
-//            .paymentStatus(PaymentStatus.UNPAID)
-//            .build();
-//
-//        CaseDetails caseDetails = startAndSubmitCreationEvent(citizenCreateApplication, caseData);
-//
-//        caseReference = caseDetails.getId();
-//        assertThat(caseReference).isNotNull();
-//
-//        CaseDetails retrievedCase = ccdApi.getCase(idamToken, s2sToken, Long.toString(caseReference));
-//        assertThat(retrievedCase.getData().get("applicantForename")).isEqualTo(applicantForename);
-//        assertThat(retrievedCase.getData().get("applicantSurname")).isEqualTo(applicantSurname);
-//        assertThat(retrievedCase.getState()).isEqualTo(State.AWAITING_SUBMISSION_TO_HMCTS.name());
+       String applicantForename = "Test Forename";
+       String applicantSurname = "Test Surname";
+
+       PCSCase caseData = PCSCase.builder()
+           .applicantForename(applicantForename)
+           .applicantSurname(applicantSurname)
+           .propertyAddress(AddressUK.builder()
+                                .addressLine1("123 Baker Street")
+                                .addressLine2("Marylebone")
+                                .postTown("London")
+                                .county("Greater London")
+                                .postCode("NW1 6XE")
+                                .build())
+           .paymentStatus(PaymentStatus.UNPAID)
+           .build();
+
+       CaseDetails caseDetails = startAndSubmitCreationEvent(citizenCreateApplication, caseData);
+
+       caseReference = caseDetails.getId();
+       assertThat(caseReference).isNotNull();
+
+       CaseDetails retrievedCase = ccdApi.getCase(idamToken, s2sToken, Long.toString(caseReference));
+       assertThat(retrievedCase.getData().get("applicantForename")).isEqualTo(applicantForename);
+       assertThat(retrievedCase.getData().get("applicantSurname")).isEqualTo(applicantSurname);
+       assertThat(retrievedCase.getState()).isEqualTo(State.AWAITING_SUBMISSION_TO_HMCTS.name());
     }
 
     @Test
     @Order(2)
     void citizenUpdatesApplication() {
-//        String updatedForename = "Updated Forename";
-//
-//        PCSCase caseData = PCSCase.builder()
-//            .applicantForename(updatedForename)
-//            .build();
-//
-//        CaseResource caseResource = startAndSubmitUpdateEvent(citizenUpdateApplication, caseData);
-//
-//        assertThat(caseResource.getReference()).isNotBlank();
-//
-//        CaseDetails retrievedCase = ccdApi.getCase(idamToken, s2sToken, Long.toString(caseReference));
-//        assertThat(retrievedCase.getData().get("applicantForename")).isEqualTo(updatedForename);
-//        assertThat(retrievedCase.getState()).isEqualTo(State.AWAITING_SUBMISSION_TO_HMCTS.name());
+       String updatedForename = "Updated Forename";
+
+       PCSCase caseData = PCSCase.builder()
+           .applicantForename(updatedForename)
+           .build();
+
+       CaseResource caseResource = startAndSubmitUpdateEvent(citizenUpdateApplication, caseData);
+
+       assertThat(caseResource.getReference()).isNotBlank();
+
+       CaseDetails retrievedCase = ccdApi.getCase(idamToken, s2sToken, Long.toString(caseReference));
+       assertThat(retrievedCase.getData().get("applicantForename")).isEqualTo(updatedForename);
+       assertThat(retrievedCase.getState()).isEqualTo(State.AWAITING_SUBMISSION_TO_HMCTS.name());
     }
 
     @Test
     @Order(3)
     void citizenSubmitsApplication() {
-//        PCSCase caseData = PCSCase.builder()
-//            .build();
-//
-//        startAndSubmitUpdateEvent(citizenSubmitApplication, caseData);
-//
-//        CaseDetails retrievedCase = ccdApi.getCase(idamToken, s2sToken, Long.toString(caseReference));
-//        assertThat(retrievedCase.getState()).isEqualTo(State.CASE_ISSUED.name());
-//    }
-//
-//    @SuppressWarnings("SameParameterValue")
-//    private CaseDetails startAndSubmitCreationEvent(EventId eventId, PCSCase caseData) {
-//        StartEventResponse startEventResponse = ccdApi.startCase(
-//            idamToken,
-//            s2sToken,
-//            CaseType.getCaseType(),
-//            eventId.name()
-//        );
-//
-//        CaseDataContent content = CaseDataContent.builder()
-//            .data(caseData)
-//            .event(Event.builder().id(eventId.name()).build())
-//            .eventToken(startEventResponse.getToken())
-//            .build();
-//
-//        return ccdApi.submitCaseCreation(idamToken, s2sToken, CaseType.getCaseType(), content);
+       PCSCase caseData = PCSCase.builder()
+           .build();
+
+       startAndSubmitUpdateEvent(citizenSubmitApplication, caseData);
+
+       CaseDetails retrievedCase = ccdApi.getCase(idamToken, s2sToken, Long.toString(caseReference));
+       assertThat(retrievedCase.getState()).isEqualTo(State.CASE_ISSUED.name());
+   }
+
+   @SuppressWarnings("SameParameterValue")
+   private CaseDetails startAndSubmitCreationEvent(EventId eventId, PCSCase caseData) {
+       StartEventResponse startEventResponse = ccdApi.startCase(
+           idamToken,
+           s2sToken,
+           CaseType.getCaseType(),
+           eventId.name()
+       );
+
+       CaseDataContent content = CaseDataContent.builder()
+           .data(caseData)
+           .event(Event.builder().id(eventId.name()).build())
+           .eventToken(startEventResponse.getToken())
+           .build();
+
+       return ccdApi.submitCaseCreation(idamToken, s2sToken, CaseType.getCaseType(), content);
     }
 
     private CaseResource startAndSubmitUpdateEvent(EventId eventId, PCSCase caseData) {
