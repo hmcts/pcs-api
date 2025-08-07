@@ -10,8 +10,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 
-import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
-
 public class MakeAClaim implements CcdPageConfiguration {
 
     PcsCaseService pcsCaseService;
@@ -31,7 +29,7 @@ public class MakeAClaim implements CcdPageConfiguration {
             .optional(PCSCase::getPropertyAddress)
             .complex(PCSCase::getOrganisationPolicy)
                 .complex(OrganisationPolicy::getOrganisation)
-                .readonly(Organisation::getOrganisationName, NEVER_SHOW)
+                .readonly(Organisation::getOrganisationName)
                 .done();
 
     }

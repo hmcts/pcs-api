@@ -53,6 +53,8 @@ public class CreateTestCase implements CCDConfig<PCSCase, State, UserRole> {
         organisationPolicy.setOrgPolicyCaseAssignedRole(UserRole.CREATOR);
         caseData.setOrganisationPolicy(organisationPolicy);
 
+        caseData.setShortenedName(organisationPolicy.getOrgPolicyReference());
+
         caseData.setApplicantForename("Preset value");
         return caseData;
     }
