@@ -7,7 +7,7 @@ import { CheckAction } from '../actions/element-actions/check.action';
 import { DoubleClickAction } from '../actions/element-actions/double-click.action';
 import { SelectAction } from '../actions/element-actions/select.action';
 import { LoginAction } from "../actions/custom-actions/login.action";
-import { navigateToUrl } from "@utils/actions/custom-actions/navigateToUrl.action";
+import {NavigateToUrl} from "@utils/actions/custom-actions/navigateToUrl.action";
 import {ClickRadioButton} from "@utils/actions/element-actions/clickRadioButton.action";
 import { CreateCaseAction } from "@utils/actions/custom-actions/createCase.action";
 export class ActionRegistry {
@@ -20,9 +20,14 @@ export class ActionRegistry {
     ['select', new SelectAction()],
     ['doubleClick', new DoubleClickAction()],
     ['login', new LoginAction()],
-    ['navigateToUrl', new navigateToUrl()],
+    ['navigateToUrl', new NavigateToUrl()],
     ['clickRadioButton', new ClickRadioButton()],
-    ['createCase', new CreateCaseAction()]]);
+    ['createCase', new CreateCaseAction()],
+    ['selectAddress', new CreateCaseAction()],
+    ['selectLegislativeCountry', new CreateCaseAction()],
+    ['selectClaimantType', new CreateCaseAction()],
+    ['selectCaseOptions', new CreateCaseAction()]
+  ]);
 
   static getAction(actionName: string): IAction {
     const action = this.actions.get(actionName);

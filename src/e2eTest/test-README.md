@@ -79,22 +79,26 @@ Playwright 1.30+ | TypeScript 4.9+
 | createCase    | `performAction('createCase', 'data: caseData')`           |
 | clickButton     | `performAction('clickButton', 'buttonName)`               |
 | clickRadioButton | `performAction('clickRadioButton', 'radioButtonName')`    |
+| selectLegislativeCountry | `performAction('selectLegislativeCountry', ...)` |
+| selectClaimantType | `performAction('selectClaimantType', ...)` |
+| selectAddress   | `performAction('selectAddress', ...)` |
+| selectCaseOptions | `performAction('selectCaseOptions', ...)` |
 ### Validations
 | Validation          | Example Usage |
 |------------------|---------------|
-| text               | `performValidation('text', 'testElement')`                                   |
-| value              | `performValidation('value', 'testElement')`                                  |
-| visibility         | `performValidation('visibility', 'testElement')`                             |
-| enabled            | `performValidation('enabled', 'testElement')`                                |
-| checked            | `performValidation('checked', 'testElement')`                                |
-| count              | `performValidation('count', 'testElement')`                                  |
-| css                | `performValidation('css', 'testElement')`                                    |
-| attribute          | `performValidation('attribute', 'testElement', 'attributeName')`             |
-| bannerAlert        | `performValidation('bannerAlert', {message: "Case has been created."})`      |
-| formLabelValue     | `performValidation('formLabelValue',  "Applicant's forename", {value:'TestUser'})` |
-| validateOptionList | `performValidation('validateOptionList', "")`                                |
-| mainHeader         | `performValidation('mainHeader', {expected: createCase.mainHeader})`                                        |
-| errorMessage       | `performValidation('errorMessage', {header: claimantType.errorMessage.header,errorHasLink: claimantType.errorMessage.errorMessage})`|
+| text           | `performValidation('text', 'testElement')`                                                                                           |
+| value          | `performValidation('value', 'testElement')`                                                                                          |
+| visibility     | `performValidation('visibility', 'testElement')`                                                                                     |
+| enabled        | `performValidation('enabled', 'testElement')`                                                                                        |
+| checked        | `performValidation('checked', 'testElement')`                                                                                        |
+| count          | `performValidation('count', 'testElement')`                                                                                          |
+| css            | `performValidation('css', 'testElement')`                                                                                            |
+| attribute      | `performValidation('attribute', 'testElement', 'attributeName')`                                                                     |
+| bannerAlert    | `performValidation('bannerAlert', {message: "Case has been created."})`                                                              |
+| formLabelValue | `performValidation('formLabelValue',  "Applicant's forename", {value:'TestUser'})`                                                   |
+| mainHeader     | `performValidation('mainHeader', {expected: createCase.mainHeader})`                                                                 |
+| errorMessage   | `performValidation('errorMessage', {header: claimantType.errorMessage.header,errorHasLink: claimantType.errorMessage.errorMessage})` |
+| optionList     | `performValidation('optionList', 'sectionName', {optionsData})`                                                                      |
 ### Basic Test
 
 ```typescript

@@ -4,7 +4,7 @@ import { performAction } from '../../controller';
 import {getUser} from "@utils/helpers/idam-helpers/idam.helper";
 
 export class LoginAction implements IAction {
-  async execute(page: Page, userKey: string): Promise<void> {
+  async execute(page: Page, action: string, userKey: string): Promise<void> {
 
     const userCreds = getUser(userKey);
     if (!userCreds) {

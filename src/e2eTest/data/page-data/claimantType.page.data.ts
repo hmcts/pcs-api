@@ -16,7 +16,7 @@ export const claimantType =
           {
             privateLandlord: 'Private landlord',
             registeredProviderForSocialHousing: 'Registered provider of social housing',
-            mortgageProviderOrLender: 'Mortgage lender',
+            mortgageLender: 'Mortgage lender',
             other: 'Other',
           }
       },
