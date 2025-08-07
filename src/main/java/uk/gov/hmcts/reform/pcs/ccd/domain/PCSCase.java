@@ -8,6 +8,7 @@ import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseworkerAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenAccess;
+import static uk.gov.hmcts.ccd.sdk.type.FieldType.TextArea;
 
 /**
  * The main domain model representing a possessions case.
@@ -89,7 +90,8 @@ public class PCSCase {
 
     @CCD(
         label = "Give details about the attempted mediation and what the outcome was",
-        access = {CitizenAccess.class, CaseworkerAccess.class}
+        access = {CitizenAccess.class, CaseworkerAccess.class},
+        typeOverride = TextArea
     )
     private String mediationDetails;
 
@@ -100,7 +102,8 @@ public class PCSCase {
 
     @CCD(
         label = "Explain what steps you've taken to reach a settlement",
-        access = {CitizenAccess.class, CaseworkerAccess.class}
+        access = {CitizenAccess.class, CaseworkerAccess.class},
+        typeOverride = TextArea
     )
     private String settlementDetails;
 
