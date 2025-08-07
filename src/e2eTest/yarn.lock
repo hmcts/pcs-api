@@ -1315,21 +1315,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"allure-js-commons@npm:3.3.2":
-  version: 3.3.2
-  resolution: "allure-js-commons@npm:3.3.2"
-  dependencies:
-    md5: "npm:^2.3.0"
-  peerDependencies:
-    allure-playwright: 3.3.2
-  peerDependenciesMeta:
-    allure-playwright:
-      optional: true
-  checksum: 10c0/f70c0db0623d677d7e353ba55a9f6bc3cac7c62674b0a6aee8024f6faa153adc435a106685a60e708b8b39ab7e2c53727ef8e3b8e5dcb2b0670632a6ababdee1
-  languageName: node
-  linkType: hard
-
-"allure-js-commons@npm:^3.3.0":
+"allure-js-commons@npm:3.3.3":
   version: 3.3.3
   resolution: "allure-js-commons@npm:3.3.3"
   dependencies:
@@ -1343,14 +1329,28 @@ __metadata:
   languageName: node
   linkType: hard
 
-"allure-playwright@npm:^3.3.0":
+"allure-js-commons@npm:^3.3.0":
   version: 3.3.2
-  resolution: "allure-playwright@npm:3.3.2"
+  resolution: "allure-js-commons@npm:3.3.2"
   dependencies:
-    allure-js-commons: "npm:3.3.2"
+    md5: "npm:^2.3.0"
+  peerDependencies:
+    allure-playwright: 3.3.2
+  peerDependenciesMeta:
+    allure-playwright:
+      optional: true
+  checksum: 10c0/f70c0db0623d677d7e353ba55a9f6bc3cac7c62674b0a6aee8024f6faa153adc435a106685a60e708b8b39ab7e2c53727ef8e3b8e5dcb2b0670632a6ababdee1
+  languageName: node
+  linkType: hard
+
+"allure-playwright@npm:^3.3.0":
+  version: 3.3.3
+  resolution: "allure-playwright@npm:3.3.3"
+  dependencies:
+    allure-js-commons: "npm:3.3.3"
   peerDependencies:
     "@playwright/test": ">=1.36.0"
-  checksum: 10c0/4296f4c8479b26411f9563a79c1d208cb12a311d1ca0e738922527b64f6b97b5f031ea636c27d7c03405cfe4e6c1f08a43c9b6794875e12571e7da8847d61dc8
+  checksum: 10c0/0e7de2c20c92508cebd1b58246205d7fdc2ff53d0ccd537d7814c1affd38fdc6b853eace1e125ba73a74d79528c7a1a242073f41a0b19e9e2defa60afa5fb496
   languageName: node
   linkType: hard
 
@@ -1786,10 +1786,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"devtools-protocol@npm:0.0.1464554":
-  version: 0.0.1464554
-  resolution: "devtools-protocol@npm:0.0.1464554"
-  checksum: 10c0/c3db644b00a2172c93fb4627c4aa5ddbcc10f90aead3838bdf334b1d36da3a37e70599a8af8f90011486c4abeb54e32fbd8a736e2a8ddcefa7c56292251830c1
+"devtools-protocol@npm:0.0.1475386":
+  version: 0.0.1475386
+  resolution: "devtools-protocol@npm:0.0.1475386"
+  checksum: 10c0/6f717f77c6152565edd01265c6489c5cd5bac2e37f6497c47b11f843f20a669eccddd93dd5603b38e1dd892b849635eee3b9621ea121aba445d37b40cc064450
   languageName: node
   linkType: hard
 
@@ -3591,16 +3591,16 @@ __metadata:
   linkType: hard
 
 "puppeteer-core@npm:^24.10.2":
-  version: 24.15.0
-  resolution: "puppeteer-core@npm:24.15.0"
+  version: 24.16.0
+  resolution: "puppeteer-core@npm:24.16.0"
   dependencies:
     "@puppeteer/browsers": "npm:2.10.6"
     chromium-bidi: "npm:7.2.0"
     debug: "npm:^4.4.1"
-    devtools-protocol: "npm:0.0.1464554"
+    devtools-protocol: "npm:0.0.1475386"
     typed-query-selector: "npm:^2.12.0"
     ws: "npm:^8.18.3"
-  checksum: 10c0/fbbb28ffa70874aaa1cf41acab4eb5a1a54276111ee71bcbfa48364be8c436fdf68aa7e282cbe28b7c08f51a767a37df0c99ad2c45ce28ecca9084bca81d1ecc
+  checksum: 10c0/98fa1edf0f1346318bff326a13c40a82e82702a98eecc2f3968060bf3b8064881df0014639c03270dd2417819ea473e29ca9798aefb491a4175a85498d1cf12f
   languageName: node
   linkType: hard
 
