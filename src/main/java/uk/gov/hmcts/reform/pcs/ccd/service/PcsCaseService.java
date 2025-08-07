@@ -43,6 +43,17 @@ public class PcsCaseService {
         PcsCaseEntity pcsCaseEntity = pcsCaseRepository.findByCaseReference(caseReference)
             .orElseThrow(() -> new CaseNotFoundException(caseReference));
 
+        if(pcsCase.getAddEditDefendants() != null) {
+            pcsCase.getAddEditDefendants().forEach(defendant -> {
+                PartyEntity party = PartyEntity.builder()
+                        .forename(defendant.getValue().getFirstName())
+                        .surname(defendant.getValue().getLastName())
+                        .build();
+
+                pcsCaseEntity.addParty(party);
+            });
+        }
+
         if (pcsCase.getApplicantForename() != null) {
             pcsCaseEntity.setApplicantForename(pcsCase.getApplicantForename());
         }

@@ -5,9 +5,12 @@ import lombok.Data;
 import uk.gov.hmcts.ccd.sdk.External;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
+import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseworkerAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenAccess;
+
+import java.util.List;
 
 /**
  * The main domain model representing a possessions case.
@@ -72,5 +75,31 @@ public class PCSCase {
     private String pageHeadingMarkdown;
 
     private String claimPaymentTabMarkdown;
+
+    @CCD(access = CaseworkerAccess.class)
+    private AddEditDefendant addEditDefendant1;
+
+    @CCD(access = CaseworkerAccess.class)
+    private AddEditDefendant addEditDefendant2;
+
+    @CCD(access = CaseworkerAccess.class)
+    private AddEditDefendant addEditDefendant3;
+
+    @CCD(access = CaseworkerAccess.class)
+    private List<ListValue<AddEditDefendant>> addEditDefendants;
+
+
+    @CCD(label = "Add another defendant?")
+    private VerticalYesNo addAnotherDefendant1;
+
+    @CCD(label = "Add another defendant?")
+    private VerticalYesNo addAnotherDefendant2;
+
+    @CCD(label = "Add another defendant?")
+    private VerticalYesNo addAnotherDefendant3;
+
+    private String defendantsSummary;
+
+
 
 }

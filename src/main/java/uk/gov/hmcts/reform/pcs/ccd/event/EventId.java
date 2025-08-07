@@ -8,5 +8,7 @@ public enum EventId {
     citizenUpdateApplication,
     createTestApplication,
     processClaimPayment,
+    createShellClaim,
+    addDefendants
 
 }

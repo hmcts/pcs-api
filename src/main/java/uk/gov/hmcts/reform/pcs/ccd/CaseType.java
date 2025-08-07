@@ -82,6 +82,17 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
             .label("claimPaymentTabMarkdownLabel", null, "${claimPaymentTabMarkdown}")
             .field("claimPaymentTabMarkdown", NEVER_SHOW);
 
+        builder.tab("defendantDetails", "Defendant Details")
+                        .label("button-label", "", """
+                <br>
+               <br>
+
+                <a href="/cases/case-details/${[CASE_REFERENCE]}/trigger/addDefendants" role="button" class="govuk-button">
+                  Add Defendant
+              </a>
+                """)
+                       .field(PCSCase::getAddEditDefendant1);
+
         builder.tab("hidden", "HiddenFields")
             .showCondition(NEVER_SHOW)
             .field(PCSCase::getPageHeadingMarkdown);

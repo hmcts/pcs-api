@@ -6,6 +6,7 @@ import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.DecentralisedCaseRepository;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.AddEditDefendant;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PaymentStatus;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
@@ -16,12 +17,16 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import static uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils.wrapListItems;
 
 /**
  * Invoked by CCD to load PCS cases under the decentralised model.
@@ -44,11 +49,20 @@ public class CCDCaseRepository extends DecentralisedCaseRepository<PCSCase> {
 
         PcsCaseEntity pcsCaseEntity = loadCaseData(caseReference);
 
+        List<AddEditDefendant> defendants = new ArrayList<>();
+        pcsCaseEntity.getParties().stream().forEach(party -> {
+            AddEditDefendant defendant = AddEditDefendant.builder()
+                .firstName(party.getForename())
+                .lastName(party.getSurname()).build();
+            defendants.add(defendant);
+        });
+
         PCSCase pcsCase = PCSCase.builder()
             .applicantForename(pcsCaseEntity.getApplicantForename())
             .applicantSurname(pcsCaseEntity.getApplicantSurname())
             .propertyAddress(convertAddress(pcsCaseEntity.getPropertyAddress()))
             .caseManagementLocation(pcsCaseEntity.getCaseManagementLocation())
+            .addEditDefendants(wrapListItems(defendants))
             .build();
 
         setDerivedProperties(caseReference,pcsCase, pcsCaseEntity);
