@@ -10,6 +10,8 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 
+import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
+
 public class MakeAClaim implements CcdPageConfiguration {
 
     PcsCaseService pcsCaseService;
@@ -27,7 +29,7 @@ public class MakeAClaim implements CcdPageConfiguration {
             .pageLabel("What is the address of the property you're claiming possession of?")
             .label("lineSeparator", "---")
             .optional(PCSCase::getPropertyAddress)
-            .complex(PCSCase::getOrganisationPolicy)
+            .complex(PCSCase::getOrganisationPolicy, NEVER_SHOW)
                 .complex(OrganisationPolicy::getOrganisation)
                 .readonly(Organisation::getOrganisationName)
                 .done();

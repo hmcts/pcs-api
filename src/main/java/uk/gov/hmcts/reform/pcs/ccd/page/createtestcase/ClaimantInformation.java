@@ -15,7 +15,6 @@ public class ClaimantInformation implements CcdPageConfiguration {
             .pageLabel("Organisation Details")
             .label("OrganisationQuestionTest", "Your claimant name registered with My HMCTS is:")
             .readonly(PCSCase::getShortenedName)
-            .label("OrganisationQuestionTest3", "After shortened Name")
             .mandatory(PCSCase::getYesOrNo)
             .done();
     }
