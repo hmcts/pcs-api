@@ -73,4 +73,10 @@ public class PCSCase {
 
     private String claimPaymentTabMarkdown;
 
+    @CCD
+    private String organisationName;
+
+    @CCD
+    private YesOrNo correctOrganisation;
+
 }
