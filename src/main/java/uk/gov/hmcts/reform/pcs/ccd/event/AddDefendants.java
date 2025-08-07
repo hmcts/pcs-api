@@ -1,12 +1,15 @@
 package uk.gov.hmcts.reform.pcs.ccd.event;
 
+import de.cronn.reflection.util.TypedPropertyGetter;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CCDConfig;
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
 import uk.gov.hmcts.ccd.sdk.api.ConfigBuilder;
+import uk.gov.hmcts.ccd.sdk.api.Event;
 import uk.gov.hmcts.ccd.sdk.api.EventPayload;
+import uk.gov.hmcts.ccd.sdk.api.FieldCollection;
 import uk.gov.hmcts.ccd.sdk.api.Permission;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
@@ -20,7 +23,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.PCS_CASE_WORKER;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.State.CASE_ISSUED;
 
@@ -30,112 +32,67 @@ import static uk.gov.hmcts.reform.pcs.ccd.domain.State.CASE_ISSUED;
 public class AddDefendants implements CCDConfig<PCSCase, State, UserRole> {
 
     private final PcsCaseService pcsCaseService;
+
     @Override
     public void configure(final ConfigBuilder<PCSCase, State, UserRole> configBuilder) {
-        configBuilder
+        var eventBuilder = configBuilder
             .decentralisedEvent("addDefendants", this::submit)
             .forStates(CASE_ISSUED)
             .name("Add defendants")
-            .description("Add one or more defendants")
+            .description("Add up to 25 defendants")
             .grant(Permission.CRU, PCS_CASE_WORKER)
             .showSummary()
+            .showEventNotes()
+            .fields(); // gives access to.page
 
-            .fields()
+        //loops pages
+        addDefendantPages(eventBuilder);
 
-            // PAGE 1 - Add first defendant
-            .page("add-defendant-1", this::midEvent1)
-            .pageLabel("Add Defendant 1")
-               // .field("addEditDefendants", DisplayContext.Optional)
-            .mandatory(PCSCase::getAddEditDefendant1)
+        // finish
+        eventBuilder.done();
+    }
+    private void addDefendantPages(FieldCollection.FieldCollectionBuilder<PCSCase, State, Event.EventBuilder<PCSCase, UserRole, State>> event) {
+        //TODO: optimize this
+        for (int i = 1; i <= 3; i++) {
+            var defendantPage = event.page("AddDefendant" + i);
 
+            if (i > 1) {
+                defendantPage.showCondition("addAnotherDefendant" + (i - 1) + "=\"YES\"");
+            }
+            // the first defendant page shows without a condition
+            defendantPage.mandatory(getTempDefField(i));
 
-            // PAGE 2 - Summary + ask to continue
-            .page("summary-1")
-            .mandatory(PCSCase::getDefendantsSummary,NEVER_SHOW)
-                //.field("addEditDefendants", DisplayContext.Optional)
-            .label("defendantsSummary1",
-                   """
-            <table>
-              <thead>
-                <tr>
-                  <th>No.</th>
-                  <th>Name</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr><td>1</td><td>${addEditDefendant1.firstName} ${addEditDefendant1.lastName}</td></tr>
-                <tr><td>2</td><td>${addEditDefendant2.firstName} ${addEditDefendant2.lastName}</td></tr>
-                <tr><td>3</td><td>${addEditDefendant3.firstName} ${addEditDefendant3.lastName}</td></tr>
-              </tbody>
-            </table>
-            """)
-            .mandatory(PCSCase::getAddAnotherDefendant1)
-
-
-            // PAGE 3 - Add second
-            .page("add-defendant-2",this::midEvent2)
-            .showCondition("addAnotherDefendant1=\"YES\"")
-            .pageLabel("Add Defendant 2")
-            .mandatory(PCSCase::getAddEditDefendant2)
-                // .field("addEditDefendants", DisplayContext.Optional)
-
-
-            // PAGE 4 - Summary + ask to continue
-            .page("summary-3")
-            .mandatory(PCSCase::getDefendantsSummary,NEVER_SHOW)
-              //  .field("addEditDefendants", DisplayContext.Optional)
-           .showCondition("addAnotherDefendant1=\"YES\"")
-            .label("defendantsSummary3",
-                   """
-                <table>
-                  <thead>
-                    <tr>
-                      <th>No.</th>
-                      <th>Name</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr><td>1</td><td>${addEditDefendant1.firstName} ${addEditDefendant1.lastName}</td></tr>
-                    <tr><td>2</td><td>${addEditDefendant2.firstName} ${addEditDefendant2.lastName}</td></tr>
-                    <tr><td>3</td><td>${addEditDefendant3.firstName} ${addEditDefendant3.lastName}</td></tr>
-                  </tbody>
-                </table>
-                """)
-            .mandatory(PCSCase::getAddAnotherDefendant2)
-
-            // PAGE 5 - Add third
-            .page("add-defendant-3",this::midEvent3)
-            .showCondition("addAnotherDefendant2=\"YES\"")
-            .pageLabel("Add Defendant 3")
-            .mandatory(PCSCase::getAddEditDefendant3)
-               // .field("addEditDefendants", DisplayContext.Optional)
-
-            // PAGE 6 - Final Summary
-            .page("summary-4")
-            .showCondition("addAnotherDefendant2=\"YES\"")
-            .mandatory(PCSCase::getDefendantsSummary,NEVER_SHOW)
-              //  .field("addEditDefendants", DisplayContext.Optional)
-            .label("defendantsSummary4",
-                   """
-               <table>
-                 <thead>
-                   <tr>
-                     <th>No.</th>
-                     <th>Name</th>
-                   </tr>
-                 </thead>
-                 <tbody>
-                   <tr><td>1</td><td>${addEditDefendant1.firstName} ${addEditDefendant1.lastName}</td></tr>
-                   <tr><td>2</td><td>${addEditDefendant2.firstName} ${addEditDefendant2.lastName}</td></tr>
-                   <tr><td>3</td><td>${addEditDefendant3.firstName} ${addEditDefendant3.lastName}</td></tr>
-                 </tbody>
-               </table>
-               """)
-
-            .done();
+            if (i < 3) {
+                var addAnotherPage = event.page("AddAnotherDefendant" + i);
+                if (i > 1) {
+                    addAnotherPage.showCondition("addAnotherDefendant" + (i - 1) + "=\"YES\"");
+                }
+                // the first add page shows without a condition
+                addAnotherPage.mandatory(getAddAnotherField(i));
+            }
+        }
     }
 
 
+    private TypedPropertyGetter<PCSCase, ?> getTempDefField(int i) {
+        switch (i) {
+            case 1: return PCSCase::getAddEditDefendant1;
+            case 2: return PCSCase::getAddEditDefendant2;
+            case 3: return PCSCase::getAddEditDefendant3;
+
+            default: throw new IllegalArgumentException("Invalid defendant index: " + i);
+        }
+    }
+
+    private TypedPropertyGetter<PCSCase, ?> getAddAnotherField(int i) {
+        switch (i) {
+            case 1: return PCSCase::getAddAnotherDefendant1;
+            case 2: return PCSCase::getAddAnotherDefendant2;
+            case 3: return PCSCase::getAddAnotherDefendant3;
+
+            default: throw new IllegalArgumentException("Invalid add-another index: " + i);
+        }
+    }
 
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent1(CaseDetails<PCSCase, State> details,
                                                                    CaseDetails<PCSCase, State> detailsBefore) {
