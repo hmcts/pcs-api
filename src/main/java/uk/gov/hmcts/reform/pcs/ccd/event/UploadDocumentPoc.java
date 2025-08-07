@@ -63,7 +63,7 @@ public class UploadDocumentPoc implements CCDConfig<PCSCase, State, UserRole> {
                 if (documentWrapper != null && documentWrapper.getValue() != null) {
                     Document document = documentWrapper.getValue();
                     String fileName = document.getFilename();
-                    String filePath = document.getUrl();
+                    String filePath = document.getBinaryUrl();
 
 
                     pcsCaseService.addDocumentToCase(caseReference, fileName, filePath);

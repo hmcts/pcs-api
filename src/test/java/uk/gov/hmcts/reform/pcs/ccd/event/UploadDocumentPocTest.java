@@ -87,11 +87,11 @@ class UploadDocumentPocTest extends BaseEventTest {
 
         Document document1 = mock(Document.class);
         when(document1.getFilename()).thenReturn("doc1.docx");
-        when(document1.getUrl()).thenReturn("/path/to/doc1.docx");
+        when(document1.getBinaryUrl()).thenReturn("/path/to/doc1.docx");
 
         Document document2 = mock(Document.class);
         when(document2.getFilename()).thenReturn("doc2.docx");
-        when(document2.getUrl()).thenReturn("/path/to/doc2.docx");
+        when(document2.getBinaryUrl()).thenReturn("/path/to/doc2.docx");
 
         ListValue<Document> documentWrapper1 = ListValue.<Document>builder()
             .value(document1)
@@ -158,7 +158,7 @@ class UploadDocumentPocTest extends BaseEventTest {
 
         Document validDocument = mock(Document.class);
         when(validDocument.getFilename()).thenReturn("valid.docx");
-        when(validDocument.getUrl()).thenReturn("/path/to/valid.docx");
+        when(validDocument.getBinaryUrl()).thenReturn("/path/to/valid.docx");
 
         ListValue<Document> validWrapper = ListValue.<Document>builder()
             .value(validDocument)
@@ -192,7 +192,7 @@ class UploadDocumentPocTest extends BaseEventTest {
 
         Document validDocument = mock(Document.class);
         when(validDocument.getFilename()).thenReturn("valid.docx");
-        when(validDocument.getUrl()).thenReturn("/path/to/valid.docx");
+        when(validDocument.getBinaryUrl()).thenReturn("/path/to/valid.docx");
 
         ListValue<Document> validWrapper = ListValue.<Document>builder()
             .value(validDocument)
