@@ -30,8 +30,8 @@ public class MakeAClaim implements CcdPageConfiguration {
             .label("lineSeparator", "---")
             .optional(PCSCase::getPropertyAddress)
             .complex(PCSCase::getOrganisationPolicy)
-                .complex(OrganisationPolicy::getOrganisation, NEVER_SHOW)
-                .readonly(Organisation::getOrganisationName)
+                .complex(OrganisationPolicy::getOrganisation)
+                .readonly(Organisation::getOrganisationName, NEVER_SHOW)
                 .done();
 
     }
