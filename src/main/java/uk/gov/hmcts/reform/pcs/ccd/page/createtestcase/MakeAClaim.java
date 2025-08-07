@@ -10,8 +10,10 @@ public class MakeAClaim implements CcdPageConfiguration {
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
             .page("Make a claim")
-            .pageLabel("What is the address of the property you're claiming possession of?")
+            .pageLabel("Claimant name")
             .label("lineSeparator", "---")
-            .mandatory(PCSCase::getPropertyAddress);
+            .label("makeAClaim-organisationQuestion", "Your claimant name registered with MyHMCTS is:")
+            .readonly(PCSCase::getOrganisationName)
+            .mandatory(PCSCase::getCorrectOrganisation);
     }
 }
