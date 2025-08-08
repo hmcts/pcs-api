@@ -64,15 +64,15 @@ export class CreateCaseAction implements IAction {
   }
 
   private async enterAddress(caseData: actionData) {
-    const addressDetails = caseData as { postcode: string; country: string, walesCounty:string, TownOrCity:string, addressLine3:string
-      addressLine2:string, BuildingAndStreet:string };
+    const addressDetails = caseData as { postcode: string; country: string, walesCounty:string, townOrCity:string, addressLine3:string
+      addressLine2:string, buildingAndStreet:string };
     await performActions(
       'Enter Address Manually'
       , ['clickButton', "I can't enter a UK postcode"]
-      , ['inputText', 'Building and Street', addressDetails.BuildingAndStreet]
+      , ['inputText', 'Building and Street', addressDetails.buildingAndStreet]
       , ['inputText', 'Address Line 2', addressDetails.addressLine2]
       , ['inputText', 'Address Line 3', addressDetails.addressLine3]
-      , ['inputText', 'Town or City', addressDetails.TownOrCity]
+      , ['inputText', 'Town or City', addressDetails.townOrCity]
       , ['inputText', 'County', addressDetails.walesCounty]
       , ['inputText', 'Postcode/Zipcode', addressDetails.postcode]
       , ['inputText', 'Country', addressDetails.country]
