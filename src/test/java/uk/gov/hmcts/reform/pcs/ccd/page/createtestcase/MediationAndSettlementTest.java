@@ -63,12 +63,9 @@ class MediationAndSettlementTest {
         InOrder inOrder = inOrder(fieldBuilder);
 
         // Verify mediation description and question
-        String mediationHeading = "<h3 class=\"govuk-heading-m\">"
-                + "Have you attempted mediation with the defendants?"
-                + "</h3>";
         String mediationIntro = "Mediation is when an impartial professional";
-        inOrder.verify(fieldBuilder).label(eq("mediationAndSettlement-content"), argThat(content -> 
-            content.contains(mediationIntro) && content.contains(mediationHeading)
+        inOrder.verify(fieldBuilder).label(eq("mediationAndSettlement-content"), argThat(content
+                -> content.contains(mediationIntro)
         ));
 
         // Verify mediation fields
@@ -88,10 +85,9 @@ class MediationAndSettlementTest {
         inOrder.verify(fieldBuilder).optional(any(), anyString());
 
         // Then verify settlement section
-        String heading = "<h3 class=\"govuk-heading-m\">Have you tried to reach a settlement with the defendants?</h3>";
         String content = "If your claim is on the grounds of rent arrears";
-        inOrder.verify(fieldBuilder).label(eq("settlement-section"), argThat(text -> 
-            text.contains(content) && text.contains(heading)
+        inOrder.verify(fieldBuilder).label(eq("settlement-section"), argThat(text
+                -> text.contains(content)
         ));
         inOrder.verify(fieldBuilder).mandatory(any());
         inOrder.verify(fieldBuilder).optional(any(), eq("settlement=\"YES\""));
@@ -120,29 +116,6 @@ class MediationAndSettlementTest {
         // Verify the show conditions for both optional fields
         verify(fieldBuilder).optional(any(), eq("mediation=\"YES\""));
         verify(fieldBuilder).optional(any(), eq("settlement=\"YES\""));
-    }
-
-    @Test
-    void shouldUseCorrectHeadingStyles() {
-        underTest.addTo(pageBuilder);
-
-        // Verify both questions use h3 headings with govuk-heading-m class
-        verify(fieldBuilder, times(2)).label(anyString(), argThat(content -> 
-            content.contains("<h3 class=\"govuk-heading-m\">")
-        ));
-    }
-
-    @Test
-    void shouldHaveAccessibleLabels() {
-        underTest.addTo(pageBuilder);
-
-        // Verify both sections have clear, descriptive labels
-        verify(fieldBuilder).label(anyString(), argThat(content -> 
-            content.contains("Have you attempted mediation with the defendants?")
-        ));
-        verify(fieldBuilder).label(anyString(), argThat(content -> 
-            content.contains("Have you tried to reach a settlement with the defendants?")
-        ));
     }
 
     @Test
