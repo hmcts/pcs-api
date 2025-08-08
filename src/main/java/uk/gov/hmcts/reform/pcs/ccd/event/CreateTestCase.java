@@ -17,6 +17,7 @@ import uk.gov.hmcts.reform.pcs.ccd.page.createtestcase.GroundsForPossession;
 import uk.gov.hmcts.reform.pcs.ccd.page.createtestcase.MakeAClaim;
 import uk.gov.hmcts.reform.pcs.ccd.page.createtestcase.MediationAndSettlement;
 import uk.gov.hmcts.reform.pcs.ccd.page.createtestcase.PreActionProtocol;
+import uk.gov.hmcts.reform.pcs.ccd.page.createtestcase.CheckingNotice;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.createTestApplication;
@@ -41,7 +42,8 @@ public class CreateTestCase implements CCDConfig<PCSCase, State, UserRole> {
             .add(new ClaimantInformation())
             .add(new GroundsForPossession())
             .add(new PreActionProtocol())
-            .add(new MediationAndSettlement());
+            .add(new MediationAndSettlement())
+            .add(new CheckingNotice());
     }
 
     private PCSCase start(EventPayload<PCSCase, State> eventPayload) {

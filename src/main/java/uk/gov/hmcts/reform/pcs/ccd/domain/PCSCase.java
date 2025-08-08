@@ -84,6 +84,7 @@ public class PCSCase {
     private YesOrNo groundsForPossession;
 
     @CCD(
+        label = "Have you attempted mediation with the defendants?",
         access = {CitizenAccess.class, CaseworkerAccess.class}
     )
     private VerticalYesNo mediation;
@@ -96,6 +97,7 @@ public class PCSCase {
     private String mediationDetails;
 
     @CCD(
+        label = "Have you tried to reach a settlement with the defendants?",
         access = {CitizenAccess.class, CaseworkerAccess.class}
     )
     private VerticalYesNo settlement;

@@ -21,7 +21,6 @@ public class MediationAndSettlement implements CcdPageConfiguration {
                         ---
                         Mediation is when an impartial professional (the mediator) helps both sides work out \
                         an agreement.
-                        <h3 class="govuk-heading-m">Have you attempted mediation with the defendants?</h3>
                         """)
                 .mandatory(PCSCase::getMediation)
                 .optional(PCSCase::getMediationDetails, "mediation=\"YES\"")
@@ -30,7 +29,6 @@ public class MediationAndSettlement implements CcdPageConfiguration {
                         ---
                         If your claim is on the grounds of rent arrears, this includes any steps you've taken \
                         to recover the arrears or to agree a repayment plan.
-                        <h3 class="govuk-heading-m">Have you tried to reach a settlement with the defendants?</h3>
                         """)
                 .mandatory(PCSCase::getSettlement)
                 .optional(PCSCase::getSettlementDetails, "settlement=\"YES\"");
