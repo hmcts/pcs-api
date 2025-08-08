@@ -164,7 +164,14 @@ allure-commandline@^2.34.1:
   resolved "https://registry.yarnpkg.com/allure-commandline/-/allure-commandline-2.34.1.tgz#cdc1361c0b1f85d917b72f80d7131fd7dbfddd11"
   integrity sha512-l42csZ2bz7FdtJI1t5zA3IXtOZ0YJaP/+JMRC9gt6aBHRVUIu+6r+3F7KRyshQ79osLz9/MHlGqAjBPRqH0QFw==
 
-allure-js-commons@3.3.2, allure-js-commons@^3.3.0:
+allure-js-commons@3.3.3:
+  version "3.3.3"
+  resolved "https://registry.yarnpkg.com/allure-js-commons/-/allure-js-commons-3.3.3.tgz#4e425ca219dedef11a25d74d392f1bb0c8699721"
+  integrity sha512-MLkPWrVtrt/2TdAvaExNSM8yTuY/lEo+MSLoM2DOUUsWzbzki8XIxHoX+mSdkatZAJargsU9JeO/dL5kQyR5IQ==
+  dependencies:
+    md5 "^2.3.0"
+
+allure-js-commons@^3.3.0:
   version "3.3.2"
   resolved "https://registry.yarnpkg.com/allure-js-commons/-/allure-js-commons-3.3.2.tgz#88569de87315fca46531726011b18ecf75db491f"
   integrity sha512-bBQW/G0Fas6Q+Ubixtk0OWP2Bywr1U5Mbei7paOezCPJpCZ47/xZvmUeuwBH0ekufi3ePCUHzDjXuwUK4iXZlg==
@@ -172,11 +179,11 @@ allure-js-commons@3.3.2, allure-js-commons@^3.3.0:
     md5 "^2.3.0"
 
 allure-playwright@^3.3.0:
-  version "3.3.2"
-  resolved "https://registry.yarnpkg.com/allure-playwright/-/allure-playwright-3.3.2.tgz#931f351fbd41fc1425272b9776373e7506c91b44"
-  integrity sha512-S0wyRdG17qQYSorp9Edz9c3DT6mcWwNE9noKdtfp2nmox5AHEVfdwQJx+IuroWUhSkLBRcZbD6E2+XayNIHCGA==
+  version "3.3.3"
+  resolved "https://registry.yarnpkg.com/allure-playwright/-/allure-playwright-3.3.3.tgz#44f403fd8916a89c28a6af3bbecf627b7a7b81a8"
+  integrity sha512-f5+PsYJVBG9igcD2ldzRHOx4kMiuqyoezpneQd94R08I/S3lL/MvdMNmkT1vet8KYB8tsV1OuK17PZexnFaC+w==
   dependencies:
-    allure-js-commons "3.3.2"
+    allure-js-commons "3.3.3"
 
 asynckit@^0.4.0:
   version "0.4.0"
