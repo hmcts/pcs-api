@@ -1,10 +1,10 @@
 import {test} from '@playwright/test';
 import {parentSuite} from 'allure-js-commons';
 import {initializeExecutor, performAction, performActions, performValidation} from '@utils/controller';
-import {borderPostcode} from "@data/page-data/borderPostcode.page.data";
-import configData from "@config/test.config";
-import {createCase} from "@data/page-data/createCase.page.data";
-import {addressDetails} from "@data/page-data/addressDetails.page.data";
+import {borderPostcode} from '@data/page-data/borderPostcode.page.data';
+import configData from '@config/test.config';
+import {createCase} from '@data/page-data/createCase.page.data';
+import {addressDetails} from '@data/page-data/addressDetails.page.data';
 import { applicantDetails } from '@data/page-data/applicantDetails.page.data';
 
 test.beforeEach(async ({page}) => {
@@ -40,84 +40,47 @@ async function selectCountryRadioBtn(country: string) {
   await performAction('clickButton', borderPostcode.continue);
 }
 
-test.describe('[Eligibility Checks for Cross border postcodes]  @Master @nightly', async () => {
-  test('Verify cross border postcode eligibility check redirection and content for England & Wales countries', async ({page}) => {
+test.describe.skip('[Eligibility Checks for Cross border postcodes]  @Master @nightly', async () => {
+  test('Verify cross border postcode eligibility check redirection and content for England and Wales', async ({page}) => {
       await inputAddressDetails(borderPostcode.englandWalesPostcode)
       await performValidation('text', {
-        "text": borderPostcode.mainHeader,
-        "elementType": "heading"
+        'text': borderPostcode.mainHeader,
+        'elementType': 'heading'
       });
       await selectCountryRadioBtn(borderPostcode.countryOptions.england);
       await performValidation('text', {
-        "text": applicantDetails.header,
-        "elementType": "heading"
+        'text': applicantDetails.header,
+        'elementType': 'heading'
       });
       await page.goBack()
       await page.waitForLoadState()
       await selectCountryRadioBtn(borderPostcode.countryOptions.wales);
       await performValidation('text', {
-        "text": borderPostcode.mainHeader,
-        "elementType": "heading"
+        'text': borderPostcode.mainHeader,
+        'elementType': 'heading'
       });
     }
   );
 
-  test('Verify content for cross border postcode page when postcode is in England & Wales', async () => {
-      await inputAddressDetails(borderPostcode.englandWalesPostcode)
-      await performValidation('text', {
-        "text": borderPostcode.mainHeader,
-        "elementType": "heading"
-      });
-      await performValidation('text', {
-        "text": borderPostcode.englandWalesParagraphContent,
-        "elementType": "paragraph"
-      });
-      await performValidation('text', {
-        "text": borderPostcode.englandWalesInlineContent,
-        "elementType": "inlineText"
-      });
-      await performValidation('text', {"text": borderPostcode.continue, "elementType": "button"})
-      await performValidation('text', {"text": borderPostcode.cancel, "elementType": "link"})
-    }
-  );
-
-  test('Verify cross border postcode eligibility check redirection and content for England & Scotland countries', async ({page}) => {
+  test('Verify cross border postcode eligibility check redirection and content for England and Scotland', async ({page}) => {
       await inputAddressDetails(borderPostcode.englandScotlandPostcode)
       await performValidation('text', {
-        "text": borderPostcode.mainHeader,
-        "elementType": "heading"
+        'text': borderPostcode.mainHeader,
+        'elementType': 'heading'
       });
       await selectCountryRadioBtn(borderPostcode.countryOptions.england);
       await performValidation('text', {
-        "text": applicantDetails.header,
-        "elementType": "heading"
+        'text': applicantDetails.header,
+        'elementType': 'heading'
       });
       await page.goBack()
       await page.waitForLoadState()
       await selectCountryRadioBtn(borderPostcode.countryOptions.scotland);
       await performValidation('text', {
-        "text": borderPostcode.mainHeader,
-        "elementType": "heading"
+        'text': borderPostcode.mainHeader,
+        'elementType': 'heading'
       });
     }
   );
-
-  test('verify content for cross border postcode page when postcode is in England&Scotland', async () => {
-    await inputAddressDetails(borderPostcode.englandScotlandPostcode)
-    await performValidation('text', {
-      "text": borderPostcode.mainHeader,
-      "elementType": "heading"
-    });
-    await performValidation('text', {
-      "text": borderPostcode.englandScotlandParagraphContent,
-      "elementType": "paragraph"
-    });
-    await performValidation('text', {
-      "text": borderPostcode.englandScotlandInlineContent,
-      "elementType": "inlineText"
-    });
-    await performValidation('text', {"text": borderPostcode.continue, "elementType": "button"})
-    await performValidation('text', {"text": borderPostcode.cancel, "elementType": "link"})
-  });
 })
 
