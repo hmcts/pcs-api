@@ -473,3 +473,4 @@ tasks.named("processFunctionalTestResources") {
 tasks.withType(Wrapper) {
   distributionType = Wrapper.DistributionType.ALL
 }
+
