@@ -5,7 +5,7 @@ import {borderPostcode} from "@data/page-data/borderPostcode.page.data";
 import configData from "@config/test.config";
 import {createCase} from "@data/page-data/createCase.page.data";
 import {addressDetails} from "@data/page-data/addressDetails.page.data";
-import {applicantDetails} from "@data/page-data/ApplicantDetails.page.data";
+import { applicantDetails } from '@data/page-data/applicantDetails.page.data';
 
 test.beforeEach(async ({page}) => {
   initializeExecutor(page);
