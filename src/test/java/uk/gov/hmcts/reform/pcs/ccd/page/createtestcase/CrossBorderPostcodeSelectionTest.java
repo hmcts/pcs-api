@@ -11,6 +11,7 @@ import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
 import uk.gov.hmcts.ccd.sdk.api.Event;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
@@ -32,15 +33,17 @@ import static org.mockito.Mockito.when;
 class CrossBorderPostcodeSelectionTest extends BasePageTest {
 
     private static final String SOME_POSTCODE = "TX1 1TX";
-    
+
     @Mock
     private EligibilityService eligibilityService;
-    
+
     private Event<PCSCase, UserRole, State> event;
 
     @BeforeEach
     void setUp() {
-        event = buildPageInTestEvent(new CrossBorderPostcodeSelection(eligibilityService));
+        event = buildPageInTestEvent(
+            new CrossBorderPostcodeSelection(eligibilityService)
+        );
     }
 
     @ParameterizedTest
@@ -55,9 +58,12 @@ class CrossBorderPostcodeSelectionTest extends BasePageTest {
         PCSCase caseData = PCSCase.builder()
             .propertyAddress(AddressUK.builder().postCode(postcode).build())
             .crossBorderCountriesList(DynamicStringList.builder()
-                                          .value(DynamicStringListElement.builder()
-                                                     .code(selectedCountry.name())
-                                                     .label(selectedCountry.getLabel())
+                                          .value(DynamicStringListElement
+                                                     .builder()
+                                                     .code(selectedCountry
+                                                               .name())
+                                                     .label(selectedCountry
+                                                                .getLabel())
                                                      .build())
                                           .build())
             .build();
@@ -67,10 +73,11 @@ class CrossBorderPostcodeSelectionTest extends BasePageTest {
             .status(status)
             .build();
 
-        when(eligibilityService.checkEligibility(postcode, selectedCountry)).thenReturn(eligibilityResult);
+        when(eligibilityService.checkEligibility(postcode, selectedCountry))
+            .thenReturn(eligibilityResult);
 
         // When
-        AboutToStartOrSubmitResponse<PCSCase, State> response = 
+        AboutToStartOrSubmitResponse<PCSCase, State> response =
             getMidEventForPage(event, "crossBorderPostcodeSelection")
                 .handle(caseDetails, null);
 
@@ -100,5 +107,112 @@ class CrossBorderPostcodeSelectionTest extends BasePageTest {
                 EligibilityStatus.NO_MATCH_FOUND
             )
         );
+    }
+
+
+    @ParameterizedTest
+    @MethodSource("eligibleCountries")
+    void shouldContinueToClaimantInfoPageWhenCrossBorderPropertyIsEligible(
+        LegislativeCountry selectedCountry
+    ) {
+        // Given: page visible (from MakeAClaim), PNE hidden
+        var caseDetails = buildCrossBorderCaseWithFlags(
+            SOME_POSTCODE,
+            selectedCountry,
+            YesOrNo.YES,
+            YesOrNo.NO
+        );
+
+        var result = EligibilityResult.builder()
+            .status(EligibilityStatus.ELIGIBLE)
+            .build();
+
+        when(eligibilityService.checkEligibility(SOME_POSTCODE,
+                                                 selectedCountry))
+            .thenReturn(result);
+
+        // When
+        AboutToStartOrSubmitResponse<PCSCase, State> resp =
+            getMidEventForPage(event, "crossBorderPostcodeSelection")
+                .handle(caseDetails, null);
+
+        // Then: stays on normal flow, and Previous returns here
+        var data = resp.getData();
+        assertThat(data.getShowPropertyNotEligiblePage())
+            .as("PropertyNotEligible should remain hidden on ELIGIBLE")
+            .isEqualTo(YesOrNo.NO);
+        assertThat(data.getShowCrossBorderPage())
+            .as("Keep cross-border visible so 'Previous' returns here")
+            .isEqualTo(YesOrNo.YES);
+    }
+
+    @ParameterizedTest
+    @MethodSource("eligibleCountries")
+    void shouldShowPropertyNotEligiblePageWhenCrossBorderPropertyIsNotEligible(
+        LegislativeCountry selectedCountry
+    ) {
+        // Given: page visible (from MakeAClaim), PNE hidden
+        var caseDetails = buildCrossBorderCaseWithFlags(
+            SOME_POSTCODE,
+            selectedCountry,
+            YesOrNo.YES,
+            YesOrNo.NO
+        );
+
+        var result = EligibilityResult.builder()
+            .status(EligibilityStatus.NOT_ELIGIBLE)
+            .build();
+
+        when(eligibilityService.checkEligibility(SOME_POSTCODE,
+                                                 selectedCountry))
+            .thenReturn(result);
+
+        // When
+        AboutToStartOrSubmitResponse<PCSCase, State> resp =
+            getMidEventForPage(event, "crossBorderPostcodeSelection")
+                .handle(caseDetails, null);
+
+        // Then: show PNE, keep cross-border for 'Previous'
+        var data = resp.getData();
+        assertThat(data.getShowPropertyNotEligiblePage())
+            .as("PropertyNotEligible should be shown when NOT_ELIGIBLE")
+            .isEqualTo(YesOrNo.YES);
+        assertThat(data.getShowCrossBorderPage())
+            .as("Keep cross-border visible so 'Previous' returns here")
+            .isEqualTo(YesOrNo.YES);
+    }
+
+    private static Stream<Arguments> eligibleCountries() {
+        return Stream.of(
+            arguments(LegislativeCountry.ENGLAND),
+            arguments(LegislativeCountry.WALES)
+        );
+    }
+
+    private CaseDetails<PCSCase, State> buildCrossBorderCaseWithFlags(
+        String postcode,
+        LegislativeCountry selectedCountry,
+        YesOrNo showCrossBorderPage,
+        YesOrNo showPropertyNotEligiblePage
+    ) {
+        var selected = DynamicStringListElement.builder()
+            .code(selectedCountry.name())
+            .label(selectedCountry.getLabel())
+            .build();
+
+        var dsl = DynamicStringList.builder()
+            .value(selected)
+            .build();
+
+        var data = PCSCase.builder()
+            .propertyAddress(AddressUK.builder().postCode(postcode).build())
+            .crossBorderCountriesList(dsl)
+            .showCrossBorderPage(showCrossBorderPage)
+            .showPropertyNotEligiblePage(showPropertyNotEligiblePage)
+            .build();
+
+        var cd = new CaseDetails<PCSCase, State>();
+        cd.setData(data);
+        return cd;
     }
 }

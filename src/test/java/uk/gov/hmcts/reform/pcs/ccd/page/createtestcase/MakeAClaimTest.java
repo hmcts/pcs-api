@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.createtestcase;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -79,7 +80,7 @@ class MakeAClaimTest extends BasePageTest {
         // Then
         PCSCase resultData = response.getData();
         assertThat(resultData.getShowCrossBorderPage()).isEqualTo(expectedShowCrossBorder);
-        
+
         if (expectedShowCrossBorder == YES) {
             assertThat(resultData.getCrossBorderCountriesList()).isNotNull();
             assertThat(resultData.getCrossBorderCountry1()).isEqualTo(expectedCountry1);
@@ -122,6 +123,74 @@ class MakeAClaimTest extends BasePageTest {
             .hasMessageContaining(postcode);
     }
 
+    @Test
+    void shouldSetShowPropertyNotEligiblePageWhenStatusIsNotEligible() {
+        // Given
+        String postcode = "M1 1AA";
+        CaseDetails<PCSCase, State> caseDetails = new CaseDetails<>();
+        PCSCase caseData = PCSCase.builder()
+            .propertyAddress(AddressUK.builder().postCode(postcode).build())
+            .build();
+        caseDetails.setData(caseData);
+
+        EligibilityResult result = EligibilityResult.builder()
+            .status(EligibilityStatus.NOT_ELIGIBLE)
+            .build();
+
+        when(eligibilityService.checkEligibility(postcode, null))
+            .thenReturn(result);
+
+        // When
+        AboutToStartOrSubmitResponse<PCSCase, State> response =
+            getMidEventForPage(event, "Make a claim")
+                .handle(caseDetails, null);
+
+        // Then
+        PCSCase data = response.getData();
+        assertThat(data.getShowPropertyNotEligiblePage())
+            .as("NOT_ELIGIBLE should set propertyNotEligible flag")
+            .isEqualTo(YES);
+        assertThat(data.getShowCrossBorderPage())
+            .as("Cross-border flag should remain NO")
+            .isEqualTo(NO);
+    }
+
+    @Test
+    void shouldResetPageFlagsAtStartOfEachMidEventRun() {
+        // Given: previous run may have set both flags to YES
+        String postcode = "SW1A 1AA";
+        CaseDetails<PCSCase, State> caseDetails = new CaseDetails<>();
+        PCSCase caseData = PCSCase.builder()
+            .propertyAddress(AddressUK.builder().postCode(postcode).build())
+            .build();
+        // simulate stale flags from a prior run
+        caseData.setShowCrossBorderPage(YES);
+        caseData.setShowPropertyNotEligiblePage(YES);
+        caseDetails.setData(caseData);
+
+        EligibilityResult result = EligibilityResult.builder()
+            .status(EligibilityStatus.ELIGIBLE)
+            .build();
+
+        when(eligibilityService.checkEligibility(postcode, null))
+            .thenReturn(result);
+
+        // When
+        AboutToStartOrSubmitResponse<PCSCase, State> response =
+            getMidEventForPage(event, "Make a claim")
+                .handle(caseDetails, null);
+
+        // Then: midEvent resets both to NO for a clean decision
+        PCSCase data = response.getData();
+        assertThat(data.getShowCrossBorderPage())
+            .as("Cross-border flag reset to NO at start")
+            .isEqualTo(NO);
+        assertThat(data.getShowPropertyNotEligiblePage())
+            .as("PropertyNotEligible flag reset to NO at start")
+            .isEqualTo(NO);
+    }
+
+
     private static Stream<Arguments> invalidLegislativeCountryScenarios() {
         return Stream.of(
             // Empty list case
@@ -130,14 +199,14 @@ class MakeAClaimTest extends BasePageTest {
                 Collections.emptyList(),
                 "but got 0"
             ),
-            
-            // Single country case  
+
+            // Single country case
             arguments(
                 "BT1 1AA",
                 Collections.singletonList(LegislativeCountry.NORTHERN_IRELAND),
                 "but got 1"
             ),
-            
+
             // Null list case
             arguments(
                 "NULL_CASE",
@@ -158,7 +227,7 @@ class MakeAClaimTest extends BasePageTest {
                 null,
                 null
             ),
-            
+
             // Not eligible postcode
             arguments(
                 "M1 1AA",
@@ -168,7 +237,7 @@ class MakeAClaimTest extends BasePageTest {
                 null,
                 null
             ),
-            
+
             // No match found
             arguments(
                 "INVALID",
@@ -178,7 +247,7 @@ class MakeAClaimTest extends BasePageTest {
                 null,
                 null
             ),
-            
+
             // Cross-border England/Scotland
             arguments(
                 "TD9 0TU",
@@ -188,7 +257,7 @@ class MakeAClaimTest extends BasePageTest {
                 "England",
                 "Scotland"
             ),
-            
+
             // Cross-border Wales/England
             arguments(
                 "LL65 1AA",
