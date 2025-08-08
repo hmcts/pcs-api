@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.createtestcase;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -122,7 +123,7 @@ class MakeAClaimTest extends BasePageTest {
             .hasMessageContaining(postcode);
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     void shouldSetShowPropertyNotEligiblePageWhenStatusIsNotEligible() {
         // Given
         String postcode = "M1 1AA";
@@ -154,7 +155,7 @@ class MakeAClaimTest extends BasePageTest {
             .isEqualTo(NO);
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     void shouldResetPageFlagsAtStartOfEachMidEventRun() {
         // Given: previous run may have set both flags to YES
         String postcode = "SW1A 1AA";
