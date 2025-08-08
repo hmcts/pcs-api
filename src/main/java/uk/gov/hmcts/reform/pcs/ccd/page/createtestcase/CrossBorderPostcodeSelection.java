@@ -31,6 +31,7 @@ public class CrossBorderPostcodeSelection implements CcdPageConfiguration {
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
             .page("crossBorderPostcodeSelection", this::midEvent)
+
             .pageLabel("Border postcode")
             .showCondition("showCrossBorderPage=\"Yes\"")
             .readonly(PCSCase::getShowCrossBorderPage, NEVER_SHOW)

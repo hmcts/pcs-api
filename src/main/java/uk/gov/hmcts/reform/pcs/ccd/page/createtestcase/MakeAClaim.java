@@ -41,14 +41,12 @@ public class MakeAClaim implements CcdPageConfiguration {
         PCSCase caseData = details.getData();
         String postcode = caseData.getPropertyAddress().getPostCode();
         EligibilityResult eligibilityResult = eligibilityService.checkEligibility(postcode, null);
-
         if (eligibilityResult.getStatus() == EligibilityStatus.LEGISLATIVE_COUNTRY_REQUIRED) {
             validateLegislativeCountries(eligibilityResult.getLegislativeCountries(), postcode);
             setupCrossBorderData(caseData, eligibilityResult.getLegislativeCountries());
         } else {
             caseData.setShowCrossBorderPage(YesOrNo.NO);
         }
-
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
             .data(caseData)
             .build();
@@ -75,7 +73,6 @@ public class MakeAClaim implements CcdPageConfiguration {
             .build();
 
         caseData.setCrossBorderCountriesList(crossBorderCountriesList);
-
         // Set individual cross border countries
         caseData.setCrossBorderCountry1(crossBorderCountries.get(0).getLabel());
         caseData.setCrossBorderCountry2(crossBorderCountries.get(1).getLabel());
