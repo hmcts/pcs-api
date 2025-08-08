@@ -2,7 +2,7 @@ import { Page } from '@playwright/test';
 import { IAction } from '../../interfaces/action.interface';
 
 export class SelectAction implements IAction {
-  async execute(page: Page, fieldName: string, option?: string | number): Promise<void> {
+  async execute(page: Page, action: string, fieldName: string, option?: string | number): Promise<void> {
     if (option === undefined) {
       throw new Error(`Option value is required for select action on '${fieldName}'`);
     }

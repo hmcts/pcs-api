@@ -16,11 +16,8 @@ type ValidationStep = {
   data: validationData;
 };
 
-type ActionTuple =
-  | [string, string]
-  | [string, string, string | number | boolean | string[] | object];
-
-type ValidationTuple = [string, string, validationData];
+type ActionTuple = [string, string] | [string, string, actionData];
+type ValidationTuple = [string, string, validationData] | [string, string];
 
 class Controller {
   private page: Page;
@@ -31,13 +28,12 @@ class Controller {
 
   async performAction(
     action: string,
-    fieldName?: actionData,
+    fieldName: actionData,
     value?: actionData
-  ): Promise<unknown> {
+  ): Promise<void> {
     const actionInstance = ActionRegistry.getAction(action);
-    return await test.step(`Perform action: [${action}] on "${fieldName}"${value !== undefined ? ` with value "${value}"` : ''}`, async () => {
-      const result = await actionInstance.execute(this.page, fieldName, value);
-      return result !== undefined ? result : null;
+    await test.step(`Perform action: [${action}] on "${fieldName}"${value !== undefined ? ` with value "${value}"` : ''}`, async () => {
+      await actionInstance.execute(this.page, action, fieldName, value);
     });
   }
 
@@ -115,7 +111,7 @@ export function initializeExecutor(page: Page): void {
 
 export async function performAction(
   action: string,
-  fieldName?: actionData,
+  fieldName: actionData,
   value?: actionData
 ): Promise<unknown> {
   if (!testExecutor) {
@@ -171,7 +167,9 @@ export async function performValidationGroup(
 
 export async function performValidations(
   groupName: string,
-  ...validations: ValidationTuple[]
+
+  ...validations: ([string, string, validationData] | [string, string])[]
+
 ): Promise<void> {
   if (!testExecutor) {
     throw new Error('Test executor not initialized. Call initializeExecutor(page) first.');

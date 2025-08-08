@@ -4,7 +4,7 @@ import { performAction } from '../../controller';
 import {getUser} from "@utils/helpers/idam-helpers/idam.helper";
 
 export class LoginAction implements IAction {
-  async execute(page: Page, userKey: string): Promise<void> {
+  async execute(page: Page, action: string, userKey: string): Promise<void> {
 
     const userCreds = getUser(userKey);
     if (!userCreds) {
@@ -14,7 +14,7 @@ export class LoginAction implements IAction {
     await test.step(`Test User ${userCreds.email} logging in with roles ${userCreds.roles.join(', ')}`, async () => {
     await performAction('inputText', 'Email address', userCreds.email);
     await performAction('inputText', 'Password', userCreds.password);
-    await performAction('click', 'Sign in');
+    await performAction('clickButton', 'Sign in');
     });
   }
 }

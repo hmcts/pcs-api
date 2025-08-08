@@ -3,7 +3,7 @@ import {parentSuite} from 'allure-js-commons';
 import {initializeExecutor, performAction, performActions, performValidation} from '@utils/controller';
 import {borderPostcode} from "../data/page-data/borderPostcode.page.data";
 import configData from "@config/test.config";
-import {caseOptions} from "@data/page-data/createCase.page.data";
+import {createCase} from "@data/page-data/createCase.page.data";
 import {addressDetails} from "@data/page-data/addressDetails.page.data";
 
 test.beforeEach(async ({page}, testInfo) => {
@@ -17,9 +17,9 @@ test.beforeEach(async ({page}, testInfo) => {
 
 async function selectJurisdictionCaseTypeEvent() {
     await performActions('Case option selection'
-        , ['select', 'Jurisdiction', caseOptions.jurisdiction.posessions]
-        , ['select', 'Case type', caseOptions.caseType.civilPosessions]
-        , ['select', 'Event', caseOptions.event.makeAPosessionClaim]);
+        , ['select', 'Jurisdiction', createCase.caseOption.jurisdiction.possessions]
+        , ['select', 'Case type', createCase.caseOption.caseType.civilPossessions]
+        , ['select', 'Event', createCase.caseOption.event.makeAPossessionClaim]);
     await performAction('clickButton', 'Start');
 }
 

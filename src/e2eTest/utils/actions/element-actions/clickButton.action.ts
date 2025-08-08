@@ -2,7 +2,7 @@ import {Locator, Page} from '@playwright/test';
 import { IAction } from '../../interfaces/action.interface';
 
 export class ClickButtonAction implements IAction {
-  async execute(page: Page, fieldName: string, option?: string): Promise<void> {
+  async execute(page: Page, action: string, fieldName: string, option?: string): Promise<void> {
     let locator: Locator;
 
     if (option) {
@@ -28,7 +28,6 @@ export class ClickButtonAction implements IAction {
                               label:has-text("${fieldName}") ~ button,
                               a:has-text("${fieldName}")`);
     }
-
     await locator.first().click();
   }
 }
