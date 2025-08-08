@@ -58,7 +58,8 @@ test.describe('[Create Case Flow With Address and Claimant Type]  @Master @night
       , caseType: createCase.caseOption.caseType.civilPossessions
       , event: createCase.caseOption.event.makeAPossessionClaim
     });
-    await performAction('enterAddress', {buildingAndStreet: addressDetails.propertyAddressSection.buildingAndStreet
+    await performAction('enterAddress', {
+      buildingAndStreet: addressDetails.propertyAddressSection.buildingAndStreet
       ,addressLine2: addressDetails.propertyAddressSection.addressLine2
       ,addressLine3: addressDetails.propertyAddressSection.addressLine3
       ,townOrCity: addressDetails.propertyAddressSection.townOrCity
