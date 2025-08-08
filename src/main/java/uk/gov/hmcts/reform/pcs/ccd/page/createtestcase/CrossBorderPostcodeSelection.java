@@ -7,12 +7,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.EligibilityResult;
-import uk.gov.hmcts.reform.pcs.postcodecourt.model.EligibilityStatus;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.postcodecourt.service.EligibilityService;
 
@@ -68,25 +68,50 @@ public class CrossBorderPostcodeSelection implements CcdPageConfiguration {
         CaseDetails<PCSCase, State> details,
         CaseDetails<PCSCase, State> detailsBefore) {
 
+        log.info("CrossBorderPostcodeSelection midEvent started for case ID: {}", 
+                details.getId());
+
         PCSCase caseData = details.getData();
+        String postcode = getPostcode(caseData);
+        
+        log.debug("Processing cross-border postcode selection for postcode: {}", postcode);
 
         String countryCode = getSelectedCountryCode(caseData);
-        log.debug("Cross-border country code: {}", countryCode);
-        String postcode = getPostcode(caseData);
+        log.debug("Selected cross-border country code: {}", countryCode);
+        
         LegislativeCountry selectedCountry = LegislativeCountry.valueOf(countryCode);
-        EligibilityResult eligibilityResult = eligibilityService.checkEligibility(postcode, selectedCountry);
+        log.debug("Selected legislative country: {}", selectedCountry);
+        
+        log.info("Performing eligibility check for postcode: {} with selected country: {}", 
+                postcode, selectedCountry);
+        
+        EligibilityResult eligibilityResult =
+            eligibilityService.checkEligibility(postcode, selectedCountry);
 
-        log.debug("Eligibility check result for postcode {} : {}", postcode, eligibilityResult.getStatus());
+        log.debug("Eligibility check completed - Status: {}, Legislative Countries: {}", 
+                eligibilityResult.getStatus(), eligibilityResult.getLegislativeCountries());
 
-        if (eligibilityResult.getStatus() == EligibilityStatus.ELIGIBLE) {
-            //TODO Jira-HDPI-1271  is claimant type page , please
-            // wire up.
-            log.debug("Property is eligible for claim");
-        } else {
-            //TODO Jira-HDPI-1254
-            log.debug("Property is not eligible (status: {})", eligibilityResult.getStatus());
+        switch (eligibilityResult.getStatus()) {
+            case ELIGIBLE -> {
+                //TODO Jira-HDPI-1271  is claimant type page , please
+                // wire up.
+                log.info("Cross-border eligibility check: ELIGIBLE for postcode {} with country {}. "
+                        + "Proceeding to normal flow", postcode, selectedCountry);
+            }
+            case NOT_ELIGIBLE -> {
+                log.info("Cross-border eligibility check: NOT_ELIGIBLE for postcode {} with country {}. "
+                        + "Redirecting to PropertyNotEligible page", postcode, selectedCountry);
+                caseData.setShowPropertyNotEligiblePage(YesOrNo.YES);
+            }
+            default -> {
+                log.debug("Cross-border eligibility check: Unexpected status {} for postcode {} with country {}. "
+                        + "This may indicate a data or configuration issue", 
+                        eligibilityResult.getStatus(), postcode, selectedCountry);
+            }
         }
 
+        log.info("CrossBorderPostcodeSelection midEvent completed for case ID: {}", 
+                details.getId());
         return response(caseData);
     }
 
