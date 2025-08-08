@@ -59,7 +59,6 @@ public class MakeAClaim implements CcdPageConfiguration {
             eligibilityResult.getLegislativeCountries()
         );
 
-        // Reset flags every run
         caseData.setShowCrossBorderPage(YesOrNo.NO);
         caseData.setShowPropertyNotEligiblePage(YesOrNo.NO);
         log.debug("Reset eligibility flags - showCrossBorderPage: NO, showPropertyNotEligiblePage: NO");
