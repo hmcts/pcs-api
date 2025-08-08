@@ -66,8 +66,8 @@ Playwright 1.30+ | TypeScript 4.9+
 ## 4. Available Actions and Validations
 
 ### Actions
-| Action          | Example Usage                                                                                                                                                                       |
-|------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Action          | Example Usage |
+|------------------|---------------|
 | inputText     | `performAction('inputText', 'Email', 'test@example.com')`                                                                                                                           |
 | check         | `performAction('check', 'RememberMe')`                                                                                                                                              |
 | login         | `performAction('login', 'citizen')`                                                                                                                                                 |
@@ -88,13 +88,7 @@ Playwright 1.30+ | TypeScript 4.9+
 | Validation          | Example Usage |
 |------------------|---------------|
 | text           | `performValidation('text', 'testElement')`                                                                                           |
-| value          | `performValidation('value', 'testElement')`                                                                                          |
 | visibility     | `performValidation('visibility', 'testElement')`                                                                                     |
-| enabled        | `performValidation('enabled', 'testElement')`                                                                                        |
-| checked        | `performValidation('checked', 'testElement')`                                                                                        |
-| count          | `performValidation('count', 'testElement')`                                                                                          |
-| css            | `performValidation('css', 'testElement')`                                                                                            |
-| attribute      | `performValidation('attribute', 'testElement', 'attributeName')`                                                                     |
 | bannerAlert    | `performValidation('bannerAlert', {message: "Case has been created."})`                                                              |
 | formLabelValue | `performValidation('formLabelValue',  "Applicant's forename", {value:'TestUser'})`                                                   |
 | mainHeader     | `performValidation('mainHeader', {expected: createCase.mainHeader})`                                                                 |
