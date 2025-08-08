@@ -1,6 +1,6 @@
 export const addressDetails = {
   title: 'Create a case - HM Courts & Tribunals Service - GOV.UK',
-  mainHeader: "What is the address of the property you're claiming possession of?",
+  mainHeader: 'What is the address of the property you\'re claiming possession of?',
   propertyAddressSection: {
     sectionTitle: 'Property address',
     englandPostcode: 'W3 7RX',

@@ -17,6 +17,5 @@
       "@config/*": ["config/*"],
       "@data/*": ["data/*"]
     }
-  },
-  "include": ["**/*.ts"]
+  }
 }
