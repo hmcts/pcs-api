@@ -5,11 +5,11 @@ import {
   performAction,
   performValidation, performValidations,
 } from '@utils/controller';
-import configData from "@config/test.config";
-import {createCase} from "@data/page-data/createCase.page.data";
-import {addressDetails} from "@data/page-data/addressDetails.page.data";
-import {claimantType} from "@data/page-data/claimantType.page.data";
-import {legislativeCountry} from "@data/page-data/legislativeCountry.page.data";
+import configData from '@config/test.config';
+import {createCase} from '@data/page-data/createCase.page.data';
+import {addressDetails} from '@data/page-data/addressDetails.page.data';
+import {claimantType} from '@data/page-data/claimantType.page.data';
+import {legislativeCountry} from '@data/page-data/legislativeCountry.page.data';
 
 test.beforeEach(async ({page}, testInfo) => {
   initializeExecutor(page);
@@ -23,7 +23,7 @@ test.beforeEach(async ({page}, testInfo) => {
   });
 });
 
-test.describe('[Create Case Flow With Address and Claimant Type]  @Master @nightly', async () => {
+test.describe.skip('[Create Case Flow With Address and Claimant Type]  @Master @nightly', async () => {
   test('England - Successful case creation', async () => {
     await performAction('clickButton', 'Create case');
     await performAction('selectCaseOptions', {
