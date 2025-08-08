@@ -17,11 +17,11 @@ import uk.gov.hmcts.reform.pcs.ccd.page.createtestcase.DocumentUpload;
 import uk.gov.hmcts.reform.pcs.ccd.page.createtestcase.MakeAClaim;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 
-import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.createTestApplication;
+import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.uploadDocumentPoc;
 
 @Component
 @AllArgsConstructor
-public class CreateTestCase implements CCDConfig<PCSCase, State, UserRole> {
+public class UploadDocumentPoc implements CCDConfig<PCSCase, State, UserRole> {
 
     private final PcsCaseService pcsCaseService;
 
@@ -29,14 +29,14 @@ public class CreateTestCase implements CCDConfig<PCSCase, State, UserRole> {
     public void configure(ConfigBuilder<PCSCase, State, UserRole> configBuilder) {
         EventBuilder<PCSCase, UserRole, State> eventBuilder =
             configBuilder
-                .decentralisedEvent(createTestApplication.name(), this::submit, this::start)
+                .decentralisedEvent(uploadDocumentPoc.name(), this::submit, this::start)
                 .initialState(State.CASE_ISSUED)
-                .name("Make a claim test")
+                .name("Upload Document - POC")
                 .grant(Permission.CRUD, UserRole.PCS_CASE_WORKER);
 
         new PageBuilder(eventBuilder)
-            .add(new MakeAClaim())
             .add(new ClaimantInformation())
+            .add(new MakeAClaim())
             .add(new DocumentUpload());
     }
 
@@ -53,5 +53,4 @@ public class CreateTestCase implements CCDConfig<PCSCase, State, UserRole> {
 
         pcsCaseService.createCase(caseReference, pcsCase);
     }
-
 }

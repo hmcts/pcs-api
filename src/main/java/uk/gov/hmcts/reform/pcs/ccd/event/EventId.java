@@ -8,5 +8,6 @@ public enum EventId {
     citizenUpdateApplication,
     createTestApplication,
     processClaimPayment,
+    uploadDocumentPoc,
 
 }
