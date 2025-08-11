@@ -67,28 +67,25 @@ public class CrossBorderPostcodeSelection implements CcdPageConfiguration {
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(
         CaseDetails<PCSCase, State> details,
         CaseDetails<PCSCase, State> detailsBefore) {
-
-        log.info("CrossBorderPostcodeSelection midEvent started for case ID: {}", 
-                details.getId());
-
+        
         PCSCase caseData = details.getData();
         String postcode = getPostcode(caseData);
-        
+
         log.debug("Processing cross-border postcode selection for postcode: {}", postcode);
 
         String countryCode = getSelectedCountryCode(caseData);
         log.debug("Selected cross-border country code: {}", countryCode);
-        
+
         LegislativeCountry selectedCountry = LegislativeCountry.valueOf(countryCode);
         log.debug("Selected legislative country: {}", selectedCountry);
-        
-        log.info("Performing eligibility check for postcode: {} with selected country: {}", 
+
+        log.info("Performing eligibility check for postcode: {} with selected country: {}",
                 postcode, selectedCountry);
-        
+
         EligibilityResult eligibilityResult =
             eligibilityService.checkEligibility(postcode, selectedCountry);
 
-        log.debug("Eligibility check completed - Status: {}, Legislative Countries: {}", 
+        log.debug("Eligibility check completed - Status: {}, Legislative Countries: {}",
                 eligibilityResult.getStatus(), eligibilityResult.getLegislativeCountries());
 
         switch (eligibilityResult.getStatus()) {
@@ -105,12 +102,12 @@ public class CrossBorderPostcodeSelection implements CcdPageConfiguration {
             }
             default -> {
                 log.debug("Cross-border eligibility check: Unexpected status {} for postcode {} with country {}. "
-                        + "This may indicate a data or configuration issue", 
+                        + "This may indicate a data or configuration issue",
                         eligibilityResult.getStatus(), postcode, selectedCountry);
             }
         }
 
-        log.info("CrossBorderPostcodeSelection midEvent completed for case ID: {}", 
+        log.info("CrossBorderPostcodeSelection midEvent completed for case ID: {}",
                 details.getId());
         return response(caseData);
     }
