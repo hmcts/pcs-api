@@ -262,7 +262,7 @@ sonarqube {
       "**/*Constants.java," +
       "**/model/*.java," +
       "**/uk/gov/hmcts/reform/pcs/Application.java," +
-      "**/uk/gov/hmcts/reform/pcs/ccd/CaseType.java," +
+      "**/uk/gov/hmcts/reform/pcs/ccd/**/*.java," +
       "**/uk/gov/hmcts/reform/pcs/config/*.java," +
       "**/uk/gov/hmcts/reform/pcs/ccd/accesscontrol/**/*.java," +
       "**/uk/gov/hmcts/reform/pcs/ccd/config/HighLevelDataSetupApp.java," +
@@ -445,7 +445,7 @@ tasks.withType(CftlibExec).configureEach {
   environment 'PCS_DB_USER_NAME', 'postgres'
   environment 'PCS_DB_PASSWORD', 'postgres'
   environment 'PCS_DB_PORT', '6432'
-  environment 'POC_APIS_URL', 'http://localhost:3206'
+  environment 'CCD_DECENTRALISED_CASE-TYPE-SERVICE-URLS_PCS', 'http://localhost:3206'
   environment 'SPRING_FLYWAY_ENABLED', 'true'
   environment 'SPRING_PROFILES_ACTIVE', 'dev'
   environment 'XUI_JURISDICTIONS', 'PCS'
