@@ -7,11 +7,15 @@ export const createCase =
         {
           possessions: 'Possessions'
         },
-      caseType:
+     /* caseType:
         {
           civilPossessions: process.env.CHANGE_ID
             ? `Civil Possessions ${process.env.CHANGE_ID}`
             : 'Civil Possessions'
+        },*/
+      caseType:
+        {
+          civilPossessions: 'Civil Possessions 424'
         },
       event:
         {
