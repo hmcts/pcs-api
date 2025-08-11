@@ -1,15 +1,24 @@
-// validations/text.validation.ts
-import { Page, expect } from '@playwright/test';
-import {IValidation, ValidationData} from "../../interfaces/validation.interface";
+
+import { Page, expect,test } from '@playwright/test';
+import {IValidation, validationData} from "../../interfaces/validation.interface";
 
 export class TextValidation implements IValidation {
-  async validate(page: Page, fieldName: string, data: ValidationData): Promise<void> {
-    const locator = page.locator(`[data-testid="${fieldName}"]`);
-
-    if ('expected' in data) {
-      await expect(locator).toHaveText(String(data.expected));
-    } else {
-      throw new Error('TextValidation requires "expected" property in data');
+  async validate(page: Page, fieldName: string, data: validationData): Promise<void> {
+    switch (data.elementType) {
+      case 'link':
+        data.elementType = 'a';
+        break;
+      case 'heading':
+        data.elementType = 'h1.govuk-heading-l';
+        break;
+      case 'paragraph':
+        data.elementType = 'p';
+        break;
+      case 'inlineText':
+        data.elementType = 'span';
+        break;
     }
+    const locator = page.locator(`${data.elementType}:has-text("${data.text}")`)
+        await expect(locator).toHaveText(String(data.text));
   }
 }
