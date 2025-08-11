@@ -44,6 +44,7 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
 
         builder.decentralisedCaseType(getCaseType(), getCaseTypeName(), CASE_TYPE_DESCRIPTION);
         builder.jurisdiction(JURISDICTION_ID, JURISDICTION_NAME, JURISDICTION_DESCRIPTION);
+        buildSupportingDocumentsCaseFileViewTab(builder);
 
         String forenameLabel = "Applicant Forename";
         String surnameLabel = "Applicant Surname";
@@ -85,5 +86,11 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
         builder.tab("hidden", "HiddenFields")
             .showCondition(NEVER_SHOW)
             .field(PCSCase::getPageHeadingMarkdown);
+    }
+
+    private void buildSupportingDocumentsCaseFileViewTab(ConfigBuilder<PCSCase, State, UserRole> configBuilder) {
+        configBuilder.tab("caseFileView", "Supporting Documents")
+            .forRoles(UserRole.PCS_CASE_WORKER)
+            .field(PCSCase::getCaseFileView, null, "#ARGUMENT(CaseFileView)");
     }
 }
