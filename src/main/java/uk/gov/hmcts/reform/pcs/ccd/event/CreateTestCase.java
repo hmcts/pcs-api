@@ -19,7 +19,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.page.createtestcase.ClaimantInformation;
 import uk.gov.hmcts.reform.pcs.ccd.page.createtestcase.ContactPreferences;
-import uk.gov.hmcts.reform.pcs.ccd.page.createtestcase.EnterPropertyAddress;
+import uk.gov.hmcts.reform.pcs.ccd.page.createtestcase.MakeAClaim;
 import uk.gov.hmcts.reform.pcs.ccd.service.ClaimService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
@@ -49,7 +49,7 @@ public class CreateTestCase implements CCDConfig<PCSCase, State, UserRole> {
                 .grant(Permission.CRUD, UserRole.PCS_CASE_WORKER);
 
         new PageBuilder(eventBuilder)
-            .add(new EnterPropertyAddress())
+            .add(new MakeAClaim())
             .add(new ClaimantInformation())
             .add(new ContactPreferences());
 

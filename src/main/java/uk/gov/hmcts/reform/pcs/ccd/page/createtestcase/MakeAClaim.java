@@ -8,7 +8,7 @@ import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 
-public class EnterPropertyAddress implements CcdPageConfiguration {
+public class MakeAClaim implements CcdPageConfiguration {
 
     @Override
     public void addTo(PageBuilder pageBuilder) {

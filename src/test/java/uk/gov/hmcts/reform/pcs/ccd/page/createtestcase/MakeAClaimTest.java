@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim;
+package uk.gov.hmcts.reform.pcs.ccd.page.createtestcase;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -10,17 +10,16 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
-import uk.gov.hmcts.reform.pcs.ccd.page.createtestcase.EnterPropertyAddress;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
-public class EnterPropertyAddressTest extends BasePageTest {
+public class MakeAClaimTest extends BasePageTest {
 
     private Event<PCSCase, UserRole, State> event;
 
     @BeforeEach
     void setUp() {
-        event = buildPageInTestEvent(new EnterPropertyAddress());
+        event = buildPageInTestEvent(new MakeAClaim());
     }
 
     @Test
