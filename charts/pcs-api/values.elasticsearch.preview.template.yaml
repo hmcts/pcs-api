@@ -1,18 +1,5 @@
 ccd:
   elasticsearch:
-    nameOverride: ${SERVICE_NAME}-es
-    clusterName: "es"
-    replicas: 1
-    minimumMasterNodes: 1
-    antiAffinity: "soft"
-    esJavaOpts: "-Xmx512m -Xms512m"
-    extraEnvs:
-      - name: discovery.type
-        value: single-node
-      - name: cluster.initial_master_nodes
-        value: ""
-      - name: action.auto_create_index
-        value: .security*,.watches,.triggered_watches,.watcher-history-*,.logstash_dead_letter,.ml*
     persistence:
       enabled: true
     volumeClaimTemplate:
@@ -20,48 +7,3 @@ ccd:
         requests:
           storage: 500Mi
       storageClassName: managed-lrs
-    ingress:
-      enabled: false
-  logstash:
-    image: "hmctspublic.azurecr.io/imported/logstash/logstash"
-    imageTag: "7.16.1"
-    imagePullPolicy: "IfNotPresent"
-    logstashJavaOpts: "-Xmx1g -Xms512M"
-xui-webapp:
-  enabled: true
-  nodejs:
-    imagePullPolicy: Always
-    releaseNameOverride: ${SERVICE_NAME}-xui-webapp
-    image: hmctspublic.azurecr.io/xui/webapp:latest
-    ingressHost: xui-${SERVICE_FQDN}
-    devmemoryRequests: 500Mi
-    devcpuRequests: 500m
-    devmemoryLimits: 1Gi
-    devcpuLimits: 1
-    environment:
-      HEALTH_CCD_COMPONENT_API: http://${SERVICE_NAME}-ccd-api-gw/health
-      HEALTH_CCD_DATA_API: http://${SERVICE_NAME}-ccd-data-store-api/health
-      HEALTH_TERMS_AND_CONDITIONS_API: http://xui-terms-and-conditions-aat.service.core-compute-aat.internal/health
-      SERVICES_CCD_COMPONENT_API: http://${SERVICE_NAME}-ccd-api-gw
-      SERVICES_CCD_DATA_STORE_API: http://${SERVICE_NAME}-ccd-data-store-api
-      SERVICES_TERMS_AND_CONDITIONS: http://xui-terms-and-conditions-aat.service.core-compute-aat.internal
-      SERVICES_HEARINGS_COMPONENT_API: http://jurisdiction-hearings-api-aat.service.core-compute-aat.internal
-      JURISDICTIONS: PCS
-      FEATURE_REDIS_ENABLED: false
-      REDISCLOUD_URL: http://dummyrediscloudurl
-      FEATURE_APP_INSIGHTS_ENABLED: false
-      FEATURE_SECURE_COOKIE_ENABLED: false
-      FEATURE_HELMET_ENABLED: false
-      FEATURE_OIDC_ENABLED: false
-      FEATURE_ACCESS_MANAGEMENT_ENABLED: true
-      PROTOCOL: http
-      PREVIEW_DEPLOYMENT_ID: "pcs-${CHANGE_ID}"
-      LAUNCH_DARKLY_CLIENT_ID: 645baeea2787d812993d9d70
-    keyVaults:
-      rpx:
-        resourceGroup: rpx
-        secrets:
-          - mc-s2s-client-secret
-          - mc-idam-client-secret
-          - system-user-name
-          - system-user-password
