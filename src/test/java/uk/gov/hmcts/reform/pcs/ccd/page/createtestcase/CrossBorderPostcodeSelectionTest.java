@@ -204,8 +204,8 @@ class CrossBorderPostcodeSelectionTest extends BasePageTest {
             .showPropertyNotEligiblePage(showPropertyNotEligiblePage)
             .build();
 
-        var cd = new CaseDetails<PCSCase, State>();
-        cd.setData(data);
-        return cd;
+        var caseDetails = new CaseDetails<PCSCase, State>();
+        caseDetails.setData(data);
+        return caseDetails;
     }
 }
