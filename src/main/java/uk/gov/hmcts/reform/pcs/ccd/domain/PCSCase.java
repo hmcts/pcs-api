@@ -8,6 +8,8 @@ import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseworkerAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenAccess;
+import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
+import static uk.gov.hmcts.ccd.sdk.type.FieldType.DynamicRadioList;
 
 /**
  * The main domain model representing a possessions case.
@@ -39,6 +41,29 @@ public class PCSCase {
     )
     @External
     private AddressUK propertyAddress;
+
+    @CCD(searchable = false, access = {CitizenAccess.class, CaseworkerAccess.class})
+    private YesOrNo showCrossBorderPage;
+    @CCD(
+        typeOverride = DynamicRadioList,
+        access = {CitizenAccess.class, CaseworkerAccess.class}
+    )
+    @External
+    private DynamicStringList crossBorderCountriesList;
+
+    @CCD(
+        searchable = false,
+        access = {CitizenAccess.class, CaseworkerAccess.class}
+    )
+    @External
+    private String crossBorderCountry1;
+
+    @CCD(
+        searchable = false,
+        access = {CitizenAccess.class, CaseworkerAccess.class}
+    )
+    @External
+    private String crossBorderCountry2;
 
     @CCD(
         searchable = false,
