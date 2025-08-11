@@ -86,7 +86,6 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
         builder.tab("hidden", "HiddenFields")
             .showCondition(NEVER_SHOW)
             .field(PCSCase::getPageHeadingMarkdown);
-
     }
 
     private void buildSupportingDocumentsCaseFileViewTab(ConfigBuilder<PCSCase, State, UserRole> configBuilder) {
