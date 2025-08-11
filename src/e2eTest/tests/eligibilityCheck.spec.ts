@@ -40,7 +40,7 @@ async function selectCountryRadioBtn(country: string) {
   await performAction('clickButton', borderPostcode.continue);
 }
 
-test.describe.skip('[Eligibility Checks for Cross border postcodes] @nightly', async () => {
+test.describe('[Eligibility Checks for Cross border postcodes] @nightly', async () => {
   //Skipping these tests until the postcode data insertion is handled in AAT via automation
   test('Verify cross border postcode eligibility check redirection and content for England and Wales', async ({page}) => {
       await inputAddressDetails(borderPostcode.englandWalesPostcode)
