@@ -1,10 +1,6 @@
 import {test} from '@playwright/test';
 import {parentSuite} from 'allure-js-commons';
 import {initializeExecutor, performAction, performActions, performValidation} from '@utils/controller';
-import {borderPostcode} from "@data/page-data/borderPostcode.page.data";
-import configData from "@config/test.config";
-import {createCase} from "@data/page-data/createCase.page.data";
-import {addressDetails} from "@data/page-data/addressDetails.page.data";
 import {borderPostcode} from '@data/page-data/borderPostcode.page.data';
 import configData from '@config/test.config';
 import {createCase} from '@data/page-data/createCase.page.data';
@@ -69,18 +65,18 @@ test.describe.skip('[Eligibility Checks for Cross border postcodes] @nightly', a
 
 
     test('verify cross border postcode page redirection for england and scotland', async () => {
-            await inputAddressDetails(borderPostcode.enlandScotlandPostcode)
+            await inputAddressDetails(borderPostcode.englandScotlandPostcode)
             await performValidation('text', {
-                "text": borderPostcode.borderPostcodeHeader,
+                "text": borderPostcode.mainHeader,
                 "elementType": "heading"
             });
         }
     );
 
     test('verify cross border postcode page for england and scotland content', async () => {
-        await inputAddressDetails(borderPostcode.enlandScotlandPostcode)
+        await inputAddressDetails(borderPostcode.englandScotlandPostcode)
         await performValidation('text', {
-            "text": borderPostcode.borderPostcodeHeader,
+            "text": borderPostcode.mainHeader,
             "elementType": "heading"
         });
         await performValidation('text', {
@@ -91,8 +87,8 @@ test.describe.skip('[Eligibility Checks for Cross border postcodes] @nightly', a
             "text": borderPostcode.englandScotlandInlineContent,
             "elementType": "inlineText"
         });
-        await performValidation('text', {"text": borderPostcode.continueBtn, "elementType": "button"})
-        await performValidation('text', {"text": borderPostcode.cancelLink, "elementType": "link"})
+        await performValidation('text', {"text": borderPostcode.continue, "elementType": "button"})
+        await performValidation('text', {"text": borderPostcode.cancel, "elementType": "link"})
     });
 })
 

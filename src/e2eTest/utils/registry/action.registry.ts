@@ -4,7 +4,7 @@ import { InputTextAction } from '../actions/element-actions/inputText.action';
 import { CheckAction } from '../actions/element-actions/check.action';
 import { SelectAction } from '../actions/element-actions/select.action';
 import { CreateUserAndLoginAction } from "../actions/custom-actions/createUserAndLogin.action";
-import { navigateToUrl } from "@utils/actions/custom-actions/navigateToUrl.action";
+import { NavigateToUrl } from "@utils/actions/custom-actions/navigateToUrl.action";
 import { CreateCaseAction } from "@utils/actions/custom-actions/createCase.action";
 import { ClickButtonAction } from "../actions/element-actions/clickButton.action";
 import { ClickRadioButton } from "../actions/element-actions/clickRadioButton.action";
@@ -17,7 +17,7 @@ export class ActionRegistry {
     ['check', new CheckAction()],
     ['select', new SelectAction()],
     ['createUserAndLogin', new CreateUserAndLoginAction()],
-    ['navigateToUrl', new navigateToUrl()],
+    ['navigateToUrl', new NavigateToUrl()],
     ['clickRadioButton', new ClickRadioButton()],
     ['selectAddress', new CreateCaseAction()],
     ['selectLegislativeCountry', new CreateCaseAction()],
