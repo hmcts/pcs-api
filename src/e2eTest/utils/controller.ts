@@ -6,7 +6,7 @@ import { ValidationRegistry } from './registry/validation.registry';
 
 type ActionStep = {
   action: string;
-  fieldName: string;
+  fieldName?: string;
   value?: string | number | boolean | string[] | object;
 };
 
@@ -28,7 +28,7 @@ class Controller {
 
   async performAction(
     action: string,
-    fieldName: actionData,
+    fieldName?: actionData,
     value?: actionData
   ): Promise<void> {
     const actionInstance = ActionRegistry.getAction(action);
@@ -111,7 +111,7 @@ export function initializeExecutor(page: Page): void {
 
 export async function performAction(
   action: string,
-  fieldName: actionData,
+  fieldName?: actionData,
   value?: actionData
 ): Promise<unknown> {
   if (!testExecutor) {

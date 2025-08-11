@@ -5,6 +5,8 @@ import { actionData, IAction } from '../../interfaces/action.interface';
 import { Page } from '@playwright/test';
 import { initIdamAuthToken, initServiceAuthToken, getUser } from 'utils/helpers/idam-helpers/idam.helper';
 import { performAction, performActions } from '@utils/controller';
+import {createCase} from "@data/page-data/createCase.page.data";
+import {addressDetails} from "@data/page-data/addressDetails.page.data";
 
 let caseInfo: { id: string; fid: string; state: string };
 const testConfig = TestConfig.ccdCase;
@@ -19,8 +21,8 @@ export class CreateCaseAction implements IAction {
       ['selectAddress', () => this.selectAddress(fieldName)],
       ['selectLegislativeCountry', () => this.selectLegislativeCountry(fieldName)],
       ['selectClaimantType', () => this.selectClaimantType(fieldName)],
-      ['selectCaseOptions', () => this.selectCaseOptions(fieldName)],
-      ['enterAddress', () => this.enterAddress(fieldName)]
+      ['selectCaseOptions', () => this.selectCaseOptions()],
+      ['enterAddress', () => this.enterTestAddressManually()]
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) throw new Error(`No action found for '${action}'`);
@@ -45,26 +47,24 @@ export class CreateCaseAction implements IAction {
   }
 
   private async selectLegislativeCountry(caseData: actionData) {
-    await performAction('clickRadioButton', (caseData as { country: string }).country);
+    await performAction('clickRadioButton', caseData);
     await performAction('clickButton', 'Continue');
   }
 
   private async selectClaimantType(caseData: actionData) {
-    await performAction('clickRadioButton', (caseData as { claimantType: string }).claimantType);
+    await performAction('clickRadioButton', caseData);
     await performAction('clickButton', 'Continue');
   }
 
-  private async selectCaseOptions(caseData: actionData) {
+  private async selectCaseOptions() {
     await performActions('Case option selection'
-      , ['select', 'Jurisdiction', (caseData as { jurisdiction: string }).jurisdiction]
-      , ['select', 'Case type', (caseData as { caseType: string }).caseType]
-      , ['select', 'Event', (caseData as { event: string }).event]);
+      , ['select', 'Jurisdiction', createCase.possessionsJurisdiction]
+      , ['select', 'Case type', createCase.caseType]
+      , ['select', 'Event', createCase.makeAPossessionClaimEvent]);
     await performAction('clickButton', 'Start');
   }
 
-  private async enterAddress(caseData: actionData) {
-    const addressDetails = caseData as { postcode: string; country: string, walesCounty:string, townOrCity:string, addressLine3:string
-      addressLine2:string, buildingAndStreet:string };
+  private async enterTestAddressManually() {
     await performActions(
       'Enter Address Manually'
       , ['clickButton', "I can't enter a UK postcode"]

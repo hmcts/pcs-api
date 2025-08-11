@@ -1,27 +1,12 @@
 export const claimantType =
   {
-    title : 'Create a case - HM Courts & Tribunals Service - GOV.UK',
-    mainHeader : 'Claimant type',
-    claimantTypeOptions:
-      {
-        elementType: 'radio',
-        wales:
-          {
-            privateLandlord: 'Private landlord',
-            registeredCommunityLandlord: 'Registered community landlord',
-            mortgageLender: 'Mortgage lender',
-            other: 'Other',
-          },
-        england:
-          {
-            privateLandlord: 'Private landlord',
-            registeredProviderForSocialHousing: 'Registered provider of social housing',
-            mortgageLender: 'Mortgage lender',
-            other: 'Other',
-          }
-      },
-    errorMessage: {
-      header: 'There is a problem',
-      errorMessage: 'Who is the claimant in this case? is required'
-    }
+    title: 'Create a case - HM Courts & Tribunals Service - GOV.UK',
+    mainHeader: 'Claimant type',
+    elementType: 'radio',
+    privateLandlord: 'Private landlord',
+    registeredCommunityLandlord: 'Registered community landlord',
+    mortgageLender: 'Mortgage lender',
+    other: 'Other',
+    registeredProviderForSocialHousing: 'Registered provider of social housing',
+    header: 'There is a problem',
   };

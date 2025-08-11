@@ -1,7 +1,6 @@
 export const addressDetails = {
   title: 'Create a case - HM Courts & Tribunals Service - GOV.UK',
   mainHeader: 'What is the address of the property you\'re claiming possession of?',
-  propertyAddressSection: {
     sectionTitle: 'Property address',
     englandPostcode: 'W3 7RX',
     walesPostcode: 'CF61 1ZH',
@@ -12,13 +11,10 @@ export const addressDetails = {
     walesCounty: 'Cardiff',
     buildingAndStreet: '123 Test Street',
     townOrCity: 'ManualTown',
-    postcode: 'MT1 2AB',
+    postcode: 'SL1 1SP',
     country: 'United Kingdom',
-  },
-  errorMessage: {
     header: 'There is a problem',
     errorMessage: 'An address is required',
-  }
 };
 
 

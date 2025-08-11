@@ -17,7 +17,7 @@ export class BannerAlertValidation implements IValidation {
                 throw new Error('BannerAlertValidation requires "message" property in data.');
             }
 
-            const message = String(data.message);
+            const message = String(data);
 
             const isPattern =
                 message.includes('.*') ||

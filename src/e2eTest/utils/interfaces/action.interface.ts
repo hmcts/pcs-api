@@ -6,7 +6,7 @@ export interface IAction {
   execute(
     page: Page,
     action: string,
-    fieldName: actionData,
+    fieldName?: actionData,
     value?: actionData
   ): Promise<void>;
 }
