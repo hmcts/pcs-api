@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.ccd.page.createtestcase;
+package uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim;
 
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 
@@ -60,9 +60,9 @@ public class CrossBorderPostcodeSelection implements CcdPageConfiguration {
                 </div>
                 """)
             .mandatory(PCSCase::getCrossBorderCountriesList,
-                       null,
-                       null,
-                       "Is the property located in ${crossBorderCountry1} or ${crossBorderCountry2}?");
+                null,
+                null,
+                "Is the property located in ${crossBorderCountry1} or ${crossBorderCountry2}?");
     }
 
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(

@@ -12,8 +12,6 @@ import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
 import static uk.gov.hmcts.ccd.sdk.type.FieldType.DynamicRadioList;
-import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
-import static uk.gov.hmcts.ccd.sdk.type.FieldType.DynamicRadioList;
 
 /**
  * The main domain model representing a possessions case.
