@@ -50,7 +50,7 @@ module.exports = defineConfig({
       name: 'firefox',
       use: {
         ...devices["Desktop Firefox"],
-        channel: 'chrome',
+        channel: 'firefox',
         screenshot: 'only-on-failure',
         video: 'retain-on-failure',
         trace: 'on-first-retry',

@@ -26,7 +26,7 @@ async function createCaseWithAddress() {
 
 async function searchCase(caseNumber: string) {
   await performAction('select', 'Jurisdiction', createCase.possessionsJurisdiction);
-  await performAction('select', 'Case type', createCase.caseType);
+  await performAction('select', 'Case type', createCase.caseType.civilPossessions);
   await performAction('inputText', 'Case Number', caseNumber);
   await performAction('clickButton', 'Apply');
 }

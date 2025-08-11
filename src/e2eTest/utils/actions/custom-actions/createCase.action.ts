@@ -59,7 +59,7 @@ export class CreateCaseAction implements IAction {
   private async selectCaseOptions() {
     await performActions('Case option selection'
       , ['select', 'Jurisdiction', createCase.possessionsJurisdiction]
-      , ['select', 'Case type', createCase.caseType]
+      , ['select', 'Case type', createCase.caseType.civilPossessions]
       , ['select', 'Event', createCase.makeAPossessionClaimEvent]);
     await performAction('clickButton', 'Start');
   }

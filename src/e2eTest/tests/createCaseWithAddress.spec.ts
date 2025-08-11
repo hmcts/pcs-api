@@ -29,6 +29,7 @@ test.describe('[Create Case Flow With Address and Claimant Type]  @Master @night
       addressIndex: addressDetails.addressIndex});
     await performAction('selectLegislativeCountry', legislativeCountry.england);
     await performAction('selectClaimantType', claimantType.registeredProviderForSocialHousing);
+    await performAction('clickButton', 'Save and continue');
     await performValidation('bannerAlert', 'Case #.* has been created.');
     await performAction('clickTab', 'Property Details');
     await performValidations('address info is not null '
