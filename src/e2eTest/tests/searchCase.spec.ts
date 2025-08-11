@@ -11,11 +11,11 @@ import {createCase} from "@data/page-data/createCase.page.data";
 import {getCaseInfo} from '@utils/actions/custom-actions/createCase.action';
 
 test.beforeEach(async ({page}) => {
-  initializeExecutor(page);
-  await parentSuite('Case Creation');
-  await performAction('navigateToUrl', configData.manageCasesBaseURL);
-  await performAction('login', 'exuiUser');
-  createCaseWithAddress()
+    initializeExecutor(page);
+    await parentSuite('Case Creation');
+    await performAction('navigateToUrl', configData.manageCasesBaseURL);
+    await performAction('createUserAndLogin', ['caseworker-pcs', 'caseworker']);
+    createCaseWithAddress();
 });
 
 async function createCaseWithAddress() {

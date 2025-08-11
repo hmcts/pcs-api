@@ -1,9 +1,9 @@
-import {test} from '@playwright/test';
-import {parentSuite} from 'allure-js-commons';
+import { test } from '@playwright/test';
+import { parentSuite } from 'allure-js-commons';
 import {
   initializeExecutor,
   performAction,
-  performValidation, performValidations,
+  performValidation, performValidations
 } from '@utils/controller';
 import configData from '@config/test.config';
 import {createCase} from '@data/page-data/createCase.page.data';
@@ -11,12 +11,11 @@ import {addressDetails} from '@data/page-data/addressDetails.page.data';
 import {claimantType} from '@data/page-data/claimantType.page.data';
 import {legislativeCountry} from '@data/page-data/legislativeCountry.page.data';
 
-test.beforeEach(async ({page}, testInfo) => {
+test.beforeEach(async ({ page }, testInfo) => {
   initializeExecutor(page);
   await parentSuite('Case Creation');
   await performAction('navigateToUrl', configData.manageCasesBaseURL);
-  await performAction('login', 'exuiUser');
-
+  await performAction('createUserAndLogin', ['caseworker-pcs', 'caseworker']);
   await testInfo.attach('Page URL', {
     body: page.url(),
     contentType: 'text/plain',
