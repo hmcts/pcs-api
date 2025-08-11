@@ -95,6 +95,10 @@ public class CrossBorderPostcodeSelection implements CcdPageConfiguration {
                         + "Redirecting to PropertyNotEligible page", postcode, selectedCountry);
                 caseData.setShowPropertyNotEligiblePage(YesOrNo.YES);
             }
+            case NO_MATCH_FOUND -> {
+                log.info("Cross-border eligibility check: NO_MATCH_FOUND for postcode {} with country {}. "
+                        + "Proceeding to normal flow", postcode, selectedCountry);
+            }
             default -> {
                 //TODO
                 throw new EligibilityCheckException(

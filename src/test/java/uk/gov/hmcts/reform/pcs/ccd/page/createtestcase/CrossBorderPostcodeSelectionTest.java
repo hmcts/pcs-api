@@ -52,7 +52,7 @@ class CrossBorderPostcodeSelectionTest extends BasePageTest {
     void shouldLogEligibilityBasedOnCountrySelection(
         String postcode,
         LegislativeCountry selectedCountry,
-        EligibilityStatus status ) {
+        EligibilityStatus status) {
 
         // Given
         CaseDetails<PCSCase, State> caseDetails = new CaseDetails<>();
@@ -115,7 +115,7 @@ class CrossBorderPostcodeSelectionTest extends BasePageTest {
     @MethodSource("eligibleCountries")
     @DisplayName("ELIGIBLE keeps normal flow and cross-border page visible")
     void shouldContinueToClaimantInfoPageWhenCrossBorderPropertyIsEligible(
-        LegislativeCountry selectedCountry ) {
+        LegislativeCountry selectedCountry) {
 
         // Given: page visible (from MakeAClaim), PNE hidden
         var caseDetails = buildCrossBorderCaseWithFlags(
@@ -147,7 +147,7 @@ class CrossBorderPostcodeSelectionTest extends BasePageTest {
     @MethodSource("eligibleCountries")
     @DisplayName("NOT_ELIGIBLE shows PropertyNotEligible and keeps cross-border page visible")
     void shouldShowPropertyNotEligiblePageWhenCrossBorderPropertyIsNotEligible(
-        LegislativeCountry selectedCountry ) {
+        LegislativeCountry selectedCountry) {
 
         // Given: page visible (from MakeAClaim), PNE hidden
         var caseDetails = buildCrossBorderCaseWithFlags(
@@ -186,7 +186,7 @@ class CrossBorderPostcodeSelectionTest extends BasePageTest {
         String postcode,
         LegislativeCountry selectedCountry,
         YesOrNo showCrossBorderPage,
-        YesOrNo showPropertyNotEligiblePage ) {
+        YesOrNo showPropertyNotEligiblePage) {
 
         var selected = DynamicStringListElement.builder()
             .code(selectedCountry.name())
