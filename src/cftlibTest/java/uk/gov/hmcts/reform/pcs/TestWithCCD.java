@@ -42,8 +42,8 @@ public class TestWithCCD extends CftlibTest {
     }
 
     @Test
-    public void createsTestCase() {
-        var r = ccdApi.startCase(idamToken, s2sToken, CaseType.getCaseType(), "createTestApplication");
+    public void createsPossessionClaim() {
+        var r = ccdApi.startCase(idamToken, s2sToken, CaseType.getCaseType(), "createPossessionClaim");
         PCSCase caseData = PCSCase.builder()
             .applicantForename("Foo")
             .propertyAddress(AddressUK.builder()
@@ -57,7 +57,7 @@ public class TestWithCCD extends CftlibTest {
             .build();
         var content = CaseDataContent.builder()
             .data(caseData)
-            .event(Event.builder().id("createTestApplication").build())
+            .event(Event.builder().id("createPossessionClaim").build())
             .eventToken(r.getToken())
             .build();
         caseDetails = ccdApi.submitForCaseworker(idamToken, s2sToken, userId,

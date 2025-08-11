@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.ccd.page.createtestcase;
+package uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -7,6 +7,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
 import uk.gov.hmcts.ccd.sdk.api.Event;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
+import uk.gov.hmcts.ccd.sdk.api.callback.MidEvent;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
@@ -29,10 +30,10 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-import static uk.gov.hmcts.ccd.sdk.type.YesOrNo.YES;
 import static uk.gov.hmcts.ccd.sdk.type.YesOrNo.NO;
+import static uk.gov.hmcts.ccd.sdk.type.YesOrNo.YES;
 
-class MakeAClaimTest extends BasePageTest {
+class EnterPropertyAddressTest extends BasePageTest {
 
     private EligibilityService eligibilityService;
     private Event<PCSCase, UserRole, State> event;
@@ -40,7 +41,7 @@ class MakeAClaimTest extends BasePageTest {
     @BeforeEach
     void setUp() {
         eligibilityService = mock(EligibilityService.class);
-        event = buildPageInTestEvent(new MakeAClaim(eligibilityService));
+        event = buildPageInTestEvent(new EnterPropertyAddress(eligibilityService));
     }
 
     @ParameterizedTest
@@ -73,13 +74,13 @@ class MakeAClaimTest extends BasePageTest {
         when(eligibilityService.checkEligibility(postcode, null)).thenReturn(eligibilityResult);
 
         // When
-        AboutToStartOrSubmitResponse<PCSCase, State> response = getMidEventForPage(event, "Make a claim")
+        AboutToStartOrSubmitResponse<PCSCase, State> response = getMidEventForPage(event, "enterPropertyAddress")
             .handle(caseDetails, null);
 
         // Then
         PCSCase resultData = response.getData();
         assertThat(resultData.getShowCrossBorderPage()).isEqualTo(expectedShowCrossBorder);
-        
+
         if (expectedShowCrossBorder == YES) {
             assertThat(resultData.getCrossBorderCountriesList()).isNotNull();
             assertThat(resultData.getCrossBorderCountry1()).isEqualTo(expectedCountry1);
@@ -113,9 +114,10 @@ class MakeAClaimTest extends BasePageTest {
 
         when(eligibilityService.checkEligibility(postcode, null)).thenReturn(eligibilityResult);
 
+        MidEvent<PCSCase, State> midEvent = getMidEventForPage(event, "enterPropertyAddress");
+
         // When & Then
-        assertThatThrownBy(() -> getMidEventForPage(event, "Make a claim")
-            .handle(caseDetails, null))
+        assertThatThrownBy(() -> midEvent.handle(caseDetails, null))
             .isInstanceOf(EligibilityCheckException.class)
             .hasMessageContaining("Expected at least 2 legislative countries")
             .hasMessageContaining(expectedMessageFragment)
@@ -130,14 +132,14 @@ class MakeAClaimTest extends BasePageTest {
                 Collections.emptyList(),
                 "but got 0"
             ),
-            
-            // Single country case  
+
+            // Single country case
             arguments(
                 "BT1 1AA",
                 Collections.singletonList(LegislativeCountry.NORTHERN_IRELAND),
                 "but got 1"
             ),
-            
+
             // Null list case
             arguments(
                 "NULL_CASE",
@@ -158,7 +160,7 @@ class MakeAClaimTest extends BasePageTest {
                 null,
                 null
             ),
-            
+
             // Not eligible postcode
             arguments(
                 "M1 1AA",
@@ -168,7 +170,7 @@ class MakeAClaimTest extends BasePageTest {
                 null,
                 null
             ),
-            
+
             // No match found
             arguments(
                 "INVALID",
@@ -178,7 +180,7 @@ class MakeAClaimTest extends BasePageTest {
                 null,
                 null
             ),
-            
+
             // Cross-border England/Scotland
             arguments(
                 "TD9 0TU",
@@ -188,7 +190,7 @@ class MakeAClaimTest extends BasePageTest {
                 "England",
                 "Scotland"
             ),
-            
+
             // Cross-border Wales/England
             arguments(
                 "LL65 1AA",
