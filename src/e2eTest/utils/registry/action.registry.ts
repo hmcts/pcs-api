@@ -22,8 +22,8 @@ export class ActionRegistry {
     ['selectAddress', new CreateCaseAction()],
     ['selectLegislativeCountry', new CreateCaseAction()],
     ['selectClaimantType', new CreateCaseAction()],
-    ['selectCaseOptions', new CreateCaseAction()],
-    ['enterAddress', new CreateCaseAction()],
+    ['selectJurisdictionCaseTypeEvent', new CreateCaseAction()],
+    ['enterTestAddressManually', new CreateCaseAction()],
     ['createCase', new CreateCaseAction()]]);
 
   static getAction(actionName: string): IAction {

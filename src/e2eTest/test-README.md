@@ -79,9 +79,9 @@ Playwright 1.30+ | TypeScript 4.9+
 | selectLegislativeCountry | `performAction('selectLegislativeCountry', {country: data.country})`                                                                                                                                                                                                                                                                          |
 | selectClaimantType       | `performAction('selectClaimantType', {claimantType : pathToDataFile.claimantTypeOption})`                                                                                                                                                                                                                                                     |
 | selectAddress            | `performAction('selectAddress',{postcode: pathToDataFile.englandPostcode,addressIndex: pathToDataFile.addressIndex} )`                                                                                                                                                                                                                        |
-| selectCaseOptions        | `performAction('selectCaseOptions', {jurisdiction: pathToDataFile.possessions, caseType: pathToDataFile.civilPossessions, event: createCase.pathToDataFile.makeAPossessionClaim}})`                                                                                                                                                           |
-| enterAddress             | `performAction('enterAddress',{BuildingAndStreet: pathToDataFile.BuildingAndStreet,addressLine2: addressDetails.pathToDataFile.addressLine2,addressLine3: pathToDataFile.addressLine3,TownOrCity: pathToDataFile.TownOrCity,walesCounty: pathToDataFile.walesCounty,postcode: pathToDataFile.walesPostcode,country: pathToDataFile.country})` |
 | createUserAndLogin | `performAction('createUserAndLogin', ...)` |
+| enterTestAddressManually | `performAction('enterTestAddressManually', ...)` |
+| selectJurisdictionCaseTypeEvent | `performAction('selectJurisdictionCaseTypeEvent', ...)` |
 ### Validations
 | Validation          | Example Usage |
 |------------------|---------------|

@@ -20,7 +20,7 @@ test.beforeEach(async ({ page }, testInfo) => {
     contentType: 'text/plain',
   });
   await performAction('clickButton', 'Create case');
-  await performAction('selectCaseOptions');
+  await performAction('selectJurisdictionCaseTypeEvent');
 });
 
 test.describe('[Create Case Flow With Address and Claimant Type]  @Master @nightly', async () => {
@@ -42,7 +42,7 @@ test.describe('[Create Case Flow With Address and Claimant Type]  @Master @night
   test('Wales - Successful case creation', async () => {
     await performAction('enterTestAddressManually');
     await performAction('selectLegislativeCountry', legislativeCountry.wales);
-    await performAction('selectClaimantType', {claimantType : claimantType.registeredCommunityLandlord});
+    await performAction('selectClaimantType', claimantType.registeredCommunityLandlord);
     await performAction('clickButton', 'Save and continue');
     await performValidation('bannerAlert', 'Case #.* has been created.');
     await performAction('clickTab', 'Property Details');
@@ -57,8 +57,8 @@ test.describe('[Create Case Flow With Address and Claimant Type]  @Master @night
   test('England - Unsuccessful case creation journey due to claimant type not in scope of Release1', async () => {
     await performAction('selectAddress', {postcode: addressDetails.englandPostcode,
       addressIndex: addressDetails.addressIndex});
-    await performAction('selectLegislativeCountry', {country: legislativeCountry.england});
-    await performAction('selectClaimantType', {claimantType : claimantType.mortgageLender});
+    await performAction('selectLegislativeCountry', legislativeCountry.england);
+    await performAction('selectClaimantType', claimantType.mortgageLender);
     await performValidation('mainHeader', 'You\'re not eligible for this online service');
     await performAction('clickButton', 'Close and return to case list');
   });
@@ -66,8 +66,8 @@ test.describe('[Create Case Flow With Address and Claimant Type]  @Master @night
   test('Wales - Unsuccessful case creation journey due to claimant type not in scope of Release1', async () => {
     await performAction('selectAddress', {postcode: addressDetails.walesPostcode,
       addressIndex: addressDetails.addressIndex});
-    await performAction('selectLegislativeCountry', {country: legislativeCountry.wales});
-    await performAction('selectClaimantType', {claimantType : claimantType.privateLandlord});
+    await performAction('selectLegislativeCountry', legislativeCountry.wales);
+    await performAction('selectClaimantType', claimantType.privateLandlord);
     await performValidation('mainHeader', 'You\'re not eligible for this online service');
     await performAction('clickButton', 'Close and return to case list');
   });

@@ -21,8 +21,8 @@ export class CreateCaseAction implements IAction {
       ['selectAddress', () => this.selectAddress(fieldName)],
       ['selectLegislativeCountry', () => this.selectLegislativeCountry(fieldName)],
       ['selectClaimantType', () => this.selectClaimantType(fieldName)],
-      ['selectCaseOptions', () => this.selectCaseOptions()],
-      ['enterAddress', () => this.enterTestAddressManually()]
+      ['selectJurisdictionCaseTypeEvent', () => this.selectJurisdictionCaseTypeEvent()],
+      ['enterTestAddressManually', () => this.enterTestAddressManually()]
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) throw new Error(`No action found for '${action}'`);
@@ -56,7 +56,7 @@ export class CreateCaseAction implements IAction {
     await performAction('clickButton', 'Continue');
   }
 
-  private async selectCaseOptions() {
+  private async selectJurisdictionCaseTypeEvent() {
     await performActions('Case option selection'
       , ['select', 'Jurisdiction', createCase.possessionsJurisdiction]
       , ['select', 'Case type', createCase.caseType.civilPossessions]
