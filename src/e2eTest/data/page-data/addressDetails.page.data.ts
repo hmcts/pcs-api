@@ -14,7 +14,7 @@ export const addressDetails = {
     postcode: 'SL1 1SP',
     country: 'United Kingdom',
     header: 'There is a problem',
-    errorMessage: 'An address is required',
+    addressDetailsError: 'An address is required',
 };
 
 
