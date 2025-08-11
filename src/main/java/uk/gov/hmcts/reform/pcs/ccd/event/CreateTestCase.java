@@ -28,6 +28,7 @@ public class CreateTestCase implements CCDConfig<PCSCase, State, UserRole> {
 
     private final PcsCaseService pcsCaseService;
     private final MakeAClaim makeAClaim;
+    private final CrossBorderPostcodeSelection crossBorderPostcodeSelection;
 
     @Override
     public void configure(ConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -40,12 +41,11 @@ public class CreateTestCase implements CCDConfig<PCSCase, State, UserRole> {
 
         new PageBuilder(eventBuilder)
             .add(makeAClaim)
-            .add(new CrossBorderPostcodeSelection())
+            .add(crossBorderPostcodeSelection)
             .add(new ClaimantInformation())
             .add(new GroundsForPossession())
             .add(new PreActionProtocol())
             .add(new MediationAndSettlement());
-
     }
 
     private PCSCase start(EventPayload<PCSCase, State> eventPayload) {
