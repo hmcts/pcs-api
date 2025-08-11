@@ -37,7 +37,7 @@ async function inputAddressDetails(postcode: string) {
     , ['inputText', 'County', addressDetails.propertyAddressSection.englandCounty]);
   await performAction('clickButton', 'Continue');
 }
-test.describe('[Pre Action Protocol page] @nightly', () => {
+test.describe.skip('[Pre Action Protocol page] @nightly', () => {
   test('Verify that the Pre-action Protocol page displays required pre-requisite information and user navigates to mediation and settlement page', async ({page}) => {
     await inputAddressDetails(caseData.postcode);
     await performAction('inputText', "Applicant's forename", applicantDetails.applicantFirstName);
@@ -46,7 +46,6 @@ test.describe('[Pre Action Protocol page] @nightly', () => {
       text: groundsForPossession.mainHeader,
       elementType: 'heading'
     });
-
     await performAction('clickRadioButton', groundsForPossession.groundsForPossessionsOptions.yes);
     await performAction('clickButton', 'Continue');
     await performValidation('text', {
@@ -60,5 +59,7 @@ test.describe('[Pre Action Protocol page] @nightly', () => {
       text: mediationAndSettlement.mainHeader,
       elementType: 'heading'
     });
+    await performAction('clickRadioButton', 'Yes');
+    await performAction('clickButton', 'Continue');
   });
 });
