@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.domain;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
 import lombok.Data;
 import uk.gov.hmcts.ccd.sdk.External;
@@ -111,6 +112,7 @@ public class PCSCase {
         typeParameterOverride = "Document",
         access = {CitizenAccess.class, CaseworkerAccess.class}
     )
+    @JsonProperty("supportingDocuments")
     private List<ListValue<Document>> supportingDocuments;
 
     @CCD(

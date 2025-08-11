@@ -14,6 +14,7 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.ccd.sdk.api.Event;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.page.createtestcase.MakeAClaim;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.ccd.sdk.api.callback.Start;
 import uk.gov.hmcts.ccd.sdk.api.callback.Submit;
@@ -41,11 +42,14 @@ class UploadDocumentPocTest extends BaseEventTest {
     @Mock
     private PcsCaseService pcsCaseService;
 
+    @Mock
+    private MakeAClaim makeAClaim;
+
     private Event<PCSCase, UserRole, State> configuredEvent;
 
     @BeforeEach
     void setUp() {
-        UploadDocumentPoc underTest = new UploadDocumentPoc(pcsCaseService);
+        UploadDocumentPoc underTest = new UploadDocumentPoc(pcsCaseService, makeAClaim);
         configuredEvent = getEvent(EventId.uploadDocumentPoc, buildEventConfig(underTest));
     }
 
