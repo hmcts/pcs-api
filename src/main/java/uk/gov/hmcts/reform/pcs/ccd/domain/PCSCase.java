@@ -44,6 +44,29 @@ public class PCSCase {
     @External
     private AddressUK propertyAddress;
 
+    @CCD(searchable = false, access = {CitizenAccess.class, CaseworkerAccess.class})
+    private YesOrNo showCrossBorderPage;
+    @CCD(
+        typeOverride = DynamicRadioList,
+        access = {CitizenAccess.class, CaseworkerAccess.class}
+    )
+    @External
+    private DynamicStringList crossBorderCountriesList;
+
+    @CCD(
+        searchable = false,
+        access = {CitizenAccess.class, CaseworkerAccess.class}
+    )
+    @External
+    private String crossBorderCountry1;
+
+    @CCD(
+        searchable = false,
+        access = {CitizenAccess.class, CaseworkerAccess.class}
+    )
+    @External
+    private String crossBorderCountry2;
+
     @CCD(
         searchable = false,
         access = {CitizenAccess.class}
