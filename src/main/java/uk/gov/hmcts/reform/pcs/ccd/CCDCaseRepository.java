@@ -6,13 +6,14 @@ import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.DecentralisedCaseRepository;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
-import uk.gov.hmcts.reform.pcs.ccd.domain.AddEditDefendant;
+import uk.gov.hmcts.reform.pcs.ccd.domain.Defendant;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PaymentStatus;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.renderer.ClaimPaymentTabRenderer;
+import uk.gov.hmcts.reform.pcs.ccd.renderer.DefendantsTabRenderer;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
@@ -39,6 +40,7 @@ public class CCDCaseRepository extends DecentralisedCaseRepository<PCSCase> {
     private final SecurityContextService securityContextService;
     private final ModelMapper modelMapper;
     private final ClaimPaymentTabRenderer claimPaymentTabRenderer;
+    private final DefendantsTabRenderer defendantsTabRenderer;
 
     /**
      * Invoked by CCD to load PCS cases by reference.
@@ -49,9 +51,9 @@ public class CCDCaseRepository extends DecentralisedCaseRepository<PCSCase> {
 
         PcsCaseEntity pcsCaseEntity = loadCaseData(caseReference);
 
-        List<AddEditDefendant> defendants = new ArrayList<>();
+        List<Defendant> defendants = new ArrayList<>();
         pcsCaseEntity.getParties().stream().forEach(party -> {
-            AddEditDefendant defendant = AddEditDefendant.builder()
+            Defendant defendant = Defendant.builder()
                 .firstName(party.getForename())
                 .lastName(party.getSurname()).build();
             defendants.add(defendant);
@@ -62,7 +64,7 @@ public class CCDCaseRepository extends DecentralisedCaseRepository<PCSCase> {
             .applicantSurname(pcsCaseEntity.getApplicantSurname())
             .propertyAddress(convertAddress(pcsCaseEntity.getPropertyAddress()))
             .caseManagementLocation(pcsCaseEntity.getCaseManagementLocation())
-            .addEditDefendants(wrapListItems(defendants))
+            .defendants(wrapListItems(defendants))
             .build();
 
         setDerivedProperties(caseReference,pcsCase, pcsCaseEntity);
@@ -80,6 +82,8 @@ public class CCDCaseRepository extends DecentralisedCaseRepository<PCSCase> {
         if (paymentStatus != null) {
             pcsCase.setClaimPaymentTabMarkdown(claimPaymentTabRenderer.render(caseRef, paymentStatus));
         }
+
+        pcsCase.setDefendantsSummaryMarkdown(defendantsTabRenderer.render(pcsCase.getDefendants()));
 
         String formattedAddress = formatAddress(pcsCase.getPropertyAddress());
         pcsCase.setPageHeadingMarkdown("""

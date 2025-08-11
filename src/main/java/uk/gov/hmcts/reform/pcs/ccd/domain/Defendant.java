@@ -11,13 +11,18 @@ import uk.gov.hmcts.ccd.sdk.api.CCD;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class AddEditDefendant {
+//@ComplexType(name = "Defendant", generate = false)
+public class Defendant {
 
     @CCD(label = "Do you know the defendant's name?")
     private VerticalYesNo defendantsNameKnown;
 
     @CCD(label = "Defendant's first name")
     private String firstName;
+
     @CCD(label = "Defendant's last name")
     private String lastName;
+
+    @CCD(label = "Email")
+    private String email;
 }

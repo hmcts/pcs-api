@@ -77,17 +77,16 @@ public class PCSCase {
     private String claimPaymentTabMarkdown;
 
     @CCD(access = CaseworkerAccess.class)
-    private AddEditDefendant addEditDefendant1;
+    private Defendant defendant1;
 
     @CCD(access = CaseworkerAccess.class)
-    private AddEditDefendant addEditDefendant2;
+    private Defendant defendant2;
 
     @CCD(access = CaseworkerAccess.class)
-    private AddEditDefendant addEditDefendant3;
+    private Defendant defendant3;
 
     @CCD(access = CaseworkerAccess.class)
-    private List<ListValue<AddEditDefendant>> addEditDefendants;
-
+    private List<ListValue<Defendant>> defendants;
 
     @CCD(label = "Add another defendant?")
     private VerticalYesNo addAnotherDefendant1;
@@ -98,8 +97,7 @@ public class PCSCase {
     @CCD(label = "Add another defendant?")
     private VerticalYesNo addAnotherDefendant3;
 
-    private String defendantsSummary;
-
+    private String defendantsSummaryMarkdown;
 
 
 }

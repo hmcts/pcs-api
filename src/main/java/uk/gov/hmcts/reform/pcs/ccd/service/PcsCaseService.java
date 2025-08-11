@@ -43,11 +43,12 @@ public class PcsCaseService {
         PcsCaseEntity pcsCaseEntity = pcsCaseRepository.findByCaseReference(caseReference)
             .orElseThrow(() -> new CaseNotFoundException(caseReference));
 
-        if(pcsCase.getAddEditDefendants() != null) {
-            pcsCase.getAddEditDefendants().forEach(defendant -> {
+        if (pcsCase.getDefendants() != null) {
+            pcsCase.getDefendants().forEach(defendant -> {
                 PartyEntity party = PartyEntity.builder()
                         .forename(defendant.getValue().getFirstName())
                         .surname(defendant.getValue().getLastName())
+                    .active(true)
                         .build();
 
                 pcsCaseEntity.addParty(party);

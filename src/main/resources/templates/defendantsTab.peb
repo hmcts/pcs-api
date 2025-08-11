@@ -1,0 +1,16 @@
+{% macro showActions(def, _context) -%}
+[Edit]()<br>[Remove]()
+{%- endmacro %}
+
+## Defendants
+
+{% if defendants | length > 0 %}
+| First name | Last name | Actions |
+|-----------------------|----------------------|---------------|
+{% for def in defendants -%}
+| {{ def.value.firstName }} | {{ def.value.lastName }}  | {{ showActions(def, _context) }} |
+{% endfor -%}
+{% else %}
+_No Defendants have been added to this case._
+{% endif %}
+
