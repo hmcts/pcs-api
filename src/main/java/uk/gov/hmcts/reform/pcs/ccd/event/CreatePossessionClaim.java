@@ -12,6 +12,7 @@ import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PaymentStatus;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.page.createtestcase.CrossBorderPostcodeSelection;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.ClaimantTypeNotEligibleEngland;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.ClaimantTypeNotEligibleWales;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.EnterPropertyAddress;
@@ -26,6 +27,8 @@ import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.createPossessionClaim;
 public class CreatePossessionClaim implements CCDConfig<PCSCase, State, UserRole> {
 
     private final PcsCaseService pcsCaseService;
+    private final EnterPropertyAddress enterPropertyAddress;
+    private final CrossBorderPostcodeSelection crossBorderPostcodeSelection;
 
     @Override
     public void configure(ConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -38,7 +41,8 @@ public class CreatePossessionClaim implements CCDConfig<PCSCase, State, UserRole
                 .showSummary();
 
         new PageBuilder(eventBuilder)
-            .add(new EnterPropertyAddress())
+            .add(enterPropertyAddress)
+            .add(crossBorderPostcodeSelection)
             .add(new SelectLegislativeCountry())
             .add(new SelectClaimantType())
             .add(new ClaimantTypeNotEligibleEngland())
