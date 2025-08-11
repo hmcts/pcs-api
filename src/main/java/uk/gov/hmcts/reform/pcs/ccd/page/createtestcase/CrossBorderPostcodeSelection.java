@@ -12,6 +12,7 @@ import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.postcodecourt.exception.EligibilityCheckException;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.EligibilityResult;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.postcodecourt.service.EligibilityService;
@@ -64,9 +65,8 @@ public class CrossBorderPostcodeSelection implements CcdPageConfiguration {
                 "Is the property located in ${crossBorderCountry1} or ${crossBorderCountry2}?");
     }
 
-    private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(
-        CaseDetails<PCSCase, State> details,
-        CaseDetails<PCSCase, State> detailsBefore) {
+    private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
+                                                                  CaseDetails<PCSCase, State> detailsBefore) {
 
         PCSCase caseData = details.getData();
         String postcode = getPostcode(caseData);
@@ -96,10 +96,17 @@ public class CrossBorderPostcodeSelection implements CcdPageConfiguration {
                 caseData.setShowPropertyNotEligiblePage(YesOrNo.YES);
             }
             default -> {
-                log.debug("Cross-border eligibility check: Unexpected status {} for postcode {} with country {}. "
-                        + "This may indicate a data or configuration issue",
-                        eligibilityResult.getStatus(), postcode, selectedCountry);
+                //TODO
+                throw new EligibilityCheckException(
+                    String.format(
+                        "Unexpected eligibility status: %s for postcode %s and country %s",
+                        eligibilityResult.getStatus(),
+                        postcode,
+                        selectedCountry
+                    )
+                );
             }
+
         }
 
         return response(caseData);

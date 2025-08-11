@@ -37,11 +37,9 @@ public class MakeAClaim implements CcdPageConfiguration {
             .mandatory(PCSCase::getPropertyAddress);
     }
 
-    private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(
-        CaseDetails<PCSCase, State> details,
-        CaseDetails<PCSCase, State> detailsBefore
-    ) {
-        log.info("MakeAClaim midEvent started for case ID: {}", details.getId());
+    private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
+                                                                  CaseDetails<PCSCase, State> detailsBefore) {
+
 
         PCSCase caseData = details.getData();
         String postcode = caseData.getPropertyAddress().getPostCode();
@@ -89,26 +87,22 @@ public class MakeAClaim implements CcdPageConfiguration {
             .build();
     }
 
-    private void validateLegislativeCountries(
-        List<LegislativeCountry> legislativeCountries,
-        String postcode
-    ) {
+    private void validateLegislativeCountries(List<LegislativeCountry> legislativeCountries, String postcode) {
+
         if (legislativeCountries == null || legislativeCountries.size() < 2) {
-            throw new EligibilityCheckException(
-                String.format(
-                    "Expected at least 2 legislative countries when status is "
-                        + "LEGISLATIVE_COUNTRY_REQUIRED, but got %d for postcode: %s",
-                    legislativeCountries == null ? 0 : legislativeCountries.size(),
-                    postcode
-                )
+            String baseMessage = "Expected at least 2 legislative countries when status is "
+                + "LEGISLATIVE_COUNTRY_REQUIRED, but got %d for postcode: %s";
+            String errorMessage = String.format(
+                baseMessage,
+                legislativeCountries == null ? 0 : legislativeCountries.size(),
+                postcode
             );
+            throw new EligibilityCheckException(errorMessage);
         }
     }
 
-    private void setupCrossBorderData(
-        PCSCase caseData,
-        List<LegislativeCountry> legislativeCountries
-    ) {
+    private void setupCrossBorderData(PCSCase caseData, List<LegislativeCountry> legislativeCountries) {
+
         List<DynamicStringListElement> crossBorderCountries =
             createCrossBorderCountriesList(legislativeCountries);
 
@@ -122,8 +116,7 @@ public class MakeAClaim implements CcdPageConfiguration {
     }
 
     private List<DynamicStringListElement> createCrossBorderCountriesList(
-        List<LegislativeCountry> legislativeCountries
-    ) {
+        List<LegislativeCountry> legislativeCountries) {
         return legislativeCountries.stream()
             .map(value -> DynamicStringListElement.builder()
                 .code(value.name())

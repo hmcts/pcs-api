@@ -52,8 +52,8 @@ class CrossBorderPostcodeSelectionTest extends BasePageTest {
     void shouldLogEligibilityBasedOnCountrySelection(
         String postcode,
         LegislativeCountry selectedCountry,
-        EligibilityStatus status
-    ) {
+        EligibilityStatus status ) {
+
         // Given
         CaseDetails<PCSCase, State> caseDetails = new CaseDetails<>();
         PCSCase caseData = PCSCase.builder()
@@ -115,8 +115,8 @@ class CrossBorderPostcodeSelectionTest extends BasePageTest {
     @MethodSource("eligibleCountries")
     @DisplayName("ELIGIBLE keeps normal flow and cross-border page visible")
     void shouldContinueToClaimantInfoPageWhenCrossBorderPropertyIsEligible(
-        LegislativeCountry selectedCountry
-    ) {
+        LegislativeCountry selectedCountry ) {
+
         // Given: page visible (from MakeAClaim), PNE hidden
         var caseDetails = buildCrossBorderCaseWithFlags(
             SOME_POSTCODE,
@@ -147,8 +147,8 @@ class CrossBorderPostcodeSelectionTest extends BasePageTest {
     @MethodSource("eligibleCountries")
     @DisplayName("NOT_ELIGIBLE shows PropertyNotEligible and keeps cross-border page visible")
     void shouldShowPropertyNotEligiblePageWhenCrossBorderPropertyIsNotEligible(
-        LegislativeCountry selectedCountry
-    ) {
+        LegislativeCountry selectedCountry ) {
+
         // Given: page visible (from MakeAClaim), PNE hidden
         var caseDetails = buildCrossBorderCaseWithFlags(
             SOME_POSTCODE,
@@ -186,20 +186,20 @@ class CrossBorderPostcodeSelectionTest extends BasePageTest {
         String postcode,
         LegislativeCountry selectedCountry,
         YesOrNo showCrossBorderPage,
-        YesOrNo showPropertyNotEligiblePage
-    ) {
+        YesOrNo showPropertyNotEligiblePage ) {
+
         var selected = DynamicStringListElement.builder()
             .code(selectedCountry.name())
             .label(selectedCountry.getLabel())
             .build();
 
-        var dsl = DynamicStringList.builder()
+        var dynamicStringList = DynamicStringList.builder()
             .value(selected)
             .build();
 
         var data = PCSCase.builder()
             .propertyAddress(AddressUK.builder().postCode(postcode).build())
-            .crossBorderCountriesList(dsl)
+            .crossBorderCountriesList(dynamicStringList)
             .showCrossBorderPage(showCrossBorderPage)
             .showPropertyNotEligiblePage(showPropertyNotEligiblePage)
             .build();

@@ -72,10 +72,8 @@ public class PropertyNotEligible implements CcdPageConfiguration {
                 """);
     }
 
-    private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(
-        CaseDetails<PCSCase, State> details,
-        CaseDetails<PCSCase, State> detailsBefore) {
-
+    private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
+                                                                   CaseDetails<PCSCase, State> detailsBefore) {
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
             .errors(List.of("Property not eligible for this online service"))
             .build();
