@@ -26,11 +26,11 @@ public class PropertyNotEligible implements CcdPageConfiguration {
     @Override
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
-            .page("propertyNotEligible-info", this::midEvent)
+            .page("propertyNotEligible", this::midEvent)
             .pageLabel("Property not eligible for this online service")
             .showCondition("showPropertyNotEligiblePage=\"Yes\"")
             .readonly(PCSCase::getShowPropertyNotEligiblePage, NEVER_SHOW)
-            .label("postcodeNotEligible-info", """
+            .label("propertyNotEligible-info", """
 
                 <hr class="govuk-section-break govuk-section-break--l govuk-section-break--visible">
                 <h2 class="govuk-heading-m">What to do next</h2>

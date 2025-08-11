@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.createtestcase;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -112,6 +113,7 @@ class CrossBorderPostcodeSelectionTest extends BasePageTest {
 
     @ParameterizedTest
     @MethodSource("eligibleCountries")
+    @DisplayName("ELIGIBLE keeps normal flow and cross-border page visible")
     void shouldContinueToClaimantInfoPageWhenCrossBorderPropertyIsEligible(
         LegislativeCountry selectedCountry
     ) {
@@ -127,8 +129,7 @@ class CrossBorderPostcodeSelectionTest extends BasePageTest {
             .status(EligibilityStatus.ELIGIBLE)
             .build();
 
-        when(eligibilityService.checkEligibility(SOME_POSTCODE,
-                                                 selectedCountry))
+        when(eligibilityService.checkEligibility(SOME_POSTCODE, selectedCountry))
             .thenReturn(result);
 
         // When
@@ -136,18 +137,15 @@ class CrossBorderPostcodeSelectionTest extends BasePageTest {
             getMidEventForPage(event, "crossBorderPostcodeSelection")
                 .handle(caseDetails, null);
 
-        // Then: stays on normal flow, and Previous returns here
+        // Then
         var data = resp.getData();
-        assertThat(data.getShowPropertyNotEligiblePage())
-            .as("PropertyNotEligible should remain hidden on ELIGIBLE")
-            .isEqualTo(YesOrNo.NO);
-        assertThat(data.getShowCrossBorderPage())
-            .as("Keep cross-border visible so 'Previous' returns here")
-            .isEqualTo(YesOrNo.YES);
+        assertThat(data.getShowPropertyNotEligiblePage()).isEqualTo(YesOrNo.NO);
+        assertThat(data.getShowCrossBorderPage()).isEqualTo(YesOrNo.YES);
     }
 
     @ParameterizedTest
     @MethodSource("eligibleCountries")
+    @DisplayName("NOT_ELIGIBLE shows PropertyNotEligible and keeps cross-border page visible")
     void shouldShowPropertyNotEligiblePageWhenCrossBorderPropertyIsNotEligible(
         LegislativeCountry selectedCountry
     ) {
@@ -163,8 +161,7 @@ class CrossBorderPostcodeSelectionTest extends BasePageTest {
             .status(EligibilityStatus.NOT_ELIGIBLE)
             .build();
 
-        when(eligibilityService.checkEligibility(SOME_POSTCODE,
-                                                 selectedCountry))
+        when(eligibilityService.checkEligibility(SOME_POSTCODE, selectedCountry))
             .thenReturn(result);
 
         // When
@@ -174,12 +171,8 @@ class CrossBorderPostcodeSelectionTest extends BasePageTest {
 
         // Then: show PNE, keep cross-border for 'Previous'
         var data = resp.getData();
-        assertThat(data.getShowPropertyNotEligiblePage())
-            .as("PropertyNotEligible should be shown when NOT_ELIGIBLE")
-            .isEqualTo(YesOrNo.YES);
-        assertThat(data.getShowCrossBorderPage())
-            .as("Keep cross-border visible so 'Previous' returns here")
-            .isEqualTo(YesOrNo.YES);
+        assertThat(data.getShowPropertyNotEligiblePage()).isEqualTo(YesOrNo.YES);
+        assertThat(data.getShowCrossBorderPage()).isEqualTo(YesOrNo.YES);
     }
 
     private static Stream<Arguments> eligibleCountries() {

@@ -67,19 +67,14 @@ public class CrossBorderPostcodeSelection implements CcdPageConfiguration {
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(
         CaseDetails<PCSCase, State> details,
         CaseDetails<PCSCase, State> detailsBefore) {
-        
+
         PCSCase caseData = details.getData();
         String postcode = getPostcode(caseData);
 
-        log.debug("Processing cross-border postcode selection for postcode: {}", postcode);
-
         String countryCode = getSelectedCountryCode(caseData);
-        log.debug("Selected cross-border country code: {}", countryCode);
-
         LegislativeCountry selectedCountry = LegislativeCountry.valueOf(countryCode);
-        log.debug("Selected legislative country: {}", selectedCountry);
 
-        log.info("Performing eligibility check for postcode: {} with selected country: {}",
+        log.debug("Performing eligibility check for postcode: {} with selected country: {}",
                 postcode, selectedCountry);
 
         EligibilityResult eligibilityResult =
@@ -107,8 +102,6 @@ public class CrossBorderPostcodeSelection implements CcdPageConfiguration {
             }
         }
 
-        log.info("CrossBorderPostcodeSelection midEvent completed for case ID: {}",
-                details.getId());
         return response(caseData);
     }
 

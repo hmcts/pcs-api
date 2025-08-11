@@ -31,8 +31,7 @@ public class MakeAClaim implements CcdPageConfiguration {
         pageBuilder
             .page("Make a claim", this::midEvent)
             .pageLabel(
-                "What is the address of the property you're claiming "
-                    + "possession of?"
+                "What is the address of the property you're claiming possession of?"
             )
             .label("lineSeparator", "---")
             .mandatory(PCSCase::getPropertyAddress);
@@ -49,7 +48,6 @@ public class MakeAClaim implements CcdPageConfiguration {
 
         log.debug("Processing MakeAClaim for postcode: {}", postcode);
 
-        log.info("Performing initial eligibility check for postcode: {}", postcode);
         EligibilityResult eligibilityResult =
             eligibilityService.checkEligibility(postcode, null);
 
@@ -59,43 +57,30 @@ public class MakeAClaim implements CcdPageConfiguration {
             eligibilityResult.getLegislativeCountries()
         );
 
-        caseData.setShowCrossBorderPage(YesOrNo.NO);
+        // Reset flags — each case will explicitly set them as needed
         caseData.setShowPropertyNotEligiblePage(YesOrNo.NO);
-        log.debug("Reset eligibility flags - showCrossBorderPage: NO, showPropertyNotEligiblePage: NO");
 
         switch (eligibilityResult.getStatus()) {
-            case LEGISLATIVE_COUNTRY_REQUIRED -> {
-                log.info("MakeAClaim eligibility check: LEGISLATIVE_COUNTRY_REQUIRED for postcode {}. "
-                        + "Setting up cross-border selection", postcode);
-                validateLegislativeCountries(
-                    eligibilityResult.getLegislativeCountries(), postcode
-                );
-                setupCrossBorderData(
-                    caseData, eligibilityResult.getLegislativeCountries()
-                );
-                log.debug(
-                    "Cross-border data configured - Country1: {}, Country2: {}",
-                    caseData.getCrossBorderCountry1(),
-                    caseData.getCrossBorderCountry2()
-                );
-            }
-            case NOT_ELIGIBLE -> {
-                log.info("MakeAClaim eligibility check: NOT_ELIGIBLE for postcode {}. "
-                        + "Redirecting to PropertyNotEligible page", postcode);
+            case LEGISLATIVE_COUNTRY_REQUIRED:
+                caseData.setShowCrossBorderPage(YesOrNo.YES);
+
+                final List<LegislativeCountry> legislativeCountries =
+                    eligibilityResult.getLegislativeCountries();
+
+                validateLegislativeCountries(legislativeCountries, postcode);
+                setupCrossBorderData(caseData, legislativeCountries);
+                break;
+
+            case NOT_ELIGIBLE:
+                caseData.setShowCrossBorderPage(YesOrNo.NO);
                 caseData.setShowPropertyNotEligiblePage(YesOrNo.YES);
-            }
-            case ELIGIBLE -> {
-                log.info("MakeAClaim eligibility check: ELIGIBLE for postcode {}. "
-                        + "Proceeding with normal claim flow", postcode);
-            }
-            case NO_MATCH_FOUND -> {
-                log.info("MakeAClaim eligibility check: NO_MATCH_FOUND for postcode {}. "
-                        + "Proceeding with default flow", postcode);
-            }
-            case MULTIPLE_MATCHES_FOUND -> {
-                log.info("MakeAClaim eligibility check: MULTIPLE_MATCHES_FOUND for postcode {}. "
-                        + "Proceeding with default flow", postcode);
-            }
+                break;
+
+            case ELIGIBLE:
+            case NO_MATCH_FOUND:
+            case MULTIPLE_MATCHES_FOUND:
+                caseData.setShowCrossBorderPage(YesOrNo.NO);
+                break;
         }
 
         log.info("MakeAClaim midEvent completed for case ID: {}", details.getId());
@@ -103,7 +88,6 @@ public class MakeAClaim implements CcdPageConfiguration {
             .data(caseData)
             .build();
     }
-
 
     private void validateLegislativeCountries(
         List<LegislativeCountry> legislativeCountries,
@@ -113,10 +97,8 @@ public class MakeAClaim implements CcdPageConfiguration {
             throw new EligibilityCheckException(
                 String.format(
                     "Expected at least 2 legislative countries when status is "
-                        + "LEGISLATIVE_COUNTRY_REQUIRED, but got %d for "
-                        + "postcode: %s",
-                    legislativeCountries == null ? 0
-                        : legislativeCountries.size(),
+                        + "LEGISLATIVE_COUNTRY_REQUIRED, but got %d for postcode: %s",
+                    legislativeCountries == null ? 0 : legislativeCountries.size(),
                     postcode
                 )
             );
@@ -127,8 +109,6 @@ public class MakeAClaim implements CcdPageConfiguration {
         PCSCase caseData,
         List<LegislativeCountry> legislativeCountries
     ) {
-        caseData.setShowCrossBorderPage(YesOrNo.YES);
-
         List<DynamicStringListElement> crossBorderCountries =
             createCrossBorderCountriesList(legislativeCountries);
 
@@ -137,14 +117,8 @@ public class MakeAClaim implements CcdPageConfiguration {
             .build();
 
         caseData.setCrossBorderCountriesList(crossBorderCountriesList);
-
-        // Set individual cross border countries
-        caseData.setCrossBorderCountry1(
-            crossBorderCountries.get(0).getLabel()
-        );
-        caseData.setCrossBorderCountry2(
-            crossBorderCountries.get(1).getLabel()
-        );
+        caseData.setCrossBorderCountry1(crossBorderCountries.get(0).getLabel());
+        caseData.setCrossBorderCountry2(crossBorderCountries.get(1).getLabel());
     }
 
     private List<DynamicStringListElement> createCrossBorderCountriesList(
