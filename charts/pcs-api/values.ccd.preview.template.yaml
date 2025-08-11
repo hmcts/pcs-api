@@ -165,12 +165,7 @@ ccd:
       - name: action.auto_create_index
         value: .security*,.watches,.triggered_watches,.watcher-history-*,.logstash_dead_letter,.ml*
     persistence:
-      enabled: true
-    volumeClaimTemplate:
-      resources:
-        requests:
-          storage: 500Mi
-      storageClassName: managed-lrs
+      enabled: false
     ingress:
       enabled: false
   logstash:
