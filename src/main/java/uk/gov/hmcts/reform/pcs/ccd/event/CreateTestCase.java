@@ -16,6 +16,7 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.page.createtestcase.ClaimantInformation;
 import uk.gov.hmcts.reform.pcs.ccd.page.createtestcase.CrossBorderPostcodeSelection;
 import uk.gov.hmcts.reform.pcs.ccd.page.createtestcase.MakeAClaim;
+import uk.gov.hmcts.reform.pcs.ccd.page.createtestcase.PropertyNotEligible;
 import uk.gov.hmcts.reform.pcs.ccd.page.createtestcase.StartTheService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 
@@ -28,6 +29,7 @@ public class CreateTestCase implements CCDConfig<PCSCase, State, UserRole> {
 
     private final PcsCaseService pcsCaseService;
     private final MakeAClaim makeAClaim;
+    private final PropertyNotEligible propertyNotEligible;
     private final CrossBorderPostcodeSelection crossBorderPostcodeSelection;
 
     @Override
@@ -43,6 +45,7 @@ public class CreateTestCase implements CCDConfig<PCSCase, State, UserRole> {
             .add(new StartTheService())
             .add(makeAClaim)
             .add(crossBorderPostcodeSelection)
+            .add(propertyNotEligible)
             .add(new ClaimantInformation());
     }
 

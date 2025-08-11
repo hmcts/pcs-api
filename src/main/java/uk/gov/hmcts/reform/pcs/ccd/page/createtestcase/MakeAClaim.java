@@ -14,7 +14,6 @@ import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 import uk.gov.hmcts.reform.pcs.postcodecourt.exception.EligibilityCheckException;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.EligibilityResult;
-import uk.gov.hmcts.reform.pcs.postcodecourt.model.EligibilityStatus;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.postcodecourt.service.EligibilityService;
 
@@ -31,24 +30,58 @@ public class MakeAClaim implements CcdPageConfiguration {
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
             .page("Make a claim", this::midEvent)
-            .pageLabel("What is the address of the property you're claiming possession of?")
+            .pageLabel(
+                "What is the address of the property you're claiming possession of?"
+            )
             .label("lineSeparator", "---")
             .mandatory(PCSCase::getPropertyAddress);
     }
 
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
                                                                   CaseDetails<PCSCase, State> detailsBefore) {
+
+
         PCSCase caseData = details.getData();
         String postcode = caseData.getPropertyAddress().getPostCode();
-        EligibilityResult eligibilityResult = eligibilityService.checkEligibility(postcode, null);
 
-        if (eligibilityResult.getStatus() == EligibilityStatus.LEGISLATIVE_COUNTRY_REQUIRED) {
-            validateLegislativeCountries(eligibilityResult.getLegislativeCountries(), postcode);
-            setupCrossBorderData(caseData, eligibilityResult.getLegislativeCountries());
-        } else {
-            caseData.setShowCrossBorderPage(YesOrNo.NO);
+        log.debug("Processing MakeAClaim for postcode: {}", postcode);
+
+        EligibilityResult eligibilityResult =
+            eligibilityService.checkEligibility(postcode, null);
+
+        log.debug(
+            "Initial eligibility check completed - Status: {}, Legislative Countries: {}",
+            eligibilityResult.getStatus(),
+            eligibilityResult.getLegislativeCountries()
+        );
+
+        // Reset flags — each case will explicitly set them as needed
+        caseData.setShowPropertyNotEligiblePage(YesOrNo.NO);
+
+        switch (eligibilityResult.getStatus()) {
+            case LEGISLATIVE_COUNTRY_REQUIRED:
+                caseData.setShowCrossBorderPage(YesOrNo.YES);
+
+                final List<LegislativeCountry> legislativeCountries =
+                    eligibilityResult.getLegislativeCountries();
+
+                validateLegislativeCountries(legislativeCountries, postcode);
+                setupCrossBorderData(caseData, legislativeCountries);
+                break;
+
+            case NOT_ELIGIBLE:
+                caseData.setShowCrossBorderPage(YesOrNo.NO);
+                caseData.setShowPropertyNotEligiblePage(YesOrNo.YES);
+                break;
+
+            case ELIGIBLE:
+            case NO_MATCH_FOUND:
+            case MULTIPLE_MATCHES_FOUND:
+                caseData.setShowCrossBorderPage(YesOrNo.NO);
+                break;
         }
 
+        log.info("MakeAClaim midEvent completed for case ID: {}", details.getId());
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
             .data(caseData)
             .build();
@@ -66,17 +99,15 @@ public class MakeAClaim implements CcdPageConfiguration {
     }
 
     private void setupCrossBorderData(PCSCase caseData, List<LegislativeCountry> legislativeCountries) {
-        caseData.setShowCrossBorderPage(YesOrNo.YES);
 
         List<DynamicStringListElement> crossBorderCountries =
             createCrossBorderCountriesList(legislativeCountries);
+
         DynamicStringList crossBorderCountriesList = DynamicStringList.builder()
             .listItems(crossBorderCountries)
             .build();
 
         caseData.setCrossBorderCountriesList(crossBorderCountriesList);
-
-        // Set individual cross border countries
         caseData.setCrossBorderCountry1(crossBorderCountries.get(0).getLabel());
         caseData.setCrossBorderCountry2(crossBorderCountries.get(1).getLabel());
     }
