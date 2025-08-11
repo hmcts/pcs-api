@@ -1,25 +1,21 @@
-
-export const caseOptions = {
+export const createCase =
+  {
     title: 'Create a case - HM Courts & Tribunals Service - GOV.UK',
     mainHeader: 'Create Case',
-    jurisdiction:
+    caseOption: {
+      jurisdiction:
         {
-            posessions: 'Possessions'
+          possessions: 'Possessions'
         },
-    caseType:
+      caseType:
         {
-            civilPosessions: process.env.CHANGE_ID
-                ? `Civil Possessions ${process.env.CHANGE_ID}`
-                : 'Civil Possessions'
+          civilPossessions: process.env.CHANGE_ID
+            ? `Civil Possessions ${process.env.CHANGE_ID}`
+            : 'Civil Possessions'
         },
-    event:
+      event:
         {
-            makeAPosessionClaim: 'Make a claim'
-        },
-
-}
-
-export const errorMessages = {
-    header: 'There is a problem',
-    errorMessage: 'An address is required',
-}
+          makeAPossessionClaim: 'Make a claim'
+        }
+    }
+  };
