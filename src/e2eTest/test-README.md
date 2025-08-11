@@ -68,16 +68,17 @@ Playwright 1.30+ | TypeScript 4.9+
 ### Actions
 | Action          | Example Usage |
 |------------------|---------------|
-| inputText     | `performAction('inputText', 'Email', 'test@example.com')` |
-| check         | `performAction('check', 'RememberMe')`                    |
-| login         | `performAction('login', 'citizen')`                       |
-| navigateToUrl | `performAction('navigateToUrl', 'testUrl')`               |
-| click         | `performAction('click', 'buttonName')`                    |
-| clickTab      | `performAction('clickTab', 'tabName')`                    |
-| clear         | `performAction('clear', 'fieldName')`                     |
-| select        | `performAction('select', 'dropdownName', 'option')`       |
-| doubleClick   | `performAction('doubleClick', 'buttonName')`              |
-| createCase    | `performAction('createCase', 'data: caseData')`           |
+| inputText          | `performAction('inputText', 'Email', 'test@example.com')` |
+| check              | `performAction('check', 'RememberMe')`                    |
+| navigateToUrl      | `performAction('navigateToUrl', 'testUrl')`               |
+| click              | `performAction('click', 'buttonName')`                    |
+| clickTab           | `performAction('clickTab', 'tabName')`                    |
+| clear              | `performAction('clear', 'fieldName')`                     |
+| select             | `performAction('select', 'dropdownName', 'option')`       |
+| doubleClick        | `performAction('doubleClick', 'buttonName')`              |
+| createCase         | `performAction('createCase', 'data: caseData')`           |
+| clickButton        | `performAction('clickButton', 'Sign in')`                 |
+| createUserAndLogin | `performAction('createUserAndLogin', [citizen])`          |
 ### Validations
 | Validation          | Example Usage |
 |------------------|---------------|
