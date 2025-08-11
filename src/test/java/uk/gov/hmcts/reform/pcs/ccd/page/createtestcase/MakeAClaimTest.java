@@ -50,13 +50,13 @@ public class MakeAClaimTest extends BasePageTest {
     void shouldSetFormattedContactAddressInMidEventCallback() {
         // Given
         CaseDetails<PCSCase, State> caseDetails = new CaseDetails<>();
-
+        String postCode = "NW1 6XE";
         AddressUK propertyAddress = AddressUK.builder()
             .addressLine1("123 Baker Street")
             .addressLine2("Marylebone")
             .postTown("London")
             .county("Greater London")
-            .postCode("NW1 6XE")
+            .postCode(postCode)
             .build();
         PCSCase caseData = PCSCase.builder()
             .propertyAddress(propertyAddress)
@@ -65,9 +65,14 @@ public class MakeAClaimTest extends BasePageTest {
         caseDetails.setData(caseData);
 
         String formattedAddress = formattedContactAddress(propertyAddress);
+        EligibilityResult eligibilityResult = EligibilityResult.builder()
+                .status(EligibilityStatus.NO_MATCH_FOUND)
+                .legislativeCountries(List.of())
+                .build();
 
         // When
-        MidEvent<PCSCase, State> midEvent = getMidEventForPage(event, "enterPropertyAddress");
+        when(eligibilityService.checkEligibility(postCode, null)).thenReturn(eligibilityResult);
+        MidEvent<PCSCase, State> midEvent = getMidEventForPage(event, "Make a claim");
         midEvent.handle(caseDetails, null);
 
         // Then

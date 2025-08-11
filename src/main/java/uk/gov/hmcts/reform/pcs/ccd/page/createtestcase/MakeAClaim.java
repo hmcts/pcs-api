@@ -48,13 +48,13 @@ public class MakeAClaim implements CcdPageConfiguration {
         String postcode = caseData.getPropertyAddress().getPostCode();
         AddressUK propertyAddress = caseData.getPropertyAddress();
         caseData.setClaimantContactAddress(propertyAddress);
-            String formattedAddress = String.format(
-                    "%s<br>%s<br>%s",
-                    propertyAddress.getAddressLine1(),
-                    propertyAddress.getPostTown(),
-                    propertyAddress.getPostCode()
-            );
-            caseData.setFormattedClaimantContactAddress(formattedAddress);
+        String formattedAddress = String.format(
+                "%s<br>%s<br>%s",
+                propertyAddress.getAddressLine1(),
+                propertyAddress.getPostTown(),
+                propertyAddress.getPostCode()
+        );
+        caseData.setFormattedClaimantContactAddress(formattedAddress);
 
         EligibilityResult eligibilityResult = eligibilityService.checkEligibility(postcode, null);
         if (eligibilityResult.getStatus() == EligibilityStatus.LEGISLATIVE_COUNTRY_REQUIRED) {
