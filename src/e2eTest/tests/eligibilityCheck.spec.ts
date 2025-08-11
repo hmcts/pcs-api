@@ -50,7 +50,7 @@ async function selectCountryRadioBtn(country: string) {
   await performAction('clickButton', borderPostcode.continue);
 }
 
-test.describe('Eligibility checks for cross and non cross border postcodes @Master @nightly', async () => {
+test.describe.skip('Eligibility checks for cross and non cross border postcodes @Master @nightly', async () => {
   //Skipping these tests until the postcode data insertion is handled in AAT via automation
   test('Verify cross border postcode eligibility check redirection and content for England and Wales', async ({page}) => {
     await inputAddressDetails(borderPostcode.englandWalesPostcode)
@@ -72,7 +72,7 @@ test.describe('Eligibility checks for cross and non cross border postcodes @Mast
     });
   });
 
-  test.skip('Verify cross border postcode page for England and Scotland content', async () => {
+  test('Verify cross border postcode page for England and Scotland content', async () => {
     await inputAddressDetails(borderPostcode.englandScotlandPostcode)
     await performValidation('text', {
       "text": borderPostcode.mainHeader,
