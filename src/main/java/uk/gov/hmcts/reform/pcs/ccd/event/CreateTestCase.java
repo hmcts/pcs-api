@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.event;
 
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CCDConfig;
 import uk.gov.hmcts.ccd.sdk.api.ConfigBuilder;
@@ -23,6 +24,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.createTestApplication;
 
 @Component
 @AllArgsConstructor
+@Slf4j
 public class CreateTestCase implements CCDConfig<PCSCase, State, UserRole> {
 
     private final PcsCaseService pcsCaseService;
@@ -48,12 +50,15 @@ public class CreateTestCase implements CCDConfig<PCSCase, State, UserRole> {
     }
 
     private PCSCase start(EventPayload<PCSCase, State> eventPayload) {
+        log.info("Callback for start");
         PCSCase caseData = eventPayload.caseData();
         caseData.setApplicantForename("Preset value");
         return caseData;
     }
 
     private void submit(EventPayload<PCSCase, State> eventPayload) {
+        log.info("Callback for submit");
+
         long caseReference = eventPayload.caseReference();
         PCSCase pcsCase = eventPayload.caseData();
         pcsCase.setPaymentStatus(PaymentStatus.UNPAID);
