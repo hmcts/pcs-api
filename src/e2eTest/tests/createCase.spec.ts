@@ -28,7 +28,7 @@ test.beforeEach(async ({page}, testInfo) => {
   await performAction('selectJurisdictionCaseTypeEvent');
 });
 
-test.describe.skip('[Create Case Flow With Address and Claimant Type]  @Master @nightly', async () => {
+test.describe('[Create Case Flow With Address and Claimant Type]  @Master @nightly', async () => {
   test('England - E2E Successful case creation', async () => {
     await performAction('selectAddress', {
       postcode: addressDetails.englandPostcode,
@@ -59,7 +59,8 @@ test.describe.skip('[Create Case Flow With Address and Claimant Type]  @Master @
       text: checkingNotice.mainHeader,
       elementType: 'heading'
     })
-    await performAction('selectLegislativeCountry', legislativeCountry.england);
+    //Commenting out below code as PR is not merged yet
+   /* await performAction('selectLegislativeCountry', legislativeCountry.england);
     await performAction('selectClaimantType', claimantType.registeredProviderForSocialHousing);
     await performAction('clickButton', 'Save and continue');
     await performValidation('bannerAlert', 'Case #.* has been created.');
@@ -70,7 +71,7 @@ test.describe.skip('[Create Case Flow With Address and Claimant Type]  @Master @
       ['formLabelValue', 'Town or City'],
       ['formLabelValue', 'Postcode/Zipcode'],
       ['formLabelValue', 'Country']
-    )
+    )*/
   });
   test('Wales - Successful case creation', async () => {
     await performAction('enterTestAddressManually');
