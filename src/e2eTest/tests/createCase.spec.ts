@@ -23,7 +23,7 @@ test.beforeEach(async ({ page }, testInfo) => {
   await performAction('selectJurisdictionCaseTypeEvent');
 });
 
-test.describe.skip('[Create Case Flow With Address and Claimant Type]  @Master @nightly', async () => {
+test.describe('[Create Case Flow With Address and Claimant Type]  @Master @nightly', async () => {
   test('England - Successful case creation', async () => {
     await performAction('selectAddress', {postcode: addressDetails.englandPostcode,
       addressIndex: addressDetails.addressIndex});
@@ -32,11 +32,13 @@ test.describe.skip('[Create Case Flow With Address and Claimant Type]  @Master @
     await performAction('clickButton', 'Save and continue');
     await performValidation('bannerAlert', 'Case #.* has been created.');
     await performAction('clickTab', 'Property Details');
-    await performValidations('address info is not null '
-      , ['formLabelValue', 'Building and Street']
-      , ['formLabelValue', 'Town or City']
-      , ['formLabelValue', 'Postcode/Zipcode']
-      , ['formLabelValue', 'Country']);
+    await performValidations(
+      'address info matches expected',
+      ['formLabelValue', 'Building and Street', { value: addressDetails.englandBuildingAndStreet }],
+      ['formLabelValue', 'Town or City', { value: addressDetails.englandTownOrCity }],
+      ['formLabelValue', 'Postcode/Zipcode', { value: addressDetails.englandPostcode }],
+      ['formLabelValue', 'Country', { value: addressDetails.country }]
+    );
   });
 
   test('Wales - Successful case creation', async () => {
@@ -47,11 +49,11 @@ test.describe.skip('[Create Case Flow With Address and Claimant Type]  @Master @
     await performValidation('bannerAlert', 'Case #.* has been created.');
     await performAction('clickTab', 'Property Details');
     await performValidations('address info is not null',
-      ['formLabelValue', 'Building and Street'],
-      ['formLabelValue', 'Address Line 2'],
-      ['formLabelValue', 'Town or City'],
-      ['formLabelValue', 'Postcode/Zipcode'],
-      ['formLabelValue', 'Country']);
+      ['formLabelValue', 'Building and Street', { value: addressDetails.buildingAndStreet }],
+      ['formLabelValue', 'Address Line 2', { value: addressDetails.addressLine2 }],
+      ['formLabelValue', 'Town or City', { value: addressDetails.townOrCity }],
+      ['formLabelValue', 'Postcode/Zipcode', { value: addressDetails.postcode }],
+      ['formLabelValue', 'Country', { value: addressDetails.country }]);
   });
 
   test('England - Unsuccessful case creation journey due to claimant type not in scope of Release1 @R1', async () => {
