@@ -33,7 +33,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.createTestApplication;
 
 @Component
 @AllArgsConstructor
-public class CreateTestCase implements CCDConfig<PCSCase, State, UserRole> {
+public class CreatePossessionClaim implements CCDConfig<PCSCase, State, UserRole> {
 
     private final PcsCaseService pcsCaseService;
     private final SecurityContextService securityContextService;
