@@ -34,10 +34,10 @@ test.describe('[Create Case Flow With Address and Claimant Type]  @Master @night
     await performAction('clickTab', 'Property Details');
     await performValidations(
       'address info matches expected',
-      ['formLabelValue', 'Building and Street', { value: addressDetails.englandBuildingAndStreet }],
-      ['formLabelValue', 'Town or City', { value: addressDetails.englandTownOrCity }],
-      ['formLabelValue', 'Postcode/Zipcode', { value: addressDetails.englandPostcode }],
-      ['formLabelValue', 'Country', { value: addressDetails.country }]
+      ['formLabelValue', 'Building and Street', addressDetails.englandBuildingAndStreet],
+      ['formLabelValue', 'Town or City', addressDetails.englandTownOrCity],
+      ['formLabelValue', 'Postcode/Zipcode', addressDetails.englandPostcode],
+      ['formLabelValue', 'Country', addressDetails.country]
     );
   });
 
@@ -48,12 +48,12 @@ test.describe('[Create Case Flow With Address and Claimant Type]  @Master @night
     await performAction('clickButton', 'Save and continue');
     await performValidation('bannerAlert', 'Case #.* has been created.');
     await performAction('clickTab', 'Property Details');
-    await performValidations('address info is not null',
-      ['formLabelValue', 'Building and Street', { value: addressDetails.buildingAndStreet }],
-      ['formLabelValue', 'Address Line 2', { value: addressDetails.addressLine2 }],
-      ['formLabelValue', 'Town or City', { value: addressDetails.townOrCity }],
-      ['formLabelValue', 'Postcode/Zipcode', { value: addressDetails.postcode }],
-      ['formLabelValue', 'Country', { value: addressDetails.country }]);
+    await performValidations('address information entered',
+      ['formLabelValue', 'Building and Street', addressDetails.buildingAndStreet],
+      ['formLabelValue', 'Address Line 2', addressDetails.addressLine2],
+      ['formLabelValue', 'Town or City', addressDetails.townOrCity],
+      ['formLabelValue', 'Postcode/Zipcode', addressDetails.postcode],
+      ['formLabelValue', 'Country', addressDetails.country]);
   });
 
   test('England - Unsuccessful case creation journey due to claimant type not in scope of Release1 @R1', async () => {

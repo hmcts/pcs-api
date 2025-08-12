@@ -17,7 +17,7 @@ type ValidationStep = {
 };
 
 type ActionTuple = [string, string] | [string, string, actionData];
-type ValidationTuple = [string, string, validationData] | [string, string];
+type ValidationTuple = [string, string, string | validationData] | [string, string];
 
 class Controller {
   private page: Page;
@@ -40,7 +40,7 @@ class Controller {
   async performValidation(
     validationType: string,
     fieldName?: string,
-    data?: validationData
+    data?: string | validationData
   ): Promise<void> {
     const validationInstance = ValidationRegistry.getValidation(validationType);
     await test.step(`Perform validation on [${validationType}]`, async () => {
@@ -168,7 +168,7 @@ export async function performValidationGroup(
 export async function performValidations(
   groupName: string,
 
-  ...validations: ([string, string, validationData] | [string, string])[]
+  ...validations: ([string, string, string | validationData] | [string, string])[]
 
 ): Promise<void> {
   if (!testExecutor) {
