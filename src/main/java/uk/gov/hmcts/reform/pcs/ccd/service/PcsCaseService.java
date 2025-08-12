@@ -23,7 +23,7 @@ public class PcsCaseService {
     private final SecurityContextService securityContextService;
     private final ModelMapper modelMapper;
 
-    public void createCase(long caseReference, PCSCase pcsCase) {
+    public PcsCaseEntity createCase(long caseReference, PCSCase pcsCase) {
         AddressUK applicantAddress = pcsCase.getPropertyAddress();
 
         AddressEntity addressEntity = applicantAddress != null
@@ -31,8 +31,6 @@ public class PcsCaseService {
 
         PcsCaseEntity pcsCaseEntity = new PcsCaseEntity();
         pcsCaseEntity.setCaseReference(caseReference);
-        pcsCaseEntity.setApplicantForename(pcsCase.getApplicantForename());
-        pcsCaseEntity.setApplicantSurname(pcsCase.getApplicantSurname());
         pcsCaseEntity.setPropertyAddress(addressEntity);
         pcsCaseEntity.setPaymentStatus(pcsCase.getPaymentStatus());
         pcsCaseEntity.setPreActionProtocolCompleted(
@@ -40,20 +38,12 @@ public class PcsCaseService {
                         ? pcsCase.getPreActionProtocolCompleted().toBoolean()
                         : null);
 
-        pcsCaseRepository.save(pcsCaseEntity);
+        return pcsCaseRepository.save(pcsCaseEntity);
     }
 
     public void patchCase(long caseReference, PCSCase pcsCase) {
         PcsCaseEntity pcsCaseEntity = pcsCaseRepository.findByCaseReference(caseReference)
             .orElseThrow(() -> new CaseNotFoundException(caseReference));
-
-        if (pcsCase.getApplicantForename() != null) {
-            pcsCaseEntity.setApplicantForename(pcsCase.getApplicantForename());
-        }
-
-        if (pcsCase.getApplicantSurname() != null) {
-            pcsCaseEntity.setApplicantSurname(pcsCase.getApplicantSurname());
-        }
 
         if (pcsCase.getPropertyAddress() != null) {
             AddressEntity addressEntity = modelMapper.map(pcsCase.getPropertyAddress(), AddressEntity.class);

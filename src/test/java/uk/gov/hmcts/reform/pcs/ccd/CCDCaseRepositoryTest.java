@@ -12,6 +12,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PaymentStatus;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.renderer.ClaimPaymentTabRenderer;
+import uk.gov.hmcts.reform.pcs.ccd.repository.PartyRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
@@ -41,13 +42,15 @@ class CCDCaseRepositoryTest {
     private ModelMapper modelMapper;
     @Mock
     private ClaimPaymentTabRenderer claimPaymentTabRenderer;
+    @Mock
+    private PartyRepository partyRepository;
 
     private CCDCaseRepository underTest;
 
     @BeforeEach
     void setUp() {
         underTest = new CCDCaseRepository(pcsCaseRepository, securityContextService,
-                                          modelMapper,claimPaymentTabRenderer);
+                modelMapper, claimPaymentTabRenderer, partyRepository);
     }
 
     @Test
@@ -60,19 +63,14 @@ class CCDCaseRepositoryTest {
 
         // Then
         assertThat(throwable)
-            .isInstanceOf(CaseNotFoundException.class)
-            .hasMessage("No case found with reference %s", CASE_REFERENCE);
+                .isInstanceOf(CaseNotFoundException.class)
+                .hasMessage("No case found with reference %s", CASE_REFERENCE);
     }
 
     @Test
     void shouldReturnCaseWithNoPropertyAddress() {
         // Given
-        String expectedForename = "Test forename";
-        String expectedSurname = "Test surname";
-
         PcsCaseEntity pcsCaseEntity = mock(PcsCaseEntity.class);
-        when(pcsCaseEntity.getApplicantForename()).thenReturn(expectedForename);
-        when(pcsCaseEntity.getApplicantSurname()).thenReturn(expectedSurname);
         when(pcsCaseEntity.getPaymentStatus()).thenReturn(PaymentStatus.UNPAID);
 
         when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(pcsCaseEntity));
@@ -81,8 +79,6 @@ class CCDCaseRepositoryTest {
         PCSCase pcsCase = underTest.getCase(CASE_REFERENCE);
 
         // Then
-        assertThat(pcsCase.getApplicantForename()).isEqualTo(expectedForename);
-        assertThat(pcsCase.getApplicantSurname()).isEqualTo(expectedSurname);
         assertThat(pcsCase.getPropertyAddress()).isNull();
     }
 

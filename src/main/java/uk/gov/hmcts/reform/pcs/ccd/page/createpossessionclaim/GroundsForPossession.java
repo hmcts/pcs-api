@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.ccd.page.createtestcase;
+package uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim;
 
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
