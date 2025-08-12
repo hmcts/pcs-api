@@ -45,7 +45,8 @@ public class AddDefendants implements CCDConfig<PCSCase, State, UserRole> {
         eventBuilder.done();
     }
 
-    private void addDefendantPages(FieldCollection.FieldCollectionBuilder<PCSCase, State, Event.EventBuilder<PCSCase, UserRole, State>> event) {
+    private void addDefendantPages(FieldCollection.FieldCollectionBuilder<PCSCase, State, Event.EventBuilder
+            <PCSCase, UserRole, State>> event) {
         //TODO: optimize this
         for (int i = 1; i <= 3; i++) {
 
@@ -54,14 +55,27 @@ public class AddDefendants implements CCDConfig<PCSCase, State, UserRole> {
                 defendantPage.showCondition("addAnotherDefendant" + (i - 1) + "=\"YES\"");
             }
             defendantPage.pageLabel("Defendant" + i)
-                .mandatory(getTempDefField(i));
+                    .complex(getTempDefField(i))
+                    .readonly(Defendant::getNameSectionLabel)
+                    .mandatory(Defendant::getDefendantsNameKnown)
+                    .mandatory(Defendant::getFirstName, "defendant" + i + ".defendantsNameKnown"+ "=\"YES\"")
+                    .mandatory(Defendant::getLastName,"defendant" + i + ".defendantsNameKnown"+ "=\"YES\"")
+                    .optional(Defendant::getAddressSectionLabel)
+                    .mandatory(Defendant::getDefendantsAddressKnown)
+                    .mandatory(Defendant::getDefendantsAddressSameAsPossession,"defendant" + i + ".defendantsAddressKnown"+ "=\"YES\"")
+                    .mandatory(Defendant::getCorrespondenceAddress,"defendant" + i + ".defendantsAddressKnown=\"YES\""
+                        + " AND defendant" + i + ".defendantsAddressSameAsPossession=\"NO\"")
+                    .optional(Defendant::getEmailSectionLabel)
+                    .mandatory(Defendant::getDefendantsEmailKnown)
+                    .mandatory(Defendant::getEmail,"defendant" + i + ".defendantsEmailKnown"+ "=\"YES\"")
+                    .done();
 
             var addAnotherPage = event.page("AddAnotherDefendant" + i);
             if (i > 1) {
                 addAnotherPage.showCondition("addAnotherDefendant" + (i - 1) + "=\"YES\"");
             }
             addAnotherPage.pageLabel("Defendant Summary")
-                .label("defTable" + i, """
+                    .label("defTable" + i, """
                  <table>
                   <thead>
                     <tr>
@@ -80,7 +94,7 @@ public class AddDefendants implements CCDConfig<PCSCase, State, UserRole> {
                   </tbody>
                 </table>
                """)
-	        .mandatory(getAddAnotherField(i));
+                    .mandatory(getAddAnotherField(i));
         }
     }
 
