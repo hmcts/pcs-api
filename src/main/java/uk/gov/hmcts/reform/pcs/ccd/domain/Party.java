@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
+import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.FieldType;
 
 import java.util.UUID;
@@ -21,6 +22,14 @@ public class Party {
 
     @CCD(label = "Party's surname")
     private String surname;
+
+    @CCD(typeOverride = FieldType.Email)
+    private String contactEmail;
+
+    private AddressUK contactAddress;
+
+    @CCD(typeOverride = FieldType.PhoneUK)
+    private String contactPhone;
 
     @CCD(typeOverride = FieldType.Text, showCondition = NEVER_SHOW)
     private UUID idamId;

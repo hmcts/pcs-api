@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -14,7 +15,6 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
-import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.EnterPropertyAddress;
 import uk.gov.hmcts.reform.pcs.postcodecourt.exception.EligibilityCheckException;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.EligibilityResult;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.EligibilityStatus;
@@ -31,18 +31,61 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-import static uk.gov.hmcts.ccd.sdk.type.YesOrNo.YES;
 import static uk.gov.hmcts.ccd.sdk.type.YesOrNo.NO;
+import static uk.gov.hmcts.ccd.sdk.type.YesOrNo.YES;
 
 class EnterPropertyAddressTest extends BasePageTest {
 
     private EligibilityService eligibilityService;
+
     private Event<PCSCase, UserRole, State> event;
 
     @BeforeEach
     void setUp() {
         eligibilityService = mock(EligibilityService.class);
         event = buildPageInTestEvent(new EnterPropertyAddress(eligibilityService));
+    }
+
+    @Test
+    void shouldSetFormattedContactAddressInMidEventCallback() {
+        // Given
+        CaseDetails<PCSCase, State> caseDetails = new CaseDetails<>();
+        String postCode = "NW1 6XE";
+        AddressUK propertyAddress = AddressUK.builder()
+            .addressLine1("123 Baker Street")
+            .addressLine2("Marylebone")
+            .postTown("London")
+            .county("Greater London")
+            .postCode(postCode)
+            .build();
+        PCSCase caseData = PCSCase.builder()
+            .propertyAddress(propertyAddress)
+            .build();
+
+        caseDetails.setData(caseData);
+
+        String formattedAddress = formattedContactAddress(propertyAddress);
+        EligibilityResult eligibilityResult = EligibilityResult.builder()
+                .status(EligibilityStatus.NO_MATCH_FOUND)
+                .legislativeCountries(List.of())
+                .build();
+
+        // When
+        when(eligibilityService.checkEligibility(postCode, null)).thenReturn(eligibilityResult);
+        MidEvent<PCSCase, State> midEvent = getMidEventForPage(event, "enterPropertyAddress");
+        midEvent.handle(caseDetails, null);
+
+        // Then
+        assertThat(caseData.getFormattedClaimantContactAddress()).isEqualTo(formattedAddress);
+    }
+
+    private String formattedContactAddress(AddressUK propertyAddress) {
+        return  String.format(
+            "%s<br>%s<br>%s",
+            propertyAddress.getAddressLine1(),
+            propertyAddress.getPostTown(),
+            propertyAddress.getPostCode()
+        );
     }
 
     @ParameterizedTest
