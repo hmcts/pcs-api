@@ -3,7 +3,6 @@ import {parentSuite} from 'allure-js-commons';
 import {initializeExecutor, performAction, performActions, performValidation} from '@utils/controller';
 import {borderPostcode} from '@data/page-data/borderPostcode.page.data';
 import configData from '@config/test.config';
-import {createCase} from '@data/page-data/createCase.page.data';
 import {addressDetails} from '@data/page-data/addressDetails.page.data';
 import { applicantDetails } from '@data/page-data/applicantDetails.page.data';
 
@@ -13,25 +12,17 @@ test.beforeEach(async ({page}) => {
     await performAction('navigateToUrl', configData.manageCasesBaseURL);
     await performAction('createUserAndLogin', ['caseworker-pcs', 'caseworker']);
     await performAction('clickButton', 'Create case');
-    await selectJurisdictionCaseTypeEvent()
+    await performAction('selectJurisdictionCaseTypeEvent');
 });
-
-async function selectJurisdictionCaseTypeEvent() {
-  await performActions('Case option selection'
-    , ['select', 'Jurisdiction', createCase.caseOption.jurisdiction.possessions]
-    , ['select', 'Case type', createCase.caseOption.caseType.civilPossessions]
-    , ['select', 'Event', createCase.caseOption.event.makeAPossessionClaim]);
-  await performAction('clickButton', 'Start');
-}
 
 async function inputAddressDetails(postcode: string) {
   await performActions('Enter Address Manually'
     , ['inputText', 'Enter a UK postcode', postcode]
     , ['clickButton', 'Find address']
-    , ['select', 'Select an address', addressDetails.propertyAddressSection.addressIndex]
-    , ['inputText', 'Address Line 2', addressDetails.propertyAddressSection.addressLine2]
-    , ['inputText', 'Address Line 3', addressDetails.propertyAddressSection.addressLine3]
-    , ['inputText', 'County', addressDetails.propertyAddressSection.englandCounty]);
+    , ['select', 'Select an address', addressDetails.addressIndex]
+    , ['inputText', 'Address Line 2', addressDetails.addressLine2]
+    , ['inputText', 'Address Line 3', addressDetails.addressLine3]
+    , ['inputText', 'County', addressDetails.englandCounty]);
   await performAction('clickButton', 'Continue');
 }
 
