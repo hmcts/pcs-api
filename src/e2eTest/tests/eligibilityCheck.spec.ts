@@ -1,82 +1,39 @@
 import {test} from '@playwright/test';
 import {parentSuite} from 'allure-js-commons';
-import {initializeExecutor, performAction, performActions, performValidation} from '@utils/controller';
+import {initializeExecutor, performAction, performValidation} from '@utils/controller';
 import {borderPostcode} from '@data/page-data/borderPostcode.page.data';
 import configData from '@config/test.config';
 import {addressDetails} from '@data/page-data/addressDetails.page.data';
-import {applicantDetails} from '@data/page-data/applicantDetails.page.data';
-import {serviceStart} from '@data/page-data/serviceStart.page.data';
+import {legislativeCountry} from "@data/page-data/legislativeCountry.page.data";
 
-test.beforeEach(async ({page}) => {
+test.beforeEach(async ({ page }) => {
   initializeExecutor(page);
   await parentSuite('Eligibility Check');
   await performAction('navigateToUrl', configData.manageCasesBaseURL);
   await performAction('createUserAndLogin', ['caseworker-pcs', 'caseworker']);
   await performAction('clickButton', 'Create case');
-  await selectJurisdictionCaseTypeEvent();
-  await serviceStartPage();
+  await performAction('selectJurisdictionCaseTypeEvent');
+  await performAction('housingPossessionClaim');
 });
 
-async function selectJurisdictionCaseTypeEvent() {
-  await performActions('Case option selection'
-    , ['select', 'Jurisdiction', createCase.caseOption.jurisdiction.possessions]
-    , ['select', 'Case type', createCase.caseOption.caseType.civilPossessions]
-    , ['select', 'Event', createCase.caseOption.event.makeAPossessionClaim]);
-  await performAction('clickButton', 'Start');
-}
-
-async function serviceStartPage() {
-  await performValidation('text', {
-    'text': serviceStart.mainHeader,
-    'elementType': 'heading'
-  });
-  await performAction('clickButton', serviceStart.continue);
-}
-
-async function inputAddressDetails(postcode: string) {
-  await performActions('Enter Address Manually'
-    , ['inputText', 'Enter a UK postcode', postcode]
-    , ['clickButton', 'Find address']
-    , ['select', 'Select an address', addressDetails.addressIndex]
-    , ['inputText', 'Address Line 2', addressDetails.addressLine2]
-    , ['inputText', 'Address Line 3', addressDetails.addressLine3]
-    , ['inputText', 'County', addressDetails.englandCounty]);
-  await performAction('clickButton', 'Continue');
-}
-
-async function selectCountryRadioBtn(country: string) {
-  await performAction('clickRadioButton', country);
-  await performAction('clickButton', borderPostcode.continue);
-}
-
-test.describe.skip('Eligibility checks for cross and non cross border postcodes @nightly', async () => {
+test.describe('Eligibility checks for cross and non cross border postcodes @Master @nightly', async () => {
   //Skipping these tests until the postcode data insertion is handled in AAT via automation
   test('Verify cross border postcode eligibility check redirection and content for England and Wales', async ({page}) => {
-    await inputAddressDetails(borderPostcode.englandWalesPostcode)
-    await performValidation('text', {
-      'text': borderPostcode.mainHeader,
-      'elementType': 'heading'
-    });
-    await selectCountryRadioBtn(borderPostcode.countryOptions.england);
-    await performValidation('text', {
-      'text': applicantDetails.header,
-      'elementType': 'heading'
-    });
+    await performAction('selectAddress', {postcode: borderPostcode.englandWalesPostcode,
+      addressIndex: addressDetails.addressIndex});
+    await performValidation('mainHeader', borderPostcode.mainHeader);
+    await performAction('selectCountryRadioButton', borderPostcode.countryOptions.england);
+    await performValidation('mainHeader', legislativeCountry.mainHeader);
     await page.goBack()
     await page.waitForLoadState()
-    await selectCountryRadioBtn(borderPostcode.countryOptions.wales);
-    await performValidation('text', {
-      'text': borderPostcode.mainHeader,
-      'elementType': 'heading'
-    });
+    await performAction('selectCountryRadioButton', borderPostcode.countryOptions.wales);
+    await performValidation('mainHeader', borderPostcode.mainHeader);
   });
 
-  test('Verify cross border postcode page for England and Scotland content', async () => {
-    await inputAddressDetails(borderPostcode.englandScotlandPostcode)
-    await performValidation('text', {
-      "text": borderPostcode.mainHeader,
-      "elementType": "heading"
-    });
+  test.skip('Verify cross border postcode page for England and Scotland content', async () => {
+    await performAction('selectAddress', {postcode: borderPostcode.englandScotlandPostcode,
+      addressIndex: addressDetails.addressIndex});
+    await performValidation('mainHeader', borderPostcode.mainHeader);
     await performValidation('text', {
       "text": borderPostcode.englandScotlandParagraphContent,
       "elementType": "paragraph"
@@ -90,18 +47,14 @@ test.describe.skip('Eligibility checks for cross and non cross border postcodes 
   });
 
   test('Verify non cross border postcode eligibility check for England', async () => {
-    await inputAddressDetails(addressDetails.propertyAddressSection.englandPostcode)
-    await performValidation('text', {
-      'text': applicantDetails.header,
-      'elementType': 'heading'
-    });
+    await performAction('selectAddress', {postcode: addressDetails.englandPostcode,
+      addressIndex: addressDetails.addressIndex});
+    await performValidation('mainHeader', legislativeCountry.mainHeader);
   });
 
   test('Verify non cross border postcode eligibility check for Wales', async () => {
-    await inputAddressDetails(addressDetails.propertyAddressSection.walesPostcode)
-    await performValidation('text', {
-      'text': applicantDetails.header,
-      'elementType': 'heading'
-    });
+    await performAction('selectAddress', {postcode: addressDetails.walesPostcode,
+      addressIndex: addressDetails.addressIndex});
+    await performValidation('mainHeader', legislativeCountry.mainHeader);
   });
 })
