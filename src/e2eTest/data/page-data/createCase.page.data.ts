@@ -5,7 +5,7 @@ export const createCase =
     possessionsJurisdiction: 'Possessions',
     caseType:
       {
-        civilPossessions: `Civil Possessions 394`
+        civilPossessions: 'Civil Possessions 394'
       },
     // caseType:
     //     {
