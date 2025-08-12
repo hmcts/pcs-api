@@ -8,6 +8,7 @@ import uk.gov.hmcts.ccd.sdk.api.ConfigBuilder;
 import uk.gov.hmcts.ccd.sdk.api.Event.EventBuilder;
 import uk.gov.hmcts.ccd.sdk.api.EventPayload;
 import uk.gov.hmcts.ccd.sdk.api.Permission;
+import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
@@ -24,6 +25,7 @@ import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.EnterPropertyAddre
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.SelectClaimantType;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.SelectLegislativeCountry;
 import uk.gov.hmcts.reform.pcs.ccd.page.createtestcase.ClaimantInformation;
+import uk.gov.hmcts.reform.pcs.ccd.page.createtestcase.ContactPreferences;
 import uk.gov.hmcts.reform.pcs.ccd.service.ClaimService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
@@ -65,13 +67,16 @@ public class CreatePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             .add(new SelectClaimantType())
             .add(new ClaimantTypeNotEligibleEngland())
             .add(new ClaimantTypeNotEligibleWales())
-            .add(new ClaimantInformation());
+            .add(new ClaimantInformation())
+            .add(new ContactPreferences());
+
     }
 
     private PCSCase start(EventPayload<PCSCase, State> eventPayload) {
         PCSCase caseData = eventPayload.caseData();
         String userDetails = securityContextService.getCurrentUserDetails().getSub();
         caseData.setClaimantName(userDetails);
+        caseData.setClaimantContactEmail(userDetails);
 
         return caseData;
     }
@@ -82,11 +87,18 @@ public class CreatePossessionClaim implements CCDConfig<PCSCase, State, UserRole
         long caseReference = eventPayload.caseReference();
         PCSCase pcsCase = eventPayload.caseData();
         pcsCase.setPaymentStatus(PaymentStatus.UNPAID);
+        pcsCase.setClaimantContactAddress(pcsCase.getPropertyAddress());
 
         UUID userID = UUID.fromString(securityContextService.getCurrentUserDetails().getUid());
 
         String claimantName = isNotBlank(pcsCase.getOverriddenClaimantName())
             ? pcsCase.getOverriddenClaimantName() : pcsCase.getClaimantName();
+
+        AddressUK contactAddress = pcsCase.getOverriddenClaimantContactAddress() != null
+            ? pcsCase.getOverriddenClaimantContactAddress() : pcsCase.getClaimantContactAddress();
+
+        String contactEmail = isNotBlank(pcsCase.getOverriddenClaimantContactEmail())
+            ? pcsCase.getOverriddenClaimantContactEmail() : pcsCase.getClaimantContactEmail();
 
         PcsCaseEntity pcsCaseEntity = pcsCaseService.createCase(caseReference, pcsCase);
         PartyEntity party = partyService.createAndLinkParty(
@@ -94,6 +106,9 @@ public class CreatePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             userID,
             claimantName,
             null,
+            contactEmail,
+            contactAddress,
+            pcsCase.getClaimantContactPhoneNumber(),
             true);
 
         ClaimEntity claimEntity = claimService.createAndLinkClaim(
