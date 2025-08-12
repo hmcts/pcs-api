@@ -4,7 +4,7 @@ import {initializeExecutor, performAction, performValidation} from '@utils/contr
 import {borderPostcode} from '@data/page-data/borderPostcode.page.data';
 import configData from '@config/test.config';
 import {addressDetails} from '@data/page-data/addressDetails.page.data';
-import {legislativeCountry} from "@data/page-data/legislativeCountry.page.data";
+import {legislativeCountry} from '@data/page-data/legislativeCountry.page.data';
 
 test.beforeEach(async ({page}) => {
   initializeExecutor(page);
@@ -16,7 +16,7 @@ test.beforeEach(async ({page}) => {
   await performAction('housingPossessionClaim');
 });
 
-test.describe.skip('Eligibility checks for cross and non cross border postcodes @Master @nightly', async () => {
+test.describe.skip('Eligibility checks for cross and non cross border postcodes @nightly', async () => {
   //Skipping these tests until the postcode data insertion is handled in AAT via automation
   test('Verify cross border postcode eligibility check redirection and content for England and Wales', async ({page}) => {
     await performAction('selectAddress', {
