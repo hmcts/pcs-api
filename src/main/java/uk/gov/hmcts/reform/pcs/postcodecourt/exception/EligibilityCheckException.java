@@ -4,4 +4,4 @@ public class EligibilityCheckException extends RuntimeException {
     public EligibilityCheckException(String message) {
         super(message);
     }
-} 
+}
