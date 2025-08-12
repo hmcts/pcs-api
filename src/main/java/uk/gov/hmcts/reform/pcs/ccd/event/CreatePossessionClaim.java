@@ -8,47 +8,47 @@ import uk.gov.hmcts.ccd.sdk.api.ConfigBuilder;
 import uk.gov.hmcts.ccd.sdk.api.Event.EventBuilder;
 import uk.gov.hmcts.ccd.sdk.api.EventPayload;
 import uk.gov.hmcts.ccd.sdk.api.Permission;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PaymentStatus;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
-import uk.gov.hmcts.reform.pcs.ccd.page.createtestcase.ClaimantInformation;
-import uk.gov.hmcts.reform.pcs.ccd.page.createtestcase.CrossBorderPostcodeSelection;
-import uk.gov.hmcts.reform.pcs.ccd.page.createtestcase.MakeAClaim;
+import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.CrossBorderPostcodeSelection;
+import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.ClaimantTypeNotEligibleEngland;
+import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.ClaimantTypeNotEligibleWales;
+import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.EnterPropertyAddress;
+import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.SelectClaimantType;
+import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.SelectLegislativeCountry;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 
-import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.createTestApplication;
+import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.createPossessionClaim;
 
+@Slf4j
 @Component
 @AllArgsConstructor
-@Slf4j
-public class CreateTestCase implements CCDConfig<PCSCase, State, UserRole> {
+public class CreatePossessionClaim implements CCDConfig<PCSCase, State, UserRole> {
 
     private final PcsCaseService pcsCaseService;
-    private final MakeAClaim makeAClaim;
+    private final EnterPropertyAddress enterPropertyAddress;
     private final CrossBorderPostcodeSelection crossBorderPostcodeSelection;
 
     @Override
     public void configure(ConfigBuilder<PCSCase, State, UserRole> configBuilder) {
         EventBuilder<PCSCase, UserRole, State> eventBuilder =
             configBuilder
-                .decentralisedEvent(createTestApplication.name(), this::submit, this::start)
+                .decentralisedEvent(createPossessionClaim.name(), this::submit)
                 .initialState(State.CASE_ISSUED)
                 .name("Make a claim")
-                .grant(Permission.CRUD, UserRole.PCS_CASE_WORKER);
+                .grant(Permission.CRUD, UserRole.PCS_CASE_WORKER)
+                .showSummary();
 
         new PageBuilder(eventBuilder)
-            .add(makeAClaim)
+            .add(enterPropertyAddress)
             .add(crossBorderPostcodeSelection)
-            .add(new ClaimantInformation());
-    }
-
-    private PCSCase start(EventPayload<PCSCase, State> eventPayload) {
-        log.info("Callback for start");
-        PCSCase caseData = eventPayload.caseData();
-        caseData.setApplicantForename("Preset value");
-        return caseData;
+            .add(new SelectLegislativeCountry())
+            .add(new SelectClaimantType())
+            .add(new ClaimantTypeNotEligibleEngland())
+            .add(new ClaimantTypeNotEligibleWales());
     }
 
     private void submit(EventPayload<PCSCase, State> eventPayload) {

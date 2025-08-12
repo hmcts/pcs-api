@@ -15,7 +15,7 @@ public class PageBuilder {
         this.eventBuilder = eventBuilder;
     }
 
-    public FieldCollectionBuilder<PCSCase, State, EventBuilder<PCSCase, UserRole, State>> page(final String id) {
+    public FieldCollectionBuilder<PCSCase, State, EventBuilder<PCSCase, UserRole, State>> page(String id) {
         return eventBuilder.fields().page(id);
     }
 
