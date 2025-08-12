@@ -16,7 +16,7 @@ export const addressDetails = {
   header: 'There is a problem',
   addressDetailsError: 'An address is required',
   englandBuildingAndStreet: '1 Second Avenue',
-  englandTownOrCity: 'London',
+  englandTownOrCity: 'London'
 };
 
 
