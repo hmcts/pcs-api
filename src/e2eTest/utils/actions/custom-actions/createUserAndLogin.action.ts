@@ -13,7 +13,7 @@ type UserInfo = {
   sessionFile?: string;
 };
 export class CreateUserAndLoginAction implements IAction {
-  async execute(page: Page, roles: actionData): Promise<void> {
+  async execute(page: Page, action: string, roles: actionData): Promise<void> {
     const userCreds = await this.createUser(roles as string[]);
     await performAction('inputText', 'Email address', userCreds.email);
     await performAction('inputText', 'Password', userCreds.password);
