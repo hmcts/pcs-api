@@ -12,7 +12,7 @@ test.beforeEach(async ({page}) => {
     await performAction('navigateToUrl', configData.manageCasesBaseURL);
     await performAction('createUserAndLogin', ['caseworker-pcs', 'caseworker']);
     await performAction('clickButton', 'Create case');
-    await performAction('selectCaseOptions');
+    await performAction('selectJurisdictionCaseTypeEvent');
 });
 
 async function inputAddressDetails(postcode: string) {
