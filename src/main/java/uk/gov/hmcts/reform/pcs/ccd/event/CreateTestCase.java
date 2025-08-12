@@ -7,14 +7,17 @@ import uk.gov.hmcts.ccd.sdk.api.ConfigBuilder;
 import uk.gov.hmcts.ccd.sdk.api.Event.EventBuilder;
 import uk.gov.hmcts.ccd.sdk.api.EventPayload;
 import uk.gov.hmcts.ccd.sdk.api.Permission;
+import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PaymentStatus;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
-import uk.gov.hmcts.reform.pcs.ccd.page.createtestcase.ClaimantInformation;
 import uk.gov.hmcts.reform.pcs.ccd.page.createtestcase.MakeAClaim;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
+import uk.gov.hmcts.reform.pcs.clients.ProfessionalOrganisationRetriever;
+import uk.gov.hmcts.reform.pcs.dto.OrganisationDto;
+import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.createTestApplication;
 
@@ -22,7 +25,9 @@ import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.createTestApplication;
 @AllArgsConstructor
 public class CreateTestCase implements CCDConfig<PCSCase, State, UserRole> {
 
+    SecurityContextService securityContextService;
     private final PcsCaseService pcsCaseService;
+    private ProfessionalOrganisationRetriever professionalOrganisationRetriever;
 
     @Override
     public void configure(ConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -34,13 +39,15 @@ public class CreateTestCase implements CCDConfig<PCSCase, State, UserRole> {
                 .grant(Permission.CRUD, UserRole.PCS_CASE_WORKER);
 
         new PageBuilder(eventBuilder)
-            .add(new MakeAClaim())
-            .add(new ClaimantInformation());
+            .add(new MakeAClaim());
     }
 
     private PCSCase start(EventPayload<PCSCase, State> eventPayload) {
         PCSCase caseData = eventPayload.caseData();
-        caseData.setApplicantForename("Preset value");
+
+        UserInfo currentUser = securityContextService.getCurrentUserDetails();
+        OrganisationDto organisationDto = professionalOrganisationRetriever.retrieve(currentUser.getUid());
+        caseData.setOrganisationName(organisationDto.getName());
         return caseData;
     }
 
@@ -51,5 +58,4 @@ public class CreateTestCase implements CCDConfig<PCSCase, State, UserRole> {
 
         pcsCaseService.createCase(caseReference, pcsCase);
     }
-
 }
