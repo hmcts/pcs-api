@@ -59,8 +59,7 @@ test.describe('[Create Case Flow With Address and Claimant Type]  @Master @night
       text: checkingNotice.mainHeader,
       elementType: 'heading'
     })
-    // commenting out below code as below code PR is not merged yet
-    /*await performAction('selectLegislativeCountry', legislativeCountry.england);
+    await performAction('selectLegislativeCountry', legislativeCountry.england);
     await performAction('selectClaimantType', claimantType.registeredProviderForSocialHousing);
     await performAction('clickButton', 'Save and continue');
     await performValidation('bannerAlert', 'Case #.* has been created.');
@@ -70,7 +69,8 @@ test.describe('[Create Case Flow With Address and Claimant Type]  @Master @night
       ['formLabelValue', 'Building and Street'],
       ['formLabelValue', 'Town or City'],
       ['formLabelValue', 'Postcode/Zipcode'],
-      ['formLabelValue', 'Country']*/
+      ['formLabelValue', 'Country']
+    )
   });
   test.skip('Wales - Successful case creation', async () => {
     await performAction('enterTestAddressManually');
