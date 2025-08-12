@@ -14,9 +14,9 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PaymentStatus;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
+import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.EnterPropertyAddress;
 import uk.gov.hmcts.reform.pcs.ccd.page.createtestcase.ClaimantInformation;
 import uk.gov.hmcts.reform.pcs.ccd.page.createtestcase.DocumentUpload;
-import uk.gov.hmcts.reform.pcs.ccd.page.createtestcase.MakeAClaim;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.uploadDocumentPoc;
@@ -28,7 +28,7 @@ import java.util.List;
 public class UploadDocumentPoc implements CCDConfig<PCSCase, State, UserRole> {
 
     private final PcsCaseService pcsCaseService;
-    private final MakeAClaim makeAClaim;
+    private final EnterPropertyAddress enterPropertyAddress;
 
 
     @Override
@@ -42,7 +42,7 @@ public class UploadDocumentPoc implements CCDConfig<PCSCase, State, UserRole> {
 
         new PageBuilder(eventBuilder)
             .add(new ClaimantInformation())
-            .add(makeAClaim)
+            .add(enterPropertyAddress)
             .add(new DocumentUpload());
     }
 
