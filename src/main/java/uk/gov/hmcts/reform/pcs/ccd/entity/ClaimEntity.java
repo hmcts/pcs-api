@@ -20,10 +20,11 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
+import static jakarta.persistence.CascadeType.ALL;
 import static jakarta.persistence.FetchType.LAZY;
 
 /**
- * JPA Entity representing a party involved in a case.
+ * JPA Entity representing a claim in a case.
  */
 @Entity
 @Builder
@@ -31,8 +32,8 @@ import static jakarta.persistence.FetchType.LAZY;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "party")
-public class PartyEntity {
+@Table(name = "claim")
+public class ClaimEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -43,18 +44,22 @@ public class PartyEntity {
     @JsonBackReference
     private PcsCaseEntity pcsCase;
 
-    @OneToMany(fetch = LAZY, mappedBy = "party")
+    @OneToMany(fetch = LAZY, cascade = ALL, mappedBy = "claim")
     @Builder.Default
     @JsonManagedReference
     private Set<ClaimPartyEntity> claimParties = new HashSet<>();
 
-    private String forename;
-    private String surname;
+    private String summary;
 
-    private UUID idamId;
+    public void addParty(PartyEntity party, PartyRole partyRole) {
+        ClaimPartyEntity claimPartyEntity = ClaimPartyEntity.builder()
+            .claim(this)
+            .party(party)
+            .role(partyRole)
+            .build();
 
-    private UUID pcqId;
-
-    private Boolean active;
+        claimParties.add(claimPartyEntity);
+        party.getClaimParties().add(claimPartyEntity);
+    }
 
 }

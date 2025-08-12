@@ -7,6 +7,7 @@ import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.ccd.client.CoreCaseDataApi;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDataContent;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
@@ -45,6 +46,9 @@ public class TestWithCCD extends CftlibTest {
     public void createsPossessionCase() {
         var r = ccdApi.startCase(idamToken, s2sToken, CaseType.getCaseType(), "createPossessionClaim");
         PCSCase caseData = PCSCase.builder()
+            .claimantName("Wrong Name")
+            .isClaimantNameCorrect(YesOrNo.NO)
+            .overriddenClaimantName("Updated Name")
             .propertyAddress(AddressUK.builder()
                                  .addressLine1("123 Baker Street")
                                  .addressLine2("Marylebone")
@@ -62,6 +66,8 @@ public class TestWithCCD extends CftlibTest {
         caseDetails = ccdApi.submitForCaseworker(idamToken, s2sToken, userId,
                                                  "PCS", CaseType.getCaseType(), false, content
         );
+
         assertThat(caseDetails.getId()).isNotNull();
     }
+
 }
