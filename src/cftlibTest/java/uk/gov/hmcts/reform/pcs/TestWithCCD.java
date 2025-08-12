@@ -43,8 +43,8 @@ public class TestWithCCD extends CftlibTest {
     }
 
     @Test
-    public void createsTestCase() {
-        var r = ccdApi.startCase(idamToken, s2sToken, CaseType.getCaseType(), "createTestApplication");
+    public void createsPossessionCase() {
+        var r = ccdApi.startCase(idamToken, s2sToken, CaseType.getCaseType(), "createPossessionClaim");
         PCSCase caseData = PCSCase.builder()
             .claimantName("Wrong Name")
             .isClaimantNameCorrect(YesOrNo.NO)
@@ -60,7 +60,7 @@ public class TestWithCCD extends CftlibTest {
             .build();
         var content = CaseDataContent.builder()
             .data(caseData)
-            .event(Event.builder().id("createTestApplication").build())
+            .event(Event.builder().id("createPossessionClaim").build())
             .eventToken(r.getToken())
             .build();
         caseDetails = ccdApi.submitForCaseworker(idamToken, s2sToken, userId,

@@ -467,14 +467,14 @@ class TestingSupportControllerTest {
         String serviceAuth = "Bearer serviceToken";
         String postcode = "SW1A 1AA";
         LegislativeCountry country = LegislativeCountry.ENGLAND;
-        
+
         EligibilityResult expectedResult = mock(EligibilityResult.class);
-        
+
         when(eligibilityService.checkEligibility(postcode, country)).thenReturn(expectedResult);
-        
+
         // When
         EligibilityResult result = underTest.getPostcodeEligibility(serviceAuth, postcode, country);
-        
+
         // Then
         assertThat(result).isSameAs(expectedResult);
         verify(eligibilityService).checkEligibility(postcode, country);
@@ -485,14 +485,14 @@ class TestingSupportControllerTest {
         // Given
         String serviceAuth = "Bearer serviceToken";
         String postcode = "CH5 1AA";
-        
+
         EligibilityResult expectedResult = mock(EligibilityResult.class);
-        
+
         when(eligibilityService.checkEligibility(postcode, null)).thenReturn(expectedResult);
-        
+
         // When
         EligibilityResult result = underTest.getPostcodeEligibility(serviceAuth, postcode, null);
-        
+
         // Then
         assertThat(result).isSameAs(expectedResult);
         verify(eligibilityService).checkEligibility(postcode, null);
@@ -504,15 +504,15 @@ class TestingSupportControllerTest {
         String serviceAuth = "Bearer serviceToken";
         String postcode = "INVALID";
         RuntimeException serviceException = new RuntimeException("Service error");
-        
+
         when(eligibilityService.checkEligibility(postcode, null)).thenThrow(serviceException);
-        
+
         // When/Then
         org.assertj.core.api.Assertions.assertThatThrownBy(() ->
             underTest.getPostcodeEligibility(serviceAuth, postcode, null)
         ).isInstanceOf(RuntimeException.class)
          .hasMessageContaining("Service error");
-        
+
         verify(eligibilityService).checkEligibility(postcode, null);
     }
 }

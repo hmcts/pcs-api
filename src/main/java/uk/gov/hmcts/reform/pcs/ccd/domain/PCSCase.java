@@ -11,6 +11,8 @@ import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseworkerAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenAccess;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
+import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
+
 import static uk.gov.hmcts.ccd.sdk.type.FieldType.DynamicRadioList;
 
 import java.util.List;
@@ -112,5 +114,27 @@ public class PCSCase {
     private String pageHeadingMarkdown;
 
     private String claimPaymentTabMarkdown;
+
+    @CCD(
+        label = "Legislative country",
+        access = CaseworkerAccess.class
+    )
+    private LegislativeCountry legislativeCountryChoice;
+
+    private String legislativeCountry;
+
+    @CCD(
+        label = "Who is the claimant in this case?",
+        hint = "If you’re a legal representative, you should select the type of claimant you’re representing.",
+        typeOverride = DynamicRadioList,
+        access = {CaseworkerAccess.class}
+    )
+    private DynamicStringList claimantType;
+
+    @CCD(searchable = false, access = CaseworkerAccess.class)
+    private YesOrNo showClaimantTypeNotEligibleEngland;
+
+    @CCD(searchable = false, access = CaseworkerAccess.class)
+    private YesOrNo showClaimantTypeNotEligibleWales;
 
 }
