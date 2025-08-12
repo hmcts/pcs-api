@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.ccd.page.createtestcase;
+package uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -32,10 +32,10 @@ import static org.mockito.Mockito.when;
 class CrossBorderPostcodeSelectionTest extends BasePageTest {
 
     private static final String SOME_POSTCODE = "TX1 1TX";
-    
+
     @Mock
     private EligibilityService eligibilityService;
-    
+
     private Event<PCSCase, UserRole, State> event;
 
     @BeforeEach
@@ -70,7 +70,7 @@ class CrossBorderPostcodeSelectionTest extends BasePageTest {
         when(eligibilityService.checkEligibility(postcode, selectedCountry)).thenReturn(eligibilityResult);
 
         // When
-        AboutToStartOrSubmitResponse<PCSCase, State> response = 
+        AboutToStartOrSubmitResponse<PCSCase, State> response =
             getMidEventForPage(event, "crossBorderPostcodeSelection")
                 .handle(caseDetails, null);
 

@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.ccd.page.createtestcase;
+package uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -34,7 +34,7 @@ import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.ccd.sdk.type.YesOrNo.NO;
 import static uk.gov.hmcts.ccd.sdk.type.YesOrNo.YES;
 
-public class MakeAClaimTest extends BasePageTest {
+class EnterPropertyAddressTest extends BasePageTest {
 
     private EligibilityService eligibilityService;
 
@@ -43,7 +43,7 @@ public class MakeAClaimTest extends BasePageTest {
     @BeforeEach
     void setUp() {
         eligibilityService = mock(EligibilityService.class);
-        event = buildPageInTestEvent(new MakeAClaim(eligibilityService));
+        event = buildPageInTestEvent(new EnterPropertyAddress(eligibilityService));
     }
 
     @Test
@@ -118,7 +118,7 @@ public class MakeAClaimTest extends BasePageTest {
         when(eligibilityService.checkEligibility(postcode, null)).thenReturn(eligibilityResult);
 
         // When
-        AboutToStartOrSubmitResponse<PCSCase, State> response = getMidEventForPage(event, "Make a claim")
+        AboutToStartOrSubmitResponse<PCSCase, State> response = getMidEventForPage(event, "enterPropertyAddress")
             .handle(caseDetails, null);
 
         // Then
@@ -158,9 +158,10 @@ public class MakeAClaimTest extends BasePageTest {
 
         when(eligibilityService.checkEligibility(postcode, null)).thenReturn(eligibilityResult);
 
+        MidEvent<PCSCase, State> midEvent = getMidEventForPage(event, "enterPropertyAddress");
+
         // When & Then
-        assertThatThrownBy(() -> getMidEventForPage(event, "Make a claim")
-            .handle(caseDetails, null))
+        assertThatThrownBy(() -> midEvent.handle(caseDetails, null))
             .isInstanceOf(EligibilityCheckException.class)
             .hasMessageContaining("Expected at least 2 legislative countries")
             .hasMessageContaining(expectedMessageFragment)
@@ -246,4 +247,3 @@ public class MakeAClaimTest extends BasePageTest {
         );
     }
 }
-
