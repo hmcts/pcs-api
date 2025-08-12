@@ -82,6 +82,9 @@ Playwright 1.30+ | TypeScript 4.9+
 | createUserAndLogin | `performAction('createUserAndLogin', ...)` |
 | enterTestAddressManually | `performAction('enterTestAddressManually', ...)` |
 | selectJurisdictionCaseTypeEvent | `performAction('selectJurisdictionCaseTypeEvent', ...)` |
+| selectClaimType | `performAction('selectClaimType', ...)` |
+| selectClaimantName | `performAction('selectClaimantName', ...)` |
+| selectContactPreferences | `performAction('selectContactPreferences', ...)` |
 ### Validations
 | Validation          | Example Usage |
 |------------------|---------------|

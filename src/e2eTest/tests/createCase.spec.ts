@@ -9,6 +9,9 @@ import configData from '@config/test.config';
 import {addressDetails} from '@data/page-data/addressDetails.page.data';
 import {claimantType} from '@data/page-data/claimantType.page.data';
 import {legislativeCountry} from '@data/page-data/legislativeCountry.page.data';
+import {claimType} from "@data/page-data/claimType.page.data";
+import {claimantName} from "@data/page-data/claimantName.page.data";
+import {contactPreferences} from "@data/page-data/contactPreferences.page.data";
 
 test.beforeEach(async ({ page }, testInfo) => {
   initializeExecutor(page);
@@ -23,12 +26,19 @@ test.beforeEach(async ({ page }, testInfo) => {
   await performAction('selectJurisdictionCaseTypeEvent');
 });
 
-test.describe.skip('[Create Case Flow With Address and Claimant Type]  @Master @nightly', async () => {
+test.describe('[Create Case Flow With Address and Claimant Type]  @Master @nightly', async () => {
   test('England - Successful case creation', async () => {
     await performAction('selectAddress', {postcode: addressDetails.englandPostcode,
       addressIndex: addressDetails.addressIndex});
     await performAction('selectLegislativeCountry', legislativeCountry.england);
     await performAction('selectClaimantType', claimantType.registeredProviderForSocialHousing);
+    await performAction('selectClaimType', claimType.no);
+    await performAction('selectClaimantName', claimantName.yes);
+    await performAction('selectContactPreferences', {
+      notifications: { answer: contactPreferences.yes },
+      correspondenceAddress: { answer: contactPreferences.yes },
+      phoneNumber: { answer: contactPreferences.no }
+    });
     await performAction('clickButton', 'Save and continue');
     await performValidation('bannerAlert', 'Case #.* has been created.');
     await performAction('clickTab', 'Property Details');
@@ -45,6 +55,13 @@ test.describe.skip('[Create Case Flow With Address and Claimant Type]  @Master @
     await performAction('enterTestAddressManually');
     await performAction('selectLegislativeCountry', legislativeCountry.wales);
     await performAction('selectClaimantType', claimantType.registeredCommunityLandlord);
+    await performAction('selectClaimType', claimType.no);
+    await performAction('selectClaimantName', claimantName.no);
+    await performAction('selectContactPreferences', {
+      notifications: { answer: contactPreferences.no },
+      correspondenceAddress: { answer: contactPreferences.no },
+      phoneNumber: { answer: contactPreferences.yes }
+    });
     await performAction('clickButton', 'Save and continue');
     await performValidation('bannerAlert', 'Case #.* has been created.');
     await performAction('clickTab', 'Property Details');
@@ -70,6 +87,16 @@ test.describe.skip('[Create Case Flow With Address and Claimant Type]  @Master @
       addressIndex: addressDetails.addressIndex});
     await performAction('selectLegislativeCountry', legislativeCountry.wales);
     await performAction('selectClaimantType', claimantType.privateLandlord);
+    await performValidation('mainHeader', 'You\'re not eligible for this online service');
+    await performAction('clickButton', 'Close and return to case list');
+  });
+
+  test('Unsuccessful case creation journey due to claim type not in scope of Release1 @R1only', async () => {
+    await performAction('selectAddress', {postcode: addressDetails.englandPostcode,
+      addressIndex: addressDetails.addressIndex});
+    await performAction('selectLegislativeCountry', legislativeCountry.england);
+    await performAction('selectClaimantType', claimantType.registeredProviderForSocialHousing);
+    await performAction('selectClaimType', claimType.yes);
     await performValidation('mainHeader', 'You\'re not eligible for this online service');
     await performAction('clickButton', 'Close and return to case list');
   });

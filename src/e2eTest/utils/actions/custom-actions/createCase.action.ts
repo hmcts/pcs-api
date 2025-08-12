@@ -7,6 +7,8 @@ import { initIdamAuthToken, initServiceAuthToken, getUser } from 'utils/helpers/
 import { performAction, performActions } from '@utils/controller';
 import {createCase} from "@data/page-data/createCase.page.data";
 import {addressDetails} from "@data/page-data/addressDetails.page.data";
+import {claimantName} from "@data/page-data/claimantName.page.data";
+import {contactPreferences} from "@data/page-data/contactPreferences.page.data";
 
 let caseInfo: { id: string; fid: string; state: string };
 const testConfig = TestConfig.ccdCase;
@@ -22,7 +24,10 @@ export class CreateCaseAction implements IAction {
       ['selectLegislativeCountry', () => this.selectLegislativeCountry(fieldName)],
       ['selectClaimantType', () => this.selectClaimantType(fieldName)],
       ['selectJurisdictionCaseTypeEvent', () => this.selectJurisdictionCaseTypeEvent()],
-      ['enterTestAddressManually', () => this.enterTestAddressManually()]
+      ['enterTestAddressManually', () => this.enterTestAddressManually()],
+      ['selectClaimType', () => this.selectClaimType(fieldName)],
+      ['selectClaimantName', () => this.selectClaimantName(fieldName)],
+      ['selectContactPreferences', () => this.selectContactPreferences(fieldName)]
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) throw new Error(`No action found for '${action}'`);
@@ -53,6 +58,54 @@ export class CreateCaseAction implements IAction {
 
   private async selectClaimantType(caseData: actionData) {
     await performAction('clickRadioButton', caseData);
+    await performAction('clickButton', 'Continue');
+  }
+
+  private async selectClaimType(caseData: actionData) {
+    await performAction('clickRadioButton', caseData);
+    await performAction('clickButton', 'Continue');
+  }
+
+  private async selectClaimantName(caseData: actionData) {
+    await performAction('clickRadioButton', caseData);
+    if(caseData == claimantName.no){
+      await performAction('inputText', claimantName.whatIsCorrectClaimantName, claimantName.correctClaimantName);
+    }
+    await performAction('clickButton', 'Continue');
+  }
+
+  private async selectContactPreferences(preferences: actionData) {
+    const prefData = preferences as {
+      notifications: { answer: string };
+      correspondenceAddress: { answer: string };
+      phoneNumber: { answer: string };
+    };
+
+    await performAction('clickRadioButton', {
+      question: contactPreferences.notificationQuestion,
+      option: prefData.notifications.answer
+    });
+    if(prefData.notifications.answer == 'No'){
+      await performAction('inputText', 'Enter email address', contactPreferences.emailId);
+    }
+
+    await performAction('clickRadioButton', {
+      question: contactPreferences.correspondenceAddressQuestion,
+      option: prefData.correspondenceAddress.answer
+    });
+    if(prefData.correspondenceAddress.answer == 'No'){
+      await performAction('selectAddress', {postcode: addressDetails.englandPostcode,
+        addressIndex: addressDetails.addressIndex});
+    }
+
+    await performAction('clickRadioButton', {
+      question: contactPreferences.phoneNumberQuestion,
+      option: prefData.phoneNumber.answer
+    });
+    if(prefData.phoneNumber.answer == 'Yes'){
+      await performAction('inputText', 'Enter phone number', contactPreferences.phoneNumber);
+    }
+
     await performAction('clickButton', 'Continue');
   }
 
