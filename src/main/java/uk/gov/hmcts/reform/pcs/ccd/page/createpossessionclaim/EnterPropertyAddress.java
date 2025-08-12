@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.ccd.page.createtestcase;
+package uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim;
 
 import lombok.extern.slf4j.Slf4j;
 import lombok.AllArgsConstructor;
@@ -23,16 +23,16 @@ import java.util.List;
 @AllArgsConstructor
 @Component
 @Slf4j
-public class MakeAClaim implements CcdPageConfiguration {
+public class EnterPropertyAddress implements CcdPageConfiguration {
 
     private final EligibilityService eligibilityService;
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
-            .page("Make a claim", this::midEvent)
+            .page("enterPropertyAddress", this::midEvent)
             .pageLabel("What is the address of the property you're claiming possession of?")
-            .label("lineSeparator", "---")
+            .label("enterPropertyAddress-lineSeparator", "---")
             .mandatory(PCSCase::getPropertyAddress);
     }
 
