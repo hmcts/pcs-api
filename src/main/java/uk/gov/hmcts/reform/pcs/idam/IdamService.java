@@ -20,8 +20,8 @@ public class IdamService {
     private final String idamSystemPassword;
 
     public IdamService(IdamClient idamClient,
-                       @Value("${idam.system-user.username}") String idamSystemUsername,
-                       @Value("${idam.system-user.password}") String idamSystemPassword) {
+                       @Value("${idam.proof-of-concept.username}") String idamSystemUsername,
+                       @Value("${idam.proof-of-concept.password}") String idamSystemPassword) {
 
         this.idamClient = idamClient;
         this.idamSystemUsername = idamSystemUsername;
