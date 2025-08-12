@@ -123,8 +123,7 @@ public class PCSCase {
     )
     private ComponentLauncher caseFileView;
 
-  
-  @CCD(
+    @CCD(
         label = "Legislative country",
         access = CaseworkerAccess.class
     )
