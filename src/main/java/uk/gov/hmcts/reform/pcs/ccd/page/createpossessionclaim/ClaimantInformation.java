@@ -30,6 +30,7 @@ public class ClaimantInformation implements CcdPageConfiguration {
                     "What is the correct claimant name?",
                     UPDATED_CLAIMANT_NAME_HINT,
                     false);
+
     }
 
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,

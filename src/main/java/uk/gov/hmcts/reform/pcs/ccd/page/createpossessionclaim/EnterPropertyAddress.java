@@ -1,10 +1,11 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim;
 
-import lombok.extern.slf4j.Slf4j;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
+import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
@@ -36,10 +37,25 @@ public class EnterPropertyAddress implements CcdPageConfiguration {
             .mandatory(PCSCase::getPropertyAddress);
     }
 
+    /*
+    TODO: This MidEvent callback should be refactored once we have integrated with MY HMCTS (Manage Org) as
+     its formatting the property address to use as a placeholder for the registered contact address.
+    */
+
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
                                                                   CaseDetails<PCSCase, State> detailsBefore) {
         PCSCase caseData = details.getData();
         String postcode = caseData.getPropertyAddress().getPostCode();
+        AddressUK propertyAddress = caseData.getPropertyAddress();
+        caseData.setClaimantContactAddress(propertyAddress);
+        String formattedAddress = String.format(
+                "%s<br>%s<br>%s",
+                propertyAddress.getAddressLine1(),
+                propertyAddress.getPostTown(),
+                propertyAddress.getPostCode()
+        );
+        caseData.setFormattedClaimantContactAddress(formattedAddress);
+
         EligibilityResult eligibilityResult = eligibilityService.checkEligibility(postcode, null);
         if (eligibilityResult.getStatus() == EligibilityStatus.LEGISLATIVE_COUNTRY_REQUIRED) {
             validateLegislativeCountries(eligibilityResult.getLegislativeCountries(), postcode);
@@ -47,6 +63,7 @@ public class EnterPropertyAddress implements CcdPageConfiguration {
         } else {
             caseData.setShowCrossBorderPage(YesOrNo.NO);
         }
+
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
             .data(caseData)
             .build();

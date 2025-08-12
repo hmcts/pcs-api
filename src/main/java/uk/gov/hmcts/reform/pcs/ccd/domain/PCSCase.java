@@ -9,6 +9,7 @@ import lombok.Data;
 import uk.gov.hmcts.ccd.sdk.External;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
+import uk.gov.hmcts.ccd.sdk.type.FieldType;
 import static uk.gov.hmcts.ccd.sdk.type.FieldType.DynamicRadioList;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
@@ -110,6 +111,31 @@ public class PCSCase {
 
     @CCD(label = "Party")
     private List<ListValue<Party>> parties;
+
+    @CCD(typeOverride = FieldType.Email)
+    private String claimantContactEmail;
+
+    @CCD(label = "Do you want to use this email address for notifications?")
+    private VerticalYesNo isCorrectClaimantContactEmail;
+
+    @CCD(label = "Enter email address", typeOverride = FieldType.Email)
+    private String overriddenClaimantContactEmail;
+
+    private AddressUK claimantContactAddress;
+
+    private String formattedClaimantContactAddress;
+
+    @CCD(label = "Do you want documents to be sent to this address?")
+    private VerticalYesNo isCorrectClaimantContactAddress;
+
+    @CCD(label = "Enter address details")
+    private AddressUK overriddenClaimantContactAddress;
+
+    @CCD(label = "Do you want to provide a contact phone number? (Optional)")
+    private VerticalYesNo claimantProvidePhoneNumber;
+
+    @CCD(label = "Enter phone number", typeOverride = FieldType.PhoneUK)
+    private String claimantContactPhoneNumber;
 
     @CCD(
         label = "Have you followed the pre-action protocol?",
