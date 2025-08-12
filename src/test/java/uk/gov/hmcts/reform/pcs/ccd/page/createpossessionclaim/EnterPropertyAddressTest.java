@@ -72,7 +72,7 @@ class EnterPropertyAddressTest extends BasePageTest {
 
         // When
         when(eligibilityService.checkEligibility(postCode, null)).thenReturn(eligibilityResult);
-        MidEvent<PCSCase, State> midEvent = getMidEventForPage(event, "Make a claim");
+        MidEvent<PCSCase, State> midEvent = getMidEventForPage(event, "enterPropertyAddress");
         midEvent.handle(caseDetails, null);
 
         // Then
