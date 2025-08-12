@@ -51,7 +51,13 @@ public class BasePageTest {
     @SuppressWarnings("unchecked")
     protected static MidEvent<PCSCase, State> getMidEventForPage(Event<PCSCase, UserRole, State> event,
                                                                  String pageId) {
-        return event.getFields().getPagesToMidEvent().get(pageId);
+        MidEvent<PCSCase, State> midEvent = event.getFields().getPagesToMidEvent().get(pageId);
+
+        assertThat(midEvent)
+            .withFailMessage("No mid event found for page with ID %s", pageId)
+            .isNotNull();
+
+        return midEvent;
     }
 
 }
