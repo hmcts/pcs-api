@@ -4,7 +4,6 @@ import {initializeExecutor, performAction, performActions, performValidation} fr
 import {borderPostcode} from '@data/page-data/borderPostcode.page.data';
 import configData from '@config/test.config';
 import {addressDetails} from '@data/page-data/addressDetails.page.data';
-import {applicantDetails} from '@data/page-data/applicantDetails.page.data';
 import {legislativeCountry} from '@data/page-data/legislativeCountry.page.data';
 
 test.beforeEach(async ({page}) => {
@@ -66,8 +65,12 @@ test.describe.skip('Eligibility checks for cross and non cross border postcodes 
     });
     await performValidation('mainHeader', legislativeCountry.mainHeader);
   });
+
   test('verify cross border postcode page for england and scotland content', async () => {
-    await inputAddressDetails(borderPostcode.englandScotlandPostcode)
+    await performAction('selectAddress', {
+      postcode: addressDetails.englandPostcode,
+      addressIndex: addressDetails.addressIndex
+    });
     await performValidation('text', {
       "text": borderPostcode.mainHeader,
       "elementType": "heading"
