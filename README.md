@@ -78,6 +78,11 @@ You should get a response similar to this:
 
 To access the swagger documentation for the API, go to http://localhost:3206/swagger-ui/index.html.
 
+#### Document Management
+
+- To get document upload working locally, it's easier to connect to AAT dependencies using a VPN.
+- Set the authentication mode to `AuthMode.AAT` as described above.
+
 ### Running the tests
 
 The Functional tests use [Rest Assured](https://rest-assured.io) and [Serenity](https://serenity-bdd.github.io) for reporting, and are located in the `/src/functionalTest` directory.
@@ -138,7 +143,7 @@ The following environment variables are needed to run the tests:
 The e2e suite can be run with the following command:
 
 ```bash
-yarn test:functional
+yarn test:e2e
 ```
 There are also several custom test scripts available:
 

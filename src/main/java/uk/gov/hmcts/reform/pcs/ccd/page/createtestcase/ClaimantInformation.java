@@ -1,16 +1,44 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.createtestcase;
 
+import lombok.extern.slf4j.Slf4j;
+import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
+import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 
+@Slf4j
 public class ClaimantInformation implements CcdPageConfiguration {
+
+    private static final String UPDATED_CLAIMANT_NAME_HINT = """
+        Changing your claimant name here only updates it for this claim.
+        It does not change your registered claimant name on My HMCTS.
+        """;
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
-            .page("claimant information")
-            .pageLabel("Please enter applicant's name")
-            .mandatory(PCSCase::getApplicantForename);
+            .page("claimantInformation")
+            .label("claimantInformation-separator", "---")
+            .pageLabel("Claimant name")
+            .readonlyWithLabel(PCSCase::getClaimantName, "Your claimant name registered with My HMCTS is:")
+            .mandatoryWithLabel(PCSCase::getIsClaimantNameCorrect,"Is this the correct claimant name?")
+            .mandatory(PCSCase::getOverriddenClaimantName,
+                    "isClaimantNameCorrect=\"No\"",
+                    null,
+                    "What is the correct claimant name?",
+                    UPDATED_CLAIMANT_NAME_HINT,
+                    false);
+
     }
+
+    private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
+                                                                  CaseDetails<PCSCase, State> detailsBefore) {
+
+        log.info("Handling midEvent for claimant information page");
+        return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
+            .build();
+    }
+
 }
