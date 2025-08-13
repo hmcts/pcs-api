@@ -1,27 +1,29 @@
 import { IAction } from '../interfaces/action.interface';
-import { ClickAction } from '../actions/element-actions/click.action';
 import { ClickTabAction } from '../actions/element-actions/clickTab.action';
 import { InputTextAction } from '../actions/element-actions/inputText.action';
-import { ClearAction } from '../actions/element-actions/clear.action';
 import { CheckAction } from '../actions/element-actions/check.action';
-import { DoubleClickAction } from '../actions/element-actions/double-click.action';
 import { SelectAction } from '../actions/element-actions/select.action';
-import { LoginAction } from "../actions/custom-actions/login.action";
-import { navigateToUrl } from "@utils/actions/custom-actions/navigateToUrl.action";
+import { CreateUserAndLoginAction } from "../actions/custom-actions/createUserAndLogin.action";
+import { NavigateToUrl } from "@utils/actions/custom-actions/navigateToUrl.action";
 import { CreateCaseAction } from "@utils/actions/custom-actions/createCase.action";
 import { ClickButtonAction } from "../actions/element-actions/clickButton.action";
+import { ClickRadioButton } from "../actions/element-actions/clickRadioButton.action";
+
 export class ActionRegistry {
   private static actions: Map<string, IAction> = new Map([
-    ['click', new ClickAction()],
     ['clickButton', new ClickButtonAction()],
     ['clickTab', new ClickTabAction()],
     ['inputText', new InputTextAction()],
-    ['clear', new ClearAction()],
     ['check', new CheckAction()],
     ['select', new SelectAction()],
-    ['doubleClick', new DoubleClickAction()],
-    ['login', new LoginAction()],
-    ['navigateToUrl', new navigateToUrl()],
+    ['createUserAndLogin', new CreateUserAndLoginAction()],
+    ['navigateToUrl', new NavigateToUrl()],
+    ['clickRadioButton', new ClickRadioButton()],
+    ['selectAddress', new CreateCaseAction()],
+    ['selectLegislativeCountry', new CreateCaseAction()],
+    ['selectClaimantType', new CreateCaseAction()],
+    ['selectJurisdictionCaseTypeEvent', new CreateCaseAction()],
+    ['enterTestAddressManually', new CreateCaseAction()],
     ['createCase', new CreateCaseAction()]]);
 
   static getAction(actionName: string): IAction {

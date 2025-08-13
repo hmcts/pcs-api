@@ -45,31 +45,27 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
         builder.decentralisedCaseType(getCaseType(), getCaseTypeName(), CASE_TYPE_DESCRIPTION);
         builder.jurisdiction(JURISDICTION_ID, JURISDICTION_NAME, JURISDICTION_DESCRIPTION);
 
-        String forenameLabel = "Applicant Forename";
-        String surnameLabel = "Applicant Surname";
+        String paymentLabel = "Payment Status";
+
         builder.searchInputFields()
             .caseReferenceField()
-            .field(PCSCase::getApplicantForename, forenameLabel);
+            .field(PCSCase::getPaymentStatus, paymentLabel);
+
         builder.searchCasesFields()
             .caseReferenceField()
-            .field(PCSCase::getApplicantForename, forenameLabel);
+            .field(PCSCase::getPaymentStatus, paymentLabel);
 
         builder.searchResultFields()
             .caseReferenceField()
-            .field(PCSCase::getApplicantForename, forenameLabel)
-            .field(PCSCase::getApplicantSurname, surnameLabel);
+            .field(PCSCase::getPaymentStatus, paymentLabel);
+
         builder.workBasketInputFields()
             .caseReferenceField()
-            .field(PCSCase::getApplicantForename, forenameLabel)
-            .field(PCSCase::getApplicantSurname, surnameLabel);
+            .field(PCSCase::getClaimantName, "Claimant Name");
+
         builder.workBasketResultFields()
             .caseReferenceField()
-            .field(PCSCase::getApplicantForename, forenameLabel)
-            .field(PCSCase::getApplicantSurname, surnameLabel);
-
-        builder.tab("claimantInformation", "Claimant Details")
-            .field(PCSCase::getApplicantForename)
-            .field(PCSCase::getApplicantSurname);
+            .field(PCSCase::getPropertyAddress, "Property Address");
 
         builder.tab("summary", "Property Details")
             .field(PCSCase::getPropertyAddress);
@@ -85,6 +81,5 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
         builder.tab("hidden", "HiddenFields")
             .showCondition(NEVER_SHOW)
             .field(PCSCase::getPageHeadingMarkdown);
-
     }
 }

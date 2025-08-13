@@ -6,7 +6,7 @@ import { ValidationRegistry } from './registry/validation.registry';
 
 type ActionStep = {
   action: string;
-  fieldName: string;
+  fieldName?: string;
   value?: string | number | boolean | string[] | object;
 };
 
@@ -16,11 +16,8 @@ type ValidationStep = {
   data: validationData;
 };
 
-type ActionTuple =
-  | [string, string]
-  | [string, string, string | number | boolean | string[] | object];
-
-type ValidationTuple = [string, string, validationData];
+type ActionTuple = [string, string] | [string, string, actionData];
+type ValidationTuple = [string, string, string | validationData] | [string, string];
 
 class Controller {
   private page: Page;
@@ -33,18 +30,17 @@ class Controller {
     action: string,
     fieldName?: actionData,
     value?: actionData
-  ): Promise<unknown> {
+  ): Promise<void> {
     const actionInstance = ActionRegistry.getAction(action);
-    return await test.step(`Perform action: [${action}] on "${fieldName}"${value !== undefined ? ` with value "${value}"` : ''}`, async () => {
-      const result = await actionInstance.execute(this.page, fieldName, value);
-      return result !== undefined ? result : null;
+    await test.step(`Perform action: [${action}] on "${fieldName}"${value !== undefined ? ` with value "${value}"` : ''}`, async () => {
+      await actionInstance.execute(this.page, action, fieldName, value);
     });
   }
 
   async performValidation(
     validationType: string,
     fieldName?: string,
-    data?: validationData
+    data?: string | validationData
   ): Promise<void> {
     const validationInstance = ValidationRegistry.getValidation(validationType);
     await test.step(`Perform validation on [${validationType}]`, async () => {
@@ -171,7 +167,9 @@ export async function performValidationGroup(
 
 export async function performValidations(
   groupName: string,
-  ...validations: ValidationTuple[]
+
+  ...validations: ([string, string, string | validationData] | [string, string])[]
+
 ): Promise<void> {
   if (!testExecutor) {
     throw new Error('Test executor not initialized. Call initializeExecutor(page) first.');
