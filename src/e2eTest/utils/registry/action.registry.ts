@@ -28,6 +28,8 @@ export class ActionRegistry {
     ['selectClaimType', new CreateCaseAction()],
     ['selectClaimantName', new CreateCaseAction()],
     ['selectContactPreferences', new CreateCaseAction()]
+    ['housingPossessionClaim', new CreateCaseAction()],
+    ['selectCountryRadioButton', new CreateCaseAction()]
   ]);
 
   static getAction(actionName: string): IAction {

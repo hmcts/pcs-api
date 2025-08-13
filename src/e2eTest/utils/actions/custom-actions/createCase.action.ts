@@ -4,11 +4,13 @@ import { getIdamAuthToken, getServiceAuthToken } from '../../helpers/idam-helper
 import { actionData, IAction } from '../../interfaces/action.interface';
 import { Page } from '@playwright/test';
 import { initIdamAuthToken, initServiceAuthToken, getUser } from 'utils/helpers/idam-helpers/idam.helper';
-import { performAction, performActions } from '@utils/controller';
-import {createCase} from "@data/page-data/createCase.page.data";
-import {addressDetails} from "@data/page-data/addressDetails.page.data";
-import {claimantName} from "@data/page-data/claimantName.page.data";
-import {contactPreferences} from "@data/page-data/contactPreferences.page.data";
+import { performAction, performActions, performValidation } from '@utils/controller';
+import { createCase } from '@data/page-data/createCase.page.data';
+import { addressDetails } from '@data/page-data/addressDetails.page.data';
+import { housingPossessionClaim } from '@data/page-data/housingPossessionClaim.page.data';
+import { borderPostcode } from '@data/page-data/borderPostcode.page.data';
+import { claimantName } from '@data/page-data/claimantName.page.data';
+import { contactPreferences } from '@data/page-data/contactPreferences.page.data';
 
 let caseInfo: { id: string; fid: string; state: string };
 const testConfig = TestConfig.ccdCase;
@@ -20,6 +22,7 @@ export class CreateCaseAction implements IAction {
   async execute(page: Page, action: string, fieldName: actionData, data?: actionData): Promise<void> {
     const actionsMap = new Map<string, () => Promise<void>>([
       ['createCase', () => this.createCaseAction(page, action, fieldName, data)],
+      ['housingPossessionClaim', () => this.housingPossessionClaim()],
       ['selectAddress', () => this.selectAddress(fieldName)],
       ['selectLegislativeCountry', () => this.selectLegislativeCountry(fieldName)],
       ['selectClaimantType', () => this.selectClaimantType(fieldName)],
@@ -28,6 +31,7 @@ export class CreateCaseAction implements IAction {
       ['selectClaimType', () => this.selectClaimType(fieldName)],
       ['selectClaimantName', () => this.selectClaimantName(fieldName)],
       ['selectContactPreferences', () => this.selectContactPreferences(fieldName)]
+      ['selectCountryRadioButton', () => this.selectCountryRadioButton(fieldName)]
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) throw new Error(`No action found for '${action}'`);
@@ -39,6 +43,17 @@ export class CreateCaseAction implements IAction {
     await dataStoreApiInstance.execute(page, action, fieldName, data);
     caseInfo = await dataStoreApiInstance.createCase(fieldName as string);
   }
+
+  private async housingPossessionClaim() {
+    /* The performValidation call below needs to be updated to:
+   await performValidation('mainHeader', housingPossessionClaim.mainHeader);
+   once we get the new story, as the previous story (HDPI-1254) has been implemented with 2-page headers. */
+    await performValidation('text', {
+      'text': housingPossessionClaim.mainHeader,
+      'elementType': 'heading'
+    });
+    await performAction('clickButton', housingPossessionClaim.continue);
+ }
 
   private async selectAddress(caseData: actionData) {
     const addressDetails = caseData as { postcode: string; addressIndex: number };
@@ -107,6 +122,10 @@ export class CreateCaseAction implements IAction {
     }
 
     await performAction('clickButton', 'Continue');
+
+  private async selectCountryRadioButton(country: actionData) {
+    await performAction('clickRadioButton', country);
+    await performAction('clickButton', borderPostcode.continue);
   }
 
   private async selectJurisdictionCaseTypeEvent() {

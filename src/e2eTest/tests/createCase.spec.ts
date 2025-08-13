@@ -24,6 +24,7 @@ test.beforeEach(async ({ page }, testInfo) => {
   });
   await performAction('clickButton', 'Create case');
   await performAction('selectJurisdictionCaseTypeEvent');
+  await performAction('housingPossessionClaim');
 });
 
 test.describe('[Create Case Flow With Address and Claimant Type]  @Master @nightly', async () => {
