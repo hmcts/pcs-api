@@ -24,7 +24,10 @@ export class ActionRegistry {
     ['selectClaimantType', new CreateCaseAction()],
     ['selectJurisdictionCaseTypeEvent', new CreateCaseAction()],
     ['enterTestAddressManually', new CreateCaseAction()],
-    ['createCase', new CreateCaseAction()]]);
+    ['createCase', new CreateCaseAction()],
+    ['housingPossessionClaim', new CreateCaseAction()],
+    ['selectCountryRadioButton', new CreateCaseAction()]
+  ]);
 
   static getAction(actionName: string): IAction {
     const action = this.actions.get(actionName);
