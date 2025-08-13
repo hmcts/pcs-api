@@ -4,6 +4,8 @@ import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
+import uk.gov.hmcts.ccd.sdk.type.Document;
+import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
@@ -14,6 +16,7 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -34,6 +37,22 @@ public class PcsCaseService {
         pcsCaseEntity.setCaseReference(caseReference);
         pcsCaseEntity.setPropertyAddress(addressEntity);
         pcsCaseEntity.setPaymentStatus(pcsCase.getPaymentStatus());
+
+        List<ListValue<Document>> supportingDocuments = pcsCase.getSupportingDocuments();
+        if (supportingDocuments != null) {
+            for (ListValue<Document> documentWrapper : supportingDocuments) {
+                if (documentWrapper != null && documentWrapper.getValue() != null) {
+                    Document document = documentWrapper.getValue();
+
+                    DocumentEntity documentEntity = new DocumentEntity();
+                    documentEntity.setFileName(document.getFilename());
+                    documentEntity.setFilePath(document.getBinaryUrl());
+                    documentEntity.setPcsCase(pcsCaseEntity);
+
+                    pcsCaseEntity.addDocument(documentEntity);
+                }
+            }
+        }
 
         return pcsCaseRepository.save(pcsCaseEntity);
     }
