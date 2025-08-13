@@ -93,7 +93,7 @@ idam:
     secret: ${IDAM_CLIENT_SECRET:123456}
     redirect_uri: ${IDAM_API_REDIRECT_URL:http://localhost:3001/oauth2/callback}
   proof-of-concept:
-    username: ${:HDPIP-POC@Mailinator.com}
+    username: ${:HDPIP-POC2@Mailinator.com}
     password: ${:Pa$$w0rd}
 
 azure:
