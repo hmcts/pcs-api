@@ -30,7 +30,7 @@ export class CreateCaseAction implements IAction {
       ['enterTestAddressManually', () => this.enterTestAddressManually()],
       ['selectClaimType', () => this.selectClaimType(fieldName)],
       ['selectClaimantName', () => this.selectClaimantName(fieldName)],
-      ['selectContactPreferences', () => this.selectContactPreferences(fieldName)]
+      ['selectContactPreferences', () => this.selectContactPreferences(fieldName)],
       ['selectCountryRadioButton', () => this.selectCountryRadioButton(fieldName)]
     ]);
     const actionToPerform = actionsMap.get(action);
@@ -100,7 +100,7 @@ export class CreateCaseAction implements IAction {
       question: contactPreferences.notificationQuestion,
       option: prefData.notifications.answer
     });
-    if(prefData.notifications.answer == 'No'){
+    if (prefData.notifications.answer == 'No') {
       await performAction('inputText', 'Enter email address', contactPreferences.emailId);
     }
 
@@ -108,20 +108,23 @@ export class CreateCaseAction implements IAction {
       question: contactPreferences.correspondenceAddressQuestion,
       option: prefData.correspondenceAddress.answer
     });
-    if(prefData.correspondenceAddress.answer == 'No'){
-      await performAction('selectAddress', {postcode: addressDetails.englandPostcode,
-        addressIndex: addressDetails.addressIndex});
+    if (prefData.correspondenceAddress.answer == 'No') {
+      await performAction('selectAddress', {
+        postcode: addressDetails.englandPostcode,
+        addressIndex: addressDetails.addressIndex
+      });
     }
 
     await performAction('clickRadioButton', {
       question: contactPreferences.phoneNumberQuestion,
       option: prefData.phoneNumber.answer
     });
-    if(prefData.phoneNumber.answer == 'Yes'){
+    if (prefData.phoneNumber.answer == 'Yes') {
       await performAction('inputText', 'Enter phone number', contactPreferences.phoneNumber);
     }
 
     await performAction('clickButton', 'Continue');
+  }
 
   private async selectCountryRadioButton(country: actionData) {
     await performAction('clickRadioButton', country);

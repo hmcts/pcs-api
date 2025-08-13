@@ -27,7 +27,7 @@ export class ActionRegistry {
     ['createCase', new CreateCaseAction()],
     ['selectClaimType', new CreateCaseAction()],
     ['selectClaimantName', new CreateCaseAction()],
-    ['selectContactPreferences', new CreateCaseAction()]
+    ['selectContactPreferences', new CreateCaseAction()],
     ['housingPossessionClaim', new CreateCaseAction()],
     ['selectCountryRadioButton', new CreateCaseAction()]
   ]);
