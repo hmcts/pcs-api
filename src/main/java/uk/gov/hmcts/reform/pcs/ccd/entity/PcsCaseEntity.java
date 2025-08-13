@@ -72,6 +72,7 @@ public class PcsCaseEntity {
     }
 
     @OneToMany(mappedBy = "pcsCase", fetch = LAZY, cascade = ALL)
+    @Builder.Default
     @JsonManagedReference
     private Set<DocumentEntity> documents = new HashSet<>();
 
