@@ -6,7 +6,7 @@
     "node": ">=18.0.0"
   },
   "scripts": {
-    "test:functional": "NODE_TLS_REJECT_UNAUTHORIZED=0 yarn playwright install && yarn playwright test --project chrome --grep @Master; EXIT_CODE=$?; allure generate ./allure-results --clean; exit $EXIT_CODE",
+    "test:e2e": "NODE_TLS_REJECT_UNAUTHORIZED=0 yarn playwright install && yarn playwright test --project chrome --grep @Master; EXIT_CODE=$?; allure generate ./allure-results --clean; exit $EXIT_CODE",
     "test:chrome": "NODE_TLS_REJECT_UNAUTHORIZED=0 yarn playwright install && yarn playwright test --project chrome --grep @nightly; EXIT_CODE=$?; allure generate ./allure-results --clean; exit $EXIT_CODE",
     "test:firefox": "NODE_TLS_REJECT_UNAUTHORIZED=0 yarn playwright install && yarn playwright test --project firefox --grep @nightly; EXIT_CODE=$?; allure generate ./allure-results --clean; exit $EXIT_CODE",
     "test:changed": "NODE_TLS_REJECT_UNAUTHORIZED=0 yarn playwright install && tsx utils/helpers/runChangedTest.helper.ts --project chrome; EXIT_CODE=$?; allure generate ./allure-results --clean; exit $EXIT_CODE",
@@ -25,6 +25,7 @@
   },
   "dependencies": {
     "@axe-core/playwright": "^4.10.2",
+    "@hmcts/playwright-common": "^1.0.33",
     "oauth4webapi": "^3.5.1",
     "uuid": "^11.1.0"
   }
