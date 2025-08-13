@@ -76,6 +76,8 @@ ccd:
         WELSH_TRANSLATION_ENABLED: false
         DEFINITION_STORE_DB_USERNAME: "{{ .Values.global.postgresUsername}}"
         DEFINITION_STORE_DB_OPTIONS: ""
+        ELASTIC_SEARCH_INDEX_SHARDS: 1
+        ELASTIC_SEARCH_INDEX_SHARDS_REPLICAS: 0
       ingressHost: ccd-definition-store-${SERVICE_FQDN}
       keyVaults:
         ccd:

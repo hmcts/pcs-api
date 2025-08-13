@@ -66,32 +66,34 @@ Playwright 1.30+ | TypeScript 4.9+
 ## 4. Available Actions and Validations
 
 ### Actions
-| Action          | Example Usage |
-|------------------|---------------|
-| inputText          | `performAction('inputText', 'Email', 'test@example.com')` |
-| check              | `performAction('check', 'RememberMe')`                    |
-| navigateToUrl      | `performAction('navigateToUrl', 'testUrl')`               |
-| click              | `performAction('click', 'buttonName')`                    |
-| clickTab           | `performAction('clickTab', 'tabName')`                    |
-| clear              | `performAction('clear', 'fieldName')`                     |
-| select             | `performAction('select', 'dropdownName', 'option')`       |
-| doubleClick        | `performAction('doubleClick', 'buttonName')`              |
-| createCase         | `performAction('createCase', 'data: caseData')`           |
-| clickButton        | `performAction('clickButton', 'Sign in')`                 |
-| createUserAndLogin | `performAction('createUserAndLogin', [citizen])`          |
+| Action                          | Example Usage                                                                                                          |
+|---------------------------------|------------------------------------------------------------------------------------------------------------------------|
+| inputText                       | `performAction('inputText', 'Email', 'test@example.com')`                                                              |
+| check                           | `performAction('check', 'RememberMe')`                                                                                 |
+| navigateToUrl                   | `performAction('navigateToUrl', 'testUrl')`                                                                            |
+| clickTab                        | `performAction('clickTab', 'tabName')`                                                                                 |
+| select                          | `performAction('select', 'dropdownName', 'option')`                                                                    |
+| createCase                      | `performAction('createCase', 'data: caseData')`                                                                        |
+| clickButton                     | `performAction('clickButton', 'buttonName)`                                                                            |
+| clickRadioButton                | `performAction('clickRadioButton', 'radioButtonName')`                                                                 |
+| selectLegislativeCountry        | `performAction('selectLegislativeCountry', {country: data.country})`                                                   |
+| selectClaimantType              | `performAction('selectClaimantType', {claimantType : pathToDataFile.claimantTypeOption})`                              |
+| selectAddress                   | `performAction('selectAddress',{postcode: pathToDataFile.englandPostcode,addressIndex: pathToDataFile.addressIndex} )` |
+| createUserAndLogin              | `performAction('createUserAndLogin', ['caseworker-pcs', 'caseworker'])`                                                |
+| enterTestAddressManually        | `performAction('enterTestAddressManually')`                                                                            |
+| selectJurisdictionCaseTypeEvent | `performAction('selectJurisdictionCaseTypeEvent')`                                                                     |
+| housingPossessionClaim          | `performAction('selectCountryRadioButton', borderPostcode.countryOptions.england)`                                     |
+| selectCountryRadioButton        | `performAction('selectCountryRadioButton', borderPostcode.countryOptions.england)`                                     |
 ### Validations
-| Validation          | Example Usage |
-|------------------|---------------|
-| text               | `performValidation('text', 'testElement')`                                          |
-| value              | `performValidation('value', 'testElement')`                                         |
-| visibility         | `performValidation('visibility', 'testElement')`                                    |
-| enabled            | `performValidation('enabled', 'testElement')`                                       |
-| checked            | `performValidation('checked', 'testElement')`                                       |
-| count              | `performValidation('count', 'testElement')`                                         |
-| css                | `performValidation('css', 'testElement')`                                           |
-| attribute          | `performValidation('attribute', 'testElement', 'attributeName')`                    |
-| bannerAlert        | `performValidation('bannerAlert', {message: "Case has been created."})`             |
-| formLabelValue     | `performValidation('formLabelValue',  "Applicant's forename", {value:'TestUser'})`  |
+| Validation        | Example Usage                                                                                                                        |
+|-------------------|--------------------------------------------------------------------------------------------------------------------------------------|
+| text              | `performValidation('text', 'testElement')`                                                                                           |
+| visibility        | `performValidation('visibility', 'testElement')`                                                                                     |
+| bannerAlert       | `performValidation('bannerAlert', {message: "Case has been created."})`                                                              |
+| formLabelValue    | `performValidation('formLabelValue',  "Applicant's forename", {value:'TestUser'})`                                                   |
+| errorMessage      | `performValidation('errorMessage', {header: claimantType.errorMessage.header,errorHasLink: claimantType.errorMessage.errorMessage})` |
+| optionList        | `performValidation('optionList', 'sectionName', {optionsData})`                                                                      |
+| mainHeader        | `performValidation('mainHeader', borderPostcode.mainHeader)`                                                                         |
 ### Basic Test
 
 ```typescript
@@ -160,7 +162,7 @@ await performValidationGroup(
 - PCS_IDAM_TEST_USER_PASSWORD
 
 ```bash
-yarn test:functional
+yarn test:e2e
 ```
 
 ## 8. Troubleshooting

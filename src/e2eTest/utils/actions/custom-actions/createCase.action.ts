@@ -1,30 +1,102 @@
-import Axios, {AxiosInstance, AxiosResponse} from 'axios';
-import {TestConfig} from 'config/test.config';
-import {
-  getIdamAuthToken,
-  getServiceAuthToken
-} from '../../helpers/idam-helpers/idam.helper';
-import {actionData, IAction} from '../../interfaces/action.interface';
-import {Page} from '@playwright/test';
-import {initIdamAuthToken, initServiceAuthToken, getUser} from 'utils/helpers/idam-helpers/idam.helper';
+import Axios, { AxiosInstance, AxiosResponse } from 'axios';
+import { TestConfig } from 'config/test.config';
+import { getIdamAuthToken, getServiceAuthToken } from '../../helpers/idam-helpers/idam.helper';
+import { actionData, IAction } from '../../interfaces/action.interface';
+import { Page } from '@playwright/test';
+import { initIdamAuthToken, initServiceAuthToken, getUser } from 'utils/helpers/idam-helpers/idam.helper';
+import { performAction, performActions, performValidation } from '@utils/controller';
+import { createCase } from '@data/page-data/createCase.page.data';
+import { addressDetails } from '@data/page-data/addressDetails.page.data';
+import { housingPossessionClaim } from '@data/page-data/housingPossessionClaim.page.data';
+import { borderPostcode } from '@data/page-data/borderPostcode.page.data';
 
-
-let caseInfo: { id: string; fid: string, state: string };
+let caseInfo: { id: string; fid: string; state: string };
 const testConfig = TestConfig.ccdCase;
 
 export class CreateCaseAction implements IAction {
   private eventToken?: string;
+  constructor(private readonly axios: AxiosInstance = Axios.create()) {}
 
-  constructor(
-    private readonly axios: AxiosInstance = Axios.create()
-  ) {
+  async execute(page: Page, action: string, fieldName: actionData, data?: actionData): Promise<void> {
+    const actionsMap = new Map<string, () => Promise<void>>([
+      ['createCase', () => this.createCaseAction(page, action, fieldName, data)],
+      ['housingPossessionClaim', () => this.housingPossessionClaim()],
+      ['selectAddress', () => this.selectAddress(fieldName)],
+      ['selectLegislativeCountry', () => this.selectLegislativeCountry(fieldName)],
+      ['selectClaimantType', () => this.selectClaimantType(fieldName)],
+      ['selectJurisdictionCaseTypeEvent', () => this.selectJurisdictionCaseTypeEvent()],
+      ['enterTestAddressManually', () => this.enterTestAddressManually()],
+      ['selectCountryRadioButton', () => this.selectCountryRadioButton(fieldName)]
+    ]);
+    const actionToPerform = actionsMap.get(action);
+    if (!actionToPerform) throw new Error(`No action found for '${action}'`);
+    await actionToPerform();
   }
 
-  async execute(page:Page,fieldName?: actionData, value?: actionData): Promise<void> {
-    if (!fieldName) throw new Error('Missing fieldName');
+  private async createCaseAction(page: Page, action: string, fieldName: actionData, data?: actionData) {
     const dataStoreApiInstance = await dataStoreApi();
-    await dataStoreApiInstance.execute(page, fieldName, value);
-    caseInfo = await dataStoreApiInstance.createCase(fieldName);
+    await dataStoreApiInstance.execute(page, action, fieldName, data);
+    caseInfo = await dataStoreApiInstance.createCase(fieldName as string);
+  }
+
+  private async housingPossessionClaim() {
+    /* The performValidation call below needs to be updated to:
+   await performValidation('mainHeader', housingPossessionClaim.mainHeader);
+   once we get the new story, as the previous story (HDPI-1254) has been implemented with 2-page headers. */
+    await performValidation('text', {
+      'text': housingPossessionClaim.mainHeader,
+      'elementType': 'heading'
+    });
+    await performAction('clickButton', housingPossessionClaim.continue);
+ }
+
+  private async selectAddress(caseData: actionData) {
+    const addressDetails = caseData as { postcode: string; addressIndex: number };
+    await performActions(
+      'Find Address based on postcode',
+      ['inputText', 'Enter a UK postcode', addressDetails.postcode],
+      ['clickButton', 'Find address'],
+      ['select', 'Select an address', addressDetails.addressIndex]
+    );
+    await performAction('clickButton', 'Continue');
+  }
+
+  private async selectLegislativeCountry(caseData: actionData) {
+    await performAction('clickRadioButton', caseData);
+    await performAction('clickButton', 'Continue');
+  }
+
+  private async selectClaimantType(caseData: actionData) {
+    await performAction('clickRadioButton', caseData);
+    await performAction('clickButton', 'Continue');
+  }
+
+  private async selectCountryRadioButton(country: actionData) {
+    await performAction('clickRadioButton', country);
+    await performAction('clickButton', borderPostcode.continue);
+  }
+
+  private async selectJurisdictionCaseTypeEvent() {
+    await performActions('Case option selection'
+      , ['select', 'Jurisdiction', createCase.possessionsJurisdiction]
+      , ['select', 'Case type', createCase.caseType.civilPossessions]
+      , ['select', 'Event', createCase.makeAPossessionClaimEvent]);
+    await performAction('clickButton', 'Start');
+  }
+
+  private async enterTestAddressManually() {
+    await performActions(
+      'Enter Address Manually'
+      , ['clickButton', "I can't enter a UK postcode"]
+      , ['inputText', 'Building and Street', addressDetails.buildingAndStreet]
+      , ['inputText', 'Address Line 2', addressDetails.addressLine2]
+      , ['inputText', 'Address Line 3', addressDetails.addressLine3]
+      , ['inputText', 'Town or City', addressDetails.townOrCity]
+      , ['inputText', 'County', addressDetails.walesCounty]
+      , ['inputText', 'Postcode/Zipcode', addressDetails.postcode]
+      , ['inputText', 'Country', addressDetails.country]
+    );
+    await performAction('clickButton', 'Continue');
   }
 
   async getEventToken(): Promise<string> {

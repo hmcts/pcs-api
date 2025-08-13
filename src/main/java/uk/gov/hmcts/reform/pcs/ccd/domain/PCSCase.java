@@ -1,11 +1,13 @@
 package uk.gov.hmcts.reform.pcs.ccd.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Builder;
 import lombok.Data;
 import uk.gov.hmcts.ccd.sdk.External;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.Document;
+import uk.gov.hmcts.ccd.sdk.type.FieldType;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.ccd.sdk.type.ComponentLauncher;
@@ -13,6 +15,8 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseworkerAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenAccess;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
+
+import java.util.List;
 
 import static uk.gov.hmcts.ccd.sdk.type.FieldType.DynamicRadioList;
 
@@ -31,18 +35,22 @@ public class PCSCase {
     private final YesOrNo decentralised = YesOrNo.YES;
 
     @CCD(
-        label = "Applicant's forename",
+        label = "Claimant Name",
         access = {CitizenAccess.class, CaseworkerAccess.class}
     )
     @External
-    private String applicantForename;
+    private String claimantName;
 
     @CCD(
-        label = "Applicant's surname",
+        searchable = false,
         access = {CitizenAccess.class, CaseworkerAccess.class}
     )
-    @External
-    private String applicantSurname;
+    private YesOrNo isClaimantNameCorrect;
+
+    @CCD(
+        access = {CitizenAccess.class, CaseworkerAccess.class}
+    )
+    private String overriddenClaimantName;
 
     @CCD(
         label = "Property address",
@@ -103,6 +111,38 @@ public class PCSCase {
     )
     private PaymentType paymentType;
 
+    @CCD(ignore = true)
+    @JsonIgnore
+    private List<ListValue<Claim>> claims;
+
+    @CCD(label = "Party")
+    private List<ListValue<Party>> parties;
+
+    @CCD(typeOverride = FieldType.Email)
+    private String claimantContactEmail;
+
+    @CCD(label = "Do you want to use this email address for notifications?")
+    private VerticalYesNo isCorrectClaimantContactEmail;
+
+    @CCD(label = "Enter email address", typeOverride = FieldType.Email)
+    private String overriddenClaimantContactEmail;
+
+    private AddressUK claimantContactAddress;
+
+    private String formattedClaimantContactAddress;
+
+    @CCD(label = "Do you want documents to be sent to this address?")
+    private VerticalYesNo isCorrectClaimantContactAddress;
+
+    @CCD(label = "Enter address details")
+    private AddressUK overriddenClaimantContactAddress;
+
+    @CCD(label = "Do you want to provide a contact phone number? (Optional)")
+    private VerticalYesNo claimantProvidePhoneNumber;
+
+    @CCD(label = "Enter phone number", typeOverride = FieldType.PhoneUK)
+    private String claimantContactPhoneNumber;
+
     private String pageHeadingMarkdown;
 
     private String claimPaymentTabMarkdown;
@@ -143,5 +183,17 @@ public class PCSCase {
 
     @CCD(searchable = false, access = CaseworkerAccess.class)
     private YesOrNo showClaimantTypeNotEligibleWales;
+
+    @CCD(
+        label = "Is this a claim against trespassers?",
+        access = CaseworkerAccess.class
+    )
+    private VerticalYesNo claimAgainstTrespassers;
+
+    @CCD(searchable = false, access = CaseworkerAccess.class)
+    private YesOrNo showClaimTypeNotEligibleEngland;
+
+    @CCD(searchable = false, access = CaseworkerAccess.class)
+    private YesOrNo showClaimTypeNotEligibleWales;
 
 }
