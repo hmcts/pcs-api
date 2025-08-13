@@ -1,6 +1,5 @@
 import {Page} from '@playwright/test';
-
-import {IAction} from '../../interfaces/action.interface';
+import {IAction} from '@utils/interfaces/action.interface';
 
 export class ClickRadioButton implements IAction {
   async execute(
