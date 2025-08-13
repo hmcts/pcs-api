@@ -89,9 +89,6 @@ Playwright 1.30+ | TypeScript 4.9+
 | visibility         | `performValidation('visibility', 'testElement')`                                    |
 | bannerAlert        | `performValidation('bannerAlert', {message: "Case has been created."})`             |
 | formLabelValue     | `performValidation('formLabelValue',  "Applicant's forename", {value:'TestUser'})`  |
-| optionList      | `performValidation('optionList', ...)` |
-| mainHeader      | `performValidation('mainHeader', ...)` |
-| errorMessage    | `performValidation('errorMessage', ...)` |
 ### Basic Test
 
 ```typescript
@@ -160,7 +157,7 @@ await performValidationGroup(
 - PCS_IDAM_TEST_USER_PASSWORD
 
 ```bash
-yarn test:functional
+yarn test:e2e
 ```
 
 ## 8. Troubleshooting
