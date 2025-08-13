@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
 import lombok.Data;
 import uk.gov.hmcts.ccd.sdk.External;
@@ -19,8 +20,6 @@ import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import java.util.List;
 
 import static uk.gov.hmcts.ccd.sdk.type.FieldType.DynamicRadioList;
-
-import java.util.List;
 
 import static uk.gov.hmcts.ccd.sdk.type.FieldType.Collection;
 
@@ -153,7 +152,7 @@ public class PCSCase {
         typeParameterOverride = "Document",
         access = {CitizenAccess.class, CaseworkerAccess.class}
     )
-
+    @JsonProperty("supportingDocuments")
     private List<ListValue<Document>> supportingDocuments;
 
     @CCD(
