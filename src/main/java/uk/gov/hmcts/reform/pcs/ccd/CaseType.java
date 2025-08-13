@@ -73,6 +73,8 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
         builder.tab("CaseHistory", "History")
             .field("caseHistory");
 
+
+
         builder.tab("ClaimPayment", "Payment")
             .showCondition("claimPaymentTabMarkdown!=\"\"")
             .label("claimPaymentTabMarkdownLabel", null, "${claimPaymentTabMarkdown}")
