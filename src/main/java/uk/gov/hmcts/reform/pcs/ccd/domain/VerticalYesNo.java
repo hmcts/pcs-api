@@ -34,4 +34,4 @@ public enum VerticalYesNo implements HasLabel {
         return this == YES;
     }
 
-} 
+}
