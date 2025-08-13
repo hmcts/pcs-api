@@ -10,7 +10,7 @@ public class PreActionProtocol implements CcdPageConfiguration {
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
                 .page("preActionProtocol")
-                .pageLabel("Pre-action Protocol")
+                .pageLabel("Pre-action protocol")
                 .label("preActionProtocol-info",
                         """
                   ---
