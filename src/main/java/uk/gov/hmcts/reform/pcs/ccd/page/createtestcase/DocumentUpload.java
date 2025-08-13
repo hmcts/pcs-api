@@ -16,6 +16,6 @@ public class DocumentUpload implements CcdPageConfiguration {
                     * a maximum of 100MB in size (larger files must be split)
                     * clearly labelled, e.g. applicant-name-evidence.pdf
                     """)
-                .mandatory(PCSCase::getSupportingDocuments);
+                .optional(PCSCase::getSupportingDocuments);
     }
 }
