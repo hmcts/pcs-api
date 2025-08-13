@@ -14,6 +14,16 @@ import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PaymentStatus;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.CrossBorderPostcodeSelection;
+import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.ClaimTypeNotEligibleEngland;
+import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.ClaimTypeNotEligibleWales;
+import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.ClaimantTypeNotEligibleEngland;
+import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.ClaimantTypeNotEligibleWales;
+import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.EnterPropertyAddress;
+import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.SelectClaimType;
+import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.SelectClaimantType;
+import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.SelectLegislativeCountry;
+import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.CrossBorderPostcodeSelection;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyRole;
@@ -67,9 +77,11 @@ public class CreatePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             .add(new SelectClaimantType())
             .add(new ClaimantTypeNotEligibleEngland())
             .add(new ClaimantTypeNotEligibleWales())
+            .add(new SelectClaimType())
+            .add(new ClaimTypeNotEligibleEngland())
+            .add(new ClaimTypeNotEligibleWales())
             .add(new ClaimantInformation())
             .add(new ContactPreferences());
-
     }
 
     private PCSCase start(EventPayload<PCSCase, State> eventPayload) {
@@ -82,8 +94,6 @@ public class CreatePossessionClaim implements CCDConfig<PCSCase, State, UserRole
     }
 
     private void submit(EventPayload<PCSCase, State> eventPayload) {
-        log.info("Callback for submit");
-
         long caseReference = eventPayload.caseReference();
         PCSCase pcsCase = eventPayload.caseData();
         pcsCase.setPaymentStatus(PaymentStatus.UNPAID);
