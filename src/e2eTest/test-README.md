@@ -85,15 +85,15 @@ Playwright 1.30+ | TypeScript 4.9+
 | housingPossessionClaim          | `performAction('selectCountryRadioButton', borderPostcode.countryOptions.england)`                                     |
 | selectCountryRadioButton        | `performAction('selectCountryRadioButton', borderPostcode.countryOptions.england)`                                     |
 ### Validations
-| Validation          | Example Usage |
-|------------------|---------------|
+| Validation        | Example Usage                                                                                                                        |
+|-------------------|--------------------------------------------------------------------------------------------------------------------------------------|
 | text              | `performValidation('text', 'testElement')`                                                                                           |
 | visibility        | `performValidation('visibility', 'testElement')`                                                                                     |
 | bannerAlert       | `performValidation('bannerAlert', {message: "Case has been created."})`                                                              |
 | formLabelValue    | `performValidation('formLabelValue',  "Applicant's forename", {value:'TestUser'})`                                                   |
-| mainHeader        | `performValidation('mainHeader', {expected: createCase.mainHeader})`                                                                 |
 | errorMessage      | `performValidation('errorMessage', {header: claimantType.errorMessage.header,errorHasLink: claimantType.errorMessage.errorMessage})` |
 | optionList        | `performValidation('optionList', 'sectionName', {optionsData})`                                                                      |
+| mainHeader        | `performValidation('mainHeader', borderPostcode.mainHeader)`                                                                         |
 ### Basic Test
 
 ```typescript
