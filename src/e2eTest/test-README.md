@@ -66,29 +66,29 @@ Playwright 1.30+ | TypeScript 4.9+
 ## 4. Available Actions and Validations
 
 ### Actions
-| Action          | Example Usage |
-|------------------|---------------|
-| inputText          | `performAction('inputText', 'Email', 'test@example.com')` |
-| check              | `performAction('check', 'RememberMe')`                    |
-| navigateToUrl      | `performAction('navigateToUrl', 'testUrl')`               |
-| clickTab           | `performAction('clickTab', 'tabName')`                    |
-| select             | `performAction('select', 'dropdownName', 'option')`       |
-| createCase         | `performAction('createCase', 'data: caseData')`           |
-| clickButton        | `performAction('clickButton', 'Sign in')`                 |
-| createUserAndLogin | `performAction('createUserAndLogin', [citizen])`          |
-| clickRadioButton | `performAction('clickRadioButton', ...)` |
-| selectAddress   | `performAction('selectAddress', ...)` |
-| selectLegislativeCountry | `performAction('selectLegislativeCountry', ...)` |
-| selectClaimantType | `performAction('selectClaimantType', ...)` |
+| Action                          | Example Usage |
+|---------------------------------|---------------|
+| inputText                       | `performAction('inputText', 'Email', 'test@example.com')` |
+| check                           | `performAction('check', 'RememberMe')`                    |
+| navigateToUrl                   | `performAction('navigateToUrl', 'testUrl')`               |
+| clickTab                        | `performAction('clickTab', 'tabName')`                    |
+| select                          | `performAction('select', 'dropdownName', 'option')`       |
+| createCase                      | `performAction('createCase', 'data: caseData')`           |
+| clickButton                     | `performAction('clickButton', 'Sign in')`                 |
+| createUserAndLogin              | `performAction('createUserAndLogin', [citizen])`          |
+| clickRadioButton                | `performAction('clickRadioButton', ...)` |
+| selectAddress                   | `performAction('selectAddress', ...)` |
+| selectLegislativeCountry        | `performAction('selectLegislativeCountry', ...)` |
+| selectClaimantType              | `performAction('selectClaimantType', ...)` |
 | selectJurisdictionCaseTypeEvent | `performAction('selectJurisdictionCaseTypeEvent', ...)` |
-| enterTestAddressManually | `performAction('enterTestAddressManually', ...)` |
+| enterTestAddressManually        | `performAction('enterTestAddressManually', ...)` |
 ### Validations
-| Validation          | Example Usage |
-|------------------|---------------|
-| text               | `performValidation('text', 'testElement')`                                          |
-| visibility         | `performValidation('visibility', 'testElement')`                                    |
-| bannerAlert        | `performValidation('bannerAlert', {message: "Case has been created."})`             |
-| formLabelValue     | `performValidation('formLabelValue',  "Applicant's forename", {value:'TestUser'})`  |
+| Validation        | Example Usage |
+|-------------------|---------------|
+| text              | `performValidation('text', 'testElement')`                                          |
+| visibility        | `performValidation('visibility', 'testElement')`                                    |
+| bannerAlert       | `performValidation('bannerAlert', {message: "Case has been created."})`             |
+| formLabelValue    | `performValidation('formLabelValue',  "Applicant's forename", {value:'TestUser'})`  |
 ### Basic Test
 
 ```typescript
