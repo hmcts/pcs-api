@@ -9,9 +9,9 @@ import configData from '@config/test.config';
 import {addressDetails} from '@data/page-data/addressDetails.page.data';
 import {claimantType} from '@data/page-data/claimantType.page.data';
 import {legislativeCountry} from '@data/page-data/legislativeCountry.page.data';
-import {claimType} from "@data/page-data/claimType.page.data";
-import {claimantName} from "@data/page-data/claimantName.page.data";
-import {contactPreferences} from "@data/page-data/contactPreferences.page.data";
+import {claimType} from '@data/page-data/claimType.page.data';
+import {claimantName} from '@data/page-data/claimantName.page.data';
+import {contactPreferences} from '@data/page-data/contactPreferences.page.data';
 
 test.beforeEach(async ({ page }, testInfo) => {
   initializeExecutor(page);
