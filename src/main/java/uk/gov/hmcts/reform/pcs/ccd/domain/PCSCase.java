@@ -88,13 +88,16 @@ public class PCSCase {
     @CCD(access = CaseworkerAccess.class)
     private List<ListValue<Defendant>> defendants;
 
-    @CCD(label = "Add another defendant?")
+    @CCD(access = CaseworkerAccess.class)
+    private List<Defendant> defendants4Table;
+
+    @CCD(label = "Do you need to add another defendant?")
     private VerticalYesNo addAnotherDefendant1;
 
-    @CCD(label = "Add another defendant?")
+    @CCD(label = "Do you need to add another defendant?")
     private VerticalYesNo addAnotherDefendant2;
 
-    @CCD(label = "Add another defendant?")
+    @CCD(label = "Do you need to add another defendant?")
     private VerticalYesNo addAnotherDefendant3;
 
     private String defendantsSummaryMarkdown;

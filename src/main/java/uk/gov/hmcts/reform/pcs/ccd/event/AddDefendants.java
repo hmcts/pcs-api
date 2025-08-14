@@ -10,6 +10,7 @@ import uk.gov.hmcts.ccd.sdk.api.Event;
 import uk.gov.hmcts.ccd.sdk.api.EventPayload;
 import uk.gov.hmcts.ccd.sdk.api.FieldCollection;
 import uk.gov.hmcts.ccd.sdk.api.Permission;
+import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Defendant;
@@ -40,7 +41,7 @@ public class AddDefendants implements CCDConfig<PCSCase, State, UserRole> {
             .description("Add up to 25 defendants")
             .grant(Permission.CRU, PCS_CASE_WORKER)
             .showSummary()
-            .fields() ;
+            .fields();
         addDefendantPages(eventBuilder);
         eventBuilder.done();
     }
@@ -54,76 +55,113 @@ public class AddDefendants implements CCDConfig<PCSCase, State, UserRole> {
             if (i > 1) {
                 defendantPage.showCondition("addAnotherDefendant" + (i - 1) + "=\"YES\"");
             }
-            defendantPage.pageLabel("Defendant" + i)
-                    .complex(getTempDefField(i))
-                    .readonly(Defendant::getNameSectionLabel)
-                    .mandatory(Defendant::getDefendantsNameKnown)
-                    .mandatory(Defendant::getFirstName, "defendant" + i + ".defendantsNameKnown"+ "=\"YES\"")
-                    .mandatory(Defendant::getLastName,"defendant" + i + ".defendantsNameKnown"+ "=\"YES\"")
-                    .optional(Defendant::getAddressSectionLabel)
-                    .mandatory(Defendant::getDefendantsAddressKnown)
-                    .mandatory(Defendant::getDefendantsAddressSameAsPossession,"defendant" + i + ".defendantsAddressKnown"+ "=\"YES\"")
-                    .mandatory(Defendant::getCorrespondenceAddress,"defendant" + i + ".defendantsAddressKnown=\"YES\""
-                        + " AND defendant" + i + ".defendantsAddressSameAsPossession=\"NO\"")
-                    .optional(Defendant::getEmailSectionLabel)
-                    .mandatory(Defendant::getDefendantsEmailKnown)
-                    .mandatory(Defendant::getEmail,"defendant" + i + ".defendantsEmailKnown"+ "=\"YES\"")
-                    .done();
+            defendantPage.pageLabel("Defendant ")
+                //Name section
+                .complex(getTempDefField(i))
+                .readonly(Defendant::getNameSectionLabel)
+                .mandatory(Defendant::getDefendantsNameKnown)
+                .mandatory(Defendant::getFirstName, "defendant" + i + ".defendantsNameKnown=\"YES\"")
+                .mandatory(Defendant::getLastName, "defendant" + i + ".defendantsNameKnown=\"YES\"")
+                .readonly(Defendant::getAddressSectionLabel)
+                .mandatory(Defendant::getDefendantsAddressKnown)
+                .mandatory(Defendant::getDefendantsAddressSameAsPossession,"defendant" + i
+                    + ".defendantsAddressKnown=\"YES\"")
+
+                /**
+                 * Address section - this isn't be adhering to the show conditions or page order
+                 * suspect because it's a nested complex type
+                 * making it mandatory doesn't render it on the page
+                 * **/
+
+                .complex(Defendant::getCorrespondenceAddress,"defendant" + i
+                    + ".defendantsAddressKnown=\"YES\" AND defendant"
+                    + i + ".defendantsAddressSameAsPossession=\"NO\"")
+                .optional(AddressUK::getAddressLine1)
+                .optional(AddressUK::getAddressLine2)
+                .optional(AddressUK::getAddressLine3)
+                .optional(AddressUK::getPostTown)
+                .optional(AddressUK::getCounty)
+                .optional(AddressUK::getPostCode)
+                .optional(AddressUK::getCountry)
+                .done()
+
+                //Email section
+                .readonly(Defendant::getEmailSectionLabel)
+                .mandatory(Defendant::getDefendantsEmailKnown)
+                .mandatory(Defendant::getEmail, "defendant" + i + ".defendantsEmailKnown=\"YES\"")
+                .done();
 
             var addAnotherPage = event.page("AddAnotherDefendant" + i);
             if (i > 1) {
                 addAnotherPage.showCondition("addAnotherDefendant" + (i - 1) + "=\"YES\"");
             }
-            addAnotherPage.pageLabel("Defendant Summary")
-                    .label("defTable" + i, """
-                 <table>
-                  <thead>
-                    <tr>
-                      <th>No.</th>
-                      <th>Name</th>
-                      <th>Email Address</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                  <tr><td>Defendant 1</td><td>${defendant1.firstName} ${defendant1.lastName}</td>
-                    <td>${defendant1.email}</td></tr>
-                  <tr><td>Defendant 2</td><td>${defendant2.firstName} ${defendant2.lastName}</td>
-                    <td>${defendant2.email}</td></tr>
-                  <tr><td>Defendant 3</td><td>${defendant3.firstName} ${defendant3.lastName}</td>
-                    <td>${defendant3.email}</td></tr>
-                  </tbody>
-                </table>
-               """)
-                    .mandatory(getAddAnotherField(i));
+            addAnotherPage.pageLabel("Defendant List")
+                    .label("defTable" + i, buildDefendantsSummaryTable(i))
+                .mandatory(getAddAnotherField(i));
         }
     }
 
     private TypedPropertyGetter<PCSCase, Defendant> getTempDefField(int i) {
         switch (i) {
-            case 1: return PCSCase::getDefendant1;
-            case 2: return PCSCase::getDefendant2;
-            case 3: return PCSCase::getDefendant3;
-
+            case 1:  return PCSCase::getDefendant1;
+            case 2:  return PCSCase::getDefendant2;
+            case 3:  return PCSCase::getDefendant3;
             default: throw new IllegalArgumentException("Invalid defendant index: " + i);
         }
     }
 
     private TypedPropertyGetter<PCSCase, ?> getAddAnotherField(int i) {
         switch (i) {
-            case 1: return PCSCase::getAddAnotherDefendant1;
-            case 2: return PCSCase::getAddAnotherDefendant2;
-            case 3: return PCSCase::getAddAnotherDefendant3;
-
+            case 1:  return PCSCase::getAddAnotherDefendant1;
+            case 2:  return PCSCase::getAddAnotherDefendant2;
+            case 3:  return PCSCase::getAddAnotherDefendant3;
             default: throw new IllegalArgumentException("Invalid add-another index: " + i);
         }
     }
 
+    private String buildDefendantsSummaryTable(int upToDefendant) {
+        StringBuilder htmlTable = new StringBuilder();
+        htmlTable.append("""
+        <h2> Defendants </h2><br>
+        <table>
+          <thead>
+            <tr>
+              <th>Defendant</th>
+              <th>Defendant <br> name</th>
+              <th>Defendant <br> correspondence address</th>
+              <th>Defendant <br> email address</th>
+            </tr>
+          </thead>
+          <tbody>
+            """);
+
+        for (int i = 1; i <= upToDefendant; i++) {
+            htmlTable.append("<tr><td>Defendant ")
+                .append(i)
+                .append("</td><td>${defendant")
+                .append(i)
+                .append(".firstName} ${defendant")
+                .append(i)
+                .append(".lastName}</td><td>")
+                .append("${defendant").append(i).append(".correspondenceAddress.AddressLine1}<br>")
+                .append("${defendant").append(i).append(".correspondenceAddress.PostTown}<br>")
+                .append("${defendant").append(i).append(".correspondenceAddress.PostCode}")
+                .append("</td><td>${defendant")
+                .append(i)
+                .append(".email}</td></tr>");
+        }
+
+        htmlTable.append("""
+          </tbody>
+        </table>
+            """);
+
+        return htmlTable.toString();
+    }
+
     private void submit(EventPayload<PCSCase, State> eventPayload) {
-        long caseReference = eventPayload.caseReference();
         PCSCase pcsCase = eventPayload.caseData();
-
         List<ListValue<Defendant>> finalDefendants = new ArrayList<>();
-
         if (pcsCase.getDefendant1() != null) {
             finalDefendants.add(new ListValue<>(UUID.randomUUID().toString(), pcsCase.getDefendant1()));
         }
@@ -134,6 +172,7 @@ public class AddDefendants implements CCDConfig<PCSCase, State, UserRole> {
             finalDefendants.add(new ListValue<>(UUID.randomUUID().toString(), pcsCase.getDefendant3()));
         }
         pcsCase.setDefendants(finalDefendants);
+        long caseReference = eventPayload.caseReference();
 
         log.info("Caseworker updated case {}", caseReference);
 

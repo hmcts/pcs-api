@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.domain;
 
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -13,7 +14,6 @@ import uk.gov.hmcts.ccd.sdk.type.FieldType;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-//@ComplexType(name = "Defendant")
 public class Defendant {
 
     @CCD(label = """
@@ -39,9 +39,10 @@ public class Defendant {
     private VerticalYesNo defendantsAddressKnown;
 
     @CCD(label = "Is the defendant's correspondence address the same as the address of the property"
-    + "you're claiming possession of?")
+        + " you're claiming possession of?")
     private VerticalYesNo defendantsAddressSameAsPossession;
 
+    @JsonProperty("correspondenceAddress")
     @CCD(label = "Enter a UK Address")
     private AddressUK correspondenceAddress;
 

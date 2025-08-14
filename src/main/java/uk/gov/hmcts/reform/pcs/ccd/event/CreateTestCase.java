@@ -7,19 +7,14 @@ import uk.gov.hmcts.ccd.sdk.api.ConfigBuilder;
 import uk.gov.hmcts.ccd.sdk.api.Event.EventBuilder;
 import uk.gov.hmcts.ccd.sdk.api.EventPayload;
 import uk.gov.hmcts.ccd.sdk.api.Permission;
-import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
-import uk.gov.hmcts.reform.pcs.ccd.domain.Defendant;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PaymentStatus;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.page.createtestcase.ClaimantInformation;
 import uk.gov.hmcts.reform.pcs.ccd.page.createtestcase.MakeAClaim;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
-
-import java.util.List;
 
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.createTestApplication;
 
@@ -46,14 +41,6 @@ public class CreateTestCase implements CCDConfig<PCSCase, State, UserRole> {
     private PCSCase start(EventPayload<PCSCase, State> eventPayload) {
         PCSCase caseData = eventPayload.caseData();
         caseData.setApplicantForename("Preset value");
-        Defendant dummy = Defendant.builder()
-            .defendantsNameKnown(VerticalYesNo.NO).firstName("TOM").lastName("Smith").build();
-        ListValue<Defendant> listVal = ListValue.<Defendant>builder()
-            .id("1")
-            .value(dummy)
-            .build();
-        caseData.setDefendants(List.of(listVal));
-
         return caseData;
     }
 
