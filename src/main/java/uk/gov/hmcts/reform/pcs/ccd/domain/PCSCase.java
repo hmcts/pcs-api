@@ -177,6 +177,12 @@ public class PCSCase {
     )
     private String settlementDetails;
 
+    @CCD(
+            label = "Notice served?",
+            access = {CitizenAccess.class, CaseworkerAccess.class}
+    )
+    private YesOrNo noticeServed;
+
     private String pageHeadingMarkdown;
 
     private String claimPaymentTabMarkdown;
