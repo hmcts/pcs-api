@@ -1,29 +1,20 @@
 import {Page} from '@playwright/test';
-import {IAction} from '@utils/interfaces/action.interface';
+import {actionData, IAction} from '@utils/interfaces/action.interface';
 
 export class ClickRadioButton implements IAction {
   async execute(
     page: Page,
     action: string,
-    params: string | { question?: string; option: string }
+    params: actionData
   ): Promise<void> {
-    let question: string | undefined;
-    let option: string;
-    if (typeof params === 'string') {
-      option = params;
-    } else {
-      question = params.question;
-      option = params.option;
-    }
-    let radioLabel;
-    if (question) {
-      const section = page.locator(
-        `div.form-group:has(legend label span.form-label:has-text("${question}"))`
-      );
-      radioLabel = section.locator(`label.form-label:has-text("${option}")`);
-    } else {
-      radioLabel = page.locator(`label.form-label:has-text("${option}")`);
-    }
-    await radioLabel.click();
+    const radioButton = typeof params === 'string'
+      ? page.locator(`input[type="radio"] + label:has-text("${params}")`)
+      : page
+        .locator(
+          `div.form-group:has(legend label span.form-label:has-text("${(params as {question: string}).question}"))`
+        )
+        .locator(`label.form-label:has-text("${(params as {option: string}).option}")`);
+
+    await radioButton.click();
   }
 }

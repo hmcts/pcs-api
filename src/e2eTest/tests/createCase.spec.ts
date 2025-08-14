@@ -27,7 +27,7 @@ test.beforeEach(async ({ page }, testInfo) => {
   await performAction('housingPossessionClaim');
 });
 
-test.describe.skip('[Create Case Flow With Address and Claimant Type]  @Master @nightly', async () => {
+test.describe('[Create Case Flow With Address and Claimant Type]  @Master @nightly', async () => {
   test('England - Successful case creation', async () => {
     await performAction('selectAddress', {postcode: addressDetails.englandPostcode,
       addressIndex: addressDetails.addressIndex});
@@ -36,9 +36,9 @@ test.describe.skip('[Create Case Flow With Address and Claimant Type]  @Master @
     await performAction('selectClaimType', claimType.no);
     await performAction('selectClaimantName', claimantName.yes);
     await performAction('selectContactPreferences', {
-      notifications: { answer: contactPreferences.yes },
-      correspondenceAddress: { answer: contactPreferences.yes },
-      phoneNumber: { answer: contactPreferences.no }
+      notifications: contactPreferences.yes,
+      correspondenceAddress: contactPreferences.yes,
+      phoneNumber: contactPreferences.no
     });
     await performAction('clickButton', 'Save and continue');
     await performValidation('bannerAlert', 'Case #.* has been created.');
@@ -59,9 +59,9 @@ test.describe.skip('[Create Case Flow With Address and Claimant Type]  @Master @
     await performAction('selectClaimType', claimType.no);
     await performAction('selectClaimantName', claimantName.no);
     await performAction('selectContactPreferences', {
-      notifications: { answer: contactPreferences.no },
-      correspondenceAddress: { answer: contactPreferences.no },
-      phoneNumber: { answer: contactPreferences.yes }
+      notifications: contactPreferences.no,
+      correspondenceAddress: contactPreferences.no,
+      phoneNumber: contactPreferences.yes
     });
     await performAction('clickButton', 'Save and continue');
     await performValidation('bannerAlert', 'Case #.* has been created.');

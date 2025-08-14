@@ -84,31 +84,31 @@ export class CreateCaseAction implements IAction {
   private async selectClaimantName(caseData: actionData) {
     await performAction('clickRadioButton', caseData);
     if(caseData == claimantName.no){
-      await performAction('inputText', claimantName.whatIsCorrectClaimantName, claimantName.correctClaimantName);
+      await performAction('inputText', claimantName.whatIsCorrectClaimantName, claimantName.correctClaimantNameInput);
     }
     await performAction('clickButton', 'Continue');
   }
 
   private async selectContactPreferences(preferences: actionData) {
     const prefData = preferences as {
-      notifications: { answer: string };
-      correspondenceAddress: { answer: string };
-      phoneNumber: { answer: string };
+      notifications: string;
+      correspondenceAddress: string;
+      phoneNumber: string;
     };
 
     await performAction('clickRadioButton', {
-      question: contactPreferences.notificationQuestion,
-      option: prefData.notifications.answer
+      question: contactPreferences.emailAddressForNotifications,
+      option: prefData.notifications
     });
-    if (prefData.notifications.answer == 'No') {
-      await performAction('inputText', 'Enter email address', contactPreferences.emailId);
+    if (prefData.notifications === 'No') {
+      await performAction('inputText', 'Enter email address', contactPreferences.emailIdInput);
     }
 
     await performAction('clickRadioButton', {
-      question: contactPreferences.correspondenceAddressQuestion,
-      option: prefData.correspondenceAddress.answer
+      question: contactPreferences.doYouWantDocumentsToBeSentToAddress,
+      option: prefData.correspondenceAddress
     });
-    if (prefData.correspondenceAddress.answer == 'No') {
+    if (prefData.correspondenceAddress === 'No') {
       await performAction('selectAddress', {
         postcode: addressDetails.englandPostcode,
         addressIndex: addressDetails.addressIndex
@@ -116,11 +116,11 @@ export class CreateCaseAction implements IAction {
     }
 
     await performAction('clickRadioButton', {
-      question: contactPreferences.phoneNumberQuestion,
-      option: prefData.phoneNumber.answer
+      question: contactPreferences.provideContactPhoneNumber,
+      option: prefData.phoneNumber
     });
-    if (prefData.phoneNumber.answer == 'Yes') {
-      await performAction('inputText', 'Enter phone number', contactPreferences.phoneNumber);
+    if (prefData.phoneNumber === 'Yes') {
+      await performAction('inputText', 'Enter phone number', contactPreferences.phoneNumberInput);
     }
 
     await performAction('clickButton', 'Continue');
