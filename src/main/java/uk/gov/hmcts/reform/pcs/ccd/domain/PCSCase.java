@@ -155,27 +155,27 @@ public class PCSCase {
         label = "Have you attempted mediation with the defendants?",
         access = {CitizenAccess.class, CaseworkerAccess.class}
     )
-    private VerticalYesNo mediation;
+    private VerticalYesNo mediationAttempted;
 
     @CCD(
         label = "Give details about the attempted mediation and what the outcome was",
         access = {CitizenAccess.class, CaseworkerAccess.class},
         typeOverride = TextArea
     )
-    private String mediationDetails;
+    private String mediationAttemptedDetails;
 
     @CCD(
         label = "Have you tried to reach a settlement with the defendants?",
         access = {CitizenAccess.class, CaseworkerAccess.class}
     )
-    private VerticalYesNo settlement;
+    private VerticalYesNo settlementAttempted;
 
     @CCD(
         label = "Explain what steps you've taken to reach a settlement",
         access = {CitizenAccess.class, CaseworkerAccess.class},
         typeOverride = TextArea
     )
-    private String settlementDetails;
+    private String settlementAttemptedDetails;
 
     private String pageHeadingMarkdown;
 
