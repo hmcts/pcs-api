@@ -30,7 +30,7 @@ public class ProfessionalOrganisationRetriever {
 
     public OrganisationDto retrieve(String uid) {
         //gets bearer token for system user. We need this to authorise our request for organisation details
-        final String systemUserAuth = idamService.getSystemUserAuthorisation();
+        final String systemUserAuth = idamService.getPrdUserAuthorisation();
         //We now pass in our userid of our currently logged-in user, and the auth token from the system user
         return getOrgDetails(uid, systemUserAuth);
     }

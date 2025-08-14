@@ -55,71 +55,71 @@ class CitizenCreateApplicationTest extends CftlibTest {
         s2sToken = generateDummyS2SToken("ccd_gw");
     }
 
-//    @Test
-//    @Order(1)
-//    void citizenCreatesApplication() {
-//
-//        PCSCase caseData = PCSCase.builder()
-//            .claimantName("Wrong Name")
-//            .isClaimantNameCorrect(YesOrNo.NO)
-//            .overriddenClaimantName("New Name")
-//            .propertyAddress(AddressUK.builder()
-//                                 .addressLine1("123 Baker Street")
-//                                 .addressLine2("Marylebone")
-//                                 .postTown("London")
-//                                 .county("Greater London")
-//                                 .postCode("NW1 6XE")
-//                                 .build())
-//            .paymentStatus(PaymentStatus.UNPAID)
-//            .build();
-//
-//        CaseDetails caseDetails = startAndSubmitCreationEvent(citizenCreateApplication, caseData);
-//
-//        caseReference = caseDetails.getId();
-//        assertThat(caseReference).isNotNull();
-//
-//        CaseDetails retrievedCase = ccdApi.getCase(idamToken, s2sToken, Long.toString(caseReference));
-//        assertThat(retrievedCase.getState()).isEqualTo(State.AWAITING_SUBMISSION_TO_HMCTS.name());
-//    }
-//
-//    @Test
-//    @Order(2)
-//    void citizenUpdatesApplication() {
-//        AddressUK updatedAddress = AddressUK.builder()
-//            .addressLine1("89 Lower Street")
-//            .addressLine2("WestMinister")
-//            .postTown("London")
-//            .county("Greater London")
-//            .postCode("W3 4FD")
-//            .build();
-//        PCSCase caseData = PCSCase.builder()
-//            .propertyAddress(updatedAddress)
-//            .build();
-//
-//        CaseResource caseResource = startAndSubmitUpdateEvent(citizenUpdateApplication, caseData);
-//
-//        assertThat(caseResource.getReference()).isNotBlank();
-//
-//        CaseDetails retrievedCase = ccdApi.getCase(idamToken, s2sToken, Long.toString(caseReference));
-//        AddressUK actualAddress = objectMapper.convertValue(
-//            retrievedCase.getData().get("propertyAddress"),
-//            AddressUK.class
-//        );
-//        assertThat(actualAddress).isEqualTo(updatedAddress);
-//        assertThat(retrievedCase.getState()).isEqualTo(State.AWAITING_SUBMISSION_TO_HMCTS.name());
-//    }
-//
-//    @Test
-//    @Order(3)
-//    void citizenSubmitsApplication() {
-//        PCSCase caseData = PCSCase.builder()
-//            .build();
-//
-//        startAndSubmitUpdateEvent(citizenSubmitApplication, caseData);
-//
-//        CaseDetails retrievedCase = ccdApi.getCase(idamToken, s2sToken, Long.toString(caseReference));
-//        assertThat(retrievedCase.getState()).isEqualTo(State.CASE_ISSUED.name());
-//    }
+    @Test
+    @Order(1)
+    void citizenCreatesApplication() {
+
+        PCSCase caseData = PCSCase.builder()
+            .claimantName("Wrong Name")
+            .isClaimantNameCorrect(YesOrNo.NO)
+            .overriddenClaimantName("New Name")
+            .propertyAddress(AddressUK.builder()
+                                 .addressLine1("123 Baker Street")
+                                 .addressLine2("Marylebone")
+                                 .postTown("London")
+                                 .county("Greater London")
+                                 .postCode("NW1 6XE")
+                                 .build())
+            .paymentStatus(PaymentStatus.UNPAID)
+            .build();
+
+        CaseDetails caseDetails = startAndSubmitCreationEvent(citizenCreateApplication, caseData);
+
+        caseReference = caseDetails.getId();
+        assertThat(caseReference).isNotNull();
+
+        CaseDetails retrievedCase = ccdApi.getCase(idamToken, s2sToken, Long.toString(caseReference));
+        assertThat(retrievedCase.getState()).isEqualTo(State.AWAITING_SUBMISSION_TO_HMCTS.name());
+    }
+
+    @Test
+    @Order(2)
+    void citizenUpdatesApplication() {
+        AddressUK updatedAddress = AddressUK.builder()
+            .addressLine1("89 Lower Street")
+            .addressLine2("WestMinister")
+            .postTown("London")
+            .county("Greater London")
+            .postCode("W3 4FD")
+            .build();
+        PCSCase caseData = PCSCase.builder()
+            .propertyAddress(updatedAddress)
+            .build();
+
+        CaseResource caseResource = startAndSubmitUpdateEvent(citizenUpdateApplication, caseData);
+
+        assertThat(caseResource.getReference()).isNotBlank();
+
+        CaseDetails retrievedCase = ccdApi.getCase(idamToken, s2sToken, Long.toString(caseReference));
+        AddressUK actualAddress = objectMapper.convertValue(
+            retrievedCase.getData().get("propertyAddress"),
+            AddressUK.class
+        );
+        assertThat(actualAddress).isEqualTo(updatedAddress);
+        assertThat(retrievedCase.getState()).isEqualTo(State.AWAITING_SUBMISSION_TO_HMCTS.name());
+    }
+
+    @Test
+    @Order(3)
+    void citizenSubmitsApplication() {
+        PCSCase caseData = PCSCase.builder()
+            .build();
+
+        startAndSubmitUpdateEvent(citizenSubmitApplication, caseData);
+
+        CaseDetails retrievedCase = ccdApi.getCase(idamToken, s2sToken, Long.toString(caseReference));
+        assertThat(retrievedCase.getState()).isEqualTo(State.CASE_ISSUED.name());
+    }
 
     @SuppressWarnings("SameParameterValue")
     private CaseDetails startAndSubmitCreationEvent(EventId eventId, PCSCase caseData) {
