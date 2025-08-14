@@ -19,6 +19,7 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.utils.ListValueUtils;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 
 import java.util.List;
 import java.util.Objects;
@@ -54,6 +55,9 @@ public class CCDCaseRepository extends DecentralisedCaseRepository<PCSCase> {
         PCSCase pcsCase = PCSCase.builder()
             .propertyAddress(convertAddress(pcsCaseEntity.getPropertyAddress()))
             .caseManagementLocation(pcsCaseEntity.getCaseManagementLocation())
+            .preActionProtocolCompleted(pcsCaseEntity.getPreActionProtocolCompleted() != null 
+                ? VerticalYesNo.from(pcsCaseEntity.getPreActionProtocolCompleted()) 
+                : null)
             .build();
 
         setDerivedProperties(caseReference,pcsCase, pcsCaseEntity);
