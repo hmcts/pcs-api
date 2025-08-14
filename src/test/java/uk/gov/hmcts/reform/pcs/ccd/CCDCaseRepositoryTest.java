@@ -19,6 +19,7 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.PartyRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 
 import java.util.List;
 import java.util.Optional;
@@ -54,7 +55,7 @@ class CCDCaseRepositoryTest {
     @BeforeEach
     void setUp() {
         underTest = new CCDCaseRepository(pcsCaseRepository, securityContextService,
-                                          modelMapper,claimPaymentTabRenderer,partyRepository);
+                modelMapper, claimPaymentTabRenderer, partyRepository);
     }
 
     @Test
@@ -67,8 +68,8 @@ class CCDCaseRepositoryTest {
 
         // Then
         assertThat(throwable)
-            .isInstanceOf(CaseNotFoundException.class)
-            .hasMessage("No case found with reference %s", CASE_REFERENCE);
+                .isInstanceOf(CaseNotFoundException.class)
+                .hasMessage("No case found with reference %s", CASE_REFERENCE);
     }
 
     @Test
@@ -158,6 +159,47 @@ class CCDCaseRepositoryTest {
         List<ListValue<Party>> mappedParties = pcsCase.getParties();
         assertThat(mappedParties).hasSize(1);
         assertThat(mappedParties.get(0).getValue()).isSameAs(party);
+    }
+
+    @Test
+    void shouldMapPreActionProtocolCompletedWhenYes() {
+        // Given
+        PcsCaseEntity pcsCaseEntity = mock(PcsCaseEntity.class);
+        when(pcsCaseEntity.getPreActionProtocolCompleted()).thenReturn(true);
+        when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(pcsCaseEntity));
+
+        // When
+        PCSCase pcsCase = underTest.getCase(CASE_REFERENCE);
+
+        // Then
+        assertThat(pcsCase.getPreActionProtocolCompleted()).isEqualTo(VerticalYesNo.YES);
+    }
+
+    @Test
+    void shouldMapPreActionProtocolCompletedWhenNo() {
+        // Given
+        PcsCaseEntity pcsCaseEntity = mock(PcsCaseEntity.class);
+        when(pcsCaseEntity.getPreActionProtocolCompleted()).thenReturn(false);
+        when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(pcsCaseEntity));
+        // When
+        PCSCase pcsCase = underTest.getCase(CASE_REFERENCE);
+
+        // Then
+        assertThat(pcsCase.getPreActionProtocolCompleted()).isEqualTo(VerticalYesNo.NO);
+    }
+
+    @Test
+    void shouldMapPreActionProtocolCompletedAsNullWhenNull() {
+        // Given
+        PcsCaseEntity pcsCaseEntity = mock(PcsCaseEntity.class);
+        when(pcsCaseEntity.getPreActionProtocolCompleted()).thenReturn(null);
+        when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(pcsCaseEntity));
+
+        // When
+        PCSCase pcsCase = underTest.getCase(CASE_REFERENCE);
+
+        // Then
+        assertThat(pcsCase.getPreActionProtocolCompleted()).isNull();
     }
 
     private AddressUK stubAddressEntityModelMapper(AddressEntity addressEntity) {

@@ -33,6 +33,10 @@ public class PcsCaseService {
         pcsCaseEntity.setCaseReference(caseReference);
         pcsCaseEntity.setPropertyAddress(addressEntity);
         pcsCaseEntity.setPaymentStatus(pcsCase.getPaymentStatus());
+        pcsCaseEntity.setPreActionProtocolCompleted(
+                pcsCase.getPreActionProtocolCompleted() != null
+                        ? pcsCase.getPreActionProtocolCompleted().toBoolean()
+                        : null);
 
         return pcsCaseRepository.save(pcsCaseEntity);
     }
@@ -57,6 +61,10 @@ public class PcsCaseService {
 
         if (pcsCase.getCaseManagementLocation() != null) {
             pcsCaseEntity.setCaseManagementLocation(pcsCase.getCaseManagementLocation());
+        }
+
+        if (pcsCase.getPreActionProtocolCompleted() != null) {
+            pcsCaseEntity.setPreActionProtocolCompleted(pcsCase.getPreActionProtocolCompleted().toBoolean());
         }
 
         pcsCaseRepository.save(pcsCaseEntity);
