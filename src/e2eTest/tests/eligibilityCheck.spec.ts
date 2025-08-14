@@ -24,6 +24,14 @@ test.describe.skip('Eligibility checks for cross and non cross border postcodes 
       addressIndex: addressDetails.addressIndex
     });
     await performValidation('mainHeader', borderPostcode.mainHeader);
+    await performValidation('text', {
+      "text": borderPostcode.englandWalesParagraphContent,
+      "elementType": "paragraph"
+    });
+    await performValidation('text', {
+      "text": borderPostcode.englandWalesInlineContent,
+      "elementType": "inlineText"
+    });
     await performAction('selectCountryRadioButton', borderPostcode.countryOptions.england);
     await performValidation('mainHeader', legislativeCountry.mainHeader);
     await page.goBack()
@@ -66,3 +74,4 @@ test.describe.skip('Eligibility checks for cross and non cross border postcodes 
     await performValidation('mainHeader', legislativeCountry.mainHeader);
   });
 })
+
