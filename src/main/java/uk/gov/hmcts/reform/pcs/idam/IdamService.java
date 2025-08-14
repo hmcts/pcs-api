@@ -18,30 +18,19 @@ public class IdamService {
     private final IdamClient idamClient;
     private final String idamSystemUsername;
     private final String idamSystemPassword;
-    private String idamSystemUsernamePrd = "";
-    private String idamSystemPasswordPrd = "";
 
-    public IdamService(IdamClient idamClient,
-                       @Value("${idam.system-user.username}") String idamSystemUsername,
-                       @Value("${idam.system-user.password}") String idamSystemPassword,
-                       @Value("${idam.proof-of-concept.username}") String idamSystemUsernamePrd,
-                       @Value("${idam.proof-of-concept.password}") String idamSystemPasswordPrd) {
-
-        this.idamClient = idamClient;
-        this.idamSystemUsername = idamSystemUsername;
-        this.idamSystemPassword = idamSystemPassword;
-        this.idamSystemUsernamePrd = idamSystemUsernamePrd;
-        this.idamSystemPasswordPrd = idamSystemPasswordPrd;
-    }
+    @Value("${idam.proof-of-concept.username}")
+    private String idamSystemUsernamePrd;
+    @Value("${idam.proof-of-concept.password}")
+    private String idamSystemPasswordPrd;
 
     public IdamService(IdamClient idamClient,
                        @Value("${idam.system-user.username}") String idamSystemUsername,
                        @Value("${idam.system-user.password}") String idamSystemPassword) {
-
         this.idamClient = idamClient;
         this.idamSystemUsername = idamSystemUsername;
         this.idamSystemPassword = idamSystemPassword;
-     }
+    }
 
     public User validateAuthToken(String authorisation) {
         if (authorisation == null || authorisation.isBlank()) {
