@@ -340,7 +340,6 @@ dependencies {
   implementation group: 'commons-fileupload', name: 'commons-fileupload', version: '1.6.0'
   implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.18.0'
   implementation group: 'org.projectlombok', name: 'lombok', version: lombokVersion
-  implementation group: 'io.vavr', name: 'vavr', version: '0.10.7'
   implementation group: 'com.github.kagkarlsson', name: 'db-scheduler-spring-boot-starter', version: '16.0.0'
   annotationProcessor group: 'org.projectlombok', name: 'lombok', version: lombokVersion
 
