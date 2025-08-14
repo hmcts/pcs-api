@@ -178,7 +178,7 @@ public class PCSCase {
     private String settlementDetails;
 
     @CCD(
-            label = "Notice served?",
+            label = "Have you served notice to the defendants?",
             access = {CitizenAccess.class, CaseworkerAccess.class}
     )
     private YesOrNo noticeServed;
