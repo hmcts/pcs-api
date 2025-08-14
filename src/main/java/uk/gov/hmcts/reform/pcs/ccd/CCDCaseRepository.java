@@ -11,6 +11,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PaymentStatus;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.renderer.ClaimPaymentTabRenderer;
@@ -19,6 +20,8 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.utils.ListValueUtils;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
+
+import uk.gov.hmcts.ccd.sdk.type.Document;
 
 import java.util.List;
 import java.util.Objects;
@@ -54,11 +57,32 @@ public class CCDCaseRepository extends DecentralisedCaseRepository<PCSCase> {
         PCSCase pcsCase = PCSCase.builder()
             .propertyAddress(convertAddress(pcsCaseEntity.getPropertyAddress()))
             .caseManagementLocation(pcsCaseEntity.getCaseManagementLocation())
+            .supportingDocuments(mapDocuments(pcsCaseEntity.getDocuments())) // ← ADD THIS
             .build();
 
         setDerivedProperties(caseReference,pcsCase, pcsCaseEntity);
 
         return pcsCase;
+    }
+
+    private List<ListValue<Document>> mapDocuments(Set<DocumentEntity> documentEntities) {
+        if (documentEntities == null || documentEntities.isEmpty()) {
+            return null;
+        }
+
+        return documentEntities.stream()
+            .map(docEntity -> {
+                Document document = Document.builder()
+                    .filename(docEntity.getFileName())
+                    .binaryUrl(docEntity.getFilePath())
+                    .url(docEntity.getFilePath())
+                    .build();
+
+                return ListValue.<Document>builder()
+                    .value(document)
+                    .build();
+            })
+            .collect(Collectors.toList());
     }
 
     private void setDerivedProperties(long caseRef,PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {
