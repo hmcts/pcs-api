@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.ccd.page.createtestcase;
+package uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim;
 
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
@@ -8,7 +8,7 @@ public class DocumentUpload implements CcdPageConfiguration {
     @Override
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
-                .page("Document Upload")
+                .page("documentUpload")
                 .pageLabel("Upload supporting documents")
                 .label("uploadLimits", """
                     Documents should be:

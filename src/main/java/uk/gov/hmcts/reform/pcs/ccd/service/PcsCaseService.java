@@ -16,7 +16,6 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -53,7 +52,6 @@ public class PcsCaseService {
                     documentEntity.setFileName(document.getFilename());
                     documentEntity.setFilePath(document.getBinaryUrl());
                     documentEntity.setPcsCase(pcsCaseEntity);
-                    documentEntity.setUploadedAt(LocalDateTime.now());
                     documentEntity.setPcsCase(pcsCaseEntity);
 
                     pcsCaseEntity.addDocument(documentEntity);

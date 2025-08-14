@@ -23,21 +23,12 @@ import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.EnterPropertyAddre
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.SelectClaimType;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.SelectClaimantType;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.SelectLegislativeCountry;
-import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.StartTheService;
+import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.DocumentUpload;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.page.createtestcase.ClaimantInformation;
-import uk.gov.hmcts.reform.pcs.ccd.page.createtestcase.ContactPreferences;
-import uk.gov.hmcts.reform.pcs.ccd.page.createtestcase.DocumentUpload;
-import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.ClaimantTypeNotEligibleEngland;
-import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.ClaimantTypeNotEligibleWales;
-import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.CrossBorderPostcodeSelection;
-import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.EnterPropertyAddress;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.StartTheService;
-import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.SelectClaimantType;
-import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.SelectLegislativeCountry;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.ClaimantInformation;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.ContactPreferences;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.GroundsForPossession;
@@ -53,6 +44,7 @@ import java.util.UUID;
 import static feign.Util.isNotBlank;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.createPossessionClaim;
 
+
 @Slf4j
 @Component
 @AllArgsConstructor
@@ -64,6 +56,7 @@ public class CreatePossessionClaim implements CCDConfig<PCSCase, State, UserRole
     private final ClaimService claimService;
     private final EnterPropertyAddress enterPropertyAddress;
     private final CrossBorderPostcodeSelection crossBorderPostcodeSelection;
+
 
     @Override
     public void configure(ConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -90,7 +83,8 @@ public class CreatePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             .add(new ContactPreferences())
             .add(new GroundsForPossession())
             .add(new PreActionProtocol())
-            .add(new MediationAndSettlement());
+            .add(new MediationAndSettlement())
+            .add(new DocumentUpload());
     }
 
     private PCSCase start(EventPayload<PCSCase, State> eventPayload) {
@@ -138,4 +132,5 @@ public class CreatePossessionClaim implements CCDConfig<PCSCase, State, UserRole
 
         claimService.saveClaim(claimEntity);
     }
+
 }
