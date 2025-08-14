@@ -1,10 +1,6 @@
-import { test } from '@playwright/test';
-import { parentSuite } from 'allure-js-commons';
-import {
-  initializeExecutor,
-  performAction,
-  performValidation, performValidations
-} from '@utils/controller';
+import {test} from '@playwright/test';
+import {parentSuite} from 'allure-js-commons';
+import {initializeExecutor, performAction, performValidation, performValidations} from '@utils/controller';
 import configData from '@config/test.config';
 import {addressDetails} from '@data/page-data/addressDetails.page.data';
 import {claimantType} from '@data/page-data/claimantType.page.data';
@@ -12,8 +8,13 @@ import {legislativeCountry} from '@data/page-data/legislativeCountry.page.data';
 import {claimType} from '@data/page-data/claimType.page.data';
 import {claimantName} from '@data/page-data/claimantName.page.data';
 import {contactPreferences} from '@data/page-data/contactPreferences.page.data';
+import {applicantDetails} from '@data/page-data/applicantDetails.page.data';
+import {groundsForPossession} from '@data/page-data/groundsForPossession.page.data';
+import {preActionProtocol} from '@data/page-data/preActionProtocol.page.data';
+import {mediationAndSettlement} from '@data/page-data/mediationAndSettlement.page.data';
+import {checkingNotice} from '@data/page-data/checkingNotice.page.data';
 
-test.beforeEach(async ({ page }, testInfo) => {
+test.beforeEach(async ({page}, testInfo) => {
   initializeExecutor(page);
   await parentSuite('Case Creation');
   await performAction('navigateToUrl', configData.manageCasesBaseURL);
@@ -29,8 +30,35 @@ test.beforeEach(async ({ page }, testInfo) => {
 
 test.describe('[Create Case Flow With Address and Claimant Type]  @Master @nightly', async () => {
   test('England - Successful case creation', async () => {
-    await performAction('selectAddress', {postcode: addressDetails.englandPostcode,
-      addressIndex: addressDetails.addressIndex});
+    await performAction('selectAddress', {
+      postcode: addressDetails.englandPostcode,
+      addressIndex: addressDetails.addressIndex
+    });
+    await performAction('inputText', "Applicant's forename", applicantDetails.applicantFirstName);
+    await performAction('clickButton', 'Continue');
+    await performValidation('text', {
+      text: groundsForPossession.mainHeader,
+      elementType: 'heading'
+    });
+    await performAction('clickRadioButton', groundsForPossession.groundsForPossessionsOptions.yes);
+    await performAction('clickButton', 'Continue');
+    await performValidation('text', {
+      text: preActionProtocol.mainHeader,
+      elementType: 'heading'
+    });
+    await performAction('clickRadioButton', preActionProtocol.preActionProtocolOptions.yes);
+    await performAction('clickButton', 'Continue');
+    await performValidation('text', {
+      text: mediationAndSettlement.mainHeader,
+      elementType: 'heading'
+    });
+    await performAction('clickRadioButton', 'Yes', mediationAndSettlement.mediationInlineText);
+    await performAction('clickRadioButton', 'Yes', mediationAndSettlement.settlementInlineText);
+    await performAction('clickButton', 'Continue');
+    await performValidation('text', {
+      text: checkingNotice.mainHeader,
+      elementType: 'heading'
+    })
     await performAction('selectLegislativeCountry', legislativeCountry.england);
     await performAction('selectClaimantType', claimantType.registeredProviderForSocialHousing);
     await performAction('selectClaimType', claimType.no);
@@ -49,7 +77,7 @@ test.describe('[Create Case Flow With Address and Claimant Type]  @Master @night
       ['formLabelValue', 'Town or City'],
       ['formLabelValue', 'Postcode/Zipcode'],
       ['formLabelValue', 'Country']
-    );
+    )
   });
 
   test('Wales - Successful case creation', async () => {
@@ -75,8 +103,10 @@ test.describe('[Create Case Flow With Address and Claimant Type]  @Master @night
   });
 
   test('England - Unsuccessful case creation journey due to claimant type not in scope of Release1 @R1only', async () => {
-    await performAction('selectAddress', {postcode: addressDetails.englandPostcode,
-      addressIndex: addressDetails.addressIndex});
+    await performAction('selectAddress', {
+      postcode: addressDetails.englandPostcode,
+      addressIndex: addressDetails.addressIndex
+    });
     await performAction('selectLegislativeCountry', legislativeCountry.england);
     await performAction('selectClaimantType', claimantType.mortgageLender);
     await performValidation('mainHeader', 'You\'re not eligible for this online service');
@@ -84,8 +114,10 @@ test.describe('[Create Case Flow With Address and Claimant Type]  @Master @night
   });
 
   test('Wales - Unsuccessful case creation journey due to claimant type not in scope of Release1 @R1only', async () => {
-    await performAction('selectAddress', {postcode: addressDetails.walesPostcode,
-      addressIndex: addressDetails.addressIndex});
+    await performAction('selectAddress', {
+      postcode: addressDetails.walesPostcode,
+      addressIndex: addressDetails.addressIndex
+    });
     await performAction('selectLegislativeCountry', legislativeCountry.wales);
     await performAction('selectClaimantType', claimantType.privateLandlord);
     await performValidation('mainHeader', 'You\'re not eligible for this online service');
@@ -102,4 +134,3 @@ test.describe('[Create Case Flow With Address and Claimant Type]  @Master @night
     await performAction('clickButton', 'Close and return to case list');
   });
 });
-
