@@ -8,7 +8,6 @@ import {legislativeCountry} from '@data/page-data/legislativeCountry.page.data';
 import {claimType} from '@data/page-data/claimType.page.data';
 import {claimantName} from '@data/page-data/claimantName.page.data';
 import {contactPreferences} from '@data/page-data/contactPreferences.page.data';
-import {applicantDetails} from '@data/page-data/applicantDetails.page.data';
 import {groundsForPossession} from '@data/page-data/groundsForPossession.page.data';
 import {preActionProtocol} from '@data/page-data/preActionProtocol.page.data';
 import {mediationAndSettlement} from '@data/page-data/mediationAndSettlement.page.data';
@@ -34,8 +33,15 @@ test.describe('[Create Case Flow With Address and Claimant Type]  @Master @night
       postcode: addressDetails.englandPostcode,
       addressIndex: addressDetails.addressIndex
     });
-    await performAction('inputText', "Applicant's forename", applicantDetails.applicantFirstName);
-    await performAction('clickButton', 'Continue');
+    await performAction('selectLegislativeCountry', legislativeCountry.england);
+    await performAction('selectClaimantType', claimantType.registeredProviderForSocialHousing);
+    await performAction('selectClaimType', claimType.no);
+    await performAction('selectClaimantName', claimantName.yes);
+    await performAction('selectContactPreferences', {
+      notifications: contactPreferences.yes,
+      correspondenceAddress: contactPreferences.yes,
+      phoneNumber: contactPreferences.no
+    });
     await performValidation('text', {
       text: groundsForPossession.mainHeader,
       elementType: 'heading'
@@ -59,15 +65,6 @@ test.describe('[Create Case Flow With Address and Claimant Type]  @Master @night
       text: checkingNotice.mainHeader,
       elementType: 'heading'
     })
-    await performAction('selectLegislativeCountry', legislativeCountry.england);
-    await performAction('selectClaimantType', claimantType.registeredProviderForSocialHousing);
-    await performAction('selectClaimType', claimType.no);
-    await performAction('selectClaimantName', claimantName.yes);
-    await performAction('selectContactPreferences', {
-      notifications: contactPreferences.yes,
-      correspondenceAddress: contactPreferences.yes,
-      phoneNumber: contactPreferences.no
-    });
     await performAction('clickButton', 'Save and continue');
     await performValidation('bannerAlert', 'Case #.* has been created.');
     await performAction('clickTab', 'Property Details');
@@ -91,6 +88,13 @@ test.describe('[Create Case Flow With Address and Claimant Type]  @Master @night
       correspondenceAddress: contactPreferences.no,
       phoneNumber: contactPreferences.yes
     });
+    await performAction('clickRadioButton', groundsForPossession.groundsForPossessionsOptions.yes);
+    await performAction('clickButton', 'Continue');
+    await performAction('clickRadioButton', preActionProtocol.preActionProtocolOptions.yes);
+    await performAction('clickButton', 'Continue');
+    await performAction('clickRadioButton', 'Yes', mediationAndSettlement.mediationInlineText);
+    await performAction('clickRadioButton', 'Yes', mediationAndSettlement.settlementInlineText);
+    await performAction('clickButton', 'Continue');
     await performAction('clickButton', 'Save and continue');
     await performValidation('bannerAlert', 'Case #.* has been created.');
     await performAction('clickTab', 'Property Details');
