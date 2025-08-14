@@ -57,7 +57,7 @@ public class CCDCaseRepository extends DecentralisedCaseRepository<PCSCase> {
         PCSCase pcsCase = PCSCase.builder()
             .propertyAddress(convertAddress(pcsCaseEntity.getPropertyAddress()))
             .caseManagementLocation(pcsCaseEntity.getCaseManagementLocation())
-            .supportingDocuments(mapDocuments(pcsCaseEntity.getDocuments())) // ← ADD THIS
+            .supportingDocuments(mapDocuments(pcsCaseEntity.getDocuments()))
             .build();
 
         setDerivedProperties(caseReference,pcsCase, pcsCaseEntity);
@@ -79,6 +79,7 @@ public class CCDCaseRepository extends DecentralisedCaseRepository<PCSCase> {
                     .build();
 
                 return ListValue.<Document>builder()
+                    .id(docEntity.getId().toString())
                     .value(document)
                     .build();
             })
