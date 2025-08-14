@@ -10,6 +10,7 @@ import {groundsForPossession} from '@data/page-data/groundsForPossession.page.da
 import {preActionProtocol} from '@data/page-data/preActionProtocol.page.data';
 import {mediationAndSettlement} from '@data/page-data/mediationAndSettlement.page.data';
 import {checkingNotice} from '@data/page-data/checkingNotice.page.data';
+import {defendant1} from "@data/page-data/defendant1.page.data";
 
 test.beforeEach(async ({page}, testInfo) => {
   initializeExecutor(page);
@@ -58,6 +59,12 @@ test.describe.skip('[Create Case Flow With Address and Claimant Type]  @Master @
     })
     await performAction('selectLegislativeCountry', legislativeCountry.england);
     await performAction('selectClaimantType', claimantType.registeredProviderForSocialHousing);
+    await performAction('defendant1Details', {
+      name: defendant1.no,
+      correspondenceAddress: defendant1.no,
+      email: defendant1.no,
+      correspondenceAddressSame: defendant1.no
+    });
     await performAction('clickButton', 'Save and continue');
     await performValidation('bannerAlert', 'Case #.* has been created.');
     await performAction('clickTab', 'Property Details');
@@ -74,6 +81,12 @@ test.describe.skip('[Create Case Flow With Address and Claimant Type]  @Master @
     await performAction('enterTestAddressManually');
     await performAction('selectLegislativeCountry', legislativeCountry.wales);
     await performAction('selectClaimantType', claimantType.registeredCommunityLandlord);
+    await performAction('defendant1Details', {
+      name: defendant1.yes,
+      correspondenceAddress: defendant1.yes,
+      email: defendant1.yes,
+      correspondenceAddressSame: defendant1.yes
+    });
     await performAction('clickButton', 'Save and continue');
     await performValidation('bannerAlert', 'Case #.* has been created.');
     await performAction('clickTab', 'Property Details');
@@ -103,7 +116,33 @@ test.describe.skip('[Create Case Flow With Address and Claimant Type]  @Master @
     });
     await performAction('selectLegislativeCountry', legislativeCountry.wales);
     await performAction('selectClaimantType', claimantType.privateLandlord);
+    await performAction('defendant1Details', {
+      name: defendant1.no,
+      correspondenceAddress: defendant1.yes,
+      email: defendant1.no,
+      correspondenceAddressSame: defendant1.no
+    });
     await performValidation('mainHeader', 'You\'re not eligible for this online service');
     await performAction('clickButton', 'Close and return to case list');
+  });
+
+  test('Defendant 1\'s correspondence address is not known', async () => {
+    await performAction('enterTestAddressManually');
+    await performAction('selectLegislativeCountry', legislativeCountry.wales);
+    await performAction('selectClaimantType', claimantType.registeredCommunityLandlord);
+    await performAction('defendant1Details', {
+      name: defendant1.yes,
+      correspondenceAddress: defendant1.no,
+      email: defendant1.yes,
+    });
+    await performAction('clickButton', 'Save and continue');
+    await performValidation('bannerAlert', 'Case #.* has been created.');
+    await performAction('clickTab', 'Property Details');
+    await performValidations('address information entered',
+      ['formLabelValue', 'Building and Street', addressDetails.buildingAndStreet],
+      ['formLabelValue', 'Address Line 2', addressDetails.addressLine2],
+      ['formLabelValue', 'Town or City', addressDetails.townOrCity],
+      ['formLabelValue', 'Postcode/Zipcode', addressDetails.postcode],
+      ['formLabelValue', 'Country', addressDetails.country]);
   });
 });
