@@ -24,7 +24,6 @@ public class ProfessionalOrganisationRetriever {
     public ProfessionalOrganisationRetriever(AuthTokenGenerator serviceAuthTokenGenerator, IdamService idamService) {
         //generating a token with this seemed to fail. Switching to hardcode
         this.serviceAuthTokenGenerator = serviceAuthTokenGenerator;
-        serviceAuthTokenGenerator.generate();
         this.idamService = idamService;
     }
 
