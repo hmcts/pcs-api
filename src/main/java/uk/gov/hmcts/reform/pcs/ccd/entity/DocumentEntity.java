@@ -15,8 +15,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.time.LocalDateTime;
 import java.util.UUID;
+import java.time.LocalDate;
 
 import static jakarta.persistence.FetchType.LAZY;
 
@@ -43,9 +43,6 @@ public class DocumentEntity {
     @Column(name = "file_path")
     private String filePath;
 
-    @Column(name = "content_type")
-    private String contentType;
-
-    @Column(name = "uploaded_at")
-    private LocalDateTime uploadedAt;
+    @Column(name = "uploaded_on")
+    private LocalDate uploadedOn;
 }

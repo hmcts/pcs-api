@@ -16,6 +16,7 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
@@ -43,7 +44,7 @@ public class PcsCaseService {
                         : null);
 
         List<ListValue<Document>> supportingDocuments = pcsCase.getSupportingDocuments();
-        if (supportingDocuments != null) {
+        if (supportingDocuments != null && !supportingDocuments.isEmpty()) {
             for (ListValue<Document> documentWrapper : supportingDocuments) {
                 if (documentWrapper != null && documentWrapper.getValue() != null) {
                     Document document = documentWrapper.getValue();
@@ -51,7 +52,7 @@ public class PcsCaseService {
                     DocumentEntity documentEntity = new DocumentEntity();
                     documentEntity.setFileName(document.getFilename());
                     documentEntity.setFilePath(document.getBinaryUrl());
-                    documentEntity.setPcsCase(pcsCaseEntity);
+                    documentEntity.setUploadedOn(LocalDate.now());
                     documentEntity.setPcsCase(pcsCaseEntity);
 
                     pcsCaseEntity.addDocument(documentEntity);
