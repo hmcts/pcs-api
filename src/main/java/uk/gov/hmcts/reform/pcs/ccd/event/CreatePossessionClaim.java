@@ -85,7 +85,7 @@ public class CreatePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             .add(new GroundsForPossession())
             .add(new PreActionProtocol())
             .add(new MediationAndSettlement())
-            .add(new DocumentUpload());
+            .add(new DocumentUpload())
             .add(new CheckingNotice());
     }
 
