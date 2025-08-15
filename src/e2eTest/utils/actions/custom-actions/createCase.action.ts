@@ -9,6 +9,7 @@ import { createCase } from '@data/page-data/createCase.page.data';
 import { addressDetails } from '@data/page-data/addressDetails.page.data';
 import { housingPossessionClaim } from '@data/page-data/housingPossessionClaim.page.data';
 import { borderPostcode } from '@data/page-data/borderPostcode.page.data';
+import {defendant1} from "@data/page-data/defendant1.page.data";
 import { claimantName } from '@data/page-data/claimantName.page.data';
 import { contactPreferences } from '@data/page-data/contactPreferences.page.data';
 
@@ -26,6 +27,7 @@ export class CreateCaseAction implements IAction {
       ['selectAddress', () => this.selectAddress(fieldName)],
       ['selectLegislativeCountry', () => this.selectLegislativeCountry(fieldName)],
       ['selectClaimantType', () => this.selectClaimantType(fieldName)],
+      ['defendant1Details', () => this.defendant1Details(fieldName)],
       ['selectJurisdictionCaseTypeEvent', () => this.selectJurisdictionCaseTypeEvent()],
       ['enterTestAddressManually', () => this.enterTestAddressManually()],
       ['selectClaimType', () => this.selectClaimType(fieldName)],
@@ -95,7 +97,6 @@ export class CreateCaseAction implements IAction {
       correspondenceAddress: string;
       phoneNumber: string;
     };
-
     await performAction('clickRadioButton', {
       question: contactPreferences.emailAddressForNotifications,
       option: prefData.notifications
@@ -103,7 +104,6 @@ export class CreateCaseAction implements IAction {
     if (prefData.notifications === 'No') {
       await performAction('inputText', 'Enter email address', contactPreferences.emailIdInput);
     }
-
     await performAction('clickRadioButton', {
       question: contactPreferences.doYouWantDocumentsToBeSentToAddress,
       option: prefData.correspondenceAddress
@@ -114,7 +114,6 @@ export class CreateCaseAction implements IAction {
         addressIndex: addressDetails.addressIndex
       });
     }
-
     await performAction('clickRadioButton', {
       question: contactPreferences.provideContactPhoneNumber,
       option: prefData.phoneNumber
@@ -122,7 +121,47 @@ export class CreateCaseAction implements IAction {
     if (prefData.phoneNumber === 'Yes') {
       await performAction('inputText', 'Enter phone number', contactPreferences.phoneNumberInput);
     }
+    await performAction('clickButton', 'Continue');
+  }
 
+private async defendant1Details(preferences: actionData) {
+    const prefData = preferences as {
+      name: string;
+      correspondenceAddress: string;
+      email: string;
+      correspondenceAddressSame?: string
+    };
+    await performAction('clickRadioButton', {
+      question: defendant1.doYouKnowTheDefendantName,
+      option: prefData.name
+    });
+    if (prefData.name === 'Yes') {
+      await performAction('inputText', defendant1.defendantFirstName, defendant1.firstNameInput);
+      await performAction('inputText', defendant1.defendantLastName, defendant1.lastNameInput);
+    }
+    await performAction('clickRadioButton', {
+      question: defendant1.defendantCorrespondenceAddress,
+      option: prefData.correspondenceAddress
+    });
+    if (prefData.correspondenceAddress === 'Yes') {
+      await performAction('clickRadioButton', {
+        question: defendant1.isCorrespondenceAddressSame,
+        option: prefData.correspondenceAddressSame
+      });
+      if (prefData.correspondenceAddressSame === 'No') {
+        await performAction('selectAddress', {
+          postcode: addressDetails.englandPostcode,
+          addressIndex: addressDetails.addressIndex
+        });
+      }
+    }
+    await performAction('clickRadioButton', {
+      question: defendant1.defendantEmailAddress,
+      option: prefData.email
+    });
+    if (prefData.email === 'Yes') {
+      await performAction('inputText', defendant1.enterEmailAddress, defendant1.emailIdInput);
+    }
     await performAction('clickButton', 'Continue');
   }
 
