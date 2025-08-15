@@ -10,7 +10,6 @@ import uk.gov.hmcts.ccd.sdk.api.Event;
 import uk.gov.hmcts.ccd.sdk.api.EventPayload;
 import uk.gov.hmcts.ccd.sdk.api.FieldCollection;
 import uk.gov.hmcts.ccd.sdk.api.Permission;
-import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Defendant;
@@ -48,9 +47,10 @@ public class AddDefendants implements CCDConfig<PCSCase, State, UserRole> {
 
     private void addDefendantPages(FieldCollection.FieldCollectionBuilder<PCSCase, State, Event.EventBuilder
             <PCSCase, UserRole, State>> event) {
-        //TODO: optimize this
-        for (int i = 1; i <= 3; i++) {
+        int maxNum = 3;
+        for (int i = 1; i <= maxNum; i++) {
 
+            //Defendant details page
             var defendantPage = event.page("AddDefendant" + i);
             if (i > 1) {
                 defendantPage.showCondition("addAnotherDefendant" + (i - 1) + "=\"YES\"");
@@ -60,44 +60,35 @@ public class AddDefendants implements CCDConfig<PCSCase, State, UserRole> {
                 .complex(getTempDefField(i))
                 .readonly(Defendant::getNameSectionLabel)
                 .mandatory(Defendant::getDefendantsNameKnown)
-                .mandatory(Defendant::getFirstName, "defendant" + i + ".defendantsNameKnown=\"YES\"")
-                .mandatory(Defendant::getLastName, "defendant" + i + ".defendantsNameKnown=\"YES\"")
+                .mandatory(Defendant::getFirstName, "defendant" + i + "DefendantsNameKnown=\"YES\"")
+                .mandatory(Defendant::getLastName, "defendant" + i + "DefendantsNameKnown=\"YES\"")
                 .readonly(Defendant::getAddressSectionLabel)
                 .mandatory(Defendant::getDefendantsAddressKnown)
                 .mandatory(Defendant::getDefendantsAddressSameAsPossession,"defendant" + i
-                    + ".defendantsAddressKnown=\"YES\"")
+                    + "DefendantsAddressKnown=\"YES\"")
 
-                /**
-                 * Address section - this isn't be adhering to the show conditions or page order
-                 * suspect because it's a nested complex type
-                 * making it mandatory doesn't render it on the page
-                 * **/
-
-                .complex(Defendant::getCorrespondenceAddress,"defendant" + i
-                    + ".defendantsAddressKnown=\"YES\" AND defendant"
-                    + i + ".defendantsAddressSameAsPossession=\"NO\"")
-                .optional(AddressUK::getAddressLine1)
-                .optional(AddressUK::getAddressLine2)
-                .optional(AddressUK::getAddressLine3)
-                .optional(AddressUK::getPostTown)
-                .optional(AddressUK::getCounty)
-                .optional(AddressUK::getPostCode)
-                .optional(AddressUK::getCountry)
-                .done()
+                //Address section
+                .mandatory(Defendant::getCorrespondenceAddress,"defendant" + i
+                    + "DefendantsAddressKnown=\"YES\" AND defendant"
+                    + i + "DefendantsAddressSameAsPossession=\"NO\"")
 
                 //Email section
                 .readonly(Defendant::getEmailSectionLabel)
                 .mandatory(Defendant::getDefendantsEmailKnown)
-                .mandatory(Defendant::getEmail, "defendant" + i + ".defendantsEmailKnown=\"YES\"")
+                .mandatory(Defendant::getEmail, "defendant" + i + "DefendantsEmailKnown=\"YES\"")
                 .done();
 
+            //Add Another / Summary page
             var addAnotherPage = event.page("AddAnotherDefendant" + i);
             if (i > 1) {
                 addAnotherPage.showCondition("addAnotherDefendant" + (i - 1) + "=\"YES\"");
             }
             addAnotherPage.pageLabel("Defendant List")
-                    .label("defTable" + i, buildDefendantsSummaryTable(i))
-                .mandatory(getAddAnotherField(i));
+                    .label("defTable" + i, buildDefendantsSummaryTable(i));
+            if(i != maxNum ) {
+                addAnotherPage.mandatory(getAddAnotherField(i));
+            }
+
         }
     }
 
@@ -140,15 +131,15 @@ public class AddDefendants implements CCDConfig<PCSCase, State, UserRole> {
                 .append(i)
                 .append("</td><td>${defendant")
                 .append(i)
-                .append(".firstName} ${defendant")
+                .append("FirstName} ${defendant")
                 .append(i)
-                .append(".lastName}</td><td>")
-                .append("${defendant").append(i).append(".correspondenceAddress.AddressLine1}<br>")
-                .append("${defendant").append(i).append(".correspondenceAddress.PostTown}<br>")
-                .append("${defendant").append(i).append(".correspondenceAddress.PostCode}")
+                .append("LastName}</td><td>")
+                .append("${defendant").append(i).append("CorrespondenceAddress.AddressLine1}<br>")
+                .append("${defendant").append(i).append("CorrespondenceAddress.PostTown}<br>")
+                .append("${defendant").append(i).append("CorrespondenceAddress.PostCode}")
                 .append("</td><td>${defendant")
                 .append(i)
-                .append(".email}</td></tr>");
+                .append("Email}</td></tr>");
         }
 
         htmlTable.append("""

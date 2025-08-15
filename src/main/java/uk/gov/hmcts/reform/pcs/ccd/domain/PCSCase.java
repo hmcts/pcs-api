@@ -1,5 +1,8 @@
 package uk.gov.hmcts.reform.pcs.ccd.domain;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonUnwrapped;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import uk.gov.hmcts.ccd.sdk.External;
@@ -11,13 +14,54 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseworkerAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenAccess;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * The main domain model representing a possessions case.
  */
 @Builder
 @Data
+@AllArgsConstructor
 public class PCSCase {
+
+    @JsonCreator
+    public PCSCase(Map<String, Object> props) {
+        int maxDefendants = 25;
+        for (int i = 1; i <= maxDefendants; i++) {
+            Defendant d = toDefendantType("defendant" + i, props);
+            if (d.getFirstName() != null && d.getLastName() != null ) {
+                setDefendant(i, d);
+            }
+        }
+    }
+
+    private Defendant toDefendantType(String prefix, Map<String, Object> props) {
+        Defendant d = new Defendant();
+        d.setFirstName((String) props.get(prefix + "FirstName"));
+        d.setLastName((String) props.get(prefix + "LastName"));
+        d.setEmail((String) props.get(prefix + "Email"));
+
+        AddressUK addr = new AddressUK();
+        addr.setAddressLine1((String) props.get(prefix + "CorrespondenceAddress.AddressLine1"));
+        addr.setAddressLine1((String) props.get(prefix + "CorrespondenceAddress.AddressLine2"));
+        addr.setAddressLine1((String) props.get(prefix + "CorrespondenceAddress.AddressLine3"));
+        addr.setPostTown((String) props.get(prefix + "CorrespondenceAddress.PostTown"));
+        addr.setAddressLine1((String) props.get(prefix + "CorrespondenceAddress.County"));
+        addr.setPostCode((String) props.get(prefix + "CorrespondenceAddress.PostCode"));
+        addr.setAddressLine1((String) props.get(prefix + "CorrespondenceAddress.Country"));
+
+        d.setCorrespondenceAddress(addr);
+        return d;
+    }
+
+    private void setDefendant(int index, Defendant d) {
+        switch (index) {
+            case 1 -> this.defendant1 = d;
+            case 2 -> this.defendant2 = d;
+            case 3 -> this.defendant3 = d;
+        }
+    }
+
 
     @CCD(searchable = false, access = {CitizenAccess.class, CaseworkerAccess.class})
     private final YesOrNo decentralised = YesOrNo.YES;
@@ -76,20 +120,20 @@ public class PCSCase {
 
     private String claimPaymentTabMarkdown;
 
+    @JsonUnwrapped(prefix = "defendant1")
     @CCD(access = CaseworkerAccess.class)
     private Defendant defendant1;
 
+    @JsonUnwrapped(prefix = "defendant2")
     @CCD(access = CaseworkerAccess.class)
     private Defendant defendant2;
 
+    @JsonUnwrapped(prefix = "defendant3")
     @CCD(access = CaseworkerAccess.class)
     private Defendant defendant3;
 
     @CCD(access = CaseworkerAccess.class)
     private List<ListValue<Defendant>> defendants;
-
-    @CCD(access = CaseworkerAccess.class)
-    private List<Defendant> defendants4Table;
 
     @CCD(label = "Do you need to add another defendant?")
     private VerticalYesNo addAnotherDefendant1;
