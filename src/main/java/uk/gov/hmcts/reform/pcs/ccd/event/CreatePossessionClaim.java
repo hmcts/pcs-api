@@ -23,18 +23,12 @@ import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.EnterPropertyAddre
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.SelectClaimType;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.SelectClaimantType;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.SelectLegislativeCountry;
-import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.CrossBorderPostcodeSelection;
+import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.CheckingNotice;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.ClaimantTypeNotEligibleEngland;
-import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.ClaimantTypeNotEligibleWales;
-import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.CrossBorderPostcodeSelection;
-import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.EnterPropertyAddress;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.StartTheService;
-import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.SelectClaimantType;
-import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.SelectLegislativeCountry;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.ClaimantInformation;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.ContactPreferences;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.GroundsForPossession;
@@ -89,7 +83,8 @@ public class CreatePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             .add(new ContactPreferences())
             .add(new GroundsForPossession())
             .add(new PreActionProtocol())
-            .add(new MediationAndSettlement());
+            .add(new MediationAndSettlement())
+            .add(new CheckingNotice());
     }
 
     private PCSCase start(EventPayload<PCSCase, State> eventPayload) {
