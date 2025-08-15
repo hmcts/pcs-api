@@ -1,21 +1,24 @@
 package uk.gov.hmcts.reform.pcs.ccd.domain;
 
-import java.util.List;
+import static uk.gov.hmcts.ccd.sdk.type.FieldType.Collection;
+import static uk.gov.hmcts.ccd.sdk.type.FieldType.DynamicRadioList;
+import static uk.gov.hmcts.ccd.sdk.type.FieldType.TextArea;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-
+import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.List;
 import lombok.Builder;
 import lombok.Data;
 import uk.gov.hmcts.ccd.sdk.External;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
+import uk.gov.hmcts.ccd.sdk.type.ComponentLauncher;
+import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.FieldType;
-import static uk.gov.hmcts.ccd.sdk.type.FieldType.DynamicRadioList;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseworkerAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenAccess;
-import static uk.gov.hmcts.ccd.sdk.type.FieldType.TextArea;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
@@ -180,6 +183,22 @@ public class PCSCase {
     private String pageHeadingMarkdown;
 
     private String claimPaymentTabMarkdown;
+
+    @CCD(
+        label = "Supporting documents",
+        typeOverride = Collection,
+        typeParameterOverride = "Document",
+        access = {CitizenAccess.class, CaseworkerAccess.class},
+        regex = ".pdf"
+    )
+    @JsonProperty("supportingDocuments")
+    private List<ListValue<Document>> supportingDocuments;
+
+    @CCD(
+        label = "Case file view",
+        access = {CitizenAccess.class, CaseworkerAccess.class}
+    )
+    private ComponentLauncher caseFileView;
 
     @CCD(
         label = "Legislative country",
