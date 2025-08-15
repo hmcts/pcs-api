@@ -27,8 +27,8 @@ test.beforeEach(async ({page}, testInfo) => {
   await performAction('housingPossessionClaim');
 });
 
-test.describe.skip('[Create Case Flow With Address and Claimant Type]  @Master @nightly', async () => {
-  test('England - Successful case creation', async () => {
+test.describe('[Create Case Flow With Address and Claimant Type]  @Master @nightly', async () => {
+  test.skip('England - Successful case creation', async () => {
     await performAction('selectAddress', {
       postcode: addressDetails.englandPostcode,
       addressIndex: addressDetails.addressIndex
@@ -77,7 +77,7 @@ test.describe.skip('[Create Case Flow With Address and Claimant Type]  @Master @
     )
   });
 
-  test('Wales - Successful case creation', async () => {
+  test.skip('Wales - Successful case creation', async () => {
     await performAction('enterTestAddressManually');
     await performAction('selectLegislativeCountry', legislativeCountry.wales);
     await performAction('selectClaimantType', claimantType.registeredCommunityLandlord);
@@ -114,7 +114,12 @@ test.describe.skip('[Create Case Flow With Address and Claimant Type]  @Master @
     await performAction('selectLegislativeCountry', legislativeCountry.england);
     await performAction('selectClaimantType', claimantType.mortgageLender);
     await performValidation('mainHeader', 'You\'re not eligible for this online service');
-    await performAction('clickButton', 'Close and return to case list');
+    await performAction('clickButton', 'Continue');
+    await performValidation('errorMessage', {
+      [claimantType.errorHeader1]: claimantType.errorMessage1,
+      [claimantType.errorHeader2]: claimantType.errorMessage2
+    });
+    await performAction('clickButton', 'Cancel');
   });
 
   test('Wales - Unsuccessful case creation journey due to claimant type not in scope of Release1 @R1only', async () => {
@@ -125,7 +130,11 @@ test.describe.skip('[Create Case Flow With Address and Claimant Type]  @Master @
     await performAction('selectLegislativeCountry', legislativeCountry.wales);
     await performAction('selectClaimantType', claimantType.privateLandlord);
     await performValidation('mainHeader', 'You\'re not eligible for this online service');
-    await performAction('clickButton', 'Close and return to case list');
+    await performAction('clickButton', 'Continue');
+    await performValidation('errorMessage', {
+      [claimantType.errorHeader1]: claimantType.errorMessage1,
+      [claimantType.errorHeader2]: claimantType.errorMessage2
+    });
   });
 
   test('Unsuccessful case creation journey due to claim type not in scope of Release1 @R1only', async () => {
@@ -135,6 +144,11 @@ test.describe.skip('[Create Case Flow With Address and Claimant Type]  @Master @
     await performAction('selectClaimantType', claimantType.registeredProviderForSocialHousing);
     await performAction('selectClaimType', claimType.yes);
     await performValidation('mainHeader', 'You\'re not eligible for this online service');
-    await performAction('clickButton', 'Close and return to case list');
+    await performAction('clickButton', 'Continue');
+    await performValidation('errorMessage', {
+      [claimType.errorHeader1]: claimType.errorMessage1,
+      [claimType.errorHeader2]: claimType.errorMessage2
+    });
+    await performAction('clickButton', 'Cancel');
   });
 });
