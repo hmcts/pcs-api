@@ -155,7 +155,6 @@ private async defendant1Details(preferences: actionData) {
         });
       }
     }
-
     await performAction('clickRadioButton', {
       question: defendant1.defendantEmailAddress,
       option: prefData.email
@@ -163,7 +162,6 @@ private async defendant1Details(preferences: actionData) {
     if (prefData.email === 'Yes') {
       await performAction('inputText', defendant1.enterEmailAddress, defendant1.emailIdInput);
     }
-
     await performAction('clickButton', 'Continue');
   }
 

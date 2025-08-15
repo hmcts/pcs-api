@@ -158,23 +158,24 @@ test.describe('[Create Case Flow With Address and Claimant Type]  @Master @night
     await performValidation('mainHeader', 'You\'re not eligible for this online service');
     await performAction('clickButton', 'Close and return to case list');
   });
-  
+
     test('Defendant 1\'s correspondence address is not known', async () => {
-    await performAction('enterTestAddressManually');
-    await performAction('selectLegislativeCountry', legislativeCountry.wales);
-    await performAction('selectClaimantType', claimantType.registeredCommunityLandlord);
-    await performAction('defendant1Details', {
-      name: defendant1.yes,
-      correspondenceAddress: defendant1.no,
-      email: defendant1.yes,
+      await performAction('enterTestAddressManually');
+      await performAction('selectLegislativeCountry', legislativeCountry.wales);
+      await performAction('selectClaimantType', claimantType.registeredCommunityLandlord);
+      await performAction('defendant1Details', {
+        name: defendant1.yes,
+        correspondenceAddress: defendant1.no,
+        email: defendant1.yes,
+      });
+      await performAction('clickButton', 'Save and continue');
+      await performValidation('bannerAlert', 'Case #.* has been created.');
+      await performAction('clickTab', 'Property Details');
+      await performValidations('address information entered',
+        ['formLabelValue', 'Building and Street', addressDetails.buildingAndStreet],
+        ['formLabelValue', 'Address Line 2', addressDetails.addressLine2],
+        ['formLabelValue', 'Town or City', addressDetails.townOrCity],
+        ['formLabelValue', 'Postcode/Zipcode', addressDetails.postcode],
+        ['formLabelValue', 'Country', addressDetails.country]);
     });
-    await performAction('clickButton', 'Save and continue');
-    await performValidation('bannerAlert', 'Case #.* has been created.');
-    await performAction('clickTab', 'Property Details');
-    await performValidations('address information entered',
-      ['formLabelValue', 'Building and Street', addressDetails.buildingAndStreet],
-      ['formLabelValue', 'Address Line 2', addressDetails.addressLine2],
-      ['formLabelValue', 'Town or City', addressDetails.townOrCity],
-      ['formLabelValue', 'Postcode/Zipcode', addressDetails.postcode],
-      ['formLabelValue', 'Country', addressDetails.country]);
 });
