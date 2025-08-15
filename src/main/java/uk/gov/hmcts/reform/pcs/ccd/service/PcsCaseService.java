@@ -38,6 +38,8 @@ public class PcsCaseService {
                         ? pcsCase.getPreActionProtocolCompleted().toBoolean()
                         : null);
 
+        pcsCaseEntity.setTenancyLicence(buildTenancyLicenceJson(pcsCase));
+
         return pcsCaseRepository.save(pcsCaseEntity);
     }
 
@@ -91,6 +93,24 @@ public class PcsCaseService {
         party.setSurname(userDetails.getFamilyName());
         party.setActive(true);
         return party;
+    }
+
+    //Temporary method to create tenancy_licence JSON
+    // Data in this JSON will likely be moved to a dedicated entity in the future
+    private String buildTenancyLicenceJson(PCSCase pcsCase) {
+        if (pcsCase.getNoticeServed() == null) {
+            return null;
+        }
+
+        boolean noticeServed = "YES".equals(pcsCase.getNoticeServed().name());
+        String json = "{\"notice_served\":" + noticeServed + "}";
+
+        // TODO: Future fields - just add more conditions like this:
+        // if (pcsCase.getCurrentRent() != null) {
+        //     Integer currentRent = pcsCase.getCurrentRent();
+        //     json = json.substring(0, json.length() - 1) + ",\"current_rent\":" + currentRent + "}";
+        // }
+        return json;
     }
 
 }

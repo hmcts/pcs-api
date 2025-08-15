@@ -12,6 +12,8 @@ import jakarta.persistence.NamedEntityGraph;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -56,6 +58,9 @@ public class PcsCaseEntity {
     private PaymentStatus paymentStatus;
 
     private Boolean preActionProtocolCompleted;
+
+    @JdbcTypeCode(SqlTypes.JSON)
+    private String tenancyLicence;
 
     @OneToMany(mappedBy = "pcsCase", fetch = LAZY, cascade = ALL)
     @Builder.Default
