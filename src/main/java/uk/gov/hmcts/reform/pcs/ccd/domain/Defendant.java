@@ -36,9 +36,8 @@ public class Defendant {
         + " you're claiming possession of?", showCondition = "defendantsAddressKnown=\"YES\"")
     private VerticalYesNo defendantsAddressSameAsPossession;
 
-
-    @CCD(label = "Enter address details", showCondition = "defendantsAddressKnown=\"YES\"" +
-            " AND defendantsAddressSameAsPossession=\"NO\"")
+    @CCD(label = "Enter address details", showCondition = "defendantsAddressKnown=\"YES\""
+        + " AND defendantsAddressSameAsPossession=\"NO\"")
     private AddressUK correspondenceAddress;
 
     @CCD(label = """
@@ -46,7 +45,7 @@ public class Defendant {
                 <h2>Defendant's email address</h2>""",typeOverride = FieldType.Label)
     private String emailSectionLabel;
 
-    @CCD(label = "Do you know the defendant's email address?(optional)")
+    @CCD(label = "Do you know the defendant's email address?(Optional)")
     private VerticalYesNo defendantsEmailKnown;
 
     @CCD(label = "Email", showCondition = "defendantsEmailKnown=\"YES\"")

@@ -1,12 +1,14 @@
 package uk.gov.hmcts.reform.pcs.ccd.entity;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Lob;
 import jakarta.persistence.NamedAttributeNode;
 import jakarta.persistence.NamedEntityGraph;
 import jakarta.persistence.OneToMany;
@@ -17,9 +19,14 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
+import uk.gov.hmcts.ccd.sdk.type.ListValue;
+import uk.gov.hmcts.reform.pcs.ccd.domain.Defendant;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PaymentStatus;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -67,6 +74,10 @@ public class PcsCaseEntity {
     @JsonManagedReference
     private Set<ClaimEntity> claims = new HashSet<>();
 
+    @Lob
+    @Column(name = "defendants",  columnDefinition = "jsonb")
+    @JdbcTypeCode(SqlTypes.JSON)
+    private List<ListValue<Defendant>> defendants;
 
     public void addParty(PartyEntity party) {
         parties.add(party);

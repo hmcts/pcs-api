@@ -37,6 +37,7 @@ public class PcsCaseService {
                 pcsCase.getPreActionProtocolCompleted() != null
                         ? pcsCase.getPreActionProtocolCompleted().toBoolean()
                         : null);
+        pcsCaseEntity.setDefendants(pcsCase.getDefendants());
 
         return pcsCaseRepository.save(pcsCaseEntity);
     }

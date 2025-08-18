@@ -191,4 +191,7 @@ public class PCSCase {
     @CCD(access = {CitizenAccess.class, CaseworkerAccess.class})
     private Defendant defendant1;
 
+    @CCD(access = {CitizenAccess.class, CaseworkerAccess.class})
+    private List<ListValue<Defendant>> defendants;
+
 }
