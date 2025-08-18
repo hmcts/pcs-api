@@ -32,6 +32,7 @@ public class PropertyNotEligible implements CcdPageConfiguration {
             .readonly(PCSCase::getShowPropertyNotEligiblePage, NEVER_SHOW)
             .label("propertyNotEligible-info", """
 
+                <section tabindex="0">
                 <hr class="govuk-section-break govuk-section-break--l govuk-section-break--visible">
                 <h2 class="govuk-heading-m">What to do next</h2>
                 <p class="govuk-body">
@@ -69,6 +70,8 @@ public class PropertyNotEligible implements CcdPageConfiguration {
                       To exit back to the case list, select 'Cancel'
                   </strong>
                 </div>
+                </section>
+
                 """);
     }
 
