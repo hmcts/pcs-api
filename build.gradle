@@ -4,7 +4,7 @@ import uk.gov.hmcts.rse.CftlibExec
 
 buildscript {
   ext {
-    flywayVersion = '11.11.0'
+    flywayVersion = '11.11.1'
     serenityBddVersion = '4.2.33'
   }
   dependencies {
@@ -344,7 +344,7 @@ dependencies {
   implementation group: 'com.github.kagkarlsson', name: 'db-scheduler-spring-boot-starter', version: '16.0.0'
   annotationProcessor group: 'org.projectlombok', name: 'lombok', version: lombokVersion
 
-  testImplementation group: 'io.rest-assured', name: 'rest-assured', version: '5.5.5'
+  testImplementation group: 'io.rest-assured', name: 'rest-assured', version: '5.5.6'
   testImplementation group: 'com.github.hmcts', name: 'fortify-client', version: '1.4.10', classifier: 'all'
 
   implementation(group: 'com.github.hmcts', name: 'befta-fw', version: '9.2.4') {
