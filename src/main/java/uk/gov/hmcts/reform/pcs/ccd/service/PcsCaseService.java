@@ -95,7 +95,7 @@ public class PcsCaseService {
         return party;
     }
 
-    //Temporary method to create tenancy_licence JSON
+    //Temporary method to create tenancy_licence JSON and related fields
     // Data in this JSON will likely be moved to a dedicated entity in the future
     private String buildTenancyLicenceJson(PCSCase pcsCase) {
         if (pcsCase.getNoticeServed() == null) {
