@@ -34,7 +34,7 @@ public class PcsCaseService {
         AddressEntity addressEntity = applicantAddress != null
             ? modelMapper.map(applicantAddress, AddressEntity.class) : null;
 
-        PcsCaseEntity pcsCaseEntity = new PcsCaseEntity();
+        final PcsCaseEntity pcsCaseEntity = new PcsCaseEntity();
         pcsCaseEntity.setCaseReference(caseReference);
         pcsCaseEntity.setPropertyAddress(addressEntity);
         pcsCaseEntity.setPaymentStatus(pcsCase.getPaymentStatus());
@@ -64,7 +64,7 @@ public class PcsCaseService {
     }
 
     public void patchCase(long caseReference, PCSCase pcsCase) {
-        PcsCaseEntity pcsCaseEntity = pcsCaseRepository.findByCaseReference(caseReference)
+        final PcsCaseEntity pcsCaseEntity = pcsCaseRepository.findByCaseReference(caseReference)
             .orElseThrow(() -> new CaseNotFoundException(caseReference));
 
         if (pcsCase.getPropertyAddress() != null) {
@@ -116,7 +116,7 @@ public class PcsCaseService {
     }
 
     public void addDocumentToCase(long caseReference, String fileName, String filePath) {
-        PcsCaseEntity pcsCaseEntity = pcsCaseRepository.findByCaseReference(caseReference)
+        final PcsCaseEntity pcsCaseEntity = pcsCaseRepository.findByCaseReference(caseReference)
             .orElseThrow(() -> new CaseNotFoundException(caseReference));
 
         DocumentEntity document = new DocumentEntity();
