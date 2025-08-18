@@ -39,6 +39,7 @@ public class CrossBorderPostcodeSelection implements CcdPageConfiguration {
             .readonly(PCSCase::getCrossBorderCountry2, NEVER_SHOW, true)
             .label("crossBorderPostcodeSelection-info", """
                 ---
+                <section tabindex="0">
                 <p class="govuk-body">
                 Your postcode includes properties in ${crossBorderCountry1} and ${crossBorderCountry2}. We need to know
                 which country your property is in, as the law is different in each country.
@@ -58,6 +59,7 @@ public class CrossBorderPostcodeSelection implements CcdPageConfiguration {
                     </span>
                   </strong>
                 </div>
+                </section>
                 """)
             .mandatory(PCSCase::getCrossBorderCountriesList,
                 null,
