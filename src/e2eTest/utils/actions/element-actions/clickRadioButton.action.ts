@@ -1,18 +1,20 @@
-import {Page, Locator} from '@playwright/test';
-
-import {IAction} from '../../interfaces/action.interface';
+import {Page} from '@playwright/test';
+import {actionData, IAction} from '@utils/interfaces/action.interface';
 
 export class ClickRadioButton implements IAction {
-  locator?: Locator;
+  async execute(
+    page: Page,
+    action: string,
+    params: actionData
+  ): Promise<void> {
+    const radioButton = typeof params === 'string'
+      ? page.locator(`input[type="radio"] + label:has-text("${params}")`)
+      : page
+        .locator(
+          `div.form-group:has(legend label span.form-label:has-text("${(params as {question: string}).question}"))`
+        )
+        .locator(`label.form-label:has-text("${(params as {option: string}).option}")`);
 
-  async execute(page: Page, action: string, fieldName: string, value: string): Promise<void> {
-    let locator = page
-      .locator(`input[type="radio"] + label:has-text("${fieldName}")`);
-    if (await locator.count() > 1) {
-      locator = page.locator(
-        `:has-text("${value}") ~ div > label:has-text("${fieldName}")`
-      );
-    }
-    await locator.click();
+    await radioButton.click();
   }
 }

@@ -21,6 +21,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.CheckingNotice;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.ClaimTypeNotEligibleEngland;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.ClaimTypeNotEligibleWales;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.ClaimantInformation;
@@ -89,7 +90,8 @@ public class CreatePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             .add(new DefendantDetails())
             .add(new GroundsForPossession())
             .add(new PreActionProtocol())
-            .add(new MediationAndSettlement());
+            .add(new MediationAndSettlement())
+            .add(new CheckingNotice());
     }
 
     private PCSCase start(EventPayload<PCSCase, State> eventPayload) {
