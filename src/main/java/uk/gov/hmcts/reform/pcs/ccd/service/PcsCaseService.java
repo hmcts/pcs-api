@@ -122,6 +122,7 @@ public class PcsCaseService {
         DocumentEntity document = new DocumentEntity();
         document.setFileName(fileName);
         document.setFilePath(filePath);
+        document.setUploadedOn(LocalDate.now());
 
         pcsCaseEntity.addDocument(document);
         pcsCaseRepository.save(pcsCaseEntity);

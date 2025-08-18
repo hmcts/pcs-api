@@ -18,10 +18,6 @@ import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PaymentStatus;
-import uk.gov.hmcts.ccd.sdk.type.ListValue;
-import uk.gov.hmcts.ccd.sdk.type.Document;
-
-import java.util.List;
 
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.uploadDocumentPoc;
 
@@ -67,19 +63,7 @@ public class UploadDocumentPoc implements CCDConfig<PCSCase, State, UserRole> {
         pcsCase.setPaymentStatus(PaymentStatus.UNPAID);
 
         PcsCaseEntity pcsCaseEntity = pcsCaseService.createCase(caseReference, pcsCase);
-        log.info("Successfully created case: {}", caseReference);
-
-        List<ListValue<Document>> supportingDocuments = pcsCase.getSupportingDocuments();
-        if (supportingDocuments != null) {
-            for (ListValue<Document> documentWrapper : supportingDocuments) {
-                if (documentWrapper != null && documentWrapper.getValue() != null) {
-                    Document document = documentWrapper.getValue();
-                    String fileName = document.getFilename();
-                    String filePath = document.getBinaryUrl();
-
-                    pcsCaseService.addDocumentToCase(caseReference, fileName, filePath);
-                }
-            }
-        }
+        log.info("Successfully created case: {} with {} documents", caseReference,
+                pcsCaseEntity.getDocuments() != null ? pcsCaseEntity.getDocuments().size() : 0);
     }
 }
