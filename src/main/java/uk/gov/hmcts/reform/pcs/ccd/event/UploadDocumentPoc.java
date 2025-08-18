@@ -1,7 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.event;
 
 import lombok.AllArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CCDConfig;
 import uk.gov.hmcts.ccd.sdk.api.ConfigBuilder;
@@ -13,7 +12,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.ClaimantInformation;
-import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.DocumentUpload;
+import uk.gov.hmcts.reform.pcs.ccd.page.uploadsupportingdocs.DocumentUpload;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
@@ -21,7 +20,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PaymentStatus;
 
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.uploadDocumentPoc;
 
-@Slf4j
 @Component
 @AllArgsConstructor
 public class UploadDocumentPoc implements CCDConfig<PCSCase, State, UserRole> {
@@ -58,12 +56,8 @@ public class UploadDocumentPoc implements CCDConfig<PCSCase, State, UserRole> {
         long caseReference = eventPayload.caseReference();
         PCSCase pcsCase = eventPayload.caseData();
 
-        log.info("Creating document upload POC case: {}", caseReference);
-
         pcsCase.setPaymentStatus(PaymentStatus.UNPAID);
 
         PcsCaseEntity pcsCaseEntity = pcsCaseService.createCase(caseReference, pcsCase);
-        log.info("Successfully created case: {} with {} documents", caseReference,
-                pcsCaseEntity.getDocuments() != null ? pcsCaseEntity.getDocuments().size() : 0);
     }
 }

@@ -23,7 +23,6 @@ import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.EnterPropertyAddre
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.SelectClaimType;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.SelectClaimantType;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.SelectLegislativeCountry;
-import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.DocumentUpload;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.CheckingNotice;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyEntity;
@@ -85,7 +84,6 @@ public class CreatePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             .add(new GroundsForPossession())
             .add(new PreActionProtocol())
             .add(new MediationAndSettlement())
-            .add(new DocumentUpload())
             .add(new CheckingNotice());
     }
 
