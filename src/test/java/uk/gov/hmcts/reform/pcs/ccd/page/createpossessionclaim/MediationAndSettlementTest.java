@@ -70,7 +70,7 @@ class MediationAndSettlementTest {
 
         // Verify mediation fields
         inOrder.verify(fieldBuilder).mandatory(any());
-        inOrder.verify(fieldBuilder).optional(any(), eq("mediation=\"YES\""));
+        inOrder.verify(fieldBuilder).optional(any(), eq("mediationAttempted=\"YES\""));
     }
 
     @Test
@@ -90,7 +90,7 @@ class MediationAndSettlementTest {
                 -> text.contains(content)
         ));
         inOrder.verify(fieldBuilder).mandatory(any());
-        inOrder.verify(fieldBuilder).optional(any(), eq("settlement=\"YES\""));
+        inOrder.verify(fieldBuilder).optional(any(), eq("settlementAttempted=\"YES\""));
     }
 
     @Test
@@ -114,8 +114,8 @@ class MediationAndSettlementTest {
         underTest.addTo(pageBuilder);
 
         // Verify the show conditions for both optional fields
-        verify(fieldBuilder).optional(any(), eq("mediation=\"YES\""));
-        verify(fieldBuilder).optional(any(), eq("settlement=\"YES\""));
+        verify(fieldBuilder).optional(any(), eq("mediationAttempted=\"YES\""));
+        verify(fieldBuilder).optional(any(), eq("settlementAttempted=\"YES\""));
     }
 
     @Test

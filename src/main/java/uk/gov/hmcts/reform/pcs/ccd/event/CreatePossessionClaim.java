@@ -28,11 +28,12 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.StartTheService;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.ClaimantInformation;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.ContactPreferences;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.GroundsForPossession;
-import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.PreActionProtocol;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.MediationAndSettlement;
+import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.PreActionProtocol;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.NoticeDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.RentDetails;
 import uk.gov.hmcts.reform.pcs.ccd.service.ClaimService;
@@ -70,6 +71,7 @@ public class CreatePossessionClaim implements CCDConfig<PCSCase, State, UserRole
                 .showSummary();
 
         new PageBuilder(eventBuilder)
+            .add(new StartTheService())
             .add(enterPropertyAddress)
             .add(crossBorderPostcodeSelection)
             .add(new SelectLegislativeCountry())
