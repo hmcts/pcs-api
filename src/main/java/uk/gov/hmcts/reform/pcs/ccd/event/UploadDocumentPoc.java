@@ -8,8 +8,6 @@ import uk.gov.hmcts.ccd.sdk.api.ConfigBuilder;
 import uk.gov.hmcts.ccd.sdk.api.Event.EventBuilder;
 import uk.gov.hmcts.ccd.sdk.api.EventPayload;
 import uk.gov.hmcts.ccd.sdk.api.Permission;
-import uk.gov.hmcts.ccd.sdk.type.Document;
-import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
@@ -18,10 +16,14 @@ import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.ClaimantInformatio
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.DocumentUpload;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
-
-import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.uploadDocumentPoc;
+import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.domain.PaymentStatus;
+import uk.gov.hmcts.ccd.sdk.type.ListValue;
+import uk.gov.hmcts.ccd.sdk.type.Document;
 
 import java.util.List;
+
+import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.uploadDocumentPoc;
 
 @Slf4j
 @Component
@@ -62,18 +64,22 @@ public class UploadDocumentPoc implements CCDConfig<PCSCase, State, UserRole> {
 
         log.info("Creating document upload POC case: {}", caseReference);
 
+        pcsCase.setPaymentStatus(PaymentStatus.UNPAID);
+
+        PcsCaseEntity pcsCaseEntity = pcsCaseService.createCase(caseReference, pcsCase);
+        log.info("Successfully created case: {}", caseReference);
+
         List<ListValue<Document>> supportingDocuments = pcsCase.getSupportingDocuments();
         if (supportingDocuments != null) {
             for (ListValue<Document> documentWrapper : supportingDocuments) {
                 if (documentWrapper != null && documentWrapper.getValue() != null) {
                     Document document = documentWrapper.getValue();
-                    pcsCaseService.addDocumentToCase(caseReference, document.getFilename(), document.getUrl());
+                    String fileName = document.getFilename();
+                    String filePath = document.getBinaryUrl();
+
+                    pcsCaseService.addDocumentToCase(caseReference, fileName, filePath);
                 }
             }
         }
-
-        pcsCaseService.createCase(caseReference, pcsCase);
-
-        log.info("Successfully created case: {}", caseReference);
     }
 }
