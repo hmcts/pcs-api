@@ -13,7 +13,7 @@ public class StartTheService implements CcdPageConfiguration {
         pageBuilder
             .page("startTheService")
             .label("mainContent",
-                   "<h1 class=\"govuk-heading-l\">Make a housing possession claim online</h1>"
+                   "<h1 class=\"govuk-heading-l\">TEST-S002.13-2-dZbSoxinJs</h1>"
                        + "<p class=\"govuk-body\">You can use this online service if you're a registered "
                        + "provider of social housing or a community landlord and the property "
                        + "you want to claim possession of is in England or Wales.</p>"
@@ -44,6 +44,6 @@ public class StartTheService implements CcdPageConfiguration {
                        + "<li class=\"govuk-list govuk-!-font-size-19\">save it as a draft. You or someone else "
                        + "can then return to sign, submit and pay at a later date</li>"
                        + "</ul>"
-            );
+            ).label("testID", "TEST-S002.13-2-dZbSoxinJs");
     }
 }
