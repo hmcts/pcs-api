@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.ccd.page.createtestcase;
+package uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -8,6 +8,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
 import uk.gov.hmcts.ccd.sdk.api.Event;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
+import uk.gov.hmcts.ccd.sdk.api.callback.MidEvent;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
@@ -30,18 +31,61 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-import static uk.gov.hmcts.ccd.sdk.type.YesOrNo.YES;
 import static uk.gov.hmcts.ccd.sdk.type.YesOrNo.NO;
+import static uk.gov.hmcts.ccd.sdk.type.YesOrNo.YES;
 
-class MakeAClaimTest extends BasePageTest {
+class EnterPropertyAddressTest extends BasePageTest {
 
     private EligibilityService eligibilityService;
+
     private Event<PCSCase, UserRole, State> event;
 
     @BeforeEach
     void setUp() {
         eligibilityService = mock(EligibilityService.class);
-        event = buildPageInTestEvent(new MakeAClaim(eligibilityService));
+        event = buildPageInTestEvent(new EnterPropertyAddress(eligibilityService));
+    }
+
+    @Test
+    void shouldSetFormattedContactAddressInMidEventCallback() {
+        // Given
+        CaseDetails<PCSCase, State> caseDetails = new CaseDetails<>();
+        String postCode = "NW1 6XE";
+        AddressUK propertyAddress = AddressUK.builder()
+            .addressLine1("123 Baker Street")
+            .addressLine2("Marylebone")
+            .postTown("London")
+            .county("Greater London")
+            .postCode(postCode)
+            .build();
+        PCSCase caseData = PCSCase.builder()
+            .propertyAddress(propertyAddress)
+            .build();
+
+        caseDetails.setData(caseData);
+
+        String formattedAddress = formattedContactAddress(propertyAddress);
+        EligibilityResult eligibilityResult = EligibilityResult.builder()
+                .status(EligibilityStatus.NO_MATCH_FOUND)
+                .legislativeCountries(List.of())
+                .build();
+
+        // When
+        when(eligibilityService.checkEligibility(postCode, null)).thenReturn(eligibilityResult);
+        MidEvent<PCSCase, State> midEvent = getMidEventForPage(event, "enterPropertyAddress");
+        midEvent.handle(caseDetails, null);
+
+        // Then
+        assertThat(caseData.getFormattedClaimantContactAddress()).isEqualTo(formattedAddress);
+    }
+
+    private String formattedContactAddress(AddressUK propertyAddress) {
+        return  String.format(
+            "%s<br>%s<br>%s",
+            propertyAddress.getAddressLine1(),
+            propertyAddress.getPostTown(),
+            propertyAddress.getPostCode()
+        );
     }
 
     @ParameterizedTest
@@ -74,7 +118,7 @@ class MakeAClaimTest extends BasePageTest {
         when(eligibilityService.checkEligibility(postcode, null)).thenReturn(eligibilityResult);
 
         // When
-        AboutToStartOrSubmitResponse<PCSCase, State> response = getMidEventForPage(event, "Make a claim")
+        AboutToStartOrSubmitResponse<PCSCase, State> response = getMidEventForPage(event, "enterPropertyAddress")
             .handle(caseDetails, null);
 
         // Then
@@ -114,82 +158,15 @@ class MakeAClaimTest extends BasePageTest {
 
         when(eligibilityService.checkEligibility(postcode, null)).thenReturn(eligibilityResult);
 
+        MidEvent<PCSCase, State> midEvent = getMidEventForPage(event, "enterPropertyAddress");
+
         // When & Then
-        assertThatThrownBy(() -> getMidEventForPage(event, "Make a claim")
-            .handle(caseDetails, null))
+        assertThatThrownBy(() -> midEvent.handle(caseDetails, null))
             .isInstanceOf(EligibilityCheckException.class)
             .hasMessageContaining("Expected at least 2 legislative countries")
             .hasMessageContaining(expectedMessageFragment)
             .hasMessageContaining(postcode);
     }
-
-    @Test
-    void shouldSetShowPropertyNotEligiblePageWhenStatusIsNotEligible() {
-        // Given
-        String postcode = "M1 1AA";
-        CaseDetails<PCSCase, State> caseDetails = new CaseDetails<>();
-        PCSCase caseData = PCSCase.builder()
-            .propertyAddress(AddressUK.builder().postCode(postcode).build())
-            .build();
-        caseDetails.setData(caseData);
-
-        EligibilityResult result = EligibilityResult.builder()
-            .status(EligibilityStatus.NOT_ELIGIBLE)
-            .build();
-
-        when(eligibilityService.checkEligibility(postcode, null))
-            .thenReturn(result);
-
-        // When
-        AboutToStartOrSubmitResponse<PCSCase, State> response =
-            getMidEventForPage(event, "Make a claim")
-                .handle(caseDetails, null);
-
-        // Then
-        PCSCase data = response.getData();
-        assertThat(data.getShowPropertyNotEligiblePage())
-            .as("NOT_ELIGIBLE should set propertyNotEligible flag")
-            .isEqualTo(YES);
-        assertThat(data.getShowCrossBorderPage())
-            .as("Cross-border flag should remain NO")
-            .isEqualTo(NO);
-    }
-
-    @Test
-    void shouldResetPageFlagsAtStartOfEachMidEventRun() {
-        // Given: previous run may have set both flags to YES
-        String postcode = "SW1A 1AA";
-        CaseDetails<PCSCase, State> caseDetails = new CaseDetails<>();
-        PCSCase caseData = PCSCase.builder()
-            .propertyAddress(AddressUK.builder().postCode(postcode).build())
-            .build();
-        // simulate stale flags from a prior run
-        caseData.setShowCrossBorderPage(YES);
-        caseData.setShowPropertyNotEligiblePage(YES);
-        caseDetails.setData(caseData);
-
-        EligibilityResult result = EligibilityResult.builder()
-            .status(EligibilityStatus.ELIGIBLE)
-            .build();
-
-        when(eligibilityService.checkEligibility(postcode, null))
-            .thenReturn(result);
-
-        // When
-        AboutToStartOrSubmitResponse<PCSCase, State> response =
-            getMidEventForPage(event, "Make a claim")
-                .handle(caseDetails, null);
-
-        // Then: midEvent resets both to NO for a clean decision
-        PCSCase data = response.getData();
-        assertThat(data.getShowCrossBorderPage())
-            .as("Cross-border flag reset to NO at start")
-            .isEqualTo(NO);
-        assertThat(data.getShowPropertyNotEligiblePage())
-            .as("PropertyNotEligible flag reset to NO at start")
-            .isEqualTo(NO);
-    }
-
 
     private static Stream<Arguments> invalidLegislativeCountryScenarios() {
         return Stream.of(
