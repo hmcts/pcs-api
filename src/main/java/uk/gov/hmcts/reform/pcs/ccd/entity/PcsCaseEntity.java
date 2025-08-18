@@ -8,7 +8,6 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.Lob;
 import jakarta.persistence.NamedAttributeNode;
 import jakarta.persistence.NamedEntityGraph;
 import jakarta.persistence.OneToMany;
@@ -74,8 +73,7 @@ public class PcsCaseEntity {
     @JsonManagedReference
     private Set<ClaimEntity> claims = new HashSet<>();
 
-    @Lob
-    @Column(name = "defendants",  columnDefinition = "jsonb")
+    @Column(name = "defendant_details")
     @JdbcTypeCode(SqlTypes.JSON)
     private List<ListValue<Defendant>> defendants;
 
