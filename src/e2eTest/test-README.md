@@ -83,13 +83,14 @@ Playwright 1.30+ | TypeScript 4.9+
 | enterTestAddressManually        | `performAction('enterTestAddressManually')`                                                                                                                                                                |
 | selectJurisdictionCaseTypeEvent | `performAction('selectJurisdictionCaseTypeEvent')`                                                                                                                                                         |
 | housingPossessionClaim          | `performAction('selectCountryRadioButton', borderPostcode.countryOptions.england)`                                                                                                                         |
-| selectCountryRadioButton        | `performAction('selectCountryRadioButton', borderPostcode.countryOptions.england)`                                                                                                                         |
 | selectClaimType                 | `performAction('selectClaimType', claimType.no)`                                                                                                                                                           |
 | selectClaimantName              | `performAction('selectClaimantName', claimantName.yes)`                                                                                                                                                    |
 | selectContactPreferences        | `performAction('selectContactPreferences', {notifications: { answer: contactPreferences.yes }, correspondenceAddress: { answer: contactPreferences.yes }, phoneNumber: { answer: contactPreferences.no })` |
+| selectRadioButton               | `performAction('selectRadioButton', pre-actionProtocol.yes)`                                                                                                                                               |
+| selectMediationAndSettlement    | `performAction('selectMediationAndSettlement',pre-actionProtocol.yes)`                                                                                                                                                       |
 ### Validations
-| Validation        | Example Usage                                                                                                                        |
-|-------------------|--------------------------------------------------------------------------------------------------------------------------------------|
+| Validation          | Example Usage |
+|------------------|---------------|
 | text              | `performValidation('text', 'testElement')`                                                                                           |
 | visibility        | `performValidation('visibility', 'testElement')`                                                                                     |
 | bannerAlert       | `performValidation('bannerAlert', {message: "Case has been created."})`                                                              |

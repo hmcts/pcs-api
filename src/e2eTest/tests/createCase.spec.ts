@@ -12,6 +12,8 @@ import {groundsForPossession} from '@data/page-data/groundsForPossession.page.da
 import {preActionProtocol} from '@data/page-data/preActionProtocol.page.data';
 import {mediationAndSettlement} from '@data/page-data/mediationAndSettlement.page.data';
 import {checkingNotice} from '@data/page-data/checkingNotice.page.data';
+import {noticeDetails} from '@data/page-data/noticeDetails.page.data';
+import {rentDetails} from '@data/page-data/rentDetails.page.data';
 
 test.beforeEach(async ({page}, testInfo) => {
   initializeExecutor(page);
@@ -27,7 +29,7 @@ test.beforeEach(async ({page}, testInfo) => {
   await performAction('housingPossessionClaim');
 });
 
-test.describe.skip('[Create Case Flow With Address and Claimant Type]  @Master @nightly', async () => {
+test.describe('[Create Case Flow With Address and Claimant Type]  @Master @nightly', async () => {
   test('England - Successful case creation', async () => {
     await performAction('selectAddress', {
       postcode: addressDetails.englandPostcode,
@@ -42,29 +44,17 @@ test.describe.skip('[Create Case Flow With Address and Claimant Type]  @Master @
       correspondenceAddress: contactPreferences.yes,
       phoneNumber: contactPreferences.no
     });
-    await performValidation('text', {
-      text: groundsForPossession.mainHeader,
-      elementType: 'heading'
-    });
-    await performAction('clickRadioButton', groundsForPossession.groundsForPossessionsOptions.yes);
-    await performAction('clickButton', 'Continue');
-    await performValidation('text', {
-      text: preActionProtocol.mainHeader,
-      elementType: 'heading'
-    });
-    await performAction('clickRadioButton', preActionProtocol.preActionProtocolOptions.yes);
-    await performAction('clickButton', 'Continue');
-    await performValidation('text', {
-      text: mediationAndSettlement.mainHeader,
-      elementType: 'heading'
-    });
-    await performAction('clickRadioButton', 'Yes', mediationAndSettlement.mediationInlineText);
-    await performAction('clickRadioButton', 'Yes', mediationAndSettlement.settlementInlineText);
-    await performAction('clickButton', 'Continue');
-    await performValidation('text', {
-      text: checkingNotice.mainHeader,
-      elementType: 'heading'
-    })
+    await performValidation('mainHeader', groundsForPossession.mainHeader);
+    await performAction('selectRadioButton', groundsForPossession.groundsForPossessionsOptions.yes);
+    await performValidation('mainHeader', preActionProtocol.mainHeader);
+    await performAction('selectRadioButton', preActionProtocol.preActionProtocolOptions.yes);
+    await performValidation('mainHeader', mediationAndSettlement.mainHeader);
+    await performAction('selectMediationAndSettlement', mediationAndSettlement.MediationAndSettlementOptions.yes);
+    await performValidation('mainHeader', checkingNotice.mainHeader);
+    await performValidation('text', {"text": checkingNotice.servedNoticeInlineTextLink, "elementType": "link"})
+    await performValidation('text', {"text": checkingNotice.servedNoticeInteractiveText, "elementType": "inlineText"});
+    await performAction('selectRadioButton', checkingNotice.checkNoticeOptions.yes);
+    await performValidation('mainHeader', noticeDetails.mainHeader);
     await performAction('clickButton', 'Save and continue');
     await performValidation('bannerAlert', 'Case #.* has been created.');
     await performAction('clickTab', 'Property Details');
@@ -77,7 +67,7 @@ test.describe.skip('[Create Case Flow With Address and Claimant Type]  @Master @
     )
   });
 
-  test('Wales - Successful case creation', async () => {
+  test.skip('Wales - Successful case creation', async () => {
     await performAction('enterTestAddressManually');
     await performAction('selectLegislativeCountry', legislativeCountry.wales);
     await performAction('selectClaimantType', claimantType.registeredCommunityLandlord);
@@ -88,13 +78,11 @@ test.describe.skip('[Create Case Flow With Address and Claimant Type]  @Master @
       correspondenceAddress: contactPreferences.no,
       phoneNumber: contactPreferences.yes
     });
-    await performAction('clickRadioButton', groundsForPossession.groundsForPossessionsOptions.yes);
-    await performAction('clickButton', 'Continue');
-    await performAction('clickRadioButton', preActionProtocol.preActionProtocolOptions.yes);
-    await performAction('clickButton', 'Continue');
-    await performAction('clickRadioButton', 'Yes', mediationAndSettlement.mediationInlineText);
-    await performAction('clickRadioButton', 'Yes', mediationAndSettlement.settlementInlineText);
-    await performAction('clickButton', 'Continue');
+    await performAction('selectRadioButton', groundsForPossession.groundsForPossessionsOptions.yes);
+    await performAction('selectRadioButton', preActionProtocol.preActionProtocolOptions.yes);
+    await performAction('selectMediationAndSettlement', mediationAndSettlement.MediationAndSettlementOptions.yes);
+    await performAction('selectRadioButton', checkingNotice.checkNoticeOptions.no);
+    await performValidation('mainHeader', rentDetails.mainHeader);
     await performAction('clickButton', 'Save and continue');
     await performValidation('bannerAlert', 'Case #.* has been created.');
     await performAction('clickTab', 'Property Details');
@@ -106,7 +94,7 @@ test.describe.skip('[Create Case Flow With Address and Claimant Type]  @Master @
       ['formLabelValue', 'Country', addressDetails.country]);
   });
 
-  test('England - Unsuccessful case creation journey due to claimant type not in scope of Release1 @R1only', async () => {
+  test.skip('England - Unsuccessful case creation journey due to claimant type not in scope of Release1 @R1only', async () => {
     await performAction('selectAddress', {
       postcode: addressDetails.englandPostcode,
       addressIndex: addressDetails.addressIndex
@@ -117,7 +105,7 @@ test.describe.skip('[Create Case Flow With Address and Claimant Type]  @Master @
     await performAction('clickButton', 'Close and return to case list');
   });
 
-  test('Wales - Unsuccessful case creation journey due to claimant type not in scope of Release1 @R1only', async () => {
+  test.skip('Wales - Unsuccessful case creation journey due to claimant type not in scope of Release1 @R1only', async () => {
     await performAction('selectAddress', {
       postcode: addressDetails.walesPostcode,
       addressIndex: addressDetails.addressIndex
@@ -128,9 +116,11 @@ test.describe.skip('[Create Case Flow With Address and Claimant Type]  @Master @
     await performAction('clickButton', 'Close and return to case list');
   });
 
-  test('Unsuccessful case creation journey due to claim type not in scope of Release1 @R1only', async () => {
-    await performAction('selectAddress', {postcode: addressDetails.englandPostcode,
-      addressIndex: addressDetails.addressIndex});
+  test.skip('Unsuccessful case creation journey due to claim type not in scope of Release1 @R1only', async () => {
+    await performAction('selectAddress', {
+      postcode: addressDetails.englandPostcode,
+      addressIndex: addressDetails.addressIndex
+    });
     await performAction('selectLegislativeCountry', legislativeCountry.england);
     await performAction('selectClaimantType', claimantType.registeredProviderForSocialHousing);
     await performAction('selectClaimType', claimType.yes);

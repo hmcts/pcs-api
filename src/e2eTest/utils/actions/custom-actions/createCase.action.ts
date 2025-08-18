@@ -1,23 +1,26 @@
-import Axios, { AxiosInstance, AxiosResponse } from 'axios';
-import { TestConfig } from 'config/test.config';
-import { getIdamAuthToken, getServiceAuthToken } from '../../helpers/idam-helpers/idam.helper';
-import { actionData, IAction } from '../../interfaces/action.interface';
-import { Page } from '@playwright/test';
-import { initIdamAuthToken, initServiceAuthToken, getUser } from 'utils/helpers/idam-helpers/idam.helper';
-import { performAction, performActions, performValidation } from '@utils/controller';
-import { createCase } from '@data/page-data/createCase.page.data';
-import { addressDetails } from '@data/page-data/addressDetails.page.data';
-import { housingPossessionClaim } from '@data/page-data/housingPossessionClaim.page.data';
-import { borderPostcode } from '@data/page-data/borderPostcode.page.data';
-import { claimantName } from '@data/page-data/claimantName.page.data';
-import { contactPreferences } from '@data/page-data/contactPreferences.page.data';
+import Axios, {AxiosInstance, AxiosResponse} from 'axios';
+import {TestConfig} from 'config/test.config';
+import {getIdamAuthToken, getServiceAuthToken} from '../../helpers/idam-helpers/idam.helper';
+import {actionData, IAction} from '../../interfaces/action.interface';
+import {Page} from '@playwright/test';
+import {getUser, initIdamAuthToken, initServiceAuthToken} from 'utils/helpers/idam-helpers/idam.helper';
+import {performAction, performActions, performValidation} from '@utils/controller';
+import {createCase} from '@data/page-data/createCase.page.data';
+import {addressDetails} from '@data/page-data/addressDetails.page.data';
+import {housingPossessionClaim} from '@data/page-data/housingPossessionClaim.page.data';
+import {borderPostcode} from '@data/page-data/borderPostcode.page.data';
+import {claimantName} from '@data/page-data/claimantName.page.data';
+import {contactPreferences} from '@data/page-data/contactPreferences.page.data';
+import {mediationAndSettlement} from '@data/page-data/mediationAndSettlement.page.data';
 
 let caseInfo: { id: string; fid: string; state: string };
 const testConfig = TestConfig.ccdCase;
 
 export class CreateCaseAction implements IAction {
   private eventToken?: string;
-  constructor(private readonly axios: AxiosInstance = Axios.create()) {}
+
+  constructor(private readonly axios: AxiosInstance = Axios.create()) {
+  }
 
   async execute(page: Page, action: string, fieldName: actionData, data?: actionData): Promise<void> {
     const actionsMap = new Map<string, () => Promise<void>>([
@@ -31,7 +34,8 @@ export class CreateCaseAction implements IAction {
       ['selectClaimType', () => this.selectClaimType(fieldName)],
       ['selectClaimantName', () => this.selectClaimantName(fieldName)],
       ['selectContactPreferences', () => this.selectContactPreferences(fieldName)],
-      ['selectCountryRadioButton', () => this.selectCountryRadioButton(fieldName)]
+      ['selectRadioButton', () => this.selectRadioButton(fieldName)],
+      ['selectMediationAndSettlement', () => this.selectMediationAndSettlement(fieldName)]
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) throw new Error(`No action found for '${action}'`);
@@ -53,7 +57,7 @@ export class CreateCaseAction implements IAction {
       'elementType': 'heading'
     });
     await performAction('clickButton', housingPossessionClaim.continue);
- }
+  }
 
   private async selectAddress(caseData: actionData) {
     const addressDetails = caseData as { postcode: string; addressIndex: number };
@@ -83,7 +87,7 @@ export class CreateCaseAction implements IAction {
 
   private async selectClaimantName(caseData: actionData) {
     await performAction('clickRadioButton', caseData);
-    if(caseData == claimantName.no){
+    if (caseData == claimantName.no) {
       await performAction('inputText', claimantName.whatIsCorrectClaimantName, claimantName.correctClaimantNameInput);
     }
     await performAction('clickButton', 'Continue');
@@ -126,9 +130,27 @@ export class CreateCaseAction implements IAction {
     await performAction('clickButton', 'Continue');
   }
 
-  private async selectCountryRadioButton(country: actionData) {
-    await performAction('clickRadioButton', country);
-    await performAction('clickButton', borderPostcode.continue);
+  private async selectMediationAndSettlement(option: actionData) {
+    await performAction('clickRadioButton', {
+      question: mediationAndSettlement.mediationInlineText,
+      option: option as string
+    });
+    if (option === 'Yes') {
+      await performAction('inputText', mediationAndSettlement.mediationTextAreaLabel, mediationAndSettlement.mediationInputData);
+    }
+    await performAction('clickRadioButton', {
+      question: mediationAndSettlement.settlementInlineText,
+      option: option as string
+    });
+    if (option === 'Yes') {
+      await performAction('inputText', mediationAndSettlement.settlementTextAreaLabel, mediationAndSettlement.settlementInputData);
+    }
+    await performAction('clickButton', 'Continue');
+  }
+
+  private async selectRadioButton(option: actionData) {
+    await performAction('clickRadioButton', option);
+    await performAction('clickButton', 'Continue');
   }
 
   private async selectJurisdictionCaseTypeEvent() {
@@ -188,6 +210,7 @@ export class CreateCaseAction implements IAction {
     }
   }
 }
+
 //setup for the DataStoreApi to use the Axios instance with the correct headers and base URL
 export const dataStoreApi = async (): Promise<CreateCaseAction> => {
   const userCreds = getUser('exuiUser');
