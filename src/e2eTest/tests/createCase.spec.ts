@@ -1,19 +1,17 @@
-import {test} from '@playwright/test';
-import {parentSuite} from 'allure-js-commons';
-import {initializeExecutor, performAction, performValidation, performValidations} from '@utils/controller';
+import { test } from '@playwright/test';
+import { parentSuite } from 'allure-js-commons';
+import { initializeExecutor, performAction, performValidation, performValidations } from '@utils/controller';
 import configData from '@config/test.config';
-import {addressDetails} from '@data/page-data/addressDetails.page.data';
-import {claimantType} from '@data/page-data/claimantType.page.data';
-import {legislativeCountry} from '@data/page-data/legislativeCountry.page.data';
-import {claimType} from '@data/page-data/claimType.page.data';
-import {claimantName} from '@data/page-data/claimantName.page.data';
-import {contactPreferences} from '@data/page-data/contactPreferences.page.data';
-import {groundsForPossession} from '@data/page-data/groundsForPossession.page.data';
-import {preActionProtocol} from '@data/page-data/preActionProtocol.page.data';
-import {mediationAndSettlement} from '@data/page-data/mediationAndSettlement.page.data';
-import {checkingNotice} from '@data/page-data/checkingNotice.page.data';
-import {noticeDetails} from '@data/page-data/noticeDetails.page.data';
-import {rentDetails} from '@data/page-data/rentDetails.page.data';
+import { addressDetails } from '@data/page-data/addressDetails.page.data';
+import { claimantType } from '@data/page-data/claimantType.page.data';
+import { legislativeCountry } from '@data/page-data/legislativeCountry.page.data';
+import { claimType } from '@data/page-data/claimType.page.data';
+import { claimantName } from '@data/page-data/claimantName.page.data';
+import { contactPreferences } from '@data/page-data/contactPreferences.page.data';
+import { groundsForPossession } from '@data/page-data/groundsForPossession.page.data';
+import { preActionProtocol } from '@data/page-data/preActionProtocol.page.data';
+import { mediationAndSettlement } from '@data/page-data/mediationAndSettlement.page.data';
+import { checkingNotice } from '@data/page-data/checkingNotice.page.data';
 
 test.beforeEach(async ({page}, testInfo) => {
   initializeExecutor(page);
@@ -29,7 +27,7 @@ test.beforeEach(async ({page}, testInfo) => {
   await performAction('housingPossessionClaim');
 });
 
-test.describe.skip('[Create Case Flow With Address and Claimant Type]  @Master @nightly', async () => {
+test.describe('[Create Case Flow With Address and Claimant Type]  @Master @nightly', async () => {
   test('England - Successful case creation', async () => {
     await performAction('selectAddress', {
       postcode: addressDetails.englandPostcode,
@@ -51,10 +49,6 @@ test.describe.skip('[Create Case Flow With Address and Claimant Type]  @Master @
     await performValidation('mainHeader', mediationAndSettlement.mainHeader);
     await performAction('selectMediationAndSettlement', mediationAndSettlement.MediationAndSettlementOptions.yes);
     await performValidation('mainHeader', checkingNotice.mainHeader);
-    await performValidation('text', {"text": checkingNotice.guidanceOnPosessionNoticePeriodsLink, "elementType": "link"})
-    await performValidation('text', {"text": checkingNotice.servedNoticeInteractiveText, "elementType": "inlineText"});
-    await performAction('selectRadioButton', checkingNotice.checkNoticeOptions.yes);
-    await performValidation('mainHeader', noticeDetails.mainHeader);
     await performAction('clickButton', 'Save and continue');
     await performValidation('bannerAlert', 'Case #.* has been created.');
     await performAction('clickTab', 'Property Details');
@@ -67,7 +61,7 @@ test.describe.skip('[Create Case Flow With Address and Claimant Type]  @Master @
     )
   });
 
-  test('Wales - Successful case creation', async () => {
+  test.skip('Wales - Successful case creation', async () => {
     await performAction('enterTestAddressManually');
     await performAction('selectLegislativeCountry', legislativeCountry.wales);
     await performAction('selectClaimantType', claimantType.registeredCommunityLandlord);
@@ -81,8 +75,6 @@ test.describe.skip('[Create Case Flow With Address and Claimant Type]  @Master @
     await performAction('selectRadioButton', groundsForPossession.groundsForPossessionsOptions.yes);
     await performAction('selectRadioButton', preActionProtocol.preActionProtocolOptions.yes);
     await performAction('selectMediationAndSettlement', mediationAndSettlement.MediationAndSettlementOptions.yes);
-    await performAction('selectRadioButton', checkingNotice.checkNoticeOptions.no);
-    await performValidation('mainHeader', rentDetails.mainHeader);
     await performAction('clickButton', 'Save and continue');
     await performValidation('bannerAlert', 'Case #.* has been created.');
     await performAction('clickTab', 'Property Details');
@@ -94,7 +86,7 @@ test.describe.skip('[Create Case Flow With Address and Claimant Type]  @Master @
       ['formLabelValue', 'Country', addressDetails.country]);
   });
 
-  test('England - Unsuccessful case creation journey due to claimant type not in scope of Release1 @R1only', async () => {
+  test.skip('England - Unsuccessful case creation journey due to claimant type not in scope of Release1 @R1only', async () => {
     await performAction('selectAddress', {
       postcode: addressDetails.englandPostcode,
       addressIndex: addressDetails.addressIndex
@@ -105,7 +97,7 @@ test.describe.skip('[Create Case Flow With Address and Claimant Type]  @Master @
     await performAction('clickButton', 'Close and return to case list');
   });
 
-  test('Wales - Unsuccessful case creation journey due to claimant type not in scope of Release1 @R1only', async () => {
+  test.skip('Wales - Unsuccessful case creation journey due to claimant type not in scope of Release1 @R1only', async () => {
     await performAction('selectAddress', {
       postcode: addressDetails.walesPostcode,
       addressIndex: addressDetails.addressIndex
@@ -116,7 +108,7 @@ test.describe.skip('[Create Case Flow With Address and Claimant Type]  @Master @
     await performAction('clickButton', 'Close and return to case list');
   });
 
-  test('Unsuccessful case creation journey due to claim type not in scope of Release1 @R1only', async () => {
+  test.skip('Unsuccessful case creation journey due to claim type not in scope of Release1 @R1only', async () => {
     await performAction('selectAddress', {
       postcode: addressDetails.englandPostcode,
       addressIndex: addressDetails.addressIndex

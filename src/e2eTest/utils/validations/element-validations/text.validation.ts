@@ -1,4 +1,4 @@
-import { Page, expect,test } from '@playwright/test';
+import { Page, expect } from '@playwright/test';
 import {IValidation, validationData} from "../../interfaces/validation.interface";
 
 export class TextValidation implements IValidation {
