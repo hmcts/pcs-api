@@ -4,7 +4,7 @@ import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 
-public class DefendantDetails implements CcdPageConfiguration {
+public class DefendantsDetails implements CcdPageConfiguration {
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
