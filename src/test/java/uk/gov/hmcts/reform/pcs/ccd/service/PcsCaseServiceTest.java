@@ -293,7 +293,7 @@ class PcsCaseServiceTest {
     }
 
     @Test
-    void shouldMapFromDefendantDetailsToDefendantPOJO() {
+    void shouldMapFromDefendantDetailsToDefendantPojo() {
         // Given
         AddressUK correspondenceAddress = AddressUK.builder()
             .addressLine1("125 Broadway")
@@ -330,7 +330,7 @@ class PcsCaseServiceTest {
     }
 
     @Test
-    void shouldMapDefendantPOJOToDefendantDetails() {
+    void shouldMapDefendantPojoToDefendantDetails() {
         // Given
         Defendant defendant = Defendant.builder()
             .id("456")
