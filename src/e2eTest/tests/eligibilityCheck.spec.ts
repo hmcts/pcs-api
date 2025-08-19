@@ -16,7 +16,7 @@ test.beforeEach(async ({page}) => {
   await performAction('housingPossessionClaim');
 });
 
-test.describe.skip('Eligibility checks for cross and non cross border postcodes @nightly', async () => {
+test.describe('Eligibility checks for cross and non cross border postcodes @nightly', async () => {
   //Skipping these tests until the postcode data insertion is handled in AAT via automation
   test('Verify cross border postcode eligibility check redirection and content for England and Wales', async ({page}) => {
     await performAction('selectAddress', {
@@ -32,15 +32,15 @@ test.describe.skip('Eligibility checks for cross and non cross border postcodes 
       "text": borderPostcode.englandWalesInlineContent,
       "elementType": "inlineText"
     });
-    await performAction('selectCountryRadioButton', borderPostcode.countryOptions.england);
+    await performAction('selectRadioButton', borderPostcode.countryOptions.england);
     await performValidation('mainHeader', legislativeCountry.mainHeader);
     await page.goBack()
     await page.waitForLoadState()
-    await performAction('selectCountryRadioButton', borderPostcode.countryOptions.wales);
+    await performAction('selectRadioButton', borderPostcode.countryOptions.wales);
     await performValidation('mainHeader', borderPostcode.mainHeader);
   });
 
-  test('Verify cross border postcode page for England and Scotland content', async () => {
+  test.skip('Verify cross border postcode page for England and Scotland content', async () => {
     await performAction('selectAddress', {
       postcode: borderPostcode.englandScotlandPostcode,
       addressIndex: addressDetails.addressIndex

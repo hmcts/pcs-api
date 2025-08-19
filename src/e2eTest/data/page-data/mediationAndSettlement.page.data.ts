@@ -3,12 +3,8 @@ export const mediationAndSettlement = {
   mainHeader: 'Mediation and settlement',
   attemptedMediationWithDefendants: 'Have you attempted mediation with the defendants?',
   settlementWithDefendants: 'Have you tried to reach a settlement with the defendants?',
-  elementTypeRadio: 'radio',
-  MediationAndSettlementOptions:
-    {
-      yes: 'Yes',
-      no: 'No'
-    },
+  yes: 'Yes',
+  no: 'No',
   attemptedMediationTextAreaLabel: 'Give details about the attempted mediation and what the outcome was (Optional)',
   attemptedMediationInputData: 'Sample mediation input data',
   settlementWithDefendantsTextAreaLabel: 'Explain what steps you\'ve taken to reach a settlement (Optional)',

@@ -27,7 +27,7 @@ test.beforeEach(async ({page}, testInfo) => {
   await performAction('housingPossessionClaim');
 });
 
-test.describe.skip('[Create Case Flow With Address and Claimant Type]  @Master @nightly', async () => {
+test.describe('[Create Case Flow With Address and Claimant Type]  @Master @nightly', async () => {
   test('England - Successful case creation', async () => {
     await performAction('selectAddress', {
       postcode: addressDetails.englandPostcode,
@@ -47,8 +47,12 @@ test.describe.skip('[Create Case Flow With Address and Claimant Type]  @Master @
     await performValidation('mainHeader', preActionProtocol.mainHeader);
     await performAction('selectRadioButton', preActionProtocol.preActionProtocolOptions.yes);
     await performValidation('mainHeader', mediationAndSettlement.mainHeader);
-    await performAction('selectMediationAndSettlement', mediationAndSettlement.MediationAndSettlementOptions.yes);
+    await performAction('selectMediationAndSettlement', {
+      attemptedMediationWithDefendantsOption: mediationAndSettlement.yes,
+      settlementWithDefendantsOption: mediationAndSettlement.no,
+    });
     await performValidation('mainHeader', checkingNotice.mainHeader);
+    await performAction('clickButton', checkingNotice.continue);
     await performAction('clickButton', 'Save and continue');
     await performValidation('bannerAlert', 'Case #.* has been created.');
     await performAction('clickTab', 'Property Details');
@@ -74,7 +78,11 @@ test.describe.skip('[Create Case Flow With Address and Claimant Type]  @Master @
     });
     await performAction('selectRadioButton', groundsForPossession.groundsForPossessionsOptions.yes);
     await performAction('selectRadioButton', preActionProtocol.preActionProtocolOptions.yes);
-    await performAction('selectMediationAndSettlement', mediationAndSettlement.MediationAndSettlementOptions.yes);
+    await performAction('selectMediationAndSettlement', {
+      attemptedMediationWithDefendantsOption: mediationAndSettlement.yes,
+      settlementWithDefendantsOption: mediationAndSettlement.no,
+    });
+    await performAction('clickButton', checkingNotice.continue);
     await performAction('clickButton', 'Save and continue');
     await performValidation('bannerAlert', 'Case #.* has been created.');
     await performAction('clickTab', 'Property Details');

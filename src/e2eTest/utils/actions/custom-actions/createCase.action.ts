@@ -129,20 +129,25 @@ export class CreateCaseAction implements IAction {
     await performAction('clickButton', 'Continue');
   }
 
-  private async selectMediationAndSettlement(option: actionData) {
+  private async selectMediationAndSettlement(mediationSettlement: actionData) {
+    const prefData = mediationSettlement as {
+      attemptedMediationWithDefendantsOption: string;
+      settlementWithDefendantsOption: string;
+    };
+
     await performAction('clickRadioButton', {
       question: mediationAndSettlement.attemptedMediationWithDefendants,
-      option: option as string
+      option: prefData.attemptedMediationWithDefendantsOption
     });
-    if (option === 'Yes') {
+    if (prefData.attemptedMediationWithDefendantsOption == 'Yes') {
       await performAction('inputText', mediationAndSettlement.attemptedMediationTextAreaLabel, mediationAndSettlement.attemptedMediationInputData);
     }
     await performAction('clickRadioButton', {
       question: mediationAndSettlement.settlementWithDefendants,
-      option: option as string
+      option: prefData.settlementWithDefendantsOption
     });
-    if (option === 'Yes') {
-      await performAction('inputText', mediationAndSettlement.settlementWithDefendantsTextAreaLabel, mediationAndSettlement.settlementWithDefendantsInputData);
+    if (prefData.settlementWithDefendantsOption == 'Yes') {
+      await performAction('inputText',  mediationAndSettlement.settlementWithDefendantsTextAreaLabel, mediationAndSettlement.settlementWithDefendantsInputData);
     }
     await performAction('clickButton', 'Continue');
   }
