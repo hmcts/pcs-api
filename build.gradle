@@ -303,6 +303,7 @@ ext {
   lombokVersion = "1.18.38"
   springSecurityVersion = "6.5.2"
   pactVersion = "4.6.17"
+  tomcatCoreVersion = "10.1.44"
 }
 
 ext['snakeyaml.version'] = '2.0'
@@ -342,8 +343,8 @@ dependencies {
   implementation group: 'org.projectlombok', name: 'lombok', version: lombokVersion
   implementation group: 'io.vavr', name: 'vavr', version: '0.10.7'
   implementation group: 'com.github.kagkarlsson', name: 'db-scheduler-spring-boot-starter', version: '16.0.0'
-  implementation group: 'org.apache.tomcat.embed', name: 'tomcat-embed-core', version: '10.1.44'
-  implementation group: 'org.apache.tomcat.embed', name: 'tomcat-embed-websocket', version: '10.1.44'
+  implementation group: 'org.apache.tomcat.embed', name: 'tomcat-embed-core', version: tomcatCoreVersion
+  implementation group: 'org.apache.tomcat.embed', name: 'tomcat-embed-websocket', version: tomcatCoreVersion
   annotationProcessor group: 'org.projectlombok', name: 'lombok', version: lombokVersion
 
   testImplementation group: 'io.rest-assured', name: 'rest-assured', version: '5.5.6'
