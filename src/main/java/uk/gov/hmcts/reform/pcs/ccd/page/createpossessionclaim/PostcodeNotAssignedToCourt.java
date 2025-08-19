@@ -27,13 +27,29 @@ public class PostcodeNotAssignedToCourt implements CcdPageConfiguration {
             .readonly(PCSCase::getShowPostcodeNotAssignedToCourt, NEVER_SHOW)
             .readonly(PCSCase::getPostcodeNotAssignedView, NEVER_SHOW)
             .readonly(PCSCase::getSelectedLegislativeCountry, NEVER_SHOW)
-            .label("postcodeNotAssignedToCourt-info-england", ENGLAND_CONTENT, "postcodeNotAssignedView=\"ENGLAND\"")
-            .label("postcodeNotAssignedToCourt-info-wales", WALES_CONTENT, "postcodeNotAssignedView=\"WALES\"")
-            .label("postcodeNotAssignedToCourt-info-all", ALL_COUNTRIES_CONTENT, "postcodeNotAssignedView=\"ALL_COUNTRIES\"")
-            .label("postcodeNotAssignedToCourt-info-default", ALL_COUNTRIES_CONTENT, "postcodeNotAssignedView=\"\"");
+            .label(
+                "postcodeNotAssignedToCourt-info-england",
+                ENGLAND_CONTENT,
+                "postcodeNotAssignedView=\"ENGLAND\""
+            )
+            .label(
+                "postcodeNotAssignedToCourt-info-wales",
+                WALES_CONTENT,
+                "postcodeNotAssignedView=\"WALES\""
+            )
+            .label(
+                "postcodeNotAssignedToCourt-info-all",
+                ALL_COUNTRIES_CONTENT,
+                "postcodeNotAssignedView=\"ALL_COUNTRIES\""
+            )
+            .label(
+                "postcodeNotAssignedToCourt-info-default",
+                ALL_COUNTRIES_CONTENT,
+                "postcodeNotAssignedView=\"\""
+            );
     }
 
-    private static final String ALL_COUNTRIES_CONTENT = """
+    public static final String ALL_COUNTRIES_CONTENT = """
             ---
             <section tabindex="0">
             <p class="govuk-body">
@@ -81,7 +97,7 @@ public class PostcodeNotAssignedToCourt implements CcdPageConfiguration {
             </section>
             """;
 
-    private static final String ENGLAND_CONTENT = """
+    public static final String ENGLAND_CONTENT = """
             ---
             <section tabindex="0">
             <p class="govuk-body">
@@ -118,7 +134,7 @@ public class PostcodeNotAssignedToCourt implements CcdPageConfiguration {
             </section>
             """;
 
-    private static final String WALES_CONTENT = """
+    public static final String WALES_CONTENT = """
             ---
             <section tabindex="0">
             <p class="govuk-body">

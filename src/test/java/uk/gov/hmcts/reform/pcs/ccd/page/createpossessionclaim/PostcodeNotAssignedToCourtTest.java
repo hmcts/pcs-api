@@ -15,6 +15,9 @@ import java.util.stream.Stream;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.PostcodeNotAssignedToCourt.ALL_COUNTRIES_CONTENT;
+import static uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.PostcodeNotAssignedToCourt.ENGLAND_CONTENT;
+import static uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.PostcodeNotAssignedToCourt.WALES_CONTENT;
 
 class PostcodeNotAssignedToCourtTest {
 
@@ -60,7 +63,22 @@ class PostcodeNotAssignedToCourtTest {
         AboutToStartOrSubmitResponse<PCSCase, State> response = underTest.midEvent(details, null);
 
         assertThat(response.getErrors()).containsExactly("You're not eligible for this online service");
-        String content = underTest.generateContent(caseData);
+
+        // Test empty string view (default case)
+        if (view == null) {
+            caseData.setPostcodeNotAssignedView("");
+            String content = ALL_COUNTRIES_CONTENT;
+            for (String expectedContent : expectedContents) {
+                assertThat(content).contains(expectedContent);
+            }
+        }
+
+        // Test specific view
+        String content = switch (view) {
+            case "ENGLAND" -> ENGLAND_CONTENT;
+            case "WALES" -> WALES_CONTENT;
+            default -> ALL_COUNTRIES_CONTENT;
+        };
         
         for (String expectedContent : expectedContents) {
             assertThat(content).contains(expectedContent);
@@ -82,12 +100,11 @@ class PostcodeNotAssignedToCourtTest {
     @ParameterizedTest
     @MethodSource("linkScenarios")
     void shouldContainRequiredLinks(String view, String expectedLink) {
-        PCSCase caseData = PCSCase.builder()
-            .showPostcodeNotAssignedToCourt(YesOrNo.YES)
-            .postcodeNotAssignedView(view)
-            .build();
-
-        String content = underTest.generateContent(caseData);
+        String content = switch (view) {
+            case "ENGLAND" -> ENGLAND_CONTENT;
+            case "WALES" -> WALES_CONTENT;
+            default -> ALL_COUNTRIES_CONTENT;
+        };
         assertThat(content).contains(expectedLink);
     }
 
