@@ -85,10 +85,9 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
     }
 
     private void buildSupportingDocumentsCaseFileViewTab(ConfigBuilder<PCSCase, State, UserRole> configBuilder) {
+        configBuilder.categories(UserRole.PCS_CASE_WORKER).categoryLabel("test lebel").categoryID("test id").build();
         configBuilder.tab("caseFileView", "Supporting Documents")
             .forRoles(UserRole.PCS_CASE_WORKER)
             .field(PCSCase::getCaseFileView, null, "#ARGUMENT(CaseFileView)");
-        configBuilder.categories(UserRole.PCS_CASE_WORKER).categoryLabel("test lebel").categoryID("test id").build();
-
     }
 }
