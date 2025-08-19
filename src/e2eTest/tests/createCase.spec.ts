@@ -12,7 +12,7 @@ import {groundsForPossession} from '@data/page-data/groundsForPossession.page.da
 import {preActionProtocol} from '@data/page-data/preActionProtocol.page.data';
 import {mediationAndSettlement} from '@data/page-data/mediationAndSettlement.page.data';
 import {checkingNotice} from '@data/page-data/checkingNotice.page.data';
-import {notEligible} from "@data/page-data/notEligible.page.data";
+import {notEligible} from '@data/page-data/notEligible.page.data';
 
 test.beforeEach(async ({page}, testInfo) => {
   initializeExecutor(page);
@@ -140,6 +140,7 @@ test.describe.skip('[Create Case Flow With Address and Claimant Type]  @Master @
     await performValidation('errorMessage', {
       header: notEligible.errors, message: notEligible.notEligibleForOnlineService
     });
+    await performAction('clickButton', 'Cancel');
   });
 
   test('Unsuccessful case creation journey due to claim type not in scope of Release1 @R1only', async () => {
