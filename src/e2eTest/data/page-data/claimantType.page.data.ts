@@ -8,5 +8,5 @@ export const claimantType =
     mortgageLender: 'Mortgage lender',
     other: 'Other',
     registeredProviderForSocialHousing: 'Registered provider of social housing',
-    header: 'There is a problem'
+    header: 'There is a problem',
   };
