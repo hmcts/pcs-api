@@ -20,6 +20,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PaymentStatus;
+import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicence;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -60,7 +61,7 @@ public class PcsCaseEntity {
     private Boolean preActionProtocolCompleted;
 
     @JdbcTypeCode(SqlTypes.JSON)
-    private String tenancyLicence;
+    private TenancyLicence tenancyLicence;
 
     @OneToMany(mappedBy = "pcsCase", fetch = LAZY, cascade = ALL)
     @Builder.Default

@@ -12,6 +12,7 @@ import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PaymentStatus;
+import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicence;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
@@ -285,43 +286,34 @@ class PcsCaseServiceTest {
 
     // Test for tenancy_licence JSON creation, temporary until Data Model is finalised
     @Test
-    void shouldSetTenancyLicenceJson() {
-        // Test notice_served field updates (converts YesOrNo enum to boolean)
-        assertTenancyLicenceField(pcsCase -> when(pcsCase.getNoticeServed()).thenReturn(YesOrNo.YES),
-                "notice_served", true);
-        assertTenancyLicenceField(pcsCase -> when(pcsCase.getNoticeServed()).thenReturn(YesOrNo.NO),
-                "notice_served", false);
-        assertTenancyLicenceField(pcsCase -> when(pcsCase.getNoticeServed()).thenReturn(null),
-                null, null);
+    void shouldSetTenancyLicence() {
+        // Test notice_served field updates
+        assertTenancyLicenceField(
+                pcsCase -> when(pcsCase.getNoticeServed()).thenReturn(YesOrNo.YES),
+                expected -> assertThat(expected.getNoticeServed()).isTrue());
+        assertTenancyLicenceField(
+                pcsCase -> when(pcsCase.getNoticeServed()).thenReturn(YesOrNo.NO),
+                expected -> assertThat(expected.getNoticeServed()).isFalse());
+        assertTenancyLicenceField(
+                pcsCase -> when(pcsCase.getNoticeServed()).thenReturn(null),
+                expected -> assertThat(expected).isNull());
 
         // TODO: Future developers can add ANY field type like:
         // assertTenancyLicenceField(
-        //     pcsCase -> when(pcsCase.getRentAmount()).thenReturn(1200), 
-        //     "rent_amount", 1200);
-
+        //     pcsCase -> when(pcsCase.getRentAmount()).thenReturn(1200),
+        //     expected -> assertThat(expected.getCurrentRent()).isEqualTo(1200));
     }
 
     private void assertTenancyLicenceField(java.util.function.Consumer<PCSCase> setupMock,
-            String jsonKey, Object expectedValue) {
+            java.util.function.Consumer<TenancyLicence> assertions) {
         PCSCase pcsCase = mock(PCSCase.class);
         setupMock.accept(pcsCase);
         when(pcsCaseRepository.save(pcsCaseEntityCaptor.capture())).thenReturn(null);
 
         underTest.createCase(CASE_REFERENCE, pcsCase);
 
-        String actualJson = pcsCaseEntityCaptor.getValue().getTenancyLicence();
-        if (jsonKey == null) {
-            assertThat(actualJson).isNull();
-        } else {
-            assertThat(actualJson).contains("\"" + jsonKey + "\":" + formatJsonValue(expectedValue));
-        }
-    }
-
-    private String formatJsonValue(Object value) {
-        if (value instanceof String) {
-            return "\"" + value + "\"";
-        }
-        return String.valueOf(value); // for boolean, int, etc.
+        TenancyLicence actual = pcsCaseEntityCaptor.getValue().getTenancyLicence();
+        assertions.accept(actual);
     }
 
     private AddressEntity stubAddressUKModelMapper(AddressUK addressUK) {

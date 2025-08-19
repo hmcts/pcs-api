@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicence;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
@@ -38,7 +39,7 @@ public class PcsCaseService {
                         ? pcsCase.getPreActionProtocolCompleted().toBoolean()
                         : null);
 
-        pcsCaseEntity.setTenancyLicence(buildTenancyLicenceJson(pcsCase));
+        pcsCaseEntity.setTenancyLicence(buildTenancyLicence(pcsCase));
 
         return pcsCaseRepository.save(pcsCaseEntity);
     }
@@ -97,20 +98,14 @@ public class PcsCaseService {
 
     //Temporary method to create tenancy_licence JSON and related fields
     // Data in this JSON will likely be moved to a dedicated entity in the future
-    private String buildTenancyLicenceJson(PCSCase pcsCase) {
+    private TenancyLicence buildTenancyLicence(PCSCase pcsCase) {
         if (pcsCase.getNoticeServed() == null) {
             return null;
         }
 
-        boolean noticeServed = "YES".equals(pcsCase.getNoticeServed().name());
-        String json = "{\"notice_served\":" + noticeServed + "}";
-
-        // TODO: Future fields - just add more conditions like this:
-        // if (pcsCase.getCurrentRent() != null) {
-        //     Integer currentRent = pcsCase.getCurrentRent();
-        //     json = json.substring(0, json.length() - 1) + ",\"current_rent\":" + currentRent + "}";
-        // }
-        return json;
+        return TenancyLicence.builder()
+                .noticeServed(pcsCase.getNoticeServed().toBoolean())
+                .build();
     }
 
 }
