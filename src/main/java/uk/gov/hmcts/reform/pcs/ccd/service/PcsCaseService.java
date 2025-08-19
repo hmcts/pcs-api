@@ -13,6 +13,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 
 import java.util.UUID;
 
@@ -99,13 +100,12 @@ public class PcsCaseService {
     //Temporary method to create tenancy_licence JSON and related fields
     // Data in this JSON will likely be moved to a dedicated entity in the future
     private TenancyLicence buildTenancyLicence(PCSCase pcsCase) {
-        if (pcsCase.getNoticeServed() == null) {
-            return null;
-        }
-
         return TenancyLicence.builder()
-                .noticeServed(pcsCase.getNoticeServed().toBoolean())
+                .noticeServed(toBooleanOrNull(pcsCase.getNoticeServed()))
                 .build();
     }
 
+    private static Boolean toBooleanOrNull(YesOrNo yesOrNo) {
+        return yesOrNo != null ? yesOrNo.toBoolean() : null;
+    }
 }

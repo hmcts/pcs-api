@@ -294,9 +294,6 @@ class PcsCaseServiceTest {
         assertTenancyLicenceField(
                 pcsCase -> when(pcsCase.getNoticeServed()).thenReturn(YesOrNo.NO),
                 expected -> assertThat(expected.getNoticeServed()).isFalse());
-        assertTenancyLicenceField(
-                pcsCase -> when(pcsCase.getNoticeServed()).thenReturn(null),
-                expected -> assertThat(expected).isNull());
 
         // TODO: Future developers can add ANY field type like:
         // assertTenancyLicenceField(
