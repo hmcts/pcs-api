@@ -216,9 +216,9 @@ public class PCSCase {
     private YesOrNo showClaimTypeNotEligibleWales;
 
     @CCD(access = {CitizenAccess.class, CaseworkerAccess.class})
-    private Defendant defendant1;
+    private DefendantDetails defendant1;
 
     @CCD(access = {CitizenAccess.class, CaseworkerAccess.class})
-    private List<ListValue<Defendant>> defendants;
+    private List<ListValue<DefendantDetails>> defendants;
 
 }

@@ -16,6 +16,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.renderer.ClaimPaymentTabRenderer;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
+import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.utils.ListValueUtils;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
@@ -40,6 +41,7 @@ public class CCDCaseRepository extends DecentralisedCaseRepository<PCSCase> {
     private final SecurityContextService securityContextService;
     private final ModelMapper modelMapper;
     private final ClaimPaymentTabRenderer claimPaymentTabRenderer;
+    private final PcsCaseService pcsCaseService;
 
     /**
      * Invoked by CCD to load PCS cases by reference.
@@ -56,10 +58,10 @@ public class CCDCaseRepository extends DecentralisedCaseRepository<PCSCase> {
             .preActionProtocolCompleted(pcsCaseEntity.getPreActionProtocolCompleted() != null
                 ? VerticalYesNo.from(pcsCaseEntity.getPreActionProtocolCompleted())
                 : null)
+            .defendants(pcsCaseService.mapToDefendantDetails(pcsCaseEntity.getDefendants()))
             .build();
 
         setDerivedProperties(caseReference,pcsCase, pcsCaseEntity);
-        pcsCase.setDefendants(pcsCaseEntity.getDefendants());
 
         return pcsCase;
     }

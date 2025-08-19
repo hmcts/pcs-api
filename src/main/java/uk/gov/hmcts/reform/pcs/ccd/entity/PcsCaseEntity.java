@@ -20,9 +20,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
-import uk.gov.hmcts.ccd.sdk.type.ListValue;
-import uk.gov.hmcts.reform.pcs.ccd.domain.Defendant;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PaymentStatus;
+import uk.gov.hmcts.reform.pcs.ccd.model.Defendant;
 
 import java.util.HashSet;
 import java.util.List;
@@ -75,7 +74,7 @@ public class PcsCaseEntity {
 
     @Column(name = "defendant_details")
     @JdbcTypeCode(SqlTypes.JSON)
-    private List<ListValue<Defendant>> defendants;
+    private List<Defendant> defendants;
 
     public void addParty(PartyEntity party) {
         parties.add(party);

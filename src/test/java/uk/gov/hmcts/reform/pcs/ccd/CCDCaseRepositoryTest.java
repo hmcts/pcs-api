@@ -17,6 +17,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.renderer.ClaimPaymentTabRenderer;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
+import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
@@ -46,13 +47,15 @@ class CCDCaseRepositoryTest {
     private ModelMapper modelMapper;
     @Mock
     private ClaimPaymentTabRenderer claimPaymentTabRenderer;
+    @Mock
+    private PcsCaseService pcsCaseService;
 
     private CCDCaseRepository underTest;
 
     @BeforeEach
     void setUp() {
         underTest = new CCDCaseRepository(pcsCaseRepository, securityContextService,
-                modelMapper, claimPaymentTabRenderer);
+                modelMapper, claimPaymentTabRenderer, pcsCaseService);
     }
 
     @Test

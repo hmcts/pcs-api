@@ -1,14 +1,18 @@
 package uk.gov.hmcts.reform.pcs.ccd.domain;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.FieldType;
 
 @Builder
 @Data
-public class Defendant {
+@NoArgsConstructor
+@AllArgsConstructor
+public class DefendantDetails {
 
     @CCD(label = """
                 ---
@@ -16,12 +20,12 @@ public class Defendant {
     private String nameSectionLabel;
 
     @CCD(label = "Do you know the defendant's name?")
-    private VerticalYesNo defendantsNameKnown;
+    private VerticalYesNo nameKnown;
 
-    @CCD(label = "Defendant's first name",showCondition = "defendantsNameKnown=\"YES\"")
+    @CCD(label = "Defendant's first name",showCondition = "nameKnown=\"YES\"")
     private String firstName;
 
-    @CCD(label = "Defendant's last name",showCondition = "defendantsNameKnown=\"YES\"")
+    @CCD(label = "Defendant's last name",showCondition = "nameKnown=\"YES\"")
     private String lastName;
 
     @CCD(label = """
@@ -30,14 +34,14 @@ public class Defendant {
     private String addressSectionLabel;
 
     @CCD(label = "Do you know the defendant's correspondence address?")
-    private VerticalYesNo defendantsAddressKnown;
+    private VerticalYesNo addressKnown;
 
     @CCD(label = "Is the defendant's correspondence address the same as the address of the property"
-        + " you're claiming possession of?", showCondition = "defendantsAddressKnown=\"YES\"")
-    private VerticalYesNo defendantsAddressSameAsPossession;
+        + " you're claiming possession of?", showCondition = "addressKnown=\"YES\"")
+    private VerticalYesNo addressSameAsPossession;
 
-    @CCD(label = "Enter address details", showCondition = "defendantsAddressKnown=\"YES\""
-        + " AND defendantsAddressSameAsPossession=\"NO\"")
+    @CCD(label = "Enter address details", showCondition = "addressKnown=\"YES\""
+        + " AND addressSameAsPossession=\"NO\"")
     private AddressUK correspondenceAddress;
 
     @CCD(label = """
@@ -46,9 +50,9 @@ public class Defendant {
     private String emailSectionLabel;
 
     @CCD(label = "Do you know the defendant's email address?(Optional)")
-    private VerticalYesNo defendantsEmailKnown;
+    private VerticalYesNo emailKnown;
 
-    @CCD(label = "Email",  typeOverride = FieldType.Email, showCondition = "defendantsEmailKnown=\"YES\"")
+    @CCD(label = "Email",  typeOverride = FieldType.Email, showCondition = "emailKnown=\"YES\"")
     private String email;
 
 }

@@ -4,15 +4,21 @@ import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
+import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.model.Defendant;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -37,7 +43,7 @@ public class PcsCaseService {
                 pcsCase.getPreActionProtocolCompleted() != null
                         ? pcsCase.getPreActionProtocolCompleted().toBoolean()
                         : null);
-        pcsCaseEntity.setDefendants(pcsCase.getDefendants());
+        pcsCaseEntity.setDefendants(mapFromDefendantDetails(pcsCase.getDefendants()));
 
         return pcsCaseRepository.save(pcsCaseEntity);
     }
@@ -70,6 +76,41 @@ public class PcsCaseService {
 
         pcsCaseRepository.save(pcsCaseEntity);
     }
+
+    public List<Defendant> mapFromDefendantDetails(List<ListValue<DefendantDetails>> defendants) {
+        if (defendants == null) {
+            return Collections.emptyList();
+        }
+        List<Defendant> result = new ArrayList<>();
+        for (ListValue<DefendantDetails> item : defendants) {
+            DefendantDetails details = item.getValue();
+            if (details != null) {
+                Defendant defendant = modelMapper.map(details, Defendant.class);
+                defendant.setId(item.getId());
+                if (details.getAddressSameAsPossession() == null) {
+                    defendant.setAddressSameAsPossession(false);
+                }
+                result.add(defendant);
+            }
+        }
+        return result;
+    }
+
+
+    public List<ListValue<DefendantDetails>> mapToDefendantDetails(List<Defendant> defendants) {
+        if (defendants == null) {
+            return Collections.emptyList();
+        }
+        List<ListValue<DefendantDetails>> result = new ArrayList<>();
+        for (Defendant defendant : defendants) {
+            if (defendant != null) {
+                DefendantDetails details = modelMapper.map(defendant, DefendantDetails.class);
+                result.add(new ListValue<>(defendant.getId(), details));
+            }
+        }
+        return result;
+    }
+
 
     private void setPcqIdForCurrentUser(UUID pcqId, PcsCaseEntity pcsCaseEntity) {
         UserInfo userDetails = securityContextService.getCurrentUserDetails();

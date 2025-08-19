@@ -12,7 +12,7 @@ import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
-import uk.gov.hmcts.reform.pcs.ccd.domain.Defendant;
+import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PaymentStatus;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
@@ -29,7 +29,6 @@ import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.ClaimantTypeNotEli
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.ClaimantTypeNotEligibleWales;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.ContactPreferences;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.CrossBorderPostcodeSelection;
-import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.DefendantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.EnterPropertyAddress;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.GroundsForPossession;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.MediationAndSettlement;
@@ -87,7 +86,7 @@ public class CreatePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             .add(new ClaimTypeNotEligibleWales())
             .add(new ClaimantInformation())
             .add(new ContactPreferences())
-            .add(new DefendantDetails())
+            .add(new uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.DefendantDetails())
             .add(new GroundsForPossession())
             .add(new PreActionProtocol())
             .add(new MediationAndSettlement())
@@ -119,9 +118,9 @@ public class CreatePossessionClaim implements CCDConfig<PCSCase, State, UserRole
         String contactEmail = isNotBlank(pcsCase.getOverriddenClaimantContactEmail())
             ? pcsCase.getOverriddenClaimantContactEmail() : pcsCase.getClaimantContactEmail();
 
-        List<ListValue<Defendant>> defendantsList = new ArrayList<>();
+        List<ListValue<DefendantDetails>> defendantsList = new ArrayList<>();
         if (pcsCase.getDefendant1() != null) {
-            if (VerticalYesNo.YES == pcsCase.getDefendant1().getDefendantsAddressSameAsPossession()) {
+            if (VerticalYesNo.YES == pcsCase.getDefendant1().getAddressSameAsPossession()) {
                 pcsCase.getDefendant1().setCorrespondenceAddress(pcsCase.getPropertyAddress());
             }
             defendantsList.add(new ListValue<>(UUID.randomUUID().toString(), pcsCase.getDefendant1()));
