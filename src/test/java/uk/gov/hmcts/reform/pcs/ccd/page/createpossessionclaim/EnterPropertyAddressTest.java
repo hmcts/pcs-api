@@ -125,6 +125,11 @@ class EnterPropertyAddressTest extends BasePageTest {
         PCSCase resultData = response.getData();
         assertThat(resultData.getShowCrossBorderPage()).isEqualTo(expectedShowCrossBorder);
 
+        if (status == EligibilityStatus.NO_MATCH_FOUND) {
+            assertThat(resultData.getShowPostcodeNotAssignedToCourt()).isEqualTo(YES);
+            assertThat(resultData.getPostcodeNotAssignedView()).isEqualTo("ALL_COUNTRIES");
+        }
+
         if (expectedShowCrossBorder == YES) {
             assertThat(resultData.getCrossBorderCountriesList()).isNotNull();
             assertThat(resultData.getCrossBorderCountry1()).isEqualTo(expectedCountry1);
@@ -218,6 +223,16 @@ class EnterPropertyAddressTest extends BasePageTest {
             // No match found
             arguments(
                 "INVALID",
+                EligibilityStatus.NO_MATCH_FOUND,
+                Collections.emptyList(),
+                NO,
+                null,
+                null
+            ),
+
+            // No match found - should set appropriate flags
+            arguments(
+                "NO_MATCH",
                 EligibilityStatus.NO_MATCH_FOUND,
                 Collections.emptyList(),
                 NO,
