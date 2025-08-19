@@ -56,6 +56,9 @@ public class PCSCase {
 
     @CCD(searchable = false, access = {CitizenAccess.class, CaseworkerAccess.class})
     private YesOrNo showCrossBorderPage;
+
+    @CCD(searchable = false, access = {CitizenAccess.class, CaseworkerAccess.class})
+    private YesOrNo showPropertyNotEligiblePage;
     @CCD(
         typeOverride = DynamicRadioList,
         access = {CitizenAccess.class, CaseworkerAccess.class}
