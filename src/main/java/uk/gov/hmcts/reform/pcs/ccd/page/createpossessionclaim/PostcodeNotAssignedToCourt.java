@@ -11,7 +11,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 
 import java.util.List;
-
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 
 @AllArgsConstructor
@@ -28,22 +27,10 @@ public class PostcodeNotAssignedToCourt implements CcdPageConfiguration {
             .readonly(PCSCase::getShowPostcodeNotAssignedToCourt, NEVER_SHOW)
             .readonly(PCSCase::getPostcodeNotAssignedView, NEVER_SHOW)
             .readonly(PCSCase::getSelectedLegislativeCountry, NEVER_SHOW)
-            .label("postcodeNotAssignedToCourt-info", ALL_COUNTRIES_CONTENT);
-    }
-
-    protected String generateContent(PCSCase caseData) {
-        String view = caseData.getPostcodeNotAssignedView();
-        
-        if (view == null) {
-            return generateAllCountriesContent();
-        }
-        
-        return switch (view) {
-            case "ALL_COUNTRIES" -> generateAllCountriesContent();
-            case "ENGLAND" -> generateEnglandContent();
-            case "WALES" -> generateWalesContent();
-            default -> generateAllCountriesContent();
-        };
+            .label("postcodeNotAssignedToCourt-info-england", ENGLAND_CONTENT, "postcodeNotAssignedView=\"ENGLAND\"")
+            .label("postcodeNotAssignedToCourt-info-wales", WALES_CONTENT, "postcodeNotAssignedView=\"WALES\"")
+            .label("postcodeNotAssignedToCourt-info-all", ALL_COUNTRIES_CONTENT, "postcodeNotAssignedView=\"ALL_COUNTRIES\"")
+            .label("postcodeNotAssignedToCourt-info-default", ALL_COUNTRIES_CONTENT, "postcodeNotAssignedView=\"\"");
     }
 
     private static final String ALL_COUNTRIES_CONTENT = """
@@ -160,23 +147,12 @@ public class PostcodeNotAssignedToCourt implements CcdPageConfiguration {
             </section>
             """;
 
-    private String generateAllCountriesContent() {
-        return ALL_COUNTRIES_CONTENT;
-    }
-
-    private String generateEnglandContent() {
-        return ENGLAND_CONTENT;
-    }
-
-    private String generateWalesContent() {
-        return WALES_CONTENT;
-    }
-
     protected AboutToStartOrSubmitResponse<PCSCase, State> midEvent(
         CaseDetails<PCSCase, State> details,
         CaseDetails<PCSCase, State> detailsBefore) {
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
+            .data(details.getData())
             .errors(List.of("You're not eligible for this online service"))
             .build();
     }
