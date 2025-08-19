@@ -303,7 +303,7 @@ ext {
   lombokVersion = "1.18.38"
   springSecurityVersion = "6.5.3"
   pactVersion = "4.6.17"
-  tomcatEmbedVersion = "10.1.44"
+  tomcatEmbedVersion = "11.0.10"
 }
 
 ext['snakeyaml.version'] = '2.0'
