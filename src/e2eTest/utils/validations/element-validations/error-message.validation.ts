@@ -1,25 +1,17 @@
 import {Page, expect} from '@playwright/test';
-import {IValidation} from '../../interfaces/validation.interface';
+import {IValidation, validationData} from '../../interfaces/validation.interface';
 
 export class ErrorMessageValidation implements IValidation {
-  async validate(page: Page, input: string | Record<string, string>): Promise<void> {
-    const checkPair = async (header: string, msg: string) => {
-      const h = page.locator('h3.error-summary-heading', { hasText: header });
-      await expect(h).toBeVisible();
-      const m = h.locator('xpath=following-sibling::*[not(self::h3)][1]');
-      await expect(m).toContainText(msg);
-    };
+  async validate(page: Page, fieldName: string, input: string | validationData): Promise<void> {
+    let errorMessage;
     if (typeof input === 'string') {
-      const message = page
-        .locator('h3.error-summary-heading')
-        .locator('xpath=following-sibling::*[not(self::h3)][1]')
-        .filter({ hasText: input })
-        .first();
-      await expect(message).toBeVisible();
-      return;
+      errorMessage = page.locator(`a.validation-error:has-text("${fieldName}")`);
+    } else {
+      errorMessage = page.locator(`
+        h3.error-summary-heading:has-text("${input.header}") + p:has-text("${input.message}"),
+        h3.error-summary-heading:has-text("${input.header}") ~ #errors li:has-text("${input.message}")
+      `);
     }
-    for (const [header, msg] of Object.entries(input)) {
-      await checkPair(header, msg);
-    }
+    await expect(errorMessage).toBeVisible();
   }
 }

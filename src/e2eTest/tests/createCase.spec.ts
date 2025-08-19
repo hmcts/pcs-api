@@ -12,6 +12,7 @@ import {groundsForPossession} from '@data/page-data/groundsForPossession.page.da
 import {preActionProtocol} from '@data/page-data/preActionProtocol.page.data';
 import {mediationAndSettlement} from '@data/page-data/mediationAndSettlement.page.data';
 import {checkingNotice} from '@data/page-data/checkingNotice.page.data';
+import {notEligible} from "@data/page-data/notEligible.page.data";
 
 test.beforeEach(async ({page}, testInfo) => {
   initializeExecutor(page);
@@ -27,8 +28,8 @@ test.beforeEach(async ({page}, testInfo) => {
   await performAction('housingPossessionClaim');
 });
 
-test.describe.skip('[Create Case Flow With Address and Claimant Type]  @Master @nightly', async () => {
-  test('England - Successful case creation', async () => {
+test.describe('[Create Case Flow With Address and Claimant Type]  @Master @nightly', async () => {
+  test.skip('England - Successful case creation', async () => {
     await performAction('selectAddress', {
       postcode: addressDetails.englandPostcode,
       addressIndex: addressDetails.addressIndex
@@ -77,7 +78,7 @@ test.describe.skip('[Create Case Flow With Address and Claimant Type]  @Master @
     )
   });
 
-  test('Wales - Successful case creation', async () => {
+  test.skip('Wales - Successful case creation', async () => {
     await performAction('enterTestAddressManually');
     await performAction('selectLegislativeCountry', legislativeCountry.wales);
     await performAction('selectClaimantType', claimantType.registeredCommunityLandlord);
@@ -116,8 +117,10 @@ test.describe.skip('[Create Case Flow With Address and Claimant Type]  @Master @
     await performValidation('mainHeader', 'You\'re not eligible for this online service');
     await performAction('clickButton', 'Continue');
     await performValidation('errorMessage', {
-      [claimantType.errorHeader1]: claimantType.errorMessage1,
-      [claimantType.errorHeader2]: claimantType.errorMessage2
+      header: notEligible.eventNotCreated, message: notEligible.unableToProceed
+    });
+    await performValidation('errorMessage', {
+      header: notEligible.errors, message: notEligible.notEligibleForOnlineService
     });
     await performAction('clickButton', 'Cancel');
   });
@@ -132,8 +135,10 @@ test.describe.skip('[Create Case Flow With Address and Claimant Type]  @Master @
     await performValidation('mainHeader', 'You\'re not eligible for this online service');
     await performAction('clickButton', 'Continue');
     await performValidation('errorMessage', {
-      [claimantType.errorHeader1]: claimantType.errorMessage1,
-      [claimantType.errorHeader2]: claimantType.errorMessage2
+      header: notEligible.eventNotCreated, message: notEligible.unableToProceed
+    });
+    await performValidation('errorMessage', {
+      header: notEligible.errors, message: notEligible.notEligibleForOnlineService
     });
   });
 
@@ -146,8 +151,10 @@ test.describe.skip('[Create Case Flow With Address and Claimant Type]  @Master @
     await performValidation('mainHeader', 'You\'re not eligible for this online service');
     await performAction('clickButton', 'Continue');
     await performValidation('errorMessage', {
-      [claimType.errorHeader1]: claimType.errorMessage1,
-      [claimType.errorHeader2]: claimType.errorMessage2
+      header: notEligible.eventNotCreated, message: notEligible.unableToProceed
+    });
+    await performValidation('errorMessage', {
+      header: notEligible.errors, message: notEligible.notEligibleForOnlineService
     });
     await performAction('clickButton', 'Cancel');
   });
