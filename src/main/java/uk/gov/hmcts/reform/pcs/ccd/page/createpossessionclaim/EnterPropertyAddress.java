@@ -56,18 +56,15 @@ public class EnterPropertyAddress implements CcdPageConfiguration {
         caseData.setFormattedClaimantContactAddress(formattedAddress);
 
         EligibilityResult eligibilityResult = eligibilityService.checkEligibility(postcode, null);
-        log.warn("EnterPropertyAddress eligibility check: {} for postcode {} with countries {}",
+        log.debug("EnterPropertyAddress eligibility check: {} for postcode {} with countries {}",
             eligibilityResult.getStatus(), postcode, eligibilityResult.getLegislativeCountries());
 
         switch (eligibilityResult.getStatus()) {
             case LEGISLATIVE_COUNTRY_REQUIRED -> {
-                log.info("EnterPropertyAddress eligibility check: LEGISLATIVE_COUNTRY_REQUIRED for postcode {}. "
-                        + "Setting up cross-border data", postcode);
                 validateLegislativeCountries(eligibilityResult.getLegislativeCountries(), postcode);
                 setupCrossBorderData(caseData, eligibilityResult.getLegislativeCountries());
             }
             case NOT_ELIGIBLE -> {
-
                 var country = eligibilityResult.getLegislativeCountry() != null
                     ? eligibilityResult.getLegislativeCountry().getLabel()
                     : null;
@@ -75,20 +72,10 @@ public class EnterPropertyAddress implements CcdPageConfiguration {
                 caseData.setShowPropertyNotEligiblePage(YesOrNo.YES);
 
                 caseData.setLegislativeCountry(country);
-                log.info("NOT_ELIGIBLE for postcode {}. Showing PropertyNotEligible page (country={})",
-                         postcode, country);
             }
-            case ELIGIBLE -> {
-                log.info("EnterPropertyAddress eligibility check: ELIGIBLE for postcode {}. "
-                        + "Proceeding to normal flow", postcode);
+            case ELIGIBLE, NO_MATCH_FOUND -> {
                 caseData.setShowCrossBorderPage(YesOrNo.NO);
             }
-            case NO_MATCH_FOUND -> {
-                log.info("EnterPropertyAddress eligibility check: NO_MATCH_FOUND for postcode {}. "
-                        + "Proceeding to normal flow", postcode);
-                caseData.setShowCrossBorderPage(YesOrNo.NO);
-            }
-
         }
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
