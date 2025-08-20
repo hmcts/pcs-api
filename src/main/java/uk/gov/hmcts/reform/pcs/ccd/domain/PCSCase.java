@@ -204,6 +204,15 @@ public class PCSCase {
     private List<ListValue<Document>> supportingDocuments;
 
     @CCD(
+        label = "Generated documents",
+        typeOverride = Collection,
+        typeParameterOverride = "Document",
+        access = {CitizenAccess.class, CaseworkerAccess.class}
+    )
+    @JsonProperty("generatedDocuments")
+    private List<ListValue<Document>> generatedDocuments;
+
+    @CCD(
         label = "Case file view",
         access = {CitizenAccess.class, CaseworkerAccess.class}
     )

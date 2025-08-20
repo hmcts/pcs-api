@@ -128,4 +128,18 @@ public class PcsCaseService {
         pcsCaseRepository.save(pcsCaseEntity);
     }
 
+
+    public void addGeneratedDocumentToCase(long caseReference, Document document) {
+        final PcsCaseEntity pcsCaseEntity = pcsCaseRepository.findByCaseReference(caseReference)
+            .orElseThrow(() -> new CaseNotFoundException(caseReference));
+
+        DocumentEntity documentEntity = new DocumentEntity();
+        documentEntity.setFileName(document.getFilename());
+        documentEntity.setFilePath(document.getBinaryUrl());
+        documentEntity.setUploadedOn(LocalDate.now());
+
+        pcsCaseEntity.addDocument(documentEntity);
+        pcsCaseRepository.save(pcsCaseEntity);
+    }
+
 }

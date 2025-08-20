@@ -59,6 +59,7 @@ public class CCDCaseRepository extends DecentralisedCaseRepository<PCSCase> {
             .propertyAddress(convertAddress(pcsCaseEntity.getPropertyAddress()))
             .caseManagementLocation(pcsCaseEntity.getCaseManagementLocation())
             .supportingDocuments(mapDocuments(pcsCaseEntity.getDocuments()))
+            .generatedDocuments(mapDocuments(pcsCaseEntity.getDocuments())) // Both collections use the same documents
             .preActionProtocolCompleted(pcsCaseEntity.getPreActionProtocolCompleted() != null
                 ? VerticalYesNo.from(pcsCaseEntity.getPreActionProtocolCompleted())
                 : null)
