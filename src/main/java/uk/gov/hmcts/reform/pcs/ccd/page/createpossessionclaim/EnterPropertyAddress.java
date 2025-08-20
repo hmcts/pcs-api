@@ -61,7 +61,7 @@ public class EnterPropertyAddress implements CcdPageConfiguration {
 
         switch (eligibilityResult.getStatus()) {
             case LEGISLATIVE_COUNTRY_REQUIRED -> {
-                log.warn("EnterPropertyAddress eligibility check: LEGISLATIVE_COUNTRY_REQUIRED for postcode {}. "
+                log.info("EnterPropertyAddress eligibility check: LEGISLATIVE_COUNTRY_REQUIRED for postcode {}. "
                         + "Setting up cross-border data", postcode);
                 validateLegislativeCountries(eligibilityResult.getLegislativeCountries(), postcode);
                 setupCrossBorderData(caseData, eligibilityResult.getLegislativeCountries());
@@ -75,16 +75,16 @@ public class EnterPropertyAddress implements CcdPageConfiguration {
                 caseData.setShowPropertyNotEligiblePage(YesOrNo.YES);
 
                 caseData.setLegislativeCountry(country);
-                log.warn("NOT_ELIGIBLE for postcode {}. Showing PropertyNotEligible page (country={})",
+                log.info("NOT_ELIGIBLE for postcode {}. Showing PropertyNotEligible page (country={})",
                          postcode, country);
             }
             case ELIGIBLE -> {
-                log.warn("EnterPropertyAddress eligibility check: ELIGIBLE for postcode {}. "
+                log.info("EnterPropertyAddress eligibility check: ELIGIBLE for postcode {}. "
                         + "Proceeding to normal flow", postcode);
                 caseData.setShowCrossBorderPage(YesOrNo.NO);
             }
             case NO_MATCH_FOUND -> {
-                log.warn("EnterPropertyAddress eligibility check: NO_MATCH_FOUND for postcode {}. "
+                log.info("EnterPropertyAddress eligibility check: NO_MATCH_FOUND for postcode {}. "
                         + "Proceeding to normal flow", postcode);
                 caseData.setShowCrossBorderPage(YesOrNo.NO);
             }
