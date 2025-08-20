@@ -127,6 +127,7 @@ public class EligibilityService {
             .orElse(EligibilityStatus.NOT_ELIGIBLE);
     }
 
+
     /**
      * Returns all mappings that have the most specific, (i.e. longest), postcode.
      * @param postCodeMappings The list of mappings which may have different length partial postcodes
