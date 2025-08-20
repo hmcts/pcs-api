@@ -33,8 +33,10 @@ export class CreateCaseAction implements IAction {
       ['selectClaimType', () => this.selectClaimType(fieldName)],
       ['selectClaimantName', () => this.selectClaimantName(fieldName)],
       ['selectContactPreferences', () => this.selectContactPreferences(fieldName)],
-      ['selectRadioButton', () => this.selectRadioButton(fieldName)],
-      ['selectMediationAndSettlement', () => this.selectMediationAndSettlement(fieldName)]
+      ['selectGroundsForPossission', () => this.selectGroundsForPossission(fieldName)],
+      ['selectPreActionProtocol', () => this.selectPreActionProtocol(fieldName)],
+      ['selectMediationAndSettlement', () => this.selectMediationAndSettlement(fieldName)],
+      ['selectNoticeOfYourIntention', () => this.selectNoticeOfYourIntention(fieldName)],
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) throw new Error(`No action found for '${action}'`);
@@ -80,6 +82,18 @@ export class CreateCaseAction implements IAction {
   }
 
   private async selectClaimType(caseData: actionData) {
+    await performAction('clickRadioButton', caseData);
+    await performAction('clickButton', 'Continue');
+  }
+  private async selectGroundsForPossission(caseData: actionData) {
+    await performAction('clickRadioButton', caseData);
+    await performAction('clickButton', 'Continue');
+  }
+  private async selectPreActionProtocol(caseData: actionData) {
+    await performAction('clickRadioButton', caseData);
+    await performAction('clickButton', 'Continue');
+  }
+  private async selectNoticeOfYourIntention(caseData: actionData) {
     await performAction('clickRadioButton', caseData);
     await performAction('clickButton', 'Continue');
   }
@@ -151,12 +165,7 @@ export class CreateCaseAction implements IAction {
     }
     await performAction('clickButton', 'Continue');
   }
-
-  private async selectRadioButton(option: actionData) {
-    await performAction('clickRadioButton', option);
-    await performAction('clickButton', 'Continue');
-  }
-
+  
   private async selectJurisdictionCaseTypeEvent() {
     await performActions('Case option selection'
       , ['select', 'Jurisdiction', createCase.possessionsJurisdiction]
