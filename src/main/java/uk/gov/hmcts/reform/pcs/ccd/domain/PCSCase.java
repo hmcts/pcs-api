@@ -18,6 +18,7 @@ import uk.gov.hmcts.ccd.sdk.type.WaysToPay;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseworkerAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenAccess;
+import static uk.gov.hmcts.ccd.sdk.type.FieldType.TextArea;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
@@ -58,6 +59,9 @@ public class PCSCase {
 
     @CCD(searchable = false, access = {CitizenAccess.class, CaseworkerAccess.class})
     private YesOrNo showCrossBorderPage;
+
+    @CCD(searchable = false, access = {CitizenAccess.class, CaseworkerAccess.class})
+    private YesOrNo showPropertyNotEligiblePage;
     @CCD(
         typeOverride = DynamicRadioList,
         access = {CitizenAccess.class, CaseworkerAccess.class}
@@ -152,6 +156,32 @@ public class PCSCase {
         access = {CitizenAccess.class, CaseworkerAccess.class}
     )
     private YesOrNo groundsForPossession;
+
+    @CCD(
+        label = "Have you attempted mediation with the defendants?",
+        access = {CitizenAccess.class, CaseworkerAccess.class}
+    )
+    private VerticalYesNo mediationAttempted;
+
+    @CCD(
+        label = "Give details about the attempted mediation and what the outcome was",
+        access = {CitizenAccess.class, CaseworkerAccess.class},
+        typeOverride = TextArea
+    )
+    private String mediationAttemptedDetails;
+
+    @CCD(
+        label = "Have you tried to reach a settlement with the defendants?",
+        access = {CitizenAccess.class, CaseworkerAccess.class}
+    )
+    private VerticalYesNo settlementAttempted;
+
+    @CCD(
+        label = "Explain what steps you've taken to reach a settlement",
+        access = {CitizenAccess.class, CaseworkerAccess.class},
+        typeOverride = TextArea
+    )
+    private String settlementAttemptedDetails;
 
     private String pageHeadingMarkdown;
 
