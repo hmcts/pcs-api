@@ -54,6 +54,7 @@ public class PcsCaseService {
                     documentEntity.setFilePath(document.getBinaryUrl());
                     documentEntity.setUploadedOn(LocalDate.now());
                     documentEntity.setPcsCase(pcsCaseEntity);
+                    documentEntity.setCategoryId("A");
 
                     pcsCaseEntity.addDocument(documentEntity);
                 }

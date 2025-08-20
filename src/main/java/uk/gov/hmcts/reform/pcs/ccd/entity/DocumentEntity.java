@@ -45,4 +45,7 @@ public class DocumentEntity {
 
     @Column(name = "uploaded_on")
     private LocalDate uploadedOn;
+
+    @Column(name = "category_id")
+    private String categoryId;
 }

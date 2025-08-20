@@ -87,12 +87,12 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
     private void buildSupportingDocumentsCaseFileViewTab(ConfigBuilder<PCSCase, State, UserRole> configBuilder) {
         configBuilder.categories(UserRole.PCS_CASE_WORKER)
             .categoryID("A")
-            .categoryLabel("Application (A Docs)")
+            .categoryLabel("A")
             .displayOrder(1)
             .build();
         configBuilder.categories(UserRole.PCS_CASE_WORKER)
-            .categoryID("TD")
-            .categoryLabel("Tribunal direction / decision notices (TD)")
+            .categoryID("B")
+            .categoryLabel("B")
             .displayOrder(2).parentCategoryID("A")
             .build();
         configBuilder.tab("caseFileView", "Supporting Documents")
