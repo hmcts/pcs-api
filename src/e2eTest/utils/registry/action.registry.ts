@@ -33,6 +33,7 @@ export class ActionRegistry {
     ['selectPreActionProtocol', new CreateCaseAction()],
     ['selectMediationAndSettlement', new CreateCaseAction()],
     ['selectNoticeOfYourIntention', new CreateCaseAction()],
+    ['selectCountryRadioButton', new CreateCaseAction()]
   ]);
 
   static getAction(actionName: string): IAction {

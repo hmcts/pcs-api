@@ -32,11 +32,11 @@ test.describe('Eligibility checks for cross and non cross border postcodes @nigh
       "text": borderPostcode.englandWalesInlineContent,
       "elementType": "inlineText"
     });
-    await performAction('selectRadioButton', borderPostcode.countryOptions.england);
+    await performAction('selectCountryRadioButton', borderPostcode.countryOptions.england);
     await performValidation('mainHeader', legislativeCountry.mainHeader);
     await page.goBack()
     await page.waitForLoadState()
-    await performAction('selectRadioButton', borderPostcode.countryOptions.wales);
+    await performAction('selectCountryRadioButton', borderPostcode.countryOptions.wales);
     await performValidation('mainHeader', borderPostcode.mainHeader);
   });
 

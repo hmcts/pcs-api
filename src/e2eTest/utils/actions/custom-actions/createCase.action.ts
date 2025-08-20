@@ -37,6 +37,7 @@ export class CreateCaseAction implements IAction {
       ['selectPreActionProtocol', () => this.selectPreActionProtocol(fieldName)],
       ['selectMediationAndSettlement', () => this.selectMediationAndSettlement(fieldName)],
       ['selectNoticeOfYourIntention', () => this.selectNoticeOfYourIntention(fieldName)],
+      ['selectCountryRadioButton', () => this.selectCountryRadioButton(fieldName)],
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) throw new Error(`No action found for '${action}'`);
@@ -97,6 +98,11 @@ export class CreateCaseAction implements IAction {
     await performAction('clickRadioButton', caseData);
     await performAction('clickButton', 'Continue');
   }
+  private async selectCountryRadioButton(option: actionData) {
+    await performAction('clickRadioButton', option);
+    await performAction('clickButton', 'Continue');
+  }
+
 
   private async selectClaimantName(caseData: actionData) {
     await performAction('clickRadioButton', caseData);
@@ -165,7 +171,7 @@ export class CreateCaseAction implements IAction {
     }
     await performAction('clickButton', 'Continue');
   }
-  
+
   private async selectJurisdictionCaseTypeEvent() {
     await performActions('Case option selection'
       , ['select', 'Jurisdiction', createCase.possessionsJurisdiction]
