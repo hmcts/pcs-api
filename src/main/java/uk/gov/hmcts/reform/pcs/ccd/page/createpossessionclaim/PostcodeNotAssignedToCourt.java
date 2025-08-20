@@ -169,7 +169,7 @@ public class PostcodeNotAssignedToCourt implements CcdPageConfiguration {
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
             .data(details.getData())
-            .errors(List.of("You're not eligible for this online service"))
+            .errors(List.of("Property not eligible for this online service"))
             .build();
     }
 }

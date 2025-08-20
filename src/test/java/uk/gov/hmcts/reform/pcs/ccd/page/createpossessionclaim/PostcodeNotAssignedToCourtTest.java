@@ -62,7 +62,7 @@ class PostcodeNotAssignedToCourtTest {
 
         AboutToStartOrSubmitResponse<PCSCase, State> response = underTest.midEvent(details, null);
 
-        assertThat(response.getErrors()).containsExactly("You're not eligible for this online service");
+        assertThat(response.getErrors()).containsExactly("Property not eligible for this online service");
 
         // Test empty string view (default case)
         if (view == null) {
