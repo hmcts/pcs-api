@@ -89,16 +89,17 @@ public class CrossBorderPostcodeSelection implements CcdPageConfiguration {
             case ELIGIBLE -> {
                 //TODO Jira-HDPI-1271  is claimant type page , please
                 // wire up.
-                log.info("Cross-border eligibility check: ELIGIBLE for postcode {} with country {}. "
+                log.warn("Cross-border eligibility check: ELIGIBLE for postcode {} with country {}. "
                         + "Proceeding to normal flow", postcode, selectedCountry);
             }
             case NOT_ELIGIBLE -> {
-                log.info("Cross-border eligibility check: NOT_ELIGIBLE for postcode {} with country {}. "
+                log.warn("Cross-border eligibility check: NOT_ELIGIBLE for postcode {} with country {}. "
                         + "Redirecting to PropertyNotEligible page", postcode, selectedCountry);
+                caseData.setLegislativeCountry(selectedCountry.getLabel());
                 caseData.setShowPropertyNotEligiblePage(YesOrNo.YES);
             }
             case NO_MATCH_FOUND -> {
-                log.info("Cross-border eligibility check: NO_MATCH_FOUND for postcode {} with country {}. "
+                log.warn("Cross-border eligibility check: NO_MATCH_FOUND for postcode {} with country {}. "
                         + "Proceeding to normal flow", postcode, selectedCountry);
             }
             default -> {
