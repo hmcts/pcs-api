@@ -94,7 +94,8 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
             .categoryID("TD")
             .categoryLabel("Tribunal direction / decision notices (TD)")
             .displayOrder(2)
-            .build();        configBuilder.tab("caseFileView", "Supporting Documents")
+            .build();
+        configBuilder.tab("caseFileView", "Supporting Documents")
             .forRoles(UserRole.PCS_CASE_WORKER)
             .field(PCSCase::getCaseFileView, null, "#ARGUMENT(CaseFileView)");
     }
