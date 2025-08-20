@@ -8,6 +8,7 @@ import uk.gov.hmcts.reform.idam.client.IdamApi;
 import uk.gov.hmcts.reform.pcs.hearings.service.api.HmcHearingApi;
 import uk.gov.hmcts.reform.pcs.location.service.api.LocationReferenceApi;
 import uk.gov.hmcts.reform.pcs.document.service.DocAssemblyApi;
+import uk.gov.hmcts.reform.pcs.payment.api.FeesRegisterApi;
 
 @SpringBootApplication(
     scanBasePackages = {
@@ -20,7 +21,8 @@ import uk.gov.hmcts.reform.pcs.document.service.DocAssemblyApi;
         HmcHearingApi.class,
         LocationReferenceApi.class,
         IdamApi.class,
-        DocAssemblyApi.class
+        DocAssemblyApi.class,
+        FeesRegisterApi.class
     }
 )
 @EnableJms

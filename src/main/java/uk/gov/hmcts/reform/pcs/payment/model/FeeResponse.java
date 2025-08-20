@@ -13,8 +13,7 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 @AllArgsConstructor
 public class FeeResponse {
-    @JsonProperty("code")
-    private String serviceRequestReference;
+    private String code;
     private String description;
     private String version;
     @JsonProperty(value = "fee_amount")
