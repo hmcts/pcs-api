@@ -42,7 +42,7 @@ _Note: The `update-testReadMe.ts` script automatically updates this documentatio
 The framework's modular design consists of these key layers:
 
 | Layer                   | Folder/File                              | Description                                                      |
-|-------------------------|------------------------------------------| ---------------------------------------------------------------- |
+|-------------------------|------------------------------------------|------------------------------------------------------------------|
 | **Configuration**       | `config/`                                | Manages environment setup and test lifecycle hooks               |
 | **Test Data**           | `data/`                                  | Stores test data files for data-driven testing                   |
 | **Test Specs**          | `tests/`                                 | Contains feature-organized test specifications                   |

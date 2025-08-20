@@ -28,7 +28,6 @@ export class ClickButtonAction implements IAction {
                               label:has-text("${fieldName}") ~ button,
                               a:has-text("${fieldName}")`);
     }
-    await locator.waitFor({ state: 'visible' });
     await locator.first().click();
   }
 }

@@ -1,16 +1,16 @@
 import Axios, {AxiosInstance, AxiosResponse} from 'axios';
-import { TestConfig } from 'config/test.config';
-import { getIdamAuthToken, getServiceAuthToken } from '../../helpers/idam-helpers/idam.helper';
-import { actionData, IAction } from '../../interfaces/action.interface';
-import { Page } from '@playwright/test';
-import { getUser, initIdamAuthToken, initServiceAuthToken } from 'utils/helpers/idam-helpers/idam.helper';
-import { performAction, performActions, performValidation } from '@utils/controller';
-import { createCase } from '@data/page-data/createCase.page.data';
-import { addressDetails } from '@data/page-data/addressDetails.page.data';
-import { housingPossessionClaim } from '@data/page-data/housingPossessionClaim.page.data';
-import { claimantName } from '@data/page-data/claimantName.page.data';
-import { contactPreferences } from '@data/page-data/contactPreferences.page.data';
-import { mediationAndSettlement } from '@data/page-data/mediationAndSettlement.page.data';
+import {TestConfig} from 'config/test.config';
+import {getIdamAuthToken, getServiceAuthToken} from '../../helpers/idam-helpers/idam.helper';
+import {actionData, IAction} from '../../interfaces/action.interface';
+import {Page} from '@playwright/test';
+import {getUser, initIdamAuthToken, initServiceAuthToken} from 'utils/helpers/idam-helpers/idam.helper';
+import {performAction, performActions, performValidation} from '@utils/controller';
+import {createCase} from '@data/page-data/createCase.page.data';
+import {addressDetails} from '@data/page-data/addressDetails.page.data';
+import {housingPossessionClaim} from '@data/page-data/housingPossessionClaim.page.data';
+import {claimantName} from '@data/page-data/claimantName.page.data';
+import {contactPreferences} from '@data/page-data/contactPreferences.page.data';
+import {mediationAndSettlement} from '@data/page-data/mediationAndSettlement.page.data';
 
 let caseInfo: { id: string; fid: string; state: string };
 const testConfig = TestConfig.ccdCase;
@@ -86,23 +86,26 @@ export class CreateCaseAction implements IAction {
     await performAction('clickRadioButton', caseData);
     await performAction('clickButton', 'Continue');
   }
+
   private async selectGroundsForPossission(caseData: actionData) {
     await performAction('clickRadioButton', caseData);
     await performAction('clickButton', 'Continue');
   }
+
   private async selectPreActionProtocol(caseData: actionData) {
     await performAction('clickRadioButton', caseData);
     await performAction('clickButton', 'Continue');
   }
+
   private async selectNoticeOfYourIntention(caseData: actionData) {
     await performAction('clickRadioButton', caseData);
     await performAction('clickButton', 'Continue');
   }
+
   private async selectCountryRadioButton(option: actionData) {
     await performAction('clickRadioButton', option);
     await performAction('clickButton', 'Continue');
   }
-
 
   private async selectClaimantName(caseData: actionData) {
     await performAction('clickRadioButton', caseData);
@@ -118,7 +121,6 @@ export class CreateCaseAction implements IAction {
       correspondenceAddress: string;
       phoneNumber: string;
     };
-
     await performAction('clickRadioButton', {
       question: contactPreferences.emailAddressForNotifications,
       option: prefData.notifications
@@ -126,7 +128,6 @@ export class CreateCaseAction implements IAction {
     if (prefData.notifications === 'No') {
       await performAction('inputText', 'Enter email address', contactPreferences.emailIdInput);
     }
-
     await performAction('clickRadioButton', {
       question: contactPreferences.doYouWantDocumentsToBeSentToAddress,
       option: prefData.correspondenceAddress
@@ -137,7 +138,6 @@ export class CreateCaseAction implements IAction {
         addressIndex: addressDetails.addressIndex
       });
     }
-
     await performAction('clickRadioButton', {
       question: contactPreferences.provideContactPhoneNumber,
       option: prefData.phoneNumber
@@ -145,7 +145,6 @@ export class CreateCaseAction implements IAction {
     if (prefData.phoneNumber === 'Yes') {
       await performAction('inputText', 'Enter phone number', contactPreferences.phoneNumberInput);
     }
-
     await performAction('clickButton', 'Continue');
   }
 
@@ -154,7 +153,6 @@ export class CreateCaseAction implements IAction {
       attemptedMediationWithDefendantsOption: string;
       settlementWithDefendantsOption: string;
     };
-
     await performAction('clickRadioButton', {
       question: mediationAndSettlement.attemptedMediationWithDefendants,
       option: prefData.attemptedMediationWithDefendantsOption
@@ -167,7 +165,7 @@ export class CreateCaseAction implements IAction {
       option: prefData.settlementWithDefendantsOption
     });
     if (prefData.settlementWithDefendantsOption == 'Yes') {
-      await performAction('inputText',  mediationAndSettlement.settlementWithDefendantsTextAreaLabel, mediationAndSettlement.settlementWithDefendantsInputData);
+      await performAction('inputText', mediationAndSettlement.settlementWithDefendantsTextAreaLabel, mediationAndSettlement.settlementWithDefendantsInputData);
     }
     await performAction('clickButton', 'Continue');
   }
