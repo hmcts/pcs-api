@@ -40,8 +40,18 @@ public class DefendantDetails {
         + " you're claiming possession of?", showCondition = "addressKnown=\"YES\"")
     private VerticalYesNo addressSameAsPossession;
 
-    @CCD(label = "Enter address details", showCondition = "addressKnown=\"YES\""
-        + " AND addressSameAsPossession=\"NO\"")
+    @CCD(typeOverride = FieldType.Label,
+            label = """
+                   <h3 class='govuk-heading-m govuk-!-margin-bottom-1'>Enter address details</h3>
+                   <p class='govuk-hint govuk-!-font-size-16 govuk-!-margin-top-1'>If their correspondence address is
+                   outside of the UK, you'll need to make a general application for permission to serve a claim
+                   outside the jurisdiction after you've submitted and paid for the claim.</p>
+                   """,
+            showCondition = "addressKnown=\"YES\" AND addressSameAsPossession=\"NO\""
+    )
+    private String correspondenceAddressHintField;
+
+    @CCD( showCondition = "addressKnown=\"YES\" AND addressSameAsPossession=\"NO\"")
     private AddressUK correspondenceAddress;
 
     @CCD(label = """
@@ -49,7 +59,7 @@ public class DefendantDetails {
                 <h2>Defendant's email address</h2>""",typeOverride = FieldType.Label)
     private String emailSectionLabel;
 
-    @CCD(label = "Do you know the defendant's email address?(Optional)")
+    @CCD(label = "Do you know the defendant's email address? (Optional)")
     private VerticalYesNo emailKnown;
 
     @CCD(label = "Email",  typeOverride = FieldType.Email, showCondition = "emailKnown=\"YES\"")
