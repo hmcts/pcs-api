@@ -155,7 +155,7 @@ class EnterPropertyAddressTest extends BasePageTest {
             .status(EligibilityStatus.LEGISLATIVE_COUNTRY_REQUIRED)
             .legislativeCountries(countries)
             .build();
-
+       //Dummy comment
         when(eligibilityService.checkEligibility(postcode, null)).thenReturn(eligibilityResult);
 
         MidEvent<PCSCase, State> midEvent = getMidEventForPage(event, "enterPropertyAddress");
