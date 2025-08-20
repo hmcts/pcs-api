@@ -9,6 +9,8 @@ import { createCase } from '@data/page-data/createCase.page.data';
 import { addressDetails } from '@data/page-data/addressDetails.page.data';
 import { housingPossessionClaim } from '@data/page-data/housingPossessionClaim.page.data';
 import { borderPostcode } from '@data/page-data/borderPostcode.page.data';
+import { claimantName } from '@data/page-data/claimantName.page.data';
+import { contactPreferences } from '@data/page-data/contactPreferences.page.data';
 
 let caseInfo: { id: string; fid: string; state: string };
 const testConfig = TestConfig.ccdCase;
@@ -26,6 +28,9 @@ export class CreateCaseAction implements IAction {
       ['selectClaimantType', () => this.selectClaimantType(fieldName)],
       ['selectJurisdictionCaseTypeEvent', () => this.selectJurisdictionCaseTypeEvent()],
       ['enterTestAddressManually', () => this.enterTestAddressManually()],
+      ['selectClaimType', () => this.selectClaimType(fieldName)],
+      ['selectClaimantName', () => this.selectClaimantName(fieldName)],
+      ['selectContactPreferences', () => this.selectContactPreferences(fieldName)],
       ['selectCountryRadioButton', () => this.selectCountryRadioButton(fieldName)]
     ]);
     const actionToPerform = actionsMap.get(action);
@@ -68,6 +73,56 @@ export class CreateCaseAction implements IAction {
 
   private async selectClaimantType(caseData: actionData) {
     await performAction('clickRadioButton', caseData);
+    await performAction('clickButton', 'Continue');
+  }
+
+  private async selectClaimType(caseData: actionData) {
+    await performAction('clickRadioButton', caseData);
+    await performAction('clickButton', 'Continue');
+  }
+
+  private async selectClaimantName(caseData: actionData) {
+    await performAction('clickRadioButton', caseData);
+    if(caseData == claimantName.no){
+      await performAction('inputText', claimantName.whatIsCorrectClaimantName, claimantName.correctClaimantNameInput);
+    }
+    await performAction('clickButton', 'Continue');
+  }
+
+  private async selectContactPreferences(preferences: actionData) {
+    const prefData = preferences as {
+      notifications: string;
+      correspondenceAddress: string;
+      phoneNumber: string;
+    };
+
+    await performAction('clickRadioButton', {
+      question: contactPreferences.emailAddressForNotifications,
+      option: prefData.notifications
+    });
+    if (prefData.notifications === 'No') {
+      await performAction('inputText', 'Enter email address', contactPreferences.emailIdInput);
+    }
+
+    await performAction('clickRadioButton', {
+      question: contactPreferences.doYouWantDocumentsToBeSentToAddress,
+      option: prefData.correspondenceAddress
+    });
+    if (prefData.correspondenceAddress === 'No') {
+      await performAction('selectAddress', {
+        postcode: addressDetails.englandPostcode,
+        addressIndex: addressDetails.addressIndex
+      });
+    }
+
+    await performAction('clickRadioButton', {
+      question: contactPreferences.provideContactPhoneNumber,
+      option: prefData.phoneNumber
+    });
+    if (prefData.phoneNumber === 'Yes') {
+      await performAction('inputText', 'Enter phone number', contactPreferences.phoneNumberInput);
+    }
+
     await performAction('clickButton', 'Continue');
   }
 

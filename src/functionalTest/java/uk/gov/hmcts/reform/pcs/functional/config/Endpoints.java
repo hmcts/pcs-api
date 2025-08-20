@@ -4,7 +4,6 @@ public enum Endpoints {
 
     DashboardNotifications("/dashboard/{caseReference}/notifications"),
     DashboardTasks("/dashboard/{caseReference}/tasks"),
-    Courts("/courts"),
     ClaimEligibility("/testing-support/claim-eligibility");
 
     private final String resource;

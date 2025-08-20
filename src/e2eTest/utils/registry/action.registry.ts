@@ -25,6 +25,9 @@ export class ActionRegistry {
     ['selectJurisdictionCaseTypeEvent', new CreateCaseAction()],
     ['enterTestAddressManually', new CreateCaseAction()],
     ['createCase', new CreateCaseAction()],
+    ['selectClaimType', new CreateCaseAction()],
+    ['selectClaimantName', new CreateCaseAction()],
+    ['selectContactPreferences', new CreateCaseAction()],
     ['housingPossessionClaim', new CreateCaseAction()],
     ['selectCountryRadioButton', new CreateCaseAction()]
   ]);
