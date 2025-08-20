@@ -93,7 +93,7 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
         configBuilder.categories(UserRole.PCS_CASE_WORKER)
             .categoryID("TD")
             .categoryLabel("Tribunal direction / decision notices (TD)")
-            .displayOrder(2)
+            .displayOrder(2).parentCategoryID("A")
             .build();
         configBuilder.tab("caseFileView", "Supporting Documents")
             .forRoles(UserRole.PCS_CASE_WORKER)
