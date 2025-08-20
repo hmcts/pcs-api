@@ -12,7 +12,7 @@ import {groundsForPossession} from '@data/page-data/groundsForPossession.page.da
 import {preActionProtocol} from '@data/page-data/preActionProtocol.page.data';
 import {mediationAndSettlement} from '@data/page-data/mediationAndSettlement.page.data';
 import {checkingNotice} from '@data/page-data/checkingNotice.page.data';
-import {notEligible} from '@data/page-data/notEligible.page.data';
+import {userIneligible} from '@data/page-data/userIneligible.page.data';
 
 test.beforeEach(async ({page}, testInfo) => {
   initializeExecutor(page);
@@ -117,10 +117,10 @@ test.describe.skip('[Create Case Flow With Address and Claimant Type]  @Master @
     await performValidation('mainHeader', 'You\'re not eligible for this online service');
     await performAction('clickButton', 'Continue');
     await performValidation('errorMessage', {
-      header: notEligible.eventNotCreated, message: notEligible.unableToProceed
+      header: userIneligible.eventNotCreated, message: userIneligible.unableToProceed
     });
     await performValidation('errorMessage', {
-      header: notEligible.errors, message: notEligible.notEligibleForOnlineService
+      header: userIneligible.errors, message: userIneligible.notEligibleForOnlineService
     });
     await performAction('clickButton', 'Cancel');
   });
@@ -135,10 +135,10 @@ test.describe.skip('[Create Case Flow With Address and Claimant Type]  @Master @
     await performValidation('mainHeader', 'You\'re not eligible for this online service');
     await performAction('clickButton', 'Continue');
     await performValidation('errorMessage', {
-      header: notEligible.eventNotCreated, message: notEligible.unableToProceed
+      header: userIneligible.eventNotCreated, message: userIneligible.unableToProceed
     });
     await performValidation('errorMessage', {
-      header: notEligible.errors, message: notEligible.notEligibleForOnlineService
+      header: userIneligible.errors, message: userIneligible.notEligibleForOnlineService
     });
     await performAction('clickButton', 'Cancel');
   });
@@ -152,10 +152,10 @@ test.describe.skip('[Create Case Flow With Address and Claimant Type]  @Master @
     await performValidation('mainHeader', 'You\'re not eligible for this online service');
     await performAction('clickButton', 'Continue');
     await performValidation('errorMessage', {
-      header: notEligible.eventNotCreated, message: notEligible.unableToProceed
+      header: userIneligible.eventNotCreated, message: userIneligible.unableToProceed
     });
     await performValidation('errorMessage', {
-      header: notEligible.errors, message: notEligible.notEligibleForOnlineService
+      header: userIneligible.errors, message: userIneligible.notEligibleForOnlineService
     });
     await performAction('clickButton', 'Cancel');
   });
