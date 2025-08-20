@@ -13,10 +13,15 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.ClaimantInformation;
 import uk.gov.hmcts.reform.pcs.ccd.page.uploadsupportingdocs.DocumentUpload;
+import uk.gov.hmcts.reform.pcs.ccd.page.generatedocument.GenerateDocument;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
+import uk.gov.hmcts.reform.pcs.ccd.service.DocumentGenerationService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PaymentStatus;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.uploadDocumentPoc;
 
@@ -26,6 +31,7 @@ public class UploadDocumentPoc implements CCDConfig<PCSCase, State, UserRole> {
 
     private final PcsCaseService pcsCaseService;
     private final SecurityContextService securityContextService;
+    private final DocumentGenerationService documentGenerationService;
 
     @Override
     public void configure(ConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -40,7 +46,8 @@ public class UploadDocumentPoc implements CCDConfig<PCSCase, State, UserRole> {
 
         new PageBuilder(eventBuilder)
             .add(new ClaimantInformation())
-            .add(new DocumentUpload());
+            .add(new DocumentUpload())
+            .add(new GenerateDocument());
     }
 
     private PCSCase start(EventPayload<PCSCase, State> eventPayload) {
@@ -59,5 +66,53 @@ public class UploadDocumentPoc implements CCDConfig<PCSCase, State, UserRole> {
         pcsCase.setPaymentStatus(PaymentStatus.UNPAID);
 
         PcsCaseEntity pcsCaseEntity = pcsCaseService.createCase(caseReference, pcsCase);
+
+        // After creating the case, generate a document to test the flow test
+        try {
+            Map<String, Object> formPayload = extractCaseDataForDocument(pcsCase, caseReference);
+
+            String templateId = "CV-CMC-ENG-0010.docx";
+            String outputType = "PDF";
+
+            uk.gov.hmcts.ccd.sdk.type.Document generatedDocument =
+                documentGenerationService.generateDocument(templateId, formPayload, outputType);
+
+            pcsCaseService.addGeneratedDocumentToCase(caseReference, generatedDocument);
+
+        } catch (Exception e) {
+            // Log error but don't fail the case
+            // This is just for testing the document generation flow
+        }
+    }
+
+    private Map<String, Object> extractCaseDataForDocument(PCSCase pcsCase, long caseReference) {
+        Map<String, Object> formPayload = new HashMap<>();
+
+        formPayload.put("caseNumber", String.valueOf(caseReference));
+
+        String claimantName = pcsCase.getClaimantName();
+        if (claimantName != null && !claimantName.trim().isEmpty()) {
+            formPayload.put("applicantName", claimantName);
+        } else {
+            // Fallback
+            String overriddenName = pcsCase.getOverriddenClaimantName();
+            if (overriddenName != null && !overriddenName.trim().isEmpty()) {
+                formPayload.put("applicantName", overriddenName);
+            } else {
+                formPayload.put("applicantName", "Not Specified");
+            }
+        }
+
+        if (pcsCase.getPropertyAddress() != null) {
+            formPayload.put("propertyAddress", pcsCase.getPropertyAddress().getAddressLine1());
+            formPayload.put("postCode", pcsCase.getPropertyAddress().getPostCode());
+        }
+
+        formPayload.put("dateOfBirth", "1990-01-01");
+
+        formPayload.put("documentType", "Case Summary");
+        formPayload.put("generatedAt", java.time.LocalDate.now().toString());
+
+        return formPayload;
     }
 }
