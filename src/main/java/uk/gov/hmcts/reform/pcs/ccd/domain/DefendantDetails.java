@@ -51,7 +51,7 @@ public class DefendantDetails {
     )
     private String correspondenceAddressHintField;
 
-    @CCD( showCondition = "addressKnown=\"YES\" AND addressSameAsPossession=\"NO\"")
+    @CCD(showCondition = "addressKnown=\"YES\" AND addressSameAsPossession=\"NO\"")
     private AddressUK correspondenceAddress;
 
     @CCD(label = """
