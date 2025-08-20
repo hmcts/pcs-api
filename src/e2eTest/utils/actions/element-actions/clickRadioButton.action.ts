@@ -14,7 +14,7 @@ export class ClickRadioButton implements IAction {
           `div.form-group:has(legend label span.form-label:has-text("${(params as {question: string}).question}"))`
         )
         .locator(`label.form-label:has-text("${(params as {option: string}).option}")`);
-
+    await radioButton.waitFor({ state: 'visible' });
     await radioButton.click();
   }
 }

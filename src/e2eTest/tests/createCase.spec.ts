@@ -72,7 +72,7 @@ test.describe('[Create Case Flow With Address and Claimant Type]  @Master @night
     )
   });
 
-  test('Wales - Successful case creation', async () => {
+  test('Wales - Successful case creation', async ({page}) => {
     await performAction('enterTestAddressManually');
     await performAction('selectLegislativeCountry', legislativeCountry.wales);
     await performAction('selectClaimantType', claimantType.registeredCommunityLandlord);
@@ -83,12 +83,14 @@ test.describe('[Create Case Flow With Address and Claimant Type]  @Master @night
       correspondenceAddress: contactPreferences.no,
       phoneNumber: contactPreferences.yes
     });
+    await performValidation('mainHeader', groundsForPossession.mainHeader);
     await performAction('selectGroundsForPossission', groundsForPossession.yes);
     await performAction('selectPreActionProtocol', preActionProtocol.yes);
     await performAction('selectMediationAndSettlement', {
       attemptedMediationWithDefendantsOption: mediationAndSettlement.yes,
       settlementWithDefendantsOption: mediationAndSettlement.no,
     });
+    await performValidation('mainHeader', checkingNotice.mainHeader);
     await performAction('selectNoticeOfYourIntention', checkingNotice.no);
     await performValidation('mainHeader', rentDetails.mainHeader);
     await performAction('clickButton', checkingNotice.continue);
