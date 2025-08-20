@@ -135,10 +135,10 @@ fees-register:
   api:
     url: ${FEES_REGISTER_API_URL:http://localhost:8991}
   fees:
-    feeWithoutHearing:
+    defaultFee:
       channel: default
       event: issue
       jurisdiction1: tribunal
       jurisdiction2: immigration and asylum chamber
-      keyword: HearingPaper
+      keyword: HearingOral
       service: other
