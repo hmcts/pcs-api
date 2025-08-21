@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.payment.serviceRequest.controller;
+package uk.gov.hmcts.reform.pcs.payment.servicerequest.controller;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -11,8 +11,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import uk.gov.hmcts.reform.pcs.payment.fee.entity.Fee;
-import uk.gov.hmcts.reform.pcs.payment.serviceRequest.model.ServiceRequestResponse;
-import uk.gov.hmcts.reform.pcs.payment.serviceRequest.service.ServiceRequestService;
+import uk.gov.hmcts.reform.pcs.payment.servicerequest.model.ServiceRequestResponse;
+import uk.gov.hmcts.reform.pcs.payment.servicerequest.service.ServiceRequestService;
 
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 
@@ -28,7 +28,11 @@ public class ServiceRequestController {
         this.serviceRequestService = serviceRequestService;
     }
 
-    @PostMapping(value = "/create-service-request", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(
+        value = "/create-service-request",
+        consumes = MediaType.APPLICATION_JSON_VALUE,
+        produces = MediaType.APPLICATION_JSON_VALUE
+    )
     public ResponseEntity<ServiceRequestResponse> createServiceRequest(
         @RequestHeader(value = AUTHORIZATION, defaultValue = "DummyId") String authorisation,
         @RequestHeader(value = "ServiceAuthorization") String serviceAuthorization,
@@ -37,7 +41,8 @@ public class ServiceRequestController {
         @RequestBody Fee fee
     ) {
 
-        log.info("Received request to create service request for case: {} with provided fee: {}", ccdCaseNumber, fee.getCode());
+        log.info("Received request to create service request for case: {} with provided fee: {}",
+                    ccdCaseNumber, fee.getCode());
 
         try {
             ServiceRequestResponse response = serviceRequestService.createServiceRequest(

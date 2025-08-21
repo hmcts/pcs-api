@@ -1,11 +1,11 @@
-package uk.gov.hmcts.reform.pcs.payment.serviceRequest.api;
+package uk.gov.hmcts.reform.pcs.payment.servicerequest.api;
 
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
-import uk.gov.hmcts.reform.pcs.payment.serviceRequest.model.ServiceRequestRequest;
-import uk.gov.hmcts.reform.pcs.payment.serviceRequest.model.ServiceRequestResponse;
+import uk.gov.hmcts.reform.pcs.payment.servicerequest.model.ServiceRequestRequest;
+import uk.gov.hmcts.reform.pcs.payment.servicerequest.model.ServiceRequestResponse;
 
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 

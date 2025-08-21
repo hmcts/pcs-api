@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.payment.serviceRequest.service;
+package uk.gov.hmcts.reform.pcs.payment.servicerequest.service;
 
 import feign.FeignException;
 import lombok.extern.slf4j.Slf4j;
@@ -7,10 +7,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.pcs.payment.fee.dto.FeeDto;
 import uk.gov.hmcts.reform.pcs.payment.fee.entity.Fee;
-import uk.gov.hmcts.reform.pcs.payment.serviceRequest.api.ServiceRequestApi;
-import uk.gov.hmcts.reform.pcs.payment.serviceRequest.dto.CasePaymentRequestDto;
-import uk.gov.hmcts.reform.pcs.payment.serviceRequest.model.ServiceRequestRequest;
-import uk.gov.hmcts.reform.pcs.payment.serviceRequest.model.ServiceRequestResponse;
+import uk.gov.hmcts.reform.pcs.payment.servicerequest.api.ServiceRequestApi;
+import uk.gov.hmcts.reform.pcs.payment.servicerequest.dto.CasePaymentRequestDto;
+import uk.gov.hmcts.reform.pcs.payment.servicerequest.model.ServiceRequestRequest;
+import uk.gov.hmcts.reform.pcs.payment.servicerequest.model.ServiceRequestResponse;
 
 @Service
 @Slf4j
