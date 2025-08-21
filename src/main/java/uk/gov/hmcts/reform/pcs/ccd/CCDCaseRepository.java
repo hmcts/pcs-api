@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd;
 
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.DecentralisedCaseRepository;
@@ -36,6 +37,7 @@ import java.util.stream.Stream;
 /**
  * Invoked by CCD to load PCS cases under the decentralised model.
  */
+@Slf4j
 @Component
 @AllArgsConstructor
 public class CCDCaseRepository extends DecentralisedCaseRepository<PCSCase> {
@@ -57,7 +59,7 @@ public class CCDCaseRepository extends DecentralisedCaseRepository<PCSCase> {
 
         log.info("Building PCSCase for case reference: {}", caseReference);
         log.info("Total documents in case: {}", pcsCaseEntity.getDocuments().size());
-        
+
         PCSCase pcsCase = PCSCase.builder()
             .propertyAddress(convertAddress(pcsCaseEntity.getPropertyAddress()))
             .caseManagementLocation(pcsCaseEntity.getCaseManagementLocation())
@@ -67,8 +69,8 @@ public class CCDCaseRepository extends DecentralisedCaseRepository<PCSCase> {
                 ? VerticalYesNo.from(pcsCaseEntity.getPreActionProtocolCompleted())
                 : null)
             .build();
-            
-        log.info("PCSCase built with {} supporting documents and {} generated documents", 
+
+        log.info("PCSCase built with {} supporting documents and {} generated documents",
             pcsCase.getSupportingDocuments() != null ? pcsCase.getSupportingDocuments().size() : 0,
             pcsCase.getGeneratedDocuments() != null ? pcsCase.getGeneratedDocuments().size() : 0);
 
@@ -106,11 +108,11 @@ public class CCDCaseRepository extends DecentralisedCaseRepository<PCSCase> {
         }
 
         log.info("Mapping {} documents for generated documents", documentEntities.size());
-        
+
         List<ListValue<Document>> generatedDocs = documentEntities.stream()
             .filter(docEntity -> {
                 boolean isGenerated = "GENERATED".equals(docEntity.getDocumentType());
-                log.info("Document {} has type: {} (isGenerated: {})", 
+                log.info("Document {} has type: {} (isGenerated: {})",
                     docEntity.getFileName(), docEntity.getDocumentType(), isGenerated);
                 return isGenerated;
             })
@@ -127,7 +129,7 @@ public class CCDCaseRepository extends DecentralisedCaseRepository<PCSCase> {
                     .build();
             })
             .collect(Collectors.toList());
-            
+
         log.info("Found {} generated documents", generatedDocs.size());
         return generatedDocs;
     }
