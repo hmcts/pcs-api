@@ -8,7 +8,7 @@ public class DocumentUploadCategoryA implements CcdPageConfiguration {
     @Override
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
-                .page("documentUpload")
+                .page("documentUploadCategoryA")
                 .pageLabel("Upload supporting documents")
                 .label("uploadLimits", """
                     Documents should be:
