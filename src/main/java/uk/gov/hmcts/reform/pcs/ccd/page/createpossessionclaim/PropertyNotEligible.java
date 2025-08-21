@@ -85,9 +85,7 @@ public class PropertyNotEligible implements CcdPageConfiguration {
                 </p>
                 <p class="govuk-body">
                   To make a claim in Scotland, you can use your
-                  <a class="govuk-link" href="https://www.scotcourts.gov.uk/home" target="_blank" rel="noopener noreferrer">
-                    local sheriff court (opens in new tab)
-                  </a>.
+                  <a class="govuk-link" href="https://www.scotcourts.gov.uk/home" target="_blank" rel="noopener noreferrer">local sheriff court (opens in new tab)</a>.
                 </p>
                 <div class="govuk-warning-text">
                   <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
@@ -109,9 +107,7 @@ public class PropertyNotEligible implements CcdPageConfiguration {
                 </p>
                 <p class="govuk-body">
                   To make a claim in Northern Ireland, you can use the
-                  <a class="govuk-link" href="https://www.nidirect.gov.uk/articles/enforcement-civil-court-orders-northern-ireland" target="_blank" rel="noopener noreferrer">
-                    Enforcement of Judgments Office (EJO) (opens in new tab)
-                  </a>.
+                  <a class="govuk-link" href="https://www.nidirect.gov.uk/articles/enforcement-civil-court-orders-northern-ireland" target="_blank" rel="noopener noreferrer">Enforcement of Judgments Office (EJO) (opens in new tab)</a>.
                 </p>
                 <div class="govuk-warning-text">
                   <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
