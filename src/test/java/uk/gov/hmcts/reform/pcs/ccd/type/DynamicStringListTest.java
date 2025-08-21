@@ -1,6 +1,9 @@
 package uk.gov.hmcts.reform.pcs.ccd.type;
 
 import org.junit.jupiter.api.Test;
+import uk.gov.hmcts.reform.pcs.ccd.type.poc.DynamicList;
+import uk.gov.hmcts.reform.pcs.ccd.type.poc.DynamicStringListElement;
+
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -10,7 +13,7 @@ class DynamicStringListTest {
     @Test
     void shouldCreateDynamicStringListWithNoArgsConstructor() {
         // When
-        DynamicStringList list = new DynamicStringList();
+        DynamicList list = new DynamicList();
 
         // Then
         assertThat(list).isNotNull();
@@ -28,7 +31,7 @@ class DynamicStringListTest {
         List<DynamicStringListElement> items = List.of(element);
 
         // When
-        DynamicStringList list = DynamicStringList.builder()
+        DynamicList list = DynamicList.builder()
             .value(element)
             .listItems(items)
             .build();
@@ -46,7 +49,7 @@ class DynamicStringListTest {
         List<DynamicStringListElement> items = List.of(element);
 
         // When
-        DynamicStringList list = new DynamicStringList(element, items);
+        DynamicList list = new DynamicList(element, items);
 
         // Then
         assertThat(list).isNotNull();
@@ -58,7 +61,7 @@ class DynamicStringListTest {
     void shouldGetValueCode() {
         // Given
         DynamicStringListElement element = new DynamicStringListElement("code1", "label1");
-        DynamicStringList list = DynamicStringList.builder()
+        DynamicList list = DynamicList.builder()
             .value(element)
             .build();
 
@@ -72,7 +75,7 @@ class DynamicStringListTest {
     @Test
     void shouldReturnNullForValueCodeWhenValueIsNull() {
         // Given
-        DynamicStringList list = DynamicStringList.builder().build();
+        DynamicList list = DynamicList.builder().build();
 
         // When
         String valueCode = list.getValueCode();
@@ -86,11 +89,11 @@ class DynamicStringListTest {
         // Given
         DynamicStringListElement element1 = new DynamicStringListElement("code1", "label1");
         List<DynamicStringListElement> items1 = List.of(element1);
-        DynamicStringList list1 = new DynamicStringList(element1, items1);
+        DynamicList list1 = new DynamicList(element1, items1);
 
         DynamicStringListElement element2 = new DynamicStringListElement("code1", "label1");
         List<DynamicStringListElement> items2 = List.of(element2);
-        DynamicStringList list2 = new DynamicStringList(element2, items2);
+        DynamicList list2 = new DynamicList(element2, items2);
 
         // When & Then
         assertThat(list1).isEqualTo(list2);

@@ -310,8 +310,6 @@ ext['snakeyaml.version'] = '2.0'
 
 dependencies {
 
-  implementation ('com.github.hmcts:ccd-config-generator:DEV-SNAPSHOT');
-
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-web', version: springFrameworkBootVersion
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-actuator', version: springFrameworkBootVersion
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-aop', version: springFrameworkBootVersion

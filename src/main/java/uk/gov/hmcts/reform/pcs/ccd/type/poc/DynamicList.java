@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.ccd.type;
+package uk.gov.hmcts.reform.pcs.ccd.type.poc;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -20,7 +20,7 @@ import java.util.List;
 @Data
 @ComplexType
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class DynamicStringList {
+public class DynamicList {
 
     /**
      * The selected value for the dropdown / radio buttons.
@@ -34,8 +34,8 @@ public class DynamicStringList {
     private List<DynamicStringListElement> listItems;
 
     @JsonCreator
-    public DynamicStringList(@JsonProperty("value") DynamicStringListElement value,
-                             @JsonProperty("list_items") List<DynamicStringListElement> listItems) {
+    public DynamicList(@JsonProperty("value") DynamicStringListElement value,
+                       @JsonProperty("list_items") List<DynamicStringListElement> listItems) {
 
         this.value = value;
         this.listItems = listItems;

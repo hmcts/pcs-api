@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.type;
 
 import org.junit.jupiter.api.Test;
+import uk.gov.hmcts.reform.pcs.ccd.type.poc.DynamicStringListElement;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

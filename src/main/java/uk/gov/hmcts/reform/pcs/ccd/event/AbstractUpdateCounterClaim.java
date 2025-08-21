@@ -28,8 +28,8 @@ import uk.gov.hmcts.reform.pcs.ccd.service.ClaimEventLogService;
 import uk.gov.hmcts.reform.pcs.ccd.service.ClaimService;
 import uk.gov.hmcts.reform.pcs.ccd.service.CounterClaimEventService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
-import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
-import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
+import uk.gov.hmcts.reform.pcs.ccd.type.poc.DynamicList;
+import uk.gov.hmcts.reform.pcs.ccd.type.poc.DynamicStringListElement;
 import uk.gov.hmcts.reform.pcs.roles.service.UserInfoService;
 
 import java.util.ArrayList;
@@ -109,19 +109,19 @@ public abstract class AbstractUpdateCounterClaim implements CCDConfig<PCSCase, S
         }
 
         List<CounterClaimEvent> events = filterByUserRoles(actionsForState, userRoles);
-        DynamicStringList claimEventDynamicList = toDynamicStringList(events);
+        DynamicList claimEventDynamicList = toDynamicStringList(events);
         caseData.setActionList(claimEventDynamicList);
 
         return caseData;
     }
 
-    private static DynamicStringList toDynamicStringList(List<CounterClaimEvent> events) {
+    private static DynamicList toDynamicStringList(List<CounterClaimEvent> events) {
         List<DynamicStringListElement> listItems = events.stream()
             .map(value -> DynamicStringListElement.builder().code(UUID.randomUUID().toString())
                 .label(value.getLabel()).build())
             .toList();
 
-        return DynamicStringList.builder()
+        return DynamicList.builder()
             .listItems(listItems)
             .build();
     }

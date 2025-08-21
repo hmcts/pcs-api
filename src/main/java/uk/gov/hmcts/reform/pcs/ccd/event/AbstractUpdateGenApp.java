@@ -26,8 +26,8 @@ import uk.gov.hmcts.reform.pcs.ccd.service.GenAppEventLogService;
 import uk.gov.hmcts.reform.pcs.ccd.service.GenAppEventService;
 import uk.gov.hmcts.reform.pcs.ccd.service.GenAppService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
-import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
-import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
+import uk.gov.hmcts.reform.pcs.ccd.type.poc.DynamicList;
+import uk.gov.hmcts.reform.pcs.ccd.type.poc.DynamicStringListElement;
 import uk.gov.hmcts.reform.pcs.roles.service.UserInfoService;
 
 import java.util.ArrayList;
@@ -89,19 +89,19 @@ public abstract class AbstractUpdateGenApp implements CCDConfig<PCSCase, State, 
         List<String> userRoles = new ArrayList<>(userInfo.getRoles());
 
         List<GenAppEvent> events = filterByUserRoles(actionsForState, userRoles);
-        DynamicStringList claimEventDynamicList = toDynamicStringList(events);
+        DynamicList claimEventDynamicList = toDynamicStringList(events);
         caseData.setActionList(claimEventDynamicList);
 
         return caseData;
     }
 
-    private static DynamicStringList toDynamicStringList(List<GenAppEvent> events) {
+    private static DynamicList toDynamicStringList(List<GenAppEvent> events) {
         List<DynamicStringListElement> listItems = events.stream()
             .map(value -> DynamicStringListElement.builder().code(UUID.randomUUID().toString())
                 .label(value.getLabel()).build())
             .toList();
 
-        return DynamicStringList.builder()
+        return DynamicList.builder()
             .listItems(listItems)
             .build();
     }

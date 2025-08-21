@@ -9,7 +9,6 @@ import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.FieldType;
 
-import static uk.gov.hmcts.ccd.sdk.type.FieldType.DynamicList;
 import static uk.gov.hmcts.ccd.sdk.type.FieldType.DynamicRadioList;
 
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
@@ -19,7 +18,7 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenAccess;
 
 import static uk.gov.hmcts.ccd.sdk.type.FieldType.TextArea;
 
-import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
+import uk.gov.hmcts.reform.pcs.ccd.type.poc.DynamicList;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
 /**
@@ -69,7 +68,7 @@ public class PCSCase {
         access = {CitizenAccess.class, CaseworkerAccess.class}
     )
     @External
-    private DynamicStringList crossBorderCountriesList;
+    private DynamicList crossBorderCountriesList;
 
     @CCD(
         searchable = false,
@@ -207,7 +206,7 @@ public class PCSCase {
         typeOverride = DynamicRadioList,
         access = {CaseworkerAccess.class}
     )
-    private DynamicStringList claimantType;
+    private DynamicList claimantType;
 
     @CCD(searchable = false, access = CaseworkerAccess.class)
     private YesOrNo showClaimantTypeNotEligibleEngland;
@@ -236,10 +235,9 @@ public class PCSCase {
 
     @CCD(
         label = "Please select an action",
-        typeOverride = DynamicList,
         access = {CaseworkerAccess.class}
     )
-    private DynamicStringList actionList;
+    private DynamicList actionList; // This is the PoC version of the DynamicList, not the one in the config generator
 
     private String selectedAction; // TODO: Can we make this an enum value?
 
