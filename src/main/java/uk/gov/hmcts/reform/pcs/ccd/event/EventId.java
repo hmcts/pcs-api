@@ -6,7 +6,12 @@ public enum EventId {
     citizenCreateApplication,
     citizenSubmitApplication,
     citizenUpdateApplication,
+    createCounterClaim,
+    updateCounterClaim,
+    createGenApp,
+    updateGenApp,
     createPossessionClaim,
-    processClaimPayment,
+    createShellClaim,
+    processClaimPayment
 
 }

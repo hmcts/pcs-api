@@ -65,21 +65,35 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
 
         builder.workBasketResultFields()
             .caseReferenceField()
-            .field(PCSCase::getPropertyAddress, "Property Address");
+            .field(PCSCase::getFormattedPropertyAddress, "Property Address");
 
-        builder.tab("summary", "Property Details")
+        builder.tab("claims", "Claims")
+            .label("claimListMarkdownLabel", null, "${claimListMarkdown}")
+            .field("claimListMarkdown", NEVER_SHOW);
+
+        builder.tab("genApps", "General Applications")
+            .label("genAppListMarkdownLabel", null, "${genAppListMarkdown}")
+            .field("genAppListMarkdown", NEVER_SHOW);
+
+        builder.tab("propertyDetails", "Property Details")
             .field(PCSCase::getPropertyAddress);
-
-        builder.tab("CaseHistory", "History")
-            .field("caseHistory");
 
         builder.tab("ClaimPayment", "Payment")
             .showCondition("claimPaymentTabMarkdown!=\"\"")
             .label("claimPaymentTabMarkdownLabel", null, "${claimPaymentTabMarkdown}")
             .field("claimPaymentTabMarkdown", NEVER_SHOW);
 
+        builder.tab("CaseHistory", "History")
+            .label("claimHistoryMarkdownLabel", null, "${claimHistoryMarkdown}")
+            .field("claimHistoryMarkdown", NEVER_SHOW)
+            .label("genAppHistoryMarkdownLabel", null, "${genAppHistoryMarkdown}")
+            .field("genAppHistoryMarkdown", NEVER_SHOW)
+            .field("caseHistory");
+
         builder.tab("hidden", "HiddenFields")
             .showCondition(NEVER_SHOW)
-            .field(PCSCase::getPageHeadingMarkdown);
+            .field(PCSCase::getPageHeadingMarkdown)
+            .field(PCSCase::getFormattedPropertyAddress)
+            .field(PCSCase::getClaimDescriptionMarkdown);
     }
 }

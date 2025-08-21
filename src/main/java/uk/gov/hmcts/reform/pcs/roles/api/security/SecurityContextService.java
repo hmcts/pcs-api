@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.security;
+package uk.gov.hmcts.reform.pcs.roles.api.security;
 
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;

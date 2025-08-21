@@ -11,6 +11,7 @@ import jakarta.persistence.NamedAttributeNode;
 import jakarta.persistence.NamedEntityGraph;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
+import jakarta.persistence.OrderBy;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -19,7 +20,9 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PaymentStatus;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -60,17 +63,33 @@ public class PcsCaseEntity {
     @OneToMany(mappedBy = "pcsCase", fetch = LAZY, cascade = ALL)
     @Builder.Default
     @JsonManagedReference
+    @OrderBy("created")
+    private List<ClaimEntity> claims = new ArrayList<>();
+
+    @OneToMany(mappedBy = "pcsCase", fetch = LAZY, cascade = ALL)
+    @Builder.Default
+    @JsonManagedReference
     private Set<PartyEntity> parties = new HashSet<>();
 
     @OneToMany(mappedBy = "pcsCase", fetch = LAZY, cascade = ALL)
     @Builder.Default
     @JsonManagedReference
-    private Set<ClaimEntity> claims = new HashSet<>();
+    @OrderBy("created")
+    private List<GenAppEntity> genApps = new ArrayList<>();
 
+    public void addClaim(ClaimEntity claim) {
+        claims.add(claim);
+        claim.setPcsCase(this);
+    }
 
     public void addParty(PartyEntity party) {
         parties.add(party);
         party.setPcsCase(this);
+    }
+
+    public void addGenApp(GenAppEntity genApp) {
+        genApps.add(genApp);
+        genApp.setPcsCase(this);
     }
 
 }

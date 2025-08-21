@@ -309,6 +309,9 @@ ext {
 ext['snakeyaml.version'] = '2.0'
 
 dependencies {
+
+  implementation ('com.github.hmcts:ccd-config-generator:DEV-SNAPSHOT');
+
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-web', version: springFrameworkBootVersion
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-actuator', version: springFrameworkBootVersion
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-aop', version: springFrameworkBootVersion
@@ -341,6 +344,8 @@ dependencies {
   implementation group: 'commons-fileupload', name: 'commons-fileupload', version: '1.6.0'
   implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.18.0'
   implementation group: 'org.projectlombok', name: 'lombok', version: lombokVersion
+  implementation group: 'com.github.ben-manes.caffeine', name: 'caffeine', version: '3.2.2'
+  implementation group: 'io.vavr', name: 'vavr', version: '0.10.7'
   implementation group: 'com.github.kagkarlsson', name: 'db-scheduler-spring-boot-starter', version: '16.0.0'
   implementation group: 'org.apache.tomcat.embed', name: 'tomcat-embed-core', version: tomcatEmbedVersion
   implementation group: 'org.apache.tomcat.embed', name: 'tomcat-embed-websocket', version: tomcatEmbedVersion

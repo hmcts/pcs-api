@@ -1,0 +1,59 @@
+{% macro genAppReferenceLink(genApp, genAppActions, eventSuffix, _context) %}
+{% if genAppActions is not empty %}
+<a href="/cases/case-details/{{_context.caseReference}}/trigger/updateGenApp{{ eventSuffix }}?genAppId={{genApp.id}}">{{ genApp.genAppReference }}</a>
+{% else %}
+{{ genApp.genAppReference }}
+{% endif %}
+{%- endmacro %}
+
+{% macro showActions(genAppActions, _context) %}
+{% if genAppActions is not empty %}
+<ul class="govuk-list govuk-list--bullet">
+{% for action in genAppActions %}
+  <li>{{ action.getLabel() }}</li>
+{% endfor %}
+</ul>
+{% endif %}
+{%- endmacro %}
+
+{% macro stateColourClass(stateLabel) %}
+{# See https://design-system.service.gov.uk/components/tag/#additional-colours #}
+{%- if stateLabel == 'Application accepted' %}
+  govuk-tag--green
+{%- elseif stateLabel == 'Awaiting submission' %}
+  govuk-tag--turquoise
+{%- elseif stateLabel == 'Application rejected' %}
+  govuk-tag--red
+{%- endif %}
+{%- endmacro %}
+
+{% macro stateLabel(label, _context) %}
+{% if label is not empty %}
+<strong class="govuk-tag {{ stateColourClass(label)}}">{{ label }}</strong>
+{% endif %}
+{%- endmacro %}
+
+<h2 class="govuk-heading-m">General Applications</h2>
+
+<table class="govuk-table govuk-table--small-text-until-tablet">
+  <thead class="govuk-table__head">
+    <tr class="govuk-table__row">
+      <th scope="col" class="govuk-table__header govuk-!-width-one-quarter">Reference</th>
+      <th scope="col" class="govuk-table__header govuk-!-width-one-quarter">Summary</th>
+      <th scope="col" class="govuk-table__header govuk-!-width-one-quarter">State</th>
+      <th scope="col" class="govuk-table__header govuk-!-width-one-quarter">Actions</th>
+    </tr>
+  </thead>
+  <tbody class="govuk-table__body">
+{% for genApp in genApps -%}
+  {% set genAppActions = _context.genAppActionMap[genApp.id] -%}
+    <tr class="govuk-table__row">
+      <td class="govuk-table__cell">{{ genAppReferenceLink(genApp, genAppActions, loop.index, _context) }}</td>
+      <td class="govuk-table__cell">{{ genApp.summary }}</td>
+      <td class="govuk-table__cell">{{ stateLabel(genApp.state.label, _context) }}</td>
+      <td class="govuk-table__cell">{{ showActions(genAppActions, _context) }}</td>
+    </tr>
+{% endfor %}
+
+  </tbody>
+</table>

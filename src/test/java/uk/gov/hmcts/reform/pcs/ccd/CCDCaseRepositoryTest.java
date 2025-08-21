@@ -14,12 +14,18 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PaymentStatus;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.renderer.ClaimHistoryRenderer;
+import uk.gov.hmcts.reform.pcs.ccd.renderer.ClaimListRenderer;
 import uk.gov.hmcts.reform.pcs.ccd.renderer.ClaimPaymentTabRenderer;
-import uk.gov.hmcts.reform.pcs.ccd.repository.PartyRepository;
+import uk.gov.hmcts.reform.pcs.ccd.renderer.GenAppHistoryRenderer;
+import uk.gov.hmcts.reform.pcs.ccd.renderer.GenAppListRenderer;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
+import uk.gov.hmcts.reform.pcs.ccd.service.ClaimService;
+import uk.gov.hmcts.reform.pcs.ccd.service.GenAppService;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
-import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
+import uk.gov.hmcts.reform.pcs.roles.api.security.SecurityContextService;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.roles.service.UserInfoService;
 
 import java.util.List;
 import java.util.Optional;
@@ -48,14 +54,29 @@ class CCDCaseRepositoryTest {
     @Mock
     private ClaimPaymentTabRenderer claimPaymentTabRenderer;
     @Mock
-    private PartyRepository partyRepository;
+    private ClaimListRenderer claimListRenderer;
+    @Mock
+    private ClaimHistoryRenderer claimHistoryRenderer;
+    @Mock
+    private GenAppListRenderer genAppListRenderer;
+    @Mock
+    private ClaimService claimService;
+    @Mock
+    private GenAppService genAppService;
+    @Mock
+    private UserInfoService userInfoService;
+    @Mock
+    private GenAppHistoryRenderer genAppHistoryRenderer;
 
     private CCDCaseRepository underTest;
 
     @BeforeEach
     void setUp() {
-        underTest = new CCDCaseRepository(pcsCaseRepository, securityContextService,
-                modelMapper, claimPaymentTabRenderer, partyRepository);
+        underTest = new CCDCaseRepository(pcsCaseRepository, securityContextService, modelMapper,
+                                          claimPaymentTabRenderer, claimListRenderer, claimHistoryRenderer,
+                                          genAppListRenderer, claimService, genAppService, userInfoService,
+                                          genAppHistoryRenderer);
+
     }
 
     @Test

@@ -2,20 +2,23 @@ package uk.gov.hmcts.reform.pcs.ccd.domain;
 
 import java.util.List;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
 import lombok.Builder;
 import lombok.Data;
 import uk.gov.hmcts.ccd.sdk.External;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.FieldType;
+
+import static uk.gov.hmcts.ccd.sdk.type.FieldType.DynamicList;
 import static uk.gov.hmcts.ccd.sdk.type.FieldType.DynamicRadioList;
+
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseworkerAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenAccess;
+
 import static uk.gov.hmcts.ccd.sdk.type.FieldType.TextArea;
+
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
@@ -53,6 +56,8 @@ public class PCSCase {
     )
     @External
     private AddressUK propertyAddress;
+
+    private String formattedPropertyAddress;
 
     @CCD(searchable = false, access = {CitizenAccess.class, CaseworkerAccess.class})
     private YesOrNo showCrossBorderPage;
@@ -108,10 +113,6 @@ public class PCSCase {
         access = {CitizenAccess.class, CaseworkerAccess.class}
     )
     private PaymentType paymentType;
-
-    @CCD(ignore = true)
-    @JsonIgnore
-    private List<ListValue<Claim>> claims;
 
     @CCD(label = "Party")
     private List<ListValue<Party>> parties;
@@ -184,6 +185,14 @@ public class PCSCase {
 
     private String claimPaymentTabMarkdown;
 
+    private String claimListMarkdown;
+
+    private String genAppListMarkdown;
+
+    private String claimHistoryMarkdown;
+
+    private String genAppHistoryMarkdown;
+
     @CCD(
         label = "Legislative country",
         access = CaseworkerAccess.class
@@ -217,5 +226,62 @@ public class PCSCase {
 
     @CCD(searchable = false, access = CaseworkerAccess.class)
     private YesOrNo showClaimTypeNotEligibleWales;
+
+    @CCD(
+        label = "Please provide more details",
+        access = CaseworkerAccess.class,
+        typeOverride = FieldType.TextArea
+    )
+    private String counterClaimDetails;
+
+    @CCD(
+        label = "Please select an action",
+        typeOverride = DynamicList,
+        access = {CaseworkerAccess.class}
+    )
+    private DynamicStringList actionList;
+
+    private String selectedAction; // TODO: Can we make this an enum value?
+
+    @CCD(
+        label = "Please provide more details",
+        access = CaseworkerAccess.class,
+        typeOverride = FieldType.TextArea
+    )
+    private String genAppDetails;
+
+    @CCD(
+        access = CaseworkerAccess.class
+    )
+    private String claimDescriptionMarkdown;
+
+    @CCD(
+        access = CaseworkerAccess.class
+    )
+    private String genAppDescriptionMarkdown;
+
+    @CCD(searchable = false)
+    private String claimId;
+
+    @CCD(searchable = false)
+    private String genAppId;
+
+    @CCD(
+        label = "Who is the applicant",
+        searchable = false
+    )
+    private String applicantEmail;
+
+    @CCD(
+        label = "Who is the respondent",
+        searchable = false
+    )
+    private String respondentEmail;
+
+    @CCD(
+        label = "Add a note to this claim",
+        typeOverride = TextArea
+    )
+    private String addedClaimNote;
 
 }

@@ -1,0 +1,46 @@
+<h2 class="govuk-heading-m">General applications</h2>
+
+{% if genApps is empty %}
+No general applications exist for this case
+{% endif %}
+
+{% for genApp in genApps -%}
+{% if genApp.eventLogs is empty %}
+  <h3 class="heading-h2">General application: {{ genApp.summary }}</h3>
+  No events to show
+  <br>
+{% else %}
+  <table class="EventLogTable">
+  <caption><h3 class="heading-h2">General Application: {{ genApp.summary }}</h3></caption>
+  <thead>
+    <tr>
+      <th class="govuk-table__header govuk-!-width-one-quarter">
+        <span class="text-16">Event</span>
+      </th>
+      <th class="govuk-table__header govuk-!-width-one-quarter">
+        <span class="text-16">Date</span>
+      </th>
+      <th class="govuk-table__header govuk-!-width-one-quarter">
+        <span class="text-16">Author</span>
+      </th>
+      <th class="govuk-table__header govuk-!-width-one-quarter">
+        <span class="text-16">Notes</span>
+      </th>
+    </tr>
+    </thead>
+    <tbody>
+      {% for entry in genApp.eventLogs -%}
+      <tr>
+        <td><span class="text-16">{{ entry.eventName }}</span></td>
+        <td><span class="text-16">{{ entry.created | date("dd MMM yyyy, h:mm:ss a")}}</span></td>
+        <td><span class="text-16">{{ entry.invokedBy }}</span></td>
+        <td><span class="text-16">{{ entry.notes }}&nbsp;</span></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% endif %}
+<br>
+{% endfor %}
+<br>
+

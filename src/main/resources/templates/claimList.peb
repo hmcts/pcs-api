@@ -1,0 +1,97 @@
+{% macro claimLabel(claim, _context) -%}
+{% if claim.type == "MAIN_CLAIM" -%}
+	Main claim
+{%- elseif claim.type == "COUNTER_CLAIM" -%}
+	Counter claim
+{%- endif %}
+:&nbsp;
+{{- claimReferenceLink(claim, _context) }}
+{%- endmacro %}
+
+{% macro claimReferenceLink(claim, claimActions, eventSuffix, _context) %}
+{% if claimActions is not empty %}
+<a href="/cases/case-details/{{_context.caseReference}}/trigger/updateCounterClaim{{ eventSuffix }}?claimId={{claim.id}}">{{ claim.claimReference }}</a>
+{% else %}
+{{ claim.claimReference }}
+{% endif %}
+{%- endmacro %}
+
+{% macro showActions(claimActions, _context) %}
+{% if claimActions is not empty %}
+<ul class="govuk-list govuk-list--bullet">
+{% for action in claimActions %}
+  <li>{{ action.getLabel() }}</li>
+{% endfor %}
+</ul>
+{% endif %}
+{# <a href="/cases/case-details/{{_context.caseReference}}/trigger/updateCounterClaim0?claimId={{claim.id}}">Update</a> #}
+{%- endmacro %}
+
+{% macro stateColourClass(stateLabel) %}
+{# See https://design-system.service.gov.uk/components/tag/#additional-colours #}
+{% if stateLabel == 'Claim withdrawn' -%}
+  govuk-tag--grey
+{%- elseif stateLabel == 'Claim resolved' %}
+  govuk-tag--green
+{%- elseif stateLabel == 'Awaiting submission' %}
+  govuk-tag--turquoise
+{%- elseif stateLabel == 'Claim rejected' %}
+  govuk-tag--red
+{%- endif %}
+{%- endmacro %}
+
+{% macro stateLabel(label, _context) %}
+{% if label is not empty %}
+<strong class="govuk-tag {{ stateColourClass(label)}}">{{ label }}</strong>
+{% endif %}
+{%- endmacro %}
+
+<h2 class="govuk-heading-m">Main Claim</h2>
+
+<table class="govuk-table govuk-table--small-text-until-tablet">
+  <thead class="govuk-table__head">
+    <tr class="govuk-table__row">
+      <th scope="col" class="govuk-table__header govuk-!-width-one-quarter">Reference</th>
+      <th scope="col" class="govuk-table__header govuk-!-width-one-quarter">Summary</th>
+      <th scope="col" class="govuk-table__header govuk-!-width-one-quarter">State</th>
+      <th scope="col" class="govuk-table__header govuk-!-width-one-quarter">Actions</th>
+    </tr>
+  </thead>
+  <tbody class="govuk-table__body">
+{% for claim in mainClaims -%}
+  {% set claimActions = _context.claimActionMap[claim.id] -%}
+    <tr class="govuk-table__row">
+      <td class="govuk-table__cell">{{ claimReferenceLink(claim, claimActions, 'main', _context) }}</td>
+      <td class="govuk-table__cell">{{ claim.summary }}</td>
+      <td class="govuk-table__cell">{{ stateLabel('${[STATE]}', _context) }}</td>
+      <td class="govuk-table__cell">&nbsp;</td>
+    </tr>
+{% endfor %}
+
+{% if counterClaims is not empty -%}
+  <tr class="govuk-table__row">
+    <td class="govuk-table__cell"><br><h2 class="govuk-heading-m">Counterclaims</h2></td>
+    <td class="govuk-table__cell"></td>
+    <td class="govuk-table__cell"></td>
+    <td class="govuk-table__cell"></td>
+  </tr>
+
+  <tr class="govuk-table__row">
+    <th scope="col" class="govuk-table__header govuk-!-width-one-quarter">Reference</th>
+    <th scope="col" class="govuk-table__header govuk-!-width-one-quarter">Summary</th>
+    <th scope="col" class="govuk-table__header govuk-!-width-one-quarter">State</th>
+    <th scope="col" class="govuk-table__header govuk-!-width-one-quarter">Actions</th>
+  </tr>
+{% endif %}
+
+{% for claim in counterClaims -%}
+  {% set claimActions = _context.claimActionMap[claim.id] -%}
+    <tr class="govuk-table__row">
+      <td class="govuk-table__cell">{{ claimReferenceLink(claim, claimActions, loop.index, _context) }}</td>
+      <td class="govuk-table__cell">{{ claim.summary }}</td>
+      <td class="govuk-table__cell">{{ stateLabel(claim.state.label, _context) }}</td>
+      <td class="govuk-table__cell">{{ showActions(claimActions, _context) }}</td>
+    </tr>
+{% endfor %}
+  </tbody>
+</table>

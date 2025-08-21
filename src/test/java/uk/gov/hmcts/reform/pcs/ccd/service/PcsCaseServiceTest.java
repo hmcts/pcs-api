@@ -17,8 +17,8 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
-import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
-import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;  
+import uk.gov.hmcts.reform.pcs.roles.api.security.SecurityContextService;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 
 import java.util.Optional;
 import java.util.UUID;
