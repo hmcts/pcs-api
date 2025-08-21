@@ -34,13 +34,13 @@ public class ServiceRequestController {
         produces = MediaType.APPLICATION_JSON_VALUE
     )
     public ResponseEntity<ServiceRequestResponse> createServiceRequest(
-        @RequestHeader(value = AUTHORIZATION, defaultValue = "DummyId") String authorisation,
+        @RequestHeader(value = AUTHORIZATION) String authorisation,
         @RequestHeader(value = "ServiceAuthorization") String serviceAuthorization,
         @RequestParam(name = "caseReference") String caseReference,
         @RequestParam(name = "ccdCaseNumber") String ccdCaseNumber,
         @RequestBody Fee fee
     ) {
-
+        log.info("Auth value: {}", authorisation);
         log.info("Received request to create service request for case: {} with provided fee: {}",
                     ccdCaseNumber, fee.getCode());
 
