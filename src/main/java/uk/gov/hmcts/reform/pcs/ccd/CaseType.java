@@ -78,6 +78,10 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
             .showCondition("claimPaymentTabMarkdown!=\"\"")
             .label("claimPaymentTabMarkdownLabel", null, "${claimPaymentTabMarkdown}")
             .field("claimPaymentTabMarkdown", NEVER_SHOW);
+            
+        builder.tab("Documents", "Documents")
+            .field(PCSCase::getSupportingDocuments)
+            .field(PCSCase::getGeneratedDocuments);
 
         builder.tab("hidden", "HiddenFields")
             .showCondition(NEVER_SHOW)

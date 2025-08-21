@@ -57,10 +57,7 @@ public class CCDCaseRepository extends DecentralisedCaseRepository<PCSCase> {
 
         PcsCaseEntity pcsCaseEntity = loadCaseData(caseReference);
 
-        log.info("Building PCSCase for case reference: {}", caseReference);
-        log.info("Total documents in case: {}", pcsCaseEntity.getDocuments().size());
-
-        PCSCase pcsCase = PCSCase.builder()
+                PCSCase pcsCase = PCSCase.builder()
             .propertyAddress(convertAddress(pcsCaseEntity.getPropertyAddress()))
             .caseManagementLocation(pcsCaseEntity.getCaseManagementLocation())
             .supportingDocuments(mapSupportingDocuments(pcsCaseEntity.getDocuments()))
@@ -69,10 +66,6 @@ public class CCDCaseRepository extends DecentralisedCaseRepository<PCSCase> {
                 ? VerticalYesNo.from(pcsCaseEntity.getPreActionProtocolCompleted())
                 : null)
             .build();
-
-        log.info("PCSCase built with {} supporting documents and {} generated documents",
-            pcsCase.getSupportingDocuments() != null ? pcsCase.getSupportingDocuments().size() : 0,
-            pcsCase.getGeneratedDocuments() != null ? pcsCase.getGeneratedDocuments().size() : 0);
 
         setDerivedProperties(caseReference,pcsCase, pcsCaseEntity);
 
@@ -101,21 +94,13 @@ public class CCDCaseRepository extends DecentralisedCaseRepository<PCSCase> {
             .collect(Collectors.toList());
     }
 
-    private List<ListValue<Document>> mapGeneratedDocuments(Set<DocumentEntity> documentEntities) {
+        private List<ListValue<Document>> mapGeneratedDocuments(Set<DocumentEntity> documentEntities) {
         if (documentEntities == null || documentEntities.isEmpty()) {
-            log.info("No documents found for generated documents mapping");
             return null;
         }
 
-        log.info("Mapping {} documents for generated documents", documentEntities.size());
-
-        List<ListValue<Document>> generatedDocs = documentEntities.stream()
-            .filter(docEntity -> {
-                boolean isGenerated = "GENERATED".equals(docEntity.getDocumentType());
-                log.info("Document {} has type: {} (isGenerated: {})",
-                    docEntity.getFileName(), docEntity.getDocumentType(), isGenerated);
-                return isGenerated;
-            })
+        return documentEntities.stream()
+            .filter(docEntity -> "GENERATED".equals(docEntity.getDocumentType()))
             .map(docEntity -> {
                 Document document = Document.builder()
                     .filename(docEntity.getFileName())
@@ -129,9 +114,6 @@ public class CCDCaseRepository extends DecentralisedCaseRepository<PCSCase> {
                     .build();
             })
             .collect(Collectors.toList());
-
-        log.info("Found {} generated documents", generatedDocs.size());
-        return generatedDocs;
     }
 
     private void setDerivedProperties(long caseRef,PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {
