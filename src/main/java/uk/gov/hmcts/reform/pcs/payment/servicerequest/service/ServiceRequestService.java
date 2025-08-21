@@ -39,35 +39,39 @@ public class ServiceRequestService {
         Fee fee
     ) {
         try {
+            FeeDto feeDto = FeeDto.builder()
+                .calculatedAmount(fee.getCalculatedAmount())
+                .code(fee.getCode())
+                .version(fee.getVersion())
+                .volume(VOLUME)
+                .build();
+
+            log.info("Built FeeDto: code={}, version={}, calculatedAmount={}, volume={}",
+                        feeDto.getCode(), feeDto.getVersion(), feeDto.getCalculatedAmount(), feeDto.getVolume());
+
+            ServiceRequestRequest request = ServiceRequestRequest.builder()
+                .callBackUrl(callBackUrl)
+                .casePaymentRequest(
+                    CasePaymentRequestDto.builder()
+                        .action(PAYMENT_ACTION)
+                        .responsibleParty(RESPONSIBLE_PARTY)
+                        .build()
+                )
+                .caseReference(String.valueOf(caseReference))
+                .ccdCaseNumber(String.valueOf(ccdCaseNumber))
+                .fees(new FeeDto[]{feeDto})
+                .build();
+
+            log.info("About to send request with {} fees", request.getFees().length);
+
             return serviceRequestApi.createServiceRequest(
                 authorisation,
                 serviceAuthorization,
-                ServiceRequestRequest.builder()
-                    .callBackUrl(callBackUrl)
-                    .casePaymentRequest(
-                        CasePaymentRequestDto.builder()
-                            .action(PAYMENT_ACTION)
-                            .responsibleParty(RESPONSIBLE_PARTY)
-                            .build()
-                    )
-                    .caseReference(String.valueOf(caseReference))
-                    .ccdCaseNumber(String.valueOf(ccdCaseNumber))
-                    .fees(new FeeDto[]{
-                        FeeDto.builder()
-                            .calculatedAmount(fee.getCalculatedAmount())
-                            .code(fee.getCode())
-                            .version(fee.getVersion())
-                            .volume(VOLUME)
-                            .build()
-                    })
-                    .build()
+                request
             );
         } catch (FeignException fe) {
-            log.error(
-                "Error in calling Payment Service Request API for case reference {} \n {}\n",
-                ccdCaseNumber,
-                fe.getMessage()
-            );
+            log.error("Error in calling Payment Service Request API for case reference {} \n {}\n",
+                        ccdCaseNumber, fe.getMessage());
             throw fe;
         }
     }

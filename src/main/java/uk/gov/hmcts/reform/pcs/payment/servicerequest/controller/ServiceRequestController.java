@@ -79,6 +79,11 @@ public class ServiceRequestController {
         log.info("Received request to create service request for case: {} with provided fee: {}",
                     ccdCaseNumber, fee.getCode());
 
+        if (fee.getCalculatedAmount() == null) {
+            log.error("Fee calculatedAmount is NULL in received object!");
+        }
+
+
         try {
             ServiceRequestResponse response = serviceRequestService.createServiceRequest(
                 authorisation,
