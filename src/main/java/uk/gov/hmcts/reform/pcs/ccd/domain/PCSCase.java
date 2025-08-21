@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.domain;
 
 import java.util.List;
+import java.math.BigDecimal;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
@@ -223,5 +224,32 @@ public class PCSCase {
 
     @CCD(searchable = false, access = CaseworkerAccess.class)
     private YesOrNo showClaimTypeNotEligibleWales;
+
+    @CCD(
+        label = "How much is the rent?",
+        typeOverride = FieldType.MoneyGBP,
+        access = {CitizenAccess.class, CaseworkerAccess.class}
+    )
+    private BigDecimal rentAmount;
+
+    @CCD(
+        label = "How frequently should rent be paid?",
+        access = {CitizenAccess.class, CaseworkerAccess.class}
+    )
+    private RentPaymentFrequency rentPaymentFrequency;
+
+    @CCD(
+        label = "Enter frequency",
+        hint = "Please specify the frequency",
+        access = {CitizenAccess.class, CaseworkerAccess.class}
+    )
+    private String otherRentFrequency;
+
+    @CCD(
+        label = "Enter the amount per day that unpaid rent should be charged at",
+        typeOverride = FieldType.MoneyGBP,
+        access = {CitizenAccess.class, CaseworkerAccess.class}
+    )
+    private BigDecimal dailyRentChargeAmount;
 
 }

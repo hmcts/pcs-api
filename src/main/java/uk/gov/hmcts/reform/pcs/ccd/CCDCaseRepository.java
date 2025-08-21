@@ -78,12 +78,13 @@ public class CCDCaseRepository extends DecentralisedCaseRepository<PCSCase> {
         }
         pcsCase.setParties(mapAndWrapParties(pcsCaseEntity.getParties()));
 
+        String formattedCaseRef = formatCaseReference(caseRef);
         pcsCase.setPageHeadingMarkdown("""
                                        <h3 class="govuk-heading-s">
                                             %s<br>
-                                            Case number: ${[CASE_REFERENCE]} <br>
+                                            Case number: %s <br>
                                         </h3>
-                                       """.formatted(formatAddress(pcsCase.getPropertyAddress())));
+                                       """.formatted(formatAddress(pcsCase.getPropertyAddress()), formattedCaseRef));
 
     }
 
@@ -130,4 +131,8 @@ public class CCDCaseRepository extends DecentralisedCaseRepository<PCSCase> {
             .collect(Collectors.collectingAndThen(Collectors.toList(), ListValueUtils::wrapListItems));
     }
 
+    private String formatCaseReference(long caseRef) {
+        String caseRefStr = String.valueOf(caseRef);
+        return caseRefStr.replaceAll("(.{4})(?=.)", "$1-");
+    }
 }
