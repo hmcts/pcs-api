@@ -122,6 +122,7 @@ public class PropertyNotEligible implements CcdPageConfiguration {
             // Channel Islands and Isle of Man guidance section
             .label("propertyNotEligible-channel-islands-iom", """
                 <section tabindex="0">
+                <hr class="govuk-section-break govuk-section-break--l govuk-section-break--visible">
                 <p class="govuk-body">
                   This service is only available for claimants claiming possession of a property in England or Wales.
                 </p>
