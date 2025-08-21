@@ -195,7 +195,7 @@ public class PCSCase {
         typeOverride = Collection,
         typeParameterOverride = "Document",
         access = {CitizenAccess.class, CaseworkerAccess.class},
-        categoryID = "B"
+        categoryID = "A"
     )
     @JsonProperty("supportingDocumentsCategoryA")
     private List<ListValue<Document>> supportingDocumentsCategoryA;

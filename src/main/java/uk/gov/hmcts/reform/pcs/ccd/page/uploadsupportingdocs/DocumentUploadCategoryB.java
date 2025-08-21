@@ -16,6 +16,6 @@ public class DocumentUploadCategoryB implements CcdPageConfiguration {
                     * a maximum of 100MB in size (larger files must be split)
                     * clearly labelled, e.g. applicant-name-evidence.pdf
                     """)
-                .optional(PCSCase::getSupportingDocumentsCategoryA);
+                .optional(PCSCase::getSupportingDocumentsCategoryB);
     }
 }
