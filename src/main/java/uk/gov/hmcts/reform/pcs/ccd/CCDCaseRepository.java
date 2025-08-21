@@ -57,7 +57,7 @@ public class CCDCaseRepository extends DecentralisedCaseRepository<PCSCase> {
 
         PcsCaseEntity pcsCaseEntity = loadCaseData(caseReference);
 
-                PCSCase pcsCase = PCSCase.builder()
+        PCSCase pcsCase = PCSCase.builder()
             .propertyAddress(convertAddress(pcsCaseEntity.getPropertyAddress()))
             .caseManagementLocation(pcsCaseEntity.getCaseManagementLocation())
             .supportingDocuments(mapSupportingDocuments(pcsCaseEntity.getDocuments()))
@@ -94,7 +94,7 @@ public class CCDCaseRepository extends DecentralisedCaseRepository<PCSCase> {
             .collect(Collectors.toList());
     }
 
-        private List<ListValue<Document>> mapGeneratedDocuments(Set<DocumentEntity> documentEntities) {
+    private List<ListValue<Document>> mapGeneratedDocuments(Set<DocumentEntity> documentEntities) {
         if (documentEntities == null || documentEntities.isEmpty()) {
             return null;
         }
