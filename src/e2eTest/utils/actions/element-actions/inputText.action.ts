@@ -1,5 +1,5 @@
-import {Page} from '@playwright/test';
-import {IAction} from '../../interfaces/action.interface';
+import { Page } from '@playwright/test';
+import { IAction } from '../../interfaces/action.interface';
 
 export class InputTextAction implements IAction {
   async execute(page: Page, action: string, fieldName: string, value?: string): Promise<void> {
