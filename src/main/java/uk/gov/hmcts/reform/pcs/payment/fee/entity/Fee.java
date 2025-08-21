@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.payment.entity;
+package uk.gov.hmcts.reform.pcs.payment.fee.entity;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

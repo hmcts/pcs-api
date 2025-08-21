@@ -1,9 +1,9 @@
-package uk.gov.hmcts.reform.pcs.payment.api;
+package uk.gov.hmcts.reform.pcs.payment.fee.api;
 
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import uk.gov.hmcts.reform.pcs.payment.model.FeeResponse;
+import uk.gov.hmcts.reform.pcs.payment.fee.model.FeeResponse;
 
 @FeignClient(name = "fees-register-api", url = "${fees-register.api.url}")
 public interface FeesRegisterApi {

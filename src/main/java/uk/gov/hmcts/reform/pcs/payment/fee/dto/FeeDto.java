@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.payment.dto;
+package uk.gov.hmcts.reform.pcs.payment.fee.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;

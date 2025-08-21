@@ -1,11 +1,11 @@
-package uk.gov.hmcts.reform.pcs.payment.service;
+package uk.gov.hmcts.reform.pcs.payment.fee.service;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import uk.gov.hmcts.reform.pcs.payment.api.FeesRegisterApi;
-import uk.gov.hmcts.reform.pcs.payment.config.FeesConfiguration;
-import uk.gov.hmcts.reform.pcs.payment.entity.Fee;
-import uk.gov.hmcts.reform.pcs.payment.model.FeeResponse;
+import uk.gov.hmcts.reform.pcs.payment.fee.api.FeesRegisterApi;
+import uk.gov.hmcts.reform.pcs.payment.fee.config.FeesConfiguration;
+import uk.gov.hmcts.reform.pcs.payment.fee.entity.Fee;
+import uk.gov.hmcts.reform.pcs.payment.fee.model.FeeResponse;
 
 @Service
 @Slf4j

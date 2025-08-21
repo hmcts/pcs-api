@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.payment.model;
+package uk.gov.hmcts.reform.pcs.payment.fee.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;

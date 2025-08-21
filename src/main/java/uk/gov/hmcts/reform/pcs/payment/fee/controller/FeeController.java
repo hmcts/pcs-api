@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.payment.endpoint;
+package uk.gov.hmcts.reform.pcs.payment.fee.controller;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -8,8 +8,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import uk.gov.hmcts.reform.pcs.payment.entity.Fee;
-import uk.gov.hmcts.reform.pcs.payment.service.FeeService;
+import uk.gov.hmcts.reform.pcs.payment.fee.entity.Fee;
+import uk.gov.hmcts.reform.pcs.payment.fee.service.FeeService;
 
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 

@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.payment.dto;
+package uk.gov.hmcts.reform.pcs.payment.serviceRequest.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
