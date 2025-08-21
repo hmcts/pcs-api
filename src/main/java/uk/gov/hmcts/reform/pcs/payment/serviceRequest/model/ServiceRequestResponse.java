@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.payment.model;
+package uk.gov.hmcts.reform.pcs.payment.serviceRequest.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;

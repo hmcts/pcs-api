@@ -143,3 +143,11 @@ fees-register:
       jurisdiction2: immigration and asylum chamber
       keyword: HearingOral
       service: other
+
+payment:
+  api:
+    url: ${PAYMENT_API_URL:http://localhost:8083}
+    callback-url: ${PAY_CALLBACK_URL:http://host.docker.internal:8096/service-request-update}
+  params:
+    organisationUrn: immigration and asylum chamber
+    siteId: BFA1

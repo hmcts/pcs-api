@@ -1,12 +1,12 @@
-package uk.gov.hmcts.reform.pcs.payment.model;
+package uk.gov.hmcts.reform.pcs.payment.serviceRequest.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
-import uk.gov.hmcts.reform.pcs.payment.dto.CasePaymentRequestDto;
-import uk.gov.hmcts.reform.pcs.payment.dto.FeeDto;
+import uk.gov.hmcts.reform.pcs.payment.serviceRequest.dto.CasePaymentRequestDto;
+import uk.gov.hmcts.reform.pcs.payment.fee.dto.FeeDto;
 
 @Data
 @Builder
