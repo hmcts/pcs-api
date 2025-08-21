@@ -3,7 +3,6 @@ package uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.mockito.InOrder;
 import uk.gov.hmcts.ccd.sdk.api.Event.EventBuilder;
 import uk.gov.hmcts.ccd.sdk.api.FieldCollection.FieldCollectionBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
@@ -15,7 +14,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -72,7 +70,8 @@ class RentDetailsTest {
 
         // Verify exactly 4 mandatory fields are configured
         verify(fieldBuilder, times(2)).mandatory(any()); // rentAmount and rentPaymentFrequency
-        verify(fieldBuilder, times(2)).mandatory(any(), eq("rentPaymentFrequency=\"OTHER\"")); // conditional fields
+        verify(fieldBuilder, times(2)).mandatory(any(), eq("rentPaymentFrequency=\"OTHER\"")); 
+        // conditional fields
     }
 
     @Test
@@ -81,6 +80,7 @@ class RentDetailsTest {
         underTest.addTo(pageBuilder);
 
         // Verify conditional fields are configured with correct show conditions
-        verify(fieldBuilder, times(2)).mandatory(any(), eq("rentPaymentFrequency=\"OTHER\"")); // otherRentFrequency and dailyRentChargeAmount
+        verify(fieldBuilder, times(2)).mandatory(any(), eq("rentPaymentFrequency=\"OTHER\"")); 
+        // otherRentFrequency and dailyRentChargeAmount
     }
 } 
