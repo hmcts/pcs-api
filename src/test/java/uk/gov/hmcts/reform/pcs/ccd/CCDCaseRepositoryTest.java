@@ -8,6 +8,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.modelmapper.ModelMapper;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
+import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PaymentStatus;
@@ -63,7 +64,7 @@ class CCDCaseRepositoryTest {
     private ClaimService claimService;
     @Mock
     private GenAppService genAppService;
-    @Mock
+    @Mock(strictness = Mock.Strictness.LENIENT)
     private UserInfoService userInfoService;
     @Mock
     private GenAppHistoryRenderer genAppHistoryRenderer;
@@ -72,6 +73,9 @@ class CCDCaseRepositoryTest {
 
     @BeforeEach
     void setUp() {
+
+        when(userInfoService.getCurrentUserInfo()).thenReturn(mock(UserInfo.class));
+
         underTest = new CCDCaseRepository(pcsCaseRepository, securityContextService, modelMapper,
                                           claimPaymentTabRenderer, claimListRenderer, claimHistoryRenderer,
                                           genAppListRenderer, claimService, genAppService, userInfoService,

@@ -19,15 +19,11 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimType;
-import uk.gov.hmcts.reform.pcs.ccd.domain.CounterClaimState;
 import uk.gov.hmcts.reform.pcs.ccd.domain.GenAppState;
 
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.UUID;
 
 import static jakarta.persistence.CascadeType.ALL;

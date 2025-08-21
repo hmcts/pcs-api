@@ -92,7 +92,8 @@ public abstract class AbstractUpdateCounterClaim implements CCDConfig<PCSCase, S
 
         UserInfo userInfo = userInfoService.getCurrentUserInfo();
 
-        caseData.setClaimDescriptionMarkdown("<h3>Counterclaim: %s</h3>".formatted(claim.getSummary())); // TODO: HTML escape or change label
+        // TODO: HTML escape or change label
+        caseData.setClaimDescriptionMarkdown("<h3>Counterclaim: %s</h3>".formatted(claim.getSummary()));
 
         List<CounterClaimEvent> actionsForState = claimService.getApplicableCounterClaimEvents(claim.getState());
 
@@ -116,7 +117,8 @@ public abstract class AbstractUpdateCounterClaim implements CCDConfig<PCSCase, S
 
     private static DynamicStringList toDynamicStringList(List<CounterClaimEvent> events) {
         List<DynamicStringListElement> listItems = events.stream()
-            .map(value -> DynamicStringListElement.builder().code(UUID.randomUUID().toString()).label(value.getLabel()).build())
+            .map(value -> DynamicStringListElement.builder().code(UUID.randomUUID().toString())
+                .label(value.getLabel()).build())
             .toList();
 
         return DynamicStringList.builder()

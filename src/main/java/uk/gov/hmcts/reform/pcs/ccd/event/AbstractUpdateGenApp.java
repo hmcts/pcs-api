@@ -12,22 +12,16 @@ import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.ShowConditions;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
-import uk.gov.hmcts.reform.pcs.ccd.domain.Claim;
-import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimType;
-import uk.gov.hmcts.reform.pcs.ccd.domain.CounterClaimEvent;
-import uk.gov.hmcts.reform.pcs.ccd.domain.CounterClaimState;
 import uk.gov.hmcts.reform.pcs.ccd.domain.GenApp;
 import uk.gov.hmcts.reform.pcs.ccd.domain.GenAppEvent;
 import uk.gov.hmcts.reform.pcs.ccd.domain.GenAppState;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.GenAppEntity;
 import uk.gov.hmcts.reform.pcs.ccd.page.updategenapp.AcceptGenApp;
 import uk.gov.hmcts.reform.pcs.ccd.page.updategenapp.MakePayment;
 import uk.gov.hmcts.reform.pcs.ccd.page.updategenapp.RejectGenApp;
 import uk.gov.hmcts.reform.pcs.ccd.page.updategenapp.SelectAction;
-import uk.gov.hmcts.reform.pcs.ccd.service.CounterClaimEventService;
 import uk.gov.hmcts.reform.pcs.ccd.service.GenAppEventLogService;
 import uk.gov.hmcts.reform.pcs.ccd.service.GenAppEventService;
 import uk.gov.hmcts.reform.pcs.ccd.service.GenAppService;
@@ -38,8 +32,6 @@ import uk.gov.hmcts.reform.pcs.roles.service.UserInfoService;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Timer;
-import java.util.TimerTask;
 import java.util.UUID;
 
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.PCS_CASE_WORKER;
@@ -89,12 +81,12 @@ public abstract class AbstractUpdateGenApp implements CCDConfig<PCSCase, State, 
 
         UserInfo userInfo = userInfoService.getCurrentUserInfo();
 
-        caseData.setClaimDescriptionMarkdown("<h3>General Application: %s</h3>".formatted(genApp.getSummary())); // TODO: HTML escape or change label
+        // TODO: HTML escape or change label
+        caseData.setClaimDescriptionMarkdown("<h3>General Application: %s</h3>".formatted(genApp.getSummary()));
 
         List<GenAppEvent> actionsForState = genAppService.getApplicableEvents(genApp.getState());
 
         List<String> userRoles = new ArrayList<>(userInfo.getRoles());
-        String userEmail = userInfo.getSub();
 
         List<GenAppEvent> events = filterByUserRoles(actionsForState, userRoles);
         DynamicStringList claimEventDynamicList = toDynamicStringList(events);
@@ -105,7 +97,8 @@ public abstract class AbstractUpdateGenApp implements CCDConfig<PCSCase, State, 
 
     private static DynamicStringList toDynamicStringList(List<GenAppEvent> events) {
         List<DynamicStringListElement> listItems = events.stream()
-            .map(value -> DynamicStringListElement.builder().code(UUID.randomUUID().toString()).label(value.getLabel()).build())
+            .map(value -> DynamicStringListElement.builder().code(UUID.randomUUID().toString())
+                .label(value.getLabel()).build())
             .toList();
 
         return DynamicStringList.builder()

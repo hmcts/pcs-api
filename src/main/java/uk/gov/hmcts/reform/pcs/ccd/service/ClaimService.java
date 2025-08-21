@@ -6,7 +6,6 @@ import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Claim;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimType;
-import uk.gov.hmcts.reform.pcs.ccd.domain.CounterClaimAction;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CounterClaimEvent;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CounterClaimState;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
@@ -17,7 +16,6 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimRepository;
 import uk.gov.hmcts.reform.pcs.exception.ClaimNotFoundException;
 
 import java.time.Instant;
-import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
@@ -38,7 +36,7 @@ public class ClaimService {
         return modelMapper.map(claimEntity, Claim.class);
     }
 
-    public UUID createClaim(long caseReference,
+    public void createClaim(long caseReference,
                             ClaimType claimType,
                             String claimDetails) {
 
@@ -54,8 +52,6 @@ public class ClaimService {
         pcsCaseEntity.addClaim(claimEntity);
 
         claimRepository.save(claimEntity);
-
-        return claimEntity.getId();
     }
 
     public UUID createClaim(long caseReference,

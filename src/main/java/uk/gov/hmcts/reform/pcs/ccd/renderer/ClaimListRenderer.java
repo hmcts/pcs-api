@@ -5,7 +5,6 @@ import io.pebbletemplates.pebble.template.PebbleTemplate;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Claim;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimType;
-import uk.gov.hmcts.reform.pcs.ccd.domain.CounterClaimAction;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CounterClaimEvent;
 import uk.gov.hmcts.reform.pcs.exception.TemplateRenderingException;
 

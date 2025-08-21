@@ -9,21 +9,17 @@ import uk.gov.hmcts.ccd.sdk.api.EventPayload;
 import uk.gov.hmcts.ccd.sdk.api.Permission;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimType;
-import uk.gov.hmcts.reform.pcs.ccd.domain.CounterClaimAction;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CounterClaimEvent;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.ClaimEventLogService;
 import uk.gov.hmcts.reform.pcs.ccd.service.ClaimService;
 import uk.gov.hmcts.reform.pcs.ccd.service.CounterClaimEventService;
-import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 
 import java.util.UUID;
 
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.PCS_CASE_WORKER;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.State.CASE_ISSUED;
-import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.caseworkerUpdateApplication;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.createCounterClaim;
 
 @Component

@@ -8,7 +8,6 @@ import uk.gov.hmcts.ccd.sdk.IdamService;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 
 import java.time.Duration;
-import java.util.UUID;
 
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 
@@ -36,10 +35,6 @@ public class UserInfoService {
     public UserInfo getCurrentUserInfo() {
         String authorisation = httpServletRequest.getHeader(AUTHORIZATION);
         return userInfoCache.get(authorisation, this::fetchUserInfo);
-    }
-
-    public UUID getCurrentUserId() {
-        return UUID.fromString(getCurrentUserInfo().getUid());
     }
 
     private UserInfo fetchUserInfo(String authorisation) {

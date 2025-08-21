@@ -20,9 +20,6 @@ public class ClaimEventLogService {
     private final UserInfoService userInfoService;
 
     public void writeEntry(UUID claimId, CounterClaimEvent counterClaimEvent, String notes) {
-        ClaimEntity claimEntity = claimRepository.findById(claimId)
-            .orElseThrow(() -> new ClaimNotFoundException(claimId));
-
         ClaimEventLogEntity claimEventLogEntity = new ClaimEventLogEntity();
         claimEventLogEntity.setEventName(counterClaimEvent != null ? counterClaimEvent.getLabel() : null);
         claimEventLogEntity.setNotes(notes);
@@ -30,6 +27,9 @@ public class ClaimEventLogService {
 
         String userEmail = userInfoService.getCurrentUserInfo().getSub();
         claimEventLogEntity.setInvokedBy(userEmail);
+
+        ClaimEntity claimEntity = claimRepository.findById(claimId)
+            .orElseThrow(() -> new ClaimNotFoundException(claimId));
 
         claimEntity.addClaimEventLog(claimEventLogEntity);
 

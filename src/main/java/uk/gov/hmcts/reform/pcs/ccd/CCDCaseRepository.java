@@ -149,6 +149,14 @@ public class CCDCaseRepository extends DecentralisedCaseRepository<PCSCase> {
         return filterByUserRolesCC(applicableEvents, userRoles);
     }
 
+    private List<GenAppEvent> getApplicableAndPermittedActions(GenApp genApp, UserInfo userInfo) {
+        List<GenAppEvent> applicableEvents = genAppService.getApplicableEvents(genApp.getId());
+
+        List<String> userRoles = new ArrayList<>(userInfo.getRoles());
+
+        return filterByUserRolesGA(applicableEvents, userRoles);
+    }
+
     private List<CounterClaimEvent> filterByUserRolesCC(List<CounterClaimEvent> actions, List<String> userRoles) {
         if (userRoles == null || userRoles.isEmpty()) {
             return List.of();
@@ -157,14 +165,6 @@ public class CCDCaseRepository extends DecentralisedCaseRepository<PCSCase> {
         return actions.stream()
             .filter(action -> action.getApplicableRoles().stream().anyMatch(userRoles::contains))
             .toList();
-    }
-
-    private List<GenAppEvent> getApplicableAndPermittedActions(GenApp genApp, UserInfo userInfo) {
-        List<GenAppEvent> applicableEvents = genAppService.getApplicableEvents(genApp.getId());
-
-        List<String> userRoles = new ArrayList<>(userInfo.getRoles());
-
-        return filterByUserRolesGA(applicableEvents, userRoles);
     }
 
     private List<GenAppEvent> filterByUserRolesGA(List<GenAppEvent> actions, List<String> userRoles) {
