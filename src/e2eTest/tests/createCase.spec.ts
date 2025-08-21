@@ -14,6 +14,7 @@ import { mediationAndSettlement } from '@data/page-data/mediationAndSettlement.p
 import { checkingNotice } from '@data/page-data/checkingNotice.page.data';
 import { noticeDetails } from '@data/page-data/noticeDetails.page.data';
 import { rentDetails } from '@data/page-data/rentDetails.page.data';
+import { userIneligible } from '@data/page-data/userIneligible.page.data';
 
 test.beforeEach(async ({page}, testInfo) => {
   initializeExecutor(page);
@@ -113,7 +114,14 @@ test.describe.skip('[Create Case Flow With Address and Claimant Type]  @Master @
     await performAction('selectLegislativeCountry', legislativeCountry.england);
     await performAction('selectClaimantType', claimantType.mortgageLender);
     await performValidation('mainHeader', 'You\'re not eligible for this online service');
-    await performAction('clickButton', 'Close and return to case list');
+    await performAction('clickButton', 'Continue');
+    await performValidation('errorMessage', {
+      header: userIneligible.eventNotCreated, message: userIneligible.unableToProceed
+    });
+    await performValidation('errorMessage', {
+      header: userIneligible.errors, message: userIneligible.notEligibleForOnlineService
+    });
+    await performAction('clickButton', 'Cancel');
   });
 
   test('Wales - Unsuccessful case creation journey due to claimant type not in scope of Release1 @R1only', async () => {
@@ -124,7 +132,14 @@ test.describe.skip('[Create Case Flow With Address and Claimant Type]  @Master @
     await performAction('selectLegislativeCountry', legislativeCountry.wales);
     await performAction('selectClaimantType', claimantType.privateLandlord);
     await performValidation('mainHeader', 'You\'re not eligible for this online service');
-    await performAction('clickButton', 'Close and return to case list');
+    await performAction('clickButton', 'Continue');
+    await performValidation('errorMessage', {
+      header: userIneligible.eventNotCreated, message: userIneligible.unableToProceed
+    });
+    await performValidation('errorMessage', {
+      header: userIneligible.errors, message: userIneligible.notEligibleForOnlineService
+    });
+    await performAction('clickButton', 'Cancel');
   });
 
   test('Unsuccessful case creation journey due to claim type not in scope of Release1 @R1only', async () => {
@@ -136,6 +151,13 @@ test.describe.skip('[Create Case Flow With Address and Claimant Type]  @Master @
     await performAction('selectClaimantType', claimantType.registeredProviderForSocialHousing);
     await performAction('selectClaimType', claimType.yes);
     await performValidation('mainHeader', 'You\'re not eligible for this online service');
-    await performAction('clickButton', 'Close and return to case list');
+    await performAction('clickButton', 'Continue');
+    await performValidation('errorMessage', {
+      header: userIneligible.eventNotCreated, message: userIneligible.unableToProceed
+    });
+    await performValidation('errorMessage', {
+      header: userIneligible.errors, message: userIneligible.notEligibleForOnlineService
+    });
+    await performAction('clickButton', 'Cancel');
   });
 });
