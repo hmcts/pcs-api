@@ -58,8 +58,8 @@ public class CCDCaseRepository extends DecentralisedCaseRepository<PCSCase> {
         PCSCase pcsCase = PCSCase.builder()
             .propertyAddress(convertAddress(pcsCaseEntity.getPropertyAddress()))
             .caseManagementLocation(pcsCaseEntity.getCaseManagementLocation())
-            .supportingDocuments(mapDocuments(pcsCaseEntity.getDocuments()))
-            .generatedDocuments(mapDocuments(pcsCaseEntity.getDocuments()))
+            .supportingDocuments(mapSupportingDocuments(pcsCaseEntity.getDocuments()))
+            .generatedDocuments(mapGeneratedDocuments(pcsCaseEntity.getDocuments()))
             .preActionProtocolCompleted(pcsCaseEntity.getPreActionProtocolCompleted() != null
                 ? VerticalYesNo.from(pcsCaseEntity.getPreActionProtocolCompleted())
                 : null)
@@ -70,12 +70,35 @@ public class CCDCaseRepository extends DecentralisedCaseRepository<PCSCase> {
         return pcsCase;
     }
 
-    private List<ListValue<Document>> mapDocuments(Set<DocumentEntity> documentEntities) {
+    private List<ListValue<Document>> mapSupportingDocuments(Set<DocumentEntity> documentEntities) {
         if (documentEntities == null || documentEntities.isEmpty()) {
             return null;
         }
 
         return documentEntities.stream()
+            .filter(docEntity -> "SUPPORTING".equals(docEntity.getDocumentType()))
+            .map(docEntity -> {
+                Document document = Document.builder()
+                    .filename(docEntity.getFileName())
+                    .binaryUrl(docEntity.getFilePath())
+                    .url(docEntity.getFilePath())
+                    .build();
+
+                return ListValue.<Document>builder()
+                    .id(docEntity.getId().toString())
+                    .value(document)
+                    .build();
+            })
+            .collect(Collectors.toList());
+    }
+
+    private List<ListValue<Document>> mapGeneratedDocuments(Set<DocumentEntity> documentEntities) {
+        if (documentEntities == null || documentEntities.isEmpty()) {
+            return null;
+        }
+
+        return documentEntities.stream()
+            .filter(docEntity -> "GENERATED".equals(docEntity.getDocumentType()))
             .map(docEntity -> {
                 Document document = Document.builder()
                     .filename(docEntity.getFileName())

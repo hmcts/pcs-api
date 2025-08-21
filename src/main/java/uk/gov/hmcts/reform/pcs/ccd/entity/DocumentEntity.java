@@ -45,4 +45,7 @@ public class DocumentEntity {
 
     @Column(name = "uploaded_on")
     private LocalDate uploadedOn;
+
+    @Column(name = "document_type")
+    private String documentType;
 }

@@ -53,6 +53,7 @@ public class PcsCaseService {
                     documentEntity.setFileName(document.getFilename());
                     documentEntity.setFilePath(document.getBinaryUrl());
                     documentEntity.setUploadedOn(LocalDate.now());
+                    documentEntity.setDocumentType("SUPPORTING");
                     documentEntity.setPcsCase(pcsCaseEntity);
 
                     pcsCaseEntity.addDocument(documentEntity);
@@ -123,6 +124,7 @@ public class PcsCaseService {
         document.setFileName(fileName);
         document.setFilePath(filePath);
         document.setUploadedOn(LocalDate.now());
+        document.setDocumentType("SUPPORTING");
 
         pcsCaseEntity.addDocument(document);
         pcsCaseRepository.save(pcsCaseEntity);
@@ -137,6 +139,7 @@ public class PcsCaseService {
         documentEntity.setFileName(document.getFilename());
         documentEntity.setFilePath(document.getBinaryUrl());
         documentEntity.setUploadedOn(LocalDate.now());
+        documentEntity.setDocumentType("GENERATED");
 
         pcsCaseEntity.addDocument(documentEntity);
         pcsCaseRepository.save(pcsCaseEntity);
