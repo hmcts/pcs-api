@@ -1,5 +1,9 @@
 package uk.gov.hmcts.reform.pcs.payment.servicerequest.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.MediaType;
@@ -28,16 +32,47 @@ public class ServiceRequestController {
         this.serviceRequestService = serviceRequestService;
     }
 
+    @Operation(summary = "Create a service request", description = "Creates a service request for payment")
     @PostMapping(
         value = "/create-service-request",
         consumes = MediaType.APPLICATION_JSON_VALUE,
         produces = MediaType.APPLICATION_JSON_VALUE
     )
     public ResponseEntity<ServiceRequestResponse> createServiceRequest(
+        @Parameter(
+            name = "Authorization",
+            description = "Bearer token for user authorization",
+            required = true,
+            in = ParameterIn.HEADER,
+            schema = @Schema(type = "string", example = "Bearer AAAAAAAA")
+        )
         @RequestHeader(value = AUTHORIZATION) String authorisation,
+
+        @Parameter(
+            name = "ServiceAuthorization",
+            description = "S2S token for service authorization",
+            required = true,
+            in = ParameterIn.HEADER,
+            schema = @Schema(type = "string", example = "Bearer s2s-token-here")
+        )
         @RequestHeader(value = "ServiceAuthorization") String serviceAuthorization,
+
+        @Parameter(
+            name = "caseReference",
+            description = "Case reference number",
+            required = true,
+            schema = @Schema(type = "string", example = "REF123")
+        )
         @RequestParam(name = "caseReference") String caseReference,
+
+        @Parameter(
+            name = "ccdCaseNumber",
+            description = "CCD case number",
+            required = true,
+            schema = @Schema(type = "string", example = "1755784629578000")
+        )
         @RequestParam(name = "ccdCaseNumber") String ccdCaseNumber,
+
         @RequestBody Fee fee
     ) {
         log.info("Auth value: {}", authorisation);
