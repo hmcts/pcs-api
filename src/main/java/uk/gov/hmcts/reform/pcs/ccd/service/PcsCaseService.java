@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.service;
 
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
@@ -22,6 +23,7 @@ import java.util.UUID;
 
 @Service
 @AllArgsConstructor
+@Slf4j
 public class PcsCaseService {
 
     private final PcsCaseRepository pcsCaseRepository;
@@ -45,6 +47,10 @@ public class PcsCaseService {
 
         addDocuments(pcsCase.getSupportingDocumentsCategoryA(), "A", pcsCaseEntity);
         addDocuments(pcsCase.getSupportingDocumentsCategoryB(), "B", pcsCaseEntity);
+
+        log.error("====== PCS CASE ENTITY DATA CAT A SIZE: "
+            + pcsCaseEntity.getDocumentsCategoryA().size()
+            + "CAT B SIZE: " + pcsCaseEntity.getDocumentsCategoryB().size());
 
         return pcsCaseRepository.save(pcsCaseEntity);
     }

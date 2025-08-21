@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd;
 
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.DecentralisedCaseRepository;
@@ -38,6 +39,7 @@ import java.util.stream.Stream;
  */
 @Component
 @AllArgsConstructor
+@Slf4j
 public class CCDCaseRepository extends DecentralisedCaseRepository<PCSCase> {
 
     private final PcsCaseRepository pcsCaseRepository;
@@ -54,6 +56,10 @@ public class CCDCaseRepository extends DecentralisedCaseRepository<PCSCase> {
     public PCSCase getCase(long caseReference) {
 
         PcsCaseEntity pcsCaseEntity = loadCaseData(caseReference);
+
+        log.error("====== LOADED PCS CASE ENTITY DATA CAT A SIZE: "
+            + pcsCaseEntity.getDocumentsCategoryA().size()
+            + "CAT B SIZE: " + pcsCaseEntity.getDocumentsCategoryB().size());
 
         PCSCase pcsCase = PCSCase.builder()
             .propertyAddress(convertAddress(pcsCaseEntity.getPropertyAddress()))
