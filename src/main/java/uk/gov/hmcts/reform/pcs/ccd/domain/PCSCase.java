@@ -23,10 +23,6 @@ import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
 
-import java.util.List;
-
-import static uk.gov.hmcts.ccd.sdk.type.FieldType.DynamicRadioList;
-
 import static uk.gov.hmcts.ccd.sdk.type.FieldType.Collection;
 
 /**
@@ -195,14 +191,24 @@ public class PCSCase {
     private String claimPaymentTabMarkdown;
 
     @CCD(
-        label = "Supporting documents",
+        label = "Supporting documents Category A",
         typeOverride = Collection,
         typeParameterOverride = "Document",
         access = {CitizenAccess.class, CaseworkerAccess.class},
         categoryID = "B"
     )
-    @JsonProperty("supportingDocuments")
-    private List<ListValue<Document>> supportingDocuments;
+    @JsonProperty("supportingDocumentsCategoryA")
+    private List<ListValue<Document>> supportingDocumentsCategoryA;
+
+    @CCD(
+        label = "Supporting documents Category B",
+        typeOverride = Collection,
+        typeParameterOverride = "Document",
+        access = {CitizenAccess.class, CaseworkerAccess.class},
+        categoryID = "B"
+    )
+    @JsonProperty("supportingDocumentsCategoryB")
+    private List<ListValue<Document>> supportingDocumentsCategoryB;
 
     @CCD(
         label = "Case file view",

@@ -12,7 +12,8 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.ClaimantInformation;
-import uk.gov.hmcts.reform.pcs.ccd.page.uploadsupportingdocs.DocumentUpload;
+import uk.gov.hmcts.reform.pcs.ccd.page.uploadsupportingdocs.DocumentUploadCategoryA;
+import uk.gov.hmcts.reform.pcs.ccd.page.uploadsupportingdocs.DocumentUploadCategoryB;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
@@ -40,7 +41,8 @@ public class UploadDocumentPoc implements CCDConfig<PCSCase, State, UserRole> {
 
         new PageBuilder(eventBuilder)
             .add(new ClaimantInformation())
-            .add(new DocumentUpload());
+            .add(new DocumentUploadCategoryA())
+            .add(new DocumentUploadCategoryB());
     }
 
     private PCSCase start(EventPayload<PCSCase, State> eventPayload) {

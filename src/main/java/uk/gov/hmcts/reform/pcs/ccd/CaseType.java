@@ -95,6 +95,16 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
             .categoryLabel("B")
             .displayOrder(2).parentCategoryID("A")
             .build();
+        configBuilder.categories(UserRole.PCS_CASE_WORKER)
+            .categoryID("C")
+            .categoryLabel("C")
+            .displayOrder(3).parentCategoryID("B")
+            .build();
+        configBuilder.categories(UserRole.PCS_CASE_WORKER)
+            .categoryID("D")
+            .categoryLabel("D")
+            .displayOrder(4)
+            .build();
         configBuilder.tab("caseFileView", "Supporting Documents")
             .forRoles(UserRole.PCS_CASE_WORKER)
             .field(PCSCase::getCaseFileView, null, "#ARGUMENT(CaseFileView)");

@@ -4,7 +4,7 @@ import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 
-public class DocumentUpload implements CcdPageConfiguration {
+public class DocumentUploadCategoryB implements CcdPageConfiguration {
     @Override
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
@@ -16,6 +16,6 @@ public class DocumentUpload implements CcdPageConfiguration {
                     * a maximum of 100MB in size (larger files must be split)
                     * clearly labelled, e.g. applicant-name-evidence.pdf
                     """)
-                .optional(PCSCase::getSupportingDocuments);
+                .optional(PCSCase::getSupportingDocumentsCategoryA);
     }
 }

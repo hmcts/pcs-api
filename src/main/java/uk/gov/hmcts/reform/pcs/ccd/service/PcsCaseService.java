@@ -43,7 +43,22 @@ public class PcsCaseService {
                         ? pcsCase.getPreActionProtocolCompleted().toBoolean()
                         : null);
 
-        List<ListValue<Document>> supportingDocuments = pcsCase.getSupportingDocuments();
+        addDocuments(pcsCase.getSupportingDocumentsCategoryA(), "A", pcsCaseEntity);
+        addDocuments(pcsCase.getSupportingDocumentsCategoryB(), "B", pcsCaseEntity);
+
+        return pcsCaseRepository.save(pcsCaseEntity);
+    }
+
+    /**
+     * This is a helper method to pull documents from a  list,
+     * convert them into a Document entity, and add to the pcsCaseEntity
+     * so it may be saved into the database.
+     * @param supportingDocuments The list of documents
+     * @param category Which category the document belongs to
+     * @param pcsCaseEntity The entity to add the document to
+     */
+    private void addDocuments(List<ListValue<Document>> supportingDocuments, String category,
+                              PcsCaseEntity pcsCaseEntity) {
         if (supportingDocuments != null && !supportingDocuments.isEmpty()) {
             for (ListValue<Document> documentWrapper : supportingDocuments) {
                 if (documentWrapper != null && documentWrapper.getValue() != null) {
@@ -55,12 +70,14 @@ public class PcsCaseService {
                     documentEntity.setUploadedOn(LocalDate.now());
                     documentEntity.setPcsCase(pcsCaseEntity);
 
-                    pcsCaseEntity.addDocument(documentEntity);
+                    if (category.equals("A")) {
+                        pcsCaseEntity.addDocumentCategoryA(documentEntity);
+                    } else {
+                        pcsCaseEntity.addDocumentCategoryB(documentEntity);
+                    }
                 }
             }
         }
-
-        return pcsCaseRepository.save(pcsCaseEntity);
     }
 
     public void patchCase(long caseReference, PCSCase pcsCase) {
@@ -87,6 +104,15 @@ public class PcsCaseService {
 
         if (pcsCase.getPreActionProtocolCompleted() != null) {
             pcsCaseEntity.setPreActionProtocolCompleted(pcsCase.getPreActionProtocolCompleted().toBoolean());
+        }
+
+        if (pcsCase.getSupportingDocumentsCategoryA() != null) {
+            addDocuments(pcsCase.getSupportingDocumentsCategoryA(), "A", pcsCaseEntity);
+        }
+
+
+        if (pcsCase.getSupportingDocumentsCategoryA() != null) {
+            addDocuments(pcsCase.getSupportingDocumentsCategoryA(), "B", pcsCaseEntity);
         }
 
         pcsCaseRepository.save(pcsCaseEntity);
@@ -124,7 +150,7 @@ public class PcsCaseService {
         document.setFilePath(filePath);
         document.setUploadedOn(LocalDate.now());
 
-        pcsCaseEntity.addDocument(document);
+        pcsCaseEntity.addDocumentCategoryA(document);
         pcsCaseRepository.save(pcsCaseEntity);
     }
 
