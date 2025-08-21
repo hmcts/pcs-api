@@ -32,6 +32,7 @@ security:
     - "/swagger-ui.html"
     - "/swagger-ui/**"
     - "/v3/api-docs/**"
+    - "/testing-support/fee-lookup"
 
 spring:
   config:
