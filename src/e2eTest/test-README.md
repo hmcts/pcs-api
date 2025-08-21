@@ -41,19 +41,19 @@ _Note: The `update-testReadMe.ts` script automatically updates this documentatio
 
 The framework's modular design consists of these key layers:
 
-| Layer                   | Folder/File                              | Description                                                      |
-|-------------------------|------------------------------------------|------------------------------------------------------------------|
-| **Configuration**       | `config/`                                | Manages environment setup and test lifecycle hooks               |
-| **Test Data**           | `data/`                                  | Stores test data files for data-driven testing                   |
-| **Test Specs**          | `tests/`                                 | Contains feature-organized test specifications                   |
-| **Controller**          | `utils/controller.ts`                    | Orchestrates test execution through action/validation interfaces |
-| **Element Actions**     | `utils/actions/element-actions/`         | Implements core browser interactions (clicks, fills, etc.)       |
-| **Custom Actions**      | `utils/actions/custom-actions/`          | Handles domain-specific workflows (login, navigation)            |
-| **Element Validations** | `utils/validations/element-validations/` | Verifies basic element states (visibility, text, etc.)           |
-| **Custom Validations**  | `utils/validations/custom-validations/`  | Validates business rules and complex scenarios                   |
-| **Interfaces**          | `utils/interfaces/`                      | Defines implementation contracts for actions and validations     |
-| **Registry**            | `utils/registry/`                        | Maintains component registration and lookup system               |
-| **Documentation**       | `testREADME.md` + `update-testReadMe.ts` | Auto-updating framework documentation system                     |
+| Layer                    | Folder/File                              | Description                                                       |
+|--------------------------|------------------------------------------|-------------------------------------------------------------------|
+| **Configuration**        | `config/`                                | Manages environment setup and test lifecycle hooks                |
+| **Test Data**            | `data/`                                  | Stores test data files for data-driven testing                    |
+| **Test Specs**           | `tests/`                                 | Contains feature-organized test specifications                    |
+| **Controller**           | `utils/controller.ts`                    | Orchestrates test execution through action/validation interfaces  |
+| **Element Actions**      | `utils/actions/element-actions/`         | Implements core browser interactions (clicks, fills, etc.)        |
+| **Custom Actions**       | `utils/actions/custom-actions/`          | Handles domain-specific workflows (login, navigation)             |
+| **Element Validations**  | `utils/validations/element-validations/` | Verifies basic element states (visibility, text, etc.)            |
+| **Custom Validations**   | `utils/validations/custom-validations/`  | Validates business rules and complex scenarios                    |
+| **Interfaces**           | `utils/interfaces/`                      | Defines implementation contracts for actions and validations      |
+| **Registry**             | `utils/registry/`                        | Maintains component registration and lookup system                |
+| **Documentation**        | `testREADME.md` + `update-testReadMe.ts` | Auto-updating framework documentation system                      |
 
 ## 3. Getting Started
 
