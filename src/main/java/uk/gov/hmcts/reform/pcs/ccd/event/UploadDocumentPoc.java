@@ -41,8 +41,7 @@ public class UploadDocumentPoc implements CCDConfig<PCSCase, State, UserRole> {
 
         new PageBuilder(eventBuilder)
             .add(new ClaimantInformation())
-            .add(new DocumentUploadCategoryA())
-            .add(new DocumentUploadCategoryB());
+            .add(new DocumentUploadCategoryA());
     }
 
     private PCSCase start(EventPayload<PCSCase, State> eventPayload) {
