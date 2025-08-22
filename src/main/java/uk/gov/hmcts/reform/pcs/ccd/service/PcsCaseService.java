@@ -97,7 +97,6 @@ public class PcsCaseService {
         return result;
     }
 
-
     public List<ListValue<DefendantDetails>> mapToDefendantDetails(List<Defendant> defendants) {
         if (defendants == null) {
             return Collections.emptyList();
