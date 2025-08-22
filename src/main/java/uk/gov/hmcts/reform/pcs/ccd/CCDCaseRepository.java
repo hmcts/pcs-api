@@ -64,7 +64,7 @@ public class CCDCaseRepository extends DecentralisedCaseRepository<PCSCase> {
         PCSCase pcsCase = PCSCase.builder()
             .propertyAddress(convertAddress(pcsCaseEntity.getPropertyAddress()))
             .caseManagementLocation(pcsCaseEntity.getCaseManagementLocation())
-            .supportingDocumentsCategoryA(mapDocumentsCategoryA(pcsCaseEntity.getDocumentsCategoryA()))
+            .differentDocumentNameA(mapDocumentsCategoryA(pcsCaseEntity.getDocumentsCategoryA()))
             .supportingDocumentsCategoryB(mapDocumentsCategoryB(pcsCaseEntity.getDocumentsCategoryB()))
             .preActionProtocolCompleted(pcsCaseEntity.getPreActionProtocolCompleted() != null
                 ? VerticalYesNo.from(pcsCaseEntity.getPreActionProtocolCompleted())
