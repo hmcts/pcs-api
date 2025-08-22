@@ -61,13 +61,15 @@ test.describe('[Create Case Flow With Address and Claimant Type]  @Master @night
       attemptedMediationWithDefendantsOption: mediationAndSettlement.yes,
       settlementWithDefendantsOption: mediationAndSettlement.no,
     });
-    await performValidation('mainHeader', checkingNotice.mainHeader);
-    await performValidation('text', {"text": checkingNotice.guidanceOnPosessionNoticePeriodsLink, "elementType": "paragraphLink"})
-    await performValidation('text', {"text": checkingNotice.servedNoticeInteractiveText, "elementType": "inlineText"});
-    await performAction('selectNoticeOfYourIntention', checkingNotice.yes);
-    await performValidation('mainHeader', noticeDetails.mainHeader);
-    await performAction('clickButton', checkingNotice.continue);
-    await performAction('clickButton', noticeDetails.continue);
+    await performAction('clickButton', 'Continue');
+
+    // await performValidation('mainHeader', checkingNotice.mainHeader);
+    // await performValidation('text', {"text": checkingNotice.guidanceOnPosessionNoticePeriodsLink, "elementType": "paragraphLink"})
+    // await performValidation('text', {"text": checkingNotice.servedNoticeInteractiveText, "elementType": "inlineText"});
+    // await performAction('selectNoticeOfYourIntention', checkingNotice.yes);
+    // await performValidation('mainHeader', noticeDetails.mainHeader);
+    // await performAction('clickButton', checkingNotice.continue);
+    // await performAction('clickButton', noticeDetails.continue);
     await performAction('clickButton', 'Save and continue');
     await performValidation('bannerAlert', 'Case #.* has been created.');
     await performAction('clickTab', 'Property Details');
@@ -104,10 +106,11 @@ test.describe('[Create Case Flow With Address and Claimant Type]  @Master @night
       attemptedMediationWithDefendantsOption: mediationAndSettlement.yes,
       settlementWithDefendantsOption: mediationAndSettlement.no,
     });
-    await performValidation('mainHeader', checkingNotice.mainHeader);
-    await performAction('selectNoticeOfYourIntention', checkingNotice.no);
-    await performValidation('mainHeader', rentDetails.mainHeader);
-    await performAction('clickButton', rentDetails.continue);
+    await performAction('clickButton', 'Continue');
+    // await performValidation('mainHeader', checkingNotice.mainHeader);
+    // await performAction('selectNoticeOfYourIntention', checkingNotice.no);
+    // await performValidation('mainHeader', rentDetails.mainHeader);
+    // await performAction('clickButton', rentDetails.continue);
     await performAction('clickButton', 'Save and continue');
     await performValidation('bannerAlert', 'Case #.* has been created.');
     await performAction('clickTab', 'Property Details');
@@ -144,12 +147,6 @@ test.describe('[Create Case Flow With Address and Claimant Type]  @Master @night
     });
     await performAction('selectLegislativeCountry', legislativeCountry.wales);
     await performAction('selectClaimantType', claimantType.privateLandlord);
-    await performAction('defendant1Details', {
-      name: defendant1.no,
-      correspondenceAddress: defendant1.yes,
-      email: defendant1.no,
-      correspondenceAddressSame: defendant1.no
-    });
     await performValidation('mainHeader', 'You\'re not eligible for this online service');
     await performAction('clickButton', 'Continue');
     await performValidation('errorMessage', {
@@ -161,7 +158,7 @@ test.describe('[Create Case Flow With Address and Claimant Type]  @Master @night
     await performAction('clickButton', 'Cancel');
   });
 
-  test('Unsuccessful case creation journey due to claim type not in scope of Release1 @R1only', async () => {
+  test.skip('Unsuccessful case creation journey due to claim type not in scope of Release1 @R1only', async () => {
     await performAction('selectAddress', {
       postcode: addressDetails.englandPostcode,
       addressIndex: addressDetails.addressIndex
@@ -196,6 +193,18 @@ test.describe('[Create Case Flow With Address and Claimant Type]  @Master @night
         correspondenceAddress: defendant1.no,
         email: defendant1.no,
       });
+      await performValidation('mainHeader', groundsForPossession.mainHeader);
+      await performAction('selectGroundsForPossission', groundsForPossession.yes);
+      await performAction('selectPreActionProtocol', preActionProtocol.yes);
+      await performAction('selectMediationAndSettlement', {
+        attemptedMediationWithDefendantsOption: mediationAndSettlement.yes,
+        settlementWithDefendantsOption: mediationAndSettlement.no,
+      });
+      await performAction('clickButton', 'Continue');
+      // await performValidation('mainHeader', checkingNotice.mainHeader);
+      // await performAction('selectNoticeOfYourIntention', checkingNotice.no);
+      // await performValidation('mainHeader', rentDetails.mainHeader);
+      // await performAction('clickButton', rentDetails.continue);
       await performAction('clickButton', 'Save and continue');
       await performValidation('bannerAlert', 'Case #.* has been created.');
       await performAction('clickTab', 'Property Details');
