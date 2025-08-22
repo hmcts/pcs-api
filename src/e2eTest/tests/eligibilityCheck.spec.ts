@@ -5,6 +5,8 @@ import {borderPostcode} from '@data/page-data/borderPostcode.page.data';
 import configData from '@config/test.config';
 import {addressDetails} from '@data/page-data/addressDetails.page.data';
 import {legislativeCountry} from '@data/page-data/legislativeCountry.page.data';
+import { canNotUseOnlineService } from '@data/page-data/canNotUseOnlineService.page.data';
+
 
 test.beforeEach(async ({page}) => {
   initializeExecutor(page);
@@ -16,9 +18,9 @@ test.beforeEach(async ({page}) => {
   await performAction('housingPossessionClaim');
 });
 
-test.describe.skip('Eligibility checks for cross and non cross border postcodes @nightly', async () => {
+test.describe('Eligibility checks for cross and non cross border postcodes @nightly', async () => {
   //Skipping these tests until the postcode data insertion is handled in AAT via automation
-  test('Verify cross border postcode eligibility check redirection and content for England and Wales', async ({page}) => {
+  test.skip('Verify cross border postcode eligibility check redirection and content for England and Wales', async ({page}) => {
     await performAction('selectAddress', {
       postcode: borderPostcode.englandWalesPostcode,
       addressIndex: addressDetails.addressIndex
@@ -40,7 +42,7 @@ test.describe.skip('Eligibility checks for cross and non cross border postcodes 
     await performValidation('mainHeader', borderPostcode.mainHeader);
   });
 
-  test('Verify cross border postcode page for England and Scotland content', async () => {
+  test.skip('Verify cross border postcode page for England and Scotland content', async () => {
     await performAction('selectAddress', {
       postcode: borderPostcode.englandScotlandPostcode,
       addressIndex: addressDetails.addressIndex
@@ -58,7 +60,7 @@ test.describe.skip('Eligibility checks for cross and non cross border postcodes 
     await performValidation('text', {"text": borderPostcode.cancel, "elementType": "link"})
   });
 
-  test('Verify non cross border postcode eligibility check for England', async () => {
+  test.skip('Verify non cross border postcode eligibility check for England', async () => {
     await performAction('selectAddress', {
       postcode: addressDetails.englandPostcode,
       addressIndex: addressDetails.addressIndex
@@ -66,12 +68,24 @@ test.describe.skip('Eligibility checks for cross and non cross border postcodes 
     await performValidation('mainHeader', legislativeCountry.mainHeader);
   });
 
-  test('Verify non cross border postcode eligibility check for Wales', async () => {
+  test.skip('Verify non cross border postcode eligibility check for Wales', async () => {
     await performAction('selectAddress', {
       postcode: addressDetails.walesPostcode,
       addressIndex: addressDetails.addressIndex
     });
     await performValidation('mainHeader', legislativeCountry.mainHeader);
+  });
+
+  test('Verify property not eligible screen for England and Wales', async () => {
+    await performAction('selectAddress', {
+      postcode: addressDetails.walesPostcode,
+      addressIndex: addressDetails.addressIndex
+    });
+    await performValidation('mainHeader', canNotUseOnlineService.mainHeader);
+    await performValidation('text', {"text": canNotUseOnlineService.PCOLLink, "elementType": "link"})
+    await performValidation('text', {"text": canNotUseOnlineService.claimsInSoctlandLink, "elementType": "link"})
+    await performValidation('text', {"text": canNotUseOnlineService.claimsInNorthernIrelandLink, "elementType": "link"})
+    await performValidation('text', {"text": canNotUseOnlineService.propertyPossessionsFullListLink, "elementType": "link"})
   });
 })
 
