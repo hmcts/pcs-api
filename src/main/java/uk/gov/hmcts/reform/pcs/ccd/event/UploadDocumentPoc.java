@@ -106,6 +106,14 @@ public class UploadDocumentPoc implements CCDConfig<PCSCase, State, UserRole> {
 
         PcsCaseEntity pcsCaseEntity = pcsCaseService.createCase(caseReference, pcsCase);
 
+        log.info("DEBUG: Final check before return - generatedDocuments: {}",
+                 pcsCase.getGeneratedDocuments() != null ? pcsCase.getGeneratedDocuments().size() : "null");
+        if (pcsCase.getGeneratedDocuments() != null && !pcsCase.getGeneratedDocuments().isEmpty()) {
+            pcsCase.getGeneratedDocuments().forEach(doc ->
+                                                        log.info("DEBUG: Generated doc ID: {}, filename: {}",
+                                                                 doc.getId(),
+                                                                 doc.getValue() != null ? doc.getValue().getFilename() : "null"));
+        }
 
         return pcsCase;
     }

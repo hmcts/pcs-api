@@ -54,20 +54,42 @@ public class CCDCaseRepository extends DecentralisedCaseRepository<PCSCase> {
      */
     @Override
     public PCSCase getCase(long caseReference) {
+        log.info("DEBUG: CCDCaseRepository.getCase() called for case: {}", caseReference);
 
         PcsCaseEntity pcsCaseEntity = loadCaseData(caseReference);
+
+        log.info("DEBUG: Database documents count - total: {}",
+                 pcsCaseEntity.getDocuments() != null ? pcsCaseEntity.getDocuments().size() : "null");
+
+        Set<DocumentEntity> docs = pcsCaseEntity.getDocuments();
+        if (docs != null) {
+            long supportingCount = docs.stream().filter(d -> "SUPPORTING".equals(d.getDocumentType())).count();
+            long generatedCount = docs.stream().filter(d -> "GENERATED".equals(d.getDocumentType())).count();
+            log.info("DEBUG: Database documents - SUPPORTING: {}, GENERATED: {}", supportingCount, generatedCount);
+        }
+
+        List<ListValue<Document>> supportingDocs = mapSupportingDocuments(pcsCaseEntity.getDocuments());
+        List<ListValue<Document>> generatedDocs = mapGeneratedDocuments(pcsCaseEntity.getDocuments());
+
+        log.info("DEBUG: Mapped documents - supportingDocs: {}, generatedDocs: {}",
+                 supportingDocs != null ? supportingDocs.size() : "null",
+                 generatedDocs != null ? generatedDocs.size() : "null");
 
         PCSCase pcsCase = PCSCase.builder()
             .propertyAddress(convertAddress(pcsCaseEntity.getPropertyAddress()))
             .caseManagementLocation(pcsCaseEntity.getCaseManagementLocation())
-            .supportingDocuments(mapSupportingDocuments(pcsCaseEntity.getDocuments()))
-            .generatedDocuments(mapGeneratedDocuments(pcsCaseEntity.getDocuments()))
+            .supportingDocuments(supportingDocs)
+            .generatedDocuments(generatedDocs)
             .preActionProtocolCompleted(pcsCaseEntity.getPreActionProtocolCompleted() != null
-                ? VerticalYesNo.from(pcsCaseEntity.getPreActionProtocolCompleted())
-                : null)
+                                            ? VerticalYesNo.from(pcsCaseEntity.getPreActionProtocolCompleted())
+                                            : null)
             .build();
 
-        setDerivedProperties(caseReference,pcsCase, pcsCaseEntity);
+        setDerivedProperties(caseReference, pcsCase, pcsCaseEntity);
+
+        log.info("DEBUG: Final PCSCase - supportingDocuments: {}, generatedDocuments: {}",
+                 pcsCase.getSupportingDocuments() != null ? pcsCase.getSupportingDocuments().size() : "null",
+                 pcsCase.getGeneratedDocuments() != null ? pcsCase.getGeneratedDocuments().size() : "null");
 
         return pcsCase;
     }
