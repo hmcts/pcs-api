@@ -54,7 +54,7 @@ public class DefendantDetails {
     @CCD(label = "Do you know the defendant's email address? (Optional)")
     private VerticalYesNo emailKnown;
 
-    @CCD(label = "Email",  typeOverride = FieldType.Email, showCondition = "emailKnown=\"YES\"")
+    @CCD(label = "Enter email address",  typeOverride = FieldType.Email, showCondition = "emailKnown=\"YES\"")
     private String email;
 
 }
