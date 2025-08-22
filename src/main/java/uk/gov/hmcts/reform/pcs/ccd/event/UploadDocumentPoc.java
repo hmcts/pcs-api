@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.event;
 
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CCDConfig;
 import uk.gov.hmcts.ccd.sdk.api.ConfigBuilder;
@@ -24,9 +25,11 @@ import uk.gov.hmcts.ccd.sdk.type.Document;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.ArrayList;
 
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.uploadDocumentPoc;
 
+@Slf4j
 @Component
 @AllArgsConstructor
 public class UploadDocumentPoc implements CCDConfig<PCSCase, State, UserRole> {
@@ -67,6 +70,17 @@ public class UploadDocumentPoc implements CCDConfig<PCSCase, State, UserRole> {
 
         pcsCase.setPaymentStatus(PaymentStatus.UNPAID);
 
+        // Debug: Check what documents we have before processing
+        log.info("DEBUG: Before processing - supportingDocuments: {}", 
+            pcsCase.getSupportingDocuments() != null ? pcsCase.getSupportingDocuments().size() : "null");
+        log.info("DEBUG: Before processing - generatedDocuments: {}", 
+            pcsCase.getGeneratedDocuments() != null ? pcsCase.getGeneratedDocuments().size() : "null");
+
+        // Ensure generatedDocuments list is initialized
+        if (pcsCase.getGeneratedDocuments() == null) {
+            pcsCase.setGeneratedDocuments(new ArrayList<>());
+        }
+
         try {
             Map<String, Object> formPayload = extractCaseDataForDocument(pcsCase, caseReference);
 
@@ -76,15 +90,23 @@ public class UploadDocumentPoc implements CCDConfig<PCSCase, State, UserRole> {
             Document generatedDocument =
                 documentGenerationService.generateDocument(templateId, formPayload, outputType);
 
+            // Add to generatedDocuments (not supportingDocuments)
             pcsCase.getGeneratedDocuments().add(
                 documentGenerationService.createDocumentListValue(generatedDocument)
             );
+
+            // Debug: Check what documents we have after adding generated document
+            log.info("DEBUG: After adding generated - supportingDocuments: {}", 
+                pcsCase.getSupportingDocuments() != null ? pcsCase.getSupportingDocuments().size() : "null");
+            log.info("DEBUG: After adding generated - generatedDocuments: {}", 
+                pcsCase.getGeneratedDocuments() != null ? pcsCase.getGeneratedDocuments().size() : "null");
 
         } catch (Exception e) {
             // Log error but don't fail the case
             // This is just for testing the document generation flow
         }
 
+        // Now create the case with BOTH supporting and generated documents
         PcsCaseEntity pcsCaseEntity = pcsCaseService.createCase(caseReference, pcsCase);
     }
 
