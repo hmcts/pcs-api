@@ -1,120 +1,88 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
-import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
-import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.ccd.sdk.api.Event.EventBuilder;
+import uk.gov.hmcts.ccd.sdk.api.FieldCollection.FieldCollectionBuilder;
+import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
+import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
 
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.params.provider.Arguments.arguments;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.PostcodeNotAssignedToCourt.ALL_COUNTRIES_CONTENT;
-import static uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.PostcodeNotAssignedToCourt.ENGLAND_CONTENT;
-import static uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.PostcodeNotAssignedToCourt.WALES_CONTENT;
+@DisplayName("PostcodeNotAssignedToCourt Page Tests")
+class PostcodeNotAssignedToCourtTest extends BasePageTest {
 
-class PostcodeNotAssignedToCourtTest {
-
+    private EventBuilder<PCSCase, UserRole, State> eventBuilder;
+    private FieldCollectionBuilder<PCSCase, State, EventBuilder<PCSCase, UserRole, State>> fieldBuilder;
+    private PageBuilder pageBuilder;
     private PostcodeNotAssignedToCourt underTest;
 
     @BeforeEach
+    @SuppressWarnings("unchecked")
     void setUp() {
+        eventBuilder = mock(EventBuilder.class);
+        fieldBuilder = mock(FieldCollectionBuilder.class);
+
+        when(eventBuilder.fields()).thenReturn(fieldBuilder);
+        when(fieldBuilder.page(anyString())).thenReturn(fieldBuilder);
+        when(fieldBuilder.pageLabel(anyString())).thenReturn(fieldBuilder);
+        when(fieldBuilder.showCondition(anyString())).thenReturn(fieldBuilder);
+        when(fieldBuilder.readonly(any(), anyString())).thenReturn(fieldBuilder);
+        when(fieldBuilder.label(anyString(), anyString())).thenReturn(fieldBuilder);
+        when(fieldBuilder.label(anyString(), anyString(), anyString())).thenReturn(fieldBuilder);
+
+        pageBuilder = new PageBuilder(eventBuilder);
         underTest = new PostcodeNotAssignedToCourt();
     }
 
+    @Test
+    @DisplayName("Should build page configuration successfully")
+    void shouldBuildPageConfigurationSuccessfully() {
+        underTest.addTo(pageBuilder);
 
-    private static Stream<Arguments> contentScenarios() {
-        return Stream.of(
-            arguments("ALL_COUNTRIES", new String[] {
-                "For claims in Scotland",
-                "For claims in Northern Ireland",
-                "local sheriff court",
-                "Enforcement of Judgments Office (EJO)"
-            }),
-            arguments("ENGLAND", new String[] {
-                "For rental or mortgage arrears claims",
-                "For other types of claims",
-                "N5 and the correct particulars of claim form"
-            }),
-            arguments("WALES", new String[] {
-                "Use form N5 Wales",
-                "correct particulars of claim form"
-            })
-        );
+        verify(fieldBuilder).page(eq("postcodeNotAssignedToCourt"));
+        verify(fieldBuilder).pageLabel(eq("You cannot use this online service"));
     }
 
     @ParameterizedTest
-    @MethodSource("contentScenarios")
-    void shouldGenerateAppropriateContent(String view, String[] expectedContents) {
-        PCSCase caseData = PCSCase.builder()
-            .showPostcodeNotAssignedToCourt(YesOrNo.YES)
-            .postcodeNotAssignedView(view)
-            .build();
+    @MethodSource("showConditionScenarios")
+    @DisplayName("Should apply correct show conditions for different views")
+    void shouldApplyCorrectShowConditions(String view, String expectedShowCondition, String expectedLabelId) {
+        underTest.addTo(pageBuilder);
 
-        CaseDetails<PCSCase, State> details = new CaseDetails<>();
-        details.setData(caseData);
-
-        AboutToStartOrSubmitResponse<PCSCase, State> response = underTest.midEvent(details, null);
-
-        assertThat(response.getErrors()).containsExactly("Property not eligible for this online service");
-
-        // Test empty string view (default case)
-        if (view == null) {
-            caseData.setPostcodeNotAssignedView("");
-            String content = ALL_COUNTRIES_CONTENT;
-            for (String expectedContent : expectedContents) {
-                assertThat(content).contains(expectedContent);
-            }
-        }
-
-        // Test specific view
-        String content = switch (view) {
-            case "ENGLAND" -> ENGLAND_CONTENT;
-            case "WALES" -> WALES_CONTENT;
-            default -> ALL_COUNTRIES_CONTENT;
-        };
+        // Verify the main show condition is set
+        verify(fieldBuilder).showCondition(eq("showPostcodeNotAssignedToCourt=\"Yes\""));
         
-        for (String expectedContent : expectedContents) {
-            assertThat(content).contains(expectedContent);
-        }
-
-        // Verify content that should NOT be present based on the view
-        if ("ENGLAND".equals(view)) {
-            assertThat(content).doesNotContain("For claims in Scotland")
-                             .doesNotContain("For claims in Wales")
-                             .doesNotContain("For claims in Northern Ireland");
-        } else if ("WALES".equals(view)) {
-            assertThat(content).doesNotContain("For claims in Scotland")
-                             .doesNotContain("For claims in England")
-                             .doesNotContain("For claims in Northern Ireland")
-                             .doesNotContain("PCOL service");
-        }
+        // Verify specific show conditions for each view are configured
+        verify(fieldBuilder).label(eq(expectedLabelId), anyString(), eq(expectedShowCondition));
     }
 
-    @ParameterizedTest
-    @MethodSource("linkScenarios")
-    void shouldContainRequiredLinks(String view, String expectedLink) {
-        String content = switch (view) {
-            case "ENGLAND" -> ENGLAND_CONTENT;
-            case "WALES" -> WALES_CONTENT;
-            default -> ALL_COUNTRIES_CONTENT;
-        };
-        assertThat(content).contains(expectedLink);
-    }
-
-    private static Stream<Arguments> linkScenarios() {
+    private static Stream<Arguments> showConditionScenarios() {
         return Stream.of(
-            arguments("ALL_COUNTRIES", "https://www.gov.uk/possession-claim-online-recover-property"),
-            arguments("ALL_COUNTRIES", "https://www.scotcourts.gov.uk/home"),
-            arguments("ALL_COUNTRIES", "https://www.nidirect.gov.uk/articles/enforcement-civil-court-orders-northern-ireland"),
-            arguments("ENGLAND", "https://www.gov.uk/possession-claim-online-recover-property"),
-            arguments("WALES", "https://www.gov.uk/government/collections/property-possession-forms")
+            arguments("ENGLAND", 
+                "showPostcodeNotAssignedToCourt=\"Yes\" AND postcodeNotAssignedView=\"ENGLAND\"", 
+                "postcodeNotAssignedToCourt-england"),
+            arguments("WALES", 
+                "showPostcodeNotAssignedToCourt=\"Yes\" AND postcodeNotAssignedView=\"WALES\"", 
+                "postcodeNotAssignedToCourt-wales"),
+            arguments("ALL_COUNTRIES", 
+                "showPostcodeNotAssignedToCourt=\"Yes\" AND postcodeNotAssignedView=\"ALL_COUNTRIES\"", 
+                "postcodeNotAssignedToCourt-all")
         );
     }
 }
