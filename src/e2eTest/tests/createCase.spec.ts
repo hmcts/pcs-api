@@ -44,9 +44,9 @@ test.describe('[Create Case Flow With Address and Claimant Type]  @Master @night
       phoneNumber: contactPreferences.no
     });
     await performAction('defendant1Details', {
-      name: defendant1.no,
-      correspondenceAddress: defendant1.no,
-      email: defendant1.no,
+      name: defendant1.yes,
+      correspondenceAddress: defendant1.yes,
+      email: defendant1.yes,
       correspondenceAddressSame: defendant1.no
     });
     await performValidation('text', {
@@ -163,10 +163,17 @@ test.describe('[Create Case Flow With Address and Claimant Type]  @Master @night
       await performAction('enterTestAddressManually');
       await performAction('selectLegislativeCountry', legislativeCountry.wales);
       await performAction('selectClaimantType', claimantType.registeredCommunityLandlord);
+      await performAction('selectClaimType', claimType.no);
+      await performAction('selectClaimantName', claimantName.yes);
+      await performAction('selectContactPreferences', {
+        notifications: contactPreferences.yes,
+        correspondenceAddress: contactPreferences.yes,
+        phoneNumber: contactPreferences.no
+      });
       await performAction('defendant1Details', {
-        name: defendant1.yes,
+        name: defendant1.no,
         correspondenceAddress: defendant1.no,
-        email: defendant1.yes,
+        email: defendant1.no,
       });
       await performAction('clickButton', 'Save and continue');
       await performValidation('bannerAlert', 'Case #.* has been created.');
