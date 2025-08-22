@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.service;
 
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
@@ -20,6 +21,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
+@Slf4j
 @Service
 @AllArgsConstructor
 public class PcsCaseService {
@@ -80,7 +82,7 @@ public class PcsCaseService {
                 }
             }
         }
-
+        log.info(String.valueOf(pcsCaseEntity.getDocuments().size()));
         return pcsCaseRepository.save(pcsCaseEntity);
     }
 

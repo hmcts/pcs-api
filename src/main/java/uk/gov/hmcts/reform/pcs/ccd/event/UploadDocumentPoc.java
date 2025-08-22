@@ -72,9 +72,11 @@ public class UploadDocumentPoc implements CCDConfig<PCSCase, State, UserRole> {
 
         // Debug: Check what documents we have before
         log.info("DEBUG: Before processing - supportingDocuments: {}",
-                 pcsCase.getSupportingDocuments() != null ? pcsCase.getSupportingDocuments().size() : "null");
+                 pcsCase.getSupportingDocuments() != null 
+                     ? pcsCase.getSupportingDocuments().size() : "null");
         log.info("DEBUG: Before processing - generatedDocuments: {}",
-                 pcsCase.getGeneratedDocuments() != null ? pcsCase.getGeneratedDocuments().size() : "null");
+                 pcsCase.getGeneratedDocuments() != null 
+                     ? pcsCase.getGeneratedDocuments().size() : "null");
 
         if (pcsCase.getGeneratedDocuments() == null) {
             pcsCase.setGeneratedDocuments(new ArrayList<>());
@@ -96,9 +98,11 @@ public class UploadDocumentPoc implements CCDConfig<PCSCase, State, UserRole> {
 
             // Debug: Check what documents we have after
             log.info("DEBUG: After adding generated - supportingDocuments: {}",
-                     pcsCase.getSupportingDocuments() != null ? pcsCase.getSupportingDocuments().size() : "null");
+                     pcsCase.getSupportingDocuments() != null 
+                         ? pcsCase.getSupportingDocuments().size() : "null");
             log.info("DEBUG: After adding generated - generatedDocuments: {}",
-                     pcsCase.getGeneratedDocuments() != null ? pcsCase.getGeneratedDocuments().size() : "null");
+                     pcsCase.getGeneratedDocuments() != null 
+                         ? pcsCase.getGeneratedDocuments().size() : "null");
 
         } catch (Exception e) {
             log.error("Failed to generate document for case: {}", caseReference, e);
@@ -107,12 +111,14 @@ public class UploadDocumentPoc implements CCDConfig<PCSCase, State, UserRole> {
         PcsCaseEntity pcsCaseEntity = pcsCaseService.createCase(caseReference, pcsCase);
 
         log.info("DEBUG: Final check before return - generatedDocuments: {}",
-                 pcsCase.getGeneratedDocuments() != null ? pcsCase.getGeneratedDocuments().size() : "null");
+                 pcsCase.getGeneratedDocuments() != null 
+                     ? pcsCase.getGeneratedDocuments().size() : "null");
         if (pcsCase.getGeneratedDocuments() != null && !pcsCase.getGeneratedDocuments().isEmpty()) {
             pcsCase.getGeneratedDocuments().forEach(doc ->
-                                                        log.info("DEBUG: Generated doc ID: {}, filename: {}",
-                                                                 doc.getId(),
-                                                                 doc.getValue() != null ? doc.getValue().getFilename() : "null"));
+                log.info("DEBUG: Generated doc ID: {}, filename: {}",
+                         doc.getId(),
+                         doc.getValue() != null 
+                             ? doc.getValue().getFilename() : "null"));
         }
 
         return pcsCase;
