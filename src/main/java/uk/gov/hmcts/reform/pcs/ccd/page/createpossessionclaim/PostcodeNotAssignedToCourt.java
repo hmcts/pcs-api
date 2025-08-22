@@ -33,8 +33,8 @@ public class PostcodeNotAssignedToCourt implements CcdPageConfiguration {
                 ---
                 <section tabindex="0">
                 <p class="govuk-body">
-                Based on the postcode you provided, we cannot determine which court your claim should be assigned to, 
-                so you cannot use this online service.
+                Based on the postcode you provided, we cannot determine which court your claim should be 
+                assigned to, so you cannot use this online service.
                 </p>
 
                 <h3 class="govuk-heading-s govuk-!-font-size-19">What to do next</h3>
@@ -63,10 +63,10 @@ public class PostcodeNotAssignedToCourt implements CcdPageConfiguration {
                 "postcodeNotAssignedToCourt-all",
                 """
                 <ul class="govuk-list govuk-list--bullet">
-                    <li><span class="govuk-!-font-weight-bold">For rental or mortgage arrears claims in England</span> – 
-                    use the %s.</li>
-                    <li><span class="govuk-!-font-weight-bold">For other types of claims in England</span> – fill in form 
-                    N5 and the correct particulars of claim form.</li>
+                    <li><span class="govuk-!-font-weight-bold">For rental or mortgage arrears claims in 
+                    England</span> – use the %s.</li>
+                    <li><span class="govuk-!-font-weight-bold">For other types of claims in England</span> – fill in 
+                    form N5 and the correct particulars of claim form.</li>
                     <li><span class="govuk-!-font-weight-bold">For claims in Wales</span> - Use form N5 Wales and the 
                     correct particulars of claim form.</li>
                     <li><span class="govuk-!-font-weight-bold">For claims in Scotland</span> - use your 
@@ -88,7 +88,7 @@ public class PostcodeNotAssignedToCourt implements CcdPageConfiguration {
             )
             .label(
                 "postcodeNotAssignedToCourt-footer",
-                FOOTER            );
+                FOOTER);
     }
 
     private static final String PCOL_LINK = """
