@@ -230,13 +230,13 @@ public class PCSCase {
         typeOverride = FieldType.MoneyGBP,
         access = {CitizenAccess.class, CaseworkerAccess.class}
     )
-    private BigDecimal rentAmount;
+    private BigDecimal currentRent;
 
     @CCD(
         label = "How frequently should rent be paid?",
         access = {CitizenAccess.class, CaseworkerAccess.class}
     )
-    private RentPaymentFrequency rentPaymentFrequency;
+    private RentPaymentFrequency rentFrequency;
 
     @CCD(
         label = "Enter frequency",

@@ -15,7 +15,6 @@ public class RentDetails implements CcdPageConfiguration {
         pageBuilder
                 .page("rentDetails")
                 .pageLabel("Rent details")
-                .label("caseReference", "Case number:")
                 .label("rentDetails-content", 
                         """
                         ---
@@ -25,9 +24,9 @@ public class RentDetails implements CcdPageConfiguration {
                             </p>
                         </section>
                         """)
-                .mandatory(PCSCase::getRentAmount)
-                .mandatory(PCSCase::getRentPaymentFrequency)
-                .mandatory(PCSCase::getOtherRentFrequency, "rentPaymentFrequency=\"OTHER\"")
-                .mandatory(PCSCase::getDailyRentChargeAmount, "rentPaymentFrequency=\"OTHER\"");
+                .mandatory(PCSCase::getCurrentRent, "rentFrequency!=\"OTHER\"")
+                .mandatory(PCSCase::getRentFrequency)
+                .mandatory(PCSCase::getOtherRentFrequency, "rentFrequency=\"OTHER\"")
+                .mandatory(PCSCase::getDailyRentChargeAmount, "rentFrequency=\"OTHER\"");
     }
 }
