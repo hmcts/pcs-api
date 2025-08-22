@@ -218,7 +218,7 @@ public class PCSCase {
     @CCD(searchable = false, access = CaseworkerAccess.class)
     private YesOrNo showClaimTypeNotEligibleWales;
 
-    @CCD(access = {CitizenAccess.class, CaseworkerAccess.class})
+    @CCD(label = "Defendant 1", access = {CitizenAccess.class, CaseworkerAccess.class})
     private DefendantDetails defendant1;
 
     @CCD(access = {CitizenAccess.class, CaseworkerAccess.class})
