@@ -8,6 +8,7 @@ import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
@@ -111,6 +112,28 @@ public class PcsCaseService {
         return result;
     }
 
+    public void clearHiddenDefendantDetailsFields(List<ListValue<DefendantDetails>> defendantsList) {
+        if (defendantsList == null) {
+            return;
+        }
+
+        for (ListValue<DefendantDetails> listValue : defendantsList) {
+            DefendantDetails defendant = listValue.getValue();
+            if (defendant != null) {
+                if (VerticalYesNo.NO == defendant.getNameKnown()) {
+                    defendant.setFirstName(null);
+                    defendant.setLastName(null);
+                }
+                if (VerticalYesNo.NO == defendant.getAddressKnown()) {
+                    defendant.setCorrespondenceAddress(new AddressUK());
+                    defendant.setAddressSameAsPossession(null);
+                }
+                if (VerticalYesNo.NO == defendant.getEmailKnown()) {
+                    defendant.setEmail(null);
+                }
+            }
+        }
+    }
 
     private void setPcqIdForCurrentUser(UUID pcqId, PcsCaseEntity pcsCaseEntity) {
         UserInfo userDetails = securityContextService.getCurrentUserDetails();

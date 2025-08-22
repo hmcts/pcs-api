@@ -361,6 +361,42 @@ class PcsCaseServiceTest {
         assertThat(mappedDefendantDetails.getEmail()).isEqualTo("jane.smith@email.com");
     }
 
+    @Test
+    void shouldClearHiddenDefendantDetailsFields() {
+        // Given
+        DefendantDetails defendantWithHiddenFields = DefendantDetails.builder()
+            .nameKnown(VerticalYesNo.NO)
+            .firstName("John")
+            .lastName("Doe")
+            .addressKnown(VerticalYesNo.NO)
+            .correspondenceAddress(AddressUK.builder()
+                                       .addressLine1("123 Test Street")
+                                       .postTown("Test Town")
+                                       .postCode("TE1 1ST")
+                                       .build())
+            .addressSameAsPossession(VerticalYesNo.NO)
+            .emailKnown(VerticalYesNo.NO)
+            .email("test@example.com")
+            .build();
+
+        List<ListValue<DefendantDetails>> defendantsList = List.of(
+            new ListValue<>("1", defendantWithHiddenFields));
+
+        // When
+        underTest.clearHiddenDefendantDetailsFields(defendantsList);
+
+        // Then
+        DefendantDetails clearedDefendant = defendantsList.get(0).getValue();
+        assertThat(clearedDefendant.getFirstName()).isNull();
+        assertThat(clearedDefendant.getLastName()).isNull();
+        assertThat(clearedDefendant.getCorrespondenceAddress().getAddressLine1()).isNull();
+        assertThat(clearedDefendant.getCorrespondenceAddress().getPostCode()).isNull();
+        assertThat(clearedDefendant.getCorrespondenceAddress().getPostTown()).isNull();
+        assertThat(clearedDefendant.getAddressSameAsPossession()).isNull();
+        assertThat(clearedDefendant.getEmail()).isNull();
+
+    }
+
     private AddressEntity stubAddressUKModelMapper(AddressUK addressUK) {
         AddressEntity addressEntity = mock(AddressEntity.class);
         when(modelMapper.map(addressUK, AddressEntity.class)).thenReturn(addressEntity);

@@ -9,9 +9,8 @@ public class DefendantsDetails implements CcdPageConfiguration {
     @Override
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
-            .page("defendantDetails")
+            .page("defendantsDetails")
             .pageLabel("Defendant 1 details")
             .mandatory(PCSCase::getDefendant1);
     }
-
 }

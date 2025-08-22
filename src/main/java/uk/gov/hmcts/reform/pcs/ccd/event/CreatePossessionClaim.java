@@ -128,6 +128,7 @@ public class CreatePossessionClaim implements CCDConfig<PCSCase, State, UserRole
                 pcsCase.getDefendant1().setCorrespondenceAddress(pcsCase.getPropertyAddress());
             }
             defendantsList.add(new ListValue<>(UUID.randomUUID().toString(), pcsCase.getDefendant1()));
+            pcsCaseService.clearHiddenDefendantDetailsFields(defendantsList);
             pcsCase.setDefendants(defendantsList);
         }
         long caseReference = eventPayload.caseReference();

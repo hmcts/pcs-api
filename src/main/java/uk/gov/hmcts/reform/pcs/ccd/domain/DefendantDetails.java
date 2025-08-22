@@ -16,7 +16,7 @@ public class DefendantDetails {
 
     @CCD(label = """
                 ---
-                <h2>Defendant's Name</h2>""",typeOverride = FieldType.Label)
+                <h2>Defendant's name</h2>""",typeOverride = FieldType.Label)
     private String nameSectionLabel;
 
     @CCD(label = "Do you know the defendant's name?")
@@ -33,25 +33,17 @@ public class DefendantDetails {
                 <h2>Defendant's correspondence address</h2>""",typeOverride = FieldType.Label)
     private String addressSectionLabel;
 
-    @CCD(label = "Do you know the defendant's correspondence address?")
+    @CCD(label = "Do you know the defendant's correspondence address?",
+        hint = "If their correspondence address is outside of the UK, you'll need to make a general application for "
+            + "permission to serve a claim outside the jurisdiction after you've submitted and paid for the claim."
+    )
     private VerticalYesNo addressKnown;
 
     @CCD(label = "Is the defendant's correspondence address the same as the address of the property"
         + " you're claiming possession of?", showCondition = "addressKnown=\"YES\"")
     private VerticalYesNo addressSameAsPossession;
 
-    @CCD(typeOverride = FieldType.Label,
-            label = """
-                   <h3 class='govuk-heading-m govuk-!-margin-bottom-1'>Enter address details</h3>
-                   <p class='govuk-hint govuk-!-font-size-16 govuk-!-margin-top-1'>If their correspondence address is
-                   outside of the UK, you'll need to make a general application for permission to serve a claim
-                   outside the jurisdiction after you've submitted and paid for the claim.</p>
-                   """,
-            showCondition = "addressKnown=\"YES\" AND addressSameAsPossession=\"NO\""
-    )
-    private String correspondenceAddressHintField;
-
-    @CCD(showCondition = "addressKnown=\"YES\" AND addressSameAsPossession=\"NO\"")
+    @CCD(label = "Enter address details",showCondition = "addressKnown=\"YES\" AND addressSameAsPossession=\"NO\"")
     private AddressUK correspondenceAddress;
 
     @CCD(label = """
