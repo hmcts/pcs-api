@@ -197,8 +197,8 @@ public class PCSCase {
         access = {CitizenAccess.class, CaseworkerAccess.class},
         categoryID = "A"
     )
-    @JsonProperty("supportingDocumentsCategoryA")
-    private List<ListValue<Document>> supportingDocumentsCategoryA;
+    @JsonProperty("differentDocumentNameA")
+    private List<ListValue<Document>> differentDocumentNameA;
 
     @CCD(
         label = "Supporting documents Category B",
@@ -207,8 +207,19 @@ public class PCSCase {
         access = {CitizenAccess.class, CaseworkerAccess.class},
         categoryID = "B"
     )
-    @JsonProperty("supportingDocumentsCategoryB")
+    @JsonProperty("supportingDocumentsCategoryC")
     private List<ListValue<Document>> supportingDocumentsCategoryB;
+
+    @CCD(
+        label = "Supporting documents Category C",
+        typeOverride = Collection,
+        typeParameterOverride = "Document",
+        access = {CitizenAccess.class, CaseworkerAccess.class},
+        categoryID = "C"
+    )
+    @JsonProperty("supportingDocumentsCategoryB")
+    private List<ListValue<Document>> supportingDocumentsCategoryC;
+
 
     @CCD(
         label = "Case file view",

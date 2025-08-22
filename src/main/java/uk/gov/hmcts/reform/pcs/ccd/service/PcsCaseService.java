@@ -45,12 +45,12 @@ public class PcsCaseService {
                         ? pcsCase.getPreActionProtocolCompleted().toBoolean()
                         : null);
 
-        addDocuments(pcsCase.getSupportingDocumentsCategoryA(), "A", pcsCaseEntity);
+        addDocuments(pcsCase.getDifferentDocumentNameA(), "A", pcsCaseEntity);
         addDocuments(pcsCase.getSupportingDocumentsCategoryB(), "B", pcsCaseEntity);
 
         log.error("====== PCS CASE ENTITY DATA CAT A SIZE: "
             + pcsCaseEntity.getDocumentsCategoryA().size()
-            + "CAT B SIZE: " + pcsCaseEntity.getDocumentsCategoryB().size());
+            + " CAT B SIZE: " + pcsCaseEntity.getDocumentsCategoryB().size());
 
         return pcsCaseRepository.save(pcsCaseEntity);
     }
@@ -112,13 +112,13 @@ public class PcsCaseService {
             pcsCaseEntity.setPreActionProtocolCompleted(pcsCase.getPreActionProtocolCompleted().toBoolean());
         }
 
-        if (pcsCase.getSupportingDocumentsCategoryA() != null) {
-            addDocuments(pcsCase.getSupportingDocumentsCategoryA(), "A", pcsCaseEntity);
+        if (pcsCase.getDifferentDocumentNameA() != null) {
+            addDocuments(pcsCase.getDifferentDocumentNameA(), "A", pcsCaseEntity);
         }
 
 
-        if (pcsCase.getSupportingDocumentsCategoryA() != null) {
-            addDocuments(pcsCase.getSupportingDocumentsCategoryA(), "B", pcsCaseEntity);
+        if (pcsCase.getDifferentDocumentNameA() != null) {
+            addDocuments(pcsCase.getDifferentDocumentNameA(), "B", pcsCaseEntity);
         }
 
         pcsCaseRepository.save(pcsCaseEntity);
