@@ -43,6 +43,7 @@ public class PcsCaseService {
                         ? pcsCase.getPreActionProtocolCompleted().toBoolean()
                         : null);
 
+        // Process supporting documents
         List<ListValue<Document>> supportingDocuments = pcsCase.getSupportingDocuments();
         if (supportingDocuments != null && !supportingDocuments.isEmpty()) {
             for (ListValue<Document> documentWrapper : supportingDocuments) {
@@ -54,6 +55,25 @@ public class PcsCaseService {
                     documentEntity.setFilePath(document.getBinaryUrl());
                     documentEntity.setUploadedOn(LocalDate.now());
                     documentEntity.setDocumentType("SUPPORTING");
+                    documentEntity.setPcsCase(pcsCaseEntity);
+
+                    pcsCaseEntity.addDocument(documentEntity);
+                }
+            }
+        }
+
+        // Process generated documents
+        List<ListValue<Document>> generatedDocuments = pcsCase.getGeneratedDocuments();
+        if (generatedDocuments != null && !generatedDocuments.isEmpty()) {
+            for (ListValue<Document> documentWrapper : generatedDocuments) {
+                if (documentWrapper != null && documentWrapper.getValue() != null) {
+                    Document document = documentWrapper.getValue();
+
+                    DocumentEntity documentEntity = new DocumentEntity();
+                    documentEntity.setFileName(document.getFilename());
+                    documentEntity.setFilePath(document.getBinaryUrl());
+                    documentEntity.setUploadedOn(LocalDate.now());
+                    documentEntity.setDocumentType("GENERATED");
                     documentEntity.setPcsCase(pcsCaseEntity);
 
                     pcsCaseEntity.addDocument(documentEntity);
