@@ -57,26 +57,15 @@ public class CCDCaseRepository extends DecentralisedCaseRepository<PCSCase> {
 
         PcsCaseEntity pcsCaseEntity = loadCaseData(caseReference);
 
-        List<ListValue<Document>> supportingDocs = mapSupportingDocuments(pcsCaseEntity.getDocuments());
-        List<ListValue<Document>> generatedDocs = mapGeneratedDocuments(pcsCaseEntity.getDocuments());
-        
-        log.info("Building PCSCase: supportingDocs size: {}, generatedDocs size: {}", 
-            supportingDocs != null ? supportingDocs.size() : 0,
-            generatedDocs != null ? generatedDocs.size() : 0);
-        
         PCSCase pcsCase = PCSCase.builder()
             .propertyAddress(convertAddress(pcsCaseEntity.getPropertyAddress()))
             .caseManagementLocation(pcsCaseEntity.getCaseManagementLocation())
-            .supportingDocuments(supportingDocs)
-            .generatedDocuments(generatedDocs)
+            .supportingDocuments(mapSupportingDocuments(pcsCaseEntity.getDocuments()))
+            .generatedDocuments(mapGeneratedDocuments(pcsCaseEntity.getDocuments()))
             .preActionProtocolCompleted(pcsCaseEntity.getPreActionProtocolCompleted() != null
                 ? VerticalYesNo.from(pcsCaseEntity.getPreActionProtocolCompleted())
                 : null)
             .build();
-            
-        log.info("PCSCase built: supportingDocuments size: {}, generatedDocuments size: {}", 
-            pcsCase.getSupportingDocuments() != null ? pcsCase.getSupportingDocuments().size() : 0,
-            pcsCase.getGeneratedDocuments() != null ? pcsCase.getGeneratedDocuments().size() : 0);
 
         setDerivedProperties(caseReference,pcsCase, pcsCaseEntity);
 
@@ -107,19 +96,11 @@ public class CCDCaseRepository extends DecentralisedCaseRepository<PCSCase> {
 
     private List<ListValue<Document>> mapGeneratedDocuments(Set<DocumentEntity> documentEntities) {
         if (documentEntities == null || documentEntities.isEmpty()) {
-            log.info("mapGeneratedDocuments: No documents to process");
             return null;
         }
 
-        log.info("mapGeneratedDocuments: Processing {} documents", documentEntities.size());
-        
-        List<ListValue<Document>> result = documentEntities.stream()
-            .filter(docEntity -> {
-                boolean isGenerated = "GENERATED".equals(docEntity.getDocumentType());
-                log.info("mapGeneratedDocuments: Document {} has type: {} (isGenerated: {})", 
-                    docEntity.getFileName(), docEntity.getDocumentType(), isGenerated);
-                return isGenerated;
-            })
+        return documentEntities.stream()
+            .filter(docEntity -> "GENERATED".equals(docEntity.getDocumentType()))
             .map(docEntity -> {
                 Document document = Document.builder()
                     .filename(docEntity.getFileName())
@@ -127,20 +108,12 @@ public class CCDCaseRepository extends DecentralisedCaseRepository<PCSCase> {
                     .url(docEntity.getFilePath())
                     .build();
 
-                ListValue<Document> listValue = ListValue.<Document>builder()
+                return ListValue.<Document>builder()
                     .id(docEntity.getId().toString())
                     .value(document)
                     .build();
-                    
-                log.info("mapGeneratedDocuments: Created ListValue with id: {}, filename: {}, binaryUrl: {}", 
-                    listValue.getId(), document.getFilename(), document.getBinaryUrl());
-                    
-                return listValue;
             })
             .collect(Collectors.toList());
-            
-        log.info("mapGeneratedDocuments: Returning {} generated documents", result.size());
-        return result;
     }
 
     private void setDerivedProperties(long caseRef,PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {
