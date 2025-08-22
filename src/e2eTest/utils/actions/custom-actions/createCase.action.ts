@@ -3,21 +3,23 @@ import { TestConfig } from 'config/test.config';
 import { getIdamAuthToken, getServiceAuthToken } from '../../helpers/idam-helpers/idam.helper';
 import { actionData, IAction } from '../../interfaces/action.interface';
 import { Page } from '@playwright/test';
-import { initIdamAuthToken, initServiceAuthToken, getUser } from 'utils/helpers/idam-helpers/idam.helper';
+import { getUser, initIdamAuthToken, initServiceAuthToken } from 'utils/helpers/idam-helpers/idam.helper';
 import { performAction, performActions, performValidation } from '@utils/controller';
 import { createCase } from '@data/page-data/createCase.page.data';
 import { addressDetails } from '@data/page-data/addressDetails.page.data';
 import { housingPossessionClaim } from '@data/page-data/housingPossessionClaim.page.data';
-import { borderPostcode } from '@data/page-data/borderPostcode.page.data';
 import { claimantName } from '@data/page-data/claimantName.page.data';
 import { contactPreferences } from '@data/page-data/contactPreferences.page.data';
+import { mediationAndSettlement } from '@data/page-data/mediationAndSettlement.page.data';
 
 let caseInfo: { id: string; fid: string; state: string };
 const testConfig = TestConfig.ccdCase;
 
 export class CreateCaseAction implements IAction {
   private eventToken?: string;
-  constructor(private readonly axios: AxiosInstance = Axios.create()) {}
+
+  constructor(private readonly axios: AxiosInstance = Axios.create()) {
+  }
 
   async execute(page: Page, action: string, fieldName: actionData, data?: actionData): Promise<void> {
     const actionsMap = new Map<string, () => Promise<void>>([
@@ -31,7 +33,11 @@ export class CreateCaseAction implements IAction {
       ['selectClaimType', () => this.selectClaimType(fieldName)],
       ['selectClaimantName', () => this.selectClaimantName(fieldName)],
       ['selectContactPreferences', () => this.selectContactPreferences(fieldName)],
-      ['selectCountryRadioButton', () => this.selectCountryRadioButton(fieldName)]
+      ['selectGroundsForPossission', () => this.selectGroundsForPossission(fieldName)],
+      ['selectPreActionProtocol', () => this.selectPreActionProtocol(fieldName)],
+      ['selectMediationAndSettlement', () => this.selectMediationAndSettlement(fieldName)],
+      ['selectNoticeOfYourIntention', () => this.selectNoticeOfYourIntention(fieldName)],
+      ['selectCountryRadioButton', () => this.selectCountryRadioButton(fieldName)],
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) throw new Error(`No action found for '${action}'`);
@@ -53,7 +59,7 @@ export class CreateCaseAction implements IAction {
       'elementType': 'heading'
     });
     await performAction('clickButton', housingPossessionClaim.continue);
- }
+  }
 
   private async selectAddress(caseData: actionData) {
     const addressDetails = caseData as { postcode: string; addressIndex: number };
@@ -81,6 +87,26 @@ export class CreateCaseAction implements IAction {
     await performAction('clickButton', 'Continue');
   }
 
+  private async selectGroundsForPossission(caseData: actionData) {
+    await performAction('clickRadioButton', caseData);
+    await performAction('clickButton', 'Continue');
+  }
+
+  private async selectPreActionProtocol(caseData: actionData) {
+    await performAction('clickRadioButton', caseData);
+    await performAction('clickButton', 'Continue');
+  }
+
+  private async selectNoticeOfYourIntention(caseData: actionData) {
+    await performAction('clickRadioButton', caseData);
+    await performAction('clickButton', 'Continue');
+  }
+
+  private async selectCountryRadioButton(option: actionData) {
+    await performAction('clickRadioButton', option);
+    await performAction('clickButton', 'Continue');
+  }
+
   private async selectClaimantName(caseData: actionData) {
     await performAction('clickRadioButton', caseData);
     if(caseData == claimantName.no){
@@ -95,7 +121,6 @@ export class CreateCaseAction implements IAction {
       correspondenceAddress: string;
       phoneNumber: string;
     };
-
     await performAction('clickRadioButton', {
       question: contactPreferences.emailAddressForNotifications,
       option: prefData.notifications
@@ -103,7 +128,6 @@ export class CreateCaseAction implements IAction {
     if (prefData.notifications === 'No') {
       await performAction('inputText', 'Enter email address', contactPreferences.emailIdInput);
     }
-
     await performAction('clickRadioButton', {
       question: contactPreferences.doYouWantDocumentsToBeSentToAddress,
       option: prefData.correspondenceAddress
@@ -114,7 +138,6 @@ export class CreateCaseAction implements IAction {
         addressIndex: addressDetails.addressIndex
       });
     }
-
     await performAction('clickRadioButton', {
       question: contactPreferences.provideContactPhoneNumber,
       option: prefData.phoneNumber
@@ -122,13 +145,29 @@ export class CreateCaseAction implements IAction {
     if (prefData.phoneNumber === 'Yes') {
       await performAction('inputText', 'Enter phone number', contactPreferences.phoneNumberInput);
     }
-
     await performAction('clickButton', 'Continue');
   }
 
-  private async selectCountryRadioButton(country: actionData) {
-    await performAction('clickRadioButton', country);
-    await performAction('clickButton', borderPostcode.continue);
+  private async selectMediationAndSettlement(mediationSettlement: actionData) {
+    const prefData = mediationSettlement as {
+      attemptedMediationWithDefendantsOption: string;
+      settlementWithDefendantsOption: string;
+    };
+    await performAction('clickRadioButton', {
+      question: mediationAndSettlement.attemptedMediationWithDefendants,
+      option: prefData.attemptedMediationWithDefendantsOption
+    });
+    if (prefData.attemptedMediationWithDefendantsOption == 'Yes') {
+      await performAction('inputText', mediationAndSettlement.attemptedMediationTextAreaLabel, mediationAndSettlement.attemptedMediationInputData);
+    }
+    await performAction('clickRadioButton', {
+      question: mediationAndSettlement.settlementWithDefendants,
+      option: prefData.settlementWithDefendantsOption
+    });
+    if (prefData.settlementWithDefendantsOption == 'Yes') {
+      await performAction('inputText', mediationAndSettlement.settlementWithDefendantsTextAreaLabel, mediationAndSettlement.settlementWithDefendantsInputData);
+    }
+    await performAction('clickButton', 'Continue');
   }
 
   private async selectJurisdictionCaseTypeEvent() {
@@ -188,6 +227,7 @@ export class CreateCaseAction implements IAction {
     }
   }
 }
+
 //setup for the DataStoreApi to use the Axios instance with the correct headers and base URL
 export const dataStoreApi = async (): Promise<CreateCaseAction> => {
   const userCreds = getUser('exuiUser');
