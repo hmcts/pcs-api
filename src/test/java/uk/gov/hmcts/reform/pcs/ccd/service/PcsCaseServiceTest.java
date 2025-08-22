@@ -299,12 +299,12 @@ class PcsCaseServiceTest {
 
         // Test rent amount field
         assertTenancyLicenceField(
-                pcsCase -> when(pcsCase.getRentAmount()).thenReturn(new BigDecimal("1200.50")),
+                pcsCase -> when(pcsCase.getCurrentRent()).thenReturn(new BigDecimal("1200.50")),
                 expected -> assertThat(expected.getRentAmount()).isEqualTo(new BigDecimal("1200.50")));
 
         // Test rent payment frequency field
         assertTenancyLicenceField(
-                pcsCase -> when(pcsCase.getRentPaymentFrequency()).thenReturn(RentPaymentFrequency.MONTHLY),
+                pcsCase -> when(pcsCase.getRentFrequency()).thenReturn(RentPaymentFrequency.MONTHLY),
                 expected -> assertThat(expected.getRentPaymentFrequency()).isEqualTo(RentPaymentFrequency.MONTHLY));
 
         // Test other rent frequency field

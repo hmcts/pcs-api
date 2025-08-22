@@ -69,9 +69,8 @@ class RentDetailsTest {
         underTest.addTo(pageBuilder);
 
         // Verify exactly 4 mandatory fields are configured
-        verify(fieldBuilder, times(2)).mandatory(any()); // rentAmount and rentPaymentFrequency
-        verify(fieldBuilder, times(2)).mandatory(any(), eq("rentPaymentFrequency=\"OTHER\"")); 
-        // conditional fields
+        verify(fieldBuilder, times(1)).mandatory(any()); // rentFrequency (no condition)
+        verify(fieldBuilder, times(3)).mandatory(any(), anyString()); // 3 fields with conditions
     }
 
     @Test
@@ -80,7 +79,8 @@ class RentDetailsTest {
         underTest.addTo(pageBuilder);
 
         // Verify conditional fields are configured with correct show conditions
-        verify(fieldBuilder, times(2)).mandatory(any(), eq("rentPaymentFrequency=\"OTHER\"")); 
+        verify(fieldBuilder).mandatory(any(), eq("rentFrequency!=\"OTHER\"")); // currentRent
+        verify(fieldBuilder, times(2)).mandatory(any(), eq("rentFrequency=\"OTHER\"")); 
         // otherRentFrequency and dailyRentChargeAmount
     }
 } 

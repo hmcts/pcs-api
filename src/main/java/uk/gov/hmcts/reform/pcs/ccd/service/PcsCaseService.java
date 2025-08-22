@@ -102,8 +102,8 @@ public class PcsCaseService {
     private TenancyLicence buildTenancyLicence(PCSCase pcsCase) {
         return TenancyLicence.builder()
                 .noticeServed(toBooleanOrNull(pcsCase.getNoticeServed()))
-                .rentAmount(pcsCase.getRentAmount())
-                .rentPaymentFrequency(pcsCase.getRentPaymentFrequency())
+                .rentAmount(pcsCase.getCurrentRent())
+                .rentPaymentFrequency(pcsCase.getRentFrequency())
                 .otherRentFrequency(pcsCase.getOtherRentFrequency())
                 .dailyRentChargeAmount(pcsCase.getDailyRentChargeAmount())
                 .build();
