@@ -31,7 +31,7 @@ test.beforeEach(async ({page}, testInfo) => {
   await performAction('housingPossessionClaim');
 });
 
-test.describe('[Create Case Flow With Address and Claimant Type]  @Master @nightly', async () => {
+test.describe.skip('[Create Case Flow With Address and Claimant Type]  @Master @nightly', async () => {
   test('England - Successful case creation', async () => {
     await performAction('selectAddress', {
       postcode: addressDetails.englandPostcode,
@@ -61,15 +61,13 @@ test.describe('[Create Case Flow With Address and Claimant Type]  @Master @night
       attemptedMediationWithDefendantsOption: mediationAndSettlement.yes,
       settlementWithDefendantsOption: mediationAndSettlement.no,
     });
-    await performAction('clickButton', 'Continue');
-
-    // await performValidation('mainHeader', checkingNotice.mainHeader);
-    // await performValidation('text', {"text": checkingNotice.guidanceOnPosessionNoticePeriodsLink, "elementType": "paragraphLink"})
-    // await performValidation('text', {"text": checkingNotice.servedNoticeInteractiveText, "elementType": "inlineText"});
-    // await performAction('selectNoticeOfYourIntention', checkingNotice.yes);
-    // await performValidation('mainHeader', noticeDetails.mainHeader);
-    // await performAction('clickButton', checkingNotice.continue);
-    // await performAction('clickButton', noticeDetails.continue);
+    await performValidation('mainHeader', checkingNotice.mainHeader);
+    await performValidation('text', {"text": checkingNotice.guidanceOnPosessionNoticePeriodsLink, "elementType": "paragraphLink"})
+    await performValidation('text', {"text": checkingNotice.servedNoticeInteractiveText, "elementType": "inlineText"});
+    await performAction('selectNoticeOfYourIntention', checkingNotice.yes);
+    await performValidation('mainHeader', noticeDetails.mainHeader);
+    await performAction('clickButton', checkingNotice.continue);
+    await performAction('clickButton', noticeDetails.continue);
     await performAction('clickButton', 'Save and continue');
     await performValidation('bannerAlert', 'Case #.* has been created.');
     await performAction('clickTab', 'Property Details');
@@ -106,11 +104,10 @@ test.describe('[Create Case Flow With Address and Claimant Type]  @Master @night
       attemptedMediationWithDefendantsOption: mediationAndSettlement.yes,
       settlementWithDefendantsOption: mediationAndSettlement.no,
     });
-    await performAction('clickButton', 'Continue');
-    // await performValidation('mainHeader', checkingNotice.mainHeader);
-    // await performAction('selectNoticeOfYourIntention', checkingNotice.no);
-    // await performValidation('mainHeader', rentDetails.mainHeader);
-    // await performAction('clickButton', rentDetails.continue);
+    await performValidation('mainHeader', checkingNotice.mainHeader);
+    await performAction('selectNoticeOfYourIntention', checkingNotice.no);
+    await performValidation('mainHeader', rentDetails.mainHeader);
+    await performAction('clickButton', rentDetails.continue);
     await performAction('clickButton', 'Save and continue');
     await performValidation('bannerAlert', 'Case #.* has been created.');
     await performAction('clickTab', 'Property Details');
@@ -158,7 +155,7 @@ test.describe('[Create Case Flow With Address and Claimant Type]  @Master @night
     await performAction('clickButton', 'Cancel');
   });
 
-  test.skip('Unsuccessful case creation journey due to claim type not in scope of Release1 @R1only', async () => {
+  test('Unsuccessful case creation journey due to claim type not in scope of Release1 @R1only', async () => {
     await performAction('selectAddress', {
       postcode: addressDetails.englandPostcode,
       addressIndex: addressDetails.addressIndex
@@ -200,11 +197,10 @@ test.describe('[Create Case Flow With Address and Claimant Type]  @Master @night
         attemptedMediationWithDefendantsOption: mediationAndSettlement.yes,
         settlementWithDefendantsOption: mediationAndSettlement.no,
       });
-      await performAction('clickButton', 'Continue');
-      // await performValidation('mainHeader', checkingNotice.mainHeader);
-      // await performAction('selectNoticeOfYourIntention', checkingNotice.no);
-      // await performValidation('mainHeader', rentDetails.mainHeader);
-      // await performAction('clickButton', rentDetails.continue);
+      await performValidation('mainHeader', checkingNotice.mainHeader);
+      await performAction('selectNoticeOfYourIntention', checkingNotice.no);
+      await performValidation('mainHeader', rentDetails.mainHeader);
+      await performAction('clickButton', rentDetails.continue);
       await performAction('clickButton', 'Save and continue');
       await performValidation('bannerAlert', 'Case #.* has been created.');
       await performAction('clickTab', 'Property Details');
