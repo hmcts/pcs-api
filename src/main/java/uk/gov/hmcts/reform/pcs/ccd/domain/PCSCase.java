@@ -1,7 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.domain;
 
 import java.util.List;
-import java.math.BigDecimal;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
@@ -230,7 +229,7 @@ public class PCSCase {
         typeOverride = FieldType.MoneyGBP,
         access = {CitizenAccess.class, CaseworkerAccess.class}
     )
-    private BigDecimal currentRent;
+    private String currentRent;
 
     @CCD(
         label = "How frequently should rent be paid?",
@@ -250,6 +249,6 @@ public class PCSCase {
         typeOverride = FieldType.MoneyGBP,
         access = {CitizenAccess.class, CaseworkerAccess.class}
     )
-    private BigDecimal dailyRentChargeAmount;
+    private String dailyRentChargeAmount;
 
 }

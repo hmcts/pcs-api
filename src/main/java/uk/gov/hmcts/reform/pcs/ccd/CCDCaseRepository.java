@@ -59,13 +59,15 @@ public class CCDCaseRepository extends DecentralisedCaseRepository<PCSCase> {
                 ? VerticalYesNo.from(pcsCaseEntity.getPreActionProtocolCompleted()) 
                 : null)
             .currentRent(pcsCaseEntity.getTenancyLicence() != null 
-                ? pcsCaseEntity.getTenancyLicence().getRentAmount() : null)
+                && pcsCaseEntity.getTenancyLicence().getRentAmount() != null
+                ? pcsCaseEntity.getTenancyLicence().getRentAmount().toString() : null)
             .rentFrequency(pcsCaseEntity.getTenancyLicence() != null 
                 ? pcsCaseEntity.getTenancyLicence().getRentPaymentFrequency() : null)
             .otherRentFrequency(pcsCaseEntity.getTenancyLicence() != null 
                 ? pcsCaseEntity.getTenancyLicence().getOtherRentFrequency() : null)
             .dailyRentChargeAmount(pcsCaseEntity.getTenancyLicence() != null 
-                ? pcsCaseEntity.getTenancyLicence().getDailyRentChargeAmount() : null)
+                && pcsCaseEntity.getTenancyLicence().getDailyRentChargeAmount() != null
+                ? pcsCaseEntity.getTenancyLicence().getDailyRentChargeAmount().toString() : null)
             .noticeServed(pcsCaseEntity.getTenancyLicence() != null 
                 && pcsCaseEntity.getTenancyLicence().getNoticeServed() != null 
                 ? YesOrNo.from(pcsCaseEntity.getTenancyLicence().getNoticeServed()) : null)

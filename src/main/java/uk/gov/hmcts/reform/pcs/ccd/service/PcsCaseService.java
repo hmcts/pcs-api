@@ -15,6 +15,7 @@ import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 
+import java.math.BigDecimal;
 import java.util.UUID;
 
 @Service
@@ -102,10 +103,12 @@ public class PcsCaseService {
     private TenancyLicence buildTenancyLicence(PCSCase pcsCase) {
         return TenancyLicence.builder()
                 .noticeServed(toBooleanOrNull(pcsCase.getNoticeServed()))
-                .rentAmount(pcsCase.getCurrentRent())
+                .rentAmount(pcsCase.getCurrentRent() != null 
+                    ? new BigDecimal(pcsCase.getCurrentRent()) : null)
                 .rentPaymentFrequency(pcsCase.getRentFrequency())
                 .otherRentFrequency(pcsCase.getOtherRentFrequency())
-                .dailyRentChargeAmount(pcsCase.getDailyRentChargeAmount())
+                .dailyRentChargeAmount(pcsCase.getDailyRentChargeAmount() != null 
+                    ? new BigDecimal(pcsCase.getDailyRentChargeAmount()) : null)
                 .build();
     }
 
