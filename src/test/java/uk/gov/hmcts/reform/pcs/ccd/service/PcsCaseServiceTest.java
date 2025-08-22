@@ -389,9 +389,7 @@ class PcsCaseServiceTest {
         DefendantDetails clearedDefendant = defendantsList.get(0).getValue();
         assertThat(clearedDefendant.getFirstName()).isNull();
         assertThat(clearedDefendant.getLastName()).isNull();
-        assertThat(clearedDefendant.getCorrespondenceAddress().getAddressLine1()).isNull();
-        assertThat(clearedDefendant.getCorrespondenceAddress().getPostCode()).isNull();
-        assertThat(clearedDefendant.getCorrespondenceAddress().getPostTown()).isNull();
+        assertThat(clearedDefendant.getCorrespondenceAddress()).isNull();
         assertThat(clearedDefendant.getAddressSameAsPossession()).isNull();
         assertThat(clearedDefendant.getEmail()).isNull();
 

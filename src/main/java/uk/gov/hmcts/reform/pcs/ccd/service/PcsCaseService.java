@@ -125,7 +125,7 @@ public class PcsCaseService {
                     defendant.setLastName(null);
                 }
                 if (VerticalYesNo.NO == defendant.getAddressKnown()) {
-                    defendant.setCorrespondenceAddress(new AddressUK());
+                    defendant.setCorrespondenceAddress(null);
                     defendant.setAddressSameAsPossession(null);
                 }
                 if (VerticalYesNo.NO == defendant.getEmailKnown()) {
