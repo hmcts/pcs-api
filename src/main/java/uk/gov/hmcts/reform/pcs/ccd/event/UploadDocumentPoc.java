@@ -64,19 +64,18 @@ public class UploadDocumentPoc implements CCDConfig<PCSCase, State, UserRole> {
         return caseData;
     }
 
-    private void submit(EventPayload<PCSCase, State> eventPayload) {
+    private PCSCase submit(EventPayload<PCSCase, State> eventPayload) {
         long caseReference = eventPayload.caseReference();
         PCSCase pcsCase = eventPayload.caseData();
 
         pcsCase.setPaymentStatus(PaymentStatus.UNPAID);
 
-        // Debug: Check what documents we have before processing
-        log.info("DEBUG: Before processing - supportingDocuments: {}", 
-            pcsCase.getSupportingDocuments() != null ? pcsCase.getSupportingDocuments().size() : "null");
-        log.info("DEBUG: Before processing - generatedDocuments: {}", 
-            pcsCase.getGeneratedDocuments() != null ? pcsCase.getGeneratedDocuments().size() : "null");
+        // Debug: Check what documents we have before
+        log.info("DEBUG: Before processing - supportingDocuments: {}",
+                 pcsCase.getSupportingDocuments() != null ? pcsCase.getSupportingDocuments().size() : "null");
+        log.info("DEBUG: Before processing - generatedDocuments: {}",
+                 pcsCase.getGeneratedDocuments() != null ? pcsCase.getGeneratedDocuments().size() : "null");
 
-        // Ensure generatedDocuments list is initialized
         if (pcsCase.getGeneratedDocuments() == null) {
             pcsCase.setGeneratedDocuments(new ArrayList<>());
         }
@@ -95,19 +94,20 @@ public class UploadDocumentPoc implements CCDConfig<PCSCase, State, UserRole> {
                 documentGenerationService.createDocumentListValue(generatedDocument)
             );
 
-            // Debug: Check what documents we have after adding generated document
-            log.info("DEBUG: After adding generated - supportingDocuments: {}", 
-                pcsCase.getSupportingDocuments() != null ? pcsCase.getSupportingDocuments().size() : "null");
-            log.info("DEBUG: After adding generated - generatedDocuments: {}", 
-                pcsCase.getGeneratedDocuments() != null ? pcsCase.getGeneratedDocuments().size() : "null");
+            // Debug: Check what documents we have after
+            log.info("DEBUG: After adding generated - supportingDocuments: {}",
+                     pcsCase.getSupportingDocuments() != null ? pcsCase.getSupportingDocuments().size() : "null");
+            log.info("DEBUG: After adding generated - generatedDocuments: {}",
+                     pcsCase.getGeneratedDocuments() != null ? pcsCase.getGeneratedDocuments().size() : "null");
 
         } catch (Exception e) {
-            // Log error but don't fail the case
-            // This is just for testing the document generation flow
+            log.error("Failed to generate document for case: {}", caseReference, e);
         }
 
-        // Now create the case with BOTH supporting and generated documents
         PcsCaseEntity pcsCaseEntity = pcsCaseService.createCase(caseReference, pcsCase);
+
+
+        return pcsCase;
     }
 
     private Map<String, Object> extractCaseDataForDocument(PCSCase pcsCase, long caseReference) {
