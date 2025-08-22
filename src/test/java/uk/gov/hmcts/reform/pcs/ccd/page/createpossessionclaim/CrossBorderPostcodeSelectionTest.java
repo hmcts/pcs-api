@@ -12,7 +12,6 @@ import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
 import uk.gov.hmcts.ccd.sdk.api.Event;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
-import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
@@ -90,7 +89,7 @@ class CrossBorderPostcodeSelectionTest extends BasePageTest {
 
         if (status == EligibilityStatus.NO_MATCH_FOUND) {
             assertThat(resultData.getShowPostcodeNotAssignedToCourt()).isEqualTo(YesOrNo.YES);
-            assertThat(resultData.getSelectedLegislativeCountry()).isEqualTo(selectedCountry.name());
+            assertThat(resultData.getLegislativeCountry()).isEqualTo(selectedCountry.getLabel());
             
             switch (selectedCountry) {
                 case ENGLAND -> assertThat(resultData.getPostcodeNotAssignedView()).isEqualTo("ENGLAND");

@@ -224,7 +224,4 @@ public class PCSCase {
     @CCD(searchable = false, access = {CitizenAccess.class, CaseworkerAccess.class})
     private String postcodeNotAssignedView;
 
-    @CCD(searchable = false, access = {CitizenAccess.class, CaseworkerAccess.class})
-    private String selectedLegislativeCountry;
-
 }

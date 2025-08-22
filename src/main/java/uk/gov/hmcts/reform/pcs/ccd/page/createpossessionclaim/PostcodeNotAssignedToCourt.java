@@ -26,7 +26,7 @@ public class PostcodeNotAssignedToCourt implements CcdPageConfiguration {
             .showCondition("showPostcodeNotAssignedToCourt=\"Yes\"")
             .readonly(PCSCase::getShowPostcodeNotAssignedToCourt, NEVER_SHOW)
             .readonly(PCSCase::getPostcodeNotAssignedView, NEVER_SHOW)
-            .readonly(PCSCase::getSelectedLegislativeCountry, NEVER_SHOW)
+            .readonly(PCSCase::getLegislativeCountry, NEVER_SHOW)
             .label(
                 "postcodeNotAssignedToCourt-info-england",
                 ENGLAND_CONTENT,

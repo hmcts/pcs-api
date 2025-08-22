@@ -118,7 +118,7 @@ public class CrossBorderPostcodeSelection implements CcdPageConfiguration {
         if (eligibilityResult.getStatus() == EligibilityStatus.NO_MATCH_FOUND) {
             log.debug("No court found for postcode {} with country {}", postcode, selectedCountry);
             caseData.setShowPostcodeNotAssignedToCourt(YesOrNo.YES);
-            caseData.setSelectedLegislativeCountry(selectedCountry.name());
+            caseData.setLegislativeCountry(selectedCountry.getLabel());
             
             // Determine which view to show based on selected country
             String view = switch (selectedCountry) {
