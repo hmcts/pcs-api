@@ -209,7 +209,7 @@ public class PCSCase {
     )
 
     @JsonProperty("supportingDocumentsCategoryB")
-    private List<ListValue<Document>> supportingDocumentsCategoryC;
+    private List<ListValue<Document>> supportingDocumentsCategoryB;
 
 
     @CCD(
