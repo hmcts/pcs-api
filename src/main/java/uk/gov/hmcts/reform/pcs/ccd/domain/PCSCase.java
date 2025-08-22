@@ -207,16 +207,7 @@ public class PCSCase {
         access = {CitizenAccess.class, CaseworkerAccess.class},
         categoryID = "B"
     )
-    @JsonProperty("supportingDocumentsCategoryC")
-    private List<ListValue<Document>> supportingDocumentsCategoryB;
 
-    @CCD(
-        label = "Supporting documents Category C",
-        typeOverride = Collection,
-        typeParameterOverride = "Document",
-        access = {CitizenAccess.class, CaseworkerAccess.class},
-        categoryID = "C"
-    )
     @JsonProperty("supportingDocumentsCategoryB")
     private List<ListValue<Document>> supportingDocumentsCategoryC;
 
