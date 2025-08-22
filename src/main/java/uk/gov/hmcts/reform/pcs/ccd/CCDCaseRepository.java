@@ -58,6 +58,19 @@ public class CCDCaseRepository extends DecentralisedCaseRepository<PCSCase> {
             .preActionProtocolCompleted(pcsCaseEntity.getPreActionProtocolCompleted() != null 
                 ? VerticalYesNo.from(pcsCaseEntity.getPreActionProtocolCompleted()) 
                 : null)
+            .currentRent(pcsCaseEntity.getTenancyLicence() != null 
+                && pcsCaseEntity.getTenancyLicence().getRentAmount() != null
+                ? pcsCaseEntity.getTenancyLicence().getRentAmount().toString() : null)
+            .rentFrequency(pcsCaseEntity.getTenancyLicence() != null 
+                ? pcsCaseEntity.getTenancyLicence().getRentPaymentFrequency() : null)
+            .otherRentFrequency(pcsCaseEntity.getTenancyLicence() != null 
+                ? pcsCaseEntity.getTenancyLicence().getOtherRentFrequency() : null)
+            .dailyRentChargeAmount(pcsCaseEntity.getTenancyLicence() != null 
+                && pcsCaseEntity.getTenancyLicence().getDailyRentChargeAmount() != null
+                ? pcsCaseEntity.getTenancyLicence().getDailyRentChargeAmount().toString() : null)
+            .noticeServed(pcsCaseEntity.getTenancyLicence() != null 
+                && pcsCaseEntity.getTenancyLicence().getNoticeServed() != null 
+                ? YesOrNo.from(pcsCaseEntity.getTenancyLicence().getNoticeServed()) : null)
             .build();
 
         setDerivedProperties(caseReference,pcsCase, pcsCaseEntity);
@@ -78,12 +91,13 @@ public class CCDCaseRepository extends DecentralisedCaseRepository<PCSCase> {
         }
         pcsCase.setParties(mapAndWrapParties(pcsCaseEntity.getParties()));
 
+        String formattedCaseRef = formatCaseReference(caseRef);
         pcsCase.setPageHeadingMarkdown("""
                                        <h3 class="govuk-heading-s">
                                             %s<br>
-                                            Case number: ${[CASE_REFERENCE]} <br>
+                                            Case number: %s <br>
                                         </h3>
-                                       """.formatted(formatAddress(pcsCase.getPropertyAddress())));
+                                       """.formatted(formatAddress(pcsCase.getPropertyAddress()), formattedCaseRef));
 
     }
 
@@ -130,4 +144,8 @@ public class CCDCaseRepository extends DecentralisedCaseRepository<PCSCase> {
             .collect(Collectors.collectingAndThen(Collectors.toList(), ListValueUtils::wrapListItems));
     }
 
+    private String formatCaseReference(long caseRef) {
+        String caseRefStr = String.valueOf(caseRef);
+        return caseRefStr.replaceAll("(.{4})(?=.)", "$1-");
+    }
 }
