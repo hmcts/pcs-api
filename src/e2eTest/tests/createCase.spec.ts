@@ -15,6 +15,8 @@ import { checkingNotice } from '@data/page-data/checkingNotice.page.data';
 import { noticeDetails } from '@data/page-data/noticeDetails.page.data';
 import { rentDetails } from '@data/page-data/rentDetails.page.data';
 import { userIneligible } from '@data/page-data/userIneligible.page.data';
+import { dailyRentAmount } from '@data/page-data/dailyRentAmount.page.data';
+import { detailsOfrentArrears } from '@data/page-data/detailsOfrentArrears.page.data';
 
 test.beforeEach(async ({page}, testInfo) => {
   initializeExecutor(page);
@@ -59,8 +61,10 @@ test.describe.skip('[Create Case Flow With Address and Claimant Type]  @Master @
     await performValidation('text', {"text": checkingNotice.servedNoticeInteractiveText, "elementType": "inlineText"});
     await performAction('selectNoticeOfYourIntention', checkingNotice.yes);
     await performValidation('mainHeader', noticeDetails.mainHeader);
-    await performAction('clickButton', checkingNotice.continue);
     await performAction('clickButton', noticeDetails.continue);
+    await performAction('provideRentDetails', {rentFrequencyOption:'weekly', rentAmount:rentDetails.rentAmount});
+    await performValidation('mainHeader', dailyRentAmount.mainHeader);
+    await performAction('clickButton', rentDetails.continue);
     await performAction('clickButton', 'Save and continue');
     await performValidation('bannerAlert', 'Case #.* has been created.');
     await performAction('clickTab', 'Property Details');
@@ -94,6 +98,8 @@ test.describe.skip('[Create Case Flow With Address and Claimant Type]  @Master @
     await performValidation('mainHeader', checkingNotice.mainHeader);
     await performAction('selectNoticeOfYourIntention', checkingNotice.no);
     await performValidation('mainHeader', rentDetails.mainHeader);
+    await performAction('provideRentDetails', {rentFrequencyOption:'other', rentAmount:rentDetails.unpaidRentAmountPerDay});
+    await performValidation('mainHeader', detailsOfrentArrears.mainHeader);
     await performAction('clickButton', rentDetails.continue);
     await performAction('clickButton', 'Save and continue');
     await performValidation('bannerAlert', 'Case #.* has been created.');
