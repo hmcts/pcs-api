@@ -38,7 +38,12 @@ public class ServiceRequestService {
         String ccdCaseNumber,
         Fee fee
     ) {
+        log.info("=== ServiceRequestService.createServiceRequest START ===");
+        log.info("Input parameters - caseReference: {}, ccdCaseNumber: {}", caseReference, ccdCaseNumber);
+        log.info("Input fee - code: {}, calculatedAmount: {}", fee.getCode(), fee.getCalculatedAmount());
+
         try {
+            log.info("Step 1: Creating FeeDto...");
             FeeDto feeDto = FeeDto.builder()
                 .calculatedAmount(fee.getCalculatedAmount())
                 .code(fee.getCode())
@@ -46,33 +51,44 @@ public class ServiceRequestService {
                 .volume(VOLUME)
                 .build();
 
-            log.info("Built FeeDto: code={}, version={}, calculatedAmount={}, volume={}",
-                        feeDto.getCode(), feeDto.getVersion(), feeDto.getCalculatedAmount(), feeDto.getVolume());
+            log.info("Step 2: FeeDto created successfully - calculatedAmount: {}", feeDto.getCalculatedAmount());
 
+            log.info("Step 3: Creating CasePaymentRequestDto...");
+            CasePaymentRequestDto casePaymentRequest = CasePaymentRequestDto.builder()
+                .action(PAYMENT_ACTION)
+                .responsibleParty(RESPONSIBLE_PARTY)
+                .build();
+
+            log.info("Step 4: CasePaymentRequestDto created successfully");
+
+            log.info("Step 5: Creating ServiceRequestRequest...");
             ServiceRequestRequest request = ServiceRequestRequest.builder()
                 .callBackUrl(callBackUrl)
-                .casePaymentRequest(
-                    CasePaymentRequestDto.builder()
-                        .action(PAYMENT_ACTION)
-                        .responsibleParty(RESPONSIBLE_PARTY)
-                        .build()
-                )
+                .casePaymentRequest(casePaymentRequest)
                 .caseReference(String.valueOf(caseReference))
                 .ccdCaseNumber(String.valueOf(ccdCaseNumber))
                 .fees(new FeeDto[]{feeDto})
                 .build();
 
+            log.info("Step 6: ServiceRequestRequest created successfully");
             log.info("About to send request with {} fees", request.getFees().length);
 
-            return serviceRequestApi.createServiceRequest(
+            log.info("Step 7: Making API call...");
+            ServiceRequestResponse response = serviceRequestApi.createServiceRequest(
                 authorisation,
                 serviceAuthorization,
                 request
             );
-        } catch (FeignException fe) {
-            log.error("Error in calling Payment Service Request API for case reference {} \n {}\n",
-                        ccdCaseNumber, fe.getMessage());
-            throw fe;
+
+            log.info("Step 8: API call completed successfully");
+            return response;
+
+        } catch (Exception e) {
+            log.error("Exception occurred in createServiceRequest: {}", e.getMessage(), e);
+            if (e instanceof FeignException fe) {
+                log.error("Feign error details - Status: {}, Body: {}", fe.status(), fe.contentUTF8());
+            }
+            throw e;
         }
     }
 }
