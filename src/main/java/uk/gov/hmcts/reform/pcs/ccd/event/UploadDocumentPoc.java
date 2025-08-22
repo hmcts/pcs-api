@@ -20,6 +20,8 @@ import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PaymentStatus;
 
+import uk.gov.hmcts.ccd.sdk.type.Document;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -65,24 +67,25 @@ public class UploadDocumentPoc implements CCDConfig<PCSCase, State, UserRole> {
 
         pcsCase.setPaymentStatus(PaymentStatus.UNPAID);
 
-        PcsCaseEntity pcsCaseEntity = pcsCaseService.createCase(caseReference, pcsCase);
-
-        // After creating the case, generate a document to test the flow test
         try {
             Map<String, Object> formPayload = extractCaseDataForDocument(pcsCase, caseReference);
 
             String templateId = "CV-CMC-ENG-0010.docx";
             String outputType = "PDF";
 
-            uk.gov.hmcts.ccd.sdk.type.Document generatedDocument =
+            Document generatedDocument =
                 documentGenerationService.generateDocument(templateId, formPayload, outputType);
 
-            pcsCaseService.addGeneratedDocumentToCase(caseReference, generatedDocument);
+            pcsCase.getGeneratedDocuments().add(
+                documentGenerationService.createDocumentListValue(generatedDocument)
+            );
 
         } catch (Exception e) {
             // Log error but don't fail the case
             // This is just for testing the document generation flow
         }
+
+        PcsCaseEntity pcsCaseEntity = pcsCaseService.createCase(caseReference, pcsCase);
     }
 
     private Map<String, Object> extractCaseDataForDocument(PCSCase pcsCase, long caseReference) {
