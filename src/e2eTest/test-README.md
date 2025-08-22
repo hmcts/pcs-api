@@ -66,8 +66,8 @@ Playwright 1.30+ | TypeScript 4.9+
 ## 4. Available Actions and Validations
 
 ### Actions
-| Action                          | Example Usage                                                                                                                                                                                              |
-|---------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Action          | Example Usage                                                                                                                                                                                              |
+|------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | inputText                       | `performAction('inputText', 'Email', 'test@example.com')`                                                                                                                                                  |
 | check                           | `performAction('check', 'RememberMe')`                                                                                                                                                                     |
 | navigateToUrl                   | `performAction('navigateToUrl', 'testUrl')`                                                                                                                                                                |
@@ -87,9 +87,10 @@ Playwright 1.30+ | TypeScript 4.9+
 | selectClaimType                 | `performAction('selectClaimType', claimType.no)`                                                                                                                                                           |
 | selectClaimantName              | `performAction('selectClaimantName', claimantName.yes)`                                                                                                                                                    |
 | selectContactPreferences        | `performAction('selectContactPreferences', {notifications: { answer: contactPreferences.yes }, correspondenceAddress: { answer: contactPreferences.yes }, phoneNumber: { answer: contactPreferences.no })` |
+| defendant1Details | `performAction('defendant1Details',{name: defendant1.no, correspondenceAddress: defendant1.no, email: defendant1.no, correspondenceAddressSame: defendant1.no })`                                          |
 ### Validations
-| Validation        | Example Usage                                                                                                                        |
-|-------------------|--------------------------------------------------------------------------------------------------------------------------------------|
+| Validation          | Example Usage |
+|------------------|---------------|
 | text              | `performValidation('text', 'testElement')`                                                                                           |
 | visibility        | `performValidation('visibility', 'testElement')`                                                                                     |
 | bannerAlert       | `performValidation('bannerAlert', {message: "Case has been created."})`                                                              |

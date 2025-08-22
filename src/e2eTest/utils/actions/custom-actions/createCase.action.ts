@@ -124,8 +124,8 @@ export class CreateCaseAction implements IAction {
     await performAction('clickButton', 'Continue');
   }
 
-private async defendant1Details(preferences: actionData) {
-    const prefData = preferences as {
+private async defendant1Details(defendantVal: actionData) {
+    const defendantData = defendantVal as {
       name: string;
       correspondenceAddress: string;
       email: string;
@@ -133,22 +133,22 @@ private async defendant1Details(preferences: actionData) {
     };
     await performAction('clickRadioButton', {
       question: defendant1.doYouKnowTheDefendantName,
-      option: prefData.name
+      option: defendantData.name
     });
-    if (prefData.name === 'Yes') {
+    if (defendantData.name === 'Yes') {
       await performAction('inputText', defendant1.defendantFirstName, defendant1.firstNameInput);
       await performAction('inputText', defendant1.defendantLastName, defendant1.lastNameInput);
     }
     await performAction('clickRadioButton', {
       question: defendant1.defendantCorrespondenceAddress,
-      option: prefData.correspondenceAddress
+      option: defendantData.correspondenceAddress
     });
-    if (prefData.correspondenceAddress === 'Yes') {
+    if (defendantData.correspondenceAddress === 'Yes') {
       await performAction('clickRadioButton', {
         question: defendant1.isCorrespondenceAddressSame,
-        option: prefData.correspondenceAddressSame
+        option: defendantData.correspondenceAddressSame
       });
-      if (prefData.correspondenceAddressSame === 'No') {
+      if (defendantData.correspondenceAddressSame === 'No') {
         await performAction('selectAddress', {
           postcode: addressDetails.englandPostcode,
           addressIndex: addressDetails.addressIndex
@@ -157,9 +157,9 @@ private async defendant1Details(preferences: actionData) {
     }
     await performAction('clickRadioButton', {
       question: defendant1.defendantEmailAddress,
-      option: prefData.email
+      option: defendantData.email
     });
-    if (prefData.email === 'Yes') {
+    if (defendantData.email === 'Yes') {
       await performAction('inputText', defendant1.enterEmailAddress, defendant1.emailIdInput);
     }
     await performAction('clickButton', 'Continue');
