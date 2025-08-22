@@ -35,6 +35,10 @@ security:
     - "/testing-support/fee-lookup"
     - "/testing-support/create-service-request"
 
+logging:
+  level:
+    uk.gov.hmcts.reform.pcs.payment.servicerequest.api.ServiceRequestApi: DEBUG
+
 spring:
   config:
     import: "optional:configtree:/mnt/secrets/pcs/"

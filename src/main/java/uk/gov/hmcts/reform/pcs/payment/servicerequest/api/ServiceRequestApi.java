@@ -4,12 +4,13 @@ import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
+import uk.gov.hmcts.reform.pcs.payment.servicerequest.config.FeignClientConfiguration;
 import uk.gov.hmcts.reform.pcs.payment.servicerequest.model.ServiceRequestRequest;
 import uk.gov.hmcts.reform.pcs.payment.servicerequest.model.ServiceRequestResponse;
 
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 
-@FeignClient(name = "service-request-api", url = "${payment.api.url}")
+@FeignClient(name = "service-request-api", url = "${payment.api.url}", configuration = FeignClientConfiguration.class)
 public interface ServiceRequestApi {
 
     @PostMapping(value = "/service-request", consumes = "application/json")

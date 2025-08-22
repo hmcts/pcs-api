@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.pcs.payment.fee.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -24,6 +25,7 @@ public class FeeDto {
 
     private Integer volume;
 
+    @JsonProperty("calculated_amount")
     private BigDecimal calculatedAmount;
 
     private String memoLine;
