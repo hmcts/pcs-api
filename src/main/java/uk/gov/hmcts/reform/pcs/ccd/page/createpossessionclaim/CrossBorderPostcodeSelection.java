@@ -14,7 +14,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.postcodecourt.exception.EligibilityCheckException;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.EligibilityResult;
-import uk.gov.hmcts.reform.pcs.postcodecourt.model.EligibilityStatus;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.postcodecourt.service.EligibilityService;
 
@@ -92,15 +91,27 @@ public class CrossBorderPostcodeSelection implements CcdPageConfiguration {
                 // wire up.
                 log.info("Cross-border eligibility check: ELIGIBLE for postcode {} with country {}. "
                         + "Proceeding to normal flow", postcode, selectedCountry);
+                caseData.setShowPostcodeNotAssignedToCourt(YesOrNo.NO);
             }
             case NOT_ELIGIBLE -> {
                 log.info("Cross-border eligibility check: NOT_ELIGIBLE for postcode {} with country {}. "
                         + "Redirecting to PropertyNotEligible page", postcode, selectedCountry);
                 caseData.setShowPropertyNotEligiblePage(YesOrNo.YES);
+                caseData.setShowPostcodeNotAssignedToCourt(YesOrNo.NO);
             }
             case NO_MATCH_FOUND -> {
                 log.info("Cross-border eligibility check: NO_MATCH_FOUND for postcode {} with country {}. "
-                        + "Proceeding to normal flow", postcode, selectedCountry);
+                        + "Redirecting to PostcodeNotAssignedToCourt page", postcode, selectedCountry);
+                caseData.setShowPostcodeNotAssignedToCourt(YesOrNo.YES);
+                caseData.setLegislativeCountry(selectedCountry.getLabel());
+                
+                // Determine which view to show based on selected country
+                String view = switch (selectedCountry) {
+                    case ENGLAND -> "ENGLAND";
+                    case WALES -> "WALES";
+                    default -> "ALL_COUNTRIES";
+                };
+                caseData.setPostcodeNotAssignedView(view);
             }
             default -> {
                 //TODO
@@ -113,27 +124,6 @@ public class CrossBorderPostcodeSelection implements CcdPageConfiguration {
                     )
                 );
             }
-        }
-
-        if (eligibilityResult.getStatus() == EligibilityStatus.NO_MATCH_FOUND) {
-            log.debug("No court found for postcode {} with country {}", postcode, selectedCountry);
-            caseData.setShowPostcodeNotAssignedToCourt(YesOrNo.YES);
-            caseData.setLegislativeCountry(selectedCountry.getLabel());
-            
-            // Determine which view to show based on selected country
-            String view = switch (selectedCountry) {
-                case ENGLAND -> "ENGLAND";
-                case WALES -> "WALES";
-                default -> "ALL_COUNTRIES";
-            };
-            caseData.setPostcodeNotAssignedView(view);
-        } else if (eligibilityResult.getStatus() == EligibilityStatus.ELIGIBLE) {
-            // TODO Jira-HDPI-1271  is claimant type page , please wire up.
-            log.debug("Property is eligible for claim");
-            caseData.setShowPostcodeNotAssignedToCourt(YesOrNo.NO);
-        } else {
-            //TODO Jira-HDPI-1254
-            log.debug("Property is not eligible (status: {})", eligibilityResult.getStatus());
         }
 
         return response(caseData);
