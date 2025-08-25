@@ -12,7 +12,6 @@ import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
 import uk.gov.hmcts.ccd.sdk.api.Event;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
-import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
@@ -23,6 +22,7 @@ import uk.gov.hmcts.reform.pcs.postcodecourt.model.EligibilityResult;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.EligibilityStatus;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.postcodecourt.service.EligibilityService;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 
 import java.util.stream.Stream;
 
@@ -84,7 +84,21 @@ class CrossBorderPostcodeSelectionTest extends BasePageTest {
 
         // Then
         assertThat(response).isNotNull();
-        assertThat(response.getData()).isNotNull();
+        PCSCase resultData = response.getData();
+        assertThat(resultData).isNotNull();
+
+        if (status == EligibilityStatus.NO_MATCH_FOUND) {
+            assertThat(resultData.getShowPostcodeNotAssignedToCourt()).isEqualTo(YesOrNo.YES);
+            assertThat(resultData.getLegislativeCountry()).isEqualTo(selectedCountry.getLabel());
+            
+            switch (selectedCountry) {
+                case ENGLAND -> assertThat(resultData.getPostcodeNotAssignedView()).isEqualTo("ENGLAND");
+                case WALES -> assertThat(resultData.getPostcodeNotAssignedView()).isEqualTo("WALES");
+                default -> assertThat(resultData.getPostcodeNotAssignedView()).isEqualTo("ALL_COUNTRIES");
+            }
+        } else if (status == EligibilityStatus.ELIGIBLE) {
+            assertThat(resultData.getShowPostcodeNotAssignedToCourt()).isEqualTo(YesOrNo.NO);
+        }
     }
 
     private static Stream<Arguments> eligibilityScenarios() {

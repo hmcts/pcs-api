@@ -57,11 +57,18 @@ public class EnterPropertyAddress implements CcdPageConfiguration {
         caseData.setFormattedClaimantContactAddress(formattedAddress);
 
         EligibilityResult eligibilityResult = eligibilityService.checkEligibility(postcode, null);
-        if (eligibilityResult.getStatus() == EligibilityStatus.LEGISLATIVE_COUNTRY_REQUIRED) {
+        
+        if (eligibilityResult.getStatus() == EligibilityStatus.NO_MATCH_FOUND) {
+            log.debug("No court found for postcode: {}", postcode);
+            caseData.setShowPostcodeNotAssignedToCourt(YesOrNo.YES);
+            caseData.setPostcodeNotAssignedView("ALL_COUNTRIES");
+            caseData.setShowCrossBorderPage(YesOrNo.NO);
+        } else if (eligibilityResult.getStatus() == EligibilityStatus.LEGISLATIVE_COUNTRY_REQUIRED) {
             validateLegislativeCountries(eligibilityResult.getLegislativeCountries(), postcode);
             setupCrossBorderData(caseData, eligibilityResult.getLegislativeCountries());
         } else {
             caseData.setShowCrossBorderPage(YesOrNo.NO);
+            caseData.setShowPostcodeNotAssignedToCourt(YesOrNo.NO);
         }
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
