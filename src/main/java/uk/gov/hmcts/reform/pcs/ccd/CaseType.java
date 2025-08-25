@@ -44,6 +44,7 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
 
         builder.decentralisedCaseType(getCaseType(), getCaseTypeName(), CASE_TYPE_DESCRIPTION);
         builder.jurisdiction(JURISDICTION_ID, JURISDICTION_NAME, JURISDICTION_DESCRIPTION);
+        buildSupportingDocumentsCaseFileViewTab(builder);
 
         String paymentLabel = "Payment Status";
 
@@ -81,5 +82,31 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
         builder.tab("hidden", "HiddenFields")
             .showCondition(NEVER_SHOW)
             .field(PCSCase::getPageHeadingMarkdown);
+    }
+
+    private void buildSupportingDocumentsCaseFileViewTab(ConfigBuilder<PCSCase, State, UserRole> configBuilder) {
+        configBuilder.categories(UserRole.PCS_CASE_WORKER)
+            .categoryID("A")
+            .categoryLabel("A")
+            .displayOrder(1)
+            .build();
+        configBuilder.categories(UserRole.PCS_CASE_WORKER)
+            .categoryID("B")
+            .categoryLabel("B")
+            .displayOrder(2).parentCategoryID("A")
+            .build();
+        configBuilder.categories(UserRole.PCS_CASE_WORKER)
+            .categoryID("C")
+            .categoryLabel("C")
+            .displayOrder(3).parentCategoryID("B")
+            .build();
+        configBuilder.categories(UserRole.PCS_CASE_WORKER)
+            .categoryID("D")
+            .categoryLabel("D")
+            .displayOrder(4)
+            .build();
+        configBuilder.tab("caseFileView", "Supporting Documents")
+            .forRoles(UserRole.PCS_CASE_WORKER)
+            .field(PCSCase::getCaseFileView, null, "#ARGUMENT(CaseFileView)");
     }
 }

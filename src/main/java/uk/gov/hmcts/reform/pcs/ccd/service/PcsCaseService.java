@@ -1,22 +1,29 @@
 package uk.gov.hmcts.reform.pcs.ccd.service;
 
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
+import uk.gov.hmcts.ccd.sdk.type.Document;
+import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
+import java.time.LocalDate;
+import java.util.List;
 import java.util.UUID;
 
 @Service
 @AllArgsConstructor
+@Slf4j
 public class PcsCaseService {
 
     private final PcsCaseRepository pcsCaseRepository;
@@ -29,7 +36,7 @@ public class PcsCaseService {
         AddressEntity addressEntity = applicantAddress != null
             ? modelMapper.map(applicantAddress, AddressEntity.class) : null;
 
-        PcsCaseEntity pcsCaseEntity = new PcsCaseEntity();
+        final PcsCaseEntity pcsCaseEntity = new PcsCaseEntity();
         pcsCaseEntity.setCaseReference(caseReference);
         pcsCaseEntity.setPropertyAddress(addressEntity);
         pcsCaseEntity.setPaymentStatus(pcsCase.getPaymentStatus());
@@ -38,11 +45,49 @@ public class PcsCaseService {
                         ? pcsCase.getPreActionProtocolCompleted().toBoolean()
                         : null);
 
+        addDocuments(pcsCase.getDifferentDocumentNameA(), "A", pcsCaseEntity);
+        addDocuments(pcsCase.getSupportingDocumentsCategoryB(), "B", pcsCaseEntity);
+
+        log.error("====== PCS CASE ENTITY DATA CAT A SIZE: "
+            + pcsCaseEntity.getDocumentsCategoryA().size()
+            + " CAT B SIZE: " + pcsCaseEntity.getDocumentsCategoryB().size());
+
         return pcsCaseRepository.save(pcsCaseEntity);
     }
 
+    /**
+     * This is a helper method to pull documents from a  list,
+     * convert them into a Document entity, and add to the pcsCaseEntity
+     * so it may be saved into the database.
+     * @param supportingDocuments The list of documents
+     * @param category Which category the document belongs to
+     * @param pcsCaseEntity The entity to add the document to
+     */
+    private void addDocuments(List<ListValue<Document>> supportingDocuments, String category,
+                              PcsCaseEntity pcsCaseEntity) {
+        if (supportingDocuments != null && !supportingDocuments.isEmpty()) {
+            for (ListValue<Document> documentWrapper : supportingDocuments) {
+                if (documentWrapper != null && documentWrapper.getValue() != null) {
+                    Document document = documentWrapper.getValue();
+
+                    DocumentEntity documentEntity = new DocumentEntity();
+                    documentEntity.setFileName(document.getFilename());
+                    documentEntity.setFilePath(document.getBinaryUrl());
+                    documentEntity.setUploadedOn(LocalDate.now());
+                    documentEntity.setPcsCase(pcsCaseEntity);
+
+                    if (category.equals("A")) {
+                        pcsCaseEntity.addDocumentCategoryA(documentEntity);
+                    } else {
+                        pcsCaseEntity.addDocumentCategoryB(documentEntity);
+                    }
+                }
+            }
+        }
+    }
+
     public void patchCase(long caseReference, PCSCase pcsCase) {
-        PcsCaseEntity pcsCaseEntity = pcsCaseRepository.findByCaseReference(caseReference)
+        final PcsCaseEntity pcsCaseEntity = pcsCaseRepository.findByCaseReference(caseReference)
             .orElseThrow(() -> new CaseNotFoundException(caseReference));
 
         if (pcsCase.getPropertyAddress() != null) {
@@ -65,6 +110,15 @@ public class PcsCaseService {
 
         if (pcsCase.getPreActionProtocolCompleted() != null) {
             pcsCaseEntity.setPreActionProtocolCompleted(pcsCase.getPreActionProtocolCompleted().toBoolean());
+        }
+
+        if (pcsCase.getDifferentDocumentNameA() != null) {
+            addDocuments(pcsCase.getDifferentDocumentNameA(), "A", pcsCaseEntity);
+        }
+
+
+        if (pcsCase.getDifferentDocumentNameA() != null) {
+            addDocuments(pcsCase.getDifferentDocumentNameA(), "B", pcsCaseEntity);
         }
 
         pcsCaseRepository.save(pcsCaseEntity);
@@ -91,6 +145,19 @@ public class PcsCaseService {
         party.setSurname(userDetails.getFamilyName());
         party.setActive(true);
         return party;
+    }
+
+    public void addDocumentToCase(long caseReference, String fileName, String filePath) {
+        final PcsCaseEntity pcsCaseEntity = pcsCaseRepository.findByCaseReference(caseReference)
+            .orElseThrow(() -> new CaseNotFoundException(caseReference));
+
+        DocumentEntity document = new DocumentEntity();
+        document.setFileName(fileName);
+        document.setFilePath(filePath);
+        document.setUploadedOn(LocalDate.now());
+
+        pcsCaseEntity.addDocumentCategoryA(document);
+        pcsCaseRepository.save(pcsCaseEntity);
     }
 
 }
