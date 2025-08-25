@@ -32,6 +32,12 @@ security:
     - "/swagger-ui.html"
     - "/swagger-ui/**"
     - "/v3/api-docs/**"
+    - "/testing-support/fee-lookup"
+    - "/testing-support/create-service-request"
+
+logging:
+  level:
+    uk.gov.hmcts.reform.pcs.payment.servicerequest.api.ServiceRequestApi: DEBUG
 
 spring:
   config:
@@ -130,3 +136,23 @@ doc-assembly:
   url: ${DOC_ASSEMBLY_URL:http://localhost:8080}
   s2s-authorised:
     services: pcs_api,ccd_data,ccd_gw,ccd_case_document_am_api,ccd_definition,ccd_admin,ccd_ps,ccd
+
+fees-register:
+  api:
+    url: ${FEES_REGISTER_API_URL:http://localhost:8991}
+  fees:
+    defaultFee:
+      channel: default
+      event: issue
+      jurisdiction1: tribunal
+      jurisdiction2: immigration and asylum chamber
+      keyword: HearingOral
+      service: other
+
+payment:
+  api:
+    url: ${PAYMENT_API_URL:http://localhost:8083}
+    callback-url: ${PAY_CALLBACK_URL:http://host.docker.internal:8096/service-request-update}
+  params:
+    organisationUrn: immigration and asylum chamber
+    siteId: BFA1

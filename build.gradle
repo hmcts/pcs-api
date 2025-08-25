@@ -268,6 +268,19 @@ sonarqube {
       "**/uk/gov/hmcts/reform/pcs/ccd/config/HighLevelDataSetupApp.java," +
       "**/uk/gov/hmcts/reform/pcs/ccd/domain/**/*.java," +
       "**/uk/gov/hmcts/reform/pcs/ccd/entity/**/*.java" +
+      "**/uk/gov/hmcts/reform/pcs/payment/fee/entity/**/*.java," +
+      "**/uk/gov/hmcts/reform/pcs/payment/fee/entity/*.java," +
+      "**/uk/gov/hmcts/reform/pcs/payment/fee/service/**/*.java," +
+      "**/uk/gov/hmcts/reform/pcs/payment/fee/controller/*.java," +
+      "**/uk/gov/hmcts/reform/pcs/payment/fee/config/**/*.java," +
+      "**/uk/gov/hmcts/reform/pcs/payment/fee/model/**/*.java," +
+      "**/uk/gov/hmcts/reform/pcs/payment/fee/entity/**/*.java," +
+      "**/uk/gov/hmcts/reform/pcs/payment/servicerequest/entity/*.java," +
+      "**/uk/gov/hmcts/reform/pcs/payment/servicerequest/service/*.java," +
+      "**/uk/gov/hmcts/reform/pcs/payment/servicerequest/controller/*.java," +
+      "**/uk/gov/hmcts/reform/pcs/payment/servicerequest/config/**/*.java," +
+      "**/uk/gov/hmcts/reform/pcs/payment/servicerequest/model/**/*.java," +
+      "**/uk/gov/hmcts/reform/pcs/payment/servicerequest/api/**/*.java," +
       "**/entities/**," + "**/model/**"
   }
 }
