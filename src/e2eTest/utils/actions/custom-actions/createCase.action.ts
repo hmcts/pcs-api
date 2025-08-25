@@ -8,6 +8,8 @@ import { performAction, performActions, performValidation } from '@utils/control
 import { createCase } from '@data/page-data/createCase.page.data';
 import { addressDetails } from '@data/page-data/addressDetails.page.data';
 import { housingPossessionClaim } from '@data/page-data/housingPossessionClaim.page.data';
+import { borderPostcode } from '@data/page-data/borderPostcode.page.data';
+import { defendant1 } from "@data/page-data/defendant1.page.data";
 import { claimantName } from '@data/page-data/claimantName.page.data';
 import { contactPreferences } from '@data/page-data/contactPreferences.page.data';
 import { mediationAndSettlement } from '@data/page-data/mediationAndSettlement.page.data';
@@ -28,6 +30,7 @@ export class CreateCaseAction implements IAction {
       ['selectAddress', () => this.selectAddress(fieldName)],
       ['selectLegislativeCountry', () => this.selectLegislativeCountry(fieldName)],
       ['selectClaimantType', () => this.selectClaimantType(fieldName)],
+      ['defendant1Details', () => this.defendant1Details(fieldName)],
       ['selectJurisdictionCaseTypeEvent', () => this.selectJurisdictionCaseTypeEvent()],
       ['enterTestAddressManually', () => this.enterTestAddressManually()],
       ['selectClaimType', () => this.selectClaimType(fieldName)],
@@ -144,6 +147,47 @@ export class CreateCaseAction implements IAction {
     });
     if (prefData.phoneNumber === 'Yes') {
       await performAction('inputText', 'Enter phone number', contactPreferences.phoneNumberInput);
+    }
+    await performAction('clickButton', 'Continue');
+  }
+
+private async defendant1Details(defendantVal: actionData) {
+    const defendantData = defendantVal as {
+      name: string;
+      correspondenceAddress: string;
+      email: string;
+      correspondenceAddressSame?: string
+    };
+    await performAction('clickRadioButton', {
+      question: defendant1.doYouKnowTheDefendantName,
+      option: defendantData.name
+    });
+    if (defendantData.name === 'Yes') {
+      await performAction('inputText', defendant1.defendantFirstName, defendant1.firstNameInput);
+      await performAction('inputText', defendant1.defendantLastName, defendant1.lastNameInput);
+    }
+    await performAction('clickRadioButton', {
+      question: defendant1.defendantCorrespondenceAddress,
+      option: defendantData.correspondenceAddress
+    });
+    if (defendantData.correspondenceAddress === 'Yes') {
+      await performAction('clickRadioButton', {
+        question: defendant1.isCorrespondenceAddressSame,
+        option: defendantData.correspondenceAddressSame
+      });
+      if (defendantData.correspondenceAddressSame === 'No') {
+        await performAction('selectAddress', {
+          postcode: addressDetails.englandPostcode,
+          addressIndex: addressDetails.addressIndex
+        });
+      }
+    }
+    await performAction('clickRadioButton', {
+      question: defendant1.defendantEmailAddress,
+      option: defendantData.email
+    });
+    if (defendantData.email === 'Yes') {
+      await performAction('inputText', defendant1.enterEmailAddress, defendant1.emailIdInput);
     }
     await performAction('clickButton', 'Continue');
   }
