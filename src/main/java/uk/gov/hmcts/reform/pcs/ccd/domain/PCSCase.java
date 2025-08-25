@@ -218,4 +218,10 @@ public class PCSCase {
     @CCD(searchable = false, access = CaseworkerAccess.class)
     private YesOrNo showClaimTypeNotEligibleWales;
 
+    @CCD
+    private String organisationName;
+
+    @CCD
+    private YesOrNo correctOrganisation;
+
 }
