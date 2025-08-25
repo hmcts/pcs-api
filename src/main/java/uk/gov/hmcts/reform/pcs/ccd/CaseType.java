@@ -49,23 +49,30 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
 
         builder.searchInputFields()
             .caseReferenceField()
-            .field(PCSCase::getPaymentStatus, paymentLabel);
+            .field(PCSCase::getPaymentStatus, paymentLabel)
+            .field(PCSCase::getClaimantProvidePhoneNumber, "Claimant provided phone no (SI)")
+            .field(PCSCase::getPropertyAddress, "Property address (SI)");
 
         builder.searchCasesFields()
             .caseReferenceField()
-            .field(PCSCase::getPaymentStatus, paymentLabel);
+            .field(PCSCase::getPaymentStatus, paymentLabel)
+            .field(PCSCase::getPropertyAddress, "Property address (SC)")
+            .field(PCSCase::getClaimantName, "Claimant Name (SC)");
 
         builder.searchResultFields()
             .caseReferenceField()
-            .field(PCSCase::getPaymentStatus, paymentLabel);
+            .field(PCSCase::getPaymentStatus, paymentLabel)
+            .field(PCSCase::getPropertyAddress, "Property address (SR)");
 
         builder.workBasketInputFields()
             .caseReferenceField()
-            .field(PCSCase::getClaimantName, "Claimant Name");
+            .stateField()
+            .field(PCSCase::getClaimantName, "Claimant Name (WB)");
 
         builder.workBasketResultFields()
             .caseReferenceField()
-            .field(PCSCase::getPropertyAddress, "Property Address");
+            .field(PCSCase::getPropertyAddress, "Property Address (WB)")
+            .field(PCSCase::getClaimantProvidePhoneNumber, "Claimant provide phone no");
 
         builder.tab("summary", "Property Details")
             .field(PCSCase::getPropertyAddress);
