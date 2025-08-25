@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.ccd.type;
+package uk.gov.hmcts.reform.pcs.ccd.type.poc;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 import uk.gov.hmcts.ccd.sdk.api.ComplexType;
 
 /**
- * An element of the {@link DynamicStringList}, with a string code as an alternative to
+ * An element of the {@link DynamicList}, with a string code as an alternative to
  * {@link uk.gov.hmcts.ccd.sdk.type.DynamicListElement} which has a {@link java.util.UUID} code.
  */
 @NoArgsConstructor

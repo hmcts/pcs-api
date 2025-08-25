@@ -11,8 +11,8 @@ import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
-import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
+import uk.gov.hmcts.reform.pcs.ccd.type.poc.DynamicList;
+import uk.gov.hmcts.reform.pcs.ccd.type.poc.DynamicStringListElement;
 import uk.gov.hmcts.reform.pcs.postcodecourt.exception.EligibilityCheckException;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.EligibilityResult;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.EligibilityStatus;
@@ -85,7 +85,7 @@ public class EnterPropertyAddress implements CcdPageConfiguration {
 
         List<DynamicStringListElement> crossBorderCountries =
             createCrossBorderCountriesList(legislativeCountries);
-        DynamicStringList crossBorderCountriesList = DynamicStringList.builder()
+        DynamicList crossBorderCountriesList = DynamicList.builder()
             .listItems(crossBorderCountries)
             .build();
 

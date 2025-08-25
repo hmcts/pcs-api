@@ -40,6 +40,9 @@ public class CftlibConfig implements CFTLibConfigurer {
 
         var users = Map.of(
             "caseworker@pcs.com", List.of("caseworker", "caseworker-pcs"),
+            "laura-landlord@test.com", List.of("caseworker", "caseworker-pcs"),
+            "timothy-tenant@test.com", List.of("caseworker", "caseworker-pcs"),
+            "judge@pcs.com", List.of("caseworker", "caseworker-pcs", "judge"),
             "citizen@pcs.com", List.of("citizen"),
             "data.store.idam.system.user@gmail.com", List.of()
         );

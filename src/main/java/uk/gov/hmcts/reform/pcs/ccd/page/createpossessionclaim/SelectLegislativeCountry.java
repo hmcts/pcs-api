@@ -7,8 +7,8 @@ import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
-import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
+import uk.gov.hmcts.reform.pcs.ccd.type.poc.DynamicList;
+import uk.gov.hmcts.reform.pcs.ccd.type.poc.DynamicStringListElement;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
 import java.util.Arrays;
@@ -42,7 +42,7 @@ public class SelectLegislativeCountry implements CcdPageConfiguration {
             .map(value -> DynamicStringListElement.builder().code(value.name()).label(value.getLabel()).build())
             .toList();
 
-        DynamicStringList claimantTypeList = DynamicStringList.builder()
+        DynamicList claimantTypeList = DynamicList.builder()
             .listItems(listItems)
             .build();
         caseData.setClaimantType(claimantTypeList);

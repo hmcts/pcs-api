@@ -14,6 +14,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 import uk.gov.hmcts.reform.pcs.exception.SecurityContextException;
 import uk.gov.hmcts.reform.pcs.idam.User;
+import uk.gov.hmcts.reform.pcs.roles.api.security.SecurityContextService;
 
 import java.util.UUID;
 

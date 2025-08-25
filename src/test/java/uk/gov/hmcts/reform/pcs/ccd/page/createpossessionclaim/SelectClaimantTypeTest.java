@@ -13,8 +13,8 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
-import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
-import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
+import uk.gov.hmcts.reform.pcs.ccd.type.poc.DynamicList;
+import uk.gov.hmcts.reform.pcs.ccd.type.poc.DynamicStringListElement;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
 import java.util.stream.Stream;
@@ -48,7 +48,7 @@ class SelectClaimantTypeTest extends BasePageTest {
                                                  YesOrNo showNotEligibleWales) {
         // Given
         CaseDetails<PCSCase, State> caseDetails = new CaseDetails<>();
-        DynamicStringList claimantTypeSelection = DynamicStringList.builder()
+        DynamicList claimantTypeSelection = DynamicList.builder()
             .value(DynamicStringListElement.builder().code(claimantType.name()).build())
             .build();
 

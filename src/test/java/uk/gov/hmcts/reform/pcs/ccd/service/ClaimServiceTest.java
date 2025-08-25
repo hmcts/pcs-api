@@ -5,6 +5,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimType;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyRole;
@@ -29,13 +30,12 @@ class ClaimServiceTest {
     void shouldCreateMainClaimAndLinkPartyAndCase() {
         PcsCaseEntity caseEntity = new PcsCaseEntity();
         PartyEntity partyEntity = new PartyEntity();
-        String claimName = "Main Claim";
 
         ClaimEntity claim = claimService.createAndLinkClaim(caseEntity, partyEntity,
-                                                            claimName, PartyRole.CLAIMANT);
+                                                            ClaimType.MAIN_CLAIM, PartyRole.CLAIMANT);
 
         assertThat(claim).isNotNull();
-        assertThat(claim.getSummary()).isEqualTo(claimName);
+        assertThat(claim.getType()).isEqualTo(ClaimType.MAIN_CLAIM);
         assertThat(claim.getPcsCase()).isSameAs(caseEntity);
         assertThat(caseEntity.getClaims().iterator().next()).isEqualTo(claim);
         assertThat(claim.getClaimParties().iterator().next().getParty()).isEqualTo(partyEntity);
@@ -44,7 +44,7 @@ class ClaimServiceTest {
     @Test
     void shouldSaveClaim() {
         ClaimEntity claim = new ClaimEntity();
-        claim.setSummary("Main claim");
+        claim.setType(ClaimType.MAIN_CLAIM);
 
         when(claimRepository.save(claim)).thenReturn(claim);
 

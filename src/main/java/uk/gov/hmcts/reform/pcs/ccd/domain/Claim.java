@@ -1,12 +1,12 @@
 package uk.gov.hmcts.reform.pcs.ccd.domain;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import uk.gov.hmcts.ccd.sdk.api.CCD;
 
+import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
 
 @Builder
@@ -15,12 +15,15 @@ import java.util.UUID;
 @AllArgsConstructor
 public class Claim {
 
-    @CCD(ignore = true)
-    @JsonIgnore
     private UUID id;
-
-    @CCD(label = "Summary")
+    private String claimReference;
+    private ClaimType type;
     private String summary;
+    private CounterClaimState state; // TODO: Rename
+    private List<ClaimEventLog> eventLogs;
+    private Instant created;
+    private String applicantEmail;
+    private String respondentEmail;
 
 }
 

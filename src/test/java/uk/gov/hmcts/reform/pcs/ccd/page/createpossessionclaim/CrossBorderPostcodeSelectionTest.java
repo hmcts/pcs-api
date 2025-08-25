@@ -17,8 +17,8 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
-import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
-import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
+import uk.gov.hmcts.reform.pcs.ccd.type.poc.DynamicList;
+import uk.gov.hmcts.reform.pcs.ccd.type.poc.DynamicStringListElement;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.EligibilityResult;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.EligibilityStatus;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
@@ -58,7 +58,7 @@ class CrossBorderPostcodeSelectionTest extends BasePageTest {
         CaseDetails<PCSCase, State> caseDetails = new CaseDetails<>();
         PCSCase caseData = PCSCase.builder()
             .propertyAddress(AddressUK.builder().postCode(postcode).build())
-            .crossBorderCountriesList(DynamicStringList.builder()
+            .crossBorderCountriesList(DynamicList.builder()
                                           .value(DynamicStringListElement
                                                      .builder()
                                                      .code(selectedCountry
@@ -193,7 +193,7 @@ class CrossBorderPostcodeSelectionTest extends BasePageTest {
             .label(selectedCountry.getLabel())
             .build();
 
-        var dynamicStringList = DynamicStringList.builder()
+        var dynamicStringList = DynamicList.builder()
             .value(selected)
             .build();
 

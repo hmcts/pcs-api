@@ -11,6 +11,7 @@ import uk.gov.hmcts.ccd.sdk.api.Permission;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
+import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PaymentStatus;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
@@ -38,7 +39,7 @@ import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.PropertyNotEligibl
 import uk.gov.hmcts.reform.pcs.ccd.service.ClaimService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
-import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
+import uk.gov.hmcts.reform.pcs.roles.api.security.SecurityContextService;
 
 import java.util.UUID;
 
@@ -130,7 +131,7 @@ public class CreatePossessionClaim implements CCDConfig<PCSCase, State, UserRole
         ClaimEntity claimEntity = claimService.createAndLinkClaim(
             pcsCaseEntity,
             party,
-            "Main Claim",
+            ClaimType.MAIN_CLAIM,
             PartyRole.CLAIMANT);
 
         claimService.saveClaim(claimEntity);
