@@ -9,7 +9,6 @@ import au.com.dius.pact.core.model.annotations.Pact;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,9 +34,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 @TestPropertySource(properties = "doc-assembly.url=http://localhost:8080")
 @ExtendWith(PactConsumerTestExt.class)
 @ExtendWith(SpringExtension.class)
-@PactTestFor(providerName = "em_docAssembly", port = "8080")
+@PactTestFor(providerName = "doc_assembly_template_rendition_provider", port = "8080")
 
-@Disabled("Do not publish this pact until provider tests are implemented - EM-6526")
 public class EvidenceManagementConsumerTest {
 
     private static final String TEMPLATE_ID = "CV-SPC-CLM-ENG-01356.docx";
@@ -49,7 +47,7 @@ public class EvidenceManagementConsumerTest {
     @Autowired
     private DocAssemblyApi docAssemblyApi;
 
-    @Pact(provider = "em_docAssembly", consumer = "pcs_api")
+    @Pact(provider = "doc_assembly_template_rendition_provider", consumer = "pcs_api")
     public V4Pact generateDocument(PactDslWithProvider builder) {
         PactDslJsonBody requestBody = (PactDslJsonBody) new PactDslJsonBody()
             .stringType("templateId", TEMPLATE_ID)
@@ -63,8 +61,8 @@ public class EvidenceManagementConsumerTest {
             .stringType("renditionOutputLocation", RENDITION_OUTPUT_URL);
 
         return builder
-            .given("document generation request is valid")
-            .uponReceiving("a valid document generation request")
+            .given("a template can be rendered successfully")
+            .uponReceiving("a request to create a template rendition")
             .method("POST")
             .path("/api/template-renditions")
             .headers(Map.of(

@@ -5,9 +5,11 @@ import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicence;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyEntity;
@@ -45,6 +47,8 @@ public class PcsCaseService {
                         ? pcsCase.getPreActionProtocolCompleted().toBoolean()
                         : null);
         pcsCaseEntity.setDefendants(mapFromDefendantDetails(pcsCase.getDefendants()));
+
+        pcsCaseEntity.setTenancyLicence(buildTenancyLicence(pcsCase));
 
         return pcsCaseRepository.save(pcsCaseEntity);
     }
@@ -157,4 +161,15 @@ public class PcsCaseService {
         return party;
     }
 
+    //Temporary method to create tenancy_licence JSON and related fields
+    // Data in this JSON will likely be moved to a dedicated entity in the future
+    private TenancyLicence buildTenancyLicence(PCSCase pcsCase) {
+        return TenancyLicence.builder()
+                .noticeServed(toBooleanOrNull(pcsCase.getNoticeServed()))
+                .build();
+    }
+
+    private static Boolean toBooleanOrNull(YesOrNo yesOrNo) {
+        return yesOrNo != null ? yesOrNo.toBoolean() : null;
+    }
 }

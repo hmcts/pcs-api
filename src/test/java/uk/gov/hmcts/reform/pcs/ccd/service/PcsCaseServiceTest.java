@@ -11,10 +11,12 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PaymentStatus;
+import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicence;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyEntity;
@@ -392,6 +394,34 @@ class PcsCaseServiceTest {
         assertThat(clearedDefendant.getCorrespondenceAddress()).isNull();
         assertThat(clearedDefendant.getAddressSameAsPossession()).isNull();
         assertThat(clearedDefendant.getEmail()).isNull();
+    }
+    // Test for tenancy_licence JSON creation, temporary until Data Model is finalised
+    @Test
+    void shouldSetTenancyLicence() {
+        // Test notice_served field updates
+        assertTenancyLicenceField(
+                pcsCase -> when(pcsCase.getNoticeServed()).thenReturn(YesOrNo.YES),
+                expected -> assertThat(expected.getNoticeServed()).isTrue());
+        assertTenancyLicenceField(
+                pcsCase -> when(pcsCase.getNoticeServed()).thenReturn(YesOrNo.NO),
+                expected -> assertThat(expected.getNoticeServed()).isFalse());
+
+        // TODO: Future developers can add ANY field type like:
+        // assertTenancyLicenceField(
+        //     pcsCase -> when(pcsCase.getRentAmount()).thenReturn(1200),
+        //     expected -> assertThat(expected.getCurrentRent()).isEqualTo(1200));
+    }
+
+    private void assertTenancyLicenceField(java.util.function.Consumer<PCSCase> setupMock,
+            java.util.function.Consumer<TenancyLicence> assertions) {
+        PCSCase pcsCase = mock(PCSCase.class);
+        setupMock.accept(pcsCase);
+        when(pcsCaseRepository.save(pcsCaseEntityCaptor.capture())).thenReturn(null);
+
+        underTest.createCase(CASE_REFERENCE, pcsCase);
+
+        TenancyLicence actual = pcsCaseEntityCaptor.getValue().getTenancyLicence();
+        assertions.accept(actual);
 
     }
 

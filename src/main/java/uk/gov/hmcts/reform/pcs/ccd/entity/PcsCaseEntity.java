@@ -21,6 +21,7 @@ import lombok.Setter;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PaymentStatus;
+import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicence;
 import uk.gov.hmcts.reform.pcs.ccd.model.Defendant;
 
 import java.util.HashSet;
@@ -61,6 +62,9 @@ public class PcsCaseEntity {
     private PaymentStatus paymentStatus;
 
     private Boolean preActionProtocolCompleted;
+
+    @JdbcTypeCode(SqlTypes.JSON)
+    private TenancyLicence tenancyLicence;
 
     @OneToMany(mappedBy = "pcsCase", fetch = LAZY, cascade = ALL)
     @Builder.Default
