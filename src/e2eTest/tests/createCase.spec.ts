@@ -46,7 +46,7 @@ test.describe.skip('[Create Case Flow With Address and Claimant Type]  @Master @
       correspondenceAddress: contactPreferences.yes,
       phoneNumber: contactPreferences.no
     });
-     await performAction('defendant1Details', {
+     await performAction('defendantDetails', {
       name: defendantDetails.yes,
       correspondenceAddress: defendantDetails.yes,
       email: defendantDetails.yes,
@@ -91,7 +91,7 @@ test.describe.skip('[Create Case Flow With Address and Claimant Type]  @Master @
       correspondenceAddress: contactPreferences.no,
       phoneNumber: contactPreferences.yes
     });
-      await performAction('defendant1Details', {
+      await performAction('defendantDetails', {
       name: defendantDetails.yes,
       correspondenceAddress: defendantDetails.yes,
       email: defendantDetails.yes,
@@ -185,7 +185,7 @@ test.describe.skip('[Create Case Flow With Address and Claimant Type]  @Master @
         correspondenceAddress: contactPreferences.yes,
         phoneNumber: contactPreferences.no
       });
-      await performAction('defendant1Details', {
+      await performAction('defendantDetails', {
         name: defendantDetails.no,
         correspondenceAddress: defendantDetails.no,
         email: defendantDetails.no,
