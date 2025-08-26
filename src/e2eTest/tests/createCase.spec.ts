@@ -15,7 +15,7 @@ import { checkingNotice } from '@data/page-data/checkingNotice.page.data';
 import { noticeDetails } from '@data/page-data/noticeDetails.page.data';
 import { rentDetails } from '@data/page-data/rentDetails.page.data';
 import { userIneligible } from '@data/page-data/userIneligible.page.data';
-import { defendant1 } from "@data/page-data/defendant1.page.data";
+import { defendantDetails } from "@data/page-data/defendantDetails.page.data";
 
 test.beforeEach(async ({page}, testInfo) => {
   initializeExecutor(page);
@@ -47,10 +47,10 @@ test.describe.skip('[Create Case Flow With Address and Claimant Type]  @Master @
       phoneNumber: contactPreferences.no
     });
      await performAction('defendant1Details', {
-      name: defendant1.yes,
-      correspondenceAddress: defendant1.yes,
-      email: defendant1.yes,
-      correspondenceAddressSame: defendant1.no
+      name: defendantDetails.yes,
+      correspondenceAddress: defendantDetails.yes,
+      email: defendantDetails.yes,
+      correspondenceAddressSame: defendantDetails.no
     });
     await performValidation('mainHeader', groundsForPossession.mainHeader);
     await performAction('selectGroundsForPossission', groundsForPossession.yes);
@@ -92,10 +92,10 @@ test.describe.skip('[Create Case Flow With Address and Claimant Type]  @Master @
       phoneNumber: contactPreferences.yes
     });
       await performAction('defendant1Details', {
-      name: defendant1.yes,
-      correspondenceAddress: defendant1.yes,
-      email: defendant1.yes,
-      correspondenceAddressSame: defendant1.yes
+      name: defendantDetails.yes,
+      correspondenceAddress: defendantDetails.yes,
+      email: defendantDetails.yes,
+      correspondenceAddressSame: defendantDetails.yes
     });
     await performValidation('mainHeader', groundsForPossession.mainHeader);
     await performAction('selectGroundsForPossission', groundsForPossession.yes);
@@ -186,9 +186,9 @@ test.describe.skip('[Create Case Flow With Address and Claimant Type]  @Master @
         phoneNumber: contactPreferences.no
       });
       await performAction('defendant1Details', {
-        name: defendant1.no,
-        correspondenceAddress: defendant1.no,
-        email: defendant1.no,
+        name: defendantDetails.no,
+        correspondenceAddress: defendantDetails.no,
+        email: defendantDetails.no,
       });
       await performValidation('mainHeader', groundsForPossession.mainHeader);
       await performAction('selectGroundsForPossission', groundsForPossession.yes);
