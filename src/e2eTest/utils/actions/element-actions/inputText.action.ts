@@ -7,6 +7,7 @@ export class InputTextAction implements IAction {
       throw new Error('inputText action requires a value');
     }
     const locator = page.locator(`label:has-text("${fieldName}") + input,
+           label:has-text("${fieldName}") + textarea,
            label:has-text("${fieldName}") ~ input,
            [aria-label="${fieldName}"],
            [placeholder="${fieldName}"]`);
