@@ -159,6 +159,7 @@ public class PcsCaseService {
     private static Boolean toBooleanOrNull(YesOrNo yesOrNo) {
         return yesOrNo != null ? yesOrNo.toBoolean() : null;
     }
+
     public void addDocumentToCase(long caseReference, String fileName, String filePath) {
         final PcsCaseEntity pcsCaseEntity = pcsCaseRepository.findByCaseReference(caseReference)
             .orElseThrow(() -> new CaseNotFoundException(caseReference));
