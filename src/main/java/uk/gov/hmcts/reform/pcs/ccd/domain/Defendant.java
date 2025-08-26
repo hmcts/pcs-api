@@ -1,7 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.domain;
 
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -24,10 +23,10 @@ public class Defendant {
     @CCD(label = "Do you know the defendant's name?")
     private VerticalYesNo defendantsNameKnown;
 
-    @CCD(label = "Defendant's first name")
+    @CCD(label = "Defendant's first name", showCondition = "defendantsNameKnown=\"YES\"")
     private String firstName;
 
-    @CCD(label = "Defendant's last name")
+    @CCD(label = "Defendant's last name", showCondition = "defendantsNameKnown=\"YES\"")
     private String lastName;
 
     @CCD(label = """
@@ -39,11 +38,11 @@ public class Defendant {
     private VerticalYesNo defendantsAddressKnown;
 
     @CCD(label = "Is the defendant's correspondence address the same as the address of the property"
-        + " you're claiming possession of?")
+        + " you're claiming possession of?", showCondition = "defendantsAddressKnown=\"YES\"")
     private VerticalYesNo defendantsAddressSameAsPossession;
 
-    @JsonProperty("correspondenceAddress")
-    @CCD(label = "Enter a UK Address")
+    @CCD(label = "Enter a Address details", showCondition = "defendantsAddressKnown=\"YES\""
+        + " AND defendantsAddressSameAsPossession=\"NO\"")
     private AddressUK correspondenceAddress;
 
     @CCD(label = """
@@ -54,6 +53,6 @@ public class Defendant {
     @CCD(label = "Do you know the defendant's email?")
     private VerticalYesNo defendantsEmailKnown;
 
-    @CCD(label = "Email")
+    @CCD(label = "Email", showCondition = "defendantsEmailKnown=\"YES\"")
     private String email;
 }

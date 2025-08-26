@@ -1,7 +1,5 @@
 package uk.gov.hmcts.reform.pcs.ccd.domain;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -14,7 +12,6 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseworkerAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenAccess;
 
 import java.util.List;
-import java.util.Map;
 
 /**
  * The main domain model representing a possessions case.
@@ -23,36 +20,6 @@ import java.util.Map;
 @Data
 @AllArgsConstructor
 public class PCSCase {
-
-    @JsonCreator
-    public PCSCase(Map<String, Object> props) {
-        int maxDefendants = 25;
-        for (int i = 1; i <= maxDefendants; i++) {
-            Defendant d = toDefendantType("defendant" + i, props);
-            if (d.getFirstName() != null && d.getLastName() != null ) {
-                setDefendant(i, d);
-            }
-        }
-    }
-
-    private Defendant toDefendantType(String prefix, Map<String, Object> props) {
-        Defendant d = new Defendant();
-        d.setFirstName((String) props.get(prefix + "FirstName"));
-        d.setLastName((String) props.get(prefix + "LastName"));
-        d.setEmail((String) props.get(prefix + "Email"));
-
-        AddressUK addr = new AddressUK();
-        addr.setAddressLine1((String) props.get(prefix + "CorrespondenceAddress.AddressLine1"));
-        addr.setAddressLine1((String) props.get(prefix + "CorrespondenceAddress.AddressLine2"));
-        addr.setAddressLine1((String) props.get(prefix + "CorrespondenceAddress.AddressLine3"));
-        addr.setPostTown((String) props.get(prefix + "CorrespondenceAddress.PostTown"));
-        addr.setAddressLine1((String) props.get(prefix + "CorrespondenceAddress.County"));
-        addr.setPostCode((String) props.get(prefix + "CorrespondenceAddress.PostCode"));
-        addr.setAddressLine1((String) props.get(prefix + "CorrespondenceAddress.Country"));
-
-        d.setCorrespondenceAddress(addr);
-        return d;
-    }
 
     private void setDefendant(int index, Defendant d) {
         switch (index) {
@@ -120,15 +87,12 @@ public class PCSCase {
 
     private String claimPaymentTabMarkdown;
 
-    @JsonUnwrapped(prefix = "defendant1")
     @CCD(access = CaseworkerAccess.class)
     private Defendant defendant1;
 
-    @JsonUnwrapped(prefix = "defendant2")
     @CCD(access = CaseworkerAccess.class)
     private Defendant defendant2;
 
-    @JsonUnwrapped(prefix = "defendant3")
     @CCD(access = CaseworkerAccess.class)
     private Defendant defendant3;
 

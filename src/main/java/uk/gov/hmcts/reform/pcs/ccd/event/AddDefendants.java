@@ -56,27 +56,7 @@ public class AddDefendants implements CCDConfig<PCSCase, State, UserRole> {
                 defendantPage.showCondition("addAnotherDefendant" + (i - 1) + "=\"YES\"");
             }
             defendantPage.pageLabel("Defendant ")
-                //Name section
-                .complex(getTempDefField(i))
-                .readonly(Defendant::getNameSectionLabel)
-                .mandatory(Defendant::getDefendantsNameKnown)
-                .mandatory(Defendant::getFirstName, "defendant" + i + "DefendantsNameKnown=\"YES\"")
-                .mandatory(Defendant::getLastName, "defendant" + i + "DefendantsNameKnown=\"YES\"")
-                .readonly(Defendant::getAddressSectionLabel)
-                .mandatory(Defendant::getDefendantsAddressKnown)
-                .mandatory(Defendant::getDefendantsAddressSameAsPossession,"defendant" + i
-                    + "DefendantsAddressKnown=\"YES\"")
-
-                //Address section
-                .mandatory(Defendant::getCorrespondenceAddress,"defendant" + i
-                    + "DefendantsAddressKnown=\"YES\" AND defendant"
-                    + i + "DefendantsAddressSameAsPossession=\"NO\"")
-
-                //Email section
-                .readonly(Defendant::getEmailSectionLabel)
-                .mandatory(Defendant::getDefendantsEmailKnown)
-                .mandatory(Defendant::getEmail, "defendant" + i + "DefendantsEmailKnown=\"YES\"")
-                .done();
+                .mandatory(getTempDefField(i));
 
             //Add Another / Summary page
             var addAnotherPage = event.page("AddAnotherDefendant" + i);
@@ -85,7 +65,7 @@ public class AddDefendants implements CCDConfig<PCSCase, State, UserRole> {
             }
             addAnotherPage.pageLabel("Defendant List")
                     .label("defTable" + i, buildDefendantsSummaryTable(i));
-            if(i != maxNum ) {
+            if (i != maxNum) {
                 addAnotherPage.mandatory(getAddAnotherField(i));
             }
 
@@ -131,15 +111,15 @@ public class AddDefendants implements CCDConfig<PCSCase, State, UserRole> {
                 .append(i)
                 .append("</td><td>${defendant")
                 .append(i)
-                .append("FirstName} ${defendant")
+                .append(".firstName} ${defendant")
                 .append(i)
-                .append("LastName}</td><td>")
-                .append("${defendant").append(i).append("CorrespondenceAddress.AddressLine1}<br>")
-                .append("${defendant").append(i).append("CorrespondenceAddress.PostTown}<br>")
-                .append("${defendant").append(i).append("CorrespondenceAddress.PostCode}")
+                .append(".lastName}</td><td>")
+                .append("${defendant").append(i).append(".correspondenceAddress.AddressLine1}<br>")
+                .append("${defendant").append(i).append(".correspondenceAddress.PostTown}<br>")
+                .append("${defendant").append(i).append(".correspondenceAddress.PostCode}")
                 .append("</td><td>${defendant")
                 .append(i)
-                .append("Email}</td></tr>");
+                .append(".email}</td></tr>");
         }
 
         htmlTable.append("""
