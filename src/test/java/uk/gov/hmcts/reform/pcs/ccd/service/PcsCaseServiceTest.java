@@ -395,6 +395,7 @@ class PcsCaseServiceTest {
         assertThat(clearedDefendant.getAddressSameAsPossession()).isNull();
         assertThat(clearedDefendant.getEmail()).isNull();
     }
+
     // Test for tenancy_licence JSON creation, temporary until Data Model is finalised
     @Test
     void shouldSetTenancyLicence() {
