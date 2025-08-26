@@ -36,6 +36,8 @@ import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.MediationAndSettle
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.PostcodeNotAssignedToCourt;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.PreActionProtocol;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.PropertyNotEligible;
+import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.NoticeDetails;
+import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.RentDetails;
 import uk.gov.hmcts.reform.pcs.ccd.service.ClaimService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
@@ -89,7 +91,9 @@ public class CreatePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             .add(new GroundsForPossession())
             .add(new PreActionProtocol())
             .add(new MediationAndSettlement())
-            .add(new CheckingNotice());
+            .add(new CheckingNotice())
+            .add(new NoticeDetails())
+            .add(new RentDetails());
     }
 
     private PCSCase start(EventPayload<PCSCase, State> eventPayload) {
