@@ -17,12 +17,6 @@ public class RentDetails implements CcdPageConfiguration {
                 .pageLabel("Rent details")
                 .label("rentDetails-content", 
                         """
-                        ---
-                        <section tabindex="0">
-                            <p class="govuk-body">
-                                Please provide details about the current rental agreement.
-                            </p>
-                        </section>
                         """)
                 .mandatory(PCSCase::getCurrentRent, "rentFrequency!=\"OTHER\"")
                 .mandatory(PCSCase::getRentFrequency)
