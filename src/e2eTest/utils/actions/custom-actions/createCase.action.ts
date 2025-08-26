@@ -11,6 +11,7 @@ import { housingPossessionClaim } from '@data/page-data/housingPossessionClaim.p
 import { claimantName } from '@data/page-data/claimantName.page.data';
 import { contactPreferences } from '@data/page-data/contactPreferences.page.data';
 import { mediationAndSettlement } from '@data/page-data/mediationAndSettlement.page.data';
+import {tenancyLicenceDetails} from "@data/page-data/tenancyLicenceDetails.page.data";
 
 let caseInfo: { id: string; fid: string; state: string };
 const testConfig = TestConfig.ccdCase;
@@ -146,6 +147,23 @@ export class CreateCaseAction implements IAction {
       await performAction('inputText', 'Enter phone number', contactPreferences.phoneNumberInput);
     }
     await performAction('clickButton', 'Continue');
+  }
+
+  private async selectTenancyOrLicenceDetails(tenancyData: actionData) {
+    const tenancyLicenceData = tenancyData as {
+      typeOfTenancy: string;
+      tenancyStartDate: string;
+      uploadAgreement: string;
+    };
+    await performAction('clickRadioButton', {
+      question: tenancyLicenceDetails.tenancyOrLicenceType,
+      option: tenancyLicenceData.typeOfTenancy
+    });
+    if (tenancyLicenceData.typeOfTenancy === 'Other') {
+      await performAction('inputText', 'Give details of the type of tenancy or licence agreement that\'s in place', tenancyLicenceDetails.detailsOfLicence);
+    }
+
+
   }
 
   private async selectMediationAndSettlement(mediationSettlement: actionData) {
