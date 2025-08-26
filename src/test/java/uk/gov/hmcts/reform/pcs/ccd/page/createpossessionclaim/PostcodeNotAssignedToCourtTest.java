@@ -39,7 +39,7 @@ class PostcodeNotAssignedToCourtTest extends BasePageTest {
         fieldBuilder = mock(FieldCollectionBuilder.class);
 
         when(eventBuilder.fields()).thenReturn(fieldBuilder);
-        when(fieldBuilder.page(anyString())).thenReturn(fieldBuilder);
+        when(fieldBuilder.page(anyString(), any())).thenReturn(fieldBuilder);
         when(fieldBuilder.pageLabel(anyString())).thenReturn(fieldBuilder);
         when(fieldBuilder.showCondition(anyString())).thenReturn(fieldBuilder);
         when(fieldBuilder.readonly(any(), anyString())).thenReturn(fieldBuilder);
@@ -55,7 +55,7 @@ class PostcodeNotAssignedToCourtTest extends BasePageTest {
     void shouldBuildPageConfigurationSuccessfully() {
         underTest.addTo(pageBuilder);
 
-        verify(fieldBuilder).page(eq("postcodeNotAssignedToCourt"));
+        verify(fieldBuilder).page(eq("postcodeNotAssignedToCourt"), any());
         verify(fieldBuilder).pageLabel(eq("You cannot use this online service"));
     }
 
