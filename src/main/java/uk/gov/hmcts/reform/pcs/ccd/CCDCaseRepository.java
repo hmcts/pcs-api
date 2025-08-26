@@ -60,14 +60,14 @@ public class CCDCaseRepository extends DecentralisedCaseRepository<PCSCase> {
                 : null)
             .currentRent(pcsCaseEntity.getTenancyLicence() != null 
                 && pcsCaseEntity.getTenancyLicence().getRentAmount() != null
-                ? pcsCaseEntity.getTenancyLicence().getRentAmount().toString() : null)
+                ? pcsCaseEntity.getTenancyLicence().getRentAmount().toPlainString() : null)
             .rentFrequency(pcsCaseEntity.getTenancyLicence() != null 
                 ? pcsCaseEntity.getTenancyLicence().getRentPaymentFrequency() : null)
             .otherRentFrequency(pcsCaseEntity.getTenancyLicence() != null 
                 ? pcsCaseEntity.getTenancyLicence().getOtherRentFrequency() : null)
             .dailyRentChargeAmount(pcsCaseEntity.getTenancyLicence() != null 
                 && pcsCaseEntity.getTenancyLicence().getDailyRentChargeAmount() != null
-                ? pcsCaseEntity.getTenancyLicence().getDailyRentChargeAmount().toString() : null)
+                ? pcsCaseEntity.getTenancyLicence().getDailyRentChargeAmount().toPlainString() : null)
             .noticeServed(pcsCaseEntity.getTenancyLicence() != null 
                 && pcsCaseEntity.getTenancyLicence().getNoticeServed() != null 
                 ? YesOrNo.from(pcsCaseEntity.getTenancyLicence().getNoticeServed()) : null)
@@ -91,13 +91,12 @@ public class CCDCaseRepository extends DecentralisedCaseRepository<PCSCase> {
         }
         pcsCase.setParties(mapAndWrapParties(pcsCaseEntity.getParties()));
 
-        String formattedCaseRef = formatCaseReference(caseRef);
         pcsCase.setPageHeadingMarkdown("""
                                        <h3 class="govuk-heading-s">
                                             %s<br>
-                                            Case number: %s <br>
+                                            Case number: ${[CASE_REFERENCE]} <br>
                                         </h3>
-                                       """.formatted(formatAddress(pcsCase.getPropertyAddress()), formattedCaseRef));
+                                       """.formatted(formatAddress(pcsCase.getPropertyAddress())));
 
     }
 
@@ -142,10 +141,5 @@ public class CCDCaseRepository extends DecentralisedCaseRepository<PCSCase> {
         return partyEntities.stream()
             .map(entity -> modelMapper.map(entity, Party.class))
             .collect(Collectors.collectingAndThen(Collectors.toList(), ListValueUtils::wrapListItems));
-    }
-
-    private String formatCaseReference(long caseRef) {
-        String caseRefStr = String.valueOf(caseRef);
-        return caseRefStr.replaceAll("(.{4})(?=.)", "$1-");
     }
 }
