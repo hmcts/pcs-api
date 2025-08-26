@@ -10,6 +10,7 @@ import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentCategory;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
@@ -45,12 +46,8 @@ public class PcsCaseService {
                         ? pcsCase.getPreActionProtocolCompleted().toBoolean()
                         : null);
 
-        addDocuments(pcsCase.getDifferentDocumentNameA(), "A", pcsCaseEntity);
+        addDocuments(pcsCase.getSupportDocumentsCategoryA(), "A", pcsCaseEntity);
         addDocuments(pcsCase.getSupportingDocumentsCategoryB(), "B", pcsCaseEntity);
-
-        log.error("====== PCS CASE ENTITY DATA CAT A SIZE: "
-            + pcsCaseEntity.getDocumentsCategoryA().size()
-            + " CAT B SIZE: " + pcsCaseEntity.getDocumentsCategoryB().size());
 
         return pcsCaseRepository.save(pcsCaseEntity);
     }
@@ -112,13 +109,13 @@ public class PcsCaseService {
             pcsCaseEntity.setPreActionProtocolCompleted(pcsCase.getPreActionProtocolCompleted().toBoolean());
         }
 
-        if (pcsCase.getDifferentDocumentNameA() != null) {
-            addDocuments(pcsCase.getDifferentDocumentNameA(), "A", pcsCaseEntity);
+        if (pcsCase.getSupportDocumentsCategoryA() != null) {
+            addDocuments(pcsCase.getSupportDocumentsCategoryA(), "A", pcsCaseEntity);
         }
 
 
-        if (pcsCase.getDifferentDocumentNameA() != null) {
-            addDocuments(pcsCase.getDifferentDocumentNameA(), "B", pcsCaseEntity);
+        if (pcsCase.getSupportDocumentsCategoryA() != null) {
+            addDocuments(pcsCase.getSupportDocumentsCategoryA(), "B", pcsCaseEntity);
         }
 
         pcsCaseRepository.save(pcsCaseEntity);
@@ -155,6 +152,7 @@ public class PcsCaseService {
         document.setFileName(fileName);
         document.setFilePath(filePath);
         document.setUploadedOn(LocalDate.now());
+        document.setCategory(DocumentCategory.CATEGORY_A);
 
         pcsCaseEntity.addDocumentCategoryA(document);
         pcsCaseRepository.save(pcsCaseEntity);

@@ -2,6 +2,8 @@ package uk.gov.hmcts.reform.pcs.ccd.entity;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -36,6 +38,8 @@ public class DocumentEntity {
     @JoinColumn(name = "case_id", referencedColumnName = "id")
     @JsonBackReference
     private PcsCaseEntity pcsCase;
+
+    @Enumerated(EnumType.STRING) @Column(name = "category", nullable = false) private DocumentCategory category;
 
     @Column(name = "file_name")
     private String fileName;

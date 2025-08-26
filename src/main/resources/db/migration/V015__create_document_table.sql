@@ -4,6 +4,7 @@ CREATE TABLE document (
     file_name VARCHAR(100),
     file_path VARCHAR(500),
     content_type VARCHAR(100),
+    category VARCHAR(16) NOT NULL
     uploaded_on DATE NOT NULL
 );
 

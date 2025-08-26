@@ -57,15 +57,11 @@ public class CCDCaseRepository extends DecentralisedCaseRepository<PCSCase> {
 
         PcsCaseEntity pcsCaseEntity = loadCaseData(caseReference);
 
-        log.error("====== LOADED PCS CASE ENTITY DATA CAT A SIZE: "
-            + pcsCaseEntity.getDocumentsCategoryA().size()
-            + "CAT B SIZE: " + pcsCaseEntity.getDocumentsCategoryB().size());
-
         PCSCase pcsCase = PCSCase.builder()
             .propertyAddress(convertAddress(pcsCaseEntity.getPropertyAddress()))
             .caseManagementLocation(pcsCaseEntity.getCaseManagementLocation())
-            .differentDocumentNameA(mapDocumentsCategoryA(pcsCaseEntity.getDocumentsCategoryA()))
-            .supportingDocumentsCategoryB(mapDocumentsCategoryB(pcsCaseEntity.getDocumentsCategoryB()))
+            .supportDocumentsCategoryA(mapDocuments(pcsCaseEntity.getDocumentsCategoryA(), "A"))
+            .supportDocumentsCategoryA(mapDocuments(pcsCaseEntity.getDocumentsCategoryB(), "B"))
             .preActionProtocolCompleted(pcsCaseEntity.getPreActionProtocolCompleted() != null
                 ? VerticalYesNo.from(pcsCaseEntity.getPreActionProtocolCompleted())
                 : null)
@@ -76,7 +72,7 @@ public class CCDCaseRepository extends DecentralisedCaseRepository<PCSCase> {
         return pcsCase;
     }
 
-    private List<ListValue<Document>> mapDocumentsCategoryA(Set<DocumentEntity> documentEntities) {
+    private List<ListValue<Document>> mapDocuments(Set<DocumentEntity> documentEntities, String category) {
         if (documentEntities == null || documentEntities.isEmpty()) {
             return null;
         }
@@ -87,27 +83,7 @@ public class CCDCaseRepository extends DecentralisedCaseRepository<PCSCase> {
                     .filename(docEntity.getFileName())
                     .binaryUrl(docEntity.getFilePath())
                     .url(docEntity.getFilePath())
-                    .build();
-
-                return ListValue.<Document>builder()
-                    .id(docEntity.getId().toString())
-                    .value(document)
-                    .build();
-            })
-            .collect(Collectors.toList());
-    }
-
-    private List<ListValue<Document>> mapDocumentsCategoryB(Set<DocumentEntity> documentEntities) {
-        if (documentEntities == null || documentEntities.isEmpty()) {
-            return null;
-        }
-
-        return documentEntities.stream()
-            .map(docEntity -> {
-                Document document = Document.builder()
-                    .filename(docEntity.getFileName())
-                    .binaryUrl(docEntity.getFilePath())
-                    .url(docEntity.getFilePath())
+                    .categoryId(category)
                     .build();
 
                 return ListValue.<Document>builder()

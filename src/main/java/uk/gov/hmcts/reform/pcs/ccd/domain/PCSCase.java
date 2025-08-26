@@ -198,7 +198,7 @@ public class PCSCase {
         categoryID = "A"
     )
     @JsonProperty("differentDocumentNameA")
-    private List<ListValue<Document>> differentDocumentNameA;
+    private List<ListValue<Document>> supportDocumentsCategoryA;
 
     @CCD(
         label = "Supporting documents Category B",
