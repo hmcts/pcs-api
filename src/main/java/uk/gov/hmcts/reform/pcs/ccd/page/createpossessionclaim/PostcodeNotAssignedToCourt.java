@@ -49,9 +49,9 @@ public class PostcodeNotAssignedToCourt implements CcdPageConfiguration {
                 "postcodeNotAssignedToCourt-england",
                 """
                 <ul class="govuk-list govuk-list--bullet">
-                    <li><span class="govuk-!-font-weight-bold">For rental or mortgage arrears claims</span> – 
+                    <li class="govuk-list govuk-!-font-size-19"><span class="govuk-!-font-weight-bold">For rental or mortgage arrears claims</span> – 
                     use the %s.</li>
-                    <li><span class="govuk-!-font-weight-bold">For other types of claims</span> – fill in form 
+                    <li class="govuk-list govuk-!-font-size-19"><span class="govuk-!-font-weight-bold">For other types of claims</span> – fill in form 
                     N5 and the correct particulars of claim form.</li>
                 </ul>
                 """.formatted(PCOL_LINK),
@@ -68,17 +68,17 @@ public class PostcodeNotAssignedToCourt implements CcdPageConfiguration {
                 "postcodeNotAssignedToCourt-all",
                 """
                 <ul class="govuk-list govuk-list--bullet">
-                    <li><span class="govuk-!-font-weight-bold">For rental or mortgage arrears claims in 
+                    <li class="govuk-list govuk-!-font-size-19"><span class="govuk-!-font-weight-bold">For rental or mortgage arrears claims in 
                     England</span> – use the %s.</li>
-                    <li><span class="govuk-!-font-weight-bold">For other types of claims in England</span> – fill in 
+                    <li class="govuk-list govuk-!-font-size-19"><span class="govuk-!-font-weight-bold">For other types of claims in England</span> – fill in 
                     form N5 and the correct particulars of claim form.</li>
-                    <li><span class="govuk-!-font-weight-bold">For claims in Wales</span> - Use form N5 Wales and the 
+                    <li class="govuk-list govuk-!-font-size-19"><span class="govuk-!-font-weight-bold">For claims in Wales</span> - Use form N5 Wales and the 
                     correct particulars of claim form.</li>
-                    <li><span class="govuk-!-font-weight-bold">For claims in Scotland</span> - use your 
+                    <li class="govuk-list govuk-!-font-size-19"><span class="govuk-!-font-weight-bold">For claims in Scotland</span> - use your 
                     <a href="https://www.scotcourts.gov.uk/home" rel="noreferrer noopener" target="_blank" 
                     class="govuk-link" aria-label="Go to Scottish Courts website (opens in new tab)">
                     local sheriff court (opens in new tab)</a>.</li>
-                    <li><span class="govuk-!-font-weight-bold">For claims in Northern Ireland</span> - use the 
+                    <li class="govuk-list govuk-!-font-size-19"><span class="govuk-!-font-weight-bold">For claims in Northern Ireland</span> - use the 
                     <a href="https://www.nidirect.gov.uk/articles/enforcement-civil-court-orders-northern-ireland" 
                     rel="noreferrer noopener" target="_blank" class="govuk-link" 
                     aria-label="Go to Enforcement of Judgments Office website (opens in new tab)">
