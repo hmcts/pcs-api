@@ -9,6 +9,7 @@ import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicence;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentCategory;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
@@ -17,6 +18,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -48,6 +50,8 @@ public class PcsCaseService {
 
         addDocuments(pcsCase.getSupportDocumentsCategoryA(), "A", pcsCaseEntity);
         addDocuments(pcsCase.getSupportingDocumentsCategoryB(), "B", pcsCaseEntity);
+
+        pcsCaseEntity.setTenancyLicence(buildTenancyLicence(pcsCase));
 
         return pcsCaseRepository.save(pcsCaseEntity);
     }
@@ -144,6 +148,17 @@ public class PcsCaseService {
         return party;
     }
 
+    //Temporary method to create tenancy_licence JSON and related fields
+    // Data in this JSON will likely be moved to a dedicated entity in the future
+    private TenancyLicence buildTenancyLicence(PCSCase pcsCase) {
+        return TenancyLicence.builder()
+                .noticeServed(toBooleanOrNull(pcsCase.getNoticeServed()))
+                .build();
+    }
+
+    private static Boolean toBooleanOrNull(YesOrNo yesOrNo) {
+        return yesOrNo != null ? yesOrNo.toBoolean() : null;
+    }
     public void addDocumentToCase(long caseReference, String fileName, String filePath) {
         final PcsCaseEntity pcsCaseEntity = pcsCaseRepository.findByCaseReference(caseReference)
             .orElseThrow(() -> new CaseNotFoundException(caseReference));

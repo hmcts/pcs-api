@@ -186,6 +186,12 @@ public class PCSCase {
     )
     private String settlementAttemptedDetails;
 
+    @CCD(
+        label = "Have you served notice to the defendants?",
+        access = {CitizenAccess.class, CaseworkerAccess.class}
+    )
+    private YesOrNo noticeServed;
+
     private String pageHeadingMarkdown;
 
     private String claimPaymentTabMarkdown;

@@ -1,4 +1,4 @@
-import { Page, expect,test } from '@playwright/test';
+import { Page, expect } from '@playwright/test';
 import {IValidation, validationData} from "../../interfaces/validation.interface";
 
 export class TextValidation implements IValidation {
@@ -6,6 +6,9 @@ export class TextValidation implements IValidation {
     switch (data.elementType) {
       case 'link':
         data.elementType = 'a';
+        break;
+      case 'paragraphLink':
+        data.elementType = 'p > a';
         break;
       case 'heading':
         data.elementType = 'h1.govuk-heading-l';
