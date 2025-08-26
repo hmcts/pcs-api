@@ -39,7 +39,9 @@ public class DocumentEntity {
     @JsonBackReference
     private PcsCaseEntity pcsCase;
 
-    @Enumerated(EnumType.STRING) @Column(name = "category", nullable = false) private DocumentCategory category;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "category", nullable = false)
+    private DocumentCategory category;
 
     @Column(name = "file_name")
     private String fileName;

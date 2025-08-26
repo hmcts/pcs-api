@@ -100,6 +100,6 @@ public class PcsCaseEntity {
     public void addDocumentCategoryB(DocumentEntity document) {
         document.setPcsCase(this);
         document.setCategory(DocumentCategory.CATEGORY_A);
-        documentsCategoryA.add(document);
+        documentsCategoryB.add(document);
     }
 }
