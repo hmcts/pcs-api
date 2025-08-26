@@ -13,5 +13,5 @@ export const defendant1 =
     enterEmailAddress: 'Enter email address',
     emailIdInput:'tom_cruise@gmail.com',
     yes: 'Yes',
-    no: 'No',
+    no: 'No'
   };
