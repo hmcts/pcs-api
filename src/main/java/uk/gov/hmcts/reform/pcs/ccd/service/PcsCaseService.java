@@ -52,7 +52,7 @@ public class PcsCaseService {
         addDocuments(pcsCase.getSupportingDocumentsCategoryB(), "B", pcsCaseEntity);
 
         pcsCaseEntity.setTenancyLicence(buildTenancyLicence(pcsCase));
-
+        log.error("Saving PcsCase + " + pcsCaseEntity.getDocumentsCategoryA());
         return pcsCaseRepository.save(pcsCaseEntity);
     }
 

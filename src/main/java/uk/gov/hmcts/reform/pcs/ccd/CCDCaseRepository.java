@@ -57,15 +57,30 @@ public class CCDCaseRepository extends DecentralisedCaseRepository<PCSCase> {
 
         PcsCaseEntity pcsCaseEntity = loadCaseData(caseReference);
 
+        log.error(
+            "---------------------------------------\n"
+                +
+            "Case Entity After being converted from JSON \n"
+                +
+            pcsCaseEntity + "\n"
+                +
+            "---------------------------------------\n"
+                +
+                "Doc A Size: " + pcsCaseEntity.getDocumentsCategoryA().size()
+                +
+                "Doc B Size: " + pcsCaseEntity.getDocumentsCategoryB().size()
+                +
+                "---------------------------------------\n");
+
         PCSCase pcsCase = PCSCase.builder()
-            .propertyAddress(convertAddress(pcsCaseEntity.getPropertyAddress()))
-            .caseManagementLocation(pcsCaseEntity.getCaseManagementLocation())
-            .supportDocumentsCategoryA(mapDocuments(pcsCaseEntity.getDocumentsCategoryA(), "A"))
-            .supportDocumentsCategoryA(mapDocuments(pcsCaseEntity.getDocumentsCategoryB(), "B"))
-            .preActionProtocolCompleted(pcsCaseEntity.getPreActionProtocolCompleted() != null
-                ? VerticalYesNo.from(pcsCaseEntity.getPreActionProtocolCompleted())
-                : null)
-            .build();
+                    .propertyAddress(convertAddress(pcsCaseEntity.getPropertyAddress()))
+                    .caseManagementLocation(pcsCaseEntity.getCaseManagementLocation())
+                    .supportDocumentsCategoryA(mapDocuments(pcsCaseEntity.getDocumentsCategoryA(), "A"))
+                    .supportDocumentsCategoryA(mapDocuments(pcsCaseEntity.getDocumentsCategoryB(), "B"))
+                    .preActionProtocolCompleted(pcsCaseEntity.getPreActionProtocolCompleted() != null
+                    ? VerticalYesNo.from(pcsCaseEntity.getPreActionProtocolCompleted())
+                    : null)
+                    .build();
 
         setDerivedProperties(caseReference,pcsCase, pcsCaseEntity);
 
