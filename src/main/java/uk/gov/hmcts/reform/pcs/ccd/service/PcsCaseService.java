@@ -4,17 +4,23 @@ import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
+import uk.gov.hmcts.ccd.sdk.type.Document;
+import uk.gov.hmcts.ccd.sdk.type.ListValue;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicence;
+import uk.gov.hmcts.reform.pcs.ccd.domain.model.TenancyLicence;
+import uk.gov.hmcts.reform.pcs.ccd.domain.model.TenancyLicenceDocument;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
-import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -100,9 +106,29 @@ public class PcsCaseService {
     //Temporary method to create tenancy_licence JSON and related fields
     // Data in this JSON will likely be moved to a dedicated entity in the future
     private TenancyLicence buildTenancyLicence(PCSCase pcsCase) {
+
         return TenancyLicence.builder()
-                .noticeServed(toBooleanOrNull(pcsCase.getNoticeServed()))
-                .build();
+            .noticeServed(toBooleanOrNull(pcsCase.getNoticeServed()))
+            .tenancyLicenceDate(pcsCase.getTenancyLicenceDate())
+            .detailsOfOtherTypeOfTenancyLicence(pcsCase.getDetailsOfOtherTypeOfTenancyLicence())
+            .documents(mapToTenancyLicenceDocument(pcsCase.getTenancyLicenceDocuments()))
+            .build();
+    }
+
+    private List<TenancyLicenceDocument> mapToTenancyLicenceDocument(List<ListValue<Document>> documents) {
+        if (documents == null) {
+            return Collections.emptyList();
+        }
+        List<TenancyLicenceDocument> result = new ArrayList<>();
+        for (ListValue<Document> item : documents) {
+            Document details = item.getValue();
+            if (details != null) {
+                TenancyLicenceDocument document = modelMapper.map(details, TenancyLicenceDocument.class);
+                document.setId(item.getId());
+                result.add(document);
+            }
+        }
+        return result;
     }
 
     private static Boolean toBooleanOrNull(YesOrNo yesOrNo) {
