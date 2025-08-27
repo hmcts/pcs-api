@@ -66,8 +66,8 @@ Playwright 1.30+ | TypeScript 4.9+
 ## 4. Available Actions and Validations
 
 ### Actions
-| Action          | Example Usage |
-|------------------|---------------|
+| Action                          | Example Usage                                                                                                                                                                                              |
+|---------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | inputText                       | `performAction('inputText', 'Email', 'test@example.com')`                                                                                                                                                  |
 | check                           | `performAction('check', 'RememberMe')`                                                                                                                                                                     |
 | navigateToUrl                   | `performAction('navigateToUrl', 'testUrl')`                                                                                                                                                                |
@@ -87,14 +87,14 @@ Playwright 1.30+ | TypeScript 4.9+
 | selectClaimType                 | `performAction('selectClaimType', claimType.no)`                                                                                                                                                           |
 | selectClaimantName              | `performAction('selectClaimantName', claimantName.yes)`                                                                                                                                                    |
 | selectContactPreferences        | `performAction('selectContactPreferences', {notifications: { answer: contactPreferences.yes }, correspondenceAddress: { answer: contactPreferences.yes }, phoneNumber: { answer: contactPreferences.no })` |
+| defendantDetails               | `performAction('defendantDetails', {name: defendantDetails.no, correspondenceAddress: defendantDetails.no, email: defendantDetails.no, correspondenceAddressSame: defendantDetails.no })`                   |
 | selectMediationAndSettlement    | `performAction('selectMediationAndSettlement',{attemptedMediationWithDefendantsOption: mediationAndSettlement.yes,settlementWithDefendantsOption: mediationAndSettlement.no}))`                            |
+| selectGroundsForPossession      | `performAction('selectGroundsForPossission',groundsForPossession.yes)`                                                                                                                                     |
 | selectPreActionProtocol         | `performAction('selectPreActionProtocol', preActionProtocol.yes)`                                                                                                                                          |
 | selectNoticeOfYourIntention     | `performAction('selectNoticeOfYourIntention', checkingNotice.no)`                                                                                                                                          |
-| selectGroundsForPossission | `performAction('selectGroundsForPossission', ...)` |
-| defendantDetails | `performAction('defendantDetails', {name: defendantDetails.no, correspondenceAddress: defendantDetails.no, email: defendantDetails.no, correspondenceAddressSame: defendantDetails.no })` |
 ### Validations
-| Validation          | Example Usage |
-|------------------|---------------|
+| Validation        | Example Usage                                                                                                                        |
+|-------------------|--------------------------------------------------------------------------------------------------------------------------------------|
 | text              | `performValidation('text', 'testElement')`                                                                                           |
 | visibility        | `performValidation('visibility', 'testElement')`                                                                                     |
 | bannerAlert       | `performValidation('bannerAlert', {message: "Case has been created."})`                                                              |
