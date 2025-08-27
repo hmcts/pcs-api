@@ -59,6 +59,9 @@ public class PCSCase {
 
     @CCD(searchable = false, access = {CitizenAccess.class, CaseworkerAccess.class})
     private YesOrNo showCrossBorderPage;
+
+    @CCD(searchable = false, access = {CitizenAccess.class, CaseworkerAccess.class})
+    private YesOrNo showPropertyNotEligiblePage;
     @CCD(
         typeOverride = DynamicRadioList,
         access = {CitizenAccess.class, CaseworkerAccess.class}
@@ -179,6 +182,12 @@ public class PCSCase {
         typeOverride = TextArea
     )
     private String settlementAttemptedDetails;
+
+    @CCD(
+        label = "Have you served notice to the defendants?",
+        access = {CitizenAccess.class, CaseworkerAccess.class}
+    )
+    private YesOrNo noticeServed;
 
     private String pageHeadingMarkdown;
 
