@@ -18,7 +18,7 @@ test.beforeEach(async ({page}) => {
   await performAction('housingPossessionClaim');
 });
 
-test.describe('Eligibility checks for cross and non cross border postcodes @nightly', async () => {
+test.describe('Eligibility checks for cross and non cross border postcodes @Master @nightly', async () => {
   //Skipping these tests until the postcode data insertion is handled in AAT via automation
   test.skip('Verify cross border postcode eligibility check redirection and content for England and Wales', async ({page}) => {
     await performAction('selectAddress', {
