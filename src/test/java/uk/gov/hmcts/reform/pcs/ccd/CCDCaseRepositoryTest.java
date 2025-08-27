@@ -20,6 +20,7 @@ import uk.gov.hmcts.reform.pcs.ccd.renderer.ClaimListRenderer;
 import uk.gov.hmcts.reform.pcs.ccd.renderer.ClaimPaymentTabRenderer;
 import uk.gov.hmcts.reform.pcs.ccd.renderer.GenAppHistoryRenderer;
 import uk.gov.hmcts.reform.pcs.ccd.renderer.GenAppListRenderer;
+import uk.gov.hmcts.reform.pcs.ccd.renderer.PendingTasksRenderer;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.ClaimService;
 import uk.gov.hmcts.reform.pcs.ccd.service.GenAppService;
@@ -68,6 +69,8 @@ class CCDCaseRepositoryTest {
     private UserInfoService userInfoService;
     @Mock
     private GenAppHistoryRenderer genAppHistoryRenderer;
+    @Mock
+    private PendingTasksRenderer pendingTasksRenderer;
 
     private CCDCaseRepository underTest;
 
@@ -79,7 +82,7 @@ class CCDCaseRepositoryTest {
         underTest = new CCDCaseRepository(pcsCaseRepository, securityContextService, modelMapper,
                                           claimPaymentTabRenderer, claimListRenderer, claimHistoryRenderer,
                                           genAppListRenderer, claimService, genAppService, userInfoService,
-                                          genAppHistoryRenderer);
+                                          genAppHistoryRenderer, pendingTasksRenderer);
 
     }
 

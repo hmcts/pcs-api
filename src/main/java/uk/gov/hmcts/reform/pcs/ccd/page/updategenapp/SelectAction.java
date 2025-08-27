@@ -22,7 +22,7 @@ public class SelectAction implements CcdPageConfiguration {
             .readonly(PCSCase::getGenAppId, ShowConditions.NEVER_SHOW)
             .label("selectAction-info", """
                            ---
-                           ${claimDescriptionMarkdown}
+                           ${genAppDescriptionMarkdown}
                            """)
             .mandatory(PCSCase::getActionList);
 

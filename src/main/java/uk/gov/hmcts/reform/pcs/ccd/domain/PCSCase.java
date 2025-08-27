@@ -182,9 +182,14 @@ public class PCSCase {
 
     private String pageHeadingMarkdown;
 
+    @CCD(searchable = false)
     private String claimPaymentTabMarkdown;
 
+    @CCD(searchable = false)
     private String claimListMarkdown;
+
+    @CCD(searchable = false)
+    private String pendingTasksMarkdown;
 
     private String genAppListMarkdown;
 

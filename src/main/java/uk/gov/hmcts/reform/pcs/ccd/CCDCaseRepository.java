@@ -8,6 +8,7 @@ import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Claim;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CounterClaimEvent;
 import uk.gov.hmcts.reform.pcs.ccd.domain.GenApp;
@@ -24,6 +25,7 @@ import uk.gov.hmcts.reform.pcs.ccd.renderer.ClaimListRenderer;
 import uk.gov.hmcts.reform.pcs.ccd.renderer.ClaimPaymentTabRenderer;
 import uk.gov.hmcts.reform.pcs.ccd.renderer.GenAppHistoryRenderer;
 import uk.gov.hmcts.reform.pcs.ccd.renderer.GenAppListRenderer;
+import uk.gov.hmcts.reform.pcs.ccd.renderer.PendingTasksRenderer;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.ClaimService;
 import uk.gov.hmcts.reform.pcs.ccd.service.CounterClaimEventService;
@@ -62,6 +64,7 @@ public class CCDCaseRepository extends DecentralisedCaseRepository<PCSCase> {
     private final GenAppService genAppService;
     private final UserInfoService userInfoService;
     private final GenAppHistoryRenderer genAppHistoryRenderer;
+    private final PendingTasksRenderer pendingTasksRenderer;
 
     /**
      * Invoked by CCD to load PCS cases by reference.
@@ -110,6 +113,7 @@ public class CCDCaseRepository extends DecentralisedCaseRepository<PCSCase> {
         pcsCase.setClaimListMarkdown(claimListRenderer.render(caseRef, claims, claimActionMap));
         pcsCase.setClaimHistoryMarkdown(claimHistoryRenderer.render(caseRef, claims));
 
+
         List<GenApp> genApps = pcsCaseEntity.getGenApps().stream()
             .map(genApp -> modelMapper.map(genApp, GenApp.class))
             .toList();
@@ -119,6 +123,11 @@ public class CCDCaseRepository extends DecentralisedCaseRepository<PCSCase> {
 
         pcsCase.setGenAppListMarkdown(genAppListRenderer.render(caseRef, genApps, genAppActionMap));
         pcsCase.setGenAppHistoryMarkdown(genAppHistoryRenderer.render(caseRef, genApps));
+
+        if (userInfo.getRoles().contains(UserRole.JUDGE.getRole())) {
+            pcsCase.setPendingTasksMarkdown(pendingTasksRenderer.render(caseRef, genApps, genAppActionMap));
+        }
+
 
         pcsCase.setFormattedPropertyAddress(formatAddress(pcsCase.getPropertyAddress()));
 

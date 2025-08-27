@@ -82,7 +82,7 @@ public abstract class AbstractUpdateGenApp implements CCDConfig<PCSCase, State, 
         UserInfo userInfo = userInfoService.getCurrentUserInfo();
 
         // TODO: HTML escape or change label
-        caseData.setClaimDescriptionMarkdown("<h3>General Application: %s</h3>".formatted(genApp.getSummary()));
+        caseData.setGenAppDescriptionMarkdown("<h3>General Application: %s</h3>".formatted(genApp.getSummary()));
 
         List<GenAppEvent> actionsForState = genAppService.getApplicableEvents(genApp.getState());
 

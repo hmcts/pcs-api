@@ -67,6 +67,11 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
             .caseReferenceField()
             .field(PCSCase::getFormattedPropertyAddress, "Property Address");
 
+        builder.tab("tasks", "My pending tasks")
+            .showCondition("pendingTasksMarkdown=\"*\"")
+            .label("pendingTasksMarkdownLabel", null, "${pendingTasksMarkdown}")
+            .field("pendingTasksMarkdown", NEVER_SHOW);
+
         builder.tab("claims", "Claims")
             .label("claimListMarkdownLabel", null, "${claimListMarkdown}")
             .field("claimListMarkdown", NEVER_SHOW);
