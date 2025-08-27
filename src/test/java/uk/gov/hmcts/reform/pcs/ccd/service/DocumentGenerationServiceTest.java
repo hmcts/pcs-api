@@ -1,5 +1,12 @@
 package uk.gov.hmcts.reform.pcs.ccd.service;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
+
+import java.util.HashMap;
+import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -9,14 +16,6 @@ import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.document.service.DocAssemblyService;
 import uk.gov.hmcts.reform.pcs.testingsupport.model.DocAssemblyRequest;
-
-import java.util.HashMap;
-import java.util.Map;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class DocumentGenerationServiceTest {
@@ -51,7 +50,7 @@ class DocumentGenerationServiceTest {
         // Then
         assertThat(result).isNotNull();
         assertThat(result.getFilename()).contains(TEMPLATE_ID.replace(".docx", ""));
-        assertThat(result.getBinaryUrl()).isEqualTo(EXPECTED_DOCUMENT_URL);
+        assertThat(result.getBinaryUrl()).isEqualTo(EXPECTED_DOCUMENT_URL + "/binary");
         assertThat(result.getUrl()).isEqualTo(EXPECTED_DOCUMENT_URL);
     }
 
@@ -97,7 +96,7 @@ class DocumentGenerationServiceTest {
             .thenThrow(new RuntimeException("Service unavailable"));
 
         // When/Then
-        assertThatThrownBy(() -> 
+        assertThatThrownBy(() ->
             documentGenerationService.generateDocument(TEMPLATE_ID, formPayload, OUTPUT_TYPE))
             .isInstanceOf(RuntimeException.class)
             .hasMessageContaining("Document generation failed");
