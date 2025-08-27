@@ -18,9 +18,9 @@ test.beforeEach(async ({page}) => {
   await performAction('housingPossessionClaim');
 });
 
-test.describe('Eligibility checks for cross and non cross border postcodes @Master @nightly', async () => {
+test.describe.skip('Eligibility checks for cross and non cross border postcodes @Master @nightly', async () => {
   //Skipping these tests until the postcode data insertion is handled in AAT via automation
-  test.skip('Verify cross border postcode eligibility check redirection and content for England and Wales', async ({page}) => {
+  test('Verify cross border postcode eligibility check redirection and content for England and Wales', async ({page}) => {
     await performAction('selectAddress', {
       postcode: borderPostcode.englandWalesPostcode,
       addressIndex: addressDetails.addressIndex
@@ -42,7 +42,7 @@ test.describe('Eligibility checks for cross and non cross border postcodes @Mast
     await performValidation('mainHeader', borderPostcode.mainHeader);
   });
 
-  test.skip('Verify cross border postcode page for England and Scotland content', async () => {
+  test('Verify cross border postcode page for England and Scotland content', async () => {
     await performAction('selectAddress', {
       postcode: borderPostcode.englandScotlandPostcode,
       addressIndex: addressDetails.addressIndex
@@ -60,7 +60,7 @@ test.describe('Eligibility checks for cross and non cross border postcodes @Mast
     await performValidation('text', {"text": borderPostcode.cancel, "elementType": "link"})
   });
 
-  test.skip('Verify non cross border postcode eligibility check for England', async () => {
+  test('Verify non cross border postcode eligibility check for England', async () => {
     await performAction('selectAddress', {
       postcode: addressDetails.englandPostcode,
       addressIndex: addressDetails.addressIndex
@@ -68,7 +68,7 @@ test.describe('Eligibility checks for cross and non cross border postcodes @Mast
     await performValidation('mainHeader', legislativeCountry.mainHeader);
   });
 
-  test.skip('Verify non cross border postcode eligibility check for Wales', async () => {
+  test('Verify non cross border postcode eligibility check for Wales', async () => {
     await performAction('selectAddress', {
       postcode: addressDetails.walesPostcode,
       addressIndex: addressDetails.addressIndex
