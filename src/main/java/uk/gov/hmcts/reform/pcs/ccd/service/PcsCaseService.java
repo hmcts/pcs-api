@@ -48,11 +48,11 @@ public class PcsCaseService {
                         ? pcsCase.getPreActionProtocolCompleted().toBoolean()
                         : null);
 
-        addDocuments(pcsCase.getSupportDocumentsCategoryA(), "A", pcsCaseEntity);
-        addDocuments(pcsCase.getSupportingDocumentsCategoryB(), "B", pcsCaseEntity);
+        addDocuments(pcsCase.getSupportingDocumentsCategoryA(), DocumentCategory.CATEGORY_A.getLabel(), pcsCaseEntity);
+        addDocuments(pcsCase.getSupportingDocumentsCategoryB(), DocumentCategory.CATEGORY_B.getLabel(), pcsCaseEntity);
 
         pcsCaseEntity.setTenancyLicence(buildTenancyLicence(pcsCase));
-        log.error("Saving PcsCase + " + pcsCaseEntity.getDocumentsCategoryA());
+        log.error("Saving PcsCase + " + pcsCaseEntity.getDocuments());
         return pcsCaseRepository.save(pcsCaseEntity);
     }
 
@@ -77,7 +77,7 @@ public class PcsCaseService {
                     documentEntity.setUploadedOn(LocalDate.now());
                     documentEntity.setPcsCase(pcsCaseEntity);
 
-                    if (category.equals("A")) {
+                    if (category.equals(DocumentCategory.CATEGORY_A.getLabel())) {
                         pcsCaseEntity.addDocumentCategoryA(documentEntity);
                     } else {
                         pcsCaseEntity.addDocumentCategoryB(documentEntity);
@@ -113,13 +113,15 @@ public class PcsCaseService {
             pcsCaseEntity.setPreActionProtocolCompleted(pcsCase.getPreActionProtocolCompleted().toBoolean());
         }
 
-        if (pcsCase.getSupportDocumentsCategoryA() != null) {
-            addDocuments(pcsCase.getSupportDocumentsCategoryA(), "A", pcsCaseEntity);
+        if (pcsCase.getSupportingDocumentsCategoryA() != null) {
+            addDocuments(pcsCase.getSupportingDocumentsCategoryA(),
+                DocumentCategory.CATEGORY_A.getLabel(), pcsCaseEntity);
         }
 
 
-        if (pcsCase.getSupportDocumentsCategoryA() != null) {
-            addDocuments(pcsCase.getSupportDocumentsCategoryA(), "B", pcsCaseEntity);
+        if (pcsCase.getSupportingDocumentsCategoryA() != null) {
+            addDocuments(pcsCase.getSupportingDocumentsCategoryA(),
+                DocumentCategory.CATEGORY_B.getLabel(), pcsCaseEntity);
         }
 
         pcsCaseRepository.save(pcsCaseEntity);

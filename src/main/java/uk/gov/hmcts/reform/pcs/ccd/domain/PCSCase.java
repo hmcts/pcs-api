@@ -19,6 +19,7 @@ import uk.gov.hmcts.ccd.sdk.type.ComponentLauncher;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseworkerAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenAccess;
 import static uk.gov.hmcts.ccd.sdk.type.FieldType.TextArea;
+
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
@@ -201,17 +202,17 @@ public class PCSCase {
         typeOverride = Collection,
         typeParameterOverride = "Document",
         access = {CitizenAccess.class, CaseworkerAccess.class},
-        categoryID = "A"
+        categoryID = "Category_A"
     )
-    @JsonProperty("differentDocumentNameA")
-    private List<ListValue<Document>> supportDocumentsCategoryA;
+    @JsonProperty("supportDocumentsCategoryA")
+    private List<ListValue<Document>> supportingDocumentsCategoryA;
 
     @CCD(
         label = "Supporting documents Category B",
         typeOverride = Collection,
         typeParameterOverride = "Document",
         access = {CitizenAccess.class, CaseworkerAccess.class},
-        categoryID = "B"
+        categoryID = "Category_B"
     )
 
     @JsonProperty("supportingDocumentsCategoryB")

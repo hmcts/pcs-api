@@ -6,6 +6,7 @@ import uk.gov.hmcts.ccd.sdk.api.ConfigBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentCategory;
 
 import static java.lang.System.getenv;
 import static java.util.Optional.ofNullable;
@@ -86,23 +87,23 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
 
     private void buildSupportingDocumentsCaseFileViewTab(ConfigBuilder<PCSCase, State, UserRole> configBuilder) {
         configBuilder.categories(UserRole.PCS_CASE_WORKER)
-            .categoryID("A")
-            .categoryLabel("A")
+            .categoryID(DocumentCategory.CATEGORY_A.getLabel())
+            .categoryLabel(DocumentCategory.CATEGORY_A.getLabel())
             .displayOrder(1)
             .build();
         configBuilder.categories(UserRole.PCS_CASE_WORKER)
-            .categoryID("B")
-            .categoryLabel("B")
-            .displayOrder(2).parentCategoryID("A")
+            .categoryID(DocumentCategory.CATEGORY_B.getLabel())
+            .categoryLabel(DocumentCategory.CATEGORY_B.getLabel())
+            .displayOrder(2).parentCategoryID(DocumentCategory.CATEGORY_A.getLabel())
             .build();
         configBuilder.categories(UserRole.PCS_CASE_WORKER)
-            .categoryID("C")
-            .categoryLabel("C")
-            .displayOrder(3).parentCategoryID("B")
+            .categoryID("Category_C")
+            .categoryLabel("Category_C")
+            .displayOrder(3).parentCategoryID(DocumentCategory.CATEGORY_B.getLabel())
             .build();
         configBuilder.categories(UserRole.PCS_CASE_WORKER)
-            .categoryID("D")
-            .categoryLabel("D")
+            .categoryID("Category_D")
+            .categoryLabel("Category_D")
             .displayOrder(4)
             .build();
         configBuilder.tab("caseFileView", "Supporting Documents")

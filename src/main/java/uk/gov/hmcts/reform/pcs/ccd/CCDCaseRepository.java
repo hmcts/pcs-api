@@ -12,6 +12,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PaymentStatus;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentCategory;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
@@ -57,26 +58,13 @@ public class CCDCaseRepository extends DecentralisedCaseRepository<PCSCase> {
 
         PcsCaseEntity pcsCaseEntity = loadCaseData(caseReference);
 
-        log.error(
-            "---------------------------------------\n"
-                +
-            "Case Entity After being converted from JSON \n"
-                +
-            pcsCaseEntity + "\n"
-                +
-            "---------------------------------------\n"
-                +
-                "Doc A Size: " + pcsCaseEntity.getDocumentsCategoryA().size()
-                +
-                "Doc B Size: " + pcsCaseEntity.getDocumentsCategoryB().size()
-                +
-                "---------------------------------------\n");
-
         PCSCase pcsCase = PCSCase.builder()
                     .propertyAddress(convertAddress(pcsCaseEntity.getPropertyAddress()))
                     .caseManagementLocation(pcsCaseEntity.getCaseManagementLocation())
-                    .supportDocumentsCategoryA(mapDocuments(pcsCaseEntity.getDocumentsCategoryA(), "A"))
-                    .supportDocumentsCategoryA(mapDocuments(pcsCaseEntity.getDocumentsCategoryB(), "B"))
+                    .supportingDocumentsCategoryA(mapDocuments(pcsCaseEntity.getDocuments(),
+                        DocumentCategory.CATEGORY_A.getLabel()))
+                    .supportingDocumentsCategoryB(mapDocuments(pcsCaseEntity.getDocuments(),
+                        DocumentCategory.CATEGORY_B.getLabel()))
                     .preActionProtocolCompleted(pcsCaseEntity.getPreActionProtocolCompleted() != null
                     ? VerticalYesNo.from(pcsCaseEntity.getPreActionProtocolCompleted())
                     : null)
@@ -87,18 +75,19 @@ public class CCDCaseRepository extends DecentralisedCaseRepository<PCSCase> {
         return pcsCase;
     }
 
-    private List<ListValue<Document>> mapDocuments(Set<DocumentEntity> documentEntities, String category) {
+    private List<ListValue<Document>> mapDocuments(Set<DocumentEntity> documentEntities, String categoryFilter) {
         if (documentEntities == null || documentEntities.isEmpty()) {
             return null;
         }
 
         return documentEntities.stream()
+            .filter(documentEntity -> String.valueOf(documentEntity.getCategory().getLabel()).equals(categoryFilter))
             .map(docEntity -> {
                 Document document = Document.builder()
                     .filename(docEntity.getFileName())
                     .binaryUrl(docEntity.getFilePath())
                     .url(docEntity.getFilePath())
-                    .categoryId(category)
+                    .categoryId(categoryFilter)
                     .build();
 
                 return ListValue.<Document>builder()

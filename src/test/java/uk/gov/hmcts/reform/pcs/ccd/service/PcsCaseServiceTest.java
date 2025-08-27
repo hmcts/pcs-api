@@ -340,10 +340,10 @@ class PcsCaseServiceTest {
         PcsCaseEntity savedEntity = pcsCaseEntityCaptor.getValue();
 
         assertThat(savedEntity).isNotNull();
-        assertThat(savedEntity.getDocumentsCategoryA()).isNotNull();
-        assertThat(savedEntity.getDocumentsCategoryA()).hasSize(1);
+        assertThat(savedEntity.getDocuments()).isNotNull();
+        assertThat(savedEntity.getDocuments()).hasSize(1);
 
-        DocumentEntity savedDocument = savedEntity.getDocumentsCategoryA().iterator().next();
+        DocumentEntity savedDocument = savedEntity.getDocuments().iterator().next();
         System.out.println("Document: " + savedDocument);
         assertThat(savedDocument.getFileName()).isEqualTo(fileName);
     }
@@ -380,9 +380,9 @@ class PcsCaseServiceTest {
         verify(pcsCaseRepository, times(2)).save(pcsCaseEntityCaptor.capture());
 
         PcsCaseEntity finalSavedEntity = pcsCaseEntityCaptor.getValue();
-        assertThat(finalSavedEntity.getDocumentsCategoryA()).hasSize(2);
+        assertThat(finalSavedEntity.getDocuments()).hasSize(2);
 
-        Set<String> fileNames = finalSavedEntity.getDocumentsCategoryA().stream()
+        Set<String> fileNames = finalSavedEntity.getDocuments().stream()
             .map(DocumentEntity::getFileName)
             .collect(Collectors.toSet());
 

@@ -34,7 +34,7 @@ public class DocumentEntity {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @ManyToOne(fetch = LAZY)
+    @ManyToOne(fetch = LAZY, optional = false)
     @JoinColumn(name = "case_id", referencedColumnName = "id")
     @JsonBackReference
     private PcsCaseEntity pcsCase;
