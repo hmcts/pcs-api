@@ -19,7 +19,9 @@ import uk.gov.hmcts.reform.pcs.postcodecourt.model.EligibilityStatus;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.postcodecourt.service.EligibilityService;
 
+
 import java.util.List;
+import java.util.ArrayList;
 
 @AllArgsConstructor
 @Component
@@ -34,7 +36,16 @@ public class EnterPropertyAddress implements CcdPageConfiguration {
             .page("enterPropertyAddress", this::midEvent)
             .pageLabel("What is the address of the property you're claiming possession of?")
             .label("enterPropertyAddress-lineSeparator", "---")
-            .mandatory(PCSCase::getPropertyAddress);
+            .complex(PCSCase::getPropertyAddress)
+                .mandatory(AddressUK::getAddressLine1)
+                .optional(AddressUK::getAddressLine2)
+                .optional(AddressUK::getAddressLine3)
+                .mandatory(AddressUK::getPostTown)
+                .optional(AddressUK::getCounty)
+                .mandatory(AddressUK::getPostCode)
+                .optional(AddressUK::getCountry)
+            .done()
+            .done();
     }
 
     /*
@@ -45,8 +56,24 @@ public class EnterPropertyAddress implements CcdPageConfiguration {
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
                                                                   CaseDetails<PCSCase, State> detailsBefore) {
         PCSCase caseData = details.getData();
-        String postcode = caseData.getPropertyAddress().getPostCode();
         AddressUK propertyAddress = caseData.getPropertyAddress();
+
+        List<String> errors = new ArrayList<>();
+        if (propertyAddress == null || isBlank(propertyAddress.getPostTown())) {
+            errors.add("Town or City is required");
+        }
+        if (propertyAddress == null || isBlank(propertyAddress.getPostCode())) {
+            errors.add("Postcode/Zipcode is required");
+        }
+        if (!errors.isEmpty()) {
+            return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
+                .data(caseData)
+                .errors(errors)
+                .build();
+        }
+
+
+        String postcode = propertyAddress.getPostCode();
         caseData.setClaimantContactAddress(propertyAddress);
         String formattedAddress = String.format(
                 "%s<br>%s<br>%s",
@@ -67,6 +94,10 @@ public class EnterPropertyAddress implements CcdPageConfiguration {
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
             .data(caseData)
             .build();
+    }
+
+    private boolean isBlank(String value) {
+        return value == null || value.trim().isEmpty();
     }
 
     private void validateLegislativeCountries(List<LegislativeCountry> legislativeCountries, String postcode) {
