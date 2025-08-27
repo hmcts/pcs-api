@@ -23,5 +23,3 @@ export const addressDetails = {
   englandWalesNoCourtCrossBorderPostcode: 'HR3 5JL',
   englandScotlandNoCourtCrossBorderPostcode: 'TD12 4AS'
 };
-
-
