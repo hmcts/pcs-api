@@ -19,6 +19,8 @@ export class TextValidation implements IValidation {
       case 'inlineText':
         data.elementType = 'span';
         break;
+      case 'listItem':
+        data.elementType = 'li';
     }
     const locator = page.locator(`${data.elementType}:has-text("${data.text}")`).first()
         await expect(locator).toHaveText(String(data.text));

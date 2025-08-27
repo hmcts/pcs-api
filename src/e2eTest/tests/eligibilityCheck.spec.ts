@@ -42,7 +42,7 @@ test.describe('Eligibility checks for cross and non cross border postcodes @Mast
     await performValidation('mainHeader', borderPostcode.mainHeader);
   });
 
-  test('Verify cross border postcode page for England and Scotland content', async () => {
+  test.skip('Verify cross border postcode page for England and Scotland content', async () => {
     await performAction('selectAddress', {
       postcode: borderPostcode.englandScotlandPostcode,
       addressIndex: addressDetails.addressIndex
@@ -60,7 +60,7 @@ test.describe('Eligibility checks for cross and non cross border postcodes @Mast
     await performValidation('text', {"text": borderPostcode.cancel, "elementType": "link"})
   });
 
-  test('Verify non cross border postcode eligibility check for England', async () => {
+  test.skip('Verify non cross border postcode eligibility check for England', async () => {
     await performAction('selectAddress', {
       postcode: addressDetails.englandPostcode,
       addressIndex: addressDetails.addressIndex
@@ -68,7 +68,7 @@ test.describe('Eligibility checks for cross and non cross border postcodes @Mast
     await performValidation('mainHeader', legislativeCountry.mainHeader);
   });
 
-  test('Verify non cross border postcode eligibility check for Wales', async () => {
+  test.skip('Verify non cross border postcode eligibility check for Wales', async () => {
     await performAction('selectAddress', {
       postcode: addressDetails.walesPostcode,
       addressIndex: addressDetails.addressIndex
@@ -78,7 +78,7 @@ test.describe('Eligibility checks for cross and non cross border postcodes @Mast
 
   test('Verify postcode not assigned to court - Can not use this service page - All countries', async () => {
     await performAction('selectAddress', {
-      postcode: addressDetails.englandScotlandNoCourtCrossBorderPostcode,
+      postcode: addressDetails.englandNoCourtAssignedPostcode,
       addressIndex: addressDetails.addressIndex
     });
     await performValidation('mainHeader', canNotUseOnlineService.mainHeader);

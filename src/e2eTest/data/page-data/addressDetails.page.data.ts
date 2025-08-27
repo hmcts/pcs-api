@@ -3,7 +3,7 @@ export const addressDetails = {
   mainHeader: 'What is the address of the property you\'re claiming possession of?',
   sectionTitle: 'Property address',
   englandPostcode: 'W3 7RX',
-  walesPostcode: 'CF61 1ZH',
+  walesPostcode: 'SA31 3DG',
   addressIndex: 1,
   addressLine2: 'address2',
   addressLine3: 'address3',
