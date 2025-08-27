@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
+import uk.gov.hmcts.reform.pcs.ccd.CaseType;
 import uk.gov.hmcts.reform.pcs.document.service.DocAssemblyService;
 import uk.gov.hmcts.reform.pcs.testingsupport.model.DocAssemblyRequest;
 
@@ -25,6 +26,8 @@ public class DocumentGenerationService {
                 .templateId(templateId)
                 .formPayload(formPayload)
                 .outputType(outputType)
+                .caseTypeId(CaseType.getCaseType())
+                .jurisdictionId(CaseType.getJurisdictionId())
                 .build();
 
             String documentUrl = docAssemblyService.generateDocument(request);

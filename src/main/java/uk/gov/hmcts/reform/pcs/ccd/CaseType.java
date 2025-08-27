@@ -1,15 +1,15 @@
 package uk.gov.hmcts.reform.pcs.ccd;
 
+import static java.lang.System.getenv;
+import static java.util.Optional.ofNullable;
+import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
+
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CCDConfig;
 import uk.gov.hmcts.ccd.sdk.api.ConfigBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-
-import static java.lang.System.getenv;
-import static java.util.Optional.ofNullable;
-import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 
 /**
  * Setup some common possessions case type configuration.
@@ -26,6 +26,10 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
 
     public static String getCaseType() {
         return withChangeId(CASE_TYPE_ID, "-");
+    }
+
+    public static String getJurisdictionId() {
+        return JURISDICTION_ID;
     }
 
     public static String getCaseTypeName() {
@@ -78,7 +82,7 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
             .showCondition("claimPaymentTabMarkdown!=\"\"")
             .label("claimPaymentTabMarkdownLabel", null, "${claimPaymentTabMarkdown}")
             .field("claimPaymentTabMarkdown", NEVER_SHOW);
-            
+
         builder.tab("Documents", "Documents")
             .field(PCSCase::getSupportingDocuments)
             .field(PCSCase::getGeneratedDocuments);
