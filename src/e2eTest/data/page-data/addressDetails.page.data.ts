@@ -16,8 +16,12 @@ export const addressDetails = {
   header: 'There is a problem',
   addressDetailsError: 'An address is required',
   englandBuildingAndStreet: '1 Second Avenue',
-  englandTownOrCity: 'London'
+  englandTownOrCity: 'London',
+  englandNoCourtAssignedPostcode: 'LE3 5EZ',
+  walesNoCourtAssignedPostcode: 'LL30 1DE',
+  scotlandNoCourtAssignedPostcode: 'SA31 3DG',
+  englandWalesNoCourtCrossBorderPostcode: 'HR3 5JL',
+  englandScotlandNoCourtCrossBorderPostcode: 'TD12 4AS'
 };
-
 
 

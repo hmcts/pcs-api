@@ -42,7 +42,7 @@ test.describe('Eligibility checks for cross and non cross border postcodes @nigh
     await performValidation('mainHeader', borderPostcode.mainHeader);
   });
 
-  test.skip('Verify cross border postcode page for England and Scotland content', async () => {
+  test('Verify cross border postcode page for England and Scotland content', async () => {
     await performAction('selectAddress', {
       postcode: borderPostcode.englandScotlandPostcode,
       addressIndex: addressDetails.addressIndex
@@ -60,7 +60,7 @@ test.describe('Eligibility checks for cross and non cross border postcodes @nigh
     await performValidation('text', {"text": borderPostcode.cancel, "elementType": "link"})
   });
 
-  test.skip('Verify non cross border postcode eligibility check for England', async () => {
+  test('Verify non cross border postcode eligibility check for England', async () => {
     await performAction('selectAddress', {
       postcode: addressDetails.englandPostcode,
       addressIndex: addressDetails.addressIndex
@@ -68,7 +68,7 @@ test.describe('Eligibility checks for cross and non cross border postcodes @nigh
     await performValidation('mainHeader', legislativeCountry.mainHeader);
   });
 
-  test.skip('Verify non cross border postcode eligibility check for Wales', async () => {
+  test('Verify non cross border postcode eligibility check for Wales', async () => {
     await performAction('selectAddress', {
       postcode: addressDetails.walesPostcode,
       addressIndex: addressDetails.addressIndex
@@ -78,7 +78,7 @@ test.describe('Eligibility checks for cross and non cross border postcodes @nigh
 
   test('Verify postcode not assigned to court - Can not use this service page - All countries', async () => {
     await performAction('selectAddress', {
-      postcode: addressDetails.walesPostcode,
+      postcode: addressDetails.englandScotlandNoCourtCrossBorderPostcode,
       addressIndex: addressDetails.addressIndex
     });
     await performValidation('mainHeader', canNotUseOnlineService.mainHeader);
@@ -86,43 +86,58 @@ test.describe('Eligibility checks for cross and non cross border postcodes @nigh
     await performValidation('text', {"text": canNotUseOnlineService.PCOLLink, "elementType": "link"})
     await performValidation('text', {"text": canNotUseOnlineService.claimsInWalesContent, "elementType": "listItem"})
     await performValidation('text', {"text": canNotUseOnlineService.claimsInEnglandContent, "elementType": "listItem"})
-    await performValidation('text', {"text": canNotUseOnlineService.claimsInSoctlandLink, "elementType": "link"})
+    await performValidation('text', {"text": canNotUseOnlineService.claimsInScotlandLink, "elementType": "link"})
     await performValidation('text', {"text": canNotUseOnlineService.claimsInNorthernIrelandLink, "elementType": "link"})
-    await performValidation('text', {"text": canNotUseOnlineService.propertyPossessionsFullListLink, "elementType": "link"})
+    await performValidation('text', {
+      "text": canNotUseOnlineService.propertyPossessionsFullListLink,
+      "elementType": "link"
+    })
   });
 
-  test('Verify postcode not assigned to court - Can not use this service page - England', async () => {
+  test('Verify postcode not assigned to court - Can not use this service page - cross border England', async () => {
     await performAction('selectAddress', {
-      postcode: addressDetails.walesPostcode,
+      postcode: addressDetails.englandWalesNoCourtCrossBorderPostcode,
       addressIndex: addressDetails.addressIndex
     });
+    await performAction('selectCountryRadioButton', borderPostcode.countryOptions.england);
     await performValidation('mainHeader', canNotUseOnlineService.mainHeader);
     await performValidation('text', {"text": canNotUseOnlineService.basedOnPostcodeContent, "elementType": "paragraph"})
     await performValidation('text', {"text": canNotUseOnlineService.PCOLLink, "elementType": "link"})
     await performValidation('text', {"text": canNotUseOnlineService.forOtherTypesOfClaims, "elementType": "listItem"})
-    await performValidation('text', {"text": canNotUseOnlineService.propertyPossessionsFullListLink, "elementType": "link"})
+    await performValidation('text', {
+      "text": canNotUseOnlineService.propertyPossessionsFullListLink,
+      "elementType": "link"
+    })
   });
 
-  test('Verify postcode not assigned to court - Can not use this service page - Wales', async () => {
+  test('Verify postcode not assigned to court - Can not use this service page - cross border Wales', async () => {
     await performAction('selectAddress', {
-      postcode: addressDetails.walesPostcode,
+      postcode: addressDetails.englandWalesNoCourtCrossBorderPostcode,
       addressIndex: addressDetails.addressIndex
     });
+    await performAction('selectCountryRadioButton', borderPostcode.countryOptions.wales);
     await performValidation('mainHeader', canNotUseOnlineService.mainHeader);
     await performValidation('text', {"text": canNotUseOnlineService.basedOnPostcodeContent, "elementType": "paragraph"})
-    await performValidation('text', {"text": canNotUseOnlineService.formN5Wales, "elementType": "listItem"})
-    await performValidation('text', {"text": canNotUseOnlineService.propertyPossessionsFullListLink, "elementType": "link"})
+    await performValidation('text', {"text": canNotUseOnlineService.formN5Wales, "elementType": "paragraph"})
+    await performValidation('text', {
+      "text": canNotUseOnlineService.propertyPossessionsFullListLink,
+      "elementType": "link"
+    })
   });
 
-  test('Verify postcode not assigned to court - Can not use this service page - Scotland', async () => {
+  test('Verify postcode not assigned to court - Can not use this service page - cross border Scotland', async () => {
     await performAction('selectAddress', {
-      postcode: addressDetails.walesPostcode,
+      postcode: addressDetails.englandScotlandNoCourtCrossBorderPostcode,
       addressIndex: addressDetails.addressIndex
     });
+    await performAction('selectCountryRadioButton', borderPostcode.countryOptions.scotland);
     await performValidation('mainHeader', canNotUseOnlineService.mainHeader);
     await performValidation('text', {"text": canNotUseOnlineService.basedOnPostcodeContent, "elementType": "paragraph"})
-    await performValidation('text', {"text": canNotUseOnlineService.claimsInSoctlandLink, "elementType": "link"})
-    await performValidation('text', {"text": canNotUseOnlineService.propertyPossessionsFullListLink, "elementType": "link"})
+    await performValidation('text', {"text": canNotUseOnlineService.claimsInScotlandLink, "elementType": "link"})
+    await performValidation('text', {
+      "text": canNotUseOnlineService.propertyPossessionsFullListLink,
+      "elementType": "link"
+    })
   });
 })
 

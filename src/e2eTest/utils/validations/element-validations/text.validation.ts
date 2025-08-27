@@ -20,7 +20,7 @@ export class TextValidation implements IValidation {
         data.elementType = 'span';
         break;
     }
-    const locator = page.locator(`${data.elementType}:has-text("${data.text}")`)
+    const locator = page.locator(`${data.elementType}:has-text("${data.text}")`).first()
         await expect(locator).toHaveText(String(data.text));
   }
 }
