@@ -39,6 +39,7 @@ export class CreateCaseAction implements IAction {
       ['selectMediationAndSettlement', () => this.selectMediationAndSettlement(fieldName)],
       ['selectNoticeOfYourIntention', () => this.selectNoticeOfYourIntention(fieldName)],
       ['selectCountryRadioButton', () => this.selectCountryRadioButton(fieldName)],
+      ['selectTenancyOrLicenceDetails', () => this.selectTenancyOrLicenceDetails(fieldName)],
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) throw new Error(`No action found for '${action}'`);
@@ -153,7 +154,6 @@ export class CreateCaseAction implements IAction {
     const tenancyLicenceData = tenancyData as {
       typeOfTenancy: string;
       tenancyStartDate: string;
-      uploadAgreement: string;
     };
     await performAction('clickRadioButton', {
       question: tenancyLicenceDetails.tenancyOrLicenceType,
@@ -162,8 +162,7 @@ export class CreateCaseAction implements IAction {
     if (tenancyLicenceData.typeOfTenancy === 'Other') {
       await performAction('inputText', 'Give details of the type of tenancy or licence agreement that\'s in place', tenancyLicenceDetails.detailsOfLicence);
     }
-
-
+    await performAction('inputText', 'Tenancy licence date', tenancyLicenceData.tenancyStartDate);
   }
 
   private async selectMediationAndSettlement(mediationSettlement: actionData) {
