@@ -33,7 +33,7 @@ public class DocumentGenerationService {
 
             return Document.builder()
                 .filename(filename)
-                .binaryUrl(documentUrl)
+                .binaryUrl(documentUrl + "/binary")
                 .url(documentUrl)
                 .build();
 
