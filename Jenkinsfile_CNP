@@ -70,6 +70,10 @@ withPipeline(type, product, component) {
     setPerftestEnvVars()
   }
 
+  before('smokeTest:aat'){
+    generateDefinitions(builder)
+  }
+
   before('highleveldatasetup') {
     onPR{
       env.DEFINITION_STORE_URL_BASE = "https://ccd-definition-store-pcs-api-pr-${CHANGE_ID}.preview.platform.hmcts.net"
