@@ -11,9 +11,7 @@ public class WelshTranslationPage implements CcdPageConfiguration {
     @Override
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
-            .page("startTheService")
-            .label("mainContent",
-                "TEST-S002.1-1-tNqmWGciWm"
-            );
+            .page("singleStringTest")
+            .label("mainContent", "TEST-S002.1-1-tNqmWGciWm");
     }
 }
