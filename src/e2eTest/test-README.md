@@ -91,6 +91,8 @@ Playwright 1.30+ | TypeScript 4.9+
 | selectGroundsForPossession      | `performAction('selectGroundsForPossission',groundsForPossession.yes)`                                                                                                                                     |
 | selectPreActionProtocol         | `performAction('selectPreActionProtocol', preActionProtocol.yes)`                                                                                                                                          |
 | selectNoticeOfYourIntention     | `performAction('selectNoticeOfYourIntention', checkingNotice.no)`                                                                                                                                          |
+| selectTenancyOrLicenceDetails   | `performAction('selectTenancyOrLicenceDetails', {tenancyOrLicenceType: tenancyLicenceDetails.assuredTenancy})`                                                                                             |
+| uploadFile                      | `performAction('uploadFile', 'SampleFile.png')`                                                                                                                                                            |
 ### Validations
 | Validation        | Example Usage                                                                                                                        |
 |-------------------|--------------------------------------------------------------------------------------------------------------------------------------|

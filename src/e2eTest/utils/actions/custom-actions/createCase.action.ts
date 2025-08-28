@@ -161,14 +161,18 @@ export class CreateCaseAction implements IAction {
     await performAction('clickRadioButton', tenancyLicenceData.tenancyOrLicenceType);
 
     if (tenancyLicenceData.tenancyOrLicenceType === 'Other') {
-      await performAction('inputText', 'Give details of the type of tenancy or licence agreement thats in place', tenancyLicenceDetails.detailsOfLicence);
+      await performAction('inputText', 'Give details of the type of tenancy or licence agreement that\'s in place', tenancyLicenceDetails.detailsOfLicence);
     }
-    await performAction('inputText', 'Day', tenancyLicenceData.day);
-    await performAction('inputText', 'Month', tenancyLicenceData.month);
-    await performAction('inputText', 'Year', tenancyLicenceData.year);
-    for (const file of tenancyLicenceData.files!) {
-      await performAction('clickButton', 'Add new');
-      await performAction('uploadFile', file);
+    if(tenancyLicenceData.day && tenancyLicenceData.month &&  tenancyLicenceData.year) {
+      await performAction('inputText', 'Day', tenancyLicenceData.day);
+      await performAction('inputText', 'Month', tenancyLicenceData.month);
+      await performAction('inputText', 'Year', tenancyLicenceData.year);
+    }
+    if (tenancyLicenceData.files) {
+      for (const file of tenancyLicenceData.files) {
+        await performAction('clickButton', 'Add new');
+        await performAction('uploadFile', file);
+      }
     }
     await performAction('clickButton', 'Continue');
   }
