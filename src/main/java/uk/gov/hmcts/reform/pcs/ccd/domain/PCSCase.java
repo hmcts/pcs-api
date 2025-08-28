@@ -38,7 +38,8 @@ public class PCSCase {
 
     @CCD(
         searchable = false,
-        access = {CitizenAccess.class, CaseworkerAccess.class}
+        access = {CitizenAccess.class, CaseworkerAccess.class},
+        label = "is Claimant Name correct label ENGLISH"
     )
     private YesOrNo isClaimantNameCorrect;
 
