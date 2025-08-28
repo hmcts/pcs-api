@@ -13,7 +13,7 @@ public class WelshTranslationPage implements CcdPageConfiguration {
         pageBuilder
             .page("startTheService")
             .label("mainContent",
-                "TEST-S002.13-2-dZbSoxinJs"
+                "TEST-S002.1-1-tNqmWGciWm"
             );
     }
 }
