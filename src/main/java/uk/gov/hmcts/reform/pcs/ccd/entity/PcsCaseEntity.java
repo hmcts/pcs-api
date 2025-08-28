@@ -20,7 +20,7 @@ import lombok.Setter;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PaymentStatus;
-import uk.gov.hmcts.reform.pcs.ccd.domain.model.TenancyLicence;
+import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicence;
 
 import java.util.HashSet;
 import java.util.Set;

@@ -1,17 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim;
 
-import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
-import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
-import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType;
-import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
-import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
-
-import java.util.Arrays;
-import java.util.List;
 
 /**
  * CCD page configuration for making a housing possession claim online.
@@ -21,7 +11,7 @@ public class StartTheService implements CcdPageConfiguration {
     @Override
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
-            .page("startTheService", this::midEvent)
+            .page("startTheService")
             .label("mainContent",
                    "<h1 class=\"govuk-heading-l\">Make a housing possession claim online</h1>"
                        + "<p class=\"govuk-body\">You can use this online service if you're a registered "
@@ -55,23 +45,5 @@ public class StartTheService implements CcdPageConfiguration {
                        + "can then return to sign, submit and pay at a later date</li>"
                        + "</ul>"
             );
-    }
-
-    private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
-                                                                  CaseDetails<PCSCase, State> detailsBefore) {
-        PCSCase caseData = details.getData();
-
-        List<DynamicStringListElement> listItems = Arrays.stream(TenancyLicenceType.values())
-            .map(value -> DynamicStringListElement.builder().code(value.name()).label(value.getLabel()).build())
-            .toList();
-
-        DynamicStringList tenancyTypeList = DynamicStringList.builder()
-            .listItems(listItems)
-            .build();
-        caseData.setTypeOfTenancyLicence(tenancyTypeList);
-
-        return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
-            .data(caseData)
-            .build();
     }
 }

@@ -6,7 +6,6 @@ import lombok.Data;
 import uk.gov.hmcts.ccd.sdk.External;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
-import uk.gov.hmcts.ccd.sdk.type.ComponentLauncher;
 import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.FieldType;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
@@ -228,7 +227,7 @@ public class PCSCase {
     private YesOrNo showClaimTypeNotEligibleWales;
 
     @CCD(
-        label = "What type of tenancy and licence is in place",
+        label = "What type of tenancy and licence is in place?",
         typeOverride = DynamicRadioList,
         access = {CaseworkerAccess.class}
     )
@@ -250,15 +249,9 @@ public class PCSCase {
     private String tenancyLicenceDate;
 
     @CCD(
-        label = "Add document",hint = "Upload a document to the system",
+        label = "Add document",
         access = {CitizenAccess.class, CaseworkerAccess.class}
     )
     private List<ListValue<Document>> tenancyLicenceDocuments;
-
-    @CCD(
-        label = "Case file view",
-        access = {CitizenAccess.class, CaseworkerAccess.class}
-    )
-    private ComponentLauncher caseFileView;
 
 }
