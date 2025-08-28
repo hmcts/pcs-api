@@ -6,7 +6,7 @@ buildscript {
   ext {
     flywayVersion = '11.11.2'
     serenityBddVersion = '4.2.33'
-    springFrameworkBootVersion = "3.5.4"
+    springFrameworkBootVersion = "3.5.5"
   }
   dependencies {
     classpath("org.flywaydb:flyway-database-postgresql:$flywayVersion")
