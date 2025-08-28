@@ -27,7 +27,7 @@ public class DocumentGenerationService {
                 .formPayload(formPayload)
                 .outputType(outputType)
                 .caseTypeId(CaseType.getCaseType())
-                .jurisdictionId(CaseType.getJurisdictionId())
+                .jurisdictionId("CIVIL")
                 .build();
 
             String documentUrl = docAssemblyService.generateDocument(request);
