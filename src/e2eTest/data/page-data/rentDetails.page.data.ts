@@ -1,6 +1,6 @@
 export const rentDetails = {
   title: 'Create a case - HM Courts & Tribunals Service - GOV.UK',
-  mainHeader: 'Rent details (placeholder)',
+  mainHeader: 'Rent details',
   continue: 'Continue',
   rentAmount: '500',
   rentFrequency: 'fortnightly',

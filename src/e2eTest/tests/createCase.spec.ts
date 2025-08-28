@@ -15,7 +15,6 @@ import { checkingNotice } from '@data/page-data/checkingNotice.page.data';
 import { noticeDetails } from '@data/page-data/noticeDetails.page.data';
 import { rentDetails } from '@data/page-data/rentDetails.page.data';
 import { userIneligible } from '@data/page-data/userIneligible.page.data';
-import { dailyRentAmount } from '@data/page-data/dailyRentAmount.page.data';
 import { detailsOfrentArrears } from '@data/page-data/detailsOfrentArrears.page.data';
 
 test.beforeEach(async ({page}, testInfo) => {
@@ -32,7 +31,7 @@ test.beforeEach(async ({page}, testInfo) => {
   await performAction('housingPossessionClaim');
 });
 
-test.describe.skip('[Create Case Flow With Address and Claimant Type]  @Master @nightly', async () => {
+test.describe('[Create Case Flow With Address and Claimant Type]  @Master @nightly', async () => {
   test('England - Successful case creation', async () => {
     await performAction('selectAddress', {
       postcode: addressDetails.englandPostcode,
@@ -63,8 +62,6 @@ test.describe.skip('[Create Case Flow With Address and Claimant Type]  @Master @
     await performValidation('mainHeader', noticeDetails.mainHeader);
     await performAction('clickButton', noticeDetails.continue);
     await performAction('provideRentDetails', {rentFrequencyOption:'weekly', rentAmount:rentDetails.rentAmount});
-    await performValidation('mainHeader', dailyRentAmount.mainHeader);
-    await performAction('clickButton', rentDetails.continue);
     await performAction('clickButton', 'Save and continue');
     await performValidation('bannerAlert', 'Case #.* has been created.');
     await performAction('clickTab', 'Property Details');
@@ -98,9 +95,9 @@ test.describe.skip('[Create Case Flow With Address and Claimant Type]  @Master @
     await performValidation('mainHeader', checkingNotice.mainHeader);
     await performAction('selectNoticeOfYourIntention', checkingNotice.no);
     await performValidation('mainHeader', rentDetails.mainHeader);
-    await performAction('provideRentDetails', {rentFrequencyOption:'other', rentAmount:rentDetails.unpaidRentAmountPerDay});
+    await performAction('provideRentDetails', {rentFrequencyOption:'Other', unpaidRentAmountPerDay:rentDetails.unpaidRentAmountPerDay});
     await performValidation('mainHeader', detailsOfrentArrears.mainHeader);
-    await performAction('clickButton', rentDetails.continue);
+    await performAction('clickButton', detailsOfrentArrears.continue);
     await performAction('clickButton', 'Save and continue');
     await performValidation('bannerAlert', 'Case #.* has been created.');
     await performAction('clickTab', 'Property Details');
@@ -112,7 +109,7 @@ test.describe.skip('[Create Case Flow With Address and Claimant Type]  @Master @
       ['formLabelValue', 'Country', addressDetails.country]);
   });
 
-  test('England - Unsuccessful case creation journey due to claimant type not in scope of Release1 @R1only', async () => {
+  test.skip('England - Unsuccessful case creation journey due to claimant type not in scope of Release1 @R1only', async () => {
     await performAction('selectAddress', {
       postcode: addressDetails.englandPostcode,
       addressIndex: addressDetails.addressIndex
@@ -130,7 +127,7 @@ test.describe.skip('[Create Case Flow With Address and Claimant Type]  @Master @
     await performAction('clickButton', 'Cancel');
   });
 
-  test('Wales - Unsuccessful case creation journey due to claimant type not in scope of Release1 @R1only', async () => {
+  test.skip('Wales - Unsuccessful case creation journey due to claimant type not in scope of Release1 @R1only', async () => {
     await performAction('selectAddress', {
       postcode: addressDetails.walesPostcode,
       addressIndex: addressDetails.addressIndex
@@ -148,7 +145,7 @@ test.describe.skip('[Create Case Flow With Address and Claimant Type]  @Master @
     await performAction('clickButton', 'Cancel');
   });
 
-  test('Unsuccessful case creation journey due to claim type not in scope of Release1 @R1only', async () => {
+  test.skip('Unsuccessful case creation journey due to claim type not in scope of Release1 @R1only', async () => {
     await performAction('selectAddress', {
       postcode: addressDetails.englandPostcode,
       addressIndex: addressDetails.addressIndex

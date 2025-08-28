@@ -196,12 +196,18 @@ export class CreateCaseAction implements IAction {
   }
 
   private async provideRentDetails(rentFrequency: actionData) {
-    const rentData = rentFrequency as { rentFrequencyOption: string; rentAmount: string };
-    await performAction('inputText', rentDetails.HowMuchRentLabel, rentData.rentAmount);
-    await performAction('clickButton', rentData.rentFrequencyOption);
+    const rentData = rentFrequency as {
+      rentFrequencyOption: string;
+      rentAmount?: string;
+      unpaidRentAmountPerDay?: string
+    };
+    await performAction('clickRadioButton', rentData.rentFrequencyOption);
     if(rentData.rentFrequencyOption == 'Other'){
       await performAction('inputText', rentDetails.rentFrequencyLabel, rentDetails.rentFrequency);
-      await performAction('inputText', rentDetails.unpaidRentAmountPerDay, rentData.rentAmount);
+      console.log("input data: " + rentDetails.amountPerDayInputLabel);
+      await performAction('inputText', rentDetails.amountPerDayInputLabel, rentData.unpaidRentAmountPerDay);
+    } else {
+      await performAction('inputText', rentDetails.HowMuchRentLabel, rentData.rentAmount);
     }
     await performAction('clickButton', 'Continue');
   }
