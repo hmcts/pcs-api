@@ -48,9 +48,6 @@ withPipeline(type, product, component) {
     if (githubApi.getLabelsbyPattern(env.BRANCH_NAME, "pr-values:ccd").size() > 0) {
       enableHighLevelDataSetup()
     }
-     afterSuccess('functionalTest:preview') {
-          runE2eTests(env.ENVIRONMENT)
-        }
   }
 
   onMaster() {
@@ -76,8 +73,8 @@ withPipeline(type, product, component) {
   before('highleveldatasetup') {
     onPR{
       env.DEFINITION_STORE_URL_BASE = "https://ccd-definition-store-pcs-api-pr-${CHANGE_ID}.preview.platform.hmcts.net"
-      env.CASE_API_URL = "https://pcs-api-pr-499.preview.platform.hmcts.net"
-      env.DATA_STORE_URL_BASE="https://ccd-data-store-api-pcs-api-pr-499.preview.platform.hmcts.net"
+      env.CASE_API_URL = "https://pcs-api-pr-${CHANGE_ID}.preview.platform.hmcts.net"
+      env.DATA_STORE_URL_BASE="https://ccd-data-store-api-pcs-api-pr-${CHANGE_ID}.preview.platform.hmcts.net"
     }
     generateDefinitions(builder)
   }
@@ -93,7 +90,7 @@ withPipeline(type, product, component) {
 
 def setPreviewEnvVars() {
   // TODO: Update URL to include XUI when available
-  env.MANAGE_CASE_BASE_URL = "https://xui-pcs-api-pr-499.preview.platform.hmcts.net"
+  env.MANAGE_CASE_BASE_URL = "https://xui-pcs-api-pr-${CHANGE_ID}.preview.platform.hmcts.net"
   env.ENVIRONMENT= "preview"
 }
 
