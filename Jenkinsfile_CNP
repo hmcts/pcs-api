@@ -53,6 +53,7 @@ withPipeline(type, product, component) {
   onMaster() {
     enablePactAs([AppPipelineDsl.PactRoles.CONSUMER])
     setAatEnvVars()
+    enableHighLevelDataSetup()
     afterSuccess('functionalTest:aat') {
       runE2eTests(env.ENVIRONMENT)
     }
@@ -70,15 +71,16 @@ withPipeline(type, product, component) {
     setPerftestEnvVars()
   }
 
-  before('smokeTest:aat'){
-    generateDefinitions(builder)
-  }
-
   before('highleveldatasetup') {
     onPR{
       env.DEFINITION_STORE_URL_BASE = "https://ccd-definition-store-pcs-api-pr-${CHANGE_ID}.preview.platform.hmcts.net"
       env.CASE_API_URL = "https://pcs-api-pr-${CHANGE_ID}.preview.platform.hmcts.net"
       env.DATA_STORE_URL_BASE="https://ccd-data-store-api-pcs-api-pr-${CHANGE_ID}.preview.platform.hmcts.net"
+    }
+    onMaster{
+      env.DEFINITION_STORE_URL_BASE = "https://ccd-definition-store.aat.platform.hmcts.net"
+      env.CASE_API_URL = "https://pcs-api.aat.platform.hmcts.net"
+      env.DATA_STORE_URL_BASE="https://ccd-data-store-api.aat.platform.hmcts.net"
     }
     generateDefinitions(builder)
   }
