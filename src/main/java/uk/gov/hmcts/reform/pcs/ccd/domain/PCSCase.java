@@ -249,7 +249,7 @@ public class PCSCase {
     private String tenancyLicenceDate;
 
     @CCD(
-        label = "Add document",
+        label = "Add document",hint = "Upload a document to the system",
         access = {CitizenAccess.class, CaseworkerAccess.class}
     )
     private List<ListValue<Document>> tenancyLicenceDocuments;
