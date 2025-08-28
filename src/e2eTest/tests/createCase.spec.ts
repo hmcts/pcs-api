@@ -46,7 +46,14 @@ test.describe('[Create Case Flow With Address and Claimant Type]  @Master @night
       correspondenceAddress: contactPreferences.yes,
       phoneNumber: contactPreferences.no
     });
-    await performAction('selectTenancyOrLicenceDetails', tenancyLicenceDetails.other);
+    await performValidation('mainHeader', tenancyLicenceDetails.mainHeader);
+    await performAction('selectTenancyOrLicenceDetails', {
+      tenancyOrLicenceType: tenancyLicenceDetails.other,
+      day: tenancyLicenceDetails.day,
+      month: tenancyLicenceDetails.month,
+      year: tenancyLicenceDetails.year,
+      files: ['SampleDocx.docx', 'SamplePNG.png']
+    });
     await performValidation('mainHeader', groundsForPossession.mainHeader);
     await performAction('selectGroundsForPossission', groundsForPossession.yes);
     await performValidation('mainHeader', preActionProtocol.mainHeader);
@@ -86,6 +93,8 @@ test.describe('[Create Case Flow With Address and Claimant Type]  @Master @night
       correspondenceAddress: contactPreferences.no,
       phoneNumber: contactPreferences.yes
     });
+    await performAction('selectTenancyOrLicenceDetails', {
+      tenancyOrLicenceType: tenancyLicenceDetails.assuredTenancy});
     await performValidation('mainHeader', groundsForPossession.mainHeader);
     await performAction('selectGroundsForPossission', groundsForPossession.yes);
     await performAction('selectPreActionProtocol', preActionProtocol.yes);
