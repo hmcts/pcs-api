@@ -22,11 +22,10 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
-import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
-import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
+import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -294,19 +293,7 @@ class PcsCaseServiceTest {
     // Test for tenancy_licence JSON creation, temporary until Data Model is finalised
     @Test
     void shouldSetTenancyLicence() {
-
-        DynamicStringList tenancyLicenceType = DynamicStringList.builder()
-            .listItems(Arrays.stream(TenancyLicenceType.values())
-                           .map(value -> DynamicStringListElement.builder()
-                               .code(value.name())
-                               .label(value.getLabel())
-                               .build())
-                           .toList())
-            .value(DynamicStringListElement.builder()
-                       .code(TenancyLicenceType.ASSURED_TENANCY.name())
-                       .label(TenancyLicenceType.ASSURED_TENANCY.getLabel())
-                       .build())
-            .build();
+        LocalDate tenancyDate = LocalDate.of(2025, 8, 27);
 
         List<ListValue<Document>> uploadedDocs = Arrays.asList(
             ListValue.<Document>builder().id("1")
@@ -322,13 +309,13 @@ class PcsCaseServiceTest {
         );
 
         assertTenancyLicenceField(
-            pcsCase -> when(pcsCase.getTypeOfTenancyLicence()).thenReturn(tenancyLicenceType),
+            pcsCase -> when(pcsCase.getTypeOfTenancyLicence()).thenReturn(TenancyLicenceType.ASSURED_TENANCY),
             expected -> assertThat(expected.getTenancyLicenceType())
                 .isEqualTo(TenancyLicenceType.ASSURED_TENANCY.getLabel()));
 
         assertTenancyLicenceField(
-            pcsCase -> when(pcsCase.getTenancyLicenceDate()).thenReturn("2024-11-23"),
-            expected -> assertThat(expected.getTenancyLicenceDate()).isEqualTo("2024-11-23"));
+            pcsCase -> when(pcsCase.getTenancyLicenceDate()).thenReturn(tenancyDate),
+            expected -> assertThat(expected.getTenancyLicenceDate()).isEqualTo(tenancyDate));
 
         assertTenancyLicenceField(
             pcsCase -> when(pcsCase.getTenancyLicenceDocuments()).thenReturn(uploadedDocs),

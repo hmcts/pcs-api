@@ -15,9 +15,9 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenAccess;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
+import java.time.LocalDate;
 import java.util.List;
 
-import static uk.gov.hmcts.ccd.sdk.type.FieldType.Date;
 import static uk.gov.hmcts.ccd.sdk.type.FieldType.DynamicRadioList;
 import static uk.gov.hmcts.ccd.sdk.type.FieldType.TextArea;
 
@@ -228,13 +228,12 @@ public class PCSCase {
 
     @CCD(
         label = "What type of tenancy or licence is in place?",
-        typeOverride = DynamicRadioList,
         access = {CaseworkerAccess.class}
     )
-    private DynamicStringList typeOfTenancyLicence;
+    private TenancyLicenceType typeOfTenancyLicence;
 
     @CCD(
-        label = "Give details of the type of tenancy or licence agreement thats in place",
+        label = "Give details of the type of tenancy or licence agreement that's in place",
         typeOverride = TextArea,
         access = {CaseworkerAccess.class}
     )
@@ -243,10 +242,9 @@ public class PCSCase {
     @CCD(
         label = "What date did the tenancy or licence begin?",
         hint = "Please enter date. For example: 16 4 2021",
-        typeOverride = Date,
         access = {CaseworkerAccess.class}
     )
-    private String tenancyLicenceDate;
+    private LocalDate tenancyLicenceDate;
 
     @CCD(
         label = "Add document",hint = "Upload a document to the system",

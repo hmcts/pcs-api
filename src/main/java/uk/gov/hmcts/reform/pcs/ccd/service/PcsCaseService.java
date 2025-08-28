@@ -104,7 +104,7 @@ public class PcsCaseService {
 
         return TenancyLicence.builder()
             .tenancyLicenceType(pcsCase.getTypeOfTenancyLicence() != null
-                                    ? pcsCase.getTypeOfTenancyLicence().getValue().getLabel() : null)
+                                    ? pcsCase.getTypeOfTenancyLicence().getLabel() : null)
             .tenancyLicenceDate(pcsCase.getTenancyLicenceDate())
             .detailsOfOtherTypeOfTenancyLicence(pcsCase.getDetailsOfOtherTypeOfTenancyLicence())
             .supportingDocuments(ListValueUtils.unwrapListItems(pcsCase.getTenancyLicenceDocuments()))

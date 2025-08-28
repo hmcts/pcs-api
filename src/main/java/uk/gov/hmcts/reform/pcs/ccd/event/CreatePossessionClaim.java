@@ -14,7 +14,6 @@ import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PaymentStatus;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyRole;
@@ -42,12 +41,8 @@ import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.TenancyLicenceDeta
 import uk.gov.hmcts.reform.pcs.ccd.service.ClaimService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
-import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
-import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
-import java.util.Arrays;
-import java.util.List;
 import java.util.UUID;
 
 import static feign.Util.isNotBlank;
@@ -107,14 +102,6 @@ public class CreatePossessionClaim implements CCDConfig<PCSCase, State, UserRole
         String userDetails = securityContextService.getCurrentUserDetails().getSub();
         caseData.setClaimantName(userDetails);
         caseData.setClaimantContactEmail(userDetails);
-        List<DynamicStringListElement> listItems = Arrays.stream(TenancyLicenceType.values())
-                .map(value -> DynamicStringListElement.builder().code(value.name()).label(value.getLabel()).build())
-                .toList();
-
-        DynamicStringList tenancyTypeList = DynamicStringList.builder()
-                .listItems(listItems)
-                .build();
-        caseData.setTypeOfTenancyLicence(tenancyTypeList);
 
         return caseData;
     }

@@ -1,7 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim;
 
 
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
@@ -16,10 +15,9 @@ import java.time.LocalDate;
 import java.util.List;
 
 @Component
-@Slf4j
 public class TenancyLicenceDetails implements CcdPageConfiguration {
 
-    private Clock ukClock;
+    private final Clock ukClock;
 
     public TenancyLicenceDetails(@Qualifier("ukClock") Clock ukClock) {
         this.ukClock = ukClock;
@@ -47,7 +45,7 @@ public class TenancyLicenceDetails implements CcdPageConfiguration {
                <h3 class="govuk-heading-s">Do you want to upload a copy of the tenancy or licence agreement?</h3>
                <p class='govuk-hint govuk-!-font-size-16 govuk-!-margin-top-1'>
                You can either upload this now or closer to the hearing data. Any documents you upload now will be
-                included in the pack of documents a judge will receive before hearing the hearing (the bundle)
+                included in the pack of documents a judge will receive before hearing the hearing (the bundle).
                 </p>
                """)
             .optional(PCSCase::getTenancyLicenceDocuments)
@@ -57,9 +55,10 @@ public class TenancyLicenceDetails implements CcdPageConfiguration {
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
                                                                   CaseDetails<PCSCase, State> detailsBefore) {
         PCSCase caseData = details.getData();
-        String date = details.getData().getTenancyLicenceDate();
+        LocalDate tenancyLicenceDate = details.getData().getTenancyLicenceDate();
+        LocalDate currentDate = LocalDate.now(ukClock);
 
-        if (date != null && !isDateInThePast(date)) {
+        if (tenancyLicenceDate != null && !tenancyLicenceDate.isBefore(currentDate)) {
             return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
             .errors(List.of("Date the tenancy or licence began must be in the past"))
             .build();
@@ -67,12 +66,6 @@ public class TenancyLicenceDetails implements CcdPageConfiguration {
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
             .data(caseData)
             .build();
-    }
-
-    private Boolean isDateInThePast(String date) {
-        LocalDate currentDate = LocalDate.now(ukClock);
-        LocalDate tenancyLicenceDate = LocalDate.parse(date);
-        return tenancyLicenceDate.isBefore(currentDate);
     }
 }
 

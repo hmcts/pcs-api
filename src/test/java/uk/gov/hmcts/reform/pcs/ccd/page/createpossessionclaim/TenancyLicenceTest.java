@@ -43,7 +43,7 @@ class TenancyLicenceTest  extends BasePageTest {
 
     @ParameterizedTest
     @MethodSource("tenancyDateScenarios")
-    void shouldThrowErrorWhenDateIsTodayOrInTheFuture(String date, Boolean isValid) {
+        void shouldThrowErrorWhenDateIsTodayOrInTheFuture(LocalDate date, Boolean isValid) {
         // Given
         CaseDetails<PCSCase, State> caseDetails = new CaseDetails<>();
 
@@ -71,10 +71,10 @@ class TenancyLicenceTest  extends BasePageTest {
 
     private static Stream<Arguments> tenancyDateScenarios() {
         return Stream.of(
-           arguments(FIXED_CURRENT_DATE.plusDays(1).toString(), false),
-           arguments(FIXED_CURRENT_DATE.toString(), false),
-           arguments(FIXED_CURRENT_DATE.minusDays(1).toString(), true),
-           arguments(FIXED_CURRENT_DATE.minusYears(5).toString(), true)
+           arguments(FIXED_CURRENT_DATE.plusDays(1), false),
+           arguments(FIXED_CURRENT_DATE, false),
+           arguments(FIXED_CURRENT_DATE.minusDays(1), true),
+           arguments(FIXED_CURRENT_DATE.minusYears(5), true)
         );
     }
 
