@@ -151,18 +151,16 @@ export class CreateCaseAction implements IAction {
   }
 
   private async selectTenancyOrLicenceDetails(tenancyData: actionData) {
-    const tenancyLicenceData = tenancyData as {
-      typeOfTenancy: string;
-      tenancyStartDate: string;
-    };
-    await performAction('clickRadioButton', {
-      question: tenancyLicenceDetails.tenancyOrLicenceType,
-      option: tenancyLicenceData.typeOfTenancy
-    });
-    if (tenancyLicenceData.typeOfTenancy === 'Other') {
-      await performAction('inputText', 'Give details of the type of tenancy or licence agreement that\'s in place', tenancyLicenceDetails.detailsOfLicence);
+    const tenancyLicenceData = tenancyData
+
+    await performAction('clickRadioButton', tenancyLicenceData);
+
+    if (tenancyLicenceData === 'Other') {
+      await performAction('inputText', 'Give details of the type of tenancy or licence agreement thats in place', tenancyLicenceDetails.detailsOfLicence);
     }
-    await performAction('inputText', 'Tenancy licence date', tenancyLicenceData.tenancyStartDate);
+    await performAction('inputText', 'Day', tenancyLicenceDetails.day);
+    await performAction('inputText', 'Month', tenancyLicenceDetails.month);
+    await performAction('inputText', 'Year', tenancyLicenceDetails.year);
   }
 
   private async selectMediationAndSettlement(mediationSettlement: actionData) {

@@ -46,6 +46,7 @@ test.describe('[Create Case Flow With Address and Claimant Type]  @Master @night
       correspondenceAddress: contactPreferences.yes,
       phoneNumber: contactPreferences.no
     });
+    await performAction('selectTenancyOrLicenceDetails', tenancyLicenceDetails.other);
     await performValidation('mainHeader', groundsForPossession.mainHeader);
     await performAction('selectGroundsForPossission', groundsForPossession.yes);
     await performValidation('mainHeader', preActionProtocol.mainHeader);
@@ -161,12 +162,4 @@ test.describe('[Create Case Flow With Address and Claimant Type]  @Master @night
     });
     await performAction('clickButton', 'Cancel');
   });
-
-  test('HDPI-1470', async () => {
-    await performAction('selectTenancyOrLicenceDetails', {
-      typeOfTenancy: tenancyLicenceDetails.assuredTenancy,
-      tenancyStartDate: tenancyLicenceDetails.date,
-    });
-  });
-
 });

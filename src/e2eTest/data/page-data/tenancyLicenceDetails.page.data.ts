@@ -1,7 +1,7 @@
 export const tenancyLicenceDetails = {
   title: 'Create a case - HM Courts & Tribunals Service - GOV.UK',
   mainHeader: 'Tenancy or licence details',
-  tenancyOrLicenceType: 'What type of tenancy or licence is in place',
+  tenancyOrLicenceType: 'What type of tenancy and licence is in place (Optional)',
   assuredTenancy: 'Assured tenancy',
   secureTenancy: 'Secure tenancy',
   introductoryTenancy: 'Introductory tenancy',
@@ -9,6 +9,8 @@ export const tenancyLicenceDetails = {
   demotedTenancy: 'Demoted tenancy',
   other: 'Other',
   tenancyOrLicenceStartDate: 'What date did the tenancy or licence begin?',
-  date: '16-04-2021',
+  day: '16',
+  month: '04',
+  year: '2021',
   detailsOfLicence: 'This is the details of Licence or Tenancy agreement.',
 }
