@@ -227,7 +227,7 @@ public class PCSCase {
     private YesOrNo showClaimTypeNotEligibleWales;
 
     @CCD(
-        label = "What type of tenancy and licence is in place?",
+        label = "What type of tenancy or licence is in place?",
         typeOverride = DynamicRadioList,
         access = {CaseworkerAccess.class}
     )

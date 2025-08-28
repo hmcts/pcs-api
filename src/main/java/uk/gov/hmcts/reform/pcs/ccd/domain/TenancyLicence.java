@@ -20,12 +20,12 @@ public class TenancyLicence {
 
     private Boolean noticeServed;
 
-    private TenancyLicenceType tenancyLicenceType;
+    private String tenancyLicenceType;
 
     private String detailsOfOtherTypeOfTenancyLicence;
 
     private String tenancyLicenceDate;
 
-    private List<Document> documents;
+    private List<Document> supportingDocuments;
 
 }

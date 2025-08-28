@@ -103,10 +103,12 @@ public class PcsCaseService {
     private TenancyLicence buildTenancyLicence(PCSCase pcsCase) {
 
         return TenancyLicence.builder()
-            .noticeServed(toBooleanOrNull(pcsCase.getNoticeServed()))
+            .tenancyLicenceType(pcsCase.getTypeOfTenancyLicence() != null
+                                    ? pcsCase.getTypeOfTenancyLicence().getValue().getLabel() : null)
             .tenancyLicenceDate(pcsCase.getTenancyLicenceDate())
             .detailsOfOtherTypeOfTenancyLicence(pcsCase.getDetailsOfOtherTypeOfTenancyLicence())
-            .documents(ListValueUtils.unwrapListItems(pcsCase.getTenancyLicenceDocuments()))
+            .supportingDocuments(ListValueUtils.unwrapListItems(pcsCase.getTenancyLicenceDocuments()))
+            .noticeServed(toBooleanOrNull(pcsCase.getNoticeServed()))
             .build();
     }
 

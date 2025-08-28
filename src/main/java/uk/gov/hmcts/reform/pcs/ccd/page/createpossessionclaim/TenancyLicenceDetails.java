@@ -59,7 +59,7 @@ public class TenancyLicenceDetails implements CcdPageConfiguration {
         PCSCase caseData = details.getData();
         String date = details.getData().getTenancyLicenceDate();
 
-        if (!isDateInThePast(date)) {
+        if (date != null && !isDateInThePast(date)) {
             return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
             .errors(List.of("Date the tenancy or licence began must be in the past"))
             .build();
