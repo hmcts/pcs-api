@@ -62,7 +62,6 @@ test.describe.skip('[Create Case Flow With Address and Claimant Type]  @Master @
     await performAction('selectNoticeOfYourIntention', checkingNotice.yes);
     await performValidation('mainHeader', noticeDetails.mainHeader);
     await performAction('clickButton', noticeDetails.continue);
-    console.log("Rent Details Data:", rentDetailsData.rentAmount);
     await performAction('provideRentDetails', {rentFrequencyOption:'weekly', rentAmount:rentDetailsData.rentAmount});
     // Below step will be uncommented when the daily rent amount page is implemented as part of the HDPI-1521 story
     //await performValidation('mainHeader', dailyrentamount.mainHeader);
