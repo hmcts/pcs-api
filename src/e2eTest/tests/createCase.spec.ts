@@ -32,6 +32,7 @@ test.beforeEach(async ({page}, testInfo) => {
 });
 
 test.describe.skip('[Create Case Flow With Address and Claimant Type]  @Master @nightly', async () => {
+  const rentDetailsData = rentDetails('500', '80');
   test('England - Successful case creation', async () => {
     await performAction('selectAddress', {
       postcode: addressDetails.englandPostcode,
@@ -61,7 +62,8 @@ test.describe.skip('[Create Case Flow With Address and Claimant Type]  @Master @
     await performAction('selectNoticeOfYourIntention', checkingNotice.yes);
     await performValidation('mainHeader', noticeDetails.mainHeader);
     await performAction('clickButton', noticeDetails.continue);
-    await performAction('provideRentDetails', {rentFrequencyOption:'weekly', rentAmount:rentDetails.rentAmount});
+    console.log("Rent Details Data:", rentDetailsData.rentAmount);
+    await performAction('provideRentDetails', {rentFrequencyOption:'weekly', rentAmount:rentDetailsData.rentAmount});
     // Below step will be uncommented when the daily rent amount page is implemented as part of the HDPI-1521 story
     //await performValidation('mainHeader', dailyrentamount.mainHeader);
     await performAction('clickButton', 'Save and continue');
@@ -96,8 +98,8 @@ test.describe.skip('[Create Case Flow With Address and Claimant Type]  @Master @
     });
     await performValidation('mainHeader', checkingNotice.mainHeader);
     await performAction('selectNoticeOfYourIntention', checkingNotice.no);
-    await performValidation('mainHeader', rentDetails.mainHeader);
-    await performAction('provideRentDetails', {rentFrequencyOption:'Other', unpaidRentAmountPerDay:rentDetails.unpaidRentAmountPerDay});
+    await performValidation('mainHeader', rentDetailsData.mainHeader);
+    await performAction('provideRentDetails', {rentFrequencyOption:'Other', unpaidRentAmountPerDay:rentDetailsData.unpaidRentAmountPerDay});
     await performValidation('mainHeader', detailsOfrentArrears.mainHeader);
     await performAction('clickButton', detailsOfrentArrears.continue);
     await performAction('clickButton', 'Save and continue');
