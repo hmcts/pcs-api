@@ -30,26 +30,26 @@ public class PCSCase {
     private final YesOrNo decentralised = YesOrNo.YES;
 
     @CCD(
-        label = "Claimant Name",
-        access = {CitizenAccess.class, CaseworkerAccess.class}
+            label = "Claimant Name",
+            access = {CitizenAccess.class, CaseworkerAccess.class}
     )
     @External
     private String claimantName;
 
     @CCD(
-        searchable = false,
-        access = {CitizenAccess.class, CaseworkerAccess.class}
+            searchable = false,
+            access = {CitizenAccess.class, CaseworkerAccess.class}
     )
     private YesOrNo isClaimantNameCorrect;
 
     @CCD(
-        access = {CitizenAccess.class, CaseworkerAccess.class}
+            access = {CitizenAccess.class, CaseworkerAccess.class}
     )
     private String overriddenClaimantName;
 
     @CCD(
-        label = "Property address",
-        access = {CitizenAccess.class, CaseworkerAccess.class}
+            label = "Property address",
+            access = {CitizenAccess.class, CaseworkerAccess.class}
     )
     @External
     private AddressUK propertyAddress;
@@ -60,29 +60,29 @@ public class PCSCase {
     @CCD(searchable = false, access = {CitizenAccess.class, CaseworkerAccess.class})
     private YesOrNo showPropertyNotEligiblePage;
     @CCD(
-        typeOverride = DynamicRadioList,
-        access = {CitizenAccess.class, CaseworkerAccess.class}
+            typeOverride = DynamicRadioList,
+            access = {CitizenAccess.class, CaseworkerAccess.class}
     )
     @External
     private DynamicStringList crossBorderCountriesList;
 
     @CCD(
-        searchable = false,
-        access = {CitizenAccess.class, CaseworkerAccess.class}
+            searchable = false,
+            access = {CitizenAccess.class, CaseworkerAccess.class}
     )
     @External
     private String crossBorderCountry1;
 
     @CCD(
-        searchable = false,
-        access = {CitizenAccess.class, CaseworkerAccess.class}
+            searchable = false,
+            access = {CitizenAccess.class, CaseworkerAccess.class}
     )
     @External
     private String crossBorderCountry2;
 
     @CCD(
-        searchable = false,
-        access = {CitizenAccess.class}
+            searchable = false,
+            access = {CitizenAccess.class}
     )
     @External
     private String userPcqId;
@@ -91,21 +91,21 @@ public class PCSCase {
     private YesOrNo userPcqIdSet;
 
     @CCD(
-        label = "Case management location",
-        access = {CitizenAccess.class, CaseworkerAccess.class}
+            label = "Case management location",
+            access = {CitizenAccess.class, CaseworkerAccess.class}
     )
     private Integer caseManagementLocation;
 
     @CCD(
-        label = "Payment status",
-        access = {CitizenAccess.class, CaseworkerAccess.class}
+            label = "Payment status",
+            access = {CitizenAccess.class, CaseworkerAccess.class}
     )
     private PaymentStatus paymentStatus;
 
     @CCD(
-        label = "Amount to pay",
-        hint = "£400",
-        access = {CitizenAccess.class, CaseworkerAccess.class}
+            label = "Amount to pay",
+            hint = "£400",
+            access = {CitizenAccess.class, CaseworkerAccess.class}
     )
     private PaymentType paymentType;
 
@@ -142,47 +142,47 @@ public class PCSCase {
     private String claimantContactPhoneNumber;
 
     @CCD(
-        label = "Have you followed the pre-action protocol?",
-        access = {CitizenAccess.class, CaseworkerAccess.class}
+            label = "Have you followed the pre-action protocol?",
+            access = {CitizenAccess.class, CaseworkerAccess.class}
     )
     private VerticalYesNo preActionProtocolCompleted;
 
     @CCD(
-        label = "Are you claiming possession because of rent arrears or breach of the tenancy (ground1)?",
-        hint = "You'll be able to add additional grounds later if you select yes.",
-        access = {CitizenAccess.class, CaseworkerAccess.class}
+            label = "Are you claiming possession because of rent arrears or breach of the tenancy (ground1)?",
+            hint = "You'll be able to add additional grounds later if you select yes.",
+            access = {CitizenAccess.class, CaseworkerAccess.class}
     )
     private YesOrNo groundsForPossession;
 
     @CCD(
-        label = "Have you attempted mediation with the defendants?",
-        access = {CitizenAccess.class, CaseworkerAccess.class}
+            label = "Have you attempted mediation with the defendants?",
+            access = {CitizenAccess.class, CaseworkerAccess.class}
     )
     private VerticalYesNo mediationAttempted;
 
     @CCD(
-        label = "Give details about the attempted mediation and what the outcome was",
-        access = {CitizenAccess.class, CaseworkerAccess.class},
-        typeOverride = TextArea
+            label = "Give details about the attempted mediation and what the outcome was",
+            access = {CitizenAccess.class, CaseworkerAccess.class},
+            typeOverride = TextArea
     )
     private String mediationAttemptedDetails;
 
     @CCD(
-        label = "Have you tried to reach a settlement with the defendants?",
-        access = {CitizenAccess.class, CaseworkerAccess.class}
+            label = "Have you tried to reach a settlement with the defendants?",
+            access = {CitizenAccess.class, CaseworkerAccess.class}
     )
     private VerticalYesNo settlementAttempted;
 
     @CCD(
-        label = "Explain what steps you've taken to reach a settlement",
-        access = {CitizenAccess.class, CaseworkerAccess.class},
-        typeOverride = TextArea
+            label = "Explain what steps you've taken to reach a settlement",
+            access = {CitizenAccess.class, CaseworkerAccess.class},
+            typeOverride = TextArea
     )
     private String settlementAttemptedDetails;
 
     @CCD(
-        label = "Have you served notice to the defendants?",
-        access = {CitizenAccess.class, CaseworkerAccess.class}
+            label = "Have you served notice to the defendants?",
+            access = {CitizenAccess.class, CaseworkerAccess.class}
     )
     private YesOrNo noticeServed;
 
@@ -191,18 +191,18 @@ public class PCSCase {
     private String claimPaymentTabMarkdown;
 
     @CCD(
-        label = "Legislative country",
-        access = CaseworkerAccess.class
+            label = "Legislative country",
+            access = CaseworkerAccess.class
     )
     private LegislativeCountry legislativeCountryChoice;
 
     private String legislativeCountry;
 
     @CCD(
-        label = "Who is the claimant in this case?",
-        hint = "If you’re a legal representative, you should select the type of claimant you’re representing.",
-        typeOverride = DynamicRadioList,
-        access = {CaseworkerAccess.class}
+            label = "Who is the claimant in this case?",
+            hint = "If you’re a legal representative, you should select the type of claimant you’re representing.",
+            typeOverride = DynamicRadioList,
+            access = {CaseworkerAccess.class}
     )
     private DynamicStringList claimantType;
 
@@ -213,8 +213,8 @@ public class PCSCase {
     private YesOrNo showClaimantTypeNotEligibleWales;
 
     @CCD(
-        label = "Is this a claim against trespassers?",
-        access = CaseworkerAccess.class
+            label = "Is this a claim against trespassers?",
+            access = CaseworkerAccess.class
     )
     private VerticalYesNo claimAgainstTrespassers;
 
@@ -225,43 +225,49 @@ public class PCSCase {
     private YesOrNo showClaimTypeNotEligibleWales;
 
     @CCD(
-        label = "How much is the rent?",
-        typeOverride = FieldType.MoneyGBP,
-        access = {CitizenAccess.class, CaseworkerAccess.class}
+            label = "How much is the rent?",
+            typeOverride = FieldType.MoneyGBP,
+            access = {CitizenAccess.class, CaseworkerAccess.class}
     )
     private String currentRent;
 
     @CCD(
-        label = "How frequently should rent be paid?",
-        access = {CitizenAccess.class, CaseworkerAccess.class}
+            label = "How frequently should rent be paid?",
+            access = {CitizenAccess.class, CaseworkerAccess.class}
     )
     private RentPaymentFrequency rentFrequency;
 
     @CCD(
-        label = "Enter frequency",
-        hint = "Please specify the frequency",
-        access = {CitizenAccess.class, CaseworkerAccess.class}
+            label = "Enter frequency",
+            hint = "Please specify the frequency",
+            access = {CitizenAccess.class, CaseworkerAccess.class}
     )
     private String otherRentFrequency;
 
     @CCD(
-        label = "Enter the amount per day that unpaid rent should be charged at",
-        typeOverride = FieldType.MoneyGBP,
-        access = {CitizenAccess.class, CaseworkerAccess.class}
+            label = "Enter the amount per day that unpaid rent should be charged at",
+            typeOverride = FieldType.MoneyGBP,
+            access = {CitizenAccess.class, CaseworkerAccess.class}
     )
     private String dailyRentChargeAmount;
 
     @CCD(
-        label = "Is the amount per day that unpaid rent should be charged at correct?",
-        access = {CitizenAccess.class, CaseworkerAccess.class}
+            label = "Is the amount per day that unpaid rent should be charged at correct?",
+            access = {CitizenAccess.class, CaseworkerAccess.class}
     )
     private VerticalYesNo rentPerDayCorrect;
 
     @CCD(
-        label = "Enter amount per day that unpaid rent should be charged at",
-        typeOverride = FieldType.MoneyGBP,
-        access = {CitizenAccess.class, CaseworkerAccess.class}
+            label = "Enter amount per day that unpaid rent should be charged at",
+            typeOverride = FieldType.MoneyGBP,
+            access = {CitizenAccess.class, CaseworkerAccess.class}
     )
     private String amendedDailyRentChargeAmount;
+
+    @CCD(
+            typeOverride = FieldType.MoneyGBP,
+            access = {CitizenAccess.class, CaseworkerAccess.class}
+    )
+    private String calculatedDailyRentChargeAmount;
 
 }
