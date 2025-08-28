@@ -72,6 +72,10 @@ export class CreateCaseAction implements IAction {
     await performAction('clickButton', 'Continue');
   }
 
+  private async continueTheJourney() {
+    await performAction('clickButton', 'Continue');
+  }
+
   private async selectLegislativeCountry(caseData: actionData) {
     await performAction('clickRadioButton', caseData);
     await performAction('clickButton', 'Continue');
