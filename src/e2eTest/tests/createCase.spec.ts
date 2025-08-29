@@ -32,7 +32,6 @@ test.beforeEach(async ({page}, testInfo) => {
 });
 
 test.describe.skip('[Create Case Flow With Address and Claimant Type]  @Master @nightly', async () => {
-  const rentDetailsData = rentDetails('500', '80');
   test('England - Successful case creation', async () => {
     await performAction('selectAddress', {
       postcode: addressDetails.englandPostcode,
@@ -62,7 +61,7 @@ test.describe.skip('[Create Case Flow With Address and Claimant Type]  @Master @
     await performAction('selectNoticeOfYourIntention', checkingNotice.yes);
     await performValidation('mainHeader', noticeDetails.mainHeader);
     await performAction('clickButton', noticeDetails.continue);
-    await performAction('provideRentDetails', {rentFrequencyOption:'weekly', rentAmount:rentDetailsData.rentAmount});
+    await performAction('provideRentDetails', {rentFrequencyOption:'weekly', rentAmount:'800'});
     // Below step will be uncommented when the daily rent amount page is implemented as part of the HDPI-1521 story
     //await performValidation('mainHeader', dailyrentamount.mainHeader);
     await performAction('clickButton', 'Save and continue');
@@ -97,8 +96,8 @@ test.describe.skip('[Create Case Flow With Address and Claimant Type]  @Master @
     });
     await performValidation('mainHeader', checkingNotice.mainHeader);
     await performAction('selectNoticeOfYourIntention', checkingNotice.no);
-    await performValidation('mainHeader', rentDetailsData.mainHeader);
-    await performAction('provideRentDetails', {rentFrequencyOption:'Other', unpaidRentAmountPerDay:rentDetailsData.unpaidRentAmountPerDay});
+    await performValidation('mainHeader', rentDetails.mainHeader);
+    await performAction('provideRentDetails', {rentFrequencyOption:'Other', unpaidRentAmountPerDay:'50'});
     await performValidation('mainHeader', detailsOfrentArrears.mainHeader);
     await performAction('clickButton', detailsOfrentArrears.continue);
     await performAction('clickButton', 'Save and continue');
@@ -112,7 +111,7 @@ test.describe.skip('[Create Case Flow With Address and Claimant Type]  @Master @
       ['formLabelValue', 'Country', addressDetails.country]);
   });
 
-  test('England - Unsuccessful case creation journey due to claimant type not in scope of Release1 @R1only', async () => {
+  test.skip('England - Unsuccessful case creation journey due to claimant type not in scope of Release1 @R1only', async () => {
     await performAction('selectAddress', {
       postcode: addressDetails.englandPostcode,
       addressIndex: addressDetails.addressIndex
