@@ -91,16 +91,28 @@ public class CrossBorderPostcodeSelection implements CcdPageConfiguration {
                 // wire up.
                 log.info("Cross-border eligibility check: ELIGIBLE for postcode {} with country {}. "
                         + "Proceeding to normal flow", postcode, selectedCountry);
+                caseData.setShowPostcodeNotAssignedToCourt(YesOrNo.NO);
             }
             case NOT_ELIGIBLE -> {
                 log.info("Cross-border eligibility check: NOT_ELIGIBLE for postcode {} with country {}. "
                         + "Redirecting to PropertyNotEligible page", postcode, selectedCountry);
                 caseData.setLegislativeCountry(selectedCountry.getLabel());
                 caseData.setShowPropertyNotEligiblePage(YesOrNo.YES);
+                caseData.setShowPostcodeNotAssignedToCourt(YesOrNo.NO);
             }
             case NO_MATCH_FOUND -> {
                 log.info("Cross-border eligibility check: NO_MATCH_FOUND for postcode {} with country {}. "
-                        + "Proceeding to normal flow", postcode, selectedCountry);
+                        + "Redirecting to PostcodeNotAssignedToCourt page", postcode, selectedCountry);
+                caseData.setShowPostcodeNotAssignedToCourt(YesOrNo.YES);
+                caseData.setLegislativeCountry(selectedCountry.getLabel());
+                
+                // Determine which view to show based on selected country
+                String view = switch (selectedCountry) {
+                    case ENGLAND -> "ENGLAND";
+                    case WALES -> "WALES";
+                    default -> "ALL_COUNTRIES";
+                };
+                caseData.setPostcodeNotAssignedView(view);
             }
             default -> {
                 //TODO
@@ -113,7 +125,6 @@ public class CrossBorderPostcodeSelection implements CcdPageConfiguration {
                     )
                 );
             }
-
         }
 
         return response(caseData);
