@@ -31,25 +31,26 @@ public class TenancyLicenceDetails implements CcdPageConfiguration {
             .label("tenancyLicenceDetails-info", """
                ---
                <h2 class="govuk-heading-m">Tenancy or licence type</h2>
-              """)
+               """)
             .mandatory(PCSCase::getTypeOfTenancyLicence)
             .mandatory(PCSCase::getDetailsOfOtherTypeOfTenancyLicence, "typeOfTenancyLicence=\"OTHER\"")
             .label("tenancyLicenceDetails-date-section", """
                ---
                <h2 class="govuk-heading-m">Tenancy or licence start date</h2>
-              """)
+               """)
             .optional(PCSCase::getTenancyLicenceDate)
             .label("tenancyLicenceDetails-doc-section", """
                ---
                <h2 class="govuk-heading-m">Upload tenancy or licence agreement</h2>
-               <h3 class="govuk-heading-s">Do you want to upload a copy of the tenancy or licence agreement?</h3>
-               <p class='govuk-hint govuk-!-font-size-16 govuk-!-margin-top-1'>
-               You can either upload this now or closer to the hearing data. Any documents you upload now will be
+               <p class="govuk-!-font-size-16 govuk-!-margin-bottom-1">
+                Do you want to upload a copy of the tenancy or licence agreement?</p>
+               <p class="govuk-hint govuk-!-font-size-14 govuk-!-margin-top-1">
+                You can either upload this now or closer to the hearing data. Any documents you upload now will be
                 included in the pack of documents a judge will receive before hearing the hearing (the bundle).
                 </p>
                """)
             .optional(PCSCase::getTenancyLicenceDocuments)
-            .label("lineSeperator", "---");
+            .label("lineSeparator", "---");
     }
 
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
