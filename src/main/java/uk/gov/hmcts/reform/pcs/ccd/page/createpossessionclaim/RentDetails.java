@@ -2,11 +2,11 @@ package uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim;
 
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
+import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 
 /**
- * Placeholder page configuration for the Rent Details section. Full
- * implementation will be done in another ticket - responses not captured at the
- * moment.
+ * Page configuration for the Rent Details section.
+ * Allows claimants to enter rent amount and payment frequency details.
  */
 public class RentDetails implements CcdPageConfiguration {
 
@@ -14,11 +14,13 @@ public class RentDetails implements CcdPageConfiguration {
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
                 .page("rentDetails")
-                .pageLabel("Rent details (placeholder)")
-                .label("rentDetails-info",
+                .pageLabel("Rent details")
+                .label("rentDetails-content", 
                         """
-                  ---
-                    Under Development
-                  """);
+                        """)
+                .mandatory(PCSCase::getCurrentRent, "rentFrequency!=\"OTHER\"")
+                .mandatory(PCSCase::getRentFrequency)
+                .mandatory(PCSCase::getOtherRentFrequency, "rentFrequency=\"OTHER\"")
+                .mandatory(PCSCase::getDailyRentChargeAmount, "rentFrequency=\"OTHER\"");
     }
 }
