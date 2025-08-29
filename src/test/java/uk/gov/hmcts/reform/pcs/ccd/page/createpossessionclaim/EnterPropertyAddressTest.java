@@ -173,6 +173,32 @@ class EnterPropertyAddressTest extends BasePageTest {
             .hasMessageContaining(postcode);
     }
 
+    @Test
+    void shouldShowPropertyNotEligiblePageAndSetCountryOnNotEligible() {
+        // Given
+        CaseDetails<PCSCase, State> caseDetails = new CaseDetails<>();
+        AddressUK propertyAddress = AddressUK.builder().postCode("M1 1AA").build();
+        PCSCase caseData = PCSCase.builder().propertyAddress(propertyAddress).build();
+        caseDetails.setData(caseData);
+
+        var result = uk.gov.hmcts.reform.pcs.postcodecourt.model.EligibilityResult.builder()
+            .status(uk.gov.hmcts.reform.pcs.postcodecourt.model.EligibilityStatus.NOT_ELIGIBLE)
+            .legislativeCountry(uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry.ENGLAND)
+            .build();
+
+        when(eligibilityService.checkEligibility("M1 1AA", null)).thenReturn(result);
+
+        // When
+        AboutToStartOrSubmitResponse<PCSCase, State> resp =
+            getMidEventForPage(event, "enterPropertyAddress").handle(caseDetails, null);
+
+        // Then
+        PCSCase data = resp.getData();
+        assertThat(data.getShowCrossBorderPage()).isEqualTo(YesOrNo.NO);
+        assertThat(data.getShowPropertyNotEligiblePage()).isEqualTo(YesOrNo.YES);
+        assertThat(data.getLegislativeCountry()).isEqualTo("England");
+    }
+
     private static Stream<Arguments> invalidLegislativeCountryScenarios() {
         return Stream.of(
             // Empty list case
