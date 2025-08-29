@@ -42,9 +42,10 @@ public class TenancyLicenceDetails implements CcdPageConfiguration {
             .label("tenancyLicenceDetails-doc-section", """
                ---
                <h2 class="govuk-heading-m">Upload tenancy or licence agreement</h2>
-               <p class="govuk-!-font-size-16 govuk-!-margin-bottom-1">
-                Do you want to upload a copy of the tenancy or licence agreement?</p>
-               <p class="govuk-hint govuk-!-font-size-14 govuk-!-margin-top-1">
+               <p class="govuk-!-font-size-16">
+                Do you want to upload a copy of the tenancy or licence agreement?
+                </p>
+               <p class="govuk-hint govuk-!-font-size-16">
                 You can either upload this now or closer to the hearing data. Any documents you upload now will be
                 included in the pack of documents a judge will receive before hearing the hearing (the bundle).
                 </p>
