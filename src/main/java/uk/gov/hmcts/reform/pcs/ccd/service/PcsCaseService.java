@@ -1,13 +1,17 @@
 package uk.gov.hmcts.reform.pcs.ccd.service;
 
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
+import uk.gov.hmcts.ccd.sdk.type.Document;
+import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicence;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
@@ -15,8 +19,11 @@ import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 
+import java.time.LocalDate;
+import java.util.List;
 import java.util.UUID;
 
+@Slf4j
 @Service
 @AllArgsConstructor
 public class PcsCaseService {
@@ -31,7 +38,7 @@ public class PcsCaseService {
         AddressEntity addressEntity = applicantAddress != null
             ? modelMapper.map(applicantAddress, AddressEntity.class) : null;
 
-        PcsCaseEntity pcsCaseEntity = new PcsCaseEntity();
+        final PcsCaseEntity pcsCaseEntity = new PcsCaseEntity();
         pcsCaseEntity.setCaseReference(caseReference);
         pcsCaseEntity.setPropertyAddress(addressEntity);
         pcsCaseEntity.setPaymentStatus(pcsCase.getPaymentStatus());
@@ -40,13 +47,50 @@ public class PcsCaseService {
                         ? pcsCase.getPreActionProtocolCompleted().toBoolean()
                         : null);
 
-        pcsCaseEntity.setTenancyLicence(buildTenancyLicence(pcsCase));
+        // Process supporting documents
+        List<ListValue<Document>> supportingDocuments = pcsCase.getSupportingDocuments();
+        if (supportingDocuments != null && !supportingDocuments.isEmpty()) {
+            for (ListValue<Document> documentWrapper : supportingDocuments) {
+                if (documentWrapper != null && documentWrapper.getValue() != null) {
+                    Document document = documentWrapper.getValue();
 
+                    DocumentEntity documentEntity = new DocumentEntity();
+                    documentEntity.setFileName(document.getFilename());
+                    documentEntity.setFilePath(document.getBinaryUrl());
+                    documentEntity.setUploadedOn(LocalDate.now());
+                    documentEntity.setDocumentType("SUPPORTING");
+                    documentEntity.setPcsCase(pcsCaseEntity);
+
+                    pcsCaseEntity.addDocument(documentEntity);
+                }
+            }
+        }
+
+        // Process generated documents
+        List<ListValue<Document>> generatedDocuments = pcsCase.getGeneratedDocuments();
+        if (generatedDocuments != null && !generatedDocuments.isEmpty()) {
+            for (ListValue<Document> documentWrapper : generatedDocuments) {
+                if (documentWrapper != null && documentWrapper.getValue() != null) {
+                    Document document = documentWrapper.getValue();
+
+                    DocumentEntity documentEntity = new DocumentEntity();
+                    documentEntity.setFileName(document.getFilename());
+                    documentEntity.setFilePath(document.getBinaryUrl());
+                    documentEntity.setUploadedOn(LocalDate.now());
+                    documentEntity.setDocumentType("GENERATED");
+                    documentEntity.setPcsCase(pcsCaseEntity);
+
+                    pcsCaseEntity.addDocument(documentEntity);
+                }
+            }
+        }
+        log.info(String.valueOf(pcsCaseEntity.getDocuments().size()));
+        pcsCaseEntity.setTenancyLicence(buildTenancyLicence(pcsCase));
         return pcsCaseRepository.save(pcsCaseEntity);
     }
 
     public void patchCase(long caseReference, PCSCase pcsCase) {
-        PcsCaseEntity pcsCaseEntity = pcsCaseRepository.findByCaseReference(caseReference)
+        final PcsCaseEntity pcsCaseEntity = pcsCaseRepository.findByCaseReference(caseReference)
             .orElseThrow(() -> new CaseNotFoundException(caseReference));
 
         if (pcsCase.getPropertyAddress() != null) {
@@ -95,6 +139,35 @@ public class PcsCaseService {
         party.setSurname(userDetails.getFamilyName());
         party.setActive(true);
         return party;
+    }
+
+    public void addDocumentToCase(long caseReference, String fileName, String filePath) {
+        final PcsCaseEntity pcsCaseEntity = pcsCaseRepository.findByCaseReference(caseReference)
+            .orElseThrow(() -> new CaseNotFoundException(caseReference));
+
+        DocumentEntity document = new DocumentEntity();
+        document.setFileName(fileName);
+        document.setFilePath(filePath);
+        document.setUploadedOn(LocalDate.now());
+        document.setDocumentType("SUPPORTING");
+
+        pcsCaseEntity.addDocument(document);
+        pcsCaseRepository.save(pcsCaseEntity);
+    }
+
+
+    public void addGeneratedDocumentToCase(long caseReference, Document document) {
+        final PcsCaseEntity pcsCaseEntity = pcsCaseRepository.findByCaseReference(caseReference)
+            .orElseThrow(() -> new CaseNotFoundException(caseReference));
+
+        DocumentEntity documentEntity = new DocumentEntity();
+        documentEntity.setFileName(document.getFilename());
+        documentEntity.setFilePath(document.getBinaryUrl());
+        documentEntity.setUploadedOn(LocalDate.now());
+        documentEntity.setDocumentType("GENERATED");
+
+        pcsCaseEntity.addDocument(documentEntity);
+        pcsCaseRepository.save(pcsCaseEntity);
     }
 
     //Temporary method to create tenancy_licence JSON and related fields
