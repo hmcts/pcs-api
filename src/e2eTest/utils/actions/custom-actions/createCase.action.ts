@@ -11,6 +11,7 @@ import { housingPossessionClaim } from '@data/page-data/housingPossessionClaim.p
 import { claimantName } from '@data/page-data/claimantName.page.data';
 import { contactPreferences } from '@data/page-data/contactPreferences.page.data';
 import { mediationAndSettlement } from '@data/page-data/mediationAndSettlement.page.data';
+import { tenancyLicenceDetails } from '@data/page-data/tenancyLicenceDetails.page.data';
 
 let caseInfo: { id: string; fid: string; state: string };
 const testConfig = TestConfig.ccdCase;
@@ -38,6 +39,7 @@ export class CreateCaseAction implements IAction {
       ['selectMediationAndSettlement', () => this.selectMediationAndSettlement(fieldName)],
       ['selectNoticeOfYourIntention', () => this.selectNoticeOfYourIntention(fieldName)],
       ['selectCountryRadioButton', () => this.selectCountryRadioButton(fieldName)],
+      ['selectTenancyOrLicenceDetails', () => this.selectTenancyOrLicenceDetails(fieldName)],
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) throw new Error(`No action found for '${action}'`);
@@ -144,6 +146,32 @@ export class CreateCaseAction implements IAction {
     });
     if (prefData.phoneNumber === 'Yes') {
       await performAction('inputText', 'Enter phone number', contactPreferences.phoneNumberInput);
+    }
+    await performAction('clickButton', 'Continue');
+  }
+
+  private async selectTenancyOrLicenceDetails(tenancyData: actionData) {
+    const tenancyLicenceData = tenancyData as {
+      tenancyOrLicenceType: string;
+      day?: string;
+      month?: string;
+      year?: string;
+      files?: string[];
+    };
+    await performAction('clickRadioButton', tenancyLicenceData.tenancyOrLicenceType);
+    if (tenancyLicenceData.tenancyOrLicenceType === 'Other') {
+      await performAction('inputText', 'Give details of the type of tenancy or licence agreement that\'s in place', tenancyLicenceDetails.detailsOfLicence);
+    }
+    if(tenancyLicenceData.day && tenancyLicenceData.month &&  tenancyLicenceData.year) {
+      await performAction('inputText', 'Day', tenancyLicenceData.day);
+      await performAction('inputText', 'Month', tenancyLicenceData.month);
+      await performAction('inputText', 'Year', tenancyLicenceData.year);
+    }
+    if (tenancyLicenceData.files) {
+      for (const file of tenancyLicenceData.files) {
+        await performAction('clickButton', 'Add new');
+        await performAction('uploadFile', file);
+      }
     }
     await performAction('clickButton', 'Continue');
   }

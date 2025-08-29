@@ -15,6 +15,7 @@ import { checkingNotice } from '@data/page-data/checkingNotice.page.data';
 import { noticeDetails } from '@data/page-data/noticeDetails.page.data';
 import { rentDetails } from '@data/page-data/rentDetails.page.data';
 import { userIneligible } from '@data/page-data/userIneligible.page.data';
+import { tenancyLicenceDetails } from '@data/page-data/tenancyLicenceDetails.page.data';
 
 test.beforeEach(async ({page}, testInfo) => {
   initializeExecutor(page);
@@ -44,6 +45,14 @@ test.describe.skip('[Create Case Flow With Address and Claimant Type]  @Master @
       notifications: contactPreferences.yes,
       correspondenceAddress: contactPreferences.yes,
       phoneNumber: contactPreferences.no
+    });
+    await performValidation('mainHeader', tenancyLicenceDetails.mainHeader);
+    await performAction('selectTenancyOrLicenceDetails', {
+      tenancyOrLicenceType: tenancyLicenceDetails.other,
+      day: tenancyLicenceDetails.day,
+      month: tenancyLicenceDetails.month,
+      year: tenancyLicenceDetails.year,
+      files: ['tenancyLicence.docx', 'tenancyLicence.png']
     });
     await performValidation('mainHeader', groundsForPossession.mainHeader);
     await performAction('selectGroundsForPossission', groundsForPossession.yes);
@@ -84,6 +93,8 @@ test.describe.skip('[Create Case Flow With Address and Claimant Type]  @Master @
       correspondenceAddress: contactPreferences.no,
       phoneNumber: contactPreferences.yes
     });
+    await performAction('selectTenancyOrLicenceDetails', {
+      tenancyOrLicenceType: tenancyLicenceDetails.assuredTenancy});
     await performValidation('mainHeader', groundsForPossession.mainHeader);
     await performAction('selectGroundsForPossission', groundsForPossession.yes);
     await performAction('selectPreActionProtocol', preActionProtocol.yes);
