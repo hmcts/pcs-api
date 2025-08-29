@@ -159,7 +159,6 @@ export class CreateCaseAction implements IAction {
       files?: string[];
     };
     await performAction('clickRadioButton', tenancyLicenceData.tenancyOrLicenceType);
-
     if (tenancyLicenceData.tenancyOrLicenceType === 'Other') {
       await performAction('inputText', 'Give details of the type of tenancy or licence agreement that\'s in place', tenancyLicenceDetails.detailsOfLicence);
     }
