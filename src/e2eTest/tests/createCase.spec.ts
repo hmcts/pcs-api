@@ -15,7 +15,7 @@ import { checkingNotice } from '@data/page-data/checkingNotice.page.data';
 import { noticeDetails } from '@data/page-data/noticeDetails.page.data';
 import { rentDetails } from '@data/page-data/rentDetails.page.data';
 import { userIneligible } from '@data/page-data/userIneligible.page.data';
-import {tenancyLicenceDetails} from "@data/page-data/tenancyLicenceDetails.page.data";
+import { tenancyLicenceDetails } from '@data/page-data/tenancyLicenceDetails.page.data';
 
 test.beforeEach(async ({page}, testInfo) => {
   initializeExecutor(page);
