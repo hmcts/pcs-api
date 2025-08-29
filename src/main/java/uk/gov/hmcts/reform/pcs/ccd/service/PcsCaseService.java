@@ -107,12 +107,27 @@ public class PcsCaseService {
                     ? new BigDecimal(pcsCase.getCurrentRent()) : null)
                 .rentPaymentFrequency(pcsCase.getRentFrequency())
                 .otherRentFrequency(pcsCase.getOtherRentFrequency())
-                .dailyRentChargeAmount(pcsCase.getDailyRentChargeAmount() != null 
-                    ? new BigDecimal(pcsCase.getDailyRentChargeAmount()) : null)
+                .dailyRentChargeAmount(getDailyRentAmount(pcsCase) != null ? getDailyRentAmount(pcsCase) : null)
                 .build();
     }
 
     private static Boolean toBooleanOrNull(YesOrNo yesOrNo) {
         return yesOrNo != null ? yesOrNo.toBoolean() : null;
+    }
+
+    private BigDecimal getDailyRentAmount(PCSCase pcsCase) {
+        String[] fieldValues = {
+            pcsCase.getAmendedDailyRentChargeAmount(),
+            pcsCase.getCalculatedDailyRentChargeAmount(),
+            pcsCase.getDailyRentChargeAmount()
+        };
+
+        for (String value : fieldValues) {
+            if (value != null && !value.trim().isEmpty()) {
+                return new BigDecimal(value);
+            }
+        }
+
+        return null;
     }
 }
