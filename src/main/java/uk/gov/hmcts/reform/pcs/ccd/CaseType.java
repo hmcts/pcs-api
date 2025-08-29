@@ -6,6 +6,7 @@ import uk.gov.hmcts.ccd.sdk.api.ConfigBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentCategory;
 
 import static java.lang.System.getenv;
 import static java.util.Optional.ofNullable;
@@ -44,6 +45,7 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
 
         builder.decentralisedCaseType(getCaseType(), getCaseTypeName(), CASE_TYPE_DESCRIPTION);
         builder.jurisdiction(JURISDICTION_ID, JURISDICTION_NAME, JURISDICTION_DESCRIPTION);
+        buildSupportingDocumentsCaseFileViewTab(builder);
 
         String paymentLabel = "Payment Status";
 
@@ -81,5 +83,31 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
         builder.tab("hidden", "HiddenFields")
             .showCondition(NEVER_SHOW)
             .field(PCSCase::getPageHeadingMarkdown);
+    }
+
+    private void buildSupportingDocumentsCaseFileViewTab(ConfigBuilder<PCSCase, State, UserRole> configBuilder) {
+        configBuilder.categories(UserRole.PCS_CASE_WORKER)
+            .categoryID(DocumentCategory.CATEGORY_A.getLabel())
+            .categoryLabel(DocumentCategory.CATEGORY_A.getLabel())
+            .displayOrder(1)
+            .build();
+        configBuilder.categories(UserRole.PCS_CASE_WORKER)
+            .categoryID(DocumentCategory.CATEGORY_B.getLabel())
+            .categoryLabel(DocumentCategory.CATEGORY_B.getLabel())
+            .displayOrder(2).parentCategoryID(DocumentCategory.CATEGORY_A.getLabel())
+            .build();
+        configBuilder.categories(UserRole.PCS_CASE_WORKER)
+            .categoryID("Category_C")
+            .categoryLabel("Category_C")
+            .displayOrder(3).parentCategoryID(DocumentCategory.CATEGORY_B.getLabel())
+            .build();
+        configBuilder.categories(UserRole.PCS_CASE_WORKER)
+            .categoryID("Category_D")
+            .categoryLabel("Category_D")
+            .displayOrder(4)
+            .build();
+        configBuilder.tab("caseFileView", "Supporting Documents")
+            .forRoles(UserRole.PCS_CASE_WORKER)
+            .field(PCSCase::getCaseFileView, null, "#ARGUMENT(CaseFileView)");
     }
 }
