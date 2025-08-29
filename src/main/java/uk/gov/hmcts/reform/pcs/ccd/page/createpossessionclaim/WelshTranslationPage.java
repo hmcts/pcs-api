@@ -14,6 +14,8 @@ public class WelshTranslationPage implements CcdPageConfiguration {
         pageBuilder
             .page("singleStringTest")
             .label("singleStringContent", "myrandomnewphrase")
-            .mandatory(PCSCase::getIsClaimantNameCorrect);
+            .mandatory(PCSCase::getIsClaimantNameCorrect)
+            .mandatory(PCSCase::getShowCrossBorderPage)
+            .mandatory(PCSCase::getShowPropertyNotEligiblePage);
     }
 }
