@@ -9,19 +9,25 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.modelmapper.ModelMapper;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
+import uk.gov.hmcts.ccd.sdk.type.Document;
+import uk.gov.hmcts.ccd.sdk.type.ListValue;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PaymentStatus;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicence;
+import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
-import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
-import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 
+import java.time.LocalDate;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -287,18 +293,42 @@ class PcsCaseServiceTest {
     // Test for tenancy_licence JSON creation, temporary until Data Model is finalised
     @Test
     void shouldSetTenancyLicence() {
-        // Test notice_served field updates
-        assertTenancyLicenceField(
-                pcsCase -> when(pcsCase.getNoticeServed()).thenReturn(YesOrNo.YES),
-                expected -> assertThat(expected.getNoticeServed()).isTrue());
-        assertTenancyLicenceField(
-                pcsCase -> when(pcsCase.getNoticeServed()).thenReturn(YesOrNo.NO),
-                expected -> assertThat(expected.getNoticeServed()).isFalse());
+        LocalDate tenancyDate = LocalDate.of(2025, 8, 27);
 
-        // TODO: Future developers can add ANY field type like:
-        // assertTenancyLicenceField(
-        //     pcsCase -> when(pcsCase.getRentAmount()).thenReturn(1200),
-        //     expected -> assertThat(expected.getCurrentRent()).isEqualTo(1200));
+        List<ListValue<Document>> uploadedDocs = Arrays.asList(
+            ListValue.<Document>builder().id("1")
+                .value(Document.builder()
+                           .filename("tenancy_agreement.pdf")
+                           .build())
+                .build(),
+            ListValue.<Document>builder().id("2")
+                .value(Document.builder()
+                           .filename("proof_of_id.png")
+                           .build())
+                .build()
+        );
+
+        assertTenancyLicenceField(
+            pcsCase -> when(pcsCase.getTypeOfTenancyLicence()).thenReturn(TenancyLicenceType.ASSURED_TENANCY),
+            expected -> assertThat(expected.getTenancyLicenceType())
+                .isEqualTo(TenancyLicenceType.ASSURED_TENANCY.getLabel()));
+
+        assertTenancyLicenceField(
+            pcsCase -> when(pcsCase.getTenancyLicenceDate()).thenReturn(tenancyDate),
+            expected -> assertThat(expected.getTenancyLicenceDate()).isEqualTo(tenancyDate));
+
+        assertTenancyLicenceField(
+            pcsCase -> when(pcsCase.getTenancyLicenceDocuments()).thenReturn(uploadedDocs),
+            expected -> {
+                assertThat(expected.getSupportingDocuments()).hasSize(2);
+                assertThat(expected.getSupportingDocuments())
+                    .extracting(d -> d.getFilename())
+                    .containsExactlyInAnyOrder("tenancy_agreement.pdf", "proof_of_id.png");
+            }
+        );
+        assertTenancyLicenceField(
+            pcsCase -> when(pcsCase.getNoticeServed()).thenReturn(YesOrNo.YES),
+            expected -> assertThat(expected.getNoticeServed()).isTrue());
     }
 
     private void assertTenancyLicenceField(java.util.function.Consumer<PCSCase> setupMock,
