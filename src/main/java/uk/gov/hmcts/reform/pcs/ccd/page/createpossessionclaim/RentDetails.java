@@ -32,23 +32,15 @@ public class RentDetails implements CcdPageConfiguration {
             CaseDetails<PCSCase, State> detailsBefore) {
         PCSCase caseData = details.getData();
 
-        System.out.println("MidEvent start - rentFrequency: " + caseData.getRentFrequency()
-                + ", initial dailyRentChargeAmount: " + caseData.getDailyRentChargeAmount());
-
         if (caseData.getRentFrequency() != RentPaymentFrequency.OTHER) {
             int rentAmountInPence = Integer.parseInt(caseData.getCurrentRent());
             int dailyAmountInPence = calculateDailyRent(rentAmountInPence, caseData.getRentFrequency());
             String dailyAmountString = String.valueOf(dailyAmountInPence);
 
-            System.out.println("Setting calculated value: " + dailyAmountString);
-            caseData.setDailyRentChargeAmount(dailyAmountString);
             caseData.setCalculatedDailyRentChargeAmount(dailyAmountString);
         } else if (caseData.getRentFrequency() == RentPaymentFrequency.OTHER) {
-            System.out.println("OTHER frequency - copying manual value: " + caseData.getDailyRentChargeAmount());
             caseData.setCalculatedDailyRentChargeAmount(caseData.getDailyRentChargeAmount());
         }
-
-        System.out.println("MidEvent end - dailyRentChargeAmount: " + caseData.getDailyRentChargeAmount());
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
                 .data(caseData)
