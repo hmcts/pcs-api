@@ -20,7 +20,7 @@ test.beforeEach(async ({page}, testInfo) => {
   initializeExecutor(page);
   await parentSuite('Case Creation');
   await performAction('navigateToUrl', configData.manageCasesBaseURL);
-  await performAction('createUserAndLogin', ['caseworker-pcs', 'caseworker']);
+  await performAction('login', ['caseworker-pcs', 'caseworker']);
   await testInfo.attach('Page URL', {
     body: page.url(),
     contentType: 'text/plain',
@@ -30,7 +30,7 @@ test.beforeEach(async ({page}, testInfo) => {
   await performAction('housingPossessionClaim');
 });
 
-test.describe.skip('[Create Case Flow With Address and Claimant Type]  @Master @nightly', async () => {
+test.describe('[Create Case Flow With Address and Claimant Type]  @Master @nightly', async () => {
   test('England - Successful case creation', async () => {
     await performAction('selectAddress', {
       postcode: addressDetails.englandPostcode,

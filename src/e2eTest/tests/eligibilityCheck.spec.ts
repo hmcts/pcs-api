@@ -11,13 +11,13 @@ test.beforeEach(async ({page}) => {
   initializeExecutor(page);
   await parentSuite('Eligibility Check');
   await performAction('navigateToUrl', configData.manageCasesBaseURL);
-  await performAction('createUserAndLogin', ['caseworker-pcs', 'caseworker']);
+  await performAction('login', ['caseworker-pcs', 'caseworker']);
   await performAction('clickButton', 'Create case');
   await performAction('selectJurisdictionCaseTypeEvent');
   await performAction('housingPossessionClaim');
 });
 
-test.describe.skip('Eligibility checks for cross and non cross border postcodes @nightly', async () => {
+test.describe('Eligibility checks for cross and non cross border postcodes @nightly', async () => {
   //Skipping these tests until the postcode data insertion is handled in AAT via automation
   test('Verify cross border postcode eligibility check redirection and content for England and Wales', async ({page}) => {
     await performAction('selectAddress', {
