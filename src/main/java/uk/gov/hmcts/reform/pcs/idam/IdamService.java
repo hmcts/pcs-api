@@ -19,10 +19,14 @@ public class IdamService {
     private final String idamSystemUsername;
     private final String idamSystemPassword;
 
+    @Value("${idam.proof-of-concept.username}")
+    private String idamSystemUsernamePrd;
+    @Value("${idam.proof-of-concept.password}")
+    private String idamSystemPasswordPrd;
+
     public IdamService(IdamClient idamClient,
                        @Value("${idam.system-user.username}") String idamSystemUsername,
                        @Value("${idam.system-user.password}") String idamSystemPassword) {
-
         this.idamClient = idamClient;
         this.idamSystemUsername = idamSystemUsername;
         this.idamSystemPassword = idamSystemPassword;
@@ -62,9 +66,22 @@ public class IdamService {
         return BEARER_PREFIX + accessTokenResponse.accessToken;
     }
 
+    public String getPrdUserAuthorisation() {
+        TokenResponse accessTokenResponse = getPrdAccessTokenResponse();
+        return BEARER_PREFIX + accessTokenResponse.accessToken;
+    }
+
     private TokenResponse getAccessTokenResponse() {
         try {
             return idamClient.getAccessTokenResponse(idamSystemUsername, idamSystemPassword);
+        } catch (FeignException fe) {
+            throw new IdamException("Unable to get access token response", fe);
+        }
+    }
+
+    private TokenResponse getPrdAccessTokenResponse() {
+        try {
+            return idamClient.getAccessTokenResponse(idamSystemUsernamePrd, idamSystemPasswordPrd);
         } catch (FeignException fe) {
             throw new IdamException("Unable to get access token response", fe);
         }
