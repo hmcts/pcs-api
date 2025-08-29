@@ -11,7 +11,7 @@ export const addressDetails = {
   walesCounty: 'Cardiff',
   buildingAndStreet: '123 Test Street',
   townOrCity: 'ManualTown',
-  postcode: 'SL1 1SP',
+  postcode: 'W3 7RX',
   country: 'United Kingdom',
   header: 'There is a problem',
   addressDetailsError: 'An address is required',

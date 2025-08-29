@@ -10,6 +10,7 @@ export class InputTextAction implements IAction {
            label:has-text("${fieldName}") + textarea,
            label:has-text("${fieldName}") ~ input,
            [aria-label="${fieldName}"],
+           label:has-text("${fieldName}")+ div input,
            [placeholder="${fieldName}"]`);
     await locator.fill(value);
   }
