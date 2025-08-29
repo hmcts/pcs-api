@@ -241,7 +241,7 @@ public class PCSCase {
 
     @CCD(
         label = "What date did the tenancy or licence begin?",
-        hint = "Please enter date. For example: 16 4 2021",
+        hint = "Please enter date. For example, 16 4 2021",
         access = {CaseworkerAccess.class}
     )
     private LocalDate tenancyLicenceDate;
