@@ -1,0 +1,21 @@
+package uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim;
+
+import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
+import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
+import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+
+/**
+ * CCD page configuration for making a housing possession claim online.
+ */
+public class WelshTranslationPage implements CcdPageConfiguration {
+
+    @Override
+    public void addTo(PageBuilder pageBuilder) {
+        pageBuilder
+            .page("singleStringTest")
+            .label("singleStringContent", "myrandomnewphrase")
+            .mandatory(PCSCase::getIsClaimantNameCorrect)
+            .mandatory(PCSCase::getShowCrossBorderPage)
+            .mandatory(PCSCase::getShowPropertyNotEligiblePage);
+    }
+}

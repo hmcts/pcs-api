@@ -38,7 +38,8 @@ public class PCSCase {
 
     @CCD(
         searchable = false,
-        access = {CitizenAccess.class, CaseworkerAccess.class}
+        access = {CitizenAccess.class, CaseworkerAccess.class},
+        label = "YesOrNo1"
     )
     private YesOrNo isClaimantNameCorrect;
 
@@ -54,11 +55,18 @@ public class PCSCase {
     @External
     private AddressUK propertyAddress;
 
-    @CCD(searchable = false, access = {CitizenAccess.class, CaseworkerAccess.class})
+    @CCD(searchable = false,
+        access = {CitizenAccess.class,
+            CaseworkerAccess.class},
+        label = "YesOrNo2"
+    )
     private YesOrNo showCrossBorderPage;
 
-    @CCD(searchable = false, access = {CitizenAccess.class, CaseworkerAccess.class})
+    @CCD(searchable = false, access = {CitizenAccess.class,
+        CaseworkerAccess.class},
+        label = "YesOrNo3")
     private YesOrNo showPropertyNotEligiblePage;
+
     @CCD(
         typeOverride = DynamicRadioList,
         access = {CitizenAccess.class, CaseworkerAccess.class}
