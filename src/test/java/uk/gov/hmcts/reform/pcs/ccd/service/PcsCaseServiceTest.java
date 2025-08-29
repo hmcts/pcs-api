@@ -8,26 +8,33 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Autowired;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
+import uk.gov.hmcts.ccd.sdk.type.ListValue;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PaymentStatus;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicence;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.model.Defendant;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
+import uk.gov.hmcts.reform.pcs.config.MapperConfig;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
-import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
-import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
@@ -37,12 +44,13 @@ class PcsCaseServiceTest {
 
     private static final long CASE_REFERENCE = 1234L;
 
+    @Autowired
+    private ModelMapper modelMapper;
+
     @Mock
     private PcsCaseRepository pcsCaseRepository;
     @Mock
     private SecurityContextService securityContextService;
-    @Mock
-    private ModelMapper modelMapper;
     @Captor
     private ArgumentCaptor<PcsCaseEntity> pcsCaseEntityCaptor;
 
@@ -50,6 +58,8 @@ class PcsCaseServiceTest {
 
     @BeforeEach
     void setUp() {
+        MapperConfig config = new MapperConfig();
+        modelMapper = spy(config.modelMapper());
         underTest = new PcsCaseService(pcsCaseRepository, securityContextService, modelMapper);
     }
 
@@ -284,6 +294,108 @@ class PcsCaseServiceTest {
         assertThat(pcsCaseEntityCaptor.getValue()).isSameAs(existingPcsCaseEntity);
     }
 
+    @Test
+    void shouldMapFromDefendantDetailsToDefendantPojo() {
+        // Given
+        AddressUK correspondenceAddress = AddressUK.builder()
+            .addressLine1("125 Broadway")
+            .postCode("W5 8DG")
+            .build();
+        DefendantDetails details =  DefendantDetails.builder()
+            .nameKnown(VerticalYesNo.YES)
+            .firstName("John")
+            .lastName("Doe")
+            .addressKnown(VerticalYesNo.YES)
+            .addressSameAsPossession(VerticalYesNo.YES)
+            .correspondenceAddress(correspondenceAddress)
+            .emailKnown(VerticalYesNo.NO)
+            .build();
+
+        ListValue<DefendantDetails> listValue = new ListValue<>("123", details);
+
+        // When
+        List<Defendant> result = underTest.mapFromDefendantDetails(List.of(listValue));
+
+        // Then
+        assertThat(result).hasSize(1);
+        Defendant mappedDefendant = result.get(0);
+
+        assertThat(mappedDefendant.getId()).isEqualTo("123");
+        assertThat(mappedDefendant.getNameKnown()).isTrue();
+        assertThat(mappedDefendant.getFirstName()).isEqualTo("John");
+        assertThat(mappedDefendant.getLastName()).isEqualTo("Doe");
+        assertThat(mappedDefendant.getAddressKnown()).isTrue();
+        assertThat(mappedDefendant.getAddressSameAsPossession()).isTrue();
+        assertThat(mappedDefendant.getCorrespondenceAddress().getAddressLine1())
+            .isEqualTo(correspondenceAddress.getAddressLine1());
+        assertThat(mappedDefendant.getEmailKnown()).isFalse();
+    }
+
+    @Test
+    void shouldMapDefendantPojoToDefendantDetails() {
+        // Given
+        Defendant defendant = Defendant.builder()
+            .id("456")
+            .nameKnown(true)
+            .firstName("Jane")
+            .lastName("Smith")
+            .addressKnown(false)
+            .addressSameAsPossession(false)
+            .emailKnown(true)
+            .email("jane.smith@email.com")
+            .build();
+
+        // When
+        List<ListValue<DefendantDetails>> result = underTest.mapToDefendantDetails(List.of(defendant));
+
+        // Then
+        ListValue<DefendantDetails> listValue = result.get(0);
+        DefendantDetails mappedDefendantDetails = listValue.getValue();
+
+        assertThat(result).hasSize(1);
+        assertThat(listValue.getId()).isEqualTo("456");
+        assertThat(mappedDefendantDetails.getNameKnown()).isEqualTo(VerticalYesNo.YES);
+        assertThat(mappedDefendantDetails.getFirstName()).isEqualTo("Jane");
+        assertThat(mappedDefendantDetails.getLastName()).isEqualTo("Smith");
+        assertThat(mappedDefendantDetails.getAddressKnown()).isEqualTo(VerticalYesNo.NO);
+        assertThat(mappedDefendantDetails.getAddressSameAsPossession()).isEqualTo(VerticalYesNo.NO);
+        assertThat(mappedDefendantDetails.getEmailKnown()).isEqualTo(VerticalYesNo.YES);
+        assertThat(mappedDefendantDetails.getEmail()).isEqualTo("jane.smith@email.com");
+    }
+
+    @Test
+    void shouldClearHiddenDefendantDetailsFields() {
+        // Given
+        DefendantDetails defendantWithHiddenFields = DefendantDetails.builder()
+            .nameKnown(VerticalYesNo.NO)
+            .firstName("John")
+            .lastName("Doe")
+            .addressKnown(VerticalYesNo.NO)
+            .correspondenceAddress(AddressUK.builder()
+                                       .addressLine1("123 Test Street")
+                                       .postTown("Test Town")
+                                       .postCode("TE1 1ST")
+                                       .build())
+            .addressSameAsPossession(VerticalYesNo.NO)
+            .emailKnown(VerticalYesNo.NO)
+            .email("test@example.com")
+            .build();
+
+        List<ListValue<DefendantDetails>> defendantsList = List.of(
+            new ListValue<>("1", defendantWithHiddenFields));
+
+        // When
+        underTest.clearHiddenDefendantDetailsFields(defendantsList);
+
+        // Then
+        DefendantDetails clearedDefendant = defendantsList.get(0).getValue();
+        assertThat(clearedDefendant.getFirstName()).isNull();
+        assertThat(clearedDefendant.getLastName()).isNull();
+        assertThat(clearedDefendant.getCorrespondenceAddress()).isNull();
+        assertThat(clearedDefendant.getAddressSameAsPossession()).isNull();
+        assertThat(clearedDefendant.getEmail()).isNull();
+    }
+
     // Test for tenancy_licence JSON creation, temporary until Data Model is finalised
     @Test
     void shouldSetTenancyLicence() {
@@ -311,6 +423,7 @@ class PcsCaseServiceTest {
 
         TenancyLicence actual = pcsCaseEntityCaptor.getValue().getTenancyLicence();
         assertions.accept(actual);
+
     }
 
     private AddressEntity stubAddressUKModelMapper(AddressUK addressUK) {
