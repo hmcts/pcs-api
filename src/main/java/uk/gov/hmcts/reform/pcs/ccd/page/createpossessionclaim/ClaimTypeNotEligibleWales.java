@@ -34,9 +34,15 @@ public class ClaimTypeNotEligibleWales implements CcdPageConfiguration {
                     class="govuk-link">View the full list of property possessions forms (opens in a new tab)</a>.
                 </p>
 
-                <a href="/cases" role="button" draggable="false" class="govuk-button" data-module="govuk-button">
-                  Close and return to case list
-                </a>
+                <div class="govuk-warning-text" role="alert" aria-labelledby="warning-message">
+                  <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+                  <strong class="govuk-warning-text__text">
+                    <span class="govuk-warning-text__assistive">Warning</span>
+                    <span id="warning-message">
+                      To exit back to the case list, select 'Cancel'
+                    </span>
+                  </strong>
+                </div>
                 """);
     }
 
