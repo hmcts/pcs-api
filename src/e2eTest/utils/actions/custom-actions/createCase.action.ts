@@ -11,7 +11,7 @@ import { housingPossessionClaim } from '@data/page-data/housingPossessionClaim.p
 import { claimantName } from '@data/page-data/claimantName.page.data';
 import { contactPreferences } from '@data/page-data/contactPreferences.page.data';
 import { mediationAndSettlement } from '@data/page-data/mediationAndSettlement.page.data';
-import {tenancyLicenceDetails} from "@data/page-data/tenancyLicenceDetails.page.data";
+import { tenancyLicenceDetails } from "@data/page-data/tenancyLicenceDetails.page.data";
 
 let caseInfo: { id: string; fid: string; state: string };
 const testConfig = TestConfig.ccdCase;
