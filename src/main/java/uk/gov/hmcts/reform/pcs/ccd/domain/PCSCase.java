@@ -223,7 +223,7 @@ public class PCSCase {
 
     @CCD(searchable = false, access = CaseworkerAccess.class)
     private YesOrNo showClaimTypeNotEligibleWales;
-
+  
     @CCD(
         label = "How much is the rent?",
         typeOverride = FieldType.MoneyGBP,
@@ -250,5 +250,12 @@ public class PCSCase {
         access = {CitizenAccess.class, CaseworkerAccess.class}
     )
     private String dailyRentChargeAmount;
+
+    @CCD(searchable = false, access = {CitizenAccess.class, CaseworkerAccess.class})
+    private YesOrNo showPostcodeNotAssignedToCourt;
+
+    @CCD(searchable = false, access = {CitizenAccess.class, CaseworkerAccess.class})
+    private String postcodeNotAssignedView;
+
 
 }
