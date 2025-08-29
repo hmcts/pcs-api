@@ -42,4 +42,6 @@ public class DocAssemblyRequest {
     private String caseTypeId;
 
     private String jurisdictionId;
+
+    private boolean secureDocStoreEnabled;
 }

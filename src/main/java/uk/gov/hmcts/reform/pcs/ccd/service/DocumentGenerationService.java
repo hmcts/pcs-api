@@ -1,17 +1,15 @@
 package uk.gov.hmcts.reform.pcs.ccd.service;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
-import uk.gov.hmcts.reform.pcs.ccd.CaseType;
 import uk.gov.hmcts.reform.pcs.document.service.DocAssemblyService;
 import uk.gov.hmcts.reform.pcs.testingsupport.model.DocAssemblyRequest;
-
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
 
 @Slf4j
 @Service
@@ -26,8 +24,9 @@ public class DocumentGenerationService {
                 .templateId(templateId)
                 .formPayload(formPayload)
                 .outputType(outputType)
-                .caseTypeId(CaseType.getCaseType())
+                .caseTypeId("PCS")
                 .jurisdictionId("CIVIL")
+                .secureDocStoreEnabled(true)
                 .build();
 
             String documentUrl = docAssemblyService.generateDocument(request);
