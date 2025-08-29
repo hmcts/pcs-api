@@ -336,4 +336,72 @@ class PcsCaseServiceTest {
         return addressEntity;
     }
 
+    @Test
+    void shouldUseAmendedDailyRentAmountWhenAvailable() {
+        // Given
+        PCSCase pcsCase = mock(PCSCase.class);
+
+        when(pcsCase.getAmendedDailyRentChargeAmount()).thenReturn("50.00");
+        when(pcsCase.getCalculatedDailyRentChargeAmount()).thenReturn("40.00");
+        when(pcsCase.getDailyRentChargeAmount()).thenReturn("35.00");
+
+        when(pcsCase.getCurrentRent()).thenReturn("1200.00");
+        when(pcsCase.getRentFrequency()).thenReturn(RentPaymentFrequency.MONTHLY);
+
+        // When
+        underTest.createCase(CASE_REFERENCE, pcsCase);
+
+        // Then
+        verify(pcsCaseRepository).save(pcsCaseEntityCaptor.capture());
+        TenancyLicence result = pcsCaseEntityCaptor.getValue().getTenancyLicence();
+
+        assertThat(result.getDailyRentChargeAmount()).isEqualTo(new BigDecimal("50.00"));
+    }
+
+    @Test
+    void shouldUseCalculatedDailyRentAmountWhenAmendedNotAvailable() {
+        // Given
+        PCSCase pcsCase = mock(PCSCase.class);
+
+        when(pcsCase.getAmendedDailyRentChargeAmount()).thenReturn(null);
+        when(pcsCase.getCalculatedDailyRentChargeAmount()).thenReturn("40.00");
+        when(pcsCase.getDailyRentChargeAmount()).thenReturn("35.00");
+
+        when(pcsCase.getCurrentRent()).thenReturn("1200.00");
+        when(pcsCase.getRentFrequency()).thenReturn(RentPaymentFrequency.MONTHLY);
+
+        // When
+        underTest.createCase(CASE_REFERENCE, pcsCase);
+
+        // Then
+        verify(pcsCaseRepository).save(pcsCaseEntityCaptor.capture());
+        TenancyLicence result = pcsCaseEntityCaptor.getValue().getTenancyLicence();
+
+        assertThat(result.getDailyRentChargeAmount()).isEqualTo(new BigDecimal("40.00"));
+    }
+
+    @Test
+    void shouldUseDailyRentChargeAmountWhenOthersNotAvailable() {
+        // Given
+        PCSCase pcsCase = mock(PCSCase.class);
+        
+
+        when(pcsCase.getAmendedDailyRentChargeAmount()).thenReturn(null);
+        when(pcsCase.getCalculatedDailyRentChargeAmount()).thenReturn(null);
+        when(pcsCase.getDailyRentChargeAmount()).thenReturn("35.00");
+        
+        when(pcsCase.getCurrentRent()).thenReturn("1200.00");
+        when(pcsCase.getRentFrequency()).thenReturn(RentPaymentFrequency.MONTHLY);
+
+        // When
+        underTest.createCase(CASE_REFERENCE, pcsCase);
+
+        // Then
+        verify(pcsCaseRepository).save(pcsCaseEntityCaptor.capture());
+        TenancyLicence result = pcsCaseEntityCaptor.getValue().getTenancyLicence();
+        
+        assertThat(result.getDailyRentChargeAmount()).isEqualTo(new BigDecimal("35.00"));
+
+    }
+
 }
