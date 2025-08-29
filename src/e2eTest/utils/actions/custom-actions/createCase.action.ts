@@ -200,10 +200,11 @@ export class CreateCaseAction implements IAction {
       rentFrequencyOption: string;
       rentAmount?: string;
       unpaidRentAmountPerDay?: string,
+      inputFrequency?: string
     };
     await performAction('clickRadioButton', rentData.rentFrequencyOption);
     if(rentData.rentFrequencyOption == 'Other'){
-      await performAction('inputText', rentDetails.rentFrequencyLabel, rentDetails.rentFrequency);
+      await performAction('inputText', rentDetails.rentFrequencyLabel, rentData.inputFrequency);
       await performAction('inputText', rentDetails.amountPerDayInputLabel, rentData.unpaidRentAmountPerDay);
     } else {
       await performAction('inputText', rentDetails.HowMuchRentLabel, rentData.rentAmount);
