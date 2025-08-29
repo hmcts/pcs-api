@@ -52,7 +52,7 @@ test.describe.skip('[Create Case Flow With Address and Claimant Type]  @Master @
       day: tenancyLicenceDetails.day,
       month: tenancyLicenceDetails.month,
       year: tenancyLicenceDetails.year,
-      files: ['SampleDocx.docx', 'SamplePNG.png']
+      files: ['sampleDocx.docx', 'samplePNG.png']
     });
     await performValidation('mainHeader', groundsForPossession.mainHeader);
     await performAction('selectGroundsForPossission', groundsForPossession.yes);
