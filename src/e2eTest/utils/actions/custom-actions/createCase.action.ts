@@ -11,6 +11,7 @@ import { housingPossessionClaim } from '@data/page-data/housingPossessionClaim.p
 import { claimantName } from '@data/page-data/claimantName.page.data';
 import { contactPreferences } from '@data/page-data/contactPreferences.page.data';
 import { mediationAndSettlement } from '@data/page-data/mediationAndSettlement.page.data';
+import { reasonsForPossession } from "@data/page-data/reasonForPossession.page.data";
 
 let caseInfo: { id: string; fid: string; state: string };
 const testConfig = TestConfig.ccdCase;
@@ -34,6 +35,8 @@ export class CreateCaseAction implements IAction {
       ['selectClaimantName', () => this.selectClaimantName(fieldName)],
       ['selectContactPreferences', () => this.selectContactPreferences(fieldName)],
       ['selectGroundsForPossission', () => this.selectGroundsForPossission(fieldName)],
+      ['selectMandatoryAndDiscretionaryGrounds', () => this.selectMandatoryAndDiscretionaryGrounds(fieldName)],
+      ['enterReasonForPossession', () => this.enterReasonForPossession(fieldName)],
       ['selectPreActionProtocol', () => this.selectPreActionProtocol(fieldName)],
       ['selectMediationAndSettlement', () => this.selectMediationAndSettlement(fieldName)],
       ['selectNoticeOfYourIntention', () => this.selectNoticeOfYourIntention(fieldName)],
@@ -89,6 +92,28 @@ export class CreateCaseAction implements IAction {
 
   private async selectGroundsForPossission(caseData: actionData) {
     await performAction('clickRadioButton', caseData);
+    await performAction('clickButton', 'Continue');
+  }
+
+  private async selectMandatoryAndDiscretionaryGrounds(caseData: actionData) {
+    // if (typeof caseData === 'object' && caseData !== null && 'list1' in caseData && 'list2' in caseData) {
+    //   const combined = [...(caseData as any).list1, ...(caseData as any).list2];
+    const grounds = caseData as Record<string, string[]>;
+    const groundsToBeSelected = Object.values(grounds).flat();
+
+      for (const selectGround of groundsToBeSelected) {
+        await performAction('check', selectGround);
+      }
+      await performAction('clickButton', 'Continue');
+    //}
+  }
+
+  private async enterReasonForPossession(caseData: actionData) {
+    if (Array.isArray(caseData)) {
+      for (const selectedGround of caseData) {
+        await performAction('inputText', selectedGround,reasonsForPossession.explanation);
+      }
+    }
     await performAction('clickButton', 'Continue');
   }
 
