@@ -15,7 +15,6 @@ import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 import uk.gov.hmcts.reform.pcs.postcodecourt.exception.EligibilityCheckException;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.EligibilityResult;
-import uk.gov.hmcts.reform.pcs.postcodecourt.model.EligibilityStatus;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.postcodecourt.service.EligibilityService;
 
@@ -57,11 +56,26 @@ public class EnterPropertyAddress implements CcdPageConfiguration {
         caseData.setFormattedClaimantContactAddress(formattedAddress);
 
         EligibilityResult eligibilityResult = eligibilityService.checkEligibility(postcode, null);
-        if (eligibilityResult.getStatus() == EligibilityStatus.LEGISLATIVE_COUNTRY_REQUIRED) {
-            validateLegislativeCountries(eligibilityResult.getLegislativeCountries(), postcode);
-            setupCrossBorderData(caseData, eligibilityResult.getLegislativeCountries());
-        } else {
-            caseData.setShowCrossBorderPage(YesOrNo.NO);
+        log.debug("EnterPropertyAddress eligibility check: {} for postcode {} with countries {}",
+            eligibilityResult.getStatus(), postcode, eligibilityResult.getLegislativeCountries());
+
+        switch (eligibilityResult.getStatus()) {
+            case LEGISLATIVE_COUNTRY_REQUIRED -> {
+                validateLegislativeCountries(eligibilityResult.getLegislativeCountries(), postcode);
+                setupCrossBorderData(caseData, eligibilityResult.getLegislativeCountries());
+            }
+            case NOT_ELIGIBLE -> {
+                var country = eligibilityResult.getLegislativeCountry() != null
+                    ? eligibilityResult.getLegislativeCountry().getLabel()
+                    : null;
+                caseData.setShowCrossBorderPage(YesOrNo.NO);
+                caseData.setShowPropertyNotEligiblePage(YesOrNo.YES);
+
+                caseData.setLegislativeCountry(country);
+            }
+            case ELIGIBLE, NO_MATCH_FOUND -> {
+                caseData.setShowCrossBorderPage(YesOrNo.NO);
+            }
         }
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
