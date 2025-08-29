@@ -9,6 +9,8 @@ import { claimType } from '@data/page-data/claimType.page.data';
 import { claimantName } from '@data/page-data/claimantName.page.data';
 import { contactPreferences } from '@data/page-data/contactPreferences.page.data';
 import { groundsForPossession } from '@data/page-data/groundsForPossession.page.data';
+import { whatAreYourGrounds } from "@data/page-data/mandatoryAndDiscretionaryGrounds.page.data";
+import { reasonsForPossession } from "@data/page-data/reasonForPossession.page.data";
 import { preActionProtocol } from '@data/page-data/preActionProtocol.page.data';
 import { mediationAndSettlement } from '@data/page-data/mediationAndSettlement.page.data';
 import { checkingNotice } from '@data/page-data/checkingNotice.page.data';
@@ -46,7 +48,17 @@ test.describe.skip('[Create Case Flow With Address and Claimant Type]  @Master @
       phoneNumber: contactPreferences.no
     });
     await performValidation('mainHeader', groundsForPossession.mainHeader);
-    await performAction('selectGroundsForPossission', groundsForPossession.yes);
+    await performAction('selectGroundsForPossession', groundsForPossession.no);
+    await performValidation('mainHeader', whatAreYourGrounds.mainHeader);
+    await performAction('selectMandatoryAndDiscretionaryGrounds', {
+      mandatory : [whatAreYourGrounds.mandatory.holidayLet,whatAreYourGrounds.mandatory.ownerOccupier],
+      discretionary :[whatAreYourGrounds.discretionary.domesticViolence,whatAreYourGrounds.discretionary.rentArrears]
+      });
+    await performValidation('mainHeader', reasonsForPossession.mainHeader);
+    await performAction('enterReasonForPossession'
+      , [whatAreYourGrounds.mandatory.holidayLet,whatAreYourGrounds.mandatory.ownerOccupier
+      , whatAreYourGrounds.discretionary.domesticViolence,whatAreYourGrounds.discretionary.rentArrears]
+      );
     await performValidation('mainHeader', preActionProtocol.mainHeader);
     await performAction('selectPreActionProtocol', preActionProtocol.yes);
     await performValidation('mainHeader', mediationAndSettlement.mainHeader);
