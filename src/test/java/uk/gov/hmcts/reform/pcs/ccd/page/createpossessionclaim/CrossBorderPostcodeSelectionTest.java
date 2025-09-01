@@ -118,7 +118,7 @@ class CrossBorderPostcodeSelectionTest extends BasePageTest {
 
         if (status == EligibilityStatus.NO_MATCH_FOUND) {
             assertThat(resultData.getShowPostcodeNotAssignedToCourt()).isEqualTo(YesOrNo.YES);
-            assertThat(resultData.getLegislativeCountry()).isEqualTo(selectedCountry.getLabel());
+            assertThat(resultData.getLegislativeCountry()).isEqualTo(selectedCountry);
 
             switch (selectedCountry) {
                 case ENGLAND -> assertThat(resultData.getPostcodeNotAssignedView()).isEqualTo("ENGLAND");
