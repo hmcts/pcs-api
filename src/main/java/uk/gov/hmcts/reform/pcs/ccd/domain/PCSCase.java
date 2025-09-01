@@ -13,6 +13,7 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseworkerAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenAccess;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
+import java.time.LocalDateTime;
 
 import java.util.List;
 
@@ -262,5 +263,62 @@ public class PCSCase {
 
     @CCD(access = {CitizenAccess.class, CaseworkerAccess.class})
     private List<ListValue<DefendantDetails>> defendants;
+    
+    // Notice Details fields
+    @CCD(
+        access = {CitizenAccess.class, CaseworkerAccess.class}
+    )
+    private NoticeServiceMethod noticeServiceMethod;
+
+    // Date fields for different service methods
+    @CCD(
+        access = {CitizenAccess.class, CaseworkerAccess.class},
+        typeOverride = FieldType.Date
+    )
+    private String noticePostedDate;
+
+    @CCD(
+        access = {CitizenAccess.class, CaseworkerAccess.class},
+        typeOverride = FieldType.Date
+    )
+    private String noticeDeliveredDate;
+
+    @CCD(
+        access = {CitizenAccess.class, CaseworkerAccess.class}
+    )
+    private LocalDateTime noticeHandedOverDateTime;
+
+    @CCD(
+        access = {CitizenAccess.class, CaseworkerAccess.class}
+    )
+    private LocalDateTime noticeEmailSentDateTime;
+
+    @CCD(
+        access = {CitizenAccess.class, CaseworkerAccess.class}
+    )
+    private LocalDateTime noticeOtherElectronicDateTime;
+
+    @CCD(
+        access = {CitizenAccess.class, CaseworkerAccess.class}
+    )
+    private LocalDateTime noticeOtherDateTime;
+
+    // Text fields for different service methods
+    @CCD(
+        access = {CitizenAccess.class, CaseworkerAccess.class}
+    )
+    private String noticePersonName;
+
+    @CCD(
+        access = {CitizenAccess.class, CaseworkerAccess.class},
+        typeOverride = TextArea
+    )
+    private String noticeEmailExplanation;
+
+    @CCD(
+        access = {CitizenAccess.class, CaseworkerAccess.class},
+        typeOverride = TextArea
+    )
+    private String noticeOtherExplanation;
 
 }
