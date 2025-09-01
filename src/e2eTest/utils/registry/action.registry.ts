@@ -16,6 +16,7 @@ export class ActionRegistry {
     ['inputText', new InputTextAction()],
     ['check', new CheckAction()],
     ['select', new SelectAction()],
+    ['createUserAndLogin', new LoginAction()],
     ['login', new LoginAction()],
     ['navigateToUrl', new NavigateToUrl()],
     ['clickRadioButton', new ClickRadioButton()],
