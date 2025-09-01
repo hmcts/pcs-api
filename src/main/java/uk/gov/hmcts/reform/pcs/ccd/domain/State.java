@@ -15,6 +15,13 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenAccess;
 public enum State {
 
     @CCD(
+        label = "Awaiting further claim details",
+        access = {CaseworkerAccess.class},
+        hint = "${pageHeadingMarkdown}"
+    )
+    AWAITING_FURTHER_CLAIM_DETAILS,
+
+    @CCD(
         label = "Awaiting Submission to HMCTS",
         access = {CitizenAccess.class}
     )

@@ -18,6 +18,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
+import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
@@ -51,6 +52,26 @@ class PcsCaseServiceTest {
     @BeforeEach
     void setUp() {
         underTest = new PcsCaseService(pcsCaseRepository, securityContextService, modelMapper);
+    }
+
+    @Test
+    void shouldCreateCaseWithAddressAndLegislativeCountry() {
+        // Given
+        AddressUK propertyAddress = mock(AddressUK.class);
+        AddressEntity propertyAddressEntity = mock(AddressEntity.class);
+        LegislativeCountry legislativeCountry = mock(LegislativeCountry.class);
+
+        when(modelMapper.map(propertyAddress, AddressEntity.class)).thenReturn(propertyAddressEntity);
+
+        // When
+        underTest.createCase(CASE_REFERENCE, propertyAddress, legislativeCountry);
+
+        // Then
+        verify(pcsCaseRepository).save(pcsCaseEntityCaptor.capture());
+        PcsCaseEntity savedEntity = pcsCaseEntityCaptor.getValue();
+        assertThat(savedEntity.getCaseReference()).isEqualTo(CASE_REFERENCE);
+        assertThat(savedEntity.getPropertyAddress()).isEqualTo(propertyAddressEntity);
+        assertThat(savedEntity.getLegislativeCountry()).isEqualTo(legislativeCountry);
     }
 
     @Test
