@@ -1,5 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim;
 
+import java.math.BigDecimal;
+
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
@@ -33,8 +35,8 @@ public class RentDetails implements CcdPageConfiguration {
         PCSCase caseData = details.getData();
 
         if (caseData.getRentFrequency() != RentPaymentFrequency.OTHER) {
-            int rentAmountInPence = Integer.parseInt(caseData.getCurrentRent());
-            int dailyAmountInPence = calculateDailyRent(rentAmountInPence, caseData.getRentFrequency());
+            BigDecimal rentAmountInPence = new BigDecimal(caseData.getCurrentRent());
+            BigDecimal dailyAmountInPence = calculateDailyRent(rentAmountInPence, caseData.getRentFrequency());
             String dailyAmountString = String.valueOf(dailyAmountInPence);
 
             caseData.setCalculatedDailyRentChargeAmount(dailyAmountString);
@@ -47,8 +49,8 @@ public class RentDetails implements CcdPageConfiguration {
                 .build();
     }
 
-    private int calculateDailyRent(int rentAmountInPence, RentPaymentFrequency frequency) {
-        double divisor;
+    private BigDecimal calculateDailyRent(BigDecimal rentAmountInPence, RentPaymentFrequency frequency) {
+        double divisor = 0;
 
         switch (frequency) {
             case WEEKLY:
@@ -60,10 +62,8 @@ public class RentDetails implements CcdPageConfiguration {
             case MONTHLY:
                 divisor = 30.44;
                 break;
-            default:
-                return rentAmountInPence;
         }
 
-        return (int) Math.round(rentAmountInPence / divisor);
+        return new BigDecimal(Math.round(rentAmountInPence.doubleValue() / divisor));
     }
 }

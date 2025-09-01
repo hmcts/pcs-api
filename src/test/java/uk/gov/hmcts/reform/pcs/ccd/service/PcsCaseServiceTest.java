@@ -12,7 +12,6 @@ import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PaymentStatus;
-import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicence;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
@@ -20,12 +19,10 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
-import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
-import uk.gov.hmcts.reform.pcs.ccd.domain.RentPaymentFrequency;
+import uk.gov.hmcts.reform.pcs.ccd.service.TenancyLicenceService;
 
 import java.util.Optional;
 import java.util.UUID;
-import java.math.BigDecimal;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
@@ -47,12 +44,14 @@ class PcsCaseServiceTest {
     private ModelMapper modelMapper;
     @Captor
     private ArgumentCaptor<PcsCaseEntity> pcsCaseEntityCaptor;
+    private TenancyLicenceService tenancyLicenceService;
 
     private PcsCaseService underTest;
 
     @BeforeEach
     void setUp() {
-        underTest = new PcsCaseService(pcsCaseRepository, securityContextService, modelMapper);
+        tenancyLicenceService = mock(TenancyLicenceService.class);
+        underTest = new PcsCaseService(pcsCaseRepository, securityContextService, modelMapper, tenancyLicenceService);
     }
 
     @Test
@@ -286,122 +285,10 @@ class PcsCaseServiceTest {
         assertThat(pcsCaseEntityCaptor.getValue()).isSameAs(existingPcsCaseEntity);
     }
 
-    // Test for tenancy_licence JSON creation, temporary until Data Model is finalised
-    @Test
-    void shouldSetTenancyLicence() {
-        // Test notice_served field updates
-        assertTenancyLicenceField(
-                pcsCase -> when(pcsCase.getNoticeServed()).thenReturn(YesOrNo.YES),
-                expected -> assertThat(expected.getNoticeServed()).isTrue());
-        assertTenancyLicenceField(
-                pcsCase -> when(pcsCase.getNoticeServed()).thenReturn(YesOrNo.NO),
-                expected -> assertThat(expected.getNoticeServed()).isFalse());
-
-        // Test rent amount field
-        assertTenancyLicenceField(
-                pcsCase -> when(pcsCase.getCurrentRent()).thenReturn("1200.50"),
-                expected -> assertThat(expected.getRentAmount()).isEqualTo(new BigDecimal("1200.50")));
-
-        // Test rent payment frequency field
-        assertTenancyLicenceField(
-                pcsCase -> when(pcsCase.getRentFrequency()).thenReturn(RentPaymentFrequency.MONTHLY),
-                expected -> assertThat(expected.getRentPaymentFrequency()).isEqualTo(RentPaymentFrequency.MONTHLY));
-
-        // Test other rent frequency field
-        assertTenancyLicenceField(
-                pcsCase -> when(pcsCase.getOtherRentFrequency()).thenReturn("Bi-weekly"),
-                expected -> assertThat(expected.getOtherRentFrequency()).isEqualTo("Bi-weekly"));
-
-        // Test daily rent charge amount field
-        assertTenancyLicenceField(
-                pcsCase -> when(pcsCase.getDailyRentChargeAmount()).thenReturn("40.00"),
-                expected -> assertThat(expected.getDailyRentChargeAmount()).isEqualTo(new BigDecimal("40.00")));
-    }
-
-    private void assertTenancyLicenceField(java.util.function.Consumer<PCSCase> setupMock,
-            java.util.function.Consumer<TenancyLicence> assertions) {
-        PCSCase pcsCase = mock(PCSCase.class);
-        setupMock.accept(pcsCase);
-        when(pcsCaseRepository.save(pcsCaseEntityCaptor.capture())).thenReturn(null);
-
-        underTest.createCase(CASE_REFERENCE, pcsCase);
-
-        TenancyLicence actual = pcsCaseEntityCaptor.getValue().getTenancyLicence();
-        assertions.accept(actual);
-    }
-
     private AddressEntity stubAddressUKModelMapper(AddressUK addressUK) {
         AddressEntity addressEntity = mock(AddressEntity.class);
         when(modelMapper.map(addressUK, AddressEntity.class)).thenReturn(addressEntity);
         return addressEntity;
-    }
-
-    @Test
-    void shouldUseAmendedDailyRentAmountWhenAvailable() {
-        // Given
-        PCSCase pcsCase = mock(PCSCase.class);
-
-        when(pcsCase.getAmendedDailyRentChargeAmount()).thenReturn("50.00");
-        when(pcsCase.getCalculatedDailyRentChargeAmount()).thenReturn("40.00");
-        when(pcsCase.getDailyRentChargeAmount()).thenReturn("35.00");
-
-        when(pcsCase.getCurrentRent()).thenReturn("1200.00");
-        when(pcsCase.getRentFrequency()).thenReturn(RentPaymentFrequency.MONTHLY);
-
-        // When
-        underTest.createCase(CASE_REFERENCE, pcsCase);
-
-        // Then
-        verify(pcsCaseRepository).save(pcsCaseEntityCaptor.capture());
-        TenancyLicence result = pcsCaseEntityCaptor.getValue().getTenancyLicence();
-
-        assertThat(result.getDailyRentChargeAmount()).isEqualTo(new BigDecimal("50.00"));
-    }
-
-    @Test
-    void shouldUseCalculatedDailyRentAmountWhenAmendedNotAvailable() {
-        // Given
-        PCSCase pcsCase = mock(PCSCase.class);
-
-        when(pcsCase.getAmendedDailyRentChargeAmount()).thenReturn(null);
-        when(pcsCase.getCalculatedDailyRentChargeAmount()).thenReturn("40.00");
-        when(pcsCase.getDailyRentChargeAmount()).thenReturn("35.00");
-
-        when(pcsCase.getCurrentRent()).thenReturn("1200.00");
-        when(pcsCase.getRentFrequency()).thenReturn(RentPaymentFrequency.MONTHLY);
-
-        // When
-        underTest.createCase(CASE_REFERENCE, pcsCase);
-
-        // Then
-        verify(pcsCaseRepository).save(pcsCaseEntityCaptor.capture());
-        TenancyLicence result = pcsCaseEntityCaptor.getValue().getTenancyLicence();
-
-        assertThat(result.getDailyRentChargeAmount()).isEqualTo(new BigDecimal("40.00"));
-    }
-
-    @Test
-    void shouldUseDailyRentChargeAmountWhenOthersNotAvailable() {
-        // Given
-        PCSCase pcsCase = mock(PCSCase.class);
-        
-
-        when(pcsCase.getAmendedDailyRentChargeAmount()).thenReturn(null);
-        when(pcsCase.getCalculatedDailyRentChargeAmount()).thenReturn(null);
-        when(pcsCase.getDailyRentChargeAmount()).thenReturn("35.00");
-        
-        when(pcsCase.getCurrentRent()).thenReturn("1200.00");
-        when(pcsCase.getRentFrequency()).thenReturn(RentPaymentFrequency.MONTHLY);
-
-        // When
-        underTest.createCase(CASE_REFERENCE, pcsCase);
-
-        // Then
-        verify(pcsCaseRepository).save(pcsCaseEntityCaptor.capture());
-        TenancyLicence result = pcsCaseEntityCaptor.getValue().getTenancyLicence();
-        
-        assertThat(result.getDailyRentChargeAmount()).isEqualTo(new BigDecimal("35.00"));
-
     }
 
 }

@@ -6,16 +6,13 @@ import org.springframework.stereotype.Service;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicence;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
-import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 
-import java.math.BigDecimal;
 import java.util.UUID;
 
 @Service
@@ -25,6 +22,7 @@ public class PcsCaseService {
     private final PcsCaseRepository pcsCaseRepository;
     private final SecurityContextService securityContextService;
     private final ModelMapper modelMapper;
+    private TenancyLicenceService tenancyLicenceService;
 
     public PcsCaseEntity createCase(long caseReference, PCSCase pcsCase) {
         AddressUK applicantAddress = pcsCase.getPropertyAddress();
@@ -41,7 +39,7 @@ public class PcsCaseService {
                         ? pcsCase.getPreActionProtocolCompleted().toBoolean()
                         : null);
 
-        pcsCaseEntity.setTenancyLicence(buildTenancyLicence(pcsCase));
+        pcsCaseEntity.setTenancyLicence(tenancyLicenceService.buildTenancyLicence(pcsCase));
 
         return pcsCaseRepository.save(pcsCaseEntity);
     }
@@ -96,38 +94,5 @@ public class PcsCaseService {
         party.setSurname(userDetails.getFamilyName());
         party.setActive(true);
         return party;
-    }
-
-    //Temporary method to create tenancy_licence JSON and related fields
-    // Data in this JSON will likely be moved to a dedicated entity in the future
-    private TenancyLicence buildTenancyLicence(PCSCase pcsCase) {
-        return TenancyLicence.builder()
-                .noticeServed(toBooleanOrNull(pcsCase.getNoticeServed()))
-                .rentAmount(pcsCase.getCurrentRent() != null 
-                    ? new BigDecimal(pcsCase.getCurrentRent()) : null)
-                .rentPaymentFrequency(pcsCase.getRentFrequency())
-                .otherRentFrequency(pcsCase.getOtherRentFrequency())
-                .dailyRentChargeAmount(getDailyRentAmount(pcsCase) != null ? getDailyRentAmount(pcsCase) : null)
-                .build();
-    }
-
-    private static Boolean toBooleanOrNull(YesOrNo yesOrNo) {
-        return yesOrNo != null ? yesOrNo.toBoolean() : null;
-    }
-
-    private BigDecimal getDailyRentAmount(PCSCase pcsCase) {
-        String[] fieldValues = {
-            pcsCase.getAmendedDailyRentChargeAmount(),
-            pcsCase.getCalculatedDailyRentChargeAmount(),
-            pcsCase.getDailyRentChargeAmount()
-        };
-
-        for (String value : fieldValues) {
-            if (value != null && !value.trim().isEmpty()) {
-                return new BigDecimal(value);
-            }
-        }
-
-        return null;
     }
 }
