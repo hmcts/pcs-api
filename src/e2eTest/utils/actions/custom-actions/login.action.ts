@@ -9,14 +9,14 @@ export class LoginAction implements IAction {
   async execute(page: Page, action: string, userType?: actionData, roles?: actionData): Promise<void> {
     const actionsMap = new Map<string, () => Promise<void>>([
       ['createUserAndLogin', () => this.createUserAndLogin(userType as string, roles as string[])],
-      ['re-login', () => this.reLogin()],
+      ['re-login', () => this.login()],
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) throw new Error(`No action found for '${action}'`);
     await actionToPerform();
   }
 
-  private async reLogin() {
+  private async login() {
     await performAction('inputText', 'Email address', process.env.IDAM_PCS_USER_EMAIL);
     await performAction('inputText', 'Password', process.env.IDAM_PCS_USER_PASSWORD);
     await performAction('clickButton', 'Sign in');
@@ -39,6 +39,6 @@ export class LoginAction implements IAction {
         roleNames: roles
       }
     });
-    await this.reLogin();
+    await this.login();
   }
 }
