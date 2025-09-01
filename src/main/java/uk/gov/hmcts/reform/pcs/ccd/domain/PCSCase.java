@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.domain;
 
+import java.util.Arrays;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -12,6 +13,9 @@ import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.FieldType;
+
+import static java.util.Locale.ROOT;
+import static org.apache.commons.lang3.StringUtils.substringAfterLast;
 import static uk.gov.hmcts.ccd.sdk.type.FieldType.DynamicRadioList;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
@@ -199,6 +203,7 @@ public class PCSCase {
 
     @CCD(
         label = "Supporting documents Category A",
+        regex = ".pdf,.doc,.jpg,.jpeg",
         typeOverride = Collection,
         typeParameterOverride = "Document",
         access = {CitizenAccess.class, CaseworkerAccess.class},
@@ -218,6 +223,21 @@ public class PCSCase {
     @JsonProperty("supportingDocumentsCategoryB")
     private List<ListValue<Document>> supportingDocumentsCategoryB;
 
+    @JsonIgnore
+    public boolean isDocumentValid() {
+        return isDocumentValid("pdf,doc,jpg,jpeg");
+    }
+
+    public boolean isDocumentValid(String validExtensions) {
+        if (supportingDocumentsCategoryA == null || supportingDocumentsCategoryA.isEmpty()) {
+            return false;
+        }
+        // Get the first document from Category A
+        Document document = supportingDocumentsCategoryA.get(0).getValue();
+        String fileName = document.getFilename();
+        String fileExtension = substringAfterLast(fileName, ".");
+        return fileExtension != null && Arrays.asList(validExtensions.split(",")).contains(fileExtension.toLowerCase(ROOT));
+    }
 
     @CCD(
         label = "Case file view",
