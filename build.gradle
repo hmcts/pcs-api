@@ -431,6 +431,12 @@ project.tasks.named("processSmokeTestResources") {
   duplicatesStrategy = 'include'
 }
 
+tasks.named('test') {
+  doFirst {
+    jvmArgs += "-javaagent:${configurations.mockitoAgent.asPath}"
+  }
+}
+
 tasks.withType(CftlibExec).configureEach {
   group = 'ccd tasks'
   authMode = AuthMode.Local

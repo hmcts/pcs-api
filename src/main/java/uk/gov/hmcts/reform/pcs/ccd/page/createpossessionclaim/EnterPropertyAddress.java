@@ -70,11 +70,17 @@ public class EnterPropertyAddress implements CcdPageConfiguration {
                     : null;
                 caseData.setShowCrossBorderPage(YesOrNo.NO);
                 caseData.setShowPropertyNotEligiblePage(YesOrNo.YES);
-
                 caseData.setLegislativeCountry(country);
             }
-            case ELIGIBLE, NO_MATCH_FOUND -> {
+            case NO_MATCH_FOUND -> {
+                log.debug("No court found for postcode: {}", postcode);
+                caseData.setShowPostcodeNotAssignedToCourt(YesOrNo.YES);
+                caseData.setPostcodeNotAssignedView("ALL_COUNTRIES");
                 caseData.setShowCrossBorderPage(YesOrNo.NO);
+            }
+            case ELIGIBLE -> {
+                caseData.setShowCrossBorderPage(YesOrNo.NO);
+                caseData.setShowPostcodeNotAssignedToCourt(YesOrNo.NO);
             }
         }
 

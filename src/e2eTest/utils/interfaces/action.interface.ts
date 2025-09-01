@@ -1,6 +1,7 @@
 import {Page} from '@playwright/test';
 
-export type actionData = string | number | boolean | string[] | object | Record<string, string>;
+export type actionData = string | number | boolean | string[] | object ;
+export type actionRecord = Record<string, string>;
 
 export interface IAction {
   execute(
