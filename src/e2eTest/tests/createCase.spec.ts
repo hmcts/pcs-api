@@ -11,7 +11,7 @@ import { contactPreferences } from '@data/page-data/contactPreferences.page.data
 import { groundsForPossession } from '@data/page-data/groundsForPossession.page.data';
 import { preActionProtocol } from '@data/page-data/preActionProtocol.page.data';
 import { mediationAndSettlement } from '@data/page-data/mediationAndSettlement.page.data';
-import { checkingNotice } from '@data/page-data/checkingNotice.page.data';
+import { noticeOfYourIntention } from '@data/page-data/noticeOfYourIntention.page.data';
 import { noticeDetails } from '@data/page-data/noticeDetails.page.data';
 import { rentDetails } from '@data/page-data/rentDetails.page.data';
 import { userIneligible } from '@data/page-data/userIneligible.page.data';
@@ -54,12 +54,12 @@ test.describe.skip('[Create Case Flow With Address and Claimant Type]  @Master @
       attemptedMediationWithDefendantsOption: mediationAndSettlement.yes,
       settlementWithDefendantsOption: mediationAndSettlement.no,
     });
-    await performValidation('mainHeader', checkingNotice.mainHeader);
-    await performValidation('text', {"text": checkingNotice.guidanceOnPosessionNoticePeriodsLink, "elementType": "paragraphLink"})
-    await performValidation('text', {"text": checkingNotice.servedNoticeInteractiveText, "elementType": "inlineText"});
-    await performAction('selectNoticeOfYourIntention', checkingNotice.yes);
+    await performValidation('mainHeader', noticeOfYourIntention.mainHeader);
+    await performValidation('text', {"text": noticeOfYourIntention.guidanceOnPosessionNoticePeriodsLink, "elementType": "paragraphLink"})
+    await performValidation('text', {"text": noticeOfYourIntention.servedNoticeInteractiveText, "elementType": "inlineText"});
+    await performAction('selectNoticeOfYourIntention', noticeOfYourIntention.yes);
     await performValidation('mainHeader', noticeDetails.mainHeader);
-    await performAction('clickButton', checkingNotice.continue);
+    await performAction('clickButton', noticeOfYourIntention.continue);
     await performAction('clickButton', noticeDetails.continue);
     await performAction('clickButton', 'Save and continue');
     await performValidation('bannerAlert', 'Case #.* has been created.');
@@ -91,8 +91,8 @@ test.describe.skip('[Create Case Flow With Address and Claimant Type]  @Master @
       attemptedMediationWithDefendantsOption: mediationAndSettlement.yes,
       settlementWithDefendantsOption: mediationAndSettlement.no,
     });
-    await performValidation('mainHeader', checkingNotice.mainHeader);
-    await performAction('selectNoticeOfYourIntention', checkingNotice.no);
+    await performValidation('mainHeader', noticeOfYourIntention.mainHeader);
+    await performAction('selectNoticeOfYourIntention', noticeOfYourIntention.no);
     await performValidation('mainHeader', rentDetails.mainHeader);
     await performAction('clickButton', rentDetails.continue);
     await performAction('clickButton', 'Save and continue');
