@@ -60,6 +60,10 @@ public class UnsubmittedCaseDataService {
         unsubmittedCaseDataRepository.save(unsubmittedCaseDataEntity);
     }
 
+    public void deleteUnsubmittedCaseData(long caseReference) {
+        unsubmittedCaseDataRepository.deleteByCaseReference(caseReference);
+    }
+
     private PCSCase parseCaseDataJson(String caseDataJson) {
         try {
             return objectMapper.readValue(caseDataJson, PCSCase.class);
