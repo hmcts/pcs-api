@@ -5,14 +5,23 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
+import uk.gov.hmcts.ccd.sdk.type.DynamicListElement;
+import uk.gov.hmcts.ccd.sdk.type.DynamicMultiSelectList;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
+import uk.gov.hmcts.reform.pcs.ccd.domain.DiscretionaryGrounds;
+import uk.gov.hmcts.reform.pcs.ccd.domain.MandatoryGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType;
 
 import java.time.Clock;
 import java.time.LocalDate;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Component
 public class TenancyLicenceDetails implements CcdPageConfiguration {
@@ -65,10 +74,62 @@ public class TenancyLicenceDetails implements CcdPageConfiguration {
             .errors(List.of("Date the tenancy or licence began must be in the past"))
             .build();
         }
+
+        if(caseData.getTypeOfTenancyLicence() == TenancyLicenceType.SECURE_TENANCY
+        ||caseData.getTypeOfTenancyLicence() == TenancyLicenceType.FLEXIBLE_TENANCY )  {
+
+            caseData.setSecureOrFlexibleTenancyDiscretionaryGrounds(
+                    DynamicMultiSelectList.builder()
+                            .listItems(getDiscretionaryGroundOptions
+                                    (TenancyLicenceType.FLEXIBLE_TENANCY ,false)).value(Collections.emptyList())
+                            .build());
+            caseData.setSecureOrFlexibleTenancyDiscretionaryGrounds2(
+                    DynamicMultiSelectList.builder()
+                            .listItems(getDiscretionaryGroundOptions
+                                    (TenancyLicenceType.FLEXIBLE_TENANCY ,true)).value(Collections.emptyList())
+                            .build()
+            );
+            caseData.setSecureOrFlexibleTenancyMandatoryGrounds(
+                    DynamicMultiSelectList.builder()
+                            .listItems(getMandatoryGroundOptions
+                                    (TenancyLicenceType.FLEXIBLE_TENANCY ,false)).value(Collections.emptyList())
+                            .build()
+            );
+            caseData.setSecureOrFlexibleTenancyMandatoryGrounds2(
+                    DynamicMultiSelectList.builder()
+                            .listItems(getMandatoryGroundOptions
+                                    (TenancyLicenceType.FLEXIBLE_TENANCY ,true)).value(Collections.emptyList())
+                            .build()
+            );
+        }
+
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
             .data(caseData)
             .build();
     }
+
+    private  List<DynamicListElement> getDiscretionaryGroundOptions(
+            TenancyLicenceType tenancyType,
+            boolean alternativeAccommodationSection
+    ) {
+        return Arrays.stream(DiscretionaryGrounds.values())
+                .filter(g -> g.isApplicableFor(tenancyType))
+                .filter(g -> g.isAlternativeAccommodationAvailable() == alternativeAccommodationSection)
+                .map(g -> new DynamicListElement(UUID.randomUUID(), g.getLabel()))
+                .collect(Collectors.toList());
+    }
+
+    private  List<DynamicListElement> getMandatoryGroundOptions(
+            TenancyLicenceType tenancyType,
+            boolean alternativeAccommodationSection
+    ) {
+        return  Arrays.stream(MandatoryGrounds.values())
+                .filter(g -> g.isApplicableFor(tenancyType))
+                .filter(g -> g.isAlternativeAccommodationAvailable() == alternativeAccommodationSection)
+                .map(g -> new DynamicListElement(UUID.randomUUID(), g.getLabel()))
+                .collect(Collectors.toList());
+    }
+
 }
 
 
