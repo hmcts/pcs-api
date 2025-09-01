@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd;
 
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.DecentralisedCaseRepository;
@@ -11,6 +12,8 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PaymentStatus;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentCategory;
+import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.renderer.ClaimPaymentTabRenderer;
@@ -20,6 +23,8 @@ import uk.gov.hmcts.reform.pcs.ccd.utils.ListValueUtils;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+
+import uk.gov.hmcts.ccd.sdk.type.Document;
 
 import java.util.List;
 import java.util.Objects;
@@ -35,6 +40,7 @@ import java.util.stream.Stream;
  */
 @Component
 @AllArgsConstructor
+@Slf4j
 public class CCDCaseRepository extends DecentralisedCaseRepository<PCSCase> {
 
     private final PcsCaseRepository pcsCaseRepository;
@@ -53,16 +59,43 @@ public class CCDCaseRepository extends DecentralisedCaseRepository<PCSCase> {
         PcsCaseEntity pcsCaseEntity = loadCaseData(caseReference);
 
         PCSCase pcsCase = PCSCase.builder()
-            .propertyAddress(convertAddress(pcsCaseEntity.getPropertyAddress()))
-            .caseManagementLocation(pcsCaseEntity.getCaseManagementLocation())
-            .preActionProtocolCompleted(pcsCaseEntity.getPreActionProtocolCompleted() != null 
-                ? VerticalYesNo.from(pcsCaseEntity.getPreActionProtocolCompleted()) 
-                : null)
-            .build();
+                    .propertyAddress(convertAddress(pcsCaseEntity.getPropertyAddress()))
+                    .caseManagementLocation(pcsCaseEntity.getCaseManagementLocation())
+                    .supportingDocumentsCategoryA(mapDocuments(pcsCaseEntity.getDocuments(),
+                        DocumentCategory.CATEGORY_A.getLabel()))
+                    .supportingDocumentsCategoryB(mapDocuments(pcsCaseEntity.getDocuments(),
+                        DocumentCategory.CATEGORY_B.getLabel()))
+                    .preActionProtocolCompleted(pcsCaseEntity.getPreActionProtocolCompleted() != null
+                    ? VerticalYesNo.from(pcsCaseEntity.getPreActionProtocolCompleted())
+                    : null)
+                    .build();
 
         setDerivedProperties(caseReference,pcsCase, pcsCaseEntity);
 
         return pcsCase;
+    }
+
+    private List<ListValue<Document>> mapDocuments(Set<DocumentEntity> documentEntities, String categoryFilter) {
+        if (documentEntities == null || documentEntities.isEmpty()) {
+            return null;
+        }
+
+        return documentEntities.stream()
+            .filter(documentEntity -> String.valueOf(documentEntity.getCategory().getLabel()).equals(categoryFilter))
+            .map(docEntity -> {
+                Document document = Document.builder()
+                    .filename(docEntity.getFileName())
+                    .binaryUrl(docEntity.getFilePath())
+                    .url(docEntity.getFilePath())
+                    .categoryId(categoryFilter)
+                    .build();
+
+                return ListValue.<Document>builder()
+                    .id(docEntity.getId().toString())
+                    .value(document)
+                    .build();
+            })
+            .collect(Collectors.toList());
     }
 
     private void setDerivedProperties(long caseRef,PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {
