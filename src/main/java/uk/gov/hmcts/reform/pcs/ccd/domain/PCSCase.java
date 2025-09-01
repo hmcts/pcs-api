@@ -40,7 +40,7 @@ public class PCSCase {
         searchable = false,
         access = {CitizenAccess.class, CaseworkerAccess.class}
     )
-    private YesOrNo isClaimantNameCorrect;
+    private VerticalYesNo isClaimantNameCorrect;
 
     @CCD(
         access = {CitizenAccess.class, CaseworkerAccess.class}
