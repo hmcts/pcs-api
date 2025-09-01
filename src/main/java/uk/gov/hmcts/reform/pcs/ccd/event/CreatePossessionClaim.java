@@ -34,6 +34,7 @@ import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.EnterPropertyAddre
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.GroundsForPossession;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.MediationAndSettlement;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.NoticeDetails;
+import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.PostcodeNotAssignedToCourt;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.PreActionProtocol;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.PropertyNotEligible;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.RentDetails;
@@ -83,6 +84,7 @@ public class CreatePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             .add(enterPropertyAddress)
             .add(crossBorderPostcodeSelection)
             .add(propertyNotEligible)
+            .add(new PostcodeNotAssignedToCourt())
             .add(new SelectLegislativeCountry())
             .add(new SelectClaimantType())
             .add(new ClaimantTypeNotEligibleEngland())
