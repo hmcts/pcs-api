@@ -23,6 +23,7 @@ export class ActionRegistry {
     ['selectLegislativeCountry', new CreateCaseAction()],
     ['retrieveCaseId', new CreateCaseAction()],
     ['selectClaimantType', new CreateCaseAction()],
+    ['defendantDetails', new CreateCaseAction()],
     ['selectJurisdictionCaseTypeEvent', new CreateCaseAction()],
     ['enterTestAddressManually', new CreateCaseAction()],
     ['createCase', new CreateCaseAction()],
