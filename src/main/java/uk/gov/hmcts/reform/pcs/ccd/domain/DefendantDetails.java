@@ -51,7 +51,7 @@ public class DefendantDetails {
                 <h2>Defendant's email address</h2>""",typeOverride = FieldType.Label)
     private String emailSectionLabel;
 
-    @CCD(label = "Do you know the defendant's email address? (Optional)")
+    @CCD(label = "Do you know the defendant's email address?")
     private VerticalYesNo emailKnown;
 
     @CCD(label = "Enter email address",  typeOverride = FieldType.Email, showCondition = "emailKnown=\"YES\"")
