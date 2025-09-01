@@ -7,6 +7,7 @@ import uk.gov.hmcts.ccd.sdk.External;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.Document;
+import uk.gov.hmcts.ccd.sdk.type.DynamicMultiSelectList;
 import uk.gov.hmcts.ccd.sdk.type.FieldType;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
@@ -17,6 +18,7 @@ import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Set;
 
 import static uk.gov.hmcts.ccd.sdk.type.FieldType.DynamicRadioList;
 import static uk.gov.hmcts.ccd.sdk.type.FieldType.TextArea;
@@ -290,5 +292,78 @@ public class PCSCase {
         access = {CitizenAccess.class, CaseworkerAccess.class}
     )
     private List<ListValue<Document>> tenancyLicenceDocuments;
+
+
+    @CCD(
+        label = "Mandatory grounds",
+        hint = "Select all that apply",
+        access = {CaseworkerAccess.class}
+    )
+    private DynamicMultiSelectList secureOrFlexibleTenancyMandatoryGrounds;
+
+    @CCD(
+        label = "Mandatory grounds(if alternative accommodation available)",
+        hint = "Select all that apply",
+        access = {CaseworkerAccess.class}
+    )
+    private DynamicMultiSelectList secureOrFlexibleTenancyMandatoryGrounds2;
+
+    @CCD(
+        label = "Discretionary grounds",
+        hint = "Select all that apply",
+        access = {CaseworkerAccess.class}
+    )
+    private DynamicMultiSelectList secureOrFlexibleTenancyDiscretionaryGrounds;
+
+    @CCD(
+        label = "Discretionary grounds(if alternative accommodation available)",
+        hint = "Select all that apply",
+        access = {CaseworkerAccess.class}
+    )
+    private DynamicMultiSelectList secureOrFlexibleTenancyDiscretionaryGrounds2;
+
+
+    @CCD(
+        typeOverride = FieldType.MultiSelectList,
+        typeParameterOverride = "DiscretionaryGrounds",
+        access = {CaseworkerAccess.class}
+    )
+    private Set<DiscretionaryGrounds> selectedSecureOrFlexibleDiscretionaryGrounds;
+
+
+    @CCD(
+        typeOverride = FieldType.MultiSelectList,
+        typeParameterOverride = "MandatoryGrounds",
+        access = {CaseworkerAccess.class}
+    )
+    private Set<MandatoryGrounds> selectedSecureOrFlexibleMandatoryGrounds;
+
+
+    @CCD(
+        typeOverride = FieldType.MultiSelectList,
+        typeParameterOverride = "RentAreasOrBreachOfTenancy",
+        access = {CaseworkerAccess.class}
+    )
+    private RentAreasOrBreachOfTenancy rentAreasOrBreachOfTenancy;
+
+    @CCD(
+        label = "Why are you making a claim for possession under this ground?",
+        hint = "Give details about your reason for possession",
+        typeOverride = TextArea,
+        access = {CaseworkerAccess.class}
+
+    )
+    private String nuisancePossessionReason;
+
+    @CCD(
+        label = "Why are you making a claim for possession under this ground?",
+        hint = "Give details about your reason for possession",
+        typeOverride = TextArea,
+        access = {CaseworkerAccess.class}
+
+    )
+    private String breachOfTenancyPossessionReason;
+
+
 
 }

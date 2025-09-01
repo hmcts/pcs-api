@@ -31,14 +31,15 @@ import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.ContactPreferences
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.CrossBorderPostcodeSelection;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.DefendantsDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.EnterPropertyAddress;
-import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.GroundsForPossession;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.MediationAndSettlement;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.NoticeDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.PostcodeNotAssignedToCourt;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.PreActionProtocol;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.PropertyNotEligible;
-import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.RentDetails;
+import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.ReasonForPossession;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.RentArrears;
+import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.RentDetails;
+import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.SecureOrFlexibleGroundsForPossession;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.SelectClaimType;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.SelectClaimantType;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.SelectLegislativeCountry;
@@ -99,7 +100,9 @@ public class CreatePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             .add(new ContactPreferences())
             .add(new DefendantsDetails())
             .add(tenancyLicenceDetails)
-            .add(new GroundsForPossession())
+            .add(new SecureOrFlexibleGroundsForPossession())
+//            .add(new GroundsForPossession())
+            .add(new ReasonForPossession())
             .add(new PreActionProtocol())
             .add(new MediationAndSettlement())
             .add(new CheckingNotice())
