@@ -33,6 +33,7 @@ export class CreateCaseAction implements IAction {
       ['selectClaimType', () => this.selectClaimType(fieldName)],
       ['selectClaimantName', () => this.selectClaimantName(fieldName)],
       ['selectContactPreferences', () => this.selectContactPreferences(fieldName)],
+      ['selectRentArrearsPossessionGround', () => this.selectRentArrearsPossessionGround(fieldName)],
       ['selectGroundsForPossission', () => this.selectGroundsForPossission(fieldName)],
       ['selectPreActionProtocol', () => this.selectPreActionProtocol(fieldName)],
       ['selectMediationAndSettlement', () => this.selectMediationAndSettlement(fieldName)],
@@ -146,6 +147,30 @@ export class CreateCaseAction implements IAction {
       await performAction('inputText', 'Enter phone number', contactPreferences.phoneNumberInput);
     }
     await performAction('clickButton', 'Continue');
+  }
+
+  private async selectRentArrearsPossessionGround(rentArrearsPossessionGrounds: actionData) {
+    const rentArrearsGrounds = rentArrearsPossessionGrounds as {
+      rentArrears: string[];
+      mandatory?: string[];
+      discretionary?: string[];
+      otherGrounds: string;
+    };
+    for (const arrears of rentArrearsGrounds.rentArrears) {
+      await performAction('check', arrears);
+    }
+    await performAction('clickRadioButton', rentArrearsGrounds.otherGrounds);
+    if(rentArrearsGrounds.otherGrounds === 'Yes') {
+      if(rentArrearsGrounds.mandatory && rentArrearsGrounds.discretionary) {
+        for (const otherGround of rentArrearsGrounds.mandatory) {
+          await performAction('check', otherGround);
+        }
+        for (const otherGround of rentArrearsGrounds.discretionary) {
+          await performAction('check', otherGround);
+        }
+      }
+      await performAction('clickButton', 'Continue');
+    }
   }
 
   private async selectMediationAndSettlement(mediationSettlement: actionData) {
