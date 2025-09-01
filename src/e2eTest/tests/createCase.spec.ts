@@ -13,8 +13,8 @@ import { preActionProtocol } from '@data/page-data/preActionProtocol.page.data';
 import { mediationAndSettlement } from '@data/page-data/mediationAndSettlement.page.data';
 import { checkingNotice } from '@data/page-data/checkingNotice.page.data';
 import { noticeDetails } from '@data/page-data/noticeDetails.page.data';
-import { rentDetails } from '@data/page-data/rentDetails.page.data';
 import { userIneligible } from '@data/page-data/userIneligible.page.data';
+import { provideMoreDetailsOfClaim } from "@data/page-data/continueTheJourney.page.data";
 
 test.beforeEach(async ({page}, testInfo) => {
   initializeExecutor(page);
@@ -30,13 +30,18 @@ test.beforeEach(async ({page}, testInfo) => {
   await performAction('housingPossessionClaim');
 });
 
-test.describe.skip('[Create Case Flow With Address and Claimant Type]  @Master @nightly', async () => {
+test.describe('[Create Case Flow With Address and Claimant Type]  @Master @nightly', async () => {
   test('England - Successful case creation', async () => {
     await performAction('selectAddress', {
-      postcode: addressDetails.englandPostcode,
+      postcode: addressDetails.englandWalesCrossBorderPostcode,
       addressIndex: addressDetails.addressIndex
     });
+    await performAction('clickButton', 'Submit');
+
     await performAction('selectLegislativeCountry', legislativeCountry.england);
+    await performValidation('bannerAlert', 'Case #.* has been created.');
+    await performValidation('Header', {"text": provideMoreDetailsOfClaim.subHeader, "elementType": 'subHeader'});
+    await performAction('clickButton', provideMoreDetailsOfClaim.continue);
     await performAction('selectClaimantType', claimantType.registeredProviderForSocialHousing);
     await performAction('selectClaimType', claimType.no);
     await performAction('selectClaimantName', claimantName.yes);
@@ -45,24 +50,24 @@ test.describe.skip('[Create Case Flow With Address and Claimant Type]  @Master @
       correspondenceAddress: contactPreferences.yes,
       phoneNumber: contactPreferences.no
     });
-    await performValidation('mainHeader', groundsForPossession.mainHeader);
-    await performAction('selectGroundsForPossission', groundsForPossession.yes);
-    await performValidation('mainHeader', preActionProtocol.mainHeader);
+    await performValidation('Header', {"text": groundsForPossession.mainHeader, "elementType": 'mainHeader'});
+    await performAction('selectGroundsForPossession', groundsForPossession.yes);
+    await performValidation('Header', {"text": preActionProtocol.mainHeader, "elementType": 'mainHeader'});
     await performAction('selectPreActionProtocol', preActionProtocol.yes);
-    await performValidation('mainHeader', mediationAndSettlement.mainHeader);
+    await performValidation('Header', {"text": mediationAndSettlement.mainHeader, "elementType": 'mainHeader'});
     await performAction('selectMediationAndSettlement', {
       attemptedMediationWithDefendantsOption: mediationAndSettlement.yes,
       settlementWithDefendantsOption: mediationAndSettlement.no,
     });
-    await performValidation('mainHeader', checkingNotice.mainHeader);
+    await performValidation('Header', {"text": checkingNotice.mainHeader, "elementType": 'mainHeader'});
     await performValidation('text', {"text": checkingNotice.guidanceOnPosessionNoticePeriodsLink, "elementType": "paragraphLink"})
     await performValidation('text', {"text": checkingNotice.servedNoticeInteractiveText, "elementType": "inlineText"});
     await performAction('selectNoticeOfYourIntention', checkingNotice.yes);
-    await performValidation('mainHeader', noticeDetails.mainHeader);
+    await performValidation('Header', {"text": noticeDetails.mainHeader, "elementType": 'mainHeader'});
     await performAction('clickButton', checkingNotice.continue);
     await performAction('clickButton', noticeDetails.continue);
     await performAction('clickButton', 'Save and continue');
-    await performValidation('bannerAlert', 'Case #.* has been created.');
+    await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
     await performAction('clickTab', 'Property Details');
     await performValidations(
       'address info not null',
@@ -75,7 +80,10 @@ test.describe.skip('[Create Case Flow With Address and Claimant Type]  @Master @
 
   test('Wales - Successful case creation', async () => {
     await performAction('enterTestAddressManually');
-    await performAction('selectLegislativeCountry', legislativeCountry.wales);
+    await performValidation('bannerAlert', 'Case #.* has been created.');
+    await performAction('retrieveCaseId');
+    await performValidation('Header', {"text": provideMoreDetailsOfClaim.subHeader, "elementType": 'subHeader'});
+    await performAction('clickButton', provideMoreDetailsOfClaim.continue);
     await performAction('selectClaimantType', claimantType.registeredCommunityLandlord);
     await performAction('selectClaimType', claimType.no);
     await performAction('selectClaimantName', claimantName.no);
@@ -84,19 +92,24 @@ test.describe.skip('[Create Case Flow With Address and Claimant Type]  @Master @
       correspondenceAddress: contactPreferences.no,
       phoneNumber: contactPreferences.yes
     });
-    await performValidation('mainHeader', groundsForPossession.mainHeader);
-    await performAction('selectGroundsForPossission', groundsForPossession.yes);
+    await performValidation('Header', {"text": groundsForPossession.mainHeader, "elementType": 'mainHeader'});
+    await performAction('selectGroundsForPossession', groundsForPossession.yes);
+    await performValidation('Header', {"text": preActionProtocol.mainHeader, "elementType": 'mainHeader'});
     await performAction('selectPreActionProtocol', preActionProtocol.yes);
+    await performValidation('Header', {"text": mediationAndSettlement.mainHeader, "elementType": 'mainHeader'});
     await performAction('selectMediationAndSettlement', {
       attemptedMediationWithDefendantsOption: mediationAndSettlement.yes,
       settlementWithDefendantsOption: mediationAndSettlement.no,
     });
-    await performValidation('mainHeader', checkingNotice.mainHeader);
-    await performAction('selectNoticeOfYourIntention', checkingNotice.no);
-    await performValidation('mainHeader', rentDetails.mainHeader);
-    await performAction('clickButton', rentDetails.continue);
+    await performValidation('Header', {"text": checkingNotice.mainHeader, "elementType": 'mainHeader'});
+    await performValidation('text', {"text": checkingNotice.guidanceOnPosessionNoticePeriodsLink, "elementType": "paragraphLink"})
+    await performValidation('text', {"text": checkingNotice.servedNoticeInteractiveText, "elementType": "inlineText"});
+    await performAction('selectNoticeOfYourIntention', checkingNotice.yes);
+    await performValidation('Header', {"text": noticeDetails.mainHeader, "elementType": 'mainHeader'});
+    await performAction('clickButton', checkingNotice.continue);
+    await performAction('clickButton', noticeDetails.continue);
     await performAction('clickButton', 'Save and continue');
-    await performValidation('bannerAlert', 'Case #.* has been created.');
+    await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
     await performAction('clickTab', 'Property Details');
     await performValidations('address information entered',
       ['formLabelValue', 'Building and Street', addressDetails.buildingAndStreet],
@@ -104,6 +117,8 @@ test.describe.skip('[Create Case Flow With Address and Claimant Type]  @Master @
       ['formLabelValue', 'Town or City', addressDetails.townOrCity],
       ['formLabelValue', 'Postcode/Zipcode', addressDetails.postcode],
       ['formLabelValue', 'Country', addressDetails.country]);
+
+
   });
 
   test('England - Unsuccessful case creation journey due to claimant type not in scope of Release1 @R1only', async () => {

@@ -11,7 +11,7 @@ export const addressDetails = {
   walesCounty: 'Cardiff',
   buildingAndStreet: '123 Test Street',
   townOrCity: 'ManualTown',
-  postcode: 'SL1 1SP',
+  postcode: 'W3 7RX',
   country: 'United Kingdom',
   header: 'There is a problem',
   addressDetailsError: 'An address is required',
@@ -19,7 +19,9 @@ export const addressDetails = {
   englandTownOrCity: 'London',
   englandNoCourtAssignedPostcode: 'LE3 5EZ',
   walesNoCourtAssignedPostcode: 'LL30 1DE',
+  walesCourtAssignedPostcode: 'CF11 6QX',
   scotlandNoCourtAssignedPostcode: 'SA31 3DG',
   englandWalesNoCourtCrossBorderPostcode: 'HR3 5JL',
-  englandScotlandNoCourtCrossBorderPostcode: 'TD12 4AS'
+  englandScotlandNoCourtCrossBorderPostcode: 'TD12 4AS',
+  englandWalesCrossBorderPostcode: 'SY13 2LH'
 };

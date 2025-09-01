@@ -11,6 +11,7 @@ import { housingPossessionClaim } from '@data/page-data/housingPossessionClaim.p
 import { claimantName } from '@data/page-data/claimantName.page.data';
 import { contactPreferences } from '@data/page-data/contactPreferences.page.data';
 import { mediationAndSettlement } from '@data/page-data/mediationAndSettlement.page.data';
+import { resumeClaimOptions } from "@data/page-data/resumeClaimOptions.page.data";
 
 let caseInfo: { id: string; fid: string; state: string };
 const testConfig = TestConfig.ccdCase;
@@ -26,14 +27,16 @@ export class CreateCaseAction implements IAction {
       ['createCase', () => this.createCaseAction(page, action, fieldName, data)],
       ['housingPossessionClaim', () => this.housingPossessionClaim()],
       ['selectAddress', () => this.selectAddress(fieldName)],
+      ['selectResumeClaimOption', () => this.selectResumeClaimOption(fieldName)],
       ['selectLegislativeCountry', () => this.selectLegislativeCountry(fieldName)],
+      ['retrieveCaseId', () => this.retrieveCaseId(page)],
       ['selectClaimantType', () => this.selectClaimantType(fieldName)],
       ['selectJurisdictionCaseTypeEvent', () => this.selectJurisdictionCaseTypeEvent()],
       ['enterTestAddressManually', () => this.enterTestAddressManually()],
       ['selectClaimType', () => this.selectClaimType(fieldName)],
       ['selectClaimantName', () => this.selectClaimantName(fieldName)],
       ['selectContactPreferences', () => this.selectContactPreferences(fieldName)],
-      ['selectGroundsForPossission', () => this.selectGroundsForPossission(fieldName)],
+      ['selectGroundsForPossession', () => this.selectGroundsForPossession(fieldName)],
       ['selectPreActionProtocol', () => this.selectPreActionProtocol(fieldName)],
       ['selectMediationAndSettlement', () => this.selectMediationAndSettlement(fieldName)],
       ['selectNoticeOfYourIntention', () => this.selectNoticeOfYourIntention(fieldName)],
@@ -61,6 +64,16 @@ export class CreateCaseAction implements IAction {
     await performAction('clickButton', housingPossessionClaim.continue);
   }
 
+  private async retrieveCaseId(page: Page) {
+    const alertDiv = page.locator('div.alert-message');
+    const text = await alertDiv.innerText();
+    const match = text.match(/#([\d-]+)/);
+    if (!match) {
+      throw new Error('Case number not found in the alert message!');
+    }
+    process.env.CASE_NUMBER  = match[1];
+  }
+
   private async selectAddress(caseData: actionData) {
     const addressDetails = caseData as { postcode: string; addressIndex: number };
     await performActions(
@@ -69,12 +82,16 @@ export class CreateCaseAction implements IAction {
       ['clickButton', 'Find address'],
       ['select', 'Select an address', addressDetails.addressIndex]
     );
-    await performAction('clickButton', 'Continue');
+  }
+
+  private async selectResumeClaimOption(caseData: actionData) {
+    await performAction('clickRadioButton', caseData);
+    await performAction('clickButton', resumeClaimOptions.continue);
   }
 
   private async selectLegislativeCountry(caseData: actionData) {
     await performAction('clickRadioButton', caseData);
-    await performAction('clickButton', 'Continue');
+    await performAction('clickButton', 'Submit');
   }
 
   private async selectClaimantType(caseData: actionData) {
@@ -87,7 +104,7 @@ export class CreateCaseAction implements IAction {
     await performAction('clickButton', 'Continue');
   }
 
-  private async selectGroundsForPossission(caseData: actionData) {
+  private async selectGroundsForPossession(caseData: actionData) {
     await performAction('clickRadioButton', caseData);
     await performAction('clickButton', 'Continue');
   }
@@ -134,7 +151,7 @@ export class CreateCaseAction implements IAction {
     });
     if (prefData.correspondenceAddress === 'No') {
       await performAction('selectAddress', {
-        postcode: addressDetails.englandPostcode,
+        postcode: addressDetails.walesPostcode,
         addressIndex: addressDetails.addressIndex
       });
     }
@@ -187,10 +204,10 @@ export class CreateCaseAction implements IAction {
       , ['inputText', 'Address Line 3', addressDetails.addressLine3]
       , ['inputText', 'Town or City', addressDetails.townOrCity]
       , ['inputText', 'County', addressDetails.walesCounty]
-      , ['inputText', 'Postcode/Zipcode', addressDetails.postcode]
+      , ['inputText', 'Postcode/Zipcode', addressDetails.walesCourtAssignedPostcode]
       , ['inputText', 'Country', addressDetails.country]
     );
-    await performAction('clickButton', 'Continue');
+    await performAction('clickButton', 'Submit');
   }
 
   async getEventToken(): Promise<string> {
