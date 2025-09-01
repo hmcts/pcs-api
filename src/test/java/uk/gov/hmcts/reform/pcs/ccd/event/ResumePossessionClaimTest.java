@@ -29,6 +29,7 @@ import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.ResumeClaim;
 import uk.gov.hmcts.reform.pcs.ccd.service.ClaimService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
+import uk.gov.hmcts.reform.pcs.ccd.service.UnsubmittedCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
@@ -68,6 +69,8 @@ class ResumePossessionClaimTest extends BaseEventTest {
     @Mock
     private ResumeClaim resumeClaim;
     @Mock
+    private UnsubmittedCaseDataService unsubmittedCaseDataService;
+    @Mock
     private UserInfo userDetails;
 
     private Event<PCSCase, UserRole, State> configuredEvent;
@@ -82,8 +85,8 @@ class ResumePossessionClaimTest extends BaseEventTest {
 
         ResumePossessionClaim underTest = new ResumePossessionClaim(pcsCaseService, securityContextService,
                                                                     partyService, claimService,
-                                                                    savingPageBuilderFactory, resumeClaim
-        );
+                                                                    savingPageBuilderFactory, resumeClaim,
+                                                                    unsubmittedCaseDataService);
 
         configuredEvent = getEvent(EventId.resumePossessionClaim, buildEventConfig(underTest));
     }

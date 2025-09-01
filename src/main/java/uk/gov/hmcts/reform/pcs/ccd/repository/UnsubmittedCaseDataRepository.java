@@ -12,4 +12,6 @@ public interface UnsubmittedCaseDataRepository extends JpaRepository<Unsubmitted
 
     boolean existsByCaseReference(long caseReference);
 
+    void deleteByCaseReference(long caseReference);
+
 }
