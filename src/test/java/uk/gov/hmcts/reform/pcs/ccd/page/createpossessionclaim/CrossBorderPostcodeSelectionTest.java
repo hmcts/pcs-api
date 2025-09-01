@@ -5,12 +5,14 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
 import uk.gov.hmcts.ccd.sdk.api.Event;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
+import uk.gov.hmcts.ccd.sdk.api.callback.MidEvent;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
@@ -48,6 +50,41 @@ class CrossBorderPostcodeSelectionTest extends BasePageTest {
     }
 
     @ParameterizedTest
+    @EnumSource(value = EligibilityStatus.class, names = {"ELIGIBLE", "NOT_ELIGIBLE"})
+    void shouldSetLegislativeCountryWhenEligibilityMatchFound(EligibilityStatus eligibilityStatus) {
+        // Given
+        String postCode = "CF10 1EP";
+        LegislativeCountry expectedLegislativeCountry = LegislativeCountry.WALES;
+
+        AddressUK propertyAddress = AddressUK.builder()
+            .postCode(postCode)
+            .build();
+
+        PCSCase caseData = PCSCase.builder()
+            .propertyAddress(propertyAddress)
+            .crossBorderCountriesList(createCountryListWithSelectedValue(expectedLegislativeCountry))
+            .build();
+
+        CaseDetails<PCSCase, State> caseDetails = CaseDetails.<PCSCase, State>builder()
+            .data(caseData)
+            .build();
+
+        EligibilityResult eligibilityResult = EligibilityResult.builder()
+            .status(eligibilityStatus)
+            .legislativeCountry(expectedLegislativeCountry)
+            .build();
+
+        when(eligibilityService.checkEligibility(postCode, expectedLegislativeCountry)).thenReturn(eligibilityResult);
+
+        // When
+        MidEvent<PCSCase, State> midEvent = getMidEventForPage(event, "crossBorderPostcodeSelection");
+        midEvent.handle(caseDetails, null);
+
+        // Then
+        assertThat(caseData.getLegislativeCountry()).isEqualTo(expectedLegislativeCountry);
+    }
+
+    @ParameterizedTest
     @MethodSource("eligibilityScenarios")
     void shouldLogEligibilityBasedOnCountrySelection(
         String postcode,
@@ -58,15 +95,7 @@ class CrossBorderPostcodeSelectionTest extends BasePageTest {
         CaseDetails<PCSCase, State> caseDetails = new CaseDetails<>();
         PCSCase caseData = PCSCase.builder()
             .propertyAddress(AddressUK.builder().postCode(postcode).build())
-            .crossBorderCountriesList(DynamicStringList.builder()
-                                          .value(DynamicStringListElement
-                                                     .builder()
-                                                     .code(selectedCountry
-                                                               .name())
-                                                     .label(selectedCountry
-                                                                .getLabel())
-                                                     .build())
-                                          .build())
+            .crossBorderCountriesList(createCountryListWithSelectedValue(selectedCountry))
             .build();
         caseDetails.setData(caseData);
 
@@ -90,7 +119,7 @@ class CrossBorderPostcodeSelectionTest extends BasePageTest {
         if (status == EligibilityStatus.NO_MATCH_FOUND) {
             assertThat(resultData.getShowPostcodeNotAssignedToCourt()).isEqualTo(YesOrNo.YES);
             assertThat(resultData.getLegislativeCountry()).isEqualTo(selectedCountry.getLabel());
-            
+
             switch (selectedCountry) {
                 case ENGLAND -> assertThat(resultData.getPostcodeNotAssignedView()).isEqualTo("ENGLAND");
                 case WALES -> assertThat(resultData.getPostcodeNotAssignedView()).isEqualTo("WALES");
@@ -124,6 +153,15 @@ class CrossBorderPostcodeSelectionTest extends BasePageTest {
         );
     }
 
+    private static DynamicStringList createCountryListWithSelectedValue(LegislativeCountry selectedCountry) {
+        return DynamicStringList.builder()
+            .value(DynamicStringListElement
+                       .builder()
+                       .code(selectedCountry.name())
+                       .label(selectedCountry.getLabel())
+                       .build())
+            .build();
+    }
 
     @ParameterizedTest
     @MethodSource("eligibleCountries")

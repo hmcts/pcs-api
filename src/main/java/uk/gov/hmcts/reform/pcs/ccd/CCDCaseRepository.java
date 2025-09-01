@@ -10,16 +10,17 @@ import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PaymentStatus;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
 import uk.gov.hmcts.reform.pcs.ccd.renderer.ClaimPaymentTabRenderer;
-import uk.gov.hmcts.reform.pcs.ccd.repository.PartyRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
+import uk.gov.hmcts.reform.pcs.ccd.service.UnsubmittedCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.utils.ListValueUtils;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
-import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 
 import java.util.List;
 import java.util.Objects;
@@ -41,7 +42,7 @@ public class CCDCaseRepository extends DecentralisedCaseRepository<PCSCase> {
     private final SecurityContextService securityContextService;
     private final ModelMapper modelMapper;
     private final ClaimPaymentTabRenderer claimPaymentTabRenderer;
-    private final PartyRepository partyRepository;
+    private final UnsubmittedCaseDataService unsubmittedCaseDataService;
 
     /**
      * Invoked by CCD to load PCS cases by reference.
@@ -49,23 +50,33 @@ public class CCDCaseRepository extends DecentralisedCaseRepository<PCSCase> {
      */
     @Override
     public PCSCase getCase(long caseReference) {
+        PCSCase pcsCase = getSubmittedCase(caseReference);
 
-        PcsCaseEntity pcsCaseEntity = loadCaseData(caseReference);
+        boolean hasUnsubmittedCaseData = unsubmittedCaseDataService.hasUnsubmittedCaseData(caseReference);
+        pcsCase.setHasUnsubmittedCaseData(YesOrNo.from(hasUnsubmittedCaseData));
 
-        PCSCase pcsCase = PCSCase.builder()
-            .propertyAddress(convertAddress(pcsCaseEntity.getPropertyAddress()))
-            .caseManagementLocation(pcsCaseEntity.getCaseManagementLocation())
-            .preActionProtocolCompleted(pcsCaseEntity.getPreActionProtocolCompleted() != null 
-                ? VerticalYesNo.from(pcsCaseEntity.getPreActionProtocolCompleted()) 
-                : null)
-            .build();
-
-        setDerivedProperties(caseReference,pcsCase, pcsCaseEntity);
+        setMarkdownFields(pcsCase);
 
         return pcsCase;
     }
 
-    private void setDerivedProperties(long caseRef,PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {
+    private PCSCase getSubmittedCase(long caseReference) {
+        PcsCaseEntity pcsCaseEntity = loadCaseData(caseReference);
+        PCSCase pcsCase = PCSCase.builder()
+            .propertyAddress(convertAddress(pcsCaseEntity.getPropertyAddress()))
+            .legislativeCountry(pcsCaseEntity.getLegislativeCountry())
+            .caseManagementLocation(pcsCaseEntity.getCaseManagementLocation())
+            .preActionProtocolCompleted(pcsCaseEntity.getPreActionProtocolCompleted() != null
+                ? VerticalYesNo.from(pcsCaseEntity.getPreActionProtocolCompleted())
+                : null)
+            .build();
+
+        setDerivedProperties(caseReference, pcsCase, pcsCaseEntity);
+
+        return pcsCase;
+    }
+
+    private void setDerivedProperties(long caseRef, PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {
         boolean pcqIdSet = findPartyForCurrentUser(pcsCaseEntity)
             .map(party -> party.getPcqId() != null)
             .orElse(false);
@@ -77,14 +88,48 @@ public class CCDCaseRepository extends DecentralisedCaseRepository<PCSCase> {
             pcsCase.setClaimPaymentTabMarkdown(claimPaymentTabRenderer.render(caseRef, paymentStatus));
         }
         pcsCase.setParties(mapAndWrapParties(pcsCaseEntity.getParties()));
+    }
 
+    private void setMarkdownFields(PCSCase pcsCase) {
         pcsCase.setPageHeadingMarkdown("""
-                                       <h3 class="govuk-heading-s">
+                                       <p class="govuk-body govuk-!-font-size-24">
                                             %s<br>
-                                            Case number: ${[CASE_REFERENCE]} <br>
-                                        </h3>
+                                            Case number: ${[CASE_REFERENCE]}<br>
+                                       </p>
                                        """.formatted(formatAddress(pcsCase.getPropertyAddress())));
 
+        if (pcsCase.getHasUnsubmittedCaseData() == YesOrNo.YES) {
+            pcsCase.setNextStepsMarkdown("""
+                                             <h2 class="govuk-heading-m">Resume claim</h2>
+                                             You've already answered some questions about this claim.
+                                             <br>
+                                             <br>
+                                             <a href="/cases/case-details/${[CASE_REFERENCE]}/trigger/%s"
+                                                role="button"
+                                                class="govuk-button govuk-link govuk-link--no-visited-state">
+                                               Continue
+                                             </a>
+                                             <p class="govuk-body govuk-!-font-size-19">
+                                             <span><a class="govuk-link--no-visited-state" href="/cases">Cancel</a></span>
+                                             </p>
+                                             """.formatted(EventId.resumePossessionClaim));
+        } else {
+            pcsCase.setNextStepsMarkdown("""
+                                             <h2 class="govuk-heading-m">Provide more details about your claim</h2>
+                                             Your answers will be saved from this point so you can return to your draft
+                                             later.
+                                             <br>
+                                             <br>
+                                             <a href="/cases/case-details/${[CASE_REFERENCE]}/trigger/%s"
+                                                role="button"
+                                                class="govuk-button govuk-link govuk-link--no-visited-state">
+                                               Continue
+                                             </a>
+                                             <p class="govuk-body govuk-!-font-size-19">
+                                             <span><a class="govuk-link--no-visited-state" href="/cases">Cancel</a></span>
+                                             </p>
+                                             """.formatted(EventId.resumePossessionClaim));
+        }
     }
 
     private Optional<PartyEntity> findPartyForCurrentUser(PcsCaseEntity pcsCaseEntity) {

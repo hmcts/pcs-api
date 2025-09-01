@@ -4,6 +4,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.MethodSource;
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
 import uk.gov.hmcts.ccd.sdk.api.Event;
@@ -46,46 +47,38 @@ class EnterPropertyAddressTest extends BasePageTest {
         event = buildPageInTestEvent(new EnterPropertyAddress(eligibilityService));
     }
 
-    @Test
-    void shouldSetFormattedContactAddressInMidEventCallback() {
+    @ParameterizedTest
+    @EnumSource(value = EligibilityStatus.class, names = {"ELIGIBLE", "NOT_ELIGIBLE"})
+    void shouldSetLegislativeCountryWhenEligibilityMatchFound(EligibilityStatus eligibilityStatus) {
         // Given
-        CaseDetails<PCSCase, State> caseDetails = new CaseDetails<>();
-        String postCode = "NW1 6XE";
+        String postCode = "CF10 1EP";
+        LegislativeCountry expectedLegislativeCountry = LegislativeCountry.WALES;
+
         AddressUK propertyAddress = AddressUK.builder()
-            .addressLine1("123 Baker Street")
-            .addressLine2("Marylebone")
-            .postTown("London")
-            .county("Greater London")
             .postCode(postCode)
             .build();
+
         PCSCase caseData = PCSCase.builder()
             .propertyAddress(propertyAddress)
             .build();
 
-        caseDetails.setData(caseData);
+        CaseDetails<PCSCase, State> caseDetails = CaseDetails.<PCSCase, State>builder()
+            .data(caseData)
+            .build();
 
-        String formattedAddress = formattedContactAddress(propertyAddress);
         EligibilityResult eligibilityResult = EligibilityResult.builder()
-                .status(EligibilityStatus.NO_MATCH_FOUND)
-                .legislativeCountries(List.of())
-                .build();
+            .status(eligibilityStatus)
+            .legislativeCountry(expectedLegislativeCountry)
+            .build();
+
+        when(eligibilityService.checkEligibility(postCode, null)).thenReturn(eligibilityResult);
 
         // When
-        when(eligibilityService.checkEligibility(postCode, null)).thenReturn(eligibilityResult);
         MidEvent<PCSCase, State> midEvent = getMidEventForPage(event, "enterPropertyAddress");
         midEvent.handle(caseDetails, null);
 
         // Then
-        assertThat(caseData.getFormattedClaimantContactAddress()).isEqualTo(formattedAddress);
-    }
-
-    private String formattedContactAddress(AddressUK propertyAddress) {
-        return  String.format(
-            "%s<br>%s<br>%s",
-            propertyAddress.getAddressLine1(),
-            propertyAddress.getPostTown(),
-            propertyAddress.getPostCode()
-        );
+        assertThat(caseData.getLegislativeCountry()).isEqualTo(expectedLegislativeCountry);
     }
 
     @ParameterizedTest
@@ -174,7 +167,7 @@ class EnterPropertyAddressTest extends BasePageTest {
     }
 
     @Test
-    void shouldShowPropertyNotEligiblePageAndSetCountryOnNotEligible() {
+    void shouldShowPropertyNotEligiblePageOnNotEligible() {
         // Given
         CaseDetails<PCSCase, State> caseDetails = new CaseDetails<>();
         AddressUK propertyAddress = AddressUK.builder().postCode("M1 1AA").build();
@@ -196,7 +189,6 @@ class EnterPropertyAddressTest extends BasePageTest {
         PCSCase data = resp.getData();
         assertThat(data.getShowCrossBorderPage()).isEqualTo(YesOrNo.NO);
         assertThat(data.getShowPropertyNotEligiblePage()).isEqualTo(YesOrNo.YES);
-        assertThat(data.getLegislativeCountry()).isEqualTo("England");
     }
 
     private static Stream<Arguments> invalidLegislativeCountryScenarios() {

@@ -1,12 +1,9 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim;
 
 import lombok.extern.slf4j.Slf4j;
-import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
-import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 
 @Slf4j
 public class ClaimantInformation implements CcdPageConfiguration {
@@ -20,8 +17,8 @@ public class ClaimantInformation implements CcdPageConfiguration {
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
             .page("claimantInformation")
-            .label("claimantInformation-separator", "---")
             .pageLabel("Claimant name")
+            .label("claimantInformation-separator", "---")
             .readonlyWithLabel(PCSCase::getClaimantName, "Your claimant name registered with My HMCTS is:")
             .mandatoryWithLabel(PCSCase::getIsClaimantNameCorrect,"Is this the correct claimant name?")
             .mandatory(PCSCase::getOverriddenClaimantName,
@@ -31,14 +28,6 @@ public class ClaimantInformation implements CcdPageConfiguration {
                     UPDATED_CLAIMANT_NAME_HINT,
                     false);
 
-    }
-
-    private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
-                                                                  CaseDetails<PCSCase, State> detailsBefore) {
-
-        log.info("Handling midEvent for claimant information page");
-        return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
-            .build();
     }
 
 }
