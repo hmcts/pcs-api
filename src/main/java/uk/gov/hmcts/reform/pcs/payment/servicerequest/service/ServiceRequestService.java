@@ -48,9 +48,6 @@ public class ServiceRequestService {
         log.info("Input parameters - caseReference: {}, ccdCaseNumber: {}", caseReference, ccdCaseNumber);
         log.info("Input fee - code: {}, calculatedAmount: {}", fee.getCode(), fee.getCalculatedAmount());
 
-        String serviceAuthToken = authTokenGenerator.generate();
-        String systemUserAuth = idamService.getSystemUserAuthorisation();
-
         try {
             log.info("Step 1: Creating FeeDto...");
             FeeDto feeDto = FeeDto.builder()
@@ -84,8 +81,8 @@ public class ServiceRequestService {
 
             log.info("Step 7: Making API call...");
             ServiceRequestResponse response = serviceRequestApi.createServiceRequest(
-                systemUserAuth,
-                serviceAuthToken,
+                idamService.getSystemUserAuthorisation(),
+                authTokenGenerator.generate(),
                 request
             );
 

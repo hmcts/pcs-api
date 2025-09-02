@@ -40,10 +40,8 @@ public class FeeService {
     private FeeResponse makeRequest() {
         FeesConfiguration.LookUpReferenceData lookUpReferenceData = feesConfiguration.getFees().get("defaultFee");
 
-        String serviceAuthorization = authTokenGenerator.generate();
-
         return feesRegisterApi.findFee(
-                serviceAuthorization,
+                authTokenGenerator.generate(),
                 lookUpReferenceData.getChannel(),
                 lookUpReferenceData.getEvent(),
                 lookUpReferenceData.getJurisdiction1(),
