@@ -32,6 +32,8 @@ import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.StartTheService;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.ClaimantInformation;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.ContactPreferences;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.GroundsForPossession;
+import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.GroundForPossessionRentArrears;
+import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.GroundForPossessionRentArrearAdditionalGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.MediationAndSettlement;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.PreActionProtocol;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.PropertyNotEligible;
@@ -72,19 +74,21 @@ public class CreatePossessionClaim implements CCDConfig<PCSCase, State, UserRole
 
         new PageBuilder(eventBuilder)
             .add(new StartTheService())
+            .add(new GroundsForPossession())
+            .add(new GroundForPossessionRentArrears())
+            .add(new GroundForPossessionRentArrearAdditionalGrounds())
             .add(enterPropertyAddress)
             .add(crossBorderPostcodeSelection)
             .add(propertyNotEligible)
             .add(new SelectLegislativeCountry())
             .add(new SelectClaimantType())
-            .add(new ClaimantTypeNotEligibleEngland())
-            .add(new ClaimantTypeNotEligibleWales())
+            // .add(new ClaimantTypeNotEligibleEngland())
+            // .add(new ClaimantTypeNotEligibleWales())
             .add(new SelectClaimType())
-            .add(new ClaimTypeNotEligibleEngland())
-            .add(new ClaimTypeNotEligibleWales())
+            // .add(new ClaimTypeNotEligibleEngland())
+            // .add(new ClaimTypeNotEligibleWales())
             .add(new ClaimantInformation())
             .add(new ContactPreferences())
-            .add(new GroundsForPossession())
             .add(new PreActionProtocol())
             .add(new MediationAndSettlement())
             .add(new CheckingNotice());
