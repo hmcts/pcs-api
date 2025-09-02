@@ -33,7 +33,7 @@ import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.ClaimantInformatio
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.ContactPreferences;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.GroundsForPossession;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.GroundForPossessionRentArrears;
-import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.GroundForPossessionRentArrearAdditionalGrounds;
+import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.GroundForPossessionAdditionalGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.MediationAndSettlement;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.PreActionProtocol;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.PropertyNotEligible;
@@ -76,7 +76,7 @@ public class CreatePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             .add(new StartTheService())
             .add(new GroundsForPossession())
             .add(new GroundForPossessionRentArrears())
-            .add(new GroundForPossessionRentArrearAdditionalGrounds())
+            .add(new GroundForPossessionAdditionalGrounds())
             .add(enterPropertyAddress)
             .add(crossBorderPostcodeSelection)
             .add(propertyNotEligible)

@@ -156,7 +156,7 @@ public class PCSCase {
         hint = "You'll be able to add additional grounds later if you select yes.",
         access = {CitizenAccess.class, CaseworkerAccess.class}
     )
-    private VerticalYesNo groundsForPossession;
+    private YesOrNo groundsForPossession;
 
     // Rent arrears grounds checkboxes
     @CCD(
@@ -169,10 +169,10 @@ public class PCSCase {
     private List<RentArrearsGround> rentArrearsGrounds;
 
     @CCD(
-        label = "Do you have any other grounds for possession?",
+        label = "Do you have any other additional grounds for possession?",
         access = {CitizenAccess.class, CaseworkerAccess.class}
     )
-    private VerticalYesNo hasOtherGrounds;
+    private YesOrNo hasOtherAdditionalGrounds;
 
     // Additional grounds checkboxes - Mandatory
     @CCD(

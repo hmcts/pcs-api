@@ -7,15 +7,15 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 /**
  * Page for selecting additional grounds for possession.
  */
-public class GroundForPossessionRentArrearAdditionalGrounds implements CcdPageConfiguration {
+public class GroundForPossessionAdditionalGrounds implements CcdPageConfiguration {
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
-            .page("groundForPossessionRentArrearAdditionalGrounds")
+            .page("groundForPossessionAdditionalGrounds")
             .pageLabel("What are your grounds for possession?")
-            .showCondition("hasOtherGrounds=\"YES\"")
-            .label("groundForPossessionRentArrearAdditionalGrounds-info", """
+            .showCondition("hasOtherAdditionalGrounds=\"Yes\"")
+            .label("groundForPossessionAdditionalGrounds-info", """
             ---
             <p class="govuk-body">You may have already given the defendants notice of your intention to begin possession proceedings.
             If you have, you should have written the grounds you're making your claim under.
