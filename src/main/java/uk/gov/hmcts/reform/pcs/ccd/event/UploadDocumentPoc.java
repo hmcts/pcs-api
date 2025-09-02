@@ -1,5 +1,10 @@
 package uk.gov.hmcts.reform.pcs.ccd.event;
 
+import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.uploadDocumentPoc;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -8,26 +13,19 @@ import uk.gov.hmcts.ccd.sdk.api.ConfigBuilder;
 import uk.gov.hmcts.ccd.sdk.api.Event.EventBuilder;
 import uk.gov.hmcts.ccd.sdk.api.EventPayload;
 import uk.gov.hmcts.ccd.sdk.api.Permission;
+import uk.gov.hmcts.ccd.sdk.type.Document;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
-import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.ClaimantInformation;
-import uk.gov.hmcts.reform.pcs.ccd.page.uploadsupportingdocs.DocumentUpload;
-import uk.gov.hmcts.reform.pcs.ccd.page.generatedocument.GenerateDocument;
-import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
-import uk.gov.hmcts.reform.pcs.ccd.service.DocumentGenerationService;
-import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
-import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PaymentStatus;
-
-import uk.gov.hmcts.ccd.sdk.type.Document;
-
-import java.util.HashMap;
-import java.util.Map;
-import java.util.ArrayList;
-
-import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.uploadDocumentPoc;
+import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.ClaimantInformation;
+import uk.gov.hmcts.reform.pcs.ccd.page.generatedocument.GenerateDocument;
+import uk.gov.hmcts.reform.pcs.ccd.page.uploadsupportingdocs.DocumentUpload;
+import uk.gov.hmcts.reform.pcs.ccd.service.DocumentGenerationService;
+import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
+import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 @Slf4j
 @Component
@@ -72,10 +70,10 @@ public class UploadDocumentPoc implements CCDConfig<PCSCase, State, UserRole> {
 
         // Debug: Check what documents we have before
         log.info("DEBUG: Before processing - supportingDocuments: {}",
-                 pcsCase.getSupportingDocuments() != null 
+                 pcsCase.getSupportingDocuments() != null
                      ? pcsCase.getSupportingDocuments().size() : "null");
         log.info("DEBUG: Before processing - generatedDocuments: {}",
-                 pcsCase.getGeneratedDocuments() != null 
+                 pcsCase.getGeneratedDocuments() != null
                      ? pcsCase.getGeneratedDocuments().size() : "null");
 
         if (pcsCase.getGeneratedDocuments() == null) {
@@ -98,10 +96,10 @@ public class UploadDocumentPoc implements CCDConfig<PCSCase, State, UserRole> {
 
             // Debug: Check what documents we have after
             log.info("DEBUG: After adding generated - supportingDocuments: {}",
-                     pcsCase.getSupportingDocuments() != null 
+                     pcsCase.getSupportingDocuments() != null
                          ? pcsCase.getSupportingDocuments().size() : "null");
             log.info("DEBUG: After adding generated - generatedDocuments: {}",
-                     pcsCase.getGeneratedDocuments() != null 
+                     pcsCase.getGeneratedDocuments() != null
                          ? pcsCase.getGeneratedDocuments().size() : "null");
 
         } catch (Exception e) {
@@ -111,13 +109,13 @@ public class UploadDocumentPoc implements CCDConfig<PCSCase, State, UserRole> {
         PcsCaseEntity pcsCaseEntity = pcsCaseService.createCase(caseReference, pcsCase);
 
         log.info("DEBUG: Final check before return - generatedDocuments: {}",
-                 pcsCase.getGeneratedDocuments() != null 
+                 pcsCase.getGeneratedDocuments() != null
                      ? pcsCase.getGeneratedDocuments().size() : "null");
         if (pcsCase.getGeneratedDocuments() != null && !pcsCase.getGeneratedDocuments().isEmpty()) {
             pcsCase.getGeneratedDocuments().forEach(doc ->
                 log.info("DEBUG: Generated doc ID: {}, filename: {}",
                          doc.getId(),
-                         doc.getValue() != null 
+                         doc.getValue() != null
                              ? doc.getValue().getFilename() : "null"));
         }
 
@@ -127,7 +125,7 @@ public class UploadDocumentPoc implements CCDConfig<PCSCase, State, UserRole> {
     private Map<String, Object> extractCaseDataForDocument(PCSCase pcsCase, long caseReference) {
         Map<String, Object> formPayload = new HashMap<>();
 
-        formPayload.put("caseNumber", String.valueOf(caseReference));
+        formPayload.put("referenceNumber", String.valueOf(caseReference));
 
         String claimantName = pcsCase.getClaimantName();
         if (claimantName != null && !claimantName.trim().isEmpty()) {
@@ -136,9 +134,9 @@ public class UploadDocumentPoc implements CCDConfig<PCSCase, State, UserRole> {
             // Fallback
             String overriddenName = pcsCase.getOverriddenClaimantName();
             if (overriddenName != null && !overriddenName.trim().isEmpty()) {
-                formPayload.put("applicantName", overriddenName);
+                formPayload.put("claimant.partyName", overriddenName);
             } else {
-                formPayload.put("applicantName", "Not Specified");
+                formPayload.put("claimant.partyName", "Not Specified");
             }
         }
 
@@ -147,10 +145,8 @@ public class UploadDocumentPoc implements CCDConfig<PCSCase, State, UserRole> {
             formPayload.put("postCode", pcsCase.getPropertyAddress().getPostCode());
         }
 
-        formPayload.put("dateOfBirth", "1990-01-01");
-
         formPayload.put("documentType", "Case Summary");
-        formPayload.put("generatedAt", java.time.LocalDate.now().toString());
+        formPayload.put("currentDate", java.time.LocalDate.now().toString());
 
         return formPayload;
     }
