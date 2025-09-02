@@ -9,6 +9,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.modelmapper.ModelMapper;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
+import uk.gov.hmcts.ccd.sdk.api.CCD;
+import uk.gov.hmcts.ccd.sdk.type.FieldType;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PaymentStatus;
@@ -317,6 +319,24 @@ class PcsCaseServiceTest {
         AddressEntity addressEntity = mock(AddressEntity.class);
         when(modelMapper.map(addressUK, AddressEntity.class)).thenReturn(addressEntity);
         return addressEntity;
+    }
+
+    @Test
+    void shouldHaveMax250OnMediationAttemptedDetails() throws Exception {
+        java.lang.reflect.Field field = PCSCase.class.getDeclaredField("mediationAttemptedDetails");
+        CCD ccd = field.getAnnotation(CCD.class);
+        assertThat(ccd).isNotNull();
+        assertThat(ccd.max()).isEqualTo(250);
+        assertThat(ccd.typeOverride()).isEqualTo(FieldType.TextArea);
+    }
+
+    @Test
+    void shouldHaveMax250OnSettlementAttemptedDetails() throws Exception {
+        java.lang.reflect.Field field = PCSCase.class.getDeclaredField("settlementAttemptedDetails");
+        CCD ccd = field.getAnnotation(CCD.class);
+        assertThat(ccd).isNotNull();
+        assertThat(ccd.max()).isEqualTo(250);
+        assertThat(ccd.typeOverride()).isEqualTo(FieldType.TextArea);
     }
 
 }
