@@ -44,6 +44,7 @@ import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.SelectClaimantType
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.SelectLegislativeCountry;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.StartTheService;
 import uk.gov.hmcts.reform.pcs.ccd.service.ClaimService;
+import uk.gov.hmcts.reform.pcs.ccd.service.NoticeDetailsService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
@@ -65,6 +66,7 @@ public class CreatePossessionClaim implements CCDConfig<PCSCase, State, UserRole
     private final SecurityContextService securityContextService;
     private final PartyService partyService;
     private final ClaimService claimService;
+    private final NoticeDetailsService noticeDetailsService;
     private final EnterPropertyAddress enterPropertyAddress;
     private final CrossBorderPostcodeSelection crossBorderPostcodeSelection;
     private final PropertyNotEligible propertyNotEligible;
@@ -100,7 +102,7 @@ public class CreatePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             .add(new PreActionProtocol())
             .add(new MediationAndSettlement())
             .add(new CheckingNotice())
-            .add(new NoticeDetails())
+            .add(new NoticeDetails(noticeDetailsService))
             .add(new RentDetails())
             .add(new RentArrears());
     }
