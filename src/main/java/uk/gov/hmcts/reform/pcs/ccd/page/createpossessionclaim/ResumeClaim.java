@@ -12,6 +12,7 @@ import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.service.UnsubmittedCaseDataService;
+import uk.gov.hmcts.reform.pcs.exception.UnsubmittedDataException;
 
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 
@@ -62,7 +63,9 @@ public class ResumeClaim implements CcdPageConfiguration {
             unsubmittedCaseDataService.getUnsubmittedCaseData(caseReference)
                 .ifPresentOrElse(
                     unsubmittedCaseData -> modelMapper.map(unsubmittedCaseData, caseData),
-                    () -> log.warn("No unsubmitted case data found for case " + caseReference)
+                    () -> {
+                        throw new UnsubmittedDataException("No unsubmitted case data found for case " + caseReference);
+                    }
                 );
         }
 

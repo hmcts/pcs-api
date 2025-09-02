@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -18,11 +19,13 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
 import uk.gov.hmcts.reform.pcs.ccd.service.UnsubmittedCaseDataService;
+import uk.gov.hmcts.reform.pcs.exception.UnsubmittedDataException;
 
 import java.util.Optional;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -83,11 +86,34 @@ class ResumeClaimTest extends BasePageTest {
 
         return Stream.of(
             // Existing unsubmitted data, Keep answers selection, Should merge data
-            arguments(null, YesOrNo.YES, false),
             arguments(null, YesOrNo.NO, false),
             arguments(unsubmittedCaseData, YesOrNo.YES, true),
             arguments(unsubmittedCaseData, YesOrNo.NO, false)
         );
+    }
+
+    @Test
+    void shouldThrowAnExceptionResumingWhenNoUnsubmittedData() {
+        // Given
+        PCSCase caseData = mock(PCSCase.class);
+
+        when(unsubmittedCaseDataService.getUnsubmittedCaseData(CASE_REFERENCE)).thenReturn(Optional.empty());
+
+        when(caseData.getResumeClaimKeepAnswers()).thenReturn(YesOrNo.YES);
+
+        CaseDetails<PCSCase, State> caseDetails = CaseDetails.<PCSCase, State>builder()
+            .id(CASE_REFERENCE)
+            .data(caseData)
+            .build();
+
+        // When
+        MidEvent<PCSCase, State> midEvent = getMidEventForPage(event, "resumeClaim");
+        Throwable throwable = catchThrowable(() -> midEvent.handle(caseDetails, null));
+
+        // Then
+        assertThat(throwable)
+            .isInstanceOf(UnsubmittedDataException.class)
+            .hasMessage("No unsubmitted case data found for case %s", CASE_REFERENCE);
     }
 
 }
