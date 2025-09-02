@@ -41,8 +41,7 @@ test.describe('[Create Case Flow With Address and Claimant Type]  @Master @night
       addressIndex: addressDetails.addressIndex
     });
     await performValidation('bannerAlert', 'Case #.* has been created.');
-    //await performValidation('mainHeader', provideMoreDetailsOfClaim.mainHeader);
-    //await performValidation('text', {'text': provideMoreDetailsOfClaim.subHeader, 'elementType': 'subHeading'});
+    await performValidation('text', {'text': provideMoreDetailsOfClaim.mainHeader, 'elementType': 'subHeading'});
     await performAction('clickButton', provideMoreDetailsOfClaim.continue);
     await performAction('selectClaimantType', claimantType.registeredProviderForSocialHousing);
     await performAction('selectClaimType', claimType.no);
@@ -90,16 +89,13 @@ test.describe('[Create Case Flow With Address and Claimant Type]  @Master @night
     await performAction('enterTestAddressManually');
     await performValidation('bannerAlert', 'Case #.* has been created.');
     await performAction('retrieveCaseId');
-    //await performValidation('mainHeader', provideMoreDetailsOfClaim.mainHeader);
     await performAction('clickButton', provideMoreDetailsOfClaim.continue);
     await performAction('selectClaimantType', claimantType.registeredCommunityLandlord);
     await performAction('selectClaimType', claimType.no);
     await performAction('selectClaimantName', claimantName.no);
     await performAction('clickButton', 'Sign out');
     await performAction('reloginAndFindTheCase');
-    //await performValidation('mainHeader', resumeClaim.mainHeader);
     await performAction('clickButton', resumeClaim.continue);
-    //await performValidation('mainHeader', resumeClaimOptions.mainHeader);
     await performAction('selectResumeClaimOption', resumeClaimOptions.yes);
     await performValidation('radioButton', {option: claimantType.registeredCommunityLandlord,shouldBeChecked: true});
     await performAction('clickButton', 'Continue');
@@ -204,7 +200,6 @@ test.describe('[Create Case Flow With Address and Claimant Type]  @Master @night
     await performAction('enterTestAddressManually');
     await performValidation('bannerAlert', 'Case #.* has been created.');
     await performAction('retrieveCaseId');
-    //await performValidation('mainHeader', provideMoreDetailsOfClaim.mainHeader);
     await performAction('clickButton', provideMoreDetailsOfClaim.continue);
     await performAction('selectClaimantType', claimantType.registeredCommunityLandlord);
     await performAction('selectClaimType', claimType.no);
@@ -212,9 +207,7 @@ test.describe('[Create Case Flow With Address and Claimant Type]  @Master @night
 
     await performAction('clickButton', 'Sign out');
     await performAction('reloginAndFindTheCase');
-    //await performValidation('mainHeader', resumeClaim.mainHeader);
     await performAction('clickButton', resumeClaim.continue);
-    //await performValidation('mainHeader', resumeClaimOptions.mainHeader);
     await performAction('selectResumeClaimOption', resumeClaimOptions.no);
     await performValidation('radioButton', {option: claimantType.registeredCommunityLandlord,shouldBeChecked: false});
     await performAction('selectClaimantType', claimantType.registeredCommunityLandlord);
@@ -222,7 +215,6 @@ test.describe('[Create Case Flow With Address and Claimant Type]  @Master @night
     await performAction('selectClaimType', claimType.no);
     await performValidation('radioButton', {option: claimantName.yes,shouldBeChecked: false});
     await performAction('selectClaimantName', claimantName.yes);
-
     await performAction('selectContactPreferences', {
       notifications: contactPreferences.yes,
       correspondenceAddress: contactPreferences.yes,
