@@ -146,9 +146,6 @@ export class CreateCaseAction implements IAction {
     await performAction('inputText', 'Case Number', caseInfo.id);
     await performAction('clickButton', 'Apply');
     await performAction('clickButton',caseInfo.id)
-    //await performAction('inputText', '16-digit case reference:', process.env.CASE_NUMBER);
-    //await page.pause();
-    //await performAction('clickButton','Find');
   }
 
   private async selectContactPreferences(preferences: actionData) {

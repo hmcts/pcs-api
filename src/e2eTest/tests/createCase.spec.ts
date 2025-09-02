@@ -19,7 +19,6 @@ import { provideMoreDetailsOfClaim } from '@data/page-data/provideMoreDetailsOfC
 import { resumeClaim } from '@data/page-data/resumeClaim.page.data';
 import { resumeClaimOptions } from '@data/page-data/resumeClaimOptions.page.data';
 
-
 test.beforeEach(async ({page}, testInfo) => {
   initializeExecutor(page);
   await parentSuite('Case Creation');
