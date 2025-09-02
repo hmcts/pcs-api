@@ -152,7 +152,7 @@ public class CreatePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             Fee fee = feeService.getFeeWithoutHearing();
             log.info("Fee retrieved successfully - code: {}, amount: {}", fee.getCode(), fee.getCalculatedAmount());
 
-            // Step 2: Create service request with the fee
+            // Step 2: Create service request with the fees
             ServiceRequestResponse serviceRequestResponse = serviceRequestService.createServiceRequest(
                 String.valueOf(caseReference), // caseReference
                 String.valueOf(caseReference), // ccdCaseNumber (using same as case reference)
