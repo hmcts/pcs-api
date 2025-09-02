@@ -20,16 +20,16 @@ module.exports = defineConfig({
   globalTeardown: require.resolve('./config/global-teardown.config'),
   reporter: [
     ['list'],
-      [
-        'allure-playwright',
-        {
-          resultsDir: 'allure-results',
-          detail: true,
-          suiteTitle: false,
-          environmentInfo: {
-            os_version: process.version,
-          },
+    [
+      'allure-playwright',
+      {
+        resultsDir: 'allure-results',
+        detail: true,
+        suiteTitle: false,
+        environmentInfo: {
+          os_version: process.version,
         },
+      },
     ],
   ],
   projects: [
@@ -43,9 +43,21 @@ module.exports = defineConfig({
         trace: 'on-first-retry',
         javaScriptEnabled: true,
         viewport: DEFAULT_VIEWPORT,
-        headless: false,
+        headless: true,
       },
     },
-
+    {
+      name: 'firefox',
+      use: {
+        ...devices["Desktop Firefox"],
+        channel: 'firefox',
+        screenshot: 'only-on-failure',
+        video: 'retain-on-failure',
+        trace: 'on-first-retry',
+        javaScriptEnabled: true,
+        viewport: DEFAULT_VIEWPORT,
+        headless: true,
+      },
+    },
   ],
 });
