@@ -40,6 +40,10 @@ import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.RentDetails;
 import uk.gov.hmcts.reform.pcs.ccd.service.ClaimService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
+import uk.gov.hmcts.reform.pcs.payment.fee.entity.Fee;
+import uk.gov.hmcts.reform.pcs.payment.fee.service.FeeService;
+import uk.gov.hmcts.reform.pcs.payment.servicerequest.model.ServiceRequestResponse;
+import uk.gov.hmcts.reform.pcs.payment.servicerequest.service.ServiceRequestService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.util.UUID;
@@ -57,6 +61,8 @@ public class CreatePossessionClaim implements CCDConfig<PCSCase, State, UserRole
     private final SecurityContextService securityContextService;
     private final PartyService partyService;
     private final ClaimService claimService;
+    private final FeeService feeService;
+    private final ServiceRequestService serviceRequestService;
     private final EnterPropertyAddress enterPropertyAddress;
     private final CrossBorderPostcodeSelection crossBorderPostcodeSelection;
     private final PropertyNotEligible propertyNotEligible;
@@ -138,6 +144,28 @@ public class CreatePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             PartyRole.CLAIMANT);
 
         claimService.saveClaim(claimEntity);
+
+        try {
+            log.info("Starting fee lookup and service request creation for case: {}", caseReference);
+
+            // Step 1: Get the fee
+            Fee fee = feeService.getFeeWithoutHearing();
+            log.info("Fee retrieved successfully - code: {}, amount: {}", fee.getCode(), fee.getCalculatedAmount());
+
+            // Step 2: Create service request with the fee
+            ServiceRequestResponse serviceRequestResponse = serviceRequestService.createServiceRequest(
+                String.valueOf(caseReference), // caseReference
+                String.valueOf(caseReference), // ccdCaseNumber (using same as case reference)
+                fee
+            );
+
+            log.info("Service request created successfully: {}", serviceRequestResponse.getServiceRequestReference());
+
+        } catch (Exception e) {
+            log.error("Failed to create fee lookup or service request for case {}: {}", caseReference,
+                        e.getMessage(), e);
+            log.warn("Case {} was created successfully but payment setup failed", caseReference);
+        }
     }
 
 }

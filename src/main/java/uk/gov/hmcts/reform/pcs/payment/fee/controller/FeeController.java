@@ -5,13 +5,10 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import uk.gov.hmcts.reform.pcs.payment.fee.entity.Fee;
 import uk.gov.hmcts.reform.pcs.payment.fee.service.FeeService;
-
-import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 
 @Slf4j
 @RestController
@@ -27,8 +24,6 @@ public class FeeController {
 
     @GetMapping(value = "/fee-lookup", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Fee> getFee(
-        @RequestHeader(value = AUTHORIZATION, defaultValue = "DummyId") String authorisation,
-        @RequestHeader(value = "ServiceAuthorization") String serviceAuthorization
     ) {
 
         log.info("Received request to retrieve fee");

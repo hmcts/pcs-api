@@ -5,6 +5,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
+import uk.gov.hmcts.reform.pcs.idam.IdamService;
 import uk.gov.hmcts.reform.pcs.payment.fee.dto.FeeDto;
 import uk.gov.hmcts.reform.pcs.payment.fee.entity.Fee;
 import uk.gov.hmcts.reform.pcs.payment.servicerequest.api.ServiceRequestApi;
@@ -20,20 +22,24 @@ public class ServiceRequestService {
     private static final String RESPONSIBLE_PARTY = "John Doe"; // Placeholder for a responsible party
     private static final int VOLUME = 1;
 
+    private final AuthTokenGenerator authTokenGenerator;
+    private final IdamService idamService;
     private final ServiceRequestApi serviceRequestApi;
     private final String callBackUrl;
 
     public ServiceRequestService(
         @Autowired ServiceRequestApi serviceRequestApi,
-        @Value("${payment.api.callback-url}") String callBackUrl
+        @Value("${payment.api.callback-url}") String callBackUrl,
+        AuthTokenGenerator authTokenGenerator,
+        IdamService idamService
     ) {
+        this.authTokenGenerator = authTokenGenerator;
+        this.idamService = idamService;
         this.serviceRequestApi = serviceRequestApi;
         this.callBackUrl = callBackUrl;
     }
 
     public ServiceRequestResponse createServiceRequest(
-        String authorisation,
-        String serviceAuthorization,
         String caseReference,
         String ccdCaseNumber,
         Fee fee
@@ -41,6 +47,9 @@ public class ServiceRequestService {
         log.info("=== ServiceRequestService.createServiceRequest START ===");
         log.info("Input parameters - caseReference: {}, ccdCaseNumber: {}", caseReference, ccdCaseNumber);
         log.info("Input fee - code: {}, calculatedAmount: {}", fee.getCode(), fee.getCalculatedAmount());
+
+        String serviceAuthToken = authTokenGenerator.generate();
+        String systemUserAuth = idamService.getSystemUserAuthorisation();
 
         try {
             log.info("Step 1: Creating FeeDto...");
@@ -75,8 +84,8 @@ public class ServiceRequestService {
 
             log.info("Step 7: Making API call...");
             ServiceRequestResponse response = serviceRequestApi.createServiceRequest(
-                authorisation,
-                serviceAuthorization,
+                systemUserAuth,
+                serviceAuthToken,
                 request
             );
 

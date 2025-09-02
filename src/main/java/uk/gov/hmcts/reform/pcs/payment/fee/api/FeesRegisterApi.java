@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.pcs.payment.fee.api;
 
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestParam;
 import uk.gov.hmcts.reform.pcs.payment.fee.model.FeeResponse;
 
@@ -10,6 +11,7 @@ public interface FeesRegisterApi {
 
     @GetMapping("/fees-register/fees/lookup")
     FeeResponse findFee(
+        @RequestHeader("ServiceAuthorization") String serviceAuthorization,
         @RequestParam(name = "channel") String channel,
         @RequestParam(name = "event") String event,
         @RequestParam(name = "jurisdiction1") String jurisdiction1,

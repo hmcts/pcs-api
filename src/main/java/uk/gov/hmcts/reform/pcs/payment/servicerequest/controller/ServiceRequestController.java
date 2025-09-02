@@ -86,8 +86,6 @@ public class ServiceRequestController {
 
         try {
             ServiceRequestResponse response = serviceRequestService.createServiceRequest(
-                authorisation,
-                serviceAuthorization,
                 caseReference,
                 ccdCaseNumber,
                 fee
