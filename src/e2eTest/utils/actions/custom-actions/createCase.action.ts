@@ -15,7 +15,7 @@ import { mediationAndSettlement } from '@data/page-data/mediationAndSettlement.p
 import { resumeClaimOptions } from "@data/page-data/resumeClaimOptions.page.data";
 import configData from '@config/test.config';
 
-let caseInfo: { id: string; fid: string; state: string };
+let caseInfo: { id: string; fid: string; state: string } = {id: "", fid: "", state: ""};
 const testConfig = TestConfig.ccdCase;
 
 export class CreateCaseAction implements IAction {
@@ -75,7 +75,7 @@ export class CreateCaseAction implements IAction {
     if (!match) {
       throw new Error('Case number not found in the alert message!');
     }
-    process.env.CASE_NUMBER  = match[1];
+    caseInfo.id  = match[1];
   }
 
   private async selectAddress(caseData: actionData) {
@@ -96,7 +96,7 @@ export class CreateCaseAction implements IAction {
 
   private async selectLegislativeCountry(caseData: actionData) {
     await performAction('clickRadioButton', caseData);
-    await performAction('clickButton', 'Submit');
+    await performAction('clickButton', 'Continue');
   }
 
   private async selectClaimantType(caseData: actionData) {
@@ -143,9 +143,9 @@ export class CreateCaseAction implements IAction {
     await performAction('clickButton', 'Find case');
     await performAction('select', 'Jurisdiction', createCase.possessionsJurisdiction);
     await performAction('select', 'Case type', createCase.caseType.civilPossessions);
-    await performAction('inputText', 'Case Number', process.env.CASE_NUMBER);
+    await performAction('inputText', 'Case Number', caseInfo.id);
     await performAction('clickButton', 'Apply');
-    await performAction('clickButton',process.env.CASE_NUMBER)
+    await performAction('clickButton',caseInfo.id)
     //await performAction('inputText', '16-digit case reference:', process.env.CASE_NUMBER);
     //await page.pause();
     //await performAction('clickButton','Find');

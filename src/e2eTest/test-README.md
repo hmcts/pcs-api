@@ -80,7 +80,6 @@ Playwright 1.30+ | TypeScript 4.9+
 | selectClaimantType              | `performAction('selectClaimantType', {claimantType : pathToDataFile.claimantTypeOption})`                                                                                                                  |
 | selectAddress                   | `performAction('selectAddress',{postcode: pathToDataFile.englandPostcode,addressIndex: pathToDataFile.addressIndex} )`                                                                                     |
 | createUserAndLogin              | `performAction('createUserAndLogin', ['caseworker-pcs', 'caseworker'])`                                                                                                                                    |
-| login                           | `performAction('login')`                                                                                                                                                                                   |
 | enterTestAddressManually        | `performAction('enterTestAddressManually')`                                                                                                                                                                |
 | selectJurisdictionCaseTypeEvent | `performAction('selectJurisdictionCaseTypeEvent')`                                                                                                                                                         |
 | housingPossessionClaim          | `performAction('selectCountryRadioButton', borderPostcode.countryOptions.england)`                                                                                                                         |
@@ -88,13 +87,14 @@ Playwright 1.30+ | TypeScript 4.9+
 | selectClaimType                 | `performAction('selectClaimType', claimType.no)`                                                                                                                                                           |
 | selectClaimantName              | `performAction('selectClaimantName', claimantName.yes)`                                                                                                                                                    |
 | selectContactPreferences        | `performAction('selectContactPreferences', {notifications: { answer: contactPreferences.yes }, correspondenceAddress: { answer: contactPreferences.yes }, phoneNumber: { answer: contactPreferences.no })` |
-| defendantDetails               | `performAction('defendantDetails', {name: defendantDetails.no, correspondenceAddress: defendantDetails.no, email: defendantDetails.no, correspondenceAddressSame: defendantDetails.no })`                   |
 | selectMediationAndSettlement    | `performAction('selectMediationAndSettlement',{attemptedMediationWithDefendantsOption: mediationAndSettlement.yes,settlementWithDefendantsOption: mediationAndSettlement.no}))`                            |
 | selectPreActionProtocol         | `performAction('selectPreActionProtocol', preActionProtocol.yes)`                                                                                                                                          |
 | selectNoticeOfYourIntention     | `performAction('selectNoticeOfYourIntention', checkingNotice.no)`                                                                                                                                          |
-| retrieveCaseId                  | `performAction('retrieveCaseId', ...)`                                                                                                                                                                     |
-| reloginAndFindTheCase           | `performAction('reloginAndFindTheCase', ...)`                                                                                                                                                              |
-| selectResumeClaimOption         | `performAction('selectResumeClaimOption', ...)`                                                                                                                                                            |
+| login           | `performAction('login', ...)` |
+| retrieveCaseId  | `performAction('retrieveCaseId', ...)` |
+| reloginAndFindTheCase | `performAction('reloginAndFindTheCase', ...)` |
+| selectResumeClaimOption | `performAction('selectResumeClaimOption', ...)` |
+| defendantDetails | `performAction('defendantDetails', ...)` |
 | selectGroundsForPossission | `performAction('selectGroundsForPossission', ...)` |
 ### Validations
 | Validation          | Example Usage |
@@ -105,8 +105,8 @@ Playwright 1.30+ | TypeScript 4.9+
 | formLabelValue    | `performValidation('formLabelValue',  "Applicant's forename", {value:'TestUser'})`                                                   |
 | errorMessage      | `performValidation('errorMessage', {header: claimantType.errorMessage.header,errorHasLink: claimantType.errorMessage.errorMessage})` |
 | optionList        | `performValidation('optionList', 'sectionName', {optionsData})`                                                                      |
+| mainHeader        | `performValidation('mainHeader', borderPostcode.mainHeader)`                                                                         |
 | radioButton     | `performValidation('radioButton', ...)` |
-| mainHeader      | `performValidation('mainHeader', ...)` |
 ### Basic Test
 
 ```typescript

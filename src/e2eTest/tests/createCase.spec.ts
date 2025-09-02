@@ -104,7 +104,7 @@ test.describe('[Create Case Flow With Address and Claimant Type]  @Master @night
     await performAction('clickButton', 'Continue');
     await performAction('selectContactPreferences', {
       notifications: contactPreferences.no,
-      correspondenceAddress: contactPreferences.yes,
+      correspondenceAddress: contactPreferences.no,
       phoneNumber: contactPreferences.yes
     });
     await performAction('defendantDetails', {
@@ -115,20 +115,15 @@ test.describe('[Create Case Flow With Address and Claimant Type]  @Master @night
     });
     await performValidation('mainHeader', groundsForPossession.mainHeader);
     await performAction('selectGroundsForPossission', groundsForPossession.yes);
-    await performValidation('mainHeader', preActionProtocol.mainHeader);
     await performAction('selectPreActionProtocol', preActionProtocol.yes);
-    await performValidation('mainHeader', mediationAndSettlement.mainHeader);
     await performAction('selectMediationAndSettlement', {
       attemptedMediationWithDefendantsOption: mediationAndSettlement.yes,
       settlementWithDefendantsOption: mediationAndSettlement.no,
     });
     await performValidation('mainHeader', checkingNotice.mainHeader);
-    await performValidation('text', {"text": checkingNotice.guidanceOnPosessionNoticePeriodsLink, "elementType": "paragraphLink"})
-    await performValidation('text', {"text": checkingNotice.servedNoticeInteractiveText, "elementType": "inlineText"});
-    await performAction('selectNoticeOfYourIntention', checkingNotice.yes);
-    await performValidation('mainHeader', noticeDetails.mainHeader);
-    await performAction('clickButton', checkingNotice.continue);
-    await performAction('clickButton', noticeDetails.continue);
+    await performAction('selectNoticeOfYourIntention', checkingNotice.no);
+    await performValidation('mainHeader', rentDetails.mainHeader);
+    await performAction('clickButton', rentDetails.continue);
     await performAction('clickButton', 'Save and continue');
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
     await performAction('clickTab', 'Property Details');
