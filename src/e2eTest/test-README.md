@@ -93,9 +93,9 @@ Playwright 1.30+ | TypeScript 4.9+
 | selectPreActionProtocol         | `performAction('selectPreActionProtocol', preActionProtocol.yes)`                                                                                                                                          |
 | selectNoticeOfYourIntention     | `performAction('selectNoticeOfYourIntention', checkingNotice.no)`                                                                                                                                          |
 | retrieveCaseId                  | `performAction('retrieveCaseId', ...)`                                                                                                                                                                     |
-| selectGroundsForPossession      | `performAction('selectGroundsForPossession', ...)`                                                                                                                                                         |
-| reloginAndFindTheCase | `performAction('reloginAndFindTheCase', ...)` |
-| selectResumeClaimOption | `performAction('selectResumeClaimOption', ...)` |
+| reloginAndFindTheCase           | `performAction('reloginAndFindTheCase', ...)`                                                                                                                                                              |
+| selectResumeClaimOption         | `performAction('selectResumeClaimOption', ...)`                                                                                                                                                            |
+| selectGroundsForPossission | `performAction('selectGroundsForPossission', ...)` |
 ### Validations
 | Validation          | Example Usage |
 |------------------|---------------|

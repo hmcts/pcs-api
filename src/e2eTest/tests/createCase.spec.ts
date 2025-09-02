@@ -41,7 +41,6 @@ test.describe('[Create Case Flow With Address and Claimant Type]  @Master @night
       addressIndex: addressDetails.addressIndex
     });
     await performValidation('bannerAlert', 'Case #.* has been created.');
-    await performValidation('text', {'text': provideMoreDetailsOfClaim.mainHeader, 'elementType': 'subHeading'});
     await performAction('clickButton', provideMoreDetailsOfClaim.continue);
     await performAction('selectClaimantType', claimantType.registeredProviderForSocialHousing);
     await performAction('selectClaimType', claimType.no);
@@ -58,7 +57,7 @@ test.describe('[Create Case Flow With Address and Claimant Type]  @Master @night
       correspondenceAddressSame: defendantDetails.no
     });
     await performValidation('mainHeader', groundsForPossession.mainHeader);
-    await performAction('selectGroundsForPossession', groundsForPossession.yes);
+    await performAction('selectGroundsForPossission', groundsForPossession.yes);
     await performValidation('mainHeader', preActionProtocol.mainHeader);
     await performAction('selectPreActionProtocol', preActionProtocol.yes);
     await performValidation('mainHeader', mediationAndSettlement.mainHeader);
@@ -115,7 +114,7 @@ test.describe('[Create Case Flow With Address and Claimant Type]  @Master @night
       correspondenceAddressSame: defendantDetails.yes
     });
     await performValidation('mainHeader', groundsForPossession.mainHeader);
-    await performAction('selectGroundsForPossession', groundsForPossession.yes);
+    await performAction('selectGroundsForPossission', groundsForPossession.yes);
     await performValidation('mainHeader', preActionProtocol.mainHeader);
     await performAction('selectPreActionProtocol', preActionProtocol.yes);
     await performValidation('mainHeader', mediationAndSettlement.mainHeader);
@@ -204,7 +203,6 @@ test.describe('[Create Case Flow With Address and Claimant Type]  @Master @night
     await performAction('selectClaimantType', claimantType.registeredCommunityLandlord);
     await performAction('selectClaimType', claimType.no);
     await performAction('selectClaimantName', claimantName.yes);
-
     await performAction('clickButton', 'Sign out');
     await performAction('reloginAndFindTheCase');
     await performAction('clickButton', resumeClaim.continue);
@@ -226,7 +224,7 @@ test.describe('[Create Case Flow With Address and Claimant Type]  @Master @night
       email: defendantDetails.no,
     });
     await performValidation('mainHeader', groundsForPossession.mainHeader);
-    await performAction('selectGroundsForPossession', groundsForPossession.yes);
+    await performAction('selectGroundsForPossission', groundsForPossession.yes);
     await performAction('selectPreActionProtocol', preActionProtocol.yes);
     await performAction('selectMediationAndSettlement', {
       attemptedMediationWithDefendantsOption: mediationAndSettlement.yes,

@@ -40,7 +40,7 @@ export class CreateCaseAction implements IAction {
       ['selectClaimType', () => this.selectClaimType(fieldName)],
       ['selectClaimantName', () => this.selectClaimantName(fieldName)],
       ['selectContactPreferences', () => this.selectContactPreferences(fieldName)],
-      ['selectGroundsForPossession', () => this.selectGroundsForPossession(fieldName)],
+      ['selectGroundsForPossission', () => this.selectGroundsForPossission(fieldName)],
       ['selectPreActionProtocol', () => this.selectPreActionProtocol(fieldName)],
       ['selectMediationAndSettlement', () => this.selectMediationAndSettlement(fieldName)],
       ['selectNoticeOfYourIntention', () => this.selectNoticeOfYourIntention(fieldName)],
@@ -109,7 +109,7 @@ export class CreateCaseAction implements IAction {
     await performAction('clickButton', 'Continue');
   }
 
-  private async selectGroundsForPossession(caseData: actionData) {
+  private async selectGroundsForPossission(caseData: actionData) {
     await performAction('clickRadioButton', caseData);
     await performAction('clickButton', 'Continue');
   }
@@ -169,10 +169,12 @@ export class CreateCaseAction implements IAction {
       option: prefData.correspondenceAddress
     });
     if (prefData.correspondenceAddress === 'No') {
-      await performAction('selectAddress', {
-        postcode: addressDetails.walesPostcode,
-        addressIndex: addressDetails.addressIndex
-      });
+      await performActions(
+          'Find Address based on postcode',
+          ['inputText', 'Enter a UK postcode', addressDetails.walesPostcode],
+          ['clickButton', 'Find address'],
+          ['select', 'Select an address', addressDetails.addressIndex]
+      );
     }
     await performAction('clickRadioButton', {
       question: contactPreferences.provideContactPhoneNumber,
@@ -209,10 +211,12 @@ private async defendantDetails(defendantVal: actionData) {
         option: defendantData.correspondenceAddressSame
       });
       if (defendantData.correspondenceAddressSame === 'No') {
-        await performAction('selectAddress', {
-          postcode: addressDetails.englandPostcode,
-          addressIndex: addressDetails.addressIndex
-        });
+        await performActions(
+            'Find Address based on postcode',
+            ['inputText', 'Enter a UK postcode', addressDetails.englandPostcode],
+            ['clickButton', 'Find address'],
+            ['select', 'Select an address', addressDetails.addressIndex]
+        );
       }
     }
     await performAction('clickRadioButton', {
