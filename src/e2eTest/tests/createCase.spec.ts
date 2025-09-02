@@ -14,10 +14,11 @@ import { checkingNotice } from '@data/page-data/checkingNotice.page.data';
 import { noticeDetails } from '@data/page-data/noticeDetails.page.data';
 import { rentDetails } from '@data/page-data/rentDetails.page.data';
 import { userIneligible } from '@data/page-data/userIneligible.page.data';
-import { defendantDetails } from "@data/page-data/defendantDetails.page.data";
-import { provideMoreDetailsOfClaim } from "@data/page-data/provideMoreDetailsOfClaim.page.data";
-import {resumeClaim} from "@data/page-data/resumeClaim.page.data";
-import {resumeClaimOptions} from "@data/page-data/resumeClaimOptions.page.data";
+import { defendantDetails } from '@data/page-data/defendantDetails.page.data';
+import { provideMoreDetailsOfClaim } from '@data/page-data/provideMoreDetailsOfClaim.page.data';
+import { resumeClaim } from '@data/page-data/resumeClaim.page.data';
+import { resumeClaimOptions } from '@data/page-data/resumeClaimOptions.page.data';
+
 
 test.beforeEach(async ({page}, testInfo) => {
   initializeExecutor(page);
@@ -51,11 +52,11 @@ test.describe('[Create Case Flow With Address and Claimant Type]  @Master @night
       correspondenceAddress: contactPreferences.yes,
       phoneNumber: contactPreferences.no
     });
-    await performAction('defendantDetails', {
+     await performAction('defendantDetails', {
       name: defendantDetails.yes,
       correspondenceAddress: defendantDetails.yes,
       email: defendantDetails.yes,
-      correspondenceAddressSame: defendantDetails.yes
+      correspondenceAddressSame: defendantDetails.no
     });
     await performValidation('mainHeader', groundsForPossession.mainHeader);
     await performAction('selectGroundsForPossession', groundsForPossession.yes);

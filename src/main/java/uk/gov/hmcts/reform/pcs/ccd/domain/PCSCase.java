@@ -222,6 +222,12 @@ public class PCSCase {
     @CCD(searchable = false, access = {CitizenAccess.class, CaseworkerAccess.class})
     private String postcodeNotAssignedView;
 
+    @CCD(access = {CitizenAccess.class, CaseworkerAccess.class})
+    private DefendantDetails defendant1;
+
+    @CCD(access = {CitizenAccess.class, CaseworkerAccess.class})
+    private List<ListValue<DefendantDetails>> defendants;
+
     @CCD(searchable = false)
     private String nextStepsMarkdown;
 

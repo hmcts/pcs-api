@@ -21,6 +21,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.renderer.ClaimPaymentTabRenderer;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
+import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.UnsubmittedCaseDataService;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
@@ -55,6 +56,8 @@ class CCDCaseRepositoryTest {
     @Mock
     private ClaimPaymentTabRenderer claimPaymentTabRenderer;
     @Mock
+    private PcsCaseService pcsCaseService;
+    @Mock
     private UnsubmittedCaseDataService unsubmittedCaseDataService;
     @Mock
     private PcsCaseEntity pcsCaseEntity;
@@ -66,7 +69,7 @@ class CCDCaseRepositoryTest {
         when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(pcsCaseEntity));
 
         underTest = new CCDCaseRepository(pcsCaseRepository, securityContextService,
-                modelMapper, claimPaymentTabRenderer, unsubmittedCaseDataService);
+                modelMapper, claimPaymentTabRenderer, pcsCaseService, unsubmittedCaseDataService);
     }
 
     @Test
