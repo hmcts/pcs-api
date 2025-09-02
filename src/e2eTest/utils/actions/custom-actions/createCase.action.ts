@@ -13,6 +13,7 @@ import { claimantName } from '@data/page-data/claimantName.page.data';
 import { contactPreferences } from '@data/page-data/contactPreferences.page.data';
 import { mediationAndSettlement } from '@data/page-data/mediationAndSettlement.page.data';
 import { resumeClaimOptions } from "@data/page-data/resumeClaimOptions.page.data";
+import configData from '@config/test.config';
 
 let caseInfo: { id: string; fid: string; state: string };
 const testConfig = TestConfig.ccdCase;
@@ -32,6 +33,7 @@ export class CreateCaseAction implements IAction {
       ['selectLegislativeCountry', () => this.selectLegislativeCountry(fieldName)],
       ['retrieveCaseId', () => this.retrieveCaseId(page)],
       ['selectClaimantType', () => this.selectClaimantType(fieldName)],
+      ['reloginAndFindTheCase', () => this.reloginAndFindTheCase()],
       ['defendantDetails', () => this.defendantDetails(fieldName)],
       ['selectJurisdictionCaseTypeEvent', () => this.selectJurisdictionCaseTypeEvent()],
       ['enterTestAddressManually', () => this.enterTestAddressManually()],
@@ -84,6 +86,7 @@ export class CreateCaseAction implements IAction {
       ['clickButton', 'Find address'],
       ['select', 'Select an address', addressDetails.addressIndex]
     );
+    await performAction('clickButton', 'Submit');
   }
 
   private async selectResumeClaimOption(caseData: actionData) {
@@ -132,6 +135,20 @@ export class CreateCaseAction implements IAction {
       await performAction('inputText', claimantName.whatIsCorrectClaimantName, claimantName.correctClaimantNameInput);
     }
     await performAction('clickButton', 'Continue');
+  }
+
+  private async reloginAndFindTheCase() {
+    await performAction('navigateToUrl', configData.manageCasesBaseURL);
+    await performAction('login')
+    await performAction('clickButton', 'Find case');
+    await performAction('select', 'Jurisdiction', createCase.possessionsJurisdiction);
+    await performAction('select', 'Case type', createCase.caseType.civilPossessions);
+    await performAction('inputText', 'Case Number', process.env.CASE_NUMBER);
+    await performAction('clickButton', 'Apply');
+    await performAction('clickButton',process.env.CASE_NUMBER)
+    //await performAction('inputText', '16-digit case reference:', process.env.CASE_NUMBER);
+    //await page.pause();
+    //await performAction('clickButton','Find');
   }
 
   private async selectContactPreferences(preferences: actionData) {

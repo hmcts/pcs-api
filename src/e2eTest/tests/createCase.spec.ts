@@ -16,13 +16,15 @@ import { noticeDetails } from '@data/page-data/noticeDetails.page.data';
 import { rentDetails } from '@data/page-data/rentDetails.page.data';
 import { userIneligible } from '@data/page-data/userIneligible.page.data';
 import { defendantDetails } from "@data/page-data/defendantDetails.page.data";
-import { provideMoreDetailsOfClaim } from "@data/page-data/continueTheJourney.page.data";
+import { provideMoreDetailsOfClaim } from "@data/page-data/provideMoreDetailsOfClaim.page.data";
+import {resumeClaim} from "@data/page-data/resumeClaim.page.data";
+import {resumeClaimOptions} from "@data/page-data/resumeClaimOptions.page.data";
 
 test.beforeEach(async ({page}, testInfo) => {
   initializeExecutor(page);
   await parentSuite('Case Creation');
   await performAction('navigateToUrl', configData.manageCasesBaseURL);
-  await performAction('createUserAndLogin', ['caseworker-pcs', 'caseworker']);
+  await performAction('createUserAndLogin', 'claimant', ['caseworker-pcs', 'caseworker']);
   await testInfo.attach('Page URL', {
     body: page.url(),
     contentType: 'text/plain',
@@ -38,11 +40,10 @@ test.describe('[Create Case Flow With Address and Claimant Type]  @Master @night
       postcode: addressDetails.englandWalesCrossBorderPostcode,
       addressIndex: addressDetails.addressIndex
     });
-    await performAction('clickButton', 'Submit');
-
     await performAction('selectLegislativeCountry', legislativeCountry.england);
     await performValidation('bannerAlert', 'Case #.* has been created.');
-    await performValidation('Header', {"text": provideMoreDetailsOfClaim.subHeader, "elementType": 'subHeader'});
+    await performValidation('Header', {"text": provideMoreDetailsOfClaim.subHeader, "elementType": 'subHeader'});//check both
+    //await performValidation('text', {'text': provideMoreDetailsOfClaim.subHeader, 'elementType': 'subHeading'});
     await performAction('clickButton', provideMoreDetailsOfClaim.continue);
     await performAction('selectClaimantType', claimantType.registeredProviderForSocialHousing);
     await performAction('selectClaimType', claimType.no);
@@ -52,17 +53,15 @@ test.describe('[Create Case Flow With Address and Claimant Type]  @Master @night
       correspondenceAddress: contactPreferences.yes,
       phoneNumber: contactPreferences.no
     });
-    await performAction('defendantDetails', {
-      name: defendantDetails.yes,
-      correspondenceAddress: defendantDetails.yes,
-      email: defendantDetails.yes,
-      correspondenceAddressSame: defendantDetails.no
-    });
+    // await performAction('defendantDetails', {
+    //   name: defendantDetails.yes,
+    //   correspondenceAddress: defendantDetails.yes,
+    //   email: defendantDetails.yes,
+    //   correspondenceAddressSame: defendantDetails.no
+    // });
     await performValidation('Header', {"text": groundsForPossession.mainHeader, "elementType": 'mainHeader'});
     await performAction('selectGroundsForPossession', groundsForPossession.yes);
     await performValidation('Header', {"text": preActionProtocol.mainHeader, "elementType": 'mainHeader'});
-    await performAction('selectGroundsForPossission', groundsForPossession.yes);
-    await performValidation('mainHeader', preActionProtocol.mainHeader);
     await performAction('selectPreActionProtocol', preActionProtocol.yes);
     await performValidation('Header', {"text": mediationAndSettlement.mainHeader, "elementType": 'mainHeader'});
     await performAction('selectMediationAndSettlement', {
@@ -97,17 +96,29 @@ test.describe('[Create Case Flow With Address and Claimant Type]  @Master @night
     await performAction('selectClaimantType', claimantType.registeredCommunityLandlord);
     await performAction('selectClaimType', claimType.no);
     await performAction('selectClaimantName', claimantName.no);
+    await performAction('clickButton', 'Sign out');
+    await performAction('reloginAndFindTheCase');
+    await performValidation('Header', {"text": resumeClaim.mainHeader, "elementType": 'mainHeader'});
+    await performAction('clickButton', resumeClaim.continue);
+    await performValidation('Header', {"text": resumeClaimOptions.mainHeader, "elementType": 'mainHeader'});
+    await performAction('selectResumeClaimOption', resumeClaimOptions.yes);
+    await performValidation('radioButton', {option: claimantType.registeredCommunityLandlord,shouldBeChecked: true});
+    await performAction('clickButton', 'Continue');
+    await performValidation('radioButton', {option: claimType.no,shouldBeChecked: true});
+    await performAction('clickButton', 'Continue');
+    await performValidation('radioButton', {option: claimantName.no,shouldBeChecked: true});
+    await performAction('clickButton', 'Continue');
     await performAction('selectContactPreferences', {
       notifications: contactPreferences.no,
-      correspondenceAddress: contactPreferences.no,
+      correspondenceAddress: contactPreferences.yes,//-----------------------------check with asha/lovelin
       phoneNumber: contactPreferences.yes
     });
-    await performAction('defendantDetails', {
-      name: defendantDetails.yes,
-      correspondenceAddress: defendantDetails.yes,
-      email: defendantDetails.yes,
-      correspondenceAddressSame: defendantDetails.yes
-    });
+    // await performAction('defendantDetails', {
+    //   name: defendantDetails.yes,
+    //   correspondenceAddress: defendantDetails.yes,
+    //   email: defendantDetails.yes,
+    //   correspondenceAddressSame: defendantDetails.yes
+    // });
     await performValidation('Header', {"text": groundsForPossession.mainHeader, "elementType": 'mainHeader'});
     await performAction('selectGroundsForPossession', groundsForPossession.yes);
     await performValidation('Header', {"text": preActionProtocol.mainHeader, "elementType": 'mainHeader'});
@@ -190,12 +201,29 @@ test.describe('[Create Case Flow With Address and Claimant Type]  @Master @night
     await performAction('clickButton', 'Cancel');
   });
 
-    test('Defendant 1\'s correspondence address is not known', async () => {
+  test('Defendant 1\'s correspondence address is not known', async () => {
       await performAction('enterTestAddressManually');
-      await performAction('selectLegislativeCountry', legislativeCountry.wales);
+      await performValidation('bannerAlert', 'Case #.* has been created.');
+      await performAction('retrieveCaseId');
+      await performValidation('Header', {"text": provideMoreDetailsOfClaim.subHeader, "elementType": 'subHeader'});
+      await performAction('clickButton', provideMoreDetailsOfClaim.continue);
+      //await performAction('selectLegislativeCountry', legislativeCountry.wales);
       await performAction('selectClaimantType', claimantType.registeredCommunityLandlord);
       await performAction('selectClaimType', claimType.no);
       await performAction('selectClaimantName', claimantName.yes);
+      await performAction('clickButton', 'Sign out');
+      await performAction('reloginAndFindTheCase');
+      await performAction('clickButton', 'Apply');
+      await performValidation('mainHeader', resumeClaim.mainHeader);
+      await performAction('clickButton', resumeClaim.continue);
+      await performValidation('mainHeader', resumeClaimOptions.mainHeader);
+      await performAction('selectResumeClaimOption', resumeClaimOptions.yes);
+      await performValidation('radioButton', {option: claimantType.registeredCommunityLandlord,shouldBeChecked: false});
+      await performAction('clickButton', 'Continue');
+      await performValidation('radioButton', {option: claimType.no,shouldBeChecked: false});
+      await performAction('clickButton', 'Continue');
+      await performValidation('radioButton', {option: claimantName.yes,shouldBeChecked: false});
+      await performAction('clickButton', 'Continue');
       await performAction('selectContactPreferences', {
         notifications: contactPreferences.yes,
         correspondenceAddress: contactPreferences.yes,
@@ -218,7 +246,7 @@ test.describe('[Create Case Flow With Address and Claimant Type]  @Master @night
       await performValidation('mainHeader', rentDetails.mainHeader);
       await performAction('clickButton', rentDetails.continue);
       await performAction('clickButton', 'Save and continue');
-      await performValidation('bannerAlert', 'Case #.* has been created.');
+      await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
       await performAction('clickTab', 'Property Details');
       await performValidations('address information entered',
         ['formLabelValue', 'Building and Street', addressDetails.buildingAndStreet],

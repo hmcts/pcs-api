@@ -15,7 +15,7 @@ export class ValidationRegistry {
     ['bannerAlert', new BannerAlertValidation()],
     ['formLabelValue', new FormLabelValueValidation()],
     ['optionList', new OptionListValidation()],
-    ['mainHeader', new HeaderValidation()],
+    ['Header', new HeaderValidation()],
     ['subHeader', new HeaderValidation()],
     ['errorMessage', new ErrorMessageValidation()],
     ['radioButton', new RadioButtonValidation()]

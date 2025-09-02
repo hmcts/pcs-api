@@ -4,7 +4,6 @@ import TestConfig from "../../../config/test.config";
 import {TokenEndpointResponse} from 'oauth4webapi';
 import {request, retriedRequest} from './rest.helper';
 import {buildUserDataWithRole, UserData} from './testConfig';
-import {permanentUsersData} from "@data/permanent-users.data";
 
 const testConfig = TestConfig.iDam;
 const username = process.env.IDAM_SYSTEM_USERNAME as string;
@@ -115,11 +114,11 @@ export function deleteTempUser(key: string) {
 }
 
 export function getUser(key: string): UserDetails | undefined {
-  return tempUsers[key] || permanentUsersData[key];
+  return tempUsers[key];
 }
 
 export function getAllUsers(): Record<string, UserDetails> {
-  return {...permanentUsersData, ...tempUsers};
+  return {...tempUsers};
 }
 
 let result: string;
@@ -150,7 +149,7 @@ export async function getS2SToken(): Promise<string> {
     return result;
   });
 
-};
+}
 
 let authToken: string = '';
 export const initIdamAuthToken = async (email: string,pwd:string): Promise<void> => {

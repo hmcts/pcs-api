@@ -46,18 +46,6 @@ module.exports = defineConfig({
         headless: false,
       },
     },
-    {
-      name: 'firefox',
-      use: {
-        ...devices["Desktop Firefox"],
-        channel: 'firefox',
-        screenshot: 'only-on-failure',
-        video: 'retain-on-failure',
-        trace: 'on-first-retry',
-        javaScriptEnabled: true,
-        viewport: DEFAULT_VIEWPORT,
-        headless: false,
-      },
-    },
+
   ],
 });
