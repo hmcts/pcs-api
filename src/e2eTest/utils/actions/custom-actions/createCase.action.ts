@@ -168,7 +168,7 @@ export class CreateCaseAction implements IAction {
     if (prefData.correspondenceAddress === 'No') {
       await performActions(
           'Find Address based on postcode',
-          ['inputText', 'Enter a UK postcode', addressDetails.walesPostcode],
+          ['inputText', 'Enter a UK postcode', addressDetails.englandPostcode],
           ['clickButton', 'Find address'],
           ['select', 'Select an address', addressDetails.addressIndex]
       );
