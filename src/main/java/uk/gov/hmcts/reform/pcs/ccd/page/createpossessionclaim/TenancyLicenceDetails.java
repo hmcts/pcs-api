@@ -46,7 +46,7 @@ public class TenancyLicenceDetails implements CcdPageConfiguration {
                 Do you want to upload a copy of the tenancy or licence agreement?
                 </p>
                <p class="govuk-hint govuk-!-font-size-16 govuk-!-margin-top-1">
-                You can either upload this now or closer to the hearing data. Any documents you upload now will be
+                You can either upload this now or closer to the hearing date. Any documents you upload now will be
                 included in the pack of documents a judge will receive before hearing the hearing (the bundle).
                 </p>
                """)
