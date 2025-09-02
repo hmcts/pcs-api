@@ -1,7 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.domain;
 
+
 import java.util.Arrays;
-import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -14,6 +14,7 @@ import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.FieldType;
 
+
 import static java.util.Locale.ROOT;
 import static org.apache.commons.lang3.StringUtils.substringAfterLast;
 import static uk.gov.hmcts.ccd.sdk.type.FieldType.DynamicRadioList;
@@ -23,7 +24,6 @@ import uk.gov.hmcts.ccd.sdk.type.ComponentLauncher;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseworkerAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenAccess;
 import static uk.gov.hmcts.ccd.sdk.type.FieldType.TextArea;
-
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
@@ -284,5 +284,11 @@ public class PCSCase {
 
     @CCD(searchable = false, access = {CitizenAccess.class, CaseworkerAccess.class})
     private String postcodeNotAssignedView;
+
+    @CCD(access = {CitizenAccess.class, CaseworkerAccess.class})
+    private DefendantDetails defendant1;
+
+    @CCD(access = {CitizenAccess.class, CaseworkerAccess.class})
+    private List<ListValue<DefendantDetails>> defendants;
 
 }
