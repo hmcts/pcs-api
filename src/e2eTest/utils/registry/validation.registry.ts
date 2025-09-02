@@ -4,9 +4,9 @@ import {BannerAlertValidation} from "@utils/validations/element-validations/bann
 import {VisibilityValidation} from "@utils/validations/element-validations/visibility.validation";
 import {FormLabelValueValidation} from "@utils/validations/element-validations/formLabelValue.validation";
 import {OptionListValidation} from "@utils/validations/element-validations/optionList.validation";
-import {HeaderValidation} from "@utils/validations/element-validations/pageHeader.validation";
 import {ErrorMessageValidation} from "@utils/validations/element-validations/error-message.validation";
 import {RadioButtonValidation} from "@utils/validations/element-validations/radioButton.validation";
+import {MainHeaderValidation} from "@utils/validations/element-validations/pageHeader.validation";
 
 export class ValidationRegistry {
   private static validations: Map<string, IValidation> = new Map([
@@ -15,8 +15,7 @@ export class ValidationRegistry {
     ['bannerAlert', new BannerAlertValidation()],
     ['formLabelValue', new FormLabelValueValidation()],
     ['optionList', new OptionListValidation()],
-    ['Header', new HeaderValidation()],
-    ['subHeader', new HeaderValidation()],
+    ['mainHeader', new MainHeaderValidation()],
     ['errorMessage', new ErrorMessageValidation()],
     ['radioButton', new RadioButtonValidation()]
   ]);

@@ -4,12 +4,12 @@ import { IValidation, validationData } from '../../interfaces/validation.interfa
 export class RadioButtonValidation implements IValidation {
   async validate(page: Page, fieldName: string, data: validationData): Promise<void> {
 
-    const label = page.locator(`label.form-label:has-text("${data.options}")`);
+    const label = page.locator(`label.form-label:has-text("${data.option}")`);
 
     const inputId = await label.getAttribute('for');
 
     if (!inputId) {
-      throw new Error(`No input id found for label "${data.options}"`);
+      throw new Error(`No input id found for label "${data.option}"`);
     }
 
     const input = page.locator(`#${inputId}`);

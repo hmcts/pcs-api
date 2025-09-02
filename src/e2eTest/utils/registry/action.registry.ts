@@ -25,6 +25,7 @@ export class ActionRegistry {
     ['retrieveCaseId', new CreateCaseAction()],
     ['selectClaimantType', new CreateCaseAction()],
     ['reloginAndFindTheCase', new CreateCaseAction()],
+    ['selectResumeClaimOption', new CreateCaseAction()],
     ['defendantDetails', new CreateCaseAction()],
     ['selectJurisdictionCaseTypeEvent', new CreateCaseAction()],
     ['enterTestAddressManually', new CreateCaseAction()],

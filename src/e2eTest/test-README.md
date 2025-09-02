@@ -95,6 +95,7 @@ Playwright 1.30+ | TypeScript 4.9+
 | retrieveCaseId                  | `performAction('retrieveCaseId', ...)`                                                                                                                                                                     |
 | selectGroundsForPossession      | `performAction('selectGroundsForPossession', ...)`                                                                                                                                                         |
 | reloginAndFindTheCase | `performAction('reloginAndFindTheCase', ...)` |
+| selectResumeClaimOption | `performAction('selectResumeClaimOption', ...)` |
 ### Validations
 | Validation          | Example Usage |
 |------------------|---------------|
@@ -105,8 +106,7 @@ Playwright 1.30+ | TypeScript 4.9+
 | errorMessage      | `performValidation('errorMessage', {header: claimantType.errorMessage.header,errorHasLink: claimantType.errorMessage.errorMessage})` |
 | optionList        | `performValidation('optionList', 'sectionName', {optionsData})`                                                                      |
 | radioButton     | `performValidation('radioButton', ...)` |
-| subHeader       | `performValidation('subHeader', ...)` |
-| Header          | `performValidation('Header', ...)` |
+| mainHeader      | `performValidation('mainHeader', ...)` |
 ### Basic Test
 
 ```typescript
