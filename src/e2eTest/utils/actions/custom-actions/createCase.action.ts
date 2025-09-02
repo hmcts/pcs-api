@@ -203,8 +203,8 @@ private async defendantDetails(defendantVal: actionData) {
       await performAction('check', arrears);
     }
     await performAction('clickRadioButton', rentArrearsGrounds.otherGrounds);
-    if(rentArrearsGrounds.otherGrounds === 'Yes') {
-      if(rentArrearsGrounds.mandatory && rentArrearsGrounds.discretionary) {
+    if (rentArrearsGrounds.otherGrounds === 'Yes') {
+      if (rentArrearsGrounds.mandatory && rentArrearsGrounds.discretionary) {
         for (const otherGround of rentArrearsGrounds.mandatory) {
           await performAction('check', otherGround);
         }
@@ -214,6 +214,7 @@ private async defendantDetails(defendantVal: actionData) {
       }
       await performAction('clickButton', 'Continue');
     }
+  }
 
   private async selectMediationAndSettlement(mediationSettlement: actionData) {
     const prefData = mediationSettlement as {
