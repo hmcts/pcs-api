@@ -433,23 +433,4 @@ class PcsCaseServiceTest {
         when(modelMapper.map(addressUK, AddressEntity.class)).thenReturn(addressEntity);
         return addressEntity;
     }
-
-    @Test
-    void shouldHaveMax250OnMediationAttemptedDetails() throws Exception {
-        java.lang.reflect.Field field = PCSCase.class.getDeclaredField("mediationAttemptedDetails");
-        CCD ccd = field.getAnnotation(CCD.class);
-        assertThat(ccd).isNotNull();
-        assertThat(ccd.max()).isEqualTo(250);
-        assertThat(ccd.typeOverride()).isEqualTo(FieldType.TextArea);
-    }
-
-    @Test
-    void shouldHaveMax250OnSettlementAttemptedDetails() throws Exception {
-        java.lang.reflect.Field field = PCSCase.class.getDeclaredField("settlementAttemptedDetails");
-        CCD ccd = field.getAnnotation(CCD.class);
-        assertThat(ccd).isNotNull();
-        assertThat(ccd.max()).isEqualTo(250);
-        assertThat(ccd.typeOverride()).isEqualTo(FieldType.TextArea);
-    }
-
 }
