@@ -163,6 +163,7 @@ public class PCSCase {
     @CCD(
         label = "Give details about the attempted mediation and what the outcome was",
         access = {CitizenAccess.class, CaseworkerAccess.class},
+        regex = "^[\\s\\S]{0,250}$",
         typeOverride = TextArea
     )
     private String mediationAttemptedDetails;
@@ -176,6 +177,7 @@ public class PCSCase {
     @CCD(
         label = "Explain what steps you've taken to reach a settlement",
         access = {CitizenAccess.class, CaseworkerAccess.class},
+        regex = "^[\\s\\S]{0,250}$",
         typeOverride = TextArea
     )
     private String settlementAttemptedDetails;
