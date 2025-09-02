@@ -9,13 +9,16 @@ import uk.gov.hmcts.ccd.sdk.api.Event.EventBuilder;
 import uk.gov.hmcts.ccd.sdk.api.EventPayload;
 import uk.gov.hmcts.ccd.sdk.api.Permission;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
+import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.ShowConditions;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PaymentStatus;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyRole;
@@ -28,6 +31,7 @@ import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.ClaimantInformatio
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.ClaimantTypeNotEligibleEngland;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.ClaimantTypeNotEligibleWales;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.ContactPreferences;
+import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.DefendantsDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.GroundsForPossession;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.MediationAndSettlement;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.NoticeDetails;
@@ -45,6 +49,7 @@ import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
@@ -89,6 +94,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             .add(new ClaimTypeNotEligibleWales())
             .add(new ClaimantInformation())
             .add(new ContactPreferences())
+            .add(new DefendantsDetails())
             .add(new GroundsForPossession())
             .add(new PreActionProtocol())
             .add(new MediationAndSettlement())
@@ -151,6 +157,16 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
 
         String contactEmail = isNotBlank(pcsCase.getOverriddenClaimantContactEmail())
             ? pcsCase.getOverriddenClaimantContactEmail() : pcsCase.getClaimantContactEmail();
+
+        List<ListValue<DefendantDetails>> defendantsList = new ArrayList<>();
+        if (pcsCase.getDefendant1() != null) {
+            if (VerticalYesNo.YES == pcsCase.getDefendant1().getAddressSameAsPossession()) {
+                pcsCase.getDefendant1().setCorrespondenceAddress(pcsCase.getPropertyAddress());
+            }
+            defendantsList.add(new ListValue<>(UUID.randomUUID().toString(), pcsCase.getDefendant1()));
+            pcsCaseService.clearHiddenDefendantDetailsFields(defendantsList);
+            pcsCase.setDefendants(defendantsList);
+        }
 
         PcsCaseEntity pcsCaseEntity = pcsCaseService.patchCase(caseReference, pcsCase);
         PartyEntity party = partyService.createAndLinkParty(

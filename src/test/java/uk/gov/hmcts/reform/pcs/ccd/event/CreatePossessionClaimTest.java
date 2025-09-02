@@ -14,6 +14,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.CrossBorderPostcodeSelection;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.EnterPropertyAddress;
+import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.PropertyNotEligible;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
@@ -32,13 +33,15 @@ class CreatePossessionClaimTest extends BaseEventTest {
     private EnterPropertyAddress enterPropertyAddress;
     @Mock
     private CrossBorderPostcodeSelection crossBorderPostcodeSelection;
+    @Mock
+    private PropertyNotEligible propertyNotEligible;
 
     private Event<PCSCase, UserRole, State> configuredEvent;
 
     @BeforeEach
     void setUp() {
-        CreatePossessionClaim underTest
-            = new CreatePossessionClaim(pcsCaseService, enterPropertyAddress, crossBorderPostcodeSelection);
+        CreatePossessionClaim underTest = new CreatePossessionClaim(pcsCaseService, enterPropertyAddress,
+                                                                    crossBorderPostcodeSelection, propertyNotEligible);
 
         configuredEvent = getEvent(EventId.createPossessionClaim, buildEventConfig(underTest));
     }

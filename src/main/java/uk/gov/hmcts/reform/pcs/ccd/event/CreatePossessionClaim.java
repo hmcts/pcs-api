@@ -30,6 +30,7 @@ public class CreatePossessionClaim implements CCDConfig<PCSCase, State, UserRole
     private final PcsCaseService pcsCaseService;
     private final EnterPropertyAddress enterPropertyAddress;
     private final CrossBorderPostcodeSelection crossBorderPostcodeSelection;
+    private final PropertyNotEligible propertyNotEligible;
 
     @Override
     public void configure(ConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -44,7 +45,7 @@ public class CreatePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             .add(new StartTheService())
             .add(enterPropertyAddress)
             .add(crossBorderPostcodeSelection)
-            .add(new PropertyNotEligible())
+            .add(propertyNotEligible)
             .add(new PostcodeNotAssignedToCourt());
     }
 
