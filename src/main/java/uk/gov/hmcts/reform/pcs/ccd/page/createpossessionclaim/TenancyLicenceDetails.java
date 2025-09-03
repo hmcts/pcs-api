@@ -78,24 +78,24 @@ public class TenancyLicenceDetails implements CcdPageConfiguration {
         if(caseData.getTypeOfTenancyLicence() == TenancyLicenceType.SECURE_TENANCY
         ||caseData.getTypeOfTenancyLicence() == TenancyLicenceType.FLEXIBLE_TENANCY )  {
 
-            caseData.setSecureOrFlexibleTenancyDiscretionaryGrounds(
+            caseData.setSecureOrFlexibleDiscretionaryGrounds(
                     DynamicMultiSelectList.builder()
                             .listItems(getDiscretionaryGroundOptions
                                     (TenancyLicenceType.FLEXIBLE_TENANCY ,false)).value(Collections.emptyList())
                             .build());
-            caseData.setSecureOrFlexibleTenancyDiscretionaryGrounds2(
+            caseData.setSecureOrFlexibleDiscretionaryGroundsAlternativeAccommodation(
                     DynamicMultiSelectList.builder()
                             .listItems(getDiscretionaryGroundOptions
                                     (TenancyLicenceType.FLEXIBLE_TENANCY ,true)).value(Collections.emptyList())
                             .build()
             );
-            caseData.setSecureOrFlexibleTenancyMandatoryGrounds(
+            caseData.setSecureOrFlexibleMandatoryGrounds(
                     DynamicMultiSelectList.builder()
                             .listItems(getMandatoryGroundOptions
                                     (TenancyLicenceType.FLEXIBLE_TENANCY ,false)).value(Collections.emptyList())
                             .build()
             );
-            caseData.setSecureOrFlexibleTenancyMandatoryGrounds2(
+            caseData.setSecureOrFlexibleMandatoryGroundsAlternativeAccommodation(
                     DynamicMultiSelectList.builder()
                             .listItems(getMandatoryGroundOptions
                                     (TenancyLicenceType.FLEXIBLE_TENANCY ,true)).value(Collections.emptyList())

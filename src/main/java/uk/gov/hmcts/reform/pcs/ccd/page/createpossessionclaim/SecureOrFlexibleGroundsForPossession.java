@@ -22,14 +22,24 @@ public class SecureOrFlexibleGroundsForPossession implements CcdPageConfiguratio
     @Override
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
-            .page("groundsForPossession", this::midEvent)
+            .page("secureOrFlexibleGroundsForPossession", this::midEvent)
             .pageLabel("What are your grounds for possession")
             .showCondition("typeOfTenancyLicence=\"SECURE_TENANCY\" OR typeOfTenancyLicence=\"FLEXIBLE_TENANCY\"")
-            .label("groundsForPossession-lineSeparator", "---")
-            .mandatory(PCSCase::getSecureOrFlexibleTenancyDiscretionaryGrounds)
-            .mandatory(PCSCase::getSecureOrFlexibleTenancyMandatoryGrounds)
-            .mandatory(PCSCase::getSecureOrFlexibleTenancyMandatoryGrounds2)
-            .mandatory(PCSCase::getSecureOrFlexibleTenancyDiscretionaryGrounds2);
+            .label("secureOrFlexibleGroundsForPossession-info", """
+               ---
+               <p class="govuk-body"> You may have already given defendant's notice of your intention to begin possession proceedings.
+                If you have, you should have written the grounds you're making your claim under. You should select these
+                grounds here and any extra ground you'd like to add to your claim, if you need to.<br><br>
+
+               <a href="#" class="govuk-link" rel="noreferrer noopener" target="_blank">
+                More information about possessions grounds (opens in a new tab)
+                </a>.
+               </p>
+               """)
+            .optional(PCSCase::getSecureOrFlexibleDiscretionaryGrounds)
+            .optional(PCSCase::getSecureOrFlexibleMandatoryGrounds)
+            .optional(PCSCase::getSecureOrFlexibleMandatoryGroundsAlternativeAccommodation)
+            .optional(PCSCase::getSecureOrFlexibleDiscretionaryGroundsAlternativeAccommodation);
     }
 
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
@@ -37,21 +47,27 @@ public class SecureOrFlexibleGroundsForPossession implements CcdPageConfiguratio
         PCSCase caseData = details.getData();
 
         caseData.setSelectedSecureOrFlexibleDiscretionaryGrounds(
-            setSelectedDiscretionaryGrounds(caseData.getSecureOrFlexibleTenancyDiscretionaryGrounds()
-                ,caseData.getSecureOrFlexibleTenancyDiscretionaryGrounds2()
+            setSelectedDiscretionaryGrounds(caseData.getSecureOrFlexibleDiscretionaryGrounds()
+                ,caseData.getSecureOrFlexibleDiscretionaryGroundsAlternativeAccommodation()
             )
         );
 
         caseData.setSelectedSecureOrFlexibleMandatoryGrounds(
-            setSelectedMandatoryGrounds(caseData.getSecureOrFlexibleTenancyMandatoryGrounds()
-                ,caseData.getSecureOrFlexibleTenancyMandatoryGrounds2()
+            setSelectedMandatoryGrounds(caseData.getSecureOrFlexibleMandatoryGrounds()
+                ,caseData.getSecureOrFlexibleMandatoryGroundsAlternativeAccommodation()
             )
         );
+
+        if(caseData.getSelectedSecureOrFlexibleDiscretionaryGrounds().isEmpty()
+            && caseData.getSelectedSecureOrFlexibleMandatoryGrounds().isEmpty()) {
+            return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
+                .errors(List.of("Please select at least one ground"))
+                .build();
+        }
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
             .data(caseData)
             .build();
     }
-
 
     private Set<DiscretionaryGrounds> setSelectedDiscretionaryGrounds(DynamicMultiSelectList list1, DynamicMultiSelectList list2) {
         return Stream.of(list1, list2)
@@ -63,7 +79,6 @@ public class SecureOrFlexibleGroundsForPossession implements CcdPageConfiguratio
             .map(DiscretionaryGrounds::fromLabel)
             .collect(Collectors.toSet());
     }
-
 
     private Set<MandatoryGrounds> setSelectedMandatoryGrounds(DynamicMultiSelectList list1, DynamicMultiSelectList list2) {
         return Stream.of(list1, list2)
