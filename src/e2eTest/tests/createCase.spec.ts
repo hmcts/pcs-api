@@ -101,11 +101,11 @@ test.describe('[Create Case Flow With Address and Claimant Type]  @Master @night
     await performAction('reloginAndFindTheCase');
     await performAction('clickButton', resumeClaim.continue);
     await performAction('selectResumeClaimOption', resumeClaimOptions.yes);
-    await performValidation('radioButton', {option: claimantType.registeredCommunityLandlord,shouldBeChecked: true});
+    await performValidation('radioButtonChecked', claimantType.registeredCommunityLandlord, true);
     await performAction('clickButton', 'Continue');
-    await performValidation('radioButton', {option: claimType.no,shouldBeChecked: true});
+    await performValidation('radioButtonChecked', claimType.no, true);
     await performAction('clickButton', 'Continue');
-    await performValidation('radioButton', {option: claimantName.no,shouldBeChecked: true});
+    await performValidation('radioButtonChecked', claimantName.no, true);
     await performAction('clickButton', 'Continue');
     await performAction('selectContactPreferences', {
       notifications: contactPreferences.no,
@@ -129,8 +129,6 @@ test.describe('[Create Case Flow With Address and Claimant Type]  @Master @night
     await performAction('selectNoticeOfYourIntention', checkingNotice.no);
     await performValidation('mainHeader', rentDetails.mainHeader);
     await performAction('provideRentDetails', {rentFrequencyOption:'Other', inputFrequency:rentDetails.rentFrequencyFortnightly,unpaidRentAmountPerDay:'50'});
-    //await performValidation('mainHeader', detailsOfrentArrears.mainHeader);
-    //await performAction('clickButton', detailsOfrentArrears.continue);
     await performAction('clickButton', 'Save and continue');
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
     await performAction('clickTab', 'Property Details');
@@ -209,11 +207,11 @@ test.describe('[Create Case Flow With Address and Claimant Type]  @Master @night
     await performAction('reloginAndFindTheCase');
     await performAction('clickButton', resumeClaim.continue);
     await performAction('selectResumeClaimOption', resumeClaimOptions.no);
-    await performValidation('radioButton', {option: claimantType.registeredCommunityLandlord,shouldBeChecked: false});
+    await performValidation('radioButtonChecked', claimantType.registeredCommunityLandlord, false);
     await performAction('selectClaimantType', claimantType.registeredCommunityLandlord);
-    await performValidation('radioButton', {option: claimType.no,shouldBeChecked: false});
+    await performValidation('radioButtonChecked', claimType.no, false);
     await performAction('selectClaimType', claimType.no);
-    await performValidation('radioButton', {option: claimantName.yes,shouldBeChecked: false});
+    await performValidation('radioButtonChecked', claimantName.no, true);
     await performAction('selectClaimantName', claimantName.yes);
     await performAction('selectContactPreferences', {
       notifications: contactPreferences.yes,

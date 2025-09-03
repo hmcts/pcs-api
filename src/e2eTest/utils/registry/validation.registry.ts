@@ -17,7 +17,7 @@ export class ValidationRegistry {
     ['optionList', new OptionListValidation()],
     ['mainHeader', new MainHeaderValidation()],
     ['errorMessage', new ErrorMessageValidation()],
-    ['radioButton', new RadioButtonValidation()]
+    ['radioButtonChecked', new RadioButtonValidation()]
   ]);
 
   static getValidation(validationType: string): IValidation {

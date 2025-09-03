@@ -107,7 +107,7 @@ Playwright 1.30+ | TypeScript 4.9+
 | errorMessage      | `performValidation('errorMessage', {header: claimantType.errorMessage.header,errorHasLink: claimantType.errorMessage.errorMessage})` |
 | optionList        | `performValidation('optionList', 'sectionName', {optionsData})`                                                                      |
 | mainHeader        | `performValidation('mainHeader', borderPostcode.mainHeader)`                                                                         |
-| radioButton       | `performValidation('radioButton', {option: claimType.no,shouldBeChecked: true});`                                                    |
+| radioButtonChecked | `performValidation('radioButtonChecked')`                                                                                           |
 ### Basic Test
 
 ```typescript
