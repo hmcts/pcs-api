@@ -13,6 +13,7 @@ import { claimantName } from '@data/page-data/claimantName.page.data';
 import { contactPreferences } from '@data/page-data/contactPreferences.page.data';
 import { mediationAndSettlement } from '@data/page-data/mediationAndSettlement.page.data';
 import { rentDetails } from '@data/page-data/rentDetails.page.data';
+import { dailyRentAmount } from '@data/page-data/dailyRentAmount.page.data';
 
 let caseInfo: { id: string; fid: string; state: string };
 const testConfig = TestConfig.ccdCase;
@@ -41,7 +42,8 @@ export class CreateCaseAction implements IAction {
       ['selectMediationAndSettlement', () => this.selectMediationAndSettlement(fieldName)],
       ['selectNoticeOfYourIntention', () => this.selectNoticeOfYourIntention(fieldName)],
       ['selectCountryRadioButton', () => this.selectCountryRadioButton(fieldName)],
-      ['provideRentDetails', () => this.provideRentDetails(fieldName)]
+      ['provideRentDetails', () => this.provideRentDetails(fieldName)],
+      ['selectDailyRentAmount', () => this.selectDailyRentAmount(fieldName)]
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) throw new Error(`No action found for '${action}'`);
@@ -251,6 +253,23 @@ private async defendantDetails(defendantVal: actionData) {
       await performAction('inputText', rentDetails.amountPerDayInputLabel, rentData.unpaidRentAmountPerDay);
     } else {
       await performAction('inputText', rentDetails.HowMuchRentLabel, rentData.rentAmount);
+    }
+    await performAction('clickButton', 'Continue');
+  }
+
+  private async selectDailyRentAmount(dailyRentAmountData: actionData) {
+    const rentAmount = dailyRentAmountData as {
+      calculateRentAmount?: string,
+      unpaidRentInteractiveOption: string,
+      unpaidRentAmountPerDay?: string
+    };
+    await performValidation('text', {
+      text: dailyRentAmount.basedOnPreviousAnswers + `${rentAmount.calculateRentAmount}`,
+      elementType: 'paragraph'
+    });
+    await performAction('clickRadioButton', rentAmount.unpaidRentInteractiveOption);
+    if(rentAmount.unpaidRentInteractiveOption == 'No'){
+      await performAction('inputText', dailyRentAmount.EnterAmountPerDayLabel, rentAmount.calculateRentAmount);
     }
     await performAction('clickButton', 'Continue');
   }
