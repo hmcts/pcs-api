@@ -259,7 +259,7 @@ private async defendantDetails(defendantVal: actionData) {
 
   private async selectDailyRentAmount(dailyRentAmountData: actionData) {
     const rentAmount = dailyRentAmountData as {
-      calculateRentAmount?: string,
+      calculateRentAmount: string,
       unpaidRentInteractiveOption: string,
       unpaidRentAmountPerDay?: string
     };
@@ -269,7 +269,7 @@ private async defendantDetails(defendantVal: actionData) {
     });
     await performAction('clickRadioButton', rentAmount.unpaidRentInteractiveOption);
     if(rentAmount.unpaidRentInteractiveOption == 'No'){
-      await performAction('inputText', dailyRentAmount.EnterAmountPerDayLabel, rentAmount.calculateRentAmount);
+      await performAction('inputText', dailyRentAmount.EnterAmountPerDayLabel, rentAmount.unpaidRentAmountPerDay);
     }
     await performAction('clickButton', 'Continue');
   }
