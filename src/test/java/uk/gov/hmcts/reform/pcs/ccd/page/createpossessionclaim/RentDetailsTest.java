@@ -73,6 +73,6 @@ class RentDetailsTest extends BasePageTest {
         midEvent.handle(caseDetails, null);
 
         // Then
-        assertThat(caseData.getCalculatedDailyRentChargeAmount()).isEqualTo("1500");
+        assertThat(caseData.getDailyRentChargeAmount()).isEqualTo("1500");
     }
 }

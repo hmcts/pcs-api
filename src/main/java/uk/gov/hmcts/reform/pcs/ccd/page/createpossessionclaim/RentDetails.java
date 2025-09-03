@@ -40,9 +40,7 @@ public class RentDetails implements CcdPageConfiguration {
             String dailyAmountString = String.valueOf(dailyAmountInPence);
 
             caseData.setCalculatedDailyRentChargeAmount(dailyAmountString);
-        } else if (caseData.getRentFrequency() == RentPaymentFrequency.OTHER) {
-            caseData.setCalculatedDailyRentChargeAmount(caseData.getDailyRentChargeAmount());
-        }
+        } 
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
                 .data(caseData)
