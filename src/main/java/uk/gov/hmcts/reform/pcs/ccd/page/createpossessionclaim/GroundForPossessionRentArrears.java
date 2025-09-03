@@ -59,17 +59,18 @@ public class GroundForPossessionRentArrears implements CcdPageConfiguration {
         List<RentArrearsGround> rentArrearsGrounds = caseData.getRentArrearsGrounds();
         log.info("Selected rent arrears grounds: {}", rentArrearsGrounds);
         
+        // Initialize lists if they don't exist
+        List<MandatoryGround> mandatoryGrounds = caseData.getMandatoryGrounds();
+        if (mandatoryGrounds == null) {
+            mandatoryGrounds = new ArrayList<>();
+        }
+        
+        List<DiscretionaryGround> discretionaryGrounds = caseData.getDiscretionaryGrounds();
+        if (discretionaryGrounds == null) {
+            discretionaryGrounds = new ArrayList<>();
+        }
+        
         if (rentArrearsGrounds != null && !rentArrearsGrounds.isEmpty()) {
-            // Initialize lists if they don't exist
-            List<MandatoryGround> mandatoryGrounds = caseData.getMandatoryGrounds();
-            if (mandatoryGrounds == null) {
-                mandatoryGrounds = new ArrayList<>();
-            }
-            
-            List<DiscretionaryGround> discretionaryGrounds = caseData.getDiscretionaryGrounds();
-            if (discretionaryGrounds == null) {
-                discretionaryGrounds = new ArrayList<>();
-            }
             
             // Check each rent arrears ground and add corresponding grounds to the appropriate lists
             for (RentArrearsGround rentArrearsGround : rentArrearsGrounds) {
@@ -98,13 +99,13 @@ public class GroundForPossessionRentArrears implements CcdPageConfiguration {
                 }
             }
             
-            // Update the case data with the populated lists
-            caseData.setMandatoryGrounds(mandatoryGrounds);
-            caseData.setDiscretionaryGrounds(discretionaryGrounds);
-            
             log.info("Auto-populated mandatory grounds: {}", mandatoryGrounds);
             log.info("Auto-populated discretionary grounds: {}", discretionaryGrounds);
         }
+        
+        // Update the case data with the lists (always, even if empty)
+        caseData.setMandatoryGrounds(mandatoryGrounds);
+        caseData.setDiscretionaryGrounds(discretionaryGrounds);
         
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
             .data(caseData)

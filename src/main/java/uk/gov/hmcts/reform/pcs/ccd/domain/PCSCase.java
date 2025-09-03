@@ -176,7 +176,7 @@ public class PCSCase {
 
     // Additional grounds checkboxes - Mandatory
     @CCD(
-        label = "Mandatory grounds label",
+        label = "Mandatory grounds",
         hint = "Select all that apply",
         typeOverride = MultiSelectList,
         typeParameterOverride = "MandatoryGround",
@@ -186,7 +186,7 @@ public class PCSCase {
 
     // Additional grounds checkboxes - Discretionary
     @CCD(
-        label = "Discretionary grounds label",
+        label = "Discretionary grounds",
         hint = "Select all that apply",
         typeOverride = MultiSelectList,
         typeParameterOverride = "DiscretionaryGround",
