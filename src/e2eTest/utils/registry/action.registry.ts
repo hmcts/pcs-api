@@ -33,12 +33,13 @@ export class ActionRegistry {
     ['selectClaimantName', new CreateCaseAction()],
     ['selectContactPreferences', new CreateCaseAction()],
     ['housingPossessionClaim', new CreateCaseAction()],
-    ['selectGroundsForPossission', new CreateCaseAction()],
+    ['selectGroundsForPossession', new CreateCaseAction()],
     ['selectPreActionProtocol', new CreateCaseAction()],
     ['selectMediationAndSettlement', new CreateCaseAction()],
     ['selectNoticeOfYourIntention', new CreateCaseAction()],
     ['selectCountryRadioButton', new CreateCaseAction()],
     ['reloginAndFindTheCase', new CreateCaseAction()],
+    ['provideRentDetails', new CreateCaseAction()],
   ]);
 
   static getAction(actionName: string): IAction {

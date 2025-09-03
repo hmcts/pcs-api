@@ -18,6 +18,7 @@ import { defendantDetails } from '@data/page-data/defendantDetails.page.data';
 import { provideMoreDetailsOfClaim } from '@data/page-data/provideMoreDetailsOfClaim.page.data';
 import { resumeClaim } from '@data/page-data/resumeClaim.page.data';
 import { resumeClaimOptions } from '@data/page-data/resumeClaimOptions.page.data';
+import { detailsOfrentArrears } from '@data/page-data/detailsOfrentArrears.page.data';
 
 test.beforeEach(async ({page}, testInfo) => {
   initializeExecutor(page);
@@ -56,7 +57,7 @@ test.describe('[Create Case Flow With Address and Claimant Type]  @Master @night
       correspondenceAddressSame: defendantDetails.no
     });
     await performValidation('mainHeader', groundsForPossession.mainHeader);
-    await performAction('selectGroundsForPossission', groundsForPossession.yes);
+    await performAction('selectGroundsForPossession', groundsForPossession.yes);
     await performValidation('mainHeader', preActionProtocol.mainHeader);
     await performAction('selectPreActionProtocol', preActionProtocol.yes);
     await performValidation('mainHeader', mediationAndSettlement.mainHeader);
@@ -69,8 +70,11 @@ test.describe('[Create Case Flow With Address and Claimant Type]  @Master @night
     await performValidation('text', {"text": checkingNotice.servedNoticeInteractiveText, "elementType": "inlineText"});
     await performAction('selectNoticeOfYourIntention', checkingNotice.yes);
     await performValidation('mainHeader', noticeDetails.mainHeader);
-    await performAction('clickButton', checkingNotice.continue);
     await performAction('clickButton', noticeDetails.continue);
+    await performValidation('mainHeader', rentDetails.mainHeader);
+    await performAction('provideRentDetails', {rentFrequencyOption:'weekly', rentAmount:'800'});
+    // Below step will be uncommented when the daily rent amount page is implemented as part of the HDPI-1521 story
+    //await performValidation('mainHeader', dailyrentamount.mainHeader);
     await performAction('clickButton', 'Save and continue');
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
     await performAction('clickTab', 'Property Details');
@@ -113,7 +117,7 @@ test.describe('[Create Case Flow With Address and Claimant Type]  @Master @night
       correspondenceAddressSame: defendantDetails.yes
     });
     await performValidation('mainHeader', groundsForPossession.mainHeader);
-    await performAction('selectGroundsForPossission', groundsForPossession.yes);
+    await performAction('selectGroundsForPossession', groundsForPossession.yes);
     await performAction('selectPreActionProtocol', preActionProtocol.yes);
     await performAction('selectMediationAndSettlement', {
       attemptedMediationWithDefendantsOption: mediationAndSettlement.yes,
@@ -122,7 +126,9 @@ test.describe('[Create Case Flow With Address and Claimant Type]  @Master @night
     await performValidation('mainHeader', checkingNotice.mainHeader);
     await performAction('selectNoticeOfYourIntention', checkingNotice.no);
     await performValidation('mainHeader', rentDetails.mainHeader);
-    await performAction('clickButton', rentDetails.continue);
+    await performAction('provideRentDetails', {rentFrequencyOption:'Other', inputFrequency:rentDetails.rentFrequencyFortnightly,unpaidRentAmountPerDay:'50'});
+    await performValidation('mainHeader', detailsOfrentArrears.mainHeader);
+    await performAction('clickButton', detailsOfrentArrears.continue);
     await performAction('clickButton', 'Save and continue');
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
     await performAction('clickTab', 'Property Details');
@@ -227,7 +233,9 @@ test.describe('[Create Case Flow With Address and Claimant Type]  @Master @night
     await performValidation('mainHeader', checkingNotice.mainHeader);
     await performAction('selectNoticeOfYourIntention', checkingNotice.no);
     await performValidation('mainHeader', rentDetails.mainHeader);
-    await performAction('clickButton', rentDetails.continue);
+    await performAction('provideRentDetails', {rentFrequencyOption: 'weekly', rentAmount: '800'});
+    // Below step will be uncommented when the daily rent amount page is implemented as part of the HDPI-1521 story
+    //await performValidation('mainHeader', dailyrentamount.mainHeader);    
     await performAction('clickButton', 'Save and continue');
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
     await performAction('clickTab', 'Property Details');
