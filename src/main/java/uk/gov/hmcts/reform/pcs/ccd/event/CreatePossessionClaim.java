@@ -38,6 +38,7 @@ import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.PostcodeNotAssigne
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.PreActionProtocol;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.PropertyNotEligible;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.RentDetails;
+import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.DailyRentAmount;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.RentArrears;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.SelectClaimType;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.SelectClaimantType;
@@ -102,6 +103,7 @@ public class CreatePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             .add(new CheckingNotice())
             .add(new NoticeDetails())
             .add(new RentDetails())
+            .add(new DailyRentAmount())
             .add(new RentArrears());
     }
 

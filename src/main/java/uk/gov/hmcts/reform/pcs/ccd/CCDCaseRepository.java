@@ -29,6 +29,7 @@ import java.util.UUID;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import java.math.BigDecimal;
 
 /**
  * Invoked by CCD to load PCS cases under the decentralised model.
@@ -60,14 +61,14 @@ public class CCDCaseRepository extends DecentralisedCaseRepository<PCSCase> {
                 : null)
             .currentRent(pcsCaseEntity.getTenancyLicence() != null 
                 && pcsCaseEntity.getTenancyLicence().getRentAmount() != null
-                ? pcsCaseEntity.getTenancyLicence().getRentAmount().toPlainString() : null)
+                ? poundsToPence(pcsCaseEntity.getTenancyLicence().getRentAmount()) : null)
             .rentFrequency(pcsCaseEntity.getTenancyLicence() != null 
                 ? pcsCaseEntity.getTenancyLicence().getRentPaymentFrequency() : null)
             .otherRentFrequency(pcsCaseEntity.getTenancyLicence() != null 
                 ? pcsCaseEntity.getTenancyLicence().getOtherRentFrequency() : null)
             .dailyRentChargeAmount(pcsCaseEntity.getTenancyLicence() != null 
                 && pcsCaseEntity.getTenancyLicence().getDailyRentChargeAmount() != null
-                ? pcsCaseEntity.getTenancyLicence().getDailyRentChargeAmount().toPlainString() : null)
+                ? poundsToPence(pcsCaseEntity.getTenancyLicence().getDailyRentChargeAmount()) : null)
             .noticeServed(pcsCaseEntity.getTenancyLicence() != null 
                 && pcsCaseEntity.getTenancyLicence().getNoticeServed() != null 
                 ? YesOrNo.from(pcsCaseEntity.getTenancyLicence().getNoticeServed()) : null)
@@ -142,5 +143,9 @@ public class CCDCaseRepository extends DecentralisedCaseRepository<PCSCase> {
         return partyEntities.stream()
             .map(entity -> modelMapper.map(entity, Party.class))
             .collect(Collectors.collectingAndThen(Collectors.toList(), ListValueUtils::wrapListItems));
+    }
+
+    private static String poundsToPence(BigDecimal pounds) {
+        return pounds.movePointRight(2).toPlainString();
     }
 }

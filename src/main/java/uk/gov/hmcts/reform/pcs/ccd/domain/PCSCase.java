@@ -251,6 +251,25 @@ public class PCSCase {
     )
     private String dailyRentChargeAmount;
 
+    @CCD(
+        label = "Is the amount per day that unpaid rent should be charged at correct?",
+        access = {CitizenAccess.class, CaseworkerAccess.class}
+    )
+    private VerticalYesNo rentPerDayCorrect;
+
+    @CCD(
+        label = "Enter amount per day that unpaid rent should be charged at",
+        typeOverride = FieldType.MoneyGBP,
+        access = {CitizenAccess.class, CaseworkerAccess.class}
+    )
+    private String amendedDailyRentChargeAmount;
+
+    @CCD(
+        typeOverride = FieldType.MoneyGBP,
+        access = {CitizenAccess.class, CaseworkerAccess.class}
+    )
+    private String calculatedDailyRentChargeAmount;
+
     @CCD(searchable = false, access = {CitizenAccess.class, CaseworkerAccess.class})
     private YesOrNo showPostcodeNotAssignedToCourt;
 
