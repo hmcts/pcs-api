@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import lombok.Builder;
 import lombok.Data;
 import uk.gov.hmcts.ccd.sdk.External;
@@ -299,28 +300,28 @@ public class PCSCase {
         hint = "Select all that apply",
         access = {CaseworkerAccess.class}
     )
-    private DynamicMultiSelectList secureOrFlexibleTenancyMandatoryGrounds;
+    private DynamicMultiSelectList secureOrFlexibleMandatoryGrounds;
 
     @CCD(
         label = "Mandatory grounds(if alternative accommodation available)",
         hint = "Select all that apply",
         access = {CaseworkerAccess.class}
     )
-    private DynamicMultiSelectList secureOrFlexibleTenancyMandatoryGrounds2;
+    private DynamicMultiSelectList secureOrFlexibleMandatoryGroundsAlternativeAccommodation;
 
     @CCD(
         label = "Discretionary grounds",
         hint = "Select all that apply",
         access = {CaseworkerAccess.class}
     )
-    private DynamicMultiSelectList secureOrFlexibleTenancyDiscretionaryGrounds;
+    private DynamicMultiSelectList secureOrFlexibleDiscretionaryGrounds;
 
     @CCD(
         label = "Discretionary grounds(if alternative accommodation available)",
         hint = "Select all that apply",
         access = {CaseworkerAccess.class}
     )
-    private DynamicMultiSelectList secureOrFlexibleTenancyDiscretionaryGrounds2;
+    private DynamicMultiSelectList secureOrFlexibleDiscretionaryGroundsAlternativeAccommodation;
 
 
     @CCD(
@@ -340,29 +341,17 @@ public class PCSCase {
 
 
     @CCD(
+        label = "What does your ground 1 claim involve?",
+        hint = "Select all that apply",
         typeOverride = FieldType.MultiSelectList,
         typeParameterOverride = "RentAreasOrBreachOfTenancy",
         access = {CaseworkerAccess.class}
     )
-    private RentAreasOrBreachOfTenancy rentAreasOrBreachOfTenancy;
+    private Set<RentAreasOrBreachOfTenancy> rentAreasOrBreachOfTenancy;
 
-    @CCD(
-        label = "Why are you making a claim for possession under this ground?",
-        hint = "Give details about your reason for possession",
-        typeOverride = TextArea,
-        access = {CaseworkerAccess.class}
-
-    )
-    private String nuisancePossessionReason;
-
-    @CCD(
-        label = "Why are you making a claim for possession under this ground?",
-        hint = "Give details about your reason for possession",
-        typeOverride = TextArea,
-        access = {CaseworkerAccess.class}
-
-    )
-    private String breachOfTenancyPossessionReason;
+    @JsonUnwrapped
+    @CCD(access = {CaseworkerAccess.class})
+    private SecureOrFlexibleGroundsReasons secureOrFlexibleGroundsReasons;
 
 
 
