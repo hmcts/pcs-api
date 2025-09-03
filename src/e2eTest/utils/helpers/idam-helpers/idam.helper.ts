@@ -148,8 +148,7 @@ export async function getS2SToken(): Promise<string> {
     }
     return result;
   });
-
-}
+};
 
 let authToken: string = '';
 export const initIdamAuthToken = async (email: string,pwd:string): Promise<void> => {

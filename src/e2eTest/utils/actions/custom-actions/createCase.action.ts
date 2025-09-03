@@ -16,7 +16,8 @@ import { resumeClaimOptions } from "@data/page-data/resumeClaimOptions.page.data
 import { rentDetails } from '@data/page-data/rentDetails.page.data';
 import configData from '@config/test.config';
 
-let caseInfo: { id: string; fid: string; state: string } = {id: "", fid: "", state: ""};
+let caseInfo: { id: string; fid: string; state: string };
+let caseNumber: string;
 const testConfig = TestConfig.ccdCase;
 
 export class CreateCaseAction implements IAction {
@@ -83,11 +84,10 @@ export class CreateCaseAction implements IAction {
 
   private async extractCaseIdFromAlert(page: Page): Promise<void> {
     const text = await page.locator('div.alert-message').innerText();
-    const caseId = text.match(/#([\d-]+)/)?.[1];
-    if (!caseId) {
+    caseNumber = text.match(/#([\d-]+)/)?.[1] as string;
+    if (!caseNumber) {
       throw new Error(`Case ID not found in alert message: "${text}"`);
     }
-    caseInfo.id = caseId;
   }
 
   private async selectResumeClaimOption(caseData: actionData) {
@@ -158,7 +158,7 @@ export class CreateCaseAction implements IAction {
     if (prefData.correspondenceAddress === 'No') {
       await performActions(
           'Find Address based on postcode',
-          ['inputText', 'Enter a UK postcode', addressDetails.englandPostcode],
+          ['inputText', 'Enter a UK postcode', addressDetails.englandCourtAssignedPostcode],
           ['clickButton', 'Find address'],
           ['select', 'Select an address', addressDetails.addressIndex]
       );
@@ -200,7 +200,7 @@ private async defendantDetails(defendantVal: actionData) {
       if (defendantData.correspondenceAddressSame === 'No') {
         await performActions(
             'Find Address based on postcode',
-            ['inputText', 'Enter a UK postcode', addressDetails.englandPostcode],
+            ['inputText', 'Enter a UK postcode', addressDetails.englandCourtAssignedPostcode],
             ['clickButton', 'Find address'],
             ['select', 'Select an address', addressDetails.addressIndex]
         );
@@ -267,9 +267,9 @@ private async defendantDetails(defendantVal: actionData) {
     await performAction('clickButton', 'Find case');
     await performAction('select', 'Jurisdiction', createCase.possessionsJurisdiction);
     await performAction('select', 'Case type', createCase.caseType.civilPossessions);
-    await performAction('inputText', 'Case Number', caseInfo.id);
+    await performAction('inputText', 'Case Number', caseNumber);
     await performAction('clickButton', 'Apply');
-    await performAction('clickButton',caseInfo.id)
+    await performAction('clickButton',caseNumber)
   }
 
   private async provideRentDetails(rentFrequency: actionData) {

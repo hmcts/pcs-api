@@ -61,7 +61,7 @@ test.describe.skip('Eligibility checks for cross and non cross border postcodes 
 
   test('Verify non cross border postcode eligibility check for England', async () => {
     await performAction('selectAddress', {
-      postcode: addressDetails.englandPostcode,
+      postcode: addressDetails.englandCourtAssignedPostcode,
       addressIndex: addressDetails.addressIndex
     });
     await performValidation('mainHeader', legislativeCountry.mainHeader);
