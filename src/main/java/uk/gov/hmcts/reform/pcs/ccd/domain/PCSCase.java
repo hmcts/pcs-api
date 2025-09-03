@@ -1,7 +1,5 @@
 package uk.gov.hmcts.reform.pcs.ccd.domain;
 
-import java.util.List;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -12,22 +10,21 @@ import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.FieldType;
-import static uk.gov.hmcts.ccd.sdk.type.FieldType.DynamicRadioList;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.ccd.sdk.type.ComponentLauncher;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseworkerAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenAccess;
-import static uk.gov.hmcts.ccd.sdk.type.FieldType.TextArea;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
-
 
 import java.util.List;
 
 import static uk.gov.hmcts.ccd.sdk.type.FieldType.DynamicRadioList;
 
 import static uk.gov.hmcts.ccd.sdk.type.FieldType.Collection;
+
+import static uk.gov.hmcts.ccd.sdk.type.FieldType.TextArea;
 
 /**
  * The main domain model representing a possessions case.
@@ -50,7 +47,7 @@ public class PCSCase {
         searchable = false,
         access = {CitizenAccess.class, CaseworkerAccess.class}
     )
-    private YesOrNo isClaimantNameCorrect;
+    private VerticalYesNo isClaimantNameCorrect;
 
     @CCD(
         access = {CitizenAccess.class, CaseworkerAccess.class}
@@ -257,5 +254,17 @@ public class PCSCase {
 
     @CCD(searchable = false, access = CaseworkerAccess.class)
     private YesOrNo showClaimTypeNotEligibleWales;
+
+    @CCD(searchable = false, access = {CitizenAccess.class, CaseworkerAccess.class})
+    private YesOrNo showPostcodeNotAssignedToCourt;
+
+    @CCD(searchable = false, access = {CitizenAccess.class, CaseworkerAccess.class})
+    private String postcodeNotAssignedView;
+
+    @CCD(access = {CitizenAccess.class, CaseworkerAccess.class})
+    private DefendantDetails defendant1;
+
+    @CCD(access = {CitizenAccess.class, CaseworkerAccess.class})
+    private List<ListValue<DefendantDetails>> defendants;
 
 }
