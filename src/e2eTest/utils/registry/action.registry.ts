@@ -3,7 +3,7 @@ import { ClickTabAction } from '../actions/element-actions/clickTab.action';
 import { InputTextAction } from '../actions/element-actions/inputText.action';
 import { CheckAction } from '../actions/element-actions/check.action';
 import { SelectAction } from '../actions/element-actions/select.action';
-import { CreateUserAndLoginAction } from "../actions/custom-actions/createUserAndLogin.action";
+import { LoginAction } from "../actions/custom-actions/login.action";
 import { NavigateToUrl } from "@utils/actions/custom-actions/navigateToUrl.action";
 import { CreateCaseAction } from "@utils/actions/custom-actions/createCase.action";
 import { ClickButtonAction } from "../actions/element-actions/clickButton.action";
@@ -16,12 +16,14 @@ export class ActionRegistry {
     ['inputText', new InputTextAction()],
     ['check', new CheckAction()],
     ['select', new SelectAction()],
-    ['createUserAndLogin', new CreateUserAndLoginAction()],
+    ['createUserAndLogin', new LoginAction()],
+    ['login', new LoginAction()],
     ['navigateToUrl', new NavigateToUrl()],
     ['clickRadioButton', new ClickRadioButton()],
     ['selectAddress', new CreateCaseAction()],
     ['selectLegislativeCountry', new CreateCaseAction()],
     ['selectClaimantType', new CreateCaseAction()],
+    ['defendantDetails', new CreateCaseAction()],
     ['selectJurisdictionCaseTypeEvent', new CreateCaseAction()],
     ['enterTestAddressManually', new CreateCaseAction()],
     ['createCase', new CreateCaseAction()],
@@ -29,11 +31,12 @@ export class ActionRegistry {
     ['selectClaimantName', new CreateCaseAction()],
     ['selectContactPreferences', new CreateCaseAction()],
     ['housingPossessionClaim', new CreateCaseAction()],
-    ['selectGroundsForPossission', new CreateCaseAction()],
+    ['selectGroundsForPossession', new CreateCaseAction()],
     ['selectPreActionProtocol', new CreateCaseAction()],
     ['selectMediationAndSettlement', new CreateCaseAction()],
     ['selectNoticeOfYourIntention', new CreateCaseAction()],
-    ['selectCountryRadioButton', new CreateCaseAction()]
+    ['selectCountryRadioButton', new CreateCaseAction()],
+    ['provideRentDetails', new CreateCaseAction()],
   ]);
 
   static getAction(actionName: string): IAction {
