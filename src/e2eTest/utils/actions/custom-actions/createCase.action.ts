@@ -39,6 +39,7 @@ export class CreateCaseAction implements IAction {
       ['selectPreActionProtocol', () => this.selectPreActionProtocol(fieldName)],
       ['selectMediationAndSettlement', () => this.selectMediationAndSettlement(fieldName)],
       ['selectNoticeOfYourIntention', () => this.selectNoticeOfYourIntention(fieldName)],
+      ['selectNoticeDetails', () => this.selectNoticeDetails(fieldName)],
       ['selectCountryRadioButton', () => this.selectCountryRadioButton(fieldName)],
     ]);
     const actionToPerform = actionsMap.get(action);
@@ -209,6 +210,22 @@ private async defendantDetails(defendantVal: actionData) {
     });
     if (prefData.settlementWithDefendantsOption == 'Yes') {
       await performAction('inputText', mediationAndSettlement.settlementWithDefendantsTextAreaLabel, mediationAndSettlement.settlementWithDefendantsInputData);
+    }
+    await performAction('clickButton', 'Continue');
+  }
+
+  private async selectNoticeDetails(noticeData: actionData) {
+    const noticeDetailsData = noticeData as {
+      howDidYouServeNotice: string;
+      day?: string;
+      month?: string;
+      year?: string;
+    };
+    await performAction('clickRadioButton', noticeDetailsData.howDidYouServeNotice);
+    if(noticeDetailsData.day && noticeDetailsData.month &&  noticeDetailsData.year) {
+      await performAction('inputText', 'Day', noticeDetailsData.day);
+      await performAction('inputText', 'Month', noticeDetailsData.month);
+      await performAction('inputText', 'Year', noticeDetailsData.year);
     }
     await performAction('clickButton', 'Continue');
   }
