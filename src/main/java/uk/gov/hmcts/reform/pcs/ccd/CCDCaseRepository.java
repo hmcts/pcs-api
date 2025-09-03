@@ -17,20 +17,17 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
 import uk.gov.hmcts.reform.pcs.ccd.renderer.ClaimPaymentTabRenderer;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
-import uk.gov.hmcts.reform.pcs.ccd.service.UnsubmittedCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
+import uk.gov.hmcts.reform.pcs.ccd.service.UnsubmittedCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.utils.ListValueUtils;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * Invoked by CCD to load PCS cases under the decentralised model.
@@ -71,18 +68,18 @@ public class CCDCaseRepository extends DecentralisedCaseRepository<PCSCase> {
             .preActionProtocolCompleted(pcsCaseEntity.getPreActionProtocolCompleted() != null
                 ? VerticalYesNo.from(pcsCaseEntity.getPreActionProtocolCompleted())
                 : null)
-            .currentRent(pcsCaseEntity.getTenancyLicence() != null 
+            .currentRent(pcsCaseEntity.getTenancyLicence() != null
                 && pcsCaseEntity.getTenancyLicence().getRentAmount() != null
                 ? pcsCaseEntity.getTenancyLicence().getRentAmount().toPlainString() : null)
-            .rentFrequency(pcsCaseEntity.getTenancyLicence() != null 
+            .rentFrequency(pcsCaseEntity.getTenancyLicence() != null
                 ? pcsCaseEntity.getTenancyLicence().getRentPaymentFrequency() : null)
-            .otherRentFrequency(pcsCaseEntity.getTenancyLicence() != null 
+            .otherRentFrequency(pcsCaseEntity.getTenancyLicence() != null
                 ? pcsCaseEntity.getTenancyLicence().getOtherRentFrequency() : null)
-            .dailyRentChargeAmount(pcsCaseEntity.getTenancyLicence() != null 
+            .dailyRentChargeAmount(pcsCaseEntity.getTenancyLicence() != null
                 && pcsCaseEntity.getTenancyLicence().getDailyRentChargeAmount() != null
                 ? pcsCaseEntity.getTenancyLicence().getDailyRentChargeAmount().toPlainString() : null)
-            .noticeServed(pcsCaseEntity.getTenancyLicence() != null 
-                && pcsCaseEntity.getTenancyLicence().getNoticeServed() != null 
+            .noticeServed(pcsCaseEntity.getTenancyLicence() != null
+                && pcsCaseEntity.getTenancyLicence().getNoticeServed() != null
                 ? YesOrNo.from(pcsCaseEntity.getTenancyLicence().getNoticeServed()) : null)
             .defendants(pcsCaseService.mapToDefendantDetails(pcsCaseEntity.getDefendants()))
             .build();
@@ -108,11 +105,7 @@ public class CCDCaseRepository extends DecentralisedCaseRepository<PCSCase> {
 
     private void setMarkdownFields(PCSCase pcsCase) {
         pcsCase.setPageHeadingMarkdown("""
-                                       <p class="govuk-body govuk-!-font-size-24">
-                                            %s<br>
-                                            Case number: ${[CASE_REFERENCE]}<br>
-                                       </p>
-                                       """.formatted(formatAddress(pcsCase.getPropertyAddress())));
+                                       <p class="govuk-!-font-size-24">#${[CASE_REFERENCE]}</p>""");
 
         if (pcsCase.getHasUnsubmittedCaseData() == YesOrNo.YES) {
             pcsCase.setNextStepsMarkdown("""
@@ -171,18 +164,6 @@ public class CCDCaseRepository extends DecentralisedCaseRepository<PCSCase> {
     private PcsCaseEntity loadCaseData(long caseRef) {
         return pcsCaseRepository.findByCaseReference(caseRef)
             .orElseThrow(() -> new CaseNotFoundException(caseRef));
-    }
-
-    private String formatAddress(AddressUK address) {
-        if (address == null) {
-            return null;
-        }
-
-        return Stream.of(address.getAddressLine1(), address.getAddressLine2(), address.getAddressLine3(),
-                         address.getPostTown(), address.getCounty(), address.getPostCode())
-            .filter(Objects::nonNull)
-            .filter(Predicate.not(String::isBlank))
-            .collect(Collectors.joining(", "));
     }
 
     private List<ListValue<Party>> mapAndWrapParties(Set<PartyEntity> partyEntities) {
