@@ -1,18 +1,29 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim;
 
+import lombok.extern.slf4j.Slf4j;
+import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
+import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
+import uk.gov.hmcts.reform.pcs.ccd.domain.DiscretionaryGround;
+import uk.gov.hmcts.reform.pcs.ccd.domain.MandatoryGround;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsGround;
+import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Page for selecting rent arrears grounds for possession.
  */
+@Slf4j
 public class GroundForPossessionRentArrears implements CcdPageConfiguration {
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
-                .page("groundForPossessionRentArrears")
+                .page("groundForPossessionRentArrears", this::midEvent)
                 .pageLabel("Grounds for possession")
                 .showCondition("groundsForPossession=\"Yes\"")
                 .label("groundForPossessionRentArrears-info", """
@@ -36,5 +47,67 @@ public class GroundForPossessionRentArrears implements CcdPageConfiguration {
                 .mandatory(PCSCase::getRentArrearsGrounds)
                 .mandatory(PCSCase::getHasOtherAdditionalGrounds)
                 .done();
+    }
+
+    public AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
+                                                                  CaseDetails<PCSCase, State> detailsBefore) {
+        log.info("Mid event for GroundForPossessionRentArrears page - auto-populating additional grounds");
+        
+        PCSCase caseData = details.getData();
+        
+        // Get the rent arrears grounds that were selected
+        List<RentArrearsGround> rentArrearsGrounds = caseData.getRentArrearsGrounds();
+        log.info("Selected rent arrears grounds: {}", rentArrearsGrounds);
+        
+        if (rentArrearsGrounds != null && !rentArrearsGrounds.isEmpty()) {
+            // Initialize lists if they don't exist
+            List<MandatoryGround> mandatoryGrounds = caseData.getMandatoryGrounds();
+            if (mandatoryGrounds == null) {
+                mandatoryGrounds = new ArrayList<>();
+            }
+            
+            List<DiscretionaryGround> discretionaryGrounds = caseData.getDiscretionaryGrounds();
+            if (discretionaryGrounds == null) {
+                discretionaryGrounds = new ArrayList<>();
+            }
+            
+            // Check each rent arrears ground and add corresponding grounds to the appropriate lists
+            for (RentArrearsGround rentArrearsGround : rentArrearsGrounds) {
+                switch (rentArrearsGround) {
+                    case SERIOUS_RENT_ARREARS_GROUND8:
+                        // Ground 8 is mandatory
+                        if (!mandatoryGrounds.contains(MandatoryGround.SERIOUS_RENT_ARREARS_GROUND8)) {
+                            mandatoryGrounds.add(MandatoryGround.SERIOUS_RENT_ARREARS_GROUND8);
+                            log.info("Added SERIOUS_RENT_ARREARS_GROUND8 to mandatory grounds");
+                        }
+                        break;
+                    case RENT_ARREARS_GROUND10:
+                        // Ground 10 is discretionary
+                        if (!discretionaryGrounds.contains(DiscretionaryGround.RENT_ARREARS_GROUND10)) {
+                            discretionaryGrounds.add(DiscretionaryGround.RENT_ARREARS_GROUND10);
+                            log.info("Added RENT_ARREARS_GROUND10 to discretionary grounds");
+                        }
+                        break;
+                    case PERSISTENT_DELAY_GROUND11:
+                        // Ground 11 is discretionary
+                        if (!discretionaryGrounds.contains(DiscretionaryGround.PERSISTENT_DELAY_GROUND11)) {
+                            discretionaryGrounds.add(DiscretionaryGround.PERSISTENT_DELAY_GROUND11);
+                            log.info("Added PERSISTENT_DELAY_GROUND11 to discretionary grounds");
+                        }
+                        break;
+                }
+            }
+            
+            // Update the case data with the populated lists
+            caseData.setMandatoryGrounds(mandatoryGrounds);
+            caseData.setDiscretionaryGrounds(discretionaryGrounds);
+            
+            log.info("Auto-populated mandatory grounds: {}", mandatoryGrounds);
+            log.info("Auto-populated discretionary grounds: {}", discretionaryGrounds);
+        }
+        
+        return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
+            .data(caseData)
+            .build();
     }
 }
