@@ -28,14 +28,5 @@ public class DailyRentAmount implements CcdPageConfiguration {
                                 """)
                 .mandatory(PCSCase::getRentPerDayCorrect)
                 .mandatory(PCSCase::getAmendedDailyRentChargeAmount, "rentPerDayCorrect=\"NO\"")
-                .label("dailyRentAmount-section",
-                        """
-                                ---
-                                <section tabindex="0">
-                                    <p class="govuk-body">
-                                        Enter the amount per day that unpaid rent should be charged at.
-                                    </p>
-                                </section>
-                                """);
     }
 }
