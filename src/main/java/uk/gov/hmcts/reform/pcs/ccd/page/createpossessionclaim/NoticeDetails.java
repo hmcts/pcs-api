@@ -1,25 +1,170 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim;
 
+import lombok.RequiredArgsConstructor;
+import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
+import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
+import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServiceMethod;
+import uk.gov.hmcts.reform.pcs.ccd.service.NoticeDetailsService;
+
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
- * Placeholder page configuration for the Notice Details section. Full
- * implementation will be done in another ticket - responses not captured at the
- * moment
+ * CCD page configuration for Notice Details.
+ * Allows users to specify how they served notice to the defendant.
  */
+@RequiredArgsConstructor
 public class NoticeDetails implements CcdPageConfiguration {
-
+    
+    private final NoticeDetailsService noticeDetailsService;
+    
+    private static final String NOTICE_SERVICE_METHOD_CONDITION = "noticeServiceMethod=\"";
+    private static final String DATE_TIME_LABEL = """
+        <p class="govuk-body">Date and time the document was handed over</p>
+        <p class="govuk-hint">For example, 16 4 2021, 11 15</p>
+        """;
+    
     @Override
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
-                .page("noticeDetails")
-                .pageLabel("Notice details (placeholder)")
-                .showCondition("noticeServed=\"Yes\"")
-                .label("noticeDetails-info",
-                        """
-                  ---
-                    Under Development
-                  """);
+            .page("noticeDetails", this::midEvent)
+            .pageLabel("Notice details")
+            .showCondition("noticeServed=\"Yes\"")
+            .mandatory(PCSCase::getNoticeServiceMethod)
+
+            // First class post
+            .label("firstClassPost-section", """
+                <h3 class="govuk-heading-s">By first class post or other service which provides for 
+                delivery on the next business day</h3>
+                <p class="govuk-body">Date the document was posted</p>
+                <p class="govuk-hint">For example, 16 4 2021</p>
+                """, NOTICE_SERVICE_METHOD_CONDITION + NoticeServiceMethod.FIRST_CLASS_POST + "\"")
+            .optional(
+                PCSCase::getNoticePostedDate, 
+                NOTICE_SERVICE_METHOD_CONDITION + NoticeServiceMethod.FIRST_CLASS_POST + "\""
+            )
+
+            // Delivered to permitted place
+            .label("deliveredPermittedPlace-section", """
+                <h3 class="govuk-heading-s">By delivering it to or leaving it at a permitted place</h3>
+                <p class="govuk-body">Date the document was delivered</p>
+                <p class="govuk-hint">For example, 16 4 2021</p>
+                """, NOTICE_SERVICE_METHOD_CONDITION + NoticeServiceMethod.DELIVERED_PERMITTED_PLACE + "\"")
+            .optional(
+                PCSCase::getNoticeDeliveredDate, 
+                NOTICE_SERVICE_METHOD_CONDITION + NoticeServiceMethod.DELIVERED_PERMITTED_PLACE + "\""
+            )
+
+            // Personally handed
+            .label("personallyHanded-section", """
+                <h3 class="govuk-heading-s">By personally handing it to someone or leaving it with someone</h3>
+                <p class="govuk-body">Name of person the document was left with</p>
+                """, NOTICE_SERVICE_METHOD_CONDITION + NoticeServiceMethod.PERSONALLY_HANDED + "\"")
+            .optional(
+                PCSCase::getNoticePersonName, 
+                NOTICE_SERVICE_METHOD_CONDITION + NoticeServiceMethod.PERSONALLY_HANDED + "\""
+            )
+            .label(
+                "personallyHanded-datetime", 
+                DATE_TIME_LABEL, 
+                NOTICE_SERVICE_METHOD_CONDITION + NoticeServiceMethod.PERSONALLY_HANDED + "\""
+            )
+            .optional(
+                PCSCase::getNoticeHandedOverDateTime, 
+                NOTICE_SERVICE_METHOD_CONDITION + NoticeServiceMethod.PERSONALLY_HANDED + "\""
+            )
+
+            // Email
+            .label("email-section", """
+                <h3 class="govuk-heading-s">By email</h3>
+                <p class="govuk-body">Explain how it was served by email</p>
+                """, NOTICE_SERVICE_METHOD_CONDITION + NoticeServiceMethod.EMAIL + "\"")
+            .optional(
+                PCSCase::getNoticeEmailExplanation, 
+                NOTICE_SERVICE_METHOD_CONDITION + NoticeServiceMethod.EMAIL + "\""
+            )
+            .label(
+                "email-datetime", 
+                DATE_TIME_LABEL, 
+                NOTICE_SERVICE_METHOD_CONDITION + NoticeServiceMethod.EMAIL + "\""
+            )
+            .optional(
+                PCSCase::getNoticeEmailSentDateTime, 
+                NOTICE_SERVICE_METHOD_CONDITION + NoticeServiceMethod.EMAIL + "\""
+            )
+
+            // Other electronic method
+            .label("otherElectronic-section", """
+                <h3 class="govuk-heading-s">By other electronic method</h3>
+                <p class="govuk-body">Date and time email or message sent</p>
+                <p class="govuk-hint">For example, 16 4 2021, 11 15</p>
+                """, NOTICE_SERVICE_METHOD_CONDITION + NoticeServiceMethod.OTHER_ELECTRONIC + "\"")
+            .optional(
+                PCSCase::getNoticeOtherElectronicDateTime, 
+                NOTICE_SERVICE_METHOD_CONDITION + NoticeServiceMethod.OTHER_ELECTRONIC + "\""
+            )
+
+            // Other
+            .label("other-section", """
+                <h3 class="govuk-heading-s">Other</h3>
+                <p class="govuk-body">Explain what the other means were</p>
+                """, NOTICE_SERVICE_METHOD_CONDITION + NoticeServiceMethod.OTHER + "\"")
+            .optional(
+                PCSCase::getNoticeOtherExplanation, 
+                NOTICE_SERVICE_METHOD_CONDITION + NoticeServiceMethod.OTHER + "\""
+            )
+            .label(
+                "other-datetime", 
+                DATE_TIME_LABEL, 
+                NOTICE_SERVICE_METHOD_CONDITION + NoticeServiceMethod.OTHER + "\""
+            )
+            .optional(
+                PCSCase::getNoticeOtherDateTime, 
+                NOTICE_SERVICE_METHOD_CONDITION + NoticeServiceMethod.OTHER + "\""
+            )
+
+            // Document upload section
+            .label("documentUpload-section", """
+                ---
+                <h2 class="govuk-heading-m">Do you want to upload a copy of the notice you served or the 
+                certificate of service? (Optional)</h2>
+                <p class="govuk-hint">You can either upload this now or closer to the hearing date. 
+                Any documents you upload now will be included in the pack of documents a judge will 
+                receive before the hearing (the bundle).</p>
+                
+                <div class="govuk-inset-text">
+                    <h3 class="govuk-heading-s">Add document</h3>
+                    <p class="govuk-body">Upload a document to the system</p>
+                    <a href="javascript:void(0)" class="govuk-button">Add new</a>
+                </div>
+                """);
+    }
+
+    private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
+                                                                  CaseDetails<PCSCase, State> detailsBefore) {
+        PCSCase caseData = details.getData();
+        
+        Map<String, String> validationErrors = noticeDetailsService.validateNoticeDetails(caseData);
+        
+        if (!validationErrors.isEmpty()) {
+            // Convert validation errors to CCD error format
+            List<String> errors = validationErrors.values().stream()
+                .distinct()
+                .collect(Collectors.toList());
+            
+            return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
+                .data(caseData)
+                .errors(errors)
+                .build();
+        }
+
+        return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
+            .data(caseData)
+            .build();
     }
 }
