@@ -125,6 +125,11 @@ class EnterPropertyAddressTest extends BasePageTest {
         PCSCase resultData = response.getData();
         assertThat(resultData.getShowCrossBorderPage()).isEqualTo(expectedShowCrossBorder);
 
+        if (status == EligibilityStatus.NO_MATCH_FOUND) {
+            assertThat(resultData.getShowPostcodeNotAssignedToCourt()).isEqualTo(YES);
+            assertThat(resultData.getPostcodeNotAssignedView()).isEqualTo("ALL_COUNTRIES");
+        }
+
         if (expectedShowCrossBorder == YES) {
             assertThat(resultData.getCrossBorderCountriesList()).isNotNull();
             assertThat(resultData.getCrossBorderCountry1()).isEqualTo(expectedCountry1);
@@ -166,6 +171,32 @@ class EnterPropertyAddressTest extends BasePageTest {
             .hasMessageContaining("Expected at least 2 legislative countries")
             .hasMessageContaining(expectedMessageFragment)
             .hasMessageContaining(postcode);
+    }
+
+    @Test
+    void shouldShowPropertyNotEligiblePageAndSetCountryOnNotEligible() {
+        // Given
+        CaseDetails<PCSCase, State> caseDetails = new CaseDetails<>();
+        AddressUK propertyAddress = AddressUK.builder().postCode("M1 1AA").build();
+        PCSCase caseData = PCSCase.builder().propertyAddress(propertyAddress).build();
+        caseDetails.setData(caseData);
+
+        var result = uk.gov.hmcts.reform.pcs.postcodecourt.model.EligibilityResult.builder()
+            .status(uk.gov.hmcts.reform.pcs.postcodecourt.model.EligibilityStatus.NOT_ELIGIBLE)
+            .legislativeCountry(uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry.ENGLAND)
+            .build();
+
+        when(eligibilityService.checkEligibility("M1 1AA", null)).thenReturn(result);
+
+        // When
+        AboutToStartOrSubmitResponse<PCSCase, State> resp =
+            getMidEventForPage(event, "enterPropertyAddress").handle(caseDetails, null);
+
+        // Then
+        PCSCase data = resp.getData();
+        assertThat(data.getShowCrossBorderPage()).isEqualTo(YesOrNo.NO);
+        assertThat(data.getShowPropertyNotEligiblePage()).isEqualTo(YesOrNo.YES);
+        assertThat(data.getLegislativeCountry()).isEqualTo("England");
     }
 
     private static Stream<Arguments> invalidLegislativeCountryScenarios() {
@@ -218,6 +249,16 @@ class EnterPropertyAddressTest extends BasePageTest {
             // No match found
             arguments(
                 "INVALID",
+                EligibilityStatus.NO_MATCH_FOUND,
+                Collections.emptyList(),
+                NO,
+                null,
+                null
+            ),
+
+            // No match found - should set appropriate flags
+            arguments(
+                "NO_MATCH",
                 EligibilityStatus.NO_MATCH_FOUND,
                 Collections.emptyList(),
                 NO,

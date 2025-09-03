@@ -1,9 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.domain;
 
-import java.util.List;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
-
 import lombok.Builder;
 import lombok.Data;
 import uk.gov.hmcts.ccd.sdk.External;
@@ -19,9 +16,13 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.DiscretionaryGround;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseworkerAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenAccess;
-import static uk.gov.hmcts.ccd.sdk.type.FieldType.TextArea;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
+
+import java.util.List;
+
+import static uk.gov.hmcts.ccd.sdk.type.FieldType.DynamicRadioList;
+import static uk.gov.hmcts.ccd.sdk.type.FieldType.TextArea;
 
 /**
  * The main domain model representing a possessions case.
@@ -44,7 +45,7 @@ public class PCSCase {
         searchable = false,
         access = {CitizenAccess.class, CaseworkerAccess.class}
     )
-    private YesOrNo isClaimantNameCorrect;
+    private VerticalYesNo isClaimantNameCorrect;
 
     @CCD(
         access = {CitizenAccess.class, CaseworkerAccess.class}
@@ -220,6 +221,12 @@ public class PCSCase {
     )
     private String settlementAttemptedDetails;
 
+    @CCD(
+        label = "Have you served notice to the defendants?",
+        access = {CitizenAccess.class, CaseworkerAccess.class}
+    )
+    private YesOrNo noticeServed;
+
     private String pageHeadingMarkdown;
 
     private String claimPaymentTabMarkdown;
@@ -257,5 +264,44 @@ public class PCSCase {
 
     @CCD(searchable = false, access = CaseworkerAccess.class)
     private YesOrNo showClaimTypeNotEligibleWales;
+  
+    @CCD(
+        label = "How much is the rent?",
+        typeOverride = FieldType.MoneyGBP,
+        access = {CitizenAccess.class, CaseworkerAccess.class}
+    )
+    private String currentRent;
+
+    @CCD(
+        label = "How frequently should rent be paid?",
+        access = {CitizenAccess.class, CaseworkerAccess.class}
+    )
+    private RentPaymentFrequency rentFrequency;
+
+    @CCD(
+        label = "Enter frequency",
+        hint = "Please specify the frequency",
+        access = {CitizenAccess.class, CaseworkerAccess.class}
+    )
+    private String otherRentFrequency;
+
+    @CCD(
+        label = "Enter the amount per day that unpaid rent should be charged at",
+        typeOverride = FieldType.MoneyGBP,
+        access = {CitizenAccess.class, CaseworkerAccess.class}
+    )
+    private String dailyRentChargeAmount;
+
+    @CCD(searchable = false, access = {CitizenAccess.class, CaseworkerAccess.class})
+    private YesOrNo showPostcodeNotAssignedToCourt;
+
+    @CCD(searchable = false, access = {CitizenAccess.class, CaseworkerAccess.class})
+    private String postcodeNotAssignedView;
+
+    @CCD(access = {CitizenAccess.class, CaseworkerAccess.class})
+    private DefendantDetails defendant1;
+
+    @CCD(access = {CitizenAccess.class, CaseworkerAccess.class})
+    private List<ListValue<DefendantDetails>> defendants;
 
 }

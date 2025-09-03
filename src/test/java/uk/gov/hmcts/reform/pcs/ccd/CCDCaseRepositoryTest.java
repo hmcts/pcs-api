@@ -11,15 +11,15 @@ import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PaymentStatus;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.renderer.ClaimPaymentTabRenderer;
-import uk.gov.hmcts.reform.pcs.ccd.repository.PartyRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
+import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
-import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 
 import java.util.List;
 import java.util.Optional;
@@ -38,6 +38,7 @@ import static org.mockito.Mockito.when;
 class CCDCaseRepositoryTest {
 
     private static final long CASE_REFERENCE = 1234L;
+    private static final String STATE = "some state";
 
     @Mock
     private PcsCaseRepository pcsCaseRepository;
@@ -48,14 +49,14 @@ class CCDCaseRepositoryTest {
     @Mock
     private ClaimPaymentTabRenderer claimPaymentTabRenderer;
     @Mock
-    private PartyRepository partyRepository;
+    private PcsCaseService pcsCaseService;
 
     private CCDCaseRepository underTest;
 
     @BeforeEach
     void setUp() {
         underTest = new CCDCaseRepository(pcsCaseRepository, securityContextService,
-                modelMapper, claimPaymentTabRenderer, partyRepository);
+                modelMapper, claimPaymentTabRenderer, pcsCaseService);
     }
 
     @Test
@@ -64,7 +65,7 @@ class CCDCaseRepositoryTest {
         when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE)).thenReturn(Optional.empty());
 
         // When
-        Throwable throwable = catchThrowable(() -> underTest.getCase(CASE_REFERENCE));
+        Throwable throwable = catchThrowable(() -> underTest.getCase(CASE_REFERENCE, STATE));
 
         // Then
         assertThat(throwable)
@@ -81,7 +82,7 @@ class CCDCaseRepositoryTest {
         when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(pcsCaseEntity));
 
         // When
-        PCSCase pcsCase = underTest.getCase(CASE_REFERENCE);
+        PCSCase pcsCase = underTest.getCase(CASE_REFERENCE, STATE);
 
         // Then
         assertThat(pcsCase.getPropertyAddress()).isNull();
@@ -99,7 +100,7 @@ class CCDCaseRepositoryTest {
         when(claimPaymentTabRenderer.render(CASE_REFERENCE, PaymentStatus.UNPAID)).thenReturn(expectedPaymentMarkdown);
 
         // When
-        PCSCase pcsCase = underTest.getCase(CASE_REFERENCE);
+        PCSCase pcsCase = underTest.getCase(CASE_REFERENCE, STATE);
 
         // Then
         assertThat(pcsCase.getClaimPaymentTabMarkdown()).isEqualTo(expectedPaymentMarkdown);
@@ -114,7 +115,7 @@ class CCDCaseRepositoryTest {
         when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(pcsCaseEntity));
 
         // When
-        PCSCase pcsCase = underTest.getCase(CASE_REFERENCE);
+        PCSCase pcsCase = underTest.getCase(CASE_REFERENCE, STATE);
 
         // Then
         assertThat(pcsCase.getClaimPaymentTabMarkdown()).isNull();
@@ -133,7 +134,7 @@ class CCDCaseRepositoryTest {
         when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(pcsCaseEntity));
 
         // When
-        PCSCase pcsCase = underTest.getCase(CASE_REFERENCE);
+        PCSCase pcsCase = underTest.getCase(CASE_REFERENCE, STATE);
 
         // Then
         assertThat(pcsCase.getPropertyAddress()).isEqualTo(addressUK);
@@ -153,7 +154,7 @@ class CCDCaseRepositoryTest {
         when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(pcsCaseEntity));
 
         // When
-        PCSCase pcsCase = underTest.getCase(CASE_REFERENCE);
+        PCSCase pcsCase = underTest.getCase(CASE_REFERENCE, STATE);
 
         // Then
         List<ListValue<Party>> mappedParties = pcsCase.getParties();
@@ -169,7 +170,7 @@ class CCDCaseRepositoryTest {
         when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(pcsCaseEntity));
 
         // When
-        PCSCase pcsCase = underTest.getCase(CASE_REFERENCE);
+        PCSCase pcsCase = underTest.getCase(CASE_REFERENCE, STATE);
 
         // Then
         assertThat(pcsCase.getPreActionProtocolCompleted()).isEqualTo(VerticalYesNo.YES);
@@ -182,7 +183,7 @@ class CCDCaseRepositoryTest {
         when(pcsCaseEntity.getPreActionProtocolCompleted()).thenReturn(false);
         when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(pcsCaseEntity));
         // When
-        PCSCase pcsCase = underTest.getCase(CASE_REFERENCE);
+        PCSCase pcsCase = underTest.getCase(CASE_REFERENCE, STATE);
 
         // Then
         assertThat(pcsCase.getPreActionProtocolCompleted()).isEqualTo(VerticalYesNo.NO);
@@ -196,7 +197,7 @@ class CCDCaseRepositoryTest {
         when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(pcsCaseEntity));
 
         // When
-        PCSCase pcsCase = underTest.getCase(CASE_REFERENCE);
+        PCSCase pcsCase = underTest.getCase(CASE_REFERENCE, STATE);
 
         // Then
         assertThat(pcsCase.getPreActionProtocolCompleted()).isNull();
