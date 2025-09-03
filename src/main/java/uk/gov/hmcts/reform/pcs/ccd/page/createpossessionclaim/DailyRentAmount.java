@@ -27,6 +27,6 @@ public class DailyRentAmount implements CcdPageConfiguration {
                                 </section>
                                 """)
                 .mandatory(PCSCase::getRentPerDayCorrect)
-                .mandatory(PCSCase::getAmendedDailyRentChargeAmount, "rentPerDayCorrect=\"NO\"")
+                .mandatory(PCSCase::getAmendedDailyRentChargeAmount, "rentPerDayCorrect=\"NO\"");
     }
 }
