@@ -269,7 +269,7 @@ private async defendantDetails(defendantVal: actionData) {
     });
     await performAction('clickRadioButton', rentAmount.unpaidRentInteractiveOption);
     if(rentAmount.unpaidRentInteractiveOption == 'No'){
-      await performAction('inputText', dailyRentAmount.EnterAmountPerDayLabel, rentAmount.unpaidRentAmountPerDay);
+      await performAction('inputText', dailyRentAmount.enterAmountPerDayLabel, rentAmount.unpaidRentAmountPerDay);
     }
     await performAction('clickButton', 'Continue');
   }

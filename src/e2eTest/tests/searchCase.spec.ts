@@ -33,7 +33,7 @@ async function searchCase(caseNumber: string) {
 
 test.describe.skip('Search case by case number @PR @Master @nightly', () => {
   test('Search for case via caselist', async ({}) => {
-  //  await performAction('clickButton', 'Case list');
+    await performAction('clickButton', 'Case list');
     await searchCase(getCaseInfo().id);
     await performValidation(
       'visibility',
