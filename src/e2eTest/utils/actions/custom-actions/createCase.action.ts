@@ -8,6 +8,7 @@ import { performAction, performActions, performValidation } from '@utils/control
 import { createCase } from '@data/page-data/createCase.page.data';
 import { addressDetails } from '@data/page-data/addressDetails.page.data';
 import { housingPossessionClaim } from '@data/page-data/housingPossessionClaim.page.data';
+import { defendantDetails } from "@data/page-data/defendantDetails.page.data";
 import { claimantName } from '@data/page-data/claimantName.page.data';
 import { contactPreferences } from '@data/page-data/contactPreferences.page.data';
 import { mediationAndSettlement } from '@data/page-data/mediationAndSettlement.page.data';
@@ -29,6 +30,7 @@ export class CreateCaseAction implements IAction {
       ['selectAddress', () => this.selectAddress(fieldName)],
       ['selectLegislativeCountry', () => this.selectLegislativeCountry(fieldName)],
       ['selectClaimantType', () => this.selectClaimantType(fieldName)],
+      ['defendantDetails', () => this.defendantDetails(fieldName)],
       ['selectJurisdictionCaseTypeEvent', () => this.selectJurisdictionCaseTypeEvent()],
       ['enterTestAddressManually', () => this.enterTestAddressManually()],
       ['selectClaimType', () => this.selectClaimType(fieldName)],
@@ -146,6 +148,47 @@ export class CreateCaseAction implements IAction {
     });
     if (prefData.phoneNumber === 'Yes') {
       await performAction('inputText', 'Enter phone number', contactPreferences.phoneNumberInput);
+    }
+    await performAction('clickButton', 'Continue');
+  }
+
+private async defendantDetails(defendantVal: actionData) {
+    const defendantData = defendantVal as {
+      name: string;
+      correspondenceAddress: string;
+      email: string;
+      correspondenceAddressSame?: string
+    };
+    await performAction('clickRadioButton', {
+      question: defendantDetails.doYouKnowTheDefendantName,
+      option: defendantData.name
+    });
+    if (defendantData.name === 'Yes') {
+      await performAction('inputText', defendantDetails.defendantFirstName, defendantDetails.firstNameInput);
+      await performAction('inputText', defendantDetails.defendantLastName, defendantDetails.lastNameInput);
+    }
+    await performAction('clickRadioButton', {
+      question: defendantDetails.defendantCorrespondenceAddress,
+      option: defendantData.correspondenceAddress
+    });
+    if (defendantData.correspondenceAddress === 'Yes') {
+      await performAction('clickRadioButton', {
+        question: defendantDetails.isCorrespondenceAddressSame,
+        option: defendantData.correspondenceAddressSame
+      });
+      if (defendantData.correspondenceAddressSame === 'No') {
+        await performAction('selectAddress', {
+          postcode: addressDetails.englandPostcode,
+          addressIndex: addressDetails.addressIndex
+        });
+      }
+    }
+    await performAction('clickRadioButton', {
+      question: defendantDetails.defendantEmailAddress,
+      option: defendantData.email
+    });
+    if (defendantData.email === 'Yes') {
+      await performAction('inputText', defendantDetails.enterEmailAddress, defendantDetails.emailIdInput);
     }
     await performAction('clickButton', 'Continue');
   }
