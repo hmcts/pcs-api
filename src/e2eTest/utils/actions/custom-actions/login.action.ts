@@ -29,7 +29,7 @@ export class LoginAction implements IAction {
     const email = process.env.IDAM_PCS_USER_EMAIL = `TEST_PCS_USER.${userType}.${uniqueId}@test.test`;
     const forename = 'fn_' + uniqueId.split('-')[0];
     const surname = 'sn_' + uniqueId.split('-')[1];
-    const user = await new IdamUtils().createUser({
+    await new IdamUtils().createUser({
       bearerToken: token,
       password,
       user: {
