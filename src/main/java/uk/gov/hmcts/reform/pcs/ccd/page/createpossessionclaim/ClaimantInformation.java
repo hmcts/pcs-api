@@ -22,7 +22,7 @@ public class ClaimantInformation implements CcdPageConfiguration {
             .readonlyWithLabel(PCSCase::getClaimantName, "Your claimant name registered with My HMCTS is:")
             .mandatoryWithLabel(PCSCase::getIsClaimantNameCorrect,"Is this the correct claimant name?")
             .mandatory(PCSCase::getOverriddenClaimantName,
-                    "isClaimantNameCorrect=\"No\"",
+                    "isClaimantNameCorrect=\"NO\"",
                     null,
                     "What is the correct claimant name?",
                     UPDATED_CLAIMANT_NAME_HINT,
