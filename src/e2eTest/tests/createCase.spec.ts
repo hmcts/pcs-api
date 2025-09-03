@@ -8,6 +8,8 @@ import { legislativeCountry } from '@data/page-data/legislativeCountry.page.data
 import { claimType } from '@data/page-data/claimType.page.data';
 import { claimantName } from '@data/page-data/claimantName.page.data';
 import { contactPreferences } from '@data/page-data/contactPreferences.page.data';
+import { defendantDetails } from '@data/page-data/defendantDetails.page.data';
+import { tenancyLicenceDetails } from '@data/page-data/tenancyLicenceDetails.page.data';
 import { groundsForPossession } from '@data/page-data/groundsForPossession.page.data';
 import { preActionProtocol } from '@data/page-data/preActionProtocol.page.data';
 import { mediationAndSettlement } from '@data/page-data/mediationAndSettlement.page.data';
@@ -15,9 +17,7 @@ import { checkingNotice } from '@data/page-data/checkingNotice.page.data';
 import { noticeDetails } from '@data/page-data/noticeDetails.page.data';
 import { rentDetails } from '@data/page-data/rentDetails.page.data';
 import { userIneligible } from '@data/page-data/userIneligible.page.data';
-import { tenancyLicenceDetails } from '@data/page-data/tenancyLicenceDetails.page.data';
-import { defendantDetails } from '@data/page-data/defendantDetails.page.data';
-
+import { detailsOfrentArrears } from '@data/page-data/detailsOfrentArrears.page.data';
 
 test.beforeEach(async ({page}, testInfo) => {
   initializeExecutor(page);
@@ -63,7 +63,7 @@ test.describe('[Create Case Flow With Address and Claimant Type]  @Master @night
       files: ['tenancyLicence.docx', 'tenancyLicence.png']
     });
     await performValidation('mainHeader', groundsForPossession.mainHeader);
-    await performAction('selectGroundsForPossission', groundsForPossession.yes);
+    await performAction('selectGroundsForPossession', groundsForPossession.yes);
     await performValidation('mainHeader', preActionProtocol.mainHeader);
     await performAction('selectPreActionProtocol', preActionProtocol.yes);
     await performValidation('mainHeader', mediationAndSettlement.mainHeader);
@@ -76,8 +76,11 @@ test.describe('[Create Case Flow With Address and Claimant Type]  @Master @night
     await performValidation('text', {"text": checkingNotice.servedNoticeInteractiveText, "elementType": "inlineText"});
     await performAction('selectNoticeOfYourIntention', checkingNotice.yes);
     await performValidation('mainHeader', noticeDetails.mainHeader);
-    await performAction('clickButton', checkingNotice.continue);
     await performAction('clickButton', noticeDetails.continue);
+    await performValidation('mainHeader', rentDetails.mainHeader);
+    await performAction('provideRentDetails', {rentFrequencyOption:'weekly', rentAmount:'800'});
+    // Below step will be uncommented when the daily rent amount page is implemented as part of the HDPI-1521 story
+    //await performValidation('mainHeader', dailyrentamount.mainHeader);
     await performAction('clickButton', 'Save and continue');
     await performValidation('bannerAlert', 'Case #.* has been created.');
     await performAction('clickTab', 'Property Details');
@@ -110,7 +113,7 @@ test.describe('[Create Case Flow With Address and Claimant Type]  @Master @night
     await performAction('selectTenancyOrLicenceDetails', {
       tenancyOrLicenceType: tenancyLicenceDetails.assuredTenancy});
     await performValidation('mainHeader', groundsForPossession.mainHeader);
-    await performAction('selectGroundsForPossission', groundsForPossession.yes);
+    await performAction('selectGroundsForPossession', groundsForPossession.yes);
     await performAction('selectPreActionProtocol', preActionProtocol.yes);
     await performAction('selectMediationAndSettlement', {
       attemptedMediationWithDefendantsOption: mediationAndSettlement.yes,
@@ -119,7 +122,9 @@ test.describe('[Create Case Flow With Address and Claimant Type]  @Master @night
     await performValidation('mainHeader', checkingNotice.mainHeader);
     await performAction('selectNoticeOfYourIntention', checkingNotice.no);
     await performValidation('mainHeader', rentDetails.mainHeader);
-    await performAction('clickButton', rentDetails.continue);
+    await performAction('provideRentDetails', {rentFrequencyOption:'Other', inputFrequency:rentDetails.rentFrequencyFortnightly,unpaidRentAmountPerDay:'50'});
+    await performValidation('mainHeader', detailsOfrentArrears.mainHeader);
+    await performAction('clickButton', detailsOfrentArrears.continue);
     await performAction('clickButton', 'Save and continue');
     await performValidation('bannerAlert', 'Case #.* has been created.');
     await performAction('clickTab', 'Property Details');
@@ -211,11 +216,12 @@ test.describe('[Create Case Flow With Address and Claimant Type]  @Master @night
       attemptedMediationWithDefendantsOption: mediationAndSettlement.yes,
       settlementWithDefendantsOption: mediationAndSettlement.no,
     });
-
     await performValidation('mainHeader', checkingNotice.mainHeader);
     await performAction('selectNoticeOfYourIntention', checkingNotice.no);
     await performValidation('mainHeader', rentDetails.mainHeader);
-    await performAction('clickButton', rentDetails.continue);
+    await performAction('provideRentDetails', {rentFrequencyOption: 'weekly', rentAmount: '800'});
+    // Below step will be uncommented when the daily rent amount page is implemented as part of the HDPI-1521 story
+    //await performValidation('mainHeader', dailyrentamount.mainHeader);
     await performAction('clickButton', 'Save and continue');
     await performValidation('bannerAlert', 'Case #.* has been created.');
     await performAction('clickTab', 'Property Details');
