@@ -68,6 +68,7 @@ test.describe.skip('[Create Case Flow With Address and Claimant Type]  @Master @
     await performAction('selectNoticeOfYourIntention', checkingNotice.yes);
     await performValidation('mainHeader', noticeDetails.mainHeader);
     await performAction('clickButton', noticeDetails.continue);
+    await performValidation('mainHeader', rentDetails.mainHeader);
     await performAction('provideRentDetails', {rentFrequencyOption:'weekly', rentAmount:'800'});
     // Below step will be uncommented when the daily rent amount page is implemented as part of the HDPI-1521 story
     //await performValidation('mainHeader', dailyrentamount.mainHeader);
@@ -179,41 +180,43 @@ test.describe.skip('[Create Case Flow With Address and Claimant Type]  @Master @
     await performAction('clickButton', 'Cancel');
   });
 
-    test('Defendant 1\'s correspondence address is not known', async () => {
-      await performAction('enterTestAddressManually');
-      await performAction('selectLegislativeCountry', legislativeCountry.wales);
-      await performAction('selectClaimantType', claimantType.registeredCommunityLandlord);
-      await performAction('selectClaimType', claimType.no);
-      await performAction('selectClaimantName', claimantName.yes);
-      await performAction('selectContactPreferences', {
-        notifications: contactPreferences.yes,
-        correspondenceAddress: contactPreferences.yes,
-        phoneNumber: contactPreferences.no
-      });
-      await performAction('defendantDetails', {
-        name: defendantDetails.no,
-        correspondenceAddress: defendantDetails.no,
-        email: defendantDetails.no,
-      });
-      await performValidation('mainHeader', groundsForPossession.mainHeader);
-      await performAction('selectGroundsForPossission', groundsForPossession.yes);
-      await performAction('selectPreActionProtocol', preActionProtocol.yes);
-      await performAction('selectMediationAndSettlement', {
-        attemptedMediationWithDefendantsOption: mediationAndSettlement.yes,
-        settlementWithDefendantsOption: mediationAndSettlement.no,
-      });
-      await performValidation('mainHeader', checkingNotice.mainHeader);
-      await performAction('selectNoticeOfYourIntention', checkingNotice.no);
-      await performValidation('mainHeader', rentDetails.mainHeader);
-      await performAction('clickButton', rentDetails.continue);
-      await performAction('clickButton', 'Save and continue');
-      await performValidation('bannerAlert', 'Case #.* has been created.');
-      await performAction('clickTab', 'Property Details');
-      await performValidations('address information entered',
-        ['formLabelValue', 'Building and Street', addressDetails.buildingAndStreet],
-        ['formLabelValue', 'Address Line 2', addressDetails.addressLine2],
-        ['formLabelValue', 'Town or City', addressDetails.townOrCity],
-        ['formLabelValue', 'Postcode/Zipcode', addressDetails.postcode],
-        ['formLabelValue', 'Country', addressDetails.country]);
+  test('Defendant 1\'s correspondence address is not known', async () => {
+    await performAction('enterTestAddressManually');
+    await performAction('selectLegislativeCountry', legislativeCountry.wales);
+    await performAction('selectClaimantType', claimantType.registeredCommunityLandlord);
+    await performAction('selectClaimType', claimType.no);
+    await performAction('selectClaimantName', claimantName.yes);
+    await performAction('selectContactPreferences', {
+      notifications: contactPreferences.yes,
+      correspondenceAddress: contactPreferences.yes,
+      phoneNumber: contactPreferences.no
     });
+    await performAction('defendantDetails', {
+      name: defendantDetails.no,
+      correspondenceAddress: defendantDetails.no,
+      email: defendantDetails.no,
+    });
+    await performValidation('mainHeader', groundsForPossession.mainHeader);
+    await performAction('selectGroundsForPossission', groundsForPossession.yes);
+    await performAction('selectPreActionProtocol', preActionProtocol.yes);
+    await performAction('selectMediationAndSettlement', {
+      attemptedMediationWithDefendantsOption: mediationAndSettlement.yes,
+      settlementWithDefendantsOption: mediationAndSettlement.no,
+    });
+    await performValidation('mainHeader', checkingNotice.mainHeader);
+    await performAction('selectNoticeOfYourIntention', checkingNotice.no);
+    await performValidation('mainHeader', rentDetails.mainHeader);
+    await performAction('provideRentDetails', {rentFrequencyOption: 'weekly', rentAmount: '800'});
+    // Below step will be uncommented when the daily rent amount page is implemented as part of the HDPI-1521 story
+    //await performValidation('mainHeader', dailyrentamount.mainHeader);
+    await performAction('clickButton', 'Save and continue');
+    await performValidation('bannerAlert', 'Case #.* has been created.');
+    await performAction('clickTab', 'Property Details');
+    await performValidations('address information entered',
+      ['formLabelValue', 'Building and Street', addressDetails.buildingAndStreet],
+      ['formLabelValue', 'Address Line 2', addressDetails.addressLine2],
+      ['formLabelValue', 'Town or City', addressDetails.townOrCity],
+      ['formLabelValue', 'Postcode/Zipcode', addressDetails.postcode],
+      ['formLabelValue', 'Country', addressDetails.country]);
+  });
 });
