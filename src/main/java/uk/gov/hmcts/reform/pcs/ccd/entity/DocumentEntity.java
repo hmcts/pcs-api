@@ -1,0 +1,51 @@
+package uk.gov.hmcts.reform.pcs.ccd.entity;
+
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import jakarta.persistence.Column;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+import java.util.UUID;
+import java.time.LocalDate;
+
+import static jakarta.persistence.FetchType.LAZY;
+
+@Entity
+@Builder
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Table(name = "document")
+public class DocumentEntity {
+    @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
+
+    @ManyToOne(fetch = LAZY)
+    @JoinColumn(name = "case_id", referencedColumnName = "id")
+    @JsonBackReference
+    private PcsCaseEntity pcsCase;
+
+    @Column(name = "file_name")
+    private String fileName;
+
+    @Column(name = "file_path")
+    private String filePath;
+
+    @Column(name = "uploaded_on")
+    private LocalDate uploadedOn;
+
+    @Column(name = "document_type")
+    private String documentType;
+}

@@ -19,6 +19,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PaymentStatus;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicence;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.model.Defendant;
@@ -32,7 +33,9 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.RentPaymentFrequency;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import java.math.BigDecimal;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -42,6 +45,7 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.times;
 
 @ExtendWith(MockitoExtension.class)
 class PcsCaseServiceTest {
@@ -449,6 +453,74 @@ class PcsCaseServiceTest {
         AddressEntity addressEntity = mock(AddressEntity.class);
         when(modelMapper.map(addressUK, AddressEntity.class)).thenReturn(addressEntity);
         return addressEntity;
+    }
+
+    @Test
+    void shouldAddDocumentToCase() {
+        final String fileName = "test-document.pdf";
+        final String filePath = "/documents/test-document.pdf";
+
+        PcsCaseEntity existingPcsCaseEntity = new PcsCaseEntity();
+        existingPcsCaseEntity.setCaseReference(CASE_REFERENCE);
+
+        when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(existingPcsCaseEntity));
+
+        underTest.addDocumentToCase(CASE_REFERENCE, fileName, filePath);
+
+        verify(pcsCaseRepository).save(pcsCaseEntityCaptor.capture());
+
+        PcsCaseEntity savedEntity = pcsCaseEntityCaptor.getValue();
+
+        assertThat(savedEntity).isNotNull();
+        assertThat(savedEntity.getDocuments()).isNotNull();
+        assertThat(savedEntity.getDocuments()).hasSize(1);
+
+        if (!savedEntity.getDocuments().isEmpty()) {
+            DocumentEntity savedDocument = savedEntity.getDocuments().iterator().next();
+            System.out.println("Document: " + savedDocument);
+            assertThat(savedDocument.getFileName()).isEqualTo(fileName);
+        }
+    }
+
+    @Test
+    void shouldThrowExceptionWhenAddingDocumentToUnknownCase() {
+        final String fileName = "test-document.docx";
+        final String filePath = "/documents/test-document.docx";
+
+        when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE)).thenReturn(Optional.empty());
+
+        Throwable throwable = catchThrowable(() -> underTest.addDocumentToCase(CASE_REFERENCE, fileName, filePath));
+
+        assertThat(throwable)
+            .isInstanceOf(CaseNotFoundException.class)
+            .hasMessage("No case found with reference %s", CASE_REFERENCE);
+    }
+
+    @Test
+    void shouldAddMultipleDocumentsToCase() {
+        final String fileName1 = "document1.docx";
+        final String filePath1 = "/documents/document1.docx";
+        final String fileName2 = "document2.docx";
+        final String filePath2 = "/documents/document2.docx";
+
+        PcsCaseEntity existingPcsCaseEntity = new PcsCaseEntity();
+        existingPcsCaseEntity.setCaseReference(CASE_REFERENCE);
+
+        when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(existingPcsCaseEntity));
+
+        underTest.addDocumentToCase(CASE_REFERENCE, fileName1, filePath1);
+        underTest.addDocumentToCase(CASE_REFERENCE, fileName2, filePath2);
+
+        verify(pcsCaseRepository, times(2)).save(pcsCaseEntityCaptor.capture());
+
+        PcsCaseEntity finalSavedEntity = pcsCaseEntityCaptor.getValue();
+        assertThat(finalSavedEntity.getDocuments()).hasSize(2);
+
+        Set<String> fileNames = finalSavedEntity.getDocuments().stream()
+            .map(DocumentEntity::getFileName)
+            .collect(Collectors.toSet());
+
+        assertThat(fileNames).containsExactlyInAnyOrder(fileName1, fileName2);
     }
 
 }
