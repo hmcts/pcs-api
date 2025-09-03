@@ -12,6 +12,7 @@ import { defendantDetails } from "@data/page-data/defendantDetails.page.data";
 import { claimantName } from '@data/page-data/claimantName.page.data';
 import { contactPreferences } from '@data/page-data/contactPreferences.page.data';
 import { mediationAndSettlement } from '@data/page-data/mediationAndSettlement.page.data';
+import { rentDetails } from '@data/page-data/rentDetails.page.data';
 
 let caseInfo: { id: string; fid: string; state: string };
 const testConfig = TestConfig.ccdCase;
@@ -35,11 +36,12 @@ export class CreateCaseAction implements IAction {
       ['selectClaimType', () => this.selectClaimType(fieldName)],
       ['selectClaimantName', () => this.selectClaimantName(fieldName)],
       ['selectContactPreferences', () => this.selectContactPreferences(fieldName)],
-      ['selectGroundsForPossission', () => this.selectGroundsForPossission(fieldName)],
+      ['selectGroundsForPossession', () => this.selectGroundsForPossession(fieldName)],
       ['selectPreActionProtocol', () => this.selectPreActionProtocol(fieldName)],
       ['selectMediationAndSettlement', () => this.selectMediationAndSettlement(fieldName)],
       ['selectNoticeOfYourIntention', () => this.selectNoticeOfYourIntention(fieldName)],
       ['selectCountryRadioButton', () => this.selectCountryRadioButton(fieldName)],
+      ['provideRentDetails', () => this.provideRentDetails(fieldName)]
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) throw new Error(`No action found for '${action}'`);
@@ -89,7 +91,7 @@ export class CreateCaseAction implements IAction {
     await performAction('clickButton', 'Continue');
   }
 
-  private async selectGroundsForPossission(caseData: actionData) {
+  private async selectGroundsForPossession(caseData: actionData) {
     await performAction('clickRadioButton', caseData);
     await performAction('clickButton', 'Continue');
   }
@@ -233,6 +235,23 @@ private async defendantDetails(defendantVal: actionData) {
       , ['inputText', 'Postcode/Zipcode', addressDetails.postcode]
       , ['inputText', 'Country', addressDetails.country]
     );
+    await performAction('clickButton', 'Continue');
+  }
+
+  private async provideRentDetails(rentFrequency: actionData) {
+    const rentData = rentFrequency as {
+      rentFrequencyOption: string;
+      rentAmount?: string;
+      unpaidRentAmountPerDay?: string,
+      inputFrequency?: string
+    };
+    await performAction('clickRadioButton', rentData.rentFrequencyOption);
+    if(rentData.rentFrequencyOption == 'Other'){
+      await performAction('inputText', rentDetails.rentFrequencyLabel, rentData.inputFrequency);
+      await performAction('inputText', rentDetails.amountPerDayInputLabel, rentData.unpaidRentAmountPerDay);
+    } else {
+      await performAction('inputText', rentDetails.HowMuchRentLabel, rentData.rentAmount);
+    }
     await performAction('clickButton', 'Continue');
   }
 
