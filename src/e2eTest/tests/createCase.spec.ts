@@ -65,10 +65,7 @@ test.describe('[Create Case Flow With Address and Claimant Type]  @Master @night
       settlementWithDefendantsOption: mediationAndSettlement.no,
     });
     await performValidation('mainHeader', checkingNotice.mainHeader);
-    await performValidation('text', {
-      "text": checkingNotice.guidanceOnPosessionNoticePeriodsLink,
-      "elementType": "paragraphLink"
-    })
+    await performValidation('text', {"text": checkingNotice.guidanceOnPosessionNoticePeriodsLink, "elementType": "paragraphLink"});
     await performValidation('text', {"text": checkingNotice.servedNoticeInteractiveText, "elementType": "inlineText"});
     await performAction('selectNoticeOfYourIntention', checkingNotice.yes);
     await performValidation('mainHeader', noticeDetails.mainHeader);
@@ -240,10 +237,10 @@ test.describe('[Create Case Flow With Address and Claimant Type]  @Master @night
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
     await performAction('clickTab', 'Property Details');
     await performValidations('address information entered',
-        ['formLabelValue', 'Building and Street', addressDetails.buildingAndStreet],
-        ['formLabelValue', 'Address Line 2', addressDetails.addressLine2],
-        ['formLabelValue', 'Town or City', addressDetails.townOrCity],
-        ['formLabelValue', 'Postcode/Zipcode', addressDetails.walesCourtAssignedPostcode],
-        ['formLabelValue', 'Country', addressDetails.country]);
+      ['formLabelValue', 'Building and Street', addressDetails.buildingAndStreet],
+      ['formLabelValue', 'Address Line 2', addressDetails.addressLine2],
+      ['formLabelValue', 'Town or City', addressDetails.townOrCity],
+      ['formLabelValue', 'Postcode/Zipcode', addressDetails.walesCourtAssignedPostcode],
+      ['formLabelValue', 'Country', addressDetails.country]);
   });
 });
