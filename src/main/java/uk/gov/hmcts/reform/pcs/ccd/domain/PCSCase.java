@@ -163,7 +163,9 @@ public class PCSCase {
     @CCD(
         label = "Give details about the attempted mediation and what the outcome was",
         access = {CitizenAccess.class, CaseworkerAccess.class},
-        typeOverride = TextArea
+        typeOverride = TextArea,
+        min = 1,
+        max = 20
     )
     private String mediationAttemptedDetails;
 
@@ -176,7 +178,9 @@ public class PCSCase {
     @CCD(
         label = "Explain what steps you've taken to reach a settlement",
         access = {CitizenAccess.class, CaseworkerAccess.class},
-        typeOverride = TextArea
+        typeOverride = TextArea,
+        min = 1,
+        max = 20
     )
     private String settlementAttemptedDetails;
 
@@ -223,7 +227,7 @@ public class PCSCase {
 
     @CCD(searchable = false, access = CaseworkerAccess.class)
     private YesOrNo showClaimTypeNotEligibleWales;
-  
+
     @CCD(
         label = "How much is the rent?",
         typeOverride = FieldType.MoneyGBP,
