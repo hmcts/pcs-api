@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import uk.gov.hmcts.ccd.sdk.type.Document;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -18,6 +19,14 @@ import java.util.List;
 public class TenancyLicence {
 
     private Boolean noticeServed;
+
+    private BigDecimal rentAmount;
+
+    private RentPaymentFrequency rentPaymentFrequency;
+
+    private String otherRentFrequency;
+
+    private BigDecimal dailyRentChargeAmount;
 
     private String tenancyLicenceType;
 
