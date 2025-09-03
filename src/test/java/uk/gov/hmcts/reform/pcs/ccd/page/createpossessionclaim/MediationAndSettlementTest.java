@@ -65,12 +65,10 @@ class MediationAndSettlementTest {
         // Verify mediation description and question
         String mediationIntro = "Mediation is when an impartial professional";
         inOrder.verify(fieldBuilder).label(eq("mediationAndSettlement-content"), argThat(content
-                -> content.contains(mediationIntro)
+                                                                                 -> content.contains(mediationIntro)
         ));
 
-        // Verify mediation fields
-        inOrder.verify(fieldBuilder).mandatory(any());
-        inOrder.verify(fieldBuilder).optional(any(), eq("mediationAttempted=\"YES\""));
+        inOrder.verify(fieldBuilder, times(2)).mandatory(any());
     }
 
     @Test
@@ -81,41 +79,22 @@ class MediationAndSettlementTest {
 
         // First verify mediation section (comes before settlement)
         inOrder.verify(fieldBuilder).label(eq("mediationAndSettlement-content"), anyString());
-        inOrder.verify(fieldBuilder).mandatory(any());
-        inOrder.verify(fieldBuilder).optional(any(), anyString());
+        inOrder.verify(fieldBuilder, times(2)).mandatory(any());
 
         // Then verify settlement section
         String content = "If your claim is on the grounds of rent arrears";
         inOrder.verify(fieldBuilder).label(eq("settlement-section"), argThat(text
-                -> text.contains(content)
+                                                                                 -> text.contains(content)
         ));
-        inOrder.verify(fieldBuilder).mandatory(any());
-        inOrder.verify(fieldBuilder).optional(any(), eq("settlementAttempted=\"YES\""));
+        inOrder.verify(fieldBuilder, times(2)).mandatory(any());
     }
 
     @Test
     void shouldRequireMediationAndSettlementSelections() {
         underTest.addTo(pageBuilder);
 
-        // Verify exactly two mandatory fields are configured
-        verify(fieldBuilder, times(2)).mandatory(any());
-    }
-
-    @Test
-    void shouldMakeDetailFieldsOptional() {
-        underTest.addTo(pageBuilder);
-
-        // Verify exactly two optional fields are configured
-        verify(fieldBuilder, times(2)).optional(any(), anyString());
-    }
-
-    @Test
-    void shouldShowDetailFieldsOnlyWhenYesSelected() {
-        underTest.addTo(pageBuilder);
-
-        // Verify the show conditions for both optional fields
-        verify(fieldBuilder).optional(any(), eq("mediationAttempted=\"YES\""));
-        verify(fieldBuilder).optional(any(), eq("settlementAttempted=\"YES\""));
+        // Verify exactly four mandatory fields are configured
+        verify(fieldBuilder, times(4)).mandatory(any());
     }
 
     @Test
@@ -123,8 +102,8 @@ class MediationAndSettlementTest {
         underTest.addTo(pageBuilder);
 
         // Verify both sections start with a separator
-        verify(fieldBuilder, times(2)).label(anyString(), argThat(content -> 
-            content.trim().startsWith("---")
+        verify(fieldBuilder, times(2)).label(anyString(), argThat(content ->
+                                                                      content.trim().startsWith("---")
         ));
     }
 }
