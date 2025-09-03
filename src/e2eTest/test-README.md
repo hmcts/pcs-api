@@ -93,9 +93,9 @@ Playwright 1.30+ | TypeScript 4.9+
 | selectPreActionProtocol         | `performAction('selectPreActionProtocol', preActionProtocol.yes)`                                                                                                                                          |
 | selectNoticeOfYourIntention     | `performAction('selectNoticeOfYourIntention', checkingNotice.no)`                                                                                                                                          |
 | login                           | `performAction('login')`                                                                                                                                                                                   |
-| retrieveCaseId                  | `performAction('retrieveCaseId')`                                                                                                                                                                          |
 | reloginAndFindTheCase           | `performAction('reloginAndFindTheCase')`                                                                                                                                                                   |
-| selectResumeClaimOption         | `performAction('selectResumeClaimOption', resumeClaimOptions.yes);`                                                                                                                                        |
+| selectResumeClaimOption         | `performAction('selectResumeClaimOption', resumeClaimOptions.yes)`                                                                                                                                         |
+| extractCaseIdFromAlert          | `performAction('extractCaseIdFromAlert', ...)` |
 ### Validations
 | Validation        | Example Usage                                                                                                                        |
 |-------------------|--------------------------------------------------------------------------------------------------------------------------------------|

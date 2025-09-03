@@ -22,10 +22,9 @@ export class ActionRegistry {
     ['clickRadioButton', new ClickRadioButton()],
     ['selectAddress', new CreateCaseAction()],
     ['selectLegislativeCountry', new CreateCaseAction()],
-    ['retrieveCaseId', new CreateCaseAction()],
-    ['selectClaimantType', new CreateCaseAction()],
-    ['reloginAndFindTheCase', new CreateCaseAction()],
+    ['extractCaseIdFromAlert', new CreateCaseAction()],
     ['selectResumeClaimOption', new CreateCaseAction()],
+    ['selectClaimantType', new CreateCaseAction()],
     ['defendantDetails', new CreateCaseAction()],
     ['selectJurisdictionCaseTypeEvent', new CreateCaseAction()],
     ['enterTestAddressManually', new CreateCaseAction()],
@@ -38,7 +37,8 @@ export class ActionRegistry {
     ['selectPreActionProtocol', new CreateCaseAction()],
     ['selectMediationAndSettlement', new CreateCaseAction()],
     ['selectNoticeOfYourIntention', new CreateCaseAction()],
-    ['selectCountryRadioButton', new CreateCaseAction()]
+    ['selectCountryRadioButton', new CreateCaseAction()],
+    ['reloginAndFindTheCase', new CreateCaseAction()],
   ]);
 
   static getAction(actionName: string): IAction {

@@ -86,7 +86,7 @@ test.describe('[Create Case Flow With Address and Claimant Type]  @Master @night
   test('Wales - Successful case creation with Saved options', async () => {
     await performAction('enterTestAddressManually');
     await performValidation('bannerAlert', 'Case #.* has been created.');
-    await performAction('retrieveCaseId');
+    await performAction('extractCaseIdFromAlert');
     await performAction('clickButton', provideMoreDetailsOfClaim.continue);
     await performAction('selectClaimantType', claimantType.registeredCommunityLandlord);
     await performAction('selectClaimType', claimType.no);
@@ -192,7 +192,7 @@ test.describe('[Create Case Flow With Address and Claimant Type]  @Master @night
   test('Wales - Successful case creation without Saved options and Defendants correspondence address is not known', async () => {
     await performAction('enterTestAddressManually');
     await performValidation('bannerAlert', 'Case #.* has been created.');
-    await performAction('retrieveCaseId');
+    await performAction('extractCaseIdFromAlert');
     await performAction('clickButton', provideMoreDetailsOfClaim.continue);
     await performAction('selectClaimantType', claimantType.registeredCommunityLandlord);
     await performAction('selectClaimType', claimType.no);

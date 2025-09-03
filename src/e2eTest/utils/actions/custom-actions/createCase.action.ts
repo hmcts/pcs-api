@@ -31,7 +31,7 @@ export class CreateCaseAction implements IAction {
       ['selectAddress', () => this.selectAddress(fieldName)],
       ['selectResumeClaimOption', () => this.selectResumeClaimOption(fieldName)],
       ['selectLegislativeCountry', () => this.selectLegislativeCountry(fieldName)],
-      ['retrieveCaseId', () => this.retrieveCaseId(page)],
+      ['extractCaseIdFromAlert', () => this.extractCaseIdFromAlert(page)],
       ['selectClaimantType', () => this.selectClaimantType(fieldName)],
       ['reloginAndFindTheCase', () => this.reloginAndFindTheCase()],
       ['defendantDetails', () => this.defendantDetails(fieldName)],
@@ -68,16 +68,6 @@ export class CreateCaseAction implements IAction {
     await performAction('clickButton', housingPossessionClaim.continue);
   }
 
-  private async retrieveCaseId(page: Page) {
-    const alertDiv = page.locator('div.alert-message');
-    const text = await alertDiv.innerText();
-    const match = text.match(/#([\d-]+)/);
-    if (!match) {
-      throw new Error('Case number not found in the alert message!');
-    }
-    caseInfo.id  = match[1];
-  }
-
   private async selectAddress(caseData: actionData) {
     const addressDetails = caseData as { postcode: string; addressIndex: number };
     await performActions(
@@ -87,6 +77,15 @@ export class CreateCaseAction implements IAction {
       ['select', 'Select an address', addressDetails.addressIndex]
     );
     await performAction('clickButton', 'Submit');
+  }
+
+  private async extractCaseIdFromAlert(page: Page): Promise<void> {
+    const text = await page.locator('div.alert-message').innerText();
+    const caseId = text.match(/#([\d-]+)/)?.[1];
+    if (!caseId) {
+      throw new Error(`Case ID not found in alert message: "${text}"`);
+    }
+    caseInfo.id = caseId;
   }
 
   private async selectResumeClaimOption(caseData: actionData) {
@@ -135,17 +134,6 @@ export class CreateCaseAction implements IAction {
       await performAction('inputText', claimantName.whatIsCorrectClaimantName, claimantName.correctClaimantNameInput);
     }
     await performAction('clickButton', 'Continue');
-  }
-
-  private async reloginAndFindTheCase() {
-    await performAction('navigateToUrl', configData.manageCasesBaseURL);
-    await performAction('login')
-    await performAction('clickButton', 'Find case');
-    await performAction('select', 'Jurisdiction', createCase.possessionsJurisdiction);
-    await performAction('select', 'Case type', createCase.caseType.civilPossessions);
-    await performAction('inputText', 'Case Number', caseInfo.id);
-    await performAction('clickButton', 'Apply');
-    await performAction('clickButton',caseInfo.id)
   }
 
   private async selectContactPreferences(preferences: actionData) {
@@ -269,6 +257,17 @@ private async defendantDetails(defendantVal: actionData) {
       , ['inputText', 'Country', addressDetails.country]
     );
     await performAction('clickButton', 'Submit');
+  }
+
+  private async reloginAndFindTheCase() {
+    await performAction('navigateToUrl', configData.manageCasesBaseURL);
+    await performAction('login')
+    await performAction('clickButton', 'Find case');
+    await performAction('select', 'Jurisdiction', createCase.possessionsJurisdiction);
+    await performAction('select', 'Case type', createCase.caseType.civilPossessions);
+    await performAction('inputText', 'Case Number', caseInfo.id);
+    await performAction('clickButton', 'Apply');
+    await performAction('clickButton',caseInfo.id)
   }
 
   async getEventToken(): Promise<string> {
