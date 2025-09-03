@@ -83,6 +83,19 @@ public class CCDCaseRepository extends DecentralisedCaseRepository<PCSCase> {
             .preActionProtocolCompleted(pcsCaseEntity.getPreActionProtocolCompleted() != null
                 ? VerticalYesNo.from(pcsCaseEntity.getPreActionProtocolCompleted())
                 : null)
+            .currentRent(pcsCaseEntity.getTenancyLicence() != null 
+                && pcsCaseEntity.getTenancyLicence().getRentAmount() != null
+                ? pcsCaseEntity.getTenancyLicence().getRentAmount().toPlainString() : null)
+            .rentFrequency(pcsCaseEntity.getTenancyLicence() != null 
+                ? pcsCaseEntity.getTenancyLicence().getRentPaymentFrequency() : null)
+            .otherRentFrequency(pcsCaseEntity.getTenancyLicence() != null 
+                ? pcsCaseEntity.getTenancyLicence().getOtherRentFrequency() : null)
+            .dailyRentChargeAmount(pcsCaseEntity.getTenancyLicence() != null 
+                && pcsCaseEntity.getTenancyLicence().getDailyRentChargeAmount() != null
+                ? pcsCaseEntity.getTenancyLicence().getDailyRentChargeAmount().toPlainString() : null)
+            .noticeServed(pcsCaseEntity.getTenancyLicence() != null 
+                && pcsCaseEntity.getTenancyLicence().getNoticeServed() != null 
+                ? YesOrNo.from(pcsCaseEntity.getTenancyLicence().getNoticeServed()) : null)
             .defendants(pcsCaseService.mapToDefendantDetails(pcsCaseEntity.getDefendants()))
             .build();
 
@@ -203,5 +216,4 @@ public class CCDCaseRepository extends DecentralisedCaseRepository<PCSCase> {
             .map(entity -> modelMapper.map(entity, Party.class))
             .collect(Collectors.collectingAndThen(Collectors.toList(), ListValueUtils::wrapListItems));
     }
-
 }

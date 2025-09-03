@@ -254,6 +254,33 @@ public class PCSCase {
 
     @CCD(searchable = false, access = CaseworkerAccess.class)
     private YesOrNo showClaimTypeNotEligibleWales;
+  
+    @CCD(
+        label = "How much is the rent?",
+        typeOverride = FieldType.MoneyGBP,
+        access = {CitizenAccess.class, CaseworkerAccess.class}
+    )
+    private String currentRent;
+
+    @CCD(
+        label = "How frequently should rent be paid?",
+        access = {CitizenAccess.class, CaseworkerAccess.class}
+    )
+    private RentPaymentFrequency rentFrequency;
+
+    @CCD(
+        label = "Enter frequency",
+        hint = "Please specify the frequency",
+        access = {CitizenAccess.class, CaseworkerAccess.class}
+    )
+    private String otherRentFrequency;
+
+    @CCD(
+        label = "Enter the amount per day that unpaid rent should be charged at",
+        typeOverride = FieldType.MoneyGBP,
+        access = {CitizenAccess.class, CaseworkerAccess.class}
+    )
+    private String dailyRentChargeAmount;
 
     @CCD(searchable = false, access = {CitizenAccess.class, CaseworkerAccess.class})
     private YesOrNo showPostcodeNotAssignedToCourt;

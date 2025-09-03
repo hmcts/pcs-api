@@ -27,12 +27,16 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.config.MapperConfig;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.RentPaymentFrequency;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import java.math.BigDecimal;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
@@ -411,10 +415,25 @@ class PcsCaseServiceTest {
                 pcsCase -> when(pcsCase.getNoticeServed()).thenReturn(YesOrNo.NO),
                 expected -> assertThat(expected.getNoticeServed()).isFalse());
 
-        // TODO: Future developers can add ANY field type like:
-        // assertTenancyLicenceField(
-        //     pcsCase -> when(pcsCase.getRentAmount()).thenReturn(1200),
-        //     expected -> assertThat(expected.getCurrentRent()).isEqualTo(1200));
+        // Test rent amount field
+        assertTenancyLicenceField(
+                pcsCase -> when(pcsCase.getCurrentRent()).thenReturn("1200.50"),
+                expected -> assertThat(expected.getRentAmount()).isEqualTo(new BigDecimal("1200.50")));
+
+        // Test rent payment frequency field
+        assertTenancyLicenceField(
+                pcsCase -> when(pcsCase.getRentFrequency()).thenReturn(RentPaymentFrequency.MONTHLY),
+                expected -> assertThat(expected.getRentPaymentFrequency()).isEqualTo(RentPaymentFrequency.MONTHLY));
+
+        // Test other rent frequency field
+        assertTenancyLicenceField(
+                pcsCase -> when(pcsCase.getOtherRentFrequency()).thenReturn("Bi-weekly"),
+                expected -> assertThat(expected.getOtherRentFrequency()).isEqualTo("Bi-weekly"));
+
+        // Test daily rent charge amount field
+        assertTenancyLicenceField(
+                pcsCase -> when(pcsCase.getDailyRentChargeAmount()).thenReturn("40.00"),
+                expected -> assertThat(expected.getDailyRentChargeAmount()).isEqualTo(new BigDecimal("40.00")));
     }
 
     private void assertTenancyLicenceField(java.util.function.Consumer<PCSCase> setupMock,
