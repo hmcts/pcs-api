@@ -14,7 +14,7 @@ test.beforeEach(async ({page}) => {
     initializeExecutor(page);
     await parentSuite('Case Creation');
     await performAction('navigateToUrl', configData.manageCasesBaseURL);
-    await performAction('createUserAndLogin', ['caseworker-pcs', 'caseworker']);
+    await performAction('createUserAndLogin', 'claimant', ['caseworker-pcs', 'caseworker']);
     createCaseWithAddress();
 });
 
