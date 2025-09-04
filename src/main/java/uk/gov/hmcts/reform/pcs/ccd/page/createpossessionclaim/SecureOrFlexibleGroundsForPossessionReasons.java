@@ -14,24 +14,29 @@ public class SecureOrFlexibleGroundsForPossessionReasons implements CcdPageConfi
         pageBuilder
             .page("secureOrFlexibleGroundsForPossessionReasons")
             .pageLabel("Reasons for possession")
+            .showCondition(
+                "isTenancyTypeSecureOrFlexible=\"Yes\""
+                    + " AND (showBreachOfTenancyTextarea=\"Yes\" OR showReasonsForGroundsPage=\"Yes\")"
+            )
+            //This dummy label is needed for page show conditions to work
+            .label("secureOrFlexibleGroundsForPossessionReasons", "Dummy Label",NEVER_SHOW)
             .readonly(PCSCase::getSelectedSecureOrFlexibleDiscretionaryGrounds, NEVER_SHOW)
             .readonly(PCSCase::getSelectedSecureOrFlexibleMandatoryGrounds, NEVER_SHOW)
             .readonly(PCSCase::getShowBreachOfTenancyTextarea,NEVER_SHOW)
             .readonly(PCSCase::getShowReasonsForGroundsPage,NEVER_SHOW)
             .readonly(PCSCase::getIsTenancyTypeSecureOrFlexible,NEVER_SHOW)
-            .showCondition(
-                "isTenancyTypeSecureOrFlexible=\"Yes\""
-                    + " AND (showBreachOfTenancyTextarea=\"Yes\" OR showReasonsForGroundsPage=\"Yes\")"
-            )
             .complex(PCSCase::getSecureOrFlexibleGroundsReasons)
             // Discretionary grounds
             .label("breachOfTenancyGround-label","""
                 ---
                 <h2 class="govuk-heading-l">Breach of the tenancy (ground 1)</h2>
                 <h3 class="govuk-heading-m">Why are you making a claim for possession under this ground?</h3>
-                """, "showBreachOfTenancyTextarea=\"Yes\"")
+                """, "showBreachOfTenancyTextarea=\"Yes\""
+                + " AND selectedSecureOrFlexibleDiscretionaryGroundsCONTAINS\"RENT_ARREARS_OR_BREACH_OF_TENANCY\"")
             .mandatory(SecureOrFlexibleGroundsReasons::getBreachOfTenancyGround,
-                       "showBreachOfTenancyTextarea=\"Yes\"")
+                       "showBreachOfTenancyTextarea=\"Yes\""
+                           + " AND selectedSecureOrFlexibleDiscretionaryGroundsCONTAINS"
+                           + "\"RENT_ARREARS_OR_BREACH_OF_TENANCY\"")
 
             .label("nuisanceOrImmoralUse-label",
                    """

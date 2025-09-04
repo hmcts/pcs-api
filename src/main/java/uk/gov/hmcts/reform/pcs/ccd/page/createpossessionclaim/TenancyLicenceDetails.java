@@ -108,8 +108,7 @@ public class TenancyLicenceDetails implements CcdPageConfiguration {
             );
 
             caseData.setIsTenancyTypeSecureOrFlexible(YesOrNo.YES);
-        }
-        else {
+        } else {
             caseData.setIsTenancyTypeSecureOrFlexible(YesOrNo.NO);
         }
 
