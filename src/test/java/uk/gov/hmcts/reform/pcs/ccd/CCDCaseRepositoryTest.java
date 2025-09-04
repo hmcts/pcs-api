@@ -15,6 +15,7 @@ import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PaymentStatus;
+import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyEntity;
@@ -94,7 +95,7 @@ class CCDCaseRepositoryTest {
         when(unsubmittedCaseDataService.hasUnsubmittedCaseData(CASE_REFERENCE)).thenReturn(hasUnsubmittedData);
 
         // When
-        PCSCase pcsCase = underTest.getCase(CASE_REFERENCE, STATE);
+        PCSCase pcsCase = underTest.getCase(CASE_REFERENCE, State.AWAITING_FURTHER_CLAIM_DETAILS.name());
 
         // Then
         assertThat(pcsCase.getHasUnsubmittedCaseData()).isEqualTo(expectedCaseDataValue);
