@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.Objects;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-
+import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import lombok.Builder;
 import lombok.Data;
 import uk.gov.hmcts.ccd.sdk.External;
@@ -12,9 +12,17 @@ import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.type.*;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseworkerAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenAccess;
+import uk.gov.hmcts.reform.pcs.ccd.domain.model.ReasonForGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.DiscretionaryGrounds;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
+
+import java.util.List;
+import java.util.Set;
+
+import static uk.gov.hmcts.ccd.sdk.type.FieldType.Date;
+import static uk.gov.hmcts.ccd.sdk.type.FieldType.DynamicRadioList;
+import static uk.gov.hmcts.ccd.sdk.type.FieldType.TextArea;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.MandatoryGrounds;
 
 import static uk.gov.hmcts.ccd.sdk.type.FieldType.*;
@@ -149,57 +157,6 @@ public class PCSCase {
     private VerticalYesNo preActionProtocolCompleted;
 
     @CCD(
-        label = "Are you claiming possession because of rent arrears?",
-        hint = "You'll be able to add additional grounds later if you select yes.",
-        access = {CitizenAccess.class, CaseworkerAccess.class}
-    )
-    private YesOrNo groundsForPossession;
-
-//    @CCD(
-//        // label = "Mandatory grounds",
-//        hint = "Select all that apply",
-//        access = {CitizenAccess.class, CaseworkerAccess.class}
-//    )
-//    private MandatoryGrounds mandatoryGroundOptions;
-
-    @CCD(
-        label = "Mandatory grounds",
-        hint = "Select all that apply",
-        access = {CitizenAccess.class, CaseworkerAccess.class}
-    )
-    private DynamicMultiSelectList mandatoryGroundsOptionsList;
-
-    @CCD(
-        label = "Discretionary grounds",
-        hint = "Select all that apply",
-        access = {CitizenAccess.class, CaseworkerAccess.class}
-    )
-    private DynamicMultiSelectList discretionaryGroundsOptionsList;
-
-    @CCD(
-        // label = "Mandatory grounds",
-        hint = "Select all that apply",
-        access = {CitizenAccess.class, CaseworkerAccess.class}
-    )
-    private List<ReasonForGrounds> selectedPossessionGrounds;
-
-//    @CCD(
-//        // label = "Mandatory grounds",
-//        hint = "Select all that apply",
-//        access = {CitizenAccess.class, CaseworkerAccess.class}
-//    )
-//    private DiscretionaryGrounds  discretionaryGroundSelections;
-
-    @CCD(
-        label = "Why are you making a claim for possession under this ground?",
-
-        access = {CitizenAccess.class, CaseworkerAccess.class},
-        typeOverride = TextArea
-    )
-    private String groundsForPossessionReason;
-
-
-    @CCD(
         label = "Have you attempted mediation with the defendants?",
         access = {CitizenAccess.class, CaseworkerAccess.class}
     )
@@ -268,5 +225,78 @@ public class PCSCase {
 
     @CCD(searchable = false, access = CaseworkerAccess.class)
     private YesOrNo showClaimTypeNotEligibleWales;
+
+    @CCD(
+        label = "What type of tenancy and licence is in place",
+        typeOverride = DynamicRadioList,
+        access = {CaseworkerAccess.class}
+    )
+    private DynamicStringList typeOfTenancyLicence;
+
+    @CCD(
+        label = "Give details of the type of tenancy or licence agreement thats in place",
+        typeOverride = TextArea,
+        access = {CaseworkerAccess.class}
+    )
+    private String detailsOfOtherTypeOfTenancyLicence;
+
+    @CCD(
+        label = "What date did the tenancy or licence begin?",
+        hint = "Please enter date. For example: 16 4 2021",
+        typeOverride = Date,
+        access = {CaseworkerAccess.class}
+    )
+    private String tenancyLicenceDate;
+
+    @CCD(
+        label = "Add document",hint = "Upload a document to the system",
+        access = {CitizenAccess.class, CaseworkerAccess.class}
+    )
+    private List<ListValue<Document>> tenancyLicenceDocuments;
+
+    @CCD(
+        label = "Case file view",
+        access = {CitizenAccess.class, CaseworkerAccess.class}
+    )
+    private ComponentLauncher caseFileView;
+
+
+    @CCD(
+        label = "Are you claiming possession because of rent arrears?",
+        hint = "You'll be able to add additional grounds later if you select yes.",
+        access = {CitizenAccess.class, CaseworkerAccess.class}
+    )
+    private YesOrNo groundsForPossession;
+
+    @CCD(
+        label = "Mandatory grounds",
+        hint = "Select all that apply",
+        access = { CaseworkerAccess.class }
+    )
+    private DynamicMultiSelectList mandatoryGroundsOptionsList;
+
+    @CCD(
+        label = "Discretionary grounds",
+        hint = "Select all that apply",
+        access = { CaseworkerAccess.class }
+    )
+    private DynamicMultiSelectList discretionaryGroundsOptionsList;
+
+    @CCD(
+        typeOverride = FieldType.MultiSelectList,
+        typeParameterOverride = "MandatoryGrounds",
+        access = {CaseworkerAccess.class}
+    )
+    private Set<MandatoryGrounds> selectedMandatoryGrounds;
+
+    @CCD(
+        hint = "Select all that apply",
+        typeOverride = MultiSelectList,
+        typeParameterOverride = "DiscretionaryGrounds"
+    )
+    private Set<DiscretionaryGrounds> selectedDiscretionaryGrounds;
+
+    @CCD(access = {CaseworkerAccess.class})
+    private ReasonForGrounds reasonForGrounds;
 
 }

@@ -4,20 +4,15 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
-import uk.gov.hmcts.ccd.sdk.api.HasLabel;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
-import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.DynamicListElement;
 import uk.gov.hmcts.ccd.sdk.type.DynamicMultiSelectList;
-import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.postcodecourt.model.DiscretionaryGrounds;
-import uk.gov.hmcts.reform.pcs.postcodecourt.model.EligibilityResult;
-import uk.gov.hmcts.reform.pcs.postcodecourt.model.EligibilityStatus;
-import uk.gov.hmcts.reform.pcs.postcodecourt.model.MandatoryGrounds;
+import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType;
+import uk.gov.hmcts.reform.pcs.postcodecourt.model.*;
 
 import java.util.Arrays;
 import java.util.List;
@@ -43,14 +38,10 @@ public class GroundsForPossession implements CcdPageConfiguration {
 
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
                                                                   CaseDetails<PCSCase, State> detailsBefore) {
-        System.out.println(details.getData().getGroundsForPossession());
-        //get the values of enum, then populate the dynamic multi select list and pass that in to the next page.
 
-        DynamicMultiSelectList mandatoryGroundsDynamicList =
-            buildDynamicMultiSelectList(MandatoryGrounds.class);
+        DynamicMultiSelectList mandatoryGroundsDynamicList = buildMandatoryGroundsDynamicMultiSelectList();
 
-        DynamicMultiSelectList discretionaryGroundsDynamicList =
-            buildDynamicMultiSelectList(DiscretionaryGrounds.class);
+        DynamicMultiSelectList discretionaryGroundsDynamicList = buildDiscretionaryGroundsDynamicMultiSelectList();
 
         PCSCase pcsCase = details.getData();
         pcsCase.setMandatoryGroundsOptionsList(mandatoryGroundsDynamicList);
@@ -61,11 +52,10 @@ public class GroundsForPossession implements CcdPageConfiguration {
             .build();
     }
 
-    private <E extends Enum<E> & HasLabel> DynamicMultiSelectList buildDynamicMultiSelectList(Class<E> enumClass) {
-     //assured tenacy
-
+    private DynamicMultiSelectList buildMandatoryGroundsDynamicMultiSelectList() {
         List<DynamicListElement> options =
-            Arrays.stream(enumClass.getEnumConstants())
+            Arrays.stream(MandatoryGrounds.values())
+                .filter(ground -> ground.getApplicableTenancies().contains(TenancyLicenceType.ASSURED_TENANCY))
                 .map(ground -> DynamicListElement.builder()
                     .code(UUID.nameUUIDFromBytes(ground.name().getBytes()))
                     .label(ground.getLabel())
@@ -77,5 +67,18 @@ public class GroundsForPossession implements CcdPageConfiguration {
             .build();
     }
 
+    private DynamicMultiSelectList buildDiscretionaryGroundsDynamicMultiSelectList() {
+        List<DynamicListElement> options =
+            Arrays.stream(DiscretionaryGrounds.values())
+                .filter(ground -> ground.getApplicableTenancies().contains(TenancyLicenceType.ASSURED_TENANCY))
+                .map(ground -> DynamicListElement.builder()
+                    .code(UUID.nameUUIDFromBytes(ground.name().getBytes()))
+                    .label(ground.getLabel())
+                    .build())
+                .toList();
 
+        return DynamicMultiSelectList.builder()
+            .listItems(options)
+            .build();
+    }
 }
