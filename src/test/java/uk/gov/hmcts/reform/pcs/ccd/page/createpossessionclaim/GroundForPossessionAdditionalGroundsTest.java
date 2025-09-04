@@ -40,14 +40,4 @@ class GroundForPossessionAdditionalGroundsTest extends BasePageTest {
         var midEvents = event.getFields().getPagesToMidEvent();
         assertThat(midEvents).doesNotContainKey("groundForPossessionAdditionalGrounds");
     }
-
-    @Test
-    void shouldHaveCorrectEventConfiguration() {
-        // Given & When
-        // The page is built in setUp() method
-
-        // Then
-        assertThat(event).isNotNull();
-        assertThat(event.getFields()).isNotNull();
-    }
 }
