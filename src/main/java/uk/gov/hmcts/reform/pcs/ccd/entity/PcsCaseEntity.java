@@ -40,11 +40,13 @@ import static jakarta.persistence.FetchType.LAZY;
 @NoArgsConstructor
 @AllArgsConstructor
 @NamedEntityGraph(
-    name = "PcsCaseEntity.parties",
+    name = "PcsCaseEntity.partiesAndDocuments",
     attributeNodes = {
-        @NamedAttributeNode("parties")
+        @NamedAttributeNode("parties"),
+        @NamedAttributeNode("documents")
     }
 )
+
 public class PcsCaseEntity {
 
     @Id
@@ -100,5 +102,13 @@ public class PcsCaseEntity {
         document.setPcsCase(this);
         document.setCategory(DocumentCategory.CATEGORY_B);
         documents.add(document);
+    }
+
+    public void addDocument(DocumentEntity document, DocumentCategory category) {
+        switch (category) {
+            case CATEGORY_A -> addDocumentCategoryA(document);
+            case CATEGORY_B -> addDocumentCategoryB(document);
+            default -> throw new IllegalArgumentException("Unsupported document category: " + category);
+        }
     }
 }

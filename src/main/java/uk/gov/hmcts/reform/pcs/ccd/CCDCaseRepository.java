@@ -60,29 +60,33 @@ public class CCDCaseRepository extends DecentralisedCaseRepository<PCSCase> {
 
         PcsCaseEntity pcsCaseEntity = loadCaseData(caseReference);
 
+        // TODO remove debug logging
+        log.info("Loading case {} with {} documents", caseReference, pcsCaseEntity.getDocuments().size());
+        pcsCaseEntity.getDocuments().forEach(doc ->
+                log.info("Document: {} - Category: {}", doc.getFileName(), doc.getCategory()));
+
+
         PCSCase pcsCase = PCSCase.builder()
 
             .propertyAddress(convertAddress(pcsCaseEntity.getPropertyAddress()))
             .caseManagementLocation(pcsCaseEntity.getCaseManagementLocation())
-            .supportingDocumentsCategoryA(mapDocumentLinks(pcsCaseEntity.getDocuments(),
-                DocumentCategory.CATEGORY_A.getLabel()))
-            .supportingDocumentsCategoryB(mapDocuments(pcsCaseEntity.getDocuments(),
-                DocumentCategory.CATEGORY_B.getLabel()))
+            .supportingDocumentsCategoryA(mapDocumentLinks(pcsCaseEntity.getDocuments(), DocumentCategory.CATEGORY_A))
+            .supportingDocumentsCategoryB(mapDocumentLinks(pcsCaseEntity.getDocuments(), DocumentCategory.CATEGORY_B))
              .preActionProtocolCompleted(pcsCaseEntity.getPreActionProtocolCompleted() != null
                 ? VerticalYesNo.from(pcsCaseEntity.getPreActionProtocolCompleted())
                 : null)
-            .currentRent(pcsCaseEntity.getTenancyLicence() != null 
+            .currentRent(pcsCaseEntity.getTenancyLicence() != null
                 && pcsCaseEntity.getTenancyLicence().getRentAmount() != null
                 ? pcsCaseEntity.getTenancyLicence().getRentAmount().toPlainString() : null)
-            .rentFrequency(pcsCaseEntity.getTenancyLicence() != null 
+            .rentFrequency(pcsCaseEntity.getTenancyLicence() != null
                 ? pcsCaseEntity.getTenancyLicence().getRentPaymentFrequency() : null)
-            .otherRentFrequency(pcsCaseEntity.getTenancyLicence() != null 
+            .otherRentFrequency(pcsCaseEntity.getTenancyLicence() != null
                 ? pcsCaseEntity.getTenancyLicence().getOtherRentFrequency() : null)
-            .dailyRentChargeAmount(pcsCaseEntity.getTenancyLicence() != null 
+            .dailyRentChargeAmount(pcsCaseEntity.getTenancyLicence() != null
                 && pcsCaseEntity.getTenancyLicence().getDailyRentChargeAmount() != null
                 ? pcsCaseEntity.getTenancyLicence().getDailyRentChargeAmount().toPlainString() : null)
-            .noticeServed(pcsCaseEntity.getTenancyLicence() != null 
-                && pcsCaseEntity.getTenancyLicence().getNoticeServed() != null 
+            .noticeServed(pcsCaseEntity.getTenancyLicence() != null
+                && pcsCaseEntity.getTenancyLicence().getNoticeServed() != null
                 ? YesOrNo.from(pcsCaseEntity.getTenancyLicence().getNoticeServed()) : null)
             .defendants(pcsCaseService.mapToDefendantDetails(pcsCaseEntity.getDefendants()))
             .build();
@@ -92,25 +96,25 @@ public class CCDCaseRepository extends DecentralisedCaseRepository<PCSCase> {
         return pcsCase;
     }
 
-    // Add this new method to handle DocumentLink mapping
     private List<ListValue<DocumentLink>> mapDocumentLinks(Set<DocumentEntity> documentEntities, 
-                                                           String categoryFilter) {
+                                                           DocumentCategory categoryFilter) {
         if (documentEntities == null || documentEntities.isEmpty()) {
+            log.warn("No documents found to map");
             return null;
         }
 
-        return documentEntities.stream()
-            .filter(documentEntity -> String.valueOf(documentEntity.getCategory().getLabel()).equals(categoryFilter))
+        List<ListValue<DocumentLink>> result = documentEntities.stream()
+            .filter(documentEntity -> documentEntity.getCategory() == categoryFilter)
             .map(docEntity -> {
-                // Create the inner Document
+                // inner Document
                 Document document = Document.builder()
                     .url(docEntity.getFilePath())
                     .filename(docEntity.getFileName())
                     .binaryUrl(docEntity.getFilePath())
-                    .categoryId(categoryFilter)
+                    .categoryId(categoryFilter.getLabel())
                     .build();
 
-                // Wrap it in DocumentLink
+                // wrap in DocumentLink
                 DocumentLink documentLink = new DocumentLink(document);
 
                 return ListValue.<DocumentLink>builder()
@@ -119,29 +123,9 @@ public class CCDCaseRepository extends DecentralisedCaseRepository<PCSCase> {
                     .build();
             })
             .collect(Collectors.toList());
-    }
 
-    private List<ListValue<Document>> mapDocuments(Set<DocumentEntity> documentEntities, String categoryFilter) {
-        if (documentEntities == null || documentEntities.isEmpty()) {
-            return null;
-        }
-
-        return documentEntities.stream()
-            .filter(documentEntity -> String.valueOf(documentEntity.getCategory().getLabel()).equals(categoryFilter))
-            .map(docEntity -> {
-                Document document = Document.builder()
-                    .filename(docEntity.getFileName())
-                    .binaryUrl(docEntity.getFilePath())
-                    .url(docEntity.getFilePath())
-                    .categoryId(categoryFilter)
-                    .build();
-
-                return ListValue.<Document>builder()
-                    .id(docEntity.getId().toString())
-                    .value(document)
-                    .build();
-            })
-            .collect(Collectors.toList());
+        log.info("Mapped {} documents for category {}", result.size(), categoryFilter);
+        return result.isEmpty() ? null : result;
     }
 
     private void setDerivedProperties(long caseRef,PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {

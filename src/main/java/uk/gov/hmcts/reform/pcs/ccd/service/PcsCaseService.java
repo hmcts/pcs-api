@@ -58,9 +58,11 @@ public class PcsCaseService {
                         : null);
         pcsCaseEntity.setDefendants(mapFromDefendantDetails(pcsCase.getDefendants()));
 
-        addDocumentLinks(pcsCase.getSupportingDocumentsCategoryA(), 
-                DocumentCategory.CATEGORY_A.getLabel(), pcsCaseEntity);
-        addDocuments(pcsCase.getSupportingDocumentsCategoryB(), DocumentCategory.CATEGORY_B.getLabel(), pcsCaseEntity);
+        addDocumentLinks(pcsCase.getSupportingDocumentsCategoryA(),
+                         DocumentCategory.CATEGORY_A, pcsCaseEntity);
+
+        addDocumentLinks(pcsCase.getSupportingDocumentsCategoryB(),
+                         DocumentCategory.CATEGORY_B, pcsCaseEntity);
 
         pcsCaseEntity.setTenancyLicence(buildTenancyLicence(pcsCase));
         log.error("Saving PcsCase + " + pcsCaseEntity.getDocuments());
@@ -75,30 +77,9 @@ public class PcsCaseService {
      * @param category Which category the document belongs to
      * @param pcsCaseEntity The entity to add the document to
      */
-    private void addDocuments(List<ListValue<Document>> supportingDocuments, String category,
-                              PcsCaseEntity pcsCaseEntity) {
-        if (supportingDocuments != null && !supportingDocuments.isEmpty()) {
-            for (ListValue<Document> documentWrapper : supportingDocuments) {
-                if (documentWrapper != null && documentWrapper.getValue() != null) {
-                    Document document = documentWrapper.getValue();
 
-                    DocumentEntity documentEntity = new DocumentEntity();
-                    documentEntity.setFileName(document.getFilename());
-                    documentEntity.setFilePath(document.getBinaryUrl());
-                    documentEntity.setUploadedOn(LocalDate.now());
-                    documentEntity.setPcsCase(pcsCaseEntity);
-
-                    if (category.equals(DocumentCategory.CATEGORY_A.getLabel())) {
-                        pcsCaseEntity.addDocumentCategoryA(documentEntity);
-                    } else {
-                        pcsCaseEntity.addDocumentCategoryB(documentEntity);
-                    }
-                }
-            }
-        }
-    }
-
-    private void addDocumentLinks(List<ListValue<DocumentLink>> supportingDocuments, String category,
+    private void addDocumentLinks(List<ListValue<DocumentLink>> supportingDocuments,
+                                  DocumentCategory category,
                                   PcsCaseEntity pcsCaseEntity) {
         if (supportingDocuments != null && !supportingDocuments.isEmpty()) {
             for (ListValue<DocumentLink> documentWrapper : supportingDocuments) {
@@ -114,15 +95,13 @@ public class PcsCaseService {
                         documentEntity.setUploadedOn(LocalDate.now());
                         documentEntity.setPcsCase(pcsCaseEntity);
 
-                        if (category.equals(DocumentCategory.CATEGORY_A.getLabel())) {
-                            pcsCaseEntity.addDocumentCategoryA(documentEntity);
-                        } else {
-                            pcsCaseEntity.addDocumentCategoryB(documentEntity);
-                        }
+                        // category handling
+                        pcsCaseEntity.addDocument(documentEntity, category);
 
-                        log.info("Added document: {} with extension: {}",
+                        log.info("Added document: {} with extension: {} for category: {}",
                                  document.getFilename(),
-                                 extractFileExtension(document.getFilename()));
+                                 extractFileExtension(document.getFilename()),
+                                 category);
                     }
                 }
             }
@@ -157,13 +136,12 @@ public class PcsCaseService {
 
         if (pcsCase.getSupportingDocumentsCategoryA() != null) {
             addDocumentLinks(pcsCase.getSupportingDocumentsCategoryA(),
-                DocumentCategory.CATEGORY_A.getLabel(), pcsCaseEntity);
+                             DocumentCategory.CATEGORY_A, pcsCaseEntity);
         }
 
-
-        if (pcsCase.getSupportingDocumentsCategoryA() != null) {
-            addDocumentLinks(pcsCase.getSupportingDocumentsCategoryA(),
-                DocumentCategory.CATEGORY_B.getLabel(), pcsCaseEntity);
+        if (pcsCase.getSupportingDocumentsCategoryB() != null) {
+            addDocumentLinks(pcsCase.getSupportingDocumentsCategoryB(),
+                             DocumentCategory.CATEGORY_B, pcsCaseEntity);
         }
 
         pcsCaseRepository.save(pcsCaseEntity);
@@ -253,11 +231,11 @@ public class PcsCaseService {
     private TenancyLicence buildTenancyLicence(PCSCase pcsCase) {
         return TenancyLicence.builder()
                 .noticeServed(toBooleanOrNull(pcsCase.getNoticeServed()))
-                .rentAmount(pcsCase.getCurrentRent() != null 
+                .rentAmount(pcsCase.getCurrentRent() != null
                     ? new BigDecimal(pcsCase.getCurrentRent()) : null)
                 .rentPaymentFrequency(pcsCase.getRentFrequency())
                 .otherRentFrequency(pcsCase.getOtherRentFrequency())
-                .dailyRentChargeAmount(pcsCase.getDailyRentChargeAmount() != null 
+                .dailyRentChargeAmount(pcsCase.getDailyRentChargeAmount() != null
                     ? new BigDecimal(pcsCase.getDailyRentChargeAmount()) : null)
                 .build();
     }

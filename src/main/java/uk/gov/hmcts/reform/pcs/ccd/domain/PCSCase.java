@@ -9,7 +9,6 @@ import lombok.Data;
 import uk.gov.hmcts.ccd.sdk.External;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
-import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.FieldType;
 
 import static uk.gov.hmcts.ccd.sdk.type.FieldType.DynamicRadioList;
@@ -203,7 +202,6 @@ public class PCSCase {
         typeOverride = Collection,
         typeParameterOverride = "DocumentLink",
         access = {CitizenAccess.class, CaseworkerAccess.class}
-    //        categoryID = "Category_A"
     )
     @JsonProperty("supportDocumentsCategoryA")
     private List<ListValue<DocumentLink>> supportingDocumentsCategoryA;
@@ -211,12 +209,11 @@ public class PCSCase {
     @CCD(
         label = "Supporting documents Category B",
         typeOverride = Collection,
-        typeParameterOverride = "Document",
-        access = {CitizenAccess.class, CaseworkerAccess.class},
-        categoryID = "Category_B"
+        typeParameterOverride = "DocumentLink",
+        access = {CitizenAccess.class, CaseworkerAccess.class}
     )
     @JsonProperty("supportingDocumentsCategoryB")
-    private List<ListValue<Document>> supportingDocumentsCategoryB;
+    private List<ListValue<DocumentLink>> supportingDocumentsCategoryB;
 
     @CCD(
         label = "Case file view",
@@ -257,7 +254,7 @@ public class PCSCase {
 
     @CCD(searchable = false, access = CaseworkerAccess.class)
     private YesOrNo showClaimTypeNotEligibleWales;
-  
+
     @CCD(
         label = "How much is the rent?",
         typeOverride = FieldType.MoneyGBP,
