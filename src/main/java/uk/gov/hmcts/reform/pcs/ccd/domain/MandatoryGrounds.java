@@ -16,13 +16,13 @@ public enum MandatoryGrounds implements HasLabel {
 
     ANTI_SOCIAL("Antisocial behaviour", Set.of(SECURE_TENANCY,FLEXIBLE_TENANCY),
                 false),
-    OVERCROWDING("Overcrowding(ground 9)", Set.of(SECURE_TENANCY,FLEXIBLE_TENANCY),
+    OVERCROWDING("Overcrowding (ground 9)", Set.of(SECURE_TENANCY,FLEXIBLE_TENANCY),
                  true),
-    LANDLORD_WORKS("Landlord's works(ground 10)",Set.of(SECURE_TENANCY,FLEXIBLE_TENANCY),
+    LANDLORD_WORKS("Landlord's works (ground 10)",Set.of(SECURE_TENANCY,FLEXIBLE_TENANCY),
                    true),
-    PROPERTY_SOLD("Property sold for redevelopment(ground 10A)",Set.of(SECURE_TENANCY,FLEXIBLE_TENANCY),
+    PROPERTY_SOLD("Property sold for redevelopment (ground 10A)",Set.of(SECURE_TENANCY,FLEXIBLE_TENANCY),
                   true),
-    CHARITABLE_LANDLORD("Charitable landlords(ground 11)",Set.of(SECURE_TENANCY,FLEXIBLE_TENANCY),
+    CHARITABLE_LANDLORD("Charitable landlords (ground 11)",Set.of(SECURE_TENANCY,FLEXIBLE_TENANCY),
                         true);
 
     private String label;

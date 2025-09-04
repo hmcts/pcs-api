@@ -15,16 +15,10 @@ public class SecureOrFlexibleGroundsForPossessionReasons implements CcdPageConfi
             .page("secureOrFlexibleGroundsForPossessionReasons")
             .pageLabel("Reasons for possession")
             .showCondition(
-                "isTenancyTypeSecureOrFlexible=\"Yes\""
+                    "typeOfTenancyLicence=\"SECURE_TENANCY\""
+                            + " OR typeOfTenancyLicence=\"FLEXIBLE_TENANCY\""
                     + " AND (showBreachOfTenancyTextarea=\"Yes\" OR showReasonsForGroundsPage=\"Yes\")"
             )
-            //This dummy label is needed for page show conditions to work
-            .label("secureOrFlexibleGroundsForPossessionReasons", "Dummy Label",NEVER_SHOW)
-            .readonly(PCSCase::getSelectedSecureOrFlexibleDiscretionaryGrounds, NEVER_SHOW)
-            .readonly(PCSCase::getSelectedSecureOrFlexibleMandatoryGrounds, NEVER_SHOW)
-            .readonly(PCSCase::getShowBreachOfTenancyTextarea,NEVER_SHOW)
-            .readonly(PCSCase::getShowReasonsForGroundsPage,NEVER_SHOW)
-            .readonly(PCSCase::getIsTenancyTypeSecureOrFlexible,NEVER_SHOW)
             .complex(PCSCase::getSecureOrFlexibleGroundsReasons)
             // Discretionary grounds
             .label("breachOfTenancyGround-label","""
@@ -205,7 +199,7 @@ public class SecureOrFlexibleGroundsForPossessionReasons implements CcdPageConfi
             .label("overcrowding-label",
                    """
                    ---
-                 <h2 class="govuk-heading-l">Overcrowding(ground 9)</h2>
+                 <h2 class="govuk-heading-l">Overcrowding (ground 9)</h2>
                  <h3 class="govuk-heading-m">Why are you making a claim for possession under this ground?</h3>
                  """,
                    "selectedSecureOrFlexibleMandatoryGroundsCONTAINS\"OVERCROWDING\"")
@@ -215,7 +209,7 @@ public class SecureOrFlexibleGroundsForPossessionReasons implements CcdPageConfi
             .label("landlordWorks-label",
                    """
                    ---
-                 <h2 class="govuk-heading-l">Landlord's works(ground 10)</h2>
+                 <h2 class="govuk-heading-l">Landlord's works (ground 10)</h2>
                  <h3 class="govuk-heading-m">Why are you making a claim for possession under this ground?</h3>
                  """,
                    "selectedSecureOrFlexibleMandatoryGroundsCONTAINS\"LANDLORD_WORKS\"")
@@ -225,7 +219,7 @@ public class SecureOrFlexibleGroundsForPossessionReasons implements CcdPageConfi
             .label("propertySold-label",
                    """
                    ---
-                 <h2 class="govuk-heading-l">Property sold for redevelopment(ground 10A)</h2>
+                 <h2 class="govuk-heading-l">Property sold for redevelopment (ground 10A)</h2>
                  <h3 class="govuk-heading-m">Why are you making a claim for possession under this ground?</h3>
                  """,
                    "selectedSecureOrFlexibleMandatoryGroundsCONTAINS\"PROPERTY_SOLD\"")
@@ -235,13 +229,17 @@ public class SecureOrFlexibleGroundsForPossessionReasons implements CcdPageConfi
             .label("charitableLandlord-label",
                    """
                    ---
-                 <h2 class="govuk-heading-l">Charitable landlords(ground 11)</h2>
+                 <h2 class="govuk-heading-l">Charitable landlords (ground 11)</h2>
                  <h3 class="govuk-heading-m">Why are you making a claim for possession under this ground?</h3>
                  """,
                    "selectedSecureOrFlexibleMandatoryGroundsCONTAINS\"CHARITABLE_LANDLORD\"")
             .mandatory(SecureOrFlexibleGroundsReasons::getCharitableLandlordGround,
                        "selectedSecureOrFlexibleMandatoryGroundsCONTAINS\"CHARITABLE_LANDLORD\"")
-            .done();
+            .done()
+                .readonly(PCSCase::getSelectedSecureOrFlexibleDiscretionaryGrounds, NEVER_SHOW)
+                .readonly(PCSCase::getSelectedSecureOrFlexibleMandatoryGrounds, NEVER_SHOW)
+                .readonly(PCSCase::getShowBreachOfTenancyTextarea,NEVER_SHOW)
+                .readonly(PCSCase::getShowReasonsForGroundsPage,NEVER_SHOW);
 
     }
 }

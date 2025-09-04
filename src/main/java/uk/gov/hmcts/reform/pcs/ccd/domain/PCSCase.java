@@ -228,7 +228,7 @@ public class PCSCase {
 
     @CCD(searchable = false, access = CaseworkerAccess.class)
     private YesOrNo showClaimTypeNotEligibleWales;
-  
+
     @CCD(
         label = "How much is the rent?",
         typeOverride = FieldType.MoneyGBP,
@@ -348,12 +348,8 @@ public class PCSCase {
 
     private YesOrNo showReasonsForGroundsPage;
 
-    private YesOrNo isTenancyTypeSecureOrFlexible;
-
     @JsonUnwrapped
     @CCD(access = {CaseworkerAccess.class})
     private SecureOrFlexibleGroundsReasons secureOrFlexibleGroundsReasons;
-
-
 
 }
