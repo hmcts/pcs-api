@@ -87,7 +87,7 @@ public class NoticeDetailsService {
      */
     private void validateDateField(LocalDate dateValue, String fieldName, List<String> errors) {
         if (dateValue != null) {
-            if (isFutureDate(dateValue)) {
+            if (isTodayOrFutureDate(dateValue)) {
                 errors.add(FUTURE_DATE_ERROR);
             }
         }
@@ -98,7 +98,7 @@ public class NoticeDetailsService {
      */
     private void validateDateTimeField(LocalDateTime dateTimeValue, String fieldName, List<String> errors) {
         if (dateTimeValue != null) {
-            if (!isValidDateTime(dateTimeValue)) {
+            if (!isValidLocalDateTime(dateTimeValue)) {
                 errors.add(INVALID_DATETIME_ERROR);
             } else if (isTodayOrFutureDateTime(dateTimeValue)) {
                 errors.add(FUTURE_DATETIME_ERROR);
@@ -160,7 +160,7 @@ public class NoticeDetailsService {
         return date.isEqual(today) || date.isAfter(today);
     }
 
-    private boolean isValidDateTime(LocalDateTime dateTime) {
+    private boolean isValidLocalDateTime(LocalDateTime dateTime) {
         try {
             // LocalDateTime is already validated by the framework, just check if it's not null
             return dateTime != null;
