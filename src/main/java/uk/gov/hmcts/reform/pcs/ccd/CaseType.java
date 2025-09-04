@@ -10,6 +10,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import static java.lang.System.getenv;
 import static java.util.Optional.ofNullable;
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.State.AWAITING_FURTHER_CLAIM_DETAILS;
 
 /**
  * Setup some common possessions case type configuration.
@@ -67,13 +68,21 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
             .caseReferenceField()
             .field(PCSCase::getPropertyAddress, "Property Address");
 
+        builder.tab("nextSteps", "Next steps")
+            .showCondition(ShowConditions.stateEquals(AWAITING_FURTHER_CLAIM_DETAILS))
+            .label("nextStepsMarkdownLabel", null, "${nextStepsMarkdown}")
+            .field("nextStepsMarkdown", NEVER_SHOW);
+
         builder.tab("summary", "Property Details")
+            .showCondition(ShowConditions.stateNotEquals(AWAITING_FURTHER_CLAIM_DETAILS))
             .field(PCSCase::getPropertyAddress);
 
         builder.tab("CaseHistory", "History")
+            .showCondition(ShowConditions.stateNotEquals(AWAITING_FURTHER_CLAIM_DETAILS))
             .field("caseHistory");
 
         builder.tab("ClaimPayment", "Payment")
+            .showCondition(ShowConditions.stateNotEquals(AWAITING_FURTHER_CLAIM_DETAILS))
             .showCondition("claimPaymentTabMarkdown!=\"\"")
             .label("claimPaymentTabMarkdownLabel", null, "${claimPaymentTabMarkdown}")
             .field("claimPaymentTabMarkdown", NEVER_SHOW);

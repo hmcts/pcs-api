@@ -12,6 +12,8 @@ import com.fasterxml.jackson.module.paramnames.ParameterNamesModule;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
+import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.UnsubmittedCaseDataMixIn;
 
 import static com.fasterxml.jackson.core.JsonGenerator.Feature.AUTO_CLOSE_JSON_CONTENT;
 import static com.fasterxml.jackson.databind.MapperFeature.ACCEPT_CASE_INSENSITIVE_ENUMS;
@@ -38,6 +40,24 @@ public class JacksonConfiguration {
 
         mapper.configure(DeserializationFeature.ACCEPT_EMPTY_STRING_AS_NULL_OBJECT, true)
             .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+
+        mapper.registerModules(new Jdk8Module(), new JavaTimeModule(), new ParameterNamesModule());
+
+        return mapper;
+    }
+
+    @Bean
+    public ObjectMapper unsubmittedCaseDataObjectMapper() {
+        ObjectMapper mapper = JsonMapper.builder()
+            .disable(AUTO_CLOSE_JSON_CONTENT)
+            .build();
+
+        mapper.addMixIn(PCSCase.class, UnsubmittedCaseDataMixIn.class);
+
+        mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+        mapper.setDateFormat(new StdDateFormat());
+
+        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
         mapper.registerModules(new Jdk8Module(), new JavaTimeModule(), new ParameterNamesModule());
 

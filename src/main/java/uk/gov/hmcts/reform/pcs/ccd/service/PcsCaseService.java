@@ -17,12 +17,14 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.model.Defendant;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
+import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 @Service
@@ -33,7 +35,20 @@ public class PcsCaseService {
     private final SecurityContextService securityContextService;
     private final ModelMapper modelMapper;
 
-    public PcsCaseEntity createCase(long caseReference, PCSCase pcsCase) {
+    public void createCase(long caseReference, AddressUK propertyAddress, LegislativeCountry legislativeCountry) {
+
+        Objects.requireNonNull(propertyAddress, "Property address must be provided to create a case");
+        Objects.requireNonNull(legislativeCountry, "Legislative country must be provided to create a case");
+
+        PcsCaseEntity pcsCaseEntity = new PcsCaseEntity();
+        pcsCaseEntity.setCaseReference(caseReference);
+        pcsCaseEntity.setPropertyAddress(modelMapper.map(propertyAddress, AddressEntity.class));
+        pcsCaseEntity.setLegislativeCountry(legislativeCountry);
+
+        pcsCaseRepository.save(pcsCaseEntity);
+    }
+
+    public void createCase(long caseReference, PCSCase pcsCase) {
         AddressUK applicantAddress = pcsCase.getPropertyAddress();
 
         AddressEntity addressEntity = applicantAddress != null
@@ -51,10 +66,10 @@ public class PcsCaseService {
 
         pcsCaseEntity.setTenancyLicence(buildTenancyLicence(pcsCase));
 
-        return pcsCaseRepository.save(pcsCaseEntity);
+        pcsCaseRepository.save(pcsCaseEntity);
     }
 
-    public void patchCase(long caseReference, PCSCase pcsCase) {
+    public PcsCaseEntity patchCase(long caseReference, PCSCase pcsCase) {
         PcsCaseEntity pcsCaseEntity = pcsCaseRepository.findByCaseReference(caseReference)
             .orElseThrow(() -> new CaseNotFoundException(caseReference));
 
@@ -80,7 +95,11 @@ public class PcsCaseService {
             pcsCaseEntity.setPreActionProtocolCompleted(pcsCase.getPreActionProtocolCompleted().toBoolean());
         }
 
+        pcsCaseEntity.setTenancyLicence(buildTenancyLicence(pcsCase));
+
         pcsCaseRepository.save(pcsCaseEntity);
+
+        return pcsCaseEntity;
     }
 
     public List<Defendant> mapFromDefendantDetails(List<ListValue<DefendantDetails>> defendants) {
@@ -167,11 +186,11 @@ public class PcsCaseService {
     private TenancyLicence buildTenancyLicence(PCSCase pcsCase) {
         return TenancyLicence.builder()
                 .noticeServed(toBooleanOrNull(pcsCase.getNoticeServed()))
-                .rentAmount(pcsCase.getCurrentRent() != null 
+                .rentAmount(pcsCase.getCurrentRent() != null
                     ? new BigDecimal(pcsCase.getCurrentRent()) : null)
                 .rentPaymentFrequency(pcsCase.getRentFrequency())
                 .otherRentFrequency(pcsCase.getOtherRentFrequency())
-                .dailyRentChargeAmount(pcsCase.getDailyRentChargeAmount() != null 
+                .dailyRentChargeAmount(pcsCase.getDailyRentChargeAmount() != null
                     ? new BigDecimal(pcsCase.getDailyRentChargeAmount()) : null)
                 .build();
     }

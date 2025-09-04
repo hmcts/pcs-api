@@ -53,7 +53,7 @@ class SelectClaimantTypeTest extends BasePageTest {
             .build();
 
         PCSCase caseData = PCSCase.builder()
-            .legislativeCountry(legislativeCountry.getLabel())
+            .legislativeCountry(legislativeCountry)
             .claimantType(claimantTypeSelection)
             .build();
 

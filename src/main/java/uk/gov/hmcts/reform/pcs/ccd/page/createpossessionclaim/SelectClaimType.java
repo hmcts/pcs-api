@@ -38,8 +38,7 @@ public class SelectClaimType implements CcdPageConfiguration {
         PCSCase caseData = details.getData();
         VerticalYesNo claimAgainstTrespassers = caseData.getClaimAgainstTrespassers();
 
-        String legislativeCountryString = caseData.getLegislativeCountry();
-        LegislativeCountry legislativeCountry = LegislativeCountry.fromLabel(legislativeCountryString);
+        LegislativeCountry legislativeCountry = caseData.getLegislativeCountry();
 
         caseData.setShowClaimTypeNotEligibleEngland(YesOrNo.from(
             isEligibleInEngland(legislativeCountry, claimAgainstTrespassers)));

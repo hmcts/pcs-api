@@ -30,6 +30,7 @@ public class PropertyNotEligible implements CcdPageConfiguration {
             .pageLabel("Property not eligible for this online service")
             .showCondition("showPropertyNotEligiblePage=\"Yes\"")
             .readonly(PCSCase::getShowPropertyNotEligiblePage, NEVER_SHOW)
+            .readonly(PCSCase::getLegislativeCountry)
 
             // England and Wales guidance section
             .label("propertyNotEligible-england-wales", """

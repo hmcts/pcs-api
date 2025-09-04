@@ -39,8 +39,7 @@ public class SelectClaimantType implements CcdPageConfiguration {
 
         ClaimantType claimantType = ClaimantType.valueOf(selectedValue);
 
-        String legislativeCountryString = caseData.getLegislativeCountry();
-        LegislativeCountry legislativeCountry = LegislativeCountry.fromLabel(legislativeCountryString);
+        LegislativeCountry legislativeCountry = caseData.getLegislativeCountry();
 
         caseData
             .setShowClaimantTypeNotEligibleEngland(YesOrNo.from(isEligibleInEngland(legislativeCountry, claimantType)));
