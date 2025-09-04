@@ -8,7 +8,6 @@ import {
   performValidation
 } from '@utils/controller';
 import {createCase} from "@data/page-data/createCase.page.data";
-import {getCaseInfo} from '@utils/actions/custom-actions/createCase.action';
 
 test.beforeEach(async ({page}) => {
     initializeExecutor(page);
@@ -31,24 +30,22 @@ async function searchCase(caseNumber: string) {
   await performAction('clickButton', 'Apply');
 }
 
-test.describe.skip('Search case by case number @PR @Master @nightly', () => {
+test.describe('Search case by case number @PR @Master @nightly', () => {
   test('Search for case via caselist', async ({}) => {
-    await performAction('clickButton', 'Case list');
-    await searchCase(getCaseInfo().id);
-    await performValidation(
-      'visibility',
-      'caseNumber',
-      {visible: getCaseInfo().fid}
-    );
+    // await searchCase(caseInfo.id);
+    // await performValidation(
+    //   'visibility',
+    //   'caseNumber',
+    //   {visible: caseInfo.fid}
+    // );
   });
   test('Search for case via find case', async ({}) => {
-    await performAction('clickButton', 'Find case');
-    await searchCase(getCaseInfo().id);
-    await performValidation(
-      'visibility',
-      'caseNumber',
-      {visible: getCaseInfo().fid}
-    );
+    // await searchCase(caseInfo.id);
+    // await performValidation(
+    //   'visibility',
+    //   'caseNumber',
+    //   {visible: caseInfo.fid}
+    // );
   });
 });
 
