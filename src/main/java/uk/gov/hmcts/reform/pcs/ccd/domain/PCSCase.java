@@ -164,7 +164,7 @@ public class PCSCase {
         label = "Give details about the attempted mediation and what the outcome was",
         access = {CitizenAccess.class, CaseworkerAccess.class},
         typeOverride = TextArea,
-        min = 1,
+        min = 3,
         max = 20
     )
     private String mediationAttemptedDetails;
@@ -179,7 +179,7 @@ public class PCSCase {
         label = "Explain what steps you've taken to reach a settlement",
         access = {CitizenAccess.class, CaseworkerAccess.class},
         typeOverride = TextArea,
-        min = 1,
+        min = 3,
         max = 20
     )
     private String settlementAttemptedDetails;
