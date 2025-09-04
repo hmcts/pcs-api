@@ -12,160 +12,232 @@ public class SecureOrFlexibleGroundsForPossessionReasons implements CcdPageConfi
     @Override
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
-            .page("reasonForPossession")
+            .page("secureOrFlexibleGroundsForPossessionReasons")
             .pageLabel("Reasons for possession")
-            .readonly(PCSCase::getSelectedSecureOrFlexibleDiscretionaryGrounds,NEVER_SHOW)
-            .readonly(PCSCase::getSelectedSecureOrFlexibleMandatoryGrounds,NEVER_SHOW)
+            .readonly(PCSCase::getSelectedSecureOrFlexibleDiscretionaryGrounds, NEVER_SHOW)
+            .readonly(PCSCase::getSelectedSecureOrFlexibleMandatoryGrounds, NEVER_SHOW)
+            .readonly(PCSCase::getShowBreachOfTenancyTextarea,NEVER_SHOW)
+            .readonly(PCSCase::getShowReasonsForGroundsPage,NEVER_SHOW)
+            .readonly(PCSCase::getIsTenancyTypeSecureOrFlexible,NEVER_SHOW)
             .showCondition(
-                "(" +
-                    "typeOfTenancyLicence=\"SECURE_TENANCY\" OR " +
-                    "typeOfTenancyLicence=\"FLEXIBLE_TENANCY\"" +
-                    ")" +
-                    " AND " +
-                    "(" +
-                    "rentAreasOrBreachOfTenancy CONTAINS \"BREACH_OF_TENANCY\" OR " +
-                    "(" +
-                    "selectedSecureOrFlexibleDiscretionaryGrounds!=\"RENT_ARREARS_OR_BREACH_OF_TENANCY\" " +
-                    "AND selectedSecureOrFlexibleDiscretionaryGrounds=\"*\"" +
-                    ") OR " +
-                    "selectedSecureOrFlexibleMandatoryGrounds=\"*\"" +
-                    ")"
-
+                "isTenancyTypeSecureOrFlexible=\"Yes\""
+                    + " AND (showBreachOfTenancyTextarea=\"Yes\" OR showReasonsForGroundsPage=\"Yes\")"
             )
             .complex(PCSCase::getSecureOrFlexibleGroundsReasons)
             // Discretionary grounds
-            .readonly(SecureOrFlexibleGroundsReasons::getBreachOfTenancyLabel,
-                      "rentAreasOrBreachOfTenancyCONTAINS" +
-                          "\"BREACH_OF_TENANCY\"")
+            .label("breachOfTenancyGround-label","""
+                ---
+                <h2 class="govuk-heading-l">Breach of the tenancy (ground 1)</h2>
+                <h3 class="govuk-heading-m">Why are you making a claim for possession under this ground?</h3>
+                """, "showBreachOfTenancyTextarea=\"Yes\"")
             .mandatory(SecureOrFlexibleGroundsReasons::getBreachOfTenancyGround,
-                       "rentAreasOrBreachOfTenancyCONTAINS" +
-                           "\"BREACH_OF_TENANCY\"")
+                       "showBreachOfTenancyTextarea=\"Yes\"")
 
-            .readonly(SecureOrFlexibleGroundsReasons::getNuisanceOrImmoralUseLabel,
-                      "selectedSecureOrFlexibleDiscretionaryGroundsCONTAINS" +
-                          "\"NUISANCE_OR_IMMORAL_USE\"")
+            .label("nuisanceOrImmoralUse-label",
+                   """
+                   ---
+                 <h2 class="govuk-heading-l">Nuisance, annoyance, illegal or immoral use of the property (ground 2)</h2>
+                 <h3 class="govuk-heading-m">Why are you making a claim for possession under this ground?</h3>
+                 """,
+                   "selectedSecureOrFlexibleDiscretionaryGroundsCONTAINS\"NUISANCE_OR_IMMORAL_USE\"")
             .mandatory(SecureOrFlexibleGroundsReasons::getNuisanceOrImmoralUseGround,
-                       "selectedSecureOrFlexibleDiscretionaryGroundsCONTAINS" +
-                           "\"NUISANCE_OR_IMMORAL_USE\"")
+                       "selectedSecureOrFlexibleDiscretionaryGroundsCONTAINS\"NUISANCE_OR_IMMORAL_USE\"")
 
-            .readonly(SecureOrFlexibleGroundsReasons::getDomesticViolenceLabel,
-                      "selectedSecureOrFlexibleDiscretionaryGroundsCONTAINS" +
-                          "\"DOMESTIC_VIOLENCE\"")
+            .label("domesticViolence-label",
+                   """
+                   ---
+                 <h2 class="govuk-heading-l">Domestic violence (ground 2A)</h2>
+                 <h3 class="govuk-heading-m">Why are you making a claim for possession under this ground?</h3>
+                 """,
+                   "selectedSecureOrFlexibleDiscretionaryGroundsCONTAINS\"DOMESTIC_VIOLENCE\"")
             .mandatory(SecureOrFlexibleGroundsReasons::getDomesticViolenceGround,
-                       "selectedSecureOrFlexibleDiscretionaryGroundsCONTAINS" +
-                           "\"DOMESTIC_VIOLENCE\"")
+                       "selectedSecureOrFlexibleDiscretionaryGroundsCONTAINS\"DOMESTIC_VIOLENCE\"")
 
-            .readonly(SecureOrFlexibleGroundsReasons::getRiotOffenceLabel,
-                      "selectedSecureOrFlexibleDiscretionaryGroundsCONTAINS" +
-                          "\"RIOT_OFFENCE\"")
+            .label("riotOffence-label",
+                   """
+                   ---
+                 <h2 class="govuk-heading-l">Offence during a riot (ground 22A)</h2>
+                 <h3 class="govuk-heading-m">Why are you making a claim for possession under this ground?</h3>
+                 """,
+                   "selectedSecureOrFlexibleDiscretionaryGroundsCONTAINS\"RIOT_OFFENCE\"")
             .mandatory(SecureOrFlexibleGroundsReasons::getRiotOffenceGround,
-                       "selectedSecureOrFlexibleDiscretionaryGroundsCONTAINS" +
-                           "\"RIOT_OFFENCE\"")
+                       "selectedSecureOrFlexibleDiscretionaryGroundsCONTAINS\"RIOT_OFFENCE\"")
 
-            .readonly(SecureOrFlexibleGroundsReasons::getPropertyDeteriorationLabel,
-                      "selectedSecureOrFlexibleDiscretionaryGroundsCONTAINS" +
-                          "\"PROPERTY_DETERIORATION\"")
+            .label("propertyDeterioration-label",
+                   """
+                   ---
+                 <h2 class="govuk-heading-l">Deterioration in the condition of the property (ground 3)</h2>
+                 <h3 class="govuk-heading-m">Why are you making a claim for possession under this ground?</h3>
+                 """,
+                   "selectedSecureOrFlexibleDiscretionaryGroundsCONTAINS\"PROPERTY_DETERIORATION\"")
             .mandatory(SecureOrFlexibleGroundsReasons::getPropertyDeteriorationGround,
-                       "selectedSecureOrFlexibleDiscretionaryGroundsCONTAINS" +
-                           "\"PROPERTY_DETERIORATION\"")
+                       "selectedSecureOrFlexibleDiscretionaryGroundsCONTAINS\"PROPERTY_DETERIORATION\"")
 
-            .readonly(SecureOrFlexibleGroundsReasons::getFurnitureDeteriorationLabel,
-                      "selectedSecureOrFlexibleDiscretionaryGroundsCONTAINS" +
-                          "\"FURNITURE_DETERIORATION\"")
+            .label("furnitureDeterioration-label",
+                   """
+                   ---
+                 <h2 class="govuk-heading-l">Deterioration of furniture (ground 4)"</h2>
+                 <h3 class="govuk-heading-m">Why are you making a claim for possession under this ground?</h3>
+                 """,
+                   "selectedSecureOrFlexibleDiscretionaryGroundsCONTAINS\"FURNITURE_DETERIORATION\"")
             .mandatory(SecureOrFlexibleGroundsReasons::getFurnitureDeteriorationGround,
-                       "selectedSecureOrFlexibleDiscretionaryGroundsCONTAINS" +
-                           "\"FURNITURE_DETERIORATION\"")
+                       "selectedSecureOrFlexibleDiscretionaryGroundsCONTAINS\"FURNITURE_DETERIORATION\"")
 
-            .readonly(SecureOrFlexibleGroundsReasons::getTenancyObtainedByFalseStatementLabel,
-                      "selectedSecureOrFlexibleDiscretionaryGroundsCONTAINS" +
-                          "\"TENANCY_OBTAINED_BY_FALSE_STATEMENT\"")
+            .label("tenancyObtainedByFalseStatement-label",
+                   """
+                   ---
+                  <h2 class="govuk-heading-l">Tenancy obtained by false statement (ground 5)</h2>
+                  <h3 class="govuk-heading-m">Why are you making a claim for possession under this ground?</h3>
+                  """,
+                   "selectedSecureOrFlexibleDiscretionaryGroundsCONTAINS"
+                       + "\"TENANCY_OBTAINED_BY_FALSE_STATEMENT\"")
             .mandatory(SecureOrFlexibleGroundsReasons::getTenancyObtainedByFalseStatementGround,
-                       "selectedSecureOrFlexibleDiscretionaryGroundsCONTAINS" +
-                           "\"TENANCY_OBTAINED_BY_FALSE_STATEMENT\"")
+                       "selectedSecureOrFlexibleDiscretionaryGroundsCONTAINS"
+                           + "\"TENANCY_OBTAINED_BY_FALSE_STATEMENT\"")
 
-            .readonly(SecureOrFlexibleGroundsReasons::getPremiumPaidMutualExchangeLabel,
-                      "selectedSecureOrFlexibleDiscretionaryGroundsCONTAINS" +
-                          "\"PREMIUM_PAID_MUTUAL_EXCHANGE\"")
+            .label("premiumPaidMutualExchange-label",
+                   """
+                   ---
+                  <h2 class="govuk-heading-l">Premium paid in connection with mutual exchange (ground 6)</h2>
+                  <h3 class="govuk-heading-m">Why are you making a claim for possession under this ground?</h3>
+                  """,
+                   "selectedSecureOrFlexibleDiscretionaryGroundsCONTAINS"
+                       + "\"PREMIUM_PAID_MUTUAL_EXCHANGE\"")
             .mandatory(SecureOrFlexibleGroundsReasons::getPremiumPaidMutualExchangeGround,
-                       "selectedSecureOrFlexibleDiscretionaryGroundsCONTAINS" +
-                           "\"PREMIUM_PAID_MUTUAL_EXCHANGE\"")
+                       "selectedSecureOrFlexibleDiscretionaryGroundsCONTAINS"
+                           + "\"PREMIUM_PAID_MUTUAL_EXCHANGE\"")
 
-            .readonly(SecureOrFlexibleGroundsReasons::getUnreasonableConductTiedAccommodationLabel,
-                      "selectedSecureOrFlexibleDiscretionaryGroundsCONTAINS" +
-                          "\"UNREASONABLE_CONDUCT_TIED_ACCOMMODATION\"")
+            .label("unreasonableConductTiedAccommodation-label",
+                   """
+                   ---
+                  <h2 class="govuk-heading-l">Unreasonable conduct in tied accommodation (ground 7)</h2>
+                  <h3 class="govuk-heading-m">Why are you making a claim for possession under this ground?</h3>
+                  """,
+                   "selectedSecureOrFlexibleDiscretionaryGroundsCONTAINS"
+                       + "\"UNREASONABLE_CONDUCT_TIED_ACCOMMODATION\"")
             .mandatory(SecureOrFlexibleGroundsReasons::getUnreasonableConductTiedAccommodationGround,
-                       "selectedSecureOrFlexibleDiscretionaryGroundsCONTAINS" +
-                           "\"UNREASONABLE_CONDUCT_TIED_ACCOMMODATION\"")
+                       "selectedSecureOrFlexibleDiscretionaryGroundsCONTAINS"
+                           + "\"UNREASONABLE_CONDUCT_TIED_ACCOMMODATION\"")
 
-            .readonly(SecureOrFlexibleGroundsReasons::getRefusalToMoveBackLabel,
-                      "selectedSecureOrFlexibleDiscretionaryGroundsCONTAINS" +
-                          "\"REFUSAL_TO_MOVE_BACK\"")
+            .label("refusalToMoveBack-label",
+                   """
+                   ---
+                <h2 class="govuk-heading-l">Refusal to move back to main home after works completed (ground 8)</h2>
+                <h3 class="govuk-heading-m">Why are you making a claim for possession under this ground?</h3>
+                """,
+                   "selectedSecureOrFlexibleDiscretionaryGroundsCONTAINS\"REFUSAL_TO_MOVE_BACK\"")
             .mandatory(SecureOrFlexibleGroundsReasons::getRefusalToMoveBackGround,
-                       "selectedSecureOrFlexibleDiscretionaryGroundsCONTAINS" +
-                           "\"REFUSAL_TO_MOVE_BACK\"")
+                       "selectedSecureOrFlexibleDiscretionaryGroundsCONTAINS\"REFUSAL_TO_MOVE_BACK\"")
 
-            .readonly(SecureOrFlexibleGroundsReasons::getTiedAccommodationNeededForEmployeeLabel,
-                      "selectedSecureOrFlexibleDiscretionaryGroundsCONTAINS" +
-                          "\"TIED_ACCOMMODATION_NEEDED_FOR_EMPLOYEE\"")
+            .label("tiedAccommodationNeededForEmployee-label",
+                   """
+                   ---
+                 <h2 class="govuk-heading-l">Tied accommodation needed for another employee (ground 12)</h2>
+                 <h3 class="govuk-heading-m">Why are you making a claim for possession under this ground?</h3>
+                 """,
+                   "selectedSecureOrFlexibleDiscretionaryGroundsCONTAINS"
+                       + "\"TIED_ACCOMMODATION_NEEDED_FOR_EMPLOYEE\"")
             .mandatory(SecureOrFlexibleGroundsReasons::getTiedAccommodationNeededForEmployeeGround,
-                       "selectedSecureOrFlexibleDiscretionaryGroundsCONTAINS" +
-                           "\"TIED_ACCOMMODATION_NEEDED_FOR_EMPLOYEE\"")
+                       "selectedSecureOrFlexibleDiscretionaryGroundsCONTAINS"
+                           + "\"TIED_ACCOMMODATION_NEEDED_FOR_EMPLOYEE\"")
 
-            .readonly(SecureOrFlexibleGroundsReasons::getAdaptedAccommodationLabel,
-                      "selectedSecureOrFlexibleDiscretionaryGroundsCONTAINS" +
-                          "\"ADAPTED_ACCOMMODATION\"")
+            .label("adaptedAccommodation-label",
+                   """
+                   ---
+                 <h2 class="govuk-heading-l">Adapted accommodation (ground 13)</h2>
+                 <h3 class="govuk-heading-m">Why are you making a claim for possession under this ground?</h3>
+                 """,
+                   "selectedSecureOrFlexibleDiscretionaryGroundsCONTAINS\"ADAPTED_ACCOMMODATION\"")
             .mandatory(SecureOrFlexibleGroundsReasons::getAdaptedAccommodationGround,
-                       "selectedSecureOrFlexibleDiscretionaryGroundsCONTAINS" +
-                           "\"ADAPTED_ACCOMMODATION\"")
+                       "selectedSecureOrFlexibleDiscretionaryGroundsCONTAINS\"ADAPTED_ACCOMMODATION\"")
 
-            .readonly(SecureOrFlexibleGroundsReasons::getHousingAssociationSpecialCircumstancesLabel,
-                      "selectedSecureOrFlexibleDiscretionaryGroundsCONTAINS" +
-                          "\"HOUSING_ASSOCIATION_SPECIAL_CIRCUMSTANCES\"")
+            .label("housingAssociationSpecialCircumstances-label",
+                   """
+                   ---
+                 <h2 class="govuk-heading-l">Housing association special circumstances accommodation (ground 14)</h2>
+                 <h3 class="govuk-heading-m">Why are you making a claim for possession under this ground?</h3>
+                 """,
+                   "selectedSecureOrFlexibleDiscretionaryGroundsCONTAINS"
+                       + "\"HOUSING_ASSOCIATION_SPECIAL_CIRCUMSTANCES\"")
             .mandatory(SecureOrFlexibleGroundsReasons::getHousingAssociationSpecialCircumstancesGround,
-                       "selectedSecureOrFlexibleDiscretionaryGroundsCONTAINS" +
-                           "\"HOUSING_ASSOCIATION_SPECIAL_CIRCUMSTANCES\"")
+                       "selectedSecureOrFlexibleDiscretionaryGroundsCONTAINS"
+                           + "\"HOUSING_ASSOCIATION_SPECIAL_CIRCUMSTANCES\"")
 
-            .readonly(SecureOrFlexibleGroundsReasons::getSpecialNeedsAccommodationLabel,
-                      "selectedSecureOrFlexibleDiscretionaryGroundsCONTAINS" +
-                          "\"SPECIAL_NEEDS_ACCOMMODATION\"")
+            .label("specialNeedsAccommodation-label",
+                   """
+                   ---
+                 <h2 class="govuk-heading-l">Special needs accommodation (ground 15)</h2>
+                 <h3 class="govuk-heading-m">Why are you making a claim for possession under this ground?</h3>
+                 """,
+                   "selectedSecureOrFlexibleDiscretionaryGroundsCONTAINS\"SPECIAL_NEEDS_ACCOMMODATION\"")
             .mandatory(SecureOrFlexibleGroundsReasons::getSpecialNeedsAccommodationGround,
-                       "selectedSecureOrFlexibleDiscretionaryGroundsCONTAINS" +
-                           "\"SPECIAL_NEEDS_ACCOMMODATION\"")
+                       "selectedSecureOrFlexibleDiscretionaryGroundsCONTAINS"
+                           + "\"SPECIAL_NEEDS_ACCOMMODATION\"")
 
-            .readonly(SecureOrFlexibleGroundsReasons::getUnderOccupyingAfterSuccessionLabel,
-                      "selectedSecureOrFlexibleDiscretionaryGroundsCONTAINS" +
-                          "\"UNDER_OCCUPYING_AFTER_SUCCESSION\"")
+            .label("underOccupyingAfterSuccession-label",
+                   """
+                   ---
+                 <h2 class="govuk-heading-l">Under occupying after succession (ground 15A)</h2>
+                 <h3 class="govuk-heading-m">Why are you making a claim for possession under this ground?</h3>
+                 """,
+                   "selectedSecureOrFlexibleDiscretionaryGroundsCONTAINS"
+                       + "\"UNDER_OCCUPYING_AFTER_SUCCESSION\"")
             .mandatory(SecureOrFlexibleGroundsReasons::getUnderOccupyingAfterSuccessionGround,
-                       "selectedSecureOrFlexibleDiscretionaryGroundsCONTAINS" +
-                           "\"UNDER_OCCUPYING_AFTER_SUCCESSION\"")
+                       "selectedSecureOrFlexibleDiscretionaryGroundsCONTAINS"
+                           + "\"UNDER_OCCUPYING_AFTER_SUCCESSION\"")
 
             // Mandatory grounds
-            .readonly(SecureOrFlexibleGroundsReasons::getAntiSocialLabel,
-                      "selectedSecureOrFlexibleMandatoryGroundsCONTAINS\"ANTI_SOCIAL\"")
+            .label("antiSocial-label",
+                   """
+                   ---
+                 <h2 class="govuk-heading-l">Antisocial behaviour</h2>
+                 <h3 class="govuk-heading-m">Why are you making a claim for possession under this ground?</h3>
+                 """,
+                   "selectedSecureOrFlexibleMandatoryGroundsCONTAINS\"ANTI_SOCIAL\"")
             .mandatory(SecureOrFlexibleGroundsReasons::getAntiSocialGround,
                        "selectedSecureOrFlexibleMandatoryGroundsCONTAINS\"ANTI_SOCIAL\"")
 
-            .readonly(SecureOrFlexibleGroundsReasons::getOvercrowdingLabel,
-                      "selectedSecureOrFlexibleMandatoryGroundsCONTAINS\"OVERCROWDING\"")
+            .label("overcrowding-label",
+                   """
+                   ---
+                 <h2 class="govuk-heading-l">Overcrowding(ground 9)</h2>
+                 <h3 class="govuk-heading-m">Why are you making a claim for possession under this ground?</h3>
+                 """,
+                   "selectedSecureOrFlexibleMandatoryGroundsCONTAINS\"OVERCROWDING\"")
             .mandatory(SecureOrFlexibleGroundsReasons::getOvercrowdingGround,
                        "selectedSecureOrFlexibleMandatoryGroundsCONTAINS\"OVERCROWDING\"")
 
-            .readonly(SecureOrFlexibleGroundsReasons::getLandlordWorksLabel,
-                      "selectedSecureOrFlexibleMandatoryGroundsCONTAINS\"LANDLORD_WORKS\"")
+            .label("landlordWorks-label",
+                   """
+                   ---
+                 <h2 class="govuk-heading-l">Landlord's works(ground 10)</h2>
+                 <h3 class="govuk-heading-m">Why are you making a claim for possession under this ground?</h3>
+                 """,
+                   "selectedSecureOrFlexibleMandatoryGroundsCONTAINS\"LANDLORD_WORKS\"")
             .mandatory(SecureOrFlexibleGroundsReasons::getLandlordWorksGround,
                        "selectedSecureOrFlexibleMandatoryGroundsCONTAINS\"LANDLORD_WORKS\"")
 
-            .readonly(SecureOrFlexibleGroundsReasons::getPropertySoldLabel,
-                      "selectedSecureOrFlexibleMandatoryGroundsCONTAINS\"PROPERTY_SOLD\"")
+            .label("propertySold-label",
+                   """
+                   ---
+                 <h2 class="govuk-heading-l">Property sold for redevelopment(ground 10A)</h2>
+                 <h3 class="govuk-heading-m">Why are you making a claim for possession under this ground?</h3>
+                 """,
+                   "selectedSecureOrFlexibleMandatoryGroundsCONTAINS\"PROPERTY_SOLD\"")
             .mandatory(SecureOrFlexibleGroundsReasons::getPropertySoldGround,
                        "selectedSecureOrFlexibleMandatoryGroundsCONTAINS\"PROPERTY_SOLD\"")
 
-            .readonly(SecureOrFlexibleGroundsReasons::getCharitableLandlordLabel,
-                      "selectedSecureOrFlexibleMandatoryGroundsCONTAINS\"CHARITABLE_LANDLORD\"")
+            .label("charitableLandlord-label",
+                   """
+                   ---
+                 <h2 class="govuk-heading-l">Charitable landlords(ground 11)</h2>
+                 <h3 class="govuk-heading-m">Why are you making a claim for possession under this ground?</h3>
+                 """,
+                   "selectedSecureOrFlexibleMandatoryGroundsCONTAINS\"CHARITABLE_LANDLORD\"")
             .mandatory(SecureOrFlexibleGroundsReasons::getCharitableLandlordGround,
                        "selectedSecureOrFlexibleMandatoryGroundsCONTAINS\"CHARITABLE_LANDLORD\"")
             .done();
 
-
     }
 }
+

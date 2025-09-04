@@ -23,6 +23,7 @@ import org.hibernate.type.SqlTypes;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PaymentStatus;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicence;
 import uk.gov.hmcts.reform.pcs.ccd.model.Defendant;
+import uk.gov.hmcts.reform.pcs.ccd.model.PossessionGrounds;
 
 import java.util.HashSet;
 import java.util.List;
@@ -65,6 +66,9 @@ public class PcsCaseEntity {
 
     @JdbcTypeCode(SqlTypes.JSON)
     private TenancyLicence tenancyLicence;
+
+    @JdbcTypeCode(SqlTypes.JSON)
+    private PossessionGrounds possessionGrounds;
 
     @OneToMany(mappedBy = "pcsCase", fetch = LAZY, cascade = ALL)
     @Builder.Default

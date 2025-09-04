@@ -15,6 +15,8 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.model.Defendant;
+import uk.gov.hmcts.reform.pcs.ccd.model.PossessionGrounds;
+import uk.gov.hmcts.reform.pcs.ccd.model.SecureOrFlexibleReasonForGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.utils.ListValueUtils;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
@@ -24,6 +26,7 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -49,8 +52,8 @@ public class PcsCaseService {
                         ? pcsCase.getPreActionProtocolCompleted().toBoolean()
                         : null);
         pcsCaseEntity.setDefendants(mapFromDefendantDetails(pcsCase.getDefendants()));
-
         pcsCaseEntity.setTenancyLicence(buildTenancyLicence(pcsCase));
+        pcsCaseEntity.setPossessionGrounds(buildPossessionGrounds(pcsCase));
 
         return pcsCaseRepository.save(pcsCaseEntity);
     }
@@ -182,6 +185,20 @@ public class PcsCaseService {
             .dailyRentChargeAmount(pcsCase.getDailyRentChargeAmount() != null
                     ? new BigDecimal(pcsCase.getDailyRentChargeAmount()) : null)
                 .build();
+    }
+
+    public PossessionGrounds buildPossessionGrounds(PCSCase pcsCase) {
+        SecureOrFlexibleReasonForGrounds reasons =
+            Optional.ofNullable(pcsCase.getSecureOrFlexibleGroundsReasons())
+                .map(grounds -> modelMapper.map(grounds,
+                                                SecureOrFlexibleReasonForGrounds.class))
+                .orElse(SecureOrFlexibleReasonForGrounds.builder().build());
+
+        return PossessionGrounds.builder()
+            .selectedDiscretionaryGrounds(pcsCase.getSelectedSecureOrFlexibleDiscretionaryGrounds())
+            .selectedMandatoryGrounds(pcsCase.getSelectedSecureOrFlexibleMandatoryGrounds())
+            .secureOrFlexibleReasonForGrounds(reasons)
+            .build();
     }
 
     private static Boolean toBooleanOrNull(YesOrNo yesOrNo) {

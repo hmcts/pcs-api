@@ -10,6 +10,7 @@ import uk.gov.hmcts.ccd.sdk.api.EventPayload;
 import uk.gov.hmcts.ccd.sdk.api.Permission;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantDetails;
@@ -119,6 +120,9 @@ public class CreatePossessionClaim implements CCDConfig<PCSCase, State, UserRole
         caseData.setClaimantName(userDetails);
         caseData.setClaimantContactEmail(userDetails);
 
+        caseData.setShowBreachOfTenancyTextarea(YesOrNo.NO);
+        caseData.setShowReasonsForGroundsPage(YesOrNo.NO);
+        caseData.setIsTenancyTypeSecureOrFlexible(YesOrNo.NO);
         return caseData;
     }
 
