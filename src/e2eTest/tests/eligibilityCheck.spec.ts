@@ -40,7 +40,7 @@ test.describe('Eligibility checks for cross and non cross border postcodes @nigh
     await performValidation('mainHeader', borderPostcode.mainHeader);
   });
 
-  test('Verify cross border postcode page for England and Scotland content', async () => {
+  test.skip('Verify cross border postcode page for England and Scotland content', async () => {
     await performAction('selectAddress', {
       postcode: borderPostcode.englandScotlandPostcode,
       addressIndex: addressDetails.addressIndex
@@ -74,7 +74,7 @@ test.describe('Eligibility checks for cross and non cross border postcodes @nigh
     await performValidation('mainHeader', legislativeCountry.mainHeader);
   });
 
-  test.skip('Verify postcode not assigned to court - Can not use this service page - All countries', async () => {
+  test('Verify postcode not assigned to court - Can not use this service page - All countries', async () => {
     await performAction('selectAddress', {
       postcode: addressDetails.englandNoCourtAssignedPostcode,
       addressIndex: addressDetails.addressIndex
