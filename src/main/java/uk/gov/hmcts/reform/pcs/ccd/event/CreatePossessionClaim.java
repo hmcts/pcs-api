@@ -41,6 +41,7 @@ import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.RentDetails;
 import uk.gov.hmcts.reform.pcs.ccd.service.ClaimService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
+import uk.gov.hmcts.reform.pcs.ccd.service.SendLetterService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.util.UUID;
@@ -58,6 +59,7 @@ public class CreatePossessionClaim implements CCDConfig<PCSCase, State, UserRole
     private final SecurityContextService securityContextService;
     private final PartyService partyService;
     private final ClaimService claimService;
+    private final SendLetterService sendLetterService;
     private final EnterPropertyAddress enterPropertyAddress;
     private final CrossBorderPostcodeSelection crossBorderPostcodeSelection;
     private final PropertyNotEligible propertyNotEligible;
@@ -75,25 +77,7 @@ public class CreatePossessionClaim implements CCDConfig<PCSCase, State, UserRole
 
         new PageBuilder(eventBuilder)
             .add(new StartTheService())
-            .add(enterPropertyAddress)
-            .add(crossBorderPostcodeSelection)
-            .add(propertyNotEligible)
-            .add(new PostcodeNotAssignedToCourt())
-            .add(new SelectLegislativeCountry())
-            .add(new SelectClaimantType())
-            .add(new ClaimantTypeNotEligibleEngland())
-            .add(new ClaimantTypeNotEligibleWales())
-            .add(new SelectClaimType())
-            .add(new ClaimTypeNotEligibleEngland())
-            .add(new ClaimTypeNotEligibleWales())
-            .add(new ClaimantInformation())
-            .add(new ContactPreferences())
-            .add(new GroundsForPossession())
-            .add(new PreActionProtocol())
-            .add(new MediationAndSettlement())
-            .add(new CheckingNotice())
-            .add(new NoticeDetails())
-            .add(new RentDetails());
+            .add(enterPropertyAddress);
     }
 
     private PCSCase start(EventPayload<PCSCase, State> eventPayload) {
@@ -140,6 +124,11 @@ public class CreatePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             PartyRole.CLAIMANT);
 
         claimService.saveClaim(claimEntity);
+        try {
+            sendLetterService.sendLetterv2();
+        } catch (Exception e) {
+            log.error(e.getMessage());
+        }
     }
 
 }

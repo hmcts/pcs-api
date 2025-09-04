@@ -130,3 +130,6 @@ doc-assembly:
   url: ${DOC_ASSEMBLY_URL:http://localhost:8080}
   s2s-authorised:
     services: pcs_api,ccd_data,ccd_gw,ccd_case_document_am_api,ccd_definition,ccd_admin,ccd_ps,ccd
+
+send-letter:
+  url: http://rpe-send-letter-service-aat.service.core-compute-aat.internal
