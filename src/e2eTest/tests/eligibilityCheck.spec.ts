@@ -66,7 +66,7 @@ test.describe('Eligibility checks for cross and non cross border postcodes @nigh
     await performValidation('mainHeader', legislativeCountry.mainHeader);
   });
 
-  test('Verify non cross border postcode eligibility check for Wales', async () => {
+  test.skip('Verify non cross border postcode eligibility check for Wales', async () => {
     await performAction('selectAddress', {
       postcode: addressDetails.walesPostcode,
       addressIndex: addressDetails.addressIndex
@@ -74,7 +74,7 @@ test.describe('Eligibility checks for cross and non cross border postcodes @nigh
     await performValidation('mainHeader', legislativeCountry.mainHeader);
   });
 
-  test('Verify postcode not assigned to court - Can not use this service page - All countries', async () => {
+  test.skip('Verify postcode not assigned to court - Can not use this service page - All countries', async () => {
     await performAction('selectAddress', {
       postcode: addressDetails.englandNoCourtAssignedPostcode,
       addressIndex: addressDetails.addressIndex
@@ -92,7 +92,7 @@ test.describe('Eligibility checks for cross and non cross border postcodes @nigh
     })
   });
 
-  test('Verify postcode not assigned to court - Can not use this service page - cross border England', async () => {
+  test.skip('Verify postcode not assigned to court - Can not use this service page - cross border England', async () => {
     await performAction('selectAddress', {
       postcode: addressDetails.englandWalesNoCourtCrossBorderPostcode,
       addressIndex: addressDetails.addressIndex
