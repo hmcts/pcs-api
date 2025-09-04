@@ -9,8 +9,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsOrBreachOfTenancy;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 
-import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
-
 public class RentArrearsOrBreachOfTenancyGround implements CcdPageConfiguration {
 
     @Override
@@ -21,8 +19,6 @@ public class RentArrearsOrBreachOfTenancyGround implements CcdPageConfiguration 
             .showCondition("typeOfTenancyLicence=\"SECURE_TENANCY\" OR typeOfTenancyLicence=\"FLEXIBLE_TENANCY\""
                                + " AND selectedSecureOrFlexibleDiscretionaryGroundsCONTAINS"
                                + "\"RENT_ARREARS_OR_BREACH_OF_TENANCY\"")
-            .readonly(PCSCase::getSelectedSecureOrFlexibleDiscretionaryGrounds,NEVER_SHOW)
-            .readonly(PCSCase::getSelectedSecureOrFlexibleMandatoryGrounds,NEVER_SHOW)
             .label("rentArrearsOrBreachOfTenancyGround-lineSeparator", "---")
             .mandatory(PCSCase::getRentAreasOrBreachOfTenancy);
     }
