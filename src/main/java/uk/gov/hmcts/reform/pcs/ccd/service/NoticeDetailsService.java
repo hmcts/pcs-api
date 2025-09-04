@@ -102,7 +102,7 @@ public class NoticeDetailsService {
         if (dateTimeValue != null) {
             if (!isValidDateTime(dateTimeValue)) {
                 errors.put(fieldName, INVALID_DATETIME_ERROR);
-            } else if (isFutureDateTime(dateTimeValue)) {
+            } else if (isTodayOrFutureDateTime(dateTimeValue)) {
                 errors.put(fieldName, FUTURE_DATETIME_ERROR);
             }
         }
@@ -172,7 +172,7 @@ public class NoticeDetailsService {
         }
     }
 
-    private boolean isFutureDateTime(LocalDateTime dateTime) {
+    private boolean isTodayOrFutureDateTime(LocalDateTime dateTime) {
         if (dateTime == null) {
             return false;
         }
