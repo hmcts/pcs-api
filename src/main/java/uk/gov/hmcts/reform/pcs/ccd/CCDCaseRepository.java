@@ -20,6 +20,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.renderer.ClaimPaymentTabRenderer;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
+import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentLink;
 import uk.gov.hmcts.reform.pcs.ccd.utils.ListValueUtils;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
@@ -62,7 +63,7 @@ public class CCDCaseRepository extends DecentralisedCaseRepository<PCSCase> {
 
             .propertyAddress(convertAddress(pcsCaseEntity.getPropertyAddress()))
             .caseManagementLocation(pcsCaseEntity.getCaseManagementLocation())
-            .supportingDocumentsCategoryA(mapDocuments(pcsCaseEntity.getDocuments(),
+            .supportingDocumentsCategoryA(mapDocumentLinks(pcsCaseEntity.getDocuments(),
                 DocumentCategory.CATEGORY_A.getLabel()))
             .supportingDocumentsCategoryB(mapDocuments(pcsCaseEntity.getDocuments(),
                 DocumentCategory.CATEGORY_B.getLabel()))
@@ -74,6 +75,34 @@ public class CCDCaseRepository extends DecentralisedCaseRepository<PCSCase> {
         setDerivedProperties(caseReference,pcsCase, pcsCaseEntity);
 
         return pcsCase;
+    }
+
+    // Add this new method to handle DocumentLink mapping
+    private List<ListValue<DocumentLink>> mapDocumentLinks(Set<DocumentEntity> documentEntities, String categoryFilter) {
+        if (documentEntities == null || documentEntities.isEmpty()) {
+            return null;
+        }
+
+        return documentEntities.stream()
+            .filter(documentEntity -> String.valueOf(documentEntity.getCategory().getLabel()).equals(categoryFilter))
+            .map(docEntity -> {
+                // Create the inner Document
+                Document document = Document.builder()
+                    .url(docEntity.getFilePath())
+                    .filename(docEntity.getFileName())
+                    .binaryUrl(docEntity.getFilePath())
+                    .categoryId(categoryFilter)
+                    .build();
+
+                // Wrap it in DocumentLink
+                DocumentLink documentLink = new DocumentLink(document);
+
+                return ListValue.<DocumentLink>builder()
+                    .id(docEntity.getId().toString())
+                    .value(documentLink)
+                    .build();
+            })
+            .collect(Collectors.toList());
     }
 
     private List<ListValue<Document>> mapDocuments(Set<DocumentEntity> documentEntities, String categoryFilter) {

@@ -20,6 +20,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.model.Defendant;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
+import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentLink;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
@@ -28,6 +29,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
+
+import static org.springframework.web.util.UriUtils.extractFileExtension;
 
 @Service
 @AllArgsConstructor
@@ -54,7 +57,7 @@ public class PcsCaseService {
                         : null);
         pcsCaseEntity.setDefendants(mapFromDefendantDetails(pcsCase.getDefendants()));
 
-        addDocuments(pcsCase.getSupportingDocumentsCategoryA(), DocumentCategory.CATEGORY_A.getLabel(), pcsCaseEntity);
+        addDocumentLinks(pcsCase.getSupportingDocumentsCategoryA(), DocumentCategory.CATEGORY_A.getLabel(), pcsCaseEntity);
         addDocuments(pcsCase.getSupportingDocumentsCategoryB(), DocumentCategory.CATEGORY_B.getLabel(), pcsCaseEntity);
 
         pcsCaseEntity.setTenancyLicence(buildTenancyLicence(pcsCase));
@@ -93,6 +96,37 @@ public class PcsCaseService {
         }
     }
 
+    private void addDocumentLinks(List<ListValue<DocumentLink>> supportingDocuments, String category,
+                                  PcsCaseEntity pcsCaseEntity) {
+        if (supportingDocuments != null && !supportingDocuments.isEmpty()) {
+            for (ListValue<DocumentLink> documentWrapper : supportingDocuments) {
+                if (documentWrapper != null && documentWrapper.getValue() != null) {
+                    DocumentLink documentLink = documentWrapper.getValue();
+
+                    if (documentLink.getDocumentLink() != null) {
+                        Document document = documentLink.getDocumentLink();
+
+                        DocumentEntity documentEntity = new DocumentEntity();
+                        documentEntity.setFileName(document.getFilename());
+                        documentEntity.setFilePath(document.getBinaryUrl());
+                        documentEntity.setUploadedOn(LocalDate.now());
+                        documentEntity.setPcsCase(pcsCaseEntity);
+
+                        if (category.equals(DocumentCategory.CATEGORY_A.getLabel())) {
+                            pcsCaseEntity.addDocumentCategoryA(documentEntity);
+                        } else {
+                            pcsCaseEntity.addDocumentCategoryB(documentEntity);
+                        }
+
+                        log.info("Added document: {} with extension: {}",
+                                 document.getFilename(),
+                                 extractFileExtension(document.getFilename()));
+                    }
+                }
+            }
+        }
+    }
+
     public void patchCase(long caseReference, PCSCase pcsCase) {
         final PcsCaseEntity pcsCaseEntity = pcsCaseRepository.findByCaseReference(caseReference)
             .orElseThrow(() -> new CaseNotFoundException(caseReference));
@@ -120,13 +154,13 @@ public class PcsCaseService {
         }
 
         if (pcsCase.getSupportingDocumentsCategoryA() != null) {
-            addDocuments(pcsCase.getSupportingDocumentsCategoryA(),
+            addDocumentLinks(pcsCase.getSupportingDocumentsCategoryA(),
                 DocumentCategory.CATEGORY_A.getLabel(), pcsCaseEntity);
         }
 
 
         if (pcsCase.getSupportingDocumentsCategoryA() != null) {
-            addDocuments(pcsCase.getSupportingDocumentsCategoryA(),
+            addDocumentLinks(pcsCase.getSupportingDocumentsCategoryA(),
                 DocumentCategory.CATEGORY_B.getLabel(), pcsCaseEntity);
         }
 
