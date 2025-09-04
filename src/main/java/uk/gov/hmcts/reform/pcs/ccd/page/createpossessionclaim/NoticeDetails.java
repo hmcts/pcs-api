@@ -40,7 +40,7 @@ public class NoticeDetails implements CcdPageConfiguration {
             .mandatory(PCSCase::getNoticeServiceMethod)
 
             // First class post
-            .label("firstClassPost-section", """
+            .label("noticeDetails-firstClassPost-section", """
                 <h3 class="govuk-heading-s">By first class post or other service which provides for 
                 delivery on the next business day</h3>
                 <p class="govuk-body">Date the document was posted</p>
@@ -52,7 +52,7 @@ public class NoticeDetails implements CcdPageConfiguration {
             )
 
             // Delivered to permitted place
-            .label("deliveredPermittedPlace-section", """
+            .label("noticeDetails-deliveredPermittedPlace-section", """
                 <h3 class="govuk-heading-s">By delivering it to or leaving it at a permitted place</h3>
                 <p class="govuk-body">Date the document was delivered</p>
                 <p class="govuk-hint">For example, 16 4 2021</p>
@@ -63,7 +63,7 @@ public class NoticeDetails implements CcdPageConfiguration {
             )
 
             // Personally handed
-            .label("personallyHanded-section", """
+            .label("noticeDetails-personallyHanded-section", """
                 <h3 class="govuk-heading-s">By personally handing it to someone or leaving it with someone</h3>
                 <p class="govuk-body">Name of person the document was left with</p>
                 """, NOTICE_SERVICE_METHOD_CONDITION + NoticeServiceMethod.PERSONALLY_HANDED + "\"")
@@ -72,7 +72,7 @@ public class NoticeDetails implements CcdPageConfiguration {
                 NOTICE_SERVICE_METHOD_CONDITION + NoticeServiceMethod.PERSONALLY_HANDED + "\""
             )
             .label(
-                "personallyHanded-datetime", 
+                "noticeDetails-personallyHanded-datetime", 
                 DATE_TIME_LABEL, 
                 NOTICE_SERVICE_METHOD_CONDITION + NoticeServiceMethod.PERSONALLY_HANDED + "\""
             )
@@ -82,7 +82,7 @@ public class NoticeDetails implements CcdPageConfiguration {
             )
 
             // Email
-            .label("email-section", """
+            .label("noticeDetails-email-section", """
                 <h3 class="govuk-heading-s">By email</h3>
                 <p class="govuk-body">Explain how it was served by email</p>
                 """, NOTICE_SERVICE_METHOD_CONDITION + NoticeServiceMethod.EMAIL + "\"")
@@ -91,7 +91,7 @@ public class NoticeDetails implements CcdPageConfiguration {
                 NOTICE_SERVICE_METHOD_CONDITION + NoticeServiceMethod.EMAIL + "\""
             )
             .label(
-                "email-datetime", 
+                "noticeDetails-email-datetime", 
                 DATE_TIME_LABEL, 
                 NOTICE_SERVICE_METHOD_CONDITION + NoticeServiceMethod.EMAIL + "\""
             )
@@ -101,7 +101,7 @@ public class NoticeDetails implements CcdPageConfiguration {
             )
 
             // Other electronic method
-            .label("otherElectronic-section", """
+            .label("noticeDetails-otherElectronic-section", """
                 <h3 class="govuk-heading-s">By other electronic method</h3>
                 <p class="govuk-body">Date and time email or message sent</p>
                 <p class="govuk-hint">For example, 16 4 2021, 11 15</p>
@@ -112,7 +112,7 @@ public class NoticeDetails implements CcdPageConfiguration {
             )
 
             // Other
-            .label("other-section", """
+            .label("noticeDetails-other-section", """
                 <h3 class="govuk-heading-s">Other</h3>
                 <p class="govuk-body">Explain what the other means were</p>
                 """, NOTICE_SERVICE_METHOD_CONDITION + NoticeServiceMethod.OTHER + "\"")
@@ -121,7 +121,7 @@ public class NoticeDetails implements CcdPageConfiguration {
                 NOTICE_SERVICE_METHOD_CONDITION + NoticeServiceMethod.OTHER + "\""
             )
             .label(
-                "other-datetime", 
+                "noticeDetails-other-datetime", 
                 DATE_TIME_LABEL, 
                 NOTICE_SERVICE_METHOD_CONDITION + NoticeServiceMethod.OTHER + "\""
             )
@@ -131,7 +131,7 @@ public class NoticeDetails implements CcdPageConfiguration {
             )
 
             // Document upload section
-            .label("documentUpload-section", """
+            .label("noticeDetails-documentUpload-section", """
                 ---
                 <h2 class="govuk-heading-m">Do you want to upload a copy of the notice you served or the 
                 certificate of service? (Optional)</h2>
