@@ -8,7 +8,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -23,7 +22,6 @@ public class NoticeDetailsService {
     // Error message constants
     private static final String INVALID_DATETIME_ERROR = "Enter a valid date and time in the format DD MM YYYY HH MM";
     private static final String FUTURE_DATETIME_ERROR = "The date and time cannot be today or in the future";
-    private static final String INVALID_DATE_ERROR = "Enter a valid date in the format YYYY-MM-DD";
     private static final String FUTURE_DATE_ERROR = "The date cannot be today or in the future";
     private static final String EXPLANATION_TOO_LONG_ERROR = "The explanation must be 250 characters or fewer";
     private static final String NOTICE_SERVICE_METHOD_REQUIRED = "You must select how you served the notice";
@@ -125,33 +123,8 @@ public class NoticeDetailsService {
         validateDateTimeField(caseData.getNoticeOtherDateTime(), NOTICE_OTHER_DATETIME, errors);
     }
 
-    /**
-     * Parses a date string and returns a LocalDate, or null if invalid.
-     */
-    private LocalDate parseDate(String dateStr) {
-        if (dateStr == null || dateStr.isBlank()) {
-            return null;
-        }
-        
-        try {
-            String trimmed = dateStr.trim();
-            
-            // Match ISO format (YYYY-MM-DD)
-            if (trimmed.matches("\\d{4}-\\d{1,2}-\\d{1,2}")) {
-                return LocalDate.parse(trimmed);
-            }
-            
-            return null;
-        } catch (DateTimeParseException e) {
-            return null;
-        }
-    }
 
-    private boolean isValidDate(String dateStr) {
-        return parseDate(dateStr) != null;
-    }
-
-    private boolean isFutureDate(LocalDate date) {
+    private boolean isTodayOrFutureDate(LocalDate date) {
         if (date == null) {
             return false;
         }
