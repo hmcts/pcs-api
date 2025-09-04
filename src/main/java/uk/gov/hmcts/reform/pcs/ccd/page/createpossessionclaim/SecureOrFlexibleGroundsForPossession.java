@@ -23,6 +23,8 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
+
 public class SecureOrFlexibleGroundsForPossession implements CcdPageConfiguration {
 
     @Override
@@ -31,6 +33,8 @@ public class SecureOrFlexibleGroundsForPossession implements CcdPageConfiguratio
             .page("secureOrFlexibleGroundsForPossession", this::midEvent)
             .pageLabel("What are your grounds for possession")
             .showCondition("typeOfTenancyLicence=\"SECURE_TENANCY\" OR typeOfTenancyLicence=\"FLEXIBLE_TENANCY\"")
+            .readonly(PCSCase::getSelectedSecureOrFlexibleDiscretionaryGrounds,NEVER_SHOW)
+            .readonly(PCSCase::getSelectedSecureOrFlexibleMandatoryGrounds,NEVER_SHOW)
             .label("secureOrFlexibleGroundsForPossession-info", """
                ---
                <p class="govuk-body"> You may have already given defendant's notice of your intention to begin

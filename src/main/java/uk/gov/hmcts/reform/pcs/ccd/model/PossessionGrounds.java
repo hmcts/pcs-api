@@ -5,8 +5,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import uk.gov.hmcts.reform.pcs.ccd.domain.DiscretionaryGrounds;
-import uk.gov.hmcts.reform.pcs.ccd.domain.MandatoryGrounds;
 
 import java.util.Set;
 
@@ -17,8 +15,8 @@ import java.util.Set;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class PossessionGrounds {
 
-    private Set<MandatoryGrounds> selectedMandatoryGrounds;
-    private Set<DiscretionaryGrounds> selectedDiscretionaryGrounds;
+    private Set<String> selectedMandatoryGrounds;
+    private Set<String> selectedDiscretionaryGrounds;
 
     private SecureOrFlexibleReasonsForGrounds secureOrFlexibleReasonsForGrounds;
 

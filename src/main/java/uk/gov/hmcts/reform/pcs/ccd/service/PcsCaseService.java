@@ -8,6 +8,8 @@ import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.DiscretionaryGrounds;
+import uk.gov.hmcts.reform.pcs.ccd.domain.MandatoryGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicence;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
@@ -28,6 +30,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
@@ -193,10 +196,21 @@ public class PcsCaseService {
                 .map(grounds -> modelMapper.map(grounds,
                                                 SecureOrFlexibleReasonsForGrounds.class))
                 .orElse(SecureOrFlexibleReasonsForGrounds.builder().build());
-
         return PossessionGrounds.builder()
-            .selectedDiscretionaryGrounds(pcsCase.getSelectedSecureOrFlexibleDiscretionaryGrounds())
-            .selectedMandatoryGrounds(pcsCase.getSelectedSecureOrFlexibleMandatoryGrounds())
+            .selectedDiscretionaryGrounds(
+                Optional.ofNullable(pcsCase.getSelectedSecureOrFlexibleDiscretionaryGrounds())
+                    .orElse(Collections.emptySet())
+                    .stream()
+                    .map(DiscretionaryGrounds::getLabel)
+                    .collect(Collectors.toSet())
+            )
+            .selectedMandatoryGrounds(
+                Optional.ofNullable(pcsCase.getSelectedSecureOrFlexibleMandatoryGrounds())
+                    .orElse(Collections.emptySet())
+                    .stream()
+                    .map(MandatoryGrounds::getLabel)
+                    .collect(Collectors.toSet())
+            )
             .secureOrFlexibleReasonsForGrounds(reasons)
             .build();
     }
