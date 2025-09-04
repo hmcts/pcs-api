@@ -15,7 +15,6 @@ public class GroundsForPossession implements CcdPageConfiguration {
                 .page("groundsForPossession")
                 .pageLabel("Grounds for possession")
                 .label("groundsForPossession-lineSeparator", "---")
-                .mandatory(PCSCase::getGroundsForPossession)
-                .done();
+                .mandatory(PCSCase::getGroundsForPossession);
     }
 }

@@ -57,13 +57,11 @@ public class GroundForPossessionRentArrears implements CcdPageConfiguration {
 
     public AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
                                                                   CaseDetails<PCSCase, State> detailsBefore) {
-        log.info("Mid event for GroundForPossessionRentArrears page - auto-populating additional grounds");
         
         PCSCase caseData = details.getData();
         
         // Get the rent arrears grounds that were selected
         List<RentArrearsGround> rentArrearsGrounds = caseData.getRentArrearsGrounds();
-        log.info("Selected rent arrears grounds: {}", rentArrearsGrounds);
         
         // Initialize lists if they don't exist
         List<MandatoryGround> mandatoryGrounds = caseData.getMandatoryGrounds();
@@ -85,28 +83,22 @@ public class GroundForPossessionRentArrears implements CcdPageConfiguration {
                         // Ground 8 is mandatory
                         if (!mandatoryGrounds.contains(MandatoryGround.SERIOUS_RENT_ARREARS_GROUND8)) {
                             mandatoryGrounds.add(MandatoryGround.SERIOUS_RENT_ARREARS_GROUND8);
-                            log.info("Added SERIOUS_RENT_ARREARS_GROUND8 to mandatory grounds");
                         }
                         break;
                     case RENT_ARREARS_GROUND10:
                         // Ground 10 is discretionary
                         if (!discretionaryGrounds.contains(DiscretionaryGround.RENT_ARREARS_GROUND10)) {
                             discretionaryGrounds.add(DiscretionaryGround.RENT_ARREARS_GROUND10);
-                            log.info("Added RENT_ARREARS_GROUND10 to discretionary grounds");
                         }
                         break;
                     case PERSISTENT_DELAY_GROUND11:
                         // Ground 11 is discretionary
                         if (!discretionaryGrounds.contains(DiscretionaryGround.PERSISTENT_DELAY_GROUND11)) {
                             discretionaryGrounds.add(DiscretionaryGround.PERSISTENT_DELAY_GROUND11);
-                            log.info("Added PERSISTENT_DELAY_GROUND11 to discretionary grounds");
                         }
                         break;
                 }
             }
-            
-            log.info("Auto-populated mandatory grounds: {}", mandatoryGrounds);
-            log.info("Auto-populated discretionary grounds: {}", discretionaryGrounds);
         }
         
         // Update the case data with the lists (always, even if empty)

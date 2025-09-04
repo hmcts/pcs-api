@@ -155,9 +155,7 @@ class GroundForPossessionRentArrearsTest extends BasePageTest {
         AboutToStartOrSubmitResponse<PCSCase, State> response = midEvent.handle(caseDetails, null);
 
         // Then
-        assertThat(response.getData().getMandatoryGrounds()).isNotNull();
         assertThat(response.getData().getMandatoryGrounds()).isEmpty();
-        assertThat(response.getData().getDiscretionaryGrounds()).isNotNull();
         assertThat(response.getData().getDiscretionaryGrounds()).isEmpty();
     }
 
@@ -176,9 +174,7 @@ class GroundForPossessionRentArrearsTest extends BasePageTest {
         AboutToStartOrSubmitResponse<PCSCase, State> response = midEvent.handle(caseDetails, null);
 
         // Then
-        assertThat(response.getData().getMandatoryGrounds()).isNotNull();
         assertThat(response.getData().getMandatoryGrounds()).isEmpty();
-        assertThat(response.getData().getDiscretionaryGrounds()).isNotNull();
         assertThat(response.getData().getDiscretionaryGrounds()).isEmpty();
     }
 
