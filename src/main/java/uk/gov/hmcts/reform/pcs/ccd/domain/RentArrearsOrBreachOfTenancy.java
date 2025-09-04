@@ -6,9 +6,9 @@ import uk.gov.hmcts.ccd.sdk.api.HasLabel;
 
 @AllArgsConstructor
 @Getter
-public enum RentAreasOrBreachOfTenancy implements HasLabel {
+public enum RentArrearsOrBreachOfTenancy implements HasLabel {
 
-    RENT_ARREARS("Rent arears"),
+    RENT_ARREARS("Rent arrears"),
     BREACH_OF_TENANCY("Breach of tenancy");
 
     private String label;

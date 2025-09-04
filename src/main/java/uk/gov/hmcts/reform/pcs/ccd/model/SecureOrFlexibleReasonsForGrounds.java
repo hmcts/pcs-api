@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class SecureOrFlexibleReasonForGrounds {
+public class SecureOrFlexibleReasonsForGrounds {
     private String breachOfTenancyGround;
     private String nuisanceOrImmoralUseGround;
     private String domesticViolenceGround;

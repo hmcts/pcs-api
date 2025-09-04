@@ -4,12 +4,13 @@ import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.DynamicListElement;
 import uk.gov.hmcts.ccd.sdk.type.DynamicMultiSelectList;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DiscretionaryGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.MandatoryGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.domain.RentAreasOrBreachOfTenancy;
+import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsOrBreachOfTenancy;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 
 import java.util.Arrays;
@@ -36,10 +37,6 @@ public class SecureOrFlexibleGroundsForPossession implements CcdPageConfiguratio
                 possession proceedings.
                 If you have, you should have written the grounds you're making your claim under. You should select these
                 grounds here and any extra ground you'd like to add to your claim, if you need to.<br><br>
-
-               <a href="#" class="govuk-link" rel="noreferrer noopener" target="_blank">
-                More information about possessions grounds (opens in a new tab)
-                </a>.
                </p>
                """)
             .optional(PCSCase::getSecureOrFlexibleDiscretionaryGrounds)
@@ -52,29 +49,42 @@ public class SecureOrFlexibleGroundsForPossession implements CcdPageConfiguratio
                                                                   CaseDetails<PCSCase, State> detailsBefore) {
         PCSCase caseData = details.getData();
 
-        caseData.setSelectedSecureOrFlexibleDiscretionaryGrounds(
-            setSelectedGrounds(caseData.getSecureOrFlexibleDiscretionaryGrounds(),
-                               caseData.getSecureOrFlexibleDiscretionaryGroundsAlternativeAccommodation(),
-                               DiscretionaryGrounds::fromLabel
-            )
+        Set<DiscretionaryGrounds> selectDiscretionaryGrounds = setSelectedGrounds(
+                caseData.getSecureOrFlexibleDiscretionaryGrounds(),
+                caseData.getSecureOrFlexibleDiscretionaryGroundsAlternativeAccommodation(),
+                DiscretionaryGrounds::fromLabel
         );
+        Set<MandatoryGrounds> selectMandatoryGrounds = setSelectedGrounds(
+                caseData.getSecureOrFlexibleMandatoryGrounds(),
+                caseData.getSecureOrFlexibleMandatoryGroundsAlternativeAccommodation(),
+                MandatoryGrounds::fromLabel
+        );
+        caseData.setSelectedSecureOrFlexibleDiscretionaryGrounds(selectDiscretionaryGrounds);
+        caseData.setSelectedSecureOrFlexibleMandatoryGrounds(selectMandatoryGrounds);
 
-        caseData.setSelectedSecureOrFlexibleMandatoryGrounds(
-            setSelectedGrounds(caseData.getSecureOrFlexibleMandatoryGrounds(),
-                               caseData.getSecureOrFlexibleMandatoryGroundsAlternativeAccommodation(),
-                               MandatoryGrounds::fromLabel
-            )
-        );
         caseData.setRentAreasOrBreachOfTenancy(
             DynamicMultiSelectList.builder().listItems(
                 getRentArrearsOrBreachOfTenancyOptions()
             ).value(Collections.emptyList()).build()
         );
-        if (caseData.getSelectedSecureOrFlexibleDiscretionaryGrounds().isEmpty()
-            && caseData.getSelectedSecureOrFlexibleMandatoryGrounds().isEmpty()) {
+
+        boolean hasOtherDiscretionaryGrounds = selectDiscretionaryGrounds
+                .stream()
+                .anyMatch(ground -> ground != DiscretionaryGrounds.RENT_ARREARS_OR_BREACH_OF_TENANCY);
+
+        boolean hasMandatoryGrounds = !selectMandatoryGrounds.isEmpty();
+
+        if (hasOtherDiscretionaryGrounds || hasMandatoryGrounds) {
+            caseData.setShowReasonsForGroundsPage(YesOrNo.YES);
+        } else {
+            caseData.setShowReasonsForGroundsPage(YesOrNo.NO);
+        }
+
+
+        if (selectDiscretionaryGrounds.isEmpty() && selectMandatoryGrounds.isEmpty()) {
             return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
-                .errors(List.of("Please select at least one ground"))
-                .build();
+                    .errors(List.of("Please select at least one ground"))
+                    .build();
         }
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
             .data(caseData)
@@ -94,10 +104,9 @@ public class SecureOrFlexibleGroundsForPossession implements CcdPageConfiguratio
             .collect(Collectors.toSet());
     }
 
-
     private List<DynamicListElement> getRentArrearsOrBreachOfTenancyOptions(
     ) {
-        return Arrays.stream(RentAreasOrBreachOfTenancy.values())
+        return Arrays.stream(RentArrearsOrBreachOfTenancy.values())
             .map(g -> new DynamicListElement(UUID.randomUUID(), g.getLabel()))
             .collect(Collectors.toList());
     }

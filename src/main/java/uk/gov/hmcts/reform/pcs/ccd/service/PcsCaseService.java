@@ -16,7 +16,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.model.Defendant;
 import uk.gov.hmcts.reform.pcs.ccd.model.PossessionGrounds;
-import uk.gov.hmcts.reform.pcs.ccd.model.SecureOrFlexibleReasonForGrounds;
+import uk.gov.hmcts.reform.pcs.ccd.model.SecureOrFlexibleReasonsForGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.utils.ListValueUtils;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
@@ -188,16 +188,16 @@ public class PcsCaseService {
     }
 
     public PossessionGrounds buildPossessionGrounds(PCSCase pcsCase) {
-        SecureOrFlexibleReasonForGrounds reasons =
+        SecureOrFlexibleReasonsForGrounds reasons =
             Optional.ofNullable(pcsCase.getSecureOrFlexibleGroundsReasons())
                 .map(grounds -> modelMapper.map(grounds,
-                                                SecureOrFlexibleReasonForGrounds.class))
-                .orElse(SecureOrFlexibleReasonForGrounds.builder().build());
+                                                SecureOrFlexibleReasonsForGrounds.class))
+                .orElse(SecureOrFlexibleReasonsForGrounds.builder().build());
 
         return PossessionGrounds.builder()
             .selectedDiscretionaryGrounds(pcsCase.getSelectedSecureOrFlexibleDiscretionaryGrounds())
             .selectedMandatoryGrounds(pcsCase.getSelectedSecureOrFlexibleMandatoryGrounds())
-            .secureOrFlexibleReasonForGrounds(reasons)
+            .secureOrFlexibleReasonsForGrounds(reasons)
             .build();
     }
 

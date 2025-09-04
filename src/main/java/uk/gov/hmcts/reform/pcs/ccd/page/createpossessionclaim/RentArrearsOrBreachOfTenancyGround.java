@@ -5,9 +5,8 @@ import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
-import uk.gov.hmcts.reform.pcs.ccd.domain.DiscretionaryGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.domain.RentAreasOrBreachOfTenancy;
+import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsOrBreachOfTenancy;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
@@ -32,24 +31,12 @@ public class RentArrearsOrBreachOfTenancyGround implements CcdPageConfiguration 
                                                                   CaseDetails<PCSCase, State> detailsBefore) {
         PCSCase caseData = details.getData();
         if (caseData.getRentAreasOrBreachOfTenancy().getValue().stream()
-                .anyMatch(item -> RentAreasOrBreachOfTenancy.BREACH_OF_TENANCY.getLabel()
+                .anyMatch(item -> RentArrearsOrBreachOfTenancy.BREACH_OF_TENANCY.getLabel()
                     .equals(item.getLabel()))) {
 
             caseData.setShowBreachOfTenancyTextarea(YesOrNo.YES);
         } else {
             caseData.setShowBreachOfTenancyTextarea(YesOrNo.NO);
-        }
-
-        boolean hasOtherDiscretionaryGrounds = caseData.getSelectedSecureOrFlexibleDiscretionaryGrounds()
-            .stream()
-            .anyMatch(ground -> ground != DiscretionaryGrounds.RENT_ARREARS_OR_BREACH_OF_TENANCY);
-
-        boolean hasMandatoryGrounds = !caseData.getSelectedSecureOrFlexibleMandatoryGrounds().isEmpty();
-
-        if (hasOtherDiscretionaryGrounds || hasMandatoryGrounds) {
-            caseData.setShowReasonsForGroundsPage(YesOrNo.YES);
-        } else {
-            caseData.setShowReasonsForGroundsPage(YesOrNo.NO);
         }
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()

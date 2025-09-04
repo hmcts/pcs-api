@@ -10,9 +10,11 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
 import uk.gov.hmcts.ccd.sdk.api.Event;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
+import uk.gov.hmcts.ccd.sdk.type.DynamicMultiSelectList;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
 
 import java.time.Clock;
@@ -49,6 +51,7 @@ class TenancyLicenceTest  extends BasePageTest {
 
         PCSCase caseData = PCSCase.builder()
             .tenancyLicenceDate(date)
+            .typeOfTenancyLicence(TenancyLicenceType.FLEXIBLE_TENANCY)
             .build();
 
         caseDetails.setData(caseData);
@@ -65,6 +68,23 @@ class TenancyLicenceTest  extends BasePageTest {
             assertThat(response.getErrors()).isNull();
             assertThat(response.getData().getTenancyLicenceDate())
                 .isEqualTo(date);
+
+            DynamicMultiSelectList discretionaryGrounds = caseData.getSecureOrFlexibleDiscretionaryGrounds();
+            DynamicMultiSelectList discretionaryGroundsAlt = caseData
+                .getSecureOrFlexibleDiscretionaryGroundsAlternativeAccommodation();
+            DynamicMultiSelectList mandatoryGrounds = caseData.getSecureOrFlexibleMandatoryGrounds();
+            DynamicMultiSelectList mandatoryGroundsAlt = caseData
+                .getSecureOrFlexibleMandatoryGroundsAlternativeAccommodation();
+
+            assertThat(discretionaryGrounds).isNotNull();
+            assertThat(discretionaryGroundsAlt).isNotNull();
+            assertThat(mandatoryGrounds).isNotNull();
+            assertThat(mandatoryGroundsAlt).isNotNull();
+
+            assertThat(discretionaryGrounds.getValue()).isEmpty();
+            assertThat(discretionaryGroundsAlt.getValue()).isEmpty();
+            assertThat(mandatoryGrounds.getValue()).isEmpty();
+            assertThat(mandatoryGroundsAlt.getValue()).isEmpty();
         }
 
     }

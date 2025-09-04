@@ -20,6 +20,6 @@ public class PossessionGrounds {
     private Set<MandatoryGrounds> selectedMandatoryGrounds;
     private Set<DiscretionaryGrounds> selectedDiscretionaryGrounds;
 
-    private SecureOrFlexibleReasonForGrounds secureOrFlexibleReasonForGrounds;
+    private SecureOrFlexibleReasonsForGrounds secureOrFlexibleReasonsForGrounds;
 
 }
