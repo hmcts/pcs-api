@@ -57,7 +57,8 @@ public class PcsCaseService {
                         : null);
         pcsCaseEntity.setDefendants(mapFromDefendantDetails(pcsCase.getDefendants()));
 
-        addDocumentLinks(pcsCase.getSupportingDocumentsCategoryA(), DocumentCategory.CATEGORY_A.getLabel(), pcsCaseEntity);
+        addDocumentLinks(pcsCase.getSupportingDocumentsCategoryA(), 
+                DocumentCategory.CATEGORY_A.getLabel(), pcsCaseEntity);
         addDocuments(pcsCase.getSupportingDocumentsCategoryB(), DocumentCategory.CATEGORY_B.getLabel(), pcsCaseEntity);
 
         pcsCaseEntity.setTenancyLicence(buildTenancyLicence(pcsCase));

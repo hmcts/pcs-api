@@ -78,7 +78,8 @@ public class CCDCaseRepository extends DecentralisedCaseRepository<PCSCase> {
     }
 
     // Add this new method to handle DocumentLink mapping
-    private List<ListValue<DocumentLink>> mapDocumentLinks(Set<DocumentEntity> documentEntities, String categoryFilter) {
+    private List<ListValue<DocumentLink>> mapDocumentLinks(Set<DocumentEntity> documentEntities, 
+                                                           String categoryFilter) {
         if (documentEntities == null || documentEntities.isEmpty()) {
             return null;
         }
