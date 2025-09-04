@@ -48,14 +48,14 @@ withPipeline(type, product, component) {
     if (githubApi.getLabelsbyPattern(env.BRANCH_NAME, "pr-values:ccd").size() > 0) {
       enableHighLevelDataSetup()
     }
+    if (githubApi.getLabelsbyPattern(env.BRANCH_NAME, "pr-values:runE2eTests").size() > 0) {
+          runE2eTests(env.ENVIRONMENT)
+    }
   }
 
   onMaster() {
     enablePactAs([AppPipelineDsl.PactRoles.CONSUMER])
     setAatEnvVars()
-    afterSuccess('functionalTest:aat') {
-      runE2eTests(env.ENVIRONMENT)
-    }
   }
 
   onDemo {
@@ -120,7 +120,7 @@ def generateDefinitions(builder) {
 def runE2eTests(String context) {
   try {
     stage('E2E Test - ' + context) {
-      sh './gradlew runE2eTests'
+      sh './gradlew runE2eChromeTests'
     }
   } finally {
     publishHTML([
