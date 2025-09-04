@@ -205,6 +205,7 @@ private async defendantDetails(defendantVal: actionData) {
       await performAction('check', arrears);
     }
     await performAction('clickRadioButton', rentArrearsGrounds.otherGrounds);
+    await performAction('clickButton', 'Continue')
     if (rentArrearsGrounds.otherGrounds === 'Yes') {
       if (rentArrearsGrounds.mandatory && rentArrearsGrounds.discretionary) {
         for (const otherGround of rentArrearsGrounds.mandatory) {
