@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
@@ -18,6 +19,7 @@ import java.util.stream.Collectors;
  * CCD page configuration for Notice Details.
  * Allows users to specify how they served notice to the defendant.
  */
+@Component
 @RequiredArgsConstructor
 public class NoticeDetails implements CcdPageConfiguration {
     
