@@ -6,8 +6,8 @@
     "node": ">=18.0.0"
   },
   "scripts": {
-    "test:chrome": "yarn playwright install && yarn playwright test --project chrome --grep @nightly; EXIT_CODE=$?; allure generate ./allure-results --clean",
-    "test:firefox": "yarn playwright install && yarn playwright test --project firefox --grep @nightly; EXIT_CODE=$?; allure generate ./allure-results --clean",
+    "test:chrome": "yarn playwright install && yarn playwright test --project chrome --grep @nightly; EXIT_CODE=$?; allure generate ./allure-results --clean; exit $EXIT_CODE",
+    "test:firefox": "yarn playwright install && yarn playwright test --project firefox --grep @nightly; EXIT_CODE=$?; allure generate ./allure-results --clean; exit $EXIT_CODE",
     "test:openAllureReport": "yarn allure open allure-report"
   },
   "devDependencies": {
