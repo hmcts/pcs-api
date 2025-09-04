@@ -16,6 +16,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.model.Defendant;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
+import uk.gov.hmcts.reform.pcs.ccd.utils.ListValueUtils;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
@@ -165,13 +166,20 @@ public class PcsCaseService {
     //Temporary method to create tenancy_licence JSON and related fields
     // Data in this JSON will likely be moved to a dedicated entity in the future
     private TenancyLicence buildTenancyLicence(PCSCase pcsCase) {
+
         return TenancyLicence.builder()
-                .noticeServed(toBooleanOrNull(pcsCase.getNoticeServed()))
-                .rentAmount(pcsCase.getCurrentRent() != null 
+
+            .tenancyLicenceType(pcsCase.getTypeOfTenancyLicence() != null
+                                    ? pcsCase.getTypeOfTenancyLicence().getLabel() : null)
+            .tenancyLicenceDate(pcsCase.getTenancyLicenceDate())
+            .detailsOfOtherTypeOfTenancyLicence(pcsCase.getDetailsOfOtherTypeOfTenancyLicence())
+            .supportingDocuments(ListValueUtils.unwrapListItems(pcsCase.getTenancyLicenceDocuments()))
+            .noticeServed(toBooleanOrNull(pcsCase.getNoticeServed()))
+            .rentAmount(pcsCase.getCurrentRent() != null
                     ? new BigDecimal(pcsCase.getCurrentRent()) : null)
-                .rentPaymentFrequency(pcsCase.getRentFrequency())
-                .otherRentFrequency(pcsCase.getOtherRentFrequency())
-                .dailyRentChargeAmount(pcsCase.getDailyRentChargeAmount() != null 
+            .rentPaymentFrequency(pcsCase.getRentFrequency())
+            .otherRentFrequency(pcsCase.getOtherRentFrequency())
+            .dailyRentChargeAmount(pcsCase.getDailyRentChargeAmount() != null
                     ? new BigDecimal(pcsCase.getDailyRentChargeAmount()) : null)
                 .build();
     }
