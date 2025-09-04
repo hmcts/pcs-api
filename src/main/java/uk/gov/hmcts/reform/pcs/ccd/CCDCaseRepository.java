@@ -10,6 +10,7 @@ import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PaymentStatus;
+import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyEntity;
@@ -46,17 +47,26 @@ public class CCDCaseRepository extends DecentralisedCaseRepository<PCSCase> {
     /**
      * Invoked by CCD to load PCS cases by reference.
      * @param caseReference The CCD case reference to load
+     * @param state the current case state
      */
     @Override
-    public PCSCase getCase(long caseReference) {
+    public PCSCase getCase(long caseReference, String state) {
         PCSCase pcsCase = getSubmittedCase(caseReference);
 
-        boolean hasUnsubmittedCaseData = unsubmittedCaseDataService.hasUnsubmittedCaseData(caseReference);
+        boolean hasUnsubmittedCaseData = caseHasUnsubmittedData(caseReference, state);
         pcsCase.setHasUnsubmittedCaseData(YesOrNo.from(hasUnsubmittedCaseData));
 
         setMarkdownFields(pcsCase);
 
         return pcsCase;
+    }
+
+    private boolean caseHasUnsubmittedData(long caseReference, String state) {
+        if (State.AWAITING_FURTHER_CLAIM_DETAILS.name().equals(state)) {
+            return unsubmittedCaseDataService.hasUnsubmittedCaseData(caseReference);
+        } else {
+            return false;
+        }
     }
 
     private PCSCase getSubmittedCase(long caseReference) {
