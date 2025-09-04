@@ -9,8 +9,8 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeParseException;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Service for handling notice details validation.
@@ -41,10 +41,10 @@ public class NoticeDetailsService {
     /**
      * Validates notice details and returns any validation errors.
      * @param caseData the case data containing notice details
-     * @return map of field names to error messages, empty if no errors
+     * @return list of error messages, empty if no errors
      */
-    public Map<String, String> validateNoticeDetails(PCSCase caseData) {
-        Map<String, String> errors = new HashMap<>();
+    public List<String> validateNoticeDetails(PCSCase caseData) {
+        List<String> errors = new ArrayList<>();
 
         if (caseData.getNoticeServed() == null || !caseData.getNoticeServed().toBoolean()) {
             return errors;
@@ -52,7 +52,7 @@ public class NoticeDetailsService {
 
         NoticeServiceMethod noticeServiceMethod = caseData.getNoticeServiceMethod();
         if (noticeServiceMethod == null) {
-            errors.put("noticeServiceMethod", NOTICE_SERVICE_METHOD_REQUIRED);
+            errors.add(NOTICE_SERVICE_METHOD_REQUIRED);
             return errors;
         }
 
@@ -85,12 +85,10 @@ public class NoticeDetailsService {
     /**
      * Validates a date field with common validation logic.
      */
-    private void validateDateField(String dateValue, String fieldName, Map<String, String> errors) {
-        if (dateValue != null && !dateValue.trim().isEmpty()) {
-            if (!isValidDate(dateValue)) {
-                errors.put(fieldName, INVALID_DATE_ERROR);
-            } else if (isFutureDate(dateValue)) {
-                errors.put(fieldName, FUTURE_DATE_ERROR);
+    private void validateDateField(LocalDate dateValue, String fieldName, List<String> errors) {
+        if (dateValue != null) {
+            if (isFutureDate(dateValue)) {
+                errors.add(FUTURE_DATE_ERROR);
             }
         }
     }
@@ -98,12 +96,12 @@ public class NoticeDetailsService {
     /**
      * Validates a datetime field with common validation logic.
      */
-    private void validateDateTimeField(LocalDateTime dateTimeValue, String fieldName, Map<String, String> errors) {
+    private void validateDateTimeField(LocalDateTime dateTimeValue, String fieldName, List<String> errors) {
         if (dateTimeValue != null) {
             if (!isValidDateTime(dateTimeValue)) {
-                errors.put(fieldName, INVALID_DATETIME_ERROR);
+                errors.add(INVALID_DATETIME_ERROR);
             } else if (isTodayOrFutureDateTime(dateTimeValue)) {
-                errors.put(fieldName, FUTURE_DATETIME_ERROR);
+                errors.add(FUTURE_DATETIME_ERROR);
             }
         }
     }
@@ -111,18 +109,18 @@ public class NoticeDetailsService {
     /**
      * Validates an explanation field with length validation.
      */
-    private void validateExplanationField(String explanation, String fieldName, Map<String, String> errors) {
+    private void validateExplanationField(String explanation, String fieldName, List<String> errors) {
         if (explanation != null && explanation.length() > 250) {
-            errors.put(fieldName, EXPLANATION_TOO_LONG_ERROR);
+            errors.add(EXPLANATION_TOO_LONG_ERROR);
         }
     }
 
-    private void validateEmail(PCSCase caseData, Map<String, String> errors) {
+    private void validateEmail(PCSCase caseData, List<String> errors) {
         validateExplanationField(caseData.getNoticeEmailExplanation(), NOTICE_EMAIL_EXPLANATION, errors);
         validateDateTimeField(caseData.getNoticeEmailSentDateTime(), NOTICE_EMAIL_SENT_DATETIME, errors);
     }
 
-    private void validateOther(PCSCase caseData, Map<String, String> errors) {
+    private void validateOther(PCSCase caseData, List<String> errors) {
         validateExplanationField(caseData.getNoticeOtherExplanation(), NOTICE_OTHER_EXPLANATION, errors);
         validateDateTimeField(caseData.getNoticeOtherDateTime(), NOTICE_OTHER_DATETIME, errors);
     }
@@ -153,8 +151,7 @@ public class NoticeDetailsService {
         return parseDate(dateStr) != null;
     }
 
-    private boolean isFutureDate(String dateStr) {
-        LocalDate date = parseDate(dateStr);
+    private boolean isFutureDate(LocalDate date) {
         if (date == null) {
             return false;
         }

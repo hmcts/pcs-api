@@ -12,8 +12,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServiceMethod;
 import uk.gov.hmcts.reform.pcs.ccd.service.NoticeDetailsService;
 
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
  * CCD page configuration for Notice Details.
@@ -151,17 +149,12 @@ public class NoticeDetails implements CcdPageConfiguration {
                                                                   CaseDetails<PCSCase, State> detailsBefore) {
         PCSCase caseData = details.getData();
         
-        Map<String, String> validationErrors = noticeDetailsService.validateNoticeDetails(caseData);
+        List<String> validationErrors = noticeDetailsService.validateNoticeDetails(caseData);
         
         if (!validationErrors.isEmpty()) {
-            // Convert validation errors to CCD error format
-            List<String> errors = validationErrors.values().stream()
-                .distinct()
-                .collect(Collectors.toList());
-            
             return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
                 .data(caseData)
-                .errors(errors)
+                .errors(validationErrors)
                 .build();
         }
 
