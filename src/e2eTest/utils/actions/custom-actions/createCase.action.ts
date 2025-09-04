@@ -217,29 +217,6 @@ private async defendantDetails(defendantVal: actionData) {
     await performAction('clickButton', 'Continue');
   }
 
-  private async selectJurisdictionCaseTypeEvent() {
-    await performActions('Case option selection'
-      , ['select', 'Jurisdiction', createCase.possessionsJurisdiction]
-      , ['select', 'Case type', createCase.caseType.civilPossessions]
-      , ['select', 'Event', createCase.makeAPossessionClaimEvent]);
-    await performAction('clickButton', 'Start');
-  }
-
-  private async enterTestAddressManually() {
-    await performActions(
-      'Enter Address Manually'
-      , ['clickButton', "I can't enter a UK postcode"]
-      , ['inputText', 'Building and Street', addressDetails.buildingAndStreet]
-      , ['inputText', 'Address Line 2', addressDetails.addressLine2]
-      , ['inputText', 'Address Line 3', addressDetails.addressLine3]
-      , ['inputText', 'Town or City', addressDetails.townOrCity]
-      , ['inputText', 'County', addressDetails.walesCounty]
-      , ['inputText', 'Postcode/Zipcode', addressDetails.postcode]
-      , ['inputText', 'Country', addressDetails.country]
-    );
-    await performAction('clickButton', 'Continue');
-  }
-
   private async provideRentDetails(rentFrequency: actionData) {
     const rentData = rentFrequency as {
       rentFrequencyOption: string;
@@ -274,6 +251,29 @@ private async defendantDetails(defendantVal: actionData) {
     await performAction('clickButton', 'Continue');
   }
 
+  private async selectJurisdictionCaseTypeEvent() {
+    await performActions('Case option selection'
+      , ['select', 'Jurisdiction', createCase.possessionsJurisdiction]
+      , ['select', 'Case type', createCase.caseType.civilPossessions]
+      , ['select', 'Event', createCase.makeAPossessionClaimEvent]);
+    await performAction('clickButton', 'Start');
+  }
+
+  private async enterTestAddressManually() {
+    await performActions(
+      'Enter Address Manually'
+      , ['clickButton', "I can't enter a UK postcode"]
+      , ['inputText', 'Building and Street', addressDetails.buildingAndStreet]
+      , ['inputText', 'Address Line 2', addressDetails.addressLine2]
+      , ['inputText', 'Address Line 3', addressDetails.addressLine3]
+      , ['inputText', 'Town or City', addressDetails.townOrCity]
+      , ['inputText', 'County', addressDetails.walesCounty]
+      , ['inputText', 'Postcode/Zipcode', addressDetails.postcode]
+      , ['inputText', 'Country', addressDetails.country]
+    );
+    await performAction('clickButton', 'Continue');
+  }
+
   async getEventToken(): Promise<string> {
     if (!this.eventToken) {
       const tokenResponse: AxiosResponse<{ token: string }> = await this.axios.get(
@@ -303,7 +303,6 @@ private async defendantDetails(defendantVal: actionData) {
         state: response.data.state,
       };
     } catch (err) {
-      throw err
       throw new Error('Case could not be created.');
     }
   }

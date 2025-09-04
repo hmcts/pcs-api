@@ -16,8 +16,8 @@ import { noticeDetails } from '@data/page-data/noticeDetails.page.data';
 import { rentDetails } from '@data/page-data/rentDetails.page.data';
 import { userIneligible } from '@data/page-data/userIneligible.page.data';
 import { detailsOfrentArrears } from '@data/page-data/detailsOfrentArrears.page.data';
-import { defendantDetails } from "@data/page-data/defendantDetails.page.data";
-import { dailyRentAmount } from "@data/page-data/dailyRentAmount.page.data";
+import { defendantDetails } from '@data/page-data/defendantDetails.page.data';
+import { dailyRentAmount } from '@data/page-data/dailyRentAmount.page.data';
 
 test.beforeEach(async ({page}, testInfo) => {
   initializeExecutor(page);
@@ -72,7 +72,11 @@ test.describe.skip('[Create Case Flow With Address and Claimant Type]  @Master @
     await performValidation('mainHeader', rentDetails.mainHeader);
     await performAction('provideRentDetails', {rentFrequencyOption:'weekly', rentAmount:'800'});
     await performValidation('mainHeader', dailyRentAmount.mainHeader);
-    await performAction('selectDailyRentAmount', { calculateRentAmount: '£114.29',unpaidRentInteractiveOption: dailyRentAmount.no,unpaidRentAmountPerDay:'20'});
+    await performAction('selectDailyRentAmount', {
+      calculateRentAmount: '£114.29',
+      unpaidRentInteractiveOption: dailyRentAmount.no,
+      unpaidRentAmountPerDay: '20'
+    });
     await performAction('clickButton', 'Save and continue');
     await performValidation('bannerAlert', 'Case #.* has been created.');
     await performAction('clickTab', 'Property Details');
