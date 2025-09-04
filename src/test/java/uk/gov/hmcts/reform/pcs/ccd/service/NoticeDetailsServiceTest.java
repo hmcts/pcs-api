@@ -10,8 +10,9 @@ import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServiceMethod;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.Map;
+import java.util.List;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -38,7 +39,7 @@ class NoticeDetailsServiceTest {
             PCSCase caseData = PCSCase.builder()
                 .noticeServed(YesOrNo.NO)
                 .build();
-            Map<String, String> errors = noticeDetailsService.validateNoticeDetails(caseData);
+            List<String> errors = noticeDetailsService.validateNoticeDetails(caseData);
 
             assertThat(errors).isEmpty();
         }
@@ -48,7 +49,7 @@ class NoticeDetailsServiceTest {
             PCSCase caseData = PCSCase.builder()
                 .noticeServed(null)
                 .build();
-            Map<String, String> errors = noticeDetailsService.validateNoticeDetails(caseData);
+            List<String> errors = noticeDetailsService.validateNoticeDetails(caseData);
 
             assertThat(errors).isEmpty();
         }
@@ -59,11 +60,10 @@ class NoticeDetailsServiceTest {
                 .noticeServed(YesOrNo.YES)
                 .noticeServiceMethod(null)
                 .build();
-            Map<String, String> errors = noticeDetailsService.validateNoticeDetails(caseData);
+            List<String> errors = noticeDetailsService.validateNoticeDetails(caseData);
 
             assertThat(errors).isNotEmpty();
-            assertThat(errors).containsKey("noticeServiceMethod");
-            assertThat(errors.get("noticeServiceMethod")).isEqualTo("You must select how you served the notice");
+            assertThat(errors).contains("You must select how you served the notice");
         }
     }
 
@@ -78,12 +78,11 @@ class NoticeDetailsServiceTest {
                 .build();
 
             // When
-            Map<String, String> errors = noticeDetailsService.validateNoticeDetails(caseData);
+            List<String> errors = noticeDetailsService.validateNoticeDetails(caseData);
 
             // Then
             assertThat(errors).isNotEmpty();
-            assertThat(errors).containsKey("noticeServiceMethod");
-            assertThat(errors.get("noticeServiceMethod")).isEqualTo("You must select how you served the notice");
+            assertThat(errors).contains("You must select how you served the notice");
         }
     }
 
@@ -96,32 +95,30 @@ class NoticeDetailsServiceTest {
             PCSCase caseData = PCSCase.builder()
                 .noticeServed(YesOrNo.YES)
                 .noticeServiceMethod(NoticeServiceMethod.FIRST_CLASS_POST)
-                .noticePostedDate("2023-01-01")
+                .noticePostedDate(LocalDate.of(2023, 1, 1))
                 .build();
 
             // When
-            Map<String, String> errors = noticeDetailsService.validateNoticeDetails(caseData);
+            List<String> errors = noticeDetailsService.validateNoticeDetails(caseData);
 
             // Then
             assertThat(errors).isEmpty();
         }
 
         @Test
-        void shouldValidateFirstClassPostWithInvalidDate() {
+        void shouldValidateFirstClassPostWithNullDate() {
             // Given
             PCSCase caseData = PCSCase.builder()
                 .noticeServed(YesOrNo.YES)
                 .noticeServiceMethod(NoticeServiceMethod.FIRST_CLASS_POST)
-                .noticePostedDate("invalid date") // Invalid date format
+                .noticePostedDate(null) // Null date is allowed for optional fields
                 .build();
 
             // When
-            Map<String, String> errors = noticeDetailsService.validateNoticeDetails(caseData);
+            List<String> errors = noticeDetailsService.validateNoticeDetails(caseData);
 
             // Then
-            assertThat(errors).isNotEmpty();
-            assertThat(errors).containsKey("noticePostedDate");
-            assertThat(errors.get("noticePostedDate")).isEqualTo("Enter a valid date in the format YYYY-MM-DD");
+            assertThat(errors).isEmpty();
         }
 
         @Test
@@ -130,16 +127,15 @@ class NoticeDetailsServiceTest {
             PCSCase caseData = PCSCase.builder()
                 .noticeServed(YesOrNo.YES)
                 .noticeServiceMethod(NoticeServiceMethod.FIRST_CLASS_POST)
-                .noticePostedDate("2099-01-01")
+                .noticePostedDate(LocalDate.of(2099, 1, 1))
                 .build();
 
             // When
-            Map<String, String> errors = noticeDetailsService.validateNoticeDetails(caseData);
+            List<String> errors = noticeDetailsService.validateNoticeDetails(caseData);
 
             // Then
             assertThat(errors).isNotEmpty();
-            assertThat(errors).containsKey("noticePostedDate");
-            assertThat(errors.get("noticePostedDate")).isEqualTo("The date cannot be today or in the future");
+            assertThat(errors).contains("The date cannot be today or in the future");
         }
         
         @Test
@@ -151,16 +147,15 @@ class NoticeDetailsServiceTest {
             PCSCase caseData = PCSCase.builder()
                 .noticeServed(YesOrNo.YES)
                 .noticeServiceMethod(NoticeServiceMethod.FIRST_CLASS_POST)
-                .noticePostedDate(todayStr) // Today's date
+                .noticePostedDate(LocalDate.now())
                 .build();
 
             // When
-            Map<String, String> errors = noticeDetailsService.validateNoticeDetails(caseData);
+            List<String> errors = noticeDetailsService.validateNoticeDetails(caseData);
 
             // Then
             assertThat(errors).isNotEmpty();
-            assertThat(errors).containsKey("noticePostedDate");
-            assertThat(errors.get("noticePostedDate")).isEqualTo("The date cannot be today or in the future");
+            assertThat(errors).contains("The date cannot be today or in the future");
         }
 
         @Test
@@ -169,32 +164,30 @@ class NoticeDetailsServiceTest {
             PCSCase caseData = PCSCase.builder()
                 .noticeServed(YesOrNo.YES)
                 .noticeServiceMethod(NoticeServiceMethod.DELIVERED_PERMITTED_PLACE)
-                .noticeDeliveredDate("2023-01-01")
+                .noticeDeliveredDate(LocalDate.of(2023, 1, 1))
                 .build();
 
             // When
-            Map<String, String> errors = noticeDetailsService.validateNoticeDetails(caseData);
+            List<String> errors = noticeDetailsService.validateNoticeDetails(caseData);
 
             // Then
             assertThat(errors).isEmpty();
         }
 
         @Test
-        void shouldValidateDeliveredPermittedPlaceWithInvalidDate() {
+        void shouldValidateDeliveredPermittedPlaceWithNullDate() {
             // Given
             PCSCase caseData = PCSCase.builder()
                 .noticeServed(YesOrNo.YES)
                 .noticeServiceMethod(NoticeServiceMethod.DELIVERED_PERMITTED_PLACE)
-                .noticeDeliveredDate("invalid date") // Invalid date format
+                .noticeDeliveredDate(null) // Null date is allowed for optional fields
                 .build();
 
             // When
-            Map<String, String> errors = noticeDetailsService.validateNoticeDetails(caseData);
+            List<String> errors = noticeDetailsService.validateNoticeDetails(caseData);
 
             // Then
-            assertThat(errors).isNotEmpty();
-            assertThat(errors).containsKey("noticeDeliveredDate");
-            assertThat(errors.get("noticeDeliveredDate")).isEqualTo("Enter a valid date in the format YYYY-MM-DD");
+            assertThat(errors).isEmpty();
         }
 
         @ParameterizedTest
@@ -204,38 +197,30 @@ class NoticeDetailsServiceTest {
             PCSCase caseData = PCSCase.builder()
                 .noticeServed(YesOrNo.YES)
                 .noticeServiceMethod(NoticeServiceMethod.FIRST_CLASS_POST)
-                .noticePostedDate(dateString)
+                .noticePostedDate(LocalDate.parse(dateString))
                 .build();
 
             // When
-            Map<String, String> errors = noticeDetailsService.validateNoticeDetails(caseData);
+            List<String> errors = noticeDetailsService.validateNoticeDetails(caseData);
 
             // Then
             assertThat(errors).isEmpty();
         }
 
-        @ParameterizedTest
-        @MethodSource("invalidDateFormats")
-        void shouldRejectInvalidDateFormats(String dateString) {
-            // Given
+        @Test
+        void shouldRejectInvalidDateFormats() {
+            // Given - with null date (invalid)
             PCSCase caseData = PCSCase.builder()
                 .noticeServed(YesOrNo.YES)
                 .noticeServiceMethod(NoticeServiceMethod.FIRST_CLASS_POST)
-                .noticePostedDate(dateString)
+                .noticePostedDate(null) // Invalid date
                 .build();
 
             // When
-            Map<String, String> errors = noticeDetailsService.validateNoticeDetails(caseData);
+            List<String> errors = noticeDetailsService.validateNoticeDetails(caseData);
 
-            // Then - invalid formats should return validation errors
-            if (!dateString.isEmpty()) {
-                assertThat(errors).isNotEmpty();
-                assertThat(errors).containsKey("noticePostedDate");
-                assertThat(errors.get("noticePostedDate"))
-                    .isEqualTo("Enter a valid date in the format YYYY-MM-DD");
-            } else {
-                assertThat(errors).isEmpty();
-            }
+            // Then - null dates should not cause validation errors since they're optional
+            assertThat(errors).isEmpty();
         }
 
         private static Stream<Arguments> validDateFormats() {
@@ -247,16 +232,6 @@ class NoticeDetailsServiceTest {
             );
         }
 
-        private static Stream<Arguments> invalidDateFormats() {
-            return Stream.of(
-                arguments("01/01/2023"), // Wrong format
-                arguments("01 01 2023"), // Wrong format
-                arguments("01 01"), // Missing year
-                arguments("01"), // Missing month and year
-                arguments("abc"), // Non-numeric
-                arguments("") // Empty string
-            );
-        }
     }
 
     @Nested
@@ -273,7 +248,7 @@ class NoticeDetailsServiceTest {
                 .build();
 
             // When
-            Map<String, String> errors = noticeDetailsService.validateNoticeDetails(caseData);
+            List<String> errors = noticeDetailsService.validateNoticeDetails(caseData);
 
             // Then
             assertThat(errors).isEmpty();
@@ -292,7 +267,7 @@ class NoticeDetailsServiceTest {
                 .build();
 
             // When
-            Map<String, String> errors = noticeDetailsService.validateNoticeDetails(caseData);
+            List<String> errors = noticeDetailsService.validateNoticeDetails(caseData);
 
             // Then
             assertThat(errors).isEmpty();
@@ -309,13 +284,11 @@ class NoticeDetailsServiceTest {
                 .build();
 
             // When
-            Map<String, String> errors = noticeDetailsService.validateNoticeDetails(caseData);
+            List<String> errors = noticeDetailsService.validateNoticeDetails(caseData);
 
             // Then
             assertThat(errors).isNotEmpty();
-            assertThat(errors).containsKey("noticeHandedOverDateTime");
-            assertThat(errors.get("noticeHandedOverDateTime"))
-                .isEqualTo("The date and time cannot be today or in the future");
+            assertThat(errors).contains("The date and time cannot be today or in the future");
         }
         
         @Test
@@ -330,13 +303,11 @@ class NoticeDetailsServiceTest {
                 .build();
 
             // When
-            Map<String, String> errors = noticeDetailsService.validateNoticeDetails(caseData);
+            List<String> errors = noticeDetailsService.validateNoticeDetails(caseData);
 
             // Then
             assertThat(errors).isNotEmpty();
-            assertThat(errors).containsKey("noticeHandedOverDateTime");
-            assertThat(errors.get("noticeHandedOverDateTime"))
-                .isEqualTo("The date and time cannot be today or in the future");
+            assertThat(errors).contains("The date and time cannot be today or in the future");
         }
 
         @Test
@@ -350,7 +321,7 @@ class NoticeDetailsServiceTest {
                 .build();
 
             // When
-            Map<String, String> errors = noticeDetailsService.validateNoticeDetails(caseData);
+            List<String> errors = noticeDetailsService.validateNoticeDetails(caseData);
 
             // Then
             assertThat(errors).isEmpty();
@@ -367,13 +338,11 @@ class NoticeDetailsServiceTest {
                 .build();
 
             // When
-            Map<String, String> errors = noticeDetailsService.validateNoticeDetails(caseData);
+            List<String> errors = noticeDetailsService.validateNoticeDetails(caseData);
 
             // Then
             assertThat(errors).isNotEmpty();
-            assertThat(errors).containsKey("noticeOtherElectronicDateTime");
-            assertThat(errors.get("noticeOtherElectronicDateTime"))
-                .isEqualTo("The date and time cannot be today or in the future");
+            assertThat(errors).contains("The date and time cannot be today or in the future");
         }
     }
 
@@ -392,7 +361,7 @@ class NoticeDetailsServiceTest {
                 .build();
 
             // When
-            Map<String, String> errors = noticeDetailsService.validateNoticeDetails(caseData);
+            List<String> errors = noticeDetailsService.validateNoticeDetails(caseData);
 
             // Then
             assertThat(errors).isEmpty();
@@ -417,13 +386,11 @@ class NoticeDetailsServiceTest {
                 .build();
 
             // When
-            Map<String, String> errors = noticeDetailsService.validateNoticeDetails(caseData);
+            List<String> errors = noticeDetailsService.validateNoticeDetails(caseData);
 
             // Then
             assertThat(errors).isNotEmpty();
-            assertThat(errors).containsKey("noticeEmailExplanation");
-            assertThat(errors.get("noticeEmailExplanation"))
-                .isEqualTo("The explanation must be 250 characters or fewer");
+            assertThat(errors).contains("The explanation must be 250 characters or fewer");
         }
 
         @Test
@@ -438,13 +405,11 @@ class NoticeDetailsServiceTest {
                 .build();
 
             // When
-            Map<String, String> errors = noticeDetailsService.validateNoticeDetails(caseData);
+            List<String> errors = noticeDetailsService.validateNoticeDetails(caseData);
 
             // Then
             assertThat(errors).isNotEmpty();
-            assertThat(errors).containsKey("noticeEmailSentDateTime");
-            assertThat(errors.get("noticeEmailSentDateTime"))
-                .isEqualTo("The date and time cannot be today or in the future");
+            assertThat(errors).contains("The date and time cannot be today or in the future");
         }
     }
 
@@ -463,7 +428,7 @@ class NoticeDetailsServiceTest {
                 .build();
 
             // When
-            Map<String, String> errors = noticeDetailsService.validateNoticeDetails(caseData);
+            List<String> errors = noticeDetailsService.validateNoticeDetails(caseData);
 
             // Then
             assertThat(errors).isEmpty();
@@ -488,13 +453,11 @@ class NoticeDetailsServiceTest {
                 .build();
 
             // When
-            Map<String, String> errors = noticeDetailsService.validateNoticeDetails(caseData);
+            List<String> errors = noticeDetailsService.validateNoticeDetails(caseData);
 
             // Then
             assertThat(errors).isNotEmpty();
-            assertThat(errors).containsKey("noticeOtherExplanation");
-            assertThat(errors.get("noticeOtherExplanation"))
-                .isEqualTo("The explanation must be 250 characters or fewer");
+            assertThat(errors).contains("The explanation must be 250 characters or fewer");
         }
 
         @Test
@@ -509,13 +472,11 @@ class NoticeDetailsServiceTest {
                 .build();
 
             // When
-            Map<String, String> errors = noticeDetailsService.validateNoticeDetails(caseData);
+            List<String> errors = noticeDetailsService.validateNoticeDetails(caseData);
 
             // Then
             assertThat(errors).isNotEmpty();
-            assertThat(errors).containsKey("noticeOtherDateTime");
-            assertThat(errors.get("noticeOtherDateTime"))
-                .isEqualTo("The date and time cannot be today or in the future");
+            assertThat(errors).contains("The date and time cannot be today or in the future");
         }
     }
 
@@ -532,7 +493,7 @@ class NoticeDetailsServiceTest {
                 .build();
 
             // When
-            Map<String, String> errors = noticeDetailsService.validateNoticeDetails(caseData);
+            List<String> errors = noticeDetailsService.validateNoticeDetails(caseData);
 
             // Then
             assertThat(errors).isEmpty();
@@ -544,11 +505,11 @@ class NoticeDetailsServiceTest {
             PCSCase caseData = PCSCase.builder()
                 .noticeServed(YesOrNo.YES)
                 .noticeServiceMethod(NoticeServiceMethod.FIRST_CLASS_POST)
-                .noticePostedDate("")
+                .noticePostedDate(null)
                 .build();
 
             // When
-            Map<String, String> errors = noticeDetailsService.validateNoticeDetails(caseData);
+            List<String> errors = noticeDetailsService.validateNoticeDetails(caseData);
 
             // Then
             assertThat(errors).isEmpty();
@@ -560,11 +521,11 @@ class NoticeDetailsServiceTest {
             PCSCase caseData = PCSCase.builder()
                 .noticeServed(YesOrNo.YES)
                 .noticeServiceMethod(NoticeServiceMethod.FIRST_CLASS_POST)
-                .noticePostedDate("   ")
+                .noticePostedDate(null)
                 .build();
 
             // When
-            Map<String, String> errors = noticeDetailsService.validateNoticeDetails(caseData);
+            List<String> errors = noticeDetailsService.validateNoticeDetails(caseData);
 
             // Then
             assertThat(errors).isEmpty();

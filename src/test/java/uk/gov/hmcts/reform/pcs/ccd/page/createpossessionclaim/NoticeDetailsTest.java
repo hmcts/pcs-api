@@ -15,8 +15,9 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
 import uk.gov.hmcts.reform.pcs.ccd.service.NoticeDetailsService;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
@@ -58,8 +59,8 @@ class NoticeDetailsTest extends BasePageTest {
                 .build();
             caseDetails.setData(caseData);
 
-            Map<String, String> validationErrors = new HashMap<>();
-            validationErrors.put("noticePostedDate", "Enter a valid date in the format DD MM YYYY");
+            List<String> validationErrors = new ArrayList<>();
+            validationErrors.add("Enter a valid date in the format DD MM YYYY");
             when(noticeDetailsService.validateNoticeDetails(caseData)).thenReturn(validationErrors);
 
             MidEvent<PCSCase, State> midEvent = getMidEventForPage(event, "noticeDetails");
@@ -78,7 +79,7 @@ class NoticeDetailsTest extends BasePageTest {
                 .build();
             caseDetails.setData(caseData);
 
-            when(noticeDetailsService.validateNoticeDetails(caseData)).thenReturn(new HashMap<>());
+            when(noticeDetailsService.validateNoticeDetails(caseData)).thenReturn(new ArrayList<>());
 
             MidEvent<PCSCase, State> midEvent = getMidEventForPage(event, "noticeDetails");
             AboutToStartOrSubmitResponse<PCSCase, State> response = midEvent.handle(caseDetails, null);
@@ -95,9 +96,9 @@ class NoticeDetailsTest extends BasePageTest {
                 .build();
             caseDetails.setData(caseData);
 
-            Map<String, String> validationErrors = new HashMap<>();
-            validationErrors.put("noticeEmailSentDateTime", "The date and time cannot be today or in the future");
-            validationErrors.put("noticeEmailExplanation", "The explanation must be 250 characters or fewer");
+            List<String> validationErrors = new ArrayList<>();
+            validationErrors.add("The date and time cannot be today or in the future");
+            validationErrors.add("The explanation must be 250 characters or fewer");
             when(noticeDetailsService.validateNoticeDetails(caseData)).thenReturn(validationErrors);
 
             MidEvent<PCSCase, State> midEvent = getMidEventForPage(event, "noticeDetails");
@@ -120,8 +121,8 @@ class NoticeDetailsTest extends BasePageTest {
                 .build();
             caseDetails.setData(caseData);
 
-            Map<String, String> validationErrors = new HashMap<>();
-            validationErrors.put("noticeServiceMethod", "You must select how you served the notice");
+            List<String> validationErrors = new ArrayList<>();
+            validationErrors.add("You must select how you served the notice");
             when(noticeDetailsService.validateNoticeDetails(caseData)).thenReturn(validationErrors);
 
             MidEvent<PCSCase, State> midEvent = getMidEventForPage(event, "noticeDetails");
@@ -137,11 +138,11 @@ class NoticeDetailsTest extends BasePageTest {
             PCSCase caseData = PCSCase.builder()
                 .noticeServed(YesOrNo.YES)
                 .noticeServiceMethod(NoticeServiceMethod.FIRST_CLASS_POST)
-                .noticePostedDate("01 01 2023")
+                .noticePostedDate(LocalDate.of(2023, 1, 1))
                 .build();
             caseDetails.setData(caseData);
 
-            when(noticeDetailsService.validateNoticeDetails(caseData)).thenReturn(new HashMap<>());
+            when(noticeDetailsService.validateNoticeDetails(caseData)).thenReturn(new ArrayList<>());
 
             MidEvent<PCSCase, State> midEvent = getMidEventForPage(event, "noticeDetails");
             AboutToStartOrSubmitResponse<PCSCase, State> response = midEvent.handle(caseDetails, null);
