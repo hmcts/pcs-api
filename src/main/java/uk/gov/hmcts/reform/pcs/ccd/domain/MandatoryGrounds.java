@@ -14,11 +14,16 @@ import static uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType.SECURE_TENAN
 @Getter
 public enum MandatoryGrounds implements HasLabel {
 
-    ANTI_SOCIAL("Antisocial behaviour", Set.of(SECURE_TENANCY,FLEXIBLE_TENANCY), false),
-    OVERCROWDING("Overcrowding(ground 9)", Set.of(SECURE_TENANCY,FLEXIBLE_TENANCY),true),
-    LANDLORD_WORKS("Landlord's works(ground 10)",Set.of(SECURE_TENANCY,FLEXIBLE_TENANCY), true),
-    PROPERTY_SOLD("Property sold for redevelopment(ground 10A)",Set.of(SECURE_TENANCY,FLEXIBLE_TENANCY), true),
-    CHARITABLE_LANDLORD("Charitable landlords(ground 11)",Set.of(SECURE_TENANCY,FLEXIBLE_TENANCY), true);
+    ANTI_SOCIAL("Antisocial behaviour", Set.of(SECURE_TENANCY,FLEXIBLE_TENANCY),
+                false),
+    OVERCROWDING("Overcrowding(ground 9)", Set.of(SECURE_TENANCY,FLEXIBLE_TENANCY),
+                 true),
+    LANDLORD_WORKS("Landlord's works(ground 10)",Set.of(SECURE_TENANCY,FLEXIBLE_TENANCY),
+                   true),
+    PROPERTY_SOLD("Property sold for redevelopment(ground 10A)",Set.of(SECURE_TENANCY,FLEXIBLE_TENANCY),
+                  true),
+    CHARITABLE_LANDLORD("Charitable landlords(ground 11)",Set.of(SECURE_TENANCY,FLEXIBLE_TENANCY),
+                        true);
 
     private String label;
     private final Set<TenancyLicenceType> tenancyLicenceTypeSet;

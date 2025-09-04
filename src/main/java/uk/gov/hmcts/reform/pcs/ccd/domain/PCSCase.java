@@ -323,14 +323,12 @@ public class PCSCase {
     )
     private DynamicMultiSelectList secureOrFlexibleDiscretionaryGroundsAlternativeAccommodation;
 
-
     @CCD(
         typeOverride = FieldType.MultiSelectList,
         typeParameterOverride = "DiscretionaryGrounds",
         access = {CaseworkerAccess.class}
     )
     private Set<DiscretionaryGrounds> selectedSecureOrFlexibleDiscretionaryGrounds;
-
 
     @CCD(
         typeOverride = FieldType.MultiSelectList,
@@ -339,15 +337,18 @@ public class PCSCase {
     )
     private Set<MandatoryGrounds> selectedSecureOrFlexibleMandatoryGrounds;
 
-
     @CCD(
         label = "What does your ground 1 claim involve?",
         hint = "Select all that apply",
-        typeOverride = FieldType.MultiSelectList,
-        typeParameterOverride = "RentAreasOrBreachOfTenancy",
         access = {CaseworkerAccess.class}
     )
-    private Set<RentAreasOrBreachOfTenancy> rentAreasOrBreachOfTenancy;
+    private DynamicMultiSelectList rentAreasOrBreachOfTenancy;
+
+    private YesOrNo showBreachOfTenancyTextarea;
+
+    private YesOrNo showReasonsForGroundsPage;
+
+    private YesOrNo isTenancyTypeSecureOrFlexible;
 
     @JsonUnwrapped
     @CCD(access = {CaseworkerAccess.class})

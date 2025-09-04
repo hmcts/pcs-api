@@ -9,11 +9,16 @@ import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DiscretionaryGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.MandatoryGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.RentAreasOrBreachOfTenancy;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.UUID;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -27,7 +32,8 @@ public class SecureOrFlexibleGroundsForPossession implements CcdPageConfiguratio
             .showCondition("typeOfTenancyLicence=\"SECURE_TENANCY\" OR typeOfTenancyLicence=\"FLEXIBLE_TENANCY\"")
             .label("secureOrFlexibleGroundsForPossession-info", """
                ---
-               <p class="govuk-body"> You may have already given defendant's notice of your intention to begin possession proceedings.
+               <p class="govuk-body"> You may have already given defendant's notice of your intention to begin
+                possession proceedings.
                 If you have, you should have written the grounds you're making your claim under. You should select these
                 grounds here and any extra ground you'd like to add to your claim, if you need to.<br><br>
 
@@ -47,18 +53,24 @@ public class SecureOrFlexibleGroundsForPossession implements CcdPageConfiguratio
         PCSCase caseData = details.getData();
 
         caseData.setSelectedSecureOrFlexibleDiscretionaryGrounds(
-            setSelectedDiscretionaryGrounds(caseData.getSecureOrFlexibleDiscretionaryGrounds()
-                ,caseData.getSecureOrFlexibleDiscretionaryGroundsAlternativeAccommodation()
+            setSelectedGrounds(caseData.getSecureOrFlexibleDiscretionaryGrounds(),
+                               caseData.getSecureOrFlexibleDiscretionaryGroundsAlternativeAccommodation(),
+                               DiscretionaryGrounds::fromLabel
             )
         );
 
         caseData.setSelectedSecureOrFlexibleMandatoryGrounds(
-            setSelectedMandatoryGrounds(caseData.getSecureOrFlexibleMandatoryGrounds()
-                ,caseData.getSecureOrFlexibleMandatoryGroundsAlternativeAccommodation()
+            setSelectedGrounds(caseData.getSecureOrFlexibleMandatoryGrounds(),
+                               caseData.getSecureOrFlexibleMandatoryGroundsAlternativeAccommodation(),
+                               MandatoryGrounds::fromLabel
             )
         );
-
-        if(caseData.getSelectedSecureOrFlexibleDiscretionaryGrounds().isEmpty()
+        caseData.setRentAreasOrBreachOfTenancy(
+            DynamicMultiSelectList.builder().listItems(
+                getRentArrearsOrBreachOfTenancyOptions()
+            ).value(Collections.emptyList()).build()
+        );
+        if (caseData.getSelectedSecureOrFlexibleDiscretionaryGrounds().isEmpty()
             && caseData.getSelectedSecureOrFlexibleMandatoryGrounds().isEmpty()) {
             return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
                 .errors(List.of("Please select at least one ground"))
@@ -69,26 +81,24 @@ public class SecureOrFlexibleGroundsForPossession implements CcdPageConfiguratio
             .build();
     }
 
-    private Set<DiscretionaryGrounds> setSelectedDiscretionaryGrounds(DynamicMultiSelectList list1, DynamicMultiSelectList list2) {
+    private <T> Set<T> setSelectedGrounds(DynamicMultiSelectList list1,
+                                          DynamicMultiSelectList list2,
+                                          Function<String, T> fromLabel) {
         return Stream.of(list1, list2)
             .filter(Objects::nonNull)
             .map(DynamicMultiSelectList::getValue)
             .filter(Objects::nonNull)
             .flatMap(List::stream)
             .map(DynamicListElement::getLabel)
-            .map(DiscretionaryGrounds::fromLabel)
+            .map(fromLabel)
             .collect(Collectors.toSet());
     }
 
-    private Set<MandatoryGrounds> setSelectedMandatoryGrounds(DynamicMultiSelectList list1, DynamicMultiSelectList list2) {
-        return Stream.of(list1, list2)
-            .filter(Objects::nonNull)
-            .map(DynamicMultiSelectList::getValue)
-            .filter(Objects::nonNull)
-            .flatMap(List::stream)
-            .map(DynamicListElement::getLabel)
-            .map(MandatoryGrounds::fromLabel)
-            .collect(Collectors.toSet());
-    }
 
+    private List<DynamicListElement> getRentArrearsOrBreachOfTenancyOptions(
+    ) {
+        return Arrays.stream(RentAreasOrBreachOfTenancy.values())
+            .map(g -> new DynamicListElement(UUID.randomUUID(), g.getLabel()))
+            .collect(Collectors.toList());
+    }
 }
