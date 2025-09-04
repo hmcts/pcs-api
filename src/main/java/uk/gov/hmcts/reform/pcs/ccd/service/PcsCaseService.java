@@ -177,8 +177,10 @@ public class PcsCaseService {
                 .noticeServiceMethod(pcsCase.getNoticeServiceMethod() != null 
                                     ? pcsCase.getNoticeServiceMethod().name() 
                                     : null)
-                .noticePostedDate(pcsCase.getNoticePostedDate())
-                .noticeDeliveredDate(pcsCase.getNoticeDeliveredDate())
+                .noticePostedDate(pcsCase.getNoticePostedDate() != null 
+                    ? pcsCase.getNoticePostedDate().toString() : null)
+                .noticeDeliveredDate(pcsCase.getNoticeDeliveredDate() != null 
+                    ? pcsCase.getNoticeDeliveredDate().toString() : null)
                 .noticeHandedOverDateTime(pcsCase.getNoticeHandedOverDateTime())
                 .noticePersonName(pcsCase.getNoticePersonName())
                 .noticeEmailSentDateTime(pcsCase.getNoticeEmailSentDateTime())

@@ -13,6 +13,7 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseworkerAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenAccess;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 import java.util.List;
@@ -272,16 +273,14 @@ public class PCSCase {
 
     // Date fields for different service methods
     @CCD(
-        access = {CitizenAccess.class, CaseworkerAccess.class},
-        typeOverride = FieldType.Date
+        access = {CitizenAccess.class, CaseworkerAccess.class}
     )
-    private String noticePostedDate;
+    private LocalDate noticePostedDate;
 
     @CCD(
-        access = {CitizenAccess.class, CaseworkerAccess.class},
-        typeOverride = FieldType.Date
+        access = {CitizenAccess.class, CaseworkerAccess.class}
     )
-    private String noticeDeliveredDate;
+    private LocalDate noticeDeliveredDate;
 
     @CCD(
         access = {CitizenAccess.class, CaseworkerAccess.class}
