@@ -46,9 +46,10 @@ public class CCDCaseRepository extends DecentralisedCaseRepository<PCSCase> {
     /**
      * Invoked by CCD to load PCS cases by reference.
      * @param caseReference The CCD case reference to load
+     * @param state the current case state
      */
     @Override
-    public PCSCase getCase(long caseReference) {
+    public PCSCase getCase(long caseReference, String state) {
 
         PcsCaseEntity pcsCaseEntity = loadCaseData(caseReference);
 
