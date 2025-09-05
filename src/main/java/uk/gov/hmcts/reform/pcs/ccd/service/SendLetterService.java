@@ -3,8 +3,18 @@ package uk.gov.hmcts.reform.pcs.ccd.service;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.RestTemplate;
+import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
+import uk.gov.hmcts.reform.pcs.idam.IdamService;
 import uk.gov.hmcts.reform.sendletter.api.SendLetterApi;
 import uk.gov.hmcts.reform.sendletter.api.SendLetterResponse;
 
@@ -13,8 +23,6 @@ import uk.gov.hmcts.reform.sendletter.api.model.v3.Document;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
@@ -29,19 +37,25 @@ public class SendLetterService {
 
     private SendLetterApi sendLetterApi;
     private AuthTokenGenerator authTokenGenerator;
+    private IdamService idamService;
 
-    public void sendLetterv2() {
+    public void sendLetterv2(ListValue<uk.gov.hmcts.ccd.sdk.type.Document> documentListValue) {
+        String url = documentListValue.getValue().getBinaryUrl();
+
         String serviceAuthHeader = authTokenGenerator.generate();
+        String systemUserAuth = idamService.getSystemUserAuthorisation();
 
         List<String> personList = new ArrayList<>();
         personList.add("Firstname Lastname");
         Map<String, Object> map = new HashMap<>();
         map.put("recipients", personList);
 
+        byte[] documentBinary = getDocumentBinary(systemUserAuth, serviceAuthHeader, url).getBody();
+
         try {
             SendLetterResponse sendLetterResponse = sendLetterApi.sendLetter(
                 serviceAuthHeader,
-                buildLetter(personList)
+                buildLetter(personList, documentBinary)
             );
             log.error(sendLetterResponse.letterId.toString());
         } catch (Exception e) {
@@ -50,13 +64,36 @@ public class SendLetterService {
 
     }
 
-    private LetterV3 buildLetter(List<String> personList) throws IOException, URISyntaxException {
-        String XEROX_TYPE_PARAMETER = "CMC001";
-        byte[] pdf = Files.readAllBytes(Path.of("/Users/toby.plunkett/Documents/Projects/pcs-api/src/main/resources/files/myPdf.pdf"));
-        String response = Base64.getEncoder().encodeToString(pdf);
+    public ResponseEntity<byte[]> getDocumentBinary(String authorisation,
+                                                    String serviceAuth,
+                                                    String url) {
+        try {
+            RestTemplate restTemplate = new RestTemplate();
+            HttpHeaders headers = new HttpHeaders();
+            headers.set(HttpHeaders.AUTHORIZATION, authorisation);
+            headers.set("ServiceAuthorization", serviceAuth);
+            MultiValueMap<String, String> requestBody = new LinkedMultiValueMap<>();
+            HttpEntity<?> requestEntity = new HttpEntity<>(requestBody, headers);
+
+            return restTemplate.exchange(
+                url,
+                HttpMethod.GET, requestEntity,
+                byte[].class
+            );
+        } catch (HttpClientErrorException exception) {
+            log.error("Exception: {}", exception.getMessage());
+            throw exception;
+        }
+    }
+
+
+    private LetterV3 buildLetter(List<String> personList, byte[] pdfBinary) throws IOException, URISyntaxException {
+        String xeroxTypeParam = "CMC001";
+
+        String response = Base64.getEncoder().encodeToString(pdfBinary);
         Map<String, Object> additionalData = new HashMap<>();
         additionalData.put("caseReference", "123421323");
         additionalData.put("recipients", personList);
-        return new LetterV3(XEROX_TYPE_PARAMETER, Arrays.asList(new Document(response, 2)), additionalData);
+        return new LetterV3(xeroxTypeParam, Arrays.asList(new Document(response, 2)), additionalData);
     }
 }

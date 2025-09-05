@@ -122,11 +122,6 @@ public class CreatePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             PartyRole.CLAIMANT);
 
         claimService.saveClaim(claimEntity);
-        try {
-            sendLetterService.sendLetterv2();
-        } catch (Exception e) {
-            log.error(e.getMessage());
-        }
     }
 
 }

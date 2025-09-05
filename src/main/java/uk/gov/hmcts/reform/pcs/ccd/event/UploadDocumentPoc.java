@@ -25,6 +25,7 @@ import uk.gov.hmcts.reform.pcs.ccd.page.generatedocument.GenerateDocument;
 import uk.gov.hmcts.reform.pcs.ccd.page.uploadsupportingdocs.DocumentUpload;
 import uk.gov.hmcts.reform.pcs.ccd.service.DocumentGenerationService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
+import uk.gov.hmcts.reform.pcs.ccd.service.SendLetterService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 @Slf4j
@@ -35,6 +36,7 @@ public class UploadDocumentPoc implements CCDConfig<PCSCase, State, UserRole> {
     private final PcsCaseService pcsCaseService;
     private final SecurityContextService securityContextService;
     private final DocumentGenerationService documentGenerationService;
+    private final SendLetterService sendLetterService;
 
     @Override
     public void configure(ConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -68,55 +70,24 @@ public class UploadDocumentPoc implements CCDConfig<PCSCase, State, UserRole> {
 
         pcsCase.setPaymentStatus(PaymentStatus.UNPAID);
 
-        // Debug: Check what documents we have before
-        log.info("DEBUG: Before processing - supportingDocuments: {}",
-                 pcsCase.getSupportingDocuments() != null
-                     ? pcsCase.getSupportingDocuments().size() : "null");
-        log.info("DEBUG: Before processing - generatedDocuments: {}",
-                 pcsCase.getGeneratedDocuments() != null
-                     ? pcsCase.getGeneratedDocuments().size() : "null");
-
         if (pcsCase.getGeneratedDocuments() == null) {
             pcsCase.setGeneratedDocuments(new ArrayList<>());
         }
 
-        try {
-            Map<String, Object> formPayload = extractCaseDataForDocument(pcsCase, caseReference);
-
-            String templateId = "CV-CMC-ENG-0010.docx";
-            String outputType = "PDF";
-
-            Document generatedDocument =
-                documentGenerationService.generateDocument(templateId, formPayload, outputType);
-
-            // Add to generatedDocuments (not supportingDocuments)
-            pcsCase.getGeneratedDocuments().add(
-                documentGenerationService.createDocumentListValue(generatedDocument)
-            );
-
-            // Debug: Check what documents we have after
-            log.info("DEBUG: After adding generated - supportingDocuments: {}",
-                     pcsCase.getSupportingDocuments() != null
-                         ? pcsCase.getSupportingDocuments().size() : "null");
-            log.info("DEBUG: After adding generated - generatedDocuments: {}",
-                     pcsCase.getGeneratedDocuments() != null
-                         ? pcsCase.getGeneratedDocuments().size() : "null");
-
-        } catch (Exception e) {
-            log.error("Failed to generate document for case: {}", caseReference, e);
-        }
-
         PcsCaseEntity pcsCaseEntity = pcsCaseService.createCase(caseReference, pcsCase);
 
-        log.info("DEBUG: Final check before return - generatedDocuments: {}",
-                 pcsCase.getGeneratedDocuments() != null
-                     ? pcsCase.getGeneratedDocuments().size() : "null");
         if (pcsCase.getGeneratedDocuments() != null && !pcsCase.getGeneratedDocuments().isEmpty()) {
             pcsCase.getGeneratedDocuments().forEach(doc ->
                 log.info("DEBUG: Generated doc ID: {}, filename: {}",
                          doc.getId(),
                          doc.getValue() != null
                              ? doc.getValue().getFilename() : "null"));
+        }
+
+        try {
+            sendLetterService.sendLetterv2(eventPayload.caseData().getSupportingDocuments().getFirst());
+        } catch (Exception e) {
+            log.error(e.getMessage());
         }
 
         return pcsCase;
