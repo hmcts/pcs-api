@@ -75,4 +75,40 @@ class RentDetailsTest extends BasePageTest {
         // Then
         assertThat(caseData.getDailyRentChargeAmount()).isEqualTo("1500");
     }
+
+    @Test
+    void shouldReturnErrorWhenCurrentRentIsNegative() {
+        // Given
+        CaseDetails<PCSCase, State> caseDetails = new CaseDetails<>();
+        PCSCase caseData = PCSCase.builder()
+                .currentRent("-1000")
+                .rentFrequency(RentPaymentFrequency.MONTHLY)
+                .build();
+        caseDetails.setData(caseData);
+
+        // When
+        MidEvent<PCSCase, State> midEvent = getMidEventForPage(event, "rentDetails");
+        var response = midEvent.handle(caseDetails, null);
+
+        // Then
+        assertThat(response.getErrors()).containsExactly("Rent amount cannot be negative");
+    }
+
+    @Test
+    void shouldReturnErrorWhenDailyRentChargeAmountIsNegative() {
+        // Given
+        CaseDetails<PCSCase, State> caseDetails = new CaseDetails<>();
+        PCSCase caseData = PCSCase.builder()
+                .rentFrequency(RentPaymentFrequency.OTHER)
+                .dailyRentChargeAmount("-500")
+                .build();
+        caseDetails.setData(caseData);
+
+        // When
+        MidEvent<PCSCase, State> midEvent = getMidEventForPage(event, "rentDetails");
+        var response = midEvent.handle(caseDetails, null);
+
+        // Then
+        assertThat(response.getErrors()).containsExactly("Daily rent charge amount cannot be negative");
+    }
 }
