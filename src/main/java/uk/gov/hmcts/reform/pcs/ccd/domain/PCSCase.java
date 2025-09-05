@@ -8,6 +8,7 @@ import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.FieldType;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
+import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseworkerAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenAccess;
@@ -262,5 +263,44 @@ public class PCSCase {
 
     @CCD(access = {CitizenAccess.class, CaseworkerAccess.class})
     private List<ListValue<DefendantDetails>> defendants;
+
+    // --- Rent arrears (statement upload + totals + third party payments) ---
+    @CCD(
+        label = "Document",
+        typeOverride = FieldType.Collection,
+        typeParameterOverride = "Document",
+        access = {CitizenAccess.class, CaseworkerAccess.class}
+    )
+    private List<ListValue<Document>> rentStatementDocuments;
+
+    @CCD(
+        label = "Total rent arrears",
+        typeOverride = FieldType.MoneyGBP,
+        access = {CitizenAccess.class, CaseworkerAccess.class}
+    )
+    private String totalRentArrears;
+
+    @CCD(
+        label = "",
+        hint = "This could include payments from Universal Credit, Housing Benefit or any other contributions made by a government agency, like the Department for Work and Pensions (DWP).",
+        access = {CitizenAccess.class, CaseworkerAccess.class}
+    )
+    private VerticalYesNo thirdPartyPayments;
+
+    @CCD(
+        label = "Where have the payments come from?",
+        typeOverride = FieldType.MultiSelectList,
+        typeParameterOverride = "ThirdPartyPaymentSource",
+        showCondition = "thirdPartyPayments=\"YES\"",
+        access = {CitizenAccess.class, CaseworkerAccess.class}
+    )
+    private java.util.List<ThirdPartyPaymentSource> thirdPartyPaymentSources;
+
+    @CCD(
+        label = "Payment source",
+        showCondition = "thirdPartyPayments=\"YES\" AND thirdPartyPaymentSources CONTAINS \"OTHER\"",
+        access = {CitizenAccess.class, CaseworkerAccess.class}
+    )
+    private String thirdPartyPaymentSourceOther;
 
 }
