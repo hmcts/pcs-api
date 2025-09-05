@@ -5,9 +5,13 @@ import lombok.Builder;
 import lombok.Data;
 import uk.gov.hmcts.ccd.sdk.External;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
+
+import static uk.gov.hmcts.ccd.sdk.type.FieldType.DynamicRadioList;
+
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.FieldType;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
+import uk.gov.hmcts.ccd.sdk.type.WaysToPay;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseworkerAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenAccess;
@@ -20,7 +24,7 @@ import static uk.gov.hmcts.ccd.sdk.type.FieldType.DynamicRadioList;
 import static uk.gov.hmcts.ccd.sdk.type.FieldType.TextArea;
 
 /**
- * The main domain model representing a possessions case.
+ * The main domain model representing a possession case.
  */
 @Builder
 @Data
@@ -262,5 +266,12 @@ public class PCSCase {
 
     @CCD(access = {CitizenAccess.class, CaseworkerAccess.class})
     private List<ListValue<DefendantDetails>> defendants;
+
+    @CCD(
+        searchable = false,
+        access = CaseworkerAccess.class,
+        label = "Ways to pay"
+    )
+    private WaysToPay waysToPay;
 
 }

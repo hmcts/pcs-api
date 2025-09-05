@@ -8,7 +8,7 @@ java:
     pcs:
       secrets:
         - name: app-insights-connection-string
-        - name: pcs-api-s2s-secret
+        - name: pcs-api-s2s-secret-temp
           alias: PCS_API_S2S_SECRET
         - name: govnotify-test-key
           alias: PCS_NOTIFY_API_KEY
@@ -16,9 +16,9 @@ java:
           alias: HEARINGS_SERVICEBUS_CONNECTION_STRING
         - name: pcs-api-idam-secret
           alias: IDAM_CLIENT_SECRET
-        - name: idam-system-user-name
+        - name: idam-system-user-name-temp
           alias: PCS_IDAM_SYSTEM_USERNAME
-        - name: idam-system-user-password
+        - name: idam-system-user-password-temp
           alias: PCS_IDAM_SYSTEM_PASSWORD
   environment:
     PCS_DB_HOST: "{{ .Release.Name }}-postgresql"
