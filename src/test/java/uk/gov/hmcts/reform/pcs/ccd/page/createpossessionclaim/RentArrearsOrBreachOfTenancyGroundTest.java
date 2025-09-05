@@ -7,8 +7,6 @@ import org.junit.jupiter.params.provider.MethodSource;
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
 import uk.gov.hmcts.ccd.sdk.api.Event;
 import uk.gov.hmcts.ccd.sdk.api.callback.MidEvent;
-import uk.gov.hmcts.ccd.sdk.type.DynamicListElement;
-import uk.gov.hmcts.ccd.sdk.type.DynamicMultiSelectList;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
@@ -16,10 +14,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsOrBreachOfTenancy;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.UUID;
-import java.util.stream.Collectors;
+import java.util.Set;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
@@ -37,13 +32,13 @@ public class RentArrearsOrBreachOfTenancyGroundTest extends BasePageTest {
     @ParameterizedTest
     @MethodSource("midEventScenarios")
     void shouldSetDisplayFlagsInMidEventCallback(
-        List<RentArrearsOrBreachOfTenancy> rentAreasOrBreach,
+        Set<RentArrearsOrBreachOfTenancy> rentAreasOrBreach,
         YesOrNo expectedShowBreachOfTenancyTextarea) {
 
         // Given
         CaseDetails<PCSCase, State> caseDetails = new CaseDetails<>();
         PCSCase caseData = PCSCase.builder()
-            .rentAreasOrBreachOfTenancy(buildDynamicMultiSelectList(rentAreasOrBreach))
+            .rentArrearsOrBreachOfTenancy(rentAreasOrBreach)
             .build();
         caseDetails.setData(caseData);
 
@@ -58,36 +53,23 @@ public class RentArrearsOrBreachOfTenancyGroundTest extends BasePageTest {
     private static Stream<Arguments> midEventScenarios() {
         return Stream.of(
             arguments(
-                List.of(RentArrearsOrBreachOfTenancy.BREACH_OF_TENANCY),
+                Set.of(RentArrearsOrBreachOfTenancy.BREACH_OF_TENANCY),
                 YesOrNo.YES
             ),
             arguments(
-                List.of(RentArrearsOrBreachOfTenancy.RENT_ARREARS),
+                Set.of(RentArrearsOrBreachOfTenancy.RENT_ARREARS),
                 YesOrNo.NO
             ),
             arguments(
-                List.of(),
+                Set.of(),
                 YesOrNo.NO
             ),
             arguments(
-                List.of(),
+                Set.of(),
                 YesOrNo.NO
             )
         );
     }
 
-    private static DynamicMultiSelectList buildDynamicMultiSelectList(List<RentArrearsOrBreachOfTenancy> selected) {
-        List<DynamicListElement> allOptions = Arrays.stream(RentArrearsOrBreachOfTenancy.values())
-            .map(e -> new DynamicListElement(UUID.randomUUID(), e.getLabel()))
-            .collect(Collectors.toList());
 
-        List<DynamicListElement> selectedElements = selected.stream()
-            .map(e -> new DynamicListElement(UUID.randomUUID(), e.getLabel()))
-            .collect(Collectors.toList());
-
-        return DynamicMultiSelectList.builder()
-            .listItems(allOptions)
-            .value(selectedElements)
-            .build();
-    }
 }

@@ -15,8 +15,10 @@ import java.util.Set;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class PossessionGrounds {
 
-    private Set<String> selectedMandatoryGrounds;
-    private Set<String> selectedDiscretionaryGrounds;
+    private Set<String> mandatoryGrounds;
+    private Set<String> discretionaryGrounds;
+    private Set<String> mandatoryGroundsAlternativeAccommodation;
+    private Set<String> discretionaryGroundsAlternativeAccommodation;
 
     private SecureOrFlexibleReasonsForGrounds secureOrFlexibleReasonsForGrounds;
 

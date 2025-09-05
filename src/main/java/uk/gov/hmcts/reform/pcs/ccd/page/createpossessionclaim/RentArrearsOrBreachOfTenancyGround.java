@@ -14,30 +14,26 @@ public class RentArrearsOrBreachOfTenancyGround implements CcdPageConfiguration 
     @Override
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
-            .page("rentArrearsOrBreachOfTenancyGround",this::midEvent)
+            .page("rentArrearsOrBreachOfTenancyGround", this::midEvent)
             .pageLabel("Rent arrears or breach of tenancy (ground 1)")
             .showCondition("typeOfTenancyLicence=\"SECURE_TENANCY\" OR typeOfTenancyLicence=\"FLEXIBLE_TENANCY\""
-                               + " AND selectedSecureOrFlexibleDiscretionaryGroundsCONTAINS"
+                               + " AND secureOrFlexibleDiscretionaryGroundsCONTAINS"
                                + "\"RENT_ARREARS_OR_BREACH_OF_TENANCY\"")
             .label("rentArrearsOrBreachOfTenancyGround-lineSeparator", "---")
-            .mandatory(PCSCase::getRentAreasOrBreachOfTenancy);
+            .mandatory(PCSCase::getRentArrearsOrBreachOfTenancy);
     }
-
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
                                                                   CaseDetails<PCSCase, State> detailsBefore) {
         PCSCase caseData = details.getData();
-        if (caseData.getRentAreasOrBreachOfTenancy().getValue().stream()
-                .anyMatch(item -> RentArrearsOrBreachOfTenancy.BREACH_OF_TENANCY.getLabel()
-                    .equals(item.getLabel()))) {
-
+        if (caseData.getRentArrearsOrBreachOfTenancy().contains(RentArrearsOrBreachOfTenancy.BREACH_OF_TENANCY)) {
             caseData.setShowBreachOfTenancyTextarea(YesOrNo.YES);
         } else {
             caseData.setShowBreachOfTenancyTextarea(YesOrNo.NO);
         }
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
-            .data(caseData)
-            .build();
+                .data(caseData)
+                .build();
     }
 
 }

@@ -10,7 +10,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
 import uk.gov.hmcts.ccd.sdk.api.Event;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
-import uk.gov.hmcts.ccd.sdk.type.DynamicMultiSelectList;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
@@ -27,7 +26,7 @@ import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.pcs.config.ClockConfiguration.UK_ZONE_ID;
 
 @ExtendWith(MockitoExtension.class)
-class TenancyLicenceTest  extends BasePageTest {
+class TenancyLicenceTest extends BasePageTest {
 
     private static final LocalDate FIXED_CURRENT_DATE = LocalDate.of(2025, 8, 27);
 
@@ -45,7 +44,7 @@ class TenancyLicenceTest  extends BasePageTest {
 
     @ParameterizedTest
     @MethodSource("tenancyDateScenarios")
-        void shouldThrowErrorWhenDateIsTodayOrInTheFuture(LocalDate date, Boolean isValid) {
+    void shouldValidateTenancyLicenceDate(LocalDate date, Boolean isValid) {
         // Given
         CaseDetails<PCSCase, State> caseDetails = new CaseDetails<>();
 
@@ -58,7 +57,7 @@ class TenancyLicenceTest  extends BasePageTest {
 
         // When
         AboutToStartOrSubmitResponse<PCSCase, State> response =
-            getMidEventForPage(event, "tenancyLicenceDetails").handle(caseDetails,null);
+            getMidEventForPage(event, "tenancyLicenceDetails").handle(caseDetails, null);
 
         // Then
         if (!isValid) {
@@ -69,33 +68,20 @@ class TenancyLicenceTest  extends BasePageTest {
             assertThat(response.getData().getTenancyLicenceDate())
                 .isEqualTo(date);
 
-            DynamicMultiSelectList discretionaryGrounds = caseData.getSecureOrFlexibleDiscretionaryGrounds();
-            DynamicMultiSelectList discretionaryGroundsAlt = caseData
-                .getSecureOrFlexibleDiscretionaryGroundsAlternativeAccommodation();
-            DynamicMultiSelectList mandatoryGrounds = caseData.getSecureOrFlexibleMandatoryGrounds();
-            DynamicMultiSelectList mandatoryGroundsAlt = caseData
-                .getSecureOrFlexibleMandatoryGroundsAlternativeAccommodation();
-
-            assertThat(discretionaryGrounds).isNotNull();
-            assertThat(discretionaryGroundsAlt).isNotNull();
-            assertThat(mandatoryGrounds).isNotNull();
-            assertThat(mandatoryGroundsAlt).isNotNull();
-
-            assertThat(discretionaryGrounds.getValue()).isEmpty();
-            assertThat(discretionaryGroundsAlt.getValue()).isEmpty();
-            assertThat(mandatoryGrounds.getValue()).isEmpty();
-            assertThat(mandatoryGroundsAlt.getValue()).isEmpty();
+            assertThat(caseData.getSecureOrFlexibleDiscretionaryGrounds()).isEmpty();
+            assertThat(caseData.getSecureOrFlexibleDiscretionaryGroundsAlt()).isEmpty();
+            assertThat(caseData.getSecureOrFlexibleMandatoryGrounds()).isEmpty();
+            assertThat(caseData.getSecureOrFlexibleMandatoryGroundsAlt()).isEmpty();
+            assertThat(caseData.getRentArrearsOrBreachOfTenancy()).isEmpty();
         }
-
     }
 
     private static Stream<Arguments> tenancyDateScenarios() {
         return Stream.of(
-           arguments(FIXED_CURRENT_DATE.plusDays(1), false),
-           arguments(FIXED_CURRENT_DATE, false),
-           arguments(FIXED_CURRENT_DATE.minusDays(1), true),
-           arguments(FIXED_CURRENT_DATE.minusYears(5), true)
+            arguments(FIXED_CURRENT_DATE.plusDays(1), false),
+            arguments(FIXED_CURRENT_DATE, false),             // today
+            arguments(FIXED_CURRENT_DATE.minusDays(1), true),
+            arguments(FIXED_CURRENT_DATE.minusYears(5), true)
         );
     }
-
 }

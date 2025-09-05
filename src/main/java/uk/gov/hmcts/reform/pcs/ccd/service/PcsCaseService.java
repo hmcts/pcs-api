@@ -8,9 +8,11 @@ import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantDetails;
-import uk.gov.hmcts.reform.pcs.ccd.domain.DiscretionaryGrounds;
-import uk.gov.hmcts.reform.pcs.ccd.domain.MandatoryGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.SecureOrFlexibleDiscretionaryGrounds;
+import uk.gov.hmcts.reform.pcs.ccd.domain.SecureOrFlexibleDiscretionaryGroundsAlternativeAccomm;
+import uk.gov.hmcts.reform.pcs.ccd.domain.SecureOrFlexibleMandatoryGrounds;
+import uk.gov.hmcts.reform.pcs.ccd.domain.SecureOrFlexibleMandatoryGroundsAlternativeAccomm;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicence;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
@@ -29,7 +31,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
@@ -191,29 +195,32 @@ public class PcsCaseService {
     }
 
     public PossessionGrounds buildPossessionGrounds(PCSCase pcsCase) {
-        SecureOrFlexibleReasonsForGrounds reasons =
-            Optional.ofNullable(pcsCase.getSecureOrFlexibleGroundsReasons())
-                .map(grounds -> modelMapper.map(grounds,
-                                                SecureOrFlexibleReasonsForGrounds.class))
-                .orElse(SecureOrFlexibleReasonsForGrounds.builder().build());
+        SecureOrFlexibleReasonsForGrounds reasons = Optional.ofNullable(pcsCase.getSecureOrFlexibleGroundsReasons())
+            .map(grounds -> modelMapper.map(grounds,
+                                            SecureOrFlexibleReasonsForGrounds.class))
+            .orElse(SecureOrFlexibleReasonsForGrounds.builder().build());
+
         return PossessionGrounds.builder()
-            .selectedDiscretionaryGrounds(
-                Optional.ofNullable(pcsCase.getSelectedSecureOrFlexibleDiscretionaryGrounds())
-                    .orElse(Collections.emptySet())
-                    .stream()
-                    .map(DiscretionaryGrounds::getLabel)
-                    .collect(Collectors.toSet())
-            )
-            .selectedMandatoryGrounds(
-                Optional.ofNullable(pcsCase.getSelectedSecureOrFlexibleMandatoryGrounds())
-                    .orElse(Collections.emptySet())
-                    .stream()
-                    .map(MandatoryGrounds::getLabel)
-                    .collect(Collectors.toSet())
-            )
+            .discretionaryGrounds(mapToLabels(pcsCase.getSecureOrFlexibleDiscretionaryGrounds(),
+                                              SecureOrFlexibleDiscretionaryGrounds::getLabel))
+            .mandatoryGrounds(mapToLabels(pcsCase.getSecureOrFlexibleMandatoryGrounds(),
+                                          SecureOrFlexibleMandatoryGrounds::getLabel))
+            .discretionaryGroundsAlternativeAccommodation(mapToLabels(
+                pcsCase.getSecureOrFlexibleDiscretionaryGroundsAlt(),
+                SecureOrFlexibleDiscretionaryGroundsAlternativeAccomm::getLabel))
+            .mandatoryGroundsAlternativeAccommodation(mapToLabels(
+                pcsCase.getSecureOrFlexibleMandatoryGroundsAlt(),
+                SecureOrFlexibleMandatoryGroundsAlternativeAccomm::getLabel))
             .secureOrFlexibleReasonsForGrounds(reasons)
             .build();
-    }
+        }
+    private <T> Set<String> mapToLabels(Set<T> items, Function<T, String> enumMapper) {
+        return Optional.ofNullable(items)
+            .orElse(Collections.emptySet())
+            .stream()
+            .map(enumMapper)
+            .collect(Collectors.toSet());
+        }
 
     private static Boolean toBooleanOrNull(YesOrNo yesOrNo) {
         return yesOrNo != null ? yesOrNo.toBoolean() : null;

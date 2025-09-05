@@ -6,28 +6,23 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
 import uk.gov.hmcts.ccd.sdk.api.Event;
-import uk.gov.hmcts.ccd.sdk.api.HasLabel;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
-import uk.gov.hmcts.ccd.sdk.type.DynamicListElement;
-import uk.gov.hmcts.ccd.sdk.type.DynamicMultiSelectList;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
-import uk.gov.hmcts.reform.pcs.ccd.domain.DiscretionaryGrounds;
-import uk.gov.hmcts.reform.pcs.ccd.domain.MandatoryGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.SecureOrFlexibleDiscretionaryGrounds;
+import uk.gov.hmcts.reform.pcs.ccd.domain.SecureOrFlexibleDiscretionaryGroundsAlternativeAccomm;
+import uk.gov.hmcts.reform.pcs.ccd.domain.SecureOrFlexibleMandatoryGrounds;
+import uk.gov.hmcts.reform.pcs.ccd.domain.SecureOrFlexibleMandatoryGroundsAlternativeAccomm;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
-import java.util.UUID;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.SecureOrFlexibleDiscretionaryGrounds.RENT_ARREARS_OR_BREACH_OF_TENANCY;
 
 public class SecureOrFlexibleGroundsForPossessionTest extends BasePageTest {
 
@@ -40,21 +35,20 @@ public class SecureOrFlexibleGroundsForPossessionTest extends BasePageTest {
 
     @ParameterizedTest
     @MethodSource("groundsScenarios")
-    void shouldMergeDynamicMultiSelectListsIntoMultiSelectLists(
-            List<DiscretionaryGrounds> discretionaryList1,
-            List<DiscretionaryGrounds> discretionaryList2,
-            List<MandatoryGrounds> mandatoryList1,
-            List<MandatoryGrounds> mandatoryList2,
+    void shouldSetSelectedGroundsAndShowReasonsFlag(
+            Set<SecureOrFlexibleDiscretionaryGrounds> discretionaryGrounds,
+            Set<SecureOrFlexibleDiscretionaryGroundsAlternativeAccomm> discretionaryGroundsAlt,
+            Set<SecureOrFlexibleMandatoryGrounds> mandatoryGrounds,
+            Set<SecureOrFlexibleMandatoryGroundsAlternativeAccomm> mandatoryGroundsAlt,
             boolean expectError,
             YesOrNo expectedShowReasonsPage) {
 
         // Given
         PCSCase caseData = PCSCase.builder()
-                .secureOrFlexibleDiscretionaryGrounds(toDynamicMultiSelectList(discretionaryList1))
-                .secureOrFlexibleDiscretionaryGroundsAlternativeAccommodation(
-                        toDynamicMultiSelectList(discretionaryList2))
-                .secureOrFlexibleMandatoryGrounds(toDynamicMultiSelectList(mandatoryList1))
-                .secureOrFlexibleMandatoryGroundsAlternativeAccommodation(toDynamicMultiSelectList(mandatoryList2))
+                .secureOrFlexibleDiscretionaryGrounds(discretionaryGrounds)
+                .secureOrFlexibleDiscretionaryGroundsAlt(discretionaryGroundsAlt)
+                .secureOrFlexibleMandatoryGrounds(mandatoryGrounds)
+                .secureOrFlexibleMandatoryGroundsAlt(mandatoryGroundsAlt)
                 .build();
 
         CaseDetails<PCSCase, State> caseDetails = new CaseDetails<>();
@@ -65,79 +59,68 @@ public class SecureOrFlexibleGroundsForPossessionTest extends BasePageTest {
                 getMidEventForPage(event, "secureOrFlexibleGroundsForPossession")
                         .handle(caseDetails, null);
 
+        PCSCase updatedCaseData = response.getData();
+
         // Then
         if (expectError) {
             assertThat(response.getErrors()).containsExactly("Please select at least one ground");
         } else {
-            Set<DiscretionaryGrounds> expectedDiscretionary = new HashSet<>(discretionaryList1);
-            expectedDiscretionary.addAll(discretionaryList2);
 
-            Set<MandatoryGrounds> expectedMandatory = new HashSet<>(mandatoryList1);
-            expectedMandatory.addAll(mandatoryList2);
+            assertThat(updatedCaseData.getShowReasonsForGroundsPage()).isEqualTo(expectedShowReasonsPage);
 
-            assertThat(caseData.getSelectedSecureOrFlexibleDiscretionaryGrounds()).isEqualTo(expectedDiscretionary);
-            assertThat(caseData.getSelectedSecureOrFlexibleMandatoryGrounds()).isEqualTo(expectedMandatory);
-            assertThat(response.getErrors()).isNull();
-            assertThat(caseData.getShowReasonsForGroundsPage()).isEqualTo(expectedShowReasonsPage);
+            if (!discretionaryGrounds.contains(RENT_ARREARS_OR_BREACH_OF_TENANCY)) {
+                assertThat(updatedCaseData.getRentArrearsOrBreachOfTenancy()).isEmpty();
+            }
         }
-    }
-
-    private <T extends HasLabel> DynamicMultiSelectList toDynamicMultiSelectList(List<T> grounds) {
-        if (grounds == null || grounds.isEmpty()) {
-            return DynamicMultiSelectList.builder().value(Collections.emptyList()).build();
-        }
-        List<DynamicListElement> elements = grounds.stream()
-                .map(g -> new DynamicListElement(UUID.randomUUID(), g.getLabel()))
-                .collect(Collectors.toList());
-
-        return DynamicMultiSelectList.builder().value(elements).build();
     }
 
     private static Stream<Arguments> groundsScenarios() {
         return Stream.of(
+                //Only one discretionary ground
                 arguments(
-                        List.of(DiscretionaryGrounds.RIOT_OFFENCE),
-                        List.of(),
-                        List.of(),
-                        List.of(),
+                        Set.of(SecureOrFlexibleDiscretionaryGrounds.RIOT_OFFENCE),
+                        Set.of(),
+                        Set.of(),
+                        Set.of(),
                         false,
                         YesOrNo.YES
                 ),
-
+                // No grounds selected → expect error
                 arguments(
-                        List.of(),
-                        List.of(),
-                        List.of(),
-                        List.of(),
+                        Set.of(),
+                        Set.of(),
+                        Set.of(),
+                        Set.of(),
                         true,
-                        null),
-
+                        null
+                ),
+                // Mixed discretionary and mandatory grounds
                 arguments(
-                        List.of(DiscretionaryGrounds.NUISANCE_OR_IMMORAL_USE),
-                        List.of(DiscretionaryGrounds.DOMESTIC_VIOLENCE),
-                        List.of(), List.of(MandatoryGrounds.OVERCROWDING),
+                        Set.of(SecureOrFlexibleDiscretionaryGrounds.NUISANCE_OR_IMMORAL_USE),
+                        Set.of(SecureOrFlexibleMandatoryGroundsAlternativeAccomm.PROPERTY_SOLD),
+                        Set.of(),
+                        Set.of(SecureOrFlexibleMandatoryGroundsAlternativeAccomm.OVERCROWDING),
                         false,
                         YesOrNo.YES
                 ),
-
-                arguments(List.of(), List.of(),
-                        List.of(MandatoryGrounds.PROPERTY_SOLD),
-                        List.of(MandatoryGrounds.CHARITABLE_LANDLORD),
+                // Only mandatory grounds
+                arguments(
+                        Set.of(),
+                        Set.of(),
+                        Set.of(SecureOrFlexibleMandatoryGrounds.ANTI_SOCIAL),
+                        Set.of(SecureOrFlexibleMandatoryGroundsAlternativeAccomm.CHARITABLE_LANDLORD),
                         false,
                         YesOrNo.YES
                 ),
-
-                arguments(List.of(DiscretionaryGrounds.RENT_ARREARS_OR_BREACH_OF_TENANCY),
-                        List.of(),
-                        List.of(),
-                        List.of(),
+                // Only RENT_ARREARS_OR_BREACH_OF_TENANCY → ShowReasons NO
+                arguments(
+                        Set.of(RENT_ARREARS_OR_BREACH_OF_TENANCY),
+                        Set.of(),
+                        Set.of(),
+                        Set.of(),
                         false,
                         YesOrNo.NO
                 )
         );
     }
-
 }
-
-
-
