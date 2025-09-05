@@ -11,7 +11,8 @@ export class InputTextAction implements IAction {
            label:has-text("${fieldName}") ~ input,
            [aria-label="${fieldName}"],
            label:has-text("${fieldName}")+ div input,
-           [placeholder="${fieldName}"]`);
+           [placeholder="${fieldName}"],
+           h2:has-text("${fieldName}") >> xpath=ancestor::ccd-label-field/following::ccd-field-write[1]//textarea`).first();
     await locator.fill(value);
   }
 }

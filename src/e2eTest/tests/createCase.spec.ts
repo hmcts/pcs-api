@@ -17,6 +17,9 @@ import { rentDetails } from '@data/page-data/rentDetails.page.data';
 import { userIneligible } from '@data/page-data/userIneligible.page.data';
 import { detailsOfrentArrears } from '@data/page-data/detailsOfrentArrears.page.data';
 import { defendantDetails } from "@data/page-data/defendantDetails.page.data";
+import {tenancyLicenceDetails} from "@data/page-data/tenancyLicenceDetails.page.data";
+import {secureOrFlexibleGrounds} from "@data/page-data/secureOrFlexibleGrounds.page.data";
+import {rentArrearsOrBreachOfTenancy} from "@data/page-data/rentArrearsOrBreachOfTenancy.page.data";
 
 test.beforeEach(async ({page}, testInfo) => {
   initializeExecutor(page);
@@ -32,7 +35,7 @@ test.beforeEach(async ({page}, testInfo) => {
   await performAction('housingPossessionClaim');
 });
 
-test.describe.skip('[Create Case Flow With Address and Claimant Type]  @Master @nightly', async () => {
+test.describe('[Create Case Flow With Address and Claimant Type]  @Master @nightly', async () => {
   test('England - Successful case creation', async () => {
     await performAction('selectAddress', {
       postcode: addressDetails.englandPostcode,
@@ -196,8 +199,17 @@ test.describe.skip('[Create Case Flow With Address and Claimant Type]  @Master @
       correspondenceAddress: defendantDetails.no,
       email: defendantDetails.no,
     });
+    await performAction('selectTenancyOrLicenceDetails', {
+      tenancyOrLicenceType: tenancyLicenceDetails.secureTenancy});
+    await performAction('selectSecureFlexiblePossessionGround', {
+      discretionary: [secureOrFlexibleGrounds.discretionary.rentArrearsOrBreachOfTenancy, secureOrFlexibleGrounds.discretionary.deteriorationOfFurniture],
+      mandatory: [secureOrFlexibleGrounds.mandatory.antiSocialBehaviour],
+      mandatoryAccommodation: [secureOrFlexibleGrounds.mandatoryWithAccommodation.charitableLandlords,secureOrFlexibleGrounds.mandatoryWithAccommodation.landlordsWorks],
+      discretionaryAccommodation: [secureOrFlexibleGrounds.discretionaryWithAccommodation.adapted,secureOrFlexibleGrounds.discretionaryWithAccommodation.tied],
+      rentArrearsOrBreach: [rentArrearsOrBreachOfTenancy.breachOfTenancy, rentArrearsOrBreachOfTenancy.rentArrears]
+    })
     await performValidation('mainHeader', groundsForPossession.mainHeader);
-    await performAction('selectGroundsForPossission', groundsForPossession.yes);
+    await performAction('selectGroundsForPossession', groundsForPossession.yes);
     await performAction('selectPreActionProtocol', preActionProtocol.yes);
     await performAction('selectMediationAndSettlement', {
       attemptedMediationWithDefendantsOption: mediationAndSettlement.yes,

@@ -14,6 +14,7 @@ import { contactPreferences } from '@data/page-data/contactPreferences.page.data
 import { mediationAndSettlement } from '@data/page-data/mediationAndSettlement.page.data';
 import { rentDetails } from '@data/page-data/rentDetails.page.data';
 import {tenancyLicenceDetails} from "@data/page-data/tenancyLicenceDetails.page.data";
+import {secureOrFlexibleGrounds} from "@data/page-data/secureOrFlexibleGrounds.page.data";
 
 let caseInfo: { id: string; fid: string; state: string };
 const testConfig = TestConfig.ccdCase;
@@ -43,6 +44,7 @@ export class CreateCaseAction implements IAction {
       ['selectNoticeOfYourIntention', () => this.selectNoticeOfYourIntention(fieldName)],
       ['selectCountryRadioButton', () => this.selectCountryRadioButton(fieldName)],
       ['selectTenancyOrLicenceDetails', () => this.selectTenancyOrLicenceDetails(fieldName)],
+      ['selectSecureFlexiblePossessionGround', () => this.selectSecureFlexiblePossessionGround(page, fieldName)],
       ['provideRentDetails', () => this.provideRentDetails(fieldName)]
     ]);
     const actionToPerform = actionsMap.get(action);
@@ -204,6 +206,9 @@ private async defendantDetails(defendantVal: actionData) {
       files?: string[];
     };
     await performAction('clickRadioButton', tenancyLicenceData.tenancyOrLicenceType);
+    if (tenancyLicenceData.tenancyOrLicenceType === 'Flexible tenancy' || 'Secure tenancy'){
+
+    }
     if (tenancyLicenceData.tenancyOrLicenceType === 'Other') {
       await performAction('inputText', 'Give details of the type of tenancy or licence agreement that\'s in place', tenancyLicenceDetails.detailsOfLicence);
     }
@@ -220,6 +225,41 @@ private async defendantDetails(defendantVal: actionData) {
     }
     await performAction('clickButton', 'Continue');
   }
+
+  private async selectSecureFlexiblePossessionGround(page: Page, secureFlexiblePossessionGrounds: actionData) {
+    const possessionGrounds = secureFlexiblePossessionGrounds as {
+      mandatory: string[];
+      mandatoryAccommodation: string[];
+      discretionary: string[];
+      discretionaryAccommodation: string;
+      rentArrearsOrBreach?: string[];
+    };
+    for (const ground of possessionGrounds.discretionary) {
+      await performAction('check', ground);
+    }
+    for (const ground of possessionGrounds.mandatory) {
+      await performAction('check', ground);
+    }
+    for (const ground of possessionGrounds.mandatoryAccommodation) {
+      await performAction('check', ground);
+    }
+    for (const ground of possessionGrounds.discretionaryAccommodation) {
+      await performAction('check', ground);
+    }
+    await page.waitForTimeout(30_000);
+    await performAction('clickButton', 'Continue');
+    if(possessionGrounds.discretionary.includes(secureOrFlexibleGrounds.discretionary.rentArrearsOrBreachOfTenancy)) {
+      if ( possessionGrounds.rentArrearsOrBreach ) {
+        for (const ground of possessionGrounds.rentArrearsOrBreach) {
+          await performAction('check', ground);
+        }
+      }
+      await page.waitForTimeout(30_000);
+      await performAction('clickButton', 'Continue');
+    }
+
+  }
+
 
   private async selectMediationAndSettlement(mediationSettlement: actionData) {
     const prefData = mediationSettlement as {
