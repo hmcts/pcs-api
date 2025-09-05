@@ -40,11 +40,13 @@ import static jakarta.persistence.FetchType.LAZY;
 @NoArgsConstructor
 @AllArgsConstructor
 @NamedEntityGraph(
-    name = "PcsCaseEntity.parties",
+    name = "PcsCaseEntity.partiesAndDocuments",
     attributeNodes = {
-        @NamedAttributeNode("parties")
+        @NamedAttributeNode("parties"),
+        @NamedAttributeNode("documents")
     }
 )
+
 public class PcsCaseEntity {
 
     @Id
@@ -85,4 +87,28 @@ public class PcsCaseEntity {
         party.setPcsCase(this);
     }
 
+    @OneToMany(mappedBy = "pcsCase", fetch = LAZY, cascade = ALL, orphanRemoval = true)
+    @Builder.Default
+    @JsonManagedReference
+    private Set<DocumentEntity> documents = new HashSet<>();
+
+    public void addDocumentCategoryA(DocumentEntity document) {
+        document.setPcsCase(this);
+        document.setCategory(DocumentCategory.CATEGORY_A);
+        documents.add(document);
+    }
+
+    public void addDocumentCategoryB(DocumentEntity document) {
+        document.setPcsCase(this);
+        document.setCategory(DocumentCategory.CATEGORY_B);
+        documents.add(document);
+    }
+
+    public void addDocument(DocumentEntity document, DocumentCategory category) {
+        switch (category) {
+            case CATEGORY_A -> addDocumentCategoryA(document);
+            case CATEGORY_B -> addDocumentCategoryB(document);
+            default -> throw new IllegalArgumentException("Unsupported document category: " + category);
+        }
+    }
 }
