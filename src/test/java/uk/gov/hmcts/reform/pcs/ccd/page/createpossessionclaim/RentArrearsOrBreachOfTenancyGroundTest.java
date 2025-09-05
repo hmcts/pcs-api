@@ -63,10 +63,6 @@ public class RentArrearsOrBreachOfTenancyGroundTest extends BasePageTest {
             arguments(
                 Set.of(),
                 YesOrNo.NO
-            ),
-            arguments(
-                Set.of(),
-                YesOrNo.NO
             )
         );
     }
