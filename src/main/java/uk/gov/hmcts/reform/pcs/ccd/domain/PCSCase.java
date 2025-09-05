@@ -331,7 +331,7 @@ public class PCSCase {
         access = { CaseworkerAccess.class }
     )
     private Set<NoRentArrearsDiscretionaryGrounds> discretionaryGroundsOptionsList;
-    
+
     @CCD(access = {CaseworkerAccess.class})
     private ReasonForGrounds reasonForGrounds;
 

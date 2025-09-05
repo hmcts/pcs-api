@@ -21,13 +21,12 @@ public enum NoRentArrearsDiscretionaryGrounds implements HasLabel {
     LANDLORD_EMPLOYEE("Employee of the landlord (ground 16)"),
     FALSE_STATEMENT("Tenancy obtained by false statement (ground 17)");
 
+    private final String label;
 
-        private final String label;
-
-        public static NoRentArrearsDiscretionaryGrounds fromLabel(String label) {
-            return Arrays.stream(values())
-                .filter(g -> g.getLabel().equals(label))
-                .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("No enum constant with label: " + label));
-        }
+    public static NoRentArrearsDiscretionaryGrounds fromLabel(String label) {
+        return Arrays.stream(values())
+            .filter(g -> g.getLabel().equals(label))
+            .findFirst()
+            .orElseThrow(() -> new IllegalArgumentException("No enum constant with label: " + label));
+    }
 }
