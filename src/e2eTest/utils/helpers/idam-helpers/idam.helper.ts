@@ -148,7 +148,6 @@ export async function getS2SToken(): Promise<string> {
     }
     return result;
   });
-
 };
 
 let authToken: string = '';
