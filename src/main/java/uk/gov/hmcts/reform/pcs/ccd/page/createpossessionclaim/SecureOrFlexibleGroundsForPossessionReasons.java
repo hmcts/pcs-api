@@ -75,7 +75,7 @@ public class SecureOrFlexibleGroundsForPossessionReasons implements CcdPageConfi
             .label("possessionReasons-furnitureDeterioration-label",
                    """
                    ---
-                 <h2 class="govuk-heading-l">Deterioration of furniture (ground 4)"</h2>
+                 <h2 class="govuk-heading-l">Deterioration of furniture (ground 4)</h2>
                  <h3 class="govuk-heading-m">Why are you making a claim for possession under this ground?</h3>
                  """,
                    "secureOrFlexibleDiscretionaryGroundsCONTAINS\"FURNITURE_DETERIORATION\"")
