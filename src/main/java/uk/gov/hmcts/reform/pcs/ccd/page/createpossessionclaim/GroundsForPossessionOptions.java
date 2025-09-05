@@ -40,8 +40,8 @@ public class GroundsForPossessionOptions implements CcdPageConfiguration {
                         if you need to.</p>""")
                 .label("groundsForPossessionOptions-information-link",
                         "<p class=\"govuk-body\"><a href=\"javascript:void(0)\" "
-                                + "class=\"govuk-link\">More information about possession grounds " +
-                                "(opens in new tab)</a>.</p>")
+                                + "class=\"govuk-link\">More information about possession grounds "
+                                + "(opens in new tab)</a>.</p>")
                 .optional(PCSCase::getMandatoryGroundsOptionsList)
                 .optional(PCSCase::getDiscretionaryGroundsOptionsList);
 
