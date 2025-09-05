@@ -297,7 +297,7 @@ ext {
   lombokVersion = "1.18.40"
   springSecurityVersion = "6.5.3"
   pactVersion = "4.6.17"
-  tomcatEmbedVersion = "11.0.10"
+  tomcatEmbedVersion = "11.0.11"
 }
 
 ext['snakeyaml.version'] = '2.0'
@@ -335,7 +335,7 @@ dependencies {
   implementation group: 'commons-fileupload', name: 'commons-fileupload', version: '1.6.0'
   implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.18.0'
   implementation group: 'org.projectlombok', name: 'lombok', version: lombokVersion
-  implementation group: 'com.github.kagkarlsson', name: 'db-scheduler-spring-boot-starter', version: '16.0.0'
+  implementation group: 'com.github.kagkarlsson', name: 'db-scheduler-spring-boot-starter', version: '16.1.0'
   implementation group: 'org.apache.tomcat.embed', name: 'tomcat-embed-core', version: tomcatEmbedVersion
   implementation group: 'org.apache.tomcat.embed', name: 'tomcat-embed-websocket', version: tomcatEmbedVersion
   annotationProcessor group: 'org.projectlombok', name: 'lombok', version: lombokVersion
