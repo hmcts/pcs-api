@@ -225,9 +225,10 @@ private async defendantDetails(defendantVal: actionData) {
     };
     await performAction('clickRadioButton', noticeDetailsData.howDidYouServeNotice);
     if(noticeDetailsData.day && noticeDetailsData.month &&  noticeDetailsData.year) {
-      await performAction('inputText', 'Day', noticeDetailsData.day);
-      await performAction('inputText', 'Month', noticeDetailsData.month);
-      await performAction('inputText', 'Year', noticeDetailsData.year);
+      await performActions('Enter Day Month Year'
+        ,['inputText', 'Day', noticeDetailsData.day]
+        ,['inputText', 'Month', noticeDetailsData.month]
+        ,['inputText', 'Year', noticeDetailsData.year]);
     }
     await performAction('clickButton', 'Continue');
   }

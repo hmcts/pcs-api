@@ -1,14 +1,19 @@
 import { Page } from '@playwright/test';
-import { IAction } from '../../interfaces/action.interface';
+import { actionRecord, IAction } from '../../interfaces/action.interface';
 
 export class InputTextAction implements IAction {
-  async execute(page: Page, action: string, fieldName: string, value?: string): Promise<void> {
-    if (!value) {
-      throw new Error('inputText action requires a value');
+  async execute(page: Page, action: string, fieldParams: string | actionRecord, value: string): Promise<void> {
+    const locator = typeof fieldParams === 'string'
+      ? page.locator(`:has-text("${fieldParams}") ~ input,
+           label:has-text("${fieldParams}") + textarea,
+           label:has-text("${fieldParams}") + div input`): page.locator(`:has-text("${fieldParams.title}")`)
+        .locator('..')
+        .getByRole('textbox', { name: fieldParams.textbox });
+    try{
+      await locator.fill(value);
     }
-    const locator = page.locator(`:has-text("${fieldName}") ~ input,
-           label:has-text("${fieldName}") + textarea,
-           label:has-text("${fieldName}") + div input`).first();
-    await locator.fill(value);
+    catch(error){
+      await locator.first().fill(value);
+    }
   }
 }
