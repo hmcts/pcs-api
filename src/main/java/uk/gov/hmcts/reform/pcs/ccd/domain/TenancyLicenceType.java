@@ -9,7 +9,7 @@ import uk.gov.hmcts.ccd.sdk.api.HasLabel;
 public enum TenancyLicenceType implements HasLabel {
 
     ASSURED_TENANCY("Assured tenancy"),
-    SECURED_TENANCY("Secured tenancy"),
+    SECURE_TENANCY("Secure tenancy"),
     INTRODUCTORY_TENANCY("Introductory tenancy"),
     FLEXIBLE_TENANCY("Flexible tenancy"),
     DEMOTED_TENANCY("Demoted tenancy"),

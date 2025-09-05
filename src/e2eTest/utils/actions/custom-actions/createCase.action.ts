@@ -8,9 +8,11 @@ import { performAction, performActions, performValidation } from '@utils/control
 import { createCase } from '@data/page-data/createCase.page.data';
 import { addressDetails } from '@data/page-data/addressDetails.page.data';
 import { housingPossessionClaim } from '@data/page-data/housingPossessionClaim.page.data';
+import { defendantDetails } from "@data/page-data/defendantDetails.page.data";
 import { claimantName } from '@data/page-data/claimantName.page.data';
 import { contactPreferences } from '@data/page-data/contactPreferences.page.data';
 import { mediationAndSettlement } from '@data/page-data/mediationAndSettlement.page.data';
+import { rentDetails } from '@data/page-data/rentDetails.page.data';
 
 let caseInfo: { id: string; fid: string; state: string };
 const testConfig = TestConfig.ccdCase;
@@ -28,16 +30,18 @@ export class CreateCaseAction implements IAction {
       ['selectAddress', () => this.selectAddress(fieldName)],
       ['selectLegislativeCountry', () => this.selectLegislativeCountry(fieldName)],
       ['selectClaimantType', () => this.selectClaimantType(fieldName)],
+      ['defendantDetails', () => this.defendantDetails(fieldName)],
       ['selectJurisdictionCaseTypeEvent', () => this.selectJurisdictionCaseTypeEvent()],
       ['enterTestAddressManually', () => this.enterTestAddressManually()],
       ['selectClaimType', () => this.selectClaimType(fieldName)],
       ['selectClaimantName', () => this.selectClaimantName(fieldName)],
       ['selectContactPreferences', () => this.selectContactPreferences(fieldName)],
-      ['selectGroundsForPossission', () => this.selectGroundsForPossission(fieldName)],
+      ['selectGroundsForPossession', () => this.selectGroundsForPossession(fieldName)],
       ['selectPreActionProtocol', () => this.selectPreActionProtocol(fieldName)],
       ['selectMediationAndSettlement', () => this.selectMediationAndSettlement(fieldName)],
       ['selectNoticeOfYourIntention', () => this.selectNoticeOfYourIntention(fieldName)],
       ['selectCountryRadioButton', () => this.selectCountryRadioButton(fieldName)],
+      ['provideRentDetails', () => this.provideRentDetails(fieldName)]
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) throw new Error(`No action found for '${action}'`);
@@ -87,7 +91,7 @@ export class CreateCaseAction implements IAction {
     await performAction('clickButton', 'Continue');
   }
 
-  private async selectGroundsForPossission(caseData: actionData) {
+  private async selectGroundsForPossession(caseData: actionData) {
     await performAction('clickRadioButton', caseData);
     await performAction('clickButton', 'Continue');
   }
@@ -148,6 +152,47 @@ export class CreateCaseAction implements IAction {
     await performAction('clickButton', 'Continue');
   }
 
+private async defendantDetails(defendantVal: actionData) {
+    const defendantData = defendantVal as {
+      name: string;
+      correspondenceAddress: string;
+      email: string;
+      correspondenceAddressSame?: string
+    };
+    await performAction('clickRadioButton', {
+      question: defendantDetails.doYouKnowTheDefendantName,
+      option: defendantData.name
+    });
+    if (defendantData.name === 'Yes') {
+      await performAction('inputText', defendantDetails.defendantFirstName, defendantDetails.firstNameInput);
+      await performAction('inputText', defendantDetails.defendantLastName, defendantDetails.lastNameInput);
+    }
+    await performAction('clickRadioButton', {
+      question: defendantDetails.defendantCorrespondenceAddress,
+      option: defendantData.correspondenceAddress
+    });
+    if (defendantData.correspondenceAddress === 'Yes') {
+      await performAction('clickRadioButton', {
+        question: defendantDetails.isCorrespondenceAddressSame,
+        option: defendantData.correspondenceAddressSame
+      });
+      if (defendantData.correspondenceAddressSame === 'No') {
+        await performAction('selectAddress', {
+          postcode: addressDetails.englandPostcode,
+          addressIndex: addressDetails.addressIndex
+        });
+      }
+    }
+    await performAction('clickRadioButton', {
+      question: defendantDetails.defendantEmailAddress,
+      option: defendantData.email
+    });
+    if (defendantData.email === 'Yes') {
+      await performAction('inputText', defendantDetails.enterEmailAddress, defendantDetails.emailIdInput);
+    }
+    await performAction('clickButton', 'Continue');
+  }
+
   private async selectMediationAndSettlement(mediationSettlement: actionData) {
     const prefData = mediationSettlement as {
       attemptedMediationWithDefendantsOption: string;
@@ -190,6 +235,23 @@ export class CreateCaseAction implements IAction {
       , ['inputText', 'Postcode/Zipcode', addressDetails.postcode]
       , ['inputText', 'Country', addressDetails.country]
     );
+    await performAction('clickButton', 'Continue');
+  }
+
+  private async provideRentDetails(rentFrequency: actionData) {
+    const rentData = rentFrequency as {
+      rentFrequencyOption: string;
+      rentAmount?: string;
+      unpaidRentAmountPerDay?: string,
+      inputFrequency?: string
+    };
+    await performAction('clickRadioButton', rentData.rentFrequencyOption);
+    if(rentData.rentFrequencyOption == 'Other'){
+      await performAction('inputText', rentDetails.rentFrequencyLabel, rentData.inputFrequency);
+      await performAction('inputText', rentDetails.amountPerDayInputLabel, rentData.unpaidRentAmountPerDay);
+    } else {
+      await performAction('inputText', rentDetails.HowMuchRentLabel, rentData.rentAmount);
+    }
     await performAction('clickButton', 'Continue');
   }
 

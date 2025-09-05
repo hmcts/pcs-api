@@ -1,10 +1,8 @@
 package uk.gov.hmcts.reform.pcs.ccd.domain;
 
 import java.util.List;
-import java.util.Objects;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import lombok.Builder;
 import lombok.Data;
 import uk.gov.hmcts.ccd.sdk.External;
@@ -17,10 +15,9 @@ import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.DiscretionaryGrounds;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
-import java.util.List;
+import java.time.LocalDate;
 import java.util.Set;
 
-import static uk.gov.hmcts.ccd.sdk.type.FieldType.Date;
 import static uk.gov.hmcts.ccd.sdk.type.FieldType.DynamicRadioList;
 import static uk.gov.hmcts.ccd.sdk.type.FieldType.TextArea;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.MandatoryGrounds;
@@ -48,7 +45,7 @@ public class PCSCase {
         searchable = false,
         access = {CitizenAccess.class, CaseworkerAccess.class}
     )
-    private YesOrNo isClaimantNameCorrect;
+    private VerticalYesNo isClaimantNameCorrect;
 
     @CCD(
         access = {CitizenAccess.class, CaseworkerAccess.class}
@@ -227,14 +224,52 @@ public class PCSCase {
     private YesOrNo showClaimTypeNotEligibleWales;
 
     @CCD(
-        label = "What type of tenancy and licence is in place",
-        typeOverride = DynamicRadioList,
-        access = {CaseworkerAccess.class}
+        label = "How much is the rent?",
+        typeOverride = FieldType.MoneyGBP,
+        access = {CitizenAccess.class, CaseworkerAccess.class}
     )
-    private DynamicStringList typeOfTenancyLicence;
+    private String currentRent;
 
     @CCD(
-        label = "Give details of the type of tenancy or licence agreement thats in place",
+        label = "How frequently should rent be paid?",
+        access = {CitizenAccess.class, CaseworkerAccess.class}
+    )
+    private RentPaymentFrequency rentFrequency;
+
+    @CCD(
+        label = "Enter frequency",
+        hint = "Please specify the frequency",
+        access = {CitizenAccess.class, CaseworkerAccess.class}
+    )
+    private String otherRentFrequency;
+
+    @CCD(
+        label = "Enter the amount per day that unpaid rent should be charged at",
+        typeOverride = FieldType.MoneyGBP,
+        access = {CitizenAccess.class, CaseworkerAccess.class}
+    )
+    private String dailyRentChargeAmount;
+
+    @CCD(searchable = false, access = {CitizenAccess.class, CaseworkerAccess.class})
+    private YesOrNo showPostcodeNotAssignedToCourt;
+
+    @CCD(searchable = false, access = {CitizenAccess.class, CaseworkerAccess.class})
+    private String postcodeNotAssignedView;
+
+    @CCD(access = {CitizenAccess.class, CaseworkerAccess.class})
+    private DefendantDetails defendant1;
+
+    @CCD(access = {CitizenAccess.class, CaseworkerAccess.class})
+    private List<ListValue<DefendantDetails>> defendants;
+
+    @CCD(
+        label = "What type of tenancy or licence is in place?",
+        access = {CaseworkerAccess.class}
+    )
+    private TenancyLicenceType typeOfTenancyLicence;
+
+    @CCD(
+        label = "Give details of the type of tenancy or licence agreement that's in place",
         typeOverride = TextArea,
         access = {CaseworkerAccess.class}
     )
@@ -242,23 +277,16 @@ public class PCSCase {
 
     @CCD(
         label = "What date did the tenancy or licence begin?",
-        hint = "Please enter date. For example: 16 4 2021",
-        typeOverride = Date,
+        hint = "For example, 16 4 2021",
         access = {CaseworkerAccess.class}
     )
-    private String tenancyLicenceDate;
+    private LocalDate tenancyLicenceDate;
 
     @CCD(
         label = "Add document",hint = "Upload a document to the system",
         access = {CitizenAccess.class, CaseworkerAccess.class}
     )
     private List<ListValue<Document>> tenancyLicenceDocuments;
-
-    @CCD(
-        label = "Case file view",
-        access = {CitizenAccess.class, CaseworkerAccess.class}
-    )
-    private ComponentLauncher caseFileView;
 
 
     @CCD(

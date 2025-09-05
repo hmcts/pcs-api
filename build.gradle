@@ -21,7 +21,7 @@ plugins {
   id 'org.flywaydb.flyway' version "$flywayVersion"
   id 'org.sonarqube' version '6.3.1.5724'
   id 'net.serenity-bdd.serenity-gradle-plugin' version "$serenityBddVersion"
-  id 'com.github.hmcts.rse-cft-lib' version '0.20.0-alpha.37'
+  id 'com.github.hmcts.rse-cft-lib' version '0.20.0-alpha.38'
   id 'io.freefair.lombok' version '8.14.2'
   id 'au.com.dius.pact' version '4.6.17'
   /*
@@ -320,7 +320,7 @@ dependencies {
   runtimeOnly group: 'org.flywaydb', name: 'flyway-database-postgresql', version: flywayVersion
 
   implementation group: 'org.flywaydb', name: 'flyway-core', version: flywayVersion
-  implementation group: 'org.springdoc', name: 'springdoc-openapi-starter-webmvc-ui', version: '2.8.11'
+  implementation group: 'org.springdoc', name: 'springdoc-openapi-starter-webmvc-ui', version: '2.8.12'
   implementation group: 'uk.gov.service.notify', name: 'notifications-java-client', version: '5.2.1-RELEASE'
   implementation platform(group: 'com.azure.spring', name :'spring-cloud-azure-dependencies', version :'5.23.0')
   implementation "com.azure.spring:spring-cloud-azure-starter-servicebus-jms"
@@ -429,6 +429,12 @@ project.tasks.named("generateCCDConfig") {
 // Gradle 7.x issue, workaround from: https://github.com/gradle/gradle/issues/17236#issuecomment-894768083
 project.tasks.named("processSmokeTestResources") {
   duplicatesStrategy = 'include'
+}
+
+tasks.named('test') {
+  doFirst {
+    jvmArgs += "-javaagent:${configurations.mockitoAgent.asPath}"
+  }
 }
 
 tasks.withType(CftlibExec).configureEach {
