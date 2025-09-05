@@ -7,14 +7,14 @@ import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
+import uk.gov.hmcts.reform.pcs.ccd.domain.NoRentArrearsDiscretionaryGrounds;
+import uk.gov.hmcts.reform.pcs.ccd.domain.NoRentArrearsMandatoryGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.postcodecourt.model.DiscretionaryGrounds;
-import uk.gov.hmcts.reform.pcs.postcodecourt.model.MandatoryGrounds;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 
 /**
@@ -49,26 +49,23 @@ public class GroundsForPossessionOptions implements CcdPageConfiguration {
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
                                                                   CaseDetails<PCSCase, State> detailsBefore) {
         PCSCase pcsCases = details.getData();
-        Set<DiscretionaryGrounds> selectedDiscretionaryOptions = pcsCases.getDiscretionaryGroundsOptionsList()
-            .getValue()
-            .stream()
-            .map(i -> DiscretionaryGrounds.fromLabel(i.getLabel()))
-            .collect(Collectors.toSet());
 
-        Set<MandatoryGrounds> selectedMandatoryOptions = pcsCases.getMandatoryGroundsOptionsList()
-            .getValue()
-            .stream()
-            .map(i -> MandatoryGrounds.fromLabel(i.getLabel()))
-            .collect(Collectors.toSet());
-
-        if (selectedMandatoryOptions.isEmpty() && selectedDiscretionaryOptions.isEmpty()) {
+        if (pcsCases.getMandatoryGroundsOptionsList().isEmpty() && pcsCases.getDiscretionaryGroundsOptionsList().isEmpty()) {
             return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
-                .errors(List.of("Please select at least one ground"))
-                .build();
+                    .errors(List.of("Please select at least one ground"))
+                    .build();
         }
 
-        pcsCases.setSelectedMandatoryGrounds(selectedMandatoryOptions);
-        pcsCases.setSelectedDiscretionaryGrounds(selectedDiscretionaryOptions);
+        Set<NoRentArrearsMandatoryGrounds> selectedNoRentArrearsMandatoryGrounds = new HashSet<>
+                (pcsCases.getMandatoryGroundsOptionsList());
+
+
+        Set<NoRentArrearsDiscretionaryGrounds> selectedNoRentArrearsDiscretionaryGrounds = new HashSet<>
+                (pcsCases.getDiscretionaryGroundsOptionsList());
+
+
+        pcsCases.setSelectedNoRentArrearsMandatoryGrounds(selectedNoRentArrearsMandatoryGrounds);
+        pcsCases.setSelectedNoRentArrearsDiscretionaryGrounds(selectedNoRentArrearsDiscretionaryGrounds);
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
             .data(pcsCases)

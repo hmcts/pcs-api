@@ -5,13 +5,14 @@ import org.junit.jupiter.api.Test;
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
 import uk.gov.hmcts.ccd.sdk.api.Event;
 import uk.gov.hmcts.ccd.sdk.api.callback.MidEvent;
-import uk.gov.hmcts.ccd.sdk.type.DynamicListElement;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
+import uk.gov.hmcts.reform.pcs.ccd.domain.NoRentArrearsDiscretionaryGrounds;
+import uk.gov.hmcts.reform.pcs.ccd.domain.NoRentArrearsMandatoryGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
-import uk.gov.hmcts.reform.pcs.postcodecourt.model.DiscretionaryGrounds;
-import uk.gov.hmcts.reform.pcs.postcodecourt.model.MandatoryGrounds;
+
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -24,12 +25,12 @@ public class GroundsForPossessionTest extends BasePageTest {
     }
 
     @Test
-    void shouldPopulateMandatoryAndDiscretionaryGroundsOptions() {
+    void shouldClearMandatoryAndDiscretionaryGroundsOptions() {
         // Given
         CaseDetails<PCSCase, State> caseDetails = new CaseDetails<>();
         PCSCase caseData = PCSCase.builder()
-            .discretionaryGroundsOptionsList(null)
-            .mandatoryGroundsOptionsList(null)
+            .discretionaryGroundsOptionsList(Set.of(NoRentArrearsDiscretionaryGrounds.DOMESTIC_VIOLENCE))
+            .mandatoryGroundsOptionsList(Set.of(NoRentArrearsMandatoryGrounds.ANTISOCIAL_BEHAVIOUR))
             .build();
 
         caseDetails.setData(caseData);
@@ -38,22 +39,9 @@ public class GroundsForPossessionTest extends BasePageTest {
         MidEvent<PCSCase, State> midEvent = getMidEventForPage(event, "groundsForPossession");
         midEvent.handle(caseDetails, null);
 
-        // Then - lists should be populated
-        assertThat(caseDetails.getData().getMandatoryGroundsOptionsList()).isNotNull();
-        assertThat(caseDetails.getData().getDiscretionaryGroundsOptionsList()).isNotNull();
+        // Then - lists should be cleared
+        assertThat(caseDetails.getData().getMandatoryGroundsOptionsList()).isEmpty();
+        assertThat(caseDetails.getData().getDiscretionaryGroundsOptionsList()).isEmpty();
 
-        assertThat(caseDetails.getData().getMandatoryGroundsOptionsList().getListItems())
-            .isNotEmpty();
-        assertThat(caseDetails.getData().getDiscretionaryGroundsOptionsList().getListItems())
-            .isNotEmpty();
-
-        // Verify that at least one label matches a known enum value
-        assertThat(caseDetails.getData().getMandatoryGroundsOptionsList().getListItems()
-                       .stream().map(DynamicListElement::getLabel).toList())
-            .contains(MandatoryGrounds.values()[0].getLabel());
-
-        assertThat(caseDetails.getData().getDiscretionaryGroundsOptionsList().getListItems()
-                       .stream().map(DynamicListElement::getLabel).toList())
-            .contains(DiscretionaryGrounds.values()[0].getLabel());
     }
 }

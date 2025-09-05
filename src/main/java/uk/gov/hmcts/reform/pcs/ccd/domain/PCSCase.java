@@ -9,7 +9,6 @@ import uk.gov.hmcts.ccd.sdk.External;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.Document;
-import uk.gov.hmcts.ccd.sdk.type.DynamicMultiSelectList;
 import uk.gov.hmcts.ccd.sdk.type.FieldType;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
@@ -17,13 +16,11 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseworkerAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenAccess;
 import uk.gov.hmcts.reform.pcs.ccd.domain.model.ReasonForGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
-import uk.gov.hmcts.reform.pcs.postcodecourt.model.DiscretionaryGrounds;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
 import java.time.LocalDate;
 import java.util.Set;
 
-import uk.gov.hmcts.reform.pcs.postcodecourt.model.MandatoryGrounds;
 
 import static uk.gov.hmcts.ccd.sdk.type.FieldType.DynamicRadioList;
 import static uk.gov.hmcts.ccd.sdk.type.FieldType.MultiSelectList;
@@ -303,33 +300,38 @@ public class PCSCase {
     private YesOrNo groundsForPossession;
 
     @CCD(
+        typeOverride = MultiSelectList,
+        typeParameterOverride = "NoRentArrearsMandatoryGrounds",
+        access = {CaseworkerAccess.class}
+    )
+    private Set<NoRentArrearsMandatoryGrounds> selectedNoRentArrearsMandatoryGrounds;
+
+    @CCD(
+        hint = "Select all that apply",
+        typeOverride = MultiSelectList,
+        typeParameterOverride = "NoRentArrearsDiscretionaryGrounds"
+    )
+    private Set<NoRentArrearsDiscretionaryGrounds> selectedNoRentArrearsDiscretionaryGrounds;
+
+
+    @CCD(
         label = "Mandatory grounds",
         hint = "Select all that apply",
+        typeOverride = MultiSelectList,
+        typeParameterOverride = "NoRentArrearsMandatoryGrounds",
         access = { CaseworkerAccess.class }
     )
-    private DynamicMultiSelectList mandatoryGroundsOptionsList;
+    private Set<NoRentArrearsMandatoryGrounds> mandatoryGroundsOptionsList;
 
     @CCD(
         label = "Discretionary grounds",
         hint = "Select all that apply",
+        typeOverride = MultiSelectList,
+        typeParameterOverride = "NoRentArrearsDiscretionaryGrounds",
         access = { CaseworkerAccess.class }
     )
-    private DynamicMultiSelectList discretionaryGroundsOptionsList;
-
-    @CCD(
-        typeOverride = MultiSelectList,
-        typeParameterOverride = "MandatoryGrounds",
-        access = {CaseworkerAccess.class}
-    )
-    private Set<MandatoryGrounds> selectedMandatoryGrounds;
-
-    @CCD(
-        hint = "Select all that apply",
-        typeOverride = MultiSelectList,
-        typeParameterOverride = "DiscretionaryGrounds"
-    )
-    private Set<DiscretionaryGrounds> selectedDiscretionaryGrounds;
-
+    private Set<NoRentArrearsDiscretionaryGrounds> discretionaryGroundsOptionsList;
+    
     @CCD(access = {CaseworkerAccess.class})
     private ReasonForGrounds reasonForGrounds;
 
