@@ -15,8 +15,8 @@ public class GroundsForPossession implements CcdPageConfiguration {
         pageBuilder
                 .page("groundsForPossession")
                 .pageLabel("Grounds for possession (placeholder)")
+                .showCondition("typeOfTenancyLicence!=\"SECURE_TENANCY\" AND typeOfTenancyLicence!=\"FLEXIBLE_TENANCY\"")
                 .label("groundsForPossession-lineSeparator", "---")
                 .mandatory(PCSCase::getGroundsForPossession);
-
     }
 }
