@@ -37,6 +37,7 @@ export class ActionRegistry {
     ['selectNoticeOfYourIntention', new CreateCaseAction()],
     ['selectCountryRadioButton', new CreateCaseAction()],
     ['provideRentDetails', new CreateCaseAction()],
+    ['selectDailyRentAmount', new CreateCaseAction()]
   ]);
 
   static getAction(actionName: string): IAction {
