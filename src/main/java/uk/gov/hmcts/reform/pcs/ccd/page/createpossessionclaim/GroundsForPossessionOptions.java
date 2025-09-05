@@ -34,13 +34,14 @@ public class GroundsForPossessionOptions implements CcdPageConfiguration {
                 .showCondition("groundsForPossession=\"No\"")
                 .label("groundsForPossessionOptions-information", """
                         ---
-                        <p>You may have already given the defendants notice of your intention to begin possession proceedings.
-                        If you have, you should have written the grounds you’re making your claim under.
+                        <p>You may have already given the defendants notice of your intention to begin possession
+                        proceedings. If you have, you should have written the grounds you’re making your claim under.
                         You should select these grounds here and any extra grounds you’d like to add to your claim,
                         if you need to.</p>""")
                 .label("groundsForPossessionOptions-information-link",
                         "<p class=\"govuk-body\"><a href=\"javascript:void(0)\" "
-                                + "class=\"govuk-link\">More information about possession grounds (opens in new tab)</a>.</p>")
+                                + "class=\"govuk-link\">More information about possession grounds " +
+                                "(opens in new tab)</a>.</p>")
                 .optional(PCSCase::getMandatoryGroundsOptionsList)
                 .optional(PCSCase::getDiscretionaryGroundsOptionsList);
 
@@ -50,7 +51,8 @@ public class GroundsForPossessionOptions implements CcdPageConfiguration {
                                                                   CaseDetails<PCSCase, State> detailsBefore) {
         PCSCase pcsCases = details.getData();
 
-        if (pcsCases.getMandatoryGroundsOptionsList().isEmpty() &&
+        if (pcsCases.getMandatoryGroundsOptionsList().isEmpty()
+                &&
                 pcsCases.getDiscretionaryGroundsOptionsList().isEmpty()) {
             return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
                     .errors(List.of("Please select at least one ground"))
