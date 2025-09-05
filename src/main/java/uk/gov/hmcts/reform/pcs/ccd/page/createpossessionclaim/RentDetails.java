@@ -1,8 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
 
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
@@ -35,29 +33,14 @@ public class RentDetails implements CcdPageConfiguration {
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
             CaseDetails<PCSCase, State> detailsBefore) {
         PCSCase caseData = details.getData();
-        List<String> errors = new ArrayList<>();
 
         if (caseData.getRentFrequency() != RentPaymentFrequency.OTHER) {
             BigDecimal rentAmountInPence = new BigDecimal(caseData.getCurrentRent());
-            if (rentAmountInPence.compareTo(BigDecimal.ZERO) < 0) {
-                errors.add("Rent amount cannot be negative");
-            } else {
-                BigDecimal dailyAmountInPence = calculateDailyRent(rentAmountInPence, caseData.getRentFrequency());
-                String dailyAmountString = String.valueOf(dailyAmountInPence);
-                caseData.setCalculatedDailyRentChargeAmount(dailyAmountString);
-            }
-        } else if (caseData.getRentFrequency() == RentPaymentFrequency.OTHER) {
-            BigDecimal dailyAmountInPence = new BigDecimal(caseData.getDailyRentChargeAmount());
-            if (dailyAmountInPence.compareTo(BigDecimal.ZERO) < 0) {
-                errors.add("Daily rent charge amount cannot be negative");
-            } 
-        }
+            BigDecimal dailyAmountInPence = calculateDailyRent(rentAmountInPence, caseData.getRentFrequency());
+            String dailyAmountString = String.valueOf(dailyAmountInPence);
 
-        if (!errors.isEmpty()) {
-            return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
-                    .errors(errors)
-                    .build();
-        }
+            caseData.setCalculatedDailyRentChargeAmount(dailyAmountString);
+        } 
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
                 .data(caseData)
