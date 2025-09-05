@@ -213,14 +213,15 @@ public class PcsCaseService {
                 SecureOrFlexibleMandatoryGroundsAlternativeAccomm::getLabel))
             .secureOrFlexibleReasonsForGrounds(reasons)
             .build();
-        }
+    }
+
     private <T> Set<String> mapToLabels(Set<T> items, Function<T, String> enumMapper) {
         return Optional.ofNullable(items)
             .orElse(Collections.emptySet())
             .stream()
             .map(enumMapper)
             .collect(Collectors.toSet());
-        }
+    }
 
     private static Boolean toBooleanOrNull(YesOrNo yesOrNo) {
         return yesOrNo != null ? yesOrNo.toBoolean() : null;

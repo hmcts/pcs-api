@@ -79,7 +79,7 @@ class TenancyLicenceTest extends BasePageTest {
     private static Stream<Arguments> tenancyDateScenarios() {
         return Stream.of(
             arguments(FIXED_CURRENT_DATE.plusDays(1), false),
-            arguments(FIXED_CURRENT_DATE, false),             // today
+            arguments(FIXED_CURRENT_DATE, false),
             arguments(FIXED_CURRENT_DATE.minusDays(1), true),
             arguments(FIXED_CURRENT_DATE.minusYears(5), true)
         );

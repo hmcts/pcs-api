@@ -85,7 +85,7 @@ public class SecureOrFlexibleGroundsForPossessionTest extends BasePageTest {
                         false,
                         YesOrNo.YES
                 ),
-                // No grounds selected → expect error
+                // No grounds selected > expect error
                 arguments(
                         Set.of(),
                         Set.of(),
@@ -112,7 +112,7 @@ public class SecureOrFlexibleGroundsForPossessionTest extends BasePageTest {
                         false,
                         YesOrNo.YES
                 ),
-                // Only RENT_ARREARS_OR_BREACH_OF_TENANCY → ShowReasons NO
+                // Only RENT_ARREARS_OR_BREACH_OF_TENANCY > showReasonsForGroundsPage = NO
                 arguments(
                         Set.of(RENT_ARREARS_OR_BREACH_OF_TENANCY),
                         Set.of(),

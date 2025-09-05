@@ -81,9 +81,6 @@ public class TenancyLicenceDetails implements CcdPageConfiguration {
             .data(caseData)
             .build();
     }
-
-
-
 }
 
 
