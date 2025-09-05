@@ -60,8 +60,9 @@ withNightlyPipeline(type, product, component) {
   enableFortifyScan()
   afterAlways('fortify-scan') {
     steps.archiveArtifacts allowEmptyArchive: true, artifacts: '**/Fortify Scan/**/*'
-    runE2eTests()
-    publishE2EReport()
+    //Skipping e2e tests as the decentralisation is not currently supported in aat
+    //runE2eTests()
+    //publishE2EReport()
   }
 }
 

@@ -17,8 +17,7 @@ test.beforeEach(async ({page}) => {
   await performAction('housingPossessionClaim');
 });
 
-test.describe.skip('Eligibility checks for cross and non cross border postcodes @nightly', async () => {
-  //Skipping these tests until the postcode data insertion is handled in AAT via automation
+test.describe('Eligibility checks for cross and non cross border postcodes @nightly', async () => {
   test('Verify cross border postcode eligibility check redirection and content for England and Wales', async ({page}) => {
     await performAction('selectAddress', {
       postcode: borderPostcode.englandWalesPostcode,
@@ -41,7 +40,7 @@ test.describe.skip('Eligibility checks for cross and non cross border postcodes 
     await performValidation('mainHeader', borderPostcode.mainHeader);
   });
 
-  test('Verify cross border postcode page for England and Scotland content', async () => {
+  test.skip('Verify cross border postcode page for England and Scotland content', async () => {
     await performAction('selectAddress', {
       postcode: borderPostcode.englandScotlandPostcode,
       addressIndex: addressDetails.addressIndex
@@ -67,7 +66,7 @@ test.describe.skip('Eligibility checks for cross and non cross border postcodes 
     await performValidation('mainHeader', legislativeCountry.mainHeader);
   });
 
-  test('Verify non cross border postcode eligibility check for Wales', async () => {
+  test.skip('Verify non cross border postcode eligibility check for Wales', async () => {
     await performAction('selectAddress', {
       postcode: addressDetails.walesPostcode,
       addressIndex: addressDetails.addressIndex
@@ -93,7 +92,7 @@ test.describe.skip('Eligibility checks for cross and non cross border postcodes 
     })
   });
 
-  test('Verify postcode not assigned to court - Can not use this service page - cross border England', async () => {
+  test.skip('Verify postcode not assigned to court - Can not use this service page - cross border England', async () => {
     await performAction('selectAddress', {
       postcode: addressDetails.englandWalesNoCourtCrossBorderPostcode,
       addressIndex: addressDetails.addressIndex
