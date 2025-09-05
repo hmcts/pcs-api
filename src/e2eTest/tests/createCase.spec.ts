@@ -8,6 +8,8 @@ import { legislativeCountry } from '@data/page-data/legislativeCountry.page.data
 import { claimType } from '@data/page-data/claimType.page.data';
 import { claimantName } from '@data/page-data/claimantName.page.data';
 import { contactPreferences } from '@data/page-data/contactPreferences.page.data';
+import { defendantDetails } from '@data/page-data/defendantDetails.page.data';
+import { tenancyLicenceDetails } from '@data/page-data/tenancyLicenceDetails.page.data';
 import { groundsForPossession } from '@data/page-data/groundsForPossession.page.data';
 import { preActionProtocol } from '@data/page-data/preActionProtocol.page.data';
 import { mediationAndSettlement } from '@data/page-data/mediationAndSettlement.page.data';
@@ -16,7 +18,6 @@ import { noticeDetails } from '@data/page-data/noticeDetails.page.data';
 import { rentDetails } from '@data/page-data/rentDetails.page.data';
 import { userIneligible } from '@data/page-data/userIneligible.page.data';
 import { detailsOfrentArrears } from '@data/page-data/detailsOfrentArrears.page.data';
-import { defendantDetails } from "@data/page-data/defendantDetails.page.data";
 
 test.beforeEach(async ({page}, testInfo) => {
   initializeExecutor(page);
@@ -47,11 +48,19 @@ test.describe.skip('[Create Case Flow With Address and Claimant Type]  @Master @
       correspondenceAddress: contactPreferences.yes,
       phoneNumber: contactPreferences.no
     });
-     await performAction('defendantDetails', {
+       await performAction('defendantDetails', {
       name: defendantDetails.yes,
       correspondenceAddress: defendantDetails.yes,
       email: defendantDetails.yes,
       correspondenceAddressSame: defendantDetails.no
+    });
+    await performValidation('mainHeader', tenancyLicenceDetails.mainHeader);
+    await performAction('selectTenancyOrLicenceDetails', {
+      tenancyOrLicenceType: tenancyLicenceDetails.other,
+      day: tenancyLicenceDetails.day,
+      month: tenancyLicenceDetails.month,
+      year: tenancyLicenceDetails.year,
+      files: ['tenancyLicence.docx', 'tenancyLicence.png']
     });
     await performValidation('mainHeader', groundsForPossession.mainHeader);
     await performAction('selectGroundsForPossession', groundsForPossession.yes);
@@ -95,12 +104,14 @@ test.describe.skip('[Create Case Flow With Address and Claimant Type]  @Master @
       correspondenceAddress: contactPreferences.no,
       phoneNumber: contactPreferences.yes
     });
-      await performAction('defendantDetails', {
+    await performAction('defendantDetails', {
       name: defendantDetails.yes,
       correspondenceAddress: defendantDetails.yes,
       email: defendantDetails.yes,
       correspondenceAddressSame: defendantDetails.yes
     });
+    await performAction('selectTenancyOrLicenceDetails', {
+      tenancyOrLicenceType: tenancyLicenceDetails.assuredTenancy});
     await performValidation('mainHeader', groundsForPossession.mainHeader);
     await performAction('selectGroundsForPossession', groundsForPossession.yes);
     await performAction('selectPreActionProtocol', preActionProtocol.yes);
@@ -196,8 +207,10 @@ test.describe.skip('[Create Case Flow With Address and Claimant Type]  @Master @
       correspondenceAddress: defendantDetails.no,
       email: defendantDetails.no,
     });
+    await performAction('selectTenancyOrLicenceDetails', {
+      tenancyOrLicenceType: tenancyLicenceDetails.assuredTenancy});
     await performValidation('mainHeader', groundsForPossession.mainHeader);
-    await performAction('selectGroundsForPossission', groundsForPossession.yes);
+    await performAction('selectGroundsForPossession', groundsForPossession.yes);
     await performAction('selectPreActionProtocol', preActionProtocol.yes);
     await performAction('selectMediationAndSettlement', {
       attemptedMediationWithDefendantsOption: mediationAndSettlement.yes,
