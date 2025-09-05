@@ -162,6 +162,7 @@ public class PCSCase {
 
     @CCD(
         label = "Give details about the attempted mediation and what the outcome was",
+        hint = "You can enter up to 250 characters",
         access = {CitizenAccess.class, CaseworkerAccess.class},
         max = 250,
         typeOverride = TextArea
@@ -176,6 +177,7 @@ public class PCSCase {
 
     @CCD(
         label = "Explain what steps you've taken to reach a settlement",
+        hint = "You can enter up to 250 characters",
         access = {CitizenAccess.class, CaseworkerAccess.class},
         max = 250,
         typeOverride = TextArea
