@@ -1,4 +1,4 @@
-import { IdamUtils } from '@hmcts/playwright-common';
+import { IdamUtils, ServiceAuthUtils } from '@hmcts/playwright-common';
 import { TestConfig } from './test.config';
 
 async function globalSetupConfig(): Promise<void> {
@@ -14,5 +14,7 @@ export const getAccessToken = async (): Promise<void> => {
     clientSecret: process.env.PCS_API_IDAM_SECRET as string,
     scope: 'profile roles'
   });
+  process.env.S2S_URL = 'http://rpe-service-auth-provider-aat.service.core-compute-aat.internal/testing-support/lease'
+  process.env.SERVICE_AUTH_TOKEN = await new ServiceAuthUtils().retrieveToken({microservice: 'pcs-api'});
 };
 export default globalSetupConfig;
