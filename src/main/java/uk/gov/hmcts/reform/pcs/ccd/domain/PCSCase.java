@@ -7,7 +7,12 @@ import lombok.Builder;
 import lombok.Data;
 import uk.gov.hmcts.ccd.sdk.External;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
-import uk.gov.hmcts.ccd.sdk.type.*;
+import uk.gov.hmcts.ccd.sdk.type.AddressUK;
+import uk.gov.hmcts.ccd.sdk.type.Document;
+import uk.gov.hmcts.ccd.sdk.type.DynamicMultiSelectList;
+import uk.gov.hmcts.ccd.sdk.type.FieldType;
+import uk.gov.hmcts.ccd.sdk.type.ListValue;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseworkerAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenAccess;
 import uk.gov.hmcts.reform.pcs.ccd.domain.model.ReasonForGrounds;
@@ -18,11 +23,12 @@ import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import java.time.LocalDate;
 import java.util.Set;
 
-import static uk.gov.hmcts.ccd.sdk.type.FieldType.DynamicRadioList;
-import static uk.gov.hmcts.ccd.sdk.type.FieldType.TextArea;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.MandatoryGrounds;
 
-import static uk.gov.hmcts.ccd.sdk.type.FieldType.*;
+import static uk.gov.hmcts.ccd.sdk.type.FieldType.DynamicRadioList;
+import static uk.gov.hmcts.ccd.sdk.type.FieldType.MultiSelectList;
+import static uk.gov.hmcts.ccd.sdk.type.FieldType.TextArea;
+
 
 /**
  * The main domain model representing a possessions case.
@@ -311,7 +317,7 @@ public class PCSCase {
     private DynamicMultiSelectList discretionaryGroundsOptionsList;
 
     @CCD(
-        typeOverride = FieldType.MultiSelectList,
+        typeOverride = MultiSelectList,
         typeParameterOverride = "MandatoryGrounds",
         access = {CaseworkerAccess.class}
     )
