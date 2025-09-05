@@ -11,6 +11,7 @@ import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.service.AddressValidator;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 import uk.gov.hmcts.reform.pcs.postcodecourt.exception.EligibilityCheckException;
@@ -26,6 +27,7 @@ import java.util.List;
 public class EnterPropertyAddress implements CcdPageConfiguration {
 
     private final EligibilityService eligibilityService;
+    private final AddressValidator addressValidator;
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
@@ -41,11 +43,23 @@ public class EnterPropertyAddress implements CcdPageConfiguration {
      its formatting the property address to use as a placeholder for the registered contact address.
     */
 
+
+
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
                                                                   CaseDetails<PCSCase, State> detailsBefore) {
+
         PCSCase caseData = details.getData();
-        String postcode = caseData.getPropertyAddress().getPostCode();
         AddressUK propertyAddress = caseData.getPropertyAddress();
+
+        List<String> validationErrors = addressValidator.validateAddressFields(propertyAddress);
+        if (!validationErrors.isEmpty()) {
+            return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
+                    .errors(validationErrors)
+                    .build();
+        }
+
+        String postcode = propertyAddress.getPostCode();
+
         caseData.setClaimantContactAddress(propertyAddress);
         String formattedAddress = String.format(
                 "%s<br>%s<br>%s",

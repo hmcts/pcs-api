@@ -2,9 +2,12 @@ package uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
 import uk.gov.hmcts.ccd.sdk.api.Event;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
@@ -15,6 +18,7 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
+import uk.gov.hmcts.reform.pcs.ccd.service.AddressValidator;
 import uk.gov.hmcts.reform.pcs.postcodecourt.exception.EligibilityCheckException;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.EligibilityResult;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.EligibilityStatus;
@@ -34,16 +38,19 @@ import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.ccd.sdk.type.YesOrNo.NO;
 import static uk.gov.hmcts.ccd.sdk.type.YesOrNo.YES;
 
+@ExtendWith(MockitoExtension.class)
 class EnterPropertyAddressTest extends BasePageTest {
 
+    @Mock
     private EligibilityService eligibilityService;
+    @Mock
+    private AddressValidator addressValidator;
 
     private Event<PCSCase, UserRole, State> event;
 
     @BeforeEach
     void setUp() {
-        eligibilityService = mock(EligibilityService.class);
-        event = buildPageInTestEvent(new EnterPropertyAddress(eligibilityService));
+        event = buildPageInTestEvent(new EnterPropertyAddress(eligibilityService, addressValidator));
     }
 
     @Test
@@ -197,6 +204,29 @@ class EnterPropertyAddressTest extends BasePageTest {
         assertThat(data.getShowCrossBorderPage()).isEqualTo(YesOrNo.NO);
         assertThat(data.getShowPropertyNotEligiblePage()).isEqualTo(YesOrNo.YES);
         assertThat(data.getLegislativeCountry()).isEqualTo("England");
+    }
+
+    @Test
+    void shouldReturnValidationErrorsWhenAddressInvalid() {
+        // Given
+        AddressUK propertyAddress = mock(AddressUK.class);
+        PCSCase caseData = PCSCase.builder()
+            .propertyAddress(propertyAddress)
+            .build();
+
+        List<String> expectedValidationErrors = List.of("error 1", "error 2");
+        when(addressValidator.validateAddressFields(propertyAddress)).thenReturn(expectedValidationErrors);
+
+        CaseDetails<PCSCase, State> caseDetails = CaseDetails.<PCSCase, State>builder()
+            .data(caseData)
+            .build();
+
+        // When
+        MidEvent<PCSCase, State> midEvent = getMidEventForPage(event, "enterPropertyAddress");
+        AboutToStartOrSubmitResponse<PCSCase, State> response = midEvent.handle(caseDetails, null);
+
+        // Then
+        assertThat(response.getErrors()).isEqualTo(expectedValidationErrors);
     }
 
     private static Stream<Arguments> invalidLegislativeCountryScenarios() {

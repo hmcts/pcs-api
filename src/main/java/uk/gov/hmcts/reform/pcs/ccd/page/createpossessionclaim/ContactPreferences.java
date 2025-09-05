@@ -1,18 +1,31 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim;
 
+import lombok.AllArgsConstructor;
+import org.springframework.stereotype.Component;
+import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
+import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
+import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.service.AddressValidator;
+
+import java.util.List;
 
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 
-
+@AllArgsConstructor
+@Component
 public class ContactPreferences implements CcdPageConfiguration {
+
+    private final AddressValidator addressValidator;
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
-            .page("contactPreferences")
+            .page("contactPreferences", this::midEvent)
             .pageLabel("Contact preferences")
 
             // Email section
@@ -68,6 +81,28 @@ public class ContactPreferences implements CcdPageConfiguration {
             .mandatory(PCSCase::getClaimantProvidePhoneNumber)
             .mandatory(PCSCase::getClaimantContactPhoneNumber, "claimantProvidePhoneNumber=\"YES\"")
             .label("contactPreferences-phoneNumber-separator", "---");
+    }
+
+    private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
+                                                                  CaseDetails<PCSCase, State> detailsBefore) {
+
+        PCSCase caseData = details.getData();
+
+        VerticalYesNo isCorrectClaimantContactAddress = caseData.getIsCorrectClaimantContactAddress();
+        if (isCorrectClaimantContactAddress == VerticalYesNo.NO) {
+            AddressUK contactAddress = caseData.getOverriddenClaimantContactAddress();
+            List<String> validationErrors = addressValidator.validateAddressFields(contactAddress);
+            if (!validationErrors.isEmpty()) {
+                return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
+                    .errors(validationErrors)
+                    .build();
+            }
+        }
+
+        return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
+            .data(caseData)
+            .build();
+
     }
 
 }
