@@ -301,7 +301,6 @@ private async defendantDetails(defendantVal: actionData) {
         state: response.data.state,
       };
     } catch (err) {
-      throw err
       throw new Error('Case could not be created.');
     }
   }

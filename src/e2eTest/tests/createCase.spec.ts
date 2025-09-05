@@ -32,7 +32,7 @@ test.beforeEach(async ({page}, testInfo) => {
   await performAction('housingPossessionClaim');
 });
 
-test.describe.skip('[Create Case Flow With Address and Claimant Type]  @Master @nightly', async () => {
+test.describe('[Create Case Flow With Address and Claimant Type]  @Master @nightly', async () => {
   test('England - Successful case creation', async () => {
     await performAction('selectAddress', {
       postcode: addressDetails.englandPostcode,
@@ -67,11 +67,9 @@ test.describe.skip('[Create Case Flow With Address and Claimant Type]  @Master @
     await performValidation('text', {"text": noticeOfYourIntention.servedNoticeInteractiveText, "elementType": "inlineText"});
     await performAction('selectNoticeOfYourIntention', noticeOfYourIntention.yes);
     await performValidation('mainHeader', noticeDetails.mainHeader);
-    await performAction('clickButton', noticeDetails.continue);
-    /*await performAction('selectNoticeDetails', {
+    await performAction('selectNoticeDetails', {
       howDidYouServeNotice: noticeDetails.byFirstClassPost,
-      day: '16', month: '07', year: '1985'
-    });*/
+      day: '16', month: '07', year: '1985'});
     await performValidation('mainHeader', rentDetails.mainHeader);
     await performAction('provideRentDetails', {rentFrequencyOption:'weekly', rentAmount:'800'});
     // Below step will be uncommented when the daily rent amount page is implemented as part of the HDPI-1521 story
@@ -129,7 +127,8 @@ test.describe.skip('[Create Case Flow With Address and Claimant Type]  @Master @
       ['formLabelValue', 'Country', addressDetails.country]);
   });
 
-  test('England - Unsuccessful case creation journey due to claimant type not in scope of Release1 @R1only', async () => {
+  test.skip('England - Unsuccessful case creation journey due to claimant type not in scope of Release1 @R1only', async () => {
+    //Skipping this test until bug HDPI-1778 is fixed
     await performAction('selectAddress', {
       postcode: addressDetails.englandPostcode,
       addressIndex: addressDetails.addressIndex
@@ -147,7 +146,8 @@ test.describe.skip('[Create Case Flow With Address and Claimant Type]  @Master @
     await performAction('clickButton', 'Cancel');
   });
 
-  test('Wales - Unsuccessful case creation journey due to claimant type not in scope of Release1 @R1only', async () => {
+  test.skip('Wales - Unsuccessful case creation journey due to claimant type not in scope of Release1 @R1only', async () => {
+    //Skipping this test until bug HDPI-1778 is fixed
     await performAction('selectAddress', {
       postcode: addressDetails.walesPostcode,
       addressIndex: addressDetails.addressIndex
@@ -165,7 +165,8 @@ test.describe.skip('[Create Case Flow With Address and Claimant Type]  @Master @
     await performAction('clickButton', 'Cancel');
   });
 
-  test('Unsuccessful case creation journey due to claim type not in scope of Release1 @R1only', async () => {
+  test.skip('Unsuccessful case creation journey due to claim type not in scope of Release1 @R1only', async () => {
+    //Skipping this test until bug HDPI-1778 is fixed
     await performAction('selectAddress', {
       postcode: addressDetails.englandPostcode,
       addressIndex: addressDetails.addressIndex
@@ -201,7 +202,7 @@ test.describe.skip('[Create Case Flow With Address and Claimant Type]  @Master @
       email: defendantDetails.no,
     });
     await performValidation('mainHeader', groundsForPossession.mainHeader);
-    await performAction('selectGroundsForPossission', groundsForPossession.yes);
+    await performAction('selectGroundsForPossession', groundsForPossession.yes);
     await performAction('selectPreActionProtocol', preActionProtocol.yes);
     await performAction('selectMediationAndSettlement', {
       attemptedMediationWithDefendantsOption: mediationAndSettlement.yes,
