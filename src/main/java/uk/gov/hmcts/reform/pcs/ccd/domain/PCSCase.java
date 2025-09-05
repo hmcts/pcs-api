@@ -263,4 +263,10 @@ public class PCSCase {
     @CCD(access = {CitizenAccess.class, CaseworkerAccess.class})
     private List<ListValue<DefendantDetails>> defendants;
 
+    @CCD
+    private String organisationName;
+
+    @CCD
+    private YesOrNo correctOrganisation;
+
 }
