@@ -57,7 +57,6 @@ public class RentArrearsOrBreachOfTenancyGroundTest extends BasePageTest {
 
     private static Stream<Arguments> midEventScenarios() {
         return Stream.of(
-            // rentAreasOrBreach, discretionaryGrounds, mandatoryGrounds, showBreach, showReasons
             arguments(
                 List.of(RentArrearsOrBreachOfTenancy.BREACH_OF_TENANCY),
                 YesOrNo.YES

@@ -344,8 +344,10 @@ public class PCSCase {
     )
     private DynamicMultiSelectList rentAreasOrBreachOfTenancy;
 
+    @CCD(searchable = false, access = {CaseworkerAccess.class})
     private YesOrNo showBreachOfTenancyTextarea;
 
+    @CCD(searchable = false, access = {CaseworkerAccess.class})
     private YesOrNo showReasonsForGroundsPage;
 
     @JsonUnwrapped
