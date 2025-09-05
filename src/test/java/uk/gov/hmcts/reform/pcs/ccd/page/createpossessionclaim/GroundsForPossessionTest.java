@@ -26,7 +26,7 @@ public class GroundsForPossessionTest extends BasePageTest {
 
     @Test
     void shouldClearMandatoryAndDiscretionaryGroundsOptions() {
-        // Given
+        // Given: One mandatory and one discretionary is selected
         CaseDetails<PCSCase, State> caseDetails = new CaseDetails<>();
         PCSCase caseData = PCSCase.builder()
             .discretionaryGroundsOptionsList(Set.of(NoRentArrearsDiscretionaryGrounds.DOMESTIC_VIOLENCE))
@@ -35,11 +35,11 @@ public class GroundsForPossessionTest extends BasePageTest {
 
         caseDetails.setData(caseData);
 
-        // When
+        // When: Mid event is executed
         MidEvent<PCSCase, State> midEvent = getMidEventForPage(event, "groundsForPossession");
         midEvent.handle(caseDetails, null);
 
-        // Then - lists should be cleared
+        // Then: Set should be cleared
         assertThat(caseDetails.getData().getMandatoryGroundsOptionsList()).isEmpty();
         assertThat(caseDetails.getData().getDiscretionaryGroundsOptionsList()).isEmpty();
 

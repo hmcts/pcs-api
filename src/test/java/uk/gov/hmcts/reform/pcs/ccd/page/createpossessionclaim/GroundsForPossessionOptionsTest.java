@@ -27,8 +27,7 @@ public class GroundsForPossessionOptionsTest extends BasePageTest {
 
     @Test
     void shouldMapSelectedGroundsToEnums() {
-        // Given: pick one mandatory and one discretionary enum
-
+        // Given: One mandatory and one discretionary enum
         CaseDetails<PCSCase, State> caseDetails = new CaseDetails<>();
         NoRentArrearsMandatoryGrounds dummyMandatory = NoRentArrearsMandatoryGrounds.ANTISOCIAL_BEHAVIOUR;
         NoRentArrearsDiscretionaryGrounds dummyDiscretionary = NoRentArrearsDiscretionaryGrounds.DOMESTIC_VIOLENCE;
@@ -39,13 +38,15 @@ public class GroundsForPossessionOptionsTest extends BasePageTest {
 
         caseDetails.setData(caseData);
 
-        // When
+        // When: Mid event is executed
         MidEvent<PCSCase, State> midEvent = getMidEventForPage(event, "groundsForPossessionOptions");
         midEvent.handle(caseDetails, null);
 
-        // Then
-        Set<NoRentArrearsMandatoryGrounds> selectedMandatory = caseDetails.getData().getSelectedNoRentArrearsMandatoryGrounds();
-        Set<NoRentArrearsDiscretionaryGrounds> selectedDiscretionary = caseDetails.getData().getSelectedNoRentArrearsDiscretionaryGrounds();
+        // Then: One mandatory and discretionary enum should exist in each set
+        Set<NoRentArrearsMandatoryGrounds> selectedMandatory =
+                caseDetails.getData().getSelectedNoRentArrearsMandatoryGrounds();
+        Set<NoRentArrearsDiscretionaryGrounds> selectedDiscretionary =
+                caseDetails.getData().getSelectedNoRentArrearsDiscretionaryGrounds();
 
         assertThat(selectedMandatory).containsExactly(dummyMandatory);
         assertThat(selectedDiscretionary).containsExactly(dummyDiscretionary);
