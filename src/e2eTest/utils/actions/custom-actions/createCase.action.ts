@@ -32,7 +32,6 @@ export class CreateCaseAction implements IAction {
       ['housingPossessionClaim', () => this.housingPossessionClaim()],
       ['selectAddress', () => this.selectAddress(fieldName)],
       ['selectResumeClaimOption', () => this.selectResumeClaimOption(fieldName)],
-      ['selectLegislativeCountry', () => this.selectLegislativeCountry(fieldName)],
       ['extractCaseIdFromAlert', () => this.extractCaseIdFromAlert(page)],
       ['selectClaimantType', () => this.selectClaimantType(fieldName)],
       ['reloginAndFindTheCase', () => this.reloginAndFindTheCase()],
@@ -95,11 +94,6 @@ export class CreateCaseAction implements IAction {
     await performAction('clickButton', resumeClaimOptions.continue);
   }
 
-  private async selectLegislativeCountry(caseData: actionData) {
-    await performAction('clickRadioButton', caseData);
-    await performAction('clickButton', 'Continue');
-  }
-
   private async selectClaimantType(caseData: actionData) {
     await performAction('clickRadioButton', caseData);
     await performAction('clickButton', 'Continue');
@@ -127,7 +121,7 @@ export class CreateCaseAction implements IAction {
 
   private async selectCountryRadioButton(option: actionData) {
     await performAction('clickRadioButton', option);
-    await performAction('clickButton', 'Continue');
+    await performAction('clickButton', 'Submit');
   }
 
   private async selectClaimantName(caseData: actionData) {
@@ -264,12 +258,8 @@ private async defendantDetails(defendantVal: actionData) {
   private async reloginAndFindTheCase() {
     await performAction('navigateToUrl', configData.manageCasesBaseURL);
     await performAction('login')
-    await performAction('clickButton', 'Find case');
-    await performAction('select', 'Jurisdiction', createCase.possessionsJurisdiction);
-    await performAction('select', 'Case type', createCase.caseType.civilPossessions);
-    await performAction('inputText', 'Case Number', caseNumber);
-    await performAction('clickButton', 'Apply');
-    await performAction('clickButton',caseNumber)
+    await performAction('inputText', '16-digit case reference:', caseNumber);
+    await performAction('clickButton', 'Find');
   }
 
   private async provideRentDetails(rentFrequency: actionData) {

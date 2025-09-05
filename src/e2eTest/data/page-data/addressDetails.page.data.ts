@@ -3,7 +3,6 @@ export const addressDetails = {
   mainHeader: 'What is the address of the property you\'re claiming possession of?',
   sectionTitle: 'Property address',
   englandCourtAssignedPostcode: 'W3 7RX',
-  walesPostcode: 'SA31 3DG',
   addressIndex: 1,
   addressLine2: 'address2',
   addressLine3: 'address3',
@@ -20,7 +19,7 @@ export const addressDetails = {
   walesNoCourtAssignedPostcode: 'LL30 1DE',
   walesCourtAssignedPostcode: 'CF11 6QX',
   scotlandNoCourtAssignedPostcode: 'SA31 3DG',
-  englandWalesNoCourtCrossBorderPostcode: 'HR3 5JL',
+  englandWalesNoCourtCrossBorderPostcode: 'SY4 5NN',
   englandScotlandNoCourtCrossBorderPostcode: 'TD12 4AS',
   englandWalesCrossBorderPostcode: 'SY13 2LH'
 };
