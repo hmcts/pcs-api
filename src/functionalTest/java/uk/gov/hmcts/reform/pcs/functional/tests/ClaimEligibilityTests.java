@@ -85,4 +85,37 @@ class ClaimEligibilityTests {
         apiSteps.checkStatusCode(200);
         apiSteps.theResponseBodyContainsAString("status", "MULTIPLE_MATCHES_FOUND");
     }
+
+    // Jo's practice tests
+    @Title("Claim Eligibility endpoint - returns 200 and NO_MATCH_FOUND for postcode that doesn't exist in db")
+    @Test
+    void shouldReturnNoMatchForNonExistentPostcode() {
+        apiSteps.requestIsPreparedWithAppropriateValues();
+        apiSteps.theRequestContainsValidServiceToken(TestConstants.PCS_API);
+        apiSteps.theRequestContainsTheQueryParameter("postcode", "L332AA");
+        apiSteps.callIsSubmittedToTheEndpoint("ClaimEligibility", "GET");
+        apiSteps.checkStatusCode(200);
+        apiSteps.theResponseBodyContainsAString("status", "NO_MATCH_FOUND");
+    }
+
+    @Title("Claim Eligibility endpoint - returns 400 for missing postcode parameter")
+    @Test
+    void shouldReturnBadRequest() {
+        apiSteps.requestIsPreparedWithAppropriateValues();
+        apiSteps.theRequestContainsValidServiceToken(TestConstants.PCS_API);
+        apiSteps.callIsSubmittedToTheEndpoint("ClaimEligibility", "GET");
+        apiSteps.checkStatusCode(400);
+        apiSteps.theResponseBodyContainsAString("title", "Bad Request");
+        apiSteps.theResponseBodyContainsAString("detail", "Required parameter 'postcode' is not present.");
+    }
+
+    @Title("Claim Eligibility endpoint - returns 401 for invalid auth header")
+    @Test
+    void shouldReturnUnauthorised() {
+        apiSteps.requestIsPreparedWithAppropriateValues();
+        apiSteps.theRequestContainsExpiredServiceToken();
+        apiSteps.theRequestContainsTheQueryParameter("postcode", "L332AA");
+        apiSteps.callIsSubmittedToTheEndpoint("ClaimEligibility", "GET");
+        apiSteps.checkStatusCode(401);
+    }
 }
