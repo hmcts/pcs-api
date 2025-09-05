@@ -1,15 +1,15 @@
 package uk.gov.hmcts.reform.pcs.ccd;
 
+import static java.lang.System.getenv;
+import static java.util.Optional.ofNullable;
+import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
+
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CCDConfig;
 import uk.gov.hmcts.ccd.sdk.api.ConfigBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-
-import static java.lang.System.getenv;
-import static java.util.Optional.ofNullable;
-import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 
 /**
  * Setup some common possessions case type configuration.
@@ -28,6 +28,10 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
         return withChangeId(CASE_TYPE_ID, "-");
     }
 
+    public static String getJurisdictionId() {
+        return JURISDICTION_ID;
+    }
+
     public static String getCaseTypeName() {
         return withChangeId(CASE_TYPE_NAME, " ");
     }
@@ -44,6 +48,7 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
 
         builder.decentralisedCaseType(getCaseType(), getCaseTypeName(), CASE_TYPE_DESCRIPTION);
         builder.jurisdiction(JURISDICTION_ID, JURISDICTION_NAME, JURISDICTION_DESCRIPTION);
+        buildSupportingDocumentsCaseFileViewTab(builder);
 
         String paymentLabel = "Payment Status";
 
@@ -78,8 +83,20 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
             .label("claimPaymentTabMarkdownLabel", null, "${claimPaymentTabMarkdown}")
             .field("claimPaymentTabMarkdown", NEVER_SHOW);
 
+        builder.tab("Documents", "Documents")
+            .field(PCSCase::getSupportingDocuments)
+            .field(PCSCase::getGeneratedDocuments);
+
         builder.tab("hidden", "HiddenFields")
             .showCondition(NEVER_SHOW)
             .field(PCSCase::getPageHeadingMarkdown);
+    }
+
+    private void buildSupportingDocumentsCaseFileViewTab(ConfigBuilder<PCSCase, State, UserRole> configBuilder) {
+        configBuilder.tab("caseFileView", "Supporting Documents")
+            .forRoles(UserRole.PCS_CASE_WORKER)
+            .field(PCSCase::getCaseFileView, null, "#ARGUMENT(CaseFileView)")
+            .field(PCSCase::getSupportingDocuments)
+            .field(PCSCase::getGeneratedDocuments);
     }
 }

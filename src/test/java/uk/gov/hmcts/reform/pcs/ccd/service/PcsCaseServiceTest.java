@@ -8,41 +8,57 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Autowired;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
+import uk.gov.hmcts.ccd.sdk.type.ListValue;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PaymentStatus;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicence;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.model.Defendant;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
+import uk.gov.hmcts.reform.pcs.config.MapperConfig;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.RentPaymentFrequency;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
+import java.math.BigDecimal;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.times;
 
 @ExtendWith(MockitoExtension.class)
 class PcsCaseServiceTest {
 
     private static final long CASE_REFERENCE = 1234L;
 
+    @Autowired
+    private ModelMapper modelMapper;
+
     @Mock
     private PcsCaseRepository pcsCaseRepository;
     @Mock
     private SecurityContextService securityContextService;
-    @Mock
-    private ModelMapper modelMapper;
     @Captor
     private ArgumentCaptor<PcsCaseEntity> pcsCaseEntityCaptor;
 
@@ -50,6 +66,8 @@ class PcsCaseServiceTest {
 
     @BeforeEach
     void setUp() {
+        MapperConfig config = new MapperConfig();
+        modelMapper = spy(config.modelMapper());
         underTest = new PcsCaseService(pcsCaseRepository, securityContextService, modelMapper);
     }
 
@@ -284,6 +302,108 @@ class PcsCaseServiceTest {
         assertThat(pcsCaseEntityCaptor.getValue()).isSameAs(existingPcsCaseEntity);
     }
 
+    @Test
+    void shouldMapFromDefendantDetailsToDefendantPojo() {
+        // Given
+        AddressUK correspondenceAddress = AddressUK.builder()
+            .addressLine1("125 Broadway")
+            .postCode("W5 8DG")
+            .build();
+        DefendantDetails details =  DefendantDetails.builder()
+            .nameKnown(VerticalYesNo.YES)
+            .firstName("John")
+            .lastName("Doe")
+            .addressKnown(VerticalYesNo.YES)
+            .addressSameAsPossession(VerticalYesNo.YES)
+            .correspondenceAddress(correspondenceAddress)
+            .emailKnown(VerticalYesNo.NO)
+            .build();
+
+        ListValue<DefendantDetails> listValue = new ListValue<>("123", details);
+
+        // When
+        List<Defendant> result = underTest.mapFromDefendantDetails(List.of(listValue));
+
+        // Then
+        assertThat(result).hasSize(1);
+        Defendant mappedDefendant = result.get(0);
+
+        assertThat(mappedDefendant.getId()).isEqualTo("123");
+        assertThat(mappedDefendant.getNameKnown()).isTrue();
+        assertThat(mappedDefendant.getFirstName()).isEqualTo("John");
+        assertThat(mappedDefendant.getLastName()).isEqualTo("Doe");
+        assertThat(mappedDefendant.getAddressKnown()).isTrue();
+        assertThat(mappedDefendant.getAddressSameAsPossession()).isTrue();
+        assertThat(mappedDefendant.getCorrespondenceAddress().getAddressLine1())
+            .isEqualTo(correspondenceAddress.getAddressLine1());
+        assertThat(mappedDefendant.getEmailKnown()).isFalse();
+    }
+
+    @Test
+    void shouldMapDefendantPojoToDefendantDetails() {
+        // Given
+        Defendant defendant = Defendant.builder()
+            .id("456")
+            .nameKnown(true)
+            .firstName("Jane")
+            .lastName("Smith")
+            .addressKnown(false)
+            .addressSameAsPossession(false)
+            .emailKnown(true)
+            .email("jane.smith@email.com")
+            .build();
+
+        // When
+        List<ListValue<DefendantDetails>> result = underTest.mapToDefendantDetails(List.of(defendant));
+
+        // Then
+        ListValue<DefendantDetails> listValue = result.get(0);
+        DefendantDetails mappedDefendantDetails = listValue.getValue();
+
+        assertThat(result).hasSize(1);
+        assertThat(listValue.getId()).isEqualTo("456");
+        assertThat(mappedDefendantDetails.getNameKnown()).isEqualTo(VerticalYesNo.YES);
+        assertThat(mappedDefendantDetails.getFirstName()).isEqualTo("Jane");
+        assertThat(mappedDefendantDetails.getLastName()).isEqualTo("Smith");
+        assertThat(mappedDefendantDetails.getAddressKnown()).isEqualTo(VerticalYesNo.NO);
+        assertThat(mappedDefendantDetails.getAddressSameAsPossession()).isEqualTo(VerticalYesNo.NO);
+        assertThat(mappedDefendantDetails.getEmailKnown()).isEqualTo(VerticalYesNo.YES);
+        assertThat(mappedDefendantDetails.getEmail()).isEqualTo("jane.smith@email.com");
+    }
+
+    @Test
+    void shouldClearHiddenDefendantDetailsFields() {
+        // Given
+        DefendantDetails defendantWithHiddenFields = DefendantDetails.builder()
+            .nameKnown(VerticalYesNo.NO)
+            .firstName("John")
+            .lastName("Doe")
+            .addressKnown(VerticalYesNo.NO)
+            .correspondenceAddress(AddressUK.builder()
+                                       .addressLine1("123 Test Street")
+                                       .postTown("Test Town")
+                                       .postCode("TE1 1ST")
+                                       .build())
+            .addressSameAsPossession(VerticalYesNo.NO)
+            .emailKnown(VerticalYesNo.NO)
+            .email("test@example.com")
+            .build();
+
+        List<ListValue<DefendantDetails>> defendantsList = List.of(
+            new ListValue<>("1", defendantWithHiddenFields));
+
+        // When
+        underTest.clearHiddenDefendantDetailsFields(defendantsList);
+
+        // Then
+        DefendantDetails clearedDefendant = defendantsList.get(0).getValue();
+        assertThat(clearedDefendant.getFirstName()).isNull();
+        assertThat(clearedDefendant.getLastName()).isNull();
+        assertThat(clearedDefendant.getCorrespondenceAddress()).isNull();
+        assertThat(clearedDefendant.getAddressSameAsPossession()).isNull();
+        assertThat(clearedDefendant.getEmail()).isNull();
+    }
+
     // Test for tenancy_licence JSON creation, temporary until Data Model is finalised
     @Test
     void shouldSetTenancyLicence() {
@@ -295,10 +415,25 @@ class PcsCaseServiceTest {
                 pcsCase -> when(pcsCase.getNoticeServed()).thenReturn(YesOrNo.NO),
                 expected -> assertThat(expected.getNoticeServed()).isFalse());
 
-        // TODO: Future developers can add ANY field type like:
-        // assertTenancyLicenceField(
-        //     pcsCase -> when(pcsCase.getRentAmount()).thenReturn(1200),
-        //     expected -> assertThat(expected.getCurrentRent()).isEqualTo(1200));
+        // Test rent amount field
+        assertTenancyLicenceField(
+                pcsCase -> when(pcsCase.getCurrentRent()).thenReturn("1200.50"),
+                expected -> assertThat(expected.getRentAmount()).isEqualTo(new BigDecimal("1200.50")));
+
+        // Test rent payment frequency field
+        assertTenancyLicenceField(
+                pcsCase -> when(pcsCase.getRentFrequency()).thenReturn(RentPaymentFrequency.MONTHLY),
+                expected -> assertThat(expected.getRentPaymentFrequency()).isEqualTo(RentPaymentFrequency.MONTHLY));
+
+        // Test other rent frequency field
+        assertTenancyLicenceField(
+                pcsCase -> when(pcsCase.getOtherRentFrequency()).thenReturn("Bi-weekly"),
+                expected -> assertThat(expected.getOtherRentFrequency()).isEqualTo("Bi-weekly"));
+
+        // Test daily rent charge amount field
+        assertTenancyLicenceField(
+                pcsCase -> when(pcsCase.getDailyRentChargeAmount()).thenReturn("40.00"),
+                expected -> assertThat(expected.getDailyRentChargeAmount()).isEqualTo(new BigDecimal("40.00")));
     }
 
     private void assertTenancyLicenceField(java.util.function.Consumer<PCSCase> setupMock,
@@ -311,12 +446,81 @@ class PcsCaseServiceTest {
 
         TenancyLicence actual = pcsCaseEntityCaptor.getValue().getTenancyLicence();
         assertions.accept(actual);
+
     }
 
     private AddressEntity stubAddressUKModelMapper(AddressUK addressUK) {
         AddressEntity addressEntity = mock(AddressEntity.class);
         when(modelMapper.map(addressUK, AddressEntity.class)).thenReturn(addressEntity);
         return addressEntity;
+    }
+
+    @Test
+    void shouldAddDocumentToCase() {
+        final String fileName = "test-document.pdf";
+        final String filePath = "/documents/test-document.pdf";
+
+        PcsCaseEntity existingPcsCaseEntity = new PcsCaseEntity();
+        existingPcsCaseEntity.setCaseReference(CASE_REFERENCE);
+
+        when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(existingPcsCaseEntity));
+
+        underTest.addDocumentToCase(CASE_REFERENCE, fileName, filePath);
+
+        verify(pcsCaseRepository).save(pcsCaseEntityCaptor.capture());
+
+        PcsCaseEntity savedEntity = pcsCaseEntityCaptor.getValue();
+
+        assertThat(savedEntity).isNotNull();
+        assertThat(savedEntity.getDocuments()).isNotNull();
+        assertThat(savedEntity.getDocuments()).hasSize(1);
+
+        if (!savedEntity.getDocuments().isEmpty()) {
+            DocumentEntity savedDocument = savedEntity.getDocuments().iterator().next();
+            System.out.println("Document: " + savedDocument);
+            assertThat(savedDocument.getFileName()).isEqualTo(fileName);
+        }
+    }
+
+    @Test
+    void shouldThrowExceptionWhenAddingDocumentToUnknownCase() {
+        final String fileName = "test-document.docx";
+        final String filePath = "/documents/test-document.docx";
+
+        when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE)).thenReturn(Optional.empty());
+
+        Throwable throwable = catchThrowable(() -> underTest.addDocumentToCase(CASE_REFERENCE, fileName, filePath));
+
+        assertThat(throwable)
+            .isInstanceOf(CaseNotFoundException.class)
+            .hasMessage("No case found with reference %s", CASE_REFERENCE);
+    }
+
+    @Test
+    void shouldAddMultipleDocumentsToCase() {
+        final String fileName1 = "document1.docx";
+        final String filePath1 = "/documents/document1.docx";
+        final String fileName2 = "document2.docx";
+        final String filePath2 = "/documents/document2.docx";
+
+        PcsCaseEntity existingPcsCaseEntity = new PcsCaseEntity();
+        existingPcsCaseEntity.setCaseReference(CASE_REFERENCE);
+
+        when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(existingPcsCaseEntity));
+
+        underTest.addDocumentToCase(CASE_REFERENCE, fileName1, filePath1);
+        underTest.addDocumentToCase(CASE_REFERENCE, fileName2, filePath2);
+
+        verify(pcsCaseRepository, times(2)).save(pcsCaseEntityCaptor.capture());
+
+        PcsCaseEntity finalSavedEntity = pcsCaseEntityCaptor.getValue();
+        assertThat(finalSavedEntity.getDocuments()).hasSize(2);
+
+        Set<String> fileNames = finalSavedEntity.getDocuments().stream()
+            .map(DocumentEntity::getFileName)
+            .collect(Collectors.toSet());
+
+        assertThat(fileNames).containsExactlyInAnyOrder(fileName1, fileName2);
     }
 
 }
