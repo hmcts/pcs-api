@@ -184,4 +184,3 @@ yarn test:e2e
 | "Validation not found" | Check registration                          |
 | Locator failures       | Verify fieldName matches UI text/attributes |
 | Timeout errors         | Add explicit waits in components            |
-
