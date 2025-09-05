@@ -5,8 +5,6 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
-import uk.gov.hmcts.reform.sendletter.api.LetterStatus;
-import uk.gov.hmcts.reform.sendletter.api.LetterWithPdfsRequest;
 import uk.gov.hmcts.reform.sendletter.api.SendLetterApi;
 import uk.gov.hmcts.reform.sendletter.api.SendLetterResponse;
 
@@ -17,18 +15,12 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
-import java.util.stream.Collectors;
-
-import static org.postgresql.core.Oid.UUID;
 
 @Service
 @AllArgsConstructor
@@ -38,8 +30,8 @@ public class SendLetterService {
     private SendLetterApi sendLetterApi;
     private AuthTokenGenerator authTokenGenerator;
 
-    public boolean sendLetterv2() {
-        String serviceAuthHeader = "Bearer ";
+    public void sendLetterv2() {
+        String serviceAuthHeader = authTokenGenerator.generate();
 
         List<String> personList = new ArrayList<>();
         personList.add("Firstname Lastname");
@@ -56,7 +48,6 @@ public class SendLetterService {
             log.error(e.getMessage());
         }
 
-        return true;
     }
 
     private LetterV3 buildLetter(List<String> personList) throws IOException, URISyntaxException {
