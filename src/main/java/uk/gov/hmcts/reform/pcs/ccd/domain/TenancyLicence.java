@@ -8,6 +8,9 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+
 @Data
 @Builder
 @NoArgsConstructor
@@ -27,4 +30,15 @@ public class TenancyLicence {
     
     private BigDecimal dailyRentChargeAmount;
 
+    // Notice details fields
+    private String noticeServiceMethod;
+    private LocalDate noticePostedDate;
+    private LocalDate noticeDeliveredDate;
+    private LocalDateTime noticeHandedOverDateTime;
+    private String noticePersonName;
+    private LocalDateTime noticeEmailSentDateTime;
+    private String noticeEmailExplanation;
+    private LocalDateTime noticeOtherElectronicDateTime;
+    private LocalDateTime noticeOtherDateTime;
+    private String noticeOtherExplanation;
 }

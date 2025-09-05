@@ -68,6 +68,7 @@ public class CreatePossessionClaim implements CCDConfig<PCSCase, State, UserRole
     private final EnterPropertyAddress enterPropertyAddress;
     private final CrossBorderPostcodeSelection crossBorderPostcodeSelection;
     private final PropertyNotEligible propertyNotEligible;
+    private final NoticeDetails noticeDetails;
 
 
     @Override
@@ -100,7 +101,7 @@ public class CreatePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             .add(new PreActionProtocol())
             .add(new MediationAndSettlement())
             .add(new CheckingNotice())
-            .add(new NoticeDetails())
+            .add(noticeDetails)
             .add(new RentDetails())
             .add(new RentArrears());
     }
