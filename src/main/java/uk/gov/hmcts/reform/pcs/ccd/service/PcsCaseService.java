@@ -3,6 +3,7 @@ package uk.gov.hmcts.reform.pcs.ccd.service;
 import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
+import uk.gov.hmcts.ccd.sdk.api.HasLabel;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
@@ -15,6 +16,8 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.model.Defendant;
+import uk.gov.hmcts.reform.pcs.ccd.model.PossessionGrounds;
+import uk.gov.hmcts.reform.pcs.ccd.model.SecureOrFlexibleReasonsForGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.utils.ListValueUtils;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
@@ -24,7 +27,10 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
@@ -49,8 +55,8 @@ public class PcsCaseService {
                         ? pcsCase.getPreActionProtocolCompleted().toBoolean()
                         : null);
         pcsCaseEntity.setDefendants(mapFromDefendantDetails(pcsCase.getDefendants()));
-
         pcsCaseEntity.setTenancyLicence(buildTenancyLicence(pcsCase));
+        pcsCaseEntity.setPossessionGrounds(buildPossessionGrounds(pcsCase));
 
         return pcsCaseRepository.save(pcsCaseEntity);
     }
@@ -182,6 +188,31 @@ public class PcsCaseService {
             .dailyRentChargeAmount(pcsCase.getDailyRentChargeAmount() != null
                     ? new BigDecimal(pcsCase.getDailyRentChargeAmount()) : null)
                 .build();
+    }
+
+    private PossessionGrounds buildPossessionGrounds(PCSCase pcsCase) {
+        SecureOrFlexibleReasonsForGrounds reasons = Optional.ofNullable(pcsCase.getSecureOrFlexibleGroundsReasons())
+            .map(grounds -> modelMapper.map(grounds,
+                                            SecureOrFlexibleReasonsForGrounds.class))
+            .orElse(SecureOrFlexibleReasonsForGrounds.builder().build());
+
+        return PossessionGrounds.builder()
+            .discretionaryGrounds(mapToLabels(pcsCase.getSecureOrFlexibleDiscretionaryGrounds()))
+            .mandatoryGrounds(mapToLabels(pcsCase.getSecureOrFlexibleMandatoryGrounds()))
+            .discretionaryGroundsAlternativeAccommodation(mapToLabels(
+                pcsCase.getSecureOrFlexibleDiscretionaryGroundsAlt())
+            )
+            .mandatoryGroundsAlternativeAccommodation(mapToLabels(pcsCase.getSecureOrFlexibleMandatoryGroundsAlt()))
+            .secureOrFlexibleReasonsForGrounds(reasons)
+            .build();
+    }
+
+    private <T extends HasLabel> Set<String> mapToLabels(Set<T> items) {
+        return Optional.ofNullable(items)
+            .orElse(Collections.emptySet())
+            .stream()
+            .map(HasLabel::getLabel)
+            .collect(Collectors.toSet());
     }
 
     private static Boolean toBooleanOrNull(YesOrNo yesOrNo) {
