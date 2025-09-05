@@ -8,7 +8,10 @@ import { legislativeCountry } from '@data/page-data/legislativeCountry.page.data
 import { claimType } from '@data/page-data/claimType.page.data';
 import { claimantName } from '@data/page-data/claimantName.page.data';
 import { contactPreferences } from '@data/page-data/contactPreferences.page.data';
+import { defendantDetails } from '@data/page-data/defendantDetails.page.data';
 import { groundsForPossession } from '@data/page-data/groundsForPossession.page.data';
+import { rentArrearsPossessionGrounds } from '@data/page-data/rentArrearsPossessionGrounds.page.data';
+import { whatAreYourGrounds } from '@data/page-data/mandatoryAndDiscretionaryGrounds.page.data';
 import { preActionProtocol } from '@data/page-data/preActionProtocol.page.data';
 import { mediationAndSettlement } from '@data/page-data/mediationAndSettlement.page.data';
 import { checkingNotice } from '@data/page-data/checkingNotice.page.data';
@@ -16,7 +19,6 @@ import { noticeDetails } from '@data/page-data/noticeDetails.page.data';
 import { rentDetails } from '@data/page-data/rentDetails.page.data';
 import { userIneligible } from '@data/page-data/userIneligible.page.data';
 import { detailsOfrentArrears } from '@data/page-data/detailsOfrentArrears.page.data';
-import { defendantDetails } from "@data/page-data/defendantDetails.page.data";
 
 test.beforeEach(async ({page}, testInfo) => {
   initializeExecutor(page);
@@ -55,6 +57,12 @@ test.describe.skip('[Create Case Flow With Address and Claimant Type]  @Master @
     });
     await performValidation('mainHeader', groundsForPossession.mainHeader);
     await performAction('selectGroundsForPossession', groundsForPossession.yes);
+    await performAction('selectRentArrearsPossessionGround', {
+      rentArrears: [rentArrearsPossessionGrounds.rentArrears, rentArrearsPossessionGrounds.seriousRentArrears, rentArrearsPossessionGrounds.persistentDelayInPayingRent],
+      mandatory : [whatAreYourGrounds.mandatory.holidayLet,whatAreYourGrounds.mandatory.ownerOccupier],
+      discretionary :[whatAreYourGrounds.discretionary.domesticViolence,whatAreYourGrounds.discretionary.rentArrears],
+      otherGrounds: rentArrearsPossessionGrounds.yes
+    });
     await performValidation('mainHeader', preActionProtocol.mainHeader);
     await performAction('selectPreActionProtocol', preActionProtocol.yes);
     await performValidation('mainHeader', mediationAndSettlement.mainHeader);
@@ -103,6 +111,10 @@ test.describe.skip('[Create Case Flow With Address and Claimant Type]  @Master @
     });
     await performValidation('mainHeader', groundsForPossession.mainHeader);
     await performAction('selectGroundsForPossession', groundsForPossession.yes);
+    await performAction('selectRentArrearsPossessionGround', {
+      rentArrears: [rentArrearsPossessionGrounds.rentArrears],
+      otherGrounds: rentArrearsPossessionGrounds.no
+    });
     await performAction('selectPreActionProtocol', preActionProtocol.yes);
     await performAction('selectMediationAndSettlement', {
       attemptedMediationWithDefendantsOption: mediationAndSettlement.yes,
@@ -197,7 +209,7 @@ test.describe.skip('[Create Case Flow With Address and Claimant Type]  @Master @
       email: defendantDetails.no,
     });
     await performValidation('mainHeader', groundsForPossession.mainHeader);
-    await performAction('selectGroundsForPossission', groundsForPossession.yes);
+    await performAction('selectGroundsForPossession', groundsForPossession.no);
     await performAction('selectPreActionProtocol', preActionProtocol.yes);
     await performAction('selectMediationAndSettlement', {
       attemptedMediationWithDefendantsOption: mediationAndSettlement.yes,

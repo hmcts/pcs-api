@@ -4,9 +4,7 @@ import { IAction } from '../../interfaces/action.interface';
 
 export class CheckAction implements IAction {
   async execute(page: Page, action: string, fieldName: string): Promise<void> {
-    const locator = page.locator(`input[type="checkbox"][aria-label="${fieldName}"],
-           input[type="checkbox"][name="${fieldName}"],
-           label:has-text("${fieldName}") input[type="checkbox"]`);
+    const locator = page.getByRole('checkbox', { name: fieldName });
     await locator.check();
   }
 }
