@@ -312,7 +312,7 @@ public class PCSCase {
     private Set<SecureOrFlexibleMandatoryGrounds> secureOrFlexibleMandatoryGrounds;
 
     @CCD(
-        label = "Discretionary grounds(if alternative accommodation available)",
+        label = "Discretionary grounds (if alternative accommodation available)",
         hint = "Select all that apply",
         typeOverride = FieldType.MultiSelectList,
         typeParameterOverride = "SecureOrFlexibleDiscretionaryGroundsAlternativeAccomm",
@@ -321,7 +321,7 @@ public class PCSCase {
     private Set<SecureOrFlexibleDiscretionaryGroundsAlternativeAccomm> secureOrFlexibleDiscretionaryGroundsAlt;
 
     @CCD(
-        label = "Mandatory grounds(if alternative accommodation available)",
+        label = "Mandatory grounds (if alternative accommodation available)",
         hint = "Select all that apply",
         typeOverride = FieldType.MultiSelectList,
         typeParameterOverride = "SecureOrFlexibleMandatoryGroundsAlternativeAccomm",

@@ -4,8 +4,6 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import uk.gov.hmcts.ccd.sdk.api.HasLabel;
 
-import java.util.Arrays;
-
 @AllArgsConstructor
 @Getter
 public enum SecureOrFlexibleMandatoryGroundsAlternativeAccomm implements HasLabel {
@@ -17,10 +15,4 @@ public enum SecureOrFlexibleMandatoryGroundsAlternativeAccomm implements HasLabe
 
     private final String label;
 
-    public static SecureOrFlexibleMandatoryGroundsAlternativeAccomm fromLabel(String label) {
-        return Arrays.stream(values())
-            .filter(g -> g.getLabel().equals(label))
-            .findFirst()
-            .orElseThrow(() -> new IllegalArgumentException("No enum constant with label: " + label));
-    }
 }
