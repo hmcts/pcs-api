@@ -44,7 +44,7 @@ class TenancyLicenceTest extends BasePageTest {
 
     @ParameterizedTest
     @MethodSource("tenancyDateScenarios")
-    void shouldValidateTenancyLicenceDate(LocalDate date, Boolean isValid) {
+    void shouldThrowErrorWhenDateIsTodayOrInTheFuture(LocalDate date, Boolean isValid) {
         // Given
         CaseDetails<PCSCase, State> caseDetails = new CaseDetails<>();
 
