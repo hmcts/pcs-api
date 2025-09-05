@@ -94,7 +94,7 @@ Playwright 1.30+ | TypeScript 4.9+
 | selectNoticeOfYourIntention     | `performAction('selectNoticeOfYourIntention', checkingNotice.no)`                                                                                                                                          |
 | provideRentDetails              | `performAction('provideRentDetails', {rentFrequencyOption:'weekly', rentAmount:rentDetails.rentAmount})`                                                                                                   |
 | selectGroundsForPossession      | `performAction('selectGroundsForPossession', groundsForPossession.yes)`                                                                                                                                    |
-| selectNoticeDetails             | `performAction('selectNoticeDetails', {howDidYouServeNotice: noticeDetails.byFirstClassPost, day: '16', month: '07', year: '1985'})`                                                                       |
+| selectNoticeDetails             | `performAction('selectNoticeDetails', {howDidYouServeNotice: noticeDetails.byFirstClassPost, day: '', month: '', year: ''})`                                                                               |
 ### Validations
 | Validation        | Example Usage                                                                                                                        |
 |-------------------|--------------------------------------------------------------------------------------------------------------------------------------|
