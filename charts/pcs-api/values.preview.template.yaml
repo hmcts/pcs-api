@@ -8,8 +8,8 @@ java:
     pcs:
       secrets:
         - name: app-insights-connection-string
-        - name: pcs-api-s2s-secret
-          alias: PCS_API_S2S_SECRET
+        - name: pcs-api-s2s-secret-test
+          alias: PCS_API_S2S_SECRET_TEST
         - name: govnotify-test-key
           alias: PCS_NOTIFY_API_KEY
         - name: hmc-servicebus-connection-string
