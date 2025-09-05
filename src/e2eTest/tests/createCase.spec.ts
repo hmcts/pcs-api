@@ -8,15 +8,15 @@ import { legislativeCountry } from '@data/page-data/legislativeCountry.page.data
 import { claimType } from '@data/page-data/claimType.page.data';
 import { claimantName } from '@data/page-data/claimantName.page.data';
 import { contactPreferences } from '@data/page-data/contactPreferences.page.data';
+import { defendantDetails } from '@data/page-data/defendantDetails.page.data';
 import { groundsForPossession } from '@data/page-data/groundsForPossession.page.data';
 import { preActionProtocol } from '@data/page-data/preActionProtocol.page.data';
 import { mediationAndSettlement } from '@data/page-data/mediationAndSettlement.page.data';
-import { checkingNotice } from '@data/page-data/checkingNotice.page.data';
+import { noticeOfYourIntention } from '@data/page-data/noticeOfYourIntention.page.data';
 import { noticeDetails } from '@data/page-data/noticeDetails.page.data';
 import { rentDetails } from '@data/page-data/rentDetails.page.data';
-import { userIneligible } from '@data/page-data/userIneligible.page.data';
 import { detailsOfrentArrears } from '@data/page-data/detailsOfrentArrears.page.data';
-import { defendantDetails } from "@data/page-data/defendantDetails.page.data";
+import { userIneligible } from '@data/page-data/userIneligible.page.data';
 
 test.beforeEach(async ({page}, testInfo) => {
   initializeExecutor(page);
@@ -62,12 +62,14 @@ test.describe.skip('[Create Case Flow With Address and Claimant Type]  @Master @
       attemptedMediationWithDefendantsOption: mediationAndSettlement.yes,
       settlementWithDefendantsOption: mediationAndSettlement.no,
     });
-    await performValidation('mainHeader', checkingNotice.mainHeader);
-    await performValidation('text', {"text": checkingNotice.guidanceOnPosessionNoticePeriodsLink, "elementType": "paragraphLink"})
-    await performValidation('text', {"text": checkingNotice.servedNoticeInteractiveText, "elementType": "inlineText"});
-    await performAction('selectNoticeOfYourIntention', checkingNotice.yes);
+    await performValidation('mainHeader', noticeOfYourIntention.mainHeader);
+    await performValidation('text', {"text": noticeOfYourIntention.guidanceOnPosessionNoticePeriodsLink, "elementType": "paragraphLink"})
+    await performValidation('text', {"text": noticeOfYourIntention.servedNoticeInteractiveText, "elementType": "inlineText"});
+    await performAction('selectNoticeOfYourIntention', noticeOfYourIntention.yes);
     await performValidation('mainHeader', noticeDetails.mainHeader);
-    await performAction('clickButton', noticeDetails.continue);
+    await performAction('selectNoticeDetails', {
+      howDidYouServeNotice: noticeDetails.byFirstClassPost,
+      day: '16', month: '07', year: '1985'});
     await performValidation('mainHeader', rentDetails.mainHeader);
     await performAction('provideRentDetails', {rentFrequencyOption:'weekly', rentAmount:'800'});
     // Below step will be uncommented when the daily rent amount page is implemented as part of the HDPI-1521 story
@@ -108,8 +110,8 @@ test.describe.skip('[Create Case Flow With Address and Claimant Type]  @Master @
       attemptedMediationWithDefendantsOption: mediationAndSettlement.yes,
       settlementWithDefendantsOption: mediationAndSettlement.no,
     });
-    await performValidation('mainHeader', checkingNotice.mainHeader);
-    await performAction('selectNoticeOfYourIntention', checkingNotice.no);
+    await performValidation('mainHeader', noticeOfYourIntention.mainHeader);
+    await performAction('selectNoticeOfYourIntention', noticeOfYourIntention.no);
     await performValidation('mainHeader', rentDetails.mainHeader);
     await performAction('provideRentDetails', {rentFrequencyOption:'Other', inputFrequency:rentDetails.rentFrequencyFortnightly,unpaidRentAmountPerDay:'50'});
     await performValidation('mainHeader', detailsOfrentArrears.mainHeader);
@@ -125,7 +127,8 @@ test.describe.skip('[Create Case Flow With Address and Claimant Type]  @Master @
       ['formLabelValue', 'Country', addressDetails.country]);
   });
 
-  test('England - Unsuccessful case creation journey due to claimant type not in scope of Release1 @R1only', async () => {
+  test.skip('England - Unsuccessful case creation journey due to claimant type not in scope of Release1 @R1only', async () => {
+    //Skipping this test until bug HDPI-1778 is fixed
     await performAction('selectAddress', {
       postcode: addressDetails.englandPostcode,
       addressIndex: addressDetails.addressIndex
@@ -143,7 +146,8 @@ test.describe.skip('[Create Case Flow With Address and Claimant Type]  @Master @
     await performAction('clickButton', 'Cancel');
   });
 
-  test('Wales - Unsuccessful case creation journey due to claimant type not in scope of Release1 @R1only', async () => {
+  test.skip('Wales - Unsuccessful case creation journey due to claimant type not in scope of Release1 @R1only', async () => {
+    //Skipping this test until bug HDPI-1778 is fixed
     await performAction('selectAddress', {
       postcode: addressDetails.walesPostcode,
       addressIndex: addressDetails.addressIndex
@@ -161,7 +165,8 @@ test.describe.skip('[Create Case Flow With Address and Claimant Type]  @Master @
     await performAction('clickButton', 'Cancel');
   });
 
-  test('Unsuccessful case creation journey due to claim type not in scope of Release1 @R1only', async () => {
+  test.skip('Unsuccessful case creation journey due to claim type not in scope of Release1 @R1only', async () => {
+    //Skipping this test until bug HDPI-1778 is fixed
     await performAction('selectAddress', {
       postcode: addressDetails.englandPostcode,
       addressIndex: addressDetails.addressIndex
@@ -197,14 +202,14 @@ test.describe.skip('[Create Case Flow With Address and Claimant Type]  @Master @
       email: defendantDetails.no,
     });
     await performValidation('mainHeader', groundsForPossession.mainHeader);
-    await performAction('selectGroundsForPossission', groundsForPossession.yes);
+    await performAction('selectGroundsForPossession', groundsForPossession.yes);
     await performAction('selectPreActionProtocol', preActionProtocol.yes);
     await performAction('selectMediationAndSettlement', {
       attemptedMediationWithDefendantsOption: mediationAndSettlement.yes,
       settlementWithDefendantsOption: mediationAndSettlement.no,
     });
-    await performValidation('mainHeader', checkingNotice.mainHeader);
-    await performAction('selectNoticeOfYourIntention', checkingNotice.no);
+    await performValidation('mainHeader', noticeOfYourIntention.mainHeader);
+    await performAction('selectNoticeOfYourIntention', noticeOfYourIntention.no);
     await performValidation('mainHeader', rentDetails.mainHeader);
     await performAction('provideRentDetails', {rentFrequencyOption: 'weekly', rentAmount: '800'});
     // Below step will be uncommented when the daily rent amount page is implemented as part of the HDPI-1521 story

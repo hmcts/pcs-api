@@ -40,6 +40,7 @@ export class CreateCaseAction implements IAction {
       ['selectPreActionProtocol', () => this.selectPreActionProtocol(fieldName)],
       ['selectMediationAndSettlement', () => this.selectMediationAndSettlement(fieldName)],
       ['selectNoticeOfYourIntention', () => this.selectNoticeOfYourIntention(fieldName)],
+      ['selectNoticeDetails', () => this.selectNoticeDetails(fieldName)],
       ['selectCountryRadioButton', () => this.selectCountryRadioButton(fieldName)],
       ['provideRentDetails', () => this.provideRentDetails(fieldName)]
     ]);
@@ -215,6 +216,23 @@ private async defendantDetails(defendantVal: actionData) {
     await performAction('clickButton', 'Continue');
   }
 
+  private async selectNoticeDetails(noticeData: actionData) {
+    const noticeDetailsData = noticeData as {
+      howDidYouServeNotice: string;
+      day?: string;
+      month?: string;
+      year?: string;
+    };
+    await performAction('clickRadioButton', noticeDetailsData.howDidYouServeNotice);
+    if(noticeDetailsData.day && noticeDetailsData.month &&  noticeDetailsData.year) {
+      await performActions('Enter Day Month Year'
+        ,['inputText', 'Day', noticeDetailsData.day]
+        ,['inputText', 'Month', noticeDetailsData.month]
+        ,['inputText', 'Year', noticeDetailsData.year]);
+    }
+    await performAction('clickButton', 'Continue');
+  }
+
   private async selectJurisdictionCaseTypeEvent() {
     await performActions('Case option selection'
       , ['select', 'Jurisdiction', createCase.possessionsJurisdiction]
@@ -284,7 +302,6 @@ private async defendantDetails(defendantVal: actionData) {
         state: response.data.state,
       };
     } catch (err) {
-      throw err
       throw new Error('Case could not be created.');
     }
   }
