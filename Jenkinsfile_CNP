@@ -85,6 +85,8 @@ withPipeline(type, product, component) {
 
   afterAlways('functionalTest:aat') {
     archiveFunctionalTestReports()
+    //Skipping e2e tests as the decentralisation is not currently supported in aat
+    //runE2eTests(env.ENVIRONMENT)
   }
 }
 
