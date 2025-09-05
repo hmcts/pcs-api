@@ -9,6 +9,8 @@ import { claimType } from '@data/page-data/claimType.page.data';
 import { claimantName } from '@data/page-data/claimantName.page.data';
 import { contactPreferences } from '@data/page-data/contactPreferences.page.data';
 import { groundsForPossession } from '@data/page-data/groundsForPossession.page.data';
+import { whatAreYourGrounds } from "@data/page-data/mandatoryAndDiscretionaryGrounds.page.data";
+import { reasonsForPossession } from "@data/page-data/reasonForPossession.page.data";
 import { preActionProtocol } from '@data/page-data/preActionProtocol.page.data';
 import { mediationAndSettlement } from '@data/page-data/mediationAndSettlement.page.data';
 import { checkingNotice } from '@data/page-data/checkingNotice.page.data';
