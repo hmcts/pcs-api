@@ -1,12 +1,13 @@
 package uk.gov.hmcts.reform.pcs.ccd.domain.model;
 
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.type.FieldType;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseworkerAccess;
-import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenAccess;
 
-import static uk.gov.hmcts.ccd.sdk.type.FieldType.Label;
 import static uk.gov.hmcts.ccd.sdk.type.FieldType.TextArea;
 
 @Builder

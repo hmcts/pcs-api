@@ -39,8 +39,8 @@ public class GroundsForPossessionOptions implements CcdPageConfiguration {
                 You should select these grounds here and any extra grounds you’d like to add to your claim,
                 if you need to.</p>""")
             .label("groundsForPossessionOptions-information-link",
-                   "<p class=\"govuk-body\"><a href=\"javascript:void(0)\" " +
-                       "class=\"govuk-link\">More information about possession grounds (opens in new tab)</a>.</p>")
+                   "<p class=\"govuk-body\"><a href=\"javascript:void(0)\" "
+                       + "class=\"govuk-link\">More information about possession grounds (opens in new tab)</a>.</p>")
             .optional(PCSCase::getMandatoryGroundsOptionsList)
             .optional(PCSCase::getDiscretionaryGroundsOptionsList);
 
@@ -61,7 +61,7 @@ public class GroundsForPossessionOptions implements CcdPageConfiguration {
             .map(i -> MandatoryGrounds.fromLabel(i.getLabel()))
             .collect(Collectors.toSet());
 
-        if(selectedMandatoryOptions.isEmpty() && selectedDiscretionaryOptions.isEmpty()) {
+        if (selectedMandatoryOptions.isEmpty() && selectedDiscretionaryOptions.isEmpty()) {
             return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
                 .errors(List.of("Please select at least one ground"))
                 .build();

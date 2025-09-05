@@ -1,6 +1,5 @@
 package uk.gov.hmcts.reform.pcs.postcodecourt.model;
 
-import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.Getter;
 import uk.gov.hmcts.ccd.sdk.api.HasLabel;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType;
