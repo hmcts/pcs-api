@@ -8,12 +8,12 @@ export const whatAreYourGrounds = {
 
 
     {
-      ownerOccupier: 'Owner Occupier (ground 1)',
+      ownerOccupier: 'Owner occupier (ground 1)',
       holidayLet: 'Holiday let (ground 3)'
     },
   discretionary:
     {
-      rentArrears: 'Rent Arrears (ground 10)',
+      rentArrears: 'Rent arrears (ground 10)',
       domesticViolence: 'Domestic violence (ground 14A)'
     },
 };

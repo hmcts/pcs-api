@@ -34,7 +34,7 @@ test.beforeEach(async ({page}, testInfo) => {
   await performAction('housingPossessionClaim');
 });
 
-test.describe.skip('[Create Case Flow With Address and Claimant Type]  @Master @nightly', async () => {
+test.describe('[Create Case Flow With Address and Claimant Type]  @Master @nightly', async () => {
   test('England - Successful case creation', async () => {
     await performAction('selectAddress', {
       postcode: addressDetails.englandPostcode,
@@ -198,8 +198,22 @@ test.describe.skip('[Create Case Flow With Address and Claimant Type]  @Master @
       correspondenceAddress: defendantDetails.no,
       email: defendantDetails.no,
     });
+    //This page should not come
+    await performAction('clickRadioButton','Assured tenancy')
+    await performAction('clickButton', 'Continue');
     await performValidation('mainHeader', groundsForPossession.mainHeader);
-    await performAction('selectGroundsForPossission', groundsForPossession.yes);
+    await performAction('selectGroundsForPossession', groundsForPossession.no);
+    //HDPI-1543-Test-Automation-Possession-Grounds-No-Rent-Arrears-screens
+    await performValidation('mainHeader', whatAreYourGrounds.mainHeader);
+    await performAction('selectMandatoryAndDiscretionaryGrounds', {
+      mandatory : [whatAreYourGrounds.mandatory.holidayLet,whatAreYourGrounds.mandatory.ownerOccupier],
+      discretionary :[whatAreYourGrounds.discretionary.domesticViolence,whatAreYourGrounds.discretionary.rentArrears]
+    });
+    await performValidation('mainHeader', reasonsForPossession.mainHeader);
+    await performAction('enterReasonForPossession'
+        , [whatAreYourGrounds.mandatory.holidayLet,whatAreYourGrounds.mandatory.ownerOccupier
+        ,  whatAreYourGrounds.discretionary.domesticViolence,whatAreYourGrounds.discretionary.rentArrears]);
+    //
     await performAction('selectPreActionProtocol', preActionProtocol.yes);
     await performAction('selectMediationAndSettlement', {
       attemptedMediationWithDefendantsOption: mediationAndSettlement.yes,

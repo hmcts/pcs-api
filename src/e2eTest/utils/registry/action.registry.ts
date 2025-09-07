@@ -33,6 +33,7 @@ export class ActionRegistry {
     ['housingPossessionClaim', new CreateCaseAction()],
     ['selectGroundsForPossission', new CreateCaseAction()],
     ['selectMandatoryAndDiscretionaryGrounds', new CreateCaseAction()],
+    ['enterReasonForPossession', new CreateCaseAction()],
     ['selectPreActionProtocol', new CreateCaseAction()],
     ['selectMediationAndSettlement', new CreateCaseAction()],
     ['selectNoticeOfYourIntention', new CreateCaseAction()],

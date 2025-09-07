@@ -37,7 +37,7 @@ export class CreateCaseAction implements IAction {
       ['selectClaimType', () => this.selectClaimType(fieldName)],
       ['selectClaimantName', () => this.selectClaimantName(fieldName)],
       ['selectContactPreferences', () => this.selectContactPreferences(fieldName)],
-      ['selectGroundsForPossission', () => this.selectGroundsForPossission(fieldName)],
+      ['selectGroundsForPossession', () => this.selectGroundsForPossession(fieldName)],
       ['selectMandatoryAndDiscretionaryGrounds', () => this.selectMandatoryAndDiscretionaryGrounds(fieldName)],
       ['enterReasonForPossession', () => this.enterReasonForPossession(fieldName)],
       ['selectPreActionProtocol', () => this.selectPreActionProtocol(fieldName)],
@@ -100,16 +100,12 @@ export class CreateCaseAction implements IAction {
   }
 
   private async selectMandatoryAndDiscretionaryGrounds(caseData: actionData) {
-    // if (typeof caseData === 'object' && caseData !== null && 'list1' in caseData && 'list2' in caseData) {
-    //   const combined = [...(caseData as any).list1, ...(caseData as any).list2];
     const grounds = caseData as Record<string, string[]>;
     const groundsToBeSelected = Object.values(grounds).flat();
-
       for (const selectGround of groundsToBeSelected) {
         await performAction('check', selectGround);
       }
       await performAction('clickButton', 'Continue');
-    //}
   }
 
   private async enterReasonForPossession(caseData: actionData) {

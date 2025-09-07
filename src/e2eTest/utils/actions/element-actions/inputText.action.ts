@@ -11,7 +11,9 @@ export class InputTextAction implements IAction {
            label:has-text("${fieldName}") ~ input,
            [aria-label="${fieldName}"],
            label:has-text("${fieldName}")+ div input,
-           [placeholder="${fieldName}"]`);
+           [placeholder="${fieldName}"],
+           fieldset:has(h2:text("${fieldName}")) textarea,
+           fieldset:has-text("${fieldName}") textarea`);
     await locator.fill(value);
   }
 }
