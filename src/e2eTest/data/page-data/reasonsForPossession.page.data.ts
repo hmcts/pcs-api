@@ -1,5 +1,5 @@
 export const reasonsForPossession = {
   title: 'Create a case - HM Courts & Tribunals Service - GOV.UK',
-  mainHeader: 'Reason for possession',
+  mainHeader: 'Reasons for possession',
   explanation: 'Reasons For possession Page - Sample Test'
 };
