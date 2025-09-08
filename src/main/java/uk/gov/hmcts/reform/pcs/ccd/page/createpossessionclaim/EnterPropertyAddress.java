@@ -35,7 +35,15 @@ public class EnterPropertyAddress implements CcdPageConfiguration {
             .page("enterPropertyAddress", this::midEvent)
             .pageLabel("What is the address of the property you're claiming possession of?")
             .label("enterPropertyAddress-lineSeparator", "---")
-            .mandatory(PCSCase::getPropertyAddress);
+            .complex(PCSCase::getPropertyAddress)
+                .mandatory(AddressUK::getAddressLine1)
+                .optional(AddressUK::getAddressLine2)
+                .optional(AddressUK::getAddressLine3)
+                .mandatory(AddressUK::getPostTown)
+                .optional(AddressUK::getCounty)
+                .optional(AddressUK::getCountry)
+                .mandatoryWithLabel(AddressUK::getPostCode, "Postcode")
+            .done();
     }
 
     /*

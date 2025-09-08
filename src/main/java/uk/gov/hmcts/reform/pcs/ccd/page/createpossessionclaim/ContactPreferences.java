@@ -68,7 +68,15 @@ public class ContactPreferences implements CcdPageConfiguration {
                 </p>
                 """)
             .mandatory(PCSCase::getIsCorrectClaimantContactAddress)
-            .mandatory(PCSCase::getOverriddenClaimantContactAddress, "isCorrectClaimantContactAddress=\"NO\"")
+            .complex(PCSCase::getOverriddenClaimantContactAddress, "isCorrectClaimantContactAddress=\"NO\"")
+                .mandatory(AddressUK::getAddressLine1)
+                .optional(AddressUK::getAddressLine2)
+                .optional(AddressUK::getAddressLine3)
+                .mandatory(AddressUK::getPostTown)
+                .optional(AddressUK::getCounty)
+                .optional(AddressUK::getCountry)
+                .mandatoryWithLabel(AddressUK::getPostCode, "Postcode")
+            .done()
 
             // Phone section
             .label("contactPreferences-phoneNumber-question", """
