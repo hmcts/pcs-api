@@ -40,7 +40,7 @@ public class SendLetterService {
 
     public SendLetterService(SendLetterApi sendLetterApi,
                              AuthTokenGenerator authTokenGenerator, IdamService idamService,
-                             @Value("${ccd.ccd-data-store-api.java.environment.CASE_DOCUMENT_AM_URL}")
+                             @Value("${cdam.url")
                              String caseDocumentUrl) {
 
         this.sendLetterApi = sendLetterApi;
