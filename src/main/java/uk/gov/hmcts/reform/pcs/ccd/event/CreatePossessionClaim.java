@@ -32,8 +32,8 @@ import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.CrossBorderPostcod
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.DefendantsDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.EnterPropertyAddress;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.GroundsForPossession;
-import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.GroundsForPossessionOptions;
-import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.GroundsForPossessionReason;
+import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.NoRentArrearsGroundsForPossessionOptions;
+import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.NoRentArrearsGroundsForPossessionReason;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.MediationAndSettlement;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.NoticeDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.PostcodeNotAssignedToCourt;
@@ -102,8 +102,8 @@ public class CreatePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             .add(new DefendantsDetails())
             .add(tenancyLicenceDetails)
             .add(new GroundsForPossession())
-            .add(new GroundsForPossessionOptions())
-            .add(new GroundsForPossessionReason())
+            .add(new NoRentArrearsGroundsForPossessionOptions())
+            .add(new NoRentArrearsGroundsForPossessionReason())
             .add(new PreActionProtocol())
             .add(new MediationAndSettlement())
             .add(new CheckingNotice())

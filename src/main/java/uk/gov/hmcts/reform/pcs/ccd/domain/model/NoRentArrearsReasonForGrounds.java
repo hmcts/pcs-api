@@ -14,7 +14,7 @@ import static uk.gov.hmcts.ccd.sdk.type.FieldType.TextArea;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class ReasonForGrounds {
+public class NoRentArrearsReasonForGrounds {
 
     // Ground 1
     @CCD(label = """

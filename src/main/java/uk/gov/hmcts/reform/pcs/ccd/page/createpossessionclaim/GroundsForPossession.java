@@ -33,14 +33,14 @@ public class GroundsForPossession implements CcdPageConfiguration {
 
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
                                                                   CaseDetails<PCSCase, State> detailsBefore) {
-        PCSCase pcsCase = details.getData();
+        PCSCase caseData = details.getData();
 
         //resetting options
-        pcsCase.setMandatoryGroundsOptionsList(Set.of());
-        pcsCase.setDiscretionaryGroundsOptionsList(Set.of());
+        caseData.setNoRentArrearsMandatoryGroundsOptions(Set.of());
+        caseData.setNoRentArrearsDiscretionaryGroundsOptions(Set.of());
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
-            .data(pcsCase)
+            .data(caseData)
             .build();
     }
 }

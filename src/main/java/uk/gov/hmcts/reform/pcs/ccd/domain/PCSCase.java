@@ -3,6 +3,7 @@ package uk.gov.hmcts.reform.pcs.ccd.domain;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import lombok.Builder;
 import lombok.Data;
 import uk.gov.hmcts.ccd.sdk.External;
@@ -14,7 +15,7 @@ import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseworkerAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenAccess;
-import uk.gov.hmcts.reform.pcs.ccd.domain.model.ReasonForGrounds;
+import uk.gov.hmcts.reform.pcs.ccd.domain.model.NoRentArrearsReasonForGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
@@ -35,7 +36,7 @@ import static uk.gov.hmcts.ccd.sdk.type.FieldType.TextArea;
 public class PCSCase {
 
     @CCD(searchable = false, access = {CitizenAccess.class, CaseworkerAccess.class})
-    private final YesOrNo decentralised;
+    private final YesOrNo decentralised = YesOrNo.YES;;
 
     @CCD(
         label = "Claimant Name",
@@ -300,28 +301,13 @@ public class PCSCase {
     private YesOrNo groundsForPossession;
 
     @CCD(
-        typeOverride = MultiSelectList,
-        typeParameterOverride = "NoRentArrearsMandatoryGrounds",
-        access = {CaseworkerAccess.class}
-    )
-    private Set<NoRentArrearsMandatoryGrounds> selectedNoRentArrearsMandatoryGrounds;
-
-    @CCD(
-        hint = "Select all that apply",
-        typeOverride = MultiSelectList,
-        typeParameterOverride = "NoRentArrearsDiscretionaryGrounds"
-    )
-    private Set<NoRentArrearsDiscretionaryGrounds> selectedNoRentArrearsDiscretionaryGrounds;
-
-
-    @CCD(
         label = "Mandatory grounds",
         hint = "Select all that apply",
         typeOverride = MultiSelectList,
         typeParameterOverride = "NoRentArrearsMandatoryGrounds",
         access = { CaseworkerAccess.class }
     )
-    private Set<NoRentArrearsMandatoryGrounds> mandatoryGroundsOptionsList;
+    private Set<NoRentArrearsMandatoryGrounds> noRentArrearsMandatoryGroundsOptions;
 
     @CCD(
         label = "Discretionary grounds",
@@ -330,9 +316,10 @@ public class PCSCase {
         typeParameterOverride = "NoRentArrearsDiscretionaryGrounds",
         access = { CaseworkerAccess.class }
     )
-    private Set<NoRentArrearsDiscretionaryGrounds> discretionaryGroundsOptionsList;
+    private Set<NoRentArrearsDiscretionaryGrounds> noRentArrearsDiscretionaryGroundsOptions;
 
+    @JsonUnwrapped
     @CCD(access = {CaseworkerAccess.class})
-    private ReasonForGrounds reasonForGrounds;
+    private NoRentArrearsReasonForGrounds noRentArrearsReasonForGrounds;
 
 }

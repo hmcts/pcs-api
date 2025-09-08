@@ -2,32 +2,43 @@ package uk.gov.hmcts.reform.pcs.ccd.domain;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.api.HasLabel;
 
 import java.util.Arrays;
 
 @AllArgsConstructor
 @Getter
-public enum NoRentArrearsMandatoryGrounds implements HasLabel {
+public enum NoRentArrearsMandatoryGrounds {
 
-    OWNER_OCCUPIER("Owner occupier (ground 1)"),
-    REPOSSESSION_BY_LENDER("Repossession by the landlord's mortgage lender (ground 2)"),
-    HOLIDAY_LET("Holiday let (ground 3)"),
-    STUDENT_LET("Student let (ground 4)"),
-    MINISTER_OF_RELIGION("Property required for minister of religion (ground 5)"),
-    REDEVELOPMENT("Property required for redevelopment (ground 6)"),
-    DEATH_OF_TENANT("Death of the tenant (ground 7)"),
-    ANTISOCIAL_BEHAVIOUR("Antisocial behaviour (ground 7A)"),
-    NO_RIGHT_TO_RENT("Tenant does not have a right to rent (ground 7B)"),
-    SERIOUS_RENT_ARREARS("Serious rent arrears (ground 8)");
+    @CCD(label = "Owner occupier (ground 1)")
+    OWNER_OCCUPIER,
 
-    private final String label;
+    @CCD(label = "Repossession by the landlord's mortgage lender (ground 2)")
+    REPOSSESSION_BY_LENDER,
 
-    public static NoRentArrearsMandatoryGrounds fromLabel(String label) {
-        return Arrays.stream(values())
-            .filter(g -> g.getLabel().equals(label))
-            .findFirst()
-            .orElseThrow(() -> new IllegalArgumentException("No enum constant with label: " + label));
-    }
+    @CCD(label = "Holiday let (ground 3)")
+    HOLIDAY_LET,
+
+    @CCD(label = "Student let (ground 4)")
+    STUDENT_LET,
+
+    @CCD(label = "Property required for minister of religion (ground 5)")
+    MINISTER_OF_RELIGION,
+
+    @CCD(label = "Property required for redevelopment (ground 6)")
+    REDEVELOPMENT,
+
+    @CCD(label = "Death of the tenant (ground 7)")
+    DEATH_OF_TENANT,
+
+    @CCD(label = "Antisocial behaviour (ground 7A)")
+    ANTISOCIAL_BEHAVIOUR,
+
+    @CCD(label = "Tenant does not have a right to rent (ground 7B)")
+    NO_RIGHT_TO_RENT,
+
+    @CCD(label = "Serious rent arrears (ground 8)")
+    SERIOUS_RENT_ARREARS
 }
 

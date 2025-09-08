@@ -29,8 +29,8 @@ public class GroundsForPossessionTest extends BasePageTest {
         // Given: One mandatory and one discretionary is selected
         CaseDetails<PCSCase, State> caseDetails = new CaseDetails<>();
         PCSCase caseData = PCSCase.builder()
-            .discretionaryGroundsOptionsList(Set.of(NoRentArrearsDiscretionaryGrounds.DOMESTIC_VIOLENCE))
-            .mandatoryGroundsOptionsList(Set.of(NoRentArrearsMandatoryGrounds.ANTISOCIAL_BEHAVIOUR))
+            .noRentArrearsDiscretionaryGroundsOptions(Set.of(NoRentArrearsDiscretionaryGrounds.DOMESTIC_VIOLENCE))
+            .noRentArrearsMandatoryGroundsOptions(Set.of(NoRentArrearsMandatoryGrounds.ANTISOCIAL_BEHAVIOUR))
             .build();
 
         caseDetails.setData(caseData);
@@ -40,8 +40,8 @@ public class GroundsForPossessionTest extends BasePageTest {
         midEvent.handle(caseDetails, null);
 
         // Then: Set should be cleared
-        assertThat(caseDetails.getData().getMandatoryGroundsOptionsList()).isEmpty();
-        assertThat(caseDetails.getData().getDiscretionaryGroundsOptionsList()).isEmpty();
+        assertThat(caseDetails.getData().getNoRentArrearsMandatoryGroundsOptions()).isEmpty();
+        assertThat(caseDetails.getData().getNoRentArrearsDiscretionaryGroundsOptions()).isEmpty();
 
     }
 }
