@@ -35,6 +35,10 @@ public class NoticeDetails implements CcdPageConfiguration {
             .page("noticeDetails", this::midEvent)
             .pageLabel("Notice details")
             .showCondition("noticeServed=\"Yes\"")
+            .label("noticeDetails-title", """
+                ---
+                <h2 class="govuk-heading-m">How did you serve the notice?</h2>
+                """)
             .mandatory(PCSCase::getNoticeServiceMethod)
 
             // First class post
@@ -62,7 +66,7 @@ public class NoticeDetails implements CcdPageConfiguration {
 
             // Personally handed
             .label("noticeDetails-personallyHanded-section", """
-                <h3 class="govuk-heading-s">By personally handing it to someone or leaving it with someone</h3>
+                <h3 class="govuk-heading-s">By personally handing it to or leaving it with someone</h3>
                 <p class="govuk-body">Name of person the document was left with</p>
                 """, NOTICE_SERVICE_METHOD_CONDITION + NoticeServiceMethod.PERSONALLY_HANDED + "\"")
             .optional(
