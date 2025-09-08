@@ -31,17 +31,22 @@ import java.util.List;
 import java.util.Map;
 
 @Service
-@AllArgsConstructor
 @Slf4j
 public class SendLetterService {
 
-    private SendLetterApi sendLetterApi;
-    private AuthTokenGenerator authTokenGenerator;
-    private IdamService idamService;
+    private final SendLetterApi sendLetterApi;
+    private final AuthTokenGenerator authTokenGenerator;
+    private final IdamService idamService;
+    private final String caseDocumentUrl;
 
-    @Value("${CASE_DOCUMENT_AM_URL}")
-    private String caseDocumentUrl;
+    public SendLetterService(SendLetterApi sendLetterApi, AuthTokenGenerator authTokenGenerator,
+                             IdamService idamService, @Value("${CASE_DOCUMENT_AM_URL}") String caseDocumentUrl) {
 
+        this.sendLetterApi = sendLetterApi;
+        this.authTokenGenerator = authTokenGenerator;
+        this.idamService = idamService;
+        this.caseDocumentUrl = caseDocumentUrl;
+    }
 
     public void sendLetterv2(String documentId) {
 
