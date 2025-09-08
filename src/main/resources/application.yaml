@@ -131,5 +131,7 @@ doc-assembly:
   s2s-authorised:
     services: pcs_api,ccd_data,ccd_gw,ccd_case_document_am_api,ccd_definition,ccd_admin,ccd_ps,ccd
 
+cdam:
+  url: ${CDAM_URL:AAAAA}
 send-letter:
   url: http://rpe-send-letter-service-aat.service.core-compute-aat.internal
