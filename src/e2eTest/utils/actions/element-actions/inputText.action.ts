@@ -61,10 +61,12 @@ export class InputTextAction implements IAction {
     }
     if (typeof fieldParams === 'string') {
       locator = page.locator(`
-        :has-text("${fieldParams}") ~ input,
-        :has-text("${fieldParams}") + input,
-        label:has-text("${fieldParams}") + textarea,
-        label:has-text("${fieldParams}") + div input
+           label:has-text("${fieldName}") + input,
+           label:has-text("${fieldName}") + textarea,
+           label:has-text("${fieldName}") ~ input,
+           [aria-label="${fieldName}"],
+           label:has-text("${fieldName}")+ div input,
+           [placeholder="${fieldName}"]
       `);
     } else {
       locator = page
