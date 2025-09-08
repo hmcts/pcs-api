@@ -42,6 +42,7 @@ export class CreateCaseAction implements IAction {
       ['selectMediationAndSettlement', () => this.selectMediationAndSettlement(fieldName)],
       ['selectNoticeOfYourIntention', () => this.selectNoticeOfYourIntention(fieldName)],
       ['selectCountryRadioButton', () => this.selectCountryRadioButton(fieldName)],
+      ['selectOtherGrounds', () => this.selectOtherGrounds(fieldName)],
       ['provideRentDetails', () => this.provideRentDetails(fieldName)]
     ]);
     const actionToPerform = actionsMap.get(action);
@@ -197,26 +198,23 @@ private async defendantDetails(defendantVal: actionData) {
   private async selectRentArrearsPossessionGround(rentArrearsPossessionGrounds: actionData) {
     const rentArrearsGrounds = rentArrearsPossessionGrounds as {
       rentArrears: string[];
-      mandatory?: string[];
-      discretionary?: string[];
       otherGrounds: string;
     };
-    for (const arrears of rentArrearsGrounds.rentArrears) {
-      await performAction('check', arrears);
-    }
+    await performAction('check', rentArrearsGrounds.rentArrears);
     await performAction('clickRadioButton', rentArrearsGrounds.otherGrounds);
-    await performAction('clickButton', 'Continue')
-    if (rentArrearsGrounds.otherGrounds === 'Yes') {
-      if (rentArrearsGrounds.mandatory && rentArrearsGrounds.discretionary) {
-        for (const otherGround of rentArrearsGrounds.mandatory) {
-          await performAction('check', otherGround);
-        }
-        for (const otherGround of rentArrearsGrounds.discretionary) {
-          await performAction('check', otherGround);
-        }
-      }
-      await performAction('clickButton', 'Continue');
+    await performAction('clickButton', 'Continue');
+  }
+
+  private async selectOtherGrounds(otherRentArrearsGrounds: actionData){
+    const otherGrounds = otherRentArrearsGrounds as {
+      mandatory?: string[];
+      discretionary?: string[];
     }
+    if (otherGrounds.mandatory && otherGrounds.discretionary) {
+      await performAction('check', otherGrounds.mandatory);
+      await performAction('check', otherGrounds.discretionary);
+    }
+    await performAction('clickButton', 'Continue');
   }
 
   private async selectMediationAndSettlement(mediationSettlement: actionData) {

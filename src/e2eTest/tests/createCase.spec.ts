@@ -59,10 +59,12 @@ test.describe.skip('[Create Case Flow With Address and Claimant Type]  @Master @
     await performAction('selectGroundsForPossession', groundsForPossession.yes);
     await performAction('selectRentArrearsPossessionGround', {
       rentArrears: [rentArrearsPossessionGrounds.rentArrears, rentArrearsPossessionGrounds.seriousRentArrears, rentArrearsPossessionGrounds.persistentDelayInPayingRent],
-      mandatory : [whatAreYourGrounds.mandatory.holidayLet,whatAreYourGrounds.mandatory.ownerOccupier],
-      discretionary :[whatAreYourGrounds.discretionary.domesticViolence,whatAreYourGrounds.discretionary.rentArrears],
       otherGrounds: rentArrearsPossessionGrounds.yes
     });
+    await performAction('selectOtherGrounds',{
+      mandatory: [whatAreYourGrounds.mandatory.holidayLet,whatAreYourGrounds.mandatory.ownerOccupier],
+      discretionary: [whatAreYourGrounds.discretionary.domesticViolence,whatAreYourGrounds.discretionary.rentArrears],
+    })
     await performValidation('mainHeader', preActionProtocol.mainHeader);
     await performAction('selectPreActionProtocol', preActionProtocol.yes);
     await performValidation('mainHeader', mediationAndSettlement.mainHeader);

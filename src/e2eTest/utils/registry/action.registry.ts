@@ -37,6 +37,7 @@ export class ActionRegistry {
     ['selectMediationAndSettlement', new CreateCaseAction()],
     ['selectNoticeOfYourIntention', new CreateCaseAction()],
     ['selectCountryRadioButton', new CreateCaseAction()],
+    ['selectOtherGrounds', new CreateCaseAction()],
     ['provideRentDetails', new CreateCaseAction()],
   ]);
 

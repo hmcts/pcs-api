@@ -95,6 +95,7 @@ Playwright 1.30+ | TypeScript 4.9+
 | provideRentDetails                | `performAction('provideRentDetails', {rentFrequencyOption:'weekly', rentAmount:rentDetails.rentAmount})`                                                                                                   |
 | selectGroundsForPossession        | `performAction('selectGroundsForPossession', groundsForPossession.yes)`                                                                                                                                    |
 | selectRentArrearsPossessionGround | `performAction('selectRentArrearsPossessionGround', {rentArrears: [rentArrearsPossessionGrounds.rentArrears], otherGrounds: rentArrearsPossessionGrounds.no})`                                             |
+| selectOtherGrounds                | `performAction('selectOtherGrounds', {mandatory: [‘holidayLet’, ‘ownerOccupier’], discretionary :[‘domesticViolence’,’rentArrears’]})`                                                                     |
 ### Validations
 | Validation        | Example Usage                                                                                                                        |
 |-------------------|--------------------------------------------------------------------------------------------------------------------------------------|
