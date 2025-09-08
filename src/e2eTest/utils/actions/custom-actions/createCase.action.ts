@@ -246,12 +246,12 @@ export class CreateCaseAction implements IAction {
   private async createCaseAction(caseData: actionData): Promise<void> {
     process.env.S2S_URL = accessTokenApiData.s2sUrl;
     process.env.SERVICE_AUTH_TOKEN = await new ServiceAuthUtils().retrieveToken({microservice: caseApiData.microservice});
-    process.env.IDAM_AUTH_TOKEN = (await Axios.create().post('/o/token', accessTokenApiData.accessTokenApiPayload)).data.access_token;
+    process.env.IDAM_AUTH_TOKEN = (await Axios.create().post(accessTokenApiData.accessTokenApiEndPoint, accessTokenApiData.accessTokenApiPayload)).data.access_token;
     const createCaseApi = Axios.create(caseApiData.createCaseApiInstance);
-    process.env.EVENT_TOKEN = (await createCaseApi.get(`/case-types/PCS-${process.env.CHANGE_ID}/event-triggers/createPossessionClaim`)).data.token;
+    process.env.EVENT_TOKEN = (await createCaseApi.get(caseApiData.eventTokenApiEndPoint)).data.token;
     const payloadData = typeof caseData === 'object' && 'data' in caseData ? caseData.data : caseData;
     try {
-      const response = await createCaseApi.post(`/case-types/${caseApiData.caseType}/cases`,
+      const response = await createCaseApi.post(caseApiData.createCaseApiEndPoint,
         {
           data: payloadData,
           event: {id: `${caseApiData.eventName}`},

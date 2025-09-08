@@ -1,7 +1,5 @@
 export const caseApiData = {
   microservice: 'ccd_data',
-  endPoint: '/testing-support/lease',
-  caseType: `PCS-${process.env.CHANGE_ID}`,
   eventName:'createPossessionClaim',
   createCasePayload: {
     propertyAddress: {
@@ -23,6 +21,8 @@ export const caseApiData = {
       'Content-Type': 'application/json',
       'experimental': 'experimental',
       'Accept': '*/*',
-    },
-  }
+    }
+  },
+  eventTokenApiEndPoint: `/case-types/PCS-${process.env.CHANGE_ID}/event-triggers/createPossessionClaim`,
+  createCaseApiEndPoint: `/case-types/PCS-${process.env.CHANGE_ID}/cases`
 }

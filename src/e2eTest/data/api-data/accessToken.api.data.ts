@@ -10,5 +10,6 @@ export const accessTokenApiData = {
     client_secret: process.env.PCS_API_IDAM_SECRET,
     scope: 'profile openid roles',
     grant_type: 'password',
-  }
+  },
+  accessTokenApiEndPoint: '/o/token'
 }
