@@ -55,6 +55,10 @@ test.describe('[Create Case Flow With Address and Claimant Type]  @Master @night
       email: defendantDetails.yes,
       correspondenceAddressSame: defendantDetails.no
     });
+    //This page should not come, its part of HDPI-1470
+    await performAction('clickRadioButton','Assured tenancy')
+    await performAction('clickButton', 'Continue');
+    //
     await performValidation('mainHeader', groundsForPossession.mainHeader);
     await performAction('selectGroundsForPossession', groundsForPossession.yes);
     await performValidation('mainHeader', preActionProtocol.mainHeader);
@@ -103,6 +107,10 @@ test.describe('[Create Case Flow With Address and Claimant Type]  @Master @night
       email: defendantDetails.yes,
       correspondenceAddressSame: defendantDetails.yes
     });
+    //This page should not come, its part of HDPI-1470
+    await performAction('clickRadioButton','Assured tenancy')
+    await performAction('clickButton', 'Continue');
+    //
     await performValidation('mainHeader', groundsForPossession.mainHeader);
     await performAction('selectGroundsForPossession', groundsForPossession.yes);
     await performAction('selectPreActionProtocol', preActionProtocol.yes);
@@ -198,12 +206,13 @@ test.describe('[Create Case Flow With Address and Claimant Type]  @Master @night
       correspondenceAddress: defendantDetails.no,
       email: defendantDetails.no,
     });
-    //This page should not come
+    //This page should not come, its part of HDPI-1470
     await performAction('clickRadioButton','Assured tenancy')
     await performAction('clickButton', 'Continue');
+    //
     await performValidation('mainHeader', groundsForPossession.mainHeader);
-    await performAction('selectGroundsForPossession', groundsForPossession.no);
     //HDPI-1543-Test-Automation-Possession-Grounds-No-Rent-Arrears-screens
+    await performAction('selectGroundsForPossession', groundsForPossession.no);
     await performValidation('mainHeader', whatAreYourGrounds.mainHeader);
     await performAction('selectMandatoryAndDiscretionaryGrounds', {
       mandatory : [whatAreYourGrounds.mandatory.holidayLet,whatAreYourGrounds.mandatory.ownerOccupier],
