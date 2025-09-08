@@ -264,7 +264,6 @@ public class PCSCase {
     @CCD(access = {CitizenAccess.class, CaseworkerAccess.class})
     private List<ListValue<DefendantDetails>> defendants;
 
-    // --- Rent arrears (statement upload + totals + third party payments) ---
     @CCD(
         label = "Add Documents",
         hint = "Upload a document to the system",
