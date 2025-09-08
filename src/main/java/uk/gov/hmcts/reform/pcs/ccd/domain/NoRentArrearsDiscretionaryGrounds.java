@@ -4,9 +4,6 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
 
-//update screen names
-// remove labels from ReasonOfGrounds and put them on the reasons page screen (remove html)
-
 @AllArgsConstructor
 @Getter
 public enum NoRentArrearsDiscretionaryGrounds {

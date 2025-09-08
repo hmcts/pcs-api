@@ -8,10 +8,6 @@ import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.model.NoRentArrearsReasonForGrounds;
 
-/**
- * Placeholder page configuration for the Grounds for Possession section.
- * Full implementation will be done in another ticket - responses not captured at the moment.
- */
 @AllArgsConstructor
 @Component
 @Slf4j

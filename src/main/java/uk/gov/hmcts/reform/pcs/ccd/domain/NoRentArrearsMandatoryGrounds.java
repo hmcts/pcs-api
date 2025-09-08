@@ -3,9 +3,6 @@ package uk.gov.hmcts.reform.pcs.ccd.domain;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
-import uk.gov.hmcts.ccd.sdk.api.HasLabel;
-
-import java.util.Arrays;
 
 @AllArgsConstructor
 @Getter
