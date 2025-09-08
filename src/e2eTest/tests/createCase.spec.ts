@@ -20,6 +20,7 @@ import { defendantDetails } from "@data/page-data/defendantDetails.page.data";
 import {tenancyLicenceDetails} from "@data/page-data/tenancyLicenceDetails.page.data";
 import {secureOrFlexibleGrounds} from "@data/page-data/secureOrFlexibleGrounds.page.data";
 import {rentArrearsOrBreachOfTenancy} from "@data/page-data/rentArrearsOrBreachOfTenancy.page.data";
+import {reasonsForPossession} from "@data/page-data/reasonsForPossession.page.data";
 
 test.beforeEach(async ({page}, testInfo) => {
   initializeExecutor(page);
@@ -207,7 +208,12 @@ test.describe('[Create Case Flow With Address and Claimant Type]  @Master @night
       mandatoryAccommodation: [secureOrFlexibleGrounds.mandatoryWithAccommodation.charitableLandlords,secureOrFlexibleGrounds.mandatoryWithAccommodation.landlordsWorks],
       discretionaryAccommodation: [secureOrFlexibleGrounds.discretionaryWithAccommodation.adapted,secureOrFlexibleGrounds.discretionaryWithAccommodation.tied],
       rentArrearsOrBreach: [rentArrearsOrBreachOfTenancy.breachOfTenancy, rentArrearsOrBreachOfTenancy.rentArrears]
-    })
+    });
+    await performValidation('mainHeader', reasonsForPossession.mainHeader);
+    await performAction('enterReasonsForPossession'
+      , [secureOrFlexibleGrounds.discretionary.deteriorationOfFurniture,secureOrFlexibleGrounds.mandatory.antiSocialBehaviour,
+        secureOrFlexibleGrounds.mandatoryWithAccommodation.charitableLandlords,secureOrFlexibleGrounds.mandatoryWithAccommodation.landlordsWorks,
+        secureOrFlexibleGrounds.discretionaryWithAccommodation.adapted,secureOrFlexibleGrounds.discretionaryWithAccommodation.tied]);
     await performValidation('mainHeader', groundsForPossession.mainHeader);
     await performAction('selectGroundsForPossession', groundsForPossession.yes);
     await performAction('selectPreActionProtocol', preActionProtocol.yes);
