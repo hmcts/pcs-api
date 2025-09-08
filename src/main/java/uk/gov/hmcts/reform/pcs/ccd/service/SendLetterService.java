@@ -40,7 +40,7 @@ public class SendLetterService {
 
     public SendLetterService(SendLetterApi sendLetterApi,
                              AuthTokenGenerator authTokenGenerator, IdamService idamService,
-                             @Value("${cdam.url")
+                             @Value("${cdam.url}")
                              String caseDocumentUrl) {
 
         this.sendLetterApi = sendLetterApi;
