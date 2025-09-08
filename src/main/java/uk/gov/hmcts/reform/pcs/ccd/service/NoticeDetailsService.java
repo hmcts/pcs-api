@@ -25,16 +25,6 @@ public class NoticeDetailsService {
     private static final String FUTURE_DATE_ERROR = "The date cannot be today or in the future";
     private static final String EXPLANATION_TOO_LONG_ERROR = "The explanation must be 250 characters or fewer";
     private static final String NOTICE_SERVICE_METHOD_REQUIRED = "You must select how you served the notice";
-    
-    // Field name constants
-    private static final String NOTICE_POSTED_DATE = "noticePostedDate";
-    private static final String NOTICE_DELIVERED_DATE = "noticeDeliveredDate";
-    private static final String NOTICE_HANDED_OVER_DATETIME = "noticeHandedOverDateTime";
-    private static final String NOTICE_EMAIL_EXPLANATION = "noticeEmailExplanation";
-    private static final String NOTICE_EMAIL_SENT_DATETIME = "noticeEmailSentDateTime";
-    private static final String NOTICE_OTHER_ELECTRONIC_DATETIME = "noticeOtherElectronicDateTime";
-    private static final String NOTICE_OTHER_EXPLANATION = "noticeOtherExplanation";
-    private static final String NOTICE_OTHER_DATETIME = "noticeOtherDateTime";
 
     /**
      * Validates notice details and returns any validation errors.
@@ -44,7 +34,7 @@ public class NoticeDetailsService {
     public List<String> validateNoticeDetails(PCSCase caseData) {
         List<String> errors = new ArrayList<>();
 
-        if (caseData.getNoticeServed() == null || !caseData.getNoticeServed().toBoolean()) {
+        if (caseData.getNoticeServed() != null && !caseData.getNoticeServed().toBoolean()) {
             return errors;
         }
 
@@ -57,20 +47,19 @@ public class NoticeDetailsService {
         // Validate based on selected method
         switch (noticeServiceMethod) {
             case FIRST_CLASS_POST:
-                validateDateField(caseData.getNoticePostedDate(), NOTICE_POSTED_DATE, errors);
+                validateDateField(caseData.getNoticePostedDate(), errors);
                 break;
             case DELIVERED_PERMITTED_PLACE:
-                validateDateField(caseData.getNoticeDeliveredDate(), NOTICE_DELIVERED_DATE, errors);
+                validateDateField(caseData.getNoticeDeliveredDate(), errors);
                 break;
             case PERSONALLY_HANDED:
-                validateDateTimeField(caseData.getNoticeHandedOverDateTime(), NOTICE_HANDED_OVER_DATETIME, errors);
+                validateDateTimeField(caseData.getNoticeHandedOverDateTime(), errors);
                 break;
             case EMAIL:
                 validateEmail(caseData, errors);
                 break;
             case OTHER_ELECTRONIC:
-                validateDateTimeField(caseData.getNoticeOtherElectronicDateTime(), 
-                                   NOTICE_OTHER_ELECTRONIC_DATETIME, errors);
+                validateDateTimeField(caseData.getNoticeOtherElectronicDateTime(), errors);
                 break;
             case OTHER:
                 validateOther(caseData, errors);
@@ -83,18 +72,16 @@ public class NoticeDetailsService {
     /**
      * Validates a date field with common validation logic.
      */
-    private void validateDateField(LocalDate dateValue, String fieldName, List<String> errors) {
-        if (dateValue != null) {
-            if (isTodayOrFutureDate(dateValue)) {
-                errors.add(FUTURE_DATE_ERROR);
-            }
+    private void validateDateField(LocalDate dateValue, List<String> errors) {
+        if (dateValue != null && isTodayOrFutureDate(dateValue)) {
+            errors.add(FUTURE_DATE_ERROR);
         }
     }
 
     /**
      * Validates a datetime field with common validation logic.
      */
-    private void validateDateTimeField(LocalDateTime dateTimeValue, String fieldName, List<String> errors) {
+    private void validateDateTimeField(LocalDateTime dateTimeValue, List<String> errors) {
         if (dateTimeValue != null) {
             if (!isValidLocalDateTime(dateTimeValue)) {
                 errors.add(INVALID_DATETIME_ERROR);
@@ -107,20 +94,20 @@ public class NoticeDetailsService {
     /**
      * Validates an explanation field with length validation.
      */
-    private void validateExplanationField(String explanation, String fieldName, List<String> errors) {
+    private void validateExplanationField(String explanation, List<String> errors) {
         if (explanation != null && explanation.length() > 250) {
             errors.add(EXPLANATION_TOO_LONG_ERROR);
         }
     }
 
     private void validateEmail(PCSCase caseData, List<String> errors) {
-        validateExplanationField(caseData.getNoticeEmailExplanation(), NOTICE_EMAIL_EXPLANATION, errors);
-        validateDateTimeField(caseData.getNoticeEmailSentDateTime(), NOTICE_EMAIL_SENT_DATETIME, errors);
+        validateExplanationField(caseData.getNoticeEmailExplanation(), errors);
+        validateDateTimeField(caseData.getNoticeEmailSentDateTime(), errors);
     }
 
     private void validateOther(PCSCase caseData, List<String> errors) {
-        validateExplanationField(caseData.getNoticeOtherExplanation(), NOTICE_OTHER_EXPLANATION, errors);
-        validateDateTimeField(caseData.getNoticeOtherDateTime(), NOTICE_OTHER_DATETIME, errors);
+        validateExplanationField(caseData.getNoticeOtherExplanation(), errors);
+        validateDateTimeField(caseData.getNoticeOtherDateTime(), errors);
     }
 
 
