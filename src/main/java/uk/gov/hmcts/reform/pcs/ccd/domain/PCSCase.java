@@ -36,7 +36,7 @@ import static uk.gov.hmcts.ccd.sdk.type.FieldType.TextArea;
 public class PCSCase {
 
     @CCD(searchable = false, access = {CitizenAccess.class, CaseworkerAccess.class})
-    private final YesOrNo decentralised = YesOrNo.YES;;
+    private final YesOrNo decentralised = YesOrNo.YES;
 
     @CCD(
         label = "Claimant Name",
