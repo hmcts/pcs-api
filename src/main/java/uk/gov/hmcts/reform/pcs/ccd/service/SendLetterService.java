@@ -51,6 +51,7 @@ public class SendLetterService {
 
     public void sendLetterv2(String documentId) {
 
+        log.error("Cdam url: " + caseDocumentUrl);
         String serviceAuthHeader = authTokenGenerator.generate();
         String systemUserAuth = idamService.getSystemUserAuthorisation();
 
@@ -78,6 +79,7 @@ public class SendLetterService {
                                                     String documentId) {
 
         String url = caseDocumentUrl + "/cases/documents/" + documentId + "/binary";
+        log.error("Endpoint URL: " + caseDocumentUrl);
         try {
             RestTemplate restTemplate = new RestTemplate();
             HttpHeaders headers = new HttpHeaders();
