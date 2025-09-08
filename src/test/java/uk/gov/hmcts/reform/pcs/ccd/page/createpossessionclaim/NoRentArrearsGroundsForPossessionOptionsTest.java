@@ -29,8 +29,14 @@ public class NoRentArrearsGroundsForPossessionOptionsTest extends BasePageTest {
     void shouldMapSelectedGroundsToEnums() {
         // Given: Mandatory and Discretionary are set
         CaseDetails<PCSCase, State> caseDetails = new CaseDetails<>();
-        Set<NoRentArrearsMandatoryGrounds> expectedMandatory = Set.of(NoRentArrearsMandatoryGrounds.ANTISOCIAL_BEHAVIOUR, NoRentArrearsMandatoryGrounds.DEATH_OF_TENANT, NoRentArrearsMandatoryGrounds.SERIOUS_RENT_ARREARS);
-        Set<NoRentArrearsDiscretionaryGrounds> expectedDiscretionary = Set.of(NoRentArrearsDiscretionaryGrounds.DOMESTIC_VIOLENCE, NoRentArrearsDiscretionaryGrounds.LANDLORD_EMPLOYEE, NoRentArrearsDiscretionaryGrounds.FALSE_STATEMENT);
+        Set<NoRentArrearsMandatoryGrounds> expectedMandatory = Set.of(
+            NoRentArrearsMandatoryGrounds.ANTISOCIAL_BEHAVIOUR,
+            NoRentArrearsMandatoryGrounds.DEATH_OF_TENANT,
+            NoRentArrearsMandatoryGrounds.SERIOUS_RENT_ARREARS);
+        Set<NoRentArrearsDiscretionaryGrounds> expectedDiscretionary = Set.of(
+            NoRentArrearsDiscretionaryGrounds.DOMESTIC_VIOLENCE,
+            NoRentArrearsDiscretionaryGrounds.LANDLORD_EMPLOYEE,
+            NoRentArrearsDiscretionaryGrounds.FALSE_STATEMENT);
         PCSCase caseData = PCSCase.builder()
                 .noRentArrearsDiscretionaryGroundsOptions(expectedDiscretionary)
                 .noRentArrearsMandatoryGroundsOptions(expectedMandatory)
