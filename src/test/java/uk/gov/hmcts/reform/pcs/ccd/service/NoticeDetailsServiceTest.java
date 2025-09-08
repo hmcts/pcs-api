@@ -48,6 +48,8 @@ class NoticeDetailsServiceTest {
         void shouldReturnNoErrorsWhenNoticeServedIsNull() {
             PCSCase caseData = PCSCase.builder()
                 .noticeServed(null)
+                .noticeServiceMethod(NoticeServiceMethod.FIRST_CLASS_POST)
+                .noticePostedDate(LocalDate.now().minusDays(1))
                 .build();
             List<String> errors = noticeDetailsService.validateNoticeDetails(caseData);
 
@@ -141,9 +143,6 @@ class NoticeDetailsServiceTest {
         @Test
         void shouldValidateFirstClassPostWithTodayDate() {
             // Given
-            java.time.LocalDate today = java.time.LocalDate.now();
-            String todayStr = today.toString();
-            
             PCSCase caseData = PCSCase.builder()
                 .noticeServed(YesOrNo.YES)
                 .noticeServiceMethod(NoticeServiceMethod.FIRST_CLASS_POST)
