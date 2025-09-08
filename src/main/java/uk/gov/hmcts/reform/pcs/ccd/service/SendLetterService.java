@@ -2,7 +2,6 @@ package uk.gov.hmcts.reform.pcs.ccd.service;
 
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -39,14 +38,12 @@ public class SendLetterService {
     private final String caseDocumentUrl;
 
     public SendLetterService(SendLetterApi sendLetterApi,
-                             AuthTokenGenerator authTokenGenerator, IdamService idamService,
-                             @Value("${cdam.url}")
-                             String caseDocumentUrl) {
+                             AuthTokenGenerator authTokenGenerator, IdamService idamService) {
 
         this.sendLetterApi = sendLetterApi;
         this.authTokenGenerator = authTokenGenerator;
         this.idamService = idamService;
-        this.caseDocumentUrl = caseDocumentUrl;
+        this.caseDocumentUrl = System.getenv("CASE_DOCUMENT_AM_URL");
     }
 
     public void sendLetterv2(String documentId) {
