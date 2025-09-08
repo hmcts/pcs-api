@@ -1,5 +1,5 @@
-import Axios, { AxiosInstance, AxiosResponse } from 'axios';
-import { TestConfig } from 'config/test.config';
+import Axios from 'axios';
+import { ServiceAuthUtils } from '@hmcts/playwright-common';
 import { actionData, IAction } from '../../interfaces/action.interface';
 import { Page } from '@playwright/test';
 import { performAction, performActions, performValidation } from '@utils/controller';
@@ -11,8 +11,10 @@ import { claimantName } from '@data/page-data/claimantName.page.data';
 import { contactPreferences } from '@data/page-data/contactPreferences.page.data';
 import { mediationAndSettlement } from '@data/page-data/mediationAndSettlement.page.data';
 import { rentDetails } from '@data/page-data/rentDetails.page.data';
+import { accessTokenApiData } from '@data/api-data/accessToken.api.data';
+import { caseApiData } from '@data/api-data/case.api.data';
 
-let caseInfo: { id: string; fid: string; state: string };
+export let caseInfo: { id: string; fid: string; state: string };
 
 export class CreateCaseAction implements IAction {
   async execute(page: Page, action: string, fieldName: actionData, data?: actionData): Promise<void> {
@@ -241,52 +243,26 @@ export class CreateCaseAction implements IAction {
     await performAction('clickButton', 'Continue');
   }
 
-
-
-
-
-
-
-
-
-
-
-  private async createCaseAction(caseData: actionData) {
-    Axios.create({
-      baseURL: `${TestConfig.ccdCase.url}`,
-      headers: {
-        Authorization: `Bearer ${process.env.CREATE_USER_BEARER_TOKEN}`,
-        ServiceAuthorization: `Bearer ${process.env.SERVICE_AUTH_TOKEN}`,
-        'Content-Type': 'application/json',
-        'experimental': 'experimental',
-        'Accept': '*/*',
-      },
-    })
-    caseInfo = await this.createCase(caseData);
-  }
-
-  async createCase(caseData: actionData): Promise<{ id: string; fid: string; state: string }> {
-    const tokenResponse: AxiosResponse<{ token: string }> = await Axios.create().get(
-      `/case-types/${TestConfig.ccdCase.caseType}/event-triggers/${TestConfig.ccdCase.eventName}`
-    );
-    const eventToken = tokenResponse.data.token;
-    const event = {id: `${TestConfig.ccdCase.eventName}`};
+  private async createCaseAction(caseData: actionData): Promise<void> {
+    process.env.S2S_URL = accessTokenApiData.s2sUrl;
+    process.env.SERVICE_AUTH_TOKEN = await new ServiceAuthUtils().retrieveToken({microservice: caseApiData.microservice});
+    process.env.IDAM_AUTH_TOKEN = (await Axios.create().post('/o/token', accessTokenApiData.accessTokenApiPayload)).data.access_token;
+    const createCaseApi = Axios.create(caseApiData.createCaseApiInstance);
+    process.env.EVENT_TOKEN = (await createCaseApi.get(`/case-types/PCS-${process.env.CHANGE_ID}/event-triggers/createPossessionClaim`)).data.token;
     const payloadData = typeof caseData === 'object' && 'data' in caseData ? caseData.data : caseData;
     try {
-      const response = await Axios.create().post(
-        `/case-types/${TestConfig.ccdCase.caseType}/cases`,
+      const response = await createCaseApi.post(`/case-types/${caseApiData.caseType}/cases`,
         {
           data: payloadData,
-          event: event,
-          event_token: eventToken,
+          event: {id: `${caseApiData.eventName}`},
+          event_token: process.env.EVENT_TOKEN,
         }
       );
-      return {
-        id: response.data.id,
-        fid:  response.data.id.replace(/(.{4})(?=.)/g, '$1-'),
-        state: response.data.state,
-      };
-    } catch (err) {
+      caseInfo.id = response.data.id,
+      caseInfo.fid =  response.data.id.replace(/(.{4})(?=.)/g, '$1-'),
+      caseInfo.state = response.data.state
+    }
+    catch (error) {
       throw new Error('Case could not be created.');
     }
   }

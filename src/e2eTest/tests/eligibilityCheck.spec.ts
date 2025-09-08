@@ -6,6 +6,7 @@ import configData from '@config/test.config';
 import { addressDetails } from '@data/page-data/addressDetails.page.data';
 import { legislativeCountry } from '@data/page-data/legislativeCountry.page.data';
 import { canNotUseOnlineService } from '@data/page-data/canNotUseOnlineService.page.data';
+import { propertyIneligible } from '@data/page-data/propertyIneligible.page.data';
 
 test.beforeEach(async ({page}) => {
   initializeExecutor(page);
@@ -99,14 +100,7 @@ test.describe('Eligibility checks for cross and non cross border postcodes @nigh
       addressIndex: addressDetails.addressIndex
     });
     await performAction('selectCountryRadioButton', borderPostcode.countryOptions.england);
-    await performValidation('mainHeader', canNotUseOnlineService.mainHeader);
-    await performValidation('text', {"text": canNotUseOnlineService.basedOnPostcodeContent, "elementType": "paragraph"})
-    await performValidation('text', {"text": canNotUseOnlineService.PCOLLink, "elementType": "link"})
-    await performValidation('text', {"text": canNotUseOnlineService.forOtherTypesOfClaims, "elementType": "listItem"})
-    await performValidation('text', {
-      "text": canNotUseOnlineService.propertyPossessionsFullListLink,
-      "elementType": "link"
-    })
+    await performValidation('mainHeader', propertyIneligible.mainHeader);
   });
 })
 

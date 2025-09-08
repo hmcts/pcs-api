@@ -1,13 +1,14 @@
 import {test} from '@playwright/test';
 import {parentSuite} from 'allure-js-commons';
 import configData from "@config/test.config";
-import caseDataWithAddress from '@data/api-data/case.api.data.json';
+import {caseApiData} from '@data/api-data/case.api.data';
 import {
   initializeExecutor,
   performAction,
   performValidation
 } from '@utils/controller';
 import {createCase} from "@data/page-data/createCase.page.data";
+import {caseInfo} from '@utils/actions/custom-actions/createCase.action';
 
 test.beforeEach(async ({page}) => {
     initializeExecutor(page);
@@ -19,7 +20,7 @@ test.beforeEach(async ({page}) => {
 
 async function createCaseWithAddress() {
   await performAction('createCase', {
-    data: caseDataWithAddress.data,
+    data: caseApiData.createCasePayload,
   });
 }
 
@@ -30,22 +31,23 @@ async function searchCase(caseNumber: string) {
   await performAction('clickButton', 'Apply');
 }
 
-test.describe('Search case by case number @PR @Master @nightly', () => {
+//Skipping these tests until create case journey is fully developed because tests may fail each time when payload changes for create case API
+test.describe.skip('Search case by case number @PR @Master @nightly', () => {
   test('Search for case via caselist', async ({}) => {
-    // await searchCase(caseInfo.id);
-    // await performValidation(
-    //   'visibility',
-    //   'caseNumber',
-    //   {visible: caseInfo.fid}
-    // );
+    await searchCase(caseInfo.id);
+    await performValidation(
+      'visibility',
+      'caseNumber',
+      {visible: caseInfo.fid}
+    );
   });
   test('Search for case via find case', async ({}) => {
-    // await searchCase(caseInfo.id);
-    // await performValidation(
-    //   'visibility',
-    //   'caseNumber',
-    //   {visible: caseInfo.fid}
-    // );
+    await searchCase(caseInfo.id);
+    await performValidation(
+      'visibility',
+      'caseNumber',
+      {visible: caseInfo.fid}
+    );
   });
 });
 
