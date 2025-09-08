@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.pcs.ccd.domain;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import java.math.BigDecimal;
+import java.util.List;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -18,13 +19,19 @@ import lombok.NoArgsConstructor;
 public class TenancyLicence {
 
     private Boolean noticeServed;
-    
+
     private BigDecimal rentAmount;
-    
+
     private RentPaymentFrequency rentPaymentFrequency;
-    
+
     private String otherRentFrequency;
-    
+
     private BigDecimal dailyRentChargeAmount;
+
+    private BigDecimal totalRentArrears;
+
+    private List<ThirdPartyPaymentSource> thirdPartyPaymentSources;
+
+    private String thirdPartyPaymentSourceOther;
 
 }

@@ -52,11 +52,6 @@ public class RentArrears implements CcdPageConfiguration {
 
                 // ---------- Third-party payments ----------
                 .label("rentArrears-thirdPartyPayments-separator", "---")
-                .label("rentArrears-thirdPartyPayments-heading",
-                        """
-                        <h2 class="govuk-heading-m govuk-!-margin-bottom-0">For the period shown on the rent
-                        statement, have any rent payments been paid by someone other than the defendants?</h2>
-                        """)
                 .mandatory(PCSCase::getThirdPartyPayments)
 
                 // Sources (select all that apply) + hint

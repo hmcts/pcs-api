@@ -167,12 +167,16 @@ public class PcsCaseService {
     private TenancyLicence buildTenancyLicence(PCSCase pcsCase) {
         return TenancyLicence.builder()
                 .noticeServed(toBooleanOrNull(pcsCase.getNoticeServed()))
-                .rentAmount(pcsCase.getCurrentRent() != null 
+                .rentAmount(pcsCase.getCurrentRent() != null
                     ? new BigDecimal(pcsCase.getCurrentRent()) : null)
                 .rentPaymentFrequency(pcsCase.getRentFrequency())
                 .otherRentFrequency(pcsCase.getOtherRentFrequency())
-                .dailyRentChargeAmount(pcsCase.getDailyRentChargeAmount() != null 
+                .dailyRentChargeAmount(pcsCase.getDailyRentChargeAmount() != null
                     ? new BigDecimal(pcsCase.getDailyRentChargeAmount()) : null)
+                .totalRentArrears(pcsCase.getTotalRentArrears() != null
+                    ? new BigDecimal(pcsCase.getTotalRentArrears()) : null)
+                .thirdPartyPaymentSources(pcsCase.getThirdPartyPaymentSources())
+                .thirdPartyPaymentSourceOther(pcsCase.getThirdPartyPaymentSourceOther())
                 .build();
     }
 

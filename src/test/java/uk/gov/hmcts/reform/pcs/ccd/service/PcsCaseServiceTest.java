@@ -29,6 +29,7 @@ import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentPaymentFrequency;
+import uk.gov.hmcts.reform.pcs.ccd.domain.ThirdPartyPaymentSource;
 
 import java.util.List;
 import java.util.Optional;
@@ -430,6 +431,27 @@ class PcsCaseServiceTest {
         assertTenancyLicenceField(
                 pcsCase -> when(pcsCase.getDailyRentChargeAmount()).thenReturn("40.00"),
                 expected -> assertThat(expected.getDailyRentChargeAmount()).isEqualTo(new BigDecimal("40.00")));
+
+        // Test total rent arrears field
+        assertTenancyLicenceField(
+                pcsCase -> when(pcsCase.getTotalRentArrears()).thenReturn("2500.75"),
+                expected -> assertThat(expected.getTotalRentArrears()).isEqualTo(new BigDecimal("2500.75")));
+
+        // Test third party payment sources field
+        assertTenancyLicenceField(
+                pcsCase -> when(pcsCase.getThirdPartyPaymentSources())
+                    .thenReturn(List.of(ThirdPartyPaymentSource.UNIVERSAL_CREDIT,
+                        ThirdPartyPaymentSource.HOUSING_BENEFIT)),
+                expected -> assertThat(expected.getThirdPartyPaymentSources())
+                    .containsExactly(ThirdPartyPaymentSource.UNIVERSAL_CREDIT,
+                        ThirdPartyPaymentSource.HOUSING_BENEFIT));
+
+        // Test third party payment source other field
+        assertTenancyLicenceField(
+                pcsCase -> when(pcsCase.getThirdPartyPaymentSourceOther())
+                    .thenReturn("Local Authority Support"),
+                expected -> assertThat(expected.getThirdPartyPaymentSourceOther())
+                    .isEqualTo("Local Authority Support"));
     }
 
     private void assertTenancyLicenceField(java.util.function.Consumer<PCSCase> setupMock,
