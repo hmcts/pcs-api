@@ -20,5 +20,3 @@ public enum ThirdPartyPaymentSource implements HasLabel {
         return label;
     }
 }
-
-
