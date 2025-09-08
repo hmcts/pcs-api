@@ -20,6 +20,7 @@ public class SecureOrFlexibleGroundsForPossessionReasons implements CcdPageConfi
                             + " AND (showBreachOfTenancyTextarea=\"Yes\" OR showReasonsForGroundsPage=\"Yes\")"
             )
             .complex(PCSCase::getSecureOrFlexibleGroundsReasons)
+
             // Discretionary grounds
             .label("possessionReasons-breachOfTenancyGround-label","""
                 ---
@@ -34,7 +35,6 @@ public class SecureOrFlexibleGroundsForPossessionReasons implements CcdPageConfi
 
             .label("possessionReasons-nuisanceOrImmoralUse-label",
                    """
-                   ---
                  <h2 class="govuk-heading-l">Nuisance, annoyance, illegal or immoral use of the property (ground 2)</h2>
                  <h3 class="govuk-heading-m">Why are you making a claim for possession under this ground?</h3>
                  """,
@@ -44,7 +44,6 @@ public class SecureOrFlexibleGroundsForPossessionReasons implements CcdPageConfi
 
             .label("possessionReasons-domesticViolence-label",
                    """
-                   ---
                  <h2 class="govuk-heading-l">Domestic violence (ground 2A)</h2>
                  <h3 class="govuk-heading-m">Why are you making a claim for possession under this ground?</h3>
                  """,
@@ -54,7 +53,6 @@ public class SecureOrFlexibleGroundsForPossessionReasons implements CcdPageConfi
 
             .label("possessionReasons-riotOffence-label",
                    """
-                   ---
                  <h2 class="govuk-heading-l">Offence during a riot (ground 22A)</h2>
                  <h3 class="govuk-heading-m">Why are you making a claim for possession under this ground?</h3>
                  """,
@@ -64,7 +62,6 @@ public class SecureOrFlexibleGroundsForPossessionReasons implements CcdPageConfi
 
             .label("possessionReasons-propertyDeterioration-label",
                    """
-                   ---
                  <h2 class="govuk-heading-l">Deterioration in the condition of the property (ground 3)</h2>
                  <h3 class="govuk-heading-m">Why are you making a claim for possession under this ground?</h3>
                  """,
@@ -74,7 +71,6 @@ public class SecureOrFlexibleGroundsForPossessionReasons implements CcdPageConfi
 
             .label("possessionReasons-furnitureDeterioration-label",
                    """
-                   ---
                  <h2 class="govuk-heading-l">Deterioration of furniture (ground 4)</h2>
                  <h3 class="govuk-heading-m">Why are you making a claim for possession under this ground?</h3>
                  """,
@@ -84,7 +80,6 @@ public class SecureOrFlexibleGroundsForPossessionReasons implements CcdPageConfi
 
             .label("possessionReasons-tenancyObtainedByFalseStatement-label",
                    """
-                   ---
                   <h2 class="govuk-heading-l">Tenancy obtained by false statement (ground 5)</h2>
                   <h3 class="govuk-heading-m">Why are you making a claim for possession under this ground?</h3>
                   """,
@@ -96,7 +91,6 @@ public class SecureOrFlexibleGroundsForPossessionReasons implements CcdPageConfi
 
             .label("possessionReasons-premiumPaidMutualExchange-label",
                    """
-                   ---
                   <h2 class="govuk-heading-l">Premium paid in connection with mutual exchange (ground 6)</h2>
                   <h3 class="govuk-heading-m">Why are you making a claim for possession under this ground?</h3>
                   """,
@@ -108,19 +102,17 @@ public class SecureOrFlexibleGroundsForPossessionReasons implements CcdPageConfi
 
             .label("possessionReasons-unreasonableConductTiedAccommodation-label",
                    """
-                   ---
                   <h2 class="govuk-heading-l">Unreasonable conduct in tied accommodation (ground 7)</h2>
                   <h3 class="govuk-heading-m">Why are you making a claim for possession under this ground?</h3>
                   """,
-                   "secureOrFlexibleDiscretionaryGroundsAltCONTAINS"
+                   "secureOrFlexibleDiscretionaryGroundsCONTAINS"
                        + "\"UNREASONABLE_CONDUCT_TIED_ACCOMMODATION\"")
             .mandatory(SecureOrFlexibleGroundsReasons::getUnreasonableConductTiedAccommodationGround,
-                       "secureOrFlexibleDiscretionaryGroundsAltCONTAINS"
+                       "secureOrFlexibleDiscretionaryGroundsCONTAINS"
                            + "\"UNREASONABLE_CONDUCT_TIED_ACCOMMODATION\"")
 
             .label("possessionReasons-refusalToMoveBack-label",
                    """
-                   ---
                 <h2 class="govuk-heading-l">Refusal to move back to main home after works completed (ground 8)</h2>
                 <h3 class="govuk-heading-m">Why are you making a claim for possession under this ground?</h3>
                 """,
@@ -128,9 +120,56 @@ public class SecureOrFlexibleGroundsForPossessionReasons implements CcdPageConfi
             .mandatory(SecureOrFlexibleGroundsReasons::getRefusalToMoveBackGround,
                        "secureOrFlexibleDiscretionaryGroundsCONTAINS\"REFUSAL_TO_MOVE_BACK\"")
 
+            // Mandatory grounds
+            .label("possessionReasons-antiSocial-label",
+                   """
+                 <h2 class="govuk-heading-l">Antisocial behaviour</h2>
+                 <h3 class="govuk-heading-m">Why are you making a claim for possession under this ground?</h3>
+                 """,
+                   "secureOrFlexibleMandatoryGroundsCONTAINS\"ANTI_SOCIAL\"")
+            .mandatory(SecureOrFlexibleGroundsReasons::getAntiSocialGround,
+                       "secureOrFlexibleMandatoryGroundsCONTAINS\"ANTI_SOCIAL\"")
+
+            // Mandatory grounds (if alternative accommodation is available)
+            .label("possessionReasons-overcrowding-label",
+                   """
+                 <h2 class="govuk-heading-l">Overcrowding (ground 9)</h2>
+                 <h3 class="govuk-heading-m">Why are you making a claim for possession under this ground?</h3>
+                 """,
+                   "secureOrFlexibleMandatoryGroundsAltCONTAINS\"OVERCROWDING\"")
+            .mandatory(SecureOrFlexibleGroundsReasons::getOvercrowdingGround,
+                       "secureOrFlexibleMandatoryGroundsAltCONTAINS\"OVERCROWDING\"")
+
+            .label("possessionReasons-landlordWorks-label",
+                   """
+                 <h2 class="govuk-heading-l">Landlord's works (ground 10)</h2>
+                 <h3 class="govuk-heading-m">Why are you making a claim for possession under this ground?</h3>
+                 """,
+                   "secureOrFlexibleMandatoryGroundsAltCONTAINS\"LANDLORD_WORKS\"")
+            .mandatory(SecureOrFlexibleGroundsReasons::getLandlordWorksGround,
+                       "secureOrFlexibleMandatoryGroundsAltCONTAINS\"LANDLORD_WORKS\"")
+
+            .label("possessionReasons-propertySold-label",
+                   """
+                 <h2 class="govuk-heading-l">Property sold for redevelopment (ground 10A)</h2>
+                 <h3 class="govuk-heading-m">Why are you making a claim for possession under this ground?</h3>
+                 """,
+                   "secureOrFlexibleMandatoryGroundsAltCONTAINS\"PROPERTY_SOLD\"")
+            .mandatory(SecureOrFlexibleGroundsReasons::getPropertySoldGround,
+                       "secureOrFlexibleMandatoryGroundsAltCONTAINS\"PROPERTY_SOLD\"")
+
+            .label("possessionReasons-charitableLandlord-label",
+                   """
+                 <h2 class="govuk-heading-l">Charitable landlords (ground 11)</h2>
+                 <h3 class="govuk-heading-m">Why are you making a claim for possession under this ground?</h3>
+                 """,
+                   "secureOrFlexibleMandatoryGroundsAltCONTAINS\"CHARITABLE_LANDLORD\"")
+            .mandatory(SecureOrFlexibleGroundsReasons::getCharitableLandlordGround,
+                       "secureOrFlexibleMandatoryGroundsAltCONTAINS\"CHARITABLE_LANDLORD\"")
+
+            //Discretionary grounds (if alternative accommodation is available)
             .label("possessionReasons-tiedAccommodationNeededForEmployee-label",
                    """
-                   ---
                  <h2 class="govuk-heading-l">Tied accommodation needed for another employee (ground 12)</h2>
                  <h3 class="govuk-heading-m">Why are you making a claim for possession under this ground?</h3>
                  """,
@@ -142,7 +181,6 @@ public class SecureOrFlexibleGroundsForPossessionReasons implements CcdPageConfi
 
             .label("possessionReasons-adaptedAccommodation-label",
                    """
-                   ---
                  <h2 class="govuk-heading-l">Adapted accommodation (ground 13)</h2>
                  <h3 class="govuk-heading-m">Why are you making a claim for possession under this ground?</h3>
                  """,
@@ -152,7 +190,6 @@ public class SecureOrFlexibleGroundsForPossessionReasons implements CcdPageConfi
 
             .label("possessionReasons-housingAssociationSpecialCircumstances-label",
                    """
-                   ---
                  <h2 class="govuk-heading-l">Housing association special circumstances accommodation (ground 14)</h2>
                  <h3 class="govuk-heading-m">Why are you making a claim for possession under this ground?</h3>
                  """,
@@ -164,7 +201,6 @@ public class SecureOrFlexibleGroundsForPossessionReasons implements CcdPageConfi
 
             .label("possessionReasons-specialNeedsAccommodation-label",
                    """
-                   ---
                  <h2 class="govuk-heading-l">Special needs accommodation (ground 15)</h2>
                  <h3 class="govuk-heading-m">Why are you making a claim for possession under this ground?</h3>
                  """,
@@ -175,7 +211,6 @@ public class SecureOrFlexibleGroundsForPossessionReasons implements CcdPageConfi
 
             .label("possessionReasons-underOccupyingAfterSuccession-label",
                    """
-                   ---
                  <h2 class="govuk-heading-l">Under occupying after succession (ground 15A)</h2>
                  <h3 class="govuk-heading-m">Why are you making a claim for possession under this ground?</h3>
                  """,
@@ -184,57 +219,6 @@ public class SecureOrFlexibleGroundsForPossessionReasons implements CcdPageConfi
             .mandatory(SecureOrFlexibleGroundsReasons::getUnderOccupyingAfterSuccessionGround,
                        "secureOrFlexibleDiscretionaryGroundsAltCONTAINS"
                            + "\"UNDER_OCCUPYING_AFTER_SUCCESSION\"")
-
-            // Mandatory grounds
-            .label("possessionReasons-antiSocial-label",
-                   """
-                   ---
-                 <h2 class="govuk-heading-l">Antisocial behaviour</h2>
-                 <h3 class="govuk-heading-m">Why are you making a claim for possession under this ground?</h3>
-                 """,
-                   "secureOrFlexibleMandatoryGroundsCONTAINS\"ANTI_SOCIAL\"")
-            .mandatory(SecureOrFlexibleGroundsReasons::getAntiSocialGround,
-                       "secureOrFlexibleMandatoryGroundsCONTAINS\"ANTI_SOCIAL\"")
-
-            .label("possessionReasons-overcrowding-label",
-                   """
-                   ---
-                 <h2 class="govuk-heading-l">Overcrowding (ground 9)</h2>
-                 <h3 class="govuk-heading-m">Why are you making a claim for possession under this ground?</h3>
-                 """,
-                   "secureOrFlexibleMandatoryGroundsAltCONTAINS\"OVERCROWDING\"")
-            .mandatory(SecureOrFlexibleGroundsReasons::getOvercrowdingGround,
-                       "secureOrFlexibleMandatoryGroundsAltCONTAINS\"OVERCROWDING\"")
-
-            .label("possessionReasons-landlordWorks-label",
-                   """
-                   ---
-                 <h2 class="govuk-heading-l">Landlord's works (ground 10)</h2>
-                 <h3 class="govuk-heading-m">Why are you making a claim for possession under this ground?</h3>
-                 """,
-                   "secureOrFlexibleMandatoryGroundsAltCONTAINS\"LANDLORD_WORKS\"")
-            .mandatory(SecureOrFlexibleGroundsReasons::getLandlordWorksGround,
-                       "secureOrFlexibleMandatoryGroundsAltCONTAINS\"LANDLORD_WORKS\"")
-
-            .label("possessionReasons-propertySold-label",
-                   """
-                   ---
-                 <h2 class="govuk-heading-l">Property sold for redevelopment (ground 10A)</h2>
-                 <h3 class="govuk-heading-m">Why are you making a claim for possession under this ground?</h3>
-                 """,
-                   "secureOrFlexibleMandatoryGroundsAltCONTAINS\"PROPERTY_SOLD\"")
-            .mandatory(SecureOrFlexibleGroundsReasons::getPropertySoldGround,
-                       "secureOrFlexibleMandatoryGroundsAltCONTAINS\"PROPERTY_SOLD\"")
-
-            .label("possessionReasons-charitableLandlord-label",
-                   """
-                   ---
-                 <h2 class="govuk-heading-l">Charitable landlords (ground 11)</h2>
-                 <h3 class="govuk-heading-m">Why are you making a claim for possession under this ground?</h3>
-                 """,
-                   "secureOrFlexibleMandatoryGroundsAltCONTAINS\"CHARITABLE_LANDLORD\"")
-            .mandatory(SecureOrFlexibleGroundsReasons::getCharitableLandlordGround,
-                       "secureOrFlexibleMandatoryGroundsAltCONTAINS\"CHARITABLE_LANDLORD\"")
             .done()
                 .readonly(PCSCase::getShowBreachOfTenancyTextarea,NEVER_SHOW)
                 .readonly(PCSCase::getShowReasonsForGroundsPage,NEVER_SHOW);
