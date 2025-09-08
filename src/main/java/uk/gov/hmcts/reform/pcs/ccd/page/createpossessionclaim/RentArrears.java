@@ -38,19 +38,25 @@ public class RentArrears implements CcdPageConfiguration {
                           two years ago</li>
                         </ul>
                         """)
-                // Upload rent statement (collection of Document)
                 .optional(PCSCase::getRentStatementDocuments)
 
                 // ---------- Total arrears ----------
                 .label("rentArrearsHeading",
                         """
                         ---
-                        <h2 class="govuk-heading-m">Rent arrears</h2>
-                        <h3 class="govuk-heading-s">How much are the total rent arrears as shown on the rent statement?</h3>
+                        <h2 class="govuk-heading-m govuk-!-margin-bottom-0">Rent arrears</h2>
+                        <h3 class="govuk-heading-s govuk-!-margin-top-0 govuk-!-margin-bottom-0">How much are the total rent arrears as shown on the rent
+                        statement?</h3>
                         """)
                 .mandatory(PCSCase::getTotalRentArrears)
 
                 // ---------- Third-party payments ----------
+                .label("thirdPartyPaymentsHeading",
+                        """
+                        ---
+                        <h3 class="govuk-heading-m govuk-!-margin-bottom-0">For the period shown on the rent
+                        statement, have any rent payments been paid by someone other than the defendants?</h3>
+                        """)
                 .mandatory(PCSCase::getThirdPartyPayments)
 
                 // Sources (select all that apply) + hint
@@ -63,9 +69,7 @@ public class RentArrears implements CcdPageConfiguration {
                 .optional(PCSCase::getThirdPartyPaymentSources, "thirdPartyPayments=\"YES\"")
 
                 // "Other" free text is mandatory when OTHER is selected
-                .mandatory(
-                        PCSCase::getThirdPartyPaymentSourceOther,
-                        "thirdPartyPayments=\"YES\" AND thirdPartyPaymentSources CONTAINS \"OTHER\""
-                );
+                .mandatory(PCSCase::getThirdPartyPaymentSourceOther,
+                        "thirdPartyPayments=\"YES\" AND thirdPartyPaymentSources CONTAINS \"OTHER\"");
     }
 }

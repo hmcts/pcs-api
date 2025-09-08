@@ -224,7 +224,7 @@ public class PCSCase {
 
     @CCD(searchable = false, access = CaseworkerAccess.class)
     private YesOrNo showClaimTypeNotEligibleWales;
-  
+
     @CCD(
         label = "How much is the rent?",
         typeOverride = FieldType.MoneyGBP,
@@ -266,7 +266,8 @@ public class PCSCase {
 
     // --- Rent arrears (statement upload + totals + third party payments) ---
     @CCD(
-        label = "Document",
+        label = "Add Documents",
+        hint = "Upload a document to the system",
         typeOverride = FieldType.Collection,
         typeParameterOverride = "Document",
         access = {CitizenAccess.class, CaseworkerAccess.class}
@@ -282,7 +283,8 @@ public class PCSCase {
 
     @CCD(
         label = "",
-        hint = "This could include payments from Universal Credit, Housing Benefit or any other contributions made by a government agency, like the Department for Work and Pensions (DWP).",
+        hint = "This could include payments from Universal Credit, Housing Benefit or any other contributions "
+            + "made by a government agency, like the Department for Work and Pensions (DWP).",
         access = {CitizenAccess.class, CaseworkerAccess.class}
     )
     private VerticalYesNo thirdPartyPayments;
@@ -291,14 +293,12 @@ public class PCSCase {
         label = "Where have the payments come from?",
         typeOverride = FieldType.MultiSelectList,
         typeParameterOverride = "ThirdPartyPaymentSource",
-        showCondition = "thirdPartyPayments=\"YES\"",
         access = {CitizenAccess.class, CaseworkerAccess.class}
     )
     private java.util.List<ThirdPartyPaymentSource> thirdPartyPaymentSources;
 
     @CCD(
         label = "Payment source",
-        showCondition = "thirdPartyPayments=\"YES\" AND thirdPartyPaymentSources CONTAINS \"OTHER\"",
         access = {CitizenAccess.class, CaseworkerAccess.class}
     )
     private String thirdPartyPaymentSourceOther;
