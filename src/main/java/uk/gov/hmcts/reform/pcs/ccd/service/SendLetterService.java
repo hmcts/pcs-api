@@ -12,7 +12,6 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
-import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.pcs.idam.IdamService;
 import uk.gov.hmcts.reform.sendletter.api.SendLetterApi;
@@ -39,8 +38,7 @@ public class SendLetterService {
     private AuthTokenGenerator authTokenGenerator;
     private IdamService idamService;
 
-    public void sendLetterv2(ListValue<uk.gov.hmcts.ccd.sdk.type.Document> documentListValue) {
-        String url = documentListValue.getValue().getBinaryUrl();
+    public void sendLetterv2(String documentId) {
 
         String serviceAuthHeader = authTokenGenerator.generate();
         String systemUserAuth = idamService.getSystemUserAuthorisation();
@@ -50,7 +48,7 @@ public class SendLetterService {
         Map<String, Object> map = new HashMap<>();
         map.put("recipients", personList);
 
-        byte[] documentBinary = getDocumentBinary(systemUserAuth, serviceAuthHeader, url).getBody();
+        byte[] documentBinary = getDocumentBinary(systemUserAuth, serviceAuthHeader, documentId).getBody();
 
         try {
             SendLetterResponse sendLetterResponse = sendLetterApi.sendLetter(
@@ -66,7 +64,10 @@ public class SendLetterService {
 
     public ResponseEntity<byte[]> getDocumentBinary(String authorisation,
                                                     String serviceAuth,
-                                                    String url) {
+                                                    String documentId) {
+
+        String url = "http://ccd-case-document-am-api-aat.service.core-compute-aat.internal/cases/documents/"
+            + documentId + "/binary";
         try {
             RestTemplate restTemplate = new RestTemplate();
             HttpHeaders headers = new HttpHeaders();
