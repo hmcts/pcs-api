@@ -38,8 +38,10 @@ public class SendLetterService {
     private final IdamService idamService;
     private final String caseDocumentUrl;
 
-    public SendLetterService(SendLetterApi sendLetterApi, AuthTokenGenerator authTokenGenerator,
-                             IdamService idamService, @Value("${CASE_DOCUMENT_AM_URL}") String caseDocumentUrl) {
+    public SendLetterService(SendLetterApi sendLetterApi,
+                             AuthTokenGenerator authTokenGenerator, IdamService idamService,
+                             @Value("${ccd.ccd-data-store-api.java.environment.CASE_DOCUMENT_AM_URL}")
+                             String caseDocumentUrl) {
 
         this.sendLetterApi = sendLetterApi;
         this.authTokenGenerator = authTokenGenerator;
