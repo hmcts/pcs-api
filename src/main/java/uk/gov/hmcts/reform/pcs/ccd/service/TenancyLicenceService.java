@@ -13,12 +13,15 @@ public class TenancyLicenceService {
 
     public TenancyLicence buildTenancyLicence(PCSCase pcsCase) {
         return TenancyLicence.builder()
-                .noticeServed(toBooleanOrNull(pcsCase.getNoticeServed()))
-                .rentAmount(penceToPounds(pcsCase.getCurrentRent()))
-                .rentPaymentFrequency(pcsCase.getRentFrequency())
-                .otherRentFrequency(pcsCase.getOtherRentFrequency())
-                .dailyRentChargeAmount(getDailyRentAmount(pcsCase))
-                .build();
+            .noticeServed(toBooleanOrNull(pcsCase.getNoticeServed()))
+            .rentAmount(penceToPounds(pcsCase.getCurrentRent()))
+            .rentPaymentFrequency(pcsCase.getRentFrequency())
+            .otherRentFrequency(pcsCase.getOtherRentFrequency())
+            .dailyRentChargeAmount(getDailyRentAmount(pcsCase))
+            .totalRentArrears(penceToPounds(pcsCase.getTotalRentArrears()))
+            .thirdPartyPaymentSources(pcsCase.getThirdPartyPaymentSources())
+            .thirdPartyPaymentSourceOther(pcsCase.getThirdPartyPaymentSourceOther())
+            .build();
     }
 
     private static Boolean toBooleanOrNull(YesOrNo yesOrNo) {

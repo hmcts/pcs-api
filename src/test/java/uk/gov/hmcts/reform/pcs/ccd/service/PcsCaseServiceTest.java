@@ -25,12 +25,13 @@ import uk.gov.hmcts.reform.pcs.config.MapperConfig;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
-import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentPaymentFrequency;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ThirdPartyPaymentSource;
+import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicence;
 import uk.gov.hmcts.reform.pcs.ccd.service.TenancyLicenceService;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -66,7 +67,7 @@ class PcsCaseServiceTest {
     void setUp() {
         MapperConfig config = new MapperConfig();
         modelMapper = spy(config.modelMapper());
-        tenancyLicenceService = mock(TenancyLicenceService.class);
+        tenancyLicenceService = new TenancyLicenceService();
         underTest = new PcsCaseService(pcsCaseRepository, securityContextService, modelMapper, tenancyLicenceService);
     }
 
@@ -424,7 +425,6 @@ class PcsCaseServiceTest {
         assertThat(clearedDefendant.getEmail()).isNull();
     }
 
-<<<<<<< HEAD
     // Test for tenancy_licence JSON creation, temporary until Data Model is finalised
     @Test
     void shouldSetTenancyLicence() {
@@ -438,8 +438,8 @@ class PcsCaseServiceTest {
 
         // Test rent amount field
         assertTenancyLicenceField(
-                pcsCase -> when(pcsCase.getCurrentRent()).thenReturn("1200.50"),
-                expected -> assertThat(expected.getRentAmount()).isEqualTo(new BigDecimal("1200.50")));
+                pcsCase -> when(pcsCase.getCurrentRent()).thenReturn("120000"),
+                expected -> assertThat(expected.getRentAmount()).isEqualTo(new BigDecimal("1200.00")));
 
         // Test rent payment frequency field
         assertTenancyLicenceField(
@@ -453,12 +453,12 @@ class PcsCaseServiceTest {
 
         // Test daily rent charge amount field
         assertTenancyLicenceField(
-                pcsCase -> when(pcsCase.getDailyRentChargeAmount()).thenReturn("40.00"),
+                pcsCase -> when(pcsCase.getDailyRentChargeAmount()).thenReturn("4000"),
                 expected -> assertThat(expected.getDailyRentChargeAmount()).isEqualTo(new BigDecimal("40.00")));
 
         // Test total rent arrears field
         assertTenancyLicenceField(
-                pcsCase -> when(pcsCase.getTotalRentArrears()).thenReturn("2500.75"),
+                pcsCase -> when(pcsCase.getTotalRentArrears()).thenReturn("250075"),
                 expected -> assertThat(expected.getTotalRentArrears()).isEqualTo(new BigDecimal("2500.75")));
 
         // Test third party payment sources field
