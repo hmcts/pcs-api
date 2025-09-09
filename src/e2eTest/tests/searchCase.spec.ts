@@ -12,7 +12,7 @@ import {getCaseInfo} from '@utils/actions/custom-actions/createCase.action';
 
 test.beforeEach(async ({page}) => {
     initializeExecutor(page);
-    await parentSuite('Case Creation');
+    await parentSuite('Search Case');
     await performAction('navigateToUrl', configData.manageCasesBaseURL);
     await performAction('createUserAndLogin', 'claimant', ['caseworker-pcs', 'caseworker']);
     createCaseWithAddress();
@@ -31,8 +31,8 @@ async function searchCase(caseNumber: string) {
   await performAction('clickButton', 'Apply');
 }
 
-test.describe.skip('Search case by case number @PR @Master @nightly', () => {
-  test('Search for case via caselist', async ({}) => {
+test.describe('Search case by case number @PR @Master @nightly', () => {
+  test.skip('Search for case via caselist', async ({}) => {
     await performAction('clickButton', 'Case list');
     await searchCase(getCaseInfo().id);
     await performValidation(
@@ -41,7 +41,7 @@ test.describe.skip('Search case by case number @PR @Master @nightly', () => {
       {visible: getCaseInfo().fid}
     );
   });
-  test('Search for case via find case', async ({}) => {
+  test.skip('Search for case via find case', async ({}) => {
     await performAction('clickButton', 'Find case');
     await searchCase(getCaseInfo().id);
     await performValidation(
@@ -51,4 +51,3 @@ test.describe.skip('Search case by case number @PR @Master @nightly', () => {
     );
   });
 });
-

@@ -1,23 +1,27 @@
-import Axios, { AxiosInstance, AxiosResponse } from 'axios';
-import { TestConfig } from 'config/test.config';
-import { getIdamAuthToken, getServiceAuthToken } from '../../helpers/idam-helpers/idam.helper';
-import { actionData, IAction } from '../../interfaces/action.interface';
-import { Page } from '@playwright/test';
-import { getUser, initIdamAuthToken, initServiceAuthToken } from 'utils/helpers/idam-helpers/idam.helper';
-import { performAction, performActions, performValidation } from '@utils/controller';
-import { createCase } from '@data/page-data/createCase.page.data';
-import { addressDetails } from '@data/page-data/addressDetails.page.data';
-import { housingPossessionClaim } from '@data/page-data/housingPossessionClaim.page.data';
-import { defendantDetails } from "@data/page-data/defendantDetails.page.data";
-import { claimantName } from '@data/page-data/claimantName.page.data';
-import { contactPreferences } from '@data/page-data/contactPreferences.page.data';
-import { mediationAndSettlement } from '@data/page-data/mediationAndSettlement.page.data';
-import { rentDetails } from '@data/page-data/rentDetails.page.data';
-import {tenancyLicenceDetails} from "@data/page-data/tenancyLicenceDetails.page.data";
-import {secureOrFlexibleGrounds} from "@data/page-data/secureOrFlexibleGrounds.page.data";
-import {reasonsForPossession} from "@data/page-data/reasonsForPossession.page.data";
+import Axios, {AxiosInstance, AxiosResponse} from 'axios';
+import {TestConfig} from 'config/test.config';
+import {getIdamAuthToken, getServiceAuthToken} from '../../helpers/idam-helpers/idam.helper';
+import {actionData, IAction} from '../../interfaces/action.interface';
+import {Page} from '@playwright/test';
+import {getUser, initIdamAuthToken, initServiceAuthToken} from 'utils/helpers/idam-helpers/idam.helper';
+import {performAction, performActions, performValidation} from '@utils/controller';
+import {createCase} from '@data/page-data/createCase.page.data';
+import {addressDetails} from '@data/page-data/addressDetails.page.data';
+import {housingPossessionClaim} from '@data/page-data/housingPossessionClaim.page.data';
+import {defendantDetails} from '@data/page-data/defendantDetails.page.data';
+import {claimantName} from '@data/page-data/claimantName.page.data';
+import {contactPreferences} from '@data/page-data/contactPreferences.page.data';
+import {mediationAndSettlement} from '@data/page-data/mediationAndSettlement.page.data';
+import {tenancyLicenceDetails} from '@data/page-data/tenancyLicenceDetails.page.data';
+import {resumeClaimOptions} from "@data/page-data/resumeClaimOptions.page.data";
+import {rentDetails} from '@data/page-data/rentDetails.page.data';
+import {dailyRentAmount} from '@data/page-data/dailyRentAmount.page.data';
+import {secureOrFlexibleGrounds} from '@data/page-data/secureOrFlexibleGrounds.page.data';
+import {reasonsForPossession} from '@data/page-data/reasonsForPossession.page.data';
+import configData from '@config/test.config';
 
 let caseInfo: { id: string; fid: string; state: string };
+let caseNumber: string;
 const testConfig = TestConfig.ccdCase;
 
 export class CreateCaseAction implements IAction {
@@ -31,8 +35,10 @@ export class CreateCaseAction implements IAction {
       ['createCase', () => this.createCaseAction(page, action, fieldName, data)],
       ['housingPossessionClaim', () => this.housingPossessionClaim()],
       ['selectAddress', () => this.selectAddress(fieldName)],
-      ['selectLegislativeCountry', () => this.selectLegislativeCountry(fieldName)],
+      ['selectResumeClaimOption', () => this.selectResumeClaimOption(fieldName)],
+      ['extractCaseIdFromAlert', () => this.extractCaseIdFromAlert(page)],
       ['selectClaimantType', () => this.selectClaimantType(fieldName)],
+      ['reloginAndFindTheCase', () => this.reloginAndFindTheCase()],
       ['defendantDetails', () => this.defendantDetails(fieldName)],
       ['selectJurisdictionCaseTypeEvent', () => this.selectJurisdictionCaseTypeEvent()],
       ['enterTestAddressManually', () => this.enterTestAddressManually()],
@@ -47,7 +53,8 @@ export class CreateCaseAction implements IAction {
       ['selectTenancyOrLicenceDetails', () => this.selectTenancyOrLicenceDetails(fieldName)],
       ['selectSecureFlexiblePossessionGround', () => this.selectSecureFlexiblePossessionGround(fieldName)],
       ['enterReasonForPossession', () => this.enterReasonForPossession(page, fieldName)],
-      ['provideRentDetails', () => this.provideRentDetails(fieldName)]
+      ['provideRentDetails', () => this.provideRentDetails(fieldName)],
+      ['selectDailyRentAmount', () => this.selectDailyRentAmount(fieldName)]
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) throw new Error(`No action found for '${action}'`);
@@ -79,12 +86,20 @@ export class CreateCaseAction implements IAction {
       ['clickButton', 'Find address'],
       ['select', 'Select an address', addressDetails.addressIndex]
     );
-    await performAction('clickButton', 'Continue');
+    await performAction('clickButton', 'Submit');
   }
 
-  private async selectLegislativeCountry(caseData: actionData) {
+  private async extractCaseIdFromAlert(page: Page): Promise<void> {
+    const text = await page.locator('div.alert-message').innerText();
+    caseNumber = text.match(/#([\d-]+)/)?.[1] as string;
+    if (!caseNumber) {
+      throw new Error(`Case ID not found in alert message: "${text}"`);
+    }
+  }
+
+  private async selectResumeClaimOption(caseData: actionData) {
     await performAction('clickRadioButton', caseData);
-    await performAction('clickButton', 'Continue');
+    await performAction('clickButton', resumeClaimOptions.continue);
   }
 
   private async selectClaimantType(caseData: actionData) {
@@ -114,7 +129,7 @@ export class CreateCaseAction implements IAction {
 
   private async selectCountryRadioButton(option: actionData) {
     await performAction('clickRadioButton', option);
-    await performAction('clickButton', 'Continue');
+    await performAction('clickButton', 'Submit');
   }
 
   private async selectClaimantName(caseData: actionData) {
@@ -143,10 +158,12 @@ export class CreateCaseAction implements IAction {
       option: prefData.correspondenceAddress
     });
     if (prefData.correspondenceAddress === 'No') {
-      await performAction('selectAddress', {
-        postcode: addressDetails.englandPostcode,
-        addressIndex: addressDetails.addressIndex
-      });
+      await performActions(
+          'Find Address based on postcode',
+          ['inputText', 'Enter a UK postcode', addressDetails.englandCourtAssignedPostcode],
+          ['clickButton', 'Find address'],
+          ['select', 'Select an address', addressDetails.addressIndex]
+      );
     }
     await performAction('clickRadioButton', {
       question: contactPreferences.provideContactPhoneNumber,
@@ -158,7 +175,7 @@ export class CreateCaseAction implements IAction {
     await performAction('clickButton', 'Continue');
   }
 
-private async defendantDetails(defendantVal: actionData) {
+  private async defendantDetails(defendantVal: actionData) {
     const defendantData = defendantVal as {
       name: string;
       correspondenceAddress: string;
@@ -183,10 +200,12 @@ private async defendantDetails(defendantVal: actionData) {
         option: defendantData.correspondenceAddressSame
       });
       if (defendantData.correspondenceAddressSame === 'No') {
-        await performAction('selectAddress', {
-          postcode: addressDetails.englandPostcode,
-          addressIndex: addressDetails.addressIndex
-        });
+        await performActions(
+            'Find Address based on postcode',
+            ['inputText', 'Enter a UK postcode', addressDetails.englandCourtAssignedPostcode],
+            ['clickButton', 'Find address'],
+            ['select', 'Select an address', addressDetails.addressIndex]
+        );
       }
     }
     await performAction('clickRadioButton', {
@@ -293,6 +312,40 @@ private async defendantDetails(defendantVal: actionData) {
     await performAction('clickButton', 'Continue');
   }
 
+  private async provideRentDetails(rentFrequency: actionData) {
+    const rentData = rentFrequency as {
+      rentFrequencyOption: string;
+      rentAmount?: string;
+      unpaidRentAmountPerDay?: string,
+      inputFrequency?: string
+    };
+    await performAction('clickRadioButton', rentData.rentFrequencyOption);
+    if(rentData.rentFrequencyOption == 'Other'){
+      await performAction('inputText', rentDetails.rentFrequencyLabel, rentData.inputFrequency);
+      await performAction('inputText', rentDetails.amountPerDayInputLabel, rentData.unpaidRentAmountPerDay);
+    } else {
+      await performAction('inputText', rentDetails.HowMuchRentLabel, rentData.rentAmount);
+    }
+    await performAction('clickButton', 'Continue');
+  }
+
+  private async selectDailyRentAmount(dailyRentAmountData: actionData) {
+    const rentAmount = dailyRentAmountData as {
+      calculateRentAmount: string,
+      unpaidRentInteractiveOption: string,
+      unpaidRentAmountPerDay?: string
+    };
+    await performValidation('text', {
+      text: dailyRentAmount.basedOnPreviousAnswers + `${rentAmount.calculateRentAmount}`,
+      elementType: 'paragraph'
+    });
+    await performAction('clickRadioButton', rentAmount.unpaidRentInteractiveOption);
+    if(rentAmount.unpaidRentInteractiveOption == 'No'){
+      await performAction('inputText', dailyRentAmount.enterAmountPerDayLabel, rentAmount.unpaidRentAmountPerDay);
+    }
+    await performAction('clickButton', 'Continue');
+  }
+
   private async selectJurisdictionCaseTypeEvent() {
     await performActions('Case option selection'
       , ['select', 'Jurisdiction', createCase.possessionsJurisdiction]
@@ -310,27 +363,17 @@ private async defendantDetails(defendantVal: actionData) {
       , ['inputText', 'Address Line 3', addressDetails.addressLine3]
       , ['inputText', 'Town or City', addressDetails.townOrCity]
       , ['inputText', 'County', addressDetails.walesCounty]
-      , ['inputText', 'Postcode/Zipcode', addressDetails.postcode]
+      , ['inputText', 'Postcode/Zipcode', addressDetails.walesCourtAssignedPostcode]
       , ['inputText', 'Country', addressDetails.country]
     );
-    await performAction('clickButton', 'Continue');
+    await performAction('clickButton', 'Submit');
   }
 
-  private async provideRentDetails(rentFrequency: actionData) {
-    const rentData = rentFrequency as {
-      rentFrequencyOption: string;
-      rentAmount?: string;
-      unpaidRentAmountPerDay?: string,
-      inputFrequency?: string
-    };
-    await performAction('clickRadioButton', rentData.rentFrequencyOption);
-    if(rentData.rentFrequencyOption == 'Other'){
-      await performAction('inputText', rentDetails.rentFrequencyLabel, rentData.inputFrequency);
-      await performAction('inputText', rentDetails.amountPerDayInputLabel, rentData.unpaidRentAmountPerDay);
-    } else {
-      await performAction('inputText', rentDetails.HowMuchRentLabel, rentData.rentAmount);
-    }
-    await performAction('clickButton', 'Continue');
+  private async reloginAndFindTheCase() {
+    await performAction('navigateToUrl', configData.manageCasesBaseURL);
+    await performAction('login')
+    await performAction('inputText', '16-digit case reference:', caseNumber);
+    await performAction('clickButton', 'Find');
   }
 
   async getEventToken(): Promise<string> {
@@ -362,7 +405,6 @@ private async defendantDetails(defendantVal: actionData) {
         state: response.data.state,
       };
     } catch (err) {
-      throw err
       throw new Error('Case could not be created.');
     }
   }

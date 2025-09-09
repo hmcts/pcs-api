@@ -16,12 +16,12 @@ properties([
     ),
     booleanParam(
       name: 'CHROME_TESTS',
-      defaultValue: true,
+      defaultValue: false,
       description: 'Tick the checkbox to run E2E tests in Chrome.'
     ),
     booleanParam(
       name: 'FIREFOX_TESTS',
-      defaultValue: true,
+      defaultValue: false,
       description: 'Tick the checkbox to run E2E tests in Firefox.'
     ),
   ])
@@ -58,13 +58,11 @@ withNightlyPipeline(type, product, component) {
   loadVaultSecrets(secrets)
   handleEnvironmentSetting()
   enableFortifyScan()
-  afterSuccess('fortify-scan') {
-    steps.archiveArtifacts allowEmptyArchive: true,
-      artifacts: '**/Fortify Scan/**/*'
-  }
-  afterAlways('FortifyScan') {
-    runE2eTests()
-    publishE2EReport()
+  afterAlways('fortify-scan') {
+    steps.archiveArtifacts allowEmptyArchive: true, artifacts: '**/Fortify Scan/**/*'
+    //Skipping e2e tests as the decentralisation is not currently supported in aat
+    //runE2eTests()
+    //publishE2EReport()
   }
 }
 
