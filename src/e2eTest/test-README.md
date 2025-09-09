@@ -99,7 +99,7 @@ Playwright 1.30+ | TypeScript 4.9+
 | selectGroundsForPossession      | `performAction('selectGroundsForPossession', groundsForPossession.yes)`                                                                                                                                    |
 | selectDailyRentAmount           | `performAction('selectDailyRentAmount', { calculateRentAmount: '£114.29',unpaidRentInteractiveOption: dailyRentAmount.no,unpaidRentAmountPerDay:'20'})`                                                    |
 | reloginAndFindTheCase           | `performAction('reloginAndFindTheCase')`                                                                                                                                                                   |
-
+| provideDetailsOfRentArrears     | `performAction('provideDetailsOfRentArrears', {files: ['tenancyLicence.docx'], rentArrearsAmountOnStatement: '1000',rentPaidByOthersOption: 'Yes',paymentOptions: ['Universal Credit']})`                  |
 ### Validations
 | Validation        | Example Usage                                                                                                                        |
 |-------------------|--------------------------------------------------------------------------------------------------------------------------------------|

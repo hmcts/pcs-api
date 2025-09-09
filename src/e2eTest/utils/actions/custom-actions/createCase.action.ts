@@ -16,6 +16,7 @@ import {tenancyLicenceDetails} from '@data/page-data/tenancyLicenceDetails.page.
 import {resumeClaimOptions} from "@data/page-data/resumeClaimOptions.page.data";
 import {rentDetails} from '@data/page-data/rentDetails.page.data';
 import {dailyRentAmount} from '@data/page-data/dailyRentAmount.page.data';
+import {detailsOfRentArrears} from '@data/page-data/detailsOfRentArrears.page.data';
 import configData from '@config/test.config';
 
 let caseInfo: { id: string; fid: string; state: string };
@@ -50,7 +51,8 @@ export class CreateCaseAction implements IAction {
       ['selectCountryRadioButton', () => this.selectCountryRadioButton(fieldName)],
       ['selectTenancyOrLicenceDetails', () => this.selectTenancyOrLicenceDetails(fieldName)],
       ['provideRentDetails', () => this.provideRentDetails(fieldName)],
-      ['selectDailyRentAmount', () => this.selectDailyRentAmount(fieldName)]
+      ['selectDailyRentAmount', () => this.selectDailyRentAmount(fieldName)],
+      ['provideDetailsOfRentArrears', () => this.provideDetailsOfRentArrears(fieldName)]
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) throw new Error(`No action found for '${action}'`);
@@ -302,6 +304,35 @@ export class CreateCaseAction implements IAction {
       , ['select', 'Case type', createCase.caseType.civilPossessions]
       , ['select', 'Event', createCase.makeAPossessionClaimEvent]);
     await performAction('clickButton', 'Start');
+  }
+
+  private async provideDetailsOfRentArrears(rentArrears: actionData) {
+    const rentArrearsData = rentArrears as {
+      files?: string[],
+      rentArrearsAmountOnStatement: string,
+      rentPaidByOthersOption: string;
+      paymentOptions?: string[];
+    };
+    if(rentArrearsData.files){
+      for (const file of rentArrearsData.files) {
+        await performAction('clickButton', 'Add new');
+        await performAction('uploadFile', file);
+      }
+    }
+    await performAction('inputText', detailsOfRentArrears.totalRentArrearsLabel, rentArrearsData.rentArrearsAmountOnStatement);
+    await performAction('clickRadioButton', {
+      question: detailsOfRentArrears.periodShownOnRentStatementLabel,
+      option: rentArrearsData.rentPaidByOthersOption
+    });
+    if (rentArrearsData.rentPaidByOthersOption == 'Yes' && rentArrearsData.paymentOptions) {
+      for (const option of rentArrearsData.paymentOptions) {
+        await performAction('check', option);
+        if (option === 'Other') {
+          await performAction('inputText', detailsOfRentArrears.paymentSourceLabel, 'Some other reason');
+        }
+      }
+      await performAction('clickButton', 'Continue');
+    }
   }
 
   private async enterTestAddressManually() {

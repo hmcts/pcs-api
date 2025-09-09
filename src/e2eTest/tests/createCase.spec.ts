@@ -145,7 +145,12 @@ test.describe('[Create Case Flow With Address and Claimant Type]  @Master @night
     await performValidation('mainHeader', rentDetails.mainHeader);
     await performAction('provideRentDetails', {rentFrequencyOption:'Other', inputFrequency:rentDetails.rentFrequencyFortnightly,unpaidRentAmountPerDay:'50'});
     await performValidation('mainHeader', detailsOfRentArrears.mainHeader);
-    await performAction('clickButton', detailsOfRentArrears.continue);
+    await performAction('provideDetailsOfRentArrears', {
+      files: ['tenancyLicence.docx', 'tenancyLicence.png'],
+      rentArrearsAmountOnStatement: '1000',
+      rentPaidByOthersOption: 'Yes',
+      paymentOptions: ['Universal Credit', 'Housing Benefit', 'Other']
+    });
     await performAction('clickButton', 'Save and continue');
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
     await performAction('clickTab', 'Property Details');
