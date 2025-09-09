@@ -7,12 +7,8 @@ export class InputTextAction implements IAction {
       ? page.locator(`:has-text("${fieldParams}") ~ input,
            label:has-text("${fieldParams}") ~ textarea,
            label:has-text("${fieldParams}") + div input`)
-      : page.locator(`fieldset:has(h2:text-is("${fieldParams.text}")) textarea:visible:enabled`).nth(Number(fieldParams.index));
-    try{
-      await locator.fill(value);
-    }
-    catch(error){
-    await locator.first().fill(value);
-    }
+      : page.locator(`:has-text("${fieldParams.text}") ~ input,
+           fieldset:has(h2:text-is("${fieldParams.text}")) textarea:visible:enabled`).nth(Number(fieldParams.index));
+    await locator.fill(value);
   }
 }
