@@ -1,16 +1,22 @@
 package uk.gov.hmcts.reform.pcs.ccd.service;
 
-import java.math.BigDecimal;
-
-import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.jupiter.api.Test;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
+import uk.gov.hmcts.ccd.sdk.type.Document;
+import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentPaymentFrequency;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicence;
+import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.Arrays;
+import java.util.List;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class TenancyLicenceServiceTest {
 
@@ -18,6 +24,43 @@ class TenancyLicenceServiceTest {
 
     @Test
     void shouldSetTenancyLicence() {
+        LocalDate tenancyDate = LocalDate.of(2025, 8, 27);
+
+        List<ListValue<Document>> uploadedDocs = Arrays.asList(
+            ListValue.<Document>builder().id("1")
+                .value(Document.builder()
+                           .filename("tenancy_agreement.pdf")
+                           .build())
+                .build(),
+            ListValue.<Document>builder().id("2")
+                .value(Document.builder()
+                           .filename("proof_of_id.png")
+                           .build())
+                .build()
+        );
+
+        // Test tenancy type field
+        assertTenancyLicenceField(
+            pcsCase -> when(pcsCase.getTypeOfTenancyLicence()).thenReturn(TenancyLicenceType.ASSURED_TENANCY),
+            expected -> assertThat(expected.getTenancyLicenceType())
+                .isEqualTo(TenancyLicenceType.ASSURED_TENANCY.getLabel()));
+
+        // Test tenancy date field
+        assertTenancyLicenceField(
+            pcsCase -> when(pcsCase.getTenancyLicenceDate()).thenReturn(tenancyDate),
+            expected -> assertThat(expected.getTenancyLicenceDate()).isEqualTo(tenancyDate));
+
+        //Test supporting documents field
+        assertTenancyLicenceField(
+            pcsCase -> when(pcsCase.getTenancyLicenceDocuments()).thenReturn(uploadedDocs),
+            expected -> {
+                assertThat(expected.getSupportingDocuments()).hasSize(2);
+                assertThat(expected.getSupportingDocuments())
+                    .extracting(d -> d.getFilename())
+                    .containsExactlyInAnyOrder("tenancy_agreement.pdf", "proof_of_id.png");
+            }
+        );
+
         // Test notice_served field updates
         assertTenancyLicenceField(
                 pcsCase -> when(pcsCase.getNoticeServed()).thenReturn(YesOrNo.YES),
@@ -60,7 +103,7 @@ class TenancyLicenceServiceTest {
     void shouldUseAmendedDailyRentAmountWhenAvailable() {
         // Given
         PCSCase pcsCase = mock(PCSCase.class);
-        when(pcsCase.getAmendedDailyRentChargeAmount()).thenReturn("5000"); 
+        when(pcsCase.getAmendedDailyRentChargeAmount()).thenReturn("5000");
         when(pcsCase.getCalculatedDailyRentChargeAmount()).thenReturn("4000");
         when(pcsCase.getDailyRentChargeAmount()).thenReturn("3500");
         when(pcsCase.getCurrentRent()).thenReturn("120000");
