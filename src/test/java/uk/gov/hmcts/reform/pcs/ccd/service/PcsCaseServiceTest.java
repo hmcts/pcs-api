@@ -68,6 +68,26 @@ class PcsCaseServiceTest {
     }
 
     @Test
+    void shouldCreateCaseWithAddressAndLegislativeCountry() {
+        // Given
+        AddressUK propertyAddress = mock(AddressUK.class);
+        AddressEntity propertyAddressEntity = mock(AddressEntity.class);
+        LegislativeCountry legislativeCountry = mock(LegislativeCountry.class);
+
+        when(modelMapper.map(propertyAddress, AddressEntity.class)).thenReturn(propertyAddressEntity);
+
+        // When
+        underTest.createCase(CASE_REFERENCE, propertyAddress, legislativeCountry);
+
+        // Then
+        verify(pcsCaseRepository).save(pcsCaseEntityCaptor.capture());
+        PcsCaseEntity savedEntity = pcsCaseEntityCaptor.getValue();
+        assertThat(savedEntity.getCaseReference()).isEqualTo(CASE_REFERENCE);
+        assertThat(savedEntity.getPropertyAddress()).isEqualTo(propertyAddressEntity);
+        assertThat(savedEntity.getLegislativeCountry()).isEqualTo(legislativeCountry);
+    }
+
+    @Test
     void shouldCreateCaseWithNoData() {
         // Given
         PCSCase pcsCase = mock(PCSCase.class);
