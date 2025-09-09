@@ -240,32 +240,6 @@ export class CreateCaseAction implements IAction {
     await performAction('clickButton', 'Continue');
   }
 
-  private async selectTenancyOrLicenceDetails(tenancyData: actionData) {
-    const tenancyLicenceData = tenancyData as {
-      tenancyOrLicenceType: string;
-      day?: string;
-      month?: string;
-      year?: string;
-      files?: string[];
-    };
-    await performAction('clickRadioButton', tenancyLicenceData.tenancyOrLicenceType);
-    if (tenancyLicenceData.tenancyOrLicenceType === 'Other') {
-      await performAction('inputText', 'Give details of the type of tenancy or licence agreement that\'s in place', tenancyLicenceDetails.detailsOfLicence);
-    }
-    if(tenancyLicenceData.day && tenancyLicenceData.month &&  tenancyLicenceData.year) {
-      await performAction('inputText', 'Day', tenancyLicenceData.day);
-      await performAction('inputText', 'Month', tenancyLicenceData.month);
-      await performAction('inputText', 'Year', tenancyLicenceData.year);
-    }
-    if (tenancyLicenceData.files) {
-      for (const file of tenancyLicenceData.files) {
-        await performAction('clickButton', 'Add new');
-        await performAction('uploadFile', file);
-      }
-    }
-    await performAction('clickButton', 'Continue');
-  }
-
   private async selectMediationAndSettlement(mediationSettlement: actionData) {
     const prefData = mediationSettlement as {
       attemptedMediationWithDefendantsOption: string;
