@@ -88,7 +88,15 @@ public class UploadDocumentPoc implements CCDConfig<PCSCase, State, UserRole> {
                 + eventPayload.caseData().getSupportingDocuments().getFirst().getId());
             log.error("DOCUMENT ID of PcsCase Entity: "
                 + pcsCaseEntity.getId());
-            sendLetterService.sendLetterv2(eventPayload.caseData().getSupportingDocuments().getFirst().getId());
+            log.error(("Binary URL of Event payload: "
+                + eventPayload.caseData().getSupportingDocuments().getFirst().getValue().getBinaryUrl()));
+
+            String fullUrl = eventPayload.caseData().getSupportingDocuments().getFirst().getValue().getBinaryUrl();
+            String[] urlArray = fullUrl.split("/");
+            String documentId = urlArray[urlArray.length - 2];
+            log.error("Extracted ID: " + documentId);
+
+            sendLetterService.sendLetterv2(documentId);
         } catch (Exception e) {
             log.error(e.getMessage());
         }
