@@ -222,4 +222,32 @@ public class PcsCaseService {
         party.setActive(true);
         return party;
     }
+
+    public void addDocumentToCase(long caseReference, String fileName, String filePath) {
+        final PcsCaseEntity pcsCaseEntity = pcsCaseRepository.findByCaseReference(caseReference)
+            .orElseThrow(() -> new CaseNotFoundException(caseReference));
+
+        DocumentEntity document = new DocumentEntity();
+        document.setFileName(fileName);
+        document.setFilePath(filePath);
+        document.setUploadedOn(LocalDate.now());
+        document.setDocumentType("SUPPORTING");
+
+        pcsCaseEntity.addDocument(document);
+        pcsCaseRepository.save(pcsCaseEntity);
+    }
+
+    public void addGeneratedDocumentToCase(long caseReference, Document document) {
+        final PcsCaseEntity pcsCaseEntity = pcsCaseRepository.findByCaseReference(caseReference)
+            .orElseThrow(() -> new CaseNotFoundException(caseReference));
+
+        DocumentEntity documentEntity = new DocumentEntity();
+        documentEntity.setFileName(document.getFilename());
+        documentEntity.setFilePath(document.getBinaryUrl());
+        documentEntity.setUploadedOn(LocalDate.now());
+        documentEntity.setDocumentType("GENERATED");
+
+        pcsCaseEntity.addDocument(documentEntity);
+        pcsCaseRepository.save(pcsCaseEntity);
+    }
 }
