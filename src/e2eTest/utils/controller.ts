@@ -40,7 +40,7 @@ class Controller {
   async performValidation(
     validationType: string,
     fieldName?: string,
-    data?: string | validationData
+    data?: string | boolean | validationData
   ): Promise<void> {
     const validationInstance = ValidationRegistry.getValidation(validationType);
     await test.step(`Perform validation on [${validationType}]`, async () => {
@@ -123,7 +123,7 @@ export async function performAction(
 export async function performValidation(
   validationType: string,
   inputFieldName: string | validationData,
-  inputData?: validationData
+  inputData?: string | boolean | validationData
 ): Promise<void> {
   if (!testExecutor) {
     throw new Error('Test executor not initialized. Call initializeExecutor(page) first.');
