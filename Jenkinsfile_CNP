@@ -55,9 +55,6 @@ withPipeline(type, product, component) {
   onMaster() {
     enablePactAs([AppPipelineDsl.PactRoles.CONSUMER])
     setAatEnvVars()
-    afterSuccess('functionalTest:aat') {
-      runE2eTests(env.ENVIRONMENT)
-    }
   }
 
   onDemo {
@@ -83,10 +80,15 @@ withPipeline(type, product, component) {
 
   afterAlways('functionalTest:preview') {
     archiveFunctionalTestReports()
+    if (githubApi.getLabelsbyPattern(env.BRANCH_NAME, "pr:runE2eTests").size() > 0) {
+          runE2eTests(env.ENVIRONMENT)
+    }
   }
 
   afterAlways('functionalTest:aat') {
     archiveFunctionalTestReports()
+    //Skipping e2e tests as the decentralisation is not currently supported in aat
+    //runE2eTests(env.ENVIRONMENT)
   }
 }
 
@@ -122,7 +124,7 @@ def generateDefinitions(builder) {
 def runE2eTests(String context) {
   try {
     stage('E2E Test - ' + context) {
-      sh './gradlew runE2eTests'
+      sh './gradlew runE2eChromeTests'
     }
   } finally {
     publishHTML([

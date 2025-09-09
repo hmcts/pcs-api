@@ -12,7 +12,7 @@ import {caseInfo} from '@utils/actions/custom-actions/createCase.action';
 
 test.beforeEach(async ({page}) => {
     initializeExecutor(page);
-    await parentSuite('Case Creation');
+    await parentSuite('Search Case');
     await performAction('navigateToUrl', configData.manageCasesBaseURL);
     await performAction('createUserAndLogin', 'claimant', ['caseworker-pcs', 'caseworker']);
     createCaseWithAddress();

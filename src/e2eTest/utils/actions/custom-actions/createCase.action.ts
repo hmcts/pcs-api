@@ -10,11 +10,14 @@ import { defendantDetails } from "@data/page-data/defendantDetails.page.data";
 import { claimantName } from '@data/page-data/claimantName.page.data';
 import { contactPreferences } from '@data/page-data/contactPreferences.page.data';
 import { mediationAndSettlement } from '@data/page-data/mediationAndSettlement.page.data';
+import { resumeClaimOptions } from "@data/page-data/resumeClaimOptions.page.data";
 import { rentDetails } from '@data/page-data/rentDetails.page.data';
 import { accessTokenApiData } from '@data/api-data/accessToken.api.data';
 import { caseApiData } from '@data/api-data/case.api.data';
+import configData from '@config/test.config';
 
 export let caseInfo: { id: string; fid: string; state: string };
+let caseNumber: string;
 
 export class CreateCaseAction implements IAction {
   async execute(page: Page, action: string, fieldName: actionData, data?: actionData): Promise<void> {
@@ -22,8 +25,10 @@ export class CreateCaseAction implements IAction {
       ['createCase', () => this.createCaseAction(fieldName)],
       ['housingPossessionClaim', () => this.housingPossessionClaim()],
       ['selectAddress', () => this.selectAddress(fieldName)],
-      ['selectLegislativeCountry', () => this.selectLegislativeCountry(fieldName)],
+      ['selectResumeClaimOption', () => this.selectResumeClaimOption(fieldName)],
+      ['extractCaseIdFromAlert', () => this.extractCaseIdFromAlert(page)],
       ['selectClaimantType', () => this.selectClaimantType(fieldName)],
+      ['reloginAndFindTheCase', () => this.reloginAndFindTheCase()],
       ['defendantDetails', () => this.defendantDetails(fieldName)],
       ['selectJurisdictionCaseTypeEvent', () => this.selectJurisdictionCaseTypeEvent()],
       ['enterTestAddressManually', () => this.enterTestAddressManually()],
@@ -61,12 +66,20 @@ export class CreateCaseAction implements IAction {
       ['clickButton', 'Find address'],
       ['select', 'Select an address', addressDetails.addressIndex]
     );
-    await performAction('clickButton', 'Continue');
+    await performAction('clickButton', 'Submit');
   }
 
-  private async selectLegislativeCountry(caseData: actionData) {
+  private async extractCaseIdFromAlert(page: Page): Promise<void> {
+    const text = await page.locator('div.alert-message').innerText();
+    caseNumber = text.match(/#([\d-]+)/)?.[1] as string;
+    if (!caseNumber) {
+      throw new Error(`Case ID not found in alert message: "${text}"`);
+    }
+  }
+
+  private async selectResumeClaimOption(caseData: actionData) {
     await performAction('clickRadioButton', caseData);
-    await performAction('clickButton', 'Continue');
+    await performAction('clickButton', resumeClaimOptions.continue);
   }
 
   private async selectClaimantType(caseData: actionData) {
@@ -96,7 +109,7 @@ export class CreateCaseAction implements IAction {
 
   private async selectCountryRadioButton(option: actionData) {
     await performAction('clickRadioButton', option);
-    await performAction('clickButton', 'Continue');
+    await performAction('clickButton', 'Submit');
   }
 
   private async selectClaimantName(caseData: actionData) {
@@ -125,10 +138,12 @@ export class CreateCaseAction implements IAction {
       option: prefData.correspondenceAddress
     });
     if (prefData.correspondenceAddress === 'No') {
-      await performAction('selectAddress', {
-        postcode: addressDetails.englandPostcode,
-        addressIndex: addressDetails.addressIndex
-      });
+      await performActions(
+          'Find Address based on postcode',
+          ['inputText', 'Enter a UK postcode', addressDetails.englandCourtAssignedPostcode],
+          ['clickButton', 'Find address'],
+          ['select', 'Select an address', addressDetails.addressIndex]
+      );
     }
     await performAction('clickRadioButton', {
       question: contactPreferences.provideContactPhoneNumber,
@@ -165,10 +180,12 @@ export class CreateCaseAction implements IAction {
         option: defendantData.correspondenceAddressSame
       });
       if (defendantData.correspondenceAddressSame === 'No') {
-        await performAction('selectAddress', {
-          postcode: addressDetails.englandPostcode,
-          addressIndex: addressDetails.addressIndex
-        });
+        await performActions(
+            'Find Address based on postcode',
+            ['inputText', 'Enter a UK postcode', addressDetails.englandCourtAssignedPostcode],
+            ['clickButton', 'Find address'],
+            ['select', 'Select an address', addressDetails.addressIndex]
+        );
       }
     }
     await performAction('clickRadioButton', {
@@ -220,10 +237,17 @@ export class CreateCaseAction implements IAction {
       , ['inputText', 'Address Line 3', addressDetails.addressLine3]
       , ['inputText', 'Town or City', addressDetails.townOrCity]
       , ['inputText', 'County', addressDetails.walesCounty]
-      , ['inputText', 'Postcode/Zipcode', addressDetails.postcode]
+      , ['inputText', 'Postcode/Zipcode', addressDetails.walesCourtAssignedPostcode]
       , ['inputText', 'Country', addressDetails.country]
     );
-    await performAction('clickButton', 'Continue');
+    await performAction('clickButton', 'Submit');
+  }
+
+  private async reloginAndFindTheCase() {
+    await performAction('navigateToUrl', configData.manageCasesBaseURL);
+    await performAction('login')
+    await performAction('inputText', '16-digit case reference:', caseNumber);
+    await performAction('clickButton', 'Find');
   }
 
   private async provideRentDetails(rentFrequency: actionData) {
