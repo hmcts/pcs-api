@@ -26,7 +26,9 @@ import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.pcs.config.ClockConfiguration.UK_ZONE_ID;
 
 @ExtendWith(MockitoExtension.class)
+
 class TenancyLicenceTest extends BasePageTest {
+
 
     private static final LocalDate FIXED_CURRENT_DATE = LocalDate.of(2025, 8, 27);
 
@@ -51,13 +53,15 @@ class TenancyLicenceTest extends BasePageTest {
         PCSCase caseData = PCSCase.builder()
             .tenancyLicenceDate(date)
             .typeOfTenancyLicence(TenancyLicenceType.FLEXIBLE_TENANCY)
+
             .build();
 
         caseDetails.setData(caseData);
 
         // When
         AboutToStartOrSubmitResponse<PCSCase, State> response =
-            getMidEventForPage(event, "tenancyLicenceDetails").handle(caseDetails, null);
+            getMidEventForPage(event, "tenancyLicenceDetails").handle(caseDetails,null);
+
 
         // Then
         if (!isValid) {
@@ -74,6 +78,7 @@ class TenancyLicenceTest extends BasePageTest {
             assertThat(caseData.getSecureOrFlexibleMandatoryGroundsAlt()).isEmpty();
             assertThat(caseData.getRentArrearsOrBreachOfTenancy()).isEmpty();
         }
+
     }
 
     private static Stream<Arguments> tenancyDateScenarios() {

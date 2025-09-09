@@ -1,14 +1,14 @@
-import { IAction } from '../interfaces/action.interface';
-import { ClickTabAction } from '../actions/element-actions/clickTab.action';
-import { InputTextAction } from '../actions/element-actions/inputText.action';
-import { CheckAction } from '../actions/element-actions/check.action';
-import { SelectAction } from '../actions/element-actions/select.action';
-import { LoginAction } from "../actions/custom-actions/login.action";
-import { NavigateToUrl } from "@utils/actions/custom-actions/navigateToUrl.action";
-import { CreateCaseAction } from "@utils/actions/custom-actions/createCase.action";
-import { ClickButtonAction } from "../actions/element-actions/clickButton.action";
-import { ClickRadioButton } from "../actions/element-actions/clickRadioButton.action";
-import { UploadFileAction } from "@utils/actions/element-actions/uploadFile.action";
+import {IAction} from '../interfaces/action.interface';
+import {ClickTabAction} from '../actions/element-actions/clickTab.action';
+import {InputTextAction} from '../actions/element-actions/inputText.action';
+import {CheckAction} from '../actions/element-actions/check.action';
+import {SelectAction} from '../actions/element-actions/select.action';
+import {LoginAction} from "../actions/custom-actions/login.action";
+import {NavigateToUrl} from "@utils/actions/custom-actions/navigateToUrl.action";
+import {CreateCaseAction} from "@utils/actions/custom-actions/createCase.action";
+import {ClickButtonAction} from "../actions/element-actions/clickButton.action";
+import {ClickRadioButton} from "../actions/element-actions/clickRadioButton.action";
+import {UploadFileAction} from "@utils/actions/element-actions/uploadFile.action";
 
 export class ActionRegistry {
   private static actions: Map<string, IAction> = new Map([
@@ -23,7 +23,8 @@ export class ActionRegistry {
     ['clickRadioButton', new ClickRadioButton()],
     ['uploadFile', new UploadFileAction()],
     ['selectAddress', new CreateCaseAction()],
-    ['selectLegislativeCountry', new CreateCaseAction()],
+    ['extractCaseIdFromAlert', new CreateCaseAction()],
+    ['selectResumeClaimOption', new CreateCaseAction()],
     ['selectClaimantType', new CreateCaseAction()],
     ['defendantDetails', new CreateCaseAction()],
     ['selectJurisdictionCaseTypeEvent', new CreateCaseAction()],
@@ -39,7 +40,9 @@ export class ActionRegistry {
     ['selectNoticeOfYourIntention', new CreateCaseAction()],
     ['selectCountryRadioButton', new CreateCaseAction()],
     ['selectTenancyOrLicenceDetails', new CreateCaseAction()],
+    ['reloginAndFindTheCase', new CreateCaseAction()],
     ['provideRentDetails', new CreateCaseAction()],
+    ['selectDailyRentAmount', new CreateCaseAction()]
   ]);
 
   static getAction(actionName: string): IAction {
