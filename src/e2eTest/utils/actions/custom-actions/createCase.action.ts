@@ -2,7 +2,6 @@ import Axios, { AxiosInstance, AxiosResponse } from 'axios';
 import { TestConfig } from 'config/test.config';
 import { getIdamAuthToken, getServiceAuthToken } from '../../helpers/idam-helpers/idam.helper';
 import { actionData, IAction } from '../../interfaces/action.interface';
-import { Page } from '@playwright/test';
 import { getUser, initIdamAuthToken, initServiceAuthToken } from 'utils/helpers/idam-helpers/idam.helper';
 import { performAction, performActions, performValidation } from '@utils/controller';
 import { createCase } from '@data/page-data/createCase.page.data';
@@ -16,6 +15,7 @@ import { resumeClaimOptions } from "@data/page-data/resumeClaimOptions.page.data
 import { rentDetails } from '@data/page-data/rentDetails.page.data';
 import { dailyRentAmount } from '@data/page-data/dailyRentAmount.page.data';
 import configData from '@config/test.config';
+import {Page, test} from "@playwright/test";
 
 let caseInfo: { id: string; fid: string; state: string };
 let caseNumber: string;
@@ -32,7 +32,7 @@ export class CreateCaseAction implements IAction {
       ['createCase', () => this.createCaseAction(page, action, fieldName, data)],
       ['housingPossessionClaim', () => this.housingPossessionClaim()],
       ['selectAddress', () => this.selectAddress(fieldName)],
-      ['selectResumeClaimOption', () => this.selectResumeClaimOption(fieldName)],
+      ['selectResumeClaimOption', () => this.selectResumeClaimOption(page,fieldName)],
       ['extractCaseIdFromAlert', () => this.extractCaseIdFromAlert(page)],
       ['selectClaimantType', () => this.selectClaimantType(fieldName)],
       ['reloginAndFindTheCase', () => this.reloginAndFindTheCase()],
@@ -89,11 +89,21 @@ export class CreateCaseAction implements IAction {
     if (!caseNumber) {
       throw new Error(`Case ID not found in alert message: "${text}"`);
     }
+    const screenshot = await page.screenshot();
+    await test.info().attach('Example screenshot', {
+      body: screenshot,
+      contentType: 'image/png'
+    });
   }
 
-  private async selectResumeClaimOption(caseData: actionData) {
+  private async selectResumeClaimOption(page: Page,caseData: actionData) {
     await performAction('clickRadioButton', caseData);
     await performAction('clickButton', resumeClaimOptions.continue);
+    const screenshot = await page.screenshot();
+    await test.info().attach('Example screenshot', {
+      body: screenshot,
+      contentType: 'image/png'
+    });
   }
 
   private async selectClaimantType(caseData: actionData) {
