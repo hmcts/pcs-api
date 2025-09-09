@@ -11,12 +11,10 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
-import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PaymentStatus;
-import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicence;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyEntity;
@@ -25,23 +23,25 @@ import uk.gov.hmcts.reform.pcs.ccd.model.Defendant;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.config.MapperConfig;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
+import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentPaymentFrequency;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ThirdPartyPaymentSource;
+import uk.gov.hmcts.reform.pcs.ccd.service.TenancyLicenceService;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import java.math.BigDecimal;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -60,12 +60,34 @@ class PcsCaseServiceTest {
     private ArgumentCaptor<PcsCaseEntity> pcsCaseEntityCaptor;
 
     private PcsCaseService underTest;
+    private TenancyLicenceService tenancyLicenceService;
 
     @BeforeEach
     void setUp() {
         MapperConfig config = new MapperConfig();
         modelMapper = spy(config.modelMapper());
-        underTest = new PcsCaseService(pcsCaseRepository, securityContextService, modelMapper);
+        tenancyLicenceService = mock(TenancyLicenceService.class);
+        underTest = new PcsCaseService(pcsCaseRepository, securityContextService, modelMapper, tenancyLicenceService);
+    }
+
+    @Test
+    void shouldCreateCaseWithAddressAndLegislativeCountry() {
+        // Given
+        AddressUK propertyAddress = mock(AddressUK.class);
+        AddressEntity propertyAddressEntity = mock(AddressEntity.class);
+        LegislativeCountry legislativeCountry = mock(LegislativeCountry.class);
+
+        when(modelMapper.map(propertyAddress, AddressEntity.class)).thenReturn(propertyAddressEntity);
+
+        // When
+        underTest.createCase(CASE_REFERENCE, propertyAddress, legislativeCountry);
+
+        // Then
+        verify(pcsCaseRepository).save(pcsCaseEntityCaptor.capture());
+        PcsCaseEntity savedEntity = pcsCaseEntityCaptor.getValue();
+        assertThat(savedEntity.getCaseReference()).isEqualTo(CASE_REFERENCE);
+        assertThat(savedEntity.getPropertyAddress()).isEqualTo(propertyAddressEntity);
+        assertThat(savedEntity.getLegislativeCountry()).isEqualTo(legislativeCountry);
     }
 
     @Test
@@ -140,7 +162,8 @@ class PcsCaseServiceTest {
 
         PcsCaseEntity savedEntity = pcsCaseEntityCaptor.getValue();
         assertThat(savedEntity).isSameAs(existingPcsCaseEntity);
-        verifyNoInteractions(existingPcsCaseEntity);
+        verify(existingPcsCaseEntity).setTenancyLicence(any());
+        verifyNoMoreInteractions(existingPcsCaseEntity);
     }
 
     @Test
@@ -401,6 +424,7 @@ class PcsCaseServiceTest {
         assertThat(clearedDefendant.getEmail()).isNull();
     }
 
+<<<<<<< HEAD
     // Test for tenancy_licence JSON creation, temporary until Data Model is finalised
     @Test
     void shouldSetTenancyLicence() {
