@@ -102,9 +102,13 @@ test.describe('[Create Case Flow With Address and Claimant Type]  @Master @night
     )
   });
 
-  test('Wales - Successful case creation with Saved options', async () => {
+  test('Wales - Successful case creation with Saved options', async ({ page },testInfo) => {
     await performAction('enterTestAddressManually');
     await performValidation('bannerAlert', 'Case #.* has been created.');
+    await testInfo.attach('Step 1: Home Page', {
+      body: await page.screenshot(),
+      contentType: 'image/png',
+    });
     await performAction('extractCaseIdFromAlert');
     await performAction('clickButton', provideMoreDetailsOfClaim.continue);
     await performAction('selectClaimantType', claimantType.registeredCommunityLandlord);
@@ -112,7 +116,15 @@ test.describe('[Create Case Flow With Address and Claimant Type]  @Master @night
     await performAction('selectClaimantName', claimantName.no);
     await performAction('clickButton', 'Sign out');
     await performAction('reloginAndFindTheCase');
+    await testInfo.attach('Step 1: Home Page', {
+      body: await page.screenshot(),
+      contentType: 'image/png',
+    });
     await performAction('clickButton', resumeClaim.continue);
+    await testInfo.attach('Step 1: Home Page', {
+      body: await page.screenshot(),
+      contentType: 'image/png',
+    });
     await performAction('selectResumeClaimOption', resumeClaimOptions.yes);
     await performValidation('radioButtonChecked', claimantType.registeredCommunityLandlord, true);
     await performAction('clickButton', 'Continue');
@@ -148,6 +160,10 @@ test.describe('[Create Case Flow With Address and Claimant Type]  @Master @night
     await performAction('clickButton', detailsOfRentArrears.continue);
     await performAction('clickButton', 'Save and continue');
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
+    await testInfo.attach('Step 1: Home Page', {
+      body: await page.screenshot(),
+      contentType: 'image/png',
+    });
     await performAction('clickTab', 'Property Details');
     await performValidations('address information entered',
       ['formLabelValue', 'Building and Street', addressDetails.buildingAndStreet],
@@ -212,9 +228,13 @@ test.describe('[Create Case Flow With Address and Claimant Type]  @Master @night
     await performAction('clickButton', 'Cancel');
   });
 
-  test('Wales - Successful case creation without Saved options and Defendants correspondence address is not known', async () => {
+  test('Wales - Successful case creation without Saved options and Defendants correspondence address is not known', async ({ page }, testInfo) => {
     await performAction('enterTestAddressManually');
     await performValidation('bannerAlert', 'Case #.* has been created.');
+    await testInfo.attach('Step 1: Home Page', {
+      body: await page.screenshot(),
+      contentType: 'image/png',
+    });
     await performAction('extractCaseIdFromAlert');
     await performAction('clickButton', provideMoreDetailsOfClaim.continue);
     await performAction('selectClaimantType', claimantType.registeredCommunityLandlord);
@@ -222,7 +242,15 @@ test.describe('[Create Case Flow With Address and Claimant Type]  @Master @night
     await performAction('selectClaimantName', claimantName.yes);
     await performAction('clickButton', 'Sign out');
     await performAction('reloginAndFindTheCase');
+    await testInfo.attach('Step 1: Home Page', {
+      body: await page.screenshot(),
+      contentType: 'image/png',
+    });
     await performAction('clickButton', resumeClaim.continue);
+    await testInfo.attach('Step 1: Home Page', {
+      body: await page.screenshot(),
+      contentType: 'image/png',
+    });
     await performAction('selectResumeClaimOption', resumeClaimOptions.no);
     await performValidation('radioButtonChecked', claimantType.registeredCommunityLandlord, false);
     await performAction('selectClaimantType', claimantType.registeredCommunityLandlord);
@@ -260,6 +288,10 @@ test.describe('[Create Case Flow With Address and Claimant Type]  @Master @night
     });
     await performAction('clickButton', 'Save and continue');
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
+    await testInfo.attach('Step 1: Home Page', {
+      body: await page.screenshot(),
+      contentType: 'image/png',
+    });
     await performAction('clickTab', 'Property Details');
     await performValidations('address information entered',
       ['formLabelValue', 'Building and Street', addressDetails.buildingAndStreet],
