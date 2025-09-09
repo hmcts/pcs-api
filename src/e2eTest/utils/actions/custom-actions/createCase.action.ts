@@ -124,7 +124,7 @@ export class CreateCaseAction implements IAction {
   private async enterReasonForPossession(caseData: actionData) {
     if (Array.isArray(caseData)) {
       for (let n = 0; n < caseData.length; n++) {
-        await performAction('inputText', { title: caseData[n], index: n }, reasonsForPossession.detailsAboutYourReason);
+        await performAction('clickTab',  {text:caseData[n],index: n, testReason:reasonsForPossession.detailsAboutYourReason});
       }
     }
     await performAction('clickButton', 'Continue');
