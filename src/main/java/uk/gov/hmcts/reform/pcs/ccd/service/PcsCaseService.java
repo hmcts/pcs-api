@@ -7,11 +7,9 @@ import org.springframework.stereotype.Service;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
-import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicence;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
@@ -20,6 +18,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.model.Defendant;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
+import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.time.LocalDate;
@@ -27,6 +26,7 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 @Slf4j
@@ -37,8 +37,22 @@ public class PcsCaseService {
     private final PcsCaseRepository pcsCaseRepository;
     private final SecurityContextService securityContextService;
     private final ModelMapper modelMapper;
+    private TenancyLicenceService tenancyLicenceService;
 
-    public PcsCaseEntity createCase(long caseReference, PCSCase pcsCase) {
+    public void createCase(long caseReference, AddressUK propertyAddress, LegislativeCountry legislativeCountry) {
+
+        Objects.requireNonNull(propertyAddress, "Property address must be provided to create a case");
+        Objects.requireNonNull(legislativeCountry, "Legislative country must be provided to create a case");
+
+        PcsCaseEntity pcsCaseEntity = new PcsCaseEntity();
+        pcsCaseEntity.setCaseReference(caseReference);
+        pcsCaseEntity.setPropertyAddress(modelMapper.map(propertyAddress, AddressEntity.class));
+        pcsCaseEntity.setLegislativeCountry(legislativeCountry);
+
+        pcsCaseRepository.save(pcsCaseEntity);
+    }
+
+    public void createCase(long caseReference, PCSCase pcsCase) {
         AddressUK applicantAddress = pcsCase.getPropertyAddress();
 
         AddressEntity addressEntity = applicantAddress != null
@@ -54,6 +68,9 @@ public class PcsCaseService {
                         : null);
         pcsCaseEntity.setDefendants(mapFromDefendantDetails(pcsCase.getDefendants()));
 
+        pcsCaseEntity.setTenancyLicence(tenancyLicenceService.buildTenancyLicence(pcsCase));
+
+        pcsCaseRepository.save(pcsCaseEntity);
         // Process supporting documents
         List<ListValue<Document>> supportingDocuments = pcsCase.getSupportingDocuments();
         if (supportingDocuments != null && !supportingDocuments.isEmpty()) {
@@ -96,6 +113,8 @@ public class PcsCaseService {
         return pcsCaseRepository.save(pcsCaseEntity);
     }
 
+    public PcsCaseEntity patchCase(long caseReference, PCSCase pcsCase) {
+        PcsCaseEntity pcsCaseEntity = pcsCaseRepository.findByCaseReference(caseReference)
     public void patchCase(long caseReference, PCSCase pcsCase) {
         final PcsCaseEntity pcsCaseEntity = pcsCaseRepository.findByCaseReference(caseReference)
             .orElseThrow(() -> new CaseNotFoundException(caseReference));
@@ -122,7 +141,11 @@ public class PcsCaseService {
             pcsCaseEntity.setPreActionProtocolCompleted(pcsCase.getPreActionProtocolCompleted().toBoolean());
         }
 
+        pcsCaseEntity.setTenancyLicence(tenancyLicenceService.buildTenancyLicence(pcsCase));
+
         pcsCaseRepository.save(pcsCaseEntity);
+
+        return pcsCaseEntity;
     }
 
     public List<Defendant> mapFromDefendantDetails(List<ListValue<DefendantDetails>> defendants) {

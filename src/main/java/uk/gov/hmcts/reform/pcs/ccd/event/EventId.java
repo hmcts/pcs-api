@@ -10,4 +10,6 @@ public enum EventId {
     processClaimPayment,
     uploadDocumentPoc,
     generateDocument,
+    resumePossessionClaim,
+
 }
