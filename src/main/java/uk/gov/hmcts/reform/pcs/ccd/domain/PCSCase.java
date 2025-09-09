@@ -215,10 +215,11 @@ public class PCSCase {
 
     @CCD(searchable = false, access = CaseworkerAccess.class)
     private YesOrNo showClaimTypeNotEligibleWales;
-  
+
     @CCD(
         label = "How much is the rent?",
         typeOverride = FieldType.MoneyGBP,
+        min = 0,
         access = {CitizenAccess.class, CaseworkerAccess.class}
     )
     private String currentRent;
@@ -239,9 +240,30 @@ public class PCSCase {
     @CCD(
         label = "Enter the amount per day that unpaid rent should be charged at",
         typeOverride = FieldType.MoneyGBP,
+        min = 0,
         access = {CitizenAccess.class, CaseworkerAccess.class}
     )
     private String dailyRentChargeAmount;
+
+    @CCD(
+        label = "Is the amount per day that unpaid rent should be charged at correct?",
+        access = {CitizenAccess.class, CaseworkerAccess.class}
+    )
+    private VerticalYesNo rentPerDayCorrect;
+
+    @CCD(
+        label = "Enter amount per day that unpaid rent should be charged at",
+        typeOverride = FieldType.MoneyGBP,
+        min = 0,
+        access = {CitizenAccess.class, CaseworkerAccess.class}
+    )
+    private String amendedDailyRentChargeAmount;
+
+    @CCD(
+        typeOverride = FieldType.MoneyGBP,
+        access = {CitizenAccess.class, CaseworkerAccess.class}
+    )
+    private String calculatedDailyRentChargeAmount;
 
     @CCD(searchable = false, access = {CitizenAccess.class, CaseworkerAccess.class})
     private YesOrNo showPostcodeNotAssignedToCourt;

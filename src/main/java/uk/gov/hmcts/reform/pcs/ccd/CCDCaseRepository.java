@@ -24,6 +24,7 @@ import uk.gov.hmcts.reform.pcs.ccd.utils.ListValueUtils;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -80,14 +81,14 @@ public class CCDCaseRepository extends DecentralisedCaseRepository<PCSCase> {
                 : null)
             .currentRent(pcsCaseEntity.getTenancyLicence() != null
                 && pcsCaseEntity.getTenancyLicence().getRentAmount() != null
-                ? pcsCaseEntity.getTenancyLicence().getRentAmount().toPlainString() : null)
+                ? poundsToPence(pcsCaseEntity.getTenancyLicence().getRentAmount()) : null)
             .rentFrequency(pcsCaseEntity.getTenancyLicence() != null
                 ? pcsCaseEntity.getTenancyLicence().getRentPaymentFrequency() : null)
             .otherRentFrequency(pcsCaseEntity.getTenancyLicence() != null
                 ? pcsCaseEntity.getTenancyLicence().getOtherRentFrequency() : null)
             .dailyRentChargeAmount(pcsCaseEntity.getTenancyLicence() != null
                 && pcsCaseEntity.getTenancyLicence().getDailyRentChargeAmount() != null
-                ? pcsCaseEntity.getTenancyLicence().getDailyRentChargeAmount().toPlainString() : null)
+                ? poundsToPence(pcsCaseEntity.getTenancyLicence().getDailyRentChargeAmount()) : null)
             .noticeServed(pcsCaseEntity.getTenancyLicence() != null
                 && pcsCaseEntity.getTenancyLicence().getNoticeServed() != null
                 ? YesOrNo.from(pcsCaseEntity.getTenancyLicence().getNoticeServed()) : null)
@@ -180,5 +181,9 @@ public class CCDCaseRepository extends DecentralisedCaseRepository<PCSCase> {
         return partyEntities.stream()
             .map(entity -> modelMapper.map(entity, Party.class))
             .collect(Collectors.collectingAndThen(Collectors.toList(), ListValueUtils::wrapListItems));
+    }
+
+    private static String poundsToPence(BigDecimal pounds) {
+        return pounds.movePointRight(2).toPlainString();
     }
 }
