@@ -4,7 +4,6 @@ import { initializeExecutor, performAction, performValidation } from '@utils/con
 import { borderPostcode } from '@data/page-data/borderPostcode.page.data';
 import configData from '@config/test.config';
 import { addressDetails } from '@data/page-data/addressDetails.page.data';
-import { legislativeCountry } from '@data/page-data/legislativeCountry.page.data';
 import { canNotUseOnlineService } from '@data/page-data/canNotUseOnlineService.page.data';
 
 test.beforeEach(async ({page}) => {
@@ -33,9 +32,11 @@ test.describe('Eligibility checks for cross and non cross border postcodes @nigh
       "elementType": "inlineText"
     });
     await performAction('selectCountryRadioButton', borderPostcode.countryOptions.england);
-    await performValidation('mainHeader', legislativeCountry.mainHeader);
-    await page.goBack()
-    await page.waitForLoadState()
+    await performValidation('bannerAlert', 'Case #.* has been created.');
+    await page.goBack();
+    await page.waitForLoadState();
+    await page.goBack();
+    await page.waitForLoadState();
     await performAction('selectCountryRadioButton', borderPostcode.countryOptions.wales);
     await performValidation('mainHeader', borderPostcode.mainHeader);
   });
@@ -54,24 +55,24 @@ test.describe('Eligibility checks for cross and non cross border postcodes @nigh
       "text": borderPostcode.englandScotlandInlineContent,
       "elementType": "inlineText"
     });
-    await performValidation('text', {"text": borderPostcode.continue, "elementType": "button"})
+    await performValidation('text', {"text": borderPostcode.submit, "elementType": "button"})
     await performValidation('text', {"text": borderPostcode.cancel, "elementType": "link"})
   });
 
   test('Verify non cross border postcode eligibility check for England', async () => {
     await performAction('selectAddress', {
-      postcode: addressDetails.englandPostcode,
+      postcode: addressDetails.englandCourtAssignedPostcode,
       addressIndex: addressDetails.addressIndex
     });
-    await performValidation('mainHeader', legislativeCountry.mainHeader);
+    await performValidation('bannerAlert', 'Case #.* has been created.');
   });
 
   test.skip('Verify non cross border postcode eligibility check for Wales', async () => {
     await performAction('selectAddress', {
-      postcode: addressDetails.walesPostcode,
+      postcode: addressDetails.walesCourtAssignedPostcode,
       addressIndex: addressDetails.addressIndex
     });
-    await performValidation('mainHeader', legislativeCountry.mainHeader);
+    await performValidation('bannerAlert', 'Case #.* has been created.');
   });
 
   test('Verify postcode not assigned to court - Can not use this service page - All countries', async () => {
@@ -92,6 +93,8 @@ test.describe('Eligibility checks for cross and non cross border postcodes @nigh
     })
   });
 
+  //This test case is failing currently due to scenario leading to different page, so test need to be corrected as
+  // part of house keeping task
   test.skip('Verify postcode not assigned to court - Can not use this service page - cross border England', async () => {
     await performAction('selectAddress', {
       postcode: addressDetails.englandWalesNoCourtCrossBorderPostcode,

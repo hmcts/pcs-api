@@ -2,8 +2,7 @@ export const addressDetails = {
   title: 'Create a case - HM Courts & Tribunals Service - GOV.UK',
   mainHeader: 'What is the address of the property you\'re claiming possession of?',
   sectionTitle: 'Property address',
-  englandPostcode: 'W3 7RX',
-  walesPostcode: 'SA31 3DG',
+  englandCourtAssignedPostcode: 'W3 7RX',
   addressIndex: 1,
   addressLine2: 'address2',
   addressLine3: 'address3',
@@ -11,7 +10,6 @@ export const addressDetails = {
   walesCounty: 'Cardiff',
   buildingAndStreet: '123 Test Street',
   townOrCity: 'ManualTown',
-  postcode: 'W3 7RX',
   country: 'United Kingdom',
   header: 'There is a problem',
   addressDetailsError: 'An address is required',
@@ -19,7 +17,9 @@ export const addressDetails = {
   englandTownOrCity: 'London',
   englandNoCourtAssignedPostcode: 'LE3 5EZ',
   walesNoCourtAssignedPostcode: 'LL30 1DE',
+  walesCourtAssignedPostcode: 'CF11 6QX',
   scotlandNoCourtAssignedPostcode: 'SA31 3DG',
-  englandWalesNoCourtCrossBorderPostcode: 'HR3 5JL',
-  englandScotlandNoCourtCrossBorderPostcode: 'TD12 4AS'
+  englandWalesNoCourtCrossBorderPostcode: 'SY4 5NN',
+  englandScotlandNoCourtCrossBorderPostcode: 'TD12 4AS',
+  englandWalesCrossBorderPostcode: 'SY13 2LH'
 };

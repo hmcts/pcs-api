@@ -6,6 +6,7 @@ import {FormLabelValueValidation} from "@utils/validations/element-validations/f
 import {OptionListValidation} from "@utils/validations/element-validations/optionList.validation";
 import {MainHeaderValidation} from "@utils/validations/element-validations/pageHeader.validation";
 import {ErrorMessageValidation} from "@utils/validations/element-validations/error-message.validation";
+import {RadioButtonValidation} from "@utils/validations/element-validations/radioButton.validation";
 
 export class ValidationRegistry {
   private static validations: Map<string, IValidation> = new Map([
@@ -15,7 +16,8 @@ export class ValidationRegistry {
     ['formLabelValue', new FormLabelValueValidation()],
     ['optionList', new OptionListValidation()],
     ['mainHeader', new MainHeaderValidation()],
-    ['errorMessage', new ErrorMessageValidation()]
+    ['errorMessage', new ErrorMessageValidation()],
+    ['radioButtonChecked', new RadioButtonValidation()]
   ]);
 
   static getValidation(validationType: string): IValidation {
