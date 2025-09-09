@@ -105,7 +105,7 @@ test.describe('[Create Case Flow With Address and Claimant Type]  @Master @night
   test('Wales - Successful case creation with Saved options', async ({ page },testInfo) => {
     await performAction('enterTestAddressManually');
     await performValidation('bannerAlert', 'Case #.* has been created.');
-    await testInfo.attach('Step 1: Home Page', {
+    await testInfo.attach('Case has been created', {
       body: await page.screenshot(),
       contentType: 'image/png',
     });
@@ -116,12 +116,12 @@ test.describe('[Create Case Flow With Address and Claimant Type]  @Master @night
     await performAction('selectClaimantName', claimantName.no);
     await performAction('clickButton', 'Sign out');
     await performAction('reloginAndFindTheCase');
-    await testInfo.attach('Step 1: Home Page', {
+    await testInfo.attach('Resume Claim', {
       body: await page.screenshot(),
       contentType: 'image/png',
     });
     await performAction('clickButton', resumeClaim.continue);
-    await testInfo.attach('Step 1: Home Page', {
+    await testInfo.attach('Continue Claim Submission', {
       body: await page.screenshot(),
       contentType: 'image/png',
     });
@@ -160,7 +160,7 @@ test.describe('[Create Case Flow With Address and Claimant Type]  @Master @night
     await performAction('clickButton', detailsOfRentArrears.continue);
     await performAction('clickButton', 'Save and continue');
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
-    await testInfo.attach('Step 1: Home Page', {
+    await testInfo.attach('Case has been updated with event: Make a claim', {
       body: await page.screenshot(),
       contentType: 'image/png',
     });
@@ -231,7 +231,7 @@ test.describe('[Create Case Flow With Address and Claimant Type]  @Master @night
   test('Wales - Successful case creation without Saved options and Defendants correspondence address is not known', async ({ page }, testInfo) => {
     await performAction('enterTestAddressManually');
     await performValidation('bannerAlert', 'Case #.* has been created.');
-    await testInfo.attach('Step 1: Home Page', {
+    await testInfo.attach('Case has been created.', {
       body: await page.screenshot(),
       contentType: 'image/png',
     });
@@ -242,12 +242,12 @@ test.describe('[Create Case Flow With Address and Claimant Type]  @Master @night
     await performAction('selectClaimantName', claimantName.yes);
     await performAction('clickButton', 'Sign out');
     await performAction('reloginAndFindTheCase');
-    await testInfo.attach('Step 1: Home Page', {
+    await testInfo.attach('Resume Claim', {
       body: await page.screenshot(),
       contentType: 'image/png',
     });
     await performAction('clickButton', resumeClaim.continue);
-    await testInfo.attach('Step 1: Home Page', {
+    await testInfo.attach('Continue Claim Submission', {
       body: await page.screenshot(),
       contentType: 'image/png',
     });
@@ -288,7 +288,7 @@ test.describe('[Create Case Flow With Address and Claimant Type]  @Master @night
     });
     await performAction('clickButton', 'Save and continue');
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
-    await testInfo.attach('Step 1: Home Page', {
+    await testInfo.attach('Case has been updated with event: Make a claim', {
       body: await page.screenshot(),
       contentType: 'image/png',
     });
