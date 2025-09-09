@@ -24,10 +24,6 @@ public class NoticeDetails implements CcdPageConfiguration {
     private final NoticeDetailsService noticeDetailsService;
     
     private static final String NOTICE_SERVICE_METHOD_CONDITION = "noticeServiceMethod=\"";
-    private static final String DATE_TIME_LABEL = """
-        <p class="govuk-body">Date and time the document was handed over</p>
-        <p class="govuk-hint">For example, 16 4 2021, 11 15</p>
-        """;
     
     @Override
     public void addTo(PageBuilder pageBuilder) {
@@ -42,8 +38,6 @@ public class NoticeDetails implements CcdPageConfiguration {
             .label("noticeDetails-firstClassPost-section", """
                 <h3 class="govuk-heading-s">By first class post or other service which provides for 
                 delivery on the next business day</h3>
-                <p class="govuk-body">Date the document was posted</p>
-                <p class="govuk-hint">For example, 16 4 2021</p>
                 """, NOTICE_SERVICE_METHOD_CONDITION + NoticeServiceMethod.FIRST_CLASS_POST + "\"")
             .optional(
                 PCSCase::getNoticePostedDate, 
@@ -53,8 +47,6 @@ public class NoticeDetails implements CcdPageConfiguration {
             // Delivered to permitted place
             .label("noticeDetails-deliveredPermittedPlace-section", """
                 <h3 class="govuk-heading-s">By delivering it to or leaving it at a permitted place</h3>
-                <p class="govuk-body">Date the document was delivered</p>
-                <p class="govuk-hint">For example, 16 4 2021</p>
                 """, NOTICE_SERVICE_METHOD_CONDITION + NoticeServiceMethod.DELIVERED_PERMITTED_PLACE + "\"")
             .optional(
                 PCSCase::getNoticeDeliveredDate, 
@@ -68,11 +60,6 @@ public class NoticeDetails implements CcdPageConfiguration {
                 """, NOTICE_SERVICE_METHOD_CONDITION + NoticeServiceMethod.PERSONALLY_HANDED + "\"")
             .optional(
                 PCSCase::getNoticePersonName, 
-                NOTICE_SERVICE_METHOD_CONDITION + NoticeServiceMethod.PERSONALLY_HANDED + "\""
-            )
-            .label(
-                "noticeDetails-personallyHanded-datetime", 
-                DATE_TIME_LABEL, 
                 NOTICE_SERVICE_METHOD_CONDITION + NoticeServiceMethod.PERSONALLY_HANDED + "\""
             )
             .optional(
@@ -89,11 +76,6 @@ public class NoticeDetails implements CcdPageConfiguration {
                 PCSCase::getNoticeEmailExplanation, 
                 NOTICE_SERVICE_METHOD_CONDITION + NoticeServiceMethod.EMAIL + "\""
             )
-            .label(
-                "noticeDetails-email-datetime", 
-                DATE_TIME_LABEL, 
-                NOTICE_SERVICE_METHOD_CONDITION + NoticeServiceMethod.EMAIL + "\""
-            )
             .optional(
                 PCSCase::getNoticeEmailSentDateTime, 
                 NOTICE_SERVICE_METHOD_CONDITION + NoticeServiceMethod.EMAIL + "\""
@@ -102,8 +84,6 @@ public class NoticeDetails implements CcdPageConfiguration {
             // Other electronic method
             .label("noticeDetails-otherElectronic-section", """
                 <h3 class="govuk-heading-s">By other electronic method</h3>
-                <p class="govuk-body">Date and time email or message sent</p>
-                <p class="govuk-hint">For example, 16 4 2021, 11 15</p>
                 """, NOTICE_SERVICE_METHOD_CONDITION + NoticeServiceMethod.OTHER_ELECTRONIC + "\"")
             .optional(
                 PCSCase::getNoticeOtherElectronicDateTime, 
@@ -117,11 +97,6 @@ public class NoticeDetails implements CcdPageConfiguration {
                 """, NOTICE_SERVICE_METHOD_CONDITION + NoticeServiceMethod.OTHER + "\"")
             .optional(
                 PCSCase::getNoticeOtherExplanation, 
-                NOTICE_SERVICE_METHOD_CONDITION + NoticeServiceMethod.OTHER + "\""
-            )
-            .label(
-                "noticeDetails-other-datetime", 
-                DATE_TIME_LABEL, 
                 NOTICE_SERVICE_METHOD_CONDITION + NoticeServiceMethod.OTHER + "\""
             )
             .optional(

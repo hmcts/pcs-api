@@ -15,8 +15,6 @@ import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-
-import java.time.LocalDate;
 import java.util.List;
 
 import static uk.gov.hmcts.ccd.sdk.type.FieldType.DynamicRadioList;
@@ -294,31 +292,43 @@ public class PCSCase {
 
     // Date fields for different service methods
     @CCD(
+        label = "Date the document was posted",
+        hint = "For example, 16 4 2021",
         access = {CitizenAccess.class, CaseworkerAccess.class}
     )
     private LocalDate noticePostedDate;
 
     @CCD(
+        label = "Date the document was delivered",
+        hint = "For example, 16 4 2021",
         access = {CitizenAccess.class, CaseworkerAccess.class}
     )
     private LocalDate noticeDeliveredDate;
 
     @CCD(
+        label = "Date and time the document was handed over",
+        hint = "For example, 16 4 2021, 11 15",
         access = {CitizenAccess.class, CaseworkerAccess.class}
     )
     private LocalDateTime noticeHandedOverDateTime;
 
     @CCD(
+        label = "Date and time the email was sent",
+        hint = "For example, 16 4 2021, 11 15",
         access = {CitizenAccess.class, CaseworkerAccess.class}
     )
     private LocalDateTime noticeEmailSentDateTime;
 
     @CCD(
+        label = "Date and time the electronic message was sent",
+        hint = "For example, 16 4 2021, 11 15",
         access = {CitizenAccess.class, CaseworkerAccess.class}
     )
     private LocalDateTime noticeOtherElectronicDateTime;
 
     @CCD(
+        label = "Date and time the document was served",
+        hint = "For example, 16 4 2021, 11 15",
         access = {CitizenAccess.class, CaseworkerAccess.class}
     )
     private LocalDateTime noticeOtherDateTime;
