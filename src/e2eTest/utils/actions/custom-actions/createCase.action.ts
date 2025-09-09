@@ -14,6 +14,7 @@ import { contactPreferences } from '@data/page-data/contactPreferences.page.data
 import { mediationAndSettlement } from '@data/page-data/mediationAndSettlement.page.data';
 import { resumeClaimOptions } from "@data/page-data/resumeClaimOptions.page.data";
 import { rentDetails } from '@data/page-data/rentDetails.page.data';
+import { dailyRentAmount } from '@data/page-data/dailyRentAmount.page.data';
 import configData from '@config/test.config';
 
 let caseInfo: { id: string; fid: string; state: string };
@@ -47,7 +48,8 @@ export class CreateCaseAction implements IAction {
       ['selectNoticeOfYourIntention', () => this.selectNoticeOfYourIntention(fieldName)],
       ['selectNoticeDetails', () => this.selectNoticeDetails(fieldName)],
       ['selectCountryRadioButton', () => this.selectCountryRadioButton(fieldName)],
-      ['provideRentDetails', () => this.provideRentDetails(fieldName)]
+      ['provideRentDetails', () => this.provideRentDetails(fieldName)],
+      ['selectDailyRentAmount', () => this.selectDailyRentAmount(fieldName)]
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) throw new Error(`No action found for '${action}'`);
@@ -246,6 +248,40 @@ private async defendantDetails(defendantVal: actionData) {
         ,['inputText', 'Day', noticeDetailsData.day]
         ,['inputText', 'Month', noticeDetailsData.month]
         ,['inputText', 'Year', noticeDetailsData.year]);
+          }
+    await performAction('clickButton', 'Continue');
+  }
+
+  private async provideRentDetails(rentFrequency: actionData) {
+    const rentData = rentFrequency as {
+      rentFrequencyOption: string;
+      rentAmount?: string;
+      unpaidRentAmountPerDay?: string,
+      inputFrequency?: string
+    };
+    await performAction('clickRadioButton', rentData.rentFrequencyOption);
+    if(rentData.rentFrequencyOption == 'Other'){
+      await performAction('inputText', rentDetails.rentFrequencyLabel, rentData.inputFrequency);
+      await performAction('inputText', rentDetails.amountPerDayInputLabel, rentData.unpaidRentAmountPerDay);
+    } else {
+      await performAction('inputText', rentDetails.HowMuchRentLabel, rentData.rentAmount);
+    }
+    await performAction('clickButton', 'Continue');
+  }
+
+  private async selectDailyRentAmount(dailyRentAmountData: actionData) {
+    const rentAmount = dailyRentAmountData as {
+      calculateRentAmount: string,
+      unpaidRentInteractiveOption: string,
+      unpaidRentAmountPerDay?: string
+    };
+    await performValidation('text', {
+      text: dailyRentAmount.basedOnPreviousAnswers + `${rentAmount.calculateRentAmount}`,
+      elementType: 'paragraph'
+    });
+    await performAction('clickRadioButton', rentAmount.unpaidRentInteractiveOption);
+    if(rentAmount.unpaidRentInteractiveOption == 'No'){
+      await performAction('inputText', dailyRentAmount.enterAmountPerDayLabel, rentAmount.unpaidRentAmountPerDay);
     }
     await performAction('clickButton', 'Continue');
   }
@@ -278,23 +314,6 @@ private async defendantDetails(defendantVal: actionData) {
     await performAction('login')
     await performAction('inputText', '16-digit case reference:', caseNumber);
     await performAction('clickButton', 'Find');
-  }
-
-  private async provideRentDetails(rentFrequency: actionData) {
-    const rentData = rentFrequency as {
-      rentFrequencyOption: string;
-      rentAmount?: string;
-      unpaidRentAmountPerDay?: string,
-      inputFrequency?: string
-    };
-    await performAction('clickRadioButton', rentData.rentFrequencyOption);
-    if(rentData.rentFrequencyOption == 'Other'){
-      await performAction('inputText', rentDetails.rentFrequencyLabel, rentData.inputFrequency);
-      await performAction('inputText', rentDetails.amountPerDayInputLabel, rentData.unpaidRentAmountPerDay);
-    } else {
-      await performAction('inputText', rentDetails.HowMuchRentLabel, rentData.rentAmount);
-    }
-    await performAction('clickButton', 'Continue');
   }
 
   async getEventToken(): Promise<string> {

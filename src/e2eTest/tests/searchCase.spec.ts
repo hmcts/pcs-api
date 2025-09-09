@@ -51,4 +51,3 @@ test.describe('Search case by case number @PR @Master @nightly', () => {
     );
   });
 });
-

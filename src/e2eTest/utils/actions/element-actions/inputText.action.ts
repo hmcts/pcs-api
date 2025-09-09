@@ -5,7 +5,7 @@ export class InputTextAction implements IAction {
   async execute(page: Page, action: string, fieldParams: string | actionRecord, value: string): Promise<void> {
     const locator = typeof fieldParams === 'string'
       ? page.locator(`:has-text("${fieldParams}") ~ input,
-           label:has-text("${fieldParams}") + textarea,
+           label:has-text("${fieldParams}") ~ textarea,
            label:has-text("${fieldParams}") + div input`): page.locator(`:has-text("${fieldParams.title}")`)
         .locator('..')
         .getByRole('textbox', { name: fieldParams.textbox });

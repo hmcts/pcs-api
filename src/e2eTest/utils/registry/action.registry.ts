@@ -40,6 +40,7 @@ export class ActionRegistry {
     ['selectCountryRadioButton', new CreateCaseAction()],
     ['reloginAndFindTheCase', new CreateCaseAction()],
     ['provideRentDetails', new CreateCaseAction()],
+    ['selectDailyRentAmount', new CreateCaseAction()]
   ]);
 
   static getAction(actionName: string): IAction {
