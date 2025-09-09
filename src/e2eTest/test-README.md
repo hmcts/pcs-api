@@ -95,6 +95,7 @@ Playwright 1.30+ | TypeScript 4.9+
 | selectNoticeOfYourIntention     | `performAction('selectNoticeOfYourIntention', checkingNotice.no)`                                                                                                                                          |
 | provideRentDetails              | `performAction('provideRentDetails', {rentFrequencyOption:'weekly', rentAmount:rentDetails.rentAmount})`                                                                                                   |
 | selectGroundsForPossession      | `performAction('selectGroundsForPossession', groundsForPossession.yes)`                                                                                                                                    |
+| selectDailyRentAmount           | `performAction('selectDailyRentAmount', { calculateRentAmount: '£114.29',unpaidRentInteractiveOption: dailyRentAmount.no,unpaidRentAmountPerDay:'20'})`                                                    |
 | reloginAndFindTheCase           | `performAction('reloginAndFindTheCase')`                                                                                                                                                                   |
 ### Validations
 | Validation        | Example Usage                                                                                                                        |

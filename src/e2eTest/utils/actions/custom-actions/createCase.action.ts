@@ -14,6 +14,7 @@ import { resumeClaimOptions } from "@data/page-data/resumeClaimOptions.page.data
 import { rentDetails } from '@data/page-data/rentDetails.page.data';
 import { accessTokenApiData } from '@data/api-data/accessToken.api.data';
 import { caseApiData } from '@data/api-data/case.api.data';
+import { dailyRentAmount } from '@data/page-data/dailyRentAmount.page.data';
 
 export let caseInfo: { id: string; fid: string; state: string };
 let caseNumber: string;
@@ -39,7 +40,8 @@ export class CreateCaseAction implements IAction {
       ['selectMediationAndSettlement', () => this.selectMediationAndSettlement(fieldName)],
       ['selectNoticeOfYourIntention', () => this.selectNoticeOfYourIntention(fieldName)],
       ['selectCountryRadioButton', () => this.selectCountryRadioButton(fieldName)],
-      ['provideRentDetails', () => this.provideRentDetails(fieldName)]
+      ['provideRentDetails', () => this.provideRentDetails(fieldName)],
+      ['selectDailyRentAmount', () => this.selectDailyRentAmount(fieldName)]
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) throw new Error(`No action found for '${action}'`);
@@ -219,6 +221,40 @@ export class CreateCaseAction implements IAction {
     await performAction('clickButton', 'Continue');
   }
 
+  private async provideRentDetails(rentFrequency: actionData) {
+    const rentData = rentFrequency as {
+      rentFrequencyOption: string;
+      rentAmount?: string;
+      unpaidRentAmountPerDay?: string,
+      inputFrequency?: string
+    };
+    await performAction('clickRadioButton', rentData.rentFrequencyOption);
+    if(rentData.rentFrequencyOption == 'Other'){
+      await performAction('inputText', rentDetails.rentFrequencyLabel, rentData.inputFrequency);
+      await performAction('inputText', rentDetails.amountPerDayInputLabel, rentData.unpaidRentAmountPerDay);
+    } else {
+      await performAction('inputText', rentDetails.HowMuchRentLabel, rentData.rentAmount);
+    }
+    await performAction('clickButton', 'Continue');
+  }
+
+  private async selectDailyRentAmount(dailyRentAmountData: actionData) {
+    const rentAmount = dailyRentAmountData as {
+      calculateRentAmount: string,
+      unpaidRentInteractiveOption: string,
+      unpaidRentAmountPerDay?: string
+    };
+    await performValidation('text', {
+      text: dailyRentAmount.basedOnPreviousAnswers + `${rentAmount.calculateRentAmount}`,
+      elementType: 'paragraph'
+    });
+    await performAction('clickRadioButton', rentAmount.unpaidRentInteractiveOption);
+    if(rentAmount.unpaidRentInteractiveOption == 'No'){
+      await performAction('inputText', dailyRentAmount.enterAmountPerDayLabel, rentAmount.unpaidRentAmountPerDay);
+    }
+    await performAction('clickButton', 'Continue');
+  }
+
   private async selectJurisdictionCaseTypeEvent() {
     await performActions('Case option selection'
       , ['select', 'Jurisdiction', createCase.possessionsJurisdiction]
@@ -247,23 +283,6 @@ export class CreateCaseAction implements IAction {
     await performAction('login')
     await performAction('inputText', '16-digit case reference:', caseNumber);
     await performAction('clickButton', 'Find');
-  }
-
-  private async provideRentDetails(rentFrequency: actionData) {
-    const rentData = rentFrequency as {
-      rentFrequencyOption: string;
-      rentAmount?: string;
-      unpaidRentAmountPerDay?: string,
-      inputFrequency?: string
-    };
-    await performAction('clickRadioButton', rentData.rentFrequencyOption);
-    if(rentData.rentFrequencyOption == 'Other'){
-      await performAction('inputText', rentDetails.rentFrequencyLabel, rentData.inputFrequency);
-      await performAction('inputText', rentDetails.amountPerDayInputLabel, rentData.unpaidRentAmountPerDay);
-    } else {
-      await performAction('inputText', rentDetails.HowMuchRentLabel, rentData.rentAmount);
-    }
-    await performAction('clickButton', 'Continue');
   }
 
   private async createCaseAction(caseData: actionData): Promise<void> {

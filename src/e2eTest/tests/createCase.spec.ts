@@ -14,9 +14,11 @@ import { noticeDetails } from '@data/page-data/noticeDetails.page.data';
 import { rentDetails } from '@data/page-data/rentDetails.page.data';
 import { userIneligible } from '@data/page-data/userIneligible.page.data';
 import { defendantDetails } from '@data/page-data/defendantDetails.page.data';
+import { dailyRentAmount } from '@data/page-data/dailyRentAmount.page.data';
 import { provideMoreDetailsOfClaim } from '@data/page-data/provideMoreDetailsOfClaim.page.data';
 import { resumeClaim } from '@data/page-data/resumeClaim.page.data';
 import { resumeClaimOptions } from '@data/page-data/resumeClaimOptions.page.data';
+import { detailsOfRentArrears } from '@data/page-data/detailsOfRentArrears.page.data';
 
 test.beforeEach(async ({page}, testInfo) => {
   initializeExecutor(page);
@@ -71,8 +73,13 @@ test.describe('[Create Case Flow With Address and Claimant Type]  @Master @night
     await performAction('clickButton', noticeDetails.continue);
     await performValidation('mainHeader', rentDetails.mainHeader);
     await performAction('provideRentDetails', {rentFrequencyOption:'weekly', rentAmount:'800'});
-    // Below step will be uncommented when the daily rent amount page is implemented as part of the HDPI-1521 story
-    //await performValidation('mainHeader', dailyrentamount.mainHeader);
+    await performValidation('mainHeader', dailyRentAmount.mainHeader);
+    // As of now calculated amount is 11429 suppose to be £114.29, bug will be created for this
+    await performAction('selectDailyRentAmount', {
+      calculateRentAmount: '11429',
+      unpaidRentInteractiveOption: dailyRentAmount.no,
+      unpaidRentAmountPerDay: '20'
+    });
     await performAction('clickButton', 'Save and continue');
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
     await performAction('clickTab', 'Property Details');
@@ -125,6 +132,8 @@ test.describe('[Create Case Flow With Address and Claimant Type]  @Master @night
     await performAction('selectNoticeOfYourIntention', checkingNotice.no);
     await performValidation('mainHeader', rentDetails.mainHeader);
     await performAction('provideRentDetails', {rentFrequencyOption:'Other', inputFrequency:rentDetails.rentFrequencyFortnightly,unpaidRentAmountPerDay:'50'});
+    await performValidation('mainHeader', detailsOfRentArrears.mainHeader);
+    await performAction('clickButton', detailsOfRentArrears.continue);
     await performAction('clickButton', 'Save and continue');
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
     await performAction('clickTab', 'Property Details');
@@ -229,9 +238,12 @@ test.describe('[Create Case Flow With Address and Claimant Type]  @Master @night
     await performValidation('mainHeader', checkingNotice.mainHeader);
     await performAction('selectNoticeOfYourIntention', checkingNotice.no);
     await performValidation('mainHeader', rentDetails.mainHeader);
-    await performAction('provideRentDetails', {rentFrequencyOption: 'weekly', rentAmount: '800'});
-    // Below step will be uncommented when the daily rent amount page is implemented as part of the HDPI-1521 story
-    //await performValidation('mainHeader', dailyrentamount.mainHeader);
+    await performAction('provideRentDetails', {rentFrequencyOption: 'Monthly', rentAmount: '1000'});
+    // As of now calculated amount is £3285 suppose to be 3285, bug will be created for this
+    await performAction('selectDailyRentAmount', {
+      calculateRentAmount: '3285',
+      unpaidRentInteractiveOption: dailyRentAmount.yes
+    });
     await performAction('clickButton', 'Save and continue');
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
     await performAction('clickTab', 'Property Details');
