@@ -1,10 +1,10 @@
-import { test } from '@playwright/test';
-import { parentSuite } from 'allure-js-commons';
-import { initializeExecutor, performAction, performValidation } from '@utils/controller';
-import { borderPostcode } from '@data/page-data/borderPostcode.page.data';
+import {test} from '@playwright/test';
+import {parentSuite} from 'allure-js-commons';
+import {initializeExecutor, performAction, performValidation} from '@utils/controller';
+import {borderPostcode} from '@data/page-data/borderPostcode.page.data';
 import configData from '@config/test.config';
-import { addressDetails } from '@data/page-data/addressDetails.page.data';
-import { canNotUseOnlineService } from '@data/page-data/canNotUseOnlineService.page.data';
+import {addressDetails} from '@data/page-data/addressDetails.page.data';
+import {canNotUseOnlineService} from '@data/page-data/canNotUseOnlineService.page.data';
 
 test.beforeEach(async ({page}) => {
   initializeExecutor(page);

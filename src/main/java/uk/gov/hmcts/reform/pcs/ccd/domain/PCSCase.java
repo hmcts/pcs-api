@@ -5,22 +5,20 @@ import lombok.Data;
 import uk.gov.hmcts.ccd.sdk.External;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
+import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.FieldType;
-import static uk.gov.hmcts.ccd.sdk.type.FieldType.DynamicRadioList;
-import static uk.gov.hmcts.ccd.sdk.type.FieldType.MultiSelectList;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
-import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsGround;
-import uk.gov.hmcts.reform.pcs.ccd.domain.MandatoryGround;
-import uk.gov.hmcts.reform.pcs.ccd.domain.DiscretionaryGround;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseworkerAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenAccess;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
+import java.time.LocalDate;
 import java.util.List;
 
 import static uk.gov.hmcts.ccd.sdk.type.FieldType.DynamicRadioList;
+import static uk.gov.hmcts.ccd.sdk.type.FieldType.MultiSelectList;
 import static uk.gov.hmcts.ccd.sdk.type.FieldType.TextArea;
 
 /**
@@ -321,6 +319,32 @@ public class PCSCase {
 
     @CCD(access = {CitizenAccess.class, CaseworkerAccess.class})
     private List<ListValue<DefendantDetails>> defendants;
+
+    @CCD(
+        label = "What type of tenancy or licence is in place?",
+        access = {CaseworkerAccess.class}
+    )
+    private TenancyLicenceType typeOfTenancyLicence;
+
+    @CCD(
+        label = "Give details of the type of tenancy or licence agreement that's in place",
+        typeOverride = TextArea,
+        access = {CaseworkerAccess.class}
+    )
+    private String detailsOfOtherTypeOfTenancyLicence;
+
+    @CCD(
+        label = "What date did the tenancy or licence begin?",
+        hint = "For example, 16 4 2021",
+        access = {CaseworkerAccess.class}
+    )
+    private LocalDate tenancyLicenceDate;
+
+    @CCD(
+        label = "Add document",hint = "Upload a document to the system",
+        access = {CitizenAccess.class, CaseworkerAccess.class}
+    )
+    private List<ListValue<Document>> tenancyLicenceDocuments;
 
     @CCD(searchable = false)
     private String nextStepsMarkdown;
