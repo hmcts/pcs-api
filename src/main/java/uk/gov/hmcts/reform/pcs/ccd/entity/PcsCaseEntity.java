@@ -22,6 +22,7 @@ import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PaymentStatus;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicence;
+import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.ccd.model.Defendant;
 
 import java.util.HashSet;
@@ -57,6 +58,9 @@ public class PcsCaseEntity {
 
     @OneToOne(cascade = ALL,orphanRemoval = true)
     private AddressEntity propertyAddress;
+
+    @Enumerated(EnumType.STRING)
+    private LegislativeCountry legislativeCountry;
 
     private Integer caseManagementLocation;
 
