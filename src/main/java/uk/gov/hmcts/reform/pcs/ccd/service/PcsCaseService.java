@@ -7,10 +7,13 @@ import org.springframework.stereotype.Service;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicence;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentLink;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentCategory;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
@@ -18,7 +21,6 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.model.Defendant;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
-import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentLink;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
@@ -31,8 +33,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
-
-import static org.springframework.web.util.UriUtils.extractFileExtension;
 
 @Service
 @AllArgsConstructor
@@ -80,8 +80,7 @@ public class PcsCaseService {
                          DocumentCategory.CATEGORY_B, pcsCaseEntity);
 
         pcsCaseEntity.setTenancyLicence(buildTenancyLicence(pcsCase));
-        log.error("Saving PcsCase + " + pcsCaseEntity.getDocuments());
-        return pcsCaseRepository.save(pcsCaseEntity);
+        pcsCaseRepository.save(pcsCaseEntity);
     }
 
     /**
@@ -112,11 +111,6 @@ public class PcsCaseService {
 
                         // category handling
                         pcsCaseEntity.addDocument(documentEntity, category);
-
-                        log.info("Added document: {} with extension: {} for category: {}",
-                                 document.getFilename(),
-                                 extractFileExtension(document.getFilename()),
-                                 category);
                     }
                 }
             }

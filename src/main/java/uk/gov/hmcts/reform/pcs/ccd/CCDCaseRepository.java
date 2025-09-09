@@ -69,13 +69,6 @@ public class CCDCaseRepository extends DecentralisedCaseRepository<PCSCase> {
         return pcsCase;
     }
 
-
-        log.info("Loading case {} with {} documents", caseReference, pcsCaseEntity.getDocuments().size());
-        pcsCaseEntity.getDocuments().forEach(doc ->
-                log.info("Document: {} - Category: {}", doc.getFileName(), doc.getCategory()));
-
-
-
     private boolean caseHasUnsubmittedData(long caseReference, String state) {
         if (State.AWAITING_FURTHER_CLAIM_DETAILS.name().equals(state)) {
             return unsubmittedCaseDataService.hasUnsubmittedCaseData(caseReference);
@@ -93,24 +86,23 @@ public class CCDCaseRepository extends DecentralisedCaseRepository<PCSCase> {
             .caseManagementLocation(pcsCaseEntity.getCaseManagementLocation())
             .supportingDocumentsCategoryA(mapDocumentLinks(pcsCaseEntity.getDocuments(), DocumentCategory.CATEGORY_A))
             .supportingDocumentsCategoryB(mapDocumentLinks(pcsCaseEntity.getDocuments(), DocumentCategory.CATEGORY_B))
-             .preActionProtocolCompleted(pcsCaseEntity.getPreActionProtocolCompleted() != null
-                ? VerticalYesNo.from(pcsCaseEntity.getPreActionProtocolCompleted())
-                : null)
+            .preActionProtocolCompleted(pcsCaseEntity.getPreActionProtocolCompleted() != null
+                                            ? VerticalYesNo.from(pcsCaseEntity.getPreActionProtocolCompleted())
+                                            : null)
             .currentRent(pcsCaseEntity.getTenancyLicence() != null
-                && pcsCaseEntity.getTenancyLicence().getRentAmount() != null
-                ? pcsCaseEntity.getTenancyLicence().getRentAmount().toPlainString() : null)
-                ? poundsToPence(pcsCaseEntity.getTenancyLicence().getRentAmount()) : null)
+                             && pcsCaseEntity.getTenancyLicence().getRentAmount() != null
+                             ? poundsToPence(pcsCaseEntity.getTenancyLicence().getRentAmount()) : null)
             .rentFrequency(pcsCaseEntity.getTenancyLicence() != null
-                ? pcsCaseEntity.getTenancyLicence().getRentPaymentFrequency() : null)
+                               ? pcsCaseEntity.getTenancyLicence().getRentPaymentFrequency() : null)
             .otherRentFrequency(pcsCaseEntity.getTenancyLicence() != null
-                ? pcsCaseEntity.getTenancyLicence().getOtherRentFrequency() : null)
+                                    ? pcsCaseEntity.getTenancyLicence().getOtherRentFrequency() : null)
             .dailyRentChargeAmount(pcsCaseEntity.getTenancyLicence() != null
-                && pcsCaseEntity.getTenancyLicence().getDailyRentChargeAmount() != null
-                ? pcsCaseEntity.getTenancyLicence().getDailyRentChargeAmount().toPlainString() : null)
-                ? poundsToPence(pcsCaseEntity.getTenancyLicence().getDailyRentChargeAmount()) : null)
+                                       && pcsCaseEntity.getTenancyLicence().getDailyRentChargeAmount() != null
+                                       ? poundsToPence(pcsCaseEntity.getTenancyLicence()
+                                                           .getDailyRentChargeAmount()) : null)
             .noticeServed(pcsCaseEntity.getTenancyLicence() != null
-                && pcsCaseEntity.getTenancyLicence().getNoticeServed() != null
-                ? YesOrNo.from(pcsCaseEntity.getTenancyLicence().getNoticeServed()) : null)
+                              && pcsCaseEntity.getTenancyLicence().getNoticeServed() != null
+                              ? YesOrNo.from(pcsCaseEntity.getTenancyLicence().getNoticeServed()) : null)
             .defendants(pcsCaseService.mapToDefendantDetails(pcsCaseEntity.getDefendants()))
             .build();
 
