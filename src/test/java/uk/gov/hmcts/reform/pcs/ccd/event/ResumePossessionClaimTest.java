@@ -25,6 +25,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.page.builder.SavingPageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.page.builder.SavingPageBuilderFactory;
+import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.NoticeDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.ResumeClaim;
 import uk.gov.hmcts.reform.pcs.ccd.service.ClaimService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PartyService;
@@ -71,6 +72,8 @@ class ResumePossessionClaimTest extends BaseEventTest {
     @Mock
     private UnsubmittedCaseDataService unsubmittedCaseDataService;
     @Mock
+    private NoticeDetails noticeDetails;
+    @Mock
     private UserInfo userDetails;
 
     private Event<PCSCase, UserRole, State> configuredEvent;
@@ -86,7 +89,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
         ResumePossessionClaim underTest = new ResumePossessionClaim(pcsCaseService, securityContextService,
                                                                     partyService, claimService,
                                                                     savingPageBuilderFactory, resumeClaim,
-                                                                    unsubmittedCaseDataService);
+                                                                    unsubmittedCaseDataService, noticeDetails);
 
         configuredEvent = getEvent(EventId.resumePossessionClaim, buildEventConfig(underTest));
     }
