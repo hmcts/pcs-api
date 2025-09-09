@@ -97,6 +97,7 @@ Playwright 1.30+ | TypeScript 4.9+
 | selectRentArrearsPossessionGround | `performAction('selectRentArrearsPossessionGround', {rentArrears: [rentArrearsPossessionGrounds.rentArrears], otherGrounds: rentArrearsPossessionGrounds.no})`                                             |
 | selectOtherGrounds                | `performAction('selectOtherGrounds', {mandatory: [‘holidayLet’, ‘ownerOccupier’], discretionary :[‘domesticViolence’,’rentArrears’]})`                                                                     |
 | reloginAndFindTheCase             | `performAction('reloginAndFindTheCase')`                                                                                                                                                                   |
+| selectDailyRentAmount             | `performAction('selectDailyRentAmount', { calculateRentAmount: '£114.29',unpaidRentInteractiveOption: dailyRentAmount.no,unpaidRentAmountPerDay:'20'})`                                                    |
 ### Validations
 | Validation        | Example Usage                                                                                                                        |
 |-------------------|--------------------------------------------------------------------------------------------------------------------------------------|
@@ -176,7 +177,7 @@ await performValidationGroup(
 - PCS_IDAM_TEST_USER_PASSWORD
 
 ```bash
-yarn test:e2e
+yarn test:chrome
 ```
 
 ## 8. Troubleshooting

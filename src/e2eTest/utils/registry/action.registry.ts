@@ -41,6 +41,7 @@ export class ActionRegistry {
     ['selectOtherGrounds', new CreateCaseAction()],
     ['reloginAndFindTheCase', new CreateCaseAction()],
     ['provideRentDetails', new CreateCaseAction()],
+    ['selectDailyRentAmount', new CreateCaseAction()]
   ]);
 
   static getAction(actionName: string): IAction {
