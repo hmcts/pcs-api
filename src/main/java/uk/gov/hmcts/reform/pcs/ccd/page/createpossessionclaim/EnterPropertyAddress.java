@@ -46,13 +46,6 @@ public class EnterPropertyAddress implements CcdPageConfiguration {
             .done();
     }
 
-    /*
-    TODO: This MidEvent callback should be refactored once we have integrated with MY HMCTS (Manage Org) as
-     its formatting the property address to use as a placeholder for the registered contact address.
-    */
-
-
-
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
                                                                   CaseDetails<PCSCase, State> detailsBefore) {
 
@@ -62,21 +55,11 @@ public class EnterPropertyAddress implements CcdPageConfiguration {
         List<String> validationErrors = addressValidator.validateAddressFields(propertyAddress);
         if (!validationErrors.isEmpty()) {
             return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
-                    .errors(validationErrors)
-                    .build();
+                .errors(validationErrors)
+                .build();
         }
 
         String postcode = propertyAddress.getPostCode();
-
-        caseData.setClaimantContactAddress(propertyAddress);
-        String formattedAddress = String.format(
-                "%s<br>%s<br>%s",
-                propertyAddress.getAddressLine1(),
-                propertyAddress.getPostTown(),
-                propertyAddress.getPostCode()
-        );
-        caseData.setFormattedClaimantContactAddress(formattedAddress);
-
         EligibilityResult eligibilityResult = eligibilityService.checkEligibility(postcode, null);
         log.debug("EnterPropertyAddress eligibility check: {} for postcode {} with countries {}",
             eligibilityResult.getStatus(), postcode, eligibilityResult.getLegislativeCountries());
@@ -87,12 +70,9 @@ public class EnterPropertyAddress implements CcdPageConfiguration {
                 setupCrossBorderData(caseData, eligibilityResult.getLegislativeCountries());
             }
             case NOT_ELIGIBLE -> {
-                var country = eligibilityResult.getLegislativeCountry() != null
-                    ? eligibilityResult.getLegislativeCountry().getLabel()
-                    : null;
                 caseData.setShowCrossBorderPage(YesOrNo.NO);
                 caseData.setShowPropertyNotEligiblePage(YesOrNo.YES);
-                caseData.setLegislativeCountry(country);
+                caseData.setLegislativeCountry(eligibilityResult.getLegislativeCountry());
             }
             case NO_MATCH_FOUND -> {
                 log.debug("No court found for postcode: {}", postcode);
@@ -100,9 +80,14 @@ public class EnterPropertyAddress implements CcdPageConfiguration {
                 caseData.setPostcodeNotAssignedView("ALL_COUNTRIES");
                 caseData.setShowCrossBorderPage(YesOrNo.NO);
             }
+            case MULTIPLE_MATCHES_FOUND -> {
+                // TODO: MULTIPLE_MATCHES_FOUND still needs a ticket
+                throw new UnsupportedOperationException("TODO: Not yet implemented");
+            }
             case ELIGIBLE -> {
                 caseData.setShowCrossBorderPage(YesOrNo.NO);
                 caseData.setShowPostcodeNotAssignedToCourt(YesOrNo.NO);
+                caseData.setLegislativeCountry(eligibilityResult.getLegislativeCountry());
             }
         }
 
