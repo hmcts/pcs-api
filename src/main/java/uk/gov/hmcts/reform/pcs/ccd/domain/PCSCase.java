@@ -1,6 +1,5 @@
 package uk.gov.hmcts.reform.pcs.ccd.domain;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import lombok.Builder;
@@ -230,7 +229,6 @@ public class PCSCase {
     )
     private LegislativeCountry legislativeCountryChoice;
 
-    private String legislativeCountry;
     private LegislativeCountry legislativeCountry;
 
     @CCD(

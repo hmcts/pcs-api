@@ -22,7 +22,6 @@ import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.time.LocalDate;
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -58,7 +57,7 @@ public class PcsCaseService {
         AddressEntity addressEntity = applicantAddress != null
             ? modelMapper.map(applicantAddress, AddressEntity.class) : null;
 
-        final PcsCaseEntity pcsCaseEntity = new PcsCaseEntity();
+        PcsCaseEntity pcsCaseEntity = new PcsCaseEntity();
         pcsCaseEntity.setCaseReference(caseReference);
         pcsCaseEntity.setPropertyAddress(addressEntity);
         pcsCaseEntity.setPaymentStatus(pcsCase.getPaymentStatus());
@@ -109,14 +108,11 @@ public class PcsCaseService {
             }
         }
         log.info(String.valueOf(pcsCaseEntity.getDocuments().size()));
-        pcsCaseEntity.setTenancyLicence(buildTenancyLicence(pcsCase));
-        return pcsCaseRepository.save(pcsCaseEntity);
+        pcsCaseRepository.save(pcsCaseEntity);
     }
 
     public PcsCaseEntity patchCase(long caseReference, PCSCase pcsCase) {
         PcsCaseEntity pcsCaseEntity = pcsCaseRepository.findByCaseReference(caseReference)
-    public void patchCase(long caseReference, PCSCase pcsCase) {
-        final PcsCaseEntity pcsCaseEntity = pcsCaseRepository.findByCaseReference(caseReference)
             .orElseThrow(() -> new CaseNotFoundException(caseReference));
 
         if (pcsCase.getPropertyAddress() != null) {
@@ -225,52 +221,5 @@ public class PcsCaseService {
         party.setSurname(userDetails.getFamilyName());
         party.setActive(true);
         return party;
-    }
-
-    public void addDocumentToCase(long caseReference, String fileName, String filePath) {
-        final PcsCaseEntity pcsCaseEntity = pcsCaseRepository.findByCaseReference(caseReference)
-            .orElseThrow(() -> new CaseNotFoundException(caseReference));
-
-        DocumentEntity document = new DocumentEntity();
-        document.setFileName(fileName);
-        document.setFilePath(filePath);
-        document.setUploadedOn(LocalDate.now());
-        document.setDocumentType("SUPPORTING");
-
-        pcsCaseEntity.addDocument(document);
-        pcsCaseRepository.save(pcsCaseEntity);
-    }
-
-
-    public void addGeneratedDocumentToCase(long caseReference, Document document) {
-        final PcsCaseEntity pcsCaseEntity = pcsCaseRepository.findByCaseReference(caseReference)
-            .orElseThrow(() -> new CaseNotFoundException(caseReference));
-
-        DocumentEntity documentEntity = new DocumentEntity();
-        documentEntity.setFileName(document.getFilename());
-        documentEntity.setFilePath(document.getBinaryUrl());
-        documentEntity.setUploadedOn(LocalDate.now());
-        documentEntity.setDocumentType("GENERATED");
-
-        pcsCaseEntity.addDocument(documentEntity);
-        pcsCaseRepository.save(pcsCaseEntity);
-    }
-
-    //Temporary method to create tenancy_licence JSON and related fields
-    // Data in this JSON will likely be moved to a dedicated entity in the future
-    private TenancyLicence buildTenancyLicence(PCSCase pcsCase) {
-        return TenancyLicence.builder()
-                .noticeServed(toBooleanOrNull(pcsCase.getNoticeServed()))
-                .rentAmount(pcsCase.getCurrentRent() != null 
-                    ? new BigDecimal(pcsCase.getCurrentRent()) : null)
-                .rentPaymentFrequency(pcsCase.getRentFrequency())
-                .otherRentFrequency(pcsCase.getOtherRentFrequency())
-                .dailyRentChargeAmount(pcsCase.getDailyRentChargeAmount() != null 
-                    ? new BigDecimal(pcsCase.getDailyRentChargeAmount()) : null)
-                .build();
-    }
-
-    private static Boolean toBooleanOrNull(YesOrNo yesOrNo) {
-        return yesOrNo != null ? yesOrNo.toBoolean() : null;
     }
 }

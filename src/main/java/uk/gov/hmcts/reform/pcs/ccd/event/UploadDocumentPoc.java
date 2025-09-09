@@ -18,7 +18,6 @@ import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PaymentStatus;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.ClaimantInformation;
 import uk.gov.hmcts.reform.pcs.ccd.page.generatedocument.GenerateDocument;
 import uk.gov.hmcts.reform.pcs.ccd.page.uploadsupportingdocs.DocumentUpload;
@@ -73,7 +72,7 @@ public class UploadDocumentPoc implements CCDConfig<PCSCase, State, UserRole> {
             pcsCase.setGeneratedDocuments(new ArrayList<>());
         }
 
-        PcsCaseEntity pcsCaseEntity = pcsCaseService.createCase(caseReference, pcsCase);
+        pcsCaseService.createCase(caseReference, pcsCase);
 
         if (pcsCase.getGeneratedDocuments() != null && !pcsCase.getGeneratedDocuments().isEmpty()) {
             pcsCase.getGeneratedDocuments().forEach(doc ->
@@ -84,10 +83,6 @@ public class UploadDocumentPoc implements CCDConfig<PCSCase, State, UserRole> {
         }
 
         try {
-            log.error("DOCUMENT ID of Event payload: "
-                + eventPayload.caseData().getSupportingDocuments().getFirst().getId());
-            log.error("DOCUMENT ID of PcsCase Entity: "
-                + pcsCaseEntity.getId());
             log.error(("Binary URL of Event payload: "
                 + eventPayload.caseData().getSupportingDocuments().getFirst().getValue().getBinaryUrl()));
 

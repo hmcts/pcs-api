@@ -129,7 +129,6 @@ public class CCDCaseRepository extends DecentralisedCaseRepository<PCSCase> {
         return pcsCase;
     }
 
-    private void setDerivedProperties(long caseRef, PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {
     private List<ListValue<Document>> mapSupportingDocuments(Set<DocumentEntity> documentEntities) {
         if (documentEntities == null || documentEntities.isEmpty()) {
             return null;
@@ -174,7 +173,7 @@ public class CCDCaseRepository extends DecentralisedCaseRepository<PCSCase> {
             .collect(Collectors.toList());
     }
 
-    private void setDerivedProperties(long caseRef,PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {
+    private void setDerivedProperties(long caseRef, PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {
         boolean pcqIdSet = findPartyForCurrentUser(pcsCaseEntity)
             .map(party -> party.getPcqId() != null)
             .orElse(false);
