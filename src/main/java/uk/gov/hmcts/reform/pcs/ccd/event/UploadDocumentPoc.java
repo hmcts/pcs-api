@@ -87,7 +87,7 @@ public class UploadDocumentPoc implements CCDConfig<PCSCase, State, UserRole> {
             log.error("DOCUMENT ID of Event payload: "
                 + eventPayload.caseData().getSupportingDocuments().getFirst().getId());
             log.error("DOCUMENT ID of PcsCase Entity: "
-                + eventPayload.caseData().getSupportingDocuments().getFirst().getId());
+                + pcsCaseEntity.getId());
             sendLetterService.sendLetterv2(eventPayload.caseData().getSupportingDocuments().getFirst().getId());
         } catch (Exception e) {
             log.error(e.getMessage());
