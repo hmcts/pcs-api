@@ -35,10 +35,7 @@ public class NoticeDetails implements CcdPageConfiguration {
             .page("noticeDetails", this::midEvent)
             .pageLabel("Notice details")
             .showCondition("noticeServed=\"Yes\"")
-            .label("noticeDetails-title", """
-                ---
-                <h2 class="govuk-heading-m">How did you serve the notice?</h2>
-                """)
+            .label("noticeDetails-separator", "---")
             .mandatory(PCSCase::getNoticeServiceMethod)
 
             // First class post

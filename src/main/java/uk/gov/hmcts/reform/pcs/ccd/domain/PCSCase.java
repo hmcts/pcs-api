@@ -267,6 +267,7 @@ public class PCSCase {
     
     // Notice Details fields
     @CCD(
+        label = "How did you serve the notice?",
         access = {CitizenAccess.class, CaseworkerAccess.class}
     )
     private NoticeServiceMethod noticeServiceMethod;
