@@ -1,9 +1,4 @@
 package uk.gov.hmcts.reform.pcs.ccd.domain;
-
-import java.util.List;
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
 import lombok.Builder;
 import lombok.Data;
 import uk.gov.hmcts.ccd.sdk.External;
@@ -28,6 +23,11 @@ public class PCSCase {
 
     @CCD(searchable = false, access = {CitizenAccess.class, CaseworkerAccess.class})
     private final YesOrNo decentralised = YesOrNo.YES;
+
+    private YesOrNo hasUnsubmittedCaseData;
+
+    @CCD(label = "Do you want to resume your claim using your saved answers?")
+    private YesOrNo resumeClaimKeepAnswers;
 
     @CCD(
         label = "Claimant Name",
@@ -109,10 +109,6 @@ public class PCSCase {
     )
     private PaymentType paymentType;
 
-    @CCD(ignore = true)
-    @JsonIgnore
-    private List<ListValue<Claim>> claims;
-
     @CCD(label = "Party")
     private List<ListValue<Party>> parties;
 
@@ -124,8 +120,6 @@ public class PCSCase {
 
     @CCD(label = "Enter email address", typeOverride = FieldType.Email)
     private String overriddenClaimantContactEmail;
-
-    private AddressUK claimantContactAddress;
 
     private String formattedClaimantContactAddress;
 
@@ -162,7 +156,9 @@ public class PCSCase {
 
     @CCD(
         label = "Give details about the attempted mediation and what the outcome was",
+        hint = "You can enter up to 250 characters",
         access = {CitizenAccess.class, CaseworkerAccess.class},
+        max = 250,
         typeOverride = TextArea
     )
     private String mediationAttemptedDetails;
@@ -175,7 +171,9 @@ public class PCSCase {
 
     @CCD(
         label = "Explain what steps you've taken to reach a settlement",
+        hint = "You can enter up to 250 characters",
         access = {CitizenAccess.class, CaseworkerAccess.class},
+        max = 250,
         typeOverride = TextArea
     )
     private String settlementAttemptedDetails;
@@ -190,13 +188,7 @@ public class PCSCase {
 
     private String claimPaymentTabMarkdown;
 
-    @CCD(
-        label = "Legislative country",
-        access = CaseworkerAccess.class
-    )
-    private LegislativeCountry legislativeCountryChoice;
-
-    private String legislativeCountry;
+    private LegislativeCountry legislativeCountry;
 
     @CCD(
         label = "Who is the claimant in this case?",
@@ -223,7 +215,7 @@ public class PCSCase {
 
     @CCD(searchable = false, access = CaseworkerAccess.class)
     private YesOrNo showClaimTypeNotEligibleWales;
-  
+
     @CCD(
         label = "How much is the rent?",
         typeOverride = FieldType.MoneyGBP,
@@ -284,5 +276,8 @@ public class PCSCase {
 
     @CCD(access = {CitizenAccess.class, CaseworkerAccess.class})
     private List<ListValue<DefendantDetails>> defendants;
+
+    @CCD(searchable = false)
+    private String nextStepsMarkdown;
 
 }

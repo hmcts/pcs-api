@@ -23,6 +23,7 @@ import uk.gov.hmcts.reform.pcs.ccd.model.Defendant;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.config.MapperConfig;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
+import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.service.TenancyLicenceService;
@@ -33,10 +34,11 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -137,7 +139,8 @@ class PcsCaseServiceTest {
 
         PcsCaseEntity savedEntity = pcsCaseEntityCaptor.getValue();
         assertThat(savedEntity).isSameAs(existingPcsCaseEntity);
-        verifyNoInteractions(existingPcsCaseEntity);
+        verify(existingPcsCaseEntity).setTenancyLicence(any());
+        verifyNoMoreInteractions(existingPcsCaseEntity);
     }
 
     @Test
@@ -403,5 +406,4 @@ class PcsCaseServiceTest {
         when(modelMapper.map(addressUK, AddressEntity.class)).thenReturn(addressEntity);
         return addressEntity;
     }
-
 }
