@@ -43,7 +43,7 @@ class SelectClaimTypeTest extends BasePageTest {
         CaseDetails<PCSCase, State> caseDetails = new CaseDetails<>();
 
         PCSCase caseData = PCSCase.builder()
-            .legislativeCountry(legislativeCountry.getLabel())
+            .legislativeCountry(legislativeCountry)
             .claimAgainstTrespassers(isClaimAgainstTrespassers)
             .build();
 
