@@ -76,19 +76,20 @@ Playwright 1.30+ | TypeScript 4.9+
 | createCase                      | `performAction('createCase', 'data: caseData')`                                                                                                                                                            |
 | clickButton                     | `performAction('clickButton', 'buttonName)`                                                                                                                                                                |
 | clickRadioButton                | `performAction('clickRadioButton', 'radioButtonName')`                                                                                                                                                     |
-| selectLegislativeCountry        | `performAction('selectLegislativeCountry', {country: data.country})`                                                                                                                                       |
 | selectClaimantType              | `performAction('selectClaimantType', {claimantType : pathToDataFile.claimantTypeOption})`                                                                                                                  |
 | selectAddress                   | `performAction('selectAddress',{postcode: pathToDataFile.englandPostcode,addressIndex: pathToDataFile.addressIndex} )`                                                                                     |
 | createUserAndLogin              | `performAction('createUserAndLogin', ['caseworker-pcs', 'caseworker'])`                                                                                                                                    |
 | login                           | `performAction('login')`                                                                                                                                                                                   |
 | enterTestAddressManually        | `performAction('enterTestAddressManually')`                                                                                                                                                                |
+| extractCaseIdFromAlert          | `performAction('extractCaseIdFromAlert')`                                                                                                                                                                  |
+| selectResumeClaimOption         | `performAction('selectResumeClaimOption', resumeClaimOptions.yes)`                                                                                                                                         |
 | selectJurisdictionCaseTypeEvent | `performAction('selectJurisdictionCaseTypeEvent')`                                                                                                                                                         |
 | housingPossessionClaim          | `performAction('selectCountryRadioButton', borderPostcode.countryOptions.england)`                                                                                                                         |
 | selectCountryRadioButton        | `performAction('selectCountryRadioButton', borderPostcode.countryOptions.england)`                                                                                                                         |
 | selectClaimType                 | `performAction('selectClaimType', claimType.no)`                                                                                                                                                           |
 | selectClaimantName              | `performAction('selectClaimantName', claimantName.yes)`                                                                                                                                                    |
 | selectContactPreferences        | `performAction('selectContactPreferences', {notifications: { answer: contactPreferences.yes }, correspondenceAddress: { answer: contactPreferences.yes }, phoneNumber: { answer: contactPreferences.no })` |
-| defendantDetails               | `performAction('defendantDetails', {name: defendantDetails.no, correspondenceAddress: defendantDetails.no, email: defendantDetails.no, correspondenceAddressSame: defendantDetails.no })`                   |
+| defendantDetails                | `performAction('defendantDetails', {name: defendantDetails.no, correspondenceAddress: defendantDetails.no, email: defendantDetails.no, correspondenceAddressSame: defendantDetails.no })`                  |
 | selectMediationAndSettlement    | `performAction('selectMediationAndSettlement',{attemptedMediationWithDefendantsOption: mediationAndSettlement.yes,settlementWithDefendantsOption: mediationAndSettlement.no}))`                            |
 | selectPreActionProtocol         | `performAction('selectPreActionProtocol', preActionProtocol.yes)`                                                                                                                                          |
 | selectNoticeOfYourIntention     | `performAction('selectNoticeOfYourIntention', checkingNotice.no)`                                                                                                                                          |
@@ -96,6 +97,8 @@ Playwright 1.30+ | TypeScript 4.9+
 | uploadFile                      | `performAction('uploadFile', 'SampleFile.png')`                                                                                                                                                            |
 | provideRentDetails              | `performAction('provideRentDetails', {rentFrequencyOption:'weekly', rentAmount:rentDetails.rentAmount})`                                                                                                   |
 | selectGroundsForPossession      | `performAction('selectGroundsForPossession', groundsForPossession.yes)`                                                                                                                                    |
+| selectDailyRentAmount           | `performAction('selectDailyRentAmount', { calculateRentAmount: '£114.29',unpaidRentInteractiveOption: dailyRentAmount.no,unpaidRentAmountPerDay:'20'})`                                                    |
+| reloginAndFindTheCase           | `performAction('reloginAndFindTheCase')`                                                                                                                                                                   |
 
 ### Validations
 | Validation        | Example Usage                                                                                                                        |
@@ -107,6 +110,7 @@ Playwright 1.30+ | TypeScript 4.9+
 | errorMessage      | `performValidation('errorMessage', {header: claimantType.errorMessage.header,errorHasLink: claimantType.errorMessage.errorMessage})` |
 | optionList        | `performValidation('optionList', 'sectionName', {optionsData})`                                                                      |
 | mainHeader        | `performValidation('mainHeader', borderPostcode.mainHeader)`                                                                         |
+| radioButtonChecked | `performValidation('radioButtonChecked')`                                                                                           |
 ### Basic Test
 
 ```typescript
@@ -175,7 +179,7 @@ await performValidationGroup(
 - PCS_IDAM_TEST_USER_PASSWORD
 
 ```bash
-yarn test:e2e
+yarn test:chrome
 ```
 
 ## 8. Troubleshooting
