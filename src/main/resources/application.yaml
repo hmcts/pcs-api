@@ -82,7 +82,7 @@ idam:
   s2s-auth:
     url: ${IDAM_S2S_AUTH_URL:http://localhost:4502}
     totp_secret: ${PCS_API_S2S_SECRET:AAAAAAAAAAAAAAAA}
-    microservice: ${pcs_api:pcs_api}
+    microservice: ${S2S_SERVICE_NAME:pcs_api}
   s2s-authorised:
     services: ${S2S_NAMES_WHITELIST:pcs_api,pcs_frontend,ccd_data}
   system-user:
