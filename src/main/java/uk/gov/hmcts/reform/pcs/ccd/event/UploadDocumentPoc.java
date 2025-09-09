@@ -13,6 +13,7 @@ import uk.gov.hmcts.ccd.sdk.api.ConfigBuilder;
 import uk.gov.hmcts.ccd.sdk.api.Event.EventBuilder;
 import uk.gov.hmcts.ccd.sdk.api.EventPayload;
 import uk.gov.hmcts.ccd.sdk.api.Permission;
+import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
@@ -72,8 +73,37 @@ public class UploadDocumentPoc implements CCDConfig<PCSCase, State, UserRole> {
             pcsCase.setGeneratedDocuments(new ArrayList<>());
         }
 
+        try {
+            Map<String, Object> formPayload = extractCaseDataForDocument(pcsCase, caseReference);
+
+            String templateId = "CV-CMC-ENG-0010.docx";
+            String outputType = "PDF";
+
+            Document generatedDocument =
+                documentGenerationService.generateDocument(templateId, formPayload, outputType);
+
+            // Add to generatedDocuments (not supportingDocuments)
+            pcsCase.getGeneratedDocuments().add(
+                documentGenerationService.createDocumentListValue(generatedDocument)
+            );
+
+            // Debug: Check what documents we have after
+            log.info("DEBUG: After adding generated - supportingDocuments: {}",
+                pcsCase.getSupportingDocuments() != null
+                    ? pcsCase.getSupportingDocuments().size() : "null");
+            log.info("DEBUG: After adding generated - generatedDocuments: {}",
+                pcsCase.getGeneratedDocuments() != null
+                    ? pcsCase.getGeneratedDocuments().size() : "null");
+
+        } catch (Exception e) {
+            log.error("Failed to generate document for case: {}", caseReference, e);
+        }
+
         pcsCaseService.createCase(caseReference, pcsCase);
 
+        log.info("DEBUG: Final check before return - generatedDocuments: {}",
+            pcsCase.getGeneratedDocuments() != null
+                ? pcsCase.getGeneratedDocuments().size() : "null");
         if (pcsCase.getGeneratedDocuments() != null && !pcsCase.getGeneratedDocuments().isEmpty()) {
             pcsCase.getGeneratedDocuments().forEach(doc ->
                 log.info("DEBUG: Generated doc ID: {}, filename: {}",
@@ -83,10 +113,7 @@ public class UploadDocumentPoc implements CCDConfig<PCSCase, State, UserRole> {
         }
 
         try {
-            log.error(("Binary URL of Event payload: "
-                + eventPayload.caseData().getSupportingDocuments().getFirst().getValue().getBinaryUrl()));
-
-            String fullUrl = eventPayload.caseData().getSupportingDocuments().getFirst().getValue().getBinaryUrl();
+            String fullUrl = pcsCase.getGeneratedDocuments().getFirst().getValue().getBinaryUrl();
             String[] urlArray = fullUrl.split("/");
             String documentId = urlArray[urlArray.length - 2];
             log.error("Extracted ID: " + documentId);
