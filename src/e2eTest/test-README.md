@@ -96,6 +96,7 @@ Playwright 1.30+ | TypeScript 4.9+
 | selectGroundsForPossession        | `performAction('selectGroundsForPossession', groundsForPossession.yes)`                                                                                                                                    |
 | selectRentArrearsPossessionGround | `performAction('selectRentArrearsPossessionGround', {rentArrears: [rentArrearsPossessionGrounds.rentArrears], otherGrounds: rentArrearsPossessionGrounds.no})`                                             |
 | selectOtherGrounds                | `performAction('selectOtherGrounds', {mandatory: [‘holidayLet’, ‘ownerOccupier’], discretionary :[‘domesticViolence’,’rentArrears’]})`                                                                     |
+| reloginAndFindTheCase             | `performAction('reloginAndFindTheCase')`                                                                                                                                                                   |
 ### Validations
 | Validation        | Example Usage                                                                                                                        |
 |-------------------|--------------------------------------------------------------------------------------------------------------------------------------|
@@ -106,6 +107,7 @@ Playwright 1.30+ | TypeScript 4.9+
 | errorMessage      | `performValidation('errorMessage', {header: claimantType.errorMessage.header,errorHasLink: claimantType.errorMessage.errorMessage})` |
 | optionList        | `performValidation('optionList', 'sectionName', {optionsData})`                                                                      |
 | mainHeader        | `performValidation('mainHeader', borderPostcode.mainHeader)`                                                                         |
+| radioButtonChecked | `performValidation('radioButtonChecked')`                                                                                           |
 ### Basic Test
 
 ```typescript

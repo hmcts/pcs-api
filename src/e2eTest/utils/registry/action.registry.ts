@@ -21,7 +21,8 @@ export class ActionRegistry {
     ['navigateToUrl', new NavigateToUrl()],
     ['clickRadioButton', new ClickRadioButton()],
     ['selectAddress', new CreateCaseAction()],
-    ['selectLegislativeCountry', new CreateCaseAction()],
+    ['extractCaseIdFromAlert', new CreateCaseAction()],
+    ['selectResumeClaimOption', new CreateCaseAction()],
     ['selectClaimantType', new CreateCaseAction()],
     ['defendantDetails', new CreateCaseAction()],
     ['selectRentArrearsPossessionGround', new CreateCaseAction()],
@@ -38,6 +39,7 @@ export class ActionRegistry {
     ['selectNoticeOfYourIntention', new CreateCaseAction()],
     ['selectCountryRadioButton', new CreateCaseAction()],
     ['selectOtherGrounds', new CreateCaseAction()],
+    ['reloginAndFindTheCase', new CreateCaseAction()],
     ['provideRentDetails', new CreateCaseAction()],
   ]);
 
