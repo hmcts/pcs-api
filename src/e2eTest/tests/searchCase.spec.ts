@@ -1,6 +1,5 @@
 import {test} from '@playwright/test';
 import {parentSuite} from 'allure-js-commons';
-import configData from "@config/test.config";
 import {caseApiData} from '@data/api-data/case.api.data';
 import {
   initializeExecutor,
@@ -13,7 +12,7 @@ import {caseInfo} from '@utils/actions/custom-actions/createCase.action';
 test.beforeEach(async ({page}) => {
     initializeExecutor(page);
     await parentSuite('Search Case');
-    await performAction('navigateToUrl', configData.manageCasesBaseURL);
+    await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
     await performAction('createUserAndLogin', 'claimant', ['caseworker-pcs', 'caseworker']);
     createCaseWithAddress();
 });

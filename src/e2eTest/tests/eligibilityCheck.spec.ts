@@ -2,7 +2,6 @@ import { test } from '@playwright/test';
 import { parentSuite } from 'allure-js-commons';
 import { initializeExecutor, performAction, performValidation } from '@utils/controller';
 import { borderPostcode } from '@data/page-data/borderPostcode.page.data';
-import configData from '@config/test.config';
 import { addressDetails } from '@data/page-data/addressDetails.page.data';
 import { canNotUseOnlineService } from '@data/page-data/canNotUseOnlineService.page.data';
 import { propertyIneligible } from '@data/page-data/propertyIneligible.page.data';
@@ -10,7 +9,7 @@ import { propertyIneligible } from '@data/page-data/propertyIneligible.page.data
 test.beforeEach(async ({page}) => {
   initializeExecutor(page);
   await parentSuite('Eligibility Check');
-  await performAction('navigateToUrl', configData.manageCasesBaseURL);
+  await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
   await performAction('createUserAndLogin', 'claimant', ['caseworker-pcs', 'caseworker']);
   await performAction('clickButton', 'Create case');
   await performAction('selectJurisdictionCaseTypeEvent');

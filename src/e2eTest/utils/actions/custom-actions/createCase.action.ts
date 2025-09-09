@@ -14,7 +14,6 @@ import { resumeClaimOptions } from "@data/page-data/resumeClaimOptions.page.data
 import { rentDetails } from '@data/page-data/rentDetails.page.data';
 import { accessTokenApiData } from '@data/api-data/accessToken.api.data';
 import { caseApiData } from '@data/api-data/case.api.data';
-import configData from '@config/test.config';
 
 export let caseInfo: { id: string; fid: string; state: string };
 let caseNumber: string;
@@ -244,7 +243,7 @@ export class CreateCaseAction implements IAction {
   }
 
   private async reloginAndFindTheCase() {
-    await performAction('navigateToUrl', configData.manageCasesBaseURL);
+    await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
     await performAction('login')
     await performAction('inputText', '16-digit case reference:', caseNumber);
     await performAction('clickButton', 'Find');
