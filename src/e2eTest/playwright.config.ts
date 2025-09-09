@@ -38,7 +38,7 @@ module.exports = defineConfig({
       use: {
         ...devices['Desktop Chrome'],
         channel: 'chrome',
-        screenshot: 'on',
+        screenshot: 'only-on-failure',
         video: 'on',
         trace: 'on-first-retry',
         javaScriptEnabled: true,
