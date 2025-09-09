@@ -179,12 +179,6 @@ tasks.register('yarnInstall', Exec) {
   commandLine 'yarn', 'install'
 }
 
-tasks.register('runE2eTests', Exec) {
-  dependsOn yarnInstall
-  workingDir = file("${project.projectDir}/src/e2eTest")
-  commandLine 'yarn', 'test:e2e'
-}
-
 tasks.register('runE2eChromeTests', Exec) {
   dependsOn yarnInstall
   workingDir = file("${project.projectDir}/src/e2eTest")
@@ -320,7 +314,7 @@ dependencies {
   runtimeOnly group: 'org.flywaydb', name: 'flyway-database-postgresql', version: flywayVersion
 
   implementation group: 'org.flywaydb', name: 'flyway-core', version: flywayVersion
-  implementation group: 'org.springdoc', name: 'springdoc-openapi-starter-webmvc-ui', version: '2.8.12'
+  implementation group: 'org.springdoc', name: 'springdoc-openapi-starter-webmvc-ui', version: '2.8.13'
   implementation group: 'uk.gov.service.notify', name: 'notifications-java-client', version: '5.2.1-RELEASE'
   implementation platform(group: 'com.azure.spring', name :'spring-cloud-azure-dependencies', version :'5.23.0')
   implementation "com.azure.spring:spring-cloud-azure-starter-servicebus-jms"
