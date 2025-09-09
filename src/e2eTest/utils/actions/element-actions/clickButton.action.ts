@@ -20,13 +20,13 @@ export class ClickButtonAction implements IAction {
                   a:has-text("${option}")`);
     } else {
       // Original behavior for just a single fieldName
-      locator = page.locator(`button:has-text("${fieldName}"),
+      locator = page.locator(`button:text-is("${fieldName}"),
                               [value="${fieldName}"],
                               [aria-label="${fieldName}"],
                               [name="${fieldName}"],
                               label:has-text("${fieldName}") + button,
                               label:has-text("${fieldName}") ~ button,
-                              a:has-text("${fieldName}")`);
+                              a:text-is("${fieldName}")`);
     }
     await locator.first().click();
   }

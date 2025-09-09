@@ -16,7 +16,6 @@ import uk.gov.hmcts.reform.pcs.ccd.page.uploadsupportingdocs.DocumentUploadCateg
 import uk.gov.hmcts.reform.pcs.ccd.page.uploadsupportingdocs.DocumentUploadCategoryB;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
-import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PaymentStatus;
 
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.uploadDocumentPoc;
@@ -60,6 +59,6 @@ public class UploadDocumentPoc implements CCDConfig<PCSCase, State, UserRole> {
 
         pcsCase.setPaymentStatus(PaymentStatus.UNPAID);
 
-        PcsCaseEntity pcsCaseEntity = pcsCaseService.createCase(caseReference, pcsCase);
+        pcsCaseService.createCase(caseReference, pcsCase);
     }
 }
