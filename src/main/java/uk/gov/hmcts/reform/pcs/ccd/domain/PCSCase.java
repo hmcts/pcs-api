@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import lombok.Builder;
@@ -23,7 +24,6 @@ import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
 import static uk.gov.hmcts.ccd.sdk.type.FieldType.Collection;
 import java.util.List;
-
 
 /**
  * The main domain model representing a possessions case.
@@ -199,7 +199,6 @@ public class PCSCase {
 
     private String claimPaymentTabMarkdown;
 
-    private LegislativeCountry legislativeCountry;
 
     @CCD(
         label = "Supporting documents Category A",
@@ -224,6 +223,13 @@ public class PCSCase {
         access = {CitizenAccess.class, CaseworkerAccess.class}
     )
     private ComponentLauncher caseFileView;
+
+    @CCD(
+        label = "Legislative country",
+        access = CaseworkerAccess.class
+    )
+    private LegislativeCountry legislativeCountry;
+
 
     @CCD(
         label = "Who is the claimant in this case?",
