@@ -21,7 +21,8 @@ export class ActionRegistry {
     ['navigateToUrl', new NavigateToUrl()],
     ['clickRadioButton', new ClickRadioButton()],
     ['selectAddress', new CreateCaseAction()],
-    ['selectLegislativeCountry', new CreateCaseAction()],
+    ['extractCaseIdFromAlert', new CreateCaseAction()],
+    ['selectResumeClaimOption', new CreateCaseAction()],
     ['selectClaimantType', new CreateCaseAction()],
     ['defendantDetails', new CreateCaseAction()],
     ['selectJurisdictionCaseTypeEvent', new CreateCaseAction()],
@@ -36,7 +37,9 @@ export class ActionRegistry {
     ['selectMediationAndSettlement', new CreateCaseAction()],
     ['selectNoticeOfYourIntention', new CreateCaseAction()],
     ['selectCountryRadioButton', new CreateCaseAction()],
+    ['reloginAndFindTheCase', new CreateCaseAction()],
     ['provideRentDetails', new CreateCaseAction()],
+    ['selectDailyRentAmount', new CreateCaseAction()]
   ]);
 
   static getAction(actionName: string): IAction {
