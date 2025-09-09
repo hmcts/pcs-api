@@ -108,6 +108,19 @@ export class CreateCaseAction implements IAction {
       await performAction('clickButton', 'Continue');
   }
 
+
+  // private async enterReasonForPossession(caseData: actionData) {
+  //
+  //   let n=0;
+  //   if (Array.isArray(caseData)) {
+  //     for (const selectedGround of caseData) {
+  //       await performAction('inputText', {title:selectedGround, index:n},reasonsForPossession.explanation);
+  //       n= n+1
+  //     }
+  //   }
+  //   await performAction('clickButton', 'Continue');
+  // }
+
   private async enterReasonForPossession(caseData: actionData) {
     if (Array.isArray(caseData)) {
       for (let n = 0; n < caseData.length; n++) {
