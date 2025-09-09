@@ -1,5 +1,5 @@
 import { Page } from '@playwright/test';
-import {actionData, IAction} from '../../interfaces/action.interface';
+import { actionData, IAction } from '../../interfaces/action.interface';
 
 export class CheckAction implements IAction {
   async execute(page: Page, action: string, fieldName: actionData): Promise<void> {
