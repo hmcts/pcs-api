@@ -1,10 +1,10 @@
-import { test } from '@playwright/test';
-import { parentSuite } from 'allure-js-commons';
-import { initializeExecutor, performAction, performValidation } from '@utils/controller';
-import { borderPostcode } from '@data/page-data/borderPostcode.page.data';
+import {test} from '@playwright/test';
+import {parentSuite} from 'allure-js-commons';
+import {initializeExecutor, performAction, performValidation} from '@utils/controller';
+import {borderPostcode} from '@data/page-data/borderPostcode.page.data';
 import configData from '@config/test.config';
-import { addressDetails } from '@data/page-data/addressDetails.page.data';
-import { canNotUseOnlineService } from '@data/page-data/canNotUseOnlineService.page.data';
+import {addressDetails} from '@data/page-data/addressDetails.page.data';
+import {canNotUseOnlineService} from '@data/page-data/canNotUseOnlineService.page.data';
 
 test.beforeEach(async ({page}) => {
   initializeExecutor(page);
@@ -16,7 +16,7 @@ test.beforeEach(async ({page}) => {
   await performAction('housingPossessionClaim');
 });
 
-test.describe.skip('Eligibility checks for cross and non cross border postcodes @Master @nightly', async () => {
+test.describe('Eligibility checks for cross and non cross border postcodes @Master @nightly', async () => {
   test('Verify cross border postcode eligibility check redirection and content for England and Wales', async ({page}) => {
     await performAction('selectAddress', {
       postcode: borderPostcode.englandWalesPostcode,
@@ -41,7 +41,7 @@ test.describe.skip('Eligibility checks for cross and non cross border postcodes 
     await performValidation('mainHeader', borderPostcode.mainHeader);
   });
 
-  test('Verify cross border postcode page for England and Scotland content', async () => {
+  test.skip('Verify cross border postcode page for England and Scotland content', async () => {
     await performAction('selectAddress', {
       postcode: borderPostcode.englandScotlandPostcode,
       addressIndex: addressDetails.addressIndex
@@ -67,7 +67,7 @@ test.describe.skip('Eligibility checks for cross and non cross border postcodes 
     await performValidation('bannerAlert', 'Case #.* has been created.');
   });
 
-  test('Verify non cross border postcode eligibility check for Wales', async () => {
+  test.skip('Verify non cross border postcode eligibility check for Wales', async () => {
     await performAction('selectAddress', {
       postcode: addressDetails.walesCourtAssignedPostcode,
       addressIndex: addressDetails.addressIndex
@@ -92,6 +92,7 @@ test.describe.skip('Eligibility checks for cross and non cross border postcodes 
       "elementType": "link"
     })
   });
+
   //This test case is failing currently due to scenario leading to different page, so test need to be corrected as
   // part of house keeping task
   test.skip('Verify postcode not assigned to court - Can not use this service page - cross border England', async () => {

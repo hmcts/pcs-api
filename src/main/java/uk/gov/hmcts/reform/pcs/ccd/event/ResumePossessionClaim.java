@@ -42,6 +42,7 @@ import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.RentDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.ResumeClaim;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.SelectClaimType;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.SelectClaimantType;
+import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.TenancyLicenceDetails;
 import uk.gov.hmcts.reform.pcs.ccd.service.ClaimService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
@@ -74,6 +75,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
     private final SavingPageBuilderFactory savingPageBuilderFactory;
     private final ResumeClaim resumeClaim;
     private final UnsubmittedCaseDataService unsubmittedCaseDataService;
+    private final TenancyLicenceDetails tenancyLicenceDetails;
     private final ContactPreferences contactPreferences;
     private final DefendantsDetails defendantsDetails;
 
@@ -99,6 +101,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             .add(new ClaimantInformation())
             .add(contactPreferences)
             .add(defendantsDetails)
+            .add(tenancyLicenceDetails)
             .add(new GroundsForPossession())
             .add(new PreActionProtocol())
             .add(new MediationAndSettlement())
