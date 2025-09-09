@@ -32,7 +32,7 @@ async function searchCase(caseNumber: string) {
 }
 
 test.describe('Search case by case number @PR @Master @nightly', () => {
-  test.skip('Search for case via caselist', async ({}) => {
+  test('Search for case via caselist', async ({}) => {
     await performAction('clickButton', 'Case list');
     await searchCase(getCaseInfo().id);
     await performValidation(
@@ -41,7 +41,7 @@ test.describe('Search case by case number @PR @Master @nightly', () => {
       {visible: getCaseInfo().fid}
     );
   });
-  test.skip('Search for case via find case', async ({}) => {
+  test('Search for case via find case', async ({}) => {
     await performAction('clickButton', 'Find case');
     await searchCase(getCaseInfo().id);
     await performValidation(
