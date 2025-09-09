@@ -171,7 +171,7 @@ test.describe('[Create Case Flow With Address and Claimant Type]  @Master @night
       ['formLabelValue', 'Country', addressDetails.country]);
   });
 
-  test.skip('England - Unsuccessful case creation journey due to claimant type not in scope of Release1 @R1only', async () => {
+  test('England - Unsuccessful case creation journey due to claimant type not in scope of Release1 @R1only', async () => {
     await performAction('selectAddress', {
       postcode: addressDetails.englandCourtAssignedPostcode,
       addressIndex: addressDetails.addressIndex
@@ -189,7 +189,7 @@ test.describe('[Create Case Flow With Address and Claimant Type]  @Master @night
     await performAction('clickButton', 'Cancel');
   });
 
-  test.skip('Wales - Unsuccessful case creation journey due to claimant type not in scope of Release1 @R1only', async () => {
+  test('Wales - Unsuccessful case creation journey due to claimant type not in scope of Release1 @R1only', async () => {
     await performAction('selectAddress', {
       postcode: addressDetails.walesCourtAssignedPostcode,
       addressIndex: addressDetails.addressIndex
@@ -207,7 +207,7 @@ test.describe('[Create Case Flow With Address and Claimant Type]  @Master @night
     await performAction('clickButton', 'Cancel');
   });
 
-  test.skip('Unsuccessful case creation journey due to claim type not in scope of Release1 @R1only', async () => {
+  test('Unsuccessful case creation journey due to claim type not in scope of Release1 @R1only', async () => {
     await performAction('selectAddress', {
       postcode: addressDetails.englandCourtAssignedPostcode,
       addressIndex: addressDetails.addressIndex
