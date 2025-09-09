@@ -17,11 +17,7 @@ import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.EnterPropertyAddre
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.PostcodeNotAssignedToCourt;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.PropertyNotEligible;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.StartTheService;
-import uk.gov.hmcts.reform.pcs.ccd.service.ClaimService;
-import uk.gov.hmcts.reform.pcs.ccd.service.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
-import uk.gov.hmcts.reform.pcs.ccd.service.SendLetterService;
-import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.createPossessionClaim;
 
@@ -32,10 +28,6 @@ import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.createPossessionClaim;
 public class CreatePossessionClaim implements CCDConfig<PCSCase, State, UserRole> {
 
     private final PcsCaseService pcsCaseService;
-    private final SecurityContextService securityContextService;
-    private final PartyService partyService;
-    private final ClaimService claimService;
-    private final SendLetterService sendLetterService;
     private final EnterPropertyAddress enterPropertyAddress;
     private final CrossBorderPostcodeSelection crossBorderPostcodeSelection;
     private final PropertyNotEligible propertyNotEligible;
@@ -54,17 +46,7 @@ public class CreatePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             .add(enterPropertyAddress)
             .add(crossBorderPostcodeSelection)
             .add(propertyNotEligible)
-            .add(new PostcodeNotAssignedToCourt())
-            .add(enterPropertyAddress);
-    }
-
-    private PCSCase start(EventPayload<PCSCase, State> eventPayload) {
-        PCSCase caseData = eventPayload.caseData();
-        String userDetails = securityContextService.getCurrentUserDetails().getSub();
-        caseData.setClaimantName(userDetails);
-        caseData.setClaimantContactEmail(userDetails);
-
-        return caseData;
+            .add(new PostcodeNotAssignedToCourt());
     }
 
     private void submit(EventPayload<PCSCase, State> eventPayload) {
