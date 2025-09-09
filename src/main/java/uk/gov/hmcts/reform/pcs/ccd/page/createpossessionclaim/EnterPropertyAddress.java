@@ -21,6 +21,8 @@ import uk.gov.hmcts.reform.pcs.postcodecourt.service.EligibilityService;
 
 import java.util.List;
 
+import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
+
 @AllArgsConstructor
 @Component
 @Slf4j
@@ -43,7 +45,8 @@ public class EnterPropertyAddress implements CcdPageConfiguration {
                 .optional(AddressUK::getCounty)
                 .optional(AddressUK::getCountry)
                 .mandatoryWithLabel(AddressUK::getPostCode, "Postcode")
-            .done();
+            .done()
+            .readonly(PCSCase::getLegislativeCountry, NEVER_SHOW, true);
     }
 
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,

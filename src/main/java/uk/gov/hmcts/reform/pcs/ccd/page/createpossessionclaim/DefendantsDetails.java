@@ -26,7 +26,30 @@ public class DefendantsDetails implements CcdPageConfiguration {
         pageBuilder
             .page("defendantsDetails", this::midEvent)
             .pageLabel("Defendant 1 details")
-            .mandatory(PCSCase::getDefendant1);
+            .complex(PCSCase::getDefendant1)
+                .readonly(DefendantDetails::getNameSectionLabel)
+                .mandatory(DefendantDetails::getNameKnown)
+                .mandatory(DefendantDetails::getFirstName)
+                .mandatory(DefendantDetails::getLastName)
+
+                .readonly(DefendantDetails::getAddressSectionLabel)
+                .mandatory(DefendantDetails::getAddressKnown)
+                .mandatory(DefendantDetails::getAddressSameAsPossession)
+                .complex(DefendantDetails::getCorrespondenceAddress)
+                    .mandatory(AddressUK::getAddressLine1)
+                    .optional(AddressUK::getAddressLine2)
+                    .optional(AddressUK::getAddressLine3)
+                    .mandatory(AddressUK::getPostTown)
+                    .optional(AddressUK::getCounty)
+                    .optional(AddressUK::getCountry)
+                    .mandatoryWithLabel(AddressUK::getPostCode, "Postcode")
+                .done()
+                .mandatory(DefendantDetails::getCorrespondenceAddress)
+
+                .readonly(DefendantDetails::getEmailSectionLabel)
+                .mandatory(DefendantDetails::getEmailKnown)
+                .mandatory(DefendantDetails::getEmail);
+
     }
 
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
