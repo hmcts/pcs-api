@@ -17,7 +17,6 @@ import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.EnterPropertyAddre
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.PostcodeNotAssignedToCourt;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.PropertyNotEligible;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.StartTheService;
-import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.TenancyLicenceDetails;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.createPossessionClaim;
@@ -32,7 +31,6 @@ public class CreatePossessionClaim implements CCDConfig<PCSCase, State, UserRole
     private final EnterPropertyAddress enterPropertyAddress;
     private final CrossBorderPostcodeSelection crossBorderPostcodeSelection;
     private final PropertyNotEligible propertyNotEligible;
-    private final TenancyLicenceDetails tenancyLicenceDetails;
 
     @Override
     public void configure(ConfigBuilder<PCSCase, State, UserRole> configBuilder) {
