@@ -24,8 +24,8 @@ public class DocumentGenerationService {
                 .templateId(templateId)
                 .formPayload(formPayload)
                 .outputType(outputType)
-                .caseTypeId("CIVIL")
-                .jurisdictionId("CIVIL")
+                .caseTypeId("benefit")
+                .jurisdictionId("sscs")
                 .secureDocStoreEnabled(true)
                 .build();
 
