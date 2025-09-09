@@ -14,7 +14,6 @@ import { mediationAndSettlement } from '@data/page-data/mediationAndSettlement.p
 import { noticeOfYourIntention } from '@data/page-data/noticeOfYourIntention.page.data';
 import { noticeDetails } from '@data/page-data/noticeDetails.page.data';
 import { rentDetails } from '@data/page-data/rentDetails.page.data';
-import { detailsOfrentArrears } from '@data/page-data/detailsOfrentArrears.page.data';
 import { userIneligible } from '@data/page-data/userIneligible.page.data';
 import { dailyRentAmount } from '@data/page-data/dailyRentAmount.page.data';
 import { provideMoreDetailsOfClaim } from '@data/page-data/provideMoreDetailsOfClaim.page.data';
