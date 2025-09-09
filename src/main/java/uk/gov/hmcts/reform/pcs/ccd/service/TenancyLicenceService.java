@@ -1,18 +1,23 @@
 package uk.gov.hmcts.reform.pcs.ccd.service;
 
-import java.math.BigDecimal;
-
 import org.springframework.stereotype.Service;
-
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicence;
+import uk.gov.hmcts.reform.pcs.ccd.utils.ListValueUtils;
+
+import java.math.BigDecimal;
 
 @Service
 public class TenancyLicenceService {
 
     public TenancyLicence buildTenancyLicence(PCSCase pcsCase) {
         return TenancyLicence.builder()
+                .tenancyLicenceType(pcsCase.getTypeOfTenancyLicence() != null
+                        ? pcsCase.getTypeOfTenancyLicence().getLabel() : null)
+                .tenancyLicenceDate(pcsCase.getTenancyLicenceDate())
+                .detailsOfOtherTypeOfTenancyLicence(pcsCase.getDetailsOfOtherTypeOfTenancyLicence())
+                .supportingDocuments(ListValueUtils.unwrapListItems(pcsCase.getTenancyLicenceDocuments()))
                 .noticeServed(toBooleanOrNull(pcsCase.getNoticeServed()))
                 .rentAmount(penceToPounds(pcsCase.getCurrentRent()))
                 .rentPaymentFrequency(pcsCase.getRentFrequency())
