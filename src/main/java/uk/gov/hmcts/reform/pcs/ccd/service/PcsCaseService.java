@@ -69,7 +69,6 @@ public class PcsCaseService {
 
         pcsCaseEntity.setTenancyLicence(tenancyLicenceService.buildTenancyLicence(pcsCase));
 
-        pcsCaseRepository.save(pcsCaseEntity);
         // Process supporting documents
         List<ListValue<Document>> supportingDocuments = pcsCase.getSupportingDocuments();
         if (supportingDocuments != null && !supportingDocuments.isEmpty()) {
