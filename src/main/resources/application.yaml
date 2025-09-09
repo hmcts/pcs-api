@@ -81,8 +81,8 @@ idam:
     url: ${IDAM_API_URL:http://localhost:5062}
   s2s-auth:
     url: ${IDAM_S2S_AUTH_URL:http://localhost:4502}
-    totp_secret: ${PCS_API_S2S_SECRET:AAAAAAAAAAAAAAAA}
-    microservice: ${S2S_SERVICE_NAME:pcs_api}
+    totp_secret: ${PCS_API_S2S_SECRET_TEST:AAAAAAAAAAAAAAAA}
+    microservice: ${sscs:sscs}
   s2s-authorised:
     services: ${S2S_NAMES_WHITELIST:pcs_api,pcs_frontend,ccd_data}
   system-user:
@@ -130,3 +130,8 @@ doc-assembly:
   url: ${DOC_ASSEMBLY_URL:http://localhost:8080}
   s2s-authorised:
     services: pcs_api,ccd_data,ccd_gw,ccd_case_document_am_api,ccd_definition,ccd_admin,ccd_ps,ccd
+
+cdam:
+  url: ${CDAM_URL:AAAAA}
+send-letter:
+  url: http://rpe-send-letter-service-aat.service.core-compute-aat.internal

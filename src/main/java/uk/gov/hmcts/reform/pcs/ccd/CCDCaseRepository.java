@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd;
 
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.DecentralisedCaseRepository;
@@ -13,6 +14,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PaymentStatus;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
@@ -25,6 +27,8 @@ import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.math.BigDecimal;
+import uk.gov.hmcts.ccd.sdk.type.Document;
+
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -34,6 +38,7 @@ import java.util.stream.Collectors;
 /**
  * Invoked by CCD to load PCS cases under the decentralised model.
  */
+@Slf4j
 @Component
 @AllArgsConstructor
 public class CCDCaseRepository extends DecentralisedCaseRepository<PCSCase> {
@@ -72,10 +77,30 @@ public class CCDCaseRepository extends DecentralisedCaseRepository<PCSCase> {
 
     private PCSCase getSubmittedCase(long caseReference) {
         PcsCaseEntity pcsCaseEntity = loadCaseData(caseReference);
+
+        log.info("DEBUG: Database documents count - total: {}",
+                 pcsCaseEntity.getDocuments() != null ? pcsCaseEntity.getDocuments().size() : "null");
+
+        Set<DocumentEntity> docs = pcsCaseEntity.getDocuments();
+        if (docs != null) {
+            long supportingCount = docs.stream().filter(d -> "SUPPORTING".equals(d.getDocumentType())).count();
+            long generatedCount = docs.stream().filter(d -> "GENERATED".equals(d.getDocumentType())).count();
+            log.info("DEBUG: Database documents - SUPPORTING: {}, GENERATED: {}", supportingCount, generatedCount);
+        }
+
+        List<ListValue<Document>> supportingDocs = mapSupportingDocuments(pcsCaseEntity.getDocuments());
+        List<ListValue<Document>> generatedDocs = mapGeneratedDocuments(pcsCaseEntity.getDocuments());
+
+        log.info("DEBUG: Mapped documents - supportingDocs: {}, generatedDocs: {}",
+                 supportingDocs != null ? supportingDocs.size() : "null",
+                 generatedDocs != null ? generatedDocs.size() : "null");
+
         PCSCase pcsCase = PCSCase.builder()
             .propertyAddress(convertAddress(pcsCaseEntity.getPropertyAddress()))
             .legislativeCountry(pcsCaseEntity.getLegislativeCountry())
             .caseManagementLocation(pcsCaseEntity.getCaseManagementLocation())
+            .supportingDocuments(supportingDocs)
+            .generatedDocuments(generatedDocs)
             .preActionProtocolCompleted(pcsCaseEntity.getPreActionProtocolCompleted() != null
                 ? VerticalYesNo.from(pcsCaseEntity.getPreActionProtocolCompleted())
                 : null)
@@ -97,7 +122,55 @@ public class CCDCaseRepository extends DecentralisedCaseRepository<PCSCase> {
 
         setDerivedProperties(caseReference, pcsCase, pcsCaseEntity);
 
+        log.info("DEBUG: Final PCSCase - supportingDocuments: {}, generatedDocuments: {}",
+                 pcsCase.getSupportingDocuments() != null ? pcsCase.getSupportingDocuments().size() : "null",
+                 pcsCase.getGeneratedDocuments() != null ? pcsCase.getGeneratedDocuments().size() : "null");
+
         return pcsCase;
+    }
+
+    private List<ListValue<Document>> mapSupportingDocuments(Set<DocumentEntity> documentEntities) {
+        if (documentEntities == null || documentEntities.isEmpty()) {
+            return null;
+        }
+
+        return documentEntities.stream()
+            .filter(docEntity -> "SUPPORTING".equals(docEntity.getDocumentType()))
+            .map(docEntity -> {
+                Document document = Document.builder()
+                    .filename(docEntity.getFileName())
+                    .binaryUrl(docEntity.getFilePath())
+                    .url(docEntity.getFilePath())
+                    .build();
+
+                return ListValue.<Document>builder()
+                    .id(docEntity.getId().toString())
+                    .value(document)
+                    .build();
+            })
+            .collect(Collectors.toList());
+    }
+
+    private List<ListValue<Document>> mapGeneratedDocuments(Set<DocumentEntity> documentEntities) {
+        if (documentEntities == null || documentEntities.isEmpty()) {
+            return null;
+        }
+
+        return documentEntities.stream()
+            .filter(docEntity -> "GENERATED".equals(docEntity.getDocumentType()))
+            .map(docEntity -> {
+                Document document = Document.builder()
+                    .filename(docEntity.getFileName())
+                    .binaryUrl(docEntity.getFilePath())
+                    .url(docEntity.getFilePath())
+                    .build();
+
+                return ListValue.<Document>builder()
+                    .id(docEntity.getId().toString())
+                    .value(document)
+                    .build();
+            })
+            .collect(Collectors.toList());
     }
 
     private void setDerivedProperties(long caseRef, PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {

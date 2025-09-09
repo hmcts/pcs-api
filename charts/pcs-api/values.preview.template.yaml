@@ -8,8 +8,8 @@ java:
     pcs:
       secrets:
         - name: app-insights-connection-string
-        - name: pcs-api-s2s-secret
-          alias: PCS_API_S2S_SECRET
+        - name: pcs-api-s2s-secret-test
+          alias: PCS_API_S2S_SECRET_TEST
         - name: govnotify-test-key
           alias: PCS_NOTIFY_API_KEY
         - name: hmc-servicebus-connection-string
@@ -33,6 +33,7 @@ java:
     IDAM_API_URL: https://idam-api.aat.platform.hmcts.net
     IDAM_S2S_AUTH_URL: http://rpe-service-auth-provider-aat.service.core-compute-aat.internal
     CCD_SDK_DECENTRALISED: "true"
+    CDAM_URL: "http://ccd-case-document-am-api.{{ .Values.global.environment }}.service.core-compute-{{ .Values.global.environment }}.internal/cases/documents/"
   secrets:
     PCS_DB_PASSWORD:
       secretRef: "{{ .Values.global.postgresSecret }}"

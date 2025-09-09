@@ -1,13 +1,17 @@
 package uk.gov.hmcts.reform.pcs.ccd.domain;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import lombok.Builder;
 import lombok.Data;
 import uk.gov.hmcts.ccd.sdk.External;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
+import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.FieldType;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.ccd.sdk.type.ComponentLauncher;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseworkerAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenAccess;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
@@ -16,6 +20,9 @@ import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import java.util.List;
 
 import static uk.gov.hmcts.ccd.sdk.type.FieldType.DynamicRadioList;
+
+import static uk.gov.hmcts.ccd.sdk.type.FieldType.Collection;
+
 import static uk.gov.hmcts.ccd.sdk.type.FieldType.TextArea;
 
 /**
@@ -191,6 +198,36 @@ public class PCSCase {
     private String pageHeadingMarkdown;
 
     private String claimPaymentTabMarkdown;
+
+    @CCD(
+        label = "Supporting documents",
+        typeOverride = Collection,
+        typeParameterOverride = "Document",
+        access = {CitizenAccess.class, CaseworkerAccess.class}
+    )
+    @JsonProperty("supportingDocuments")
+    private List<ListValue<Document>> supportingDocuments;
+
+    @CCD(
+        label = "Generated documents",
+        typeOverride = Collection,
+        typeParameterOverride = "Document",
+        access = {CitizenAccess.class, CaseworkerAccess.class}
+    )
+    @JsonProperty("generatedDocuments")
+    private List<ListValue<Document>> generatedDocuments;
+
+    @CCD(
+        label = "Case file view",
+        access = {CitizenAccess.class, CaseworkerAccess.class}
+    )
+    private ComponentLauncher caseFileView;
+
+    @CCD(
+        label = "Legislative country",
+        access = CaseworkerAccess.class
+    )
+    private LegislativeCountry legislativeCountryChoice;
 
     private LegislativeCountry legislativeCountry;
 
