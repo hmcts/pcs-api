@@ -58,7 +58,7 @@ public class SendLetterService {
         map.put("recipients", personList);
 
         byte[] documentBinary = getDocumentBinary(systemUserAuth, serviceAuthHeader, documentId).getBody();
-        log.error("Binary URL: " + documentBinary.toString());
+        log.error("Binary URL: " + Arrays.toString(documentBinary));
 
         try {
             SendLetterResponse sendLetterResponse = sendLetterApi.sendLetter(
