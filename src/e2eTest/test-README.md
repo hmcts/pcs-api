@@ -42,7 +42,7 @@ _Note: The `update-testReadMe.ts` script automatically updates this documentatio
 The framework's modular design consists of these key layers:
 
 | Layer                   | Folder/File                              | Description                                                      |
-| ----------------------- |------------------------------------------| ---------------------------------------------------------------- |
+| ----------------------- | ---------------------------------------- | ---------------------------------------------------------------- |
 | **Configuration**       | `config/`                                | Manages environment setup and test lifecycle hooks               |
 | **Test Data**           | `data/`                                  | Stores test data files for data-driven testing                   |
 | **Test Specs**          | `tests/`                                 | Contains feature-organized test specifications                   |
@@ -66,8 +66,9 @@ Playwright 1.30+ | TypeScript 4.9+
 ## 4. Available Actions and Validations
 
 ### Actions
+
 | Action                          | Example Usage                                                                                                                                                                                              |
-|---------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| ------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | inputText                       | `performAction('inputText', 'Email', 'test@example.com')`                                                                                                                                                  |
 | check                           | `performAction('check', 'RememberMe')`                                                                                                                                                                     |
 | navigateToUrl                   | `performAction('navigateToUrl', 'testUrl')`                                                                                                                                                                |
@@ -76,19 +77,20 @@ Playwright 1.30+ | TypeScript 4.9+
 | createCase                      | `performAction('createCase', 'data: caseData')`                                                                                                                                                            |
 | clickButton                     | `performAction('clickButton', 'buttonName)`                                                                                                                                                                |
 | clickRadioButton                | `performAction('clickRadioButton', 'radioButtonName')`                                                                                                                                                     |
-| selectLegislativeCountry        | `performAction('selectLegislativeCountry', {country: data.country})`                                                                                                                                       |
 | selectClaimantType              | `performAction('selectClaimantType', {claimantType : pathToDataFile.claimantTypeOption})`                                                                                                                  |
 | selectAddress                   | `performAction('selectAddress',{postcode: pathToDataFile.englandPostcode,addressIndex: pathToDataFile.addressIndex} )`                                                                                     |
 | createUserAndLogin              | `performAction('createUserAndLogin', ['caseworker-pcs', 'caseworker'])`                                                                                                                                    |
 | login                           | `performAction('login')`                                                                                                                                                                                   |
 | enterTestAddressManually        | `performAction('enterTestAddressManually')`                                                                                                                                                                |
+| extractCaseIdFromAlert          | `performAction('extractCaseIdFromAlert')`                                                                                                                                                                  |
+| selectResumeClaimOption         | `performAction('selectResumeClaimOption', resumeClaimOptions.yes)`                                                                                                                                         |
 | selectJurisdictionCaseTypeEvent | `performAction('selectJurisdictionCaseTypeEvent')`                                                                                                                                                         |
 | housingPossessionClaim          | `performAction('selectCountryRadioButton', borderPostcode.countryOptions.england)`                                                                                                                         |
 | selectCountryRadioButton        | `performAction('selectCountryRadioButton', borderPostcode.countryOptions.england)`                                                                                                                         |
 | selectClaimType                 | `performAction('selectClaimType', claimType.no)`                                                                                                                                                           |
 | selectClaimantName              | `performAction('selectClaimantName', claimantName.yes)`                                                                                                                                                    |
 | selectContactPreferences        | `performAction('selectContactPreferences', {notifications: { answer: contactPreferences.yes }, correspondenceAddress: { answer: contactPreferences.yes }, phoneNumber: { answer: contactPreferences.no })` |
-| defendantDetails               | `performAction('defendantDetails', {name: defendantDetails.no, correspondenceAddress: defendantDetails.no, email: defendantDetails.no, correspondenceAddressSame: defendantDetails.no })`                   |
+| defendantDetails                | `performAction('defendantDetails', {name: defendantDetails.no, correspondenceAddress: defendantDetails.no, email: defendantDetails.no, correspondenceAddressSame: defendantDetails.no })`                  |
 | selectMediationAndSettlement    | `performAction('selectMediationAndSettlement',{attemptedMediationWithDefendantsOption: mediationAndSettlement.yes,settlementWithDefendantsOption: mediationAndSettlement.no}))`                            |
 | selectPreActionProtocol         | `performAction('selectPreActionProtocol', preActionProtocol.yes)`                                                                                                                                          |
 | selectNoticeOfYourIntention     | `performAction('selectNoticeOfYourIntention', checkingNotice.no)`                                                                                                                                          |
@@ -96,38 +98,43 @@ Playwright 1.30+ | TypeScript 4.9+
 | uploadFile                      | `performAction('uploadFile', 'SampleFile.png')`                                                                                                                                                            |
 | provideRentDetails              | `performAction('provideRentDetails', {rentFrequencyOption:'weekly', rentAmount:rentDetails.rentAmount})`                                                                                                   |
 | selectGroundsForPossession      | `performAction('selectGroundsForPossession', groundsForPossession.yes)`                                                                                                                                    |
+| selectDailyRentAmount           | `performAction('selectDailyRentAmount', { calculateRentAmount: '£114.29',unpaidRentInteractiveOption: dailyRentAmount.no,unpaidRentAmountPerDay:'20'})`                                                    |
+| reloginAndFindTheCase           | `performAction('reloginAndFindTheCase')`                                                                                                                                                                   |
 
 ### Validations
-| Validation        | Example Usage                                                                                                                        |
-|-------------------|--------------------------------------------------------------------------------------------------------------------------------------|
-| text              | `performValidation('text', 'testElement')`                                                                                           |
-| visibility        | `performValidation('visibility', 'testElement')`                                                                                     |
-| bannerAlert       | `performValidation('bannerAlert', {message: "Case has been created."})`                                                              |
-| formLabelValue    | `performValidation('formLabelValue',  "Applicant's forename", {value:'TestUser'})`                                                   |
-| errorMessage      | `performValidation('errorMessage', {header: claimantType.errorMessage.header,errorHasLink: claimantType.errorMessage.errorMessage})` |
-| optionList        | `performValidation('optionList', 'sectionName', {optionsData})`                                                                      |
-| mainHeader        | `performValidation('mainHeader', borderPostcode.mainHeader)`                                                                         |
+
+| Validation         | Example Usage                                                                                                                        |
+| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------ |
+| text               | `performValidation('text', 'testElement')`                                                                                           |
+| visibility         | `performValidation('visibility', 'testElement')`                                                                                     |
+| bannerAlert        | `performValidation('bannerAlert', {message: "Case has been created."})`                                                              |
+| formLabelValue     | `performValidation('formLabelValue',  "Applicant's forename", {value:'TestUser'})`                                                   |
+| errorMessage       | `performValidation('errorMessage', {header: claimantType.errorMessage.header,errorHasLink: claimantType.errorMessage.errorMessage})` |
+| optionList         | `performValidation('optionList', 'sectionName', {optionsData})`                                                                      |
+| mainHeader         | `performValidation('mainHeader', borderPostcode.mainHeader)`                                                                         |
+| radioButtonChecked | `performValidation('radioButtonChecked')`                                                                                            |
+
 ### Basic Test
 
 ```typescript
 initializeExecutor(page);
-await performAction('clickButton', 'LoginButton');
-await performValidation('text', 'WelcomeMsg', 'Welcome!');
+await performAction("clickButton", "LoginButton");
+await performValidation("text", "WelcomeMsg", "Welcome!");
 ```
 
 ### Test Groups
 
 ```typescript
 await performActionGroup(
-  'Login',
-  { action: 'fill', fieldName: 'Email', value: 'test@example.com' },
-  { action: 'clickButton', fieldName: 'Submit' }
+  "Login",
+  { action: "fill", fieldName: "Email", value: "test@example.com" },
+  { action: "clickButton", fieldName: "Submit" }
 );
 
 await performValidationGroup(
-  'Post-Login',
-  { validationType: 'url', data: { expected: '/dashboard' } },
-  { validationType: 'visible', fieldName: 'UserMenu' }
+  "Post-Login",
+  { validationType: "url", data: { expected: "/dashboard" } },
+  { validationType: "visible", fieldName: "UserMenu" }
 );
 ```
 
@@ -145,7 +152,7 @@ await performValidationGroup(
    ```
 2. Register in `action.registry.ts`:
    ```typescript
-   ActionRegistry.register('newAction', new NewAction());
+   ActionRegistry.register("newAction", new NewAction());
    ```
 
 ### Adding Validations
@@ -160,7 +167,7 @@ await performValidationGroup(
    ```
 2. Register in `validation.registry.ts`:
    ```typescript
-   ValidationRegistry.register('newValidation', new NewValidation());
+   ValidationRegistry.register("newValidation", new NewValidation());
    ```
 
 ## 7. Execution
@@ -175,7 +182,7 @@ await performValidationGroup(
 - PCS_IDAM_TEST_USER_PASSWORD
 
 ```bash
-yarn test:e2e
+yarn test:chrome
 ```
 
 ## 8. Troubleshooting
