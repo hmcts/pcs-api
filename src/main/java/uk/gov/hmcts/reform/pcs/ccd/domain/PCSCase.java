@@ -200,7 +200,6 @@ public class PCSCase {
 
     private String claimPaymentTabMarkdown;
 
-
     @CCD(
         label = "Supporting documents Category A",
         typeOverride = Collection,
