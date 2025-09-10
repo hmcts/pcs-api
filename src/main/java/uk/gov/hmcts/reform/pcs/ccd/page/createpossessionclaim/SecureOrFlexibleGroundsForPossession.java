@@ -23,7 +23,7 @@ public class SecureOrFlexibleGroundsForPossession implements CcdPageConfiguratio
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
             .page("secureOrFlexibleGroundsForPossession", this::midEvent)
-            .pageLabel("What are your grounds for possession")
+            .pageLabel("What are your grounds for possession?")
             .showCondition("typeOfTenancyLicence=\"SECURE_TENANCY\" OR typeOfTenancyLicence=\"FLEXIBLE_TENANCY\"")
             .label("secureOrFlexibleGroundsForPossession-info", """
                ---
