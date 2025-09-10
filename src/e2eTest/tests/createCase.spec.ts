@@ -23,7 +23,6 @@ import {resumeClaimOptions} from '@data/page-data/resumeClaimOptions.page.data';
 import {detailsOfRentArrears} from '@data/page-data/detailsOfRentArrears.page.data';
 import { moneyJudgement } from '@data/page-data/moneyJudgement.page.data';
 
-
 test.beforeEach(async ({page}, testInfo) => {
   initializeExecutor(page);
   await parentSuite('Case Creation');
