@@ -298,14 +298,6 @@ export class CreateCaseAction implements IAction {
     await performAction('clickButton', 'Continue');
   }
 
-  private async selectJurisdictionCaseTypeEvent() {
-    await performActions('Case option selection'
-      , ['select', 'Jurisdiction', createCase.possessionsJurisdiction]
-      , ['select', 'Case type', createCase.caseType.civilPossessions]
-      , ['select', 'Event', createCase.makeAPossessionClaimEvent]);
-    await performAction('clickButton', 'Start');
-  }
-
   private async provideDetailsOfRentArrears(rentArrears: actionData) {
     const rentArrearsData = rentArrears as {
       files?: string[],
@@ -314,7 +306,7 @@ export class CreateCaseAction implements IAction {
       paymentOptions?: string[];
     };
     if(rentArrearsData.files){
-      for (const file of rentArrearsData.files) {
+      for(const file of rentArrearsData.files){
         await performAction('clickButton', 'Add new');
         await performAction('uploadFile', file);
       }
@@ -324,15 +316,23 @@ export class CreateCaseAction implements IAction {
       question: detailsOfRentArrears.periodShownOnRentStatementLabel,
       option: rentArrearsData.rentPaidByOthersOption
     });
-    if (rentArrearsData.rentPaidByOthersOption == 'Yes' && rentArrearsData.paymentOptions) {
+    if(rentArrearsData.rentPaidByOthersOption == 'Yes' && rentArrearsData.paymentOptions){
       for (const option of rentArrearsData.paymentOptions) {
         await performAction('check', option);
-        if (option === 'Other') {
-          await performAction('inputText', detailsOfRentArrears.paymentSourceLabel, 'Some other reason');
+        if (option == 'Other') {
+          await performAction('inputText', detailsOfRentArrears.paymentSourceLabel, detailsOfRentArrears.paymentOptionOtherInput);
         }
       }
       await performAction('clickButton', 'Continue');
     }
+  }
+
+  private async selectJurisdictionCaseTypeEvent() {
+    await performActions('Case option selection'
+      , ['select', 'Jurisdiction', createCase.possessionsJurisdiction]
+      , ['select', 'Case type', createCase.caseType.civilPossessions]
+      , ['select', 'Event', createCase.makeAPossessionClaimEvent]);
+    await performAction('clickButton', 'Start');
   }
 
   private async enterTestAddressManually() {
