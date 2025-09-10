@@ -1,27 +1,32 @@
 package uk.gov.hmcts.reform.pcs.ccd.service;
 
-import java.math.BigDecimal;
-
 import org.springframework.stereotype.Service;
-
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicence;
+import uk.gov.hmcts.reform.pcs.ccd.utils.ListValueUtils;
+
+import java.math.BigDecimal;
 
 @Service
 public class TenancyLicenceService {
 
     public TenancyLicence buildTenancyLicence(PCSCase pcsCase) {
         return TenancyLicence.builder()
-            .noticeServed(toBooleanOrNull(pcsCase.getNoticeServed()))
-            .rentAmount(penceToPounds(pcsCase.getCurrentRent()))
-            .rentPaymentFrequency(pcsCase.getRentFrequency())
-            .otherRentFrequency(pcsCase.getOtherRentFrequency())
-            .dailyRentChargeAmount(getDailyRentAmount(pcsCase))
-            .totalRentArrears(penceToPounds(pcsCase.getTotalRentArrears()))
-            .thirdPartyPaymentSources(pcsCase.getThirdPartyPaymentSources())
-            .thirdPartyPaymentSourceOther(pcsCase.getThirdPartyPaymentSourceOther())
-            .build();
+                .tenancyLicenceType(pcsCase.getTypeOfTenancyLicence() != null
+                        ? pcsCase.getTypeOfTenancyLicence().getLabel() : null)
+                .tenancyLicenceDate(pcsCase.getTenancyLicenceDate())
+                .detailsOfOtherTypeOfTenancyLicence(pcsCase.getDetailsOfOtherTypeOfTenancyLicence())
+                .supportingDocuments(ListValueUtils.unwrapListItems(pcsCase.getTenancyLicenceDocuments()))
+                .noticeServed(toBooleanOrNull(pcsCase.getNoticeServed()))
+                .rentAmount(penceToPounds(pcsCase.getCurrentRent()))
+                .rentPaymentFrequency(pcsCase.getRentFrequency())
+                .otherRentFrequency(pcsCase.getOtherRentFrequency())
+                .dailyRentChargeAmount(getDailyRentAmount(pcsCase))
+                .totalRentArrears(penceToPounds(pcsCase.getTotalRentArrears()))
+                .thirdPartyPaymentSources(pcsCase.getThirdPartyPaymentSources())
+                .thirdPartyPaymentSourceOther(pcsCase.getThirdPartyPaymentSourceOther())
+                .build();
     }
 
     private static Boolean toBooleanOrNull(YesOrNo yesOrNo) {

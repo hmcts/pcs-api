@@ -181,26 +181,4 @@ public class PcsCaseService {
         party.setActive(true);
         return party;
     }
-
-    //Temporary method to create tenancy_licence JSON and related fields
-    // Data in this JSON will likely be moved to a dedicated entity in the future
-    private TenancyLicence buildTenancyLicence(PCSCase pcsCase) {
-        return TenancyLicence.builder()
-                .noticeServed(toBooleanOrNull(pcsCase.getNoticeServed()))
-                .rentAmount(pcsCase.getCurrentRent() != null
-                    ? new BigDecimal(pcsCase.getCurrentRent()) : null)
-                .rentPaymentFrequency(pcsCase.getRentFrequency())
-                .otherRentFrequency(pcsCase.getOtherRentFrequency())
-                .dailyRentChargeAmount(pcsCase.getDailyRentChargeAmount() != null
-                    ? new BigDecimal(pcsCase.getDailyRentChargeAmount()) : null)
-                .totalRentArrears(pcsCase.getTotalRentArrears() != null
-                    ? new BigDecimal(pcsCase.getTotalRentArrears()) : null)
-                .thirdPartyPaymentSources(pcsCase.getThirdPartyPaymentSources())
-                .thirdPartyPaymentSourceOther(pcsCase.getThirdPartyPaymentSourceOther())
-                .build();
-    }
-
-    private static Boolean toBooleanOrNull(YesOrNo yesOrNo) {
-        return yesOrNo != null ? yesOrNo.toBoolean() : null;
-    }
 }
