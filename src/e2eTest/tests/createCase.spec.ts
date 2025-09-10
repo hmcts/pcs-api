@@ -124,6 +124,7 @@ test.describe('[Create Case Flow With Address and Claimant Type]  @Master @night
       contentType: 'image/png',
     });
     await performAction('clickButton', resumeClaim.continue);
+    await page.waitForTimeout(3000); // waits 2 seconds
     await testInfo.attach('Continue Claim Submission', {
       body: await page.screenshot(),
       contentType: 'image/png',
@@ -256,6 +257,7 @@ test.describe('[Create Case Flow With Address and Claimant Type]  @Master @night
       contentType: 'image/png',
     });
     await performAction('clickButton', resumeClaim.continue);
+    await page.waitForTimeout(3000); // waits 2 seconds
     await testInfo.attach('Continue Claim Submission', {
       body: await page.screenshot(),
       contentType: 'image/png',
