@@ -1,18 +1,31 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim;
 
+import lombok.AllArgsConstructor;
+import org.springframework.stereotype.Component;
+import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
+import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.util.PostcodeValidator;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 
 
+@Component
+@AllArgsConstructor
 public class ContactPreferences implements CcdPageConfiguration {
+
+    private final PostcodeValidator postcodeValidator;
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
-            .page("contactPreferences")
+            .page("contactPreferences", this::validatePostcode)
             .pageLabel("Contact preferences")
 
             // Email section
@@ -68,6 +81,32 @@ public class ContactPreferences implements CcdPageConfiguration {
             .mandatory(PCSCase::getClaimantProvidePhoneNumber)
             .mandatory(PCSCase::getClaimantContactPhoneNumber, "claimantProvidePhoneNumber=\"YES\"")
             .label("contactPreferences-phoneNumber-separator", "---");
+    }
+
+    private AboutToStartOrSubmitResponse<PCSCase, State> validatePostcode(CaseDetails<PCSCase, State> details,
+                                                                          CaseDetails<PCSCase, State> detailsBefore) {
+        PCSCase caseData = details.getData();
+        List<String> errors = new ArrayList<>();
+
+        // Validate overridden claimant contact address postcode if present
+        if (caseData.getOverriddenClaimantContactAddress() != null) {
+            List<String> addressErrors = postcodeValidator.getValidationErrors(
+                caseData.getOverriddenClaimantContactAddress(), 
+                "overriddenClaimantContactAddress"
+            );
+            errors.addAll(addressErrors);
+        }
+
+        if (!errors.isEmpty()) {
+            return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
+                .data(caseData)
+                .errors(errors)
+                .build();
+        }
+
+        return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
+            .data(caseData)
+            .build();
     }
 
 }
