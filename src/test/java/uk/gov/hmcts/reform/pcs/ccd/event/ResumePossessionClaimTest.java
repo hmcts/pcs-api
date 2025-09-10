@@ -34,6 +34,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.UnsubmittedCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
+import uk.gov.hmcts.reform.pcs.ccd.util.PostcodeValidator;
 
 import java.util.List;
 import java.util.UUID;
@@ -75,6 +76,8 @@ class ResumePossessionClaimTest extends BaseEventTest {
     private UserInfo userDetails;
     @Mock
     private TenancyLicenceDetails tenancyLicenceDetails;
+    @Mock
+    private PostcodeValidator postcodeValidator;
 
     private Event<PCSCase, UserRole, State> configuredEvent;
 
@@ -89,7 +92,8 @@ class ResumePossessionClaimTest extends BaseEventTest {
         ResumePossessionClaim underTest = new ResumePossessionClaim(pcsCaseService, securityContextService,
                                                                     partyService, claimService,
                                                                     savingPageBuilderFactory, resumeClaim,
-                                                                    unsubmittedCaseDataService, tenancyLicenceDetails);
+                                                                    unsubmittedCaseDataService, tenancyLicenceDetails,
+                                                                    postcodeValidator);
 
         configuredEvent = getEvent(EventId.resumePossessionClaim, buildEventConfig(underTest));
     }
