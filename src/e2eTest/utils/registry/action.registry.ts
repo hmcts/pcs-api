@@ -43,6 +43,7 @@ export class ActionRegistry {
     ['selectTenancyOrLicenceDetails', new CreateCaseAction()],
     ['enterReasonsForPossession', new CreateCaseAction()],
     ['reloginAndFindTheCase', new CreateCaseAction()],
+    ['selectRentArrearsOrBreachOfTenancy', new CreateCaseAction() ],
     ['provideRentDetails', new CreateCaseAction()],
     ['selectDailyRentAmount', new CreateCaseAction()]
   ]);

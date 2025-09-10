@@ -16,7 +16,6 @@ import {tenancyLicenceDetails} from '@data/page-data/tenancyLicenceDetails.page.
 import {resumeClaimOptions} from "@data/page-data/resumeClaimOptions.page.data";
 import {rentDetails} from '@data/page-data/rentDetails.page.data';
 import {dailyRentAmount} from '@data/page-data/dailyRentAmount.page.data';
-import {secureOrFlexibleGrounds} from '@data/page-data/secureOrFlexibleGrounds.page.data';
 import {reasonsForPossession} from '@data/page-data/reasonsForPossession.page.data';
 import configData from '@config/test.config';
 
@@ -52,7 +51,8 @@ export class CreateCaseAction implements IAction {
       ['selectCountryRadioButton', () => this.selectCountryRadioButton(fieldName)],
       ['selectTenancyOrLicenceDetails', () => this.selectTenancyOrLicenceDetails(fieldName)],
       ['selectSecureFlexiblePossessionGround', () => this.selectSecureFlexiblePossessionGround(fieldName)],
-      ['enterReasonForPossession', () => this.enterReasonForPossession(page, fieldName)],
+      ['enterReasonForPossession', () => this.enterReasonForPossession(fieldName)],
+      ['selectRentArrearsOrBreachOfTenancy', () => this.selectRentArrearsOrBreachOfTenancy(fieldName)],
       ['provideRentDetails', () => this.provideRentDetails(fieldName)],
       ['selectDailyRentAmount', () => this.selectDailyRentAmount(fieldName)]
     ]);
@@ -227,9 +227,6 @@ export class CreateCaseAction implements IAction {
       files?: string[];
     };
     await performAction('clickRadioButton', tenancyLicenceData.tenancyOrLicenceType);
-    if (tenancyLicenceData.tenancyOrLicenceType === 'Flexible tenancy' || 'Secure tenancy'){
-
-    }
     if (tenancyLicenceData.tenancyOrLicenceType === 'Other') {
       await performAction('inputText', 'Give details of the type of tenancy or licence agreement that\'s in place', tenancyLicenceDetails.detailsOfLicence);
     }
@@ -253,40 +250,27 @@ export class CreateCaseAction implements IAction {
       mandatoryAccommodation: string[];
       discretionary: string[];
       discretionaryAccommodation: string;
-      rentArrearsOrBreach?: string[];
     };
-    for (const ground of possessionGrounds.discretionary) {
-      await performAction('check', ground);
-    }
-    for (const ground of possessionGrounds.mandatory) {
-      await performAction('check', ground);
-    }
-    for (const ground of possessionGrounds.mandatoryAccommodation) {
-      await performAction('check', ground);
-    }
-    for (const ground of possessionGrounds.discretionaryAccommodation) {
-      await performAction('check', ground);
-    }
-    await performAction('clickButton', 'Continue');
-    if(possessionGrounds.discretionary.includes(secureOrFlexibleGrounds.discretionary.rentArrearsOrBreachOfTenancy)) {
-      if ( possessionGrounds.rentArrearsOrBreach ) {
-        for (const ground of possessionGrounds.rentArrearsOrBreach) {
-          await performAction('check', ground);
-        }
-      }
+      await performAction('check', possessionGrounds.discretionary);
+      await performAction('check', possessionGrounds.mandatory);
+      await performAction('check', possessionGrounds.mandatoryAccommodation);
+      await performAction('check', possessionGrounds.discretionaryAccommodation);
       await performAction('clickButton', 'Continue');
-    }
   }
 
-  private async enterReasonForPossession(page: Page, caseData: actionData) {
+  private async selectRentArrearsOrBreachOfTenancy(grounds: actionData) {
+    const rentArrearsOrBreachOfTenancyGrounds = grounds as {
+      rentArrearsOrBreach: string[];
+    }
+    await performAction('check', rentArrearsOrBreachOfTenancyGrounds.rentArrearsOrBreach);
+  }
+
+  private async enterReasonForPossession(caseData: actionData) {
     if (Array.isArray(caseData)) {
       for (let n = 0; n < caseData.length; n++) {
-        const selectedGround = caseData[n];
-        const explanation = reasonsForPossession.explanation + "-" + selectedGround;
-        await performAction('inputText', { title: selectedGround, index: n }, explanation);
+        await performAction('inputText',  {text:caseData[n],index: n}, reasonsForPossession.detailsABoutYourReason);
       }
     }
-    await page.waitForTimeout(30_000);
     await performAction('clickButton', 'Continue');
   }
 

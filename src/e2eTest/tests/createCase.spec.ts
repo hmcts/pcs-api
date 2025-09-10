@@ -21,7 +21,6 @@ import {provideMoreDetailsOfClaim} from '@data/page-data/provideMoreDetailsOfCla
 import {resumeClaim} from '@data/page-data/resumeClaim.page.data';
 import {resumeClaimOptions} from '@data/page-data/resumeClaimOptions.page.data';
 import {detailsOfRentArrears} from '@data/page-data/detailsOfRentArrears.page.data';
-import {tenancyLicenceDetails} from "@data/page-data/tenancyLicenceDetails.page.data";
 import {secureOrFlexibleGrounds} from "@data/page-data/secureOrFlexibleGrounds.page.data";
 import {rentArrearsOrBreachOfTenancy} from "@data/page-data/rentArrearsOrBreachOfTenancy.page.data";
 import {reasonsForPossession} from "@data/page-data/reasonsForPossession.page.data";
@@ -251,6 +250,9 @@ test.describe('[Create Case Flow With Address and Claimant Type]  @Master @night
       mandatory: [secureOrFlexibleGrounds.mandatory.antiSocialBehaviour],
       mandatoryAccommodation: [secureOrFlexibleGrounds.mandatoryWithAccommodation.charitableLandlords,secureOrFlexibleGrounds.mandatoryWithAccommodation.landlordsWorks],
       discretionaryAccommodation: [secureOrFlexibleGrounds.discretionaryWithAccommodation.adapted,secureOrFlexibleGrounds.discretionaryWithAccommodation.tied],
+    });
+    await performValidation('mainHeader', rentArrearsOrBreachOfTenancy.mainHeader);
+    await performAction('selectRentArrearsOrBreachOfTenancy', {
       rentArrearsOrBreach: [rentArrearsOrBreachOfTenancy.breachOfTenancy, rentArrearsOrBreachOfTenancy.rentArrears]
     });
     await performValidation('mainHeader', reasonsForPossession.mainHeader);
