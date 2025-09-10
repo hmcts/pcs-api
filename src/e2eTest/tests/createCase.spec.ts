@@ -91,6 +91,7 @@ test.describe('[Create Case Flow With Address and Claimant Type]  @Master @night
       unpaidRentInteractiveOption: dailyRentAmount.no,
       unpaidRentAmountPerDay: '20'
     });
+    await performAction('clickButton',moneyJudgement.continue);
     await performAction('clickButton', 'Save and continue');
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
     await performAction('clickTab', 'Property Details');
@@ -266,6 +267,7 @@ test.describe('[Create Case Flow With Address and Claimant Type]  @Master @night
       calculateRentAmount: '3285',
       unpaidRentInteractiveOption: dailyRentAmount.yes
     });
+    await performAction('clickButton',moneyJudgement.continue);
     await performAction('clickButton', 'Save and continue');
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
     await performAction('clickTab', 'Property Details');
