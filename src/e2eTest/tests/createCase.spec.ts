@@ -118,6 +118,7 @@ test.describe('[Create Case Flow With Address and Claimant Type]  @Master @night
     await performAction('selectClaimantName', claimantName.no);
     await performAction('clickButton', 'Sign out');
     await performAction('reloginAndFindTheCase');
+    await page.waitForTimeout(2000); // waits 2 seconds
     await testInfo.attach('Resume Claim', {
       body: await page.screenshot(),
       contentType: 'image/png',
@@ -249,6 +250,7 @@ test.describe('[Create Case Flow With Address and Claimant Type]  @Master @night
     await performAction('selectClaimantName', claimantName.yes);
     await performAction('clickButton', 'Sign out');
     await performAction('reloginAndFindTheCase');
+    await page.waitForTimeout(2000); // waits 2 seconds
     await testInfo.attach('Resume Claim', {
       body: await page.screenshot(),
       contentType: 'image/png',
