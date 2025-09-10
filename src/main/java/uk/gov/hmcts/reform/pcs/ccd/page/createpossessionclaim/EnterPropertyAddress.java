@@ -16,6 +16,7 @@ import uk.gov.hmcts.reform.pcs.postcodecourt.exception.EligibilityCheckException
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.EligibilityResult;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.postcodecourt.service.EligibilityService;
+import uk.gov.hmcts.reform.pcs.ccd.util.PostcodeValidator;
 
 import java.util.List;
 
@@ -27,6 +28,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 public class EnterPropertyAddress implements CcdPageConfiguration {
 
     private final EligibilityService eligibilityService;
+    private final PostcodeValidator postcodeValidator;
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
@@ -41,7 +43,17 @@ public class EnterPropertyAddress implements CcdPageConfiguration {
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
                                                                   CaseDetails<PCSCase, State> detailsBefore) {
         PCSCase caseData = details.getData();
-        String postcode = caseData.getPropertyAddress().getPostCode();
+        
+        // Validate postcode format first
+        if (caseData.getPropertyAddress() != null && caseData.getPropertyAddress().getPostCode() != null 
+            && !postcodeValidator.isValidPostcode(caseData.getPropertyAddress().getPostCode())) {
+            return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
+                .data(caseData)
+                .errors(List.of("Enter a valid postcode"))
+                .build();
+        }
+        
+        String postcode = caseData.getPropertyAddress() != null ? caseData.getPropertyAddress().getPostCode() : null;
 
         EligibilityResult eligibilityResult = eligibilityService.checkEligibility(postcode, null);
         log.debug("EnterPropertyAddress eligibility check: {} for postcode {} with countries {}",

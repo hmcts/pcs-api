@@ -21,6 +21,7 @@ import uk.gov.hmcts.reform.pcs.postcodecourt.model.EligibilityResult;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.EligibilityStatus;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.postcodecourt.service.EligibilityService;
+import uk.gov.hmcts.reform.pcs.ccd.util.PostcodeValidator;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -30,6 +31,7 @@ import java.util.stream.Stream;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.ccd.sdk.type.YesOrNo.NO;
@@ -38,13 +40,15 @@ import static uk.gov.hmcts.ccd.sdk.type.YesOrNo.YES;
 class EnterPropertyAddressTest extends BasePageTest {
 
     private EligibilityService eligibilityService;
+    private PostcodeValidator postcodeValidator;
 
     private Event<PCSCase, UserRole, State> event;
 
     @BeforeEach
     void setUp() {
         eligibilityService = mock(EligibilityService.class);
-        event = buildPageInTestEvent(new EnterPropertyAddress(eligibilityService));
+        postcodeValidator = mock(PostcodeValidator.class);
+        event = buildPageInTestEvent(new EnterPropertyAddress(eligibilityService, postcodeValidator));
     }
 
     @ParameterizedTest
@@ -71,6 +75,7 @@ class EnterPropertyAddressTest extends BasePageTest {
             .legislativeCountry(expectedLegislativeCountry)
             .build();
 
+        when(postcodeValidator.isValidPostcode(anyString())).thenReturn(true);
         when(eligibilityService.checkEligibility(postCode, null)).thenReturn(eligibilityResult);
 
         // When
@@ -108,6 +113,7 @@ class EnterPropertyAddressTest extends BasePageTest {
             .legislativeCountries(countries)
             .build();
 
+        when(postcodeValidator.isValidPostcode(anyString())).thenReturn(true);
         when(eligibilityService.checkEligibility(postcode, null)).thenReturn(eligibilityResult);
 
         // When
@@ -154,6 +160,7 @@ class EnterPropertyAddressTest extends BasePageTest {
             .legislativeCountries(countries)
             .build();
 
+        when(postcodeValidator.isValidPostcode(anyString())).thenReturn(true);
         when(eligibilityService.checkEligibility(postcode, null)).thenReturn(eligibilityResult);
 
         MidEvent<PCSCase, State> midEvent = getMidEventForPage(event, "enterPropertyAddress");
@@ -179,6 +186,7 @@ class EnterPropertyAddressTest extends BasePageTest {
             .legislativeCountry(uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry.ENGLAND)
             .build();
 
+        when(postcodeValidator.isValidPostcode(anyString())).thenReturn(true);
         when(eligibilityService.checkEligibility("M1 1AA", null)).thenReturn(result);
 
         // When
@@ -279,4 +287,31 @@ class EnterPropertyAddressTest extends BasePageTest {
             )
         );
     }
+
+    @Test
+    void shouldReturnErrorWhenPostcodeIsInvalid() {
+        // Given
+        String invalidPostcode = "12345"; // Invalid: doesn't start with letter
+        AddressUK propertyAddress = AddressUK.builder()
+            .postCode(invalidPostcode)
+            .build();
+
+        PCSCase caseData = PCSCase.builder()
+            .propertyAddress(propertyAddress)
+            .build();
+
+        CaseDetails<PCSCase, State> caseDetails = CaseDetails.<PCSCase, State>builder()
+            .data(caseData)
+            .build();
+
+        when(postcodeValidator.isValidPostcode(anyString())).thenReturn(false);
+
+        // When
+        MidEvent<PCSCase, State> midEvent = getMidEventForPage(event, "enterPropertyAddress");
+        AboutToStartOrSubmitResponse<PCSCase, State> response = midEvent.handle(caseDetails, null);
+
+        // Then
+        assertThat(response.getErrors()).containsExactly("Enter a valid postcode");
+    }
+
 }
