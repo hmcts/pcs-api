@@ -43,9 +43,7 @@ public class RentDetails implements CcdPageConfiguration {
             caseData.setCalculatedDailyRentChargeAmount(dailyAmountString);
 
             // Set formatted value for display  
-            BigDecimal dailyAmountInPounds = dailyAmountInPence.movePointLeft(2);
-            String formattedAmount = "£" + dailyAmountInPounds.toPlainString();
-            caseData.setFormattedCalculatedDailyRentChargeAmount(formattedAmount);
+            caseData.setFormattedCalculatedDailyRentChargeAmount(formatCurrency(dailyAmountString));
         } 
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
@@ -69,5 +67,10 @@ public class RentDetails implements CcdPageConfiguration {
         }
 
         return new BigDecimal(Math.round(rentAmountInPence.doubleValue() / divisor));
+    }
+
+    private String formatCurrency(String amountInPence) {
+        BigDecimal amountInPounds = new BigDecimal(amountInPence).movePointLeft(2);
+        return "£" + amountInPounds.toPlainString();
     }
 }
