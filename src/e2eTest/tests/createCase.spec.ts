@@ -1,5 +1,5 @@
 import {test} from '@playwright/test';
-import {parentSuite} from 'allure-js-commons';
+import {feature, parentSuite} from 'allure-js-commons';
 import {initializeExecutor, performAction, performValidation, performValidations} from '@utils/controller';
 import configData from '@config/test.config';
 import {addressDetails} from '@data/page-data/addressDetails.page.data';
@@ -38,6 +38,7 @@ test.beforeEach(async ({page}, testInfo) => {
 
 test.describe('[Create Case Flow With Address and Claimant Type]  @Master @nightly', async () => {
   test('England - Successful case creation', async () => {
+    feature('Successful case creation');
     await performAction('selectAddress', {
       postcode: addressDetails.englandCourtAssignedPostcode,
       addressIndex: addressDetails.addressIndex
@@ -103,6 +104,7 @@ test.describe('[Create Case Flow With Address and Claimant Type]  @Master @night
   });
 
   test('Wales - Successful case creation with Saved options', async ({ page },testInfo) => {
+    feature('Successful case creation');
     await performAction('enterTestAddressManually');
     await performValidation('bannerAlert', 'Case #.* has been created.');
     await testInfo.attach('Case has been created', {
@@ -174,6 +176,8 @@ test.describe('[Create Case Flow With Address and Claimant Type]  @Master @night
   });
 
   test('England - Unsuccessful case creation journey due to claimant type not in scope of Release1 @R1only', async () => {
+    feature('Unsuccessful case creation');
+
     await performAction('selectAddress', {
       postcode: addressDetails.englandCourtAssignedPostcode,
       addressIndex: addressDetails.addressIndex
@@ -192,6 +196,7 @@ test.describe('[Create Case Flow With Address and Claimant Type]  @Master @night
   });
 
   test('Wales - Unsuccessful case creation journey due to claimant type not in scope of Release1 @R1only', async () => {
+    feature('Unsuccessful case creation');
     await performAction('selectAddress', {
       postcode: addressDetails.walesCourtAssignedPostcode,
       addressIndex: addressDetails.addressIndex
@@ -210,6 +215,7 @@ test.describe('[Create Case Flow With Address and Claimant Type]  @Master @night
   });
 
   test('Unsuccessful case creation journey due to claim type not in scope of Release1 @R1only', async () => {
+    feature('Unsuccessful case creation');
     await performAction('selectAddress', {
       postcode: addressDetails.englandCourtAssignedPostcode,
       addressIndex: addressDetails.addressIndex
@@ -229,6 +235,7 @@ test.describe('[Create Case Flow With Address and Claimant Type]  @Master @night
   });
 
   test('Wales - Successful case creation without Saved options and Defendants correspondence address is not known', async ({ page }, testInfo) => {
+    feature('Successful case creation');
     await performAction('enterTestAddressManually');
     await performValidation('bannerAlert', 'Case #.* has been created.');
     await testInfo.attach('Case has been created.', {

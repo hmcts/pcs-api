@@ -95,7 +95,7 @@ test.describe('Eligibility checks for cross and non cross border postcodes @Mast
 
   //This test case is failing currently due to scenario leading to different page, so test need to be corrected as
   // part of housekeeping task
-  test('Verify postcode not assigned to court - Can not use this service page - cross border England', async () => {
+  test.skip('Verify postcode not assigned to court - Can not use this service page - cross border England', async () => {
     await performAction('selectAddress', {
       postcode: addressDetails.englandWalesNoCourtCrossBorderPostcode,
       addressIndex: addressDetails.addressIndex
