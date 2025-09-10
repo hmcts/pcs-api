@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim;
+package uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim;
 
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;

@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim;
+package uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim;
 
 import java.math.BigDecimal;
 
@@ -21,7 +21,7 @@ public class RentDetails implements CcdPageConfiguration {
         pageBuilder
                 .page("rentDetails", this::midEvent)
                 .pageLabel("Rent details")
-                .label("rentDetails-content", 
+                .label("rentDetails-content",
                         """
                         """)
                 .mandatory(PCSCase::getCurrentRent, "rentFrequency!=\"OTHER\"")
@@ -40,7 +40,7 @@ public class RentDetails implements CcdPageConfiguration {
             String dailyAmountString = String.valueOf(dailyAmountInPence);
 
             caseData.setCalculatedDailyRentChargeAmount(dailyAmountString);
-        } 
+        }
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
                 .data(caseData)
