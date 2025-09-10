@@ -245,6 +245,7 @@ test.describe('[Create Case Flow With Address and Claimant Type]  @Master @night
     });
     await performAction('selectTenancyOrLicenceDetails', {
       tenancyOrLicenceType: tenancyLicenceDetails.secureTenancy});
+    await performValidation('mainHeader', secureOrFlexibleGrounds.mainHeader);
     await performAction('selectSecureFlexiblePossessionGround', {
       discretionary: [secureOrFlexibleGrounds.discretionary.rentArrearsOrBreachOfTenancy, secureOrFlexibleGrounds.discretionary.deteriorationOfFurniture],
       mandatory: [secureOrFlexibleGrounds.mandatory.antiSocialBehaviour],
@@ -256,7 +257,7 @@ test.describe('[Create Case Flow With Address and Claimant Type]  @Master @night
       rentArrearsOrBreach: [rentArrearsOrBreachOfTenancy.breachOfTenancy, rentArrearsOrBreachOfTenancy.rentArrears]
     });
     await performValidation('mainHeader', reasonsForPossession.mainHeader);
-    await performAction('enterReasonsForPossession'
+    await performAction('enterReasonForPossession'
       , [secureOrFlexibleGrounds.discretionary.deteriorationOfFurniture,secureOrFlexibleGrounds.mandatory.antiSocialBehaviour,
         secureOrFlexibleGrounds.mandatoryWithAccommodation.charitableLandlords,secureOrFlexibleGrounds.mandatoryWithAccommodation.landlordsWorks,
         secureOrFlexibleGrounds.discretionaryWithAccommodation.adapted,secureOrFlexibleGrounds.discretionaryWithAccommodation.tied]);

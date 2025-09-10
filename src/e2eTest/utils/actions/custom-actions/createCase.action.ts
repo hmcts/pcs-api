@@ -258,11 +258,12 @@ export class CreateCaseAction implements IAction {
       await performAction('clickButton', 'Continue');
   }
 
-  private async selectRentArrearsOrBreachOfTenancy(grounds: actionData) {
+  private async selectRentArrearsOrBreachOfTenancy( grounds: actionData) {
     const rentArrearsOrBreachOfTenancyGrounds = grounds as {
       rentArrearsOrBreach: string[];
     }
     await performAction('check', rentArrearsOrBreachOfTenancyGrounds.rentArrearsOrBreach);
+    await performAction('clickButton', 'Continue');
   }
 
   private async enterReasonForPossession(caseData: actionData) {
