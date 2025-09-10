@@ -26,15 +26,42 @@ class Controller {
     this.page = page;
   }
 
+  async formatFieldName(fieldName: unknown): Promise<string> {
+    if (typeof fieldName === 'string') return fieldName;
+
+    if (typeof fieldName === 'number' || typeof fieldName === 'boolean') {
+      return String(fieldName);
+    }
+
+    if (typeof fieldName === 'object' && fieldName !== null) {
+      const entries = Object.entries(fieldName as Record<string, unknown>);
+      if (entries.length === 0) return '{}';
+
+      // Pick first 2 keys to keep step names short
+      const preview = entries
+        .slice(0, 2)
+        .map(([k, v]) => `${k}: ${String(v)}`)
+        .join(', ');
+
+      return `{ ${preview}${entries.length > 2 ? ', ...' : ''} }`;
+    }
+
+    return String(fieldName);
+  }
+
   async performAction(
     action: string,
     fieldName?: actionData,
     value?: actionData
   ): Promise<void> {
     const actionInstance = ActionRegistry.getAction(action);
-    await test.step(`Perform action: [${action}] on "${fieldName}"${value !== undefined ? ` with value "${value}"` : ''}`, async () => {
-      await actionInstance.execute(this.page, action, fieldName, value);
-    });
+    const fieldLabel = this.formatFieldName(fieldName);
+    await test.step(
+      `Perform action: [${action}] on ${fieldLabel}${value !== undefined ? ` with value "${value}"` : ''}`,
+      async () => {
+        await actionInstance.execute(this.page, action, fieldName, value);
+      }
+    );
   }
 
   async performValidation(
