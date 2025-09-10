@@ -25,13 +25,7 @@ import uk.gov.hmcts.reform.pcs.config.MapperConfig;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
-import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
-import uk.gov.hmcts.reform.pcs.ccd.domain.RentPaymentFrequency;
-import uk.gov.hmcts.reform.pcs.ccd.domain.ThirdPartyPaymentSource;
-import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicence;
-import uk.gov.hmcts.reform.pcs.ccd.service.TenancyLicenceService;
 
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -423,72 +417,6 @@ class PcsCaseServiceTest {
         assertThat(clearedDefendant.getCorrespondenceAddress()).isNull();
         assertThat(clearedDefendant.getAddressSameAsPossession()).isNull();
         assertThat(clearedDefendant.getEmail()).isNull();
-    }
-
-    // Test for tenancy_licence JSON creation, temporary until Data Model is finalised
-    @Test
-    void shouldSetTenancyLicence() {
-        // Test notice_served field updates
-        assertTenancyLicenceField(
-                pcsCase -> when(pcsCase.getNoticeServed()).thenReturn(YesOrNo.YES),
-                expected -> assertThat(expected.getNoticeServed()).isTrue());
-        assertTenancyLicenceField(
-                pcsCase -> when(pcsCase.getNoticeServed()).thenReturn(YesOrNo.NO),
-                expected -> assertThat(expected.getNoticeServed()).isFalse());
-
-        // Test rent amount field
-        assertTenancyLicenceField(
-                pcsCase -> when(pcsCase.getCurrentRent()).thenReturn("120000"),
-                expected -> assertThat(expected.getRentAmount()).isEqualTo(new BigDecimal("1200.00")));
-
-        // Test rent payment frequency field
-        assertTenancyLicenceField(
-                pcsCase -> when(pcsCase.getRentFrequency()).thenReturn(RentPaymentFrequency.MONTHLY),
-                expected -> assertThat(expected.getRentPaymentFrequency()).isEqualTo(RentPaymentFrequency.MONTHLY));
-
-        // Test other rent frequency field
-        assertTenancyLicenceField(
-                pcsCase -> when(pcsCase.getOtherRentFrequency()).thenReturn("Bi-weekly"),
-                expected -> assertThat(expected.getOtherRentFrequency()).isEqualTo("Bi-weekly"));
-
-        // Test daily rent charge amount field
-        assertTenancyLicenceField(
-                pcsCase -> when(pcsCase.getDailyRentChargeAmount()).thenReturn("4000"),
-                expected -> assertThat(expected.getDailyRentChargeAmount()).isEqualTo(new BigDecimal("40.00")));
-
-        // Test total rent arrears field
-        assertTenancyLicenceField(
-                pcsCase -> when(pcsCase.getTotalRentArrears()).thenReturn("250075"),
-                expected -> assertThat(expected.getTotalRentArrears()).isEqualTo(new BigDecimal("2500.75")));
-
-        // Test third party payment sources field
-        assertTenancyLicenceField(
-                pcsCase -> when(pcsCase.getThirdPartyPaymentSources())
-                    .thenReturn(List.of(ThirdPartyPaymentSource.UNIVERSAL_CREDIT,
-                        ThirdPartyPaymentSource.HOUSING_BENEFIT)),
-                expected -> assertThat(expected.getThirdPartyPaymentSources())
-                    .containsExactly(ThirdPartyPaymentSource.UNIVERSAL_CREDIT,
-                        ThirdPartyPaymentSource.HOUSING_BENEFIT));
-
-        // Test third party payment source other field
-        assertTenancyLicenceField(
-                pcsCase -> when(pcsCase.getThirdPartyPaymentSourceOther())
-                    .thenReturn("Local Authority Support"),
-                expected -> assertThat(expected.getThirdPartyPaymentSourceOther())
-                    .isEqualTo("Local Authority Support"));
-    }
-
-    private void assertTenancyLicenceField(java.util.function.Consumer<PCSCase> setupMock,
-            java.util.function.Consumer<TenancyLicence> assertions) {
-        PCSCase pcsCase = mock(PCSCase.class);
-        setupMock.accept(pcsCase);
-        when(pcsCaseRepository.save(pcsCaseEntityCaptor.capture())).thenReturn(null);
-
-        underTest.createCase(CASE_REFERENCE, pcsCase);
-
-        TenancyLicence actual = pcsCaseEntityCaptor.getValue().getTenancyLicence();
-        assertions.accept(actual);
-
     }
 
     private AddressEntity stubAddressUKModelMapper(AddressUK addressUK) {
