@@ -23,6 +23,7 @@ public class TenancyLicenceService {
                 .rentPaymentFrequency(pcsCase.getRentFrequency())
                 .otherRentFrequency(pcsCase.getOtherRentFrequency())
                 .dailyRentChargeAmount(getDailyRentAmount(pcsCase))
+                .arrearsJudgementWanted(toBooleanOrNull(pcsCase.getArrearsJudgementWanted()))
                 .build();
     }
 

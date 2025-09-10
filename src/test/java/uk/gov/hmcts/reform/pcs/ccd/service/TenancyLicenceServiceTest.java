@@ -89,6 +89,14 @@ class TenancyLicenceServiceTest {
         assertTenancyLicenceField(
                 pcsCase -> when(pcsCase.getDailyRentChargeAmount()).thenReturn("4000"),
                 expected -> assertThat(expected.getDailyRentChargeAmount()).isEqualTo(new BigDecimal("40.00")));
+
+        // Test arrearsJudgementWanted field updates
+        assertTenancyLicenceField(
+                pcsCase -> when(pcsCase.getArrearsJudgementWanted()).thenReturn(YesOrNo.YES),
+                expected -> assertThat(expected.getArrearsJudgementWanted()).isTrue());
+        assertTenancyLicenceField(
+                pcsCase -> when(pcsCase.getArrearsJudgementWanted()).thenReturn(YesOrNo.NO),
+                expected -> assertThat(expected.getArrearsJudgementWanted()).isFalse());
     }
 
     private void assertTenancyLicenceField(java.util.function.Consumer<PCSCase> setupMock,
