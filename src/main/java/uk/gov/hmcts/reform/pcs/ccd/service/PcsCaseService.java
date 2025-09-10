@@ -36,7 +36,6 @@ import java.util.UUID;
 
 @Service
 @AllArgsConstructor
-@Slf4j
 public class PcsCaseService {
 
     private final PcsCaseRepository pcsCaseRepository;
@@ -63,7 +62,7 @@ public class PcsCaseService {
         AddressEntity addressEntity = applicantAddress != null
             ? modelMapper.map(applicantAddress, AddressEntity.class) : null;
 
-        final PcsCaseEntity pcsCaseEntity = new PcsCaseEntity();
+        PcsCaseEntity pcsCaseEntity = new PcsCaseEntity();
         pcsCaseEntity.setCaseReference(caseReference);
         pcsCaseEntity.setPropertyAddress(addressEntity);
         pcsCaseEntity.setPaymentStatus(pcsCase.getPaymentStatus());
@@ -73,6 +72,7 @@ public class PcsCaseService {
                         : null);
         pcsCaseEntity.setDefendants(mapFromDefendantDetails(pcsCase.getDefendants()));
 
+        pcsCaseEntity.setTenancyLicence(tenancyLicenceService.buildTenancyLicence(pcsCase));
         addDocumentLinks(pcsCase.getSupportingDocumentsCategoryA(),
                          DocumentCategory.CATEGORY_A, pcsCaseEntity);
 
@@ -82,41 +82,6 @@ public class PcsCaseService {
         pcsCaseEntity.setTenancyLicence(buildTenancyLicence(pcsCase));
         pcsCaseRepository.save(pcsCaseEntity);
     }
-
-    /**
-     * This is a helper method to pull documents from a  list,
-     * convert them into a Document entity, and add to the pcsCaseEntity
-     * so it may be saved into the database.
-     * @param supportingDocuments The list of documents
-     * @param category Which category the document belongs to
-     * @param pcsCaseEntity The entity to add the document to
-     */
-
-    private void addDocumentLinks(List<ListValue<DocumentLink>> supportingDocuments,
-                                  DocumentCategory category,
-                                  PcsCaseEntity pcsCaseEntity) {
-        if (supportingDocuments != null && !supportingDocuments.isEmpty()) {
-            for (ListValue<DocumentLink> documentWrapper : supportingDocuments) {
-                if (documentWrapper != null && documentWrapper.getValue() != null) {
-                    DocumentLink documentLink = documentWrapper.getValue();
-
-                    if (documentLink.getDocumentLink() != null) {
-                        Document document = documentLink.getDocumentLink();
-
-                        DocumentEntity documentEntity = new DocumentEntity();
-                        documentEntity.setFileName(document.getFilename());
-                        documentEntity.setFilePath(document.getBinaryUrl());
-                        documentEntity.setUploadedOn(LocalDate.now());
-                        documentEntity.setPcsCase(pcsCaseEntity);
-
-                        // category handling
-                        pcsCaseEntity.addDocument(documentEntity, category);
-                    }
-                }
-            }
-        }
-    }
-
 
     public PcsCaseEntity patchCase(long caseReference, PCSCase pcsCase) {
         PcsCaseEntity pcsCaseEntity = pcsCaseRepository.findByCaseReference(caseReference)
@@ -157,10 +122,34 @@ public class PcsCaseService {
 
         pcsCaseEntity.setTenancyLicence(tenancyLicenceService.buildTenancyLicence(pcsCase));
 
-
         pcsCaseRepository.save(pcsCaseEntity);
 
         return pcsCaseEntity;
+    }
+
+    private void addDocumentLinks(List<ListValue<DocumentLink>> supportingDocuments,
+                                  DocumentCategory category,
+                                  PcsCaseEntity pcsCaseEntity) {
+        if (supportingDocuments != null && !supportingDocuments.isEmpty()) {
+            for (ListValue<DocumentLink> documentWrapper : supportingDocuments) {
+                if (documentWrapper != null && documentWrapper.getValue() != null) {
+                    DocumentLink documentLink = documentWrapper.getValue();
+
+                    if (documentLink.getDocumentLink() != null) {
+                        Document document = documentLink.getDocumentLink();
+
+                        DocumentEntity documentEntity = new DocumentEntity();
+                        documentEntity.setFileName(document.getFilename());
+                        documentEntity.setFilePath(document.getBinaryUrl());
+                        documentEntity.setUploadedOn(LocalDate.now());
+                        documentEntity.setPcsCase(pcsCaseEntity);
+
+                        // category handling
+                        pcsCaseEntity.addDocument(documentEntity, category);
+                    }
+                }
+            }
+        }
     }
 
     public List<Defendant> mapFromDefendantDetails(List<ListValue<DefendantDetails>> defendants) {

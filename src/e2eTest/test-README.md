@@ -89,13 +89,17 @@ Playwright 1.30+ | TypeScript 4.9+
 | selectClaimType                 | `performAction('selectClaimType', claimType.no)`                                                                                                                                                           |
 | selectClaimantName              | `performAction('selectClaimantName', claimantName.yes)`                                                                                                                                                    |
 | selectContactPreferences        | `performAction('selectContactPreferences', {notifications: { answer: contactPreferences.yes }, correspondenceAddress: { answer: contactPreferences.yes }, phoneNumber: { answer: contactPreferences.no })` |
-| defendantDetails               | `performAction('defendantDetails', {name: defendantDetails.no, correspondenceAddress: defendantDetails.no, email: defendantDetails.no, correspondenceAddressSame: defendantDetails.no })`                   |
+| defendantDetails                | `performAction('defendantDetails', {name: defendantDetails.no, correspondenceAddress: defendantDetails.no, email: defendantDetails.no, correspondenceAddressSame: defendantDetails.no })`                  |
 | selectMediationAndSettlement    | `performAction('selectMediationAndSettlement',{attemptedMediationWithDefendantsOption: mediationAndSettlement.yes,settlementWithDefendantsOption: mediationAndSettlement.no}))`                            |
 | selectPreActionProtocol         | `performAction('selectPreActionProtocol', preActionProtocol.yes)`                                                                                                                                          |
 | selectNoticeOfYourIntention     | `performAction('selectNoticeOfYourIntention', checkingNotice.no)`                                                                                                                                          |
+| selectTenancyOrLicenceDetails   | `performAction('selectTenancyOrLicenceDetails', {tenancyOrLicenceType: tenancyLicenceDetails.assuredTenancy})`                                                                                             |
+| uploadFile                      | `performAction('uploadFile', 'SampleFile.png')`                                                                                                                                                            |
 | provideRentDetails              | `performAction('provideRentDetails', {rentFrequencyOption:'weekly', rentAmount:rentDetails.rentAmount})`                                                                                                   |
 | selectGroundsForPossession      | `performAction('selectGroundsForPossession', groundsForPossession.yes)`                                                                                                                                    |
+| selectDailyRentAmount           | `performAction('selectDailyRentAmount', { calculateRentAmount: '£114.29',unpaidRentInteractiveOption: dailyRentAmount.no,unpaidRentAmountPerDay:'20'})`                                                    |
 | reloginAndFindTheCase           | `performAction('reloginAndFindTheCase')`                                                                                                                                                                   |
+
 ### Validations
 | Validation        | Example Usage                                                                                                                        |
 |-------------------|--------------------------------------------------------------------------------------------------------------------------------------|

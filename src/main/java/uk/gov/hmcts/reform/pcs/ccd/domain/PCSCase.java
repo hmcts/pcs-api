@@ -7,6 +7,7 @@ import lombok.Data;
 import uk.gov.hmcts.ccd.sdk.External;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
+import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.FieldType;
 
 import static uk.gov.hmcts.ccd.sdk.type.FieldType.DynamicRadioList;
@@ -22,6 +23,7 @@ import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
 
 import static uk.gov.hmcts.ccd.sdk.type.FieldType.Collection;
+import java.time.LocalDate;
 import java.util.List;
 
 /**
@@ -229,7 +231,6 @@ public class PCSCase {
     )
     private LegislativeCountry legislativeCountry;
 
-
     @CCD(
         label = "Who is the claimant in this case?",
         hint = "If you’re a legal representative, you should select the type of claimant you’re representing.",
@@ -316,6 +317,32 @@ public class PCSCase {
 
     @CCD(access = {CitizenAccess.class, CaseworkerAccess.class})
     private List<ListValue<DefendantDetails>> defendants;
+
+    @CCD(
+        label = "What type of tenancy or licence is in place?",
+        access = {CaseworkerAccess.class}
+    )
+    private TenancyLicenceType typeOfTenancyLicence;
+
+    @CCD(
+        label = "Give details of the type of tenancy or licence agreement that's in place",
+        typeOverride = TextArea,
+        access = {CaseworkerAccess.class}
+    )
+    private String detailsOfOtherTypeOfTenancyLicence;
+
+    @CCD(
+        label = "What date did the tenancy or licence begin?",
+        hint = "For example, 16 4 2021",
+        access = {CaseworkerAccess.class}
+    )
+    private LocalDate tenancyLicenceDate;
+
+    @CCD(
+        label = "Add document",hint = "Upload a document to the system",
+        access = {CitizenAccess.class, CaseworkerAccess.class}
+    )
+    private List<ListValue<Document>> tenancyLicenceDocuments;
 
     @CCD(searchable = false)
     private String nextStepsMarkdown;
