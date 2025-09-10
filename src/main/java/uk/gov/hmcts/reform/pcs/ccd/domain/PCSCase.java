@@ -312,4 +312,45 @@ public class PCSCase {
     @CCD(searchable = false)
     private String nextStepsMarkdown;
 
+    // --- Rent arrears (statement upload + totals + third party payments) ---
+    @CCD(
+        label = "Add Documents",
+        hint = "Upload a document to the system",
+        typeOverride = FieldType.Collection,
+        typeParameterOverride = "Document",
+        access = {CitizenAccess.class, CaseworkerAccess.class}
+    )
+    private List<ListValue<Document>> rentStatementDocuments;
+
+    @CCD(
+        label = "Total rent arrears",
+        min = 0,
+        typeOverride = FieldType.MoneyGBP,
+        access = {CitizenAccess.class, CaseworkerAccess.class}
+    )
+    private String totalRentArrears;
+
+    @CCD(
+        label = "For the period shown on the rent statement, have any rent payments been paid by someone "
+            + "other than the defendants?",
+        hint = "This could include payments from Universal Credit, Housing Benefit or any other contributions "
+            + "made by a government agency, like the Department for Work and Pensions (DWP).",
+        access = {CitizenAccess.class, CaseworkerAccess.class}
+    )
+    private VerticalYesNo thirdPartyPayments;
+
+    @CCD(
+        label = "Where have the payments come from?",
+        typeOverride = FieldType.MultiSelectList,
+        typeParameterOverride = "ThirdPartyPaymentSource",
+        access = {CitizenAccess.class, CaseworkerAccess.class}
+    )
+    private java.util.List<ThirdPartyPaymentSource> thirdPartyPaymentSources;
+
+    @CCD(
+        label = "Payment source",
+        access = {CitizenAccess.class, CaseworkerAccess.class}
+    )
+    private String thirdPartyPaymentSourceOther;
+
 }

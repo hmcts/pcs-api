@@ -36,4 +36,10 @@ public class TenancyLicence {
 
     private List<Document> supportingDocuments;
 
+    private BigDecimal totalRentArrears;
+
+    private List<ThirdPartyPaymentSource> thirdPartyPaymentSources;
+
+    private String thirdPartyPaymentSourceOther;
+
 }
