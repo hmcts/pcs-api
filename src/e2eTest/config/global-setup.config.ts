@@ -1,5 +1,5 @@
 import { IdamUtils } from '@hmcts/playwright-common';
-import { accessTokenApiData } from '../data/api-data/accessToken.api.data';
+import { accessTokenApiData } from '@data/api-data/accessToken.api.data';
 
 async function globalSetupConfig(): Promise<void> {
   await getAccessToken();
