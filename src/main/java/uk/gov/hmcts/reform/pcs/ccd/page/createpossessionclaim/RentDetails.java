@@ -39,7 +39,13 @@ public class RentDetails implements CcdPageConfiguration {
             BigDecimal dailyAmountInPence = calculateDailyRent(rentAmountInPence, caseData.getRentFrequency());
             String dailyAmountString = String.valueOf(dailyAmountInPence);
 
+            // Set pence value for calculations/integrations
             caseData.setCalculatedDailyRentChargeAmount(dailyAmountString);
+
+            // Set formatted value for display  
+            BigDecimal dailyAmountInPounds = dailyAmountInPence.movePointLeft(2);
+            String formattedAmount = "£" + dailyAmountInPounds.toPlainString();
+            caseData.setFormattedCalculatedDailyRentChargeAmount(formattedAmount);
         } 
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
