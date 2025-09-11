@@ -35,18 +35,13 @@ class ClaimServiceTest {
             .ownerOccupierTextArea("Testing").build();
 
         ClaimEntity claim = claimService.createAndLinkClaim(caseEntity, partyEntity,
-                                                            claimName, PartyRole.CLAIMANT,
-                                                            noRentArrearsReasonForGrounds);
+                                                            claimName, PartyRole.CLAIMANT);
 
         assertThat(claim).isNotNull();
         assertThat(claim.getSummary()).isEqualTo(claimName);
         assertThat(claim.getPcsCase()).isSameAs(caseEntity);
         assertThat(caseEntity.getClaims().iterator().next()).isEqualTo(claim);
         assertThat(claim.getClaimParties().iterator().next().getParty()).isEqualTo(partyEntity);
-        assertThat(claim.getClaimGroundEntities().iterator().next().getGroundsId())
-            .isEqualTo("OWNER_OCCUPIER");
-        assertThat(claim.getClaimGroundEntities().iterator().next().getClaimsReasonText())
-            .isEqualTo(noRentArrearsReasonForGrounds.getOwnerOccupierTextArea());
     }
 
     @Test

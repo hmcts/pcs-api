@@ -20,6 +20,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PaymentStatus;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimGroundEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
@@ -45,6 +46,7 @@ import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.ResumeClaim;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.SelectClaimType;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.SelectClaimantType;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.TenancyLicenceDetails;
+import uk.gov.hmcts.reform.pcs.ccd.service.ClaimGroundService;
 import uk.gov.hmcts.reform.pcs.ccd.service.ClaimService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
@@ -74,6 +76,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
     private final SecurityContextService securityContextService;
     private final PartyService partyService;
     private final ClaimService claimService;
+    private final ClaimGroundService claimGroundService;
     private final SavingPageBuilderFactory savingPageBuilderFactory;
     private final ResumeClaim resumeClaim;
     private final UnsubmittedCaseDataService unsubmittedCaseDataService;
@@ -133,7 +136,8 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
 
         List<DynamicStringListElement> listItems = Arrays.stream(ClaimantType.values())
             .filter(value -> value.isApplicableFor(legislativeCountry))
-            .map(value -> DynamicStringListElement.builder().code(value.name()).label(value.getLabel()).build())
+            .map(value -> DynamicStringListElement.builder().code(value.name()).label(value.getLabel())
+                .build())
             .toList();
 
         DynamicStringList claimantTypeList = DynamicStringList.builder()
@@ -194,9 +198,15 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             pcsCaseEntity,
             party,
             "Main Claim",
-            PartyRole.CLAIMANT,
-            pcsCase.getNoRentArrearsReasonForGrounds());
+            PartyRole.CLAIMANT);
 
+        List<ClaimGroundEntity> claimGroundEntities = claimGroundService
+            .getGroundsWithReason(pcsCase.getNoRentArrearsMandatoryGroundsOptions(),
+                                  pcsCase.getNoRentArrearsDiscretionaryGroundsOptions(),
+                                  pcsCase.getNoRentArrearsReasonForGrounds(),
+                                  claimEntity);
+
+        claimEntity.getClaimGroundEntities().addAll(claimGroundEntities);
         claimService.saveClaim(claimEntity);
 
         unsubmittedCaseDataService.deleteUnsubmittedCaseData(caseReference);
