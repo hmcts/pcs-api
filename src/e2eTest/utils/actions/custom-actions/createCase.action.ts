@@ -231,9 +231,11 @@ export class CreateCaseAction implements IAction {
       await performAction('inputText', 'Give details of the type of tenancy or licence agreement that\'s in place', tenancyLicenceDetails.detailsOfLicence);
     }
     if (tenancyLicenceData.day && tenancyLicenceData.month && tenancyLicenceData.year) {
-      await performAction('inputText', 'Day', tenancyLicenceData.day);
-      await performAction('inputText', 'Month', tenancyLicenceData.month);
-      await performAction('inputText', 'Year', tenancyLicenceData.year);
+      await performActions(
+        'Enter Date',
+        ['inputText', 'Day', tenancyLicenceData.day],
+        ['inputText', 'Month', tenancyLicenceData.month],
+        ['inputText', 'Year', tenancyLicenceData.year]);
     }
     if (tenancyLicenceData.files) {
       for (const file of tenancyLicenceData.files) {
@@ -271,7 +273,7 @@ export class CreateCaseAction implements IAction {
   private async enterReasonForPossession(caseData: actionData) {
     if (Array.isArray(caseData)) {
       for (let n = 0; n < caseData.length; n++) {
-        await performAction('inputText',  {text:caseData[n],index: n}, reasonsForPossession.detailsABoutYourReason);
+        await performAction('inputText',  {text:caseData[n],index: n}, reasonsForPossession.detailsAboutYourReason);
       }
     }
     await performAction('clickButton', 'Continue');
