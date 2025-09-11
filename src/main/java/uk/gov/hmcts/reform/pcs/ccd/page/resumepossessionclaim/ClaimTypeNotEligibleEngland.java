@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim;
+package uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim;
 
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
@@ -11,23 +11,23 @@ import java.util.List;
 
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 
-public class ClaimTypeNotEligibleWales implements CcdPageConfiguration {
+public class ClaimTypeNotEligibleEngland implements CcdPageConfiguration {
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
-            .page("claimTypeNotEligibleWales", this::midEvent)
+            .page("claimTypeNotEligibleEngland", this::midEvent)
             .pageLabel("You're not eligible for this online service")
-            .showCondition("showClaimTypeNotEligibleWales=\"Yes\"")
-            .readonly(PCSCase::getShowClaimTypeNotEligibleWales, NEVER_SHOW)
-            .label("claimTypeNotEligibleWales-info", """
+            .showCondition("showClaimTypeNotEligibleEngland=\"Yes\"")
+            .readonly(PCSCase::getShowClaimTypeNotEligibleEngland, NEVER_SHOW)
+            .label("claimTypeNotEligibleEngland-info", """
                 ---
                 <p class="govuk-body">
                 You cannot make a trespass claim using this service.
 
                 <h3 class="govuk-heading-s govuk-!-font-size-19">What to do next</h3>
 
-                Use form N5 Wales and the correct particulars of claim form.
+                Use form N5 and the correct particulars of claim form.
 
                 <a href="https://www.gov.uk/government/collections/property-possession-forms" rel="noreferrer noopener"
                     target="_blank"

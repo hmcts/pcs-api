@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim;
+package uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim;
 
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
@@ -19,8 +19,8 @@ public class DailyRentAmount implements CcdPageConfiguration {
                                 ---
                                 <section tabindex="0">
                                     <p class="govuk-body">
-                                        Based on your previous answers, the amount per day that unpaid 
-                                        rent should be charged at is: 
+                                        Based on your previous answers, the amount per day that unpaid
+                                        rent should be charged at is:
                                         <span class="govuk-body govuk-!-font-weight-bold">
                                             ${calculatedDailyRentChargeAmount}
                                         </span>
