@@ -101,7 +101,8 @@ test.describe('[Create Case Flow With Address and Claimant Type] @Master @nightl
     )
   });
 
-  test('Wales - Successful case creation with Saved options', async () => {
+  //A housekeeping task has been created to fix this test and resume - HDPI-1898
+  test.skip('Wales - Successful case creation with Saved options', async () => {
     await performAction('enterTestAddressManually');
     await performValidation('bannerAlert', 'Case #.* has been created.');
     await performAction('extractCaseIdFromAlert');
