@@ -269,12 +269,11 @@ export class CreateCaseAction implements IAction {
       unpaidRentAmountPerDay?: string,
       inputFrequency?: string
     };
+    await performAction('inputText', rentDetails.HowMuchRentLabel, rentData.rentAmount);
     await performAction('clickRadioButton', rentData.rentFrequencyOption);
     if(rentData.rentFrequencyOption == 'Other'){
       await performAction('inputText', rentDetails.rentFrequencyLabel, rentData.inputFrequency);
       await performAction('inputText', rentDetails.amountPerDayInputLabel, rentData.unpaidRentAmountPerDay);
-    } else {
-      await performAction('inputText', rentDetails.HowMuchRentLabel, rentData.rentAmount);
     }
     await performAction('clickButton', 'Continue');
   }
