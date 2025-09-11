@@ -155,6 +155,12 @@ public class PCSCase {
     private YesOrNo groundsForPossession;
 
     @CCD(
+            label = "Do you have grounds for possession?",
+            access = {CitizenAccess.class, CaseworkerAccess.class}
+    )
+    private VerticalYesNo introductoryDemotedOtherGroundsForPossession;
+
+    @CCD(
         label = "Have you attempted mediation with the defendants?",
         access = {CitizenAccess.class, CaseworkerAccess.class}
     )

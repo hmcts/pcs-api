@@ -13,10 +13,15 @@ public class GroundsForPossession implements CcdPageConfiguration {
     @Override
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
-                .page("groundsForPossession")
-                .pageLabel("Grounds for possession (placeholder)")
-                .label("groundsForPossession-lineSeparator", "---")
-                .mandatory(PCSCase::getGroundsForPossession);
+            .page("groundsForPossession")
+            .pageLabel("Grounds for possession (placeholder)")
+            .label("groundsForPossession-lineSeparator", "---")
+            .showCondition("typeOfTenancyLicence!=\"SECURE_TENANCY\" "
+                    + "AND typeOfTenancyLicence!=\"FLEXIBLE_TENANCY\" "
+                    + "AND typeOfTenancyLicence!=\"INTRODUCTORY_TENANCY\" "
+                    + "AND typeOfTenancyLicence!=\"DEMOTED_TENANCY\" "
+                    + "AND typeOfTenancyLicence!=\"OTHER\"")
+            .mandatory(PCSCase::getGroundsForPossession);
 
     }
 }

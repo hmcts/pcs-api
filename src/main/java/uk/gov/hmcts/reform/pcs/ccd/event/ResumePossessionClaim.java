@@ -34,6 +34,7 @@ import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.ContactPreferences
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.DailyRentAmount;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.DefendantsDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.GroundsForPossession;
+import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.IntroductoryDemotedOrOtherGroundsForPossession;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.MediationAndSettlement;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.NoticeDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.PreActionProtocol;
@@ -100,6 +101,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             .add(new ContactPreferences())
             .add(new DefendantsDetails())
             .add(tenancyLicenceDetails)
+            .add(new IntroductoryDemotedOrOtherGroundsForPossession())
             .add(new GroundsForPossession())
             .add(new PreActionProtocol())
             .add(new MediationAndSettlement())
