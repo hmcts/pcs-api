@@ -1,27 +1,26 @@
-import { test } from '@playwright/test';
-import { parentSuite } from 'allure-js-commons';
-import { initializeExecutor, performAction, performValidation, performValidations } from '@utils/controller';
+import {test} from '@playwright/test';
+import {parentSuite} from 'allure-js-commons';
+import {initializeExecutor, performAction, performValidation, performValidations} from '@utils/controller';
 import configData from '@config/test.config';
-import { addressDetails } from '@data/page-data/addressDetails.page.data';
-import { claimantType } from '@data/page-data/claimantType.page.data';
-import { claimType } from '@data/page-data/claimType.page.data';
-import { claimantName } from '@data/page-data/claimantName.page.data';
-import { contactPreferences } from '@data/page-data/contactPreferences.page.data';
-import { groundsForPossession } from '@data/page-data/groundsForPossession.page.data';
-import { whatAreYourGrounds } from "@data/page-data/mandatoryAndDiscretionaryGrounds.page.data";
-import { reasonsForPossession } from "@data/page-data/reasonForPossession.page.data";
-import { preActionProtocol } from '@data/page-data/preActionProtocol.page.data';
-import { mediationAndSettlement } from '@data/page-data/mediationAndSettlement.page.data';
-import { checkingNotice } from '@data/page-data/checkingNotice.page.data';
-import { noticeDetails } from '@data/page-data/noticeDetails.page.data';
-import { rentDetails } from '@data/page-data/rentDetails.page.data';
-import { userIneligible } from '@data/page-data/userIneligible.page.data';
-import { defendantDetails } from '@data/page-data/defendantDetails.page.data';
-import { dailyRentAmount } from '@data/page-data/dailyRentAmount.page.data';
-import { provideMoreDetailsOfClaim } from '@data/page-data/provideMoreDetailsOfClaim.page.data';
-import { resumeClaim } from '@data/page-data/resumeClaim.page.data';
-import { resumeClaimOptions } from '@data/page-data/resumeClaimOptions.page.data';
-import { detailsOfRentArrears } from '@data/page-data/detailsOfRentArrears.page.data';
+import {addressDetails} from '@data/page-data/addressDetails.page.data';
+import {claimantType} from '@data/page-data/claimantType.page.data';
+import {claimType} from '@data/page-data/claimType.page.data';
+import {claimantName} from '@data/page-data/claimantName.page.data';
+import {contactPreferences} from '@data/page-data/contactPreferences.page.data';
+import {defendantDetails} from '@data/page-data/defendantDetails.page.data';
+import {tenancyLicenceDetails} from '@data/page-data/tenancyLicenceDetails.page.data';
+import {groundsForPossession} from '@data/page-data/groundsForPossession.page.data';
+import {preActionProtocol} from '@data/page-data/preActionProtocol.page.data';
+import {mediationAndSettlement} from '@data/page-data/mediationAndSettlement.page.data';
+import {checkingNotice} from '@data/page-data/checkingNotice.page.data';
+import {noticeDetails} from '@data/page-data/noticeDetails.page.data';
+import {rentDetails} from '@data/page-data/rentDetails.page.data';
+import {userIneligible} from '@data/page-data/userIneligible.page.data';
+import {dailyRentAmount} from '@data/page-data/dailyRentAmount.page.data';
+import {provideMoreDetailsOfClaim} from '@data/page-data/provideMoreDetailsOfClaim.page.data';
+import {resumeClaim} from '@data/page-data/resumeClaim.page.data';
+import {resumeClaimOptions} from '@data/page-data/resumeClaimOptions.page.data';
+import {detailsOfRentArrears} from '@data/page-data/detailsOfRentArrears.page.data';
 
 test.beforeEach(async ({page}, testInfo) => {
   initializeExecutor(page);
@@ -53,16 +52,20 @@ test.describe('[Create Case Flow With Address and Claimant Type]  @Master @night
       correspondenceAddress: contactPreferences.yes,
       phoneNumber: contactPreferences.no
     });
-     await performAction('defendantDetails', {
+       await performAction('defendantDetails', {
       name: defendantDetails.yes,
       correspondenceAddress: defendantDetails.yes,
       email: defendantDetails.yes,
       correspondenceAddressSame: defendantDetails.no
     });
-    //This page should not come, its part of HDPI-1470
-    await performAction('clickRadioButton','Assured tenancy')
-    await performAction('clickButton', 'Continue');
-    //
+    await performValidation('mainHeader', tenancyLicenceDetails.mainHeader);
+    await performAction('selectTenancyOrLicenceDetails', {
+      tenancyOrLicenceType: tenancyLicenceDetails.other,
+      day: tenancyLicenceDetails.day,
+      month: tenancyLicenceDetails.month,
+      year: tenancyLicenceDetails.year,
+      files: ['tenancyLicence.docx', 'tenancyLicence.png']
+    });
     await performValidation('mainHeader', groundsForPossession.mainHeader);
     await performAction('selectGroundsForPossession', groundsForPossession.yes);
     await performValidation('mainHeader', preActionProtocol.mainHeader);
@@ -128,10 +131,8 @@ test.describe('[Create Case Flow With Address and Claimant Type]  @Master @night
       email: defendantDetails.yes,
       correspondenceAddressSame: defendantDetails.yes
     });
-    //This page should not come, its part of HDPI-1470
-    await performAction('clickRadioButton','Assured tenancy')
-    await performAction('clickButton', 'Continue');
-    //
+    await performAction('selectTenancyOrLicenceDetails', {
+      tenancyOrLicenceType: tenancyLicenceDetails.assuredTenancy});
     await performValidation('mainHeader', groundsForPossession.mainHeader);
     await performAction('selectGroundsForPossession', groundsForPossession.yes);
     await performAction('selectPreActionProtocol', preActionProtocol.yes);
@@ -239,10 +240,8 @@ test.describe('[Create Case Flow With Address and Claimant Type]  @Master @night
       correspondenceAddress: defendantDetails.no,
       email: defendantDetails.no,
     });
-    //This page should not come, its part of HDPI-1470
-    await performAction('clickRadioButton','Assured tenancy')
-    await performAction('clickButton', 'Continue');
-    //
+    await performAction('selectTenancyOrLicenceDetails', {
+      tenancyOrLicenceType: tenancyLicenceDetails.assuredTenancy});
     await performValidation('mainHeader', groundsForPossession.mainHeader);
     //HDPI-1543-Test-Automation-Possession-Grounds-No-Rent-Arrears-screens
     await performAction('selectGroundsForPossession', groundsForPossession.no);

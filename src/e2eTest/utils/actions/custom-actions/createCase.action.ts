@@ -1,19 +1,24 @@
-import Axios, { AxiosInstance, AxiosResponse } from 'axios';
-import { TestConfig } from 'config/test.config';
-import { getIdamAuthToken, getServiceAuthToken } from '../../helpers/idam-helpers/idam.helper';
-import { actionData, IAction } from '../../interfaces/action.interface';
-import { Page } from '@playwright/test';
-import { getUser, initIdamAuthToken, initServiceAuthToken } from 'utils/helpers/idam-helpers/idam.helper';
-import { performAction, performActions, performValidation } from '@utils/controller';
-import { createCase } from '@data/page-data/createCase.page.data';
-import { addressDetails } from '@data/page-data/addressDetails.page.data';
-import { housingPossessionClaim } from '@data/page-data/housingPossessionClaim.page.data';
-import { defendantDetails } from "@data/page-data/defendantDetails.page.data";
-import { claimantName } from '@data/page-data/claimantName.page.data';
-import { contactPreferences } from '@data/page-data/contactPreferences.page.data';
-import { mediationAndSettlement } from '@data/page-data/mediationAndSettlement.page.data';
+
+import Axios, {AxiosInstance, AxiosResponse} from 'axios';
+import {TestConfig} from 'config/test.config';
+import {getIdamAuthToken, getServiceAuthToken} from '../../helpers/idam-helpers/idam.helper';
+import {actionData, IAction} from '../../interfaces/action.interface';
+import {Page} from '@playwright/test';
+import {getUser, initIdamAuthToken, initServiceAuthToken} from 'utils/helpers/idam-helpers/idam.helper';
+import {performAction, performActions, performValidation} from '@utils/controller';
+import {createCase} from '@data/page-data/createCase.page.data';
+import {addressDetails} from '@data/page-data/addressDetails.page.data';
+import {housingPossessionClaim} from '@data/page-data/housingPossessionClaim.page.data';
+import {defendantDetails} from '@data/page-data/defendantDetails.page.data';
+import {claimantName} from '@data/page-data/claimantName.page.data';
+import {contactPreferences} from '@data/page-data/contactPreferences.page.data';
+import {mediationAndSettlement} from '@data/page-data/mediationAndSettlement.page.data';
+import {tenancyLicenceDetails} from '@data/page-data/tenancyLicenceDetails.page.data';
+import {resumeClaimOptions} from "@data/page-data/resumeClaimOptions.page.data";
+import {rentDetails} from '@data/page-data/rentDetails.page.data';
+import {dailyRentAmount} from '@data/page-data/dailyRentAmount.page.data';
+import configData from '@config/test.config';
 import { reasonsForPossession } from "@data/page-data/reasonForPossession.page.data";
-import { rentDetails } from '@data/page-data/rentDetails.page.data';
 
 let caseInfo: { id: string; fid: string; state: string };
 const testConfig = TestConfig.ccdCase;
@@ -44,7 +49,9 @@ export class CreateCaseAction implements IAction {
       ['selectMediationAndSettlement', () => this.selectMediationAndSettlement(fieldName)],
       ['selectNoticeOfYourIntention', () => this.selectNoticeOfYourIntention(fieldName)],
       ['selectCountryRadioButton', () => this.selectCountryRadioButton(fieldName)],
-      ['provideRentDetails', () => this.provideRentDetails(fieldName)]
+      ['selectTenancyOrLicenceDetails', () => this.selectTenancyOrLicenceDetails(fieldName)],
+      ['provideRentDetails', () => this.provideRentDetails(fieldName)],
+      ['selectDailyRentAmount', () => this.selectDailyRentAmount(fieldName)]
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) throw new Error(`No action found for '${action}'`);
@@ -186,7 +193,7 @@ export class CreateCaseAction implements IAction {
     await performAction('clickButton', 'Continue');
   }
 
-private async defendantDetails(defendantVal: actionData) {
+  private async defendantDetails(defendantVal: actionData) {
     const defendantData = defendantVal as {
       name: string;
       correspondenceAddress: string;
@@ -223,6 +230,32 @@ private async defendantDetails(defendantVal: actionData) {
     });
     if (defendantData.email === 'Yes') {
       await performAction('inputText', defendantDetails.enterEmailAddress, defendantDetails.emailIdInput);
+    }
+    await performAction('clickButton', 'Continue');
+  }
+
+  private async selectTenancyOrLicenceDetails(tenancyData: actionData) {
+    const tenancyLicenceData = tenancyData as {
+      tenancyOrLicenceType: string;
+      day?: string;
+      month?: string;
+      year?: string;
+      files?: string[];
+    };
+    await performAction('clickRadioButton', tenancyLicenceData.tenancyOrLicenceType);
+    if (tenancyLicenceData.tenancyOrLicenceType === 'Other') {
+      await performAction('inputText', 'Give details of the type of tenancy or licence agreement that\'s in place', tenancyLicenceDetails.detailsOfLicence);
+    }
+    if(tenancyLicenceData.day && tenancyLicenceData.month &&  tenancyLicenceData.year) {
+      await performAction('inputText', 'Day', tenancyLicenceData.day);
+      await performAction('inputText', 'Month', tenancyLicenceData.month);
+      await performAction('inputText', 'Year', tenancyLicenceData.year);
+    }
+    if (tenancyLicenceData.files) {
+      for (const file of tenancyLicenceData.files) {
+        await performAction('clickButton', 'Add new');
+        await performAction('uploadFile', file);
+      }
     }
     await performAction('clickButton', 'Continue');
   }
