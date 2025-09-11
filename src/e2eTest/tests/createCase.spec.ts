@@ -307,8 +307,8 @@ test.describe('[Create Case Flow With Address and Claimant Type]  @Master @night
     await performAction('selectSecureFlexiblePossessionGround', {
       discretionary: [secureOrFlexibleGrounds.discretionary.rentArrearsOrBreachOfTenancy, secureOrFlexibleGrounds.discretionary.deteriorationOfFurniture],
       mandatory: [secureOrFlexibleGrounds.mandatory.antiSocialBehaviour],
-      mandatoryAccommodation: [secureOrFlexibleGrounds.mandatoryWithAccommodation.charitableLandlords,secureOrFlexibleGrounds.mandatoryWithAccommodation.landlordsWorks],
-      discretionaryAccommodation: [secureOrFlexibleGrounds.discretionaryWithAccommodation.adapted,secureOrFlexibleGrounds.discretionaryWithAccommodation.tied],
+      mandatoryAccommodation: [secureOrFlexibleGrounds.mandatoryWithAccommodation.charitableLandlords, secureOrFlexibleGrounds.mandatoryWithAccommodation.landlordsWorks],
+      discretionaryAccommodation: [secureOrFlexibleGrounds.discretionaryWithAccommodation.adapted, secureOrFlexibleGrounds.discretionaryWithAccommodation.tied],
     });
     await performValidation('mainHeader', rentArrearsOrBreachOfTenancy.mainHeader);
     await performAction('selectRentArrearsOrBreachOfTenancy', {
@@ -316,9 +316,9 @@ test.describe('[Create Case Flow With Address and Claimant Type]  @Master @night
     });
     await performValidation('mainHeader', reasonsForPossession.mainHeader);
     await performAction('enterReasonForPossession'
-      , [secureOrFlexibleGrounds.discretionary.deteriorationOfFurniture,secureOrFlexibleGrounds.mandatory.antiSocialBehaviour,
-        secureOrFlexibleGrounds.mandatoryWithAccommodation.charitableLandlords,secureOrFlexibleGrounds.mandatoryWithAccommodation.landlordsWorks,
-        secureOrFlexibleGrounds.discretionaryWithAccommodation.adapted,secureOrFlexibleGrounds.discretionaryWithAccommodation.tied,
+      , [secureOrFlexibleGrounds.discretionary.deteriorationOfFurniture, secureOrFlexibleGrounds.mandatory.antiSocialBehaviour,
+        secureOrFlexibleGrounds.mandatoryWithAccommodation.charitableLandlords, secureOrFlexibleGrounds.mandatoryWithAccommodation.landlordsWorks,
+        secureOrFlexibleGrounds.discretionaryWithAccommodation.adapted, secureOrFlexibleGrounds.discretionaryWithAccommodation.tied,
         reasonsForPossession.breachOfTenancy
       ]);
     await performAction('selectPreActionProtocol', preActionProtocol.yes);
