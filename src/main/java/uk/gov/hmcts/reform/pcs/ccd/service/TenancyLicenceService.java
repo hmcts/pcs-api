@@ -18,6 +18,7 @@ public class TenancyLicenceService {
                 .tenancyLicenceDate(pcsCase.getTenancyLicenceDate())
                 .detailsOfOtherTypeOfTenancyLicence(pcsCase.getDetailsOfOtherTypeOfTenancyLicence())
                 .supportingDocuments(ListValueUtils.unwrapListItems(pcsCase.getTenancyLicenceDocuments()))
+                .rentStatementDocuments(ListValueUtils.unwrapListItems(pcsCase.getRentStatementDocuments()))
                 .noticeServed(toBooleanOrNull(pcsCase.getNoticeServed()))
                 .rentAmount(penceToPounds(pcsCase.getCurrentRent()))
                 .rentPaymentFrequency(pcsCase.getRentFrequency())

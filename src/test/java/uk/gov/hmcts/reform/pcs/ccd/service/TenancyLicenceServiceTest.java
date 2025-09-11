@@ -61,6 +61,23 @@ class TenancyLicenceServiceTest {
             }
         );
 
+        // Test rent statement documents field
+        List<ListValue<Document>> rentStatementDocs = Arrays.asList(
+            ListValue.<Document>builder().id("10")
+                .value(Document.builder().filename("rent_statement_jan.pdf").build()).build(),
+            ListValue.<Document>builder().id("11")
+                .value(Document.builder().filename("rent_statement_feb.pdf").build()).build()
+        );
+        assertTenancyLicenceField(
+            pcsCase -> when(pcsCase.getRentStatementDocuments()).thenReturn(rentStatementDocs),
+            expected -> {
+                assertThat(expected.getRentStatementDocuments()).hasSize(2);
+                assertThat(expected.getRentStatementDocuments())
+                    .extracting(d -> d.getFilename())
+                    .containsExactlyInAnyOrder("rent_statement_jan.pdf", "rent_statement_feb.pdf");
+            }
+        );
+
         // Test notice_served field updates
         assertTenancyLicenceField(
                 pcsCase -> when(pcsCase.getNoticeServed()).thenReturn(YesOrNo.YES),
