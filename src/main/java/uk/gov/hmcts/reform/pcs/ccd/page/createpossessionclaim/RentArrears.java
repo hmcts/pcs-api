@@ -54,12 +54,6 @@ public class RentArrears implements CcdPageConfiguration {
                 .label("rentArrears-thirdPartyPayments-separator", "---")
                 .mandatory(PCSCase::getThirdPartyPayments)
 
-                // Sources (select all that apply) + hint
-                .label("rentArrears-thirdPartyPayments-sources",
-                        """
-                        <div class="govuk-hint govuk-!-margin-bottom-2">Select all that apply</div>
-                        """,
-                        "thirdPartyPayments=\"YES\"")
                 .mandatory(PCSCase::getThirdPartyPaymentSources, "thirdPartyPayments=\"YES\"")
 
                 // "Other" free text is mandatory when OTHER is selected
