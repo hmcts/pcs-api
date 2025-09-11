@@ -154,7 +154,7 @@ test.describe('[Create Case Flow With Address and Claimant Type]  @Master @night
       paymentOptions: [detailsOfRentArrears.universalCreditOption, detailsOfRentArrears.paymentOtherOption]
     });
     await performValidation('mainHeader', moneyJudgement.mainHeader);
-    await performAction('clickButton',moneyJudgement.continue);
+    await performAction('clickButton', moneyJudgement.continue);
     await performAction('clickButton', 'Save and continue');
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
     await performAction('clickTab', 'Property Details');
