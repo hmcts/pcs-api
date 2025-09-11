@@ -18,18 +18,18 @@ import uk.gov.hmcts.reform.ccd.client.model.CaseResource;
 import uk.gov.hmcts.reform.ccd.client.model.Event;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
-import uk.gov.hmcts.reform.pcs.ccd.CaseType;
-import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.domain.PaymentStatus;
-import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
-import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
+import uk.gov.hmcts.reform.pcs.ccd3.CaseType;
+import uk.gov.hmcts.reform.pcs.ccd3.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd3.domain.PaymentStatus;
+import uk.gov.hmcts.reform.pcs.ccd3.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd3.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd3.event.EventId;
 import uk.gov.hmcts.rse.ccd.lib.test.CftlibTest;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.citizenCreateApplication;
-import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.citizenSubmitApplication;
-import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.citizenUpdateApplication;
+import static uk.gov.hmcts.reform.pcs.ccd3.event.EventId.citizenCreateApplication;
+import static uk.gov.hmcts.reform.pcs.ccd3.event.EventId.citizenSubmitApplication;
+import static uk.gov.hmcts.reform.pcs.ccd3.event.EventId.citizenUpdateApplication;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)

@@ -256,12 +256,11 @@ sonarqube {
       "**/*Constants.java," +
       "**/model/*.java," +
       "**/uk/gov/hmcts/reform/pcs/Application.java," +
-      "**/uk/gov/hmcts/reform/pcs/ccd/**/*.java," +
       "**/uk/gov/hmcts/reform/pcs/config/*.java," +
-      "**/uk/gov/hmcts/reform/pcs/ccd/accesscontrol/**/*.java," +
-      "**/uk/gov/hmcts/reform/pcs/ccd/config/HighLevelDataSetupApp.java," +
-      "**/uk/gov/hmcts/reform/pcs/ccd/domain/**/*.java," +
-      "**/uk/gov/hmcts/reform/pcs/ccd/entity/**/*.java" +
+      "**/uk/gov/hmcts/reform/pcs/ccd3/accesscontrol/**/*.java," +
+      "**/uk/gov/hmcts/reform/pcs/ccd3/config/HighLevelDataSetupApp.java," +
+      "**/uk/gov/hmcts/reform/pcs/ccd3/domain/**/*.java," +
+      "**/uk/gov/hmcts/reform/pcs/ccd3/entity/**/*.java" +
       "**/entities/**," + "**/model/**"
   }
 }
