@@ -34,7 +34,7 @@ public class RentArrears implements CcdPageConfiguration {
                         <p class="govuk-body">It must cover the time period of either:</p>
                         <ul class="govuk-list govuk-list--bullet">
                           <li>from the first date the defendants missed a payment, or</li>
-                          <li>the last two years of payments, if the first date of their missed payment was more 
+                          <li>the last two years of payments, if the first date of their missed payment was more
                           than two years ago</li>
                         </ul>
                         """)
@@ -57,11 +57,10 @@ public class RentArrears implements CcdPageConfiguration {
                 // Sources (select all that apply) + hint
                 .label("rentArrears-thirdPartyPayments-sources",
                         """
-                        <h3 class="govuk-heading-s govuk-!-margin-bottom-1">Where have the payments come from?</h3>
                         <div class="govuk-hint govuk-!-margin-bottom-2">Select all that apply</div>
                         """,
                         "thirdPartyPayments=\"YES\"")
-                .optional(PCSCase::getThirdPartyPaymentSources, "thirdPartyPayments=\"YES\"")
+                .mandatory(PCSCase::getThirdPartyPaymentSources, "thirdPartyPayments=\"YES\"")
 
                 // "Other" free text is mandatory when OTHER is selected
                 .mandatory(PCSCase::getThirdPartyPaymentSourceOther,

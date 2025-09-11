@@ -314,7 +314,7 @@ public class PCSCase {
 
     // --- Rent arrears (statement upload + totals + third party payments) ---
     @CCD(
-        label = "Add Documents",
+        label = "Add Document",
         hint = "Upload a document to the system",
         typeOverride = FieldType.Collection,
         typeParameterOverride = "Document",
@@ -334,7 +334,7 @@ public class PCSCase {
         label = "For the period shown on the rent statement, have any rent payments been paid by someone "
             + "other than the defendants?",
         hint = "This could include payments from Universal Credit, Housing Benefit or any other contributions "
-            + "made by a government agency, like the Department for Work and Pensions (DWP).",
+            + "made by a government department, like the Department for Work and Pensions (DWP).",
         access = {CitizenAccess.class, CaseworkerAccess.class}
     )
     private VerticalYesNo thirdPartyPayments;
