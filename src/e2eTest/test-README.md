@@ -99,9 +99,9 @@ Playwright 1.30+ | TypeScript 4.9+
 | selectGroundsForPossession           | `performAction('selectGroundsForPossession', groundsForPossession.yes)`                                                                                                                                    |
 | selectDailyRentAmount                | `performAction('selectDailyRentAmount', { calculateRentAmount: '£114.29',unpaidRentInteractiveOption: dailyRentAmount.no,unpaidRentAmountPerDay:'20'})`                                                    |
 | reloginAndFindTheCase                | `performAction('reloginAndFindTheCase')`                                                                                                                                                                   |
-| selectSecureFlexiblePossessionGround | `performAction('selectSecureFlexiblePossessionGround', ...)` |
-| enterReasonsForPossession            | `performAction('enterReasonsForPossession', ...)` |
-| selectRentArrearsOrBreachOfTenancy   | `performAction('selectRentArrearsOrBreachOfTenancy', ...)` |
+| selectSecureFlexiblePossessionGround | `performAction('selectSecureFlexiblePossessionGround', discretionary: [secureOrFlexibleGrounds.discretionary.rentArrearsOrBreachOfTenancy])`                                                               |
+| enterReasonsForPossession            | `performAction('enterReasonsForPossession', [secureOrFlexibleGrounds.discretionary.deteriorationOfFurniture])`                                                                                             |
+| selectRentArrearsOrBreachOfTenancy   | `performAction('selectRentArrearsOrBreachOfTenancy', { rentArrearsOrBreach: [rentArrearsOrBreachOfTenancy.rentArrears]})`                                                                                  |
 ### Validations
 | Validation          | Example Usage                                                                                                                         |
 |---------------------|---------------------------------------------------------------------------------------------------------------------------------------|
