@@ -6,7 +6,7 @@ public enum ThirdPartyPaymentSource implements HasLabel {
     UNIVERSAL_CREDIT("Universal Credit"),
     HOUSING_BENEFIT("Housing Benefit"),
     DISCRETIONARY_HOUSING_PAYMENT("Discretionary Housing Payment"),
-    HOMELESSNESS_PREVENTION_FUND("Homelessness Prevention Fund"),
+    HOMELESS_PREVENTION_FUND("Homeless Prevention Fund"),
     OTHER("Other");
 
     private final String label;
