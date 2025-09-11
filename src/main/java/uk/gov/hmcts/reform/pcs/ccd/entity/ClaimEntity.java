@@ -15,13 +15,17 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import uk.gov.hmcts.reform.pcs.ccd.domain.NoRentArrearsDiscretionaryGrounds;
+import uk.gov.hmcts.reform.pcs.ccd.domain.NoRentArrearsMandatoryGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.model.NoRentArrearsReasonForGrounds;
 
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.function.Function;
 
 import static jakarta.persistence.CascadeType.ALL;
 import static jakarta.persistence.FetchType.LAZY;
@@ -57,6 +61,58 @@ public class ClaimEntity {
     @JsonManagedReference
     private Set<ClaimGroundEntity> claimGroundEntities = new HashSet<>();
 
+    private final Map<NoRentArrearsMandatoryGrounds,
+        Function<NoRentArrearsReasonForGrounds, String>> NO_RENT_ARREARS_MANDATORY_ACCESSORS =
+        Map.ofEntries(
+            Map.entry(NoRentArrearsMandatoryGrounds.OWNER_OCCUPIER,
+                      NoRentArrearsReasonForGrounds::getOwnerOccupierTextArea),
+            Map.entry(NoRentArrearsMandatoryGrounds.REPOSSESSION_BY_LENDER,
+                      NoRentArrearsReasonForGrounds::getRepossessionByLenderTextArea),
+            Map.entry(NoRentArrearsMandatoryGrounds.HOLIDAY_LET,
+                      NoRentArrearsReasonForGrounds::getHolidayLetTextArea),
+            Map.entry(NoRentArrearsMandatoryGrounds.STUDENT_LET,
+                      NoRentArrearsReasonForGrounds::getStudentLetTextArea),
+            Map.entry(NoRentArrearsMandatoryGrounds.MINISTER_OF_RELIGION,
+                      NoRentArrearsReasonForGrounds::getMinisterOfReligionTextArea),
+            Map.entry(NoRentArrearsMandatoryGrounds.REDEVELOPMENT,
+                      NoRentArrearsReasonForGrounds::getRedevelopmentTextArea),
+            Map.entry(NoRentArrearsMandatoryGrounds.DEATH_OF_TENANT,
+                      NoRentArrearsReasonForGrounds::getDeathOfTenantTextArea),
+            Map.entry(NoRentArrearsMandatoryGrounds.ANTISOCIAL_BEHAVIOUR,
+                      NoRentArrearsReasonForGrounds::getAntisocialBehaviourTextArea),
+            Map.entry(NoRentArrearsMandatoryGrounds.NO_RIGHT_TO_RENT,
+                      NoRentArrearsReasonForGrounds::getNoRightToRentTextArea),
+            Map.entry(NoRentArrearsMandatoryGrounds.SERIOUS_RENT_ARREARS,
+                      NoRentArrearsReasonForGrounds::getSeriousRentArrearsTextArea)
+        );
+
+    private final Map<NoRentArrearsDiscretionaryGrounds,
+        Function<NoRentArrearsReasonForGrounds, String>> NO_RENT_ARREARS_DISCRETIONARY_ACCESSORS =
+        Map.ofEntries(
+            Map.entry(NoRentArrearsDiscretionaryGrounds.SUITABLE_ALTERNATIVE_ACCOMMODATION,
+                      NoRentArrearsReasonForGrounds::getSuitableAlternativeAccommodationTextArea),
+            Map.entry(NoRentArrearsDiscretionaryGrounds.RENT_ARREARS,
+                      NoRentArrearsReasonForGrounds::getRentArrearsTextArea),
+            Map.entry(NoRentArrearsDiscretionaryGrounds.PERSISTENT_DELAY_IN_PAYING_RENT,
+                      NoRentArrearsReasonForGrounds::getPersistentDelayInPayingRentTextArea),
+            Map.entry(NoRentArrearsDiscretionaryGrounds.BREACH_OF_TENANCY_CONDITIONS,
+                      NoRentArrearsReasonForGrounds::getBreachOfTenancyConditionsTextArea),
+            Map.entry(NoRentArrearsDiscretionaryGrounds.PROPERTY_DETERIORATION,
+                      NoRentArrearsReasonForGrounds::getPropertyDeteriorationTextArea),
+            Map.entry(NoRentArrearsDiscretionaryGrounds.NUISANCE_OR_ILLEGAL_USE,
+                      NoRentArrearsReasonForGrounds::getNuisanceOrIllegalUseTextArea),
+            Map.entry(NoRentArrearsDiscretionaryGrounds.DOMESTIC_VIOLENCE,
+                      NoRentArrearsReasonForGrounds::getDomesticViolenceTextArea),
+            Map.entry(NoRentArrearsDiscretionaryGrounds.OFFENCE_DURING_RIOT,
+                      NoRentArrearsReasonForGrounds::getOffenceDuringRiotTextArea),
+            Map.entry(NoRentArrearsDiscretionaryGrounds.FURNITURE_DETERIORATION,
+                      NoRentArrearsReasonForGrounds::getFurnitureDeteriorationTextArea),
+            Map.entry(NoRentArrearsDiscretionaryGrounds.LANDLORD_EMPLOYEE,
+                      NoRentArrearsReasonForGrounds::getLandlordEmployeeTextArea),
+            Map.entry(NoRentArrearsDiscretionaryGrounds.FALSE_STATEMENT,
+                      NoRentArrearsReasonForGrounds::getFalseStatementTextArea)
+        );
+
     private String summary;
 
     public void addParty(PartyEntity party, PartyRole partyRole) {
@@ -69,162 +125,35 @@ public class ClaimEntity {
         claimParties.add(claimPartyEntity);
         party.getClaimParties().add(claimPartyEntity);
     }
-
+    
     public void addClaimGroundEntities(NoRentArrearsReasonForGrounds grounds) {
-        List<ClaimGroundEntity> claimGroundEntityList = collectGroundEntities(grounds);
-        claimGroundEntities.addAll(claimGroundEntityList);
-    }
+        List<ClaimGroundEntity> entities = new ArrayList<>();
 
-    private List<ClaimGroundEntity> collectGroundEntities(NoRentArrearsReasonForGrounds grounds) {
-        List<ClaimGroundEntity> result = new ArrayList<>();
+        // NoRentArrearsMandatoryGrounds
+        for (Map.Entry<NoRentArrearsMandatoryGrounds, Function<NoRentArrearsReasonForGrounds, String>> entry :
+            NO_RENT_ARREARS_MANDATORY_ACCESSORS.entrySet()) {
+            String value = entry.getValue().apply(grounds);
+            if (value != null) {
+                entities.add(ClaimGroundEntity.builder()
+                                 .claim(this)
+                                 .groundsId(entry.getKey().name())
+                                 .claimsReasonText(value)
+                                 .build());
+            }
+        }
 
-        if (grounds.getOwnerOccupierTextArea() != null) {
-            result.add(ClaimGroundEntity.builder()
-                           .claim(this)
-                           .groundsId("Owner occupier (ground 1)")
-                           .claimsReasonText(grounds.getOwnerOccupierTextArea())
-                           .build());
+        // NoRentArrearsDiscretionaryGrounds
+        for (Map.Entry<NoRentArrearsDiscretionaryGrounds, Function<NoRentArrearsReasonForGrounds, String>> entry :
+            NO_RENT_ARREARS_DISCRETIONARY_ACCESSORS.entrySet()) {
+            String value = entry.getValue().apply(grounds);
+            if (value != null) {
+                entities.add(ClaimGroundEntity.builder()
+                                 .claim(this)
+                                 .groundsId(entry.getKey().name())
+                                 .claimsReasonText(value)
+                                 .build());
+            }
         }
-        if (grounds.getRepossessionByLenderTextArea() != null) {
-            result.add(ClaimGroundEntity.builder()
-                           .claim(this)
-                           .groundsId("Repossession by the landlord's mortgage lender (ground 2)")
-                           .claimsReasonText(grounds.getRepossessionByLenderTextArea())
-                           .build());
-        }
-        if (grounds.getHolidayLetTextArea() != null) {
-            result.add(ClaimGroundEntity.builder()
-                           .claim(this)
-                           .groundsId("Holiday let (ground 3)")
-                           .claimsReasonText(grounds.getHolidayLetTextArea())
-                           .build());
-        }
-        if (grounds.getStudentLetTextArea() != null) {
-            result.add(ClaimGroundEntity.builder()
-                           .claim(this)
-                           .groundsId("Student let (ground 4)")
-                           .claimsReasonText(grounds.getStudentLetTextArea())
-                           .build());
-        }
-        if (grounds.getMinisterOfReligionTextArea() != null) {
-            result.add(ClaimGroundEntity.builder()
-                           .claim(this)
-                           .groundsId("Property required for minister of religion (ground 5)")
-                           .claimsReasonText(grounds.getMinisterOfReligionTextArea())
-                           .build());
-        }
-        if (grounds.getRedevelopmentTextArea() != null) {
-            result.add(ClaimGroundEntity.builder()
-                           .claim(this)
-                           .groundsId("Property required for redevelopment (ground 6)")
-                           .claimsReasonText(grounds.getRedevelopmentTextArea())
-                           .build());
-        }
-        if (grounds.getDeathOfTenantTextArea() != null) {
-            result.add(ClaimGroundEntity.builder()
-                           .claim(this)
-                           .groundsId("Death of the tenant (ground 7)")
-                           .claimsReasonText(grounds.getDeathOfTenantTextArea())
-                           .build());
-        }
-        if (grounds.getAntisocialBehaviourTextArea() != null) {
-            result.add(ClaimGroundEntity.builder()
-                           .claim(this)
-                           .groundsId("Antisocial behaviour (ground 7A)")
-                           .claimsReasonText(grounds.getAntisocialBehaviourTextArea())
-                           .build());
-        }
-        if (grounds.getNoRightToRentTextArea() != null) {
-            result.add(ClaimGroundEntity.builder()
-                           .claim(this)
-                           .groundsId("Tenant does not have a right to rent (ground 7B)")
-                           .claimsReasonText(grounds.getNoRightToRentTextArea())
-                           .build());
-        }
-        if (grounds.getSeriousRentArrearsTextArea() != null) {
-            result.add(ClaimGroundEntity.builder()
-                           .claim(this)
-                           .groundsId("Serious rent arrears (ground 8)")
-                           .claimsReasonText(grounds.getSeriousRentArrearsTextArea())
-                           .build());
-        }
-        if (grounds.getSuitableAlternativeAccommodationTextArea() != null) {
-            result.add(ClaimGroundEntity.builder()
-                           .claim(this)
-                           .groundsId("Suitable alternative accommodation (ground 9)")
-                           .claimsReasonText(grounds.getSuitableAlternativeAccommodationTextArea())
-                           .build());
-        }
-        if (grounds.getRentArrearsTextArea() != null) {
-            result.add(ClaimGroundEntity.builder()
-                           .claim(this)
-                           .groundsId("Rent arrears (ground 10)")
-                           .claimsReasonText(grounds.getRentArrearsTextArea())
-                           .build());
-        }
-        if (grounds.getPersistentDelayInPayingRentTextArea() != null) {
-            result.add(ClaimGroundEntity.builder()
-                           .claim(this)
-                           .groundsId("Persistent delay in paying rent (ground 11)")
-                           .claimsReasonText(grounds.getPersistentDelayInPayingRentTextArea())
-                           .build());
-        }
-        if (grounds.getBreachOfTenancyConditionsTextArea() != null) {
-            result.add(ClaimGroundEntity.builder()
-                           .claim(this)
-                           .groundsId("Breach of tenancy conditions (ground 12)")
-                           .claimsReasonText(grounds.getBreachOfTenancyConditionsTextArea())
-                           .build());
-        }
-        if (grounds.getPropertyDeteriorationTextArea() != null) {
-            result.add(ClaimGroundEntity.builder()
-                           .claim(this)
-                           .groundsId("Deterioration in the condition of the property (ground 13)")
-                           .claimsReasonText(grounds.getPropertyDeteriorationTextArea())
-                           .build());
-        }
-        if (grounds.getNuisanceOrIllegalUseTextArea() != null) {
-            result.add(ClaimGroundEntity.builder()
-                           .claim(this)
-                           .groundsId("Nuisance, annoyance, illegal or immoral use of the property (ground 14)")
-                           .claimsReasonText(grounds.getNuisanceOrIllegalUseTextArea())
-                           .build());
-        }
-        if (grounds.getDomesticViolenceTextArea() != null) {
-            result.add(ClaimGroundEntity.builder()
-                           .claim(this)
-                           .groundsId("Domestic violence (ground 14A)")
-                           .claimsReasonText(grounds.getDomesticViolenceTextArea())
-                           .build());
-        }
-        if (grounds.getOffenceDuringRiotTextArea() != null) {
-            result.add(ClaimGroundEntity.builder()
-                           .claim(this)
-                           .groundsId("Offence during a riot (ground 14ZA)")
-                           .claimsReasonText(grounds.getOffenceDuringRiotTextArea())
-                           .build());
-        }
-        if (grounds.getFurnitureDeteriorationTextArea() != null) {
-            result.add(ClaimGroundEntity.builder()
-                           .claim(this)
-                           .groundsId("Deterioration of furniture (ground 15)")
-                           .claimsReasonText(grounds.getFurnitureDeteriorationTextArea())
-                           .build());
-        }
-        if (grounds.getLandlordEmployeeTextArea() != null) {
-            result.add(ClaimGroundEntity.builder()
-                           .claim(this)
-                           .groundsId("Employee of the landlord (ground 16)")
-                           .claimsReasonText(grounds.getLandlordEmployeeTextArea())
-                           .build());
-        }
-        if (grounds.getFalseStatementTextArea() != null) {
-            result.add(ClaimGroundEntity.builder()
-                           .claim(this)
-                           .groundsId("Tenancy obtained by false statement (ground 17)")
-                           .claimsReasonText(grounds.getFalseStatementTextArea())
-                           .build());
-        }
-        return result;
+        claimGroundEntities.addAll(entities);
     }
 }

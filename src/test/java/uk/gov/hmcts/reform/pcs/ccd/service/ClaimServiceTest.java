@@ -44,7 +44,7 @@ class ClaimServiceTest {
         assertThat(caseEntity.getClaims().iterator().next()).isEqualTo(claim);
         assertThat(claim.getClaimParties().iterator().next().getParty()).isEqualTo(partyEntity);
         assertThat(claim.getClaimGroundEntities().iterator().next().getGroundsId())
-            .isEqualTo("Owner occupier (ground 1)");
+            .isEqualTo("OWNER_OCCUPIER");
         assertThat(claim.getClaimGroundEntities().iterator().next().getClaimsReasonText())
             .isEqualTo(noRentArrearsReasonForGrounds.getOwnerOccupierTextArea());
     }
