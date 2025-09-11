@@ -314,7 +314,7 @@ public class PCSCase {
 
     // --- Rent arrears (statement upload + totals + third party payments) ---
     @CCD(
-        label = "Add Document",
+        label = "Add document",
         hint = "Upload a document to the system",
         typeOverride = FieldType.Collection,
         typeParameterOverride = "Document",
@@ -341,6 +341,7 @@ public class PCSCase {
 
     @CCD(
         label = "Where have the payments come from?",
+        hint = "Select all that apply",
         typeOverride = FieldType.MultiSelectList,
         typeParameterOverride = "ThirdPartyPaymentSource",
         access = {CitizenAccess.class, CaseworkerAccess.class}

@@ -13,11 +13,11 @@ public class MoneyClaim implements CcdPageConfiguration {
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
                 .page("moneyClaim")
-                .pageLabel("Money judgment")
-                .label("moneyClaim-question", 
+                .pageLabel("Money Judgment")
+                .label("moneyClaim-question",
                         "Do you want the court to make a judgment for the outstanding arrears?")
                 .label("moneyClaim-placeholder", "---");
-                
+
         // TODO: Add actual field when PCSCase is updated
         // .mandatory(PCSCase::getMoneyJudgmentRequired);
     }
