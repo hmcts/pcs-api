@@ -13,6 +13,7 @@ import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
 
 import java.time.Clock;
@@ -25,7 +26,9 @@ import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.pcs.config.ClockConfiguration.UK_ZONE_ID;
 
 @ExtendWith(MockitoExtension.class)
-class TenancyLicenceTest  extends BasePageTest {
+
+class TenancyLicenceTest extends BasePageTest {
+
 
     private static final LocalDate FIXED_CURRENT_DATE = LocalDate.of(2025, 8, 27);
 
@@ -43,12 +46,14 @@ class TenancyLicenceTest  extends BasePageTest {
 
     @ParameterizedTest
     @MethodSource("tenancyDateScenarios")
-        void shouldThrowErrorWhenDateIsTodayOrInTheFuture(LocalDate date, Boolean isValid) {
+    void shouldThrowErrorWhenDateIsTodayOrInTheFuture(LocalDate date, Boolean isValid) {
         // Given
         CaseDetails<PCSCase, State> caseDetails = new CaseDetails<>();
 
         PCSCase caseData = PCSCase.builder()
             .tenancyLicenceDate(date)
+            .typeOfTenancyLicence(TenancyLicenceType.FLEXIBLE_TENANCY)
+
             .build();
 
         caseDetails.setData(caseData);
@@ -56,6 +61,7 @@ class TenancyLicenceTest  extends BasePageTest {
         // When
         AboutToStartOrSubmitResponse<PCSCase, State> response =
             getMidEventForPage(event, "tenancyLicenceDetails").handle(caseDetails,null);
+
 
         // Then
         if (!isValid) {
@@ -65,17 +71,22 @@ class TenancyLicenceTest  extends BasePageTest {
             assertThat(response.getErrors()).isNull();
             assertThat(response.getData().getTenancyLicenceDate())
                 .isEqualTo(date);
+
+            assertThat(caseData.getSecureOrFlexibleDiscretionaryGrounds()).isEmpty();
+            assertThat(caseData.getSecureOrFlexibleDiscretionaryGroundsAlt()).isEmpty();
+            assertThat(caseData.getSecureOrFlexibleMandatoryGrounds()).isEmpty();
+            assertThat(caseData.getSecureOrFlexibleMandatoryGroundsAlt()).isEmpty();
+            assertThat(caseData.getRentArrearsOrBreachOfTenancy()).isEmpty();
         }
 
     }
 
     private static Stream<Arguments> tenancyDateScenarios() {
         return Stream.of(
-           arguments(FIXED_CURRENT_DATE.plusDays(1), false),
-           arguments(FIXED_CURRENT_DATE, false),
-           arguments(FIXED_CURRENT_DATE.minusDays(1), true),
-           arguments(FIXED_CURRENT_DATE.minusYears(5), true)
+            arguments(FIXED_CURRENT_DATE.plusDays(1), false),
+            arguments(FIXED_CURRENT_DATE, false),
+            arguments(FIXED_CURRENT_DATE.minusDays(1), true),
+            arguments(FIXED_CURRENT_DATE.minusYears(5), true)
         );
     }
-
 }

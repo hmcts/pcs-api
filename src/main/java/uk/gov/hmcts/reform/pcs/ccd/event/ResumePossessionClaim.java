@@ -38,8 +38,11 @@ import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.MediationAndSettle
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.NoticeDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.PreActionProtocol;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.RentArrears;
+import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.RentArrearsOrBreachOfTenancyGround;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.RentDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.ResumeClaim;
+import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.SecureOrFlexibleGroundsForPossession;
+import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.SecureOrFlexibleGroundsForPossessionReasons;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.SelectClaimType;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.SelectClaimantType;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.TenancyLicenceDetails;
@@ -100,6 +103,9 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             .add(new ContactPreferences())
             .add(new DefendantsDetails())
             .add(tenancyLicenceDetails)
+            .add(new SecureOrFlexibleGroundsForPossession())
+            .add(new RentArrearsOrBreachOfTenancyGround())
+            .add(new SecureOrFlexibleGroundsForPossessionReasons())
             .add(new GroundsForPossession())
             .add(new PreActionProtocol())
             .add(new MediationAndSettlement())

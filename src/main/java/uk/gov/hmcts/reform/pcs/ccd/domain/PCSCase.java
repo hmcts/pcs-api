@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.domain;
 
+import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import lombok.Builder;
 import lombok.Data;
 import uk.gov.hmcts.ccd.sdk.External;
@@ -16,6 +17,7 @@ import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Set;
 
 import static uk.gov.hmcts.ccd.sdk.type.FieldType.DynamicRadioList;
 import static uk.gov.hmcts.ccd.sdk.type.FieldType.TextArea;
@@ -312,4 +314,58 @@ public class PCSCase {
     @CCD(searchable = false)
     private String nextStepsMarkdown;
 
+    @CCD(
+        label = "Discretionary grounds",
+        hint = "Select all that apply",
+        typeOverride = FieldType.MultiSelectList,
+        typeParameterOverride = "SecureOrFlexibleDiscretionaryGrounds",
+        access = {CaseworkerAccess.class}
+    )
+    private Set<SecureOrFlexibleDiscretionaryGrounds> secureOrFlexibleDiscretionaryGrounds;
+
+    @CCD(
+        label = "Mandatory grounds",
+        hint = "Select all that apply",
+        typeOverride = FieldType.MultiSelectList,
+        typeParameterOverride = "SecureOrFlexibleMandatoryGrounds",
+        access = {CaseworkerAccess.class}
+    )
+    private Set<SecureOrFlexibleMandatoryGrounds> secureOrFlexibleMandatoryGrounds;
+
+    @CCD(
+        label = "Discretionary grounds (if alternative accommodation available)",
+        hint = "Select all that apply",
+        typeOverride = FieldType.MultiSelectList,
+        typeParameterOverride = "SecureOrFlexibleDiscretionaryGroundsAlternativeAccomm",
+        access = {CaseworkerAccess.class}
+    )
+    private Set<SecureOrFlexibleDiscretionaryGroundsAlternativeAccomm> secureOrFlexibleDiscretionaryGroundsAlt;
+
+    @CCD(
+        label = "Mandatory grounds (if alternative accommodation available)",
+        hint = "Select all that apply",
+        typeOverride = FieldType.MultiSelectList,
+        typeParameterOverride = "SecureOrFlexibleMandatoryGroundsAlternativeAccomm",
+        access = {CaseworkerAccess.class}
+    )
+    private Set<SecureOrFlexibleMandatoryGroundsAlternativeAccomm> secureOrFlexibleMandatoryGroundsAlt;
+
+    @CCD(
+        label = "What does your ground 1 claim involve?",
+        hint = "Select all that apply",
+        typeOverride = FieldType.MultiSelectList,
+        typeParameterOverride = "RentArrearsOrBreachOfTenancy",
+        access = {CaseworkerAccess.class}
+    )
+    private Set<RentArrearsOrBreachOfTenancy> rentArrearsOrBreachOfTenancy;
+
+    @CCD(searchable = false, access = {CaseworkerAccess.class})
+    private YesOrNo showBreachOfTenancyTextarea;
+
+    @CCD(searchable = false, access = {CaseworkerAccess.class})
+    private YesOrNo showReasonsForGroundsPage;
+
+    @JsonUnwrapped
+    @CCD(access = {CaseworkerAccess.class})
+    private SecureOrFlexibleGroundsReasons secureOrFlexibleGroundsReasons;
 }
