@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
+import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
@@ -27,7 +28,8 @@ public class RentDetails implements CcdPageConfiguration {
                 .mandatory(PCSCase::getCurrentRent, "rentFrequency!=\"OTHER\"")
                 .mandatory(PCSCase::getRentFrequency)
                 .mandatory(PCSCase::getOtherRentFrequency, "rentFrequency=\"OTHER\"")
-                .mandatory(PCSCase::getDailyRentChargeAmount, "rentFrequency=\"OTHER\"");
+                .mandatory(PCSCase::getDailyRentChargeAmount, "rentFrequency=\"OTHER\"")
+                .readonly(PCSCase::getCalculatedDailyRentChargeAmount, NEVER_SHOW);
     }
 
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
@@ -37,7 +39,7 @@ public class RentDetails implements CcdPageConfiguration {
         if (caseData.getRentFrequency() != RentPaymentFrequency.OTHER) {
             BigDecimal rentAmountInPence = new BigDecimal(caseData.getCurrentRent());
             BigDecimal dailyAmountInPence = calculateDailyRent(rentAmountInPence, caseData.getRentFrequency());
-            String dailyAmountString = String.valueOf(dailyAmountInPence);
+            String dailyAmountString = dailyAmountInPence.toPlainString();
 
             // Set pence value for calculations/integrations
             caseData.setCalculatedDailyRentChargeAmount(dailyAmountString);
