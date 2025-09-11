@@ -3,6 +3,7 @@ package uk.gov.hmcts.reform.pcs.ccd.service;
 
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
+import uk.gov.hmcts.reform.pcs.ccd.domain.model.NoRentArrearsReasonForGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyRole;
@@ -16,7 +17,8 @@ public class ClaimService {
     private final ClaimRepository claimRepository;
 
     public ClaimEntity createAndLinkClaim(PcsCaseEntity caseEntity, PartyEntity partyEntity,
-                                          String claimName, PartyRole role) {
+                                          String claimName, PartyRole role,
+                                          NoRentArrearsReasonForGrounds noRentArrearsReasonForGrounds) {
         ClaimEntity claim = ClaimEntity.builder()
             .summary(claimName)
             .pcsCase(caseEntity)
@@ -24,10 +26,10 @@ public class ClaimService {
 
         caseEntity.getClaims().add(claim);
         claim.addParty(partyEntity, role);
+        claim.addClaimGroundEntities(noRentArrearsReasonForGrounds);
 
         return claim;
     }
-
 
     public ClaimEntity saveClaim(ClaimEntity claim) {
         return claimRepository.save(claim);

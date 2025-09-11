@@ -20,6 +20,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PaymentStatus;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.domain.model.NoRentArrearsReasonForGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
@@ -262,7 +263,10 @@ class ResumePossessionClaimTest extends BaseEventTest {
     @Test
     void shouldCreateMainClaimInSubmitCallback() {
         // Given
-        PCSCase caseData = PCSCase.builder()
+        NoRentArrearsReasonForGrounds noRentArrearsReasonForGrounds = NoRentArrearsReasonForGrounds.builder()
+            .ownerOccupierTextArea("testing 1").build();
+
+        PCSCase caseData = PCSCase.builder().noRentArrearsReasonForGrounds(noRentArrearsReasonForGrounds)
             .build();
 
         UUID userId = UUID.randomUUID();
@@ -272,7 +276,9 @@ class ResumePossessionClaimTest extends BaseEventTest {
         when(pcsCaseService.patchCase(eq(CASE_REFERENCE), any(PCSCase.class))).thenReturn(pcsCaseEntity);
 
         ClaimEntity claimEntity = mock(ClaimEntity.class);
-        when(claimService.createAndLinkClaim(any(PcsCaseEntity.class), any(), anyString(), any(PartyRole.class)))
+        when(claimService.createAndLinkClaim(any(PcsCaseEntity.class), any(), anyString(), any(PartyRole.class), any(
+            NoRentArrearsReasonForGrounds.class)
+        ))
             .thenReturn(claimEntity);
 
         EventPayload<PCSCase, State> eventPayload = new EventPayload<>(CASE_REFERENCE, caseData, null);
@@ -283,7 +289,8 @@ class ResumePossessionClaimTest extends BaseEventTest {
 
         // Then
         verify(claimService)
-            .createAndLinkClaim(eq(pcsCaseEntity), any(), eq("Main Claim"), eq(PartyRole.CLAIMANT));
+            .createAndLinkClaim(eq(pcsCaseEntity), any(), eq("Main Claim"), eq(PartyRole.CLAIMANT),
+                                eq(noRentArrearsReasonForGrounds));
 
         verify(claimService).saveClaim(claimEntity);
     }

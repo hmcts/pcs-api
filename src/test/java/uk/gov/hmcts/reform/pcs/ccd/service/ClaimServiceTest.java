@@ -5,6 +5,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.hmcts.reform.pcs.ccd.domain.model.NoRentArrearsReasonForGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyRole;
@@ -30,15 +31,22 @@ class ClaimServiceTest {
         PcsCaseEntity caseEntity = new PcsCaseEntity();
         PartyEntity partyEntity = new PartyEntity();
         String claimName = "Main Claim";
+        NoRentArrearsReasonForGrounds noRentArrearsReasonForGrounds = NoRentArrearsReasonForGrounds.builder()
+            .ownerOccupierTextArea("Testing").build();
 
         ClaimEntity claim = claimService.createAndLinkClaim(caseEntity, partyEntity,
-                                                            claimName, PartyRole.CLAIMANT);
+                                                            claimName, PartyRole.CLAIMANT,
+                                                            noRentArrearsReasonForGrounds);
 
         assertThat(claim).isNotNull();
         assertThat(claim.getSummary()).isEqualTo(claimName);
         assertThat(claim.getPcsCase()).isSameAs(caseEntity);
         assertThat(caseEntity.getClaims().iterator().next()).isEqualTo(claim);
         assertThat(claim.getClaimParties().iterator().next().getParty()).isEqualTo(partyEntity);
+        assertThat(claim.getClaimGroundEntities().iterator().next().getGroundsId())
+            .isEqualTo("Owner occupier (ground 1)");
+        assertThat(claim.getClaimGroundEntities().iterator().next().getClaimsReasonText())
+            .isEqualTo(noRentArrearsReasonForGrounds.getOwnerOccupierTextArea());
     }
 
     @Test
