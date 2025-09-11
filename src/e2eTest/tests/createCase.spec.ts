@@ -82,6 +82,7 @@ test.describe('[Create Case Flow With Address and Claimant Type]  @Master @night
     await performValidation('mainHeader', noticeDetails.mainHeader);
     await performAction('selectNoticeDetails', {
       howDidYouServeNotice: noticeDetails.byFirstClassPost,
+      index: noticeDetails.byFirstClassPostIndex,
       day: '16', month: '07', year: '1985'});
     await performValidation('mainHeader', rentDetails.mainHeader);
     await performAction('provideRentDetails', {rentFrequencyOption:'weekly', rentAmount:'800'});
@@ -159,7 +160,7 @@ test.describe('[Create Case Flow With Address and Claimant Type]  @Master @night
       ['formLabelValue', 'Country', addressDetails.country]);
   });
 
-  test.skip('England - Unsuccessful case creation journey due to claimant type not in scope of Release1 @R1only', async () => {
+  test('England - Unsuccessful case creation journey due to claimant type not in scope of Release1 @R1only', async () => {
     //Skipping this test until bug HDPI-1778 is fixed
     await performAction('selectAddress', {
       postcode: addressDetails.englandCourtAssignedPostcode,
@@ -178,7 +179,7 @@ test.describe('[Create Case Flow With Address and Claimant Type]  @Master @night
     await performAction('clickButton', 'Cancel');
   });
 
-  test.skip('Wales - Unsuccessful case creation journey due to claimant type not in scope of Release1 @R1only', async () => {
+  test('Wales - Unsuccessful case creation journey due to claimant type not in scope of Release1 @R1only', async () => {
     //Skipping this test until bug HDPI-1778 is fixed
     await performAction('selectAddress', {
       postcode: addressDetails.walesCourtAssignedPostcode,
@@ -197,7 +198,7 @@ test.describe('[Create Case Flow With Address and Claimant Type]  @Master @night
     await performAction('clickButton', 'Cancel');
   });
 
-  test.skip('Unsuccessful case creation journey due to claim type not in scope of Release1 @R1only', async () => {
+  test('Unsuccessful case creation journey due to claim type not in scope of Release1 @R1only', async () => {
     //Skipping this test until bug HDPI-1778 is fixed
     await performAction('selectAddress', {
       postcode: addressDetails.englandCourtAssignedPostcode,
@@ -255,8 +256,11 @@ test.describe('[Create Case Flow With Address and Claimant Type]  @Master @night
       settlementWithDefendantsOption: mediationAndSettlement.no,
     });
     await performValidation('mainHeader', noticeOfYourIntention.mainHeader);
-    await performAction('selectNoticeOfYourIntention', noticeOfYourIntention.no);
-    await performValidation('mainHeader', rentDetails.mainHeader);
+    await performAction('selectNoticeOfYourIntention', noticeOfYourIntention.yes);
+    await performAction('selectNoticeDetails', {
+      howDidYouServeNotice: noticeDetails.byDeliveringAtPermittedPlace,
+      index: noticeDetails.byDeliveringAtPermittedPlaceIndex,
+      day: '25', month: '02', year: '1970'});
     await performAction('provideRentDetails', {rentFrequencyOption: 'Monthly', rentAmount: '1000'});
     // As of now calculated amount is £3285 suppose to be 3285, bug will be created for this
     await performAction('selectDailyRentAmount', {

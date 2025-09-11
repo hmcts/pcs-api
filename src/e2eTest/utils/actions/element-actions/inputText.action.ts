@@ -6,14 +6,9 @@ export class InputTextAction implements IAction {
     const locator = typeof fieldParams === 'string'
       ? page.locator(`:has-text("${fieldParams}") ~ input,
            label:has-text("${fieldParams}") ~ textarea,
-           label:has-text("${fieldParams}") + div input`): page.locator(`:has-text("${fieldParams.title}")`)
-        .locator('..')
-        .getByRole('textbox', { name: fieldParams.textbox });
-    try{
-      await locator.fill(value);
-    }
-    catch(error){
-      await locator.first().fill(value);
-    }
+           label:has-text("${fieldParams}") + div input`)
+      : page.locator(`:has-text("${fieldParams.text}") ~ input,
+           fieldset:has(h2:text-is("${fieldParams.text}")) textarea:visible:enabled`).nth(Number(fieldParams.index));
+    await locator.fill(value);
   }
 }

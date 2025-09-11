@@ -266,17 +266,17 @@ export class CreateCaseAction implements IAction {
   private async selectNoticeDetails(noticeData: actionData) {
     const noticeDetailsData = noticeData as {
       howDidYouServeNotice: string;
+      index: string,
       day?: string;
       month?: string;
       year?: string;
     };
     await performAction('clickRadioButton', noticeDetailsData.howDidYouServeNotice);
     if(noticeDetailsData.day && noticeDetailsData.month &&  noticeDetailsData.year) {
-      await performActions('Enter Day Month Year'
-        ,['inputText', 'Day', noticeDetailsData.day]
-        ,['inputText', 'Month', noticeDetailsData.month]
-        ,['inputText', 'Year', noticeDetailsData.year]);
-          }
+      await performAction('inputText', {text: 'Day', index: noticeDetailsData.index}, noticeDetailsData.day);
+      await performAction('inputText', {text: 'Month', index: noticeDetailsData.index}, noticeDetailsData.month);
+      await performAction('inputText', {text: 'Year', index: noticeDetailsData.index}, noticeDetailsData.year);
+    }
     await performAction('clickButton', 'Continue');
   }
 
