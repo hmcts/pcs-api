@@ -10,7 +10,7 @@ export const whatAreYourGroundsForPossession = {
       rentArrearsOrBreachOfTenancy: 'Rent arrears or breach of the tenancy (ground 1)',
       nuisanceAnnoyance: 'Nuisance, annoyance, illegal or immoral use of the property (ground 2)',
       domesticViolence: 'Domestic violence (ground 2A)',
-      offenceDuringRiot: 'Offence during a riot (ground 22A)',
+      offenceDuringRiot: 'Offence during a riot (ground 2ZA)',
       deteriorationInPropertyCondition: 'Deterioration in the condition of the property (ground 3)',
       deteriorationOfFurniture: 'Deterioration of furniture (ground 4)',
       tenancyObtainedByFalseStatement: 'Tenancy obtained by false statement (ground 5)',
