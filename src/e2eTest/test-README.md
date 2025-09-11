@@ -42,7 +42,7 @@ _Note: The `update-testReadMe.ts` script automatically updates this documentatio
 The framework's modular design consists of these key layers:
 
 | Layer                   | Folder/File                              | Description                                                      |
-| ----------------------- | ---------------------------------------- | ---------------------------------------------------------------- |
+| ----------------------- |------------------------------------------| ---------------------------------------------------------------- |
 | **Configuration**       | `config/`                                | Manages environment setup and test lifecycle hooks               |
 | **Test Data**           | `data/`                                  | Stores test data files for data-driven testing                   |
 | **Test Specs**          | `tests/`                                 | Contains feature-organized test specifications                   |
@@ -66,9 +66,8 @@ Playwright 1.30+ | TypeScript 4.9+
 ## 4. Available Actions and Validations
 
 ### Actions
-
 | Action                          | Example Usage                                                                                                                                                                                              |
-| ------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+|---------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | inputText                       | `performAction('inputText', 'Email', 'test@example.com')`                                                                                                                                                  |
 | check                           | `performAction('check', 'RememberMe')`                                                                                                                                                                     |
 | navigateToUrl                   | `performAction('navigateToUrl', 'testUrl')`                                                                                                                                                                |
@@ -102,39 +101,37 @@ Playwright 1.30+ | TypeScript 4.9+
 | reloginAndFindTheCase           | `performAction('reloginAndFindTheCase')`                                                                                                                                                                   |
 
 ### Validations
-
-| Validation         | Example Usage                                                                                                                        |
-| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------ |
-| text               | `performValidation('text', 'testElement')`                                                                                           |
-| visibility         | `performValidation('visibility', 'testElement')`                                                                                     |
-| bannerAlert        | `performValidation('bannerAlert', {message: "Case has been created."})`                                                              |
-| formLabelValue     | `performValidation('formLabelValue',  "Applicant's forename", {value:'TestUser'})`                                                   |
-| errorMessage       | `performValidation('errorMessage', {header: claimantType.errorMessage.header,errorHasLink: claimantType.errorMessage.errorMessage})` |
-| optionList         | `performValidation('optionList', 'sectionName', {optionsData})`                                                                      |
-| mainHeader         | `performValidation('mainHeader', borderPostcode.mainHeader)`                                                                         |
-| radioButtonChecked | `performValidation('radioButtonChecked')`                                                                                            |
-
+| Validation        | Example Usage                                                                                                                        |
+|-------------------|--------------------------------------------------------------------------------------------------------------------------------------|
+| text              | `performValidation('text', 'testElement')`                                                                                           |
+| visibility        | `performValidation('visibility', 'testElement')`                                                                                     |
+| bannerAlert       | `performValidation('bannerAlert', {message: "Case has been created."})`                                                              |
+| formLabelValue    | `performValidation('formLabelValue',  "Applicant's forename", {value:'TestUser'})`                                                   |
+| errorMessage      | `performValidation('errorMessage', {header: claimantType.errorMessage.header,errorHasLink: claimantType.errorMessage.errorMessage})` |
+| optionList        | `performValidation('optionList', 'sectionName', {optionsData})`                                                                      |
+| mainHeader        | `performValidation('mainHeader', borderPostcode.mainHeader)`                                                                         |
+| radioButtonChecked | `performValidation('radioButtonChecked')`                                                                                           |
 ### Basic Test
 
 ```typescript
 initializeExecutor(page);
-await performAction("clickButton", "LoginButton");
-await performValidation("text", "WelcomeMsg", "Welcome!");
+await performAction('clickButton', 'LoginButton');
+await performValidation('text', 'WelcomeMsg', 'Welcome!');
 ```
 
 ### Test Groups
 
 ```typescript
 await performActionGroup(
-  "Login",
-  { action: "fill", fieldName: "Email", value: "test@example.com" },
-  { action: "clickButton", fieldName: "Submit" }
+  'Login',
+  { action: 'fill', fieldName: 'Email', value: 'test@example.com' },
+  { action: 'clickButton', fieldName: 'Submit' }
 );
 
 await performValidationGroup(
-  "Post-Login",
-  { validationType: "url", data: { expected: "/dashboard" } },
-  { validationType: "visible", fieldName: "UserMenu" }
+  'Post-Login',
+  { validationType: 'url', data: { expected: '/dashboard' } },
+  { validationType: 'visible', fieldName: 'UserMenu' }
 );
 ```
 
@@ -152,7 +149,7 @@ await performValidationGroup(
    ```
 2. Register in `action.registry.ts`:
    ```typescript
-   ActionRegistry.register("newAction", new NewAction());
+   ActionRegistry.register('newAction', new NewAction());
    ```
 
 ### Adding Validations
@@ -167,7 +164,7 @@ await performValidationGroup(
    ```
 2. Register in `validation.registry.ts`:
    ```typescript
-   ValidationRegistry.register("newValidation", new NewValidation());
+   ValidationRegistry.register('newValidation', new NewValidation());
    ```
 
 ## 7. Execution
