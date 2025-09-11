@@ -13,6 +13,6 @@ export class CheckAction implements IAction {
   }
 
   private async clickCheckBox(page: Page, checkbox: string) {
-    await page.getByRole('checkbox', {name: checkbox as string}).check();
+    await page.locator(`input[type="checkbox"]+:has-text("${checkbox}")`).check();
   }
 }
