@@ -103,16 +103,16 @@ Playwright 1.30+ | TypeScript 4.9+
 | enterReasonsForPossession            | `performAction('enterReasonsForPossession', [secureOrFlexibleGrounds.discretionary.deteriorationOfFurniture])`                                                                                             |
 | selectRentArrearsOrBreachOfTenancy   | `performAction('selectRentArrearsOrBreachOfTenancy', { rentArrearsOrBreach: [rentArrearsOrBreachOfTenancy.rentArrears]})`                                                                                  |
 ### Validations
-| Validation          | Example Usage                                                                                                                         |
-|---------------------|---------------------------------------------------------------------------------------------------------------------------------------|
-| text                | `performValidation('text', 'testElement')`                                                                                            |
-| visibility          | `performValidation('visibility', 'testElement')`                                                                                      |
-| bannerAlert         | `performValidation('bannerAlert', {message: "Case has been created."})`                                                               |
-| formLabelValue      | `performValidation('formLabelValue',  "Applicant's forename", {value:'TestUser'})`                                                    |
-| errorMessage        | `performValidation('errorMessage', {header: claimantType.errorMessage.header,errorHasLink: claimantType.errorMessage.errorMessage})`  |
-| optionList          | `performValidation('optionList', 'sectionName', {optionsData})`                                                                       |
-| mainHeader          | `performValidation('mainHeader', borderPostcode.mainHeader)`                                                                          |
-| radioButtonChecked  | `performValidation('radioButtonChecked')`                                                                                             |
+| Validation        | Example Usage                                                                                                                        |
+|-------------------|--------------------------------------------------------------------------------------------------------------------------------------|
+| text              | `performValidation('text', 'testElement')`                                                                                           |
+| visibility        | `performValidation('visibility', 'testElement')`                                                                                     |
+| bannerAlert       | `performValidation('bannerAlert', {message: "Case has been created."})`                                                              |
+| formLabelValue    | `performValidation('formLabelValue',  "Applicant's forename", {value:'TestUser'})`                                                   |
+| errorMessage      | `performValidation('errorMessage', {header: claimantType.errorMessage.header,errorHasLink: claimantType.errorMessage.errorMessage})` |
+| optionList        | `performValidation('optionList', 'sectionName', {optionsData})`                                                                      |
+| mainHeader        | `performValidation('mainHeader', borderPostcode.mainHeader)`                                                                         |
+| radioButtonChecked | `performValidation('radioButtonChecked')`                                                                                           |
 ### Basic Test
 
 ```typescript
@@ -181,7 +181,7 @@ await performValidationGroup(
 - PCS_IDAM_TEST_USER_PASSWORD
 
 ```bash
-yarn test:e2e
+yarn test:chrome
 ```
 
 ## 8. Troubleshooting
