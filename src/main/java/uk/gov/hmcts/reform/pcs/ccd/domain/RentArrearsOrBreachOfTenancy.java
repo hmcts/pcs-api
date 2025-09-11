@@ -9,7 +9,7 @@ import uk.gov.hmcts.ccd.sdk.api.HasLabel;
 public enum RentArrearsOrBreachOfTenancy implements HasLabel {
 
     RENT_ARREARS("Rent arrears"),
-    BREACH_OF_TENANCY("Breach of tenancy");
+    BREACH_OF_TENANCY("Breach of the tenancy");
 
     private String label;
 }
