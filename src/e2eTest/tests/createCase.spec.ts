@@ -21,7 +21,7 @@ import {provideMoreDetailsOfClaim} from '@data/page-data/provideMoreDetailsOfCla
 import {resumeClaim} from '@data/page-data/resumeClaim.page.data';
 import {resumeClaimOptions} from '@data/page-data/resumeClaimOptions.page.data';
 import {detailsOfRentArrears} from '@data/page-data/detailsOfRentArrears.page.data';
-import {secureOrFlexibleGrounds} from '@data/page-data/secureOrFlexibleGrounds.page.data';
+import {whatAreYourGroundsForPossession} from '@data/page-data/whatAreYourGroundsForPossession.page.data';
 import {rentArrearsOrBreachOfTenancy} from '@data/page-data/rentArrearsOrBreachOfTenancy.page.data';
 import {reasonsForPossession} from '@data/page-data/reasonsForPossession.page.data';
 
@@ -246,8 +246,8 @@ test.describe('[Create Case Flow]  @Master @nightly', async () => {
     await performValidation('mainHeader', tenancyLicenceDetails.mainHeader);
     await performAction('selectTenancyOrLicenceDetails', {
       tenancyOrLicenceType: tenancyLicenceDetails.flexibleTenancy});
-    await performAction('selectSecureFlexiblePossessionGround', {
-      discretionary: [secureOrFlexibleGrounds.discretionary.rentArrearsOrBreachOfTenancy]
+    await performAction('selectYourPossessionGrounds', {
+      discretionary: [whatAreYourGroundsForPossession.discretionary.rentArrearsOrBreachOfTenancy]
     });
     await performValidation('mainHeader', rentArrearsOrBreachOfTenancy.mainHeader);
     await performAction('selectRentArrearsOrBreachOfTenancy', {
@@ -310,12 +310,12 @@ test.describe('[Create Case Flow]  @Master @nightly', async () => {
     });
     await performAction('selectTenancyOrLicenceDetails', {
       tenancyOrLicenceType: tenancyLicenceDetails.secureTenancy});
-    await performValidation('mainHeader', secureOrFlexibleGrounds.mainHeader);
-    await performAction('selectSecureFlexiblePossessionGround', {
-      discretionary: [secureOrFlexibleGrounds.discretionary.rentArrearsOrBreachOfTenancy, secureOrFlexibleGrounds.discretionary.deteriorationOfFurniture],
-      mandatory: [secureOrFlexibleGrounds.mandatory.antiSocialBehaviour],
-      mandatoryAccommodation: [secureOrFlexibleGrounds.mandatoryWithAccommodation.charitableLandlords, secureOrFlexibleGrounds.mandatoryWithAccommodation.landlordsWorks],
-      discretionaryAccommodation: [secureOrFlexibleGrounds.discretionaryWithAccommodation.adapted, secureOrFlexibleGrounds.discretionaryWithAccommodation.tied],
+    await performValidation('mainHeader', whatAreYourGroundsForPossession.mainHeader);
+    await performAction('selectYourPossessionGrounds', {
+      discretionary: [whatAreYourGroundsForPossession.discretionary.rentArrearsOrBreachOfTenancy, whatAreYourGroundsForPossession.discretionary.deteriorationOfFurniture],
+      mandatory: [whatAreYourGroundsForPossession.mandatory.antiSocialBehaviour],
+      mandatoryAccommodation: [whatAreYourGroundsForPossession.mandatoryWithAccommodation.charitableLandlords, whatAreYourGroundsForPossession.mandatoryWithAccommodation.landlordsWorks],
+      discretionaryAccommodation: [whatAreYourGroundsForPossession.discretionaryWithAccommodation.adapted, whatAreYourGroundsForPossession.discretionaryWithAccommodation.tied],
     });
     await performValidation('mainHeader', rentArrearsOrBreachOfTenancy.mainHeader);
     await performAction('selectRentArrearsOrBreachOfTenancy', {
@@ -323,9 +323,9 @@ test.describe('[Create Case Flow]  @Master @nightly', async () => {
     });
     await performValidation('mainHeader', reasonsForPossession.mainHeader);
     await performAction('enterReasonForPossession'
-      , [secureOrFlexibleGrounds.discretionary.deteriorationOfFurniture, secureOrFlexibleGrounds.mandatory.antiSocialBehaviour,
-        secureOrFlexibleGrounds.mandatoryWithAccommodation.charitableLandlords, secureOrFlexibleGrounds.mandatoryWithAccommodation.landlordsWorks,
-        secureOrFlexibleGrounds.discretionaryWithAccommodation.adapted, secureOrFlexibleGrounds.discretionaryWithAccommodation.tied,
+      , [whatAreYourGroundsForPossession.discretionary.deteriorationOfFurniture, whatAreYourGroundsForPossession.mandatory.antiSocialBehaviour,
+        whatAreYourGroundsForPossession.mandatoryWithAccommodation.charitableLandlords, whatAreYourGroundsForPossession.mandatoryWithAccommodation.landlordsWorks,
+        whatAreYourGroundsForPossession.discretionaryWithAccommodation.adapted, whatAreYourGroundsForPossession.discretionaryWithAccommodation.tied,
         reasonsForPossession.breachOfTenancy
       ]);
     await performAction('selectPreActionProtocol', preActionProtocol.yes);
@@ -349,5 +349,4 @@ test.describe('[Create Case Flow]  @Master @nightly', async () => {
       ['formLabelValue', 'Postcode/Zipcode', addressDetails.walesCourtAssignedPostcode],
       ['formLabelValue', 'Country', addressDetails.country]);
   });
-
 });

@@ -50,7 +50,7 @@ export class CreateCaseAction implements IAction {
       ['selectNoticeOfYourIntention', () => this.selectNoticeOfYourIntention(fieldName)],
       ['selectCountryRadioButton', () => this.selectCountryRadioButton(fieldName)],
       ['selectTenancyOrLicenceDetails', () => this.selectTenancyOrLicenceDetails(fieldName)],
-      ['selectSecureFlexiblePossessionGround', () => this.selectSecureFlexiblePossessionGround(fieldName)],
+      ['selectYourPossessionGrounds', () => this.selectYourPossessionGrounds(fieldName)],
       ['enterReasonForPossession', () => this.enterReasonForPossession(fieldName)],
       ['selectRentArrearsOrBreachOfTenancy', () => this.selectRentArrearsOrBreachOfTenancy(fieldName)],
       ['provideRentDetails', () => this.provideRentDetails(fieldName)],
@@ -246,18 +246,18 @@ export class CreateCaseAction implements IAction {
     await performAction('clickButton', 'Continue');
   }
 
-  private async selectSecureFlexiblePossessionGround(secureFlexiblePossessionGrounds: actionData) {
-    const possessionGrounds = secureFlexiblePossessionGrounds as {
+  private async selectYourPossessionGrounds(possessionGrounds: actionData) {
+    const grounds = possessionGrounds as {
       mandatory?: string[];
       mandatoryAccommodation?: string[];
       discretionary: string[];
       discretionaryAccommodation?: string;
     };
-      await performAction('check', possessionGrounds.discretionary);
-      if(possessionGrounds.mandatory && possessionGrounds.discretionaryAccommodation && possessionGrounds.mandatoryAccommodation) {
-        await performAction('check', possessionGrounds.mandatory);
-        await performAction('check', possessionGrounds.mandatoryAccommodation);
-        await performAction('check', possessionGrounds.discretionaryAccommodation);
+      await performAction('check', grounds.discretionary);
+      if(grounds.mandatory && grounds.discretionaryAccommodation && grounds.mandatoryAccommodation) {
+        await performAction('check', grounds.mandatory);
+        await performAction('check', grounds.mandatoryAccommodation);
+        await performAction('check', grounds.discretionaryAccommodation);
       }
       await performAction('clickButton', 'Continue');
   }

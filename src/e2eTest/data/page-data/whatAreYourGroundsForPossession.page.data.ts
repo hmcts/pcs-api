@@ -1,4 +1,4 @@
-export const secureOrFlexibleGrounds = {
+export const whatAreYourGroundsForPossession = {
   title: 'Create a case - HM Courts & Tribunals Service - GOV.UK',
   mainHeader: 'What are your grounds for possession?',
   mandatory:
