@@ -36,7 +36,7 @@ export class CreateCaseAction implements IAction {
       ['selectResumeClaimOption', () => this.selectResumeClaimOption(fieldName)],
       ['extractCaseIdFromAlert', () => this.extractCaseIdFromAlert(page)],
       ['selectClaimantType', () => this.selectClaimantType(fieldName)],
-      ['reloginAndFindTheCase', () => this.reloginAndFindTheCase()],
+      ['reloginAndFindTheCase', () => this.reloginAndFindTheCase(fieldName)],
       ['defendantDetails', () => this.defendantDetails(fieldName)],
       ['selectJurisdictionCaseTypeEvent', () => this.selectJurisdictionCaseTypeEvent()],
       ['enterTestAddressManually', () => this.enterTestAddressManually()],
@@ -319,9 +319,9 @@ export class CreateCaseAction implements IAction {
     await performAction('clickButton', 'Submit');
   }
 
-  private async reloginAndFindTheCase() {
+  private async reloginAndFindTheCase(userInfo: actionData) {
     await performAction('navigateToUrl', configData.manageCasesBaseURL);
-    await performAction('login')
+    await performAction('login',userInfo);
     await performAction('inputText', '16-digit case reference:', caseNumber);
     await performAction('clickButton', 'Find');
   }

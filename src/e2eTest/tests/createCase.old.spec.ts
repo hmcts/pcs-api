@@ -2,7 +2,6 @@ import {test} from '@playwright/test';
 import {parentSuite} from 'allure-js-commons';
 import {initializeExecutor, performAction, performValidation, performValidations} from '@utils/controller';
 import configData from '@config/test.config';
-import userConfig from '@config/permanentUsers.config';
 import {addressDetails} from '@data/page-data/addressDetails.page.data';
 import {claimantType} from '@data/page-data/claimantType.page.data';
 import {claimType} from '@data/page-data/claimType.page.data';
@@ -27,7 +26,7 @@ test.beforeEach(async ({page}, testInfo) => {
   initializeExecutor(page);
   await parentSuite('Case Creation');
   await performAction('navigateToUrl', configData.manageCasesBaseURL);
-  await performAction('login', userConfig.solicitor);
+  await performAction('createUserAndLogin', 'claimant', ['caseworker-pcs', 'caseworker']);
   await testInfo.attach('Page URL', {
     body: page.url(),
     contentType: 'text/plain',
@@ -53,7 +52,7 @@ test.describe('[Create Case Flow With Address and Claimant Type]  @Master @night
       correspondenceAddress: contactPreferences.yes,
       phoneNumber: contactPreferences.no
     });
-       await performAction('defendantDetails', {
+    await performAction('defendantDetails', {
       name: defendantDetails.yes,
       correspondenceAddress: defendantDetails.yes,
       email: defendantDetails.yes,
@@ -112,7 +111,7 @@ test.describe('[Create Case Flow With Address and Claimant Type]  @Master @night
     await performAction('selectClaimType', claimType.no);
     await performAction('selectClaimantName', claimantName.no);
     await performAction('clickButton', 'Sign out');
-    await performAction('reloginAndFindTheCase',userConfig.solicitor);
+    await performAction('reloginAndFindTheCase');
     await performAction('clickButton', resumeClaim.continue);
     await performAction('selectResumeClaimOption', resumeClaimOptions.yes);
     await performValidation('radioButtonChecked', claimantType.registeredCommunityLandlord, true);
@@ -222,7 +221,7 @@ test.describe('[Create Case Flow With Address and Claimant Type]  @Master @night
     await performAction('selectClaimType', claimType.no);
     await performAction('selectClaimantName', claimantName.yes);
     await performAction('clickButton', 'Sign out');
-    await performAction('reloginAndFindTheCase',userConfig.solicitor);
+    await performAction('reloginAndFindTheCase');
     await performAction('clickButton', resumeClaim.continue);
     await performAction('selectResumeClaimOption', resumeClaimOptions.no);
     await performValidation('radioButtonChecked', claimantType.registeredCommunityLandlord, false);
