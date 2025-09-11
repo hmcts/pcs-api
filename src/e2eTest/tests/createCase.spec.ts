@@ -21,6 +21,8 @@ import {provideMoreDetailsOfClaim} from '@data/page-data/provideMoreDetailsOfCla
 import {resumeClaim} from '@data/page-data/resumeClaim.page.data';
 import {resumeClaimOptions} from '@data/page-data/resumeClaimOptions.page.data';
 import {detailsOfRentArrears} from '@data/page-data/detailsOfRentArrears.page.data';
+import {whatAreYourGroundsForPossession} from "@data/page-data/whatAreYourGroundsForPossession.page.data";
+import {reasonsForPossession} from "@data/page-data/reasonForPossession.page.data";
 
 test.beforeEach(async ({page}, testInfo) => {
   initializeExecutor(page);
@@ -157,7 +159,7 @@ test.describe('[Create Case Flow With Address and Claimant Type]  @Master @night
       ['formLabelValue', 'Country', addressDetails.country]);
   });
 
-  test.skip('England - Unsuccessful case creation journey due to claimant type not in scope of Release1 @R1only', async () => {
+  test('England - Unsuccessful case creation journey due to claimant type not in scope of Release1 @R1only', async () => {
     await performAction('selectAddress', {
       postcode: addressDetails.englandCourtAssignedPostcode,
       addressIndex: addressDetails.addressIndex
@@ -175,7 +177,7 @@ test.describe('[Create Case Flow With Address and Claimant Type]  @Master @night
     await performAction('clickButton', 'Cancel');
   });
 
-  test.skip('Wales - Unsuccessful case creation journey due to claimant type not in scope of Release1 @R1only', async () => {
+  test('Wales - Unsuccessful case creation journey due to claimant type not in scope of Release1 @R1only', async () => {
     await performAction('selectAddress', {
       postcode: addressDetails.walesCourtAssignedPostcode,
       addressIndex: addressDetails.addressIndex
@@ -193,7 +195,7 @@ test.describe('[Create Case Flow With Address and Claimant Type]  @Master @night
     await performAction('clickButton', 'Cancel');
   });
 
-  test.skip('Unsuccessful case creation journey due to claim type not in scope of Release1 @R1only', async () => {
+  test('Unsuccessful case creation journey due to claim type not in scope of Release1 @R1only', async () => {
     await performAction('selectAddress', {
       postcode: addressDetails.englandCourtAssignedPostcode,
       addressIndex: addressDetails.addressIndex
@@ -242,8 +244,19 @@ test.describe('[Create Case Flow With Address and Claimant Type]  @Master @night
     });
     await performAction('selectTenancyOrLicenceDetails', {
       tenancyOrLicenceType: tenancyLicenceDetails.assuredTenancy});
+    //HDPI-1543-Test-Automation-Possession-Grounds-No-Rent-Arrears-screens
     await performValidation('mainHeader', groundsForPossession.mainHeader);
-    await performAction('selectGroundsForPossession', groundsForPossession.yes);
+    await performAction('selectGroundsForPossession', groundsForPossession.no);
+    await performValidation('mainHeader', whatAreYourGroundsForPossession.mainHeader);
+    await performAction('selectYourPossessionGrounds', {
+      mandatory : [whatAreYourGroundsForPossession.mandatory.holidayLet,whatAreYourGroundsForPossession.mandatory.ownerOccupier],
+      discretionary :[whatAreYourGroundsForPossession.discretionary.domesticViolenceGround14A,whatAreYourGroundsForPossession.discretionary.rentArrears]
+    });
+    await performValidation('mainHeader', reasonsForPossession.mainHeader);
+    await performAction('enterReasonForPossession'
+      , [whatAreYourGroundsForPossession.mandatory.holidayLet,whatAreYourGroundsForPossession.mandatory.ownerOccupier
+        ,  whatAreYourGroundsForPossession.discretionary.domesticViolenceGround14A,whatAreYourGroundsForPossession.discretionary.rentArrears]);
+    //HDPI-1543-Test-Automation-Possession-Grounds-No-Rent-Arrears-screens
     await performAction('selectPreActionProtocol', preActionProtocol.yes);
     await performAction('selectMediationAndSettlement', {
       attemptedMediationWithDefendantsOption: mediationAndSettlement.yes,

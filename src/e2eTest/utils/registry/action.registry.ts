@@ -35,6 +35,8 @@ export class ActionRegistry {
     ['selectContactPreferences', new CreateCaseAction()],
     ['housingPossessionClaim', new CreateCaseAction()],
     ['selectGroundsForPossession', new CreateCaseAction()],
+    ['selectYourPossessionGrounds', new CreateCaseAction()],
+    ['enterReasonForPossession', new CreateCaseAction()],
     ['selectPreActionProtocol', new CreateCaseAction()],
     ['selectMediationAndSettlement', new CreateCaseAction()],
     ['selectNoticeOfYourIntention', new CreateCaseAction()],
