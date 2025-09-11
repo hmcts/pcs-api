@@ -11,7 +11,7 @@ public enum SecureOrFlexibleDiscretionaryGrounds implements HasLabel {
     RENT_ARREARS_OR_BREACH_OF_TENANCY("Rent arrears or breach of the tenancy (ground 1)"),
     NUISANCE_OR_IMMORAL_USE("Nuisance, annoyance, illegal or immoral use of the property (ground 2)"),
     DOMESTIC_VIOLENCE("Domestic violence (ground 2A)"),
-    RIOT_OFFENCE("Offence during a riot (ground 22A)"),
+    RIOT_OFFENCE("Offence during a riot (ground 2ZA)"),
     PROPERTY_DETERIORATION("Deterioration in the condition of the property (ground 3)"),
     FURNITURE_DETERIORATION("Deterioration of furniture (ground 4)"),
     TENANCY_OBTAINED_BY_FALSE_STATEMENT("Tenancy obtained by false statement (ground 5)"),

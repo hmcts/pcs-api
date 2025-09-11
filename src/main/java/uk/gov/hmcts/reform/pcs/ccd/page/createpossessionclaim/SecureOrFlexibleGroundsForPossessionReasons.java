@@ -53,7 +53,7 @@ public class SecureOrFlexibleGroundsForPossessionReasons implements CcdPageConfi
 
             .label("possessionReasons-riotOffence-label",
                    """
-                 <h2 class="govuk-heading-l">Offence during a riot (ground 22A)</h2>
+                 <h2 class="govuk-heading-l">Offence during a riot (ground 2ZA)</h2>
                  <h3 class="govuk-heading-m">Why are you making a claim for possession under this ground?</h3>
                  """,
                    "secureOrFlexibleDiscretionaryGroundsCONTAINS\"RIOT_OFFENCE\"")

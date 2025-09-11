@@ -15,7 +15,7 @@ public class RentArrearsOrBreachOfTenancyGround implements CcdPageConfiguration 
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
             .page("rentArrearsOrBreachOfTenancyGround", this::midEvent)
-            .pageLabel("Rent arrears or breach of tenancy (ground 1)")
+            .pageLabel("Rent arrears or breach of the tenancy (ground 1)")
             .showCondition("typeOfTenancyLicence=\"SECURE_TENANCY\" OR typeOfTenancyLicence=\"FLEXIBLE_TENANCY\""
                                + " AND secureOrFlexibleDiscretionaryGroundsCONTAINS"
                                + "\"RENT_ARREARS_OR_BREACH_OF_TENANCY\"")
