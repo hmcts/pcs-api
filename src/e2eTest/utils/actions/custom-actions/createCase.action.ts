@@ -50,7 +50,8 @@ export class CreateCaseAction implements IAction {
       ['selectCountryRadioButton', () => this.selectCountryRadioButton(fieldName)],
       ['selectTenancyOrLicenceDetails', () => this.selectTenancyOrLicenceDetails(fieldName)],
       ['provideRentDetails', () => this.provideRentDetails(fieldName)],
-      ['selectDailyRentAmount', () => this.selectDailyRentAmount(fieldName)]
+      ['selectDailyRentAmount', () => this.selectDailyRentAmount(fieldName)],
+      ['selectClaimForMoney', () => this.selectClaimForMoney(fieldName)]
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) throw new Error(`No action found for '${action}'`);
@@ -293,6 +294,11 @@ export class CreateCaseAction implements IAction {
     if(rentAmount.unpaidRentInteractiveOption == 'No'){
       await performAction('inputText', dailyRentAmount.enterAmountPerDayLabel, rentAmount.unpaidRentAmountPerDay);
     }
+    await performAction('clickButton', 'Continue');
+  }
+
+  private async selectClaimForMoney(option: actionData) {
+    await performAction('clickRadioButton', option);
     await performAction('clickButton', 'Continue');
   }
 
