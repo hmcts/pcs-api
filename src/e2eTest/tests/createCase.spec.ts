@@ -39,7 +39,7 @@ test.beforeEach(async ({page}, testInfo) => {
   await performAction('housingPossessionClaim');
 });
 
-test.describe('[Create Case Flow With Address and Claimant Type]  @Master @nightly', async () => {
+test.describe('[Create Case Flow]  @Master @nightly', async () => {
   test('England - Successful case creation', async () => {
     await performAction('selectAddress', {
       postcode: addressDetails.englandCourtAssignedPostcode,
@@ -215,7 +215,7 @@ test.describe('[Create Case Flow With Address and Claimant Type]  @Master @night
     await performAction('clickButton', 'Cancel');
   });
 
-  test('Wales - Successful case creation without Saved options and Defendants correspondence address is not known', async () => {
+  test('Wales - Successful case creation without Saved options and Defendants correspondence address is not known with flexible tenancy', async () => {
     await performAction('enterTestAddressManually');
     await performValidation('bannerAlert', 'Case #.* has been created.');
     await performAction('extractCaseIdFromAlert');
@@ -243,10 +243,17 @@ test.describe('[Create Case Flow With Address and Claimant Type]  @Master @night
       correspondenceAddress: defendantDetails.no,
       email: defendantDetails.no,
     });
+    await performValidation('mainHeader', tenancyLicenceDetails.mainHeader);
     await performAction('selectTenancyOrLicenceDetails', {
-      tenancyOrLicenceType: tenancyLicenceDetails.assuredTenancy});
-    await performValidation('mainHeader', groundsForPossession.mainHeader);
-    await performAction('selectGroundsForPossession', groundsForPossession.yes);
+      tenancyOrLicenceType: tenancyLicenceDetails.flexibleTenancy});
+    await performAction('selectSecureFlexiblePossessionGround', {
+      discretionary: [secureOrFlexibleGrounds.discretionary.rentArrearsOrBreachOfTenancy]
+    });
+    await performValidation('mainHeader', rentArrearsOrBreachOfTenancy.mainHeader);
+    await performAction('selectRentArrearsOrBreachOfTenancy', {
+      rentArrearsOrBreach: [rentArrearsOrBreachOfTenancy.rentArrears]
+    });
+    await performValidation('mainHeader', preActionProtocol.mainHeader);
     await performAction('selectPreActionProtocol', preActionProtocol.yes);
     await performAction('selectMediationAndSettlement', {
       attemptedMediationWithDefendantsOption: mediationAndSettlement.yes,
@@ -343,64 +350,4 @@ test.describe('[Create Case Flow With Address and Claimant Type]  @Master @night
       ['formLabelValue', 'Country', addressDetails.country]);
   });
 
-  test('Wales - Successful case creation with Saved options for flexible tenancy type with rent and other grounds', async () => {
-    await performAction('enterTestAddressManually');
-    await performValidation('bannerAlert', 'Case #.* has been created.');
-    await performAction('extractCaseIdFromAlert');
-    await performAction('clickButton', provideMoreDetailsOfClaim.continue);
-    await performAction('selectClaimantType', claimantType.registeredCommunityLandlord);
-    await performAction('selectClaimType', claimType.no);
-    await performAction('selectClaimantName', claimantName.no);
-    await performAction('clickButton', 'Sign out');
-    await performAction('reloginAndFindTheCase');
-    await performAction('clickButton', resumeClaim.continue);
-    await performAction('selectResumeClaimOption', resumeClaimOptions.yes);
-    await performValidation('radioButtonChecked', claimantType.registeredCommunityLandlord, true);
-    await performAction('clickButton', 'Continue');
-    await performValidation('radioButtonChecked', claimType.no, true);
-    await performAction('clickButton', 'Continue');
-    await performValidation('radioButtonChecked', claimantName.no, true);
-    await performAction('clickButton', 'Continue');
-    await performAction('selectContactPreferences', {
-      notifications: contactPreferences.no,
-      correspondenceAddress: contactPreferences.no,
-      phoneNumber: contactPreferences.yes
-    });
-    await performAction('defendantDetails', {
-      name: defendantDetails.yes,
-      correspondenceAddress: defendantDetails.yes,
-      email: defendantDetails.yes,
-      correspondenceAddressSame: defendantDetails.yes
-    });
-    await performAction('selectTenancyOrLicenceDetails', {
-      tenancyOrLicenceType: tenancyLicenceDetails.flexibleTenancy});
-    await performAction('selectSecureFlexiblePossessionGround', {
-      discretionary: [secureOrFlexibleGrounds.discretionary.rentArrearsOrBreachOfTenancy]
-    });
-    await performValidation('mainHeader', rentArrearsOrBreachOfTenancy.mainHeader);
-    await performAction('selectRentArrearsOrBreachOfTenancy', {
-      rentArrearsOrBreach: [rentArrearsOrBreachOfTenancy.rentArrears]
-    });
-    await performValidation('mainHeader', preActionProtocol.mainHeader);
-    await performAction('selectPreActionProtocol', preActionProtocol.yes);
-    await performAction('selectMediationAndSettlement', {
-      attemptedMediationWithDefendantsOption: mediationAndSettlement.yes,
-      settlementWithDefendantsOption: mediationAndSettlement.no,
-    });
-    await performValidation('mainHeader', checkingNotice.mainHeader);
-    await performAction('selectNoticeOfYourIntention', checkingNotice.no);
-    await performValidation('mainHeader', rentDetails.mainHeader);
-    await performAction('provideRentDetails', {rentFrequencyOption:'Other', inputFrequency:rentDetails.rentFrequencyFortnightly,unpaidRentAmountPerDay:'50'});
-    await performValidation('mainHeader', detailsOfRentArrears.mainHeader);
-    await performAction('clickButton', detailsOfRentArrears.continue);
-    await performAction('clickButton', 'Save and continue');
-    await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
-    await performAction('clickTab', 'Property Details');
-    await performValidations('address information entered',
-      ['formLabelValue', 'Building and Street', addressDetails.buildingAndStreet],
-      ['formLabelValue', 'Address Line 2', addressDetails.addressLine2],
-      ['formLabelValue', 'Town or City', addressDetails.townOrCity],
-      ['formLabelValue', 'Postcode/Zipcode', addressDetails.walesCourtAssignedPostcode],
-      ['formLabelValue', 'Country', addressDetails.country]);
-  });
 });
