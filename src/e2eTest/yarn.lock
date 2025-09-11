@@ -247,9 +247,9 @@
     tslib "^2.8.0"
 
 "@hmcts/playwright-common@^1.0.33":
-  version "1.0.35"
-  resolved "https://registry.yarnpkg.com/@hmcts/playwright-common/-/playwright-common-1.0.35.tgz#f544673cca21477ccce875a59175a36d2ce95aa7"
-  integrity sha512-zCFDqyo0RvZrKqHAdK+xbjQbFotW6OlWL1sSk5W/DFjhdExmHROgGMnQq7ANF+e2E6iTiW+n+pwrSu/HadhGog==
+  version "1.0.36"
+  resolved "https://registry.yarnpkg.com/@hmcts/playwright-common/-/playwright-common-1.0.36.tgz#4423844afac77b991f80b0fbf6e2cf9fc56a24f4"
+  integrity sha512-Ii+YJ6qCsIdxPMc2+ZVwGxXtZNf/XonVfwT+t/5EhAHwcexFCm3iI6Do2hwcFQUa0YEkeHaA5KZBZupN1D8l7w==
   dependencies:
     "@axe-core/playwright" "^4.10.0"
     "@eslint/js" "^9.11.1"
@@ -996,13 +996,14 @@ bare-events@^2.2.0, bare-events@^2.5.4:
   integrity sha512-AuTJkq9XmE6Vk0FJVNq5QxETrSA/vKHarWVBG5l/JbdCL1prJemiyJqUS0jrlXO0MftuPq4m3YVYhoNc5+aE/g==
 
 bare-fs@^4.0.1:
-  version "4.2.3"
-  resolved "https://registry.yarnpkg.com/bare-fs/-/bare-fs-4.2.3.tgz#6f799e90b054b39a9f2f6029d78253ca12092fac"
-  integrity sha512-1aGs5pRVLToMQ79elP+7cc0u0s/wXAzfBv/7hDloT7WFggLqECCas5qqPky7WHCFdsBH5WDq6sD4fAoz5sJbtA==
+  version "4.3.2"
+  resolved "https://registry.yarnpkg.com/bare-fs/-/bare-fs-4.3.2.tgz#7f2f88219eac02f32c3a375aad32a2f3fb35a707"
+  integrity sha512-FAJ00JF69O6/oKAP+oiJYgdem1biZoGAR0NbRkBRQZ26shA87DmdHWbpeY3EVKPrAzHByLoLo+hAzTT6NTJWCg==
   dependencies:
     bare-events "^2.5.4"
     bare-path "^3.0.0"
     bare-stream "^2.6.4"
+    bare-url "^2.2.2"
 
 bare-os@^3.0.1:
   version "3.6.2"
@@ -1022,6 +1023,13 @@ bare-stream@^2.6.4:
   integrity sha512-oyXQNicV1y8nc2aKffH+BUHFRXmx6VrPzlnaEvMhram0nPBrKcEdcyBg5r08D0i8VxngHFAiVyn1QKXpSG0B8A==
   dependencies:
     streamx "^2.21.0"
+
+bare-url@^2.2.2:
+  version "2.2.2"
+  resolved "https://registry.yarnpkg.com/bare-url/-/bare-url-2.2.2.tgz#1369d1972bbd7d9b358d0214d3f12abe2328d3e9"
+  integrity sha512-g+ueNGKkrjMazDG3elZO1pNs3HY5+mMmOet1jtKyhOaCnkLzitxf26z7hoAEkDNgdNmnc1KIlt/dw6Po6xZMpA==
+  dependencies:
+    bare-path "^3.0.0"
 
 basic-ftp@^5.0.2:
   version "5.0.5"
@@ -1648,9 +1656,9 @@ globals@^14.0.0:
   integrity sha512-oahGvuMGQlPw/ivIYBjVSrWAfWLBeku5tpPE2fOPLi+WHffIWbuh2tCjhyQhTBPMf5E9jDEH4FOmTYgYwbKwtQ==
 
 globals@^16.0.0:
-  version "16.3.0"
-  resolved "https://registry.yarnpkg.com/globals/-/globals-16.3.0.tgz#66118e765ddaf9e2d880f7e17658543f93f1f667"
-  integrity sha512-bqWEnJ1Nt3neqx2q5SFfGS8r/ahumIakg3HcwtNlrVlwXIeNumWn/c7Pn/wKzGhf6SaW6H6uWXLqC30STCMchQ==
+  version "16.4.0"
+  resolved "https://registry.yarnpkg.com/globals/-/globals-16.4.0.tgz#574bc7e72993d40cf27cf6c241f324ee77808e51"
+  integrity sha512-ob/2LcVVaVGCYN+r14cnwnoDPUufjiYgSqRhiFD0Q1iI4Odora5RE8Iv1D24hAz5oMophRGkGz+yuvQmmUMnMw==
 
 gopd@^1.2.0:
   version "1.2.0"
