@@ -21,6 +21,7 @@ import {provideMoreDetailsOfClaim} from '@data/page-data/provideMoreDetailsOfCla
 import {resumeClaim} from '@data/page-data/resumeClaim.page.data';
 import {resumeClaimOptions} from '@data/page-data/resumeClaimOptions.page.data';
 import {detailsOfRentArrears} from '@data/page-data/detailsOfRentArrears.page.data';
+import {defendantList} from "@data/page-data/defendantList.page.data";
 
 test.beforeEach(async ({page}, testInfo) => {
   initializeExecutor(page);
@@ -58,6 +59,11 @@ test.describe('[Create Case Flow With Address and Claimant Type]  @Master @night
       email: defendantDetails.yes,
       correspondenceAddressSame: defendantDetails.no
     });
+    //HDPI-1366-Test-Automation-Defendant Details Summary
+    await performValidation('mainHeader', defendantList.mainHeader);
+    //validate the table data??
+    await performAction('selectDefendantList', defendantList.no);
+    //HDPI-1366-Test-Automation-Defendant Details Summary
     await performValidation('mainHeader', tenancyLicenceDetails.mainHeader);
     await performAction('selectTenancyOrLicenceDetails', {
       tenancyOrLicenceType: tenancyLicenceDetails.other,
