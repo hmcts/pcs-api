@@ -21,9 +21,9 @@ import {provideMoreDetailsOfClaim} from '@data/page-data/provideMoreDetailsOfCla
 import {resumeClaim} from '@data/page-data/resumeClaim.page.data';
 import {resumeClaimOptions} from '@data/page-data/resumeClaimOptions.page.data';
 import {detailsOfRentArrears} from '@data/page-data/detailsOfRentArrears.page.data';
-import {secureOrFlexibleGrounds} from "@data/page-data/secureOrFlexibleGrounds.page.data";
-import {rentArrearsOrBreachOfTenancy} from "@data/page-data/rentArrearsOrBreachOfTenancy.page.data";
-import {reasonsForPossession} from "@data/page-data/reasonsForPossession.page.data";
+import {secureOrFlexibleGrounds} from '@data/page-data/secureOrFlexibleGrounds.page.data';
+import {rentArrearsOrBreachOfTenancy} from '@data/page-data/rentArrearsOrBreachOfTenancy.page.data';
+import {reasonsForPossession} from '@data/page-data/reasonsForPossession.page.data';
 
 test.beforeEach(async ({page}, testInfo) => {
   initializeExecutor(page);
@@ -244,23 +244,7 @@ test.describe('[Create Case Flow With Address and Claimant Type]  @Master @night
       email: defendantDetails.no,
     });
     await performAction('selectTenancyOrLicenceDetails', {
-      tenancyOrLicenceType: tenancyLicenceDetails.secureTenancy});
-    await performValidation('mainHeader', secureOrFlexibleGrounds.mainHeader);
-    await performAction('selectSecureFlexiblePossessionGround', {
-      discretionary: [secureOrFlexibleGrounds.discretionary.rentArrearsOrBreachOfTenancy, secureOrFlexibleGrounds.discretionary.deteriorationOfFurniture],
-      mandatory: [secureOrFlexibleGrounds.mandatory.antiSocialBehaviour],
-      mandatoryAccommodation: [secureOrFlexibleGrounds.mandatoryWithAccommodation.charitableLandlords,secureOrFlexibleGrounds.mandatoryWithAccommodation.landlordsWorks],
-      discretionaryAccommodation: [secureOrFlexibleGrounds.discretionaryWithAccommodation.adapted,secureOrFlexibleGrounds.discretionaryWithAccommodation.tied],
-    });
-    await performValidation('mainHeader', rentArrearsOrBreachOfTenancy.mainHeader);
-    await performAction('selectRentArrearsOrBreachOfTenancy', {
-      rentArrearsOrBreach: [rentArrearsOrBreachOfTenancy.breachOfTenancy, rentArrearsOrBreachOfTenancy.rentArrears]
-    });
-    await performValidation('mainHeader', reasonsForPossession.mainHeader);
-    await performAction('enterReasonForPossession'
-      , [secureOrFlexibleGrounds.discretionary.deteriorationOfFurniture,secureOrFlexibleGrounds.mandatory.antiSocialBehaviour,
-        secureOrFlexibleGrounds.mandatoryWithAccommodation.charitableLandlords,secureOrFlexibleGrounds.mandatoryWithAccommodation.landlordsWorks,
-        secureOrFlexibleGrounds.discretionaryWithAccommodation.adapted,secureOrFlexibleGrounds.discretionaryWithAccommodation.tied]);
+      tenancyOrLicenceType: tenancyLicenceDetails.assuredTenancy});
     await performValidation('mainHeader', groundsForPossession.mainHeader);
     await performAction('selectGroundsForPossession', groundsForPossession.yes);
     await performAction('selectPreActionProtocol', preActionProtocol.yes);
@@ -277,6 +261,138 @@ test.describe('[Create Case Flow With Address and Claimant Type]  @Master @night
       calculateRentAmount: '3285',
       unpaidRentInteractiveOption: dailyRentAmount.yes
     });
+    await performAction('clickButton', 'Save and continue');
+    await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
+    await performAction('clickTab', 'Property Details');
+    await performValidations('address information entered',
+      ['formLabelValue', 'Building and Street', addressDetails.buildingAndStreet],
+      ['formLabelValue', 'Address Line 2', addressDetails.addressLine2],
+      ['formLabelValue', 'Town or City', addressDetails.townOrCity],
+      ['formLabelValue', 'Postcode/Zipcode', addressDetails.walesCourtAssignedPostcode],
+      ['formLabelValue', 'Country', addressDetails.country]);
+  });
+
+  test('Wales - Successful case creation with Saved options for secure tenancy type with rent and other grounds', async () => {
+    await performAction('enterTestAddressManually');
+    await performValidation('bannerAlert', 'Case #.* has been created.');
+    await performAction('extractCaseIdFromAlert');
+    await performAction('clickButton', provideMoreDetailsOfClaim.continue);
+    await performAction('selectClaimantType', claimantType.registeredCommunityLandlord);
+    await performAction('selectClaimType', claimType.no);
+    await performAction('selectClaimantName', claimantName.no);
+    await performAction('clickButton', 'Sign out');
+    await performAction('reloginAndFindTheCase');
+    await performAction('clickButton', resumeClaim.continue);
+    await performAction('selectResumeClaimOption', resumeClaimOptions.yes);
+    await performValidation('radioButtonChecked', claimantType.registeredCommunityLandlord, true);
+    await performAction('clickButton', 'Continue');
+    await performValidation('radioButtonChecked', claimType.no, true);
+    await performAction('clickButton', 'Continue');
+    await performValidation('radioButtonChecked', claimantName.no, true);
+    await performAction('clickButton', 'Continue');
+    await performAction('selectContactPreferences', {
+      notifications: contactPreferences.no,
+      correspondenceAddress: contactPreferences.no,
+      phoneNumber: contactPreferences.yes
+    });
+    await performAction('defendantDetails', {
+      name: defendantDetails.yes,
+      correspondenceAddress: defendantDetails.yes,
+      email: defendantDetails.yes,
+      correspondenceAddressSame: defendantDetails.yes
+    });
+    await performAction('selectTenancyOrLicenceDetails', {
+      tenancyOrLicenceType: tenancyLicenceDetails.secureTenancy});
+    await performValidation('mainHeader', secureOrFlexibleGrounds.mainHeader);
+    await performAction('selectSecureFlexiblePossessionGround', {
+      discretionary: [secureOrFlexibleGrounds.discretionary.rentArrearsOrBreachOfTenancy, secureOrFlexibleGrounds.discretionary.deteriorationOfFurniture],
+      mandatory: [secureOrFlexibleGrounds.mandatory.antiSocialBehaviour],
+      mandatoryAccommodation: [secureOrFlexibleGrounds.mandatoryWithAccommodation.charitableLandlords,secureOrFlexibleGrounds.mandatoryWithAccommodation.landlordsWorks],
+      discretionaryAccommodation: [secureOrFlexibleGrounds.discretionaryWithAccommodation.adapted,secureOrFlexibleGrounds.discretionaryWithAccommodation.tied],
+    });
+    await performValidation('mainHeader', rentArrearsOrBreachOfTenancy.mainHeader);
+    await performAction('selectRentArrearsOrBreachOfTenancy', {
+      rentArrearsOrBreach: [rentArrearsOrBreachOfTenancy.breachOfTenancy, rentArrearsOrBreachOfTenancy.rentArrears]
+    });
+    await performValidation('mainHeader', reasonsForPossession.mainHeader);
+    await performAction('enterReasonForPossession'
+      , [secureOrFlexibleGrounds.discretionary.deteriorationOfFurniture,secureOrFlexibleGrounds.mandatory.antiSocialBehaviour,
+        secureOrFlexibleGrounds.mandatoryWithAccommodation.charitableLandlords,secureOrFlexibleGrounds.mandatoryWithAccommodation.landlordsWorks,
+        secureOrFlexibleGrounds.discretionaryWithAccommodation.adapted,secureOrFlexibleGrounds.discretionaryWithAccommodation.tied,
+        reasonsForPossession.breachOfTenancy
+      ]);
+    await performAction('selectPreActionProtocol', preActionProtocol.yes);
+    await performAction('selectMediationAndSettlement', {
+      attemptedMediationWithDefendantsOption: mediationAndSettlement.yes,
+      settlementWithDefendantsOption: mediationAndSettlement.no,
+    });
+    await performValidation('mainHeader', checkingNotice.mainHeader);
+    await performAction('selectNoticeOfYourIntention', checkingNotice.no);
+    await performValidation('mainHeader', rentDetails.mainHeader);
+    await performAction('provideRentDetails', {rentFrequencyOption:'Other', inputFrequency:rentDetails.rentFrequencyFortnightly,unpaidRentAmountPerDay:'50'});
+    await performValidation('mainHeader', detailsOfRentArrears.mainHeader);
+    await performAction('clickButton', detailsOfRentArrears.continue);
+    await performAction('clickButton', 'Save and continue');
+    await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
+    await performAction('clickTab', 'Property Details');
+    await performValidations('address information entered',
+      ['formLabelValue', 'Building and Street', addressDetails.buildingAndStreet],
+      ['formLabelValue', 'Address Line 2', addressDetails.addressLine2],
+      ['formLabelValue', 'Town or City', addressDetails.townOrCity],
+      ['formLabelValue', 'Postcode/Zipcode', addressDetails.walesCourtAssignedPostcode],
+      ['formLabelValue', 'Country', addressDetails.country]);
+  });
+
+  test('Wales - Successful case creation with Saved options for flexible tenancy type with rent and other grounds', async () => {
+    await performAction('enterTestAddressManually');
+    await performValidation('bannerAlert', 'Case #.* has been created.');
+    await performAction('extractCaseIdFromAlert');
+    await performAction('clickButton', provideMoreDetailsOfClaim.continue);
+    await performAction('selectClaimantType', claimantType.registeredCommunityLandlord);
+    await performAction('selectClaimType', claimType.no);
+    await performAction('selectClaimantName', claimantName.no);
+    await performAction('clickButton', 'Sign out');
+    await performAction('reloginAndFindTheCase');
+    await performAction('clickButton', resumeClaim.continue);
+    await performAction('selectResumeClaimOption', resumeClaimOptions.yes);
+    await performValidation('radioButtonChecked', claimantType.registeredCommunityLandlord, true);
+    await performAction('clickButton', 'Continue');
+    await performValidation('radioButtonChecked', claimType.no, true);
+    await performAction('clickButton', 'Continue');
+    await performValidation('radioButtonChecked', claimantName.no, true);
+    await performAction('clickButton', 'Continue');
+    await performAction('selectContactPreferences', {
+      notifications: contactPreferences.no,
+      correspondenceAddress: contactPreferences.no,
+      phoneNumber: contactPreferences.yes
+    });
+    await performAction('defendantDetails', {
+      name: defendantDetails.yes,
+      correspondenceAddress: defendantDetails.yes,
+      email: defendantDetails.yes,
+      correspondenceAddressSame: defendantDetails.yes
+    });
+    await performAction('selectTenancyOrLicenceDetails', {
+      tenancyOrLicenceType: tenancyLicenceDetails.flexibleTenancy});
+    await performAction('selectSecureFlexiblePossessionGround', {
+      discretionary: [secureOrFlexibleGrounds.discretionary.rentArrearsOrBreachOfTenancy]
+    });
+    await performValidation('mainHeader', rentArrearsOrBreachOfTenancy.mainHeader);
+    await performAction('selectRentArrearsOrBreachOfTenancy', {
+      rentArrearsOrBreach: [rentArrearsOrBreachOfTenancy.rentArrears]
+    });
+    await performValidation('mainHeader', preActionProtocol.mainHeader);
+    await performAction('selectPreActionProtocol', preActionProtocol.yes);
+    await performAction('selectMediationAndSettlement', {
+      attemptedMediationWithDefendantsOption: mediationAndSettlement.yes,
+      settlementWithDefendantsOption: mediationAndSettlement.no,
+    });
+    await performValidation('mainHeader', checkingNotice.mainHeader);
+    await performAction('selectNoticeOfYourIntention', checkingNotice.no);
+    await performValidation('mainHeader', rentDetails.mainHeader);
+    await performAction('provideRentDetails', {rentFrequencyOption:'Other', inputFrequency:rentDetails.rentFrequencyFortnightly,unpaidRentAmountPerDay:'50'});
+    await performValidation('mainHeader', detailsOfRentArrears.mainHeader);
+    await performAction('clickButton', detailsOfRentArrears.continue);
     await performAction('clickButton', 'Save and continue');
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
     await performAction('clickTab', 'Property Details');

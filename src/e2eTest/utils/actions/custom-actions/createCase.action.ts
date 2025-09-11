@@ -246,19 +246,21 @@ export class CreateCaseAction implements IAction {
 
   private async selectSecureFlexiblePossessionGround(secureFlexiblePossessionGrounds: actionData) {
     const possessionGrounds = secureFlexiblePossessionGrounds as {
-      mandatory: string[];
-      mandatoryAccommodation: string[];
+      mandatory?: string[];
+      mandatoryAccommodation?: string[];
       discretionary: string[];
-      discretionaryAccommodation: string;
+      discretionaryAccommodation?: string;
     };
       await performAction('check', possessionGrounds.discretionary);
-      await performAction('check', possessionGrounds.mandatory);
-      await performAction('check', possessionGrounds.mandatoryAccommodation);
-      await performAction('check', possessionGrounds.discretionaryAccommodation);
+      if(possessionGrounds.mandatory && possessionGrounds.discretionaryAccommodation && possessionGrounds.mandatoryAccommodation) {
+        await performAction('check', possessionGrounds.mandatory);
+        await performAction('check', possessionGrounds.mandatoryAccommodation);
+        await performAction('check', possessionGrounds.discretionaryAccommodation);
+      }
       await performAction('clickButton', 'Continue');
   }
 
-  private async selectRentArrearsOrBreachOfTenancy( grounds: actionData) {
+  private async selectRentArrearsOrBreachOfTenancy(grounds: actionData) {
     const rentArrearsOrBreachOfTenancyGrounds = grounds as {
       rentArrearsOrBreach: string[];
     }
