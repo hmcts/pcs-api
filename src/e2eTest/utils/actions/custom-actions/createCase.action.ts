@@ -305,23 +305,16 @@ export class CreateCaseAction implements IAction {
       rentPaidByOthersOption: string;
       paymentOptions?: string[];
     };
-    if(rentArrearsData.files){
-      for(const file of rentArrearsData.files){
-        await performAction('clickButton', 'Add new');
-        await performAction('uploadFile', file);
-      }
-    }
+    await performAction('uploadFile', rentArrearsData.files);
     await performAction('inputText', detailsOfRentArrears.totalRentArrearsLabel, rentArrearsData.rentArrearsAmountOnStatement);
     await performAction('clickRadioButton', {
       question: detailsOfRentArrears.periodShownOnRentStatementLabel,
       option: rentArrearsData.rentPaidByOthersOption
     });
-    if(rentArrearsData.rentPaidByOthersOption == 'Yes' && rentArrearsData.paymentOptions){
-      for (const option of rentArrearsData.paymentOptions) {
-        await performAction('check', option);
-        if (option == 'Other') {
-          await performAction('inputText', detailsOfRentArrears.paymentSourceLabel, detailsOfRentArrears.paymentOptionOtherInput);
-        }
+    if (rentArrearsData.rentPaidByOthersOption == 'Yes') {
+      await performAction('check', rentArrearsData.paymentOptions);
+      if (rentArrearsData.paymentOptions?.includes('Other')) {
+        await performAction('inputText', detailsOfRentArrears.paymentSourceLabel, detailsOfRentArrears.paymentOptionOtherInput);
       }
       await performAction('clickButton', 'Continue');
     }

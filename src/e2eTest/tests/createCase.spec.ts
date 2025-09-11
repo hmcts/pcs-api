@@ -21,7 +21,7 @@ import {provideMoreDetailsOfClaim} from '@data/page-data/provideMoreDetailsOfCla
 import {resumeClaim} from '@data/page-data/resumeClaim.page.data';
 import {resumeClaimOptions} from '@data/page-data/resumeClaimOptions.page.data';
 import {detailsOfRentArrears} from '@data/page-data/detailsOfRentArrears.page.data';
-import { moneyJudgement } from '@data/page-data/moneyJudgement.page.data';
+import {moneyJudgement} from '@data/page-data/moneyJudgement.page.data';
 
 test.beforeEach(async ({page}, testInfo) => {
   initializeExecutor(page);
@@ -148,7 +148,7 @@ test.describe('[Create Case Flow With Address and Claimant Type]  @Master @night
     await performAction('provideRentDetails', {rentFrequencyOption:'Other', inputFrequency:rentDetails.rentFrequencyFortnightly,unpaidRentAmountPerDay:'50'});
     await performValidation('mainHeader', detailsOfRentArrears.mainHeader);
     await performAction('provideDetailsOfRentArrears', {
-      files: ['tenancyLicence.docx', 'tenancyLicence.png'],
+      files: ['rentArrears.docx', 'rentArrears.png'],
       rentArrearsAmountOnStatement: '1000',
       rentPaidByOthersOption: detailsOfRentArrears.yes,
       paymentOptions: [detailsOfRentArrears.universalCreditOption, detailsOfRentArrears.paymentOtherOption]
@@ -267,7 +267,7 @@ test.describe('[Create Case Flow With Address and Claimant Type]  @Master @night
       calculateRentAmount: '3285',
       unpaidRentInteractiveOption: dailyRentAmount.yes
     });
-    await performAction('clickButton',moneyJudgement.continue);
+    await performAction('clickButton', moneyJudgement.continue);
     await performAction('clickButton', 'Save and continue');
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
     await performAction('clickTab', 'Property Details');
