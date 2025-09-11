@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import uk.gov.hmcts.reform.pcs.config.DocAssemblyConfiguration;
 import uk.gov.hmcts.reform.pcs.document.service.DocAssemblyService;
 import uk.gov.hmcts.reform.pcs.document.service.exception.DocAssemblyException;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.EligibilityResult;
@@ -30,6 +31,8 @@ import uk.gov.hmcts.reform.pcs.testingsupport.model.DocAssemblyRequest;
 
 import java.net.URI;
 import java.time.Instant;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
@@ -45,17 +48,20 @@ public class TestingSupportController {
     private final Task<Void> helloWorldTask;
     private final DocAssemblyService docAssemblyService;
     private final EligibilityService eligibilityService;
+    private final DocAssemblyConfiguration docAssemblyConfiguration;
 
     public TestingSupportController(
         SchedulerClient schedulerClient,
         @Qualifier("helloWorldTask") Task<Void> helloWorldTask,
         DocAssemblyService docAssemblyService,
-        EligibilityService eligibilityService
+        EligibilityService eligibilityService,
+        DocAssemblyConfiguration docAssemblyConfiguration
     ) {
         this.schedulerClient = schedulerClient;
         this.helloWorldTask = helloWorldTask;
         this.docAssemblyService = docAssemblyService;
         this.eligibilityService = eligibilityService;
+        this.docAssemblyConfiguration = docAssemblyConfiguration;
     }
 
     @Operation(
@@ -271,6 +277,15 @@ public class TestingSupportController {
         @RequestParam(value = "legislativeCountry", required = false) LegislativeCountry legislativeCountry
     ) {
         return eligibilityService.checkEligibility(postcode, legislativeCountry);
+    }
+
+    @GetMapping("/doc-assembly-config")
+    public ResponseEntity<Map<String, Object>> getDocAssemblyConfig() {
+        Map<String, Object> config = new HashMap<>();
+        config.put("url", docAssemblyConfiguration.getUrl());
+        config.put("templates", docAssemblyConfiguration.getTemplates());
+
+        return ResponseEntity.ok(config);
     }
 
     private ResponseEntity<String> handleDocAssemblyException(DocAssemblyException e) {
