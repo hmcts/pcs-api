@@ -79,7 +79,7 @@ test.describe('[Create Case Flow]  @Master @nightly', async () => {
     await performAction('selectOtherGrounds',{
       mandatory: [whatAreYourGrounds.mandatory.holidayLet,whatAreYourGrounds.mandatory.ownerOccupier],
       discretionary: [whatAreYourGrounds.discretionary.domesticViolence,whatAreYourGrounds.discretionary.rentArrears],
-    })
+    });
     await performValidation('mainHeader', preActionProtocol.mainHeader);
     await performAction('selectPreActionProtocol', preActionProtocol.yes);
     await performValidation('mainHeader', mediationAndSettlement.mainHeader);
@@ -293,13 +293,11 @@ test.describe('[Create Case Flow]  @Master @nightly', async () => {
     await performValidation('mainHeader', checkingNotice.mainHeader);
     await performAction('selectNoticeOfYourIntention', checkingNotice.no);
     await performValidation('mainHeader', rentDetails.mainHeader);
-    await performAction('provideRentDetails', {
-      rentFrequencyOption: 'Other',
-      inputFrequency: rentDetails.rentFrequencyFortnightly,
-      unpaidRentAmountPerDay: '50'
+    await performAction('provideRentDetails', {rentFrequencyOption: 'Monthly', rentAmount: '1000'});
+    await performAction('selectDailyRentAmount', {
+      calculateRentAmount: '£32.85',
+      unpaidRentInteractiveOption: dailyRentAmount.yes
     });
-    await performValidation('mainHeader', detailsOfRentArrears.mainHeader);
-    await performAction('clickButton', detailsOfRentArrears.continue);
     await performAction('clickButton', 'Save and continue');
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
     await performAction('clickTab', 'Property Details');
