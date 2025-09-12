@@ -201,7 +201,6 @@ test.describe('[Create Case Flow With Address and Claimant Type] @Master @nightl
     });
     await performAction('selectTenancyOrLicenceDetails', {
       tenancyOrLicenceType: tenancyLicenceDetails.assuredTenancy});
-    //HDPI-1543-Test-Automation-Possession-Grounds-No-Rent-Arrears-screens
     await performValidation('mainHeader', groundsForPossession.mainHeader);
     await performAction('selectGroundsForPossession', groundsForPossession.no);
     await performValidation('mainHeader', whatAreYourGroundsForPossession.mainHeader);
@@ -210,9 +209,9 @@ test.describe('[Create Case Flow With Address and Claimant Type] @Master @nightl
       discretionary :[whatAreYourGroundsForPossession.discretionary.domesticViolenceGround14A,whatAreYourGroundsForPossession.discretionary.rentArrears]
     });
     await performValidation('mainHeader', reasonsForPossession.mainHeader);
-    await performAction('enterReasonForPossession'
-      , [whatAreYourGroundsForPossession.mandatory.holidayLet,whatAreYourGroundsForPossession.mandatory.ownerOccupier
-        ,  whatAreYourGroundsForPossession.discretionary.domesticViolenceGround14A,whatAreYourGroundsForPossession.discretionary.rentArrears]);
+    await performAction('enterReasonForPossession',
+      [whatAreYourGroundsForPossession.mandatory.holidayLet,whatAreYourGroundsForPossession.mandatory.ownerOccupier,
+       whatAreYourGroundsForPossession.discretionary.domesticViolenceGround14A,whatAreYourGroundsForPossession.discretionary.rentArrears]);
     await performAction('selectPreActionProtocol', preActionProtocol.yes);
     await performAction('selectMediationAndSettlement', {
       attemptedMediationWithDefendantsOption: mediationAndSettlement.yes,

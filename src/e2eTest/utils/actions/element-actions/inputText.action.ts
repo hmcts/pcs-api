@@ -1,4 +1,4 @@
-import { Page } from '@playwright/test';
+import {Page} from '@playwright/test';
 import {actionRecord, IAction} from '../../interfaces/action.interface';
 
 export class InputTextAction implements IAction {
