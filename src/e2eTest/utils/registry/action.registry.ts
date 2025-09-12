@@ -27,6 +27,7 @@ export class ActionRegistry {
     ['selectResumeClaimOption', new CreateCaseAction()],
     ['selectClaimantType', new CreateCaseAction()],
     ['defendantDetails', new CreateCaseAction()],
+    ['addAnotherDefendant', new CreateCaseAction()],
     ['selectRentArrearsPossessionGround', new CreateCaseAction()],
     ['selectJurisdictionCaseTypeEvent', new CreateCaseAction()],
     ['enterTestAddressManually', new CreateCaseAction()],
