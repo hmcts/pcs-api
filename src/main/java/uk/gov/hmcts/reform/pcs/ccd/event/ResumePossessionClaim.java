@@ -53,6 +53,7 @@ import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
+import uk.gov.hmcts.reform.pcs.ccd.util.PostcodeValidator;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -78,6 +79,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
     private final ResumeClaim resumeClaim;
     private final UnsubmittedCaseDataService unsubmittedCaseDataService;
     private final TenancyLicenceDetails tenancyLicenceDetails;
+    private final PostcodeValidator postcodeValidator;
 
     @Override
     public void configure(ConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -99,8 +101,8 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             .add(new ClaimTypeNotEligibleEngland())
             .add(new ClaimTypeNotEligibleWales())
             .add(new ClaimantInformation())
-            .add(new ContactPreferences())
-            .add(new DefendantsDetails())
+            .add(new ContactPreferences(postcodeValidator))
+            .add(new DefendantsDetails(postcodeValidator))
             .add(tenancyLicenceDetails)
             .add(new GroundsForPossession())
             .add(new GroundForPossessionRentArrears())
