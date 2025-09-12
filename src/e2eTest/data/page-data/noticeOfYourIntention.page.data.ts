@@ -1,4 +1,4 @@
-export const checkingNotice = {
+export const noticeOfYourIntention = {
   title: 'Create a case - HM Courts & Tribunals Service - GOV.UK',
   mainHeader: 'Notice of your intention to begin possession proceedings',
   continue: 'Continue',
