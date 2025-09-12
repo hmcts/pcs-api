@@ -25,7 +25,7 @@ import {detailsOfRentArrears} from '@data/page-data/detailsOfRentArrears.page.da
 test.beforeEach(async ({page}, testInfo) => {
   initializeExecutor(page);
   await parentSuite('Case Creation');
-  await performAction('navigateToUrl', configData.manageCasesBaseURL);
+  await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
   await performAction('login', userConfig.solicitor);
   await testInfo.attach('Page URL', {
     body: page.url(),
