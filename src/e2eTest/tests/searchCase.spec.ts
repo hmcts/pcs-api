@@ -1,26 +1,25 @@
 import {test} from '@playwright/test';
 import {parentSuite} from 'allure-js-commons';
-import configData from "@config/test.config";
-import caseDataWithAddress from '@data/api-data/case.api.data.json';
+import {caseApiData} from '@data/api-data/case.api.data';
 import {
   initializeExecutor,
   performAction,
   performValidation
 } from '@utils/controller';
 import {createCase} from "@data/page-data/createCase.page.data";
-import {getCaseInfo} from '@utils/actions/custom-actions/createCase.action';
+import {caseInfo} from '@utils/actions/custom-actions/createCase.action';
 
 test.beforeEach(async ({page}) => {
     initializeExecutor(page);
     await parentSuite('Search Case');
-    await performAction('navigateToUrl', configData.manageCasesBaseURL);
+    await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
     await performAction('createUserAndLogin', 'claimant', ['caseworker-pcs', 'caseworker']);
     createCaseWithAddress();
 });
 
 async function createCaseWithAddress() {
   await performAction('createCase', {
-    data: caseDataWithAddress.data,
+    data: caseApiData.createCasePayload,
   });
 }
 
@@ -31,23 +30,22 @@ async function searchCase(caseNumber: string) {
   await performAction('clickButton', 'Apply');
 }
 
-test.describe('Search case by case number @PR @Master @nightly', () => {
-  test.skip('Search for case via caselist', async ({}) => {
-    await performAction('clickButton', 'Case list');
-    await searchCase(getCaseInfo().id);
+//Skipping these tests until create case journey is fully developed because tests may fail each time when payload changes for create case API
+test.describe.skip('[Search case by case number @PR] @Master @nightly', () => {
+  test('Search for case via caselist', async ({}) => {
+    await searchCase(caseInfo.id);
     await performValidation(
       'visibility',
       'caseNumber',
-      {visible: getCaseInfo().fid}
+      {visible: caseInfo.fid}
     );
   });
-  test.skip('Search for case via find case', async ({}) => {
-    await performAction('clickButton', 'Find case');
-    await searchCase(getCaseInfo().id);
+  test('Search for case via find case', async ({}) => {
+    await searchCase(caseInfo.id);
     await performValidation(
       'visibility',
       'caseNumber',
-      {visible: getCaseInfo().fid}
+      {visible: caseInfo.fid}
     );
   });
 });
