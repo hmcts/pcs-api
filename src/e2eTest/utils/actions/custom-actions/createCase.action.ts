@@ -37,11 +37,13 @@ export class CreateCaseAction implements IAction {
       ['selectClaimType', () => this.selectClaimType(fieldName)],
       ['selectClaimantName', () => this.selectClaimantName(fieldName)],
       ['selectContactPreferences', () => this.selectContactPreferences(fieldName)],
+      ['selectRentArrearsPossessionGround', () => this.selectRentArrearsPossessionGround(fieldName)],
       ['selectGroundsForPossession', () => this.selectGroundsForPossession(fieldName)],
       ['selectPreActionProtocol', () => this.selectPreActionProtocol(fieldName)],
       ['selectMediationAndSettlement', () => this.selectMediationAndSettlement(fieldName)],
       ['selectNoticeOfYourIntention', () => this.selectNoticeOfYourIntention(fieldName)],
       ['selectCountryRadioButton', () => this.selectCountryRadioButton(fieldName)],
+      ['selectOtherGrounds', () => this.selectOtherGrounds(fieldName)],
       ['selectTenancyOrLicenceDetails', () => this.selectTenancyOrLicenceDetails(fieldName)],
       ['selectYourPossessionGrounds', () => this.selectYourPossessionGrounds(fieldName)],
       ['enterReasonForPossession', () => this.enterReasonForPossession(fieldName)],
@@ -204,6 +206,28 @@ export class CreateCaseAction implements IAction {
     await performAction('clickButton', 'Continue');
   }
 
+  private async selectRentArrearsPossessionGround(rentArrearsPossessionGrounds: actionData) {
+    const rentArrearsGrounds = rentArrearsPossessionGrounds as {
+      rentArrears: string[];
+      otherGrounds: string;
+    };
+    await performAction('check', rentArrearsGrounds.rentArrears);
+    await performAction('clickRadioButton', rentArrearsGrounds.otherGrounds);
+    await performAction('clickButton', 'Continue');
+  }
+
+  private async selectOtherGrounds(otherRentArrearsGrounds: actionData){
+    const otherGrounds = otherRentArrearsGrounds as {
+      mandatory?: string[];
+      discretionary?: string[];
+    }
+    if (otherGrounds.mandatory && otherGrounds.discretionary) {
+      await performAction('check', otherGrounds.mandatory);
+      await performAction('check', otherGrounds.discretionary);
+    }
+    await performAction('clickButton', 'Continue');
+  }
+
   private async selectTenancyOrLicenceDetails(tenancyData: actionData) {
     const tenancyLicenceData = tenancyData as {
       tenancyOrLicenceType: string;
@@ -290,12 +314,11 @@ export class CreateCaseAction implements IAction {
       unpaidRentAmountPerDay?: string,
       inputFrequency?: string
     };
+    await performAction('inputText', rentDetails.HowMuchRentLabel, rentData.rentAmount);
     await performAction('clickRadioButton', rentData.rentFrequencyOption);
     if(rentData.rentFrequencyOption == 'Other'){
       await performAction('inputText', rentDetails.rentFrequencyLabel, rentData.inputFrequency);
       await performAction('inputText', rentDetails.amountPerDayInputLabel, rentData.unpaidRentAmountPerDay);
-    } else {
-      await performAction('inputText', rentDetails.HowMuchRentLabel, rentData.rentAmount);
     }
     await performAction('clickButton', 'Continue');
   }
