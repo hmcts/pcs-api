@@ -286,6 +286,7 @@ test.describe('[Create Case Flow]  @Master @nightly', async () => {
         reasonsForPossession.breachOfTenancy
       ]);
     await performAction('selectPreActionProtocol', preActionProtocol.yes);
+    await performValidation('mainHeader', mediationAndSettlement.mainHeader);
     await performAction('selectMediationAndSettlement', {
       attemptedMediationWithDefendantsOption: mediationAndSettlement.yes,
       settlementWithDefendantsOption: mediationAndSettlement.no,
