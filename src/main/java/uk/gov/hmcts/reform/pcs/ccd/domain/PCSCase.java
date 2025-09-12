@@ -375,17 +375,20 @@ public class PCSCase {
 
     // Text fields for different service methods
     @CCD(
+        label = "Name of person the document was left with",
         access = {CitizenAccess.class, CaseworkerAccess.class}
     )
     private String noticePersonName;
 
     @CCD(
+        label = "Explain how it was served by email",
         access = {CitizenAccess.class, CaseworkerAccess.class},
         typeOverride = TextArea
     )
     private String noticeEmailExplanation;
 
     @CCD(
+        label = "Explain what the other means were",
         access = {CitizenAccess.class, CaseworkerAccess.class},
         typeOverride = TextArea
     )

@@ -56,7 +56,6 @@ public class NoticeDetails implements CcdPageConfiguration {
             // Personally handed
             .label("noticeDetails-personallyHanded-section", """
                 <h3 class="govuk-heading-s">By personally handing it to or leaving it with someone</h3>
-                <p class="govuk-body">Name of person the document was left with</p>
                 """, NOTICE_SERVICE_METHOD_CONDITION + NoticeServiceMethod.PERSONALLY_HANDED + "\"")
             .optional(
                 PCSCase::getNoticePersonName, 
@@ -70,7 +69,6 @@ public class NoticeDetails implements CcdPageConfiguration {
             // Email
             .label("noticeDetails-email-section", """
                 <h3 class="govuk-heading-s">By email</h3>
-                <p class="govuk-body">Explain how it was served by email</p>
                 """, NOTICE_SERVICE_METHOD_CONDITION + NoticeServiceMethod.EMAIL + "\"")
             .optional(
                 PCSCase::getNoticeEmailExplanation, 
@@ -93,7 +91,6 @@ public class NoticeDetails implements CcdPageConfiguration {
             // Other
             .label("noticeDetails-other-section", """
                 <h3 class="govuk-heading-s">Other</h3>
-                <p class="govuk-body">Explain what the other means were</p>
                 """, NOTICE_SERVICE_METHOD_CONDITION + NoticeServiceMethod.OTHER + "\"")
             .optional(
                 PCSCase::getNoticeOtherExplanation, 
