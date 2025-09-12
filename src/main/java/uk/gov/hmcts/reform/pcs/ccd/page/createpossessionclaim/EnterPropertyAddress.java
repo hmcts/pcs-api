@@ -88,6 +88,7 @@ public class EnterPropertyAddress implements CcdPageConfiguration {
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
             .data(caseData)
+            .errors(List.of())
             .build();
     }
 

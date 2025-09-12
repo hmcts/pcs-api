@@ -50,6 +50,7 @@ public class DefendantsDetails implements CcdPageConfiguration {
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
             .data(caseData)
+            .errors(List.of())
             .build();
     }
 }

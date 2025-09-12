@@ -58,6 +58,7 @@ public class CaseworkerUpdateApplication implements CCDConfig<PCSCase, State, Us
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
             .data(caseData)
+            .errors(List.of())
             .build();
     }
 
