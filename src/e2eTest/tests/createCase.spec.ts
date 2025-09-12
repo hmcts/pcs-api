@@ -1,7 +1,6 @@
 import {test} from '@playwright/test';
 import {parentSuite} from 'allure-js-commons';
 import {initializeExecutor, performAction, performValidation, performValidations} from '@utils/controller';
-import configData from '@config/test.config';
 import userConfig from '@config/permanentUsers.config';
 import {addressDetails} from '@data/page-data/addressDetails.page.data';
 import {claimantType} from '@data/page-data/claimantType.page.data';
@@ -37,7 +36,7 @@ test.beforeEach(async ({page}, testInfo) => {
   await performAction('housingPossessionClaim');
 });
 
-test.describe('[Create Case Flow With Address and Claimant Type]  @Master @nightly', async () => {
+test.describe('[Create Case Flow With Address and Claimant Type] @Master @nightly', async () => {
   test('England - Successful case creation', async () => {
     await performAction('selectAddress', {
       postcode: addressDetails.englandCourtAssignedPostcode,
@@ -53,7 +52,7 @@ test.describe('[Create Case Flow With Address and Claimant Type]  @Master @night
       correspondenceAddress: contactPreferences.yes,
       phoneNumber: contactPreferences.no
     });
-       await performAction('defendantDetails', {
+    await performAction('defendantDetails', {
       name: defendantDetails.yes,
       correspondenceAddress: defendantDetails.yes,
       email: defendantDetails.yes,
@@ -85,7 +84,7 @@ test.describe('[Create Case Flow With Address and Claimant Type]  @Master @night
     await performValidation('mainHeader', rentDetails.mainHeader);
     await performAction('provideRentDetails', {rentFrequencyOption:'weekly', rentAmount:'800'});
     await performValidation('mainHeader', dailyRentAmount.mainHeader);
-    // As of now calculated amount is 11429 suppose to be £114.29, bug will be created for this
+    // As of now calculated amount is 11429 suppose to be £114.29, a bug has been created for this #1857
     await performAction('selectDailyRentAmount', {
       calculateRentAmount: '11429',
       unpaidRentInteractiveOption: dailyRentAmount.no,
@@ -103,7 +102,8 @@ test.describe('[Create Case Flow With Address and Claimant Type]  @Master @night
     )
   });
 
-  test('Wales - Successful case creation with Saved options', async () => {
+  //A housekeeping task has been created to fix this test and resume - HDPI-1898
+  test.skip('Wales - Successful case creation with Saved options', async () => {
     await performAction('enterTestAddressManually');
     await performValidation('bannerAlert', 'Case #.* has been created.');
     await performAction('extractCaseIdFromAlert');
@@ -147,6 +147,63 @@ test.describe('[Create Case Flow With Address and Claimant Type]  @Master @night
     await performAction('provideRentDetails', {rentFrequencyOption:'Other', inputFrequency:rentDetails.rentFrequencyFortnightly,unpaidRentAmountPerDay:'50'});
     await performValidation('mainHeader', detailsOfRentArrears.mainHeader);
     await performAction('clickButton', detailsOfRentArrears.continue);
+    await performAction('clickButton', 'Save and continue');
+    await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
+    await performAction('clickTab', 'Property Details');
+    await performValidations('address information entered',
+      ['formLabelValue', 'Building and Street', addressDetails.buildingAndStreet],
+      ['formLabelValue', 'Address Line 2', addressDetails.addressLine2],
+      ['formLabelValue', 'Town or City', addressDetails.townOrCity],
+      ['formLabelValue', 'Postcode/Zipcode', addressDetails.walesCourtAssignedPostcode],
+      ['formLabelValue', 'Country', addressDetails.country]);
+  });
+
+  test('Wales - Successful case creation without Saved options and Defendants correspondence address is not known', async () => {
+    await performAction('enterTestAddressManually');
+    await performValidation('bannerAlert', 'Case #.* has been created.');
+    await performAction('extractCaseIdFromAlert');
+    await performAction('clickButton', provideMoreDetailsOfClaim.continue);
+    await performAction('selectClaimantType', claimantType.registeredCommunityLandlord);
+    await performAction('selectClaimType', claimType.no);
+    await performAction('selectClaimantName', claimantName.yes);
+    await performAction('clickButton', 'Sign out');
+    await performAction('reloginAndFindTheCase',userConfig.solicitor);
+    await performAction('clickButton', resumeClaim.continue);
+    await performAction('selectResumeClaimOption', resumeClaimOptions.no);
+    await performValidation('radioButtonChecked', claimantType.registeredCommunityLandlord, false);
+    await performAction('selectClaimantType', claimantType.registeredCommunityLandlord);
+    await performValidation('radioButtonChecked', claimType.no, false);
+    await performAction('selectClaimType', claimType.no);
+    await performValidation('radioButtonChecked', claimantName.no, true);
+    await performAction('selectClaimantName', claimantName.yes);
+    await performAction('selectContactPreferences', {
+      notifications: contactPreferences.yes,
+      correspondenceAddress: contactPreferences.yes,
+      phoneNumber: contactPreferences.no
+    });
+    await performAction('defendantDetails', {
+      name: defendantDetails.no,
+      correspondenceAddress: defendantDetails.no,
+      email: defendantDetails.no,
+    });
+    await performAction('selectTenancyOrLicenceDetails', {
+      tenancyOrLicenceType: tenancyLicenceDetails.assuredTenancy});
+    await performValidation('mainHeader', groundsForPossession.mainHeader);
+    await performAction('selectGroundsForPossession', groundsForPossession.yes);
+    await performAction('selectPreActionProtocol', preActionProtocol.yes);
+    await performAction('selectMediationAndSettlement', {
+      attemptedMediationWithDefendantsOption: mediationAndSettlement.yes,
+      settlementWithDefendantsOption: mediationAndSettlement.no,
+    });
+    await performValidation('mainHeader', checkingNotice.mainHeader);
+    await performAction('selectNoticeOfYourIntention', checkingNotice.no);
+    await performValidation('mainHeader', rentDetails.mainHeader);
+    await performAction('provideRentDetails', {rentFrequencyOption: 'Monthly', rentAmount: '1000'});
+    // As of now calculated amount is £3285 suppose to be 3285, bug will be created for this
+    await performAction('selectDailyRentAmount', {
+      calculateRentAmount: '3285',
+      unpaidRentInteractiveOption: dailyRentAmount.yes
+    });
     await performAction('clickButton', 'Save and continue');
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
     await performAction('clickTab', 'Property Details');
@@ -211,62 +268,5 @@ test.describe('[Create Case Flow With Address and Claimant Type]  @Master @night
       header: userIneligible.errors, message: userIneligible.notEligibleForOnlineService
     });
     await performAction('clickButton', 'Cancel');
-  });
-
-  test('Wales - Successful case creation without Saved options and Defendants correspondence address is not known', async () => {
-    await performAction('enterTestAddressManually');
-    await performValidation('bannerAlert', 'Case #.* has been created.');
-    await performAction('extractCaseIdFromAlert');
-    await performAction('clickButton', provideMoreDetailsOfClaim.continue);
-    await performAction('selectClaimantType', claimantType.registeredCommunityLandlord);
-    await performAction('selectClaimType', claimType.no);
-    await performAction('selectClaimantName', claimantName.yes);
-    await performAction('clickButton', 'Sign out');
-    await performAction('reloginAndFindTheCase',userConfig.solicitor);
-    await performAction('clickButton', resumeClaim.continue);
-    await performAction('selectResumeClaimOption', resumeClaimOptions.no);
-    await performValidation('radioButtonChecked', claimantType.registeredCommunityLandlord, false);
-    await performAction('selectClaimantType', claimantType.registeredCommunityLandlord);
-    await performValidation('radioButtonChecked', claimType.no, false);
-    await performAction('selectClaimType', claimType.no);
-    await performValidation('radioButtonChecked', claimantName.no, true);
-    await performAction('selectClaimantName', claimantName.yes);
-    await performAction('selectContactPreferences', {
-      notifications: contactPreferences.yes,
-      correspondenceAddress: contactPreferences.yes,
-      phoneNumber: contactPreferences.no
-    });
-    await performAction('defendantDetails', {
-      name: defendantDetails.no,
-      correspondenceAddress: defendantDetails.no,
-      email: defendantDetails.no,
-    });
-    await performAction('selectTenancyOrLicenceDetails', {
-      tenancyOrLicenceType: tenancyLicenceDetails.assuredTenancy});
-    await performValidation('mainHeader', groundsForPossession.mainHeader);
-    await performAction('selectGroundsForPossession', groundsForPossession.yes);
-    await performAction('selectPreActionProtocol', preActionProtocol.yes);
-    await performAction('selectMediationAndSettlement', {
-      attemptedMediationWithDefendantsOption: mediationAndSettlement.yes,
-      settlementWithDefendantsOption: mediationAndSettlement.no,
-    });
-    await performValidation('mainHeader', checkingNotice.mainHeader);
-    await performAction('selectNoticeOfYourIntention', checkingNotice.no);
-    await performValidation('mainHeader', rentDetails.mainHeader);
-    await performAction('provideRentDetails', {rentFrequencyOption: 'Monthly', rentAmount: '1000'});
-    // As of now calculated amount is £3285 suppose to be 3285, bug will be created for this
-    await performAction('selectDailyRentAmount', {
-      calculateRentAmount: '3285',
-      unpaidRentInteractiveOption: dailyRentAmount.yes
-    });
-    await performAction('clickButton', 'Save and continue');
-    await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
-    await performAction('clickTab', 'Property Details');
-    await performValidations('address information entered',
-      ['formLabelValue', 'Building and Street', addressDetails.buildingAndStreet],
-      ['formLabelValue', 'Address Line 2', addressDetails.addressLine2],
-      ['formLabelValue', 'Town or City', addressDetails.townOrCity],
-      ['formLabelValue', 'Postcode/Zipcode', addressDetails.walesCourtAssignedPostcode],
-      ['formLabelValue', 'Country', addressDetails.country]);
   });
 });
