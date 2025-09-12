@@ -93,9 +93,8 @@ test.describe('[Create Case Flow With Address and Claimant Type] @Master @nightl
     await performValidation('mainHeader', rentDetails.mainHeader);
     await performAction('provideRentDetails', {rentFrequencyOption:'weekly', rentAmount:'800'});
     await performValidation('mainHeader', dailyRentAmount.mainHeader);
-    // As of now calculated amount is 11429 suppose to be £114.29, a bug has been created for this #1857
     await performAction('selectDailyRentAmount', {
-      calculateRentAmount: '11429',
+      calculateRentAmount: '£114.29',
       unpaidRentInteractiveOption: dailyRentAmount.no,
       unpaidRentAmountPerDay: '20'
     });
@@ -212,9 +211,8 @@ test.describe('[Create Case Flow With Address and Claimant Type] @Master @nightl
     await performAction('selectNoticeOfYourIntention', checkingNotice.no);
     await performValidation('mainHeader', rentDetails.mainHeader);
     await performAction('provideRentDetails', {rentFrequencyOption: 'Monthly', rentAmount: '1000'});
-    // As of now calculated amount is £3285 suppose to be 3285, bug will be created for this
     await performAction('selectDailyRentAmount', {
-      calculateRentAmount: '3285',
+      calculateRentAmount: '£32.85',
       unpaidRentInteractiveOption: dailyRentAmount.yes
     });
     await performAction('clickButton', 'Save and continue');
