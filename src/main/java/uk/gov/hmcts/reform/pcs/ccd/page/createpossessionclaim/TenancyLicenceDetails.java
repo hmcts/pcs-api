@@ -69,7 +69,7 @@ public class TenancyLicenceDetails implements CcdPageConfiguration {
         }
 
         if (caseData.getTypeOfTenancyLicence() != TenancyLicenceType.SECURE_TENANCY
-            || caseData.getTypeOfTenancyLicence() != TenancyLicenceType.FLEXIBLE_TENANCY)  {
+            && caseData.getTypeOfTenancyLicence() != TenancyLicenceType.FLEXIBLE_TENANCY)  {
             caseData.setSecureOrFlexibleDiscretionaryGrounds(Set.of());
             caseData.setSecureOrFlexibleMandatoryGrounds(Set.of());
             caseData.setSecureOrFlexibleDiscretionaryGroundsAlt(Set.of());
