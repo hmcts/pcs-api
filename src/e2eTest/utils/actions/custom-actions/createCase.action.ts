@@ -17,7 +17,6 @@ import { accessTokenApiData } from '@data/api-data/accessToken.api.data';
 import { caseApiData } from '@data/api-data/case.api.data';
 import { dailyRentAmount } from '@data/page-data/dailyRentAmount.page.data';
 import { reasonsForPossession } from '@data/page-data/reasonsForPossession.page.data';
-import configData from '@config/test.config';
 
 export let caseInfo: { id: string; fid: string; state: string };
 let caseNumber: string;
