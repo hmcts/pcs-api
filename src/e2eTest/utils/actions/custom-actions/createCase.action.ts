@@ -6,7 +6,7 @@ import { performAction, performActions, performValidation } from '@utils/control
 import { createCase } from '@data/page-data/createCase.page.data';
 import { addressDetails } from '@data/page-data/addressDetails.page.data';
 import { housingPossessionClaim } from '@data/page-data/housingPossessionClaim.page.data';
-import { defendant1Details } from "@data/page-data/defendant1Details.page.data";
+import { defendantDetails } from "@data/page-data/defendantDetails.page.data";
 import { claimantName } from '@data/page-data/claimantName.page.data';
 import { contactPreferences } from '@data/page-data/contactPreferences.page.data';
 import { mediationAndSettlement } from '@data/page-data/mediationAndSettlement.page.data';
@@ -173,20 +173,20 @@ export class CreateCaseAction implements IAction {
       postcode?: string;
     };
     await performAction('clickRadioButton', {
-      question: defendant1Details.doYouKnowTheDefendantName,
+      question: defendantDetails.doYouKnowTheDefendantName,
       option: defendantData.name
     });
     if (defendantData.name === 'Yes') {
-      await performAction('inputText', defendant1Details.defendantFirstName, defendantData.firstName);
-      await performAction('inputText', defendant1Details.defendantLastName, defendantData.lastName);
+      await performAction('inputText', defendantDetails.defendantFirstName, defendantData.firstName);
+      await performAction('inputText', defendantDetails.defendantLastName, defendantData.lastName);
     }
     await performAction('clickRadioButton', {
-      question: defendant1Details.defendantCorrespondenceAddress,
+      question: defendantDetails.defendantCorrespondenceAddress,
       option: defendantData.correspondenceAddress
     });
     if (defendantData.correspondenceAddress === 'Yes') {
       await performAction('clickRadioButton', {
-        question: defendant1Details.isCorrespondenceAddressSame,
+        question: defendantDetails.isCorrespondenceAddressSame,
         option: defendantData.correspondenceAddressSame
       });
       if (defendantData.correspondenceAddressSame === 'No' && defendantData.postcode) {
@@ -194,16 +194,16 @@ export class CreateCaseAction implements IAction {
             'Find Address based on postcode',
             ['inputText', 'Enter a UK postcode', defendantData.postcode],
             ['clickButton', 'Find address'],
-            ['select', 'Select an address', defendant1Details.addressIndex]
+            ['select', 'Select an address', defendantDetails.addressIndex]
         );
       }
     }
     await performAction('clickRadioButton', {
-      question: defendant1Details.defendantEmailAddress,
+      question: defendantDetails.defendantEmailAddress,
       option: defendantData.email
     });
     if (defendantData.email === 'Yes') {
-      await performAction('inputText', defendant1Details.enterEmailAddress, defendantData.emailId);
+      await performAction('inputText', defendantDetails.enterEmailAddress, defendantData.emailId);
     }
     await performAction('clickButton', 'Continue');
   }

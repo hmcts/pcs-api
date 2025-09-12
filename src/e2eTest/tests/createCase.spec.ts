@@ -6,7 +6,7 @@ import {claimantType} from '@data/page-data/claimantType.page.data';
 import {claimType} from '@data/page-data/claimType.page.data';
 import {claimantName} from '@data/page-data/claimantName.page.data';
 import {contactPreferences} from '@data/page-data/contactPreferences.page.data';
-import {defendant1Details} from '@data/page-data/defendant1Details.page.data';
+import {defendant1Details, defendant2Details} from '@data/page-data/defendantDetails.page.data';
 import {tenancyLicenceDetails} from '@data/page-data/tenancyLicenceDetails.page.data';
 import {groundsForPossession} from '@data/page-data/groundsForPossession.page.data';
 import {rentArrearsPossessionGrounds} from '@data/page-data/rentArrearsPossessionGrounds.page.data';
@@ -23,7 +23,6 @@ import {resumeClaim} from '@data/page-data/resumeClaim.page.data';
 import {resumeClaimOptions} from '@data/page-data/resumeClaimOptions.page.data';
 import {detailsOfRentArrears} from '@data/page-data/detailsOfRentArrears.page.data';
 import {defendantList} from '@data/page-data/defendantList.page.data';
-import {defendant2Details} from "@data/page-data/defendant2Details.page.data";
 
 test.beforeEach(async ({page}, testInfo) => {
   initializeExecutor(page);
