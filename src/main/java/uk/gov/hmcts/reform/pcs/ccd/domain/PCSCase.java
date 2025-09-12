@@ -350,21 +350,21 @@ public class PCSCase {
     private LocalDateTime noticeHandedOverDateTime;
 
     @CCD(
-        label = "Date and time the email was sent",
+        label = "Date and time the document was handed over",
         hint = "For example, 16 4 2021, 11 15",
         access = {CitizenAccess.class, CaseworkerAccess.class}
     )
     private LocalDateTime noticeEmailSentDateTime;
 
     @CCD(
-        label = "Date and time the electronic message was sent",
+        label = "Date and time email or message sent",
         hint = "For example, 16 4 2021, 11 15",
         access = {CitizenAccess.class, CaseworkerAccess.class}
     )
     private LocalDateTime noticeOtherElectronicDateTime;
 
     @CCD(
-        label = "Date and time the document was served",
+        label = "Date and time the document was handed over",
         hint = "For example, 16 4 2021, 11 15",
         access = {CitizenAccess.class, CaseworkerAccess.class}
     )
