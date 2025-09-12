@@ -16,6 +16,7 @@ import {tenancyLicenceDetails} from '@data/page-data/tenancyLicenceDetails.page.
 import {resumeClaimOptions} from "@data/page-data/resumeClaimOptions.page.data";
 import {rentDetails} from '@data/page-data/rentDetails.page.data';
 import {dailyRentAmount} from '@data/page-data/dailyRentAmount.page.data';
+import {detailsOfRentArrears} from '@data/page-data/detailsOfRentArrears.page.data';
 import configData from '@config/test.config';
 
 let caseInfo: { id: string; fid: string; state: string };
@@ -50,7 +51,8 @@ export class CreateCaseAction implements IAction {
       ['selectCountryRadioButton', () => this.selectCountryRadioButton(fieldName)],
       ['selectTenancyOrLicenceDetails', () => this.selectTenancyOrLicenceDetails(fieldName)],
       ['provideRentDetails', () => this.provideRentDetails(fieldName)],
-      ['selectDailyRentAmount', () => this.selectDailyRentAmount(fieldName)]
+      ['selectDailyRentAmount', () => this.selectDailyRentAmount(fieldName)],
+      ['provideDetailsOfRentArrears', () => this.provideDetailsOfRentArrears(fieldName)]
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) throw new Error(`No action found for '${action}'`);
@@ -294,6 +296,28 @@ export class CreateCaseAction implements IAction {
       await performAction('inputText', dailyRentAmount.enterAmountPerDayLabel, rentAmount.unpaidRentAmountPerDay);
     }
     await performAction('clickButton', 'Continue');
+  }
+
+  private async provideDetailsOfRentArrears(rentArrears: actionData) {
+    const rentArrearsData = rentArrears as {
+      files?: string[],
+      rentArrearsAmountOnStatement: string,
+      rentPaidByOthersOption: string;
+      paymentOptions?: string[];
+    };
+    await performAction('uploadFile', rentArrearsData.files);
+    await performAction('inputText', detailsOfRentArrears.totalRentArrearsLabel, rentArrearsData.rentArrearsAmountOnStatement);
+    await performAction('clickRadioButton', {
+      question: detailsOfRentArrears.periodShownOnRentStatementLabel,
+      option: rentArrearsData.rentPaidByOthersOption
+    });
+    if (rentArrearsData.rentPaidByOthersOption == 'Yes') {
+      await performAction('check', rentArrearsData.paymentOptions);
+      if (rentArrearsData.paymentOptions?.includes('Other')) {
+        await performAction('inputText', detailsOfRentArrears.paymentSourceLabel, detailsOfRentArrears.paymentOptionOtherInput);
+      }
+      await performAction('clickButton', 'Continue');
+    }
   }
 
   private async selectJurisdictionCaseTypeEvent() {
