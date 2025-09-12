@@ -16,6 +16,7 @@ import { rentDetails } from '@data/page-data/rentDetails.page.data';
 import { accessTokenApiData } from '@data/api-data/accessToken.api.data';
 import { caseApiData } from '@data/api-data/case.api.data';
 import { dailyRentAmount } from '@data/page-data/dailyRentAmount.page.data';
+import { reasonsForPossession } from '@data/page-data/reasonsForPossession.page.data';
 
 export let caseInfo: { id: string; fid: string; state: string };
 let caseNumber: string;
@@ -44,6 +45,9 @@ export class CreateCaseAction implements IAction {
       ['selectCountryRadioButton', () => this.selectCountryRadioButton(fieldName)],
       ['selectOtherGrounds', () => this.selectOtherGrounds(fieldName)],
       ['selectTenancyOrLicenceDetails', () => this.selectTenancyOrLicenceDetails(fieldName)],
+      ['selectYourPossessionGrounds', () => this.selectYourPossessionGrounds(fieldName)],
+      ['enterReasonForPossession', () => this.enterReasonForPossession(fieldName)],
+      ['selectRentArrearsOrBreachOfTenancy', () => this.selectRentArrearsOrBreachOfTenancy(fieldName)],
       ['provideRentDetails', () => this.provideRentDetails(fieldName)],
       ['selectDailyRentAmount', () => this.selectDailyRentAmount(fieldName)]
     ]);
@@ -237,15 +241,50 @@ export class CreateCaseAction implements IAction {
     if (tenancyLicenceData.tenancyOrLicenceType === 'Other') {
       await performAction('inputText', 'Give details of the type of tenancy or licence agreement that\'s in place', tenancyLicenceDetails.detailsOfLicence);
     }
-    if(tenancyLicenceData.day && tenancyLicenceData.month &&  tenancyLicenceData.year) {
-      await performAction('inputText', 'Day', tenancyLicenceData.day);
-      await performAction('inputText', 'Month', tenancyLicenceData.month);
-      await performAction('inputText', 'Year', tenancyLicenceData.year);
+    if (tenancyLicenceData.day && tenancyLicenceData.month && tenancyLicenceData.year) {
+      await performActions(
+        'Enter Date',
+        ['inputText', 'Day', tenancyLicenceData.day],
+        ['inputText', 'Month', tenancyLicenceData.month],
+        ['inputText', 'Year', tenancyLicenceData.year]);
     }
     if (tenancyLicenceData.files) {
       for (const file of tenancyLicenceData.files) {
         await performAction('clickButton', 'Add new');
         await performAction('uploadFile', file);
+      }
+    }
+    await performAction('clickButton', 'Continue');
+  }
+
+  private async selectYourPossessionGrounds(possessionGrounds: actionData) {
+    const grounds = possessionGrounds as {
+      mandatory?: string[];
+      mandatoryAccommodation?: string[];
+      discretionary: string[];
+      discretionaryAccommodation?: string;
+    };
+      await performAction('check', grounds.discretionary);
+      if(grounds.mandatory && grounds.discretionaryAccommodation && grounds.mandatoryAccommodation) {
+        await performAction('check', grounds.mandatory);
+        await performAction('check', grounds.mandatoryAccommodation);
+        await performAction('check', grounds.discretionaryAccommodation);
+      }
+      await performAction('clickButton', 'Continue');
+  }
+
+  private async selectRentArrearsOrBreachOfTenancy(grounds: actionData) {
+    const rentArrearsOrBreachOfTenancyGrounds = grounds as {
+      rentArrearsOrBreach: string[];
+    }
+    await performAction('check', rentArrearsOrBreachOfTenancyGrounds.rentArrearsOrBreach);
+    await performAction('clickButton', 'Continue');
+  }
+
+  private async enterReasonForPossession(caseData: actionData) {
+    if (Array.isArray(caseData)) {
+      for (let n = 0; n < caseData.length; n++) {
+        await performAction('inputText',  {text:caseData[n],index: n}, reasonsForPossession.detailsAboutYourReason);
       }
     }
     await performAction('clickButton', 'Continue');

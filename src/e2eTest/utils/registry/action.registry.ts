@@ -40,9 +40,12 @@ export class ActionRegistry {
     ['selectMediationAndSettlement', new CreateCaseAction()],
     ['selectNoticeOfYourIntention', new CreateCaseAction()],
     ['selectCountryRadioButton', new CreateCaseAction()],
+    ['selectYourPossessionGrounds', new CreateCaseAction()],
     ['selectOtherGrounds', new CreateCaseAction()],
     ['selectTenancyOrLicenceDetails', new CreateCaseAction()],
+    ['enterReasonForPossession', new CreateCaseAction()],
     ['reloginAndFindTheCase', new CreateCaseAction()],
+    ['selectRentArrearsOrBreachOfTenancy', new CreateCaseAction() ],
     ['provideRentDetails', new CreateCaseAction()],
     ['selectDailyRentAmount', new CreateCaseAction()]
   ]);
