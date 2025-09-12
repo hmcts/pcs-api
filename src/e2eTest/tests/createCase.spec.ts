@@ -111,8 +111,7 @@ test.describe('[Create Case Flow With Address and Claimant Type] @Master @nightl
     )
   });
 
-  //A housekeeping task has been created to fix this test and resume - HDPI-1898
-  test.skip('Wales - Successful case creation with Saved options', async () => {
+  test('Wales - Successful case creation with Saved options', async () => {
     await performAction('enterTestAddressManually');
     await performValidation('bannerAlert', 'Case #.* has been created.');
     await performAction('extractCaseIdFromAlert');
@@ -157,7 +156,7 @@ test.describe('[Create Case Flow With Address and Claimant Type] @Master @nightl
     await performValidation('mainHeader', checkingNotice.mainHeader);
     await performAction('selectNoticeOfYourIntention', checkingNotice.no);
     await performValidation('mainHeader', rentDetails.mainHeader);
-    await performAction('provideRentDetails', {rentFrequencyOption:'Other', inputFrequency:rentDetails.rentFrequencyFortnightly,unpaidRentAmountPerDay:'50'});
+    await performAction('provideRentDetails', {rentAmount:'850', rentFrequencyOption:'Other', inputFrequency:rentDetails.rentFrequencyFortnightly,unpaidRentAmountPerDay:'50'});
     await performValidation('mainHeader', detailsOfRentArrears.mainHeader);
     await performAction('clickButton', detailsOfRentArrears.continue);
     await performAction('clickButton', 'Save and continue');
