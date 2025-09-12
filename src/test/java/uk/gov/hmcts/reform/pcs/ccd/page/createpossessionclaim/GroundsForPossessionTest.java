@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
 import uk.gov.hmcts.ccd.sdk.api.Event;
 import uk.gov.hmcts.ccd.sdk.api.callback.MidEvent;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.NoRentArrearsDiscretionaryGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.NoRentArrearsMandatoryGrounds;
@@ -25,12 +26,13 @@ public class GroundsForPossessionTest extends BasePageTest {
     }
 
     @Test
-    void shouldClearMandatoryAndDiscretionaryGroundsOptions() {
+    void shouldClearGroundsOptionsWhenGroundsForPossessionIsYes() {
         // Given: One mandatory and one discretionary is selected
         CaseDetails<PCSCase, State> caseDetails = new CaseDetails<>();
         PCSCase caseData = PCSCase.builder()
             .noRentArrearsDiscretionaryGroundsOptions(Set.of(NoRentArrearsDiscretionaryGrounds.DOMESTIC_VIOLENCE))
             .noRentArrearsMandatoryGroundsOptions(Set.of(NoRentArrearsMandatoryGrounds.ANTISOCIAL_BEHAVIOUR))
+            .groundsForPossession(YesOrNo.YES)
             .build();
 
         caseDetails.setData(caseData);
@@ -39,9 +41,31 @@ public class GroundsForPossessionTest extends BasePageTest {
         MidEvent<PCSCase, State> midEvent = getMidEventForPage(event, "groundsForPossession");
         midEvent.handle(caseDetails, null);
 
-        // Then: Set should be cleared
+        // Then: Sets should be cleared
         assertThat(caseDetails.getData().getNoRentArrearsMandatoryGroundsOptions()).isEmpty();
         assertThat(caseDetails.getData().getNoRentArrearsDiscretionaryGroundsOptions()).isEmpty();
+
+    }
+
+    @Test
+    void shouldNotClearGroundsOptionsWhenGroundsForPossessionIsNo() {
+        // Given: One mandatory and one discretionary is selected
+        CaseDetails<PCSCase, State> caseDetails = new CaseDetails<>();
+        PCSCase caseData = PCSCase.builder()
+            .noRentArrearsDiscretionaryGroundsOptions(Set.of(NoRentArrearsDiscretionaryGrounds.DOMESTIC_VIOLENCE))
+            .noRentArrearsMandatoryGroundsOptions(Set.of(NoRentArrearsMandatoryGrounds.ANTISOCIAL_BEHAVIOUR))
+            .groundsForPossession(YesOrNo.NO)
+            .build();
+
+        caseDetails.setData(caseData);
+
+        // When: Mid event is executed
+        MidEvent<PCSCase, State> midEvent = getMidEventForPage(event, "groundsForPossession");
+        midEvent.handle(caseDetails, null);
+
+        // Then: Sets should not be cleared
+        assertThat(caseDetails.getData().getNoRentArrearsMandatoryGroundsOptions()).isNotEmpty();
+        assertThat(caseDetails.getData().getNoRentArrearsDiscretionaryGroundsOptions()).isNotEmpty();
 
     }
 }

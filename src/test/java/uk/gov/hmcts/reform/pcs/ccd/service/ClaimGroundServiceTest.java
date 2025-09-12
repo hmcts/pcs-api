@@ -66,8 +66,6 @@ class ClaimGroundServiceTest {
         // Check size
         assertThat(entities.size()).isEqualTo(mandatory.size() + discretionary.size());
 
-        // Check that each mandatory ground is present with the correct reason
-
         // Expected pairs: ground ID -> reason
         Map<String, String> expectedReasons = Map.ofEntries(
             entry("OWNER_OCCUPIER", "Owner occupier reason"),
