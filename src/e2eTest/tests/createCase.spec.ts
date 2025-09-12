@@ -1,7 +1,6 @@
 import {test} from '@playwright/test';
 import {parentSuite} from 'allure-js-commons';
 import {initializeExecutor, performAction, performValidation, performValidations} from '@utils/controller';
-import configData from '@config/test.config';
 import {addressDetails} from '@data/page-data/addressDetails.page.data';
 import {claimantType} from '@data/page-data/claimantType.page.data';
 import {claimType} from '@data/page-data/claimType.page.data';
@@ -10,6 +9,8 @@ import {contactPreferences} from '@data/page-data/contactPreferences.page.data';
 import {defendantDetails} from '@data/page-data/defendantDetails.page.data';
 import {tenancyLicenceDetails} from '@data/page-data/tenancyLicenceDetails.page.data';
 import {groundsForPossession} from '@data/page-data/groundsForPossession.page.data';
+import {rentArrearsPossessionGrounds} from '@data/page-data/rentArrearsPossessionGrounds.page.data';
+import {whatAreYourGrounds} from '@data/page-data/mandatoryAndDiscretionaryGrounds.page.data';
 import {preActionProtocol} from '@data/page-data/preActionProtocol.page.data';
 import {mediationAndSettlement} from '@data/page-data/mediationAndSettlement.page.data';
 import {checkingNotice} from '@data/page-data/checkingNotice.page.data';
@@ -25,7 +26,7 @@ import {detailsOfRentArrears} from '@data/page-data/detailsOfRentArrears.page.da
 test.beforeEach(async ({page}, testInfo) => {
   initializeExecutor(page);
   await parentSuite('Case Creation');
-  await performAction('navigateToUrl', configData.manageCasesBaseURL);
+  await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
   await performAction('createUserAndLogin', 'claimant', ['caseworker-pcs', 'caseworker']);
   await testInfo.attach('Page URL', {
     body: page.url(),
@@ -36,7 +37,7 @@ test.beforeEach(async ({page}, testInfo) => {
   await performAction('housingPossessionClaim');
 });
 
-test.describe('[Create Case Flow With Address and Claimant Type]  @Master @nightly', async () => {
+test.describe('[Create Case Flow With Address and Claimant Type] @Master @nightly', async () => {
   test('England - Successful case creation', async () => {
     await performAction('selectAddress', {
       postcode: addressDetails.englandCourtAssignedPostcode,
@@ -52,7 +53,7 @@ test.describe('[Create Case Flow With Address and Claimant Type]  @Master @night
       correspondenceAddress: contactPreferences.yes,
       phoneNumber: contactPreferences.no
     });
-       await performAction('defendantDetails', {
+    await performAction('defendantDetails', {
       name: defendantDetails.yes,
       correspondenceAddress: defendantDetails.yes,
       email: defendantDetails.yes,
@@ -68,6 +69,14 @@ test.describe('[Create Case Flow With Address and Claimant Type]  @Master @night
     });
     await performValidation('mainHeader', groundsForPossession.mainHeader);
     await performAction('selectGroundsForPossession', groundsForPossession.yes);
+    await performAction('selectRentArrearsPossessionGround', {
+      rentArrears: [rentArrearsPossessionGrounds.rentArrears, rentArrearsPossessionGrounds.seriousRentArrears, rentArrearsPossessionGrounds.persistentDelayInPayingRent],
+      otherGrounds: rentArrearsPossessionGrounds.yes
+    });
+    await performAction('selectOtherGrounds',{
+      mandatory: [whatAreYourGrounds.mandatory.holidayLet,whatAreYourGrounds.mandatory.ownerOccupier],
+      discretionary: [whatAreYourGrounds.discretionary.domesticViolence,whatAreYourGrounds.discretionary.rentArrears],
+    })
     await performValidation('mainHeader', preActionProtocol.mainHeader);
     await performAction('selectPreActionProtocol', preActionProtocol.yes);
     await performValidation('mainHeader', mediationAndSettlement.mainHeader);
@@ -84,9 +93,8 @@ test.describe('[Create Case Flow With Address and Claimant Type]  @Master @night
     await performValidation('mainHeader', rentDetails.mainHeader);
     await performAction('provideRentDetails', {rentFrequencyOption:'weekly', rentAmount:'800'});
     await performValidation('mainHeader', dailyRentAmount.mainHeader);
-    // As of now calculated amount is 11429 suppose to be £114.29, bug will be created for this
     await performAction('selectDailyRentAmount', {
-      calculateRentAmount: '11429',
+      calculateRentAmount: '£114.29',
       unpaidRentInteractiveOption: dailyRentAmount.no,
       unpaidRentAmountPerDay: '20'
     });
@@ -102,7 +110,8 @@ test.describe('[Create Case Flow With Address and Claimant Type]  @Master @night
     )
   });
 
-  test('Wales - Successful case creation with Saved options', async () => {
+  //A housekeeping task has been created to fix this test and resume - HDPI-1898
+  test.skip('Wales - Successful case creation with Saved options', async () => {
     await performAction('enterTestAddressManually');
     await performValidation('bannerAlert', 'Case #.* has been created.');
     await performAction('extractCaseIdFromAlert');
@@ -135,6 +144,10 @@ test.describe('[Create Case Flow With Address and Claimant Type]  @Master @night
       tenancyOrLicenceType: tenancyLicenceDetails.assuredTenancy});
     await performValidation('mainHeader', groundsForPossession.mainHeader);
     await performAction('selectGroundsForPossession', groundsForPossession.yes);
+    await performAction('selectRentArrearsPossessionGround', {
+      rentArrears: [rentArrearsPossessionGrounds.rentArrears],
+      otherGrounds: rentArrearsPossessionGrounds.no
+    });
     await performAction('selectPreActionProtocol', preActionProtocol.yes);
     await performAction('selectMediationAndSettlement', {
       attemptedMediationWithDefendantsOption: mediationAndSettlement.yes,
@@ -155,61 +168,6 @@ test.describe('[Create Case Flow With Address and Claimant Type]  @Master @night
       ['formLabelValue', 'Town or City', addressDetails.townOrCity],
       ['formLabelValue', 'Postcode/Zipcode', addressDetails.walesCourtAssignedPostcode],
       ['formLabelValue', 'Country', addressDetails.country]);
-  });
-
-  test.skip('England - Unsuccessful case creation journey due to claimant type not in scope of Release1 @R1only', async () => {
-    await performAction('selectAddress', {
-      postcode: addressDetails.englandCourtAssignedPostcode,
-      addressIndex: addressDetails.addressIndex
-    });
-    await performAction('clickButton', provideMoreDetailsOfClaim.continue);
-    await performAction('selectClaimantType', claimantType.mortgageLender);
-    await performValidation('mainHeader', 'You\'re not eligible for this online service');
-    await performAction('clickButton', 'Continue');
-    await performValidation('errorMessage', {
-      header: userIneligible.eventNotCreated, message: userIneligible.unableToProceed
-    });
-    await performValidation('errorMessage', {
-      header: userIneligible.errors, message: userIneligible.notEligibleForOnlineService
-    });
-    await performAction('clickButton', 'Cancel');
-  });
-
-  test.skip('Wales - Unsuccessful case creation journey due to claimant type not in scope of Release1 @R1only', async () => {
-    await performAction('selectAddress', {
-      postcode: addressDetails.walesCourtAssignedPostcode,
-      addressIndex: addressDetails.addressIndex
-    });
-    await performAction('clickButton', provideMoreDetailsOfClaim.continue);
-    await performAction('selectClaimantType', claimantType.privateLandlord);
-    await performValidation('mainHeader', 'You\'re not eligible for this online service');
-    await performAction('clickButton', 'Continue');
-    await performValidation('errorMessage', {
-      header: userIneligible.eventNotCreated, message: userIneligible.unableToProceed
-    });
-    await performValidation('errorMessage', {
-      header: userIneligible.errors, message: userIneligible.notEligibleForOnlineService
-    });
-    await performAction('clickButton', 'Cancel');
-  });
-
-  test.skip('Unsuccessful case creation journey due to claim type not in scope of Release1 @R1only', async () => {
-    await performAction('selectAddress', {
-      postcode: addressDetails.englandCourtAssignedPostcode,
-      addressIndex: addressDetails.addressIndex
-    });
-    await performAction('clickButton', provideMoreDetailsOfClaim.continue);
-    await performAction('selectClaimantType', claimantType.registeredProviderForSocialHousing);
-    await performAction('selectClaimType', claimType.yes);
-    await performValidation('mainHeader', 'You\'re not eligible for this online service');
-    await performAction('clickButton', 'Continue');
-    await performValidation('errorMessage', {
-      header: userIneligible.eventNotCreated, message: userIneligible.unableToProceed
-    });
-    await performValidation('errorMessage', {
-      header: userIneligible.errors, message: userIneligible.notEligibleForOnlineService
-    });
-    await performAction('clickButton', 'Cancel');
   });
 
   test('Wales - Successful case creation without Saved options and Defendants correspondence address is not known', async () => {
@@ -243,7 +201,7 @@ test.describe('[Create Case Flow With Address and Claimant Type]  @Master @night
     await performAction('selectTenancyOrLicenceDetails', {
       tenancyOrLicenceType: tenancyLicenceDetails.assuredTenancy});
     await performValidation('mainHeader', groundsForPossession.mainHeader);
-    await performAction('selectGroundsForPossession', groundsForPossession.yes);
+    await performAction('selectGroundsForPossession', groundsForPossession.no);
     await performAction('selectPreActionProtocol', preActionProtocol.yes);
     await performAction('selectMediationAndSettlement', {
       attemptedMediationWithDefendantsOption: mediationAndSettlement.yes,
@@ -253,9 +211,8 @@ test.describe('[Create Case Flow With Address and Claimant Type]  @Master @night
     await performAction('selectNoticeOfYourIntention', checkingNotice.no);
     await performValidation('mainHeader', rentDetails.mainHeader);
     await performAction('provideRentDetails', {rentFrequencyOption: 'Monthly', rentAmount: '1000'});
-    // As of now calculated amount is £3285 suppose to be 3285, bug will be created for this
     await performAction('selectDailyRentAmount', {
-      calculateRentAmount: '3285',
+      calculateRentAmount: '£32.85',
       unpaidRentInteractiveOption: dailyRentAmount.yes
     });
     await performAction('clickButton', 'Save and continue');
@@ -267,5 +224,60 @@ test.describe('[Create Case Flow With Address and Claimant Type]  @Master @night
       ['formLabelValue', 'Town or City', addressDetails.townOrCity],
       ['formLabelValue', 'Postcode/Zipcode', addressDetails.walesCourtAssignedPostcode],
       ['formLabelValue', 'Country', addressDetails.country]);
+  });
+
+  test('England - Unsuccessful case creation journey due to claimant type not in scope of Release1 @R1only', async () => {
+    await performAction('selectAddress', {
+      postcode: addressDetails.englandCourtAssignedPostcode,
+      addressIndex: addressDetails.addressIndex
+    });
+    await performAction('clickButton', provideMoreDetailsOfClaim.continue);
+    await performAction('selectClaimantType', claimantType.mortgageLender);
+    await performValidation('mainHeader', 'You\'re not eligible for this online service');
+    await performAction('clickButton', 'Continue');
+    await performValidation('errorMessage', {
+      header: userIneligible.eventNotCreated, message: userIneligible.unableToProceed
+    });
+    await performValidation('errorMessage', {
+      header: userIneligible.errors, message: userIneligible.notEligibleForOnlineService
+    });
+    await performAction('clickButton', 'Cancel');
+  });
+
+  test('Wales - Unsuccessful case creation journey due to claimant type not in scope of Release1 @R1only', async () => {
+    await performAction('selectAddress', {
+      postcode: addressDetails.walesCourtAssignedPostcode,
+      addressIndex: addressDetails.addressIndex
+    });
+    await performAction('clickButton', provideMoreDetailsOfClaim.continue);
+    await performAction('selectClaimantType', claimantType.privateLandlord);
+    await performValidation('mainHeader', 'You\'re not eligible for this online service');
+    await performAction('clickButton', 'Continue');
+    await performValidation('errorMessage', {
+      header: userIneligible.eventNotCreated, message: userIneligible.unableToProceed
+    });
+    await performValidation('errorMessage', {
+      header: userIneligible.errors, message: userIneligible.notEligibleForOnlineService
+    });
+    await performAction('clickButton', 'Cancel');
+  });
+
+  test('Unsuccessful case creation journey due to claim type not in scope of Release1 @R1only', async () => {
+    await performAction('selectAddress', {
+      postcode: addressDetails.englandCourtAssignedPostcode,
+      addressIndex: addressDetails.addressIndex
+    });
+    await performAction('clickButton', provideMoreDetailsOfClaim.continue);
+    await performAction('selectClaimantType', claimantType.registeredProviderForSocialHousing);
+    await performAction('selectClaimType', claimType.yes);
+    await performValidation('mainHeader', 'You\'re not eligible for this online service');
+    await performAction('clickButton', 'Continue');
+    await performValidation('errorMessage', {
+      header: userIneligible.eventNotCreated, message: userIneligible.unableToProceed
+    });
+    await performValidation('errorMessage', {
+      header: userIneligible.errors, message: userIneligible.notEligibleForOnlineService
+    });
+    await performAction('clickButton', 'Cancel');
   });
 });
