@@ -383,6 +383,7 @@ public class PCSCase {
     @CCD(
         label = "Explain how it was served by email",
         access = {CitizenAccess.class, CaseworkerAccess.class},
+        max = 250,
         typeOverride = TextArea
     )
     private String noticeEmailExplanation;
@@ -390,6 +391,7 @@ public class PCSCase {
     @CCD(
         label = "Explain what the other means were",
         access = {CitizenAccess.class, CaseworkerAccess.class},
+        max = 250,
         typeOverride = TextArea
     )
     private String noticeOtherExplanation;
