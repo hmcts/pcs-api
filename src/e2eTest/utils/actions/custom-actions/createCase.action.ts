@@ -36,11 +36,13 @@ export class CreateCaseAction implements IAction {
       ['selectClaimType', () => this.selectClaimType(fieldName)],
       ['selectClaimantName', () => this.selectClaimantName(fieldName)],
       ['selectContactPreferences', () => this.selectContactPreferences(fieldName)],
+      ['selectRentArrearsPossessionGround', () => this.selectRentArrearsPossessionGround(fieldName)],
       ['selectGroundsForPossession', () => this.selectGroundsForPossession(fieldName)],
       ['selectPreActionProtocol', () => this.selectPreActionProtocol(fieldName)],
       ['selectMediationAndSettlement', () => this.selectMediationAndSettlement(fieldName)],
       ['selectNoticeOfYourIntention', () => this.selectNoticeOfYourIntention(fieldName)],
       ['selectCountryRadioButton', () => this.selectCountryRadioButton(fieldName)],
+      ['selectOtherGrounds', () => this.selectOtherGrounds(fieldName)],
       ['selectTenancyOrLicenceDetails', () => this.selectTenancyOrLicenceDetails(fieldName)],
       ['provideRentDetails', () => this.provideRentDetails(fieldName)],
       ['selectDailyRentAmount', () => this.selectDailyRentAmount(fieldName)]
@@ -197,6 +199,28 @@ export class CreateCaseAction implements IAction {
     });
     if (defendantData.email === 'Yes') {
       await performAction('inputText', defendantDetails.enterEmailAddress, defendantDetails.emailIdInput);
+    }
+    await performAction('clickButton', 'Continue');
+  }
+
+  private async selectRentArrearsPossessionGround(rentArrearsPossessionGrounds: actionData) {
+    const rentArrearsGrounds = rentArrearsPossessionGrounds as {
+      rentArrears: string[];
+      otherGrounds: string;
+    };
+    await performAction('check', rentArrearsGrounds.rentArrears);
+    await performAction('clickRadioButton', rentArrearsGrounds.otherGrounds);
+    await performAction('clickButton', 'Continue');
+  }
+
+  private async selectOtherGrounds(otherRentArrearsGrounds: actionData){
+    const otherGrounds = otherRentArrearsGrounds as {
+      mandatory?: string[];
+      discretionary?: string[];
+    }
+    if (otherGrounds.mandatory && otherGrounds.discretionary) {
+      await performAction('check', otherGrounds.mandatory);
+      await performAction('check', otherGrounds.discretionary);
     }
     await performAction('clickButton', 'Continue');
   }
