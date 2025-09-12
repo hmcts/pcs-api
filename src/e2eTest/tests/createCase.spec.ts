@@ -22,12 +22,13 @@ import {provideMoreDetailsOfClaim} from '@data/page-data/provideMoreDetailsOfCla
 import {resumeClaim} from '@data/page-data/resumeClaim.page.data';
 import {resumeClaimOptions} from '@data/page-data/resumeClaimOptions.page.data';
 import {detailsOfRentArrears} from '@data/page-data/detailsOfRentArrears.page.data';
+import {user} from "@data/user-data/permanent.user.data";
 
 test.beforeEach(async ({page}, testInfo) => {
   initializeExecutor(page);
   await parentSuite('Case Creation');
   await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
-  await performAction('createUserAndLogin', 'claimant', ['caseworker-pcs', 'caseworker']);
+  await performAction('login', user.claimantSolicitor);
   await testInfo.attach('Page URL', {
     body: page.url(),
     contentType: 'text/plain',
@@ -119,7 +120,7 @@ test.describe('[Create Case Flow With Address and Claimant Type] @Master @nightl
     await performAction('selectClaimType', claimType.no);
     await performAction('selectClaimantName', claimantName.no);
     await performAction('clickButton', 'Sign out');
-    await performAction('reloginAndFindTheCase');
+    await performAction('reloginAndFindTheCase',user.claimantSolicitor);
     await performAction('clickButton', resumeClaim.continue);
     await performAction('selectResumeClaimOption', resumeClaimOptions.yes);
     await performValidation('radioButtonChecked', claimantType.registeredCommunityLandlord, true);
@@ -178,7 +179,7 @@ test.describe('[Create Case Flow With Address and Claimant Type] @Master @nightl
     await performAction('selectClaimType', claimType.no);
     await performAction('selectClaimantName', claimantName.yes);
     await performAction('clickButton', 'Sign out');
-    await performAction('reloginAndFindTheCase');
+    await performAction('reloginAndFindTheCase',user.claimantSolicitor);
     await performAction('clickButton', resumeClaim.continue);
     await performAction('selectResumeClaimOption', resumeClaimOptions.no);
     await performValidation('radioButtonChecked', claimantType.registeredCommunityLandlord, false);
