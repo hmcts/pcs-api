@@ -133,12 +133,13 @@ The e2e tests use playwright, and are located in the /src/e2eTest directory.
 
 The following environment variables are needed to run the tests:
 
+- CHANGE_ID (same as PR number - Required only pointing to Preview env)
+- MANAGE_CASE_BASE_URL
+- PCS_API_IDAM_SECRET
 - IDAM_SYSTEM_USERNAME
 - IDAM_SYSTEM_USER_PASSWORD
-- PCS_IDAM_TEST_USER_PASSWORD
-- PCS_API_IDAM_SECRET
-- MANAGE_CASE_BASE_URL
-- CHANGE_ID (same as PR number - Required only pointing to Preview env)
+- IDAM_PCS_USER_PASSWORD
+
 
 The e2e suite can be run with the following command:
 

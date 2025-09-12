@@ -1,8 +1,8 @@
 import { Page, expect } from '@playwright/test';
-import {IValidation, validationData} from "../../interfaces/validation.interface";
+import {IValidation, validationRecord} from "../../interfaces/validation.interface";
 
 export class TextValidation implements IValidation {
-  async validate(page: Page, fieldName: string, data: validationData): Promise<void> {
+  async validate(page: Page, fieldName: string, data: validationRecord): Promise<void> {
     switch (data.elementType) {
       case 'link':
         data.elementType = 'a';
