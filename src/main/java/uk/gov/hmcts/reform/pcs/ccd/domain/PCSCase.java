@@ -308,6 +308,9 @@ public class PCSCase {
     )
     private String calculatedDailyRentChargeAmount;
 
+    @CCD(access = {CitizenAccess.class, CaseworkerAccess.class})
+    private String formattedCalculatedDailyRentChargeAmount;
+
     @CCD(searchable = false, access = {CitizenAccess.class, CaseworkerAccess.class})
     private YesOrNo showPostcodeNotAssignedToCourt;
 
