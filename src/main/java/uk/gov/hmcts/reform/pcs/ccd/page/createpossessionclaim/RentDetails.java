@@ -23,8 +23,9 @@ public class RentDetails implements CcdPageConfiguration {
                 .pageLabel("Rent details")
                 .label("rentDetails-content", 
                         """
+                        ---
                         """)
-                .mandatory(PCSCase::getCurrentRent, "rentFrequency!=\"OTHER\"")
+                .mandatory(PCSCase::getCurrentRent)
                 .mandatory(PCSCase::getRentFrequency)
                 .mandatory(PCSCase::getOtherRentFrequency, "rentFrequency=\"OTHER\"")
                 .mandatory(PCSCase::getDailyRentChargeAmount, "rentFrequency=\"OTHER\"");
