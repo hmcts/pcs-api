@@ -62,11 +62,24 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
 
         builder.workBasketInputFields()
             .caseReferenceField()
+            .field(PCSCase::getClaimantContactEmail, "Contact email");
+
+        builder.workBasketResultFields()
+            .caseReferenceField()
+            .field(PCSCase::getClaimantContactEmail, "Claimant Email");
+
+
+        builder.workBasketInputFields()
+            .caseReferenceField()
             .field(PCSCase::getClaimantName, "Claimant Name");
 
         builder.workBasketResultFields()
             .caseReferenceField()
-            .field(PCSCase::getPropertyAddress, "Property Address");
+            .field(PCSCase::getClaimantName, "Claimant Name");
+
+        builder.workBasketResultFields()
+            .caseReferenceField()
+            .field(PCSCase::getPropertyAddress, "Property AAAddress");
 
         builder.tab("nextSteps", "Next steps")
             .showCondition(ShowConditions.stateEquals(AWAITING_FURTHER_CLAIM_DETAILS))
