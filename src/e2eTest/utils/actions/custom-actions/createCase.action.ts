@@ -10,7 +10,7 @@ import { defendantDetails } from "@data/page-data/defendantDetails.page.data";
 import { claimantName } from '@data/page-data/claimantName.page.data';
 import { contactPreferences } from '@data/page-data/contactPreferences.page.data';
 import { mediationAndSettlement } from '@data/page-data/mediationAndSettlement.page.data';
-import {reasonsForPossession} from "@data/page-data/reasonForPossession.page.data";
+import {reasonsForPossession} from "@data/page-data/reasonsForPossession.page.data";
 import {tenancyLicenceDetails} from '@data/page-data/tenancyLicenceDetails.page.data';
 import { resumeClaimOptions } from "@data/page-data/resumeClaimOptions.page.data";
 import { rentDetails } from '@data/page-data/rentDetails.page.data';
