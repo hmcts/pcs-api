@@ -76,7 +76,7 @@ You should get a response similar to this:
   {"status":"UP","components":{"coreCaseData":{"status":"UP"},"db":{"status":"UP","details":{"database":"PostgreSQL","validationQuery":"isValid()"}},"dbScheduler":{"status":"UP","details":{"state":"started"}},"discoveryComposite":{"description":"Discovery Client not initialized","status":"UNKNOWN","components":{"discoveryClient":{"description":"Discovery Client not initialized","status":"UNKNOWN"}}},"diskSpace":{"status":"UP","details":{"total":494384795648,"free":167924658176,"threshold":10485760,"path":"/Users/jakegowler/Documents/HMCTS/pcs/pcs-api/.","exists":true}},"ping":{"status":"UP"},"refreshScope":{"status":"UP"},"serviceAuth":{"status":"UP"},"ssl":{"status":"UP","details":{"validChains":[],"invalidChains":[]}}}}
 ```
 
-To access the swagger documentation for the API, go to http://localhost:3206/swagger-ui/index.html.
+To access the swagger documentation for the API, go to http://localhost:3206/swagger-ui/index.html
 
 #### Document Management
 
