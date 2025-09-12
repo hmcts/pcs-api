@@ -3,8 +3,8 @@ package uk.gov.hmcts.reform.pcs.ccd.service;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.pcs.ccd.domain.NoRentArrearsDiscretionaryGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.NoRentArrearsMandatoryGrounds;
+import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.model.NoRentArrearsReasonForGrounds;
-import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimGroundEntity;
 
 import java.util.ArrayList;
@@ -13,10 +13,12 @@ import java.util.Set;
 
 @Service
 public class ClaimGroundService {
-    public List<ClaimGroundEntity> getGroundsWithReason(
-            Set<NoRentArrearsMandatoryGrounds> noRentArrearsMandatoryGrounds,
-            Set<NoRentArrearsDiscretionaryGrounds> noRentArrearsDiscretionaryGrounds,
-            NoRentArrearsReasonForGrounds grounds,  ClaimEntity claim) {
+    public List<ClaimGroundEntity> getGroundsWithReason(PCSCase pcsCase) {
+        Set<NoRentArrearsMandatoryGrounds> noRentArrearsMandatoryGrounds = pcsCase
+            .getNoRentArrearsMandatoryGroundsOptions();
+        Set<NoRentArrearsDiscretionaryGrounds> noRentArrearsDiscretionaryGrounds = pcsCase
+            .getNoRentArrearsDiscretionaryGroundsOptions();
+        NoRentArrearsReasonForGrounds grounds = pcsCase.getNoRentArrearsReasonForGrounds();
 
         List<ClaimGroundEntity> entities = new ArrayList<>();
 
@@ -34,13 +36,10 @@ public class ClaimGroundService {
                 case SERIOUS_RENT_ARREARS -> grounds.getSeriousRentArrearsTextArea();
             };
 
-            if (reasonText != null) {
-                entities.add(ClaimGroundEntity.builder()
-                        .claim(claim)
-                        .groundsId(ground.name())
-                        .claimsReasonText(reasonText)
-                        .build());
-            }
+            entities.add(ClaimGroundEntity.builder()
+                             .groundsId(ground.name())
+                             .claimsReasonText(reasonText)
+                             .build());
         }
 
         for (NoRentArrearsDiscretionaryGrounds ground : noRentArrearsDiscretionaryGrounds) {
@@ -58,13 +57,10 @@ public class ClaimGroundService {
                 case FALSE_STATEMENT -> grounds.getFalseStatementTextArea();
             };
 
-            if (reasonText != null && !reasonText.isBlank()) {
-                entities.add(ClaimGroundEntity.builder()
-                        .claim(claim)
-                        .groundsId(ground.name())
-                        .claimsReasonText(reasonText)
-                        .build());
-            }
+            entities.add(ClaimGroundEntity.builder()
+                             .groundsId(ground.name())
+                             .claimsReasonText(reasonText)
+                             .build());
         }
         return entities;
     }

@@ -17,6 +17,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -65,5 +66,12 @@ public class ClaimEntity {
 
         claimParties.add(claimPartyEntity);
         party.getClaimParties().add(claimPartyEntity);
+    }
+
+    public void addClaimGroundEntities(List<ClaimGroundEntity> grounds) {
+        for (ClaimGroundEntity ground : grounds) {
+            ground.setClaim(this);
+            this.claimGroundEntities.add(ground);
+        }
     }
 }

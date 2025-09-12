@@ -20,7 +20,7 @@ public class NoRentArrearsGroundsForPossessionReason implements CcdPageConfigura
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
             .page("noRentArrearsGroundsForPossessionReason", this::midEvent)
-            .pageLabel("Reason for possession")
+            .pageLabel("Reasons for possession")
             .showCondition("groundsForPossession=\"No\"")
             .label("noRentArrearsOptions-lineSeparator", "---")
             .complex(PCSCase::getNoRentArrearsReasonForGrounds)

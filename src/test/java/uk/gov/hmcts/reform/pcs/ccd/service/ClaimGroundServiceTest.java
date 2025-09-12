@@ -6,6 +6,7 @@ import org.mockito.InjectMocks;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.pcs.ccd.domain.NoRentArrearsDiscretionaryGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.NoRentArrearsMandatoryGrounds;
+import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.model.NoRentArrearsReasonForGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimGroundEntity;
@@ -33,21 +34,22 @@ class ClaimGroundServiceTest {
 
         Set<NoRentArrearsMandatoryGrounds> mandatory = Set.of(
             NoRentArrearsMandatoryGrounds.OWNER_OCCUPIER,
-            NoRentArrearsMandatoryGrounds.REPOSSESSION_BY_LENDER,
-            NoRentArrearsMandatoryGrounds.HOLIDAY_LET // no text, should be skipped
+            NoRentArrearsMandatoryGrounds.REPOSSESSION_BY_LENDER
         );
 
         Set<NoRentArrearsDiscretionaryGrounds> discretionary = Set.of(
             NoRentArrearsDiscretionaryGrounds.RENT_ARREARS,
-            NoRentArrearsDiscretionaryGrounds.FALSE_STATEMENT,
-            NoRentArrearsDiscretionaryGrounds.NUISANCE_OR_ILLEGAL_USE // no text, skipped
+            NoRentArrearsDiscretionaryGrounds.FALSE_STATEMENT
         );
 
+        PCSCase caseDate = PCSCase.builder()
+            .noRentArrearsDiscretionaryGroundsOptions(discretionary)
+            .noRentArrearsMandatoryGroundsOptions(mandatory)
+            .noRentArrearsReasonForGrounds(grounds)
+            .build();
+
         List<ClaimGroundEntity> entities = claimGroundService.getGroundsWithReason(
-            mandatory,
-            discretionary,
-            grounds,
-            claim
+            caseDate
         );
 
         // Check size

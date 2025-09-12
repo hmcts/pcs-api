@@ -200,13 +200,11 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             "Main Claim",
             PartyRole.CLAIMANT);
 
-        List<ClaimGroundEntity> claimGroundEntities = claimGroundService
-            .getGroundsWithReason(pcsCase.getNoRentArrearsMandatoryGroundsOptions(),
-                                  pcsCase.getNoRentArrearsDiscretionaryGroundsOptions(),
-                                  pcsCase.getNoRentArrearsReasonForGrounds(),
-                                  claimEntity);
+        List<ClaimGroundEntity> claimGroundEntities =
+            claimGroundService.getGroundsWithReason(pcsCase);
 
-        claimEntity.getClaimGroundEntities().addAll(claimGroundEntities);
+        claimEntity.addClaimGroundEntities(claimGroundEntities);
+
         claimService.saveClaim(claimEntity);
 
         unsubmittedCaseDataService.deleteUnsubmittedCaseData(caseReference);

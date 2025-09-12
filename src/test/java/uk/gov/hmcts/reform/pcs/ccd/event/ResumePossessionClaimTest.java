@@ -313,10 +313,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
         verify(claimService)
             .createAndLinkClaim(eq(pcsCaseEntity), any(), eq("Main Claim"), eq(CLAIMANT));
 
-        verify(claimGroundService).getGroundsWithReason(caseData.getNoRentArrearsMandatoryGroundsOptions(),
-                                                        caseData.getNoRentArrearsDiscretionaryGroundsOptions(),
-                                                        caseData.getNoRentArrearsReasonForGrounds(),
-                                                        claimEntity);
+        verify(claimGroundService).getGroundsWithReason(caseData);
         verify(claimService).saveClaim(claimEntity);
     }
 
