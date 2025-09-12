@@ -13,6 +13,10 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 
 import java.util.Set;
 
+
+/**
+ * Page configuration for the Grounds for Possession section.
+ */
 @AllArgsConstructor
 @Component
 @Slf4j

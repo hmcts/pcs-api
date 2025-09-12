@@ -360,13 +360,6 @@ public class PCSCase {
     private String nextStepsMarkdown;
 
     @CCD(
-        label = "Are you claiming possession because of rent arrears?",
-        hint = "You'll be able to add additional grounds later if you select yes.",
-        access = {CitizenAccess.class, CaseworkerAccess.class}
-    )
-    private YesOrNo groundsForPossession;
-
-    @CCD(
         label = "Mandatory grounds",
         hint = "Select all that apply",
         typeOverride = MultiSelectList,
