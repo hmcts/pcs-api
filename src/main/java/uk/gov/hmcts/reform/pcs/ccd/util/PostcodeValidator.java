@@ -7,23 +7,22 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Utility class for validating postcodes according to AC01 requirements.
- * - Field shall be alphanumeric only
+ * Utility class for validating postcodes.
+ * - Postcode shall be alphanumeric only
  * - 1st character should always be an alphabet
  * - Minimum character length shall be 5
- * - Max character length shall be 7
+ * - Maximum character length shall be 7
  * - Spaces shall not be counted as a character
  * - Not case sensitive
  */
 @Component
 public class PostcodeValidator {
 
-    // Postcode validation pattern based on AC01 requirements
     // 5-7 characters total, first must be letter, rest alphanumeric
     private static final String POSTCODE_PATTERN = "^[A-Za-z][A-Za-z0-9]{4,6}$";
 
     /**
-     * Validates a postcode string according to AC01 requirements.
+     * Validates a postcode string.
      * @param postcode the postcode to validate
      * @return true if valid, false otherwise
      */
@@ -32,7 +31,7 @@ public class PostcodeValidator {
             return false;
         }
         
-        // Remove spaces for validation (spaces don't count as characters per AC01)
+        // Remove spaces
         String postcodeWithoutSpaces = postcode.replaceAll("\\s", "");
         
         return postcodeWithoutSpaces.matches(POSTCODE_PATTERN);
