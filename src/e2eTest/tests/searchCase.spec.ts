@@ -13,7 +13,7 @@ test.beforeEach(async ({page}) => {
     initializeExecutor(page);
     await parentSuite('Search Case');
     await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
-    await performAction('createUserAndLogin', 'claimant', ['caseworker-pcs', 'caseworker']);
+    await performAction('createUserAndLogin', 'caseworker', ['caseworker-pcs', 'caseworker']);
     createCaseWithAddress();
 });
 

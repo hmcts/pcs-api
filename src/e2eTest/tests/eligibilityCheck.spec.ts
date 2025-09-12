@@ -5,13 +5,13 @@ import {borderPostcode} from '@data/page-data/borderPostcode.page.data';
 import {addressDetails} from '@data/page-data/addressDetails.page.data';
 import {canNotUseOnlineService} from '@data/page-data/canNotUseOnlineService.page.data';
 import {propertyIneligible} from '@data/page-data/propertyIneligible.page.data';
-import userConfig from "@config/permanentUsers.config";
+import {user} from "@data/user-data/permanent.user.data";
 
 test.beforeEach(async ({page}) => {
   initializeExecutor(page);
   await parentSuite('Eligibility Check');
   await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
-  await performAction('login', userConfig.solicitor);
+  await performAction('login', user.claimantSolicitor);
   await performAction('clickButton', 'Create case');
   await performAction('selectJurisdictionCaseTypeEvent');
   await performAction('housingPossessionClaim');
