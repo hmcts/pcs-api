@@ -28,11 +28,7 @@ test.beforeEach(async ({page}, testInfo) => {
   await parentSuite('Case Creation');
   await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
   await performAction('createUserAndLogin', 'claimant', ['caseworker-pcs', 'caseworker']);
-  await testInfo.attach('Page URL', {
-    body: page.url(),
-    contentType: 'text/plain',
-  });
-  await performAction('clickButton', 'Create case');
+  await performAction('clickTab', 'Create case');
   await performAction('selectJurisdictionCaseTypeEvent');
   await performAction('housingPossessionClaim');
 });
@@ -43,6 +39,7 @@ test.describe('[Create Case Flow With Address and Claimant Type] @Master @nightl
       postcode: addressDetails.englandCourtAssignedPostcode,
       addressIndex: addressDetails.addressIndex
     });
+
     await performValidation('bannerAlert', 'Case #.* has been created.');
     await performAction('clickButton', provideMoreDetailsOfClaim.continue);
     await performAction('selectClaimantType', claimantType.registeredProviderForSocialHousing);
