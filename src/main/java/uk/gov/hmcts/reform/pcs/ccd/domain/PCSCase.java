@@ -312,4 +312,22 @@ public class PCSCase {
     @CCD(searchable = false)
     private String nextStepsMarkdown;
 
+    @CCD(
+        label = "Do you need to add another defendant?",
+        access = {CitizenAccess.class, CaseworkerAccess.class}
+    )
+    private YesOrNo addAnotherDefendant;
+
+    @CCD(
+        label = "Defendants table HTML",
+        access = {CitizenAccess.class, CaseworkerAccess.class}
+    )
+    private String defendantsTableHtml;
+
+    @CCD(
+        label = "Current defendant number",
+        access = {CitizenAccess.class, CaseworkerAccess.class}
+    )
+    private Integer currentDefendantNumber;
+
 }

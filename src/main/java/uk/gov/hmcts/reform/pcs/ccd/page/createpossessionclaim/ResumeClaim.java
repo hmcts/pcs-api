@@ -69,6 +69,14 @@ public class ResumeClaim implements CcdPageConfiguration {
                 );
         }
 
+        // Initialize defendant flow variables for the first time
+        if (caseData.getCurrentDefendantNumber() == null) {
+            caseData.setCurrentDefendantNumber(1);
+        }
+        if (caseData.getAddAnotherDefendant() == null) {
+            caseData.setAddAnotherDefendant(YesOrNo.YES);
+        }
+
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
             .data(caseData)
             .build();

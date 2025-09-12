@@ -32,6 +32,7 @@ import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.ClaimantTypeNotEli
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.ClaimantTypeNotEligibleWales;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.ContactPreferences;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.DailyRentAmount;
+import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.DefendantList;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.DefendantsDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.GroundsForPossession;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.MediationAndSettlement;
@@ -90,15 +91,16 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
 
         savingPageBuilderFactory.create(eventBuilder)
             .add(resumeClaim)
-            .add(new SelectClaimantType())
-            .add(new ClaimantTypeNotEligibleEngland())
-            .add(new ClaimantTypeNotEligibleWales())
-            .add(new SelectClaimType())
-            .add(new ClaimTypeNotEligibleEngland())
-            .add(new ClaimTypeNotEligibleWales())
-            .add(new ClaimantInformation())
-            .add(new ContactPreferences())
+            // .add(new SelectClaimantType())
+            // .add(new ClaimantTypeNotEligibleEngland())
+            // .add(new ClaimantTypeNotEligibleWales())
+            // .add(new SelectClaimType())
+            // .add(new ClaimTypeNotEligibleEngland())
+            // .add(new ClaimTypeNotEligibleWales())
+            // .add(new ClaimantInformation())
+            // .add(new ContactPreferences())
             .add(new DefendantsDetails())
+            .add(new DefendantList())
             .add(tenancyLicenceDetails)
             .add(new GroundsForPossession())
             .add(new PreActionProtocol())
