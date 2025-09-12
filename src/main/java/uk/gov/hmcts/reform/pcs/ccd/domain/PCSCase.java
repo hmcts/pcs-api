@@ -16,6 +16,7 @@ import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Set;
 
 import static uk.gov.hmcts.ccd.sdk.type.FieldType.DynamicRadioList;
 import static uk.gov.hmcts.ccd.sdk.type.FieldType.TextArea;
@@ -317,5 +318,23 @@ public class PCSCase {
 
     @CCD(searchable = false)
     private String nextStepsMarkdown;
+
+    @CCD(
+            label = "What are your grounds for possession?",
+            typeOverride = FieldType.MultiSelectList,
+            typeParameterOverride = "IntroductoryDemotedOrOtherGrounds",
+            access = {CaseworkerAccess.class}
+    )
+    private Set<IntroductoryDemotedOrOtherGrounds> introductoryDemotedOrOtherGrounds;
+
+    @CCD(
+            label = "Enter your grounds for Possession",
+            hint = "You'll be able to explain your reasons for claiming Possession"
+                    + " under these grounds on the next screen",
+            access = {CitizenAccess.class, CaseworkerAccess.class},
+            max = 250,
+            typeOverride = TextArea
+    )
+    private String otherGroundsOfPossession;
 
 }

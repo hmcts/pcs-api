@@ -29,6 +29,11 @@ public class IntroductoryDemotedOrOtherGroundsForPossession implements CcdPageCo
                     these grounds here and any extra ground you'd like to add to your claim, if you need to.
                    </p>
                    """)
-            .mandatory(PCSCase::getIntroductoryDemotedOtherGroundsForPossession);
+            .mandatory(PCSCase::getIntroductoryDemotedOtherGroundsForPossession)
+            .mandatory(PCSCase::getIntroductoryDemotedOrOtherGrounds,
+                    "introductoryDemotedOtherGroundsForPossession=\"YES\"")
+            .mandatory(PCSCase::getOtherGroundsOfPossession,
+                    "introductoryDemotedOrOtherGroundsCONTAINS "
+                    + "\"OTHER\"");
     }
 }
