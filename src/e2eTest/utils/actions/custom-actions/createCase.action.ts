@@ -1,25 +1,27 @@
-import Axios, {AxiosInstance, AxiosResponse} from 'axios';
-import {TestConfig} from 'config/test.config';
-import {getIdamAuthToken, getServiceAuthToken} from '../../helpers/idam-helpers/idam.helper';
-import {actionData, IAction} from '../../interfaces/action.interface';
-import {Page} from '@playwright/test';
-import {getUser, initIdamAuthToken, initServiceAuthToken} from 'utils/helpers/idam-helpers/idam.helper';
-import {performAction, performActions, performValidation} from '@utils/controller';
-import {createCase} from '@data/page-data/createCase.page.data';
-import {addressDetails} from '@data/page-data/addressDetails.page.data';
-import {housingPossessionClaim} from '@data/page-data/housingPossessionClaim.page.data';
-import {defendantDetails} from '@data/page-data/defendantDetails.page.data';
-import {claimantName} from '@data/page-data/claimantName.page.data';
-import {contactPreferences} from '@data/page-data/contactPreferences.page.data';
-import {mediationAndSettlement} from '@data/page-data/mediationAndSettlement.page.data';
-import {tenancyLicenceDetails} from '@data/page-data/tenancyLicenceDetails.page.data';
-import {resumeClaimOptions} from "@data/page-data/resumeClaimOptions.page.data";
-import {rentDetails} from '@data/page-data/rentDetails.page.data';
-import {dailyRentAmount} from '@data/page-data/dailyRentAmount.page.data';
+import Axios, { AxiosInstance, AxiosResponse } from 'axios';
+import { TestConfig } from 'config/test.config';
+import { getIdamAuthToken, getServiceAuthToken } from '../../helpers/idam-helpers/idam.helper';
+import { actionData, IAction } from '../../interfaces/action.interface';
+import { Page } from '@playwright/test';
+import { getUser, initIdamAuthToken, initServiceAuthToken } from 'utils/helpers/idam-helpers/idam.helper';
+import { performAction, performActions, performValidation } from '@utils/controller';
+import { createCase } from '@data/page-data/createCase.page.data';
+import { addressDetails } from '@data/page-data/addressDetails.page.data';
+import { housingPossessionClaim } from '@data/page-data/housingPossessionClaim.page.data';
+import { defendantDetails } from '@data/page-data/defendantDetails.page.data';
+import { claimantName } from '@data/page-data/claimantName.page.data';
+import { contactPreferences } from '@data/page-data/contactPreferences.page.data';
+import { mediationAndSettlement } from '@data/page-data/mediationAndSettlement.page.data';
+import { tenancyLicenceDetails } from '@data/page-data/tenancyLicenceDetails.page.data';
+import { resumeClaimOptions } from "@data/page-data/resumeClaimOptions.page.data";
+import { rentDetails } from '@data/page-data/rentDetails.page.data';
+import { dailyRentAmount } from '@data/page-data/dailyRentAmount.page.data';
+import { claimantCircumstance } from '@data/page-data/claimantCircumstances.page.data';
 import configData from '@config/test.config';
 
 let caseInfo: { id: string; fid: string; state: string };
 let caseNumber: string;
+export let claimantsName: string;
 const testConfig = TestConfig.ccdCase;
 
 export class CreateCaseAction implements IAction {
@@ -41,7 +43,8 @@ export class CreateCaseAction implements IAction {
       ['selectJurisdictionCaseTypeEvent', () => this.selectJurisdictionCaseTypeEvent()],
       ['enterTestAddressManually', () => this.enterTestAddressManually()],
       ['selectClaimType', () => this.selectClaimType(fieldName)],
-      ['selectClaimantName', () => this.selectClaimantName(fieldName)],
+      ['selectClaimantName', () => this.selectClaimantName(page, fieldName)],
+      ['extractClaimantName', () => this.extractClaimantName(page, fieldName)],
       ['selectContactPreferences', () => this.selectContactPreferences(fieldName)],
       ['selectGroundsForPossession', () => this.selectGroundsForPossession(fieldName)],
       ['selectPreActionProtocol', () => this.selectPreActionProtocol(fieldName)],
@@ -50,7 +53,8 @@ export class CreateCaseAction implements IAction {
       ['selectCountryRadioButton', () => this.selectCountryRadioButton(fieldName)],
       ['selectTenancyOrLicenceDetails', () => this.selectTenancyOrLicenceDetails(fieldName)],
       ['provideRentDetails', () => this.provideRentDetails(fieldName)],
-      ['selectDailyRentAmount', () => this.selectDailyRentAmount(fieldName)]
+      ['selectDailyRentAmount', () => this.selectDailyRentAmount(fieldName)],
+      ['selectClaimantCircumstances', () => this.selectClaimantCircumstances(fieldName)]
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) throw new Error(`No action found for '${action}'`);
@@ -108,6 +112,11 @@ export class CreateCaseAction implements IAction {
     await performAction('clickButton', 'Continue');
   }
 
+  private async extractClaimantName(page: Page, caseData: actionData): Promise<void> {
+    claimantsName = caseData == "No" ? claimantName.correctClaimantNameInput : await page.locator('span.text-16').innerText();
+    console.log(claimantsName);
+  }
+
   private async selectGroundsForPossession(caseData: actionData) {
     await performAction('clickRadioButton', caseData);
     await performAction('clickButton', 'Continue');
@@ -128,11 +137,12 @@ export class CreateCaseAction implements IAction {
     await performAction('clickButton', 'Submit');
   }
 
-  private async selectClaimantName(caseData: actionData) {
+  private async selectClaimantName(page: Page, caseData: actionData) {
     await performAction('clickRadioButton', caseData);
-    if(caseData == claimantName.no){
+    if (caseData == claimantName.no) {
       await performAction('inputText', claimantName.whatIsCorrectClaimantName, claimantName.correctClaimantNameInput);
     }
+    claimantsName = caseData == "No" ? claimantName.correctClaimantNameInput : await page.locator('span.text-16').filter({ visible: true }).innerText();
     await performAction('clickButton', 'Continue');
   }
 
@@ -155,10 +165,10 @@ export class CreateCaseAction implements IAction {
     });
     if (prefData.correspondenceAddress === 'No') {
       await performActions(
-          'Find Address based on postcode',
-          ['inputText', 'Enter a UK postcode', addressDetails.englandCourtAssignedPostcode],
-          ['clickButton', 'Find address'],
-          ['select', 'Select an address', addressDetails.addressIndex]
+        'Find Address based on postcode',
+        ['inputText', 'Enter a UK postcode', addressDetails.englandCourtAssignedPostcode],
+        ['clickButton', 'Find address'],
+        ['select', 'Select an address', addressDetails.addressIndex]
       );
     }
     await performAction('clickRadioButton', {
@@ -197,10 +207,10 @@ export class CreateCaseAction implements IAction {
       });
       if (defendantData.correspondenceAddressSame === 'No') {
         await performActions(
-            'Find Address based on postcode',
-            ['inputText', 'Enter a UK postcode', addressDetails.englandCourtAssignedPostcode],
-            ['clickButton', 'Find address'],
-            ['select', 'Select an address', addressDetails.addressIndex]
+          'Find Address based on postcode',
+          ['inputText', 'Enter a UK postcode', addressDetails.englandCourtAssignedPostcode],
+          ['clickButton', 'Find address'],
+          ['select', 'Select an address', addressDetails.addressIndex]
         );
       }
     }
@@ -226,7 +236,7 @@ export class CreateCaseAction implements IAction {
     if (tenancyLicenceData.tenancyOrLicenceType === 'Other') {
       await performAction('inputText', 'Give details of the type of tenancy or licence agreement that\'s in place', tenancyLicenceDetails.detailsOfLicence);
     }
-    if(tenancyLicenceData.day && tenancyLicenceData.month &&  tenancyLicenceData.year) {
+    if (tenancyLicenceData.day && tenancyLicenceData.month && tenancyLicenceData.year) {
       await performAction('inputText', 'Day', tenancyLicenceData.day);
       await performAction('inputText', 'Month', tenancyLicenceData.month);
       await performAction('inputText', 'Year', tenancyLicenceData.year);
@@ -270,7 +280,7 @@ export class CreateCaseAction implements IAction {
       inputFrequency?: string
     };
     await performAction('clickRadioButton', rentData.rentFrequencyOption);
-    if(rentData.rentFrequencyOption == 'Other'){
+    if (rentData.rentFrequencyOption == 'Other') {
       await performAction('inputText', rentDetails.rentFrequencyLabel, rentData.inputFrequency);
       await performAction('inputText', rentDetails.amountPerDayInputLabel, rentData.unpaidRentAmountPerDay);
     } else {
@@ -290,11 +300,26 @@ export class CreateCaseAction implements IAction {
       elementType: 'paragraph'
     });
     await performAction('clickRadioButton', rentAmount.unpaidRentInteractiveOption);
-    if(rentAmount.unpaidRentInteractiveOption == 'No'){
+    if (rentAmount.unpaidRentInteractiveOption == 'No') {
       await performAction('inputText', dailyRentAmount.enterAmountPerDayLabel, rentAmount.unpaidRentAmountPerDay);
     }
     await performAction('clickButton', 'Continue');
   }
+
+  private async selectClaimantCircumstances(claimantCircumstances: actionData) {
+    const claimData = claimantCircumstances as {
+      claimantCircumstanceOption: string;
+    };
+    await performAction('clickRadioButton', {
+      question: claimantCircumstance.claimantCircumstanceInfo.replace("Claimants", `${claimantsName}'s`),
+      option: claimData.claimantCircumstanceOption
+    });
+    if (claimData.claimantCircumstanceOption == 'Yes') {
+      await performAction('inputText', claimantCircumstance.claimantCircumstanceInfoTextAreaLabel.replace("Claimants", `${claimantsName}'s`), claimantCircumstance.claimantCircumstanceInfoInputData);
+    }
+    await performAction('clickButton', 'Continue');
+  }
+
 
   private async selectJurisdictionCaseTypeEvent() {
     await performActions('Case option selection'
@@ -338,7 +363,7 @@ export class CreateCaseAction implements IAction {
 
   async createCase(caseData: actionData): Promise<{ id: string; fid: string; state: string }> {
     const eventToken = await this.getEventToken();
-    const event = {id: `${testConfig.eventName}`};
+    const event = { id: `${testConfig.eventName}` };
     const payloadData = typeof caseData === 'object' && 'data' in caseData ? caseData.data : caseData;
     try {
       const response = await this.axios.post(
