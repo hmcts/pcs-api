@@ -5,5 +5,5 @@ export type validationRecord = Record<string, validationData>;
 export type validationTuple = [string, string, validationData | validationRecord] | [string, string];
 
 export interface IValidation {
-  validate(page: Page, fieldName?: validationData | validationRecord, data?: validationData | validationRecord): Promise<void>;
+  validate(page: Page, validation: string, fieldName?: validationData | validationRecord, data?: validationData | validationRecord): Promise<void>;
 }
