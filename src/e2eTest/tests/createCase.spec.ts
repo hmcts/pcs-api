@@ -171,7 +171,7 @@ test.describe('[Create Case Flow]  @Master @nightly', async () => {
       ['formLabelValue', 'Town or City', addressDetails.townOrCity],
       ['formLabelValue', 'Postcode/Zipcode', addressDetails.walesCourtAssignedPostcode],
       ['formLabelValue', 'Country', addressDetails.country]);
-  }); 
+  });
 
   test('Wales - Successful case creation without Saved options and Defendants correspondence address is not known with flexible tenancy', async () => {
     await performAction('enterTestAddressManually');
@@ -266,7 +266,8 @@ test.describe('[Create Case Flow]  @Master @nightly', async () => {
       correspondenceAddressSame: defendantDetails.yes
     });
     await performAction('selectTenancyOrLicenceDetails', {
-      tenancyOrLicenceType: tenancyLicenceDetails.secureTenancy});
+      tenancyOrLicenceType: tenancyLicenceDetails.secureTenancy
+    });
     await performValidation('mainHeader', whatAreYourGroundsForPossession.mainHeader);
     await performAction('selectYourPossessionGrounds', {
       discretionary: [whatAreYourGroundsForPossession.discretionary.rentArrearsOrBreachOfTenancy, whatAreYourGroundsForPossession.discretionary.deteriorationOfFurniture],
@@ -293,7 +294,11 @@ test.describe('[Create Case Flow]  @Master @nightly', async () => {
     await performValidation('mainHeader', checkingNotice.mainHeader);
     await performAction('selectNoticeOfYourIntention', checkingNotice.no);
     await performValidation('mainHeader', rentDetails.mainHeader);
-    await performAction('provideRentDetails', {rentFrequencyOption:'Other', inputFrequency:rentDetails.rentFrequencyFortnightly,unpaidRentAmountPerDay:'50'});
+    await performAction('provideRentDetails', {
+      rentFrequencyOption: 'Other',
+      inputFrequency: rentDetails.rentFrequencyFortnightly,
+      unpaidRentAmountPerDay: '50'
+    });
     await performValidation('mainHeader', detailsOfRentArrears.mainHeader);
     await performAction('clickButton', detailsOfRentArrears.continue);
     await performAction('clickButton', 'Save and continue');
@@ -305,6 +310,7 @@ test.describe('[Create Case Flow]  @Master @nightly', async () => {
       ['formLabelValue', 'Town or City', addressDetails.townOrCity],
       ['formLabelValue', 'Postcode/Zipcode', addressDetails.walesCourtAssignedPostcode],
       ['formLabelValue', 'Country', addressDetails.country]);
+  });
 
   test('England - Unsuccessful case creation journey due to claimant type not in scope of Release1 @R1only', async () => {
     await performAction('selectAddress', {
