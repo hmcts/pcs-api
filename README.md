@@ -140,7 +140,6 @@ The following environment variables are needed to run the tests:
 - IDAM_SYSTEM_USER_PASSWORD
 - IDAM_PCS_USER_PASSWORD
 
-
 The e2e suite can be run with the following command:
 
 ```bash

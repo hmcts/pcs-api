@@ -17,11 +17,7 @@ function getExecutor(): { page: Page } {
   return testExecutor;
 }
 
-export async function performAction(
-  action: string,
-  fieldName?: actionData | actionRecord,
-  value?: actionData | actionRecord
-): Promise<void> {
+export async function performAction(action: string, fieldName?: actionData | actionRecord, value?: actionData | actionRecord): Promise<void> {
   const executor = getExecutor();
   const actionInstance = ActionRegistry.getAction(action);
   await test.step(`Perform action: [${action}] on "${fieldName}"${value !== undefined ? ` with value "${value}"` : ''}`, async () => {
@@ -29,28 +25,19 @@ export async function performAction(
   });
 }
 
-export async function performValidation(
-  validationType: string,
-  inputFieldName: string | validationData | validationRecord,
-  inputData?: validationData | validationRecord
-): Promise<void> {
+export async function performValidation(validationType: string, inputFieldName: string | validationData | validationRecord, inputData?: validationData | validationRecord): Promise<void> {
   const executor = getExecutor();
   const [fieldName, data] = typeof inputFieldName === 'string'
     ? [inputFieldName, inputData]
     : ['', inputFieldName];
-
   const validationInstance = ValidationRegistry.getValidation(validationType);
   await test.step(`Perform validation on [${validationType}]`, async () => {
     await validationInstance.validate(executor.page, fieldName, data);
   });
 }
 
-export async function performActions(
-  groupName: string,
-  ...actions: actionTuple[]
-): Promise<void> {
+export async function performActions(groupName: string, ...actions: actionTuple[]): Promise<void> {
   getExecutor();
-
   await test.step(`Performing action group: [${groupName}]`, async () => {
     for (const action of actions) {
       const [actionName, fieldName, value] = action;
@@ -59,26 +46,12 @@ export async function performActions(
   });
 }
 
-export async function performValidations(
-  groupName: string,
-  ...validations: validationTuple[]
-): Promise<void> {
+export async function performValidations(groupName: string, ...validations: validationTuple[]): Promise<void> {
   getExecutor();
-
   await test.step(`Performing validation group: [${groupName}]`, async () => {
     for (const validation of validations) {
       const [validationType, fieldName, data] = validation;
       await performValidation(validationType, fieldName, data);
     }
   });
-}
-
-export function getAvailableActions(): string[] {
-  getExecutor();
-  return ActionRegistry.getAvailableActions();
-}
-
-export function getAvailableValidations(): string[] {
-  getExecutor();
-  return ValidationRegistry.getAvailableValidations();
 }
