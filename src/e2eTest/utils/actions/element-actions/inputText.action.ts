@@ -8,7 +8,6 @@ export class InputTextAction implements IAction {
     }
 
     const locator = page.locator(`:has-text("${fieldName}") + input,
-           label:has-text("${fieldName}") + textarea,
            label:has-text("${fieldName}") ~ textarea,
            label:has-text("${fieldName}") ~ input,
            [aria-label="${fieldName}"],
