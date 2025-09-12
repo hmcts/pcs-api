@@ -10,9 +10,9 @@ export class LoginAction implements IAction {
     const actionsMap = new Map<string, () => Promise<void>>([
       ['createUserAndLogin', () => this.createUserAndLogin(userType as string, roles as string[])],
       ['login', () => {
-          const { email, password } = (userType as { email: string; password: string }) ?? {};
-          return this.login(email, password);
-        }],
+        const user = userType as { email?: string; password?: string };
+        return this.login(user?.email, user?.password);}
+      ],
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) throw new Error(`No action found for '${action}'`);
