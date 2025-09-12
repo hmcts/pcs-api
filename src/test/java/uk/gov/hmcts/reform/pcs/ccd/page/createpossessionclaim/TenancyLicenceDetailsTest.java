@@ -27,7 +27,7 @@ import static uk.gov.hmcts.reform.pcs.config.ClockConfiguration.UK_ZONE_ID;
 
 @ExtendWith(MockitoExtension.class)
 
-class TenancyLicenceTest extends BasePageTest {
+class TenancyLicenceDetailsTest extends BasePageTest {
 
 
     private static final LocalDate FIXED_CURRENT_DATE = LocalDate.of(2025, 8, 27);
@@ -46,14 +46,15 @@ class TenancyLicenceTest extends BasePageTest {
 
     @ParameterizedTest
     @MethodSource("tenancyDateScenarios")
-    void shouldThrowErrorWhenDateIsTodayOrInTheFuture(LocalDate date, Boolean isValid) {
+    void shouldThrowErrorWhenDateIsTodayOrInTheFuture(LocalDate date,
+                                                      Boolean isValid,
+                                                      TenancyLicenceType  tenancyLicence) {
         // Given
         CaseDetails<PCSCase, State> caseDetails = new CaseDetails<>();
 
         PCSCase caseData = PCSCase.builder()
             .tenancyLicenceDate(date)
-            .typeOfTenancyLicence(TenancyLicenceType.FLEXIBLE_TENANCY)
-
+            .typeOfTenancyLicence(tenancyLicence)
             .build();
 
         caseDetails.setData(caseData);
@@ -61,7 +62,6 @@ class TenancyLicenceTest extends BasePageTest {
         // When
         AboutToStartOrSubmitResponse<PCSCase, State> response =
             getMidEventForPage(event, "tenancyLicenceDetails").handle(caseDetails,null);
-
 
         // Then
         if (!isValid) {
@@ -83,10 +83,10 @@ class TenancyLicenceTest extends BasePageTest {
 
     private static Stream<Arguments> tenancyDateScenarios() {
         return Stream.of(
-            arguments(FIXED_CURRENT_DATE.plusDays(1), false),
-            arguments(FIXED_CURRENT_DATE, false),
-            arguments(FIXED_CURRENT_DATE.minusDays(1), true),
-            arguments(FIXED_CURRENT_DATE.minusYears(5), true)
+            arguments(FIXED_CURRENT_DATE.plusDays(1), false, TenancyLicenceType.ASSURED_TENANCY),
+            arguments(FIXED_CURRENT_DATE, false, null, TenancyLicenceType.DEMOTED_TENANCY),
+            arguments(FIXED_CURRENT_DATE.minusDays(1), true, TenancyLicenceType.INTRODUCTORY_TENANCY),
+            arguments(FIXED_CURRENT_DATE.minusYears(5), true, TenancyLicenceType.OTHER)
         );
     }
 }
