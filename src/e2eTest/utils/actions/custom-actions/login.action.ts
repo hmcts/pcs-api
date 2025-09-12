@@ -9,19 +9,19 @@ export class LoginAction implements IAction {
   async execute(page: Page, action: string, userType?: actionData, roles?: actionData): Promise<void> {
     const actionsMap = new Map<string, () => Promise<void>>([
       ['createUserAndLogin', () => this.createUserAndLogin(userType as string, roles as string[])],
-      ['login', () => {
-        const user = userType as { email?: string; password?: string };
-        return this.login(user?.email, user?.password);}
-      ],
+      ['login', () => this.login((userType as { email?: string }).email, (userType as { password?: string }).password)]
     ]);
+
     const actionToPerform = actionsMap.get(action);
-    if (!actionToPerform) throw new Error(`No action found for '${action}'`);
+    if (!actionToPerform) {
+      throw new Error(`No action found for '${action}'`);
+    }
     await actionToPerform();
   }
 
   private async login(email?: string, password?: string) {
-    const userEmail = email ?? process.env.IDAM_PCS_USER_EMAIL;
-    const userPassword = password ?? process.env.IDAM_PCS_USER_PASSWORD;
+    const userEmail = email || process.env.IDAM_PCS_USER_EMAIL;
+    const userPassword = password || process.env.IDAM_PCS_USER_PASSWORD;
 
     if (!userEmail || !userPassword) {
       throw new Error('Login failed: missing credentials');

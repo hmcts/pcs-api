@@ -8,12 +8,13 @@ import {
 } from '@utils/controller';
 import {createCase} from "@data/page-data/createCase.page.data";
 import {caseInfo} from '@utils/actions/custom-actions/createCase.action';
+import {user} from "@data/user-data/permanent.user.data";
 
 test.beforeEach(async ({page}) => {
     initializeExecutor(page);
     await parentSuite('Search Case');
     await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
-    await performAction('createUserAndLogin', 'caseworker', ['caseworker-pcs', 'caseworker']);
+    await performAction('login', user.claimantSolicitor);
     createCaseWithAddress();
 });
 
