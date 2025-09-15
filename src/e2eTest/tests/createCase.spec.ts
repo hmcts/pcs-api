@@ -10,7 +10,6 @@ import {defendantDetails} from '@data/page-data/defendantDetails.page.data';
 import {tenancyLicenceDetails} from '@data/page-data/tenancyLicenceDetails.page.data';
 import {groundsForPossession} from '@data/page-data/groundsForPossession.page.data';
 import {rentArrearsPossessionGrounds} from '@data/page-data/rentArrearsPossessionGrounds.page.data';
-import {whatAreYourGrounds} from '@data/page-data/mandatoryAndDiscretionaryGrounds.page.data';
 import {preActionProtocol} from '@data/page-data/preActionProtocol.page.data';
 import {mediationAndSettlement} from '@data/page-data/mediationAndSettlement.page.data';
 import {checkingNotice} from '@data/page-data/checkingNotice.page.data';
@@ -77,8 +76,8 @@ test.describe('[Create Case Flow]  @Master @nightly', async () => {
       otherGrounds: rentArrearsPossessionGrounds.yes
     });
     await performAction('selectOtherGrounds',{
-      mandatory: [whatAreYourGrounds.mandatory.holidayLet,whatAreYourGrounds.mandatory.ownerOccupier],
-      discretionary: [whatAreYourGrounds.discretionary.domesticViolence,whatAreYourGrounds.discretionary.rentArrears],
+      mandatory: [whatAreYourGroundsForPossession.mandatory.holidayLet,whatAreYourGroundsForPossession.mandatory.ownerOccupier],
+      discretionary: [whatAreYourGroundsForPossession.discretionary.domesticViolence14A,whatAreYourGroundsForPossession.discretionary.rentArrears],
     });
     await performValidation('mainHeader', preActionProtocol.mainHeader);
     await performAction('selectPreActionProtocol', preActionProtocol.yes);
@@ -285,6 +284,7 @@ test.describe('[Create Case Flow]  @Master @nightly', async () => {
         whatAreYourGroundsForPossession.discretionaryWithAccommodation.adapted, whatAreYourGroundsForPossession.discretionaryWithAccommodation.tied,
         reasonsForPossession.breachOfTenancy
       ]);
+    await performValidation('mainHeader', preActionProtocol.mainHeader);
     await performAction('selectPreActionProtocol', preActionProtocol.yes);
     await performValidation('mainHeader', mediationAndSettlement.mainHeader);
     await performAction('selectMediationAndSettlement', {

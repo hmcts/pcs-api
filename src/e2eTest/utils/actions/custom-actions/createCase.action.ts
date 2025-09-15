@@ -43,8 +43,8 @@ export class CreateCaseAction implements IAction {
       ['selectMediationAndSettlement', () => this.selectMediationAndSettlement(fieldName)],
       ['selectNoticeOfYourIntention', () => this.selectNoticeOfYourIntention(fieldName)],
       ['selectCountryRadioButton', () => this.selectCountryRadioButton(fieldName)],
-      ['selectOtherGrounds', () => this.selectOtherGrounds(fieldName)],
       ['selectTenancyOrLicenceDetails', () => this.selectTenancyOrLicenceDetails(fieldName)],
+      ['selectOtherGrounds', () => this.selectYourPossessionGrounds(fieldName)],
       ['selectYourPossessionGrounds', () => this.selectYourPossessionGrounds(fieldName)],
       ['enterReasonForPossession', () => this.enterReasonForPossession(fieldName)],
       ['selectRentArrearsOrBreachOfTenancy', () => this.selectRentArrearsOrBreachOfTenancy(fieldName)],
@@ -217,18 +217,6 @@ export class CreateCaseAction implements IAction {
     await performAction('clickButton', 'Continue');
   }
 
-  private async selectOtherGrounds(otherRentArrearsGrounds: actionData){
-    const otherGrounds = otherRentArrearsGrounds as {
-      mandatory?: string[];
-      discretionary?: string[];
-    }
-    if (otherGrounds.mandatory && otherGrounds.discretionary) {
-      await performAction('check', otherGrounds.mandatory);
-      await performAction('check', otherGrounds.discretionary);
-    }
-    await performAction('clickButton', 'Continue');
-  }
-
   private async selectTenancyOrLicenceDetails(tenancyData: actionData) {
     const tenancyLicenceData = tenancyData as {
       tenancyOrLicenceType: string;
@@ -256,21 +244,26 @@ export class CreateCaseAction implements IAction {
     }
     await performAction('clickButton', 'Continue');
   }
-
   private async selectYourPossessionGrounds(possessionGrounds: actionData) {
     const grounds = possessionGrounds as {
       mandatory?: string[];
       mandatoryAccommodation?: string[];
-      discretionary: string[];
-      discretionaryAccommodation?: string;
+      discretionary?: string[];
+      discretionaryAccommodation?: string[];
     };
+    if (grounds.discretionary) {
       await performAction('check', grounds.discretionary);
-      if(grounds.mandatory && grounds.discretionaryAccommodation && grounds.mandatoryAccommodation) {
-        await performAction('check', grounds.mandatory);
-        await performAction('check', grounds.mandatoryAccommodation);
-        await performAction('check', grounds.discretionaryAccommodation);
-      }
-      await performAction('clickButton', 'Continue');
+    }
+    if (grounds.mandatory) {
+      await performAction('check', grounds.mandatory);
+    }
+    if (grounds.mandatoryAccommodation) {
+      await performAction('check', grounds.mandatoryAccommodation);
+    }
+    if (grounds.discretionaryAccommodation) {
+      await performAction('check', grounds.discretionaryAccommodation);
+    }
+    await performAction('clickButton', 'Continue');
   }
 
   private async selectRentArrearsOrBreachOfTenancy(grounds: actionData) {
