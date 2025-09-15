@@ -7,6 +7,8 @@ import uk.gov.hmcts.ccd.sdk.DecentralisedCaseRepository;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.reform.idam.client.models.UserInfo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PaymentStatus;
@@ -17,6 +19,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
 import uk.gov.hmcts.reform.pcs.ccd.renderer.ClaimPaymentTabRenderer;
+import uk.gov.hmcts.reform.pcs.ccd.renderer.SummaryForDefendantRenderer;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.UnsubmittedCaseDataService;
@@ -42,6 +45,7 @@ public class CCDCaseRepository extends DecentralisedCaseRepository<PCSCase> {
     private final SecurityContextService securityContextService;
     private final ModelMapper modelMapper;
     private final ClaimPaymentTabRenderer claimPaymentTabRenderer;
+    private final SummaryForDefendantRenderer summaryForDefendantRenderer;
     private final PcsCaseService pcsCaseService;
     private final UnsubmittedCaseDataService unsubmittedCaseDataService;
 
@@ -72,6 +76,7 @@ public class CCDCaseRepository extends DecentralisedCaseRepository<PCSCase> {
 
     private PCSCase getSubmittedCase(long caseReference) {
         PcsCaseEntity pcsCaseEntity = loadCaseData(caseReference);
+        List<ListValue<DefendantDetails>> defendants = pcsCaseService.mapToDefendantDetails(pcsCaseEntity.getDefendants());
         PCSCase pcsCase = PCSCase.builder()
             .propertyAddress(convertAddress(pcsCaseEntity.getPropertyAddress()))
             .legislativeCountry(pcsCaseEntity.getLegislativeCountry())
@@ -92,7 +97,9 @@ public class CCDCaseRepository extends DecentralisedCaseRepository<PCSCase> {
             .noticeServed(pcsCaseEntity.getTenancyLicence() != null
                 && pcsCaseEntity.getTenancyLicence().getNoticeServed() != null
                 ? YesOrNo.from(pcsCaseEntity.getTenancyLicence().getNoticeServed()) : null)
-            .defendants(pcsCaseService.mapToDefendantDetails(pcsCaseEntity.getDefendants()))
+            .defendants(defendants)
+            .defendant1(defendants.isEmpty() ? null : defendants.getFirst().getValue())
+            .defendantResponse(pcsCaseEntity.getDefendantResponse())
             .build();
 
         setDerivedProperties(caseReference, pcsCase, pcsCaseEntity);
@@ -115,8 +122,14 @@ public class CCDCaseRepository extends DecentralisedCaseRepository<PCSCase> {
     }
 
     private void setMarkdownFields(PCSCase pcsCase) {
+
+        UserInfo currentUserDetails = securityContextService.getCurrentUserDetails();
+        List<String> userRoles = currentUserDetails.getRoles();
         pcsCase.setPageHeadingMarkdown("""
-                                       <p class="govuk-!-font-size-24">#${[CASE_REFERENCE]}</p>""");
+                                       <p class="govuk-!-font-size-24
+                                       govuk-!-margin-top-0 govuk-!-margin-bottom-0">#${[CASE_REFERENCE]}</p>
+                                       %s""".formatted(currentUserDetails.getSub())
+                                       );
 
         if (pcsCase.getHasUnsubmittedCaseData() == YesOrNo.YES) {
             pcsCase.setNextStepsMarkdown("""
@@ -150,6 +163,9 @@ public class CCDCaseRepository extends DecentralisedCaseRepository<PCSCase> {
                                              </p>
                                              """.formatted(EventId.resumePossessionClaim));
         }
+
+        pcsCase.setSummaryForDefendantMarkdown(summaryForDefendantRenderer.render(pcsCase));
+
     }
 
     private Optional<PartyEntity> findPartyForCurrentUser(PcsCaseEntity pcsCaseEntity) {

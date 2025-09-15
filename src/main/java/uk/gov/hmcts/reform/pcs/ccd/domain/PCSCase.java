@@ -11,6 +11,7 @@ import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseworkerAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenAccess;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.DefendantAccess;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
@@ -37,7 +38,7 @@ public class PCSCase {
 
     @CCD(
         label = "Claimant Name",
-        access = {CitizenAccess.class, CaseworkerAccess.class}
+        access = {CitizenAccess.class, CaseworkerAccess.class, DefendantAccess.class}
     )
     @External
     private String claimantName;
@@ -55,10 +56,12 @@ public class PCSCase {
 
     @CCD(
         label = "Property address",
-        access = {CitizenAccess.class, CaseworkerAccess.class}
+        access = {CaseworkerAccess.class, DefendantAccess.class}
     )
     @External
     private AddressUK propertyAddress;
+
+    private String formattedPropertyAddress;
 
     @CCD(searchable = false, access = {CitizenAccess.class, CaseworkerAccess.class})
     private YesOrNo showCrossBorderPage;
@@ -311,5 +314,30 @@ public class PCSCase {
 
     @CCD(searchable = false)
     private String nextStepsMarkdown;
+
+    @CCD(searchable = false,
+        access = {CaseworkerAccess.class, DefendantAccess.class})
+    private String summaryForDefendantMarkdown;
+
+    @CCD(
+        label = "What is the link code?",
+        searchable = false,
+        access = CitizenAccess.class
+    )
+    private String linkCode;
+
+    @CCD(
+            label = "What is the link user ID?",
+            searchable = false,
+            access = CitizenAccess.class
+    )
+    private String linkUserId;
+
+    @CCD(
+        label = "Defendant response",
+        typeOverride = TextArea
+//        access = DefendantAccess.class
+    )
+    private String defendantResponse;
 
 }

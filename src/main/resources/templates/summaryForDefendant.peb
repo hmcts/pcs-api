@@ -1,0 +1,18 @@
+### Address of property subject to claim
+
+<p>
+{% if propertyAddress.addressLine1 %}{{ propertyAddress.addressLine1 }}<br>{% endif %}
+{% if propertyAddress.addressLine2 %}{{ propertyAddress.addressLine2 }}<br>{% endif %}
+{% if propertyAddress.addressLine3 %}{{ propertyAddress.addressLine3 }}<br>{% endif %}
+{% if propertyAddress.postTown %}{{ propertyAddress.postTown }}<br>{% endif %}
+{% if propertyAddress.postCode %}{{ propertyAddress.postCode }}<br>{% endif %}
+</p>
+
+<br>
+
+{% if defendantResponse %}
+### Defendant response
+<div class="govuk-inset-text">
+{{ defendantResponse }}
+</div>
+{% endif %}

@@ -69,19 +69,34 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
             .field(PCSCase::getPropertyAddress, "Property Address");
 
         builder.tab("nextSteps", "Next steps")
+            .forRoles(UserRole.CLAIMANT_SOLICITOR)
             .showCondition(ShowConditions.stateEquals(AWAITING_FURTHER_CLAIM_DETAILS))
             .label("nextStepsMarkdownLabel", null, "${nextStepsMarkdown}")
             .field("nextStepsMarkdown", NEVER_SHOW);
 
+        builder.tab("summaryForDefendant", "Case Summary")
+            .forRoles(UserRole.DEFENDANT)
+            .label("summaryForDefendantMarkdownLabel", null, "${summaryForDefendantMarkdown}")
+            .field("summaryForDefendantMarkdown", NEVER_SHOW);
+
         builder.tab("summary", "Property Details")
+            .forRoles(UserRole.CLAIMANT_SOLICITOR)
             .showCondition(ShowConditions.stateNotEquals(AWAITING_FURTHER_CLAIM_DETAILS))
             .field(PCSCase::getPropertyAddress);
 
+        builder.tab("defendantDetails", "Defendant Details")
+            .forRoles(UserRole.CLAIMANT_SOLICITOR)
+            .showCondition(ShowConditions.stateNotEquals(AWAITING_FURTHER_CLAIM_DETAILS))
+            .field(PCSCase::getDefendant1)
+            .field(PCSCase::getDefendantResponse);
+
         builder.tab("CaseHistory", "History")
+            .forRoles(UserRole.CLAIMANT_SOLICITOR)
             .showCondition(ShowConditions.stateNotEquals(AWAITING_FURTHER_CLAIM_DETAILS))
             .field("caseHistory");
 
         builder.tab("ClaimPayment", "Payment")
+            .forRoles(UserRole.CLAIMANT_SOLICITOR)
             .showCondition(ShowConditions.stateNotEquals(AWAITING_FURTHER_CLAIM_DETAILS))
             .showCondition("claimPaymentTabMarkdown!=\"\"")
             .label("claimPaymentTabMarkdownLabel", null, "${claimPaymentTabMarkdown}")

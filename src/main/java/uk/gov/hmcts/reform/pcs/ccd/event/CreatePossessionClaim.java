@@ -8,6 +8,7 @@ import uk.gov.hmcts.ccd.sdk.api.ConfigBuilder;
 import uk.gov.hmcts.ccd.sdk.api.Event.EventBuilder;
 import uk.gov.hmcts.ccd.sdk.api.EventPayload;
 import uk.gov.hmcts.ccd.sdk.api.Permission;
+import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
@@ -36,17 +37,29 @@ public class CreatePossessionClaim implements CCDConfig<PCSCase, State, UserRole
     public void configure(ConfigBuilder<PCSCase, State, UserRole> configBuilder) {
         EventBuilder<PCSCase, UserRole, State> eventBuilder =
             configBuilder
-                .decentralisedEvent(createPossessionClaim.name(), this::submit)
+                .decentralisedEvent(createPossessionClaim.name(), this::submit, this::start)
                 .initialState(State.AWAITING_FURTHER_CLAIM_DETAILS)
                 .name("Make a claim")
-                .grant(Permission.CRUD, UserRole.PCS_CASE_WORKER);
+                .grant(Permission.CRUD, UserRole.CLAIMANT_SOLICITOR);
 
         new PageBuilder(eventBuilder)
-            .add(new StartTheService())
+//            .add(new StartTheService())
             .add(enterPropertyAddress)
             .add(crossBorderPostcodeSelection)
             .add(propertyNotEligible)
             .add(new PostcodeNotAssignedToCourt());
+    }
+
+    private PCSCase start(EventPayload<PCSCase, State> eventPayload) {
+        return PCSCase.builder()
+            .propertyAddress(AddressUK.builder()
+                                 .addressLine1("123 Baker Street")
+                                 .addressLine2("Marylebone")
+                                 .postTown("London")
+                                 .county("Greater London")
+                                 .postCode("W3 7RX")
+                                 .build())
+            .build();
     }
 
     private void submit(EventPayload<PCSCase, State> eventPayload) {

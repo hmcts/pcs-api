@@ -9,5 +9,8 @@ public enum EventId {
     createPossessionClaim,
     processClaimPayment,
     resumePossessionClaim,
+    linkDefendant,
+    defendantRespondToClaim,
+    generateDefendantPin
 
 }

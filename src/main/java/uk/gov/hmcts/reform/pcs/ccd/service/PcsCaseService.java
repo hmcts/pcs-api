@@ -95,6 +95,8 @@ public class PcsCaseService {
 
         pcsCaseEntity.setTenancyLicence(tenancyLicenceService.buildTenancyLicence(pcsCase));
 
+        pcsCaseEntity.setDefendants(mapFromDefendantDetails(pcsCase.getDefendants()));
+
         pcsCaseRepository.save(pcsCaseEntity);
 
         return pcsCaseEntity;

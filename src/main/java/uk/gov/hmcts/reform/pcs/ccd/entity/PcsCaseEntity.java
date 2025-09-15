@@ -84,6 +84,8 @@ public class PcsCaseEntity {
     @JdbcTypeCode(SqlTypes.JSON)
     private List<Defendant> defendants;
 
+    private String defendantResponse;
+
     public void addParty(PartyEntity party) {
         parties.add(party);
         party.setPcsCase(this);

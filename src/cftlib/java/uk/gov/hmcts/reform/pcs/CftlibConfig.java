@@ -35,13 +35,21 @@ public class CftlibConfig implements CFTLibConfigurer {
         this.configWriter = configWriter;
     }
 
+    // TODO: Create a script to link a given user email or ID to a case
+
     @Override
     public void configure(CFTLib lib) throws Exception {
 
+        // TODO: Switch citizen role back to "citizen" ?
         var users = Map.of(
-            "caseworker@pcs.com", List.of("caseworker", "caseworker-pcs"),
-            "citizen@pcs.com", List.of("citizen"),
-            "data.store.idam.system.user@gmail.com", List.of()
+            "caseworker@test.com", List.of("caseworker", "caseworker-pcs"),
+            "citizen1@test.com", List.of("caseworker", "caseworker-pcs", "citizen"),
+            "citizen2@test.com", List.of("caseworker", "caseworker-pcs", "citizen"),
+            "data.store.idam.system.user@gmail.com", List.of(),
+            "ccd.import@test.com", List.of("ccd-import"),
+            "claimant-solicitor@test.com", List.of("caseworker", "caseworker-pcs", "claimant-solicitor"),
+            "defendant1@test.com", List.of("caseworker", "caseworker-pcs", "defendant"),
+            "pcs-system-user@localhost", List.of("caseworker", "caseworker-pcs", "pcs-system-update")
         );
 
         // Create users and roles including in idam simulator
