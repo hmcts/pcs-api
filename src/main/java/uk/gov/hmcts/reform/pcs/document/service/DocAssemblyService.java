@@ -4,14 +4,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.docassembly.DocAssemblyClient;
-//import uk.gov.hmcts.reform.docassembly.domain.DocAssemblyRequest;
+import uk.gov.hmcts.reform.docassembly.domain.DocAssemblyRequest;
 import uk.gov.hmcts.reform.docassembly.domain.DocAssemblyResponse;
 import uk.gov.hmcts.reform.docassembly.exception.DocumentGenerationFailedException;
+import uk.gov.hmcts.reform.pcs.ccd.CaseType;
+import uk.gov.hmcts.reform.pcs.document.model.GenerateDocumentParams;
 import uk.gov.hmcts.reform.pcs.document.service.exception.DocAssemblyException;
 import uk.gov.hmcts.reform.pcs.idam.IdamService;
-import uk.gov.hmcts.reform.pcs.testingsupport.model.DocAssemblyRequest;
-
-import java.util.Base64;
 
 @Slf4j
 @Service
@@ -19,7 +18,6 @@ public class DocAssemblyService {
     private final DocAssemblyClient docAssemblyClient;
     private final IdamService idamService;
     private final AuthTokenGenerator authTokenGenerator;
-    private static final String DEFAULT_TEMPLATE_ID = "CV-SPC-CLM-ENG-01356.docx";
 
     public DocAssemblyService(
         DocAssemblyClient docAssemblyClient,
@@ -36,21 +34,27 @@ public class DocAssemblyService {
             if (request == null) {
                 throw new IllegalArgumentException("Request cannot be null");
             }
-            // Use templateId from request, or default if not provided
-            if (request.getTemplateId() == null || request.getTemplateId().trim().isEmpty()) {
-                request.setTemplateId(DEFAULT_TEMPLATE_ID);
-            }
-            // Set output type if not provided
-            if (request.getOutputType() == null || request.getOutputType().trim().isEmpty()) {
-                request.setOutputType("PDF");
-            }
+
             String authorization = idamService.getSystemUserAuthorisation();
             String serviceAuthorization = authTokenGenerator.generate();
 
-            DocAssemblyRequest assemblyRequest = DocAssemblyRequest.builder()
+            GenerateDocumentParams params = GenerateDocumentParams.builder()
+                .userAuthentication(authorization)
                 .templateId(request.getTemplateId())
                 .formPayload(request.getFormPayload())
                 .outputType(request.getOutputType())
+                .outputFilename(request.getOutputFilename())
+                .build();
+
+            // docAssemblyRequest with meta
+            DocAssemblyRequest assemblyRequest = DocAssemblyRequest.builder()
+                .templateId(params.getTemplateId())
+                .outputType(params.getOutputType())
+                .formPayload(params.getFormPayload())
+                .outputFilename(params.getOutputFilename())
+                .caseTypeId(CaseType.getCaseType())
+                .jurisdictionId(CaseType.getJurisdictionId())
+                .secureDocStoreEnabled(true)
                 .build();
 
             DocAssemblyResponse response = docAssemblyClient.generateOrder(
