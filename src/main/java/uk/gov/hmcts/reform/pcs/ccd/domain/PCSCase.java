@@ -322,7 +322,7 @@ public class PCSCase {
 
     @CCD(access = {CitizenAccess.class, CaseworkerAccess.class})
     private List<ListValue<DefendantDetails>> defendants;
-    
+
     // Notice Details fields
     @CCD(
         label = "How did you serve the notice?",
@@ -424,5 +424,17 @@ public class PCSCase {
 
     @CCD(searchable = false)
     private String nextStepsMarkdown;
+
+    @CCD(
+        access = {CitizenAccess.class, CaseworkerAccess.class}
+    )
+    private VerticalYesNo claimantCircumstancesSelect;
+
+    @CCD(
+        access = {CitizenAccess.class, CaseworkerAccess.class},
+        max = 950,
+        typeOverride = TextArea
+    )
+    private String claimantCircumstancesDetails;
 
 }

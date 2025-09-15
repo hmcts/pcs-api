@@ -19,6 +19,7 @@ public class ClaimService {
                                           String claimName, PartyRole role) {
         ClaimEntity claim = ClaimEntity.builder()
             .summary(claimName)
+            .claimantCircumstances(caseEntity.getClaimantCircumstances())
             .pcsCase(caseEntity)
             .build();
 
