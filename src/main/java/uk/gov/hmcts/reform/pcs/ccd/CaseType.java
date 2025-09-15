@@ -62,7 +62,8 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
 
         builder.workBasketInputFields()
             .caseReferenceField()
-            .field(PCSCase::getClaimantName, "Claimant Name");
+            .field(PCSCase::getClaimantName, "Claimant Name")
+            .field(PCSCase::getClaimantContactEmail, "Claimant email");
 
         builder.workBasketResultFields()
             .caseReferenceField()
