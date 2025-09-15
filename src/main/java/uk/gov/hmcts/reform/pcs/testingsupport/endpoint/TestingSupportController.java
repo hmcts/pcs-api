@@ -144,15 +144,8 @@ public class TestingSupportController {
                 return ResponseEntity.internalServerError().body("Doc Assembly service returned invalid document URL");
             }
             String documentUrl = docAssemblyService.generateDocument(request);
-
-            // Validate that we got a valid document URL
-            if (documentUrl == null || documentUrl.trim().isEmpty()) {
-                log.error("Doc Assembly service returned null or empty document URL");
-                return ResponseEntity.internalServerError()
-                    .body("Doc Assembly service returned invalid document URL");
-            }
-
             return ResponseEntity.created(URI.create(documentUrl)).body(documentUrl);
+
         } catch (DocAssemblyException e) {
             log.error("Doc Assembly service error: {}", e.getMessage(), e);
             return handleDocAssemblyException(e);

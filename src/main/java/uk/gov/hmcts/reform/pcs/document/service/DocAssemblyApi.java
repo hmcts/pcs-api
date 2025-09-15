@@ -14,4 +14,4 @@ public interface DocAssemblyApi {
         @RequestHeader("ServiceAuthorization") String serviceAuthorization,
         @RequestBody DocAssemblyRequest request
     );
-} 
+}
