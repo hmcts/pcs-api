@@ -9,10 +9,14 @@ import {
 import {createCase} from "@data/page-data/createCase.page.data";
 import {caseInfo} from '@utils/actions/custom-actions/createCase.action';
 
-test.beforeEach(async ({page}) => {
+test.beforeEach(async ({page}, testInfo) => {
     initializeExecutor(page);
     await parentSuite('Search Case');
-    await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
+    await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL, testInfo);
+    await testInfo.attach('Page URL', {
+      body: page.url(),
+      contentType: 'text/plain',
+    });
     await performAction('createUserAndLogin', 'claimant', ['caseworker-pcs', 'caseworker']);
     createCaseWithAddress();
 });
@@ -31,7 +35,7 @@ async function searchCase(caseNumber: string) {
 }
 
 //Skipping these tests until create case journey is fully developed because tests may fail each time when payload changes for create case API
-test.describe.skip('[Search case by case number @PR] @Master @nightly', () => {
+test.describe.skip('[Search case by case number] @PR @Master @nightly', () => {
   test('Search for case via caselist', async ({}) => {
     await searchCase(caseInfo.id);
     await performValidation(

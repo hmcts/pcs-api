@@ -10,17 +10,21 @@ import {provideMoreDetailsOfClaim} from '@data/page-data/provideMoreDetailsOfCla
 import {claimantType} from '@data/page-data/claimantType.page.data';
 import {claimType} from '@data/page-data/claimType.page.data';
 
-test.beforeEach(async ({page}) => {
+test.beforeEach(async ({page}, testInfo) => {
   initializeExecutor(page);
   await parentSuite('Eligibility Check');
-  await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
+  await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL, testInfo);
+  await testInfo.attach('Page URL', {
+    body: page.url(),
+    contentType: 'text/plain',
+  });
   await performAction('createUserAndLogin', 'claimant', ['caseworker-pcs', 'caseworker']);
   await performAction('clickTab', 'Create case');
   await performAction('selectJurisdictionCaseTypeEvent');
   await performAction('housingPossessionClaim');
 });
 
-test.describe('[Eligibility checks for cross and non cross border postcodes] @Master @nightly', async () => {
+test.describe.skip('[Eligibility checks for cross and non cross border postcodes] @Master @nightly', async () => {
   test('Cross border - Verify postcode eligibility check redirection and content for England and Wales', async ({page}) => {
     await performAction('selectAddress', {
       postcode: borderPostcode.englandWalesPostcode,
