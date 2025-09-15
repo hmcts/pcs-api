@@ -12,7 +12,7 @@ public class IntroductoryDemotedOtherGroundsReasons implements CcdPageConfigurat
         pageBuilder
             .page("introductoryDemotedOtherGroundsReasons")
             .pageLabel("Reasons for possession ")
-            .showCondition( "showIntroductoryDemotedOtherGroundReasonPage=\"Yes\""
+            .showCondition("showIntroductoryDemotedOtherGroundReasonPage=\"Yes\""
                     + " AND (typeOfTenancyLicence=\"INTRODUCTORY_TENANCY\""
                     + " OR typeOfTenancyLicence=\"DEMOTED_TENANCY\""
                     +  " OR typeOfTenancyLicence=\"OTHER\")")
@@ -45,7 +45,7 @@ public class IntroductoryDemotedOtherGroundsReasons implements CcdPageConfigurat
                 ---
                 <h2 class="govuk-heading-l">Other ground</h2>
                 <h3 class="govuk-heading-m">Why are you making a claim for possession under this ground?</h3>
-                """ ,"introductoryDemotedOrOtherGroundsCONTAINS\"OTHER\"")
+                ""","introductoryDemotedOrOtherGroundsCONTAINS\"OTHER\"")
             .mandatory(IntroductoryDemotedOtherGroundReason::getOtherGround,
                     "introductoryDemotedOrOtherGroundsCONTAINS\"OTHER\"")
                 .done();

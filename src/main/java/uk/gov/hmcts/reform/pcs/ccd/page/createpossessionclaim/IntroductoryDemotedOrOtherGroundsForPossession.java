@@ -47,25 +47,26 @@ public class IntroductoryDemotedOrOtherGroundsForPossession implements CcdPageCo
                        "introductoryDemotedOrOtherGroundsCONTAINS\"OTHER\""
                         + "AND hasIntroductoryDemotedOtherGroundsForPossession=\"YES\"");
     }
+
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
                                                                   CaseDetails<PCSCase, State> detailsBefore) {
         PCSCase caseData = details.getData();
 
-        boolean hasOtherDiscretionaryGrounds = caseData.getIntroductoryDemotedOrOtherGrounds() == null? false
+        boolean hasOtherDiscretionaryGrounds = caseData.getIntroductoryDemotedOrOtherGrounds() == null ? false
             : caseData.getIntroductoryDemotedOrOtherGrounds()
             .stream()
             .anyMatch(ground -> ground != IntroductoryDemotedOrOtherGrounds.RENT_ARREARS
             );
 
-        if (hasOtherDiscretionaryGrounds &&
-            caseData.getHasIntroductoryDemotedOtherGroundsForPossession() == VerticalYesNo.YES ) {
+        if (hasOtherDiscretionaryGrounds
+                &&
+            caseData.getHasIntroductoryDemotedOtherGroundsForPossession() == VerticalYesNo.YES) {
             caseData.setShowIntroductoryDemotedOtherGroundReasonPage(YesOrNo.YES);
-        }
-        else{
+        } else {
             caseData.setShowIntroductoryDemotedOtherGroundReasonPage(YesOrNo.NO);
         }
         // Clears checkboxes when use selects 'No'
-        if(caseData.getHasIntroductoryDemotedOtherGroundsForPossession() == VerticalYesNo.NO){
+        if (caseData.getHasIntroductoryDemotedOtherGroundsForPossession() == VerticalYesNo.NO) {
             caseData.setIntroductoryDemotedOrOtherGrounds(Set.of());
         }
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
