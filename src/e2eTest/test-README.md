@@ -100,7 +100,7 @@ Playwright 1.30+ | TypeScript 4.9+
 | reloginAndFindTheCase             | `performAction('reloginAndFindTheCase')`                                                                                                                                                                   |
 | selectDailyRentAmount             | `performAction('selectDailyRentAmount', { calculateRentAmount: '£114.29',unpaidRentInteractiveOption: dailyRentAmount.no,unpaidRentAmountPerDay:'20'})`                                                    |
 | extractCaseIdFromAlert            | `performAction('extractCaseIdFromAlert')`                                                                                                                                                                  |
-| selectResumeClaimOption           | `performAction('selectResumeClaimOption', 'yes'`                                                                                                                                                           |
+| selectResumeClaimOption           | `performAction('selectResumeClaimOption', 'yes')`                                                                                                                                                          |
 | selectClaimForMoney               | `performAction('selectClaimForMoney', 'yes')`                                                                                                                                                              |
 ### Validations
 | Validation        | Example Usage                                                                                                                        |
