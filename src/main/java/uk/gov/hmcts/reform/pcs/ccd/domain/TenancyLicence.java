@@ -36,6 +36,6 @@ public class TenancyLicence {
 
     private List<Document> supportingDocuments;
     
-    private Boolean arrearsJudgementWanted;
+    private Boolean arrearsJudgmentWanted;
 
 }
