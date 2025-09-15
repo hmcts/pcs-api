@@ -28,6 +28,7 @@ public class SelectClaimantType implements CcdPageConfiguration {
                         A claimant is the person or organisation who is making the possession claim.
                         """)
             .readonly(PCSCase::getLegislativeCountry, NEVER_SHOW, true)
+            .mandatory(PCSCase::getPropertyAddress, "noticeServed=\"YES\" OR noticeServed=\"NO\"", true)
             .mandatory(PCSCase::getClaimantType);
     }
 
