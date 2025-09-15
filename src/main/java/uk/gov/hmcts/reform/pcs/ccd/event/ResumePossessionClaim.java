@@ -31,6 +31,7 @@ import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.ClaimantInformatio
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.ClaimantTypeNotEligibleEngland;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.ClaimantTypeNotEligibleWales;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.ContactPreferences;
+import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.DynamicDefendantsPages;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.DailyRentAmount;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.DefendantList;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.DefendantsDetails;
@@ -99,8 +100,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             // .add(new ClaimTypeNotEligibleWales())
             // .add(new ClaimantInformation())
             // .add(new ContactPreferences())
-            .add(new DefendantsDetails())
-            .add(new DefendantList())
+            .add(new DynamicDefendantsPages())
             .add(tenancyLicenceDetails)
             .add(new GroundsForPossession())
             .add(new PreActionProtocol())

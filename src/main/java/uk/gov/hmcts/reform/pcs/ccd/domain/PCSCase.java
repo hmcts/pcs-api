@@ -281,6 +281,78 @@ public class PCSCase {
     private DefendantDetails defendant1;
 
     @CCD(access = {CitizenAccess.class, CaseworkerAccess.class})
+    private DefendantDetails defendant2;
+
+    @CCD(access = {CitizenAccess.class, CaseworkerAccess.class})
+    private DefendantDetails defendant3;
+
+    @CCD(access = {CitizenAccess.class, CaseworkerAccess.class})
+    private DefendantDetails defendant4;
+
+    @CCD(access = {CitizenAccess.class, CaseworkerAccess.class})
+    private DefendantDetails defendant5;
+
+    @CCD(access = {CitizenAccess.class, CaseworkerAccess.class})
+    private DefendantDetails defendant6;
+
+    @CCD(access = {CitizenAccess.class, CaseworkerAccess.class})
+    private DefendantDetails defendant7;
+
+    @CCD(access = {CitizenAccess.class, CaseworkerAccess.class})
+    private DefendantDetails defendant8;
+
+    @CCD(access = {CitizenAccess.class, CaseworkerAccess.class})
+    private DefendantDetails defendant9;
+
+    @CCD(access = {CitizenAccess.class, CaseworkerAccess.class})
+    private DefendantDetails defendant10;
+
+    @CCD(access = {CitizenAccess.class, CaseworkerAccess.class})
+    private DefendantDetails defendant11;
+
+    @CCD(access = {CitizenAccess.class, CaseworkerAccess.class})
+    private DefendantDetails defendant12;
+
+    @CCD(access = {CitizenAccess.class, CaseworkerAccess.class})
+    private DefendantDetails defendant13;
+
+    @CCD(access = {CitizenAccess.class, CaseworkerAccess.class})
+    private DefendantDetails defendant14;
+
+    @CCD(access = {CitizenAccess.class, CaseworkerAccess.class})
+    private DefendantDetails defendant15;
+
+    @CCD(access = {CitizenAccess.class, CaseworkerAccess.class})
+    private DefendantDetails defendant16;
+
+    @CCD(access = {CitizenAccess.class, CaseworkerAccess.class})
+    private DefendantDetails defendant17;
+
+    @CCD(access = {CitizenAccess.class, CaseworkerAccess.class})
+    private DefendantDetails defendant18;
+
+    @CCD(access = {CitizenAccess.class, CaseworkerAccess.class})
+    private DefendantDetails defendant19;
+
+    @CCD(access = {CitizenAccess.class, CaseworkerAccess.class})
+    private DefendantDetails defendant20;
+
+    @CCD(access = {CitizenAccess.class, CaseworkerAccess.class})
+    private DefendantDetails defendant21;
+
+    @CCD(access = {CitizenAccess.class, CaseworkerAccess.class})
+    private DefendantDetails defendant22;
+
+    @CCD(access = {CitizenAccess.class, CaseworkerAccess.class})
+    private DefendantDetails defendant23;
+
+    @CCD(access = {CitizenAccess.class, CaseworkerAccess.class})
+    private DefendantDetails defendant24;
+
+    @CCD(access = {CitizenAccess.class, CaseworkerAccess.class})
+    private DefendantDetails defendant25;
+
+    @CCD(access = {CitizenAccess.class, CaseworkerAccess.class})
     private List<ListValue<DefendantDetails>> defendants;
 
     @CCD(
@@ -317,6 +389,156 @@ public class PCSCase {
         access = {CitizenAccess.class, CaseworkerAccess.class}
     )
     private YesOrNo addAnotherDefendant;
+
+    @CCD(
+        label = "Do you need to add another defendant?",
+        access = {CitizenAccess.class, CaseworkerAccess.class}
+    )
+    private YesOrNo addAnotherDefendant1;
+
+    @CCD(
+        label = "Do you need to add another defendant?",
+        access = {CitizenAccess.class, CaseworkerAccess.class}
+    )
+    private YesOrNo addAnotherDefendant2;
+
+    @CCD(
+        label = "Do you need to add another defendant?",
+        access = {CitizenAccess.class, CaseworkerAccess.class}
+    )
+    private YesOrNo addAnotherDefendant3;
+
+    @CCD(
+        label = "Do you need to add another defendant?",
+        access = {CitizenAccess.class, CaseworkerAccess.class}
+    )
+    private YesOrNo addAnotherDefendant4;
+
+    @CCD(
+        label = "Do you need to add another defendant?",
+        access = {CitizenAccess.class, CaseworkerAccess.class}
+    )
+    private YesOrNo addAnotherDefendant5;
+
+    @CCD(
+        label = "Do you need to add another defendant?",
+        access = {CitizenAccess.class, CaseworkerAccess.class}
+    )
+    private YesOrNo addAnotherDefendant6;
+
+    @CCD(
+        label = "Do you need to add another defendant?",
+        access = {CitizenAccess.class, CaseworkerAccess.class}
+    )
+    private YesOrNo addAnotherDefendant7;
+
+    @CCD(
+        label = "Do you need to add another defendant?",
+        access = {CitizenAccess.class, CaseworkerAccess.class}
+    )
+    private YesOrNo addAnotherDefendant8;
+
+    @CCD(
+        label = "Do you need to add another defendant?",
+        access = {CitizenAccess.class, CaseworkerAccess.class}
+    )
+    private YesOrNo addAnotherDefendant9;
+
+    @CCD(
+        label = "Do you need to add another defendant?",
+        access = {CitizenAccess.class, CaseworkerAccess.class}
+    )
+    private YesOrNo addAnotherDefendant10;
+
+    @CCD(
+        label = "Do you need to add another defendant?",
+        access = {CitizenAccess.class, CaseworkerAccess.class}
+    )
+    private YesOrNo addAnotherDefendant11;
+
+    @CCD(
+        label = "Do you need to add another defendant?",
+        access = {CitizenAccess.class, CaseworkerAccess.class}
+    )
+    private YesOrNo addAnotherDefendant12;
+
+    @CCD(
+        label = "Do you need to add another defendant?",
+        access = {CitizenAccess.class, CaseworkerAccess.class}
+    )
+    private YesOrNo addAnotherDefendant13;
+
+    @CCD(
+        label = "Do you need to add another defendant?",
+        access = {CitizenAccess.class, CaseworkerAccess.class}
+    )
+    private YesOrNo addAnotherDefendant14;
+
+    @CCD(
+        label = "Do you need to add another defendant?",
+        access = {CitizenAccess.class, CaseworkerAccess.class}
+    )
+    private YesOrNo addAnotherDefendant15;
+
+    @CCD(
+        label = "Do you need to add another defendant?",
+        access = {CitizenAccess.class, CaseworkerAccess.class}
+    )
+    private YesOrNo addAnotherDefendant16;
+
+    @CCD(
+        label = "Do you need to add another defendant?",
+        access = {CitizenAccess.class, CaseworkerAccess.class}
+    )
+    private YesOrNo addAnotherDefendant17;
+
+    @CCD(
+        label = "Do you need to add another defendant?",
+        access = {CitizenAccess.class, CaseworkerAccess.class}
+    )
+    private YesOrNo addAnotherDefendant18;
+
+    @CCD(
+        label = "Do you need to add another defendant?",
+        access = {CitizenAccess.class, CaseworkerAccess.class}
+    )
+    private YesOrNo addAnotherDefendant19;
+
+    @CCD(
+        label = "Do you need to add another defendant?",
+        access = {CitizenAccess.class, CaseworkerAccess.class}
+    )
+    private YesOrNo addAnotherDefendant20;
+
+    @CCD(
+        label = "Do you need to add another defendant?",
+        access = {CitizenAccess.class, CaseworkerAccess.class}
+    )
+    private YesOrNo addAnotherDefendant21;
+
+    @CCD(
+        label = "Do you need to add another defendant?",
+        access = {CitizenAccess.class, CaseworkerAccess.class}
+    )
+    private YesOrNo addAnotherDefendant22;
+
+    @CCD(
+        label = "Do you need to add another defendant?",
+        access = {CitizenAccess.class, CaseworkerAccess.class}
+    )
+    private YesOrNo addAnotherDefendant23;
+
+    @CCD(
+        label = "Do you need to add another defendant?",
+        access = {CitizenAccess.class, CaseworkerAccess.class}
+    )
+    private YesOrNo addAnotherDefendant24;
+
+    @CCD(
+        label = "Do you need to add another defendant?",
+        access = {CitizenAccess.class, CaseworkerAccess.class}
+    )
+    private YesOrNo addAnotherDefendant25;
 
     @CCD(
         label = "Defendants table HTML",

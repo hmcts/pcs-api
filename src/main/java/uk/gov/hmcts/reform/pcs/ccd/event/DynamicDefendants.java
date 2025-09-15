@@ -1,0 +1,260 @@
+package uk.gov.hmcts.reform.pcs.ccd.event;
+
+import de.cronn.reflection.util.TypedPropertyGetter;
+import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Component;
+import uk.gov.hmcts.ccd.sdk.api.CCDConfig;
+import uk.gov.hmcts.ccd.sdk.api.ConfigBuilder;
+import uk.gov.hmcts.ccd.sdk.api.Event;
+import uk.gov.hmcts.ccd.sdk.api.EventPayload;
+import uk.gov.hmcts.ccd.sdk.api.FieldCollection;
+import uk.gov.hmcts.ccd.sdk.api.Permission;
+import uk.gov.hmcts.ccd.sdk.type.ListValue;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
+import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.PCS_CASE_WORKER;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.State.AWAITING_FURTHER_CLAIM_DETAILS;
+
+@Component
+@Slf4j
+@AllArgsConstructor
+public class DynamicDefendants implements CCDConfig<PCSCase, State, UserRole> {
+
+    private final PcsCaseService pcsCaseService;
+
+    @Override
+    public void configure(final ConfigBuilder<PCSCase, State, UserRole> configBuilder) {
+        var eventBuilder = configBuilder
+            .decentralisedEvent("dynamicDefendants", this::submit)
+            .forStates(AWAITING_FURTHER_CLAIM_DETAILS)
+            .name("Add defendants")
+            .description("Add up to 25 defendants")
+            .grant(Permission.CRU, PCS_CASE_WORKER)
+            .showSummary()
+            .fields();
+        addDefendantPages(eventBuilder);
+        eventBuilder.done();
+    }
+
+    private void addDefendantPages(FieldCollection.FieldCollectionBuilder<PCSCase, State, Event.EventBuilder
+            <PCSCase, UserRole, State>> event) {
+        int maxNum = 25;
+        for (int i = 1; i <= maxNum; i++) {
+
+            // Defendant details page
+            var defendantPage = event.page("DefendantDetails" + i);
+            if (i > 1) {
+                defendantPage.showCondition("addAnotherDefendant" + (i - 1) + "=\"Yes\"");
+            }
+            defendantPage.pageLabel("Defendant " + i + " details")
+                .mandatory(getTempDefField(i));
+
+            // Add Another / Summary page
+            var addAnotherPage = event.page("DefendantList" + i);
+            if (i > 1) {
+                addAnotherPage.showCondition("addAnotherDefendant" + (i - 1) + "=\"Yes\"");
+            }
+            addAnotherPage.pageLabel("Defendant List")
+                    .label("defTable" + i, buildDefendantsSummaryTable(i));
+            if (i != maxNum) {
+                addAnotherPage.mandatory(getAddAnotherField(i));
+            }
+
+        }
+    }
+
+    private TypedPropertyGetter<PCSCase, DefendantDetails> getTempDefField(int i) {
+        switch (i) {
+            case 1:  return PCSCase::getDefendant1;
+            case 2:  return PCSCase::getDefendant2;
+            case 3:  return PCSCase::getDefendant3;
+            case 4:  return PCSCase::getDefendant4;
+            case 5:  return PCSCase::getDefendant5;
+            case 6:  return PCSCase::getDefendant6;
+            case 7:  return PCSCase::getDefendant7;
+            case 8:  return PCSCase::getDefendant8;
+            case 9:  return PCSCase::getDefendant9;
+            case 10: return PCSCase::getDefendant10;
+            case 11: return PCSCase::getDefendant11;
+            case 12: return PCSCase::getDefendant12;
+            case 13: return PCSCase::getDefendant13;
+            case 14: return PCSCase::getDefendant14;
+            case 15: return PCSCase::getDefendant15;
+            case 16: return PCSCase::getDefendant16;
+            case 17: return PCSCase::getDefendant17;
+            case 18: return PCSCase::getDefendant18;
+            case 19: return PCSCase::getDefendant19;
+            case 20: return PCSCase::getDefendant20;
+            case 21: return PCSCase::getDefendant21;
+            case 22: return PCSCase::getDefendant22;
+            case 23: return PCSCase::getDefendant23;
+            case 24: return PCSCase::getDefendant24;
+            case 25: return PCSCase::getDefendant25;
+            default: throw new IllegalArgumentException("Invalid defendant index: " + i);
+        }
+    }
+
+    private TypedPropertyGetter<PCSCase, ?> getAddAnotherField(int i) {
+        switch (i) {
+            case 1:  return PCSCase::getAddAnotherDefendant1;
+            case 2:  return PCSCase::getAddAnotherDefendant2;
+            case 3:  return PCSCase::getAddAnotherDefendant3;
+            case 4:  return PCSCase::getAddAnotherDefendant4;
+            case 5:  return PCSCase::getAddAnotherDefendant5;
+            case 6:  return PCSCase::getAddAnotherDefendant6;
+            case 7:  return PCSCase::getAddAnotherDefendant7;
+            case 8:  return PCSCase::getAddAnotherDefendant8;
+            case 9:  return PCSCase::getAddAnotherDefendant9;
+            case 10: return PCSCase::getAddAnotherDefendant10;
+            case 11: return PCSCase::getAddAnotherDefendant11;
+            case 12: return PCSCase::getAddAnotherDefendant12;
+            case 13: return PCSCase::getAddAnotherDefendant13;
+            case 14: return PCSCase::getAddAnotherDefendant14;
+            case 15: return PCSCase::getAddAnotherDefendant15;
+            case 16: return PCSCase::getAddAnotherDefendant16;
+            case 17: return PCSCase::getAddAnotherDefendant17;
+            case 18: return PCSCase::getAddAnotherDefendant18;
+            case 19: return PCSCase::getAddAnotherDefendant19;
+            case 20: return PCSCase::getAddAnotherDefendant20;
+            case 21: return PCSCase::getAddAnotherDefendant21;
+            case 22: return PCSCase::getAddAnotherDefendant22;
+            case 23: return PCSCase::getAddAnotherDefendant23;
+            case 24: return PCSCase::getAddAnotherDefendant24;
+            case 25: return PCSCase::getAddAnotherDefendant25;
+            default: throw new IllegalArgumentException("Invalid add-another index: " + i);
+        }
+    }
+
+    private String buildDefendantsSummaryTable(int upToDefendant) {
+        StringBuilder htmlTable = new StringBuilder();
+        htmlTable.append("""
+        <table class="govuk-table">
+          <caption class="govuk-table__caption govuk-table__caption--m">Defendants</caption>
+          <thead class="govuk-table__head">
+            <tr class="govuk-table__row">
+              <th scope="col" class="govuk-table__header">Defendant</th>
+              <th scope="col" class="govuk-table__header">Defendant name</th>
+              <th scope="col" class="govuk-table__header">Defendant correspondence address</th>
+              <th scope="col" class="govuk-table__header">Defendant email address</th>
+            </tr>
+          </thead>
+          <tbody class="govuk-table__body">
+            """);
+
+        for (int i = 1; i <= upToDefendant; i++) {
+            htmlTable.append("<tr class=\"govuk-table__row\">")
+                .append("<td class=\"govuk-table__cell\">Defendant ").append(i).append("</td>")
+                .append("<td class=\"govuk-table__cell\">${defendant").append(i).append(".firstName} ${defendant").append(i).append(".lastName}</td>")
+                .append("<td class=\"govuk-table__cell\">")
+                .append("Address details will be displayed here")
+                .append("</td>")
+                .append("<td class=\"govuk-table__cell\">${defendant").append(i).append(".email}</td>")
+                .append("</tr>");
+        }
+
+        htmlTable.append("""
+          </tbody>
+        </table>
+            """);
+
+        return htmlTable.toString();
+    }
+
+    private void submit(EventPayload<PCSCase, State> eventPayload) {
+        PCSCase pcsCase = eventPayload.caseData();
+        List<ListValue<DefendantDetails>> finalDefendants = new ArrayList<>();
+        
+        // Add all individual defendants to the final list
+        if (pcsCase.getDefendant1() != null) {
+            finalDefendants.add(new ListValue<>(UUID.randomUUID().toString(), pcsCase.getDefendant1()));
+        }
+        if (pcsCase.getDefendant2() != null) {
+            finalDefendants.add(new ListValue<>(UUID.randomUUID().toString(), pcsCase.getDefendant2()));
+        }
+        if (pcsCase.getDefendant3() != null) {
+            finalDefendants.add(new ListValue<>(UUID.randomUUID().toString(), pcsCase.getDefendant3()));
+        }
+        if (pcsCase.getDefendant4() != null) {
+            finalDefendants.add(new ListValue<>(UUID.randomUUID().toString(), pcsCase.getDefendant4()));
+        }
+        if (pcsCase.getDefendant5() != null) {
+            finalDefendants.add(new ListValue<>(UUID.randomUUID().toString(), pcsCase.getDefendant5()));
+        }
+        if (pcsCase.getDefendant6() != null) {
+            finalDefendants.add(new ListValue<>(UUID.randomUUID().toString(), pcsCase.getDefendant6()));
+        }
+        if (pcsCase.getDefendant7() != null) {
+            finalDefendants.add(new ListValue<>(UUID.randomUUID().toString(), pcsCase.getDefendant7()));
+        }
+        if (pcsCase.getDefendant8() != null) {
+            finalDefendants.add(new ListValue<>(UUID.randomUUID().toString(), pcsCase.getDefendant8()));
+        }
+        if (pcsCase.getDefendant9() != null) {
+            finalDefendants.add(new ListValue<>(UUID.randomUUID().toString(), pcsCase.getDefendant9()));
+        }
+        if (pcsCase.getDefendant10() != null) {
+            finalDefendants.add(new ListValue<>(UUID.randomUUID().toString(), pcsCase.getDefendant10()));
+        }
+        if (pcsCase.getDefendant11() != null) {
+            finalDefendants.add(new ListValue<>(UUID.randomUUID().toString(), pcsCase.getDefendant11()));
+        }
+        if (pcsCase.getDefendant12() != null) {
+            finalDefendants.add(new ListValue<>(UUID.randomUUID().toString(), pcsCase.getDefendant12()));
+        }
+        if (pcsCase.getDefendant13() != null) {
+            finalDefendants.add(new ListValue<>(UUID.randomUUID().toString(), pcsCase.getDefendant13()));
+        }
+        if (pcsCase.getDefendant14() != null) {
+            finalDefendants.add(new ListValue<>(UUID.randomUUID().toString(), pcsCase.getDefendant14()));
+        }
+        if (pcsCase.getDefendant15() != null) {
+            finalDefendants.add(new ListValue<>(UUID.randomUUID().toString(), pcsCase.getDefendant15()));
+        }
+        if (pcsCase.getDefendant16() != null) {
+            finalDefendants.add(new ListValue<>(UUID.randomUUID().toString(), pcsCase.getDefendant16()));
+        }
+        if (pcsCase.getDefendant17() != null) {
+            finalDefendants.add(new ListValue<>(UUID.randomUUID().toString(), pcsCase.getDefendant17()));
+        }
+        if (pcsCase.getDefendant18() != null) {
+            finalDefendants.add(new ListValue<>(UUID.randomUUID().toString(), pcsCase.getDefendant18()));
+        }
+        if (pcsCase.getDefendant19() != null) {
+            finalDefendants.add(new ListValue<>(UUID.randomUUID().toString(), pcsCase.getDefendant19()));
+        }
+        if (pcsCase.getDefendant20() != null) {
+            finalDefendants.add(new ListValue<>(UUID.randomUUID().toString(), pcsCase.getDefendant20()));
+        }
+        if (pcsCase.getDefendant21() != null) {
+            finalDefendants.add(new ListValue<>(UUID.randomUUID().toString(), pcsCase.getDefendant21()));
+        }
+        if (pcsCase.getDefendant22() != null) {
+            finalDefendants.add(new ListValue<>(UUID.randomUUID().toString(), pcsCase.getDefendant22()));
+        }
+        if (pcsCase.getDefendant23() != null) {
+            finalDefendants.add(new ListValue<>(UUID.randomUUID().toString(), pcsCase.getDefendant23()));
+        }
+        if (pcsCase.getDefendant24() != null) {
+            finalDefendants.add(new ListValue<>(UUID.randomUUID().toString(), pcsCase.getDefendant24()));
+        }
+        if (pcsCase.getDefendant25() != null) {
+            finalDefendants.add(new ListValue<>(UUID.randomUUID().toString(), pcsCase.getDefendant25()));
+        }
+        
+        pcsCase.setDefendants(finalDefendants);
+        long caseReference = eventPayload.caseReference();
+
+        log.info("Caseworker updated case {} with {} defendants", caseReference, finalDefendants.size());
+
+        pcsCaseService.patchCase(caseReference, pcsCase);
+    }
+}
