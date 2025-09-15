@@ -22,7 +22,7 @@ import {provideMoreDetailsOfClaim} from '@data/page-data/provideMoreDetailsOfCla
 import {resumeClaim} from '@data/page-data/resumeClaim.page.data';
 import {resumeClaimOptions} from '@data/page-data/resumeClaimOptions.page.data';
 import {detailsOfRentArrears} from '@data/page-data/detailsOfRentArrears.page.data';
-import {user} from "@data/user-data/permanent.user.data";
+import {user} from '@data/user-data/permanent.user.data';
 
 test.beforeEach(async ({page}, testInfo) => {
   initializeExecutor(page);

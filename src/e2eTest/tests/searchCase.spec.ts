@@ -6,9 +6,9 @@ import {
   performAction,
   performValidation
 } from '@utils/controller';
-import {createCase} from "@data/page-data/createCase.page.data";
+import {createCase} from '@data/page-data/createCase.page.data';
 import {caseInfo} from '@utils/actions/custom-actions/createCase.action';
-import {user} from "@data/user-data/permanent.user.data";
+import {user} from '@data/user-data/permanent.user.data';
 
 test.beforeEach(async ({page}) => {
     initializeExecutor(page);
