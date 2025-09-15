@@ -9,6 +9,7 @@ import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.FieldType;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseworkerAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenAccess;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
@@ -389,151 +390,151 @@ public class PCSCase {
         label = "Do you need to add another defendant?",
         access = {CitizenAccess.class, CaseworkerAccess.class}
     )
-    private YesOrNo addAnotherDefendant1;
+    private VerticalYesNo addAnotherDefendant1;
 
     @CCD(
         label = "Do you need to add another defendant?",
         access = {CitizenAccess.class, CaseworkerAccess.class}
     )
-    private YesOrNo addAnotherDefendant2;
+    private VerticalYesNo addAnotherDefendant2;
 
     @CCD(
         label = "Do you need to add another defendant?",
         access = {CitizenAccess.class, CaseworkerAccess.class}
     )
-    private YesOrNo addAnotherDefendant3;
+    private VerticalYesNo addAnotherDefendant3;
 
     @CCD(
         label = "Do you need to add another defendant?",
         access = {CitizenAccess.class, CaseworkerAccess.class}
     )
-    private YesOrNo addAnotherDefendant4;
+    private VerticalYesNo addAnotherDefendant4;
 
     @CCD(
         label = "Do you need to add another defendant?",
         access = {CitizenAccess.class, CaseworkerAccess.class}
     )
-    private YesOrNo addAnotherDefendant5;
+    private VerticalYesNo addAnotherDefendant5;
 
     @CCD(
         label = "Do you need to add another defendant?",
         access = {CitizenAccess.class, CaseworkerAccess.class}
     )
-    private YesOrNo addAnotherDefendant6;
+    private VerticalYesNo addAnotherDefendant6;
 
     @CCD(
         label = "Do you need to add another defendant?",
         access = {CitizenAccess.class, CaseworkerAccess.class}
     )
-    private YesOrNo addAnotherDefendant7;
+    private VerticalYesNo addAnotherDefendant7;
 
     @CCD(
         label = "Do you need to add another defendant?",
         access = {CitizenAccess.class, CaseworkerAccess.class}
     )
-    private YesOrNo addAnotherDefendant8;
+    private VerticalYesNo addAnotherDefendant8;
 
     @CCD(
         label = "Do you need to add another defendant?",
         access = {CitizenAccess.class, CaseworkerAccess.class}
     )
-    private YesOrNo addAnotherDefendant9;
+    private VerticalYesNo addAnotherDefendant9;
 
     @CCD(
         label = "Do you need to add another defendant?",
         access = {CitizenAccess.class, CaseworkerAccess.class}
     )
-    private YesOrNo addAnotherDefendant10;
+    private VerticalYesNo addAnotherDefendant10;
 
     @CCD(
         label = "Do you need to add another defendant?",
         access = {CitizenAccess.class, CaseworkerAccess.class}
     )
-    private YesOrNo addAnotherDefendant11;
+    private VerticalYesNo addAnotherDefendant11;
 
     @CCD(
         label = "Do you need to add another defendant?",
         access = {CitizenAccess.class, CaseworkerAccess.class}
     )
-    private YesOrNo addAnotherDefendant12;
+    private VerticalYesNo addAnotherDefendant12;
 
     @CCD(
         label = "Do you need to add another defendant?",
         access = {CitizenAccess.class, CaseworkerAccess.class}
     )
-    private YesOrNo addAnotherDefendant13;
+    private VerticalYesNo addAnotherDefendant13;
 
     @CCD(
         label = "Do you need to add another defendant?",
         access = {CitizenAccess.class, CaseworkerAccess.class}
     )
-    private YesOrNo addAnotherDefendant14;
+    private VerticalYesNo addAnotherDefendant14;
 
     @CCD(
         label = "Do you need to add another defendant?",
         access = {CitizenAccess.class, CaseworkerAccess.class}
     )
-    private YesOrNo addAnotherDefendant15;
+    private VerticalYesNo addAnotherDefendant15;
 
     @CCD(
         label = "Do you need to add another defendant?",
         access = {CitizenAccess.class, CaseworkerAccess.class}
     )
-    private YesOrNo addAnotherDefendant16;
+    private VerticalYesNo addAnotherDefendant16;
 
     @CCD(
         label = "Do you need to add another defendant?",
         access = {CitizenAccess.class, CaseworkerAccess.class}
     )
-    private YesOrNo addAnotherDefendant17;
+    private VerticalYesNo addAnotherDefendant17;
 
     @CCD(
         label = "Do you need to add another defendant?",
         access = {CitizenAccess.class, CaseworkerAccess.class}
     )
-    private YesOrNo addAnotherDefendant18;
+    private VerticalYesNo addAnotherDefendant18;
 
     @CCD(
         label = "Do you need to add another defendant?",
         access = {CitizenAccess.class, CaseworkerAccess.class}
     )
-    private YesOrNo addAnotherDefendant19;
+    private VerticalYesNo addAnotherDefendant19;
 
     @CCD(
         label = "Do you need to add another defendant?",
         access = {CitizenAccess.class, CaseworkerAccess.class}
     )
-    private YesOrNo addAnotherDefendant20;
+    private VerticalYesNo addAnotherDefendant20;
 
     @CCD(
         label = "Do you need to add another defendant?",
         access = {CitizenAccess.class, CaseworkerAccess.class}
     )
-    private YesOrNo addAnotherDefendant21;
+    private VerticalYesNo addAnotherDefendant21;
 
     @CCD(
         label = "Do you need to add another defendant?",
         access = {CitizenAccess.class, CaseworkerAccess.class}
     )
-    private YesOrNo addAnotherDefendant22;
+    private VerticalYesNo addAnotherDefendant22;
 
     @CCD(
         label = "Do you need to add another defendant?",
         access = {CitizenAccess.class, CaseworkerAccess.class}
     )
-    private YesOrNo addAnotherDefendant23;
+    private VerticalYesNo addAnotherDefendant23;
 
     @CCD(
         label = "Do you need to add another defendant?",
         access = {CitizenAccess.class, CaseworkerAccess.class}
     )
-    private YesOrNo addAnotherDefendant24;
+    private VerticalYesNo addAnotherDefendant24;
 
     @CCD(
         label = "Do you need to add another defendant?",
         access = {CitizenAccess.class, CaseworkerAccess.class}
     )
-    private YesOrNo addAnotherDefendant25;
+    private VerticalYesNo addAnotherDefendant25;
 
     @CCD(
         label = "Defendants table HTML",

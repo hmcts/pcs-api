@@ -6,8 +6,13 @@ import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import de.cronn.reflection.util.TypedPropertyGetter;
+import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
+import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
+import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 
 @Component
 @Slf4j
@@ -22,11 +27,12 @@ public class DynamicDefendantsPages implements CcdPageConfiguration {
     @Override
     public void addTo(PageBuilder pageBuilder) {
         for (int i = 1; i <= MAX_NUMBER_OF_DEFENDANTS; i++) {
+            final int defendantIndex = i; // Make effectively final for lambda
 
             // Defendant details page
-            var defendantPage = pageBuilder.page("DefendantDetails" + i);
+            var defendantPage = pageBuilder.page("DefendantDetails" + i, (details, detailsBefore) -> midEventForDefendant(details, detailsBefore, defendantIndex));
             if (i > 1) {
-                defendantPage.showCondition("addAnotherDefendant" + (i - 1) + "=\"Yes\"");
+                defendantPage.showCondition("addAnotherDefendant" + (i - 1) + "=\"YES\"");
             }
             defendantPage.pageLabel("Defendant " + i + " details")
                 .mandatory(getTempDefField(i));
@@ -34,7 +40,7 @@ public class DynamicDefendantsPages implements CcdPageConfiguration {
             // Add Another / Summary page
             var addAnotherPage = pageBuilder.page("DefendantList" + i);
             if (i > 1) {
-                addAnotherPage.showCondition("addAnotherDefendant" + (i - 1) + "=\"Yes\"");
+                addAnotherPage.showCondition("addAnotherDefendant" + (i - 1) + "=\"YES\"");
             }
                    addAnotherPage.pageLabel("Defendant List")
                            .label("defTable" + i, buildDefendantsSummaryTable(i));
@@ -49,7 +55,6 @@ public class DynamicDefendantsPages implements CcdPageConfiguration {
            public String buildDefendantsSummaryTable(int upToDefendant) {
                StringBuilder htmlTable = new StringBuilder();
                htmlTable.append("""
-                   <h2>Defendants</h2>
                    <table class="govuk-table">
                      <caption class="govuk-table__caption govuk-table__caption--m">Defendants</caption>
                      <thead class="govuk-table__head">
@@ -143,6 +148,54 @@ public class DynamicDefendantsPages implements CcdPageConfiguration {
             case 24 -> PCSCase::getAddAnotherDefendant24;
             case 25 -> PCSCase::getAddAnotherDefendant25;
             default -> throw new IllegalArgumentException("Invalid add-another index: " + i);
+        };
+    }
+
+    private AboutToStartOrSubmitResponse<PCSCase, State> midEventForDefendant(CaseDetails<PCSCase, State> details,
+                                                                              CaseDetails<PCSCase, State> detailsBefore,
+                                                                              int defendantIndex) {
+        PCSCase caseData = details.getData();
+        
+        // Check only the specific defendant for this page
+        DefendantDetails defendant = getDefendantByIndex(caseData, defendantIndex);
+        if (defendant != null && defendant.getAddressSameAsPossession() == VerticalYesNo.YES) {
+            // Set the correspondence address to the property address
+            defendant.setCorrespondenceAddress(caseData.getPropertyAddress());
+        }
+        
+        return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
+            .data(caseData)
+            .build();
+    }
+
+    private DefendantDetails getDefendantByIndex(PCSCase caseData, int index) {
+        return switch (index) {
+            case 1 -> caseData.getDefendant1();
+            case 2 -> caseData.getDefendant2();
+            case 3 -> caseData.getDefendant3();
+            case 4 -> caseData.getDefendant4();
+            case 5 -> caseData.getDefendant5();
+            case 6 -> caseData.getDefendant6();
+            case 7 -> caseData.getDefendant7();
+            case 8 -> caseData.getDefendant8();
+            case 9 -> caseData.getDefendant9();
+            case 10 -> caseData.getDefendant10();
+            case 11 -> caseData.getDefendant11();
+            case 12 -> caseData.getDefendant12();
+            case 13 -> caseData.getDefendant13();
+            case 14 -> caseData.getDefendant14();
+            case 15 -> caseData.getDefendant15();
+            case 16 -> caseData.getDefendant16();
+            case 17 -> caseData.getDefendant17();
+            case 18 -> caseData.getDefendant18();
+            case 19 -> caseData.getDefendant19();
+            case 20 -> caseData.getDefendant20();
+            case 21 -> caseData.getDefendant21();
+            case 22 -> caseData.getDefendant22();
+            case 23 -> caseData.getDefendant23();
+            case 24 -> caseData.getDefendant24();
+            case 25 -> caseData.getDefendant25();
+            default -> null;
         };
     }
 
