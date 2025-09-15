@@ -26,11 +26,11 @@ test.beforeEach(async ({page}, testInfo) => {
   initializeExecutor(page);
   await parentSuite('Case Creation');
   await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
+  await performAction('createUserAndLogin', 'claimant', ['caseworker-pcs', 'caseworker']);
   await testInfo.attach('Page URL', {
     body: page.url(),
     contentType: 'text/plain',
   });
-  await performAction('createUserAndLogin', 'claimant', ['caseworker-pcs', 'caseworker']);
   await performAction('clickTab', 'Create case');
   await performAction('selectJurisdictionCaseTypeEvent');
   await performAction('housingPossessionClaim');
