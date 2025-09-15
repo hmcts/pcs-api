@@ -33,8 +33,6 @@ import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.ClaimantTypeNotEli
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.ContactPreferences;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.DynamicDefendantsPages;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.DailyRentAmount;
-import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.DefendantList;
-import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.DefendantsDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.GroundsForPossession;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.MediationAndSettlement;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.NoticeDetails;
@@ -48,6 +46,7 @@ import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.TenancyLicenceDeta
 import uk.gov.hmcts.reform.pcs.ccd.service.ClaimService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
+import uk.gov.hmcts.reform.pcs.ccd.service.DefendantsTableService;
 import uk.gov.hmcts.reform.pcs.ccd.service.UnsubmittedCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
@@ -78,6 +77,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
     private final ResumeClaim resumeClaim;
     private final UnsubmittedCaseDataService unsubmittedCaseDataService;
     private final TenancyLicenceDetails tenancyLicenceDetails;
+    private final DefendantsTableService defendantsTableService;
 
     @Override
     public void configure(ConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -176,6 +176,9 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             pcsCaseService.clearHiddenDefendantDetailsFields(defendantsList);
             pcsCase.setDefendants(defendantsList);
         }
+        
+        // Populate the defendants table HTML with formatted data
+        defendantsTableService.populateDefendantsTableHtml(pcsCase);
 
         PcsCaseEntity pcsCaseEntity = pcsCaseService.patchCase(caseReference, pcsCase);
         PartyEntity party = partyService.createAndLinkParty(
