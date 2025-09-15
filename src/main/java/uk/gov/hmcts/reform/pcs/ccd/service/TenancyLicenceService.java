@@ -27,6 +27,19 @@ public class TenancyLicenceService {
                 .totalRentArrears(penceToPounds(pcsCase.getTotalRentArrears()))
                 .thirdPartyPaymentSources(pcsCase.getThirdPartyPaymentSources())
                 .thirdPartyPaymentSourceOther(pcsCase.getThirdPartyPaymentSourceOther())
+                // Add notice details fields
+                .noticeServiceMethod(pcsCase.getNoticeServiceMethod() != null
+                                    ? pcsCase.getNoticeServiceMethod().name()
+                                    : null)
+                .noticePostedDate(pcsCase.getNoticePostedDate())
+                .noticeDeliveredDate(pcsCase.getNoticeDeliveredDate())
+                .noticeHandedOverDateTime(pcsCase.getNoticeHandedOverDateTime())
+                .noticePersonName(pcsCase.getNoticePersonName())
+                .noticeEmailSentDateTime(pcsCase.getNoticeEmailSentDateTime())
+                .noticeEmailExplanation(pcsCase.getNoticeEmailExplanation())
+                .noticeOtherElectronicDateTime(pcsCase.getNoticeOtherElectronicDateTime())
+                .noticeOtherDateTime(pcsCase.getNoticeOtherDateTime())
+                .noticeOtherExplanation(pcsCase.getNoticeOtherExplanation())
                 .build();
     }
 
