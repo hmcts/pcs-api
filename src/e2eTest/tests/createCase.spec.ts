@@ -39,7 +39,6 @@ test.describe('[Create Case Flow With Address and Claimant Type] @Master @nightl
       postcode: addressDetails.englandCourtAssignedPostcode,
       addressIndex: addressDetails.addressIndex
     });
-
     await performValidation('bannerAlert', 'Case #.* has been created.');
     await performAction('clickButton', provideMoreDetailsOfClaim.continue);
     await performAction('selectClaimantType', claimantType.registeredProviderForSocialHousing);
