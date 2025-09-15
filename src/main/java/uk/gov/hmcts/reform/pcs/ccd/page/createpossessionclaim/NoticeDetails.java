@@ -102,20 +102,24 @@ public class NoticeDetails implements CcdPageConfiguration {
             )
 
             // Document upload section
-            .label("noticeDetails-documentUpload-section", """
-                ---
-                <h2 class="govuk-heading-m">Do you want to upload a copy of the notice you served or the 
-                certificate of service? (Optional)</h2>
-                <p class="govuk-hint">You can either upload this now or closer to the hearing date. 
-                Any documents you upload now will be included in the pack of documents a judge will 
-                receive before the hearing (the bundle).</p>
-                
-                <div class="govuk-inset-text">
-                    <h3 class="govuk-heading-s">Add document</h3>
-                    <p class="govuk-body">Upload a document to the system</p>
-                    <a href="javascript:void(0)" class="govuk-button">Add new</a>
-                </div>
-                """);
+            .label("noticeDetails-documentUpload-separator", "---")
+            .label("noticeDetails-documentUpload-heading",
+                    """
+                    <h2 class="govuk-heading-m govuk-!-margin-bottom-2">Notice documents</h2>
+                    """
+            )
+            .label("noticeDetails-documentUpload-help",
+                    """
+                    <section tabindex="0">
+                      <h3 class="govuk-heading-s govuk-!-margin-top-1 govuk-!-margin-bottom-1">
+                        Upload a copy of the notice you served or the certificate of service
+                      </h3>
+                      <p class="govuk-body">You can either upload this now or closer to the hearing date. 
+                      Any documents you upload now will be included in the pack of documents a judge will 
+                      receive before the hearing (the bundle).</p>
+                    </section>
+                    """)
+            .mandatory(PCSCase::getNoticeDocuments);
     }
 
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
