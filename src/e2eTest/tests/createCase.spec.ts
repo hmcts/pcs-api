@@ -113,7 +113,7 @@ test.describe('[Create Case Flow]  @Master @nightly', async () => {
   });
 
   test('Wales - Successful case creation with Saved options', async () => {
-    await performAction('enterTestAddressManually');
+    await performAction('enterTe  stAddressManually');
     await performValidation('bannerAlert', 'Case #.* has been created.');
     await performAction('extractCaseIdFromAlert');
     await performAction('clickButton', provideMoreDetailsOfClaim.continue);
@@ -295,6 +295,7 @@ test.describe('[Create Case Flow]  @Master @nightly', async () => {
     await performAction('selectNoticeOfYourIntention', checkingNotice.no);
     await performValidation('mainHeader', rentDetails.mainHeader);
     await performAction('provideRentDetails', {rentFrequencyOption: 'Monthly', rentAmount: '1000'});
+    await performValidation('mainHeader', dailyRentAmount.mainHeader);
     await performAction('selectDailyRentAmount', {
       calculateRentAmount: '£32.85',
       unpaidRentInteractiveOption: dailyRentAmount.yes
