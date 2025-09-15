@@ -125,23 +125,6 @@ public class DynamicDefendantsPages implements CcdPageConfiguration {
                        """);
 
                for (int i = 1; i <= upToDefendant; i++) {
-            // Address
-                    String address = "";
-                    if (defendant.getCorrespondenceAddress() != null) {
-                        if (defendant.getCorrespondenceAddress().getAddressLine1() != null) {
-                            address += defendant.getCorrespondenceAddress().getAddressLine1();
-                        }
-                        if (defendant.getCorrespondenceAddress().getPostTown() != null) {
-                            if (!address.isEmpty()) address += ", ";
-                            address += defendant.getCorrespondenceAddress().getPostTown();
-                        }
-                        if (defendant.getCorrespondenceAddress().getPostCode() != null) {
-                            if (!address.isEmpty()) address += ", ";
-                            address += defendant.getCorrespondenceAddress().getPostCode();
-                        }
-                    }
-
-
                    htmlTable.append("<tr class=\"govuk-table__row\">")
                        .append("<td class=\"govuk-table__cell\">Defendant ").append(i).append("</td>")
                        .append("<td class=\"govuk-table__cell\">${defendant").append(i).append(".firstName} ${defendant").append(i).append(".lastName}</td>")

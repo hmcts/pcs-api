@@ -240,96 +240,13 @@ public class AddDefendantsimplements implements CCDConfig<PCSCase, State, UserRo
         PCSCase caseData = details.getData();
         
         // Build the table with current defendant data
-        String tableHtml = buildDefendantsSummaryTableWithData(caseData, DefendantConstants.MAX_NUMBER_OF_DEFENDANTS);
-        caseData.setDefendantsTableHtml(tableHtml);
+        defendantsTableService.populateDefendantsTableHtml(caseData);
         
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
             .data(caseData)
             .build();
     }
 
-    /**
-     * Builds a defendants summary table with actual data (for runtime use)
-     */
-    public String buildDefendantsSummaryTableWithData(PCSCase pcsCase, int upToDefendant) {
-        StringBuilder htmlTable = new StringBuilder();
-        htmlTable.append("""
-            <h2>Defendants</h2>
-            <table class="govuk-table">
-              <caption class="govuk-table__caption govuk-table__caption--m">Defendants</caption>
-              <thead class="govuk-table__head">
-                <tr class="govuk-table__row">
-                  <th scope="col" class="govuk-table__header">Defendant</th>
-                  <th scope="col" class="govuk-table__header">Defendant name</th>
-                  <th scope="col" class="govuk-table__header">Defendant correspondence address</th>
-                  <th scope="col" class="govuk-table__header">Defendant email address</th>
-                </tr>
-              </thead>
-              <tbody class="govuk-table__body">
-                """);
 
-        for (int i = 1; i <= upToDefendant; i++) {
-            DefendantDetails defendant = getDefendantByIndex(pcsCase, i);
-            if (defendant != null) {
-                String fullName = buildFullName(defendant);
-                String address = formatAddress(defendant.getCorrespondenceAddress());
-                String email = defendant.getEmail() != null ? defendant.getEmail() : "Not provided";
-
-                htmlTable.append("<tr class=\"govuk-table__row\">")
-                    .append("<td class=\"govuk-table__cell\">Defendant ").append(i).append("</td>")
-                    .append("<td class=\"govuk-table__cell\">").append(fullName).append("</td>")
-                    .append("<td class=\"govuk-table__cell\">").append(address).append("</td>")
-                    .append("<td class=\"govuk-table__cell\">").append(email).append("</td>")
-                    .append("</tr>");
-            }
-        }
-
-        htmlTable.append("""
-              </tbody>
-            </table>
-                """);
-
-        return htmlTable.toString();
-    }
-
-    private String buildFullName(DefendantDetails defendant) {
-        if (defendant.getFirstName() != null && defendant.getLastName() != null) {
-            return defendant.getFirstName() + " " + defendant.getLastName();
-        } else if (defendant.getFirstName() != null) {
-            return defendant.getFirstName();
-        } else if (defendant.getLastName() != null) {
-            return defendant.getLastName();
-        } else {
-            return "Name not provided";
-        }
-    }
-
-    private String formatAddress(AddressUK address) {
-        if (address == null) {
-            return "No address provided";
-        }
-
-        StringBuilder addressStr = new StringBuilder();
-
-        if (address.getAddressLine1() != null && !address.getAddressLine1().trim().isEmpty()) {
-            addressStr.append(address.getAddressLine1().trim());
-        }
-
-        if (address.getPostTown() != null && !address.getPostTown().trim().isEmpty()) {
-            if (addressStr.length() > 0) {
-                addressStr.append(", ");
-            }
-            addressStr.append(address.getPostTown().trim());
-        }
-
-        if (address.getPostCode() != null && !address.getPostCode().trim().isEmpty()) {
-            if (addressStr.length() > 0) {
-                addressStr.append(", ");
-            }
-            addressStr.append(address.getPostCode().trim());
-        }
-
-        return addressStr.length() > 0 ? addressStr.toString() : "No address provided";
-    }
 }
 
