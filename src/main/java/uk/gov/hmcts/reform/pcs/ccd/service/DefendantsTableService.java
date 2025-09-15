@@ -5,14 +5,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.DynamicDefendantsPages;
 
 @Service
 @Slf4j
 @RequiredArgsConstructor
 public class DefendantsTableService {
 
-    private final DynamicDefendantsPages dynamicDefendantsPages;
 
     /**
      * Populates the defendantsTableHtml field with formatted data
@@ -23,9 +21,8 @@ public class DefendantsTableService {
             int defendantCount = countDefendantsWithData(pcsCase);
             
             if (defendantCount > 0) {
-                String htmlTable = dynamicDefendantsPages.buildDefendantsSummaryTableWithData(pcsCase, defendantCount);
-                pcsCase.setDefendantsTableHtml(htmlTable);
-                log.info("Populated defendants table HTML with {} defendants", defendantCount);
+                pcsCase.setDefendantsTableHtml("<p>Defendants table will be displayed here</p>");
+                log.info("Found {} defendants, setting placeholder message", defendantCount);
             } else {
                 pcsCase.setDefendantsTableHtml("<p>No defendants added yet.</p>");
                 log.info("No defendants found, setting empty table message");
