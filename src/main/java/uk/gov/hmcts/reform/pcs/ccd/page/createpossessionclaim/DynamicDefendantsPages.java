@@ -13,6 +13,7 @@ import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 
 @Component
 @Slf4j
@@ -107,7 +108,7 @@ public class DynamicDefendantsPages implements CcdPageConfiguration {
         }
     }
 
-           private String buildDefendantsSummaryTable(int upToDefendant) {
+           public String buildDefendantsSummaryTable(int upToDefendant) {
                StringBuilder htmlTable = new StringBuilder();
                htmlTable.append("""
                    <h2>Defendants</h2>
@@ -129,7 +130,9 @@ public class DynamicDefendantsPages implements CcdPageConfiguration {
                        .append("<td class=\"govuk-table__cell\">Defendant ").append(i).append("</td>")
                        .append("<td class=\"govuk-table__cell\">${defendant").append(i).append(".firstName} ${defendant").append(i).append(".lastName}</td>")
                        .append("<td class=\"govuk-table__cell\">")
-                       .append("Address details will be displayed here")
+                       .append("${defendant").append(i).append(".correspondenceAddress.AddressLine1}<br>")
+                       .append("${defendant").append(i).append(".correspondenceAddress.PostTown}<br>")
+                       .append("${defendant").append(i).append(".correspondenceAddress.PostCode}")
                        .append("</td>")
                        .append("<td class=\"govuk-table__cell\">${defendant").append(i).append(".email}</td>")
                        .append("</tr>");
@@ -167,7 +170,14 @@ public class DynamicDefendantsPages implements CcdPageConfiguration {
             DefendantDetails defendant = getDefendantByIndex(pcsCase, i);
             if (defendant != null) {
                 String fullName = buildFullName(defendant);
-                String address = formatAddress(defendant.getCorrespondenceAddress());
+                
+                // Handle address - use property address if same as possession
+                AddressUK addressToUse = defendant.getCorrespondenceAddress();
+                if (VerticalYesNo.YES == defendant.getAddressSameAsPossession()) {
+                    addressToUse = pcsCase.getPropertyAddress();
+                }
+                String address = formatAddress(addressToUse);
+                
                 String email = defendant.getEmail() != null ? defendant.getEmail() : "Not provided";
                 
                 htmlTable.append("<tr class=\"govuk-table__row\">")

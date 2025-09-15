@@ -16,8 +16,10 @@ import uk.gov.hmcts.reform.pcs.ccd.common.DefendantConstants;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.DefendantsTableService;
+import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.DynamicDefendantsPages;
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
@@ -36,6 +38,7 @@ public class AddDefendantsimplements implements CCDConfig<PCSCase, State, UserRo
 
     private final PcsCaseService pcsCaseService;
     private final DefendantsTableService defendantsTableService;
+    private final DynamicDefendantsPages dynamicDefendantsPages;
 
     @Override
     public void configure(final ConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -69,7 +72,7 @@ public class AddDefendantsimplements implements CCDConfig<PCSCase, State, UserRo
                 addAnotherPage.showCondition("addAnotherDefendant" + (i - 1) + "=\"YES\"");
             }
                    addAnotherPage.pageLabel("Defendant List")
-                           .label("defTable" + i, buildDefendantsSummaryTable(i));
+                           .label("defTable" + i, dynamicDefendantsPages.buildDefendantsSummaryTable(i));
             if (i != DefendantConstants.MAX_NUMBER_OF_DEFENDANTS) {
                 addAnotherPage.mandatory(getAddAnotherField(i));
             }
@@ -139,47 +142,13 @@ public class AddDefendantsimplements implements CCDConfig<PCSCase, State, UserRo
         }
     }
 
-           private String buildDefendantsSummaryTable(int upToDefendant) {
-               StringBuilder htmlTable = new StringBuilder();
-               htmlTable.append("""
-                   <h2> Defendants </h2><br>
-                   <table>
-                     <thead>
-                       <tr>
-                         <th>Defendant</th>
-                         <th>Defendant <br> name</th>
-                         <th>Defendant <br> correspondence address</th>
-                         <th>Defendant <br> email address</th>
-                       </tr>
-                     </thead>
-                     <tbody>
-                       """);
-
-               for (int i = 1; i <= upToDefendant; i++) {
-                   htmlTable.append("<tr><td>Defendant ")
-                       .append(i)
-                       .append("</td><td>${defendant")
-                       .append(i)
-                       .append(".firstName} ${defendant")
-                       .append(i)
-                       .append(".lastName}</td><td>")
-                       .append("Address details will be displayed here")
-                       .append("</td><td>${defendant")
-                       .append(i)
-                       .append(".email}</td></tr>");
-               }
-
-               htmlTable.append("""
-                     </tbody>
-                   </table>
-                       """);
-
-               return htmlTable.toString();
-           }
 
     private void submit(EventPayload<PCSCase, State> eventPayload) {
         PCSCase pcsCase = eventPayload.caseData();
         List<ListValue<DefendantDetails>> finalDefendants = new ArrayList<>();
+        
+        // Set correspondence address to property address if addressSameAsPossession is YES
+        setCorrespondenceAddressIfSameAsPossession(pcsCase);
         
         // Add all defendants that have data
         for (int i = 1; i <= DefendantConstants.MAX_NUMBER_OF_DEFENDANTS; i++) {
@@ -247,6 +216,14 @@ public class AddDefendantsimplements implements CCDConfig<PCSCase, State, UserRo
             .build();
     }
 
+    private void setCorrespondenceAddressIfSameAsPossession(PCSCase pcsCase) {
+        for (int i = 1; i <= DefendantConstants.MAX_NUMBER_OF_DEFENDANTS; i++) {
+            DefendantDetails defendant = getDefendantByIndex(pcsCase, i);
+            if (defendant != null && defendant.getAddressSameAsPossession() == VerticalYesNo.YES) {
+                defendant.setCorrespondenceAddress(pcsCase.getPropertyAddress());
+            }
+        }
+    }
 
 }
 
