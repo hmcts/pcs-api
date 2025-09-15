@@ -4,7 +4,6 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
-import uk.gov.hmcts.reform.pcs.ccd.common.DefendantConstants;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import de.cronn.reflection.util.TypedPropertyGetter;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantDetails;
@@ -15,9 +14,14 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 @AllArgsConstructor
 public class DynamicDefendantsPages implements CcdPageConfiguration {
 
+    /**
+     * Maximum number of defendants that can be added to a case.
+     */
+    private static final int MAX_NUMBER_OF_DEFENDANTS = 25;
+
     @Override
     public void addTo(PageBuilder pageBuilder) {
-        for (int i = 1; i <= DefendantConstants.MAX_NUMBER_OF_DEFENDANTS; i++) {
+        for (int i = 1; i <= MAX_NUMBER_OF_DEFENDANTS; i++) {
 
             // Defendant details page
             var defendantPage = pageBuilder.page("DefendantDetails" + i);
@@ -34,7 +38,7 @@ public class DynamicDefendantsPages implements CcdPageConfiguration {
             }
                    addAnotherPage.pageLabel("Defendant List")
                            .label("defTable" + i, buildDefendantsSummaryTable(i));
-            if (i != DefendantConstants.MAX_NUMBER_OF_DEFENDANTS) {
+            if (i != MAX_NUMBER_OF_DEFENDANTS) {
                 addAnotherPage.mandatory(getAddAnotherField(i));
             }
 
