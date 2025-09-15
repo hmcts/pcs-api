@@ -18,6 +18,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 import static uk.gov.hmcts.ccd.sdk.type.FieldType.DynamicRadioList;
+import static uk.gov.hmcts.ccd.sdk.type.FieldType.MultiSelectList;
 import static uk.gov.hmcts.ccd.sdk.type.FieldType.TextArea;
 
 /**
@@ -148,11 +149,47 @@ public class PCSCase {
     private VerticalYesNo preActionProtocolCompleted;
 
     @CCD(
-        label = "Are you claiming possession because of rent arrears or breach of the tenancy (ground1)?",
+        label = "Are you claiming possession because of rent arrears?",
         hint = "You'll be able to add additional grounds later if you select yes.",
         access = {CitizenAccess.class, CaseworkerAccess.class}
     )
     private YesOrNo groundsForPossession;
+
+    // Rent arrears grounds checkboxes
+    @CCD(
+        label = "What are your grounds for possession?",
+        hint = "Select all that apply",
+        typeOverride = MultiSelectList,
+        typeParameterOverride = "RentArrearsGround",
+        access = {CitizenAccess.class, CaseworkerAccess.class}
+    )
+    private List<RentArrearsGround> rentArrearsGrounds;
+
+    @CCD(
+        label = "Do you have any other additional grounds for possession?",
+        access = {CitizenAccess.class, CaseworkerAccess.class}
+    )
+    private YesOrNo hasOtherAdditionalGrounds;
+
+    // Additional grounds checkboxes - Mandatory
+    @CCD(
+        label = "Mandatory grounds",
+        hint = "Select all that apply",
+        typeOverride = MultiSelectList,
+        typeParameterOverride = "MandatoryGround",
+        access = {CitizenAccess.class, CaseworkerAccess.class}
+    )
+    private List<MandatoryGround> mandatoryGrounds;
+
+    // Additional grounds checkboxes - Discretionary
+    @CCD(
+        label = "Discretionary grounds",
+        hint = "Select all that apply",
+        typeOverride = MultiSelectList,
+        typeParameterOverride = "DiscretionaryGround",
+        access = {CitizenAccess.class, CaseworkerAccess.class}
+    )
+    private List<DiscretionaryGround> discretionaryGrounds;
 
     @CCD(
         label = "Have you attempted mediation with the defendants?",
@@ -271,6 +308,9 @@ public class PCSCase {
     )
     private String calculatedDailyRentChargeAmount;
 
+    @CCD(access = {CitizenAccess.class, CaseworkerAccess.class})
+    private String formattedCalculatedDailyRentChargeAmount;
+
     @CCD(searchable = false, access = {CitizenAccess.class, CaseworkerAccess.class})
     private YesOrNo showPostcodeNotAssignedToCourt;
 
@@ -314,7 +354,7 @@ public class PCSCase {
 
     // --- Rent arrears (statement upload + totals + third party payments) ---
     @CCD(
-        label = "Add Document",
+        label = "Add document",
         hint = "Upload a document to the system",
         typeOverride = FieldType.Collection,
         typeParameterOverride = "Document",
@@ -341,6 +381,7 @@ public class PCSCase {
 
     @CCD(
         label = "Where have the payments come from?",
+        hint = "Select all that apply",
         typeOverride = FieldType.MultiSelectList,
         typeParameterOverride = "ThirdPartyPaymentSource",
         access = {CitizenAccess.class, CaseworkerAccess.class}

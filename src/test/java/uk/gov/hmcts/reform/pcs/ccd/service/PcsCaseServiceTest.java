@@ -61,7 +61,7 @@ class PcsCaseServiceTest {
     void setUp() {
         MapperConfig config = new MapperConfig();
         modelMapper = spy(config.modelMapper());
-        tenancyLicenceService = new TenancyLicenceService();
+        tenancyLicenceService = mock(TenancyLicenceService.class);
         underTest = new PcsCaseService(pcsCaseRepository, securityContextService, modelMapper, tenancyLicenceService);
     }
 

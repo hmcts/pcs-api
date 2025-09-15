@@ -8,10 +8,12 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentPaymentFrequency;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicence;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.ThirdPartyPaymentSource;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -106,6 +108,29 @@ class TenancyLicenceServiceTest {
         assertTenancyLicenceField(
                 pcsCase -> when(pcsCase.getDailyRentChargeAmount()).thenReturn("4000"),
                 expected -> assertThat(expected.getDailyRentChargeAmount()).isEqualTo(new BigDecimal("40.00")));
+
+        // Test total rent arrears field
+        assertTenancyLicenceField(
+                pcsCase -> when(pcsCase.getTotalRentArrears()).thenReturn("150000"), // value in pence
+                expected -> assertThat(expected.getTotalRentArrears())
+                        .isEqualTo(new BigDecimal("1500.00"))); // value in pounds
+
+        // Test third party payment sources field
+        assertTenancyLicenceField(
+                pcsCase -> when(pcsCase.getThirdPartyPaymentSources()).thenReturn(
+                        Arrays.asList(ThirdPartyPaymentSource.UNIVERSAL_CREDIT, 
+                                ThirdPartyPaymentSource.HOUSING_BENEFIT)),
+                expected -> {
+                    assertThat(expected.getThirdPartyPaymentSources()).hasSize(2);
+                    assertThat(expected.getThirdPartyPaymentSources())
+                            .containsExactlyInAnyOrder(ThirdPartyPaymentSource.UNIVERSAL_CREDIT, 
+                                    ThirdPartyPaymentSource.HOUSING_BENEFIT);
+                });
+
+        // Test third party payment source other field
+        assertTenancyLicenceField(
+                pcsCase -> when(pcsCase.getThirdPartyPaymentSourceOther()).thenReturn("Custom payment method"),
+                expected -> assertThat(expected.getThirdPartyPaymentSourceOther()).isEqualTo("Custom payment method"));
     }
 
     private void assertTenancyLicenceField(java.util.function.Consumer<PCSCase> setupMock,
@@ -159,5 +184,60 @@ class TenancyLicenceServiceTest {
         TenancyLicence result = tenancyLicenceService.buildTenancyLicence(pcsCase);
         // Then
         assertThat(result.getDailyRentChargeAmount()).isEqualTo(new BigDecimal("35.00"));
+    }
+
+    @Test
+    void shouldHandleNullTotalRentArrears() {
+        // Given
+        PCSCase pcsCase = mock(PCSCase.class);
+        when(pcsCase.getTotalRentArrears()).thenReturn(null);
+        // When
+        TenancyLicence result = tenancyLicenceService.buildTenancyLicence(pcsCase);
+        // Then
+        assertThat(result.getTotalRentArrears()).isNull();
+    }
+
+    @Test
+    void shouldHandleEmptyThirdPartyPaymentSources() {
+        // Given
+        PCSCase pcsCase = mock(PCSCase.class);
+        when(pcsCase.getThirdPartyPaymentSources()).thenReturn(Collections.emptyList());
+        // When
+        TenancyLicence result = tenancyLicenceService.buildTenancyLicence(pcsCase);
+        // Then
+        assertThat(result.getThirdPartyPaymentSources()).isEmpty();
+    }
+
+    @Test
+    void shouldHandleNullThirdPartyPaymentSources() {
+        // Given
+        PCSCase pcsCase = mock(PCSCase.class);
+        when(pcsCase.getThirdPartyPaymentSources()).thenReturn(null);
+        // When
+        TenancyLicence result = tenancyLicenceService.buildTenancyLicence(pcsCase);
+        // Then
+        assertThat(result.getThirdPartyPaymentSources()).isNull();
+    }
+
+    @Test
+    void shouldHandleNullThirdPartyPaymentSourceOther() {
+        // Given
+        PCSCase pcsCase = mock(PCSCase.class);
+        when(pcsCase.getThirdPartyPaymentSourceOther()).thenReturn(null);
+        // When
+        TenancyLicence result = tenancyLicenceService.buildTenancyLicence(pcsCase);
+        // Then
+        assertThat(result.getThirdPartyPaymentSourceOther()).isNull();
+    }
+
+    @Test
+    void shouldHandleEmptyThirdPartyPaymentSourceOther() {
+        // Given
+        PCSCase pcsCase = mock(PCSCase.class);
+        when(pcsCase.getThirdPartyPaymentSourceOther()).thenReturn("");
+        // When
+        TenancyLicence result = tenancyLicenceService.buildTenancyLicence(pcsCase);
+        // Then
+        assertThat(result.getThirdPartyPaymentSourceOther()).isEqualTo("");
     }
 }

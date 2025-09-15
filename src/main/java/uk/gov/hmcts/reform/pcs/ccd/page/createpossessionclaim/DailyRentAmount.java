@@ -13,7 +13,7 @@ public class DailyRentAmount implements CcdPageConfiguration {
                 .page("dailyRentAmount")
                 .pageLabel("Daily rent amount")
                 .showCondition("rentFrequency!=\"OTHER\"")
-                .readonly(PCSCase::getCalculatedDailyRentChargeAmount, NEVER_SHOW)
+                .readonly(PCSCase::getFormattedCalculatedDailyRentChargeAmount, NEVER_SHOW)
                 .label("dailyRentAmount-content",
                         """
                                 ---
@@ -22,7 +22,7 @@ public class DailyRentAmount implements CcdPageConfiguration {
                                         Based on your previous answers, the amount per day that unpaid 
                                         rent should be charged at is: 
                                         <span class="govuk-body govuk-!-font-weight-bold">
-                                            ${calculatedDailyRentChargeAmount}
+                                            ${formattedCalculatedDailyRentChargeAmount}
                                         </span>
                                     </p>
                                 </section>
