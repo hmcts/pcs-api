@@ -42,6 +42,7 @@ export class CreateCaseAction implements IAction {
       ['selectPreActionProtocol', () => this.selectPreActionProtocol(fieldName)],
       ['selectMediationAndSettlement', () => this.selectMediationAndSettlement(fieldName)],
       ['selectNoticeOfYourIntention', () => this.selectNoticeOfYourIntention(fieldName)],
+      ['selectNoticeDetails', () => this.selectNoticeDetails(fieldName)],
       ['selectCountryRadioButton', () => this.selectCountryRadioButton(fieldName)],
       ['selectOtherGrounds', () => this.selectOtherGrounds(fieldName)],
       ['selectTenancyOrLicenceDetails', () => this.selectTenancyOrLicenceDetails(fieldName)],
@@ -303,6 +304,23 @@ export class CreateCaseAction implements IAction {
     });
     if (prefData.settlementWithDefendantsOption == 'Yes') {
       await performAction('inputText', mediationAndSettlement.settlementWithDefendantsTextAreaLabel, mediationAndSettlement.settlementWithDefendantsInputData);
+    }
+    await performAction('clickButton', 'Continue');
+  }
+
+  private async selectNoticeDetails(noticeData: actionData) {
+    const noticeDetailsData = noticeData as {
+      howDidYouServeNotice: string;
+      index: string,
+      day?: string;
+      month?: string;
+      year?: string;
+    };
+    await performAction('clickRadioButton', noticeDetailsData.howDidYouServeNotice);
+    if(noticeDetailsData.day && noticeDetailsData.month &&  noticeDetailsData.year) {
+      await performAction('inputText', {text: 'Day', index: noticeDetailsData.index}, noticeDetailsData.day);
+      await performAction('inputText', {text: 'Month', index: noticeDetailsData.index}, noticeDetailsData.month);
+      await performAction('inputText', {text: 'Year', index: noticeDetailsData.index}, noticeDetailsData.year);
     }
     await performAction('clickButton', 'Continue');
   }
