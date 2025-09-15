@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim;
+package uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -39,7 +39,7 @@ class NoticeDetailsTest extends BasePageTest {
 
     @Nested
     class PageConfigurationTests {
-        
+
         @Test
         void shouldBuildPageWithCorrectStructure() {
             MidEvent<PCSCase, State> midEvent = getMidEventForPage(event, "noticeDetails");
@@ -49,7 +49,7 @@ class NoticeDetailsTest extends BasePageTest {
 
     @Nested
     class ServiceIntegrationTests {
-        
+
         @Test
         void shouldCallNoticeDetailsServiceForValidation() {
             CaseDetails<PCSCase, State> caseDetails = new CaseDetails<>();
@@ -112,7 +112,7 @@ class NoticeDetailsTest extends BasePageTest {
 
     @Nested
     class PageBehaviorTests {
-        
+
         @Test
         void shouldRequireNoticeServiceMethodSelection() {
             CaseDetails<PCSCase, State> caseDetails = new CaseDetails<>();
