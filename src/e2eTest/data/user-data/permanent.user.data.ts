@@ -1,6 +1,6 @@
 export const user = {
   claimantSolicitor:  {
-    email: 'pcs-caseworker@test.com',
+    email: 'pcs-civilorg-user@test.com',
     password: process.env.IDAM_PCS_USER_PASSWORD
   },
   caseworker:  {
