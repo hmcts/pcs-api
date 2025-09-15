@@ -45,7 +45,7 @@ import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.SelectClaimantType
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.TenancyLicenceDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.GroundForPossessionRentArrears;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.GroundForPossessionAdditionalGrounds;
-import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.MoneyJudgement;
+import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.MoneyJudgment;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.ClaimantCircumstances;
 import uk.gov.hmcts.reform.pcs.ccd.service.ClaimService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PartyService;
@@ -114,7 +114,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             .add(new RentDetails())
             .add(new DailyRentAmount())
             .add(new RentArrears())
-            .add(new MoneyJudgement())
+            .add(new MoneyJudgment())
             .add(new ClaimantCircumstances());
     }
 

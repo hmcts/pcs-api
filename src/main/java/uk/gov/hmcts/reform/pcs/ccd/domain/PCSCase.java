@@ -353,9 +353,9 @@ public class PCSCase {
     private String nextStepsMarkdown;
 
     @CCD(
-        label = "Do you want the court to make a judgement for the outstanding arrears?",
+        label = "Do you want the court to make a judgment for the outstanding arrears?",
         access = {CitizenAccess.class, CaseworkerAccess.class}
     )
-    private YesOrNo arrearsJudgementWanted;
+    private YesOrNo arrearsJudgmentWanted;
 
 }
