@@ -10,7 +10,7 @@ public enum IntroductoryDemotedOrOtherGrounds implements HasLabel {
 
     RENT_ARREARS("Rent Arrears"),
     ANTI_SOCIAL("Antisocial behaviour"),
-    TENANCY_BREACH("Breach of the tenancy"),
+    BREACH_OF_THE_TENANCY("Breach of the tenancy"),
     ABSOLUTE_GROUNDS("Absolute grounds"),
     OTHER("Other");
 

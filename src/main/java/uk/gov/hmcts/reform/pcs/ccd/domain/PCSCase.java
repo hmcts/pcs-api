@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.domain;
 
+import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import lombok.Builder;
 import lombok.Data;
 import uk.gov.hmcts.ccd.sdk.External;
@@ -193,12 +194,6 @@ public class PCSCase {
     private List<DiscretionaryGround> discretionaryGrounds;
 
     @CCD(
-            label = "Do you have grounds for possession?",
-            access = {CitizenAccess.class, CaseworkerAccess.class}
-    )
-    private VerticalYesNo introductoryDemotedOtherGroundsForPossession;
-
-    @CCD(
         label = "Have you attempted mediation with the defendants?",
         access = {CitizenAccess.class, CaseworkerAccess.class}
     )
@@ -360,10 +355,16 @@ public class PCSCase {
     private String nextStepsMarkdown;
 
     @CCD(
+        label = "Do you have grounds for possession?",
+        access = {CitizenAccess.class, CaseworkerAccess.class}
+    )
+    private VerticalYesNo hasIntroductoryDemotedOtherGroundsForPossession;
+
+    @CCD(
             label = "What are your grounds for possession?",
             typeOverride = FieldType.MultiSelectList,
             typeParameterOverride = "IntroductoryDemotedOrOtherGrounds",
-            access = {CaseworkerAccess.class}
+            access = {CitizenAccess.class,CaseworkerAccess.class}
     )
     private Set<IntroductoryDemotedOrOtherGrounds> introductoryDemotedOrOtherGrounds;
 
@@ -372,9 +373,15 @@ public class PCSCase {
             hint = "You'll be able to explain your reasons for claiming Possession"
                     + " under these grounds on the next screen",
             access = {CitizenAccess.class, CaseworkerAccess.class},
-            max = 250,
             typeOverride = TextArea
     )
     private String otherGroundsOfPossession;
+
+    @CCD(access = {CitizenAccess.class, CaseworkerAccess.class})
+    private YesOrNo showIntroductoryDemotedOtherGroundReasonPage;
+
+    @JsonUnwrapped
+    @CCD(access = {CitizenAccess.class, CaseworkerAccess.class})
+    private IntroductoryDemotedOtherGroundReason introductoryDemotedOtherGroundReason;
 
 }
