@@ -25,7 +25,7 @@ export async function performAction(action: string, fieldName?: actionData | act
   });
 }
 
-export async function performValidation(validation: string, inputFieldName: string | validationData | validationRecord, inputData?: validationData | validationRecord): Promise<void> {
+export async function performValidation(validation: string, inputFieldName: validationData | validationRecord, inputData?: validationData | validationRecord): Promise<void> {
   const executor = getExecutor();
   const [fieldName, data] = typeof inputFieldName === 'string'
     ? [inputFieldName, inputData]

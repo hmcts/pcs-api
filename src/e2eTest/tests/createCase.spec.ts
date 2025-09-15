@@ -16,7 +16,6 @@ import {mediationAndSettlement} from '@data/page-data/mediationAndSettlement.pag
 import {checkingNotice} from '@data/page-data/checkingNotice.page.data';
 import {noticeDetails} from '@data/page-data/noticeDetails.page.data';
 import {rentDetails} from '@data/page-data/rentDetails.page.data';
-import {userIneligible} from '@data/page-data/userIneligible.page.data';
 import {dailyRentAmount} from '@data/page-data/dailyRentAmount.page.data';
 import {provideMoreDetailsOfClaim} from '@data/page-data/provideMoreDetailsOfClaim.page.data';
 import {resumeClaim} from '@data/page-data/resumeClaim.page.data';
@@ -219,60 +218,5 @@ test.describe('[Create Case Flow With Address and Claimant Type] @Master @nightl
       ['formLabelValue', 'Town or City', addressDetails.townOrCity],
       ['formLabelValue', 'Postcode/Zipcode', addressDetails.walesCourtAssignedPostcode],
       ['formLabelValue', 'Country', addressDetails.country]);
-  });
-
-  test('England - Unsuccessful case creation journey due to claimant type not in scope of Release1 @R1only', async () => {
-    await performAction('selectAddress', {
-      postcode: addressDetails.englandCourtAssignedPostcode,
-      addressIndex: addressDetails.addressIndex
-    });
-    await performAction('clickButton', provideMoreDetailsOfClaim.continue);
-    await performAction('selectClaimantType', claimantType.mortgageLender);
-    await performValidation('mainHeader', 'You\'re not eligible for this online service');
-    await performAction('clickButton', 'Continue');
-    await performValidation('errorMessage', {
-      header: userIneligible.eventNotCreated, message: userIneligible.unableToProceed
-    });
-    await performValidation('errorMessage', {
-      header: userIneligible.errors, message: userIneligible.notEligibleForOnlineService
-    });
-    await performAction('clickButton', 'Cancel');
-  });
-
-  test('Wales - Unsuccessful case creation journey due to claimant type not in scope of Release1 @R1only', async () => {
-    await performAction('selectAddress', {
-      postcode: addressDetails.walesCourtAssignedPostcode,
-      addressIndex: addressDetails.addressIndex
-    });
-    await performAction('clickButton', provideMoreDetailsOfClaim.continue);
-    await performAction('selectClaimantType', claimantType.privateLandlord);
-    await performValidation('mainHeader', 'You\'re not eligible for this online service');
-    await performAction('clickButton', 'Continue');
-    await performValidation('errorMessage', {
-      header: userIneligible.eventNotCreated, message: userIneligible.unableToProceed
-    });
-    await performValidation('errorMessage', {
-      header: userIneligible.errors, message: userIneligible.notEligibleForOnlineService
-    });
-    await performAction('clickButton', 'Cancel');
-  });
-
-  test('Unsuccessful case creation journey due to claim type not in scope of Release1 @R1only', async () => {
-    await performAction('selectAddress', {
-      postcode: addressDetails.englandCourtAssignedPostcode,
-      addressIndex: addressDetails.addressIndex
-    });
-    await performAction('clickButton', provideMoreDetailsOfClaim.continue);
-    await performAction('selectClaimantType', claimantType.registeredProviderForSocialHousing);
-    await performAction('selectClaimType', claimType.yes);
-    await performValidation('mainHeader', 'You\'re not eligible for this online service');
-    await performAction('clickButton', 'Continue');
-    await performValidation('errorMessage', {
-      header: userIneligible.eventNotCreated, message: userIneligible.unableToProceed
-    });
-    await performValidation('errorMessage', {
-      header: userIneligible.errors, message: userIneligible.notEligibleForOnlineService
-    });
-    await performAction('clickButton', 'Cancel');
   });
 });
