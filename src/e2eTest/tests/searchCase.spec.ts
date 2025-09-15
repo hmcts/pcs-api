@@ -12,7 +12,7 @@ import {caseInfo} from '@utils/actions/custom-actions/createCase.action';
 test.beforeEach(async ({page}, testInfo) => {
     initializeExecutor(page);
     await parentSuite('Search Case');
-    await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL, testInfo);
+    await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
     await testInfo.attach('Page URL', {
       body: page.url(),
       contentType: 'text/plain',
