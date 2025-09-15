@@ -123,7 +123,7 @@ test.describe('[Create Case Flow With Address and Claimant Type] @Master @nightl
     await performAction('selectClaimType', claimType.no);
     await performAction('selectClaimantName', claimantName.no);
     await performAction('clickButton', 'Sign out');
-    await performAction('reloginAndFindTheCase',user.claimantSolicitor);
+    await performAction('reloginAndFindTheCase', user.claimantSolicitor);
     await performAction('clickButton', resumeClaim.continue);
     await performAction('selectResumeClaimOption', resumeClaimOptions.yes);
     await performValidation('radioButtonChecked', claimantType.registeredCommunityLandlord, true);
@@ -182,7 +182,7 @@ test.describe('[Create Case Flow With Address and Claimant Type] @Master @nightl
     await performAction('selectClaimType', claimType.no);
     await performAction('selectClaimantName', claimantName.yes);
     await performAction('clickButton', 'Sign out');
-    await performAction('reloginAndFindTheCase',user.claimantSolicitor);
+    await performAction('reloginAndFindTheCase', user.claimantSolicitor);
     await performAction('clickButton', resumeClaim.continue);
     await performAction('selectResumeClaimOption', resumeClaimOptions.no);
     await performValidation('radioButtonChecked', claimantType.registeredCommunityLandlord, false);

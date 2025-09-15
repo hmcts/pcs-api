@@ -349,7 +349,7 @@ export class CreateCaseAction implements IAction {
 
   private async reloginAndFindTheCase(userInfo: actionData) {
     await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
-    await performAction('login',userInfo);
+    await performAction('login', userInfo);
     await performAction('inputText', '16-digit case reference:', caseNumber);
     await performAction('clickButton', 'Find');
   }

@@ -11,22 +11,17 @@ export class LoginAction implements IAction {
       ['createUserAndLogin', () => this.createUserAndLogin(userType as string, roles as string[])],
       ['login', () => this.login((userType as { email?: string }).email, (userType as { password?: string }).password)]
     ]);
-
     const actionToPerform = actionsMap.get(action);
-    if (!actionToPerform) {
-      throw new Error(`No action found for '${action}'`);
-    }
+    if (!actionToPerform) throw new Error(`No action found for '${action}'`);
     await actionToPerform();
   }
 
   private async login(email?: string, password?: string) {
     const userEmail = email || process.env.IDAM_PCS_USER_EMAIL;
     const userPassword = password || process.env.IDAM_PCS_USER_PASSWORD;
-
     if (!userEmail || !userPassword) {
       throw new Error('Login failed: missing credentials');
     }
-
     await performAction('inputText', 'Email address', userEmail);
     await performAction('inputText', 'Password', userPassword);
     await performAction('clickButton', 'Sign in');
