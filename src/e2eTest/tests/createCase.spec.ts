@@ -113,7 +113,7 @@ test.describe('[Create Case Flow]  @Master @nightly', async () => {
   });
 
   test('Wales - Successful case creation with Saved options', async () => {
-    await performAction('enterTe  stAddressManually');
+    await performAction('enterTestAddressManually');
     await performValidation('bannerAlert', 'Case #.* has been created.');
     await performAction('extractCaseIdFromAlert');
     await performAction('clickButton', provideMoreDetailsOfClaim.continue);
