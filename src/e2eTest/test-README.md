@@ -101,6 +101,8 @@ Playwright 1.30+ | TypeScript 4.9+
 | reloginAndFindTheCase             | `performAction('reloginAndFindTheCase')`                                                                                                                                                                   |
 | selectDailyRentAmount             | `performAction('selectDailyRentAmount', { calculateRentAmount: '£114.29',unpaidRentInteractiveOption: dailyRentAmount.no,unpaidRentAmountPerDay:'20'})`                                                    |
 | selectNoticeDetails               | `performAction('selectNoticeDetails', {howDidYouServeNotice: noticeDetails.byFirstClassPost, day: '', month: '', year: ''})`                                                                               |
+| selectYourPossessionGrounds       | `performAction('selectYourPossessionGrounds', {mandatory : [whatAreYourGroundsForPossession.mandatory.holidayLet]})`                                                                                       |
+| enterReasonForPossession          | `performAction('enterReasonForPossession',[whatAreYourGroundsForPossession.mandatory.holidayLet])`                                                                                                         |
 ### Validations
 | Validation        | Example Usage                                                                                                                        |
 |-------------------|--------------------------------------------------------------------------------------------------------------------------------------|
