@@ -2,7 +2,7 @@ import {Locator, Page} from '@playwright/test';
 import { IAction } from '../../interfaces/action.interface';
 
 export class ClickButtonAction implements IAction {
-  async execute(page: Page, fieldName: string, option?: string): Promise<void> {
+  async execute(page: Page, action: string, fieldName: string, option?: string): Promise<void> {
     let locator: Locator;
 
     if (option) {
@@ -20,15 +20,14 @@ export class ClickButtonAction implements IAction {
                   a:has-text("${option}")`);
     } else {
       // Original behavior for just a single fieldName
-      locator = page.locator(`button:has-text("${fieldName}"),
+      locator = page.locator(`button:text-is("${fieldName}"),
                               [value="${fieldName}"],
                               [aria-label="${fieldName}"],
                               [name="${fieldName}"],
                               label:has-text("${fieldName}") + button,
                               label:has-text("${fieldName}") ~ button,
-                              a:has-text("${fieldName}")`);
+                              a:text-is("${fieldName}")`);
     }
-
     await locator.first().click();
   }
 }

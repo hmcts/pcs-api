@@ -35,4 +35,7 @@ public enum VerticalYesNo implements HasLabel {
     }
 
 }
+<<<<<<< HEAD
 
+=======
+>>>>>>> 236678fa6a4f938f5565ade7af0e11e2cafd4ec7

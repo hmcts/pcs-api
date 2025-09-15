@@ -24,7 +24,7 @@ import java.util.List;
 @Component
 public class IdamAuthenticationFilter extends OncePerRequestFilter {
 
-    private static final List<String> FILTER_PATHS = List.of("/courts", "/ccd");
+    private static final List<String> FILTER_PATHS = List.of("/ccd", "/callbacks");
 
     private final IdamService idamService;
 

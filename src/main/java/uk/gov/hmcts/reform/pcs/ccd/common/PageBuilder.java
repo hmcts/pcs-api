@@ -20,7 +20,11 @@ public class PageBuilder {
     }
 
     public FieldCollectionBuilder<PCSCase, State, EventBuilder<PCSCase, UserRole, State>> page(
+<<<<<<< HEAD
             String id, MidEvent<PCSCase, State> midEventCallback) {
+=======
+        String id, MidEvent<PCSCase, State> midEventCallback) {
+>>>>>>> 236678fa6a4f938f5565ade7af0e11e2cafd4ec7
         return eventBuilder.fields().page(id, midEventCallback);
     }
 

@@ -14,7 +14,7 @@ import uk.gov.hmcts.reform.ccd.client.model.Event;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
 import uk.gov.hmcts.reform.pcs.ccd.CaseType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.domain.PaymentStatus;
+import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.rse.ccd.lib.test.CftlibTest;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -42,10 +42,9 @@ public class TestWithCCD extends CftlibTest {
     }
 
     @Test
-    public void createsTestCase() {
-        var r = ccdApi.startCase(idamToken, s2sToken, CaseType.getCaseType(), "createTestApplication");
+    public void createsShellPossessionCase() {
+        var r = ccdApi.startCase(idamToken, s2sToken, CaseType.getCaseType(), "createPossessionClaim");
         PCSCase caseData = PCSCase.builder()
-            .applicantForename("Foo")
             .propertyAddress(AddressUK.builder()
                                  .addressLine1("123 Baker Street")
                                  .addressLine2("Marylebone")
@@ -53,16 +52,18 @@ public class TestWithCCD extends CftlibTest {
                                  .county("Greater London")
                                  .postCode("NW1 6XE")
                                  .build())
-            .paymentStatus(PaymentStatus.UNPAID)
+            .legislativeCountry(LegislativeCountry.ENGLAND)
             .build();
         var content = CaseDataContent.builder()
             .data(caseData)
-            .event(Event.builder().id("createTestApplication").build())
+            .event(Event.builder().id("createPossessionClaim").build())
             .eventToken(r.getToken())
             .build();
         caseDetails = ccdApi.submitForCaseworker(idamToken, s2sToken, userId,
                                                  "PCS", CaseType.getCaseType(), false, content
         );
+
         assertThat(caseDetails.getId()).isNotNull();
     }
+
 }

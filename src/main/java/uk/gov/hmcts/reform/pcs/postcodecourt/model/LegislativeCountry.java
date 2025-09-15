@@ -10,7 +10,9 @@ public enum LegislativeCountry implements HasLabel {
     ENGLAND("England"),
     NORTHERN_IRELAND("Northern Ireland"),
     SCOTLAND("Scotland"),
-    WALES("Wales");
+    WALES("Wales"),
+    ISLE_OF_MAN("Isle of Man"),
+    CHANNEL_ISLANDS("Channel Islands");
 
     private final String label;
 
@@ -25,6 +27,11 @@ public enum LegislativeCountry implements HasLabel {
     }
 
     public static LegislativeCountry fromLabel(String label) {
+
+        if (label == null) {
+            return null;
+        }
+
         return Arrays.stream(values())
             .filter(value -> value.getLabel().equals(label))
             .findFirst()
