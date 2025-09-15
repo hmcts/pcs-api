@@ -36,7 +36,7 @@ GradleBuilder builder = new GradleBuilder(this, product)
 withPipeline(type, product, component) {
 
   afterAlways('checkout'){
-    sh 'echo "I am here'
+    sh 'echo "I am here"'
   }
   def githubApi = new GithubAPI(this)
   env.IDAM_S2S_AUTH_URL = "http://rpe-service-auth-provider-aat.service.core-compute-aat.internal"
