@@ -37,9 +37,9 @@ class ClaimGroundServiceTest {
             .antisocialBehaviourTextArea("Antisocial behaviour reason")
             .noRightToRentTextArea("No right to rent reason")
             .seriousRentArrearsTextArea("Serious rent arrears reason")
-            .suitableAlternativeAccommodationTextArea("Suitable alternative accommodation reason")
+            .suitableAccomTextArea("Suitable alternative accommodation reason")
             .rentArrearsTextArea("Rent arrears reason")
-            .persistentDelayInPayingRentTextArea("Persistent delay reason")
+            .rentPaymentDelayTextArea("Persistent delay reason")
             .breachOfTenancyConditionsTextArea("Breach of tenancy conditions reason")
             .propertyDeteriorationTextArea("Property deterioration reason")
             .nuisanceOrIllegalUseTextArea("Nuisance reason")
@@ -78,9 +78,9 @@ class ClaimGroundServiceTest {
             entry("ANTISOCIAL_BEHAVIOUR", "Antisocial behaviour reason"),
             entry("NO_RIGHT_TO_RENT", "No right to rent reason"),
             entry("SERIOUS_RENT_ARREARS", "Serious rent arrears reason"),
-            entry("SUITABLE_ALTERNATIVE_ACCOMMODATION", "Suitable alternative accommodation reason"),
+            entry("SUITABLE_ACCOM", "Suitable alternative accommodation reason"),
             entry("RENT_ARREARS", "Rent arrears reason"),
-            entry("PERSISTENT_DELAY_IN_PAYING_RENT", "Persistent delay reason"),
+            entry("RENT_PAYMENT_DELAY", "Persistent delay reason"),
             entry("BREACH_OF_TENANCY_CONDITIONS", "Breach of tenancy conditions reason"),
             entry("PROPERTY_DETERIORATION", "Property deterioration reason"),
             entry("NUISANCE_OR_ILLEGAL_USE", "Nuisance reason"),

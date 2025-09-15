@@ -44,9 +44,9 @@ public class ClaimGroundService {
 
         for (NoRentArrearsDiscretionaryGrounds ground : noRentArrearsDiscretionaryGrounds) {
             String reasonText = switch (ground) {
-                case SUITABLE_ALTERNATIVE_ACCOMMODATION -> grounds.getSuitableAlternativeAccommodationTextArea();
+                case SUITABLE_ACCOM -> grounds.getSuitableAccomTextArea();
                 case RENT_ARREARS -> grounds.getRentArrearsTextArea();
-                case PERSISTENT_DELAY_IN_PAYING_RENT -> grounds.getPersistentDelayInPayingRentTextArea();
+                case RENT_PAYMENT_DELAY -> grounds.getRentPaymentDelayTextArea();
                 case BREACH_OF_TENANCY_CONDITIONS -> grounds.getBreachOfTenancyConditionsTextArea();
                 case PROPERTY_DETERIORATION -> grounds.getPropertyDeteriorationTextArea();
                 case NUISANCE_OR_ILLEGAL_USE -> grounds.getNuisanceOrIllegalUseTextArea();

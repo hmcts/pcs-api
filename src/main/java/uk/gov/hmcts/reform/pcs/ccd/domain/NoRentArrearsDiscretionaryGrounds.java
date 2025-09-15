@@ -8,13 +8,13 @@ import uk.gov.hmcts.ccd.sdk.api.CCD;
 @Getter
 public enum NoRentArrearsDiscretionaryGrounds {
     @CCD(label = "Suitable alternative accommodation (ground 9)")
-    SUITABLE_ALTERNATIVE_ACCOMMODATION,
+    SUITABLE_ACCOM,
 
     @CCD(label = "Rent arrears (ground 10)")
     RENT_ARREARS,
 
     @CCD(label = "Persistent delay in paying rent (ground 11)")
-    PERSISTENT_DELAY_IN_PAYING_RENT,
+    RENT_PAYMENT_DELAY,
 
     @CCD(label = "Breach of tenancy conditions (ground 12)")
     BREACH_OF_TENANCY_CONDITIONS,

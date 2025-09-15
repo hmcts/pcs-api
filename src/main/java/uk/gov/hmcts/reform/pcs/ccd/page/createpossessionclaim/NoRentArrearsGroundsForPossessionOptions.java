@@ -23,7 +23,7 @@ public class NoRentArrearsGroundsForPossessionOptions implements CcdPageConfigur
         pageBuilder
             .page("noRentArrearsGroundsForPossessionOptions", this::midEvent)
             .pageLabel("What are your grounds for possession?")
-            .showCondition("groundsForPossession=\"No\"")
+            .showCondition("groundsForPossession=\"No\" AND typeOfTenancyLicence=\"ASSURED_TENANCY\"")
             .label(
                 "NoRentArrearsGroundsForPossessionOptions-information", """
                     ---

@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.domain;
 
+import java.util.HashSet;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
@@ -364,21 +365,23 @@ public class PCSCase {
         hint = "Select all that apply",
         typeOverride = MultiSelectList,
         typeParameterOverride = "NoRentArrearsMandatoryGrounds",
-        access = { CaseworkerAccess.class }
+        access = {CitizenAccess.class, CaseworkerAccess.class}
     )
-    private Set<NoRentArrearsMandatoryGrounds> noRentArrearsMandatoryGroundsOptions;
+    @Builder.Default
+    private Set<NoRentArrearsMandatoryGrounds> noRentArrearsMandatoryGroundsOptions = new HashSet<>();
 
     @CCD(
         label = "Discretionary grounds",
         hint = "Select all that apply",
         typeOverride = MultiSelectList,
         typeParameterOverride = "NoRentArrearsDiscretionaryGrounds",
-        access = { CaseworkerAccess.class }
+        access = {CitizenAccess.class, CaseworkerAccess.class}
     )
-    private Set<NoRentArrearsDiscretionaryGrounds> noRentArrearsDiscretionaryGroundsOptions;
+    @Builder.Default
+    private Set<NoRentArrearsDiscretionaryGrounds> noRentArrearsDiscretionaryGroundsOptions = new HashSet<>();
 
     @JsonUnwrapped
-    @CCD(access = {CaseworkerAccess.class})
+    @CCD(access = {CitizenAccess.class, CaseworkerAccess.class})
     private NoRentArrearsReasonForGrounds noRentArrearsReasonForGrounds;
 
 }

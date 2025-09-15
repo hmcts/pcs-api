@@ -21,7 +21,7 @@ public class NoRentArrearsGroundsForPossessionReason implements CcdPageConfigura
         pageBuilder
             .page("noRentArrearsGroundsForPossessionReason", this::midEvent)
             .pageLabel("Reasons for possession")
-            .showCondition("groundsForPossession=\"No\"")
+            .showCondition("groundsForPossession=\"No\" AND typeOfTenancyLicence=\"ASSURED_TENANCY\"")
             .label("noRentArrearsOptions-lineSeparator", "---")
             .complex(PCSCase::getNoRentArrearsReasonForGrounds)
             // Ground 1
@@ -156,16 +156,16 @@ public class NoRentArrearsGroundsForPossessionReason implements CcdPageConfigura
             )
             // Ground 9
             .label(
-                "noRentArrearsOptions-suitableAlternativeAccommodation-label",
+                "noRentArrearsOptions-suitableAccom-label",
                 """
                     <h2 class="govuk-heading-l">Suitable alternative accommodation (ground 9)</h2>
                     <h3 class="govuk-heading-m">Why are you making a claim for possession under this ground?</h3>
                     """,
-                "noRentArrearsDiscretionaryGroundsOptionsCONTAINS\"SUITABLE_ALTERNATIVE_ACCOMMODATION\""
+                "noRentArrearsDiscretionaryGroundsOptionsCONTAINS\"SUITABLE_ACCOM\""
             )
             .mandatory(
-                NoRentArrearsReasonForGrounds::getSuitableAlternativeAccommodationTextArea,
-                "noRentArrearsDiscretionaryGroundsOptionsCONTAINS\"SUITABLE_ALTERNATIVE_ACCOMMODATION\""
+                NoRentArrearsReasonForGrounds::getSuitableAccomTextArea,
+                "noRentArrearsDiscretionaryGroundsOptionsCONTAINS\"SUITABLE_ACCOM\""
             )
             // Ground 10
             .label(
@@ -182,16 +182,16 @@ public class NoRentArrearsGroundsForPossessionReason implements CcdPageConfigura
             )
             // Ground 11
             .label(
-                "noRentArrearsOptions-persistentDelayInPayingRent-label",
+                "noRentArrearsOptions-rentPaymentDelay-label",
                 """
                     <h2 class="govuk-heading-l">Persistent delay in paying rent (ground 11)</h2>
                     <h3 class="govuk-heading-m">Why are you making a claim for possession under this ground?</h3>
                     """,
-                "noRentArrearsDiscretionaryGroundsOptionsCONTAINS\"PERSISTENT_DELAY_IN_PAYING_RENT\""
+                "noRentArrearsDiscretionaryGroundsOptionsCONTAINS\"RENT_PAYMENT_DELAY\""
             )
             .mandatory(
-                NoRentArrearsReasonForGrounds::getPersistentDelayInPayingRentTextArea,
-                "noRentArrearsDiscretionaryGroundsOptionsCONTAINS\"PERSISTENT_DELAY_IN_PAYING_RENT\""
+                NoRentArrearsReasonForGrounds::getRentPaymentDelayTextArea,
+                "noRentArrearsDiscretionaryGroundsOptionsCONTAINS\"RENT_PAYMENT_DELAY\""
             )
             // Ground 12
             .label(
