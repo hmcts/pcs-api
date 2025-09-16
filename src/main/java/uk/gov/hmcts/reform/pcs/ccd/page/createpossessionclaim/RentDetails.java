@@ -22,7 +22,8 @@ public class RentDetails implements CcdPageConfiguration {
         pageBuilder
                 .page("rentDetails", this::midEvent)
                 .pageLabel("Rent details")
-                .label("rentDetails-content", 
+                .showCondition("groundsForPossession=\"Yes\" AND noticeServed = \"No\"")
+                .label("rentDetails-content",
                         """
                         ---
                         """)
@@ -45,9 +46,9 @@ public class RentDetails implements CcdPageConfiguration {
             // Set pence value for calculations/integrations
             caseData.setCalculatedDailyRentChargeAmount(dailyAmountString);
 
-            // Set formatted value for display  
+            // Set formatted value for display
             caseData.setFormattedCalculatedDailyRentChargeAmount(formatCurrency(dailyAmountString));
-        } 
+        }
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
                 .data(caseData)

@@ -13,8 +13,8 @@ public class RentArrears implements CcdPageConfiguration {
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
                 .page("rentArrears")
+                .showCondition("groundsForPossession=\"Yes\" AND noticeServed = \"No\" AND rentFrequency=\"OTHER\"")
                 .pageLabel("Details of rent arrears")
-                .showCondition("rentFrequency=\"OTHER\"")
                 .label("rentArrears-lineSeparator", "---");
     }
 }
