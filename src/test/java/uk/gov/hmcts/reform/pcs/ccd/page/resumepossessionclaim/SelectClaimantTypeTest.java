@@ -4,14 +4,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
-import uk.gov.hmcts.ccd.sdk.api.Event;
-import uk.gov.hmcts.ccd.sdk.api.callback.MidEvent;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
-import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
@@ -33,11 +28,9 @@ import static uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry.WAL
 
 class SelectClaimantTypeTest extends BasePageTest {
 
-    private Event<PCSCase, UserRole, State> event;
-
     @BeforeEach
     void setUp() {
-        event = buildPageInTestEvent(new SelectClaimantType());
+        setPageUnderTest(new SelectClaimantType());
     }
 
     @ParameterizedTest
@@ -47,7 +40,6 @@ class SelectClaimantTypeTest extends BasePageTest {
                                                  YesOrNo showNotEligibleEngland,
                                                  YesOrNo showNotEligibleWales) {
         // Given
-        CaseDetails<PCSCase, State> caseDetails = new CaseDetails<>();
         DynamicStringList claimantTypeSelection = DynamicStringList.builder()
             .value(DynamicStringListElement.builder().code(claimantType.name()).build())
             .build();
@@ -57,11 +49,8 @@ class SelectClaimantTypeTest extends BasePageTest {
             .claimantType(claimantTypeSelection)
             .build();
 
-        caseDetails.setData(caseData);
-
         // When
-        MidEvent<PCSCase, State> midEvent = getMidEventForPage(event, "selectClaimantType");
-        midEvent.handle(caseDetails, null);
+        callMidEventHandler(caseData);
 
         // Then
         assertThat(caseData.getShowClaimantTypeNotEligibleEngland()).isEqualTo(showNotEligibleEngland);
