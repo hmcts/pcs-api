@@ -11,7 +11,8 @@ public class ClaimantCircumstances implements CcdPageConfiguration {
     public static final String CLAIMANT_CIRCUMSTANCES_INFO = "claimantCircumstances-Info";
     public static final String CLAIMANT_CIRCUMSTANCES = "claimantCircumstances";
     public static final String CLAIMANT_CIRCUMSTANCES_LABEL = "Claimant circumstances";
-    public static final String GIVE_DETAILS_ABOUT_THE_CLAIMANT_NAME_CIRCUMSTANCES = "Give details about the ${claimantName} circumstances";
+    public static final String GIVE_DETAILS_ABOUT_THE_CLAIMANT_NAME_CIRCUMSTANCES
+        = "Give details about the ${claimantName} circumstances";
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
@@ -24,8 +25,9 @@ public class ClaimantCircumstances implements CcdPageConfiguration {
                 <b>Is there any information you'd like to provide about the ${claimantName} circumstances?</b>
                 """)
             .mandatoryWithLabel(PCSCase::getClaimantCircumstancesSelect,
-                       "This can be any information about your financial or general situation that " +
-                           "you'd like the court to consider when making its decision whether or not to grant a possession order"
+                       "This can be any information about your financial or general situation that "
+                           + "you'd like the court to consider when making its decision "
+                           + "whether or not to grant a possession order"
                        )
             .mandatory(PCSCase::getClaimantCircumstancesDetails, SHOW_CONDITION,
                        "",
