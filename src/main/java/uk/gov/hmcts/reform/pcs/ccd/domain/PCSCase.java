@@ -649,11 +649,4 @@ public class PCSCase {
     )
     private VerticalYesNo addAnotherDefendant25;
 
-    @CCD(
-        label = "Defendants table HTML",
-        access = {CitizenAccess.class, CaseworkerAccess.class}
-    )
-    private String defendantsTableHtml;
-
-
 }
