@@ -15,6 +15,7 @@ import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
+import uk.gov.hmcts.reform.pcs.ccd.service.AddressValidator;
 import uk.gov.hmcts.reform.pcs.postcodecourt.exception.EligibilityCheckException;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.EligibilityResult;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.EligibilityStatus;
@@ -29,6 +30,7 @@ import java.util.stream.Stream;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.ccd.sdk.type.YesOrNo.NO;
 import static uk.gov.hmcts.ccd.sdk.type.YesOrNo.YES;
@@ -42,10 +44,12 @@ class EnterPropertyAddressTest extends BasePageTest {
 
     @Mock
     private EligibilityService eligibilityService;
+    @Mock
+    private AddressValidator addressValidator;
 
     @BeforeEach
     void setUp() {
-        setPageUnderTest(new EnterPropertyAddress(eligibilityService));
+        setPageUnderTest(new EnterPropertyAddress(eligibilityService, addressValidator));
     }
 
     @ParameterizedTest
@@ -172,6 +176,24 @@ class EnterPropertyAddressTest extends BasePageTest {
         PCSCase data = resp.getData();
         assertThat(data.getShowCrossBorderPage()).isEqualTo(YesOrNo.NO);
         assertThat(data.getShowPropertyNotEligiblePage()).isEqualTo(YesOrNo.YES);
+    }
+
+    @Test
+    void shouldReturnValidationErrorsWhenAddressInvalid() {
+        // Given
+        AddressUK propertyAddress = mock(AddressUK.class);
+        PCSCase caseData = PCSCase.builder()
+            .propertyAddress(propertyAddress)
+            .build();
+
+        List<String> expectedValidationErrors = List.of("error 1", "error 2");
+        when(addressValidator.validateAddressFields(propertyAddress)).thenReturn(expectedValidationErrors);
+
+        // When
+        AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
+
+        // Then
+        assertThat(response.getErrors()).isEqualTo(expectedValidationErrors);
     }
 
     private static Stream<Arguments> invalidLegislativeCountryScenarios() {
