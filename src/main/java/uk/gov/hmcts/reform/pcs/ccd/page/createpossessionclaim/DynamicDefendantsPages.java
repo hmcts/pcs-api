@@ -8,7 +8,6 @@ import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import de.cronn.reflection.util.TypedPropertyGetter;
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
-import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
@@ -37,13 +36,13 @@ public class DynamicDefendantsPages implements CcdPageConfiguration {
             defendantPage.pageLabel("Defendant " + i + " details")
                 .mandatory(getTempDefField(i));
 
-            // Add Another / Summary page
+            // Add Another Defendant list page
             var addAnotherPage = pageBuilder.page("DefendantList" + i);
             if (i > 1) {
                 addAnotherPage.showCondition("addAnotherDefendant" + (i - 1) + "=\"YES\"");
             }
-                   addAnotherPage.pageLabel("Defendant List")
-                           .label("defTable" + i, buildDefendantsSummaryTable(i));
+            addAnotherPage.pageLabel("Defendant List")
+                .label("defTable" + i, buildDefendantsSummaryTable(i));
             if (i != MAX_NUMBER_OF_DEFENDANTS) {
                 addAnotherPage.mandatory(getAddAnotherField(i));
             }
@@ -51,43 +50,42 @@ public class DynamicDefendantsPages implements CcdPageConfiguration {
         }
     }
 
+    public String buildDefendantsSummaryTable(int upToDefendant) {
+        StringBuilder htmlTable = new StringBuilder();
+        htmlTable.append("""
+            <table class="govuk-table">
+              <caption class="govuk-table__caption govuk-table__caption--m">Defendants</caption>
+              <thead class="govuk-table__head">
+                <tr class="govuk-table__row">
+                  <th scope="col" class="govuk-table__header">Defendant</th>
+                  <th scope="col" class="govuk-table__header">Defendant name</th>
+                  <th scope="col" class="govuk-table__header">Defendant correspondence address</th>
+                  <th scope="col" class="govuk-table__header">Defendant email address</th>
+                </tr>
+              </thead>
+              <tbody class="govuk-table__body">
+                """);
 
-           public String buildDefendantsSummaryTable(int upToDefendant) {
-               StringBuilder htmlTable = new StringBuilder();
-               htmlTable.append("""
-                   <table class="govuk-table">
-                     <caption class="govuk-table__caption govuk-table__caption--m">Defendants</caption>
-                     <thead class="govuk-table__head">
-                       <tr class="govuk-table__row">
-                         <th scope="col" class="govuk-table__header">Defendant</th>
-                         <th scope="col" class="govuk-table__header">Defendant name</th>
-                         <th scope="col" class="govuk-table__header">Defendant correspondence address</th>
-                         <th scope="col" class="govuk-table__header">Defendant email address</th>
-                       </tr>
-                     </thead>
-                     <tbody class="govuk-table__body">
-                       """);
+        for (int i = 1; i <= upToDefendant; i++) {
+            htmlTable.append("<tr class=\"govuk-table__row\">")
+                .append("<td class=\"govuk-table__cell\">Defendant ").append(i).append("</td>")
+                .append("<td class=\"govuk-table__cell\">${defendant").append(i).append(".firstName} ${defendant").append(i).append(".lastName}</td>")
+                .append("<td class=\"govuk-table__cell\">")
+                .append("${defendant").append(i).append(".correspondenceAddress.AddressLine1}<br>")
+                .append("${defendant").append(i).append(".correspondenceAddress.PostTown}<br>")
+                .append("${defendant").append(i).append(".correspondenceAddress.PostCode}")
+                .append("</td>")
+                .append("<td class=\"govuk-table__cell\">${defendant").append(i).append(".email}</td>")
+                .append("</tr>");
+        }
 
-               for (int i = 1; i <= upToDefendant; i++) {
-                   htmlTable.append("<tr class=\"govuk-table__row\">")
-                       .append("<td class=\"govuk-table__cell\">Defendant ").append(i).append("</td>")
-                       .append("<td class=\"govuk-table__cell\">${defendant").append(i).append(".firstName} ${defendant").append(i).append(".lastName}</td>")
-                       .append("<td class=\"govuk-table__cell\">")
-                       .append("${defendant").append(i).append(".correspondenceAddress.AddressLine1}<br>")
-                       .append("${defendant").append(i).append(".correspondenceAddress.PostTown}<br>")
-                       .append("${defendant").append(i).append(".correspondenceAddress.PostCode}")
-                       .append("</td>")
-                       .append("<td class=\"govuk-table__cell\">${defendant").append(i).append(".email}</td>")
-                       .append("</tr>");
-               }
+        htmlTable.append("""
+              </tbody>
+            </table>
+                """);
 
-               htmlTable.append("""
-                     </tbody>
-                   </table>
-                       """);
-
-               return htmlTable.toString();
-           }
+        return htmlTable.toString();
+    }
 
     private static TypedPropertyGetter<PCSCase, DefendantDetails> getTempDefField(int i) {
         return switch (i) {
@@ -152,10 +150,10 @@ public class DynamicDefendantsPages implements CcdPageConfiguration {
     }
 
     private AboutToStartOrSubmitResponse<PCSCase, State> midEventForDefendant(CaseDetails<PCSCase, State> details,
-                                                                              CaseDetails<PCSCase, State> detailsBefore,
-                                                                              int defendantIndex) {
+                                                                                CaseDetails<PCSCase, State> detailsBefore,
+                                                                                int defendantIndex) {
         PCSCase caseData = details.getData();
-        
+
         // Check only the specific defendant for this page
         DefendantDetails defendant = getDefendantByIndex(caseData, defendantIndex);
         if (defendant != null && defendant.getAddressSameAsPossession() == VerticalYesNo.YES) {
@@ -169,6 +167,9 @@ public class DynamicDefendantsPages implements CcdPageConfiguration {
     }
 
     private DefendantDetails getDefendantByIndex(PCSCase caseData, int index) {
+        if (index < 1 || index > MAX_NUMBER_OF_DEFENDANTS) {
+            return null;
+        }
         return switch (index) {
             case 1 -> caseData.getDefendant1();
             case 2 -> caseData.getDefendant2();
@@ -198,6 +199,7 @@ public class DynamicDefendantsPages implements CcdPageConfiguration {
             default -> null;
         };
     }
+
 
 }
 
