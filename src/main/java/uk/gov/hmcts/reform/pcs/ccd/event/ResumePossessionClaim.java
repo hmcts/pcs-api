@@ -77,6 +77,8 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
     private final SavingPageBuilderFactory savingPageBuilderFactory;
     private final ResumeClaim resumeClaim;
     private final UnsubmittedCaseDataService unsubmittedCaseDataService;
+    private final NoticeDetails noticeDetails;
+
     private final TenancyLicenceDetails tenancyLicenceDetails;
     private final ContactPreferences contactPreferences;
     private final DefendantsDetails defendantsDetails;
@@ -110,7 +112,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             .add(new PreActionProtocol())
             .add(new MediationAndSettlement())
             .add(new CheckingNotice())
-            .add(new NoticeDetails())
+            .add(noticeDetails)
             .add(new RentDetails())
             .add(new DailyRentAmount())
             .add(new RentArrears());
