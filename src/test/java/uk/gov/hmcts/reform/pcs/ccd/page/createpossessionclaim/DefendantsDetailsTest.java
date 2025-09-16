@@ -5,12 +5,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
-import uk.gov.hmcts.ccd.sdk.api.Event;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
-import uk.gov.hmcts.ccd.sdk.api.callback.MidEvent;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
-import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
@@ -30,11 +26,9 @@ class DefendantsDetailsTest extends BasePageTest {
     @Mock
     private AddressValidator addressValidator;
 
-    private Event<PCSCase, UserRole, State> event;
-
     @BeforeEach
     void setUp() {
-        event = buildPageInTestEvent(new DefendantsDetails(addressValidator));
+        setPageUnderTest(new DefendantsDetails(addressValidator));
     }
 
     @Test
@@ -55,13 +49,8 @@ class DefendantsDetailsTest extends BasePageTest {
         List<String> expectedValidationErrors = List.of("error 1", "error 2");
         when(addressValidator.validateAddressFields(correspondenceAddress)).thenReturn(expectedValidationErrors);
 
-        CaseDetails<PCSCase, State> caseDetails = CaseDetails.<PCSCase, State>builder()
-            .data(caseData)
-            .build();
-
         // When
-        MidEvent<PCSCase, State> midEvent = getMidEventForPage(event, "defendantsDetails");
-        AboutToStartOrSubmitResponse<PCSCase, State> response = midEvent.handle(caseDetails, null);
+        AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
 
         // Then
         assertThat(response.getErrors()).isEqualTo(expectedValidationErrors);
