@@ -102,6 +102,7 @@ Playwright 1.30+ | TypeScript 4.9+
 | extractCaseIdFromAlert            | `performAction('extractCaseIdFromAlert')`                                                                                                                                                                  |
 | selectResumeClaimOption           | `performAction('selectResumeClaimOption', 'yes')`                                                                                                                                                          |
 | selectClaimForMoney               | `performAction('selectClaimForMoney', 'yes')`                                                                                                                                                              |
+| selectNoticeDetails               | `performAction('selectNoticeDetails', {howDidYouServeNotice: noticeDetails.byFirstClassPost, day: '', month: '', year: ''})`                                                                               |
 ### Validations
 | Validation        | Example Usage                                                                                                                        |
 |-------------------|--------------------------------------------------------------------------------------------------------------------------------------|
