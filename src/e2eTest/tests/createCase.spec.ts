@@ -68,7 +68,12 @@ test.describe('[Create Case Flow With Address and Claimant Type] @Master @nightl
       files: ['tenancyLicence.docx', 'tenancyLicence.png']
     });
     await performValidation('mainHeader', groundsForPossession.mainHeader);
-    await performAction('selectGroundsForPossession', groundsForPossession.yes);
+    await performAction('selectGroundsForPossession', {groundsRadioInput: groundsForPossession.yes,
+    grounds: [groundsForPossession.rentArrears, groundsForPossession.antiSocialBehaviour,
+    groundsForPossession.breachOfTheTenancy, groundsForPossession.absoluteGrounds,groundsForPossession.other]});
+    await performAction('enterReasonForPossession'
+      , [groundsForPossession.rentArrears, groundsForPossession.antiSocialBehaviour,
+        groundsForPossession.breachOfTheTenancy, groundsForPossession.absoluteGrounds]);
     await performAction('selectRentArrearsPossessionGround', {
       rentArrears: [rentArrearsPossessionGrounds.rentArrears, rentArrearsPossessionGrounds.seriousRentArrears, rentArrearsPossessionGrounds.persistentDelayInPayingRent],
       otherGrounds: rentArrearsPossessionGrounds.yes
