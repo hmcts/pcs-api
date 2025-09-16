@@ -25,32 +25,65 @@ public class DynamicDefendantsPages implements CcdPageConfiguration {
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
+        // Generate 25 defendant detail pages and 25 defendant list pages
         for (int i = 1; i <= MAX_NUMBER_OF_DEFENDANTS; i++) {
             final int defendantIndex = i; // Make effectively final for lambda
 
-            // Defendant details page
-            var defendantPage = pageBuilder.page("DefendantDetails" + i, (details, detailsBefore) -> midEventForDefendant(details, detailsBefore, defendantIndex));
-            if (i > 1) {
-                defendantPage.showCondition("addAnotherDefendant" + (i - 1) + "=\"YES\"");
-            }
-            defendantPage.pageLabel("Defendant " + i + " details")
-                .mandatory(getTempDefField(i));
+            // Create defendant details page (e.g., "Defendant 1 Details", "Defendant 2 Details")
+            createDefendantDetailsPage(pageBuilder, i, defendantIndex);
 
-            // Add Another Defendant list page
-            var addAnotherPage = pageBuilder.page("DefendantList" + i);
-            if (i > 1) {
-                addAnotherPage.showCondition("addAnotherDefendant" + (i - 1) + "=\"YES\"");
-            }
-            addAnotherPage.pageLabel("Defendant List")
-                .label("defTable" + i, buildDefendantsSummaryTable(i));
-            if (i != MAX_NUMBER_OF_DEFENDANTS) {
-                addAnotherPage.mandatory(getAddAnotherField(i));
-            }
-
+            // Create defendant list page (e.g., "Defendant List 1", "Defendant List 2")
+            createDefendantListPage(pageBuilder, i);
         }
     }
 
+    /**
+     * Creates a defendant details page for entering defendant information.
+     */
+    private void createDefendantDetailsPage(PageBuilder pageBuilder, int i, int defendantIndex) {
+        var defendantPage = pageBuilder.page("DefendantDetails" + i, 
+            (details, detailsBefore) -> midEventForDefendant(details, detailsBefore, defendantIndex));
+        
+        // Only show this page if previous "Add Another Defendant" was YES (except for first defendant)
+        if (i > 1) {
+            defendantPage.showCondition("addAnotherDefendant" + (i - 1) + "=\"YES\"");
+        }
+        
+        defendantPage.pageLabel("Defendant " + i + " Details")
+            .mandatory(getTempDefField(i));
+    }
+
+    /**
+     * Creates a defendant list page showing summary and "Add Another Defendant?" option.
+     */
+    private void createDefendantListPage(PageBuilder pageBuilder, int i) {
+        var addAnotherPage = pageBuilder.page("DefendantList" + i);
+        
+        // Only show this page if previous "Add Another Defendant" was YES (except for first defendant)
+        if (i > 1) {
+            addAnotherPage.showCondition("addAnotherDefendant" + (i - 1) + "=\"YES\"");
+        }
+        
+        addAnotherPage.pageLabel("Defendant List")
+            .label("defTable" + i, buildDefendantsSummaryTable(i));
+        
+        // Only add "Add Another Defendant?" field if not the last defendant
+        if (i != MAX_NUMBER_OF_DEFENDANTS) {
+            addAnotherPage.mandatory(getAddAnotherField(i));
+        }
+    }
+
+    /**
+     * Builds an HTML table showing defendants 1 through upToDefendant.
+     * 
+     * @param upToDefendant the highest defendant number to include in the table
+     * @return HTML table string for display in CCD
+     */
     public String buildDefendantsSummaryTable(int upToDefendant) {
+        if (upToDefendant < 1 || upToDefendant > MAX_NUMBER_OF_DEFENDANTS) {
+            throw new IllegalArgumentException("Invalid defendant count: " + upToDefendant);
+        }
+
         StringBuilder htmlTable = new StringBuilder();
         htmlTable.append("""
             <table class="govuk-table">
@@ -66,17 +99,9 @@ public class DynamicDefendantsPages implements CcdPageConfiguration {
               <tbody class="govuk-table__body">
                 """);
 
+        // Generate table rows for each defendant
         for (int i = 1; i <= upToDefendant; i++) {
-            htmlTable.append("<tr class=\"govuk-table__row\">")
-                .append("<td class=\"govuk-table__cell\">Defendant ").append(i).append("</td>")
-                .append("<td class=\"govuk-table__cell\">${defendant").append(i).append(".firstName} ${defendant").append(i).append(".lastName}</td>")
-                .append("<td class=\"govuk-table__cell\">")
-                .append("${defendant").append(i).append(".correspondenceAddress.AddressLine1}<br>")
-                .append("${defendant").append(i).append(".correspondenceAddress.PostTown}<br>")
-                .append("${defendant").append(i).append(".correspondenceAddress.PostCode}")
-                .append("</td>")
-                .append("<td class=\"govuk-table__cell\">${defendant").append(i).append(".email}</td>")
-                .append("</tr>");
+            htmlTable.append(buildDefendantTableRow(i));
         }
 
         htmlTable.append("""
@@ -87,6 +112,35 @@ public class DynamicDefendantsPages implements CcdPageConfiguration {
         return htmlTable.toString();
     }
 
+    /**
+     * Builds a single table row for a defendant.
+     * 
+     * @param defendantNumber the defendant number (1-based)
+     * @return HTML table row string
+     */
+    private String buildDefendantTableRow(int defendantNumber) {
+        // Build the HTML row with defendant-specific field references
+        return new StringBuilder()
+                .append("<tr class=\"govuk-table__row\">")
+                .append("<td class=\"govuk-table__cell\">Defendant ").append(defendantNumber).append("</td>")
+                .append("<td class=\"govuk-table__cell\">${defendant").append(defendantNumber).append(".firstName} ${defendant").append(defendantNumber).append(".lastName}</td>")
+                .append("<td class=\"govuk-table__cell\">")
+                .append("${defendant").append(defendantNumber).append(".correspondenceAddress.AddressLine1}<br>")
+                .append("${defendant").append(defendantNumber).append(".correspondenceAddress.PostTown}<br>")
+                .append("${defendant").append(defendantNumber).append(".correspondenceAddress.PostCode}")
+                .append("</td>")
+                .append("<td class=\"govuk-table__cell\">${defendant").append(defendantNumber).append(".email}</td>")
+                .append("</tr>")
+                .toString();
+    }
+
+    /**
+     * Gets the TypedPropertyGetter for the specified defendant field.
+     * 
+     * @param i the defendant index (1-25)
+     * @return TypedPropertyGetter for the defendant field
+     * @throws IllegalArgumentException if index is out of range
+     */
     private static TypedPropertyGetter<PCSCase, DefendantDetails> getTempDefField(int i) {
         return switch (i) {
             case 1 -> PCSCase::getDefendant1;
@@ -118,6 +172,13 @@ public class DynamicDefendantsPages implements CcdPageConfiguration {
         };
     }
 
+    /**
+     * Gets the TypedPropertyGetter for the specified "Add Another Defendant" field.
+     * 
+     * @param i the defendant index (1-25)
+     * @return TypedPropertyGetter for the addAnotherDefendant field
+     * @throws IllegalArgumentException if index is out of range
+     */
     private static TypedPropertyGetter<PCSCase, ?> getAddAnotherField(int i) {
         return switch (i) {
             case 1 -> PCSCase::getAddAnotherDefendant1;
@@ -149,23 +210,38 @@ public class DynamicDefendantsPages implements CcdPageConfiguration {
         };
     }
 
-    private AboutToStartOrSubmitResponse<PCSCase, State> midEventForDefendant(CaseDetails<PCSCase, State> details,
-                                                                                CaseDetails<PCSCase, State> detailsBefore,
-                                                                                int defendantIndex) {
+    /**
+     * Mid-event callback for defendant details pages.
+     * Handles setting correspondence address if it's the same as property address.
+     * 
+     * @param details current case details
+     * @param detailsBefore previous case details
+     * @param defendantIndex the defendant index being processed
+     * @return response with updated case data
+     */
+    private AboutToStartOrSubmitResponse<PCSCase, State> midEventForDefendant(
+            CaseDetails<PCSCase, State> details,
+            CaseDetails<PCSCase, State> detailsBefore,
+            int defendantIndex) {
         PCSCase caseData = details.getData();
 
-        // Check only the specific defendant for this page
         DefendantDetails defendant = getDefendantByIndex(caseData, defendantIndex);
         if (defendant != null && defendant.getAddressSameAsPossession() == VerticalYesNo.YES) {
-            // Set the correspondence address to the property address
             defendant.setCorrespondenceAddress(caseData.getPropertyAddress());
         }
-        
+
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
             .data(caseData)
             .build();
     }
 
+    /**
+     * Gets the defendant details for the specified index.
+     * 
+     * @param caseData the case data
+     * @param index the defendant index (1-25)
+     * @return DefendantDetails or null if index is out of range
+     */
     private DefendantDetails getDefendantByIndex(PCSCase caseData, int index) {
         if (index < 1 || index > MAX_NUMBER_OF_DEFENDANTS) {
             return null;
@@ -199,7 +275,5 @@ public class DynamicDefendantsPages implements CcdPageConfiguration {
             default -> null;
         };
     }
-
-
 }
 
