@@ -13,7 +13,7 @@ import {rentArrearsPossessionGrounds} from '@data/page-data/rentArrearsPossessio
 import {whatAreYourGrounds} from '@data/page-data/mandatoryAndDiscretionaryGrounds.page.data';
 import {preActionProtocol} from '@data/page-data/preActionProtocol.page.data';
 import {mediationAndSettlement} from '@data/page-data/mediationAndSettlement.page.data';
-import {checkingNotice} from '@data/page-data/checkingNotice.page.data';
+import {noticeOfYourIntention} from '@data/page-data/noticeOfYourIntention.page.data';
 import {noticeDetails} from '@data/page-data/noticeDetails.page.data';
 import {rentDetails} from '@data/page-data/rentDetails.page.data';
 import {userIneligible} from '@data/page-data/userIneligible.page.data';
@@ -84,12 +84,15 @@ test.describe('[Create Case Flow With Address and Claimant Type] @Master @nightl
       attemptedMediationWithDefendantsOption: mediationAndSettlement.yes,
       settlementWithDefendantsOption: mediationAndSettlement.no,
     });
-    await performValidation('mainHeader', checkingNotice.mainHeader);
-    await performValidation('text', {"text": checkingNotice.guidanceOnPosessionNoticePeriodsLink, "elementType": "paragraphLink"});
-    await performValidation('text', {"text": checkingNotice.servedNoticeInteractiveText, "elementType": "inlineText"});
-    await performAction('selectNoticeOfYourIntention', checkingNotice.yes);
+    await performValidation('mainHeader', noticeOfYourIntention.mainHeader);
+    await performValidation('text', {"text": noticeOfYourIntention.guidanceOnPosessionNoticePeriodsLink, "elementType": "paragraphLink"})
+    await performValidation('text', {"text": noticeOfYourIntention.servedNoticeInteractiveText, "elementType": "inlineText"});
+    await performAction('selectNoticeOfYourIntention', noticeOfYourIntention.yes);
     await performValidation('mainHeader', noticeDetails.mainHeader);
-    await performAction('clickButton', noticeDetails.continue);
+    await performAction('selectNoticeDetails', {
+      howDidYouServeNotice: noticeDetails.byFirstClassPost,
+      index: noticeDetails.byFirstClassPostIndex,
+      day: '16', month: '07', year: '1985'});
     await performValidation('mainHeader', rentDetails.mainHeader);
     await performAction('provideRentDetails', {rentFrequencyOption:'weekly', rentAmount:'800'});
     await performValidation('mainHeader', dailyRentAmount.mainHeader);
@@ -152,8 +155,8 @@ test.describe('[Create Case Flow With Address and Claimant Type] @Master @nightl
       attemptedMediationWithDefendantsOption: mediationAndSettlement.yes,
       settlementWithDefendantsOption: mediationAndSettlement.no,
     });
-    await performValidation('mainHeader', checkingNotice.mainHeader);
-    await performAction('selectNoticeOfYourIntention', checkingNotice.no);
+    await performValidation('mainHeader', noticeOfYourIntention.mainHeader);
+    await performAction('selectNoticeOfYourIntention', noticeOfYourIntention.no);
     await performValidation('mainHeader', rentDetails.mainHeader);
     await performAction('provideRentDetails', {rentAmount:'850', rentFrequencyOption:'Other', inputFrequency:rentDetails.rentFrequencyFortnightly,unpaidRentAmountPerDay:'50'});
     await performValidation('mainHeader', detailsOfRentArrears.mainHeader);
@@ -206,9 +209,12 @@ test.describe('[Create Case Flow With Address and Claimant Type] @Master @nightl
       attemptedMediationWithDefendantsOption: mediationAndSettlement.yes,
       settlementWithDefendantsOption: mediationAndSettlement.no,
     });
-    await performValidation('mainHeader', checkingNotice.mainHeader);
-    await performAction('selectNoticeOfYourIntention', checkingNotice.no);
-    await performValidation('mainHeader', rentDetails.mainHeader);
+    await performValidation('mainHeader', noticeOfYourIntention.mainHeader);
+    await performAction('selectNoticeOfYourIntention', noticeOfYourIntention.yes);
+    await performAction('selectNoticeDetails', {
+      howDidYouServeNotice: noticeDetails.byDeliveringAtPermittedPlace,
+      index: noticeDetails.byDeliveringAtPermittedPlaceIndex,
+      day: '25', month: '02', year: '1970'});
     await performAction('provideRentDetails', {rentFrequencyOption: 'Monthly', rentAmount: '1000'});
     await performAction('selectDailyRentAmount', {
       calculateRentAmount: '£32.85',
