@@ -43,6 +43,8 @@ import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.ResumeClaim;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.SelectClaimType;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.SelectClaimantType;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.TenancyLicenceDetails;
+import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.GroundForPossessionRentArrears;
+import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.GroundForPossessionAdditionalGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.service.ClaimService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
@@ -75,7 +77,11 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
     private final SavingPageBuilderFactory savingPageBuilderFactory;
     private final ResumeClaim resumeClaim;
     private final UnsubmittedCaseDataService unsubmittedCaseDataService;
+    private final NoticeDetails noticeDetails;
+
     private final TenancyLicenceDetails tenancyLicenceDetails;
+    private final ContactPreferences contactPreferences;
+    private final DefendantsDetails defendantsDetails;
 
     @Override
     public void configure(ConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -97,14 +103,16 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             .add(new ClaimTypeNotEligibleEngland())
             .add(new ClaimTypeNotEligibleWales())
             .add(new ClaimantInformation())
-            .add(new ContactPreferences())
-            .add(new DefendantsDetails())
+            .add(contactPreferences)
+            .add(defendantsDetails)
             .add(tenancyLicenceDetails)
             .add(new GroundsForPossession())
+            .add(new GroundForPossessionRentArrears())
+            .add(new GroundForPossessionAdditionalGrounds())
             .add(new PreActionProtocol())
             .add(new MediationAndSettlement())
             .add(new CheckingNotice())
-            .add(new NoticeDetails())
+            .add(noticeDetails)
             .add(new RentDetails())
             .add(new DailyRentAmount())
             .add(new RentArrears());

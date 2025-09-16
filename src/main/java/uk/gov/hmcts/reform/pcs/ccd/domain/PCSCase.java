@@ -13,11 +13,12 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseworkerAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenAccess;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
-
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import static uk.gov.hmcts.ccd.sdk.type.FieldType.DynamicRadioList;
+import static uk.gov.hmcts.ccd.sdk.type.FieldType.MultiSelectList;
 import static uk.gov.hmcts.ccd.sdk.type.FieldType.TextArea;
 
 /**
@@ -148,11 +149,47 @@ public class PCSCase {
     private VerticalYesNo preActionProtocolCompleted;
 
     @CCD(
-        label = "Are you claiming possession because of rent arrears or breach of the tenancy (ground1)?",
+        label = "Are you claiming possession because of rent arrears?",
         hint = "You'll be able to add additional grounds later if you select yes.",
         access = {CitizenAccess.class, CaseworkerAccess.class}
     )
     private YesOrNo groundsForPossession;
+
+    // Rent arrears grounds checkboxes
+    @CCD(
+        label = "What are your grounds for possession?",
+        hint = "Select all that apply",
+        typeOverride = MultiSelectList,
+        typeParameterOverride = "RentArrearsGround",
+        access = {CitizenAccess.class, CaseworkerAccess.class}
+    )
+    private List<RentArrearsGround> rentArrearsGrounds;
+
+    @CCD(
+        label = "Do you have any other additional grounds for possession?",
+        access = {CitizenAccess.class, CaseworkerAccess.class}
+    )
+    private YesOrNo hasOtherAdditionalGrounds;
+
+    // Additional grounds checkboxes - Mandatory
+    @CCD(
+        label = "Mandatory grounds",
+        hint = "Select all that apply",
+        typeOverride = MultiSelectList,
+        typeParameterOverride = "MandatoryGround",
+        access = {CitizenAccess.class, CaseworkerAccess.class}
+    )
+    private List<MandatoryGround> mandatoryGrounds;
+
+    // Additional grounds checkboxes - Discretionary
+    @CCD(
+        label = "Discretionary grounds",
+        hint = "Select all that apply",
+        typeOverride = MultiSelectList,
+        typeParameterOverride = "DiscretionaryGround",
+        access = {CitizenAccess.class, CaseworkerAccess.class}
+    )
+    private List<DiscretionaryGround> discretionaryGrounds;
 
     @CCD(
         label = "Have you attempted mediation with the defendants?",
@@ -271,6 +308,9 @@ public class PCSCase {
     )
     private String calculatedDailyRentChargeAmount;
 
+    @CCD(access = {CitizenAccess.class, CaseworkerAccess.class})
+    private String formattedCalculatedDailyRentChargeAmount;
+
     @CCD(searchable = false, access = {CitizenAccess.class, CaseworkerAccess.class})
     private YesOrNo showPostcodeNotAssignedToCourt;
 
@@ -282,6 +322,79 @@ public class PCSCase {
 
     @CCD(access = {CitizenAccess.class, CaseworkerAccess.class})
     private List<ListValue<DefendantDetails>> defendants;
+    
+    // Notice Details fields
+    @CCD(
+        label = "How did you serve the notice?",
+        access = {CitizenAccess.class, CaseworkerAccess.class}
+    )
+    private NoticeServiceMethod noticeServiceMethod;
+
+    // Date fields for different service methods
+    @CCD(
+        label = "Date the document was posted",
+        hint = "For example, 16 4 2021",
+        access = {CitizenAccess.class, CaseworkerAccess.class}
+    )
+    private LocalDate noticePostedDate;
+
+    @CCD(
+        label = "Date the document was delivered",
+        hint = "For example, 16 4 2021",
+        access = {CitizenAccess.class, CaseworkerAccess.class}
+    )
+    private LocalDate noticeDeliveredDate;
+
+    @CCD(
+        label = "Date and time the document was handed over",
+        hint = "For example, 16 4 2021, 11 15",
+        access = {CitizenAccess.class, CaseworkerAccess.class}
+    )
+    private LocalDateTime noticeHandedOverDateTime;
+
+    @CCD(
+        label = "Date and time the document was handed over",
+        hint = "For example, 16 4 2021, 11 15",
+        access = {CitizenAccess.class, CaseworkerAccess.class}
+    )
+    private LocalDateTime noticeEmailSentDateTime;
+
+    @CCD(
+        label = "Date and time email or message sent",
+        hint = "For example, 16 4 2021, 11 15",
+        access = {CitizenAccess.class, CaseworkerAccess.class}
+    )
+    private LocalDateTime noticeOtherElectronicDateTime;
+
+    @CCD(
+        label = "Date and time the document was handed over",
+        hint = "For example, 16 4 2021, 11 15",
+        access = {CitizenAccess.class, CaseworkerAccess.class}
+    )
+    private LocalDateTime noticeOtherDateTime;
+
+    // Text fields for different service methods
+    @CCD(
+        label = "Name of person the document was left with",
+        access = {CitizenAccess.class, CaseworkerAccess.class}
+    )
+    private String noticePersonName;
+
+    @CCD(
+        label = "Explain how it was served by email",
+        access = {CitizenAccess.class, CaseworkerAccess.class},
+        max = 250,
+        typeOverride = TextArea
+    )
+    private String noticeEmailExplanation;
+
+    @CCD(
+        label = "Explain what the other means were",
+        access = {CitizenAccess.class, CaseworkerAccess.class},
+        max = 250,
+        typeOverride = TextArea
+    )
+    private String noticeOtherExplanation;
 
     @CCD(
         label = "What type of tenancy or licence is in place?",
