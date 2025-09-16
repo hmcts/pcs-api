@@ -36,6 +36,7 @@ export class CreateCaseAction implements IAction {
       ['selectClaimType', () => this.selectClaimType(fieldName)],
       ['selectClaimantName', () => this.selectClaimantName(fieldName)],
       ['selectContactPreferences', () => this.selectContactPreferences(fieldName)],
+      ['selectDefendantList', () => this.selectDefendantList(fieldName)],
       ['selectRentArrearsPossessionGround', () => this.selectRentArrearsPossessionGround(fieldName)],
       ['selectGroundsForPossession', () => this.selectGroundsForPossession(fieldName)],
       ['selectPreActionProtocol', () => this.selectPreActionProtocol(fieldName)],
@@ -204,6 +205,11 @@ export class CreateCaseAction implements IAction {
     await performAction('clickButton', 'Continue');
   }
 
+  private async selectDefendantList(caseData: actionData) {
+    await performAction('clickRadioButton', caseData);
+    await performAction('clickButton', 'Continue');
+  }
+
   private async selectRentArrearsPossessionGround(rentArrearsPossessionGrounds: actionData) {
     const rentArrearsGrounds = rentArrearsPossessionGrounds as {
       rentArrears: string[];
@@ -369,9 +375,9 @@ export class CreateCaseAction implements IAction {
           event_token: process.env.EVENT_TOKEN,
         }
       );
-      caseInfo.id = response.data.id,
-      caseInfo.fid =  response.data.id.replace(/(.{4})(?=.)/g, '$1-'),
-      caseInfo.state = response.data.state
+      caseInfo.id = response.data.id;
+      caseInfo.fid =  response.data.id.replace(/(.{4})(?=.)/g, '$1-');
+      caseInfo.state = response.data.state;
     }
     catch (error) {
       throw new Error('Case could not be created.');
