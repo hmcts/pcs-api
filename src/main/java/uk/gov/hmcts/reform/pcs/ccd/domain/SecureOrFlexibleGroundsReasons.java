@@ -20,6 +20,7 @@ public class SecureOrFlexibleGroundsReasons {
         label = "Give details about your reason for possession",
         hint = "You'll be able to upload documents to support or further explain your reasons later on",
         typeOverride = TextArea,
+        max = 500,
         access = { CaseworkerAccess.class }
     )
     private String breachOfTenancyGround;
@@ -28,6 +29,7 @@ public class SecureOrFlexibleGroundsReasons {
         label = "Give details about your reason for possession",
         hint = "You'll be able to upload documents to support or further explain your reasons later on",
         typeOverride = TextArea,
+        max = 500,
         access = { CaseworkerAccess.class }
     )
     private String nuisanceOrImmoralUseGround;
@@ -36,6 +38,7 @@ public class SecureOrFlexibleGroundsReasons {
         label = "Give details about your reason for possession",
         hint = "You'll be able to upload documents to support or further explain your reasons later on",
         typeOverride = TextArea,
+        max = 500,
         access = { CaseworkerAccess.class }
     )
     private String domesticViolenceGround;
@@ -44,6 +47,7 @@ public class SecureOrFlexibleGroundsReasons {
         label = "Give details about your reason for possession",
         hint = "You'll be able to upload documents to support or further explain your reasons later on",
         typeOverride = TextArea,
+        max = 500,
         access = { CaseworkerAccess.class }
     )
     private String riotOffenceGround;
@@ -52,6 +56,7 @@ public class SecureOrFlexibleGroundsReasons {
         label = "Give details about your reason for possession",
         hint = "You'll be able to upload documents to support or further explain your reasons later on",
         typeOverride = TextArea,
+        max = 500,
         access = { CaseworkerAccess.class }
     )
     private String propertyDeteriorationGround;
@@ -60,6 +65,7 @@ public class SecureOrFlexibleGroundsReasons {
         label = "Give details about your reason for possession",
         hint = "You'll be able to upload documents to support or further explain your reasons later on",
         typeOverride = TextArea,
+        max = 500,
         access = { CaseworkerAccess.class }
     )
     private String furnitureDeteriorationGround;
@@ -68,30 +74,34 @@ public class SecureOrFlexibleGroundsReasons {
         label = "Give details about your reason for possession",
         hint = "You'll be able to upload documents to support or further explain your reasons later on",
         typeOverride = TextArea,
+        max = 500,
         access = { CaseworkerAccess.class }
     )
-    private String tenancyObtainedByFalseStatementGround;
+    private String tenancyByFalseStatementGround;
 
     @CCD(
         label = "Give details about your reason for possession",
         hint = "You'll be able to upload documents to support or further explain your reasons later on",
         typeOverride = TextArea,
+        max = 500,
         access = { CaseworkerAccess.class }
     )
-    private String premiumPaidMutualExchangeGround;
+    private String premiumMutualExchangeGround;
 
     @CCD(
         label = "Give details about your reason for possession",
         hint = "You'll be able to upload documents to support or further explain your reasons later on",
         typeOverride = TextArea,
+        max = 500,
         access = { CaseworkerAccess.class }
     )
-    private String unreasonableConductTiedAccommodationGround;
+    private String unreasonableConductGround;
 
     @CCD(
         label = "Give details about your reason for possession",
         hint = "You'll be able to upload documents to support or further explain your reasons later on",
         typeOverride = TextArea,
+        max = 500,
         access = { CaseworkerAccess.class }
     )
     private String refusalToMoveBackGround;
@@ -100,14 +110,16 @@ public class SecureOrFlexibleGroundsReasons {
         label = "Give details about your reason for possession",
         hint = "You'll be able to upload documents to support or further explain your reasons later on",
         typeOverride = TextArea,
+        max = 500,
         access = { CaseworkerAccess.class }
     )
-    private String tiedAccommodationNeededForEmployeeGround;
+    private String tiedAccommodationGround;
 
     @CCD(
         label = "Give details about your reason for possession",
         hint = "You'll be able to upload documents to support or further explain your reasons later on",
         typeOverride = TextArea,
+        max = 500,
         access = { CaseworkerAccess.class }
     )
     private String adaptedAccommodationGround;
@@ -116,14 +128,16 @@ public class SecureOrFlexibleGroundsReasons {
         label = "Give details about your reason for possession",
         hint = "You'll be able to upload documents to support or further explain your reasons later on",
         typeOverride = TextArea,
+        max = 500,
         access = { CaseworkerAccess.class }
     )
-    private String housingAssociationSpecialCircumstancesGround;
+    private String housingAssocSpecialGround;
 
     @CCD(
         label = "Give details about your reason for possession",
         hint = "You'll be able to upload documents to support or further explain your reasons later on",
         typeOverride = TextArea,
+        max = 500,
         access = { CaseworkerAccess.class }
     )
     private String specialNeedsAccommodationGround;
@@ -132,14 +146,16 @@ public class SecureOrFlexibleGroundsReasons {
         label = "Give details about your reason for possession",
         hint = "You'll be able to upload documents to support or further explain your reasons later on",
         typeOverride = TextArea,
+        max = 500,
         access = { CaseworkerAccess.class }
     )
-    private String underOccupyingAfterSuccessionGround;
+    private String underOccupancySuccessionGround;
 
     @CCD(
         label = "Give details about your reason for possession",
         hint = "You'll be able to upload documents to support or further explain your reasons later on",
         typeOverride = TextArea,
+        max = 500,
         access = { CaseworkerAccess.class }
     )
     private String antiSocialGround;
@@ -148,6 +164,7 @@ public class SecureOrFlexibleGroundsReasons {
         label = "Give details about your reason for possession",
         hint = "You'll be able to upload documents to support or further explain your reasons later on",
         typeOverride = TextArea,
+        max = 500,
         access = { CaseworkerAccess.class }
     )
     private String overcrowdingGround;
@@ -156,6 +173,7 @@ public class SecureOrFlexibleGroundsReasons {
         label = "Give details about your reason for possession",
         hint = "You'll be able to upload documents to support or further explain your reasons later on",
         typeOverride = TextArea,
+        max = 500,
         access = { CaseworkerAccess.class }
     )
     private String landlordWorksGround;
@@ -164,6 +182,7 @@ public class SecureOrFlexibleGroundsReasons {
         label = "Give details about your reason for possession",
         hint = "You'll be able to upload documents to support or further explain your reasons later on",
         typeOverride = TextArea,
+        max = 500,
         access = { CaseworkerAccess.class }
     )
     private String propertySoldGround;
@@ -172,6 +191,7 @@ public class SecureOrFlexibleGroundsReasons {
         label = "Give details about your reason for possession",
         hint = "You'll be able to upload documents to support or further explain your reasons later on",
         typeOverride = TextArea,
+        max = 500,
         access = { CaseworkerAccess.class }
     )
     private String charitableLandlordGround;

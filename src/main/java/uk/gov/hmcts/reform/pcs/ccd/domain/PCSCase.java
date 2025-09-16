@@ -165,7 +165,14 @@ public class PCSCase {
         typeParameterOverride = "RentArrearsGround",
         access = {CitizenAccess.class, CaseworkerAccess.class}
     )
-    private List<RentArrearsGround> rentArrearsGrounds;
+    private Set<RentArrearsGround> rentArrearsGrounds;
+
+    @CCD(
+        typeOverride = MultiSelectList,
+        typeParameterOverride = "RentArrearsGround",
+        access = {CitizenAccess.class, CaseworkerAccess.class}
+    )
+    private Set<RentArrearsGround> copyOfRentArrearsGrounds;
 
     @CCD(
         label = "Do you have any other additional grounds for possession?",
@@ -181,7 +188,7 @@ public class PCSCase {
         typeParameterOverride = "MandatoryGround",
         access = {CitizenAccess.class, CaseworkerAccess.class}
     )
-    private List<MandatoryGround> mandatoryGrounds;
+    private Set<MandatoryGround> mandatoryGrounds;
 
     // Additional grounds checkboxes - Discretionary
     @CCD(
@@ -191,7 +198,7 @@ public class PCSCase {
         typeParameterOverride = "DiscretionaryGround",
         access = {CitizenAccess.class, CaseworkerAccess.class}
     )
-    private List<DiscretionaryGround> discretionaryGrounds;
+    private Set<DiscretionaryGround> discretionaryGrounds;
 
     @CCD(
         label = "Have you attempted mediation with the defendants?",

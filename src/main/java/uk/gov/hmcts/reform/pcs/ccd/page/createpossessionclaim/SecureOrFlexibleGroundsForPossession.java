@@ -27,10 +27,10 @@ public class SecureOrFlexibleGroundsForPossession implements CcdPageConfiguratio
             .showCondition("typeOfTenancyLicence=\"SECURE_TENANCY\" OR typeOfTenancyLicence=\"FLEXIBLE_TENANCY\"")
             .label("secureOrFlexibleGroundsForPossession-info", """
                ---
-               <p class="govuk-body"> You may have already given the defendants notice of your intention to begin
-                possession proceedings.
-                If you have, you should have written the grounds you're making your claim under. You should select these
-                grounds here and any extra ground you'd like to add to your claim, if you need to.
+               <p class="govuk-body" tabindex="0">
+                  You may have already given the defendants notice of your intention to begin possession proceedings.
+                  If you have, you should have written the grounds you're making your claim under. You should select
+                  these grounds here and any extra ground you'd like to add to your claim, if you need to.
                </p>
                """)
             .optional(PCSCase::getSecureOrFlexibleDiscretionaryGrounds)
