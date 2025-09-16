@@ -720,9 +720,9 @@
     undici-types "~7.10.0"
 
 "@types/node@^22.15.31":
-  version "22.18.1"
-  resolved "https://registry.yarnpkg.com/@types/node/-/node-22.18.1.tgz#cc85ee6999b2a2928739281d2f56ff410a140c52"
-  integrity sha512-rzSDyhn4cYznVG+PCzGe1lwuMYJrcBS1fc3JqSa2PvtABwWo+dZ1ij5OVok3tqfpEBCBoaR4d7upFJk73HRJDw==
+  version "22.18.4"
+  resolved "https://registry.yarnpkg.com/@types/node/-/node-22.18.4.tgz#cecc2120443ec4224e930caf84c66a47fb9e1e47"
+  integrity sha512-UJdblFqXymSBhmZf96BnbisoFIr8ooiiBRMolQgg77Ea+VM37jXw76C2LQr9n8wm9+i/OvlUlW6xSvqwzwqznw==
   dependencies:
     undici-types "~6.21.0"
 
@@ -903,19 +903,19 @@ allure-commandline@^2.34.1:
   resolved "https://registry.yarnpkg.com/allure-commandline/-/allure-commandline-2.34.1.tgz#cdc1361c0b1f85d917b72f80d7131fd7dbfddd11"
   integrity sha512-l42csZ2bz7FdtJI1t5zA3IXtOZ0YJaP/+JMRC9gt6aBHRVUIu+6r+3F7KRyshQ79osLz9/MHlGqAjBPRqH0QFw==
 
-allure-js-commons@3.3.3, allure-js-commons@^3.3.0:
-  version "3.3.3"
-  resolved "https://registry.yarnpkg.com/allure-js-commons/-/allure-js-commons-3.3.3.tgz#4e425ca219dedef11a25d74d392f1bb0c8699721"
-  integrity sha512-MLkPWrVtrt/2TdAvaExNSM8yTuY/lEo+MSLoM2DOUUsWzbzki8XIxHoX+mSdkatZAJargsU9JeO/dL5kQyR5IQ==
+allure-js-commons@3.4.1, allure-js-commons@^3.3.0:
+  version "3.4.1"
+  resolved "https://registry.yarnpkg.com/allure-js-commons/-/allure-js-commons-3.4.1.tgz#2aaed0424c5385154a1aad1fefe779307856138f"
+  integrity sha512-Lzs91+8fTPUucnLwQULuuLyEJWQCBCxsZl5tX6lMPFZcAVXgwu/Dti0XfzhH9R1Hw8e43k20XAlmyh/ZDqqpYA==
   dependencies:
     md5 "^2.3.0"
 
 allure-playwright@^3.3.0:
-  version "3.3.3"
-  resolved "https://registry.yarnpkg.com/allure-playwright/-/allure-playwright-3.3.3.tgz#44f403fd8916a89c28a6af3bbecf627b7a7b81a8"
-  integrity sha512-f5+PsYJVBG9igcD2ldzRHOx4kMiuqyoezpneQd94R08I/S3lL/MvdMNmkT1vet8KYB8tsV1OuK17PZexnFaC+w==
+  version "3.4.1"
+  resolved "https://registry.yarnpkg.com/allure-playwright/-/allure-playwright-3.4.1.tgz#75447a341badd196917c53b17f984f4f4d612ce1"
+  integrity sha512-vSc+7iBmilejRbSiv0dakl+/EONHFUs3yDmEOydKmF0+aOMczRyMYOBvU42Ob51PrZozi11ExiQj9SCMH0c4bQ==
   dependencies:
-    allure-js-commons "3.3.3"
+    allure-js-commons "3.4.1"
 
 ansi-colors@^4.1.1:
   version "4.1.3"
