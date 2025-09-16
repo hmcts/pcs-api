@@ -81,6 +81,8 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
     private final NoticeDetails noticeDetails;
 
     private final TenancyLicenceDetails tenancyLicenceDetails;
+    private final ContactPreferences contactPreferences;
+    private final DefendantsDetails defendantsDetails;
 
     @Override
     public void configure(ConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -102,8 +104,8 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             .add(new ClaimTypeNotEligibleEngland())
             .add(new ClaimTypeNotEligibleWales())
             .add(new ClaimantInformation())
-            .add(new ContactPreferences())
-            .add(new DefendantsDetails())
+            .add(contactPreferences)
+            .add(defendantsDetails)
             .add(tenancyLicenceDetails)
             .add(new GroundsForPossession())
             .add(new GroundForPossessionRentArrears())
