@@ -266,7 +266,7 @@ class TenancyLicenceServiceTest {
         // When
         TenancyLicence result = tenancyLicenceService.buildTenancyLicence(pcsCase);
         // Then
-        assertThat(result.getRentStatementDocuments()).isNull();
+        assertThat(result.getRentStatementDocuments()).isEmpty();
     }
 
     @Test
@@ -288,7 +288,7 @@ class TenancyLicenceServiceTest {
         // When
         TenancyLicence result = tenancyLicenceService.buildTenancyLicence(pcsCase);
         // Then
-        assertThat(result.getNoticeDocuments()).isNull();
+        assertThat(result.getNoticeDocuments()).isEmpty();
     }
 
     @Test
