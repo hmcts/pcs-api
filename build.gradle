@@ -118,10 +118,6 @@ tasks.withType(Test).configureEach {
   testLogging {
     exceptionFormat = 'full'
   }
-
-  // Exclude document and testing support packages from test execution
-  exclude '**/document/**/*Test.class'
-  exclude '**/testingsupport/**/*Test.class'
 }
 
 test {
@@ -270,6 +266,7 @@ sonarqube {
       "**/uk/gov/hmcts/reform/pcs/ccd/testingsupport/**/*.java," +
       "**/uk/gov/hmcts/reform/pcs/document/**/*.java," +
       "**/uk/gov/hmcts/reform/pcs/testingsupport/**/*.java," +
+      "**/uk/gov/hmcts/reform/pcs/caseType/**/*.java," +
       "**/entities/**," + "**/model/**"
   }
 }
