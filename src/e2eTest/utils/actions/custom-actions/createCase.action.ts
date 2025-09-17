@@ -48,7 +48,7 @@ export class CreateCaseAction implements IAction {
       ['selectTenancyOrLicenceDetails', () => this.selectTenancyOrLicenceDetails(fieldName)],
       ['provideRentDetails', () => this.provideRentDetails(fieldName)],
       ['selectDailyRentAmount', () => this.selectDailyRentAmount(fieldName)],
-      ['provideDetailsOfRentArrears', () => this.provideDetailsOfRentArrears(fieldName)]
+      ['provideDetailsOfRentArrears', () => this.provideDetailsOfRentArrears(fieldName)],
       ['selectClaimForMoney', () => this.selectClaimForMoney(fieldName)]
     ]);
     const actionToPerform = actionsMap.get(action);
@@ -347,6 +347,7 @@ export class CreateCaseAction implements IAction {
       }
       await performAction('clickButton', 'Continue');
     }
+  }
     
   private async selectClaimForMoney(option: actionData) {
     await performAction('clickRadioButton', option);
