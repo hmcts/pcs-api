@@ -274,11 +274,12 @@ export class CreateCaseAction implements IAction {
     await performAction('clickButton', 'Continue');
   }
 
-  private async enterReasonForPossession(caseData: actionData) {
-    if (Array.isArray(caseData)) {
-      for (let n = 0; n < caseData.length; n++) {
-        await performAction('inputText',  {text:caseData[n],index: n}, reasonsForPossession.detailsAboutYourReason);
-      }
+  private async enterReasonForPossession(reasons: actionData) {
+    if (!Array.isArray(reasons)) {
+      throw new Error(`EnterReasonForPossession expected an array, but received ${typeof reasons}`);
+    }
+    for (let n = 0; n < reasons.length; n++) {
+      await performAction('inputText',  {text:reasons[n],index: n}, reasonsForPossession.detailsAboutYourReason);
     }
     await performAction('clickButton', 'Continue');
   }
