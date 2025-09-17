@@ -12,11 +12,8 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.junit.jupiter.MockitoExtension;
-import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
-import uk.gov.hmcts.ccd.sdk.api.Event;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
-import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.IntroductoryDemotedOrOtherGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
@@ -25,52 +22,20 @@ import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
 
 @ExtendWith(MockitoExtension.class)
 class IntroductoryDemotedOrOtherGroundsForPossessionTest extends BasePageTest {
-    private Event<PCSCase, UserRole, State> event;
-
-    private static Stream<Arguments> testGroundsOtherThanRentArrearsScenarios() {
-        return Stream.of(
-          arguments(Set.of(IntroductoryDemotedOrOtherGrounds.ABSOLUTE_GROUNDS)),
-          arguments(Set.of(IntroductoryDemotedOrOtherGrounds.ANTI_SOCIAL)),
-          arguments(Set.of(IntroductoryDemotedOrOtherGrounds.BREACH_OF_THE_TENANCY)),
-          arguments(Set.of(IntroductoryDemotedOrOtherGrounds.OTHER)),
-          arguments(
-              Set.of(
-                  IntroductoryDemotedOrOtherGrounds.RENT_ARREARS,
-                  IntroductoryDemotedOrOtherGrounds.ABSOLUTE_GROUNDS)),
-          arguments(
-              Set.of(
-                  IntroductoryDemotedOrOtherGrounds.RENT_ARREARS,
-                  IntroductoryDemotedOrOtherGrounds.OTHER)));
-    }
-
-    private static Set<IntroductoryDemotedOrOtherGrounds> buildIntroductoryDemotedOrOtherGrounds() {
-        return Set.of(
-            IntroductoryDemotedOrOtherGrounds.RENT_ARREARS,
-            IntroductoryDemotedOrOtherGrounds.ABSOLUTE_GROUNDS,
-            IntroductoryDemotedOrOtherGrounds.ANTI_SOCIAL,
-            IntroductoryDemotedOrOtherGrounds.BREACH_OF_THE_TENANCY,
-            IntroductoryDemotedOrOtherGrounds.OTHER);
-    }
 
     @BeforeEach
     void setUp() {
-        event = buildPageInTestEvent(new IntroductoryDemotedOrOtherGroundsForPossession());
+        setPageUnderTest(new IntroductoryDemotedOrOtherGroundsForPossession());
     }
 
     @Test
     void shouldNotShowReasonsPageIfNoGrounds() {
         // Given
-        CaseDetails<PCSCase, State> caseDetails = new CaseDetails<>();
-
         PCSCase caseData =
             PCSCase.builder().hasIntroductoryDemotedOtherGroundsForPossession(VerticalYesNo.NO).build();
 
-        caseDetails.setData(caseData);
-
         // When
-        AboutToStartOrSubmitResponse<PCSCase, State> response =
-            getMidEventForPage(event, "introductoryDemotedOrOtherGroundsForPossession")
-              .handle(caseDetails, null);
+        AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
 
         // Then
         assertThat(
@@ -80,7 +45,6 @@ class IntroductoryDemotedOrOtherGroundsForPossessionTest extends BasePageTest {
     @Test
     void shouldNotShowReasonsPageIfRentArrearsGround() {
         // Given
-        CaseDetails<PCSCase, State> caseDetails = new CaseDetails<>();
 
         PCSCase caseData =
             PCSCase.builder()
@@ -89,12 +53,8 @@ class IntroductoryDemotedOrOtherGroundsForPossessionTest extends BasePageTest {
                   Set.of(IntroductoryDemotedOrOtherGrounds.RENT_ARREARS))
               .build();
 
-        caseDetails.setData(caseData);
-
         // When
-        AboutToStartOrSubmitResponse<PCSCase, State> response =
-            getMidEventForPage(event, "introductoryDemotedOrOtherGroundsForPossession")
-              .handle(caseDetails, null);
+        AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
 
         // Then
         assertThat(
@@ -106,7 +66,6 @@ class IntroductoryDemotedOrOtherGroundsForPossessionTest extends BasePageTest {
     void shouldShowReasonsPageIfOtherGroundThanRentArrearsSelected(
         Set<IntroductoryDemotedOrOtherGrounds> grounds) {
         // Given
-        CaseDetails<PCSCase, State> caseDetails = new CaseDetails<>();
 
         PCSCase caseData =
             PCSCase.builder()
@@ -114,12 +73,8 @@ class IntroductoryDemotedOrOtherGroundsForPossessionTest extends BasePageTest {
               .introductoryDemotedOrOtherGrounds(grounds)
               .build();
 
-        caseDetails.setData(caseData);
-
         // When
-        AboutToStartOrSubmitResponse<PCSCase, State> response =
-            getMidEventForPage(event, "introductoryDemotedOrOtherGroundsForPossession")
-              .handle(caseDetails, null);
+        AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
 
         // Then
         assertThat(
@@ -129,8 +84,6 @@ class IntroductoryDemotedOrOtherGroundsForPossessionTest extends BasePageTest {
     @Test
     void shouldShowGroundsOptionsWhenGroundsForPossessionIsYes() {
         // Given
-        CaseDetails<PCSCase, State> caseDetails = new CaseDetails<>();
-
         PCSCase caseData =
             PCSCase.builder()
                 .hasIntroductoryDemotedOtherGroundsForPossession(VerticalYesNo.YES)
@@ -139,33 +92,48 @@ class IntroductoryDemotedOrOtherGroundsForPossessionTest extends BasePageTest {
                         .buildIntroductoryDemotedOrOtherGrounds())
                 .build();
 
-        caseDetails.setData(caseData);
-
         // When
-        AboutToStartOrSubmitResponse<PCSCase, State> response =
-            getMidEventForPage(event, "introductoryDemotedOrOtherGroundsForPossession")
-                .handle(caseDetails, null);
+        AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
 
         // Then
-        assertThat(response.getData().getIntroductoryDemotedOrOtherGrounds()).isEmpty();
+        assertThat(response.getData().getIntroductoryDemotedOrOtherGrounds()).isNotEmpty();
     }
 
     @Test
     void shouldNotShowGroundsOptionsWhenGroundsForPossessionIsNo() {
         // Given
-        CaseDetails<PCSCase, State> caseDetails = new CaseDetails<>();
-
         PCSCase caseData =
             PCSCase.builder().hasIntroductoryDemotedOtherGroundsForPossession(VerticalYesNo.NO).build();
 
-        caseDetails.setData(caseData);
-
         // When
-        AboutToStartOrSubmitResponse<PCSCase, State> response =
-            getMidEventForPage(event, "introductoryDemotedOrOtherGroundsForPossession")
-                .handle(caseDetails, null);
+        AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
 
         // Then
         assertThat(response.getData().getIntroductoryDemotedOrOtherGrounds()).isEmpty();
+    }
+
+    private static Stream<Arguments> testGroundsOtherThanRentArrearsScenarios() {
+        return Stream.of(
+                arguments(Set.of(IntroductoryDemotedOrOtherGrounds.ABSOLUTE_GROUNDS)),
+                arguments(Set.of(IntroductoryDemotedOrOtherGrounds.ANTI_SOCIAL)),
+                arguments(Set.of(IntroductoryDemotedOrOtherGrounds.BREACH_OF_THE_TENANCY)),
+                arguments(Set.of(IntroductoryDemotedOrOtherGrounds.OTHER)),
+                arguments(
+                        Set.of(
+                                IntroductoryDemotedOrOtherGrounds.RENT_ARREARS,
+                                IntroductoryDemotedOrOtherGrounds.ABSOLUTE_GROUNDS)),
+                arguments(
+                        Set.of(
+                                IntroductoryDemotedOrOtherGrounds.RENT_ARREARS,
+                                IntroductoryDemotedOrOtherGrounds.OTHER)));
+    }
+
+    private static Set<IntroductoryDemotedOrOtherGrounds> buildIntroductoryDemotedOrOtherGrounds() {
+        return Set.of(
+                IntroductoryDemotedOrOtherGrounds.RENT_ARREARS,
+                IntroductoryDemotedOrOtherGrounds.ABSOLUTE_GROUNDS,
+                IntroductoryDemotedOrOtherGrounds.ANTI_SOCIAL,
+                IntroductoryDemotedOrOtherGrounds.BREACH_OF_THE_TENANCY,
+                IntroductoryDemotedOrOtherGrounds.OTHER);
     }
 }

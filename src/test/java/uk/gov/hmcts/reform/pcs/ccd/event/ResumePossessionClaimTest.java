@@ -213,12 +213,14 @@ class ResumePossessionClaimTest extends BaseEventTest {
     @Test
     void shouldCreatePartyInSubmitCallback() {
         // Given
+        PcsCaseEntity pcsCaseEntity = mock(PcsCaseEntity.class);
         AddressUK propertyAddress = mock(AddressUK.class);
         String claimantName = "Test Claimant";
         String claimantContactEmail = "claimant@test.com";
         String claimantContactPhoneNumber = "01234 567890";
+        UUID userId = UUID.randomUUID();
 
-        PCSCase caseData = PCSCase.builder()
+        final PCSCase caseData = PCSCase.builder()
             .propertyAddress(propertyAddress)
             .legislativeCountry(WALES)
             .claimantName(claimantName)
@@ -226,13 +228,12 @@ class ResumePossessionClaimTest extends BaseEventTest {
             .claimantContactPhoneNumber(claimantContactPhoneNumber)
             .build();
 
-        UUID userId = UUID.randomUUID();
-        when(userDetails.getUid()).thenReturn(userId.toString());
-
-        PcsCaseEntity pcsCaseEntity = mock(PcsCaseEntity.class);
-        when(pcsCaseService.patchCase(eq(TEST_CASE_REFERENCE), any(PCSCase.class))).thenReturn(pcsCaseEntity);
-
         // When
+        when(userDetails.getUid()).thenReturn(userId.toString());
+        when(claimService.createAndLinkClaim(any(), any(), eq("Main Claim"), eq(CLAIMANT)))
+                .thenReturn(ClaimEntity.builder().build());
+
+        when(pcsCaseService.patchCase(eq(TEST_CASE_REFERENCE), any(PCSCase.class))).thenReturn(pcsCaseEntity);
         callSubmitHandler(caseData);
 
         // Then
@@ -245,7 +246,6 @@ class ResumePossessionClaimTest extends BaseEventTest {
                                                 eq(claimantContactPhoneNumber),
                                                 eq(true)
         );
-
     }
 
     @Test
@@ -293,5 +293,4 @@ class ResumePossessionClaimTest extends BaseEventTest {
             arguments(SCOTLAND, List.of())
         );
     }
-
 }
