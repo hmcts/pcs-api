@@ -41,11 +41,13 @@ export class CreateCaseAction implements IAction {
       ['selectPreActionProtocol', () => this.selectPreActionProtocol(fieldName)],
       ['selectMediationAndSettlement', () => this.selectMediationAndSettlement(fieldName)],
       ['selectNoticeOfYourIntention', () => this.selectNoticeOfYourIntention(fieldName)],
+      ['selectNoticeDetails', () => this.selectNoticeDetails(fieldName)],
       ['selectCountryRadioButton', () => this.selectCountryRadioButton(fieldName)],
       ['selectOtherGrounds', () => this.selectOtherGrounds(fieldName)],
       ['selectTenancyOrLicenceDetails', () => this.selectTenancyOrLicenceDetails(fieldName)],
       ['provideRentDetails', () => this.provideRentDetails(fieldName)],
-      ['selectDailyRentAmount', () => this.selectDailyRentAmount(fieldName)]
+      ['selectDailyRentAmount', () => this.selectDailyRentAmount(fieldName)],
+      ['selectClaimForMoney', () => this.selectClaimForMoney(fieldName)]
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) throw new Error(`No action found for '${action}'`);
@@ -273,6 +275,23 @@ export class CreateCaseAction implements IAction {
     await performAction('clickButton', 'Continue');
   }
 
+  private async selectNoticeDetails(noticeData: actionData) {
+    const noticeDetailsData = noticeData as {
+      howDidYouServeNotice: string;
+      index: string,
+      day?: string;
+      month?: string;
+      year?: string;
+    };
+    await performAction('clickRadioButton', noticeDetailsData.howDidYouServeNotice);
+    if(noticeDetailsData.day && noticeDetailsData.month &&  noticeDetailsData.year) {
+      await performAction('inputText', {text: 'Day', index: noticeDetailsData.index}, noticeDetailsData.day);
+      await performAction('inputText', {text: 'Month', index: noticeDetailsData.index}, noticeDetailsData.month);
+      await performAction('inputText', {text: 'Year', index: noticeDetailsData.index}, noticeDetailsData.year);
+    }
+    await performAction('clickButton', 'Continue');
+  }
+
   private async provideRentDetails(rentFrequency: actionData) {
     const rentData = rentFrequency as {
       rentFrequencyOption: string;
@@ -303,6 +322,11 @@ export class CreateCaseAction implements IAction {
     if(rentAmount.unpaidRentInteractiveOption == 'No'){
       await performAction('inputText', dailyRentAmount.enterAmountPerDayLabel, rentAmount.unpaidRentAmountPerDay);
     }
+    await performAction('clickButton', 'Continue');
+  }
+
+  private async selectClaimForMoney(option: actionData) {
+    await performAction('clickRadioButton', option);
     await performAction('clickButton', 'Continue');
   }
 
