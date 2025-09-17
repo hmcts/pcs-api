@@ -52,10 +52,6 @@ withPipeline(type, product, component) {
   onMaster() {
     enablePactAs([AppPipelineDsl.PactRoles.CONSUMER])
     setAatEnvVars()
-    enableHighLevelDataSetup()
-    afterAlways("buildinfra:prod") {
-      env.ENVIRONMENT = "prod"
-    }
   }
 
   onDemo {
@@ -76,11 +72,6 @@ withPipeline(type, product, component) {
       env.CASE_API_URL = "https://pcs-api-pr-${CHANGE_ID}.preview.platform.hmcts.net"
       env.DATA_STORE_URL_BASE="https://ccd-data-store-api-pcs-api-pr-${CHANGE_ID}.preview.platform.hmcts.net"
     }
-    onMaster{
-      env.DEFINITION_STORE_URL_BASE = "http://ccd-definition-store-api-aat.service.core-compute-aat.internal"
-      env.CASE_API_URL = "http://pcs-api-aat.service.core-compute-aat.internal"
-      env.DATA_STORE_URL_BASE="http://ccd-data-store-api-aat.service.core-compute-aat.internal"
-    }
     generateDefinitions(builder)
   }
 
@@ -99,6 +90,7 @@ withPipeline(type, product, component) {
 }
 
 def setPreviewEnvVars() {
+  // TODO: Update URL to include XUI when available
   env.MANAGE_CASE_BASE_URL = "https://xui-pcs-api-pr-${CHANGE_ID}.preview.platform.hmcts.net"
   env.ENVIRONMENT= "preview"
 }
