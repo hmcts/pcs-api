@@ -20,6 +20,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PaymentStatus;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimGroundEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
@@ -35,6 +36,8 @@ import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.DailyRentAmount;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.DefendantsDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.GroundsForPossession;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.MediationAndSettlement;
+import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.NoRentArrearsGroundsForPossessionOptions;
+import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.NoRentArrearsGroundsForPossessionReason;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.NoticeDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.PreActionProtocol;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.RentArrears;
@@ -47,6 +50,7 @@ import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.GroundForPossessio
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.GroundForPossessionAdditionalGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.MoneyJudgment;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.ClaimantCircumstances;
+import uk.gov.hmcts.reform.pcs.ccd.service.ClaimGroundService;
 import uk.gov.hmcts.reform.pcs.ccd.service.ClaimService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
@@ -76,6 +80,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
     private final SecurityContextService securityContextService;
     private final PartyService partyService;
     private final ClaimService claimService;
+    private final ClaimGroundService claimGroundService;
     private final SavingPageBuilderFactory savingPageBuilderFactory;
     private final ResumeClaim resumeClaim;
     private final UnsubmittedCaseDataService unsubmittedCaseDataService;
@@ -111,6 +116,8 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             .add(new GroundsForPossession())
             .add(new GroundForPossessionRentArrears())
             .add(new GroundForPossessionAdditionalGrounds())
+            .add(new NoRentArrearsGroundsForPossessionOptions())
+            .add(new NoRentArrearsGroundsForPossessionReason())
             .add(new PreActionProtocol())
             .add(new MediationAndSettlement())
             .add(new CheckingNotice())
@@ -141,7 +148,8 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
 
         List<DynamicStringListElement> listItems = Arrays.stream(ClaimantType.values())
             .filter(value -> value.isApplicableFor(legislativeCountry))
-            .map(value -> DynamicStringListElement.builder().code(value.name()).label(value.getLabel()).build())
+            .map(value -> DynamicStringListElement.builder().code(value.name()).label(value.getLabel())
+                .build())
             .toList();
 
         DynamicStringList claimantTypeList = DynamicStringList.builder()
@@ -204,9 +212,13 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             "Main Claim",
             PartyRole.CLAIMANT);
 
+        List<ClaimGroundEntity> claimGroundEntities =
+            claimGroundService.getGroundsWithReason(pcsCase);
+
+        claimEntity.addClaimGroundEntities(claimGroundEntities);
+
         claimService.saveClaim(claimEntity);
 
         unsubmittedCaseDataService.deleteUnsubmittedCaseData(caseReference);
     }
-
 }
