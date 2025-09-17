@@ -454,9 +454,13 @@ tasks.withType(CftlibExec).configureEach {
 }
 
 tasks.register('highLevelDataSetup', JavaExec) {
-  mainClass.set("uk.gov.hmcts.reform.pcs.ccd.config.HighLevelDataSetupApp")
-  classpath += sourceSets.main.runtimeClasspath
-  jvmArgs = ['--add-opens=java.base/java.lang.reflect=ALL-UNNAMED']
+  if (System.getenv("ENVIRONMENT") != "prod") {
+    mainClass.set("uk.gov.hmcts.reform.pcs.ccd.config.HighLevelDataSetupApp")
+    classpath += sourceSets.main.runtimeClasspath
+    jvmArgs = ['--add-opens=java.base/java.lang.reflect=ALL-UNNAMED']
+  } else {
+    println("High level data setup is disabled in PROD environment")
+  }
 }
 
 // Ensure we cover Cftlib dev & test with our CI checks
