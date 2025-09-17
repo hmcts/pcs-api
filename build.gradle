@@ -262,6 +262,7 @@ sonarqube {
       "**/uk/gov/hmcts/reform/pcs/ccd/domain/**/*.java," +
       "**/uk/gov/hmcts/reform/pcs/ccd/entity/**/*.java" +
       "**/uk/gov/hmcts/reform/pcs/ccd/document/**/*.java" +
+      "**/uk/gov/hmcts/reform/pcs/ccd/document/service/**/*.java" +
       "**/uk/gov/hmcts/reform/pcs/ccd/testingsupport/**/*.java" +
       "**/entities/**," + "**/model/**"
     property "sonar.coverage.jacoco.xmlReportPaths", "$buildDir/reports/jacoco/jacocoTestReport/jacocoTestReport.xml"
