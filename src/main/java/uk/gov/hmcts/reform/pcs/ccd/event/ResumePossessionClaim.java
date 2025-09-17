@@ -48,6 +48,8 @@ import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.SelectClaimantType
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.TenancyLicenceDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.GroundForPossessionRentArrears;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.GroundForPossessionAdditionalGrounds;
+import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.MoneyJudgment;
+import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.ClaimantCircumstances;
 import uk.gov.hmcts.reform.pcs.ccd.service.ClaimGroundService;
 import uk.gov.hmcts.reform.pcs.ccd.service.ClaimService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PartyService;
@@ -85,6 +87,8 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
     private final NoticeDetails noticeDetails;
 
     private final TenancyLicenceDetails tenancyLicenceDetails;
+    private final ContactPreferences contactPreferences;
+    private final DefendantsDetails defendantsDetails;
 
     @Override
     public void configure(ConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -106,8 +110,8 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             .add(new ClaimTypeNotEligibleEngland())
             .add(new ClaimTypeNotEligibleWales())
             .add(new ClaimantInformation())
-            .add(new ContactPreferences())
-            .add(new DefendantsDetails())
+            .add(contactPreferences)
+            .add(defendantsDetails)
             .add(tenancyLicenceDetails)
             .add(new GroundsForPossession())
             .add(new GroundForPossessionRentArrears())
@@ -120,7 +124,9 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             .add(noticeDetails)
             .add(new RentDetails())
             .add(new DailyRentAmount())
-            .add(new RentArrears());
+            .add(new RentArrears())
+            .add(new MoneyJudgment())
+            .add(new ClaimantCircumstances());
     }
 
     private PCSCase start(EventPayload<PCSCase, State> eventPayload) {

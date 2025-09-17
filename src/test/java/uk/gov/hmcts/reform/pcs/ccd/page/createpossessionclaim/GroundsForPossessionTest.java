@@ -3,10 +3,7 @@ package uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
-import uk.gov.hmcts.ccd.sdk.api.Event;
-import uk.gov.hmcts.ccd.sdk.api.callback.MidEvent;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
-import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.NoRentArrearsDiscretionaryGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.NoRentArrearsMandatoryGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
@@ -18,11 +15,10 @@ import java.util.Set;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class GroundsForPossessionTest extends BasePageTest {
-    private Event<PCSCase, UserRole, State> event;
 
     @BeforeEach
     void setUp() {
-        event = buildPageInTestEvent(new GroundsForPossession());
+        setPageUnderTest(new GroundsForPossession());
     }
 
     @Test
@@ -38,8 +34,7 @@ public class GroundsForPossessionTest extends BasePageTest {
         caseDetails.setData(caseData);
 
         // When: Mid event is executed
-        MidEvent<PCSCase, State> midEvent = getMidEventForPage(event, "groundsForPossession");
-        midEvent.handle(caseDetails, null);
+        callMidEventHandler(caseData);
 
         // Then: Sets should be cleared
         assertThat(caseDetails.getData().getNoRentArrearsMandatoryGroundsOptions()).isEmpty();
@@ -60,12 +55,11 @@ public class GroundsForPossessionTest extends BasePageTest {
         caseDetails.setData(caseData);
 
         // When: Mid event is executed
-        MidEvent<PCSCase, State> midEvent = getMidEventForPage(event, "groundsForPossession");
-        midEvent.handle(caseDetails, null);
+        callMidEventHandler(caseData);
+
 
         // Then: Sets should not be cleared
         assertThat(caseDetails.getData().getNoRentArrearsMandatoryGroundsOptions()).isNotEmpty();
         assertThat(caseDetails.getData().getNoRentArrearsDiscretionaryGroundsOptions()).isNotEmpty();
-
     }
 }

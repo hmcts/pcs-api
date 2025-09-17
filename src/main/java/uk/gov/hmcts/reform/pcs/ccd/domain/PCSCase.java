@@ -434,6 +434,12 @@ public class PCSCase {
     private String nextStepsMarkdown;
 
     @CCD(
+        label = "Do you want the court to make a judgment for the outstanding arrears?",
+        access = {CitizenAccess.class, CaseworkerAccess.class}
+    )
+    private YesOrNo arrearsJudgmentWanted;
+
+    @CCD(
         label = "Mandatory grounds",
         hint = "Select all that apply",
         typeOverride = MultiSelectList,

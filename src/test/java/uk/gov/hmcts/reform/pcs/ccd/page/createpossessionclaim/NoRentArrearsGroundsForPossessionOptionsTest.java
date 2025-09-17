@@ -1,11 +1,9 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim;
 
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
 import uk.gov.hmcts.ccd.sdk.api.Event;
-import uk.gov.hmcts.ccd.sdk.api.callback.MidEvent;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.NoRentArrearsDiscretionaryGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.NoRentArrearsMandatoryGrounds;
@@ -22,7 +20,7 @@ public class NoRentArrearsGroundsForPossessionOptionsTest extends BasePageTest {
 
     @BeforeEach
     void setUp() {
-        event = buildPageInTestEvent(new NoRentArrearsGroundsForPossessionOptions());
+        setPageUnderTest(new NoRentArrearsGroundsForPossessionOptions());
     }
 
     @Test
@@ -45,8 +43,7 @@ public class NoRentArrearsGroundsForPossessionOptionsTest extends BasePageTest {
         caseDetails.setData(caseData);
 
         // When: Mid event is executed
-        MidEvent<PCSCase, State> midEvent = getMidEventForPage(event, "noRentArrearsGroundsForPossessionOptions");
-        midEvent.handle(caseDetails, null);
+        callMidEventHandler(caseData);
 
         // Then: Mandatory and Discretionary enum should exist in each set
         Set<NoRentArrearsMandatoryGrounds> selectedMandatory =
