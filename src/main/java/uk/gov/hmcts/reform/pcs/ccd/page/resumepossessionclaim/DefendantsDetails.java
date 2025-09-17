@@ -12,7 +12,9 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.service.AddressValidator;
+import uk.gov.hmcts.reform.pcs.ccd.util.PostcodeValidator;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @AllArgsConstructor
@@ -20,6 +22,7 @@ import java.util.List;
 public class DefendantsDetails implements CcdPageConfiguration {
 
     private final AddressValidator addressValidator;
+    private final PostcodeValidator postcodeValidator;
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
@@ -56,18 +59,33 @@ public class DefendantsDetails implements CcdPageConfiguration {
                                                                   CaseDetails<PCSCase, State> detailsBefore) {
 
         PCSCase caseData = details.getData();
+        List<String> errors = new ArrayList<>();
+        
         DefendantDetails defendantDetails = caseData.getDefendant1();
-
-        if (defendantDetails.getAddressSameAsPossession() == VerticalYesNo.NO
+        
+        if (defendantDetails != null 
+            && defendantDetails.getAddressSameAsPossession() == VerticalYesNo.NO
             && defendantDetails.getAddressKnown() == VerticalYesNo.YES) {
 
             AddressUK correspondenceAddress = defendantDetails.getCorrespondenceAddress();
-            List<String> validationErrors = addressValidator.validateAddressFields(correspondenceAddress);
-            if (!validationErrors.isEmpty()) {
-                return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
-                    .errors(validationErrors)
-                    .build();
-            }
+            
+            // Validate address fields
+            List<String> addressErrors = addressValidator.validateAddressFields(correspondenceAddress);
+            errors.addAll(addressErrors);
+            
+            // Validate postcode
+            List<String> postcodeErrors = postcodeValidator.getValidationErrors(
+                correspondenceAddress,
+                "defendant1.correspondenceAddress"
+            );
+            errors.addAll(postcodeErrors);
+        }
+
+        if (!errors.isEmpty()) {
+            return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
+                .data(caseData)
+                .errors(errors)
+                .build();
         }
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()

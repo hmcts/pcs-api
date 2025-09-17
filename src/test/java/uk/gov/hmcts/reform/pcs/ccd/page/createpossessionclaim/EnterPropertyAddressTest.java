@@ -16,6 +16,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
 import uk.gov.hmcts.reform.pcs.ccd.service.AddressValidator;
+import uk.gov.hmcts.reform.pcs.ccd.util.PostcodeValidator;
 import uk.gov.hmcts.reform.pcs.postcodecourt.exception.EligibilityCheckException;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.EligibilityResult;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.EligibilityStatus;
@@ -46,10 +47,12 @@ class EnterPropertyAddressTest extends BasePageTest {
     private EligibilityService eligibilityService;
     @Mock
     private AddressValidator addressValidator;
+    @Mock
+    private PostcodeValidator postcodeValidator;
 
     @BeforeEach
     void setUp() {
-        setPageUnderTest(new EnterPropertyAddress(eligibilityService, addressValidator));
+        setPageUnderTest(new EnterPropertyAddress(eligibilityService, addressValidator, postcodeValidator));
     }
 
     @ParameterizedTest
@@ -72,6 +75,7 @@ class EnterPropertyAddressTest extends BasePageTest {
             .legislativeCountry(expectedLegislativeCountry)
             .build();
 
+        when(postcodeValidator.isValidPostcode(postCode)).thenReturn(true);
         when(eligibilityService.checkEligibility(postCode, null)).thenReturn(eligibilityResult);
 
         // When
@@ -105,6 +109,7 @@ class EnterPropertyAddressTest extends BasePageTest {
             .legislativeCountries(countries)
             .build();
 
+        when(postcodeValidator.isValidPostcode(postcode)).thenReturn(true);
         when(eligibilityService.checkEligibility(postcode, null)).thenReturn(eligibilityResult);
 
         // When
@@ -146,6 +151,7 @@ class EnterPropertyAddressTest extends BasePageTest {
             .legislativeCountries(countries)
             .build();
 
+        when(postcodeValidator.isValidPostcode(postcode)).thenReturn(true);
         when(eligibilityService.checkEligibility(postcode, null)).thenReturn(eligibilityResult);
 
         // When & Then
@@ -167,6 +173,7 @@ class EnterPropertyAddressTest extends BasePageTest {
             .legislativeCountry(ENGLAND)
             .build();
 
+        when(postcodeValidator.isValidPostcode("M1 1AA")).thenReturn(true);
         when(eligibilityService.checkEligibility("M1 1AA", null)).thenReturn(result);
 
         // When
@@ -194,6 +201,31 @@ class EnterPropertyAddressTest extends BasePageTest {
 
         // Then
         assertThat(response.getErrors()).isEqualTo(expectedValidationErrors);
+    }
+
+    @Test
+    void shouldReturnErrorWhenPostcodeIsInvalid() {
+        // Given
+        String invalidPostcode = "12345"; // Invalid: doesn't start with letter
+        AddressUK propertyAddress = AddressUK.builder()
+            .addressLine1("123 Test Street")
+            .postTown("Test City")
+            .postCode(invalidPostcode)
+            .build();
+
+        PCSCase caseData = PCSCase.builder()
+            .propertyAddress(propertyAddress)
+            .build();
+
+        // Mock address validation to pass so we reach postcode validation
+        when(addressValidator.validateAddressFields(propertyAddress)).thenReturn(List.of());
+        when(postcodeValidator.isValidPostcode(invalidPostcode)).thenReturn(false);
+
+        // When
+        AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
+
+        // Then
+        assertThat(response.getErrors()).containsExactly("Enter a valid postcode");
     }
 
     private static Stream<Arguments> invalidLegislativeCountryScenarios() {
