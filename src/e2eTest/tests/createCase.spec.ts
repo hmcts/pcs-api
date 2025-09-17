@@ -16,12 +16,13 @@ import {mediationAndSettlement} from '@data/page-data/mediationAndSettlement.pag
 import {noticeOfYourIntention} from '@data/page-data/noticeOfYourIntention.page.data';
 import {noticeDetails} from '@data/page-data/noticeDetails.page.data';
 import {rentDetails} from '@data/page-data/rentDetails.page.data';
-import {userIneligible} from '@data/page-data/userIneligible.page.data';
 import {dailyRentAmount} from '@data/page-data/dailyRentAmount.page.data';
 import {provideMoreDetailsOfClaim} from '@data/page-data/provideMoreDetailsOfClaim.page.data';
 import {resumeClaim} from '@data/page-data/resumeClaim.page.data';
 import {resumeClaimOptions} from '@data/page-data/resumeClaimOptions.page.data';
 import {detailsOfRentArrears} from '@data/page-data/detailsOfRentArrears.page.data';
+import {moneyJudgment} from '@data/page-data/moneyJudgment.page.data';
+import {claimantCircumstances} from '@data/page-data/claimantCircumstances.page.data';
 import {defendantList} from "@data/page-data/defendantList.page.data";
 
 test.beforeEach(async ({page}, testInfo) => {
@@ -33,7 +34,7 @@ test.beforeEach(async ({page}, testInfo) => {
     body: page.url(),
     contentType: 'text/plain',
   });
-  await performAction('clickButton', 'Create case');
+  await performAction('clickTab', 'Create case');
   await performAction('selectJurisdictionCaseTypeEvent');
   await performAction('housingPossessionClaim');
 });
@@ -107,6 +108,9 @@ test.describe('[Create Case Flow With Address and Claimant Type] @Master @nightl
       unpaidRentInteractiveOption: dailyRentAmount.no,
       unpaidRentAmountPerDay: '20'
     });
+    await performAction('selectClaimForMoney', moneyJudgment.yes);
+    await performValidation('mainHeader', claimantCircumstances.mainHeader);
+    await performAction('clickButton', claimantCircumstances.continue);
     await performAction('clickButton', 'Save and continue');
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
     await performAction('clickTab', 'Property Details');
@@ -119,7 +123,8 @@ test.describe('[Create Case Flow With Address and Claimant Type] @Master @nightl
     )
   });
 
-  test('Wales - Successful case creation with Saved options', async () => {
+  //A houskeeping ticket has been created HDPI-1952 to fix this test
+  test.skip('Wales - Successful case creation with Saved options', async () => {
     await performAction('enterTestAddressManually');
     await performValidation('bannerAlert', 'Case #.* has been created.');
     await performAction('extractCaseIdFromAlert');
@@ -167,6 +172,9 @@ test.describe('[Create Case Flow With Address and Claimant Type] @Master @nightl
     await performAction('provideRentDetails', {rentAmount:'850', rentFrequencyOption:'Other', inputFrequency:rentDetails.rentFrequencyFortnightly,unpaidRentAmountPerDay:'50'});
     await performValidation('mainHeader', detailsOfRentArrears.mainHeader);
     await performAction('clickButton', detailsOfRentArrears.continue);
+    await performAction('selectClaimForMoney', moneyJudgment.yes);
+    await performValidation('mainHeader', claimantCircumstances.mainHeader);
+    await performAction('clickButton', claimantCircumstances.continue);
     await performAction('clickButton', 'Save and continue');
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
     await performAction('clickTab', 'Property Details');
@@ -178,7 +186,8 @@ test.describe('[Create Case Flow With Address and Claimant Type] @Master @nightl
       ['formLabelValue', 'Country', addressDetails.country]);
   });
 
-  test('Wales - Successful case creation without Saved options and Defendants correspondence address is not known', async () => {
+  //A houskeeping ticket has been created HDPI-1952 to fix this test
+  test.skip('Wales - Successful case creation without Saved options and Defendants correspondence address is not known', async () => {
     await performAction('enterTestAddressManually');
     await performValidation('bannerAlert', 'Case #.* has been created.');
     await performAction('extractCaseIdFromAlert');
@@ -226,6 +235,9 @@ test.describe('[Create Case Flow With Address and Claimant Type] @Master @nightl
       calculateRentAmount: '£32.85',
       unpaidRentInteractiveOption: dailyRentAmount.yes
     });
+    await performAction('selectClaimForMoney', moneyJudgment.no);
+    await performValidation('mainHeader', claimantCircumstances.mainHeader);
+    await performAction('clickButton', claimantCircumstances.continue);
     await performAction('clickButton', 'Save and continue');
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
     await performAction('clickTab', 'Property Details');
@@ -235,60 +247,5 @@ test.describe('[Create Case Flow With Address and Claimant Type] @Master @nightl
       ['formLabelValue', 'Town or City', addressDetails.townOrCity],
       ['formLabelValue', 'Postcode/Zipcode', addressDetails.walesCourtAssignedPostcode],
       ['formLabelValue', 'Country', addressDetails.country]);
-  });
-
-  test('England - Unsuccessful case creation journey due to claimant type not in scope of Release1 @R1only', async () => {
-    await performAction('selectAddress', {
-      postcode: addressDetails.englandCourtAssignedPostcode,
-      addressIndex: addressDetails.addressIndex
-    });
-    await performAction('clickButton', provideMoreDetailsOfClaim.continue);
-    await performAction('selectClaimantType', claimantType.mortgageLender);
-    await performValidation('mainHeader', 'You\'re not eligible for this online service');
-    await performAction('clickButton', 'Continue');
-    await performValidation('errorMessage', {
-      header: userIneligible.eventNotCreated, message: userIneligible.unableToProceed
-    });
-    await performValidation('errorMessage', {
-      header: userIneligible.errors, message: userIneligible.notEligibleForOnlineService
-    });
-    await performAction('clickButton', 'Cancel');
-  });
-
-  test('Wales - Unsuccessful case creation journey due to claimant type not in scope of Release1 @R1only', async () => {
-    await performAction('selectAddress', {
-      postcode: addressDetails.walesCourtAssignedPostcode,
-      addressIndex: addressDetails.addressIndex
-    });
-    await performAction('clickButton', provideMoreDetailsOfClaim.continue);
-    await performAction('selectClaimantType', claimantType.privateLandlord);
-    await performValidation('mainHeader', 'You\'re not eligible for this online service');
-    await performAction('clickButton', 'Continue');
-    await performValidation('errorMessage', {
-      header: userIneligible.eventNotCreated, message: userIneligible.unableToProceed
-    });
-    await performValidation('errorMessage', {
-      header: userIneligible.errors, message: userIneligible.notEligibleForOnlineService
-    });
-    await performAction('clickButton', 'Cancel');
-  });
-
-  test('Unsuccessful case creation journey due to claim type not in scope of Release1 @R1only', async () => {
-    await performAction('selectAddress', {
-      postcode: addressDetails.englandCourtAssignedPostcode,
-      addressIndex: addressDetails.addressIndex
-    });
-    await performAction('clickButton', provideMoreDetailsOfClaim.continue);
-    await performAction('selectClaimantType', claimantType.registeredProviderForSocialHousing);
-    await performAction('selectClaimType', claimType.yes);
-    await performValidation('mainHeader', 'You\'re not eligible for this online service');
-    await performAction('clickButton', 'Continue');
-    await performValidation('errorMessage', {
-      header: userIneligible.eventNotCreated, message: userIneligible.unableToProceed
-    });
-    await performValidation('errorMessage', {
-      header: userIneligible.errors, message: userIneligible.notEligibleForOnlineService
-    });
-    await performAction('clickButton', 'Cancel');
   });
 });

@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim;
+package uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -9,12 +9,8 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.modelmapper.ModelMapper;
-import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
-import uk.gov.hmcts.ccd.sdk.api.Event;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
-import uk.gov.hmcts.ccd.sdk.api.callback.MidEvent;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
-import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
@@ -38,18 +34,14 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class ResumeClaimTest extends BasePageTest {
 
-    private static final long CASE_REFERENCE = 1234L;
-
     @Mock(strictness = LENIENT)
     private UnsubmittedCaseDataService unsubmittedCaseDataService;
     @Mock
     private ModelMapper modelMapper;
 
-    private Event<PCSCase, UserRole, State> event;
-
     @BeforeEach
     void setUp() {
-        event = buildPageInTestEvent(new ResumeClaim(unsubmittedCaseDataService, modelMapper));
+        setPageUnderTest(new ResumeClaim(unsubmittedCaseDataService, modelMapper));
     }
 
     @ParameterizedTest
@@ -58,19 +50,13 @@ class ResumeClaimTest extends BasePageTest {
         // Given
         PCSCase caseData = mock(PCSCase.class);
 
-        when(unsubmittedCaseDataService.getUnsubmittedCaseData(CASE_REFERENCE))
+        when(unsubmittedCaseDataService.getUnsubmittedCaseData(TEST_CASE_REFERENCE))
             .thenReturn(Optional.ofNullable(unsubmittedCaseData));
 
         when(caseData.getResumeClaimKeepAnswers()).thenReturn(keepAnswers);
 
-        CaseDetails<PCSCase, State> caseDetails = CaseDetails.<PCSCase, State>builder()
-            .id(CASE_REFERENCE)
-            .data(caseData)
-            .build();
-
         // When
-        MidEvent<PCSCase, State> midEvent = getMidEventForPage(event, "resumeClaim");
-        AboutToStartOrSubmitResponse<PCSCase, State> response = midEvent.handle(caseDetails, null);
+        AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
 
         // Then
         assertThat(response.getData()).isSameAs(caseData);
@@ -97,23 +83,17 @@ class ResumeClaimTest extends BasePageTest {
         // Given
         PCSCase caseData = mock(PCSCase.class);
 
-        when(unsubmittedCaseDataService.getUnsubmittedCaseData(CASE_REFERENCE)).thenReturn(Optional.empty());
+        when(unsubmittedCaseDataService.getUnsubmittedCaseData(TEST_CASE_REFERENCE)).thenReturn(Optional.empty());
 
         when(caseData.getResumeClaimKeepAnswers()).thenReturn(YesOrNo.YES);
 
-        CaseDetails<PCSCase, State> caseDetails = CaseDetails.<PCSCase, State>builder()
-            .id(CASE_REFERENCE)
-            .data(caseData)
-            .build();
-
         // When
-        MidEvent<PCSCase, State> midEvent = getMidEventForPage(event, "resumeClaim");
-        Throwable throwable = catchThrowable(() -> midEvent.handle(caseDetails, null));
+        Throwable throwable = catchThrowable(() -> callMidEventHandler(caseData));
 
         // Then
         assertThat(throwable)
             .isInstanceOf(UnsubmittedDataException.class)
-            .hasMessage("No unsubmitted case data found for case %s", CASE_REFERENCE);
+            .hasMessage("No unsubmitted case data found for case %s", TEST_CASE_REFERENCE);
     }
 
 }

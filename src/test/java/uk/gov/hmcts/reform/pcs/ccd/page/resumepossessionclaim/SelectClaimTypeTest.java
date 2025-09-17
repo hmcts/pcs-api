@@ -1,16 +1,11 @@
-package uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim;
+package uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
-import uk.gov.hmcts.ccd.sdk.api.Event;
-import uk.gov.hmcts.ccd.sdk.api.callback.MidEvent;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
-import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
@@ -26,11 +21,9 @@ import static uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry.WAL
 
 class SelectClaimTypeTest extends BasePageTest {
 
-    private Event<PCSCase, UserRole, State> event;
-
     @BeforeEach
     void setUp() {
-        event = buildPageInTestEvent(new SelectClaimType());
+        setPageUnderTest(new SelectClaimType());
     }
 
     @ParameterizedTest
@@ -40,18 +33,13 @@ class SelectClaimTypeTest extends BasePageTest {
                                                  YesOrNo showNotEligibleEngland,
                                                  YesOrNo showNotEligibleWales) {
         // Given
-        CaseDetails<PCSCase, State> caseDetails = new CaseDetails<>();
-
         PCSCase caseData = PCSCase.builder()
             .legislativeCountry(legislativeCountry)
             .claimAgainstTrespassers(isClaimAgainstTrespassers)
             .build();
 
-        caseDetails.setData(caseData);
-
         // When
-        MidEvent<PCSCase, State> midEvent = getMidEventForPage(event, "selectClaimType");
-        midEvent.handle(caseDetails, null);
+        callMidEventHandler(caseData);
 
         // Then
         assertThat(caseData.getShowClaimTypeNotEligibleEngland()).isEqualTo(showNotEligibleEngland);

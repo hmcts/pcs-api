@@ -9,13 +9,9 @@ import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
-import uk.gov.hmcts.ccd.sdk.api.Event;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
-import uk.gov.hmcts.ccd.sdk.api.callback.MidEvent;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
-import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
@@ -38,6 +34,10 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.ccd.sdk.type.YesOrNo.NO;
 import static uk.gov.hmcts.ccd.sdk.type.YesOrNo.YES;
+import static uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry.ENGLAND;
+import static uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry.NORTHERN_IRELAND;
+import static uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry.SCOTLAND;
+import static uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry.WALES;
 
 @ExtendWith(MockitoExtension.class)
 class EnterPropertyAddressTest extends BasePageTest {
@@ -47,11 +47,9 @@ class EnterPropertyAddressTest extends BasePageTest {
     @Mock
     private AddressValidator addressValidator;
 
-    private Event<PCSCase, UserRole, State> event;
-
     @BeforeEach
     void setUp() {
-        event = buildPageInTestEvent(new EnterPropertyAddress(eligibilityService, addressValidator));
+        setPageUnderTest(new EnterPropertyAddress(eligibilityService, addressValidator));
     }
 
     @ParameterizedTest
@@ -59,7 +57,7 @@ class EnterPropertyAddressTest extends BasePageTest {
     void shouldSetLegislativeCountryWhenEligibilityMatchFound(EligibilityStatus eligibilityStatus) {
         // Given
         String postCode = "CF10 1EP";
-        LegislativeCountry expectedLegislativeCountry = LegislativeCountry.WALES;
+        LegislativeCountry expectedLegislativeCountry = WALES;
 
         AddressUK propertyAddress = AddressUK.builder()
             .postCode(postCode)
@@ -67,10 +65,6 @@ class EnterPropertyAddressTest extends BasePageTest {
 
         PCSCase caseData = PCSCase.builder()
             .propertyAddress(propertyAddress)
-            .build();
-
-        CaseDetails<PCSCase, State> caseDetails = CaseDetails.<PCSCase, State>builder()
-            .data(caseData)
             .build();
 
         EligibilityResult eligibilityResult = EligibilityResult.builder()
@@ -81,8 +75,7 @@ class EnterPropertyAddressTest extends BasePageTest {
         when(eligibilityService.checkEligibility(postCode, null)).thenReturn(eligibilityResult);
 
         // When
-        MidEvent<PCSCase, State> midEvent = getMidEventForPage(event, "enterPropertyAddress");
-        midEvent.handle(caseDetails, null);
+        callMidEventHandler(caseData);
 
         // Then
         assertThat(caseData.getLegislativeCountry()).isEqualTo(expectedLegislativeCountry);
@@ -99,7 +92,6 @@ class EnterPropertyAddressTest extends BasePageTest {
         String expectedCountry2
     ) {
         // Given
-        CaseDetails<PCSCase, State> caseDetails = new CaseDetails<>();
         AddressUK propertyAddress = AddressUK.builder()
             .postCode(postcode)
             .build();
@@ -107,8 +99,6 @@ class EnterPropertyAddressTest extends BasePageTest {
         PCSCase caseData = PCSCase.builder()
             .propertyAddress(propertyAddress)
             .build();
-
-        caseDetails.setData(caseData);
 
         EligibilityResult eligibilityResult = EligibilityResult.builder()
             .status(status)
@@ -118,9 +108,7 @@ class EnterPropertyAddressTest extends BasePageTest {
         when(eligibilityService.checkEligibility(postcode, null)).thenReturn(eligibilityResult);
 
         // When
-        AboutToStartOrSubmitResponse<PCSCase, State> response = getMidEventForPage(event, "enterPropertyAddress")
-            .handle(caseDetails, null);
-
+        AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
         // Then
         PCSCase resultData = response.getData();
         assertThat(resultData.getShowCrossBorderPage()).isEqualTo(expectedShowCrossBorder);
@@ -145,7 +133,6 @@ class EnterPropertyAddressTest extends BasePageTest {
         String expectedMessageFragment
     ) {
         // Given
-        CaseDetails<PCSCase, State> caseDetails = new CaseDetails<>();
         AddressUK propertyAddress = AddressUK.builder()
             .postCode(postcode)
             .build();
@@ -154,8 +141,6 @@ class EnterPropertyAddressTest extends BasePageTest {
             .propertyAddress(propertyAddress)
             .build();
 
-        caseDetails.setData(caseData);
-
         EligibilityResult eligibilityResult = EligibilityResult.builder()
             .status(EligibilityStatus.LEGISLATIVE_COUNTRY_REQUIRED)
             .legislativeCountries(countries)
@@ -163,10 +148,8 @@ class EnterPropertyAddressTest extends BasePageTest {
 
         when(eligibilityService.checkEligibility(postcode, null)).thenReturn(eligibilityResult);
 
-        MidEvent<PCSCase, State> midEvent = getMidEventForPage(event, "enterPropertyAddress");
-
         // When & Then
-        assertThatThrownBy(() -> midEvent.handle(caseDetails, null))
+        assertThatThrownBy(() -> callMidEventHandler(caseData))
             .isInstanceOf(EligibilityCheckException.class)
             .hasMessageContaining("Expected at least 2 legislative countries")
             .hasMessageContaining(expectedMessageFragment)
@@ -176,21 +159,18 @@ class EnterPropertyAddressTest extends BasePageTest {
     @Test
     void shouldShowPropertyNotEligiblePageOnNotEligible() {
         // Given
-        CaseDetails<PCSCase, State> caseDetails = new CaseDetails<>();
         AddressUK propertyAddress = AddressUK.builder().postCode("M1 1AA").build();
         PCSCase caseData = PCSCase.builder().propertyAddress(propertyAddress).build();
-        caseDetails.setData(caseData);
 
-        var result = uk.gov.hmcts.reform.pcs.postcodecourt.model.EligibilityResult.builder()
-            .status(uk.gov.hmcts.reform.pcs.postcodecourt.model.EligibilityStatus.NOT_ELIGIBLE)
-            .legislativeCountry(uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry.ENGLAND)
+        var result = EligibilityResult.builder()
+            .status(EligibilityStatus.NOT_ELIGIBLE)
+            .legislativeCountry(ENGLAND)
             .build();
 
         when(eligibilityService.checkEligibility("M1 1AA", null)).thenReturn(result);
 
         // When
-        AboutToStartOrSubmitResponse<PCSCase, State> resp =
-            getMidEventForPage(event, "enterPropertyAddress").handle(caseDetails, null);
+        AboutToStartOrSubmitResponse<PCSCase, State> resp = callMidEventHandler(caseData);
 
         // Then
         PCSCase data = resp.getData();
@@ -209,13 +189,8 @@ class EnterPropertyAddressTest extends BasePageTest {
         List<String> expectedValidationErrors = List.of("error 1", "error 2");
         when(addressValidator.validateAddressFields(propertyAddress)).thenReturn(expectedValidationErrors);
 
-        CaseDetails<PCSCase, State> caseDetails = CaseDetails.<PCSCase, State>builder()
-            .data(caseData)
-            .build();
-
         // When
-        MidEvent<PCSCase, State> midEvent = getMidEventForPage(event, "enterPropertyAddress");
-        AboutToStartOrSubmitResponse<PCSCase, State> response = midEvent.handle(caseDetails, null);
+        AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
 
         // Then
         assertThat(response.getErrors()).isEqualTo(expectedValidationErrors);
@@ -233,7 +208,7 @@ class EnterPropertyAddressTest extends BasePageTest {
             // Single country case
             arguments(
                 "BT1 1AA",
-                Collections.singletonList(LegislativeCountry.NORTHERN_IRELAND),
+                Collections.singletonList(NORTHERN_IRELAND),
                 "but got 1"
             ),
 
@@ -292,7 +267,7 @@ class EnterPropertyAddressTest extends BasePageTest {
             arguments(
                 "TD9 0TU",
                 EligibilityStatus.LEGISLATIVE_COUNTRY_REQUIRED,
-                Arrays.asList(LegislativeCountry.ENGLAND, LegislativeCountry.SCOTLAND),
+                Arrays.asList(ENGLAND, SCOTLAND),
                 YES,
                 "England",
                 "Scotland"
@@ -302,7 +277,7 @@ class EnterPropertyAddressTest extends BasePageTest {
             arguments(
                 "LL65 1AA",
                 EligibilityStatus.LEGISLATIVE_COUNTRY_REQUIRED,
-                Arrays.asList(LegislativeCountry.WALES, LegislativeCountry.ENGLAND),
+                Arrays.asList(WALES, ENGLAND),
                 YES,
                 "Wales",
                 "England"
