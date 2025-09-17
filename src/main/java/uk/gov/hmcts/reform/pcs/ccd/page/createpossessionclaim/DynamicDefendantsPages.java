@@ -288,8 +288,8 @@ public class DynamicDefendantsPages implements CcdPageConfiguration {
      * @param index the defendant index (1-25)
      * @return DefendantDetails or null if index is out of range
      */
-    private DefendantDetails getDefendantByIndex(PCSCase caseData, int index) {
-        if (index < 1 || index > MAX_NUMBER_OF_DEFENDANTS) {
+    public DefendantDetails getDefendantByIndex(PCSCase caseData, int index) {
+        if (caseData == null || index < 1 || index > MAX_NUMBER_OF_DEFENDANTS) {
             return null;
         }
         return switch (index) {

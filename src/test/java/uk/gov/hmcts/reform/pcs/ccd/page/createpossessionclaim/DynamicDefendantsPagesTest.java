@@ -23,6 +23,7 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -312,5 +313,130 @@ class DynamicDefendantsPagesTest extends BasePageTest {
             + "Defendant correspondence address</th>");
         assertThat(table).contains("<th scope=\"col\" class=\"govuk-table__header\">Defendant email address</th>");
     }
+
+    @Test
+    void shouldGetDefendantByIndexForValidIndexes() {
+        // Test all valid indexes (1-25)
+        for (int i = 1; i <= 25; i++) {
+            // Given
+            DefendantDetails defendant = DefendantDetails.builder()
+                .firstName("Test" + i)
+                .lastName("User" + i)
+                .build();
+
+            PCSCase caseData = PCSCase.builder().build();
+            
+            // Set the specific defendant field based on index
+            switch (i) {
+                case 1 -> caseData.setDefendant1(defendant);
+                case 2 -> caseData.setDefendant2(defendant);
+                case 3 -> caseData.setDefendant3(defendant);
+                case 4 -> caseData.setDefendant4(defendant);
+                case 5 -> caseData.setDefendant5(defendant);
+                case 6 -> caseData.setDefendant6(defendant);
+                case 7 -> caseData.setDefendant7(defendant);
+                case 8 -> caseData.setDefendant8(defendant);
+                case 9 -> caseData.setDefendant9(defendant);
+                case 10 -> caseData.setDefendant10(defendant);
+                case 11 -> caseData.setDefendant11(defendant);
+                case 12 -> caseData.setDefendant12(defendant);
+                case 13 -> caseData.setDefendant13(defendant);
+                case 14 -> caseData.setDefendant14(defendant);
+                case 15 -> caseData.setDefendant15(defendant);
+                case 16 -> caseData.setDefendant16(defendant);
+                case 17 -> caseData.setDefendant17(defendant);
+                case 18 -> caseData.setDefendant18(defendant);
+                case 19 -> caseData.setDefendant19(defendant);
+                case 20 -> caseData.setDefendant20(defendant);
+                case 21 -> caseData.setDefendant21(defendant);
+                case 22 -> caseData.setDefendant22(defendant);
+                case 23 -> caseData.setDefendant23(defendant);
+                case 24 -> caseData.setDefendant24(defendant);
+                case 25 -> caseData.setDefendant25(defendant);
+            }
+
+            // When
+            DefendantDetails result = dynamicDefendantsPages.getDefendantByIndex(caseData, i);
+
+            // Then
+            assertThat(result).isNotNull();
+            assertThat(result.getFirstName()).isEqualTo("Test" + i);
+            assertThat(result.getLastName()).isEqualTo("User" + i);
+        }
+    }
+
+    @Test
+    void shouldReturnNullForInvalidIndexes() {
+        // Given
+        PCSCase caseData = PCSCase.builder().build();
+
+        // Test invalid indexes
+        int[] invalidIndexes = {0, -1, 26, 100, Integer.MIN_VALUE, Integer.MAX_VALUE};
+
+        for (int invalidIndex : invalidIndexes) {
+            // When
+            DefendantDetails result = dynamicDefendantsPages.getDefendantByIndex(caseData, invalidIndex);
+
+            // Then
+            assertThat(result).isNull();
+        }
+    }
+
+    @Test
+    void shouldReturnNullForNullCaseData() {
+        // When
+        DefendantDetails result = dynamicDefendantsPages.getDefendantByIndex(null, 1);
+
+        // Then
+        assertThat(result).isNull();
+    }
+
+    @Test
+    void shouldReturnNullForDefendantNotSet() {
+        // Given
+        PCSCase caseData = PCSCase.builder().build(); // No defendants set
+
+        // When
+        DefendantDetails result = dynamicDefendantsPages.getDefendantByIndex(caseData, 1);
+
+        // Then
+        assertThat(result).isNull();
+    }
+
+    @Test
+    void shouldHandleEdgeCasesForDefendantIndexes() {
+        // Given
+        DefendantDetails defendant1 = DefendantDetails.builder()
+            .firstName("First")
+            .lastName("Defendant")
+            .build();
+        DefendantDetails defendant25 = DefendantDetails.builder()
+            .firstName("Last")
+            .lastName("Defendant")
+            .build();
+
+        PCSCase caseData = PCSCase.builder()
+            .defendant1(defendant1)
+            .defendant25(defendant25)
+            .build();
+
+        // Test first defendant
+        DefendantDetails result1 = dynamicDefendantsPages.getDefendantByIndex(caseData, 1);
+        assertThat(result1).isNotNull();
+        assertThat(result1.getFirstName()).isEqualTo("First");
+
+        // Test last defendant
+        DefendantDetails result25 = dynamicDefendantsPages.getDefendantByIndex(caseData, 25);
+        assertThat(result25).isNotNull();
+        assertThat(result25.getFirstName()).isEqualTo("Last");
+
+        // Test middle defendant (not set)
+        DefendantDetails result13 = dynamicDefendantsPages.getDefendantByIndex(caseData, 13);
+        assertThat(result13).isNull();
+    }
+
+
+
+
 
 }
