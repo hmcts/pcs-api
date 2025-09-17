@@ -4,11 +4,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
-import uk.gov.hmcts.ccd.sdk.api.Event;
-import uk.gov.hmcts.ccd.sdk.api.callback.MidEvent;
+import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
-import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsOrBreachOfTenancy;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
@@ -22,11 +19,9 @@ import static org.junit.jupiter.params.provider.Arguments.arguments;
 
 public class RentArrearsOrBreachOfTenancyGroundTest extends BasePageTest {
 
-    private Event<PCSCase, UserRole, State> event;
-
     @BeforeEach
     void setUp() {
-        event = buildPageInTestEvent(new RentArrearsOrBreachOfTenancyGround());
+        setPageUnderTest(new RentArrearsOrBreachOfTenancyGround());
     }
 
     @ParameterizedTest
@@ -36,18 +31,15 @@ public class RentArrearsOrBreachOfTenancyGroundTest extends BasePageTest {
         YesOrNo expectedShowBreachOfTenancyTextarea) {
 
         // Given
-        CaseDetails<PCSCase, State> caseDetails = new CaseDetails<>();
         PCSCase caseData = PCSCase.builder()
             .rentArrearsOrBreachOfTenancy(rentAreasOrBreach)
             .build();
-        caseDetails.setData(caseData);
 
         // When
-        MidEvent<PCSCase, State> midEvent = getMidEventForPage(event, "rentArrearsOrBreachOfTenancyGround");
-        midEvent.handle(caseDetails, null);
+        AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
 
         // Then
-        assertThat(caseData.getShowBreachOfTenancyTextarea()).isEqualTo(expectedShowBreachOfTenancyTextarea);
+        assertThat(response.getData().getShowBreachOfTenancyTextarea()).isEqualTo(expectedShowBreachOfTenancyTextarea);
     }
 
     private static Stream<Arguments> midEventScenarios() {

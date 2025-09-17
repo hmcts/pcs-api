@@ -4,11 +4,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
-import uk.gov.hmcts.ccd.sdk.api.Event;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
-import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.SecureOrFlexibleDiscretionaryGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.SecureOrFlexibleDiscretionaryGroundsAlternativeAccomm;
@@ -26,11 +23,9 @@ import static uk.gov.hmcts.reform.pcs.ccd.domain.SecureOrFlexibleDiscretionaryGr
 
 public class SecureOrFlexibleGroundsForPossessionTest extends BasePageTest {
 
-    private Event<PCSCase, UserRole, State> event;
-
     @BeforeEach
     void setUp() {
-        event = buildPageInTestEvent(new SecureOrFlexibleGroundsForPossession());
+        setPageUnderTest(new SecureOrFlexibleGroundsForPossession());
     }
 
     @ParameterizedTest
@@ -51,13 +46,8 @@ public class SecureOrFlexibleGroundsForPossessionTest extends BasePageTest {
                 .secureOrFlexibleMandatoryGroundsAlt(mandatoryGroundsAlt)
                 .build();
 
-        CaseDetails<PCSCase, State> caseDetails = new CaseDetails<>();
-        caseDetails.setData(caseData);
-
         // When
-        AboutToStartOrSubmitResponse<PCSCase, State> response =
-                getMidEventForPage(event, "secureOrFlexibleGroundsForPossession")
-                        .handle(caseDetails, null);
+        AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
 
         PCSCase updatedCaseData = response.getData();
 

@@ -39,6 +39,7 @@ export class ActionRegistry {
     ['selectPreActionProtocol', new CreateCaseAction()],
     ['selectMediationAndSettlement', new CreateCaseAction()],
     ['selectNoticeOfYourIntention', new CreateCaseAction()],
+    ['selectNoticeDetails', new CreateCaseAction()],
     ['selectCountryRadioButton', new CreateCaseAction()],
     ['selectYourPossessionGrounds', new CreateCaseAction()],
     ['selectOtherGrounds', new CreateCaseAction()],
