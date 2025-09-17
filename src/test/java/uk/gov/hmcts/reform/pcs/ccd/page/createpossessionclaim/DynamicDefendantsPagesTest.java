@@ -7,6 +7,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
 import uk.gov.hmcts.ccd.sdk.api.Event;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
@@ -43,13 +44,17 @@ class DynamicDefendantsPagesTest extends BasePageTest {
     @Test
     void shouldCreateAllDefendantPages() {
         // Given & When
-        // The event is built in setUp() by calling addTo() on the page builder
+        // The DynamicDefendantsPages is created in setUp()
 
         // Then
-        // Verify that the event was built successfully
-        assertThat(event).isNotNull();
-        assertThat(event.getFields()).isNotNull();
-        // The pages are created but don't have mid-events, so we just verify the event was built successfully
+        // Verify that the page configuration was created successfully
+        assertThat(dynamicDefendantsPages).isNotNull();
+        // Test that the table generation works for all defendant counts
+        for (int i = 1; i <= 25; i++) {
+            String table = dynamicDefendantsPages.buildDefendantsSummaryTable(i);
+            assertThat(table).isNotNull();
+            assertThat(table).isNotEmpty();
+        }
     }
 
     @Test
@@ -117,8 +122,13 @@ class DynamicDefendantsPagesTest extends BasePageTest {
             .defendant1(defendant)
             .build();
 
-        // When
-        AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
+        CaseDetails<PCSCase, State> caseDetails = CaseDetails.<PCSCase, State>builder()
+            .data(caseData)
+            .build();
+
+        // When - Test the mid-event directly
+        AboutToStartOrSubmitResponse<PCSCase, State> response = dynamicDefendantsPages
+            .midEventForDefendant(caseDetails, null, 1);
 
         // Then
         assertThat(response).isNotNull();
@@ -156,8 +166,13 @@ class DynamicDefendantsPagesTest extends BasePageTest {
             .defendant1(defendant)
             .build();
 
+        CaseDetails<PCSCase, State> caseDetails = CaseDetails.<PCSCase, State>builder()
+            .data(caseData)
+            .build();
+
         // When
-        AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
+        AboutToStartOrSubmitResponse<PCSCase, State> response = dynamicDefendantsPages
+            .midEventForDefendant(caseDetails, null, 1);
 
         // Then
         assertThat(response).isNotNull();
@@ -189,8 +204,13 @@ class DynamicDefendantsPagesTest extends BasePageTest {
             .defendant1(defendant)
             .build();
 
+        CaseDetails<PCSCase, State> caseDetails = CaseDetails.<PCSCase, State>builder()
+            .data(caseData)
+            .build();
+
         // When
-        AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
+        AboutToStartOrSubmitResponse<PCSCase, State> response = dynamicDefendantsPages
+            .midEventForDefendant(caseDetails, null, 1);
 
         // Then
         assertThat(response).isNotNull();
@@ -208,8 +228,13 @@ class DynamicDefendantsPagesTest extends BasePageTest {
             .defendant1(null) // null defendant
             .build();
 
+        CaseDetails<PCSCase, State> caseDetails = CaseDetails.<PCSCase, State>builder()
+            .data(caseData)
+            .build();
+
         // When
-        AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
+        AboutToStartOrSubmitResponse<PCSCase, State> response = dynamicDefendantsPages
+            .midEventForDefendant(caseDetails, null, 1);
 
         // Then
         assertThat(response).isNotNull();
@@ -235,8 +260,13 @@ class DynamicDefendantsPagesTest extends BasePageTest {
         List<String> expectedValidationErrors = List.of("error 1", "error 2");
         when(addressValidator.validateAddressFields(correspondenceAddress)).thenReturn(expectedValidationErrors);
 
+        CaseDetails<PCSCase, State> caseDetails = CaseDetails.<PCSCase, State>builder()
+            .data(caseData)
+            .build();
+
         // When
-        AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
+        AboutToStartOrSubmitResponse<PCSCase, State> response = dynamicDefendantsPages
+            .midEventForDefendant(caseDetails, null, 1);
 
         // Then
         assertThat(response.getErrors()).isEqualTo(expectedValidationErrors);

@@ -249,7 +249,7 @@ public class DynamicDefendantsPages implements CcdPageConfiguration {
      * @param defendantIndex the defendant index being processed
      * @return response with updated case data
      */
-    private AboutToStartOrSubmitResponse<PCSCase, State> midEventForDefendant(
+    public AboutToStartOrSubmitResponse<PCSCase, State> midEventForDefendant(
             CaseDetails<PCSCase, State> details,
             CaseDetails<PCSCase, State> detailsBefore,
             int defendantIndex) {
