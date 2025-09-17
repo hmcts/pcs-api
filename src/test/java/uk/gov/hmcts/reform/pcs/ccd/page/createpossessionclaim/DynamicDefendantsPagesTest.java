@@ -8,10 +8,8 @@ import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
-import uk.gov.hmcts.ccd.sdk.api.Event;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
-import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
@@ -29,7 +27,6 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class DynamicDefendantsPagesTest extends BasePageTest {
 
-    private Event<PCSCase, UserRole, State> event;
     private DynamicDefendantsPages dynamicDefendantsPages;
 
     @Mock
@@ -282,14 +279,15 @@ class DynamicDefendantsPagesTest extends BasePageTest {
         String rowContent = tableRow.substring(tableRow.indexOf("<tbody"), tableRow.indexOf("</tbody>"));
         
         // Then
-        assertThat(rowContent).contains("Defendant 1");
-        assertThat(rowContent).contains("${defendant1.firstName}");
-        assertThat(rowContent).contains("${defendant1.lastName}");
-        assertThat(rowContent).contains("${defendant1.correspondenceAddress.AddressLine1}");
-        assertThat(rowContent).contains("${defendant1.correspondenceAddress.PostTown}");
-        assertThat(rowContent).contains("${defendant1.correspondenceAddress.PostCode}");
-        assertThat(rowContent).contains("${defendant1.email}");
-        assertThat(rowContent).contains("<br>"); // Address line breaks
+        assertThat(rowContent)
+            .contains("Defendant 1")
+            .contains("${defendant1.firstName}")
+            .contains("${defendant1.lastName}")
+            .contains("${defendant1.correspondenceAddress.AddressLine1}")
+            .contains("${defendant1.correspondenceAddress.PostTown}")
+            .contains("${defendant1.correspondenceAddress.PostCode}")
+            .contains("${defendant1.email}")
+            .contains("<br>"); // Address line breaks
     }
 
     @Test
@@ -298,19 +296,19 @@ class DynamicDefendantsPagesTest extends BasePageTest {
         String table = dynamicDefendantsPages.buildDefendantsSummaryTable(3);
 
         // Then
-        assertThat(table).contains("<table class=\"govuk-table\">");
-        assertThat(table).contains("<caption class=\"govuk-table__caption govuk-table__caption--m\">"
-            + "Defendants</caption>");
-        assertThat(table).contains("<thead class=\"govuk-table__head\">");
-        assertThat(table).contains("<tbody class=\"govuk-table__body\">");
-        assertThat(table).contains("</table>");
-        
-        // Verify column headers
-        assertThat(table).contains("<th scope=\"col\" class=\"govuk-table__header\">Defendant</th>");
-        assertThat(table).contains("<th scope=\"col\" class=\"govuk-table__header\">Defendant name</th>");
-        assertThat(table).contains("<th scope=\"col\" class=\"govuk-table__header\">"
-            + "Defendant correspondence address</th>");
-        assertThat(table).contains("<th scope=\"col\" class=\"govuk-table__header\">Defendant email address</th>");
+        assertThat(table)
+            .contains("<table class=\"govuk-table\">")
+            .contains("<caption class=\"govuk-table__caption govuk-table__caption--m\">"
+                + "Defendants</caption>")
+            .contains("<thead class=\"govuk-table__head\">")
+            .contains("<tbody class=\"govuk-table__body\">")
+            .contains("</table>")
+            // Verify column headers
+            .contains("<th scope=\"col\" class=\"govuk-table__header\">Defendant</th>")
+            .contains("<th scope=\"col\" class=\"govuk-table__header\">Defendant name</th>")
+            .contains("<th scope=\"col\" class=\"govuk-table__header\">"
+                + "Defendant correspondence address</th>")
+            .contains("<th scope=\"col\" class=\"govuk-table__header\">Defendant email address</th>");
     }
 
     @Test
@@ -352,6 +350,7 @@ class DynamicDefendantsPagesTest extends BasePageTest {
                 case 23 -> caseData.setDefendant23(defendant);
                 case 24 -> caseData.setDefendant24(defendant);
                 case 25 -> caseData.setDefendant25(defendant);
+                default -> throw new IllegalArgumentException("Invalid defendant index: " + i);
             }
 
             // When

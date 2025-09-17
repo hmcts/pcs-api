@@ -26,6 +26,11 @@ public class DynamicDefendantsPages implements CcdPageConfiguration {
      * Maximum number of defendants that can be added to a case.
      */
     private static final int MAX_NUMBER_OF_DEFENDANTS = 25;
+    
+    /**
+     * Template prefix for defendant field references in CCD expressions.
+     */
+    private static final String DEFENDANT_FIELD_PREFIX = "${defendant";
 
     private final AddressValidator addressValidator;
 
@@ -152,14 +157,19 @@ public class DynamicDefendantsPages implements CcdPageConfiguration {
         return new StringBuilder()
                 .append("<tr class=\"govuk-table__row\">")
                 .append("<td class=\"govuk-table__cell\">Defendant ").append(defendantNumber).append("</td>")
-                .append("<td class=\"govuk-table__cell\">${defendant").append(defendantNumber)
-                    .append(".firstName} ${defendant").append(defendantNumber).append(".lastName}</td>")
+                .append("<td class=\"govuk-table__cell\">").append(DEFENDANT_FIELD_PREFIX)
+                    .append(defendantNumber).append(".firstName} ").append(DEFENDANT_FIELD_PREFIX)
+                    .append(defendantNumber).append(".lastName}</td>")
                 .append("<td class=\"govuk-table__cell\">")
-                .append("${defendant").append(defendantNumber).append(".correspondenceAddress.AddressLine1}<br>")
-                .append("${defendant").append(defendantNumber).append(".correspondenceAddress.PostTown}<br>")
-                .append("${defendant").append(defendantNumber).append(".correspondenceAddress.PostCode}")
+                .append(DEFENDANT_FIELD_PREFIX).append(defendantNumber)
+                    .append(".correspondenceAddress.AddressLine1}<br>")
+                .append(DEFENDANT_FIELD_PREFIX).append(defendantNumber)
+                    .append(".correspondenceAddress.PostTown}<br>")
+                .append(DEFENDANT_FIELD_PREFIX).append(defendantNumber)
+                    .append(".correspondenceAddress.PostCode}")
                 .append("</td>")
-                .append("<td class=\"govuk-table__cell\">${defendant").append(defendantNumber).append(".email}</td>")
+                .append("<td class=\"govuk-table__cell\">").append(DEFENDANT_FIELD_PREFIX)
+                    .append(defendantNumber).append(".email}</td>")
                 .append("</tr>")
                 .toString();
     }
