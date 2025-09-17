@@ -393,112 +393,6 @@ public class PCSCase {
     @CCD(access = {CitizenAccess.class, CaseworkerAccess.class})
     private DefendantDetails defendant25;
 
-    @CCD(access = {CitizenAccess.class, CaseworkerAccess.class})
-    private List<ListValue<DefendantDetails>> defendants;
-    
-    // Notice Details fields
-    @CCD(
-        label = "How did you serve the notice?",
-        access = {CitizenAccess.class, CaseworkerAccess.class}
-    )
-    private NoticeServiceMethod noticeServiceMethod;
-
-    // Date fields for different service methods
-    @CCD(
-        label = "Date the document was posted",
-        hint = "For example, 16 4 2021",
-        access = {CitizenAccess.class, CaseworkerAccess.class}
-    )
-    private LocalDate noticePostedDate;
-
-    @CCD(
-        label = "Date the document was delivered",
-        hint = "For example, 16 4 2021",
-        access = {CitizenAccess.class, CaseworkerAccess.class}
-    )
-    private LocalDate noticeDeliveredDate;
-
-    @CCD(
-        label = "Date and time the document was handed over",
-        hint = "For example, 16 4 2021, 11 15",
-        access = {CitizenAccess.class, CaseworkerAccess.class}
-    )
-    private LocalDateTime noticeHandedOverDateTime;
-
-    @CCD(
-        label = "Date and time the document was handed over",
-        hint = "For example, 16 4 2021, 11 15",
-        access = {CitizenAccess.class, CaseworkerAccess.class}
-    )
-    private LocalDateTime noticeEmailSentDateTime;
-
-    @CCD(
-        label = "Date and time email or message sent",
-        hint = "For example, 16 4 2021, 11 15",
-        access = {CitizenAccess.class, CaseworkerAccess.class}
-    )
-    private LocalDateTime noticeOtherElectronicDateTime;
-
-    @CCD(
-        label = "Date and time the document was handed over",
-        hint = "For example, 16 4 2021, 11 15",
-        access = {CitizenAccess.class, CaseworkerAccess.class}
-    )
-    private LocalDateTime noticeOtherDateTime;
-
-    // Text fields for different service methods
-    @CCD(
-        label = "Name of person the document was left with",
-        access = {CitizenAccess.class, CaseworkerAccess.class}
-    )
-    private String noticePersonName;
-
-    @CCD(
-        label = "Explain how it was served by email",
-        access = {CitizenAccess.class, CaseworkerAccess.class},
-        max = 250,
-        typeOverride = TextArea
-    )
-    private String noticeEmailExplanation;
-
-    @CCD(
-        label = "Explain what the other means were",
-        access = {CitizenAccess.class, CaseworkerAccess.class},
-        max = 250,
-        typeOverride = TextArea
-    )
-    private String noticeOtherExplanation;
-
-    @CCD(
-        label = "What type of tenancy or licence is in place?",
-        access = {CaseworkerAccess.class}
-    )
-    private TenancyLicenceType typeOfTenancyLicence;
-
-    @CCD(
-        label = "Give details of the type of tenancy or licence agreement that's in place",
-        typeOverride = TextArea,
-        access = {CaseworkerAccess.class}
-    )
-    private String detailsOfOtherTypeOfTenancyLicence;
-
-    @CCD(
-        label = "What date did the tenancy or licence begin?",
-        hint = "For example, 16 4 2021",
-        access = {CaseworkerAccess.class}
-    )
-    private LocalDate tenancyLicenceDate;
-
-    @CCD(
-        label = "Add document",hint = "Upload a document to the system",
-        access = {CitizenAccess.class, CaseworkerAccess.class}
-    )
-    private List<ListValue<Document>> tenancyLicenceDocuments;
-
-    @CCD(searchable = false)
-    private String nextStepsMarkdown;
-
-
     @CCD(
         label = "Do you need to add another defendant?",
         access = {CitizenAccess.class, CaseworkerAccess.class}
@@ -648,5 +542,116 @@ public class PCSCase {
         access = {CitizenAccess.class, CaseworkerAccess.class}
     )
     private VerticalYesNo addAnotherDefendant25;
+
+    @CCD(access = {CitizenAccess.class, CaseworkerAccess.class})
+    private List<ListValue<DefendantDetails>> defendants;
+    
+    // Notice Details fields
+    @CCD(
+        label = "How did you serve the notice?",
+        access = {CitizenAccess.class, CaseworkerAccess.class}
+    )
+    private NoticeServiceMethod noticeServiceMethod;
+
+    // Date fields for different service methods
+    @CCD(
+        label = "Date the document was posted",
+        hint = "For example, 16 4 2021",
+        access = {CitizenAccess.class, CaseworkerAccess.class}
+    )
+    private LocalDate noticePostedDate;
+
+    @CCD(
+        label = "Date the document was delivered",
+        hint = "For example, 16 4 2021",
+        access = {CitizenAccess.class, CaseworkerAccess.class}
+    )
+    private LocalDate noticeDeliveredDate;
+
+    @CCD(
+        label = "Date and time the document was handed over",
+        hint = "For example, 16 4 2021, 11 15",
+        access = {CitizenAccess.class, CaseworkerAccess.class}
+    )
+    private LocalDateTime noticeHandedOverDateTime;
+
+    @CCD(
+        label = "Date and time the document was handed over",
+        hint = "For example, 16 4 2021, 11 15",
+        access = {CitizenAccess.class, CaseworkerAccess.class}
+    )
+    private LocalDateTime noticeEmailSentDateTime;
+
+    @CCD(
+        label = "Date and time email or message sent",
+        hint = "For example, 16 4 2021, 11 15",
+        access = {CitizenAccess.class, CaseworkerAccess.class}
+    )
+    private LocalDateTime noticeOtherElectronicDateTime;
+
+    @CCD(
+        label = "Date and time the document was handed over",
+        hint = "For example, 16 4 2021, 11 15",
+        access = {CitizenAccess.class, CaseworkerAccess.class}
+    )
+    private LocalDateTime noticeOtherDateTime;
+
+    // Text fields for different service methods
+    @CCD(
+        label = "Name of person the document was left with",
+        access = {CitizenAccess.class, CaseworkerAccess.class}
+    )
+    private String noticePersonName;
+
+    @CCD(
+        label = "Explain how it was served by email",
+        access = {CitizenAccess.class, CaseworkerAccess.class},
+        max = 250,
+        typeOverride = TextArea
+    )
+    private String noticeEmailExplanation;
+
+    @CCD(
+        label = "Explain what the other means were",
+        access = {CitizenAccess.class, CaseworkerAccess.class},
+        max = 250,
+        typeOverride = TextArea
+    )
+    private String noticeOtherExplanation;
+
+    @CCD(
+        label = "What type of tenancy or licence is in place?",
+        access = {CaseworkerAccess.class}
+    )
+    private TenancyLicenceType typeOfTenancyLicence;
+
+    @CCD(
+        label = "Give details of the type of tenancy or licence agreement that's in place",
+        typeOverride = TextArea,
+        access = {CaseworkerAccess.class}
+    )
+    private String detailsOfOtherTypeOfTenancyLicence;
+
+    @CCD(
+        label = "What date did the tenancy or licence begin?",
+        hint = "For example, 16 4 2021",
+        access = {CaseworkerAccess.class}
+    )
+    private LocalDate tenancyLicenceDate;
+
+    @CCD(
+        label = "Add document",hint = "Upload a document to the system",
+        access = {CitizenAccess.class, CaseworkerAccess.class}
+    )
+    private List<ListValue<Document>> tenancyLicenceDocuments;
+
+    @CCD(searchable = false)
+    private String nextStepsMarkdown;
+
+    @CCD(
+        label = "Do you want the court to make a judgment for the outstanding arrears?",
+        access = {CitizenAccess.class, CaseworkerAccess.class}
+    )
+    private YesOrNo arrearsJudgmentWanted;
 
 }

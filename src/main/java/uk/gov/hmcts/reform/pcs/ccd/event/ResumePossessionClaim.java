@@ -43,6 +43,8 @@ import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.GroundForPossessio
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.SelectClaimType;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.SelectClaimantType;
 import uk.gov.hmcts.reform.pcs.ccd.service.AddressValidator;
+import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.MoneyJudgment;
+import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.ClaimantCircumstances;
 import uk.gov.hmcts.reform.pcs.ccd.service.ClaimService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
@@ -113,7 +115,9 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             .add(noticeDetails)
             .add(new RentDetails())
             .add(new DailyRentAmount())
-            .add(new RentArrears());
+            .add(new RentArrears())
+            .add(new MoneyJudgment())
+            .add(new ClaimantCircumstances());
     }
 
     private PCSCase start(EventPayload<PCSCase, State> eventPayload) {
