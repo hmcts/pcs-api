@@ -297,9 +297,11 @@ ext {
   springSecurityVersion = "6.5.4"
   pactVersion = "4.6.17"
   tomcatEmbedVersion = "11.0.11"
+  nettyVersion = "4.1.127.Final"
 }
 
 ext['snakeyaml.version'] = '2.0'
+ext['netty.version'] = nettyVersion
 
 dependencies {
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-web', version: springFrameworkBootVersion
@@ -454,7 +456,6 @@ tasks.withType(CftlibExec).configureEach {
 }
 
 tasks.register('highLevelDataSetup', JavaExec) {
-  onlyIf { System.getenv("ENVIRONMENT") != "prod" } // Skipping to stop CCD config upload on prod
   mainClass.set("uk.gov.hmcts.reform.pcs.ccd.config.HighLevelDataSetupApp")
   classpath += sourceSets.main.runtimeClasspath
   jvmArgs = ['--add-opens=java.base/java.lang.reflect=ALL-UNNAMED']
