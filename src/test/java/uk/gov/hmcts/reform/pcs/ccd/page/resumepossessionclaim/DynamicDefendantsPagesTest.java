@@ -221,8 +221,12 @@ class DynamicDefendantsPagesTest extends BasePageTest {
     @Test
     void shouldHandleMidEventForDefendantWithNullDefendant() {
         // Given
-        PCSCase caseData = PCSCase.builder()
+        Defendants defendants = Defendants.builder()
             .defendant1(null) // null defendant
+            .build();
+
+        PCSCase caseData = PCSCase.builder()
+            .defendants(defendants)
             .build();
 
         CaseDetails<PCSCase, State> caseDetails = CaseDetails.<PCSCase, State>builder()
@@ -236,7 +240,7 @@ class DynamicDefendantsPagesTest extends BasePageTest {
         // Then
         assertThat(response).isNotNull();
         assertThat(response.getData()).isNotNull();
-        assertThat(response.getData().getDefendant1()).isNull();
+        assertThat(response.getData().getDefendants().getDefendant1()).isNull();
     }
 
     @Test
@@ -250,8 +254,12 @@ class DynamicDefendantsPagesTest extends BasePageTest {
             .correspondenceAddress(correspondenceAddress)
             .build();
 
-        PCSCase caseData = PCSCase.builder()
+        Defendants defendants = Defendants.builder()
             .defendant1(defendantsDetails)
+            .build();
+
+        PCSCase caseData = PCSCase.builder()
+            .defendants(defendants)
             .build();
 
         List<String> expectedValidationErrors = List.of("error 1", "error 2");
@@ -391,9 +399,13 @@ class DynamicDefendantsPagesTest extends BasePageTest {
             .lastName("Defendant")
             .build();
 
-        PCSCase caseData = PCSCase.builder()
+        Defendants defendants = Defendants.builder()
             .defendant1(defendant1)
             .defendant25(defendant25)
+            .build();
+
+        PCSCase caseData = PCSCase.builder()
+            .defendants(defendants)
             .build();
 
         DefendantDetails result1 = dynamicDefendantsPages.getDefendantByIndex(caseData, 1);
