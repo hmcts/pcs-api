@@ -41,7 +41,8 @@ public class CftlibConfig implements CFTLibConfigurer {
         var users = Map.of(
             "caseworker@pcs.com", List.of("caseworker", "caseworker-pcs"),
             "citizen@pcs.com", List.of("citizen"),
-            "data.store.idam.system.user@gmail.com", List.of()
+            "data.store.idam.system.user@gmail.com", List.of(),
+            "ccd.import@pcs.com", List.of("ccd-import")
         );
 
         // Create users and roles including in idam simulator
