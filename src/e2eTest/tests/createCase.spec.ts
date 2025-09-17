@@ -1,3 +1,4 @@
+import { test } from '@playwright/test';
 import { parentSuite } from 'allure-js-commons';
 import { initializeExecutor, performAction, performValidation, performValidations } from '@utils/controller';
 import { addressDetails } from '@data/page-data/addressDetails.page.data';
@@ -21,7 +22,8 @@ import { provideMoreDetailsOfClaim } from '@data/page-data/provideMoreDetailsOfC
 import { resumeClaim } from '@data/page-data/resumeClaim.page.data';
 import { resumeClaimOptions } from '@data/page-data/resumeClaimOptions.page.data';
 import { detailsOfRentArrears } from '@data/page-data/detailsOfRentArrears.page.data';
-import test from '@playwright/test';
+import { claimantsName } from '@utils/actions/custom-actions/createCase.action';
+import { claimantCircumstance } from '@data/page-data/claimantCircumstances.page.data';
 
 test.beforeEach(async ({ page }, testInfo) => {
   initializeExecutor(page);
@@ -98,6 +100,8 @@ test.describe('[Create Case Flow With Address and Claimant Type] @Master @nightl
       unpaidRentInteractiveOption: dailyRentAmount.no,
       unpaidRentAmountPerDay: '20'
     });
+    await performValidation('mainHeader', `"${claimantsName}'s ${claimantCircumstance.mainHeader}"`);
+    await performAction('selectClaimantCircumstances', claimantCircumstance.yes);
     await performAction('clickButton', 'Save and continue');
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
     await performAction('clickTab', 'Property Details');

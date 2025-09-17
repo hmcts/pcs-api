@@ -66,8 +66,8 @@ Playwright 1.30+ | TypeScript 4.9+
 ## 4. Available Actions and Validations
 
 ### Actions
-| Action                            | Example Usage                                                                                                                                                                                              |
-|-----------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Action          | Example Usage |
+|------------------|---------------|
 | inputText                         | `performAction('inputText', 'Email', 'test@example.com')`                                                                                                                                                  |
 | check                             | `performAction('check', 'RememberMe')`                                                                                                                                                                     |
 | navigateToUrl                     | `performAction('navigateToUrl', 'testUrl')`                                                                                                                                                                |
@@ -76,7 +76,6 @@ Playwright 1.30+ | TypeScript 4.9+
 | createCase                        | `performAction('createCase', 'data: caseData')`                                                                                                                                                            |
 | clickButton                       | `performAction('clickButton', 'buttonName)`                                                                                                                                                                |
 | clickRadioButton                  | `performAction('clickRadioButton', 'radioButtonName')`                                                                                                                                                     |
-| selectLegislativeCountry          | `performAction('selectLegislativeCountry', {country: data.country})`                                                                                                                                       |
 | selectClaimantType                | `performAction('selectClaimantType', {claimantType : pathToDataFile.claimantTypeOption})`                                                                                                                  |
 | selectAddress                     | `performAction('selectAddress',{postcode: pathToDataFile.englandPostcode,addressIndex: pathToDataFile.addressIndex} )`                                                                                     |
 | createUserAndLogin                | `performAction('createUserAndLogin', ['caseworker-pcs', 'caseworker'])`                                                                                                                                    |
@@ -100,9 +99,12 @@ Playwright 1.30+ | TypeScript 4.9+
 | selectOtherGrounds                | `performAction('selectOtherGrounds', {mandatory: [‘holidayLet’, ‘ownerOccupier’], discretionary :[‘domesticViolence’,’rentArrears’]})`                                                                     |
 | reloginAndFindTheCase             | `performAction('reloginAndFindTheCase')`                                                                                                                                                                   |
 | selectDailyRentAmount             | `performAction('selectDailyRentAmount', { calculateRentAmount: '£114.29',unpaidRentInteractiveOption: dailyRentAmount.no,unpaidRentAmountPerDay:'20'})`                                                    |
+| extractCaseIdFromAlert | `performAction('extractCaseIdFromAlert', ...)` |
+| selectResumeClaimOption | `performAction('selectResumeClaimOption', ...)` |
+| selectClaimantCircumstances | `performAction('selectClaimantCircumstances', ...)` |
 ### Validations
-| Validation        | Example Usage                                                                                                                        |
-|-------------------|--------------------------------------------------------------------------------------------------------------------------------------|
+| Validation          | Example Usage |
+|------------------|---------------|
 | text              | `performValidation('text', 'testElement')`                                                                                           |
 | visibility        | `performValidation('visibility', 'testElement')`                                                                                     |
 | bannerAlert       | `performValidation('bannerAlert', {message: "Case has been created."})`                                                              |

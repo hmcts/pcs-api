@@ -36,7 +36,6 @@ export class CreateCaseAction implements IAction {
       ['enterTestAddressManually', () => this.enterTestAddressManually()],
       ['selectClaimType', () => this.selectClaimType(fieldName)],
       ['selectClaimantName', () => this.selectClaimantName(page, fieldName)],
-      ['extractClaimantName', () => this.extractClaimantName(page, fieldName)],
       ['selectContactPreferences', () => this.selectContactPreferences(fieldName)],
       ['selectRentArrearsPossessionGround', () => this.selectRentArrearsPossessionGround(fieldName)],
       ['selectGroundsForPossession', () => this.selectGroundsForPossession(fieldName)],
@@ -100,9 +99,11 @@ export class CreateCaseAction implements IAction {
     await performAction('clickButton', 'Continue');
   }
 
-  private async extractClaimantName(page: Page, caseData: actionData): Promise<void> {
-    claimantsName = caseData == "No" ? claimantName.correctClaimantNameInput : await page.locator('span.text-16').innerText();
-    console.log(claimantsName);
+  private async extractClaimantName(page: Page, caseData: string): Promise<string> {
+    const loc = page.locator(`dl.case-field > dt.case-field__label:has-text("${caseData}")`)
+      .locator('xpath=../..')
+      .locator('span.text-16');
+    return await loc.innerText();
   }
 
   private async selectGroundsForPossession(caseData: actionData) {
@@ -130,7 +131,7 @@ export class CreateCaseAction implements IAction {
     if (caseData == claimantName.no) {
       await performAction('inputText', claimantName.whatIsCorrectClaimantName, claimantName.correctClaimantNameInput);
     }
-    claimantsName = caseData == "No" ? claimantName.correctClaimantNameInput : await page.locator('span.text-16').filter({ visible: true }).innerText();
+    claimantsName = caseData == "No" ? claimantName.correctClaimantNameInput : await this.extractClaimantName(page, claimantName.yourClaimantNameRegisteredWithHMCTS);
     await performAction('clickButton', 'Continue');
   }
 
