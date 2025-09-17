@@ -14,7 +14,7 @@ public class CaseworkerAccess implements HasAccessControl {
     @Override
     public SetMultimap<HasRole, Permission> getGrants() {
         SetMultimap<HasRole, Permission> grants = HashMultimap.create();
-//        grants.putAll(PCS_CASE_WORKER, Permission.CRU);
+        grants.putAll(PCS_CASE_WORKER, Permission.CRU);
         return grants;
     }
 
