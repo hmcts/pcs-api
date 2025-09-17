@@ -266,7 +266,7 @@ sonarqube {
       "**/uk/gov/hmcts/reform/pcs/ccd/testingsupport/**/*.java," +
       "**/uk/gov/hmcts/reform/pcs/document/**/*.java," +
       "**/uk/gov/hmcts/reform/pcs/testingsupport/**/*.java," +
-      "**/uk/gov/hmcts/reform/pcs/caseType/**/*.java," +
+      "**/uk/gov/hmcts/reform/pcs/ccd/CaseType.java," +
       "**/entities/**," + "**/model/**"
   }
 }
