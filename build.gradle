@@ -454,7 +454,6 @@ tasks.withType(CftlibExec).configureEach {
 }
 
 tasks.register('highLevelDataSetup', JavaExec) {
-  onlyIf { System.getenv("ENVIRONMENT") != "prod" } // Skipping to stop CCD config upload on prod
   mainClass.set("uk.gov.hmcts.reform.pcs.ccd.config.HighLevelDataSetupApp")
   classpath += sourceSets.main.runtimeClasspath
   jvmArgs = ['--add-opens=java.base/java.lang.reflect=ALL-UNNAMED']
