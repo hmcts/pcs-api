@@ -12,6 +12,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimRepository;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -32,7 +33,7 @@ class ClaimServiceTest {
         String claimName = "Main Claim";
 
         ClaimEntity claim = claimService.createAndLinkClaim(caseEntity, partyEntity,
-                                                            claimName, PartyRole.CLAIMANT);
+                                                            claimName, PartyRole.CLAIMANT, anyString());
 
         assertThat(claim).isNotNull();
         assertThat(claim.getSummary()).isEqualTo(claimName);
@@ -58,12 +59,11 @@ class ClaimServiceTest {
     void shouldCreateClaimWithClaimantCircumstances() {
         String claimantCircumstances = "Some circumstances";
         PcsCaseEntity caseEntity = new PcsCaseEntity();
-        caseEntity.setClaimantCircumstances(claimantCircumstances);
         PartyEntity partyEntity = new PartyEntity();
         String claimName = "Main Claim";
 
         ClaimEntity claim = claimService.createAndLinkClaim(caseEntity, partyEntity,
-                                                            claimName, PartyRole.CLAIMANT);
+                                                            claimName, PartyRole.CLAIMANT, claimantCircumstances);
 
         assertThat(claim).isNotNull();
         assertThat(claim.getSummary()).isEqualTo(claimName);

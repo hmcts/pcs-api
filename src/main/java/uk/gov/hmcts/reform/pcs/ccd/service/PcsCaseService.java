@@ -95,8 +95,6 @@ public class PcsCaseService {
 
         pcsCaseEntity.setTenancyLicence(tenancyLicenceService.buildTenancyLicence(pcsCase));
 
-        pcsCaseEntity.setClaimantCircumstances(pcsCase.getClaimantCircumstancesDetails());
-
         pcsCaseRepository.save(pcsCaseEntity);
 
         return pcsCaseEntity;
