@@ -261,7 +261,10 @@ sonarqube {
       "**/uk/gov/hmcts/reform/pcs/ccd/config/HighLevelDataSetupApp.java," +
       "**/uk/gov/hmcts/reform/pcs/ccd/domain/**/*.java," +
       "**/uk/gov/hmcts/reform/pcs/ccd/entity/**/*.java" +
+      "**/uk/gov/hmcts/reform/pcs/ccd/document/**/*.java" +
+      "**/uk/gov/hmcts/reform/pcs/ccd/testingsupport/**/*.java" +
       "**/entities/**," + "**/model/**"
+    property "sonar.coverage.jacoco.xmlReportPaths", "$buildDir/reports/jacoco/jacocoTestReport/jacocoTestReport.xml"
   }
 }
 
@@ -452,6 +455,7 @@ tasks.withType(CftlibExec).configureEach {
   environment 'SPRING_PROFILES_ACTIVE', 'dev'
   environment 'XUI_JURISDICTIONS', 'PCS'
   environment 'XUI_DOCUMENTS_API_V2', 'http://ccd-case-document-am-api-aat.service.core-compute-aat.internal'
+//  environment 'IDAM_S2S_URL', 'http://rpe-service-auth-provider-aat.service.core-compute-aat.internal'
 }
 
 tasks.register('highLevelDataSetup', JavaExec) {

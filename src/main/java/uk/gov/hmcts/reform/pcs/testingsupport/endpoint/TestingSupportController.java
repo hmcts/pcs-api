@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import uk.gov.hmcts.reform.docassembly.domain.DocAssemblyRequest;
+import uk.gov.hmcts.reform.pcs.document.model.GenerateDocumentParams;
 import uk.gov.hmcts.reform.pcs.document.service.DocAssemblyService;
 import uk.gov.hmcts.reform.pcs.document.service.exception.DocAssemblyException;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.EligibilityResult;
@@ -137,13 +137,15 @@ public class TestingSupportController {
             description = "Document generation request containing template ID and form data",
             required = true
         )
-        @RequestBody DocAssemblyRequest request
+        @RequestBody GenerateDocumentParams request
     ) {
+
         try {
             if (request == null || request.getFormPayload() == null) {
                 return ResponseEntity.internalServerError().body("Doc Assembly service returned invalid document URL");
             }
             String documentUrl = docAssemblyService.generateDocument(request);
+            //            String documentUrl = "google.com";
             return ResponseEntity.created(URI.create(documentUrl)).body(documentUrl);
 
         } catch (DocAssemblyException e) {

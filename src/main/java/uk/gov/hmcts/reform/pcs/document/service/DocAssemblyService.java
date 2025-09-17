@@ -29,7 +29,7 @@ public class DocAssemblyService {
         this.authTokenGenerator = authTokenGenerator;
     }
 
-    public String generateDocument(DocAssemblyRequest request) {
+    public String generateDocument(GenerateDocumentParams request) {
         try {
             if (request == null) {
                 throw new IllegalArgumentException("Request cannot be null");
@@ -48,6 +48,7 @@ public class DocAssemblyService {
 
             // docAssemblyRequest with meta
             DocAssemblyRequest assemblyRequest = DocAssemblyRequest.builder()
+
                 .templateId(params.getTemplateId())
                 .outputType(params.getOutputType())
                 .formPayload(params.getFormPayload())

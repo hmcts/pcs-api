@@ -126,7 +126,7 @@ db-scheduler:
   polling-interval-seconds: 10
   threads: 10
 
-doc-assembly:
+doc_assembly:
   url: ${DOC_ASSEMBLY_URL:http://localhost:8080}
   templates:
     default: CV-SPC-CLM-ENG-01356.docx
