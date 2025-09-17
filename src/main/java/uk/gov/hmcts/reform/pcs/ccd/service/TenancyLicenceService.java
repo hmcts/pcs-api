@@ -36,6 +36,7 @@ public class TenancyLicenceService {
                 .noticeOtherElectronicDateTime(pcsCase.getNoticeOtherElectronicDateTime())
                 .noticeOtherDateTime(pcsCase.getNoticeOtherDateTime())
                 .noticeOtherExplanation(pcsCase.getNoticeOtherExplanation())
+                .arrearsJudgmentWanted(toBooleanOrNull(pcsCase.getArrearsJudgmentWanted()))
                 .build();
     }
 
