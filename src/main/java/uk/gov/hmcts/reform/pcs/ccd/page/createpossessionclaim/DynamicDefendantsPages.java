@@ -8,10 +8,14 @@ import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import de.cronn.reflection.util.TypedPropertyGetter;
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
+import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.service.AddressValidator;
+
+import java.util.List;
 
 @Component
 @Slf4j
@@ -22,6 +26,8 @@ public class DynamicDefendantsPages implements CcdPageConfiguration {
      * Maximum number of defendants that can be added to a case.
      */
     private static final int MAX_NUMBER_OF_DEFENDANTS = 25;
+
+    private final AddressValidator addressValidator;
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
@@ -50,7 +56,30 @@ public class DynamicDefendantsPages implements CcdPageConfiguration {
         }
         
         defendantPage.pageLabel("Defendant " + i + " Details")
-            .mandatory(getTempDefField(i));
+            .complex(getTempDefField(i))
+                .readonly(DefendantDetails::getNameSectionLabel)
+                .mandatory(DefendantDetails::getNameKnown)
+                .mandatory(DefendantDetails::getFirstName)
+                .mandatory(DefendantDetails::getLastName)
+
+                .readonly(DefendantDetails::getAddressSectionLabel)
+                .mandatory(DefendantDetails::getAddressKnown)
+                .mandatory(DefendantDetails::getAddressSameAsPossession)
+                .complex(DefendantDetails::getCorrespondenceAddress)
+                    .mandatory(AddressUK::getAddressLine1)
+                    .optional(AddressUK::getAddressLine2)
+                    .optional(AddressUK::getAddressLine3)
+                    .mandatory(AddressUK::getPostTown)
+                    .optional(AddressUK::getCounty)
+                    .optional(AddressUK::getCountry)
+                    .mandatoryWithLabel(AddressUK::getPostCode, "Postcode")
+                .done()
+                .mandatory(DefendantDetails::getCorrespondenceAddress)
+
+                .readonly(DefendantDetails::getEmailSectionLabel)
+                .mandatory(DefendantDetails::getEmailKnown)
+                .mandatory(DefendantDetails::getEmail)
+            .done();
     }
 
     /**
@@ -212,7 +241,7 @@ public class DynamicDefendantsPages implements CcdPageConfiguration {
 
     /**
      * Mid-event callback for defendant details pages.
-     * Handles setting correspondence address if it's the same as property address.
+     * Handles setting correspondence address if it's the same as property address and validates address fields.
      * 
      * @param details current case details
      * @param detailsBefore previous case details
@@ -226,8 +255,24 @@ public class DynamicDefendantsPages implements CcdPageConfiguration {
         PCSCase caseData = details.getData();
 
         DefendantDetails defendant = getDefendantByIndex(caseData, defendantIndex);
-        if (defendant != null && defendant.getAddressSameAsPossession() == VerticalYesNo.YES) {
-            defendant.setCorrespondenceAddress(caseData.getPropertyAddress());
+        if (defendant != null) {
+            // Set correspondence address if it's the same as property address
+            if (defendant.getAddressSameAsPossession() == VerticalYesNo.YES) {
+                defendant.setCorrespondenceAddress(caseData.getPropertyAddress());
+            }
+            
+            // Validate address fields if address is known and not same as possession
+            if (defendant.getAddressSameAsPossession() == VerticalYesNo.NO
+                && defendant.getAddressKnown() == VerticalYesNo.YES) {
+
+                AddressUK correspondenceAddress = defendant.getCorrespondenceAddress();
+                List<String> validationErrors = addressValidator.validateAddressFields(correspondenceAddress);
+                if (!validationErrors.isEmpty()) {
+                    return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
+                        .errors(validationErrors)
+                        .build();
+                }
+            }
         }
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()

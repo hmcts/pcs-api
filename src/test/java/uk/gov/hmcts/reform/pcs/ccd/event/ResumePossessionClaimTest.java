@@ -20,10 +20,10 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.page.builder.SavingPageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.page.builder.SavingPageBuilderFactory;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.ContactPreferences;
-import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.DefendantsDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.NoticeDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.ResumeClaim;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.TenancyLicenceDetails;
+import uk.gov.hmcts.reform.pcs.ccd.service.AddressValidator;
 import uk.gov.hmcts.reform.pcs.ccd.service.ClaimService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
@@ -69,7 +69,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
     @Mock
     private ContactPreferences contactPreferences;
     @Mock
-    private DefendantsDetails defendantsDetails;
+    private AddressValidator addressValidator;
     @Mock
     private NoticeDetails noticeDetails;
     @Mock
@@ -89,8 +89,8 @@ class ResumePossessionClaimTest extends BaseEventTest {
                                                                     partyService, claimService,
                                                                     savingPageBuilderFactory, resumeClaim,
                                                                     unsubmittedCaseDataService, noticeDetails,
-                                                                    tenancyLicenceDetails, contactPreferences,
-                                                                    defendantsDetails);
+                                                                    addressValidator, tenancyLicenceDetails, 
+                                                                    contactPreferences);
 
         setEventUnderTest(underTest);
     }
