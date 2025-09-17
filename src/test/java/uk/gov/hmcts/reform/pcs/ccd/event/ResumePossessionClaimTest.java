@@ -27,6 +27,7 @@ import uk.gov.hmcts.reform.pcs.ccd.page.builder.SavingPageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.page.builder.SavingPageBuilderFactory;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.ResumeClaim;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.TenancyLicenceDetails;
+import uk.gov.hmcts.reform.pcs.ccd.service.ClaimGroundService;
 import uk.gov.hmcts.reform.pcs.ccd.service.ClaimService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
@@ -48,6 +49,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.reform.pcs.ccd.entity.PartyRole.CLAIMANT;
 import static uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry.ENGLAND;
 import static uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry.SCOTLAND;
 import static uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry.WALES;
@@ -65,6 +67,8 @@ class ResumePossessionClaimTest extends BaseEventTest {
     private PartyService partyService;
     @Mock
     private ClaimService claimService;
+    @Mock
+    private ClaimGroundService claimGroundService;
     @Mock
     private SavingPageBuilderFactory savingPageBuilderFactory;
     @Mock
@@ -87,7 +91,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
         when(securityContextService.getCurrentUserDetails()).thenReturn(userDetails);
 
         ResumePossessionClaim underTest = new ResumePossessionClaim(pcsCaseService, securityContextService,
-                                                                    partyService, claimService,
+                                                                    partyService, claimService, claimGroundService,
                                                                     savingPageBuilderFactory, resumeClaim,
                                                                     unsubmittedCaseDataService, tenancyLicenceDetails);
 
@@ -201,6 +205,8 @@ class ResumePossessionClaimTest extends BaseEventTest {
             .build();
 
         when(userDetails.getUid()).thenReturn(UUID.randomUUID().toString());
+        when(claimService.createAndLinkClaim(any(), any(), eq("Main Claim"), eq(CLAIMANT)))
+                .thenReturn(ClaimEntity.builder().build());
 
         EventPayload<PCSCase, State> eventPayload = new EventPayload<>(CASE_REFERENCE, caseData, null);
 
@@ -239,6 +245,8 @@ class ResumePossessionClaimTest extends BaseEventTest {
 
         PcsCaseEntity pcsCaseEntity = mock(PcsCaseEntity.class);
         when(pcsCaseService.patchCase(eq(CASE_REFERENCE), any(PCSCase.class))).thenReturn(pcsCaseEntity);
+        when(claimService.createAndLinkClaim(any(), any(), eq("Main Claim"), eq(CLAIMANT)))
+                .thenReturn(ClaimEntity.builder().build());
 
         EventPayload<PCSCase, State> eventPayload = new EventPayload<>(CASE_REFERENCE, caseData, null);
 
@@ -283,8 +291,9 @@ class ResumePossessionClaimTest extends BaseEventTest {
 
         // Then
         verify(claimService)
-            .createAndLinkClaim(eq(pcsCaseEntity), any(), eq("Main Claim"), eq(PartyRole.CLAIMANT));
+            .createAndLinkClaim(eq(pcsCaseEntity), any(), eq("Main Claim"), eq(CLAIMANT));
 
+        verify(claimGroundService).getGroundsWithReason(caseData);
         verify(claimService).saveClaim(claimEntity);
     }
 

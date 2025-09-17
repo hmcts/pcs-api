@@ -43,7 +43,7 @@ public class IntroductoryDemotedOtherGroundsReasons implements CcdPageConfigurat
 
             .label("introductoryDemotedOtherGroundsReasons-otherGround-label","""
                 ---
-                <h2 class="govuk-heading-l">Other ground</h2>
+                <h2 class="govuk-heading-l">Other grounds</h2>
                 <h3 class="govuk-heading-m">Why are you making a claim for possession under this ground?</h3>
                 ""","introductoryDemotedOrOtherGroundsCONTAINS\"OTHER\"")
             .mandatory(IntroductoryDemotedOtherGroundReason::getOtherGround,

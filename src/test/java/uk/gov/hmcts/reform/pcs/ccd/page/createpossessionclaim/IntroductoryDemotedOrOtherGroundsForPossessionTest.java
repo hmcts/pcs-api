@@ -25,7 +25,6 @@ import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
 
 @ExtendWith(MockitoExtension.class)
 class IntroductoryDemotedOrOtherGroundsForPossessionTest extends BasePageTest {
-
     private Event<PCSCase, UserRole, State> event;
 
     private static Stream<Arguments> testGroundsOtherThanRentArrearsScenarios() {
@@ -42,6 +41,15 @@ class IntroductoryDemotedOrOtherGroundsForPossessionTest extends BasePageTest {
               Set.of(
                   IntroductoryDemotedOrOtherGrounds.RENT_ARREARS,
                   IntroductoryDemotedOrOtherGrounds.OTHER)));
+    }
+
+    private static Set<IntroductoryDemotedOrOtherGrounds> buildIntroductoryDemotedOrOtherGrounds() {
+        return Set.of(
+            IntroductoryDemotedOrOtherGrounds.RENT_ARREARS,
+            IntroductoryDemotedOrOtherGrounds.ABSOLUTE_GROUNDS,
+            IntroductoryDemotedOrOtherGrounds.ANTI_SOCIAL,
+            IntroductoryDemotedOrOtherGrounds.BREACH_OF_THE_TENANCY,
+            IntroductoryDemotedOrOtherGrounds.OTHER);
     }
 
     @BeforeEach
@@ -116,5 +124,48 @@ class IntroductoryDemotedOrOtherGroundsForPossessionTest extends BasePageTest {
         // Then
         assertThat(
             response.getData().getShowIntroductoryDemotedOtherGroundReasonPage()).isEqualTo(YesOrNo.YES);
+    }
+
+    @Test
+    void shouldShowGroundsOptionsWhenGroundsForPossessionIsYes() {
+        // Given
+        CaseDetails<PCSCase, State> caseDetails = new CaseDetails<>();
+
+        PCSCase caseData =
+            PCSCase.builder()
+                .hasIntroductoryDemotedOtherGroundsForPossession(VerticalYesNo.YES)
+                .introductoryDemotedOrOtherGrounds(
+                    IntroductoryDemotedOrOtherGroundsForPossessionTest
+                        .buildIntroductoryDemotedOrOtherGrounds())
+                .build();
+
+        caseDetails.setData(caseData);
+
+        // When
+        AboutToStartOrSubmitResponse<PCSCase, State> response =
+            getMidEventForPage(event, "introductoryDemotedOrOtherGroundsForPossession")
+                .handle(caseDetails, null);
+
+        // Then
+        assertThat(response.getData().getIntroductoryDemotedOrOtherGrounds()).isEmpty();
+    }
+
+    @Test
+    void shouldNotShowGroundsOptionsWhenGroundsForPossessionIsNo() {
+        // Given
+        CaseDetails<PCSCase, State> caseDetails = new CaseDetails<>();
+
+        PCSCase caseData =
+            PCSCase.builder().hasIntroductoryDemotedOtherGroundsForPossession(VerticalYesNo.NO).build();
+
+        caseDetails.setData(caseData);
+
+        // When
+        AboutToStartOrSubmitResponse<PCSCase, State> response =
+            getMidEventForPage(event, "introductoryDemotedOrOtherGroundsForPossession")
+                .handle(caseDetails, null);
+
+        // Then
+        assertThat(response.getData().getIntroductoryDemotedOrOtherGrounds()).isEmpty();
     }
 }
