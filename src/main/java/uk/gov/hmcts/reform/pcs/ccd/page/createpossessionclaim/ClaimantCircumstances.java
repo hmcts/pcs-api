@@ -6,12 +6,12 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 
 public class ClaimantCircumstances implements CcdPageConfiguration {
 
-    public static final String YOU_CAN_ENTER_UP_TO_950_CHARACTERS = "You can enter up to 950 characters";
-    public static final String SHOW_CONDITION = "claimantCircumstancesSelect=\"YES\"";
-    public static final String CLAIMANT_CIRCUMSTANCES_INFO = "claimantCircumstances-Info";
-    public static final String CLAIMANT_CIRCUMSTANCES = "claimantCircumstances";
-    public static final String CLAIMANT_CIRCUMSTANCES_LABEL = "Claimant circumstances";
-    public static final String GIVE_DETAILS_ABOUT_THE_CLAIMANT_NAME_CIRCUMSTANCES
+    private static final String YOU_CAN_ENTER_UP_TO_950_CHARACTERS = "You can enter up to 950 characters";
+    private static final String SHOW_CONDITION = "claimantCircumstancesSelect=\"YES\"";
+    private static final String CLAIMANT_CIRCUMSTANCES_INFO = "claimantCircumstances-Info";
+    private static final String CLAIMANT_CIRCUMSTANCES = "claimantCircumstances";
+    private static final String CLAIMANT_CIRCUMSTANCES_LABEL = "Claimant circumstances";
+    private static final String GIVE_DETAILS_ABOUT_THE_CLAIMANT_NAME_CIRCUMSTANCES
         = "Give details about the ${claimantName} circumstances";
 
     @Override
