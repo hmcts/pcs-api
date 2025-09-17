@@ -31,14 +31,18 @@ public class DynamicDefendantsPages implements CcdPageConfiguration {
      * Template prefix for defendant field references in CCD expressions.
      */
     private static final String DEFENDANT_FIELD_PREFIX = "${defendant";
+    
+    /**
+     * CSS class for table cells in the defendant summary table.
+     */
+    private static final String TABLE_CELL_CLASS = "<td class=\"govuk-table__cell\">";
 
     private final AddressValidator addressValidator;
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
-        // Generate 25 defendant detail pages and 25 defendant list pages
         for (int i = 1; i <= MAX_NUMBER_OF_DEFENDANTS; i++) {
-            final int defendantIndex = i; // Make effectively final for lambda
+            final int defendantIndex = i;
 
             // Create defendant details page (e.g., "Defendant 1 Details", "Defendant 2 Details")
             createDefendantDetailsPage(pageBuilder, i, defendantIndex);
@@ -55,8 +59,7 @@ public class DynamicDefendantsPages implements CcdPageConfiguration {
         var defendantPage = pageBuilder.page("DefendantDetails" + i, 
             (details, detailsBefore) -> midEventForDefendant(details, detailsBefore, defendantIndex));
         
-        // Only show this page if previous "Add Another Defendant" was YES (except for first defendant)
-        if (i > 1) {
+         if (i > 1) {
             defendantPage.showCondition("addAnotherDefendant" + (i - 1) + "=\"YES\"");
         }
         
@@ -92,8 +95,6 @@ public class DynamicDefendantsPages implements CcdPageConfiguration {
      */
     private void createDefendantListPage(PageBuilder pageBuilder, int i) {
         var addAnotherPage = pageBuilder.page("DefendantList" + i);
-        
-        // Only show this page if previous "Add Another Defendant" was YES (except for first defendant)
         if (i > 1) {
             addAnotherPage.showCondition("addAnotherDefendant" + (i - 1) + "=\"YES\"");
         }
@@ -101,7 +102,6 @@ public class DynamicDefendantsPages implements CcdPageConfiguration {
         addAnotherPage.pageLabel("Defendant List")
             .label("defTable" + i, buildDefendantsSummaryTable(i));
         
-        // Only add "Add Another Defendant?" field if not the last defendant
         if (i != MAX_NUMBER_OF_DEFENDANTS) {
             addAnotherPage.mandatory(getAddAnotherField(i));
         }
@@ -153,14 +153,13 @@ public class DynamicDefendantsPages implements CcdPageConfiguration {
      * @return HTML table row string
      */
     private String buildDefendantTableRow(int defendantNumber) {
-        // Build the HTML row with defendant-specific field references
         return new StringBuilder()
                 .append("<tr class=\"govuk-table__row\">")
-                .append("<td class=\"govuk-table__cell\">Defendant ").append(defendantNumber).append("</td>")
-                .append("<td class=\"govuk-table__cell\">").append(DEFENDANT_FIELD_PREFIX)
+                .append(TABLE_CELL_CLASS).append("Defendant ").append(defendantNumber).append("</td>")
+                .append(TABLE_CELL_CLASS).append(DEFENDANT_FIELD_PREFIX)
                     .append(defendantNumber).append(".firstName} ").append(DEFENDANT_FIELD_PREFIX)
                     .append(defendantNumber).append(".lastName}</td>")
-                .append("<td class=\"govuk-table__cell\">")
+                .append(TABLE_CELL_CLASS)
                 .append(DEFENDANT_FIELD_PREFIX).append(defendantNumber)
                     .append(".correspondenceAddress.AddressLine1}<br>")
                 .append(DEFENDANT_FIELD_PREFIX).append(defendantNumber)
@@ -168,7 +167,7 @@ public class DynamicDefendantsPages implements CcdPageConfiguration {
                 .append(DEFENDANT_FIELD_PREFIX).append(defendantNumber)
                     .append(".correspondenceAddress.PostCode}")
                 .append("</td>")
-                .append("<td class=\"govuk-table__cell\">").append(DEFENDANT_FIELD_PREFIX)
+                .append(TABLE_CELL_CLASS).append(DEFENDANT_FIELD_PREFIX)
                     .append(defendantNumber).append(".email}</td>")
                 .append("</tr>")
                 .toString();
@@ -267,12 +266,10 @@ public class DynamicDefendantsPages implements CcdPageConfiguration {
 
         DefendantDetails defendant = getDefendantByIndex(caseData, defendantIndex);
         if (defendant != null) {
-            // Set correspondence address if it's the same as property address
             if (defendant.getAddressSameAsPossession() == VerticalYesNo.YES) {
                 defendant.setCorrespondenceAddress(caseData.getPropertyAddress());
             }
             
-            // Validate address fields if address is known and not same as possession
             if (defendant.getAddressSameAsPossession() == VerticalYesNo.NO
                 && defendant.getAddressKnown() == VerticalYesNo.YES) {
 

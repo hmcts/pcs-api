@@ -287,7 +287,7 @@ class DynamicDefendantsPagesTest extends BasePageTest {
             .contains("${defendant1.correspondenceAddress.PostTown}")
             .contains("${defendant1.correspondenceAddress.PostCode}")
             .contains("${defendant1.email}")
-            .contains("<br>"); // Address line breaks
+            .contains("<br>");
     }
 
     @Test
@@ -303,7 +303,6 @@ class DynamicDefendantsPagesTest extends BasePageTest {
             .contains("<thead class=\"govuk-table__head\">")
             .contains("<tbody class=\"govuk-table__body\">")
             .contains("</table>")
-            // Verify column headers
             .contains("<th scope=\"col\" class=\"govuk-table__header\">Defendant</th>")
             .contains("<th scope=\"col\" class=\"govuk-table__header\">Defendant name</th>")
             .contains("<th scope=\"col\" class=\"govuk-table__header\">"
@@ -313,17 +312,13 @@ class DynamicDefendantsPagesTest extends BasePageTest {
 
     @Test
     void shouldGetDefendantByIndexForValidIndexes() {
-        // Test all valid indexes (1-25)
         for (int i = 1; i <= 25; i++) {
-            // Given
             DefendantDetails defendant = DefendantDetails.builder()
                 .firstName("Test" + i)
                 .lastName("User" + i)
                 .build();
 
             PCSCase caseData = PCSCase.builder().build();
-            
-            // Set the specific defendant field based on index
             switch (i) {
                 case 1 -> caseData.setDefendant1(defendant);
                 case 2 -> caseData.setDefendant2(defendant);
@@ -353,10 +348,8 @@ class DynamicDefendantsPagesTest extends BasePageTest {
                 default -> throw new IllegalArgumentException("Invalid defendant index: " + i);
             }
 
-            // When
             DefendantDetails result = dynamicDefendantsPages.getDefendantByIndex(caseData, i);
 
-            // Then
             assertThat(result).isNotNull();
             assertThat(result.getFirstName()).isEqualTo("Test" + i);
             assertThat(result.getLastName()).isEqualTo("User" + i);
@@ -365,45 +358,30 @@ class DynamicDefendantsPagesTest extends BasePageTest {
 
     @Test
     void shouldReturnNullForInvalidIndexes() {
-        // Given
         PCSCase caseData = PCSCase.builder().build();
-
-        // Test invalid indexes
         int[] invalidIndexes = {0, -1, 26, 100, Integer.MIN_VALUE, Integer.MAX_VALUE};
 
         for (int invalidIndex : invalidIndexes) {
-            // When
             DefendantDetails result = dynamicDefendantsPages.getDefendantByIndex(caseData, invalidIndex);
-
-            // Then
             assertThat(result).isNull();
         }
     }
 
     @Test
     void shouldReturnNullForNullCaseData() {
-        // When
         DefendantDetails result = dynamicDefendantsPages.getDefendantByIndex(null, 1);
-
-        // Then
         assertThat(result).isNull();
     }
 
     @Test
     void shouldReturnNullForDefendantNotSet() {
-        // Given
-        PCSCase caseData = PCSCase.builder().build(); // No defendants set
-
-        // When
+        PCSCase caseData = PCSCase.builder().build();
         DefendantDetails result = dynamicDefendantsPages.getDefendantByIndex(caseData, 1);
-
-        // Then
         assertThat(result).isNull();
     }
 
     @Test
     void shouldHandleEdgeCasesForDefendantIndexes() {
-        // Given
         DefendantDetails defendant1 = DefendantDetails.builder()
             .firstName("First")
             .lastName("Defendant")
@@ -418,17 +396,14 @@ class DynamicDefendantsPagesTest extends BasePageTest {
             .defendant25(defendant25)
             .build();
 
-        // Test first defendant
         DefendantDetails result1 = dynamicDefendantsPages.getDefendantByIndex(caseData, 1);
         assertThat(result1).isNotNull();
         assertThat(result1.getFirstName()).isEqualTo("First");
 
-        // Test last defendant
         DefendantDetails result25 = dynamicDefendantsPages.getDefendantByIndex(caseData, 25);
         assertThat(result25).isNotNull();
         assertThat(result25.getFirstName()).isEqualTo("Last");
 
-        // Test middle defendant (not set)
         DefendantDetails result13 = dynamicDefendantsPages.getDefendantByIndex(caseData, 13);
         assertThat(result13).isNull();
     }
