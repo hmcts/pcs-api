@@ -76,7 +76,6 @@ Playwright 1.30+ | TypeScript 4.9+
 | createCase                        | `performAction('createCase', 'data: caseData')`                                                                                                                                                            |
 | clickButton                       | `performAction('clickButton', 'buttonName)`                                                                                                                                                                |
 | clickRadioButton                  | `performAction('clickRadioButton', 'radioButtonName')`                                                                                                                                                     |
-| selectLegislativeCountry          | `performAction('selectLegislativeCountry', {country: data.country})`                                                                                                                                       |
 | selectClaimantType                | `performAction('selectClaimantType', {claimantType : pathToDataFile.claimantTypeOption})`                                                                                                                  |
 | selectAddress                     | `performAction('selectAddress',{postcode: pathToDataFile.englandPostcode,addressIndex: pathToDataFile.addressIndex} )`                                                                                     |
 | createUserAndLogin                | `performAction('createUserAndLogin', ['caseworker-pcs', 'caseworker'])`                                                                                                                                    |
@@ -101,6 +100,10 @@ Playwright 1.30+ | TypeScript 4.9+
 | reloginAndFindTheCase             | `performAction('reloginAndFindTheCase')`                                                                                                                                                                   |
 | selectDailyRentAmount             | `performAction('selectDailyRentAmount', { calculateRentAmount: '£114.29',unpaidRentInteractiveOption: dailyRentAmount.no,unpaidRentAmountPerDay:'20'})`                                                    |
 | provideDetailsOfRentArrears       | `performAction('provideDetailsOfRentArrears', {files: ['tenancyLicence.docx'], rentArrearsAmountOnStatement: '1000',rentPaidByOthersOption: 'Yes',paymentOptions: ['Universal Credit']})`                  | 
+| extractCaseIdFromAlert            | `performAction('extractCaseIdFromAlert')`                                                                                                                                                                  |
+| selectResumeClaimOption           | `performAction('selectResumeClaimOption', 'yes')`                                                                                                                                                          |
+| selectClaimForMoney               | `performAction('selectClaimForMoney', 'yes')`                                                                                                                                                              |
+| selectNoticeDetails               | `performAction('selectNoticeDetails', {howDidYouServeNotice: noticeDetails.byFirstClassPost, day: '', month: '', year: ''})`                                                                               |
 ### Validations
 | Validation        | Example Usage                                                                                                                        |
 |-------------------|--------------------------------------------------------------------------------------------------------------------------------------|
@@ -172,12 +175,12 @@ await performValidationGroup(
 
 ### The following environment variables are needed to run the tests:
 
-- NODE_CONFIG_ENV
-- TEST_URL
-- PCS_FRONTEND_IDAM_SECRET
-- IDAM_SYSTEM_PASSWORD
+- CHANGE_ID (same as PR number - Required only pointing to Preview env)
+- MANAGE_CASE_BASE_URL
+- PCS_API_IDAM_SECRET
 - IDAM_SYSTEM_USERNAME
-- PCS_IDAM_TEST_USER_PASSWORD
+- IDAM_SYSTEM_USER_PASSWORD
+- IDAM_PCS_USER_PASSWORD
 
 ```bash
 yarn test:chrome

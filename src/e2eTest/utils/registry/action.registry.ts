@@ -39,6 +39,7 @@ export class ActionRegistry {
     ['selectPreActionProtocol', new CreateCaseAction()],
     ['selectMediationAndSettlement', new CreateCaseAction()],
     ['selectNoticeOfYourIntention', new CreateCaseAction()],
+    ['selectNoticeDetails', new CreateCaseAction()],
     ['selectCountryRadioButton', new CreateCaseAction()],
     ['selectOtherGrounds', new CreateCaseAction()],
     ['selectTenancyOrLicenceDetails', new CreateCaseAction()],
@@ -46,6 +47,7 @@ export class ActionRegistry {
     ['provideRentDetails', new CreateCaseAction()],
     ['selectDailyRentAmount', new CreateCaseAction()],
     ['provideDetailsOfRentArrears', new CreateCaseAction()]
+    ['selectClaimForMoney', new CreateCaseAction()]
   ]);
 
   static getAction(actionName: string): IAction {

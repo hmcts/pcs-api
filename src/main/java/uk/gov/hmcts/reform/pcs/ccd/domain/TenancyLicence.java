@@ -11,6 +11,8 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
+import java.time.LocalDateTime;
+
 @Data
 @Builder
 @NoArgsConstructor
@@ -28,6 +30,18 @@ public class TenancyLicence {
 
     private BigDecimal dailyRentChargeAmount;
 
+    // Notice details fields
+    private String noticeServiceMethod;
+    private LocalDate noticePostedDate;
+    private LocalDate noticeDeliveredDate;
+    private LocalDateTime noticeHandedOverDateTime;
+    private String noticePersonName;
+    private LocalDateTime noticeEmailSentDateTime;
+    private String noticeEmailExplanation;
+    private LocalDateTime noticeOtherElectronicDateTime;
+    private LocalDateTime noticeOtherDateTime;
+    private String noticeOtherExplanation;
+    
     private String tenancyLicenceType;
 
     private String detailsOfOtherTypeOfTenancyLicence;
@@ -35,6 +49,8 @@ public class TenancyLicence {
     private LocalDate tenancyLicenceDate;
 
     private List<Document> supportingDocuments;
+    
+    private Boolean arrearsJudgmentWanted;
 
     private BigDecimal totalRentArrears;
 
