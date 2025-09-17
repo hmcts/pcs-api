@@ -49,5 +49,7 @@ public class TenancyLicence {
     private LocalDate tenancyLicenceDate;
 
     private List<Document> supportingDocuments;
+    
+    private Boolean arrearsJudgmentWanted;
 
 }
