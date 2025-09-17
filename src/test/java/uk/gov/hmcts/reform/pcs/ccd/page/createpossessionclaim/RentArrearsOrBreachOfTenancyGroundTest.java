@@ -6,7 +6,7 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
 import uk.gov.hmcts.ccd.sdk.api.Event;
-import uk.gov.hmcts.ccd.sdk.api.callback.MidEvent;
+import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
@@ -26,7 +26,7 @@ public class RentArrearsOrBreachOfTenancyGroundTest extends BasePageTest {
 
     @BeforeEach
     void setUp() {
-        event = buildPageInTestEvent(new RentArrearsOrBreachOfTenancyGround());
+        setPageUnderTest(new RentArrearsOrBreachOfTenancyGround());
     }
 
     @ParameterizedTest
@@ -43,8 +43,7 @@ public class RentArrearsOrBreachOfTenancyGroundTest extends BasePageTest {
         caseDetails.setData(caseData);
 
         // When
-        MidEvent<PCSCase, State> midEvent = getMidEventForPage(event, "rentArrearsOrBreachOfTenancyGround");
-        midEvent.handle(caseDetails, null);
+        AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
 
         // Then
         assertThat(caseData.getShowBreachOfTenancyTextarea()).isEqualTo(expectedShowBreachOfTenancyTextarea);

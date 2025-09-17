@@ -30,7 +30,7 @@ public class SecureOrFlexibleGroundsForPossessionTest extends BasePageTest {
 
     @BeforeEach
     void setUp() {
-        event = buildPageInTestEvent(new SecureOrFlexibleGroundsForPossession());
+        setPageUnderTest(new SecureOrFlexibleGroundsForPossession());
     }
 
     @ParameterizedTest
@@ -55,9 +55,7 @@ public class SecureOrFlexibleGroundsForPossessionTest extends BasePageTest {
         caseDetails.setData(caseData);
 
         // When
-        AboutToStartOrSubmitResponse<PCSCase, State> response =
-                getMidEventForPage(event, "secureOrFlexibleGroundsForPossession")
-                        .handle(caseDetails, null);
+        AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
 
         PCSCase updatedCaseData = response.getData();
 
