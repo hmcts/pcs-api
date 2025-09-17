@@ -5,11 +5,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
+import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.service.AddressValidator;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 import uk.gov.hmcts.reform.pcs.postcodecourt.exception.EligibilityCheckException;
@@ -28,7 +30,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 public class EnterPropertyAddress implements CcdPageConfiguration {
 
     private final EligibilityService eligibilityService;
-    private final PostcodeValidator postcodeValidator;
+    private final AddressValidator addressValidator;
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
@@ -36,25 +38,32 @@ public class EnterPropertyAddress implements CcdPageConfiguration {
             .page("enterPropertyAddress", this::midEvent)
             .pageLabel("What is the address of the property you're claiming possession of?")
             .label("enterPropertyAddress-lineSeparator", "---")
-            .mandatory(PCSCase::getPropertyAddress)
+            .complex(PCSCase::getPropertyAddress)
+                .mandatory(AddressUK::getAddressLine1)
+                .optional(AddressUK::getAddressLine2)
+                .optional(AddressUK::getAddressLine3)
+                .mandatory(AddressUK::getPostTown)
+                .optional(AddressUK::getCounty)
+                .optional(AddressUK::getCountry)
+                .mandatoryWithLabel(AddressUK::getPostCode, "Postcode")
+            .done()
             .readonly(PCSCase::getLegislativeCountry, NEVER_SHOW, true);
     }
 
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
                                                                   CaseDetails<PCSCase, State> detailsBefore) {
+
         PCSCase caseData = details.getData();
-        
-        // Validate postcode format first
-        if (caseData.getPropertyAddress() != null && caseData.getPropertyAddress().getPostCode() != null 
-            && !postcodeValidator.isValidPostcode(caseData.getPropertyAddress().getPostCode())) {
+        AddressUK propertyAddress = caseData.getPropertyAddress();
+
+        List<String> validationErrors = addressValidator.validateAddressFields(propertyAddress);
+        if (!validationErrors.isEmpty()) {
             return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
-                .data(caseData)
-                .errors(List.of("Enter a valid postcode"))
+                .errors(validationErrors)
                 .build();
         }
-        
-        String postcode = caseData.getPropertyAddress() != null ? caseData.getPropertyAddress().getPostCode() : null;
 
+        String postcode = propertyAddress.getPostCode();
         EligibilityResult eligibilityResult = eligibilityService.checkEligibility(postcode, null);
         log.debug("EnterPropertyAddress eligibility check: {} for postcode {} with countries {}",
             eligibilityResult.getStatus(), postcode, eligibilityResult.getLegislativeCountries());

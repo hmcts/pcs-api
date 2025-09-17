@@ -7,10 +7,7 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
-import uk.gov.hmcts.ccd.sdk.api.Event;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
-import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
@@ -32,30 +29,24 @@ class TenancyLicenceTest  extends BasePageTest {
     @Mock
     private Clock ukClock;
 
-    private Event<PCSCase, UserRole, State> event;
-
     @BeforeEach
     void setUp() {
         when(ukClock.instant()).thenReturn(FIXED_CURRENT_DATE.atTime(10, 20).atZone(UK_ZONE_ID).toInstant());
         when(ukClock.getZone()).thenReturn(UK_ZONE_ID);
-        event = buildPageInTestEvent(new TenancyLicenceDetails(ukClock));
+
+        setPageUnderTest(new TenancyLicenceDetails(ukClock));
     }
 
     @ParameterizedTest
     @MethodSource("tenancyDateScenarios")
         void shouldThrowErrorWhenDateIsTodayOrInTheFuture(LocalDate date, Boolean isValid) {
         // Given
-        CaseDetails<PCSCase, State> caseDetails = new CaseDetails<>();
-
         PCSCase caseData = PCSCase.builder()
             .tenancyLicenceDate(date)
             .build();
 
-        caseDetails.setData(caseData);
-
         // When
-        AboutToStartOrSubmitResponse<PCSCase, State> response =
-            getMidEventForPage(event, "tenancyLicenceDetails").handle(caseDetails,null);
+        AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
 
         // Then
         if (!isValid) {

@@ -5,13 +5,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import uk.gov.hmcts.ccd.sdk.api.Event;
-import uk.gov.hmcts.ccd.sdk.api.EventPayload;
-import uk.gov.hmcts.ccd.sdk.api.callback.Submit;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
-import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.CrossBorderPostcodeSelection;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.EnterPropertyAddress;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.PropertyNotEligible;
@@ -25,8 +20,6 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class CreatePossessionClaimTest extends BaseEventTest {
 
-    private static final long CASE_REFERENCE = 1234L;
-
     @Mock
     private PcsCaseService pcsCaseService;
     @Mock
@@ -36,14 +29,12 @@ class CreatePossessionClaimTest extends BaseEventTest {
     @Mock
     private PropertyNotEligible propertyNotEligible;
 
-    private Event<PCSCase, UserRole, State> configuredEvent;
-
     @BeforeEach
     void setUp() {
         CreatePossessionClaim underTest = new CreatePossessionClaim(pcsCaseService, enterPropertyAddress,
                                                                     crossBorderPostcodeSelection, propertyNotEligible);
 
-        configuredEvent = getEvent(EventId.createPossessionClaim, buildEventConfig(underTest));
+        setEventUnderTest(underTest);
     }
 
     @Test
@@ -56,14 +47,11 @@ class CreatePossessionClaimTest extends BaseEventTest {
         when(caseData.getPropertyAddress()).thenReturn(propertyAddress);
         when(caseData.getLegislativeCountry()).thenReturn(legislativeCountry);
 
-        EventPayload<PCSCase, State> eventPayload = new EventPayload<>(CASE_REFERENCE, caseData, null);
-
         // When
-        Submit<PCSCase, State> submitHandler = configuredEvent.getSubmitHandler();
-        submitHandler.submit(eventPayload);
+        callSubmitHandler(caseData);
 
         // Then
-        verify(pcsCaseService).createCase(CASE_REFERENCE, propertyAddress, legislativeCountry);
+        verify(pcsCaseService).createCase(TEST_CASE_REFERENCE, propertyAddress, legislativeCountry);
     }
 
 }

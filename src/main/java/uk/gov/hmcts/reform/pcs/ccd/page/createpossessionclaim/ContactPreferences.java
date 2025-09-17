@@ -4,28 +4,28 @@ import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
+import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.util.PostcodeValidator;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.service.AddressValidator;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 
-
-@Component
 @AllArgsConstructor
+@Component
 public class ContactPreferences implements CcdPageConfiguration {
 
-    private final PostcodeValidator postcodeValidator;
+    private final AddressValidator addressValidator;
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
-            .page("contactPreferences", this::validatePostcode)
+            .page("contactPreferences", this::midEvent)
             .pageLabel("Contact preferences")
 
             // Email section
@@ -68,7 +68,15 @@ public class ContactPreferences implements CcdPageConfiguration {
                 </p>
                 """)
             .mandatory(PCSCase::getIsCorrectClaimantContactAddress)
-            .mandatory(PCSCase::getOverriddenClaimantContactAddress, "isCorrectClaimantContactAddress=\"NO\"")
+            .complex(PCSCase::getOverriddenClaimantContactAddress, "isCorrectClaimantContactAddress=\"NO\"")
+                .mandatory(AddressUK::getAddressLine1)
+                .optional(AddressUK::getAddressLine2)
+                .optional(AddressUK::getAddressLine3)
+                .mandatory(AddressUK::getPostTown)
+                .optional(AddressUK::getCounty)
+                .optional(AddressUK::getCountry)
+                .mandatoryWithLabel(AddressUK::getPostCode, "Postcode")
+            .done()
 
             // Phone section
             .label("contactPreferences-phoneNumber-question", """
@@ -83,31 +91,26 @@ public class ContactPreferences implements CcdPageConfiguration {
             .label("contactPreferences-phoneNumber-separator", "---");
     }
 
-    private AboutToStartOrSubmitResponse<PCSCase, State> validatePostcode(CaseDetails<PCSCase, State> details,
-                                                                          CaseDetails<PCSCase, State> detailsBefore) {
+    private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
+                                                                  CaseDetails<PCSCase, State> detailsBefore) {
+
         PCSCase caseData = details.getData();
-        List<String> errors = new ArrayList<>();
 
-        // Validate overridden claimant contact address postcode if present
-        if (caseData.getOverriddenClaimantContactAddress() != null) {
-            List<String> addressErrors = postcodeValidator.getValidationErrors(
-                caseData.getOverriddenClaimantContactAddress(), 
-                "overriddenClaimantContactAddress"
-            );
-            errors.addAll(addressErrors);
-        }
-
-        if (!errors.isEmpty()) {
-            return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
-                .data(caseData)
-                .errors(errors)
-                .build();
+        VerticalYesNo isCorrectClaimantContactAddress = caseData.getIsCorrectClaimantContactAddress();
+        if (isCorrectClaimantContactAddress == VerticalYesNo.NO) {
+            AddressUK contactAddress = caseData.getOverriddenClaimantContactAddress();
+            List<String> validationErrors = addressValidator.validateAddressFields(contactAddress);
+            if (!validationErrors.isEmpty()) {
+                return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
+                    .errors(validationErrors)
+                    .build();
+            }
         }
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
             .data(caseData)
-            .errors(List.of())
             .build();
+
     }
 
 }
