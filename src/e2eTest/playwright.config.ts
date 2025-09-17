@@ -11,7 +11,7 @@ module.exports = defineConfig({
   forbidOnly: !!process.env.CI,
   /* Retry on CI only */
   retries: process.env.CI ? 2 : 0,
-  timeout: 60 * 1000,
+  timeout: 30 * 1000,
   expect: { timeout: 60_000 },
   /* Report slow tests if they take longer than 5 mins */
   reportSlowTests: { max: 15, threshold: 5 * 60 * 1000 },
@@ -23,7 +23,7 @@ module.exports = defineConfig({
         'allure-playwright',
         {
           resultsDir: 'allure-results',
-          detail: true,
+          detail: false,
           suiteTitle: false,
           environmentInfo: {
             os_version: process.version,
