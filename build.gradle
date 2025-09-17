@@ -454,11 +454,8 @@ tasks.withType(CftlibExec).configureEach {
 }
 
 tasks.register('highLevelDataSetup', JavaExec) {
-  if (System.getenv("ENVIRONMENT") == "prod") {
+  if (System.getenv("ENVIRONMENT") == "prod") { // Prevent High level data setup on prod
     onlyIf { false }
-    doFirst {
-      println("High level data setup is disabled in PROD environment")
-    }
   }
   mainClass.set("uk.gov.hmcts.reform.pcs.ccd.config.HighLevelDataSetupApp")
   classpath += sourceSets.main.runtimeClasspath

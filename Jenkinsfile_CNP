@@ -53,7 +53,7 @@ withPipeline(type, product, component) {
     enablePactAs([AppPipelineDsl.PactRoles.CONSUMER])
     setAatEnvVars()
     enableHighLevelDataSetup()
-    afterAlways('publishhelmchart') {
+    afterAlways('dbmigrate:prod') {
       env.ENVIRONMENT = "prod"
     }
   }
@@ -72,7 +72,6 @@ withPipeline(type, product, component) {
 
   before('highleveldatasetup') {
     onPR{
-      env.ENVIRONMENT = "prod"
       env.DEFINITION_STORE_URL_BASE = "https://ccd-definition-store-pcs-api-pr-${CHANGE_ID}.preview.platform.hmcts.net"
       env.CASE_API_URL = "https://pcs-api-pr-${CHANGE_ID}.preview.platform.hmcts.net"
       env.DATA_STORE_URL_BASE="https://ccd-data-store-api-pcs-api-pr-${CHANGE_ID}.preview.platform.hmcts.net"
