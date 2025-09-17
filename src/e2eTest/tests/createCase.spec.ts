@@ -219,8 +219,8 @@ test.describe('[Create Case Flow]  @Master @nightly', async () => {
       attemptedMediationWithDefendantsOption: mediationAndSettlement.yes,
       settlementWithDefendantsOption: mediationAndSettlement.no,
     });
-    await performValidation('mainHeader', checkingNotice.mainHeader);
-    await performAction('selectNoticeOfYourIntention', checkingNotice.no);
+    await performValidation('mainHeader', noticeOfYourIntention.mainHeader);
+    await performAction('selectNoticeOfYourIntention', noticeOfYourIntention.no);
     await performValidation('mainHeader', rentDetails.mainHeader);
     await performAction('provideRentDetails', {rentFrequencyOption: 'Monthly', rentAmount: '1000'});
     await performAction('selectDailyRentAmount', {
