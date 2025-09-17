@@ -37,7 +37,7 @@ public class PCSCase {
     private YesOrNo resumeClaimKeepAnswers;
 
     @CCD(
-        label = "Claimant Name",
+        label = "Claimant Name ",
         access = {CitizenAccess.class, CaseworkerAccess.class}
     )
     @External
