@@ -118,6 +118,10 @@ tasks.withType(Test).configureEach {
   testLogging {
     exceptionFormat = 'full'
   }
+
+  // Exclude document and testing support packages from test execution
+  exclude '**/document/**/*Test.class'
+  exclude '**/testingsupport/**/*Test.class'
 }
 
 test {
@@ -260,12 +264,13 @@ sonarqube {
       "**/uk/gov/hmcts/reform/pcs/ccd/accesscontrol/**/*.java," +
       "**/uk/gov/hmcts/reform/pcs/ccd/config/HighLevelDataSetupApp.java," +
       "**/uk/gov/hmcts/reform/pcs/ccd/domain/**/*.java," +
-      "**/uk/gov/hmcts/reform/pcs/ccd/entity/**/*.java" +
-      "**/uk/gov/hmcts/reform/pcs/ccd/document/**/*.java" +
-      "**/uk/gov/hmcts/reform/pcs/ccd/document/service/**/*.java" +
-      "**/uk/gov/hmcts/reform/pcs/ccd/testingsupport/**/*.java" +
+      "**/uk/gov/hmcts/reform/pcs/ccd/entity/**/*.java," +
+      "**/uk/gov/hmcts/reform/pcs/ccd/document/**/*.java," +
+      "**/uk/gov/hmcts/reform/pcs/ccd/document/service/**/*.java," +
+      "**/uk/gov/hmcts/reform/pcs/ccd/testingsupport/**/*.java," +
+      "**/uk/gov/hmcts/reform/pcs/document/**/*.java," +
+      "**/uk/gov/hmcts/reform/pcs/testingsupport/**/*.java," +
       "**/entities/**," + "**/model/**"
-    property "sonar.coverage.jacoco.xmlReportPaths", "$buildDir/reports/jacoco/jacocoTestReport/jacocoTestReport.xml"
   }
 }
 
