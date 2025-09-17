@@ -23,6 +23,8 @@ import {detailsOfRentArrears} from '@data/page-data/detailsOfRentArrears.page.da
 import {whatAreYourGroundsForPossession} from '@data/page-data/whatAreYourGroundsForPossession.page.data';
 import {rentArrearsOrBreachOfTenancy} from '@data/page-data/rentArrearsOrBreachOfTenancy.page.data';
 import {reasonsForPossession} from '@data/page-data/reasonsForPossession.page.data';
+import {moneyJudgment} from '@data/page-data/moneyJudgment.page.data';
+import {claimantCircumstances} from '@data/page-data/claimantCircumstances.page.data';
 
 test.beforeEach(async ({page}, testInfo) => {
   initializeExecutor(page);
@@ -102,6 +104,9 @@ test.describe('[Create Case Flow]  @Master @nightly', async () => {
       unpaidRentInteractiveOption: dailyRentAmount.no,
       unpaidRentAmountPerDay: '20'
     });
+    await performAction('selectClaimForMoney', moneyJudgment.yes);
+    await performValidation('mainHeader', claimantCircumstances.mainHeader);
+    await performAction('clickButton', claimantCircumstances.continue);
     await performAction('clickButton', 'Save and continue');
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
     await performAction('clickTab', 'Property Details');
@@ -163,6 +168,9 @@ test.describe('[Create Case Flow]  @Master @nightly', async () => {
     await performAction('provideRentDetails', {rentAmount:'850', rentFrequencyOption:'Other', inputFrequency:rentDetails.rentFrequencyFortnightly,unpaidRentAmountPerDay:'50'});
     await performValidation('mainHeader', detailsOfRentArrears.mainHeader);
     await performAction('clickButton', detailsOfRentArrears.continue);
+    await performAction('selectClaimForMoney', moneyJudgment.yes);
+    await performValidation('mainHeader', claimantCircumstances.mainHeader);
+    await performAction('clickButton', claimantCircumstances.continue);
     await performAction('clickButton', 'Save and continue');
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
     await performAction('clickTab', 'Property Details');
@@ -307,6 +315,9 @@ test.describe('[Create Case Flow]  @Master @nightly', async () => {
       calculateRentAmount: '£32.85',
       unpaidRentInteractiveOption: dailyRentAmount.yes
     });
+    await performAction('selectClaimForMoney', moneyJudgment.no);
+    await performValidation('mainHeader', claimantCircumstances.mainHeader);
+    await performAction('clickButton', claimantCircumstances.continue);
     await performAction('clickButton', 'Save and continue');
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
     await performAction('clickTab', 'Property Details');
