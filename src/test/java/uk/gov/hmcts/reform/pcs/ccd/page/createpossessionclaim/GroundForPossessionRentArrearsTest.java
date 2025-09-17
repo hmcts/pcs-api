@@ -5,7 +5,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DiscretionaryGround;
 import uk.gov.hmcts.reform.pcs.ccd.domain.MandatoryGround;
@@ -22,7 +21,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static uk.gov.hmcts.ccd.sdk.type.YesOrNo.YES;
 
 class GroundForPossessionRentArrearsTest extends BasePageTest {
-
 
     @BeforeEach
     void setUp() {
@@ -140,14 +138,12 @@ class GroundForPossessionRentArrearsTest extends BasePageTest {
     @Test
     void shouldInitializeEmptyListsWhenMandatoryAndDiscretionaryGroundsAreNull() {
         // Given
-        CaseDetails<PCSCase, State> caseDetails = new CaseDetails<>();
         PCSCase caseData = PCSCase.builder()
             .rentArrearsGrounds(Set.of(RentArrearsGround.SERIOUS_RENT_ARREARS_GROUND8))
             .mandatoryGrounds(null)
             .discretionaryGrounds(null)
             .hasOtherAdditionalGrounds(YES)
             .build();
-        caseDetails.setData(caseData);
 
         // When
         AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
@@ -170,8 +166,6 @@ class GroundForPossessionRentArrearsTest extends BasePageTest {
             .copyOfRentArrearsGrounds(new HashSet<>(previousGrounds))
             .build();
 
-        CaseDetails<PCSCase, State> caseDetails = new CaseDetails<>();
-        caseDetails.setData(caseData);
 
         // When
         AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
