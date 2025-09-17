@@ -467,4 +467,10 @@ public class PCSCase {
     )
     private String thirdPartyPaymentSourceOther;
 
+    @CCD(
+        label = "Do you want the court to make a judgment for the outstanding arrears?",
+        access = {CitizenAccess.class, CaseworkerAccess.class}
+    )
+    private YesOrNo arrearsJudgmentWanted;
+
 }

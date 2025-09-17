@@ -4,7 +4,7 @@ import uk.gov.hmcts.rse.CftlibExec
 
 buildscript {
   ext {
-    flywayVersion = '11.12.0'
+    flywayVersion = '11.13.0'
     serenityBddVersion = '4.2.33'
   }
   dependencies {
@@ -454,6 +454,7 @@ tasks.withType(CftlibExec).configureEach {
 }
 
 tasks.register('highLevelDataSetup', JavaExec) {
+  onlyIf { System.getenv("ENVIRONMENT") != "prod" } // Skipping to stop CCD config upload on prod
   mainClass.set("uk.gov.hmcts.reform.pcs.ccd.config.HighLevelDataSetupApp")
   classpath += sourceSets.main.runtimeClasspath
   jvmArgs = ['--add-opens=java.base/java.lang.reflect=ALL-UNNAMED']
