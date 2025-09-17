@@ -41,7 +41,7 @@ test.beforeEach(async ({page}, testInfo) => {
 });
 
 test.describe('[Create Case Flow]  @Master @nightly', async () => {
-  test('England - Successful case creation', async () => {
+  test('England - Successful case creation with Assured tenancy', async () => {
     await performAction('selectAddress', {
       postcode: addressDetails.englandCourtAssignedPostcode,
       addressIndex: addressDetails.addressIndex
