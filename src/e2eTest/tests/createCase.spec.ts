@@ -64,7 +64,7 @@ test.describe('[Create Case Flow]  @Master @nightly', async () => {
     });
     await performValidation('mainHeader', tenancyLicenceDetails.mainHeader);
     await performAction('selectTenancyOrLicenceDetails', {
-      tenancyOrLicenceType: tenancyLicenceDetails.other,
+      tenancyOrLicenceType: tenancyLicenceDetails.assuredTenancy,
       day: tenancyLicenceDetails.day,
       month: tenancyLicenceDetails.month,
       year: tenancyLicenceDetails.year,
