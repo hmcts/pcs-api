@@ -17,10 +17,23 @@ function getExecutor(): { page: Page } {
   return testExecutor;
 }
 
+function objectToString(obj: any): string {
+  if (obj === null || obj === undefined) return String(obj);
+  if (typeof obj !== 'object') return String(obj);
+
+  if (obj.constructor.name === 'Object') {
+    const keys = Object.keys(obj);
+    return `object with keys: ${keys.join(', ')}`;
+  } else {
+    return `${obj.constructor.name} instance`;
+  }
+}
+
+
 export async function performAction(action: string, fieldName?: actionData | actionRecord, value?: actionData | actionRecord): Promise<void> {
   const executor = getExecutor();
   const actionInstance = ActionRegistry.getAction(action);
-  await test.step(`Perform action: ${action} on "${fieldName}"${value !== undefined ? ` with value "${value}"` : ''}`, async () => {
+  await test.step(`Perform action '${action}' on '${typeof fieldName === 'object' ? objectToString(fieldName) : fieldName}'${value !== undefined ? ` with value '${typeof value === 'object' ? objectToString(value) : value}'` : ''}`, async () => {
     await actionInstance.execute(executor.page, action, fieldName, value);
   });
 }
@@ -31,7 +44,7 @@ export async function performValidation(validation: string, inputFieldName: vali
     ? [inputFieldName, inputData]
     : ['', inputFieldName];
   const validationInstance = ValidationRegistry.getValidation(validation);
-  await test.step(`Perform validation on ${validation}`, async () => {
+  await test.step(`Perform validation '${validation}' on '${typeof fieldName === 'object' ? objectToString(fieldName) : fieldName}'${inputData !== undefined ? ` with value '${typeof inputData === 'object' ? objectToString(inputData) : inputData}'` : ''}`, async () => {
     await validationInstance.validate(executor.page, validation, fieldName, data);
   });
 }
