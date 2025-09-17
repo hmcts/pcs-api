@@ -14,6 +14,7 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseworkerAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenAccess;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
+
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -331,7 +332,7 @@ public class PCSCase {
 
     @CCD(access = {CitizenAccess.class, CaseworkerAccess.class})
     private List<ListValue<DefendantDetails>> defendants;
-    
+
     // Notice Details fields
     @CCD(
         label = "How did you serve the notice?",
@@ -488,4 +489,11 @@ public class PCSCase {
     @JsonUnwrapped
     @CCD(access = {CaseworkerAccess.class})
     private SecureOrFlexibleGroundsReasons secureOrFlexibleGroundsReasons;
+
+    @CCD(
+        label = "Do you want the court to make a judgment for the outstanding arrears?",
+        access = {CitizenAccess.class, CaseworkerAccess.class}
+    )
+    private YesOrNo arrearsJudgmentWanted;
+
 }
