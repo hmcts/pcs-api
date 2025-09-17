@@ -60,7 +60,8 @@ class DynamicDefendantsPagesTest extends BasePageTest {
             
             // Verify table structure
             assertThat(table).contains("<table class=\"govuk-table\">");
-            assertThat(table).contains("<caption class=\"govuk-table__caption govuk-table__caption--m\">Defendants</caption>");
+            assertThat(table).contains("<caption class=\"govuk-table__caption govuk-table__caption--m\">"
+                + "Defendants</caption>");
             assertThat(table).contains("<thead class=\"govuk-table__head\">");
             assertThat(table).contains("<tbody class=\"govuk-table__body\">");
             assertThat(table).contains("</table>");
@@ -268,7 +269,8 @@ class DynamicDefendantsPagesTest extends BasePageTest {
 
         // Then
         assertThat(table).contains("<table class=\"govuk-table\">");
-        assertThat(table).contains("<caption class=\"govuk-table__caption govuk-table__caption--m\">Defendants</caption>");
+        assertThat(table).contains("<caption class=\"govuk-table__caption govuk-table__caption--m\">"
+            + "Defendants</caption>");
         assertThat(table).contains("<thead class=\"govuk-table__head\">");
         assertThat(table).contains("<tbody class=\"govuk-table__body\">");
         assertThat(table).contains("</table>");
@@ -276,7 +278,8 @@ class DynamicDefendantsPagesTest extends BasePageTest {
         // Verify column headers
         assertThat(table).contains("<th scope=\"col\" class=\"govuk-table__header\">Defendant</th>");
         assertThat(table).contains("<th scope=\"col\" class=\"govuk-table__header\">Defendant name</th>");
-        assertThat(table).contains("<th scope=\"col\" class=\"govuk-table__header\">Defendant correspondence address</th>");
+        assertThat(table).contains("<th scope=\"col\" class=\"govuk-table__header\">"
+            + "Defendant correspondence address</th>");
         assertThat(table).contains("<th scope=\"col\" class=\"govuk-table__header\">Defendant email address</th>");
     }
 
