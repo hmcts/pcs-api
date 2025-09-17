@@ -107,7 +107,7 @@ test.describe('[Create Case Flow With Address and Claimant Type] @Master @nightl
       'address info not null',
       ['formLabelValue', 'Building and Street'],
       ['formLabelValue', 'Town or City'],
-      ['formLabelValue', 'Postcode/Zipcode'],
+      ['formLabelValue', 'Postcode'],
       ['formLabelValue', 'Country']
     )
   });
@@ -168,7 +168,7 @@ test.describe('[Create Case Flow With Address and Claimant Type] @Master @nightl
       ['formLabelValue', 'Building and Street', addressDetails.buildingAndStreet],
       ['formLabelValue', 'Address Line 2', addressDetails.addressLine2],
       ['formLabelValue', 'Town or City', addressDetails.townOrCity],
-      ['formLabelValue', 'Postcode/Zipcode', addressDetails.walesCourtAssignedPostcode],
+      ['formLabelValue', 'Postcode', addressDetails.walesCourtAssignedPostcode],
       ['formLabelValue', 'Country', addressDetails.country]);
   });
 
@@ -228,7 +228,7 @@ test.describe('[Create Case Flow With Address and Claimant Type] @Master @nightl
       ['formLabelValue', 'Building and Street', addressDetails.buildingAndStreet],
       ['formLabelValue', 'Address Line 2', addressDetails.addressLine2],
       ['formLabelValue', 'Town or City', addressDetails.townOrCity],
-      ['formLabelValue', 'Postcode/Zipcode', addressDetails.walesCourtAssignedPostcode],
+      ['formLabelValue', 'Postcode', addressDetails.walesCourtAssignedPostcode],
       ['formLabelValue', 'Country', addressDetails.country]);
   });
 });

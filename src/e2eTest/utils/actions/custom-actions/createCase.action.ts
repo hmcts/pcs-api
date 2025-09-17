@@ -341,7 +341,7 @@ export class CreateCaseAction implements IAction {
       , ['inputText', 'Address Line 3', addressDetails.addressLine3]
       , ['inputText', 'Town or City', addressDetails.townOrCity]
       , ['inputText', 'County', addressDetails.walesCounty]
-      , ['inputText', 'Postcode/Zipcode', addressDetails.walesCourtAssignedPostcode]
+      , ['inputText', 'Postcode', addressDetails.walesCourtAssignedPostcode]
       , ['inputText', 'Country', addressDetails.country]
     );
     await performAction('clickButton', 'Submit');
