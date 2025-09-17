@@ -22,7 +22,8 @@ public class IntroductoryDemotedOtherGroundReason {
         label = "Give details about your reason for possession",
         hint = "You'll be able to upload documents to support or further explain your reasons later on",
         typeOverride = TextArea,
-        access = { CaseworkerAccess.class }
+        access = { CaseworkerAccess.class },
+        max = 500
     )
     private String antiSocialBehaviourGround;
 
@@ -30,7 +31,8 @@ public class IntroductoryDemotedOtherGroundReason {
         label = "Give details about your reason for possession",
         hint = "You'll be able to upload documents to support or further explain your reasons later on",
         typeOverride = TextArea,
-        access = { CaseworkerAccess.class }
+        access = { CaseworkerAccess.class },
+        max = 500
     )
     private String breachOfTenancyGround;
 
@@ -39,7 +41,8 @@ public class IntroductoryDemotedOtherGroundReason {
         label = "Give details about your reason for possession",
         hint = "You'll be able to upload documents to support or further explain your reasons later on",
         typeOverride = TextArea,
-        access = { CaseworkerAccess.class }
+        access = { CaseworkerAccess.class },
+        max = 500
     )
     private String absoluteGrounds;
 
@@ -47,7 +50,8 @@ public class IntroductoryDemotedOtherGroundReason {
         label = "Give details about your reason for possession",
         hint = "You'll be able to upload documents to support or further explain your reasons later on",
         typeOverride = TextArea,
-        access = { CaseworkerAccess.class }
+        access = { CaseworkerAccess.class },
+        max = 500
     )
     private String otherGround;
 
