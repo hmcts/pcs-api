@@ -9,22 +9,18 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import uk.gov.hmcts.ccd.sdk.api.Event;
-import uk.gov.hmcts.ccd.sdk.api.EventPayload;
-import uk.gov.hmcts.ccd.sdk.api.callback.Start;
-import uk.gov.hmcts.ccd.sdk.api.callback.Submit;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
-import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PaymentStatus;
-import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.page.builder.SavingPageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.page.builder.SavingPageBuilderFactory;
+import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.ContactPreferences;
+import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.DefendantsDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.NoticeDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.ResumeClaim;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.TenancyLicenceDetails;
@@ -56,8 +52,6 @@ import static uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry.WAL
 @ExtendWith(MockitoExtension.class)
 class ResumePossessionClaimTest extends BaseEventTest {
 
-    private static final long CASE_REFERENCE = 1234L;
-
     @Mock
     private PcsCaseService pcsCaseService;
     @Mock
@@ -73,13 +67,15 @@ class ResumePossessionClaimTest extends BaseEventTest {
     @Mock
     private UnsubmittedCaseDataService unsubmittedCaseDataService;
     @Mock
+    private ContactPreferences contactPreferences;
+    @Mock
+    private DefendantsDetails defendantsDetails;
+    @Mock
     private NoticeDetails noticeDetails;
     @Mock
     private UserInfo userDetails;
     @Mock
     private TenancyLicenceDetails tenancyLicenceDetails;
-
-    private Event<PCSCase, UserRole, State> configuredEvent;
 
     @BeforeEach
     void setUp() {
@@ -93,9 +89,10 @@ class ResumePossessionClaimTest extends BaseEventTest {
                                                                     partyService, claimService,
                                                                     savingPageBuilderFactory, resumeClaim,
                                                                     unsubmittedCaseDataService, noticeDetails,
-                                                                    tenancyLicenceDetails);
+                                                                    tenancyLicenceDetails, contactPreferences,
+                                                                    defendantsDetails);
 
-        configuredEvent = getEvent(EventId.resumePossessionClaim, buildEventConfig(underTest));
+        setEventUnderTest(underTest);
     }
 
     @Test
@@ -105,11 +102,8 @@ class ResumePossessionClaimTest extends BaseEventTest {
             .legislativeCountry(WALES)
             .build();
 
-        EventPayload<PCSCase, State> eventPayload = new EventPayload<>(CASE_REFERENCE, caseData, null);
-
         // When
-        Start<PCSCase, State> startHandler = configuredEvent.getStartHandler();
-        Throwable throwable = catchThrowable(() -> startHandler.start(eventPayload));
+        Throwable throwable = catchThrowable(() -> callStartHandler(caseData));
 
         // Then
         assertThat(throwable)
@@ -124,11 +118,8 @@ class ResumePossessionClaimTest extends BaseEventTest {
             .propertyAddress(mock(AddressUK.class))
             .build();
 
-        EventPayload<PCSCase, State> eventPayload = new EventPayload<>(CASE_REFERENCE, caseData, null);
-
         // When
-        Start<PCSCase, State> startHandler = configuredEvent.getStartHandler();
-        Throwable throwable = catchThrowable(() -> startHandler.start(eventPayload));
+        Throwable throwable = catchThrowable(() -> callStartHandler(caseData));
 
         // Then
         assertThat(throwable)
@@ -156,11 +147,8 @@ class ResumePossessionClaimTest extends BaseEventTest {
             .legislativeCountry(WALES)
             .build();
 
-        EventPayload<PCSCase, State> eventPayload = new EventPayload<>(CASE_REFERENCE, caseData, null);
-
         // When
-        Start<PCSCase, State> startHandler = configuredEvent.getStartHandler();
-        PCSCase updatedCaseData = startHandler.start(eventPayload);
+        PCSCase updatedCaseData = callStartHandler(caseData);
 
         // Then
         assertThat(updatedCaseData.getClaimantName()).isEqualTo(expectedUserEmail);
@@ -179,11 +167,8 @@ class ResumePossessionClaimTest extends BaseEventTest {
             .legislativeCountry(legislativeCountry)
             .build();
 
-        EventPayload<PCSCase, State> eventPayload = new EventPayload<>(CASE_REFERENCE, caseData, null);
-
         // When
-        Start<PCSCase, State> startHandler = configuredEvent.getStartHandler();
-        PCSCase updatedCaseData = startHandler.start(eventPayload);
+        PCSCase updatedCaseData = callStartHandler(caseData);
 
         // Then
         List<String> actualClaimantTypeCodes = updatedCaseData.getClaimantType().getListItems().stream()
@@ -206,15 +191,12 @@ class ResumePossessionClaimTest extends BaseEventTest {
 
         when(userDetails.getUid()).thenReturn(UUID.randomUUID().toString());
 
-        EventPayload<PCSCase, State> eventPayload = new EventPayload<>(CASE_REFERENCE, caseData, null);
-
         // When
-        Submit<PCSCase, State> submitHandler = configuredEvent.getSubmitHandler();
-        submitHandler.submit(eventPayload);
+        callSubmitHandler(caseData);
 
         // Then
         ArgumentCaptor<PCSCase> pcsCaseCaptor = ArgumentCaptor.forClass(PCSCase.class);
-        verify(pcsCaseService).patchCase(eq(CASE_REFERENCE), pcsCaseCaptor.capture());
+        verify(pcsCaseService).patchCase(eq(TEST_CASE_REFERENCE), pcsCaseCaptor.capture());
 
         PCSCase dataToPatchWith = pcsCaseCaptor.getValue();
         assertThat(dataToPatchWith).isSameAs(caseData);
@@ -242,13 +224,10 @@ class ResumePossessionClaimTest extends BaseEventTest {
         when(userDetails.getUid()).thenReturn(userId.toString());
 
         PcsCaseEntity pcsCaseEntity = mock(PcsCaseEntity.class);
-        when(pcsCaseService.patchCase(eq(CASE_REFERENCE), any(PCSCase.class))).thenReturn(pcsCaseEntity);
-
-        EventPayload<PCSCase, State> eventPayload = new EventPayload<>(CASE_REFERENCE, caseData, null);
+        when(pcsCaseService.patchCase(eq(TEST_CASE_REFERENCE), any(PCSCase.class))).thenReturn(pcsCaseEntity);
 
         // When
-        Submit<PCSCase, State> submitHandler = configuredEvent.getSubmitHandler();
-        submitHandler.submit(eventPayload);
+        callSubmitHandler(caseData);
 
         // Then
         verify(partyService).createAndLinkParty(eq(pcsCaseEntity),
@@ -266,24 +245,20 @@ class ResumePossessionClaimTest extends BaseEventTest {
     @Test
     void shouldCreateMainClaimInSubmitCallback() {
         // Given
-        PCSCase caseData = PCSCase.builder()
-            .build();
-
         UUID userId = UUID.randomUUID();
         when(userDetails.getUid()).thenReturn(userId.toString());
 
         PcsCaseEntity pcsCaseEntity = mock(PcsCaseEntity.class);
-        when(pcsCaseService.patchCase(eq(CASE_REFERENCE), any(PCSCase.class))).thenReturn(pcsCaseEntity);
+        when(pcsCaseService.patchCase(eq(TEST_CASE_REFERENCE), any(PCSCase.class))).thenReturn(pcsCaseEntity);
 
         ClaimEntity claimEntity = mock(ClaimEntity.class);
         when(claimService.createAndLinkClaim(any(PcsCaseEntity.class), any(), anyString(), any(PartyRole.class)))
             .thenReturn(claimEntity);
 
-        EventPayload<PCSCase, State> eventPayload = new EventPayload<>(CASE_REFERENCE, caseData, null);
+        PCSCase caseData = mock(PCSCase.class);
 
         // When
-        Submit<PCSCase, State> submitHandler = configuredEvent.getSubmitHandler();
-        submitHandler.submit(eventPayload);
+        callSubmitHandler(caseData);
 
         // Then
         verify(claimService)
