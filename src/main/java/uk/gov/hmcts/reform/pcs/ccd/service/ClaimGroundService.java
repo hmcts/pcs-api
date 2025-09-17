@@ -56,6 +56,7 @@ public class ClaimGroundService {
         return entities;
     }
 
+    //TODO - Once 1543 is merged refactor and integrate
     private List<ClaimGroundEntity> getAssuredTenancyGroundsWithReason(PCSCase pcsCase) {
         return List.of();
     }
