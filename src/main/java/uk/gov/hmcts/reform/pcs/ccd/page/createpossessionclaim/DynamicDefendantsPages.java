@@ -59,7 +59,7 @@ public class DynamicDefendantsPages implements CcdPageConfiguration {
         var defendantPage = pageBuilder.page("DefendantDetails" + i, 
             (details, detailsBefore) -> midEventForDefendant(details, detailsBefore, defendantIndex));
         
-         if (i > 1) {
+        if (i > 1) {
             defendantPage.showCondition("addAnotherDefendant" + (i - 1) + "=\"YES\"");
         }
         
