@@ -80,6 +80,23 @@ class TenancyLicenceServiceTest {
             }
         );
 
+        // Test notice documents field
+        List<ListValue<Document>> noticeDocs = Arrays.asList(
+            ListValue.<Document>builder().id("20")
+                .value(Document.builder().filename("notice_served.pdf").build()).build(),
+            ListValue.<Document>builder().id("21")
+                .value(Document.builder().filename("certificate_service.pdf").build()).build()
+        );
+        assertTenancyLicenceField(
+            pcsCase -> when(pcsCase.getNoticeDocuments()).thenReturn(noticeDocs),
+            expected -> {
+                assertThat(expected.getNoticeDocuments()).hasSize(2);
+                assertThat(expected.getNoticeDocuments())
+                    .extracting(d -> d.getFilename())
+                    .containsExactlyInAnyOrder("notice_served.pdf", "certificate_service.pdf");
+            }
+        );
+
         // Test notice_served field updates
         assertTenancyLicenceField(
                 pcsCase -> when(pcsCase.getNoticeServed()).thenReturn(YesOrNo.YES),
@@ -239,5 +256,49 @@ class TenancyLicenceServiceTest {
         TenancyLicence result = tenancyLicenceService.buildTenancyLicence(pcsCase);
         // Then
         assertThat(result.getThirdPartyPaymentSourceOther()).isEqualTo("");
+    }
+
+    @Test
+    void shouldHandleNullRentStatementDocuments() {
+        // Given
+        PCSCase pcsCase = mock(PCSCase.class);
+        when(pcsCase.getRentStatementDocuments()).thenReturn(null);
+        // When
+        TenancyLicence result = tenancyLicenceService.buildTenancyLicence(pcsCase);
+        // Then
+        assertThat(result.getRentStatementDocuments()).isNull();
+    }
+
+    @Test
+    void shouldHandleEmptyRentStatementDocuments() {
+        // Given
+        PCSCase pcsCase = mock(PCSCase.class);
+        when(pcsCase.getRentStatementDocuments()).thenReturn(Collections.emptyList());
+        // When
+        TenancyLicence result = tenancyLicenceService.buildTenancyLicence(pcsCase);
+        // Then
+        assertThat(result.getRentStatementDocuments()).isEmpty();
+    }
+
+    @Test
+    void shouldHandleNullNoticeDocuments() {
+        // Given
+        PCSCase pcsCase = mock(PCSCase.class);
+        when(pcsCase.getNoticeDocuments()).thenReturn(null);
+        // When
+        TenancyLicence result = tenancyLicenceService.buildTenancyLicence(pcsCase);
+        // Then
+        assertThat(result.getNoticeDocuments()).isNull();
+    }
+
+    @Test
+    void shouldHandleEmptyNoticeDocuments() {
+        // Given
+        PCSCase pcsCase = mock(PCSCase.class);
+        when(pcsCase.getNoticeDocuments()).thenReturn(Collections.emptyList());
+        // When
+        TenancyLicence result = tenancyLicenceService.buildTenancyLicence(pcsCase);
+        // Then
+        assertThat(result.getNoticeDocuments()).isEmpty();
     }
 }
