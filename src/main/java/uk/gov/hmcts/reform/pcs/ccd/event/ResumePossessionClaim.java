@@ -24,27 +24,29 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.page.builder.SavingPageBuilderFactory;
-import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.CheckingNotice;
-import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.ClaimTypeNotEligibleEngland;
-import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.ClaimTypeNotEligibleWales;
-import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.ClaimantInformation;
-import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.ClaimantTypeNotEligibleEngland;
-import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.ClaimantTypeNotEligibleWales;
-import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.ContactPreferences;
-import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.DailyRentAmount;
-import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.DefendantsDetails;
-import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.GroundsForPossession;
-import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.MediationAndSettlement;
-import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.NoticeDetails;
-import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.PreActionProtocol;
-import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.RentArrears;
-import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.RentDetails;
-import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.ResumeClaim;
-import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.SelectClaimType;
-import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.SelectClaimantType;
-import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.TenancyLicenceDetails;
-import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.GroundForPossessionRentArrears;
-import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.GroundForPossessionAdditionalGrounds;
+import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.ClaimantCircumstances;
+import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.MoneyJudgment;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.CheckingNotice;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ClaimTypeNotEligibleEngland;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ClaimTypeNotEligibleWales;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ClaimantInformation;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ClaimantTypeNotEligibleEngland;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ClaimantTypeNotEligibleWales;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ContactPreferences;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.DailyRentAmount;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.DefendantsDetails;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.GroundsForPossession;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.MediationAndSettlement;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.NoticeDetails;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.PreActionProtocol;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.RentArrears;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.RentDetails;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ResumeClaim;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.SelectClaimType;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.SelectClaimantType;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.TenancyLicenceDetails;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.GroundForPossessionRentArrears;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.GroundForPossessionAdditionalGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.service.ClaimService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
@@ -77,7 +79,11 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
     private final SavingPageBuilderFactory savingPageBuilderFactory;
     private final ResumeClaim resumeClaim;
     private final UnsubmittedCaseDataService unsubmittedCaseDataService;
+    private final NoticeDetails noticeDetails;
+
     private final TenancyLicenceDetails tenancyLicenceDetails;
+    private final ContactPreferences contactPreferences;
+    private final DefendantsDetails defendantsDetails;
 
     @Override
     public void configure(ConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -99,8 +105,8 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             .add(new ClaimTypeNotEligibleEngland())
             .add(new ClaimTypeNotEligibleWales())
             .add(new ClaimantInformation())
-            .add(new ContactPreferences())
-            .add(new DefendantsDetails())
+            .add(contactPreferences)
+            .add(defendantsDetails)
             .add(tenancyLicenceDetails)
             .add(new GroundsForPossession())
             .add(new GroundForPossessionRentArrears())
@@ -108,10 +114,12 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             .add(new PreActionProtocol())
             .add(new MediationAndSettlement())
             .add(new CheckingNotice())
-            .add(new NoticeDetails())
+            .add(noticeDetails)
             .add(new RentDetails())
             .add(new DailyRentAmount())
-            .add(new RentArrears());
+            .add(new RentArrears())
+            .add(new MoneyJudgment())
+            .add(new ClaimantCircumstances());
     }
 
     private PCSCase start(EventPayload<PCSCase, State> eventPayload) {

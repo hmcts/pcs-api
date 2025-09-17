@@ -4,7 +4,7 @@ import uk.gov.hmcts.rse.CftlibExec
 
 buildscript {
   ext {
-    flywayVersion = '11.12.0'
+    flywayVersion = '11.13.0'
     serenityBddVersion = '4.2.33'
   }
   dependencies {
@@ -21,7 +21,7 @@ plugins {
   id 'org.flywaydb.flyway' version "$flywayVersion"
   id 'org.sonarqube' version '6.3.1.5724'
   id 'net.serenity-bdd.serenity-gradle-plugin' version "$serenityBddVersion"
-  id 'com.github.hmcts.rse-cft-lib' version '0.20.0-alpha.43'
+  id 'com.github.hmcts.rse-cft-lib' version '0.20.0-alpha.45'
   id 'io.freefair.lombok' version '8.14.2'
   id 'au.com.dius.pact' version '4.6.17'
   /*
@@ -294,12 +294,14 @@ ext {
   testcontainersVersion = "1.21.3"
   springFrameworkBootVersion = "3.5.5"
   lombokVersion = "1.18.40"
-  springSecurityVersion = "6.5.3"
+  springSecurityVersion = "6.5.4"
   pactVersion = "4.6.17"
   tomcatEmbedVersion = "11.0.11"
+  nettyVersion = "4.1.127.Final"
 }
 
 ext['snakeyaml.version'] = '2.0'
+ext['netty.version'] = nettyVersion
 
 dependencies {
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-web', version: springFrameworkBootVersion
