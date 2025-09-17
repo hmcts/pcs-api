@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim;
+package uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim;
 
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
@@ -23,9 +23,9 @@ public class PreActionProtocol implements CcdPageConfiguration {
                     <ul class="govuk-list govuk-list--bullet">
                         <li class="govuk-!-font-size-19">Contacted, or attempted to contact, the defendants.</li>
                         <li class="govuk-!-font-size-19">Tried to agree a repayment plan.</li>
-                        <li class="govuk-!-font-size-19">Applied for arrears to be paid by the 
+                        <li class="govuk-!-font-size-19">Applied for arrears to be paid by the
                         Department for Work and Pensions (DWP) by deductions from the defendants' benefits.</li>
-                        <li class="govuk-!-font-size-19">Offered to assist the defendants in a claim for 
+                        <li class="govuk-!-font-size-19">Offered to assist the defendants in a claim for
                         housing benefit or Universal Credit.</li>
                     </ul>
 
