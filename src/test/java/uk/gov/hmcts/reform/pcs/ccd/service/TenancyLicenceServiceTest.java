@@ -1,6 +1,9 @@
 package uk.gov.hmcts.reform.pcs.ccd.service;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
@@ -17,12 +20,15 @@ import java.util.Collections;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+@ExtendWith(MockitoExtension.class)
 class TenancyLicenceServiceTest {
 
     private final TenancyLicenceService tenancyLicenceService = new TenancyLicenceService();
+    
+    @Mock
+    private PCSCase pcsCase;
 
     @Test
     void shouldSetTenancyLicence() {
@@ -152,7 +158,6 @@ class TenancyLicenceServiceTest {
 
     private void assertTenancyLicenceField(java.util.function.Consumer<PCSCase> setupMock,
             java.util.function.Consumer<TenancyLicence> assertions) {
-        PCSCase pcsCase = mock(PCSCase.class);
         setupMock.accept(pcsCase);
         TenancyLicence actual = tenancyLicenceService.buildTenancyLicence(pcsCase);
         assertions.accept(actual);
@@ -161,7 +166,6 @@ class TenancyLicenceServiceTest {
     @Test
     void shouldUseAmendedDailyRentAmountWhenAvailable() {
         // Given
-        PCSCase pcsCase = mock(PCSCase.class);
         when(pcsCase.getAmendedDailyRentChargeAmount()).thenReturn("5000");
         when(pcsCase.getCalculatedDailyRentChargeAmount()).thenReturn("4000");
         when(pcsCase.getDailyRentChargeAmount()).thenReturn("3500");
@@ -176,7 +180,6 @@ class TenancyLicenceServiceTest {
     @Test
     void shouldUseCalculatedDailyRentAmountWhenAmendedNotAvailable() {
         // Given
-        PCSCase pcsCase = mock(PCSCase.class);
         when(pcsCase.getAmendedDailyRentChargeAmount()).thenReturn(null);
         when(pcsCase.getCalculatedDailyRentChargeAmount()).thenReturn("4000");
         when(pcsCase.getDailyRentChargeAmount()).thenReturn("3500");
@@ -191,7 +194,6 @@ class TenancyLicenceServiceTest {
     @Test
     void shouldUseDailyRentChargeAmountWhenOthersNotAvailable() {
         // Given
-        PCSCase pcsCase = mock(PCSCase.class);
         when(pcsCase.getAmendedDailyRentChargeAmount()).thenReturn(null);
         when(pcsCase.getCalculatedDailyRentChargeAmount()).thenReturn(null);
         when(pcsCase.getDailyRentChargeAmount()).thenReturn("3500");
@@ -206,7 +208,6 @@ class TenancyLicenceServiceTest {
     @Test
     void shouldHandleNullTotalRentArrears() {
         // Given
-        PCSCase pcsCase = mock(PCSCase.class);
         when(pcsCase.getTotalRentArrears()).thenReturn(null);
         // When
         TenancyLicence result = tenancyLicenceService.buildTenancyLicence(pcsCase);
@@ -217,7 +218,6 @@ class TenancyLicenceServiceTest {
     @Test
     void shouldHandleEmptyThirdPartyPaymentSources() {
         // Given
-        PCSCase pcsCase = mock(PCSCase.class);
         when(pcsCase.getThirdPartyPaymentSources()).thenReturn(Collections.emptyList());
         // When
         TenancyLicence result = tenancyLicenceService.buildTenancyLicence(pcsCase);
@@ -228,7 +228,6 @@ class TenancyLicenceServiceTest {
     @Test
     void shouldHandleNullThirdPartyPaymentSources() {
         // Given
-        PCSCase pcsCase = mock(PCSCase.class);
         when(pcsCase.getThirdPartyPaymentSources()).thenReturn(null);
         // When
         TenancyLicence result = tenancyLicenceService.buildTenancyLicence(pcsCase);
@@ -239,7 +238,6 @@ class TenancyLicenceServiceTest {
     @Test
     void shouldHandleNullThirdPartyPaymentSourceOther() {
         // Given
-        PCSCase pcsCase = mock(PCSCase.class);
         when(pcsCase.getThirdPartyPaymentSourceOther()).thenReturn(null);
         // When
         TenancyLicence result = tenancyLicenceService.buildTenancyLicence(pcsCase);
@@ -250,7 +248,6 @@ class TenancyLicenceServiceTest {
     @Test
     void shouldHandleEmptyThirdPartyPaymentSourceOther() {
         // Given
-        PCSCase pcsCase = mock(PCSCase.class);
         when(pcsCase.getThirdPartyPaymentSourceOther()).thenReturn("");
         // When
         TenancyLicence result = tenancyLicenceService.buildTenancyLicence(pcsCase);
@@ -261,7 +258,6 @@ class TenancyLicenceServiceTest {
     @Test
     void shouldHandleNullRentStatementDocuments() {
         // Given
-        PCSCase pcsCase = mock(PCSCase.class);
         when(pcsCase.getRentStatementDocuments()).thenReturn(null);
         // When
         TenancyLicence result = tenancyLicenceService.buildTenancyLicence(pcsCase);
@@ -272,7 +268,6 @@ class TenancyLicenceServiceTest {
     @Test
     void shouldHandleEmptyRentStatementDocuments() {
         // Given
-        PCSCase pcsCase = mock(PCSCase.class);
         when(pcsCase.getRentStatementDocuments()).thenReturn(Collections.emptyList());
         // When
         TenancyLicence result = tenancyLicenceService.buildTenancyLicence(pcsCase);
@@ -283,7 +278,6 @@ class TenancyLicenceServiceTest {
     @Test
     void shouldHandleNullNoticeDocuments() {
         // Given
-        PCSCase pcsCase = mock(PCSCase.class);
         when(pcsCase.getNoticeDocuments()).thenReturn(null);
         // When
         TenancyLicence result = tenancyLicenceService.buildTenancyLicence(pcsCase);
@@ -294,7 +288,6 @@ class TenancyLicenceServiceTest {
     @Test
     void shouldHandleEmptyNoticeDocuments() {
         // Given
-        PCSCase pcsCase = mock(PCSCase.class);
         when(pcsCase.getNoticeDocuments()).thenReturn(Collections.emptyList());
         // When
         TenancyLicence result = tenancyLicenceService.buildTenancyLicence(pcsCase);
