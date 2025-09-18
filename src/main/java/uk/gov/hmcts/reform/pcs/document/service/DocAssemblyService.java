@@ -38,27 +38,27 @@ public class DocAssemblyService {
             String authorization = idamService.getSystemUserAuthorisation();
             String serviceAuthorization = authTokenGenerator.generate();
 
-//            GenerateDocumentParams params = GenerateDocumentParams.builder()
-//                .userAuthentication(authorization)
-//                .templateId(request.getTemplateId())
-//                .formPayload(request.getFormPayload())
-//                .outputType(request.getOutputType())
-//                .outputFilename(request.getOutputFilename())
-//                .build();
+            //            GenerateDocumentParams params = GenerateDocumentParams.builder()
+            //                .userAuthentication(authorization)
+            //                .templateId(request.getTemplateId())
+            //                .formPayload(request.getFormPayload())
+            //                .outputType(request.getOutputType())
+            //                .outputFilename(request.getOutputFilename())
+            //                .build();
 
             // docAssemblyRequest with meta
             DocAssemblyRequest assemblyRequest = DocAssemblyRequest.builder()
 
-                .templateId(request.getTemplateId() != null ?
-                                request.getTemplateId() : "CV-SPC-CLM-ENG-01356.docx")
-                .outputType(request.getOutputType() != null ?
-                                request.getOutputType() : OutputType.PDF)
+                .templateId(request.getTemplateId() != null
+                    ? request.getTemplateId() : "CV-SPC-CLM-ENG-01356.docx")
+                .outputType(request.getOutputType() != null
+                    ? request.getOutputType() : OutputType.PDF)
                 .formPayload(request.getFormPayload())
                 .outputFilename(request.getOutputFilename())
-                .caseTypeId(request.getCaseTypeId() != null ?
-                                request.getCaseTypeId() : CaseType.getCaseType())
-                .jurisdictionId(request.getJurisdictionId() != null ?
-                                    request.getJurisdictionId() : CaseType.getJurisdictionId())
+                .caseTypeId(request.getCaseTypeId() != null
+                    ? request.getCaseTypeId() : CaseType.getCaseType())
+                .jurisdictionId(request.getJurisdictionId() != null
+                    ? request.getJurisdictionId() : CaseType.getJurisdictionId())
                 .secureDocStoreEnabled(true)
                 .build();
 
