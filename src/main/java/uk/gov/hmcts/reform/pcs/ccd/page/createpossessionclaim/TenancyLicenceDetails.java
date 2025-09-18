@@ -28,12 +28,12 @@ public class TenancyLicenceDetails implements CcdPageConfiguration {
         pageBuilder
             .page("tenancyLicenceDetails", this::midEvent)
             .pageLabel("Tenancy or licence details")
+            .label("tenancyLicenceDetails-Section", "## Tenancy information details",
+                   "[STATE]=\"AWAITING_FURTHER_CLAIM_DETAILS\"", true)
             .label("tenancyLicenceDetails-info", """
                ---
                <h2 class="govuk-heading-m">Tenancy or licence type</h2>
                """)
-            .label("TenancyLicenseDetailsHeader", "## Tenancy information details",
-                   "[STATE]=\"AWAITING_FURTHER_CLAIM_DETAILS\"", true)
             .mandatory(PCSCase::getTypeOfTenancyLicence)
             .mandatory(PCSCase::getDetailsOfOtherTypeOfTenancyLicence, "typeOfTenancyLicence=\"OTHER\"")
             .label("tenancyLicenceDetails-date-section", """

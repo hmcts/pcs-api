@@ -23,7 +23,7 @@ public class SelectClaimantType implements CcdPageConfiguration {
         pageBuilder
             .page("selectClaimantType", this::midEvent)
             .pageLabel("### Claimant type")
-            .label("selectClaimantTypeHeader", "## Claim Details",
+            .label("selectClaimantType-header", "## Claim Details",
                     "[STATE]=\"AWAITING_FURTHER_CLAIM_DETAILS\"", true)
             .label("selectClaimantTypeLabel", """
 
