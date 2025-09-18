@@ -18,11 +18,12 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import static uk.gov.hmcts.ccd.sdk.type.FieldType.DynamicRadioList;
+import static uk.gov.hmcts.ccd.sdk.type.FieldType.Label;
 import static uk.gov.hmcts.ccd.sdk.type.FieldType.MultiSelectList;
 import static uk.gov.hmcts.ccd.sdk.type.FieldType.TextArea;
 
 /**
- * The main domain model representing a possessions case.
+ * The main domain model representing a possession case.
  */
 @Builder
 @Data
@@ -63,6 +64,12 @@ public class PCSCase {
 
     @CCD(searchable = false, access = {CitizenAccess.class, CaseworkerAccess.class})
     private YesOrNo showCrossBorderPage;
+
+    @CCD(
+        typeOverride = Label,
+        access = {CitizenAccess.class, CaseworkerAccess.class}
+    )
+    public static final String ClaimantTypeLabel = "## What type of claimant are you?";
 
     @CCD(searchable = false, access = {CitizenAccess.class, CaseworkerAccess.class})
     private YesOrNo showPropertyNotEligiblePage;
@@ -322,7 +329,7 @@ public class PCSCase {
 
     @CCD(access = {CitizenAccess.class, CaseworkerAccess.class})
     private List<ListValue<DefendantDetails>> defendants;
-    
+
     // Notice Details fields
     @CCD(
         label = "How did you serve the notice?",
