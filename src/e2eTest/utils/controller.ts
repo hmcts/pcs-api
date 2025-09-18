@@ -17,18 +17,6 @@ function getExecutor(): { page: Page } {
   return testExecutor;
 }
 
-function readValuesFromInputObjects(obj: object): string {
-  const keys = Object.keys(obj);
-  const formattedPairs = keys.map(key => {
-    const value = (obj as actionRecord)[key];
-    let valueStr: string;
-    if (typeof value === 'string') valueStr = `${value}`;
-    else valueStr = String(value);
-    return `${key}: ${valueStr}`;
-  });
-  return `${formattedPairs.join(', ')}`;
-}
-
 export async function performAction(action: string, fieldName?: actionData | actionRecord, value?: actionData | actionRecord): Promise<void> {
   const executor = getExecutor();
   const actionInstance = ActionRegistry.getAction(action);
@@ -66,4 +54,16 @@ export async function performValidations(groupName: string, ...validations: vali
       await performValidation(validationType, fieldName, data);
     }
   });
+}
+
+function readValuesFromInputObjects(obj: object): string {
+  const keys = Object.keys(obj);
+  const formattedPairs = keys.map(key => {
+    const value = (obj as actionRecord)[key];
+    let valueStr: string;
+    if (typeof value === 'string') valueStr = `${value}`;
+    else valueStr = String(value);
+    return `${key}: ${valueStr}`;
+  });
+  return `${formattedPairs.join(', ')}`;
 }
