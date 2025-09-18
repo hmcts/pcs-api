@@ -32,7 +32,7 @@ public class TenancyLicenceDetails implements CcdPageConfiguration {
                ---
                <h2 class="govuk-heading-m">Tenancy or licence type</h2>
                """)
-            .label("selectClaimantTypeHeader", "## Tenancy information details",
+            .label("TenancyLicenseDetailsHeader", "## Tenancy information details",
                    "[STATE]=\"AWAITING_FURTHER_CLAIM_DETAILS\"", true)
             .mandatory(PCSCase::getTypeOfTenancyLicence)
             .mandatory(PCSCase::getDetailsOfOtherTypeOfTenancyLicence, "typeOfTenancyLicence=\"OTHER\"")
