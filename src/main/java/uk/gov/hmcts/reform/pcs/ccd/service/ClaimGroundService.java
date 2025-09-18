@@ -43,14 +43,14 @@ public class ClaimGroundService {
                     case RENT_ARREARS -> null;
                 };
 
-                String otherGroundDescription = ground.equals(IntroductoryDemotedOrOtherGrounds.OTHER)
+                String groundDescription = ground.equals(IntroductoryDemotedOrOtherGrounds.OTHER)
                         ? pcsCase.getOtherGroundDescription() : null;
 
                 entities.add(
                         ClaimGroundEntity.builder()
                                 .groundId(ground.name())
                                 .groundReason(reasonText)
-                                .groundDescription(otherGroundDescription)
+                                .groundDescription(groundDescription)
                                 .build());
             }
         }
