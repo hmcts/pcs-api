@@ -6,9 +6,9 @@ import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.docassembly.DocAssemblyClient;
 import uk.gov.hmcts.reform.docassembly.domain.DocAssemblyRequest;
 import uk.gov.hmcts.reform.docassembly.domain.DocAssemblyResponse;
+import uk.gov.hmcts.reform.docassembly.domain.OutputType;
 import uk.gov.hmcts.reform.docassembly.exception.DocumentGenerationFailedException;
 import uk.gov.hmcts.reform.pcs.ccd.CaseType;
-import uk.gov.hmcts.reform.pcs.document.model.GenerateDocumentParams;
 import uk.gov.hmcts.reform.pcs.document.service.exception.DocAssemblyException;
 import uk.gov.hmcts.reform.pcs.idam.IdamService;
 
@@ -29,7 +29,7 @@ public class DocAssemblyService {
         this.authTokenGenerator = authTokenGenerator;
     }
 
-    public String generateDocument(GenerateDocumentParams request) {
+    public String generateDocument(DocAssemblyRequest request) {
         try {
             if (request == null) {
                 throw new IllegalArgumentException("Request cannot be null");
@@ -38,23 +38,27 @@ public class DocAssemblyService {
             String authorization = idamService.getSystemUserAuthorisation();
             String serviceAuthorization = authTokenGenerator.generate();
 
-            GenerateDocumentParams params = GenerateDocumentParams.builder()
-                .userAuthentication(authorization)
-                .templateId(request.getTemplateId())
-                .formPayload(request.getFormPayload())
-                .outputType(request.getOutputType())
-                .outputFilename(request.getOutputFilename())
-                .build();
+//            GenerateDocumentParams params = GenerateDocumentParams.builder()
+//                .userAuthentication(authorization)
+//                .templateId(request.getTemplateId())
+//                .formPayload(request.getFormPayload())
+//                .outputType(request.getOutputType())
+//                .outputFilename(request.getOutputFilename())
+//                .build();
 
             // docAssemblyRequest with meta
             DocAssemblyRequest assemblyRequest = DocAssemblyRequest.builder()
 
-                .templateId(params.getTemplateId())
-                .outputType(params.getOutputType())
-                .formPayload(params.getFormPayload())
-                .outputFilename(params.getOutputFilename())
-                .caseTypeId(CaseType.getCaseType())
-                .jurisdictionId(CaseType.getJurisdictionId())
+                .templateId(request.getTemplateId() != null ?
+                                request.getTemplateId() : "CV-SPC-CLM-ENG-01356.docx")
+                .outputType(request.getOutputType() != null ?
+                                request.getOutputType() : OutputType.PDF)
+                .formPayload(request.getFormPayload())
+                .outputFilename(request.getOutputFilename())
+                .caseTypeId(request.getCaseTypeId() != null ?
+                                request.getCaseTypeId() : CaseType.getCaseType())
+                .jurisdictionId(request.getJurisdictionId() != null ?
+                                    request.getJurisdictionId() : CaseType.getJurisdictionId())
                 .secureDocStoreEnabled(true)
                 .build();
 
