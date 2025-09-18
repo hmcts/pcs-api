@@ -45,15 +45,15 @@ class AddressValidatorTest {
         return Stream.of(
             // Town, postcode, expected validation errors
             arguments(TEST_TOWN, TEST_POSTCODE, List.of()),
-            arguments(null, null, List.of("Town or City is required", "Postcode/Zipcode is required")),
-            arguments("", "", List.of("Town or City is required", "Postcode/Zipcode is required")),
-            arguments(" ", " ", List.of("Town or City is required", "Postcode/Zipcode is required")),
+            arguments(null, null, List.of("Town or City is required", "Postcode is required")),
+            arguments("", "", List.of("Town or City is required", "Postcode is required")),
+            arguments(" ", " ", List.of("Town or City is required", "Postcode is required")),
             arguments(null, TEST_POSTCODE, List.of("Town or City is required")),
             arguments("", TEST_POSTCODE, List.of("Town or City is required")),
             arguments(" ", TEST_POSTCODE, List.of("Town or City is required")),
-            arguments(TEST_TOWN, null, List.of("Postcode/Zipcode is required")),
-            arguments(TEST_TOWN, "", List.of("Postcode/Zipcode is required")),
-            arguments(TEST_TOWN, " ", List.of("Postcode/Zipcode is required"))
+            arguments(TEST_TOWN, null, List.of("Postcode is required")),
+            arguments(TEST_TOWN, "", List.of("Postcode is required")),
+            arguments(TEST_TOWN, " ", List.of("Postcode is required"))
         );
     }
 
