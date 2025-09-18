@@ -154,6 +154,14 @@ class TenancyLicenceServiceTest {
         assertTenancyLicenceField(
                 pcsCase -> when(pcsCase.getThirdPartyPaymentSourceOther()).thenReturn("Custom payment method"),
                 expected -> assertThat(expected.getThirdPartyPaymentSourceOther()).isEqualTo("Custom payment method"));
+
+        // Test arrearsJudgmentWanted field updates
+        assertTenancyLicenceField(
+                pcsCase -> when(pcsCase.getArrearsJudgmentWanted()).thenReturn(YesOrNo.YES),
+                expected -> assertThat(expected.getArrearsJudgmentWanted()).isTrue());
+        assertTenancyLicenceField(
+                pcsCase -> when(pcsCase.getArrearsJudgmentWanted()).thenReturn(YesOrNo.NO),
+                expected -> assertThat(expected.getArrearsJudgmentWanted()).isFalse());
     }
 
     private void assertTenancyLicenceField(java.util.function.Consumer<PCSCase> setupMock,
