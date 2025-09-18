@@ -8,7 +8,8 @@ import uk.gov.hmcts.reform.docassembly.domain.DocAssemblyRequest;
 import uk.gov.hmcts.reform.docassembly.domain.DocAssemblyResponse;
 import uk.gov.hmcts.reform.docassembly.exception.DocumentGenerationFailedException;
 import uk.gov.hmcts.reform.pcs.ccd.CaseType;
-import uk.gov.hmcts.reform.pcs.document.model.GenerateDocumentParams;
+import uk.gov.hmcts.reform.docassembly.domain.FormPayload;
+import uk.gov.hmcts.reform.docassembly.domain.OutputType;
 import uk.gov.hmcts.reform.pcs.document.service.exception.DocAssemblyException;
 import uk.gov.hmcts.reform.pcs.idam.IdamService;
 
@@ -29,30 +30,26 @@ public class DocAssemblyService {
         this.authTokenGenerator = authTokenGenerator;
     }
 
-    public String generateDocument(GenerateDocumentParams request) {
+    public String generateDocument(
+            FormPayload formPayload,
+            String templateId,
+            OutputType outputType,
+            String outputFilename
+    ) {
         try {
-            if (request == null) {
-                throw new IllegalArgumentException("Request cannot be null");
+            if (formPayload == null) {
+                throw new IllegalArgumentException("FormPayload cannot be null");
             }
 
             String authorization = idamService.getSystemUserAuthorisation();
             String serviceAuthorization = authTokenGenerator.generate();
 
-            GenerateDocumentParams params = GenerateDocumentParams.builder()
-                .userAuthentication(authorization)
-                .templateId(request.getTemplateId())
-                .formPayload(request.getFormPayload())
-                .outputType(request.getOutputType())
-                .outputFilename(request.getOutputFilename())
-                .build();
-
-            // docAssemblyRequest with meta
+            // Build DocAssemblyRequest directly
             DocAssemblyRequest assemblyRequest = DocAssemblyRequest.builder()
-
-                .templateId(params.getTemplateId())
-                .outputType(params.getOutputType())
-                .formPayload(params.getFormPayload())
-                .outputFilename(params.getOutputFilename())
+                .templateId(templateId)
+                .outputType(outputType)
+                .formPayload(formPayload)
+                .outputFilename(outputFilename)
                 .caseTypeId(CaseType.getCaseType())
                 .jurisdictionId(CaseType.getJurisdictionId())
                 .secureDocStoreEnabled(true)
