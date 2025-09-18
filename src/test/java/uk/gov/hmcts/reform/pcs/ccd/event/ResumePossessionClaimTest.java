@@ -216,7 +216,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
         String claimantContactPhoneNumber = "01234 567890";
         UUID userId = UUID.randomUUID();
 
-        final PCSCase caseData = PCSCase.builder()
+        PCSCase caseData = PCSCase.builder()
             .propertyAddress(propertyAddress)
             .legislativeCountry(WALES)
             .claimantName(claimantName)
