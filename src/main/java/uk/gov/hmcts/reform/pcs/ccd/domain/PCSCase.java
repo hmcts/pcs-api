@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.domain;
 
+import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import lombok.Builder;
 import lombok.Data;
 import uk.gov.hmcts.ccd.sdk.External;
@@ -13,9 +14,11 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseworkerAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenAccess;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
+
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
 
 import static uk.gov.hmcts.ccd.sdk.type.FieldType.DynamicRadioList;
 import static uk.gov.hmcts.ccd.sdk.type.FieldType.MultiSelectList;
@@ -322,7 +325,7 @@ public class PCSCase {
 
     @CCD(access = {CitizenAccess.class, CaseworkerAccess.class})
     private List<ListValue<DefendantDetails>> defendants;
-    
+
     // Notice Details fields
     @CCD(
         label = "How did you serve the notice?",
@@ -424,6 +427,36 @@ public class PCSCase {
 
     @CCD(searchable = false)
     private String nextStepsMarkdown;
+
+    @CCD(
+        label = "Do you have grounds for possession?",
+        access = {CitizenAccess.class, CaseworkerAccess.class}
+    )
+    private VerticalYesNo hasIntroductoryDemotedOtherGroundsForPossession;
+
+    @CCD(
+            label = "What are your grounds for possession?",
+            typeOverride = FieldType.MultiSelectList,
+            typeParameterOverride = "IntroductoryDemotedOrOtherGrounds",
+            access = {CitizenAccess.class,CaseworkerAccess.class}
+    )
+    private Set<IntroductoryDemotedOrOtherGrounds> introductoryDemotedOrOtherGrounds;
+
+    @CCD(
+            label = "Enter your grounds for Possession",
+            hint = "You'll be able to explain your reasons for claiming Possession"
+                    + " under these grounds on the next screen",
+            access = {CitizenAccess.class, CaseworkerAccess.class},
+            typeOverride = TextArea
+    )
+    private String otherGroundDescription;
+
+    @CCD(access = {CitizenAccess.class, CaseworkerAccess.class})
+    private YesOrNo showIntroductoryDemotedOtherGroundReasonPage;
+
+    @JsonUnwrapped
+    @CCD(access = {CitizenAccess.class, CaseworkerAccess.class})
+    private IntroductoryDemotedOtherGroundReason introductoryDemotedOtherGroundReason;
 
     @CCD(
         label = "Do you want the court to make a judgment for the outstanding arrears?",

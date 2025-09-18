@@ -25,7 +25,8 @@ public class GroundForPossessionRentArrears implements CcdPageConfiguration {
         pageBuilder
                 .page("groundForPossessionRentArrears", this::midEvent)
                 .pageLabel("Grounds for possession")
-                .showCondition("groundsForPossession=\"Yes\"")
+                .showCondition("groundsForPossession=\"Yes\""
+                               + " AND typeOfTenancyLicence=\"ASSURED_TENANCY\"")
                 .label("groundForPossessionRentArrears-info", """
                 ---
                 <p class="govuk-body">You may have already given the defendants notice of your intention to begin
