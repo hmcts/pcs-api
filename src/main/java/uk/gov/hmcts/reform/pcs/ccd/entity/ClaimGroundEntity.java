@@ -36,10 +36,10 @@ public class ClaimGroundEntity {
     @JsonBackReference
     private ClaimEntity claim;
 
-    @Column(name = "grounds_id")
-    private String groundsId;
+    @Column(name = "ground_id")
+    private String groundId;
 
-    @Column(name = "claims_reason_text")
-    private String claimsReasonText;
+    @Column(name = "ground_reason")
+    private String groundReason;
 }
 

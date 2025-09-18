@@ -93,7 +93,7 @@ class ClaimGroundServiceTest {
 
         expectedReasons.forEach((groundId, reason) ->
                                     assertThat(entities.stream().anyMatch(
-                                        e -> e.getGroundsId().equals(groundId) && e.getClaimsReasonText().equals(reason)
+                                        e -> e.getGroundId().equals(groundId) && e.getGroundReason().equals(reason)
                                     )).isTrue()
         );
     }

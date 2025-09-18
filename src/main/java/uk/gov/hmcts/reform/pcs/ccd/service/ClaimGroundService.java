@@ -37,8 +37,8 @@ public class ClaimGroundService {
             };
 
             entities.add(ClaimGroundEntity.builder()
-                             .groundsId(ground.name())
-                             .claimsReasonText(reasonText)
+                             .groundId(ground.name())
+                             .groundReason(reasonText)
                              .build());
         }
 
@@ -58,8 +58,8 @@ public class ClaimGroundService {
             };
 
             entities.add(ClaimGroundEntity.builder()
-                             .groundsId(ground.name())
-                             .claimsReasonText(reasonText)
+                             .groundId(ground.name())
+                             .groundReason(reasonText)
                              .build());
         }
         return entities;
