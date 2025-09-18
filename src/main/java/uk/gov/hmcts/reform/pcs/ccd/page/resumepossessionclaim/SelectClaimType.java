@@ -20,7 +20,6 @@ public class SelectClaimType implements CcdPageConfiguration {
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
             .page("selectClaimType", this::midEvent)
-            .showCondition("groundsForPossession=\"No\"")
             .pageLabel("Claim type")
             .label("selectClaimType-info", """
                         ---
