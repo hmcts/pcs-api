@@ -20,7 +20,7 @@ function getExecutor(): { page: Page } {
 export async function performAction(action: string, fieldName?: actionData | actionRecord, value?: actionData | actionRecord): Promise<void> {
   const executor = getExecutor();
   const actionInstance = ActionRegistry.getAction(action);
-  await test.step(`${action} - ${typeof fieldName === 'object' ? readValuesFromInputObjects(fieldName) : `${fieldName}`} ${value !== undefined ? ` with value '${typeof value === 'object' ? readValuesFromInputObjects(value) : value}'` : ''}`, async () => {
+  await test.step(`${action}${fieldName !== undefined ? ` - ${typeof fieldName === 'object' ? readValuesFromInputObjects(fieldName) : fieldName}` : ''} ${value !== undefined ? ` with value '${typeof value === 'object' ? readValuesFromInputObjects(value) : value}'` : ''}`, async () => {
     await actionInstance.execute(executor.page, action, fieldName, value);
   });
 }
