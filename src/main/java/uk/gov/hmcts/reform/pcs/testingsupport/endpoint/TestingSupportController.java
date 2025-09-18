@@ -23,8 +23,11 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 //import uk.gov.hmcts.reform.pcs.document.model.GenerateDocumentParams;
 import uk.gov.hmcts.reform.docassembly.domain.DocAssemblyRequest;
+import uk.gov.hmcts.reform.pcs.document.model.FormPayloadObj;
 import uk.gov.hmcts.reform.pcs.document.service.DocAssemblyService;
 import uk.gov.hmcts.reform.pcs.document.service.exception.DocAssemblyException;
+
+import java.util.Map;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.EligibilityResult;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.postcodecourt.service.EligibilityService;
@@ -138,13 +141,16 @@ public class TestingSupportController {
             description = "Document generation request containing template ID and form data",
             required = true
         )
-        @RequestBody DocAssemblyRequest request
+        @RequestBody Map<String, Object> requestBody
     ) {
 
         try {
-            if (request == null || request.getFormPayload() == null) {
-                return ResponseEntity.internalServerError().body("Doc Assembly service returned invalid document URL");
+            if (requestBody == null || requestBody.get("formPayload") == null) {
+                return ResponseEntity.badRequest().body("Request body and formPayload are required");
             }
+            
+            // Convert Map to DocAssemblyRequest
+            DocAssemblyRequest request = convertToDocAssemblyRequest(requestBody);
             String documentUrl = docAssemblyService.generateDocument(request);
             //            String documentUrl = "google.com";
             return ResponseEntity.created(URI.create(documentUrl)).body(documentUrl);
@@ -282,6 +288,64 @@ public class TestingSupportController {
             return ResponseEntity.status(503).body("Doc Assembly service is temporarily unavailable: " + message);
         } else {
             return ResponseEntity.internalServerError().body("Doc Assembly service error: " + message);
+        }
+    }
+
+    /**
+     * Converts Map request body to DocAssemblyRequest.
+     */
+    private DocAssemblyRequest convertToDocAssemblyRequest(Map<String, Object> requestBody) {
+        // Convert formPayload to FormPayloadObj
+        FormPayloadObj formPayloadObj = convertToFormPayloadObj(requestBody.get("formPayload"));
+        
+        return DocAssemblyRequest.builder()
+            .templateId((String) requestBody.get("templateId"))
+            .formPayload(formPayloadObj)
+            .outputType(requestBody.get("outputType") != null
+                ? uk.gov.hmcts.reform.docassembly.domain.OutputType.valueOf((String) requestBody.get("outputType"))
+                : uk.gov.hmcts.reform.docassembly.domain.OutputType.PDF)
+            .outputFilename((String) requestBody.get("outputFilename"))
+            .caseTypeId((String) requestBody.get("caseTypeId"))
+            .jurisdictionId((String) requestBody.get("jurisdictionId"))
+            .secureDocStoreEnabled(true)
+            .build();
+    }
+
+    /**
+     * Converts Object to FormPayloadObj for proper deserialization.
+     */
+    private FormPayloadObj convertToFormPayloadObj(Object formPayload) {
+        if (formPayload == null) {
+            return new FormPayloadObj();
+        }
+
+        if (formPayload instanceof FormPayloadObj) {
+            return (FormPayloadObj) formPayload;
+        }
+
+        if (formPayload instanceof Map) {
+            @SuppressWarnings("unchecked")
+            Map<String, Object> payloadMap = (Map<String, Object>) formPayload;
+            FormPayloadObj formPayloadObj = new FormPayloadObj();
+            
+            // Map the fields from the Map to FormPayloadObj
+            if (payloadMap.containsKey("applicantName")) {
+                formPayloadObj.setApplicantName((String) payloadMap.get("applicantName"));
+            }
+            if (payloadMap.containsKey("caseNumber")) {
+                formPayloadObj.setCaseNumber((String) payloadMap.get("caseNumber"));
+            }
+            
+            return formPayloadObj;
+        }
+
+        // For other types, use ObjectMapper to convert
+        try {
+            com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+            return mapper.convertValue(formPayload, FormPayloadObj.class);
+        } catch (Exception e) {
+            log.warn("Failed to convert FormPayload to FormPayloadObj, using empty object", e);
+            return new FormPayloadObj();
         }
     }
 }
