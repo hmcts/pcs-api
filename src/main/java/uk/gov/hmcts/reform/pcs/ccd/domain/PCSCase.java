@@ -67,7 +67,8 @@ public class PCSCase {
 
     @CCD(
         typeOverride = Label,
-        access = {CitizenAccess.class, CaseworkerAccess.class}
+        access = {CitizenAccess.class, CaseworkerAccess.class},
+        showSummaryContent = true
     )
     public static final String ClaimantTypeLabel = "## What type of claimant are you?";
 
