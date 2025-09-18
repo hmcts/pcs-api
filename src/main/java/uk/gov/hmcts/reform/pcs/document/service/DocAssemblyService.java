@@ -88,8 +88,8 @@ public class DocAssemblyService {
     }
 
     /**
-     * Converts FormPayload to FormPayloadObj for proper deserialization
-     * Handles both Map and FormPayload types
+     * Converts FormPayload to FormPayloadObj for proper deserialization.
+     * Handles both Map and FormPayload types.
      */
     private FormPayloadObj convertToFormPayloadObj(Object formPayload) {
         if (formPayload == null) {
@@ -116,7 +116,6 @@ public class DocAssemblyService {
             return formPayloadObj;
         }
 
-        // For other types, use ObjectMapper to convert
         try {
             ObjectMapper mapper = new ObjectMapper();
             return mapper.convertValue(formPayload, FormPayloadObj.class);
