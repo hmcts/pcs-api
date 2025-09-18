@@ -8,6 +8,7 @@ export const groundsForPossession = {
   breachOfTheTenancy: 'Breach of the tenancy',
   absoluteGrounds: 'Absolute grounds',
   other: 'Other',
+  otherGrounds: 'Other grounds',
   yes: 'Yes',
   no: 'No'
 };

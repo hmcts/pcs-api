@@ -17,6 +17,7 @@ import { accessTokenApiData } from '@data/api-data/accessToken.api.data';
 import { caseApiData } from '@data/api-data/case.api.data';
 import { dailyRentAmount } from '@data/page-data/dailyRentAmount.page.data';
 import {groundsForPossession} from "@data/page-data/groundsForPossession.page.data";
+import {reasonsForPossession} from "@data/page-data/reasonsForPossession.page.data";
 
 export let caseInfo: { id: string; fid: string; state: string };
 let caseNumber: string;
@@ -46,6 +47,7 @@ export class CreateCaseAction implements IAction {
       ['selectCountryRadioButton', () => this.selectCountryRadioButton(fieldName)],
       ['selectOtherGrounds', () => this.selectOtherGrounds(fieldName)],
       ['selectTenancyOrLicenceDetails', () => this.selectTenancyOrLicenceDetails(fieldName)],
+      ['enterReasonForPossession', () => this.enterReasonForPossession(fieldName)],
       ['provideRentDetails', () => this.provideRentDetails(fieldName)],
       ['selectDailyRentAmount', () => this.selectDailyRentAmount(fieldName)],
       ['selectClaimForMoney', () => this.selectClaimForMoney(fieldName)]
@@ -214,6 +216,16 @@ export class CreateCaseAction implements IAction {
     });
     if (defendantData.email === 'Yes') {
       await performAction('inputText', defendantDetails.enterEmailAddress, defendantDetails.emailIdInput);
+    }
+    await performAction('clickButton', 'Continue');
+  }
+
+  private async enterReasonForPossession(reasons: actionData) {
+    if (!Array.isArray(reasons)) {
+      throw new Error(`EnterReasonForPossession expected an array, but received ${typeof reasons}`);
+    }
+    for (let n = 0; n < reasons.length; n++) {
+      await performAction('inputText',  {text:reasons[n],index: n}, reasonsForPossession.detailsAboutYourReason);
     }
     await performAction('clickButton', 'Continue');
   }

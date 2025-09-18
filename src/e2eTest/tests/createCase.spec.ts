@@ -151,7 +151,7 @@ test.describe('[Create Case Flow With Address and Claimant Type] @Master @nightl
       grounds: [groundsForPossession.rentArrears, groundsForPossession.antiSocialBehaviour,
         groundsForPossession.breachOfTheTenancy, groundsForPossession.absoluteGrounds,groundsForPossession.other]});
     await performAction('enterReasonForPossession'
-      , [ groundsForPossession.antiSocialBehaviour, groundsForPossession.breachOfTheTenancy, groundsForPossession.absoluteGrounds,groundsForPossession.other]);
+      , [ groundsForPossession.antiSocialBehaviour, groundsForPossession.breachOfTheTenancy, groundsForPossession.absoluteGrounds,groundsForPossession.otherGrounds]);
     await performValidation('mainHeader', preActionProtocol.mainHeader);
     await performAction('selectPreActionProtocol', preActionProtocol.yes);
     await performValidation('mainHeader', mediationAndSettlement.mainHeader);

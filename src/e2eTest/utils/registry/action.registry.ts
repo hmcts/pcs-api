@@ -43,6 +43,7 @@ export class ActionRegistry {
     ['selectCountryRadioButton', new CreateCaseAction()],
     ['selectOtherGrounds', new CreateCaseAction()],
     ['selectTenancyOrLicenceDetails', new CreateCaseAction()],
+    ['enterReasonForPossession', new CreateCaseAction()],
     ['reloginAndFindTheCase', new CreateCaseAction()],
     ['provideRentDetails', new CreateCaseAction()],
     ['selectDailyRentAmount', new CreateCaseAction()],
