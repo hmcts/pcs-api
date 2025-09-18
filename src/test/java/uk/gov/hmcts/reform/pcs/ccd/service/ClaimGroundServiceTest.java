@@ -55,13 +55,12 @@ class ClaimGroundServiceTest {
         List<ClaimGroundEntity> entities = claimGroundService.getGroundsWithReason(caseData);
 
         // Then
-        assertThat(entities.get(0).getClaimsReasonText()).isNotBlank();
+        assertThat(entities.get(0).getGroundReason()).isNotBlank();
     }
 
     @Test
     void shouldNotHaveReasonIfRentArrearsGround() {
         // Given
-        CaseDetails<PCSCase, State> caseDetails = new CaseDetails<>();
         Set<IntroductoryDemotedOrOtherGrounds> grounds = Set.of(RENT_ARREARS);
 
         PCSCase caseData =
@@ -72,13 +71,11 @@ class ClaimGroundServiceTest {
                         .introductoryDemotedOtherGroundReason(getReasonForGround(grounds))
                         .build();
 
-        caseDetails.setData(caseData);
-
         // When
         List<ClaimGroundEntity> entities = claimGroundService.getGroundsWithReason(caseData);
 
         // Then
-        assertThat(entities.get(0).getClaimsReasonText()).isBlank();
+        assertThat(entities.get(0).getGroundReason()).isBlank();
     }
 
     private static Stream<Arguments> testGroundsOtherThanRentArrearsScenarios() {

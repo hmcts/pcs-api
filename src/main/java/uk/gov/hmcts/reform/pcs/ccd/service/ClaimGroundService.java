@@ -1,13 +1,14 @@
 package uk.gov.hmcts.reform.pcs.ccd.service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.pcs.ccd.domain.IntroductoryDemotedOrOtherGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimGroundEntity;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
 
 @Service
 public class ClaimGroundService {
@@ -30,28 +31,28 @@ public class ClaimGroundService {
             pcsCase.getIntroductoryDemotedOrOtherGrounds();
 
         List<ClaimGroundEntity> entities = new ArrayList<>();
+        if (introductoryDemotedOrOtherGrounds != null) {
+            for (IntroductoryDemotedOrOtherGrounds ground : introductoryDemotedOrOtherGrounds) {
+                String reasonText = switch (ground) {
+                    case ABSOLUTE_GROUNDS -> pcsCase.getIntroductoryDemotedOtherGroundReason().getAbsoluteGrounds();
+                    case ANTI_SOCIAL ->
+                            pcsCase.getIntroductoryDemotedOtherGroundReason().getAntiSocialBehaviourGround();
+                    case BREACH_OF_THE_TENANCY ->
+                            pcsCase.getIntroductoryDemotedOtherGroundReason().getBreachOfTenancyGround();
+                    case OTHER -> pcsCase.getIntroductoryDemotedOtherGroundReason().getOtherGround();
+                    case RENT_ARREARS -> null;
+                };
 
-        for (IntroductoryDemotedOrOtherGrounds ground : introductoryDemotedOrOtherGrounds) {
-            String reasonText = switch (ground) {
-                case ABSOLUTE_GROUNDS ->
-                    pcsCase.getIntroductoryDemotedOtherGroundReason().getAbsoluteGrounds();
-                case ANTI_SOCIAL ->
-                    pcsCase.getIntroductoryDemotedOtherGroundReason().getAntiSocialBehaviourGround();
-                case BREACH_OF_THE_TENANCY ->
-                    pcsCase.getIntroductoryDemotedOtherGroundReason().getBreachOfTenancyGround();
-                case OTHER -> pcsCase.getIntroductoryDemotedOtherGroundReason().getOtherGround();
-                case RENT_ARREARS -> null;
-            };
+                String otherGroundDescription = ground.equals(IntroductoryDemotedOrOtherGrounds.OTHER)
+                        ? pcsCase.getOtherGroundDescription() : null;
 
-            String otherGround = ground.equals(IntroductoryDemotedOrOtherGrounds.OTHER)
-                    ? pcsCase.getOtherGroundsOfPossession() : null;
-
-            entities.add(
-                ClaimGroundEntity.builder()
-                  .groundsId(ground.name())
-                  .claimsReasonText(reasonText)
-                  .otherGroundDescription(otherGround)
-                  .build());
+                entities.add(
+                        ClaimGroundEntity.builder()
+                                .groundId(ground.name())
+                                .groundReason(reasonText)
+                                .groundDescription(otherGroundDescription)
+                                .build());
+            }
         }
         return entities;
     }

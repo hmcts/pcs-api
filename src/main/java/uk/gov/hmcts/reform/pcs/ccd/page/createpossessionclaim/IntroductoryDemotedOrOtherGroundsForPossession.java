@@ -41,7 +41,7 @@ public class IntroductoryDemotedOrOtherGroundsForPossession implements CcdPageCo
             .mandatory(PCSCase::getHasIntroductoryDemotedOtherGroundsForPossession)
             .mandatory(PCSCase::getIntroductoryDemotedOrOtherGrounds,
                     "hasIntroductoryDemotedOtherGroundsForPossession=\"YES\"")
-            .mandatory(PCSCase::getOtherGroundsOfPossession,
+            .mandatory(PCSCase::getOtherGroundDescription,
                        "introductoryDemotedOrOtherGroundsCONTAINS\"OTHER\""
                         + "AND hasIntroductoryDemotedOtherGroundsForPossession=\"YES\"");
     }

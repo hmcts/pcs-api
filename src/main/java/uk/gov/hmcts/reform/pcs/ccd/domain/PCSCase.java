@@ -14,6 +14,7 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseworkerAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenAccess;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
+
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -448,7 +449,7 @@ public class PCSCase {
             access = {CitizenAccess.class, CaseworkerAccess.class},
             typeOverride = TextArea
     )
-    private String otherGroundsOfPossession;
+    private String otherGroundDescription;
 
     @CCD(access = {CitizenAccess.class, CaseworkerAccess.class})
     private YesOrNo showIntroductoryDemotedOtherGroundReasonPage;
