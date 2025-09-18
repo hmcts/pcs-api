@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.document.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
@@ -9,8 +10,11 @@ import uk.gov.hmcts.reform.docassembly.domain.DocAssemblyResponse;
 import uk.gov.hmcts.reform.docassembly.domain.OutputType;
 import uk.gov.hmcts.reform.docassembly.exception.DocumentGenerationFailedException;
 import uk.gov.hmcts.reform.pcs.ccd.CaseType;
+import uk.gov.hmcts.reform.pcs.document.model.FormPayloadObj;
 import uk.gov.hmcts.reform.pcs.document.service.exception.DocAssemblyException;
 import uk.gov.hmcts.reform.pcs.idam.IdamService;
+
+import java.util.Map;
 
 @Slf4j
 @Service
@@ -38,22 +42,16 @@ public class DocAssemblyService {
             String authorization = idamService.getSystemUserAuthorisation();
             String serviceAuthorization = authTokenGenerator.generate();
 
-            //            GenerateDocumentParams params = GenerateDocumentParams.builder()
-            //                .userAuthentication(authorization)
-            //                .templateId(request.getTemplateId())
-            //                .formPayload(request.getFormPayload())
-            //                .outputType(request.getOutputType())
-            //                .outputFilename(request.getOutputFilename())
-            //                .build();
+            // Convert FormPayload to FormPayloadObj
+            FormPayloadObj formPayloadObj = convertToFormPayloadObj(request.getFormPayload());
 
             // docAssemblyRequest with meta
             DocAssemblyRequest assemblyRequest = DocAssemblyRequest.builder()
-
                 .templateId(request.getTemplateId() != null
                     ? request.getTemplateId() : "CV-SPC-CLM-ENG-01356.docx")
                 .outputType(request.getOutputType() != null
                     ? request.getOutputType() : OutputType.PDF)
-                .formPayload(request.getFormPayload())
+                .formPayload(formPayloadObj)
                 .outputFilename(request.getOutputFilename())
                 .caseTypeId(request.getCaseTypeId() != null
                     ? request.getCaseTypeId() : CaseType.getCaseType())
@@ -86,6 +84,45 @@ public class DocAssemblyService {
         } catch (Exception e) {
             log.error("Unexpected error occurred during document generation", e);
             throw new DocAssemblyException("Unexpected error occurred during document generation", e);
+        }
+    }
+
+    /**
+     * Converts FormPayload to FormPayloadObj for proper deserialization
+     * Handles both Map and FormPayload types
+     */
+    private FormPayloadObj convertToFormPayloadObj(Object formPayload) {
+        if (formPayload == null) {
+            return new FormPayloadObj();
+        }
+
+        if (formPayload instanceof FormPayloadObj) {
+            return (FormPayloadObj) formPayload;
+        }
+
+        if (formPayload instanceof Map) {
+            @SuppressWarnings("unchecked")
+            Map<String, Object> payloadMap = (Map<String, Object>) formPayload;
+            FormPayloadObj formPayloadObj = new FormPayloadObj();
+
+            // Map the fields from the Map to FormPayloadObj
+            if (payloadMap.containsKey("applicantName")) {
+                formPayloadObj.setApplicantName((String) payloadMap.get("applicantName"));
+            }
+            if (payloadMap.containsKey("caseNumber")) {
+                formPayloadObj.setCaseNumber((String) payloadMap.get("caseNumber"));
+            }
+
+            return formPayloadObj;
+        }
+
+        // For other types, use ObjectMapper to convert
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            return mapper.convertValue(formPayload, FormPayloadObj.class);
+        } catch (Exception e) {
+            log.warn("Failed to convert FormPayload to FormPayloadObj, using empty object", e);
+            return new FormPayloadObj();
         }
     }
 }
