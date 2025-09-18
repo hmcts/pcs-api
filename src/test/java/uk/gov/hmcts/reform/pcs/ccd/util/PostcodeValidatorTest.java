@@ -3,9 +3,6 @@ package uk.gov.hmcts.reform.pcs.ccd.util;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
-import uk.gov.hmcts.ccd.sdk.type.AddressUK;
-
-import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -35,24 +32,4 @@ class PostcodeValidatorTest {
         assertThat(validator.isValidPostcode("")).isFalse();
     }
 
-    @Test
-    void shouldReturnTrueForNullAddress() {
-        assertThat(validator.isValidAddressPostcode(null)).isTrue();
-    }
-
-    @Test
-    void shouldReturnValidationErrorsForInvalidPostcode() {
-        AddressUK address = AddressUK.builder().postCode("12345").build();
-        List<String> errors = validator.getValidationErrors(address, "testField");
-        
-        assertThat(errors).containsExactly("Enter a valid postcode");
-    }
-
-    @Test
-    void shouldReturnEmptyErrorsForValidPostcode() {
-        AddressUK address = AddressUK.builder().postCode("M1 1AA").build();
-        List<String> errors = validator.getValidationErrors(address, "testField");
-        
-        assertThat(errors).isEmpty();
-    }
 }

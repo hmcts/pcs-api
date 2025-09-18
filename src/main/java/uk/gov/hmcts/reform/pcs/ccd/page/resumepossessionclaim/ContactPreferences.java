@@ -11,9 +11,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.service.AddressValidator;
-import uk.gov.hmcts.reform.pcs.ccd.util.PostcodeValidator;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
@@ -23,7 +21,6 @@ import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 public class ContactPreferences implements CcdPageConfiguration {
 
     private final AddressValidator addressValidator;
-    private final PostcodeValidator postcodeValidator;
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
@@ -98,29 +95,16 @@ public class ContactPreferences implements CcdPageConfiguration {
                                                                   CaseDetails<PCSCase, State> detailsBefore) {
 
         PCSCase caseData = details.getData();
-        List<String> errors = new ArrayList<>();
 
         VerticalYesNo isCorrectClaimantContactAddress = caseData.getIsCorrectClaimantContactAddress();
         if (isCorrectClaimantContactAddress == VerticalYesNo.NO) {
             AddressUK contactAddress = caseData.getOverriddenClaimantContactAddress();
-            
-            // Validate address fields
-            List<String> addressErrors = addressValidator.validateAddressFields(contactAddress);
-            errors.addAll(addressErrors);
-            
-            // Validate postcode
-            List<String> postcodeErrors = postcodeValidator.getValidationErrors(
-                contactAddress,
-                "overriddenClaimantContactAddress"
-            );
-            errors.addAll(postcodeErrors);
-        }
-
-        if (!errors.isEmpty()) {
-            return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
-                .data(caseData)
-                .errors(errors)
-                .build();
+            List<String> validationErrors = addressValidator.validateAddressFields(contactAddress);
+            if (!validationErrors.isEmpty()) {
+                return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
+                    .errors(validationErrors)
+                    .build();
+            }
         }
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
