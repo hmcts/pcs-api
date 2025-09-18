@@ -321,7 +321,6 @@ public class PCSCase {
     private List<ListValue<DefendantDetails>> defendants;
 
     // Individual defendant fields for CCD framework compatibility (1-25)
-    // These fields are required by the CCD framework for dynamic page generation
     @SuppressWarnings("checkstyle:MultipleVariableDeclarations")
     @CCD(access = {CitizenAccess.class, CaseworkerAccess.class})
     private DefendantDetails defendant1, defendant2, defendant3, defendant4, defendant5,
