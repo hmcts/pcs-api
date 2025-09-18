@@ -16,7 +16,7 @@ public class AddressValidator {
             validationErrors.add("Town or City is required");
         }
         if (StringUtils.isBlank(address.getPostCode())) {
-            validationErrors.add("Postcode/Zipcode is required");
+            validationErrors.add("Postcode is required");
         }
         return validationErrors;
     }

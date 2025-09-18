@@ -297,9 +297,11 @@ ext {
   springSecurityVersion = "6.5.4"
   pactVersion = "4.6.17"
   tomcatEmbedVersion = "11.0.11"
+  nettyVersion = "4.1.127.Final"
 }
 
 ext['snakeyaml.version'] = '2.0'
+ext['netty.version'] = nettyVersion
 
 dependencies {
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-web', version: springFrameworkBootVersion
