@@ -23,11 +23,11 @@ public class SelectClaimantType implements CcdPageConfiguration {
         pageBuilder
             .page("selectClaimantType", this::midEvent)
             .pageLabel("### Claimant type")
-            .label("selectClaimantTypeLabel", "## What type of claimant are you?")
-            .label("selectClaimantType-info", """
-                        ---
-                        A claimant is the person or organisation who is making the possession claim.
-                        """)
+            .label("selectClaimantTypeLabel", """
+                ### What type of claimant are you?
+                ---
+                A claimant is the person or organisation who is making the possession claim.
+                """)
             .readonly(PCSCase::getLegislativeCountry, NEVER_SHOW, true)
             .mandatory(PCSCase::getClaimantType);
     }
