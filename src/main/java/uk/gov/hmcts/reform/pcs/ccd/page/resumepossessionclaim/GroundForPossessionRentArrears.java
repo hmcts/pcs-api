@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim;
+package uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim;
 
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
@@ -58,17 +58,20 @@ public class GroundForPossessionRentArrears implements CcdPageConfiguration {
 
     public AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
                                                                   CaseDetails<PCSCase, State> detailsBefore) {
+
         PCSCase caseData = details.getData();
         // Get the rent arrears grounds that were selected
         Set<RentArrearsGround> rentArrearsGrounds = caseData.getRentArrearsGrounds();
 
         // Initialize sets if they don't exist
         Set<MandatoryGround> mandatoryGrounds = caseData.getMandatoryGrounds();
+
         if (mandatoryGrounds == null) {
             mandatoryGrounds = new HashSet<>();
         }
 
         Set<DiscretionaryGround> discretionaryGrounds = caseData.getDiscretionaryGrounds();
+
         if (discretionaryGrounds == null) {
             discretionaryGrounds = new HashSet<>();
         }
