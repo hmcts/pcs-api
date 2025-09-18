@@ -26,6 +26,8 @@ public class DefendantsDetails implements CcdPageConfiguration {
         pageBuilder
             .page("defendantsDetails", this::midEvent)
             .pageLabel("Defendant 1 details")
+            .label("selectClaimantTypeHeader", "## Defendant details",
+                   "[STATE]=\"AWAITING_FURTHER_CLAIM_DETAILS\"", true)
             .complex(PCSCase::getDefendant1)
                 .readonly(DefendantDetails::getNameSectionLabel)
                 .mandatory(DefendantDetails::getNameKnown)

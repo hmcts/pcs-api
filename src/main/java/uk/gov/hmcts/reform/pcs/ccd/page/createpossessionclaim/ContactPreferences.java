@@ -27,6 +27,8 @@ public class ContactPreferences implements CcdPageConfiguration {
         pageBuilder
             .page("contactPreferences", this::midEvent)
             .pageLabel("Contact preferences")
+            .label("selectClaimantTypeHeader", "## Contact preferences",
+                   "[STATE]=\"AWAITING_FURTHER_CLAIM_DETAILS\"", true)
 
             // Email section
             .readonly(PCSCase::getClaimantContactEmail, NEVER_SHOW)
