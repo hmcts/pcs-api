@@ -1,23 +1,16 @@
 package uk.gov.hmcts.reform.pcs.document.model;
 
-import lombok.Getter;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.Data;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.docassembly.domain.FormPayload;
 
-
-@Getter
+@Data
 @Component
 public class FormPayloadObj implements FormPayload {
+    @JsonProperty("applicantName")
     private String applicantName;
-    //    private FormPayload formPayload;
-    private String caseNumber;
 
-    //    {
-    //        "templateId": "CV-SPC-CLM-ENG-00001",
-    //        "formPayload": {
-    //        "applicantName": "John Doe",
-    //            "caseNumber": "1234567890"
-    //    },
-    //        "outputType": "PDF"
-    //    }
+    @JsonProperty("caseNumber")
+    private String caseNumber;
 }
