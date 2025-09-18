@@ -1,10 +1,5 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.params.provider.Arguments.arguments;
-
-import java.util.Set;
-import java.util.stream.Stream;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -19,6 +14,12 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
+
+import java.util.Set;
+import java.util.stream.Stream;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.params.provider.Arguments.arguments;
 
 @ExtendWith(MockitoExtension.class)
 class IntroductoryDemotedOrOtherGroundsForPossessionTest extends BasePageTest {
@@ -109,7 +110,7 @@ class IntroductoryDemotedOrOtherGroundsForPossessionTest extends BasePageTest {
         AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
 
         // Then
-        assertThat(response.getData().getIntroductoryDemotedOrOtherGrounds()).isEmpty();
+        assertThat(response.getData().getIntroductoryDemotedOrOtherGrounds()).isNull();
     }
 
     private static Stream<Arguments> testGroundsOtherThanRentArrearsScenarios() {

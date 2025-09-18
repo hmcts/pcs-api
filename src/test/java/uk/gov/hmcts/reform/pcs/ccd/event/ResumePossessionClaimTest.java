@@ -14,7 +14,6 @@ import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PaymentStatus;
-import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.page.builder.SavingPageBuilder;
@@ -41,12 +40,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static uk.gov.hmcts.reform.pcs.ccd.entity.PartyRole.CLAIMANT;
 import static uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry.ENGLAND;
 import static uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry.SCOTLAND;
 import static uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry.WALES;
@@ -194,8 +192,6 @@ class ResumePossessionClaimTest extends BaseEventTest {
             .build();
 
         when(userDetails.getUid()).thenReturn(UUID.randomUUID().toString());
-        when(claimService.createAndLinkClaim(any(), any(), eq("Main Claim"), eq(CLAIMANT)))
-                .thenReturn(ClaimEntity.builder().build());
 
         // When
         callSubmitHandler(caseData);
@@ -230,8 +226,6 @@ class ResumePossessionClaimTest extends BaseEventTest {
 
         // When
         when(userDetails.getUid()).thenReturn(userId.toString());
-        when(claimService.createAndLinkClaim(any(), any(), eq("Main Claim"), eq(CLAIMANT)))
-                .thenReturn(ClaimEntity.builder().build());
 
         when(pcsCaseService.patchCase(eq(TEST_CASE_REFERENCE), any(PCSCase.class))).thenReturn(pcsCaseEntity);
         callSubmitHandler(caseData);
@@ -257,10 +251,6 @@ class ResumePossessionClaimTest extends BaseEventTest {
         PcsCaseEntity pcsCaseEntity = mock(PcsCaseEntity.class);
         when(pcsCaseService.patchCase(eq(TEST_CASE_REFERENCE), any(PCSCase.class))).thenReturn(pcsCaseEntity);
 
-        ClaimEntity claimEntity = mock(ClaimEntity.class);
-        when(claimService.createAndLinkClaim(any(PcsCaseEntity.class), any(), anyString(), any(PartyRole.class)))
-            .thenReturn(claimEntity);
-
         PCSCase caseData = mock(PCSCase.class);
 
         // When
@@ -268,10 +258,9 @@ class ResumePossessionClaimTest extends BaseEventTest {
 
         // Then
         verify(claimService)
-            .createAndLinkClaim(eq(pcsCaseEntity), any(), eq("Main Claim"), eq(PartyRole.CLAIMANT));
+            .createAndLinkClaim(eq(pcsCaseEntity), any(), eq("Main Claim"), eq(PartyRole.CLAIMANT),anyList());
 
         verify(claimGroundService).getGroundsWithReason(caseData);
-        verify(claimService).saveClaim(claimEntity);
     }
 
     private static Stream<Arguments> claimantTypeScenarios() {

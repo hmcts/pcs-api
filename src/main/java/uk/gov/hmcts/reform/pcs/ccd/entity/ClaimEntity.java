@@ -53,7 +53,7 @@ public class ClaimEntity {
     @OneToMany(fetch = LAZY, cascade = ALL, mappedBy = "claim")
     @Builder.Default
     @JsonManagedReference
-    private Set<ClaimGroundEntity> claimGroundEntities = new HashSet<>();
+    private Set<ClaimGroundEntity> claimGrounds = new HashSet<>();
 
     private String summary;
 
@@ -71,7 +71,7 @@ public class ClaimEntity {
     public void addClaimGroundEntities(List<ClaimGroundEntity> grounds) {
         for (ClaimGroundEntity ground : grounds) {
             ground.setClaim(this);
-            this.claimGroundEntities.add(ground);
+            this.claimGrounds.add(ground);
         }
     }
 }

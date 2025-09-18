@@ -10,8 +10,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 
-import java.util.Set;
-
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 
 public class IntroductoryDemotedOrOtherGroundsForPossession implements CcdPageConfiguration {
@@ -30,7 +28,7 @@ public class IntroductoryDemotedOrOtherGroundsForPossession implements CcdPageCo
                 "introductoryDemotedOrOtherGroundsForPossession-info",
                   """
                    ---
-                   <p class="govuk-body">In some cases, a claimant can make for possession of a property
+                   <p class="govuk-body" tabindex="0">In some cases, a claimant can make for possession of a property
                    without having to rely on a specific ground. If your claim meets these
                    requirements, you can select that you have no grounds for possession.
 
@@ -65,10 +63,7 @@ public class IntroductoryDemotedOrOtherGroundsForPossession implements CcdPageCo
         } else {
             caseData.setShowIntroductoryDemotedOtherGroundReasonPage(YesOrNo.NO);
         }
-        // Clears checkboxes when use selects 'No'
-        if (caseData.getHasIntroductoryDemotedOtherGroundsForPossession() == VerticalYesNo.NO) {
-            caseData.setIntroductoryDemotedOrOtherGrounds(Set.of());
-        }
+
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
             .data(caseData)
             .build();
