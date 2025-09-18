@@ -118,8 +118,7 @@ test.describe('[Create Case Flow With Address and Claimant Type] @Master @nightl
     )
   });
 
-  //A houskeeping ticket has been created HDPI-1952 to fix this test
-  test.skip('Wales - Successful case creation with Saved options', async () => {
+  test('Wales - Successful case creation with Saved options', async () => {
     await performAction('enterTestAddressManually');
     await performValidation('bannerAlert', 'Case #.* has been created.');
     await performAction('extractCaseIdFromAlert');
@@ -181,8 +180,7 @@ test.describe('[Create Case Flow With Address and Claimant Type] @Master @nightl
       ['formLabelValue', 'Country', addressDetails.country]);
   });
 
-  //A houskeeping ticket has been created HDPI-1952 to fix this test
-  test.skip('Wales - Successful case creation without Saved options and Defendants correspondence address is not known', async () => {
+  test('Wales - Successful case creation without Saved options and Defendants correspondence address is not known', async () => {
     await performAction('enterTestAddressManually');
     await performValidation('bannerAlert', 'Case #.* has been created.');
     await performAction('extractCaseIdFromAlert');
