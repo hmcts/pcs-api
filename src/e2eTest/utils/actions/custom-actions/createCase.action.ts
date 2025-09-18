@@ -10,8 +10,9 @@ import { defendantDetails } from "@data/page-data/defendantDetails.page.data";
 import { claimantName } from '@data/page-data/claimantName.page.data';
 import { contactPreferences } from '@data/page-data/contactPreferences.page.data';
 import { mediationAndSettlement } from '@data/page-data/mediationAndSettlement.page.data';
-import {tenancyLicenceDetails} from '@data/page-data/tenancyLicenceDetails.page.data';
-import { resumeClaimOptions } from "@data/page-data/resumeClaimOptions.page.data";
+import { reasonsForPossession } from '@data/page-data/reasonsForPossession.page.data';
+import { tenancyLicenceDetails } from '@data/page-data/tenancyLicenceDetails.page.data';
+import { resumeClaimOptions } from '@data/page-data/resumeClaimOptions.page.data';
 import { rentDetails } from '@data/page-data/rentDetails.page.data';
 import { accessTokenApiData } from '@data/api-data/accessToken.api.data';
 import { caseApiData } from '@data/api-data/case.api.data';
@@ -45,6 +46,8 @@ export class CreateCaseAction implements IAction {
       ['selectCountryRadioButton', () => this.selectCountryRadioButton(fieldName)],
       ['selectOtherGrounds', () => this.selectOtherGrounds(fieldName)],
       ['selectTenancyOrLicenceDetails', () => this.selectTenancyOrLicenceDetails(fieldName)],
+      ['selectYourPossessionGrounds', () => this.selectYourPossessionGrounds(fieldName)],
+      ['enterReasonForPossession', () => this.enterReasonForPossession(fieldName)],
       ['provideRentDetails', () => this.provideRentDetails(fieldName)],
       ['selectDailyRentAmount', () => this.selectDailyRentAmount(fieldName)],
       ['selectClaimForMoney', () => this.selectClaimForMoney(fieldName)]
@@ -249,6 +252,38 @@ export class CreateCaseAction implements IAction {
         await performAction('clickButton', 'Add new');
         await performAction('uploadFile', file);
       }
+    }
+    await performAction('clickButton', 'Continue');
+  }
+
+  private async selectYourPossessionGrounds(possessionGrounds: actionData) {
+    const grounds = possessionGrounds as {
+      mandatory?: string[];
+      mandatoryAccommodation?: string[];
+      discretionary?: string[];
+      discretionaryAccommodation?: string[];
+    };
+    if (grounds.discretionary) {
+      await performAction('check', grounds.discretionary);
+    }
+    if (grounds.mandatory) {
+      await performAction('check', grounds.mandatory);
+    }
+    if (grounds.mandatoryAccommodation) {
+      await performAction('check', grounds.mandatoryAccommodation);
+    }
+    if (grounds.discretionaryAccommodation) {
+      await performAction('check', grounds.discretionaryAccommodation);
+    }
+    await performAction('clickButton', 'Continue');
+  }
+
+  private async enterReasonForPossession(reasons: actionData) {
+    if (!Array.isArray(reasons)) {
+      throw new Error(`EnterReasonForPossession expected an array, but received ${typeof reasons}`);
+    }
+    for (let n = 0; n < reasons.length; n++) {
+      await performAction('inputText',  {text:reasons[n],index: n}, reasonsForPossession.detailsAboutYourReason);
     }
     await performAction('clickButton', 'Continue');
   }

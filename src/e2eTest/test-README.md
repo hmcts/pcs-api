@@ -103,6 +103,8 @@ Playwright 1.30+ | TypeScript 4.9+
 | selectResumeClaimOption           | `performAction('selectResumeClaimOption', 'yes')`                                                                                                                                                          |
 | selectClaimForMoney               | `performAction('selectClaimForMoney', 'yes')`                                                                                                                                                              |
 | selectNoticeDetails               | `performAction('selectNoticeDetails', {howDidYouServeNotice: noticeDetails.byFirstClassPost, day: '', month: '', year: ''})`                                                                               |
+| selectYourPossessionGrounds       | `performAction('selectYourPossessionGrounds', {mandatory : [whatAreYourGroundsForPossession.mandatory.holidayLet]})`                                                                                       |
+| enterReasonForPossession          | `performAction('enterReasonForPossession',[whatAreYourGroundsForPossession.mandatory.holidayLet])`                                                                                                         |
 ### Validations
 | Validation        | Example Usage                                                                                                                        |
 |-------------------|--------------------------------------------------------------------------------------------------------------------------------------|
