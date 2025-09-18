@@ -1,9 +1,7 @@
-import Axios, { AxiosInstance, AxiosResponse } from 'axios';
-import { TestConfig } from 'config/test.config';
-import { getIdamAuthToken, getServiceAuthToken } from '../../helpers/idam-helpers/idam.helper';
+import Axios from 'axios';
+import { ServiceAuthUtils } from '@hmcts/playwright-common';
 import { actionData, IAction } from '../../interfaces/action.interface';
 import { Page } from '@playwright/test';
-import { getUser, initIdamAuthToken, initServiceAuthToken } from 'utils/helpers/idam-helpers/idam.helper';
 import { performAction, performActions, performValidation } from '@utils/controller';
 import { createCase } from '@data/page-data/createCase.page.data';
 import { addressDetails } from '@data/page-data/addressDetails.page.data';
@@ -12,46 +10,48 @@ import { defendantDetails } from "@data/page-data/defendantDetails.page.data";
 import { claimantName } from '@data/page-data/claimantName.page.data';
 import { contactPreferences } from '@data/page-data/contactPreferences.page.data';
 import { mediationAndSettlement } from '@data/page-data/mediationAndSettlement.page.data';
+import {tenancyLicenceDetails} from '@data/page-data/tenancyLicenceDetails.page.data';
+import { resumeClaimOptions } from "@data/page-data/resumeClaimOptions.page.data";
 import { rentDetails } from '@data/page-data/rentDetails.page.data';
+import { accessTokenApiData } from '@data/api-data/accessToken.api.data';
+import { caseApiData } from '@data/api-data/case.api.data';
+import { dailyRentAmount } from '@data/page-data/dailyRentAmount.page.data';
 
-let caseInfo: { id: string; fid: string; state: string };
-const testConfig = TestConfig.ccdCase;
+export let caseInfo: { id: string; fid: string; state: string };
+let caseNumber: string;
 
 export class CreateCaseAction implements IAction {
-  private eventToken?: string;
-
-  constructor(private readonly axios: AxiosInstance = Axios.create()) {
-  }
-
   async execute(page: Page, action: string, fieldName: actionData, data?: actionData): Promise<void> {
     const actionsMap = new Map<string, () => Promise<void>>([
-      ['createCase', () => this.createCaseAction(page, action, fieldName, data)],
+      ['createCase', () => this.createCaseAction(fieldName)],
       ['housingPossessionClaim', () => this.housingPossessionClaim()],
       ['selectAddress', () => this.selectAddress(fieldName)],
-      ['selectLegislativeCountry', () => this.selectLegislativeCountry(fieldName)],
+      ['selectResumeClaimOption', () => this.selectResumeClaimOption(fieldName)],
+      ['extractCaseIdFromAlert', () => this.extractCaseIdFromAlert(page)],
       ['selectClaimantType', () => this.selectClaimantType(fieldName)],
+      ['reloginAndFindTheCase', () => this.reloginAndFindTheCase()],
       ['defendantDetails', () => this.defendantDetails(fieldName)],
       ['selectJurisdictionCaseTypeEvent', () => this.selectJurisdictionCaseTypeEvent()],
       ['enterTestAddressManually', () => this.enterTestAddressManually()],
       ['selectClaimType', () => this.selectClaimType(fieldName)],
       ['selectClaimantName', () => this.selectClaimantName(fieldName)],
       ['selectContactPreferences', () => this.selectContactPreferences(fieldName)],
+      ['selectRentArrearsPossessionGround', () => this.selectRentArrearsPossessionGround(fieldName)],
       ['selectGroundsForPossession', () => this.selectGroundsForPossession(fieldName)],
       ['selectPreActionProtocol', () => this.selectPreActionProtocol(fieldName)],
       ['selectMediationAndSettlement', () => this.selectMediationAndSettlement(fieldName)],
       ['selectNoticeOfYourIntention', () => this.selectNoticeOfYourIntention(fieldName)],
+      ['selectNoticeDetails', () => this.selectNoticeDetails(fieldName)],
       ['selectCountryRadioButton', () => this.selectCountryRadioButton(fieldName)],
-      ['provideRentDetails', () => this.provideRentDetails(fieldName)]
+      ['selectOtherGrounds', () => this.selectOtherGrounds(fieldName)],
+      ['selectTenancyOrLicenceDetails', () => this.selectTenancyOrLicenceDetails(fieldName)],
+      ['provideRentDetails', () => this.provideRentDetails(fieldName)],
+      ['selectDailyRentAmount', () => this.selectDailyRentAmount(fieldName)],
+      ['selectClaimForMoney', () => this.selectClaimForMoney(fieldName)]
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) throw new Error(`No action found for '${action}'`);
     await actionToPerform();
-  }
-
-  private async createCaseAction(page: Page, action: string, fieldName: actionData, data?: actionData) {
-    const dataStoreApiInstance = await dataStoreApi();
-    await dataStoreApiInstance.execute(page, action, fieldName, data);
-    caseInfo = await dataStoreApiInstance.createCase(fieldName as string);
   }
 
   private async housingPossessionClaim() {
@@ -73,12 +73,20 @@ export class CreateCaseAction implements IAction {
       ['clickButton', 'Find address'],
       ['select', 'Select an address', addressDetails.addressIndex]
     );
-    await performAction('clickButton', 'Continue');
+    await performAction('clickButton', 'Submit');
   }
 
-  private async selectLegislativeCountry(caseData: actionData) {
+  private async extractCaseIdFromAlert(page: Page): Promise<void> {
+    const text = await page.locator('div.alert-message').innerText();
+    caseNumber = text.match(/#([\d-]+)/)?.[1] as string;
+    if (!caseNumber) {
+      throw new Error(`Case ID not found in alert message: "${text}"`);
+    }
+  }
+
+  private async selectResumeClaimOption(caseData: actionData) {
     await performAction('clickRadioButton', caseData);
-    await performAction('clickButton', 'Continue');
+    await performAction('clickButton', resumeClaimOptions.continue);
   }
 
   private async selectClaimantType(caseData: actionData) {
@@ -108,7 +116,7 @@ export class CreateCaseAction implements IAction {
 
   private async selectCountryRadioButton(option: actionData) {
     await performAction('clickRadioButton', option);
-    await performAction('clickButton', 'Continue');
+    await performAction('clickButton', 'Submit');
   }
 
   private async selectClaimantName(caseData: actionData) {
@@ -137,10 +145,12 @@ export class CreateCaseAction implements IAction {
       option: prefData.correspondenceAddress
     });
     if (prefData.correspondenceAddress === 'No') {
-      await performAction('selectAddress', {
-        postcode: addressDetails.englandPostcode,
-        addressIndex: addressDetails.addressIndex
-      });
+      await performActions(
+          'Find Address based on postcode',
+          ['inputText', 'Enter a UK postcode', addressDetails.englandCourtAssignedPostcode],
+          ['clickButton', 'Find address'],
+          ['select', 'Select an address', addressDetails.addressIndex]
+      );
     }
     await performAction('clickRadioButton', {
       question: contactPreferences.provideContactPhoneNumber,
@@ -152,7 +162,7 @@ export class CreateCaseAction implements IAction {
     await performAction('clickButton', 'Continue');
   }
 
-private async defendantDetails(defendantVal: actionData) {
+  private async defendantDetails(defendantVal: actionData) {
     const defendantData = defendantVal as {
       name: string;
       correspondenceAddress: string;
@@ -177,10 +187,12 @@ private async defendantDetails(defendantVal: actionData) {
         option: defendantData.correspondenceAddressSame
       });
       if (defendantData.correspondenceAddressSame === 'No') {
-        await performAction('selectAddress', {
-          postcode: addressDetails.englandPostcode,
-          addressIndex: addressDetails.addressIndex
-        });
+        await performActions(
+            'Find Address based on postcode',
+            ['inputText', 'Enter a UK postcode', addressDetails.englandCourtAssignedPostcode],
+            ['clickButton', 'Find address'],
+            ['select', 'Select an address', addressDetails.addressIndex]
+        );
       }
     }
     await performAction('clickRadioButton', {
@@ -189,6 +201,54 @@ private async defendantDetails(defendantVal: actionData) {
     });
     if (defendantData.email === 'Yes') {
       await performAction('inputText', defendantDetails.enterEmailAddress, defendantDetails.emailIdInput);
+    }
+    await performAction('clickButton', 'Continue');
+  }
+
+  private async selectRentArrearsPossessionGround(rentArrearsPossessionGrounds: actionData) {
+    const rentArrearsGrounds = rentArrearsPossessionGrounds as {
+      rentArrears: string[];
+      otherGrounds: string;
+    };
+    await performAction('check', rentArrearsGrounds.rentArrears);
+    await performAction('clickRadioButton', rentArrearsGrounds.otherGrounds);
+    await performAction('clickButton', 'Continue');
+  }
+
+  private async selectOtherGrounds(otherRentArrearsGrounds: actionData){
+    const otherGrounds = otherRentArrearsGrounds as {
+      mandatory?: string[];
+      discretionary?: string[];
+    }
+    if (otherGrounds.mandatory && otherGrounds.discretionary) {
+      await performAction('check', otherGrounds.mandatory);
+      await performAction('check', otherGrounds.discretionary);
+    }
+    await performAction('clickButton', 'Continue');
+  }
+
+  private async selectTenancyOrLicenceDetails(tenancyData: actionData) {
+    const tenancyLicenceData = tenancyData as {
+      tenancyOrLicenceType: string;
+      day?: string;
+      month?: string;
+      year?: string;
+      files?: string[];
+    };
+    await performAction('clickRadioButton', tenancyLicenceData.tenancyOrLicenceType);
+    if (tenancyLicenceData.tenancyOrLicenceType === 'Other') {
+      await performAction('inputText', 'Give details of the type of tenancy or licence agreement that\'s in place', tenancyLicenceDetails.detailsOfLicence);
+    }
+    if(tenancyLicenceData.day && tenancyLicenceData.month &&  tenancyLicenceData.year) {
+      await performAction('inputText', 'Day', tenancyLicenceData.day);
+      await performAction('inputText', 'Month', tenancyLicenceData.month);
+      await performAction('inputText', 'Year', tenancyLicenceData.year);
+    }
+    if (tenancyLicenceData.files) {
+      for (const file of tenancyLicenceData.files) {
+        await performAction('clickButton', 'Add new');
+        await performAction('uploadFile', file);
+      }
     }
     await performAction('clickButton', 'Continue');
   }
@@ -215,6 +275,61 @@ private async defendantDetails(defendantVal: actionData) {
     await performAction('clickButton', 'Continue');
   }
 
+  private async selectNoticeDetails(noticeData: actionData) {
+    const noticeDetailsData = noticeData as {
+      howDidYouServeNotice: string;
+      index: string,
+      day?: string;
+      month?: string;
+      year?: string;
+    };
+    await performAction('clickRadioButton', noticeDetailsData.howDidYouServeNotice);
+    if(noticeDetailsData.day && noticeDetailsData.month &&  noticeDetailsData.year) {
+      await performAction('inputText', {text: 'Day', index: noticeDetailsData.index}, noticeDetailsData.day);
+      await performAction('inputText', {text: 'Month', index: noticeDetailsData.index}, noticeDetailsData.month);
+      await performAction('inputText', {text: 'Year', index: noticeDetailsData.index}, noticeDetailsData.year);
+    }
+    await performAction('clickButton', 'Continue');
+  }
+
+  private async provideRentDetails(rentFrequency: actionData) {
+    const rentData = rentFrequency as {
+      rentFrequencyOption: string;
+      rentAmount?: string;
+      unpaidRentAmountPerDay?: string,
+      inputFrequency?: string
+    };
+    await performAction('inputText', rentDetails.HowMuchRentLabel, rentData.rentAmount);
+    await performAction('clickRadioButton', rentData.rentFrequencyOption);
+    if(rentData.rentFrequencyOption == 'Other'){
+      await performAction('inputText', rentDetails.rentFrequencyLabel, rentData.inputFrequency);
+      await performAction('inputText', rentDetails.amountPerDayInputLabel, rentData.unpaidRentAmountPerDay);
+    }
+    await performAction('clickButton', 'Continue');
+  }
+
+  private async selectDailyRentAmount(dailyRentAmountData: actionData) {
+    const rentAmount = dailyRentAmountData as {
+      calculateRentAmount: string,
+      unpaidRentInteractiveOption: string,
+      unpaidRentAmountPerDay?: string
+    };
+    await performValidation('text', {
+      text: dailyRentAmount.basedOnPreviousAnswers + `${rentAmount.calculateRentAmount}`,
+      elementType: 'paragraph'
+    });
+    await performAction('clickRadioButton', rentAmount.unpaidRentInteractiveOption);
+    if(rentAmount.unpaidRentInteractiveOption == 'No'){
+      await performAction('inputText', dailyRentAmount.enterAmountPerDayLabel, rentAmount.unpaidRentAmountPerDay);
+    }
+    await performAction('clickButton', 'Continue');
+  }
+
+  private async selectClaimForMoney(option: actionData) {
+    await performAction('clickRadioButton', option);
+    await performAction('clickButton', 'Continue');
+  }
+
   private async selectJurisdictionCaseTypeEvent() {
     await performActions('Case option selection'
       , ['select', 'Jurisdiction', createCase.possessionsJurisdiction]
@@ -232,89 +347,40 @@ private async defendantDetails(defendantVal: actionData) {
       , ['inputText', 'Address Line 3', addressDetails.addressLine3]
       , ['inputText', 'Town or City', addressDetails.townOrCity]
       , ['inputText', 'County', addressDetails.walesCounty]
-      , ['inputText', 'Postcode/Zipcode', addressDetails.postcode]
+      , ['inputText', 'Postcode/Zipcode', addressDetails.walesCourtAssignedPostcode]
       , ['inputText', 'Country', addressDetails.country]
     );
-    await performAction('clickButton', 'Continue');
+    await performAction('clickButton', 'Submit');
   }
 
-  private async provideRentDetails(rentFrequency: actionData) {
-    const rentData = rentFrequency as {
-      rentFrequencyOption: string;
-      rentAmount?: string;
-      unpaidRentAmountPerDay?: string,
-      inputFrequency?: string
-    };
-    await performAction('clickRadioButton', rentData.rentFrequencyOption);
-    if(rentData.rentFrequencyOption == 'Other'){
-      await performAction('inputText', rentDetails.rentFrequencyLabel, rentData.inputFrequency);
-      await performAction('inputText', rentDetails.amountPerDayInputLabel, rentData.unpaidRentAmountPerDay);
-    } else {
-      await performAction('inputText', rentDetails.HowMuchRentLabel, rentData.rentAmount);
-    }
-    await performAction('clickButton', 'Continue');
+  private async reloginAndFindTheCase() {
+    await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
+    await performAction('login')
+    await performAction('inputText', '16-digit case reference:', caseNumber);
+    await performAction('clickButton', 'Find');
   }
 
-  async getEventToken(): Promise<string> {
-    if (!this.eventToken) {
-      const tokenResponse: AxiosResponse<{ token: string }> = await this.axios.get(
-        `/case-types/${testConfig.caseType}/event-triggers/${testConfig.eventName}`
-      );
-      this.eventToken = tokenResponse.data.token;
-    }
-    return this.eventToken;
-  }
-
-  async createCase(caseData: actionData): Promise<{ id: string; fid: string; state: string }> {
-    const eventToken = await this.getEventToken();
-    const event = {id: `${testConfig.eventName}`};
+  private async createCaseAction(caseData: actionData): Promise<void> {
+    process.env.S2S_URL = accessTokenApiData.s2sUrl;
+    process.env.SERVICE_AUTH_TOKEN = await new ServiceAuthUtils().retrieveToken({microservice: caseApiData.microservice});
+    process.env.IDAM_AUTH_TOKEN = (await Axios.create().post(accessTokenApiData.accessTokenApiEndPoint, accessTokenApiData.accessTokenApiPayload)).data.access_token;
+    const createCaseApi = Axios.create(caseApiData.createCaseApiInstance);
+    process.env.EVENT_TOKEN = (await createCaseApi.get(caseApiData.eventTokenApiEndPoint)).data.token;
     const payloadData = typeof caseData === 'object' && 'data' in caseData ? caseData.data : caseData;
     try {
-      const response = await this.axios.post(
-        `/case-types/${testConfig.caseType}/cases`,
+      const response = await createCaseApi.post(caseApiData.createCaseApiEndPoint,
         {
           data: payloadData,
-          event: event,
-          event_token: eventToken,
+          event: {id: `${caseApiData.eventName}`},
+          event_token: process.env.EVENT_TOKEN,
         }
       );
-      return {
-        id: response.data.id,
-        fid: formatCaseNumber(response.data.id),
-        state: response.data.state,
-      };
-    } catch (err) {
-      throw err
+      caseInfo.id = response.data.id,
+      caseInfo.fid =  response.data.id.replace(/(.{4})(?=.)/g, '$1-'),
+      caseInfo.state = response.data.state
+    }
+    catch (error) {
       throw new Error('Case could not be created.');
     }
   }
-}
-
-//setup for the DataStoreApi to use the Axios instance with the correct headers and base URL
-export const dataStoreApi = async (): Promise<CreateCaseAction> => {
-  const userCreds = getUser('exuiUser');
-  await initIdamAuthToken(userCreds?.email ?? '', userCreds?.password ?? '');
-  await initServiceAuthToken();
-  return new CreateCaseAction(
-    Axios.create({
-      baseURL: `${testConfig.url}`,
-      headers: {
-        Authorization: `Bearer ${getIdamAuthToken()}`,
-        ServiceAuthorization: `Bearer ${getServiceAuthToken()}`,
-        'Content-Type': 'application/json',
-        'experimental': 'experimental',
-        'Accept': '*/*',
-      },
-    }),
-  );
-};
-
-export const getCaseInfo = (): { id: string; fid: string, state: string } => {
-  if (!caseInfo) {
-    throw new Error('Case information is not available. Ensure that a case has been created.');
-  }
-  return caseInfo;
-}
-export const formatCaseNumber = (id: string): string => {
-  return id.replace(/(.{4})(?=.)/g, '$1-');
 }

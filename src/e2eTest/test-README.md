@@ -66,34 +66,43 @@ Playwright 1.30+ | TypeScript 4.9+
 ## 4. Available Actions and Validations
 
 ### Actions
-| Action                          | Example Usage                                                                                                                                                                                              |
-|---------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| inputText                       | `performAction('inputText', 'Email', 'test@example.com')`                                                                                                                                                  |
-| check                           | `performAction('check', 'RememberMe')`                                                                                                                                                                     |
-| navigateToUrl                   | `performAction('navigateToUrl', 'testUrl')`                                                                                                                                                                |
-| clickTab                        | `performAction('clickTab', 'tabName')`                                                                                                                                                                     |
-| select                          | `performAction('select', 'dropdownName', 'option')`                                                                                                                                                        |
-| createCase                      | `performAction('createCase', 'data: caseData')`                                                                                                                                                            |
-| clickButton                     | `performAction('clickButton', 'buttonName)`                                                                                                                                                                |
-| clickRadioButton                | `performAction('clickRadioButton', 'radioButtonName')`                                                                                                                                                     |
-| selectLegislativeCountry        | `performAction('selectLegislativeCountry', {country: data.country})`                                                                                                                                       |
-| selectClaimantType              | `performAction('selectClaimantType', {claimantType : pathToDataFile.claimantTypeOption})`                                                                                                                  |
-| selectAddress                   | `performAction('selectAddress',{postcode: pathToDataFile.englandPostcode,addressIndex: pathToDataFile.addressIndex} )`                                                                                     |
-| createUserAndLogin              | `performAction('createUserAndLogin', ['caseworker-pcs', 'caseworker'])`                                                                                                                                    |
-| login                           | `performAction('login')`                                                                                                                                                                                   |
-| enterTestAddressManually        | `performAction('enterTestAddressManually')`                                                                                                                                                                |
-| selectJurisdictionCaseTypeEvent | `performAction('selectJurisdictionCaseTypeEvent')`                                                                                                                                                         |
-| housingPossessionClaim          | `performAction('selectCountryRadioButton', borderPostcode.countryOptions.england)`                                                                                                                         |
-| selectCountryRadioButton        | `performAction('selectCountryRadioButton', borderPostcode.countryOptions.england)`                                                                                                                         |
-| selectClaimType                 | `performAction('selectClaimType', claimType.no)`                                                                                                                                                           |
-| selectClaimantName              | `performAction('selectClaimantName', claimantName.yes)`                                                                                                                                                    |
-| selectContactPreferences        | `performAction('selectContactPreferences', {notifications: { answer: contactPreferences.yes }, correspondenceAddress: { answer: contactPreferences.yes }, phoneNumber: { answer: contactPreferences.no })` |
-| defendantDetails               | `performAction('defendantDetails', {name: defendantDetails.no, correspondenceAddress: defendantDetails.no, email: defendantDetails.no, correspondenceAddressSame: defendantDetails.no })`                   |
-| selectMediationAndSettlement    | `performAction('selectMediationAndSettlement',{attemptedMediationWithDefendantsOption: mediationAndSettlement.yes,settlementWithDefendantsOption: mediationAndSettlement.no}))`                            |
-| selectPreActionProtocol         | `performAction('selectPreActionProtocol', preActionProtocol.yes)`                                                                                                                                          |
-| selectNoticeOfYourIntention     | `performAction('selectNoticeOfYourIntention', checkingNotice.no)`                                                                                                                                          |
-| provideRentDetails              | `performAction('provideRentDetails', {rentFrequencyOption:'weekly', rentAmount:rentDetails.rentAmount})`                                                                                                   |
-| selectGroundsForPossession      | `performAction('selectGroundsForPossession', groundsForPossession.yes)`                                                                                                                                    |
+| Action                            | Example Usage                                                                                                                                                                                              |
+|-----------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| inputText                         | `performAction('inputText', 'Email', 'test@example.com')`                                                                                                                                                  |
+| check                             | `performAction('check', 'RememberMe')`                                                                                                                                                                     |
+| navigateToUrl                     | `performAction('navigateToUrl', 'testUrl')`                                                                                                                                                                |
+| clickTab                          | `performAction('clickTab', 'tabName')`                                                                                                                                                                     |
+| select                            | `performAction('select', 'dropdownName', 'option')`                                                                                                                                                        |
+| createCase                        | `performAction('createCase', 'data: caseData')`                                                                                                                                                            |
+| clickButton                       | `performAction('clickButton', 'buttonName)`                                                                                                                                                                |
+| clickRadioButton                  | `performAction('clickRadioButton', 'radioButtonName')`                                                                                                                                                     |
+| selectClaimantType                | `performAction('selectClaimantType', {claimantType : pathToDataFile.claimantTypeOption})`                                                                                                                  |
+| selectAddress                     | `performAction('selectAddress',{postcode: pathToDataFile.englandPostcode,addressIndex: pathToDataFile.addressIndex} )`                                                                                     |
+| createUserAndLogin                | `performAction('createUserAndLogin', ['caseworker-pcs', 'caseworker'])`                                                                                                                                    |
+| login                             | `performAction('login')`                                                                                                                                                                                   |
+| enterTestAddressManually          | `performAction('enterTestAddressManually')`                                                                                                                                                                |
+| selectJurisdictionCaseTypeEvent   | `performAction('selectJurisdictionCaseTypeEvent')`                                                                                                                                                         |
+| housingPossessionClaim            | `performAction('selectCountryRadioButton', borderPostcode.countryOptions.england)`                                                                                                                         |
+| selectCountryRadioButton          | `performAction('selectCountryRadioButton', borderPostcode.countryOptions.england)`                                                                                                                         |
+| selectClaimType                   | `performAction('selectClaimType', claimType.no)`                                                                                                                                                           |
+| selectClaimantName                | `performAction('selectClaimantName', claimantName.yes)`                                                                                                                                                    |
+| selectContactPreferences          | `performAction('selectContactPreferences', {notifications: { answer: contactPreferences.yes }, correspondenceAddress: { answer: contactPreferences.yes }, phoneNumber: { answer: contactPreferences.no })` |
+| defendantDetails                  | `performAction('defendantDetails', {name: defendantDetails.no, correspondenceAddress: defendantDetails.no, email: defendantDetails.no, correspondenceAddressSame: defendantDetails.no })`                  |
+| selectMediationAndSettlement      | `performAction('selectMediationAndSettlement',{attemptedMediationWithDefendantsOption: mediationAndSettlement.yes,settlementWithDefendantsOption: mediationAndSettlement.no}))`                            |
+| selectPreActionProtocol           | `performAction('selectPreActionProtocol', preActionProtocol.yes)`                                                                                                                                          |
+| selectNoticeOfYourIntention       | `performAction('selectNoticeOfYourIntention', checkingNotice.no)`                                                                                                                                          |
+| provideRentDetails                | `performAction('provideRentDetails', {rentFrequencyOption:'weekly', rentAmount:rentDetails.rentAmount})`                                                                                                   |
+| selectTenancyOrLicenceDetails     | `performAction('selectTenancyOrLicenceDetails', {tenancyOrLicenceType: tenancyLicenceDetails.assuredTenancy})`                                                                                             |
+| uploadFile                        | `performAction('uploadFile', 'SampleFile.png')`                                                                                                                                                            |
+| selectGroundsForPossession        | `performAction('selectGroundsForPossession', groundsForPossession.yes)`                                                                                                                                    |
+| selectRentArrearsPossessionGround | `performAction('selectRentArrearsPossessionGround', {rentArrears: [rentArrearsPossessionGrounds.rentArrears], otherGrounds: rentArrearsPossessionGrounds.no})`                                             |
+| selectOtherGrounds                | `performAction('selectOtherGrounds', {mandatory: [‘holidayLet’, ‘ownerOccupier’], discretionary :[‘domesticViolence’,’rentArrears’]})`                                                                     |
+| reloginAndFindTheCase             | `performAction('reloginAndFindTheCase')`                                                                                                                                                                   |
+| selectDailyRentAmount             | `performAction('selectDailyRentAmount', { calculateRentAmount: '£114.29',unpaidRentInteractiveOption: dailyRentAmount.no,unpaidRentAmountPerDay:'20'})`                                                    |
+| extractCaseIdFromAlert            | `performAction('extractCaseIdFromAlert')`                                                                                                                                                                  |
+| selectResumeClaimOption           | `performAction('selectResumeClaimOption', 'yes')`                                                                                                                                                          |
+| selectClaimForMoney               | `performAction('selectClaimForMoney', 'yes')`                                                                                                                                                              |
+| selectNoticeDetails               | `performAction('selectNoticeDetails', {howDidYouServeNotice: noticeDetails.byFirstClassPost, day: '', month: '', year: ''})`                                                                               |
 ### Validations
 | Validation        | Example Usage                                                                                                                        |
 |-------------------|--------------------------------------------------------------------------------------------------------------------------------------|
@@ -104,6 +113,7 @@ Playwright 1.30+ | TypeScript 4.9+
 | errorMessage      | `performValidation('errorMessage', {header: claimantType.errorMessage.header,errorHasLink: claimantType.errorMessage.errorMessage})` |
 | optionList        | `performValidation('optionList', 'sectionName', {optionsData})`                                                                      |
 | mainHeader        | `performValidation('mainHeader', borderPostcode.mainHeader)`                                                                         |
+| radioButtonChecked | `performValidation('radioButtonChecked')`                                                                                           |
 ### Basic Test
 
 ```typescript
@@ -164,15 +174,15 @@ await performValidationGroup(
 
 ### The following environment variables are needed to run the tests:
 
-- NODE_CONFIG_ENV
-- TEST_URL
-- PCS_FRONTEND_IDAM_SECRET
-- IDAM_SYSTEM_PASSWORD
+- CHANGE_ID (same as PR number - Required only pointing to Preview env)
+- MANAGE_CASE_BASE_URL
+- PCS_API_IDAM_SECRET
 - IDAM_SYSTEM_USERNAME
-- PCS_IDAM_TEST_USER_PASSWORD
+- IDAM_SYSTEM_USER_PASSWORD
+- IDAM_PCS_USER_PASSWORD
 
 ```bash
-yarn test:e2e
+yarn test:chrome
 ```
 
 ## 8. Troubleshooting

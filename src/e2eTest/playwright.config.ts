@@ -11,11 +11,10 @@ module.exports = defineConfig({
   forbidOnly: !!process.env.CI,
   /* Retry on CI only */
   retries: process.env.CI ? 2 : 0,
-  timeout: 30 * 1000,
+  timeout: 60 * 1000,
   expect: { timeout: 60_000 },
   /* Report slow tests if they take longer than 5 mins */
   reportSlowTests: { max: 15, threshold: 5 * 60 * 1000 },
-  workers: process.env.FUNCTIONAL_TESTS_WORKERS ? parseInt(process.env.FUNCTIONAL_TESTS_WORKERS) : 4,
   globalSetup: require.resolve('./config/global-setup.config'),
   globalTeardown: require.resolve('./config/global-teardown.config'),
   reporter: [
@@ -43,8 +42,23 @@ module.exports = defineConfig({
         trace: 'on-first-retry',
         javaScriptEnabled: true,
         viewport: DEFAULT_VIEWPORT,
-        headless: true,
+        headless: process.env.CI? true : false,
       },
-    }
-  ],
+    },
+    ...(process.env.CI ? [
+      {
+        name: 'firefox',
+        use: {
+          ...devices["Desktop Firefox"],
+          channel: 'firefox',
+          screenshot: 'only-on-failure' as const,
+          video: 'retain-on-failure' as const,
+          trace: 'on-first-retry' as const,
+          javaScriptEnabled: true,
+          viewport: DEFAULT_VIEWPORT,
+          headless: process.env.CI? true : false,
+        }
+      }
+    ] : [])
+  ]
 });
