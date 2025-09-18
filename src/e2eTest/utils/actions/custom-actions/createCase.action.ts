@@ -16,8 +16,8 @@ import { rentDetails } from '@data/page-data/rentDetails.page.data';
 import { accessTokenApiData } from '@data/api-data/accessToken.api.data';
 import { caseApiData } from '@data/api-data/case.api.data';
 import { dailyRentAmount } from '@data/page-data/dailyRentAmount.page.data';
-import {groundsForPossession} from "@data/page-data/groundsForPossession.page.data";
-import {reasonsForPossession} from "@data/page-data/reasonsForPossession.page.data";
+import { groundsForPossession } from '@data/page-data/groundsForPossession.page.data';
+import { reasonsForPossession } from '@data/page-data/reasonsForPossession.page.data';
 
 export let caseInfo: { id: string; fid: string; state: string };
 let caseNumber: string;
@@ -45,7 +45,7 @@ export class CreateCaseAction implements IAction {
       ['selectNoticeOfYourIntention', () => this.selectNoticeOfYourIntention(fieldName)],
       ['selectNoticeDetails', () => this.selectNoticeDetails(fieldName)],
       ['selectCountryRadioButton', () => this.selectCountryRadioButton(fieldName)],
-      ['selectOtherGrounds', () => this.selectOtherGrounds(fieldName)],
+      ['selectYourPossessionGrounds', () => this.selectYourPossessionGrounds(fieldName)],
       ['selectTenancyOrLicenceDetails', () => this.selectTenancyOrLicenceDetails(fieldName)],
       ['enterReasonForPossession', () => this.enterReasonForPossession(fieldName)],
       ['provideRentDetails', () => this.provideRentDetails(fieldName)],
@@ -240,14 +240,24 @@ export class CreateCaseAction implements IAction {
     await performAction('clickButton', 'Continue');
   }
 
-  private async selectOtherGrounds(otherRentArrearsGrounds: actionData){
-    const otherGrounds = otherRentArrearsGrounds as {
+  private async selectYourPossessionGrounds(possessionGrounds: actionData) {
+    const grounds = possessionGrounds as {
       mandatory?: string[];
+      mandatoryAccommodation?: string[];
       discretionary?: string[];
+      discretionaryAccommodation?: string[];
+    };
+    if (grounds.discretionary) {
+      await performAction('check', grounds.discretionary);
     }
-    if (otherGrounds.mandatory && otherGrounds.discretionary) {
-      await performAction('check', otherGrounds.mandatory);
-      await performAction('check', otherGrounds.discretionary);
+    if (grounds.mandatory) {
+      await performAction('check', grounds.mandatory);
+    }
+    if (grounds.mandatoryAccommodation) {
+      await performAction('check', grounds.mandatoryAccommodation);
+    }
+    if (grounds.discretionaryAccommodation) {
+      await performAction('check', grounds.discretionaryAccommodation);
     }
     await performAction('clickButton', 'Continue');
   }

@@ -74,7 +74,7 @@ test.describe('[Create Case Flow With Address and Claimant Type] @Master @nightl
       rentArrears: [rentArrearsPossessionGrounds.rentArrears, rentArrearsPossessionGrounds.seriousRentArrears, rentArrearsPossessionGrounds.persistentDelayInPayingRent],
       otherGrounds: rentArrearsPossessionGrounds.yes
     });
-    await performAction('selectOtherGrounds',{
+    await performAction('selectYourPossessionGrounds',{
       mandatory: [whatAreYourGroundsForPossession.mandatory.holidayLet,whatAreYourGroundsForPossession.mandatory.ownerOccupier],
       discretionary: [whatAreYourGroundsForPossession.discretionary.domesticViolence14A,whatAreYourGroundsForPossession.discretionary.rentArrears],
     });
