@@ -22,7 +22,7 @@ public class RentDetails implements CcdPageConfiguration {
         pageBuilder
                 .page("rentDetails", this::midEvent)
                 .pageLabel("Rent details")
-                .showCondition("groundsForPossession=\"Yes\" AND noticeServed = \"No\"")
+                .showCondition("groundsForPossession=\"Yes\"")
                 .label("rentDetails-content",
                         """
                         ---
