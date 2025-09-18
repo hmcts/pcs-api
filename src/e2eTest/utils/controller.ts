@@ -23,7 +23,6 @@ function readValuesFromInputObjects(obj: object): string {
     const value = (obj as actionRecord)[key];
     let valueStr: string;
     if (typeof value === 'string') valueStr = `${value}`;
-    else if (typeof value === 'object') valueStr = `${readValuesFromInputObjects(value as object)}`;
     else valueStr = String(value);
     return `${key}: ${valueStr}`;
   });
