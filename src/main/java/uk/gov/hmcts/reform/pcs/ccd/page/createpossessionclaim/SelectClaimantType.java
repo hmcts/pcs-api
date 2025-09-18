@@ -23,7 +23,8 @@ public class SelectClaimantType implements CcdPageConfiguration {
         pageBuilder
             .page("selectClaimantType", this::midEvent)
             .pageLabel("### Claimant type")
-            .label("selectClaimantTypeHeader", PCSCase.ClaimantTypeLabel, NEVER_SHOW, true)
+            .label("selectClaimantTypeHeader", "## What type of claimant are you?",
+                    "[STATE]=\"AWAITING_FURTHER_CLAIM_DETAILS\"", true)
             .label("selectClaimantTypeLabel", """
                 ---
                 A claimant is the person or organisation who is making the possession claim.
