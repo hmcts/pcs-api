@@ -233,6 +233,8 @@ test.describe('[Create Case Flow]  @Master @nightly', async () => {
       calculateRentAmount: '£32.85',
       unpaidRentInteractiveOption: dailyRentAmount.yes
     });
+    await performAction('selectClaimForMoney', moneyJudgment.yes);
+    await performAction('clickButton', claimantCircumstances.continue);
     await performAction('clickButton', 'Save and continue');
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
     await performAction('clickTab', 'Property Details');
