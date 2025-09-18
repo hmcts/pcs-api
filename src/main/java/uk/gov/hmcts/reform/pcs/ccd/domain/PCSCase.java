@@ -431,13 +431,10 @@ public class PCSCase {
     )
     private YesOrNo arrearsJudgmentWanted;
 
-    @CCD(
-        access = {CitizenAccess.class, CaseworkerAccess.class}
-    )
+    @CCD
     private VerticalYesNo claimantCircumstancesSelect;
 
     @CCD(
-        access = {CitizenAccess.class, CaseworkerAccess.class},
         max = 950,
         typeOverride = TextArea
     )
