@@ -261,12 +261,6 @@ sonarqube {
       "**/uk/gov/hmcts/reform/pcs/ccd/config/HighLevelDataSetupApp.java," +
       "**/uk/gov/hmcts/reform/pcs/ccd/domain/**/*.java," +
       "**/uk/gov/hmcts/reform/pcs/ccd/entity/**/*.java," +
-      "**/uk/gov/hmcts/reform/pcs/ccd/document/**/*.java," +
-      "**/uk/gov/hmcts/reform/pcs/ccd/document/service/**/*.java," +
-      "**/uk/gov/hmcts/reform/pcs/ccd/testingsupport/**/*.java," +
-      "**/uk/gov/hmcts/reform/pcs/document/**/*.java," +
-      "**/uk/gov/hmcts/reform/pcs/testingsupport/**/*.java," +
-      "**/uk/gov/hmcts/reform/pcs/ccd/CaseType.java," +
       "**/entities/**," + "**/model/**"
   }
 }
