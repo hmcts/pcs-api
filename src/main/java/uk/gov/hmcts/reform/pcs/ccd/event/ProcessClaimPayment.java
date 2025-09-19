@@ -2,7 +2,6 @@ package uk.gov.hmcts.reform.pcs.ccd.event;
 
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
-
 import uk.gov.hmcts.ccd.sdk.api.CCDConfig;
 import uk.gov.hmcts.ccd.sdk.api.ConfigBuilder;
 import uk.gov.hmcts.ccd.sdk.api.Event;
@@ -17,9 +16,8 @@ import uk.gov.hmcts.reform.pcs.ccd.page.claimpayment.ClaimPayment;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.postcodecourt.service.PostCodeCourtService;
 
-
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
-import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.PCS_CASE_WORKER;
+import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.PCS_SOLICITOR;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.State.CASE_ISSUED;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.processClaimPayment;
 
@@ -39,7 +37,7 @@ public class ProcessClaimPayment implements CCDConfig<PCSCase, State, UserRole> 
             .forStates(CASE_ISSUED)
             .showCondition(NEVER_SHOW)
             .name("Claim Payment")
-                .grant(Permission.CRU, PCS_CASE_WORKER);
+            .grant(Permission.CRU, PCS_SOLICITOR);
 
         new PageBuilder(eventBuilder)
             .add(new ClaimPayment());

@@ -11,9 +11,11 @@ import uk.gov.hmcts.reform.ccd.client.CoreCaseDataApi;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDataContent;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.ccd.client.model.Event;
+import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
 import uk.gov.hmcts.reform.pcs.ccd.CaseType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.rse.ccd.lib.test.CftlibTest;
 
@@ -29,21 +31,17 @@ public class TestWithCCD extends CftlibTest {
     @Autowired
     private IdamClient idamClient;
 
-    CaseDetails caseDetails;
-    String idamToken;
-    String s2sToken;
-    String userId;
+    private String idamToken;
+    private String s2sToken;
 
     @BeforeAll
     public void setup() {
-        idamToken = idamClient.getAccessToken("caseworker@pcs.com", "password");
+        idamToken = idamClient.getAccessToken("pcs-solicitor1@test.com", "password");
         s2sToken = generateDummyS2SToken("ccd_gw");
-        userId = idamClient.getUserInfo(idamToken).getUid();
     }
 
     @Test
     public void createsShellPossessionCase() {
-        var r = ccdApi.startCase(idamToken, s2sToken, CaseType.getCaseType(), "createPossessionClaim");
         PCSCase caseData = PCSCase.builder()
             .propertyAddress(AddressUK.builder()
                                  .addressLine1("123 Baker Street")
@@ -54,16 +52,28 @@ public class TestWithCCD extends CftlibTest {
                                  .build())
             .legislativeCountry(LegislativeCountry.ENGLAND)
             .build();
-        var content = CaseDataContent.builder()
-            .data(caseData)
-            .event(Event.builder().id("createPossessionClaim").build())
-            .eventToken(r.getToken())
-            .build();
-        caseDetails = ccdApi.submitForCaseworker(idamToken, s2sToken, userId,
-                                                 "PCS", CaseType.getCaseType(), false, content
-        );
+
+        CaseDetails caseDetails = startAndSubmitCreationEvent(EventId.createPossessionClaim, caseData);
 
         assertThat(caseDetails.getId()).isNotNull();
+    }
+
+    @SuppressWarnings("SameParameterValue")
+    private CaseDetails startAndSubmitCreationEvent(EventId eventId, PCSCase caseData) {
+        StartEventResponse startEventResponse = ccdApi.startCase(
+            idamToken,
+            s2sToken,
+            CaseType.getCaseType(),
+            eventId.name()
+        );
+
+        CaseDataContent content = CaseDataContent.builder()
+            .data(caseData)
+            .event(Event.builder().id(eventId.name()).build())
+            .eventToken(startEventResponse.getToken())
+            .build();
+
+        return ccdApi.submitCaseCreation(idamToken, s2sToken, CaseType.getCaseType(), content);
     }
 
 }
