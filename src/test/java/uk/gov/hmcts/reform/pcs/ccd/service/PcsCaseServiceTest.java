@@ -8,7 +8,6 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
@@ -44,7 +43,6 @@ class PcsCaseServiceTest {
 
     private static final long CASE_REFERENCE = 1234L;
 
-    @Autowired
     private ModelMapper modelMapper;
 
     @Mock
@@ -55,13 +53,12 @@ class PcsCaseServiceTest {
     private ArgumentCaptor<PcsCaseEntity> pcsCaseEntityCaptor;
 
     private PcsCaseService underTest;
-    private TenancyLicenceService tenancyLicenceService;
 
     @BeforeEach
     void setUp() {
         MapperConfig config = new MapperConfig();
         modelMapper = spy(config.modelMapper());
-        tenancyLicenceService = mock(TenancyLicenceService.class);
+        TenancyLicenceService tenancyLicenceService = mock(TenancyLicenceService.class);
         underTest = new PcsCaseService(pcsCaseRepository, securityContextService, modelMapper, tenancyLicenceService);
     }
 
@@ -341,7 +338,7 @@ class PcsCaseServiceTest {
 
         // Then
         assertThat(result).hasSize(1);
-        Defendant mappedDefendant = result.get(0);
+        Defendant mappedDefendant = result.getFirst();
 
         assertThat(mappedDefendant.getId()).isEqualTo("123");
         assertThat(mappedDefendant.getNameKnown()).isTrue();
@@ -372,7 +369,7 @@ class PcsCaseServiceTest {
         List<ListValue<DefendantDetails>> result = underTest.mapToDefendantDetails(List.of(defendant));
 
         // Then
-        ListValue<DefendantDetails> listValue = result.get(0);
+        ListValue<DefendantDetails> listValue = result.getFirst();
         DefendantDetails mappedDefendantDetails = listValue.getValue();
 
         assertThat(result).hasSize(1);
@@ -411,7 +408,7 @@ class PcsCaseServiceTest {
         underTest.clearHiddenDefendantDetailsFields(defendantsList);
 
         // Then
-        DefendantDetails clearedDefendant = defendantsList.get(0).getValue();
+        DefendantDetails clearedDefendant = defendantsList.getFirst().getValue();
         assertThat(clearedDefendant.getFirstName()).isNull();
         assertThat(clearedDefendant.getLastName()).isNull();
         assertThat(clearedDefendant.getCorrespondenceAddress()).isNull();

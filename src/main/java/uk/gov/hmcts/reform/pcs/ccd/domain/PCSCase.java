@@ -322,7 +322,7 @@ public class PCSCase {
 
     @CCD(access = {CitizenAccess.class, CaseworkerAccess.class})
     private List<ListValue<DefendantDetails>> defendants;
-    
+
     // Notice Details fields
     @CCD(
         label = "How did you serve the notice?",
@@ -472,5 +472,20 @@ public class PCSCase {
         access = {CitizenAccess.class, CaseworkerAccess.class}
     )
     private YesOrNo arrearsJudgmentWanted;
+
+    @CCD(
+        label = "Is there any information you'd like to provide about the ${displayedClaimantName} circumstances?",
+        hint = "This can be any information about your financial or general situation that you'd "
+            + "like the court to consider when making its decision whether or not to grant a possession order"
+    )
+    private VerticalYesNo claimantCircumstancesSelect;
+
+    @CCD(
+        max = 950,
+        typeOverride = TextArea
+    )
+    private String claimantCircumstancesDetails;
+
+    private String displayedClaimantName;
 
 }

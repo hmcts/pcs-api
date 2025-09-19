@@ -202,7 +202,8 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             pcsCaseEntity,
             party,
             "Main Claim",
-            PartyRole.CLAIMANT);
+            PartyRole.CLAIMANT,
+            pcsCase.getClaimantCircumstancesDetails());
 
         claimService.saveClaim(claimEntity);
 

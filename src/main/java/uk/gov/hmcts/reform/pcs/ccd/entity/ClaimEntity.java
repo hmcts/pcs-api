@@ -10,6 +10,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import jakarta.persistence.Column;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -50,6 +51,9 @@ public class ClaimEntity {
     private Set<ClaimPartyEntity> claimParties = new HashSet<>();
 
     private String summary;
+
+    @Column(name = "claimant_circumstances")
+    private String claimantCircumstances;
 
     public void addParty(PartyEntity party, PartyRole partyRole) {
         ClaimPartyEntity claimPartyEntity = ClaimPartyEntity.builder()
