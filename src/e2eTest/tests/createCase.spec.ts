@@ -93,7 +93,7 @@ test.describe('[Create Case Flow With Address and Claimant Type] @Master @nightl
     await performAction('selectNoticeDetails', {
       howDidYouServeNotice: noticeDetails.byFirstClassPost,
       index: noticeDetails.byFirstClassPostIndex,
-      day: '16', month: '07', year: '1985'});
+      day: '16', month: '07', year: '1985', files: 'noticeDetails.pdf'});
     await performValidation('mainHeader', rentDetails.mainHeader);
     await performAction('provideRentDetails', {rentFrequencyOption:'weekly', rentAmount:'800'});
     await performValidation('mainHeader', dailyRentAmount.mainHeader);
@@ -221,7 +221,7 @@ test.describe('[Create Case Flow With Address and Claimant Type] @Master @nightl
     await performAction('selectNoticeDetails', {
       howDidYouServeNotice: noticeDetails.byDeliveringAtPermittedPlace,
       index: noticeDetails.byDeliveringAtPermittedPlaceIndex,
-      day: '25', month: '02', year: '1970'});
+      day: '25', month: '02', year: '1970', files: 'noticeDetails.pdf'});
     await performAction('provideRentDetails', {rentFrequencyOption: 'Monthly', rentAmount: '1000'});
     await performAction('selectDailyRentAmount', {
       calculateRentAmount: '£32.85',
