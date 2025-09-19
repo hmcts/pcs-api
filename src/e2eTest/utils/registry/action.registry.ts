@@ -42,7 +42,7 @@ export class ActionRegistry {
     ['selectNoticeOfYourIntention', new CreateCaseAction()],
     ['selectNoticeDetails', new CreateCaseAction()],
     ['selectCountryRadioButton', new CreateCaseAction()],
-    ['selectOtherGrounds', new CreateCaseAction()],
+    ['selectYourPossessionGrounds', new CreateCaseAction()],
     ['selectTenancyOrLicenceDetails', new CreateCaseAction()],
     ['reloginAndFindTheCase', new CreateCaseAction()],
     ['provideRentDetails', new CreateCaseAction()],

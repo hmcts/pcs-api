@@ -6,7 +6,7 @@ import { performAction, performActions, performValidation } from '@utils/control
 import { createCase } from '@data/page-data/createCase.page.data';
 import { addressDetails } from '@data/page-data/addressDetails.page.data';
 import { housingPossessionClaim } from '@data/page-data/housingPossessionClaim.page.data';
-import { defendantDetails } from "@data/page-data/defendantDetails.page.data";
+import { defendantDetails } from '@data/page-data/defendantDetails.page.data';
 import { claimantName } from '@data/page-data/claimantName.page.data';
 import { contactPreferences } from '@data/page-data/contactPreferences.page.data';
 import { mediationAndSettlement } from '@data/page-data/mediationAndSettlement.page.data';
@@ -43,7 +43,7 @@ export class CreateCaseAction implements IAction {
       ['selectNoticeOfYourIntention', () => this.selectNoticeOfYourIntention(fieldName)],
       ['selectNoticeDetails', () => this.selectNoticeDetails(fieldName)],
       ['selectCountryRadioButton', () => this.selectCountryRadioButton(fieldName)],
-      ['selectOtherGrounds', () => this.selectOtherGrounds(fieldName)],
+      ['selectYourPossessionGrounds', () => this.selectYourPossessionGrounds(fieldName)],
       ['selectTenancyOrLicenceDetails', () => this.selectTenancyOrLicenceDetails(fieldName)],
       ['provideRentDetails', () => this.provideRentDetails(fieldName)],
       ['addAnotherDefendant', () => this.addAnotherDefendant(fieldName)],
@@ -225,14 +225,24 @@ export class CreateCaseAction implements IAction {
     await performAction('clickButton', 'Continue');
   }
 
-  private async selectOtherGrounds(otherRentArrearsGrounds: actionData){
-    const otherGrounds = otherRentArrearsGrounds as {
+  private async selectYourPossessionGrounds(possessionGrounds: actionData) {
+    const grounds = possessionGrounds as {
       mandatory?: string[];
+      mandatoryAccommodation?: string[];
       discretionary?: string[];
+      discretionaryAccommodation?: string[];
+    };
+    if (grounds.discretionary) {
+      await performAction('check', grounds.discretionary);
     }
-    if (otherGrounds.mandatory && otherGrounds.discretionary) {
-      await performAction('check', otherGrounds.mandatory);
-      await performAction('check', otherGrounds.discretionary);
+    if (grounds.mandatory) {
+      await performAction('check', grounds.mandatory);
+    }
+    if (grounds.mandatoryAccommodation) {
+      await performAction('check', grounds.mandatoryAccommodation);
+    }
+    if (grounds.discretionaryAccommodation) {
+      await performAction('check', grounds.discretionaryAccommodation);
     }
     await performAction('clickButton', 'Continue');
   }
