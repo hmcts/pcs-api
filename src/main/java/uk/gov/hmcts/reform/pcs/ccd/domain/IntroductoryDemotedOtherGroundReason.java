@@ -16,7 +16,7 @@ import static uk.gov.hmcts.ccd.sdk.type.FieldType.TextArea;
 public class IntroductoryDemotedOtherGroundReason {
 
     @CCD(
-        label = "Give details about your reason for possession",
+        label = "Give details about your reason for possession (Antisocial behaviour)",
         hint = "You'll be able to upload documents to support or further explain your reasons later on",
         typeOverride = TextArea,
         max = 500
@@ -24,7 +24,7 @@ public class IntroductoryDemotedOtherGroundReason {
     private String antiSocialBehaviourGround;
 
     @CCD(
-        label = "Give details about your reason for possession",
+        label = "Give details about your reason for possession (Breach of the tenancy)",
         hint = "You'll be able to upload documents to support or further explain your reasons later on",
         typeOverride = TextArea,
         max = 500
@@ -33,7 +33,7 @@ public class IntroductoryDemotedOtherGroundReason {
 
 
     @CCD(
-        label = "Give details about your reason for possession",
+        label = "Give details about your reason for possession (Absolute grounds)",
         hint = "You'll be able to upload documents to support or further explain your reasons later on",
         typeOverride = TextArea,
         max = 500
@@ -41,7 +41,7 @@ public class IntroductoryDemotedOtherGroundReason {
     private String absoluteGrounds;
 
     @CCD(
-        label = "Give details about your reason for possession",
+        label = "Give details about your reason for possession (Other grounds)",
         hint = "You'll be able to upload documents to support or further explain your reasons later on",
         typeOverride = TextArea,
         max = 500
