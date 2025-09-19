@@ -18,6 +18,8 @@ public class TenancyLicenceService {
                 .tenancyLicenceDate(pcsCase.getTenancyLicenceDate())
                 .detailsOfOtherTypeOfTenancyLicence(pcsCase.getDetailsOfOtherTypeOfTenancyLicence())
                 .supportingDocuments(ListValueUtils.unwrapListItems(pcsCase.getTenancyLicenceDocuments()))
+                .rentStatementDocuments(ListValueUtils.unwrapListItems(pcsCase.getRentStatementDocuments()))
+                .noticeDocuments(ListValueUtils.unwrapListItems(pcsCase.getNoticeDocuments()))
                 .noticeServed(toBooleanOrNull(pcsCase.getNoticeServed()))
                 .rentAmount(penceToPounds(pcsCase.getCurrentRent()))
                 .rentPaymentFrequency(pcsCase.getRentFrequency())
@@ -27,8 +29,8 @@ public class TenancyLicenceService {
                 .thirdPartyPaymentSources(pcsCase.getThirdPartyPaymentSources())
                 .thirdPartyPaymentSourceOther(pcsCase.getThirdPartyPaymentSourceOther())
                 // Add notice details fields
-                .noticeServiceMethod(pcsCase.getNoticeServiceMethod() != null 
-                                    ? pcsCase.getNoticeServiceMethod().name() 
+                .noticeServiceMethod(pcsCase.getNoticeServiceMethod() != null
+                                    ? pcsCase.getNoticeServiceMethod().name()
                                     : null)
                 .noticePostedDate(pcsCase.getNoticePostedDate())
                 .noticeDeliveredDate(pcsCase.getNoticeDeliveredDate())

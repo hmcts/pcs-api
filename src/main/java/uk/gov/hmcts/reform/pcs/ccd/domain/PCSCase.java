@@ -397,6 +397,15 @@ public class PCSCase {
     private String noticeOtherExplanation;
 
     @CCD(
+        label = "Add document",
+        hint = "Upload a document to the system",
+        typeOverride = FieldType.Collection,
+        typeParameterOverride = "Document",
+        access = {CitizenAccess.class, CaseworkerAccess.class}
+    )
+    private List<ListValue<Document>> noticeDocuments;
+
+    @CCD(
         label = "What type of tenancy or licence is in place?",
         access = {CaseworkerAccess.class}
     )
