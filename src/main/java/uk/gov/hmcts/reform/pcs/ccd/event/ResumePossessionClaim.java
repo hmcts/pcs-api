@@ -214,11 +214,15 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
     private void populateDefendantsList(PCSCase pcsCase) {
         List<ListValue<DefendantDetails>> defendantsList = new ArrayList<>();
         DefendantDetails[] individualDefendants = {
-            pcsCase.getDefendant1(), pcsCase.getDefendant2(), pcsCase.getDefendant3(), pcsCase.getDefendant4(), pcsCase.getDefendant5(),
-            pcsCase.getDefendant6(), pcsCase.getDefendant7(), pcsCase.getDefendant8(), pcsCase.getDefendant9(), pcsCase.getDefendant10(),
-            pcsCase.getDefendant11(), pcsCase.getDefendant12(), pcsCase.getDefendant13(), pcsCase.getDefendant14(), pcsCase.getDefendant15(),
-            pcsCase.getDefendant16(), pcsCase.getDefendant17(), pcsCase.getDefendant18(), pcsCase.getDefendant19(), pcsCase.getDefendant20(),
-            pcsCase.getDefendant21(), pcsCase.getDefendant22(), pcsCase.getDefendant23(), pcsCase.getDefendant24(), pcsCase.getDefendant25()
+            pcsCase.getDefendant1(), pcsCase.getDefendant2(), pcsCase.getDefendant3(),
+            pcsCase.getDefendant4(), pcsCase.getDefendant5(), pcsCase.getDefendant6(),
+            pcsCase.getDefendant7(), pcsCase.getDefendant8(), pcsCase.getDefendant9(),
+            pcsCase.getDefendant10(), pcsCase.getDefendant11(), pcsCase.getDefendant12(),
+            pcsCase.getDefendant13(), pcsCase.getDefendant14(), pcsCase.getDefendant15(),
+            pcsCase.getDefendant16(), pcsCase.getDefendant17(), pcsCase.getDefendant18(),
+            pcsCase.getDefendant19(), pcsCase.getDefendant20(), pcsCase.getDefendant21(),
+            pcsCase.getDefendant22(), pcsCase.getDefendant23(), pcsCase.getDefendant24(),
+            pcsCase.getDefendant25()
         };
         
         for (DefendantDetails defendant : individualDefendants) {
