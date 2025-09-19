@@ -419,6 +419,149 @@ class PcsCaseServiceTest {
         assertThat(clearedDefendant.getEmail()).isNull();
     }
 
+    @Test
+    void shouldPopulateDefendantsListWithSingleDefendant() {
+        // Given
+        DefendantDetails defendant1 = DefendantDetails.builder()
+            .firstName("John")
+            .lastName("Doe")
+            .email("john.doe@example.com")
+            .build();
+
+        PCSCase pcsCase = PCSCase.builder()
+            .defendant1(defendant1)
+            .build();
+
+        // When
+        underTest.populateDefendantsList(pcsCase);
+
+        // Then
+        assertThat(pcsCase.getDefendants()).isNotNull();
+        assertThat(pcsCase.getDefendants()).hasSize(1);
+        assertThat(pcsCase.getDefendants().get(0).getValue().getFirstName()).isEqualTo("John");
+        assertThat(pcsCase.getDefendants().get(0).getValue().getLastName()).isEqualTo("Doe");
+        assertThat(pcsCase.getDefendants().get(0).getValue().getEmail()).isEqualTo("john.doe@example.com");
+    }
+
+    @Test
+    void shouldPopulateDefendantsListWithMultipleDefendants() {
+        // Given
+        DefendantDetails defendant1 = DefendantDetails.builder()
+            .firstName("John")
+            .lastName("Doe")
+            .build();
+        DefendantDetails defendant2 = DefendantDetails.builder()
+            .firstName("Jane")
+            .lastName("Smith")
+            .build();
+
+        PCSCase pcsCase = PCSCase.builder()
+            .defendant1(defendant1)
+            .defendant2(defendant2)
+            .build();
+
+        // When
+        underTest.populateDefendantsList(pcsCase);
+
+        // Then
+        assertThat(pcsCase.getDefendants()).isNotNull();
+        assertThat(pcsCase.getDefendants()).hasSize(2);
+        assertThat(pcsCase.getDefendants().get(0).getValue().getFirstName()).isEqualTo("John");
+        assertThat(pcsCase.getDefendants().get(1).getValue().getFirstName()).isEqualTo("Jane");
+    }
+
+    @Test
+    void shouldHandleNullDefendants() {
+        // Given
+        PCSCase pcsCase = PCSCase.builder().build();
+
+        // When
+        underTest.populateDefendantsList(pcsCase);
+
+        // Then
+        assertThat(pcsCase.getDefendants()).isNull();
+    }
+
+    @Test
+    void shouldHandleMixedNullAndPopulatedDefendants() {
+        // Given
+        DefendantDetails defendant1 = DefendantDetails.builder()
+            .firstName("John")
+            .lastName("Doe")
+            .build();
+        DefendantDetails defendant3 = DefendantDetails.builder()
+            .firstName("Jane")
+            .lastName("Smith")
+            .build();
+
+        PCSCase pcsCase = PCSCase.builder()
+            .defendant1(defendant1)
+            .defendant3(defendant3)
+            .build();
+
+        // When
+        underTest.populateDefendantsList(pcsCase);
+
+        // Then
+        assertThat(pcsCase.getDefendants()).isNotNull();
+        assertThat(pcsCase.getDefendants()).hasSize(2);
+        assertThat(pcsCase.getDefendants().get(0).getValue().getFirstName()).isEqualTo("John");
+        assertThat(pcsCase.getDefendants().get(1).getValue().getFirstName()).isEqualTo("Jane");
+    }
+
+    @Test
+    void shouldGenerateUniqueIdsForDefendants() {
+        // Given
+        DefendantDetails defendant1 = DefendantDetails.builder()
+            .firstName("John")
+            .lastName("Doe")
+            .build();
+        DefendantDetails defendant2 = DefendantDetails.builder()
+            .firstName("Jane")
+            .lastName("Smith")
+            .build();
+
+        PCSCase pcsCase = PCSCase.builder()
+            .defendant1(defendant1)
+            .defendant2(defendant2)
+            .build();
+
+        // When
+        underTest.populateDefendantsList(pcsCase);
+
+        // Then
+        assertThat(pcsCase.getDefendants()).hasSize(2);
+        String id1 = pcsCase.getDefendants().get(0).getId();
+        String id2 = pcsCase.getDefendants().get(1).getId();
+        assertThat(id1).isNotEqualTo(id2);
+        assertThat(id1).isNotNull();
+        assertThat(id2).isNotNull();
+    }
+
+    @Test
+    void shouldCallClearHiddenDefendantDetailsFields() {
+        // Given
+        DefendantDetails defendant1 = DefendantDetails.builder()
+            .firstName("John")
+            .lastName("Doe")
+            .nameKnown(VerticalYesNo.NO)
+            .build();
+
+        PCSCase pcsCase = PCSCase.builder()
+            .defendant1(defendant1)
+            .build();
+
+        // When
+        underTest.populateDefendantsList(pcsCase);
+
+        // Then
+        // Verify that clearHiddenDefendantDetailsFields was called by checking the result
+        assertThat(pcsCase.getDefendants()).isNotNull();
+        assertThat(pcsCase.getDefendants()).hasSize(1);
+        // The firstName should be cleared because nameKnown is NO
+        assertThat(pcsCase.getDefendants().get(0).getValue().getFirstName()).isNull();
+    }
+
     private AddressEntity stubAddressUKModelMapper(AddressUK addressUK) {
         AddressEntity addressEntity = mock(AddressEntity.class);
         when(modelMapper.map(addressUK, AddressEntity.class)).thenReturn(addressEntity);

@@ -178,4 +178,36 @@ public class PcsCaseService {
         party.setActive(true);
         return party;
     }
+
+    /**
+     * Populates the defendants list from individual defendant fields.
+     * Only processes non-null defendants and applies field clearing logic.
+     *
+     * @param pcsCase the case data containing individual defendant fields
+     */
+    public void populateDefendantsList(PCSCase pcsCase) {
+        List<ListValue<DefendantDetails>> defendantsList = new ArrayList<>();
+        DefendantDetails[] individualDefendants = {
+            pcsCase.getDefendant1(), pcsCase.getDefendant2(), pcsCase.getDefendant3(),
+            pcsCase.getDefendant4(), pcsCase.getDefendant5(), pcsCase.getDefendant6(),
+            pcsCase.getDefendant7(), pcsCase.getDefendant8(), pcsCase.getDefendant9(),
+            pcsCase.getDefendant10(), pcsCase.getDefendant11(), pcsCase.getDefendant12(),
+            pcsCase.getDefendant13(), pcsCase.getDefendant14(), pcsCase.getDefendant15(),
+            pcsCase.getDefendant16(), pcsCase.getDefendant17(), pcsCase.getDefendant18(),
+            pcsCase.getDefendant19(), pcsCase.getDefendant20(), pcsCase.getDefendant21(),
+            pcsCase.getDefendant22(), pcsCase.getDefendant23(), pcsCase.getDefendant24(),
+            pcsCase.getDefendant25()
+        };
+        
+        for (DefendantDetails defendant : individualDefendants) {
+            if (defendant != null) {
+                defendantsList.add(new ListValue<>(UUID.randomUUID().toString(), defendant));
+            }
+        }
+        
+        if (!defendantsList.isEmpty()) {
+            clearHiddenDefendantDetailsFields(defendantsList);
+            pcsCase.setDefendants(defendantsList);
+        }
+    }
 }
