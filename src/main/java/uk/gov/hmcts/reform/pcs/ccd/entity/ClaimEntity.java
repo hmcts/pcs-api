@@ -17,6 +17,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -49,6 +50,11 @@ public class ClaimEntity {
     @JsonManagedReference
     private Set<ClaimPartyEntity> claimParties = new HashSet<>();
 
+    @OneToMany(fetch = LAZY, cascade = ALL, mappedBy = "claim")
+    @Builder.Default
+    @JsonManagedReference
+    private Set<ClaimGroundEntity> claimGrounds = new HashSet<>();
+
     private String summary;
 
     public void addParty(PartyEntity party, PartyRole partyRole) {
@@ -62,4 +68,10 @@ public class ClaimEntity {
         party.getClaimParties().add(claimPartyEntity);
     }
 
+    public void addClaimGroundEntities(List<ClaimGroundEntity> grounds) {
+        for (ClaimGroundEntity ground : grounds) {
+            ground.setClaim(this);
+            this.claimGrounds.add(ground);
+        }
+    }
 }
