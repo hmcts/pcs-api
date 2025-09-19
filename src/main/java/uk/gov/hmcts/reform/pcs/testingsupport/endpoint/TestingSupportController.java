@@ -21,12 +21,13 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import uk.gov.hmcts.reform.docassembly.domain.OutputType;
+import uk.gov.hmcts.reform.pcs.document.model.FormPayloadObj;
 import uk.gov.hmcts.reform.pcs.document.service.DocAssemblyService;
 import uk.gov.hmcts.reform.pcs.document.service.exception.DocAssemblyException;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.EligibilityResult;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.postcodecourt.service.EligibilityService;
-import uk.gov.hmcts.reform.pcs.testingsupport.model.DocAssemblyRequest;
 
 import java.net.URI;
 import java.time.Instant;
@@ -137,21 +138,18 @@ public class TestingSupportController {
             description = "Document generation request containing template ID and form data",
             required = true
         )
-        @RequestBody DocAssemblyRequest request
+        @RequestBody FormPayloadObj formPayload
     ) {
         try {
-            if (request == null || request.getFormPayload() == null) {
-                return ResponseEntity.internalServerError().body("Doc Assembly service returned invalid document URL");
+            if (formPayload == null) {
+                return ResponseEntity.badRequest().body("FormPayload is required");
             }
-            String documentUrl = docAssemblyService.generateDocument(request);
-
-            // Validate that we got a valid document URL
-            if (documentUrl == null || documentUrl.trim().isEmpty()) {
-                log.error("Doc Assembly service returned null or empty document URL");
-                return ResponseEntity.internalServerError()
-                    .body("Doc Assembly service returned invalid document URL");
-            }
-
+            String documentUrl = docAssemblyService.generateDocument(
+                formPayload,
+                "CV-SPC-CLM-ENG-01356.docx",
+                OutputType.PDF,
+                "generated-document.pdf"
+            );
             return ResponseEntity.created(URI.create(documentUrl)).body(documentUrl);
         } catch (DocAssemblyException e) {
             log.error("Doc Assembly service error: {}", e.getMessage(), e);
@@ -288,4 +286,5 @@ public class TestingSupportController {
             return ResponseEntity.internalServerError().body("Doc Assembly service error: " + message);
         }
     }
+
 }

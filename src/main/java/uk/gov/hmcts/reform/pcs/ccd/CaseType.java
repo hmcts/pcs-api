@@ -29,6 +29,10 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
         return withChangeId(CASE_TYPE_ID, "-");
     }
 
+    public static String getJurisdictionId() {
+        return JURISDICTION_ID;
+    }
+
     public static String getCaseTypeName() {
         return withChangeId(CASE_TYPE_NAME, " ");
     }
