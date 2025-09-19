@@ -6,9 +6,10 @@ on:
 
 jobs:
   publish-openapi:
-    uses: hmcts/workflow-publish-openapi-spec/.github/workflows/publish-openapi.yml@v1
+    uses: hmcts/workflow-publish-openapi-spec/.github/workflows/publish-openapi.yml@main
     secrets:
       SWAGGER_PUBLISHER_API_TOKEN: ${{ secrets.SWAGGER_PUBLISHER_API_TOKEN }}
     with:
       test_to_run: 'uk.gov.hmcts.reform.pcs.openapi.OpenAPIPublisherTest'
       java_version: 21
+      api_name: pcs-api
