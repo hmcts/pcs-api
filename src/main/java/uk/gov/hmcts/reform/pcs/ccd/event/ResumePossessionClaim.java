@@ -44,16 +44,18 @@ import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.SelectClaimantType
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.TenancyLicenceDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.GroundForPossessionRentArrears;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.GroundForPossessionAdditionalGrounds;
-import uk.gov.hmcts.reform.pcs.ccd.service.AddressValidator;
 import uk.gov.hmcts.reform.pcs.ccd.service.ClaimService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.UnsubmittedCaseDataService;
+import uk.gov.hmcts.ccd.sdk.type.ListValue;
+import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
@@ -77,10 +79,10 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
     private final ResumeClaim resumeClaim;
     private final UnsubmittedCaseDataService unsubmittedCaseDataService;
     private final NoticeDetails noticeDetails;
-    private final AddressValidator addressValidator;
 
     private final TenancyLicenceDetails tenancyLicenceDetails;
     private final ContactPreferences contactPreferences;
+    private final DynamicDefendantsPages dynamicDefendantsPages;
    
 
     @Override
@@ -104,7 +106,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             .add(new ClaimTypeNotEligibleWales())
             .add(new ClaimantInformation())
             .add(contactPreferences)
-            .add(new DynamicDefendantsPages(addressValidator))
+            .add(dynamicDefendantsPages)
             .add(tenancyLicenceDetails)
             .add(new GroundsForPossession())
             .add(new GroundForPossessionRentArrears())
@@ -175,6 +177,8 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
         String contactEmail = isNotBlank(pcsCase.getOverriddenClaimantContactEmail())
             ? pcsCase.getOverriddenClaimantContactEmail() : pcsCase.getClaimantContactEmail();
 
+        populateDefendantsList(pcsCase);
+
         PcsCaseEntity pcsCaseEntity = pcsCaseService.patchCase(caseReference, pcsCase);
         PartyEntity party = partyService.createAndLinkParty(
             pcsCaseEntity,
@@ -195,6 +199,38 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
         claimService.saveClaim(claimEntity);
 
         unsubmittedCaseDataService.deleteUnsubmittedCaseData(caseReference);
+    }
+
+    /**
+     * Populates the defendants list from individual defendant fields that have been populated by the user.
+     * Only processes defendants that are not null, indicating they have been entered.
+     * Applies field clearing logic to clean up hidden fields.
+     * 
+     * Note: addressSameAsPossession logic is already handled by the midEvent callback
+     * in DynamicDefendantsPages when users interact with the defendant forms.
+     * 
+     * @param pcsCase the case data containing individual defendant fields
+     */
+    private void populateDefendantsList(PCSCase pcsCase) {
+        List<ListValue<DefendantDetails>> defendantsList = new ArrayList<>();
+        DefendantDetails[] individualDefendants = {
+            pcsCase.getDefendant1(), pcsCase.getDefendant2(), pcsCase.getDefendant3(), pcsCase.getDefendant4(), pcsCase.getDefendant5(),
+            pcsCase.getDefendant6(), pcsCase.getDefendant7(), pcsCase.getDefendant8(), pcsCase.getDefendant9(), pcsCase.getDefendant10(),
+            pcsCase.getDefendant11(), pcsCase.getDefendant12(), pcsCase.getDefendant13(), pcsCase.getDefendant14(), pcsCase.getDefendant15(),
+            pcsCase.getDefendant16(), pcsCase.getDefendant17(), pcsCase.getDefendant18(), pcsCase.getDefendant19(), pcsCase.getDefendant20(),
+            pcsCase.getDefendant21(), pcsCase.getDefendant22(), pcsCase.getDefendant23(), pcsCase.getDefendant24(), pcsCase.getDefendant25()
+        };
+        
+        for (DefendantDetails defendant : individualDefendants) {
+            if (defendant != null) {
+                defendantsList.add(new ListValue<>(UUID.randomUUID().toString(), defendant));
+            }
+        }
+        
+        if (!defendantsList.isEmpty()) {
+            pcsCaseService.clearHiddenDefendantDetailsFields(defendantsList);
+            pcsCase.setDefendants(defendantsList);
+        }
     }
 
 }

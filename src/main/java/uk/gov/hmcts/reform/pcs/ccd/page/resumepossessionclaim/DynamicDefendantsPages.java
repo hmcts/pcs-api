@@ -133,7 +133,6 @@ public class DynamicDefendantsPages implements CcdPageConfiguration {
               <tbody class="govuk-table__body">
                 """);
 
-        // Generate table rows for each defendant
         for (int i = 1; i <= upToDefendant; i++) {
             htmlTable.append(buildDefendantTableRow(i));
         }

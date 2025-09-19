@@ -12,6 +12,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PaymentStatus;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
@@ -20,14 +21,15 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.page.builder.SavingPageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.page.builder.SavingPageBuilderFactory;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ContactPreferences;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.DynamicDefendantsPages;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.NoticeDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ResumeClaim;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.TenancyLicenceDetails;
-import uk.gov.hmcts.reform.pcs.ccd.service.AddressValidator;
 import uk.gov.hmcts.reform.pcs.ccd.service.ClaimService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.UnsubmittedCaseDataService;
+import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
@@ -43,6 +45,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry.ENGLAND;
@@ -69,13 +72,13 @@ class ResumePossessionClaimTest extends BaseEventTest {
     @Mock
     private ContactPreferences contactPreferences;
     @Mock
-    private AddressValidator addressValidator;
-    @Mock
     private NoticeDetails noticeDetails;
     @Mock
     private UserInfo userDetails;
     @Mock
     private TenancyLicenceDetails tenancyLicenceDetails;
+    @Mock
+    private DynamicDefendantsPages dynamicDefendantsPages;
 
     @BeforeEach
     void setUp() {
@@ -89,8 +92,8 @@ class ResumePossessionClaimTest extends BaseEventTest {
                                                                     partyService, claimService,
                                                                     savingPageBuilderFactory, resumeClaim,
                                                                     unsubmittedCaseDataService, noticeDetails,
-                                                                    addressValidator, tenancyLicenceDetails, 
-                                                                    contactPreferences);
+                                                                    tenancyLicenceDetails, contactPreferences, 
+                                                                    dynamicDefendantsPages);
 
         setEventUnderTest(underTest);
     }
@@ -285,6 +288,197 @@ class ResumePossessionClaimTest extends BaseEventTest {
 
             arguments(SCOTLAND, List.of())
         );
+    }
+
+    @Test
+    void shouldPopulateDefendantsListWithSingleDefendant() {
+        // Given
+        DefendantDetails defendant1 = DefendantDetails.builder()
+            .firstName("John")
+            .lastName("Doe")
+            .email("john.doe@example.com")
+            .build();
+
+        PCSCase pcsCase = PCSCase.builder()
+            .defendant1(defendant1)
+            .build();
+
+        // When
+        callSubmitHandler(pcsCase);
+
+        // Then
+        verify(pcsCaseService).clearHiddenDefendantDetailsFields(any());
+        verify(pcsCaseService).patchCase(any(), any(PCSCase.class));
+        
+        // Verify the defendants list was populated
+        ArgumentCaptor<PCSCase> caseCaptor = ArgumentCaptor.forClass(PCSCase.class);
+        verify(pcsCaseService).patchCase(any(), caseCaptor.capture());
+        
+        PCSCase capturedCase = caseCaptor.getValue();
+        assertThat(capturedCase.getDefendants()).isNotNull();
+        assertThat(capturedCase.getDefendants()).hasSize(1);
+        assertThat(capturedCase.getDefendants().get(0).getValue().getFirstName()).isEqualTo("John");
+        assertThat(capturedCase.getDefendants().get(0).getValue().getLastName()).isEqualTo("Doe");
+    }
+
+    @Test
+    void shouldPopulateDefendantsListWithMultipleDefendants() {
+        // Given
+        DefendantDetails defendant1 = DefendantDetails.builder()
+            .firstName("John")
+            .lastName("Doe")
+            .email("john.doe@example.com")
+            .build();
+
+        DefendantDetails defendant2 = DefendantDetails.builder()
+            .firstName("Jane")
+            .lastName("Smith")
+            .email("jane.smith@example.com")
+            .build();
+
+        PCSCase pcsCase = PCSCase.builder()
+            .defendant1(defendant1)
+            .defendant2(defendant2)
+            .build();
+
+        // When
+        callSubmitHandler(pcsCase);
+
+        // Then
+        verify(pcsCaseService).clearHiddenDefendantDetailsFields(any());
+        
+        ArgumentCaptor<PCSCase> caseCaptor = ArgumentCaptor.forClass(PCSCase.class);
+        verify(pcsCaseService).patchCase(any(), caseCaptor.capture());
+        
+        PCSCase capturedCase = caseCaptor.getValue();
+        assertThat(capturedCase.getDefendants()).isNotNull();
+        assertThat(capturedCase.getDefendants()).hasSize(2);
+        
+        // Verify both defendants are in the list
+        List<String> firstNames = capturedCase.getDefendants().stream()
+            .map(listValue -> listValue.getValue().getFirstName())
+            .toList();
+        assertThat(firstNames).containsExactlyInAnyOrder("John", "Jane");
+    }
+
+    @Test
+    void shouldSkipNullDefendants() {
+        // Given
+        DefendantDetails defendant1 = DefendantDetails.builder()
+            .firstName("John")
+            .lastName("Doe")
+            .build();
+
+        // defendant2 is null, defendant3 is populated
+        DefendantDetails defendant3 = DefendantDetails.builder()
+            .firstName("Bob")
+            .lastName("Wilson")
+            .build();
+
+        PCSCase pcsCase = PCSCase.builder()
+            .defendant1(defendant1)
+            .defendant2(null)  // null defendant
+            .defendant3(defendant3)
+            .build();
+
+        // When
+        callSubmitHandler(pcsCase);
+
+        // Then
+        ArgumentCaptor<PCSCase> caseCaptor = ArgumentCaptor.forClass(PCSCase.class);
+        verify(pcsCaseService).patchCase(any(), caseCaptor.capture());
+        
+        PCSCase capturedCase = caseCaptor.getValue();
+        assertThat(capturedCase.getDefendants()).isNotNull();
+        assertThat(capturedCase.getDefendants()).hasSize(2); // Only 2 non-null defendants
+        
+        List<String> firstNames = capturedCase.getDefendants().stream()
+            .map(listValue -> listValue.getValue().getFirstName())
+            .toList();
+        assertThat(firstNames).containsExactlyInAnyOrder("John", "Bob");
+    }
+
+    @Test
+    void shouldHandleEmptyDefendantsList() {
+        // Given - no defendants populated
+        PCSCase pcsCase = PCSCase.builder()
+            .defendant1(null)
+            .defendant2(null)
+            .build();
+
+        // When
+        callSubmitHandler(pcsCase);
+
+        // Then
+        ArgumentCaptor<PCSCase> caseCaptor = ArgumentCaptor.forClass(PCSCase.class);
+        verify(pcsCaseService).patchCase(any(), caseCaptor.capture());
+        
+        PCSCase capturedCase = caseCaptor.getValue();
+        // Should not call clearHiddenDefendantDetailsFields when no defendants
+        verify(pcsCaseService, never()).clearHiddenDefendantDetailsFields(any());
+        assertThat(capturedCase.getDefendants()).isNull();
+    }
+
+    @Test
+    void shouldGenerateUniqueIdsForDefendants() {
+        // Given
+        DefendantDetails defendant1 = DefendantDetails.builder()
+            .firstName("John")
+            .lastName("Doe")
+            .build();
+
+        DefendantDetails defendant2 = DefendantDetails.builder()
+            .firstName("Jane")
+            .lastName("Smith")
+            .build();
+
+        PCSCase pcsCase = PCSCase.builder()
+            .defendant1(defendant1)
+            .defendant2(defendant2)
+            .build();
+
+        // When
+        callSubmitHandler(pcsCase);
+
+        // Then
+        ArgumentCaptor<PCSCase> caseCaptor = ArgumentCaptor.forClass(PCSCase.class);
+        verify(pcsCaseService).patchCase(any(), caseCaptor.capture());
+        
+        PCSCase capturedCase = caseCaptor.getValue();
+        List<String> ids = capturedCase.getDefendants().stream()
+            .map(ListValue::getId)
+            .toList();
+        
+        assertThat(ids).hasSize(2);
+        assertThat(ids.get(0)).isNotEqualTo(ids.get(1)); // IDs should be unique
+        assertThat(ids.get(0)).isNotNull();
+        assertThat(ids.get(1)).isNotNull();
+    }
+
+    @Test
+    void shouldCallClearHiddenDefendantDetailsFields() {
+        // Given
+        DefendantDetails defendant1 = DefendantDetails.builder()
+            .firstName("John")
+            .lastName("Doe")
+            .build();
+
+        PCSCase pcsCase = PCSCase.builder()
+            .defendant1(defendant1)
+            .build();
+
+        // When
+        callSubmitHandler(pcsCase);
+
+        // Then
+        @SuppressWarnings("unchecked")
+        ArgumentCaptor<List<ListValue<DefendantDetails>>> listCaptor = 
+            ArgumentCaptor.forClass((Class<List<ListValue<DefendantDetails>>>) (Class<?>) List.class);
+        verify(pcsCaseService).clearHiddenDefendantDetailsFields(listCaptor.capture());
+        
+        List<ListValue<DefendantDetails>> capturedList = listCaptor.getValue();
+        assertThat(capturedList).hasSize(1);
+        assertThat(capturedList.get(0).getValue().getFirstName()).isEqualTo("John");
     }
 
 }
