@@ -52,4 +52,10 @@ public class TenancyLicence {
     
     private Boolean arrearsJudgmentWanted;
 
+    private BigDecimal totalRentArrears;
+
+    private List<ThirdPartyPaymentSource> thirdPartyPaymentSources;
+
+    private String thirdPartyPaymentSourceOther;
+
 }
