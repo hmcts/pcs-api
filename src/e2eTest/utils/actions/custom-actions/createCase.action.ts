@@ -367,12 +367,12 @@ export class CreateCaseAction implements IAction {
       'Enter Address Manually'
       , ['clickButton', "I can't enter a UK postcode"]
       , ['inputText', 'Building and Street', addressDetails.buildingAndStreet]
-      , ['inputText', 'Address Line 2', addressDetails.addressLine2]
-      , ['inputText', 'Address Line 3', addressDetails.addressLine3]
+      , ['inputText', 'Address Line 2 (Optional)', addressDetails.addressLine2]
+      , ['inputText', 'Address Line 3 (Optional)', addressDetails.addressLine3]
       , ['inputText', 'Town or City', addressDetails.townOrCity]
-      , ['inputText', 'County', addressDetails.walesCounty]
-      , ['inputText', 'Postcode/Zipcode', addressDetails.walesCourtAssignedPostcode]
-      , ['inputText', 'Country', addressDetails.country]
+      , ['inputText', 'County (Optional)', addressDetails.walesCounty]
+      , ['inputText', 'Postcode', addressDetails.walesCourtAssignedPostcode]
+      , ['inputText', 'Country (Optional)', addressDetails.country]
     );
     await performAction('clickButton', 'Submit');
   }
