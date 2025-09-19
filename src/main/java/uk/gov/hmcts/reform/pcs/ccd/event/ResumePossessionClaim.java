@@ -202,13 +202,9 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
     }
 
     /**
-     * Populates the defendants list from individual defendant fields that have been populated by the user.
-     * Only processes defendants that are not null, indicating they have been entered.
-     * Applies field clearing logic to clean up hidden fields.
-     * 
-     * Note: addressSameAsPossession logic is already handled by the midEvent callback
-     * in DynamicDefendantsPages when users interact with the defendant forms.
-     * 
+     * Populates the defendants list from individual defendant fields.
+     * Only processes non-null defendants and applies field clearing logic.
+     *
      * @param pcsCase the case data containing individual defendant fields
      */
     private void populateDefendantsList(PCSCase pcsCase) {
