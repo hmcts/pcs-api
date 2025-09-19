@@ -6,11 +6,10 @@ import {claimantType} from '@data/page-data/claimantType.page.data';
 import {claimType} from '@data/page-data/claimType.page.data';
 import {claimantName} from '@data/page-data/claimantName.page.data';
 import {contactPreferences} from '@data/page-data/contactPreferences.page.data';
-import {defendantDetails} from '@data/page-data/defendantDetails.page.data';
+import {defendant1Details, defendant2Details} from '@data/page-data/defendantDetails.page.data';
 import {tenancyLicenceDetails} from '@data/page-data/tenancyLicenceDetails.page.data';
 import {groundsForPossession} from '@data/page-data/groundsForPossession.page.data';
 import {rentArrearsPossessionGrounds} from '@data/page-data/rentArrearsPossessionGrounds.page.data';
-import {whatAreYourGrounds} from '@data/page-data/mandatoryAndDiscretionaryGrounds.page.data';
 import {preActionProtocol} from '@data/page-data/preActionProtocol.page.data';
 import {mediationAndSettlement} from '@data/page-data/mediationAndSettlement.page.data';
 import {noticeOfYourIntention} from '@data/page-data/noticeOfYourIntention.page.data';
@@ -21,8 +20,10 @@ import {provideMoreDetailsOfClaim} from '@data/page-data/provideMoreDetailsOfCla
 import {resumeClaim} from '@data/page-data/resumeClaim.page.data';
 import {resumeClaimOptions} from '@data/page-data/resumeClaimOptions.page.data';
 import {detailsOfRentArrears} from '@data/page-data/detailsOfRentArrears.page.data';
+import {defendantList} from '@data/page-data/defendantList.page.data';
 import {moneyJudgment} from '@data/page-data/moneyJudgment.page.data';
 import {claimantCircumstances} from '@data/page-data/claimantCircumstances.page.data';
+import {whatAreYourGroundsForPossession} from '@data/page-data/whatAreYourGroundsForPossession.page.data';
 
 test.beforeEach(async ({page}, testInfo) => {
   initializeExecutor(page);
@@ -54,15 +55,34 @@ test.describe('[Create Case Flow With Address and Claimant Type] @Master @nightl
       correspondenceAddress: contactPreferences.yes,
       phoneNumber: contactPreferences.no
     });
+    await performValidation('mainHeader', defendant1Details.mainHeader);
     await performAction('defendantDetails', {
-      name: defendantDetails.yes,
-      correspondenceAddress: defendantDetails.yes,
-      email: defendantDetails.yes,
-      correspondenceAddressSame: defendantDetails.no
+      name: defendant1Details.yes,
+      firstName: defendant1Details.defendant1FirstNameInput,
+      lastName: defendant1Details.defendant1LastNameInput,
+      emailId: defendant1Details.defendant1EmailIdInput,
+      correspondenceAddress: defendant1Details.yes,
+      email: defendant1Details.yes,
+      correspondenceAddressSame: defendant1Details.no,
+      postcode: defendant1Details.defendant1PostcodeInput
     });
+    await performValidation('mainHeader', defendantList.mainHeader);
+    await performAction('addAnotherDefendant', defendantList.yes);
+    await performValidation('mainHeader', defendant2Details.mainHeader);
+    await performAction('defendantDetails', {
+      name: defendant2Details.yes,
+      firstName: defendant2Details.defendant2FirstNameInput,
+      lastName: defendant2Details.defendant2LastNameInput,
+      emailId: defendant2Details.defendant2EmailIdInput,
+      correspondenceAddress: defendant2Details.yes,
+      email: defendant2Details.yes,
+      correspondenceAddressSame: defendant2Details.no,
+      postcode: defendant2Details.defendant2PostcodeInput
+    });
+    await performAction('addAnotherDefendant', defendantList.no);
     await performValidation('mainHeader', tenancyLicenceDetails.mainHeader);
     await performAction('selectTenancyOrLicenceDetails', {
-      tenancyOrLicenceType: tenancyLicenceDetails.other,
+      tenancyOrLicenceType: tenancyLicenceDetails.assuredTenancy,
       day: tenancyLicenceDetails.day,
       month: tenancyLicenceDetails.month,
       year: tenancyLicenceDetails.year,
@@ -74,9 +94,9 @@ test.describe('[Create Case Flow With Address and Claimant Type] @Master @nightl
       rentArrears: [rentArrearsPossessionGrounds.rentArrears, rentArrearsPossessionGrounds.seriousRentArrears, rentArrearsPossessionGrounds.persistentDelayInPayingRent],
       otherGrounds: rentArrearsPossessionGrounds.yes
     });
-    await performAction('selectOtherGrounds',{
-      mandatory: [whatAreYourGrounds.mandatory.holidayLet,whatAreYourGrounds.mandatory.ownerOccupier],
-      discretionary: [whatAreYourGrounds.discretionary.domesticViolence,whatAreYourGrounds.discretionary.rentArrears],
+    await performAction('selectYourPossessionGrounds',{
+      mandatory: [whatAreYourGroundsForPossession.mandatory.holidayLet,whatAreYourGroundsForPossession.mandatory.ownerOccupier],
+      discretionary: [whatAreYourGroundsForPossession.discretionary.domesticViolence14A,whatAreYourGroundsForPossession.discretionary.rentArrears],
     })
     await performValidation('mainHeader', preActionProtocol.mainHeader);
     await performAction('selectPreActionProtocol', preActionProtocol.yes);
@@ -141,11 +161,12 @@ test.describe('[Create Case Flow With Address and Claimant Type] @Master @nightl
       phoneNumber: contactPreferences.yes
     });
     await performAction('defendantDetails', {
-      name: defendantDetails.yes,
-      correspondenceAddress: defendantDetails.yes,
-      email: defendantDetails.yes,
-      correspondenceAddressSame: defendantDetails.yes
+      name: defendant1Details.yes,
+      correspondenceAddress: defendant1Details.yes,
+      email: defendant1Details.yes,
+      correspondenceAddressSame: defendant1Details.yes
     });
+    await performAction('addAnotherDefendant', defendantList.no);
     await performAction('selectTenancyOrLicenceDetails', {
       tenancyOrLicenceType: tenancyLicenceDetails.assuredTenancy});
     await performValidation('mainHeader', groundsForPossession.mainHeader);
@@ -209,10 +230,11 @@ test.describe('[Create Case Flow With Address and Claimant Type] @Master @nightl
       phoneNumber: contactPreferences.no
     });
     await performAction('defendantDetails', {
-      name: defendantDetails.no,
-      correspondenceAddress: defendantDetails.no,
-      email: defendantDetails.no,
+      name: defendant1Details.no,
+      correspondenceAddress: defendant1Details.no,
+      email: defendant1Details.no,
     });
+    await performAction('addAnotherDefendant', defendantList.no)
     await performAction('selectTenancyOrLicenceDetails', {
       tenancyOrLicenceType: tenancyLicenceDetails.assuredTenancy});
     await performValidation('mainHeader', groundsForPossession.mainHeader);
