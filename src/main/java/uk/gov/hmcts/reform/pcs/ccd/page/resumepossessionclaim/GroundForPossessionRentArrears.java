@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim;
 
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DiscretionaryGround;
@@ -98,9 +99,11 @@ public class GroundForPossessionRentArrears implements CcdPageConfiguration {
         }
 
         // Update grounds only when the rent arrears options have changed as this will override them
-        if (rentArrearsGrounds != null && !rentArrearsGrounds.equals(caseData.getCopyOfRentArrearsGrounds())) {
+        if (rentArrearsGrounds != null && !rentArrearsGrounds.equals(caseData.getCopyOfRentArrearsGrounds())
+            || caseData.getOverrideResumedGrounds() == YesOrNo.YES) {
             caseData.setMandatoryGrounds(mandatoryGrounds);
             caseData.setDiscretionaryGrounds(discretionaryGrounds);
+            caseData.setOverrideResumedGrounds(YesOrNo.NO);
         }
         caseData.setCopyOfRentArrearsGrounds(rentArrearsGrounds);
 
