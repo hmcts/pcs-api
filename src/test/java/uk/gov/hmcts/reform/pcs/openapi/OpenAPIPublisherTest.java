@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.config;
+package uk.gov.hmcts.reform.pcs.openapi;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
