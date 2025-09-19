@@ -3,24 +3,19 @@ package uk.gov.hmcts.reform.pcs.functional.tests;
 import net.serenitybdd.annotations.Title;
 import net.serenitybdd.junit5.SerenityJUnit5Extension;
 import net.serenitybdd.annotations.Steps;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import uk.gov.hmcts.reform.pcs.functional.config.TestConstants;
 import uk.gov.hmcts.reform.pcs.functional.steps.ApiSteps;
+import uk.gov.hmcts.reform.pcs.functional.steps.BaseApi;
 
 @Tag("Functional")
 @ExtendWith(SerenityJUnit5Extension.class)
-class DashboardNotificationsEndpointTests {
+class DashboardNotificationsEndpointTests extends BaseApi {
 
     @Steps
     ApiSteps apiSteps;
-
-    @BeforeEach
-    void beforeEach() {
-        apiSteps.setUp();
-    }
 
     // Currently, endpoint use mock data and happy path tests only check that valid tokens return a 200 response.
     // Once real data is available, add assertions to validate response content to happy path scenarios.
