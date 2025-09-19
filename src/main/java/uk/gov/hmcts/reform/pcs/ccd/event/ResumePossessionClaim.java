@@ -119,7 +119,6 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             .add(new DailyRentAmount())
             .add(new RentArrears())
             .add(new MoneyJudgment())
-
             .add(new ClaimantCircumstances());
     }
 

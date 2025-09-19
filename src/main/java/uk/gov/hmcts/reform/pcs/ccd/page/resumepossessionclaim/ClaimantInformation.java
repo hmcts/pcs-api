@@ -1,9 +1,13 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim;
 
+import io.micrometer.common.util.StringUtils;
 import lombok.extern.slf4j.Slf4j;
+import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
+import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 
 @Slf4j
 public class ClaimantInformation implements CcdPageConfiguration {
@@ -16,7 +20,7 @@ public class ClaimantInformation implements CcdPageConfiguration {
     @Override
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
-            .page("claimantInformation")
+            .page("claimantInformation", this::midEvent)
             .pageLabel("Claimant name")
             .label("claimantInformation-separator", "---")
             .readonlyWithLabel(PCSCase::getClaimantName, "Your claimant name registered with My HMCTS is:")
@@ -28,6 +32,31 @@ public class ClaimantInformation implements CcdPageConfiguration {
                     UPDATED_CLAIMANT_NAME_HINT,
                     false);
 
+    }
+
+    private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
+                                                                  CaseDetails<PCSCase, State> detailsBefore) {
+        PCSCase caseData = details.getData();
+        setDisplayedClaimantName(details);
+
+        return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
+            .data(caseData)
+            .build();
+    }
+
+    void setDisplayedClaimantName(CaseDetails<PCSCase, State> details) {
+        PCSCase caseData = details.getData();
+        String displayedClaimantName = StringUtils.isNotEmpty(caseData.getOverriddenClaimantName())
+            ? caseData.getOverriddenClaimantName()
+            : caseData.getClaimantName();
+        caseData.setDisplayedClaimantName(applyApostrophe(displayedClaimantName));
+    }
+
+    private String applyApostrophe(String value) {
+        if (value == null) {
+            return null;
+        }
+        return value.endsWith("s") || value.endsWith("S") ? value + "'" : value + "'s";
     }
 
 }

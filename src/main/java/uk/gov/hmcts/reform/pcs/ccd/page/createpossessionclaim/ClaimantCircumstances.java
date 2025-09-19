@@ -4,6 +4,8 @@ import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 
+import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
+
 public class ClaimantCircumstances implements CcdPageConfiguration {
 
     private static final String YOU_CAN_ENTER_UP_TO_950_CHARACTERS = "You can enter up to 950 characters";
@@ -12,23 +14,20 @@ public class ClaimantCircumstances implements CcdPageConfiguration {
     private static final String CLAIMANT_CIRCUMSTANCES = "claimantCircumstances";
     private static final String CLAIMANT_CIRCUMSTANCES_LABEL = "Claimant circumstances";
     private static final String GIVE_DETAILS_ABOUT_THE_CLAIMANT_NAME_CIRCUMSTANCES
-        = "Give details about the ${claimantName} circumstances";
+        = "Give details about the ${displayedClaimantName} circumstances";
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
             .page(CLAIMANT_CIRCUMSTANCES)
             .pageLabel(CLAIMANT_CIRCUMSTANCES_LABEL)
+            .readonly(PCSCase::getDisplayedClaimantName, NEVER_SHOW)
             .label(
                 CLAIMANT_CIRCUMSTANCES_INFO, """
                 ---
-                <b>Is there any information you'd like to provide about the ${claimantName} circumstances?</b>
+                <b>Is there any information you'd like to provide about the ${displayedClaimantName} circumstances?</b>
                 """)
-            .mandatoryWithLabel(PCSCase::getClaimantCircumstancesSelect,
-                       "This can be any information about your financial or general situation that "
-                           + "you'd like the court to consider when making its decision "
-                           + "whether or not to grant a possession order"
-                       )
+            .mandatory(PCSCase::getClaimantCircumstancesSelect)
             .mandatory(PCSCase::getClaimantCircumstancesDetails, SHOW_CONDITION,
                        "",
                        GIVE_DETAILS_ABOUT_THE_CLAIMANT_NAME_CIRCUMSTANCES,
