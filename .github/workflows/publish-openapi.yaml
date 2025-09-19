@@ -12,3 +12,4 @@ jobs:
     with:
       test_to_run: 'uk.gov.hmcts.reform.pcs.openapi.OpenAPIPublisherTest'
       java_version: 21
+      api_name: pcs-api
