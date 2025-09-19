@@ -26,7 +26,7 @@ import static org.mockito.Mockito.when;
 class TenancyLicenceServiceTest {
 
     private final TenancyLicenceService tenancyLicenceService = new TenancyLicenceService();
-    
+
     @Mock
     private PCSCase pcsCase;
 
@@ -141,12 +141,12 @@ class TenancyLicenceServiceTest {
         // Test third party payment sources field
         assertTenancyLicenceField(
                 pcsCase -> when(pcsCase.getThirdPartyPaymentSources()).thenReturn(
-                        Arrays.asList(ThirdPartyPaymentSource.UNIVERSAL_CREDIT, 
+                        Arrays.asList(ThirdPartyPaymentSource.UNIVERSAL_CREDIT,
                                 ThirdPartyPaymentSource.HOUSING_BENEFIT)),
                 expected -> {
                     assertThat(expected.getThirdPartyPaymentSources()).hasSize(2);
                     assertThat(expected.getThirdPartyPaymentSources())
-                            .containsExactlyInAnyOrder(ThirdPartyPaymentSource.UNIVERSAL_CREDIT, 
+                            .containsExactlyInAnyOrder(ThirdPartyPaymentSource.UNIVERSAL_CREDIT,
                                     ThirdPartyPaymentSource.HOUSING_BENEFIT);
                 });
 
@@ -302,4 +302,5 @@ class TenancyLicenceServiceTest {
         // Then
         assertThat(result.getNoticeDocuments()).isEmpty();
     }
+
 }
