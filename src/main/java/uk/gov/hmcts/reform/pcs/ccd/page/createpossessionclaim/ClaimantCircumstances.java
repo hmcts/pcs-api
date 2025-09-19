@@ -25,11 +25,10 @@ public class ClaimantCircumstances implements CcdPageConfiguration {
             .label(
                 CLAIMANT_CIRCUMSTANCES_INFO, """
                 ---
-                <b>Is there any information you'd like to provide about the ${displayedClaimantName} circumstances?</b>
                 """)
             .mandatory(PCSCase::getClaimantCircumstancesSelect)
             .mandatory(PCSCase::getClaimantCircumstancesDetails, SHOW_CONDITION,
-                       "",
+                       "Stuff here ...",
                        GIVE_DETAILS_ABOUT_THE_CLAIMANT_NAME_CIRCUMSTANCES,
                        YOU_CAN_ENTER_UP_TO_950_CHARACTERS,
                        false

@@ -432,9 +432,9 @@ public class PCSCase {
     private YesOrNo arrearsJudgmentWanted;
 
     @CCD(
-        hint = "This can be any information about your financial or general situation that "
-            + "you'd like the court to consider when making its decision "
-            + "whether or not to grant a possession order"
+        label = "Is there any information you'd like to provide about the ${displayedClaimantName} circumstances?",
+        hint = "This can be any information about your financial or general situation that you'd "
+            + "like the court to consider when making its decision whether or not to grant a possession order"
     )
     private VerticalYesNo claimantCircumstancesSelect;
 
