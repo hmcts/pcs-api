@@ -20,7 +20,7 @@ function getExecutor(): { page: Page } {
 export async function performAction(action: string, fieldName?: actionData | actionRecord, value?: actionData | actionRecord): Promise<void> {
   const executor = getExecutor();
   const actionInstance = ActionRegistry.getAction(action);
-  await test.step(`Perform action: ${action} on "${fieldName}"${value !== undefined ? ` with value "${value}"` : ''}`, async () => {
+  await test.step(`${action}${fieldName !== undefined ? ` - ${typeof fieldName === 'object' ? readValuesFromInputObjects(fieldName) : fieldName}` : ''} ${value !== undefined ? ` with value '${typeof value === 'object' ? readValuesFromInputObjects(value) : value}'` : ''}`, async () => {
     await actionInstance.execute(executor.page, action, fieldName, value);
   });
 }
@@ -31,14 +31,14 @@ export async function performValidation(validation: string, inputFieldName: vali
     ? [inputFieldName, inputData]
     : ['', inputFieldName];
   const validationInstance = ValidationRegistry.getValidation(validation);
-  await test.step(`Perform validation on ${validation}`, async () => {
+  await test.step(`Validated ${validation} - '${typeof fieldName === 'object' ? readValuesFromInputObjects(fieldName) : fieldName}'${data !== undefined ? ` with value '${typeof data === 'object' ? readValuesFromInputObjects(data) : data}'` : ''}`, async () => {
     await validationInstance.validate(executor.page, validation, fieldName, data);
   });
 }
 
 export async function performActions(groupName: string, ...actions: actionTuple[]): Promise<void> {
   getExecutor();
-  await test.step(`Performing action group: ${groupName}`, async () => {
+  await test.step(`Performed action group: ${groupName}`, async () => {
     for (const action of actions) {
       const [actionName, fieldName, value] = action;
       await performAction(actionName, fieldName, value);
@@ -48,10 +48,22 @@ export async function performActions(groupName: string, ...actions: actionTuple[
 
 export async function performValidations(groupName: string, ...validations: validationTuple[]): Promise<void> {
   getExecutor();
-  await test.step(`Performing validation group: ${groupName}`, async () => {
+  await test.step(`Performed validation group: ${groupName}`, async () => {
     for (const validation of validations) {
       const [validationType, fieldName, data] = validation;
       await performValidation(validationType, fieldName, data);
     }
   });
+}
+
+function readValuesFromInputObjects(obj: object): string {
+  const keys = Object.keys(obj);
+  const formattedPairs = keys.map(key => {
+    const value = (obj as actionRecord)[key];
+    let valueStr: string;
+    if (typeof value === 'string') valueStr = `${value}`;
+    else valueStr = String(value);
+    return `${key}: ${valueStr}`;
+  });
+  return `${formattedPairs.join(', ')}`;
 }
