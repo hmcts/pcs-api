@@ -1,8 +1,8 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim;
 
-import lombok.extern.slf4j.Slf4j;
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DiscretionaryGround;
@@ -11,13 +11,14 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsGround;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
+
+import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 
 /**
  * Page for selecting rent arrears grounds for possession.
  */
-@Slf4j
 public class GroundForPossessionRentArrears implements CcdPageConfiguration {
 
     @Override
@@ -25,7 +26,9 @@ public class GroundForPossessionRentArrears implements CcdPageConfiguration {
         pageBuilder
                 .page("groundForPossessionRentArrears", this::midEvent)
                 .pageLabel("Grounds for possession")
-                .showCondition("groundsForPossession=\"Yes\"")
+                .showCondition("groundsForPossession=\"Yes\""
+                               +  " AND typeOfTenancyLicence=\"ASSURED_TENANCY\"")
+                .readonly(PCSCase::getCopyOfRentArrearsGrounds,NEVER_SHOW)
                 .label("groundForPossessionRentArrears-info", """
                 ---
                 <p class="govuk-body">You may have already given the defendants notice of your intention to begin
@@ -51,59 +54,58 @@ public class GroundForPossessionRentArrears implements CcdPageConfiguration {
                     rent.</p>
                 """)
                 .mandatory(PCSCase::getRentArrearsGrounds)
-                .mandatory(PCSCase::getHasOtherAdditionalGrounds)
-                .done();
+                .mandatory(PCSCase::getHasOtherAdditionalGrounds);
     }
 
     public AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
                                                                   CaseDetails<PCSCase, State> detailsBefore) {
 
         PCSCase caseData = details.getData();
-
         // Get the rent arrears grounds that were selected
-        List<RentArrearsGround> rentArrearsGrounds = caseData.getRentArrearsGrounds();
+        Set<RentArrearsGround> rentArrearsGrounds = caseData.getRentArrearsGrounds();
 
-        // Initialize lists if they don't exist
-        List<MandatoryGround> mandatoryGrounds = caseData.getMandatoryGrounds();
+        // Initialize sets if they don't exist
+        Set<MandatoryGround> mandatoryGrounds = caseData.getMandatoryGrounds();
+
         if (mandatoryGrounds == null) {
-            mandatoryGrounds = new ArrayList<>();
+            mandatoryGrounds = new HashSet<>();
         }
 
-        List<DiscretionaryGround> discretionaryGrounds = caseData.getDiscretionaryGrounds();
+        Set<DiscretionaryGround> discretionaryGrounds = caseData.getDiscretionaryGrounds();
+
         if (discretionaryGrounds == null) {
-            discretionaryGrounds = new ArrayList<>();
+            discretionaryGrounds = new HashSet<>();
         }
 
         if (rentArrearsGrounds != null && !rentArrearsGrounds.isEmpty()) {
 
-            // Check each rent arrears ground and add corresponding grounds to the appropriate lists
+            // Check each rent arrears ground and add corresponding grounds to the appropriate sets
             for (RentArrearsGround rentArrearsGround : rentArrearsGrounds) {
                 switch (rentArrearsGround) {
                     case SERIOUS_RENT_ARREARS_GROUND8:
-                        // Ground 8 is mandatory
-                        if (!mandatoryGrounds.contains(MandatoryGround.SERIOUS_RENT_ARREARS_GROUND8)) {
-                            mandatoryGrounds.add(MandatoryGround.SERIOUS_RENT_ARREARS_GROUND8);
-                        }
+                        mandatoryGrounds.add(MandatoryGround.SERIOUS_RENT_ARREARS_GROUND8);
                         break;
                     case RENT_ARREARS_GROUND10:
                         // Ground 10 is discretionary
-                        if (!discretionaryGrounds.contains(DiscretionaryGround.RENT_ARREARS_GROUND10)) {
-                            discretionaryGrounds.add(DiscretionaryGround.RENT_ARREARS_GROUND10);
-                        }
+                        discretionaryGrounds.add(DiscretionaryGround.RENT_ARREARS_GROUND10);
                         break;
                     case PERSISTENT_DELAY_GROUND11:
                         // Ground 11 is discretionary
-                        if (!discretionaryGrounds.contains(DiscretionaryGround.PERSISTENT_DELAY_GROUND11)) {
-                            discretionaryGrounds.add(DiscretionaryGround.PERSISTENT_DELAY_GROUND11);
-                        }
+                        discretionaryGrounds.add(DiscretionaryGround.PERSISTENT_DELAY_GROUND11);
                         break;
                 }
             }
+
         }
 
-        // Update the case data with the lists (always, even if empty)
-        caseData.setMandatoryGrounds(mandatoryGrounds);
-        caseData.setDiscretionaryGrounds(discretionaryGrounds);
+        // Update grounds only when the rent arrears options have changed as this will override them
+        if (rentArrearsGrounds != null && !rentArrearsGrounds.equals(caseData.getCopyOfRentArrearsGrounds())
+            || caseData.getOverrideResumedGrounds() == YesOrNo.YES) {
+            caseData.setMandatoryGrounds(mandatoryGrounds);
+            caseData.setDiscretionaryGrounds(discretionaryGrounds);
+            caseData.setOverrideResumedGrounds(YesOrNo.NO);
+        }
+        caseData.setCopyOfRentArrearsGrounds(rentArrearsGrounds);
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
             .data(caseData)

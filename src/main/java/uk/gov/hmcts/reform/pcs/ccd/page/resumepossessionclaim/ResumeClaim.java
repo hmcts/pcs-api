@@ -31,6 +31,7 @@ public class ResumeClaim implements CcdPageConfiguration {
             .pageLabel("Resume claim")
             .showCondition("hasUnsubmittedCaseData=\"Yes\"")
             .readonly(PCSCase::getHasUnsubmittedCaseData, NEVER_SHOW)
+            .readonly(PCSCase::getOverrideResumedGrounds, NEVER_SHOW)
             .label("resumeClaim-info", """
                 ---
                 <p class="govuk-body">
@@ -67,6 +68,12 @@ public class ResumeClaim implements CcdPageConfiguration {
                         throw new UnsubmittedDataException("No unsubmitted case data found for case " + caseReference);
                     }
                 );
+        }
+
+        if (caseData.getMandatoryGrounds() == null && caseData.getDiscretionaryGrounds() == null) {
+            caseData.setOverrideResumedGrounds(YesOrNo.YES);
+        } else {
+            caseData.setOverrideResumedGrounds(YesOrNo.NO);
         }
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
