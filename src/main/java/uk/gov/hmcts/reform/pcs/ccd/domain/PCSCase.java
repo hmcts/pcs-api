@@ -175,6 +175,9 @@ public class PCSCase {
     )
     private Set<RentArrearsGround> copyOfRentArrearsGrounds;
 
+    @CCD(access = {CitizenAccess.class, CaseworkerAccess.class})
+    private YesOrNo overrideResumedGrounds;
+
     @CCD(
         label = "Do you have any other additional grounds for possession?",
         access = {CitizenAccess.class, CaseworkerAccess.class}
