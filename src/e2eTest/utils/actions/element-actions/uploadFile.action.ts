@@ -1,7 +1,7 @@
 import {Page} from '@playwright/test';
 import path from 'path';
 import {actionData, IAction} from '@utils/interfaces/action.interface';
-import {performAction} from '@utils/controller';
+import {performAction, performValidation} from '@utils/controller';
 
 export class UploadFileAction implements IAction {
   async execute(page: Page, action: string, files: actionData): Promise<void> {
@@ -10,6 +10,8 @@ export class UploadFileAction implements IAction {
     } else if (Array.isArray(files)) {
       for (const file of files) {
         await this.uploadFile(page, file);
+        // Added wait explicitly to upload multiple files as per application file upload standards
+        await page.waitForTimeout(7000);
       }
     }
   }
@@ -19,5 +21,6 @@ export class UploadFileAction implements IAction {
     const fileInput = page.locator('input[type="file"].form-control.bottom-30');
     const filePath = path.resolve(__dirname, '../../../data/inputFiles', file);
     await fileInput.last().setInputFiles(filePath);
+    await performValidation('waitUntilElementDisappears', 'Uploading...');
   }
 }
