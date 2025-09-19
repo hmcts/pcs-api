@@ -210,5 +210,4 @@ public class PcsCaseService {
             .map(HasLabel::getLabel)
             .collect(Collectors.toSet());
     }
-
 }

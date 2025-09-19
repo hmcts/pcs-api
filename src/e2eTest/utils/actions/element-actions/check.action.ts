@@ -3,7 +3,7 @@ import { actionData, IAction } from '../../interfaces/action.interface';
 
 export class CheckAction implements IAction {
   async execute(page: Page, action: string, fieldName: actionData): Promise<void> {
-    if(fieldName === 'string') {
+    if(fieldName == 'string') {
       await this.clickCheckBox(page, fieldName);
     }
     else {
@@ -17,3 +17,4 @@ export class CheckAction implements IAction {
     await page.locator(`input[type="checkbox"]+:has-text("${checkbox}")`).check();
   }
 }
+
