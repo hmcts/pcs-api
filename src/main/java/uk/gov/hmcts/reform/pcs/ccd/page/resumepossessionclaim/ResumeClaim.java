@@ -69,6 +69,7 @@ public class ResumeClaim implements CcdPageConfiguration {
                 );
         }
 
+
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
             .data(caseData)
             .build();

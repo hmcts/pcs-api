@@ -20,7 +20,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.page.builder.SavingPageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.page.builder.SavingPageBuilderFactory;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ContactPreferences;
-import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.DefendantsDetails;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.DynamicDefendantsPages;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.NoticeDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ResumeClaim;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.TenancyLicenceDetails;
@@ -69,13 +69,13 @@ class ResumePossessionClaimTest extends BaseEventTest {
     @Mock
     private ContactPreferences contactPreferences;
     @Mock
-    private DefendantsDetails defendantsDetails;
-    @Mock
     private NoticeDetails noticeDetails;
     @Mock
     private UserInfo userDetails;
     @Mock
     private TenancyLicenceDetails tenancyLicenceDetails;
+    @Mock
+    private DynamicDefendantsPages dynamicDefendantsPages;
 
     @BeforeEach
     void setUp() {
@@ -89,8 +89,8 @@ class ResumePossessionClaimTest extends BaseEventTest {
                                                                     partyService, claimService,
                                                                     savingPageBuilderFactory, resumeClaim,
                                                                     unsubmittedCaseDataService, noticeDetails,
-                                                                    tenancyLicenceDetails, contactPreferences,
-                                                                    defendantsDetails);
+                                                                    tenancyLicenceDetails, contactPreferences, 
+                                                                    dynamicDefendantsPages);
 
         setEventUnderTest(underTest);
     }
@@ -286,5 +286,6 @@ class ResumePossessionClaimTest extends BaseEventTest {
             arguments(SCOTLAND, List.of())
         );
     }
+
 
 }
