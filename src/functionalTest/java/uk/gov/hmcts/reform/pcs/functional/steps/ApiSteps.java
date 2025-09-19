@@ -23,14 +23,14 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class ApiSteps {
 
     private RequestSpecification request;
-    private final String baseUrl = System.getenv("TEST_URL");
-    private String pcsApiS2sToken;
-    private String pcsFrontendS2sToken;
-    private String unauthorisedS2sToken;
-    private String idamToken;
+    private static final String baseUrl = System.getenv("TEST_URL");
+    private static String pcsApiS2sToken;
+    private static String pcsFrontendS2sToken;
+    private static String unauthorisedS2sToken;
+    private static String idamToken;
 
     @Step("Generate S2S tokens")
-    public void setUp() {
+    public static void setUp() {
         ServiceAuthenticationGenerator serviceAuthenticationGenerator = new ServiceAuthenticationGenerator();
         pcsApiS2sToken = serviceAuthenticationGenerator.generate();
         pcsFrontendS2sToken = serviceAuthenticationGenerator.generate(TestConstants.PCS_FRONTEND);
