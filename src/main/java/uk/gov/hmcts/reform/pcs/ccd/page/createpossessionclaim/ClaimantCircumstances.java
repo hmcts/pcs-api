@@ -14,7 +14,7 @@ public class ClaimantCircumstances implements CcdPageConfiguration {
     private static final String CLAIMANT_CIRCUMSTANCES = "claimantCircumstances";
     private static final String CLAIMANT_CIRCUMSTANCES_LABEL = "Claimant circumstances";
     private static final String GIVE_DETAILS_ABOUT_THE_CLAIMANT_NAME_CIRCUMSTANCES
-        = "Give details about the ${displayedClaimantName} circumstances";
+        = "Give details about ${displayedClaimantName} circumstances";
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
