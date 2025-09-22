@@ -163,10 +163,14 @@ test.describe('[Create Case Flow With Address and Claimant Type] @Master @nightl
     });
     await performAction('defendantDetails', {
       name: defendant1Details.yes,
+      firstName: defendant1Details.defendant1FirstNameInput,
+      lastName: defendant1Details.defendant1LastNameInput,
       correspondenceAddress: defendant1Details.yes,
       email: defendant1Details.yes,
+      emailId: defendant1Details.defendant1EmailIdInput,
       correspondenceAddressSame: defendant1Details.yes
     });
+    await performValidation('mainHeader', defendantList.mainHeader);
     await performAction('addAnotherDefendant', defendantList.no);
     await performAction('selectTenancyOrLicenceDetails', {
       tenancyOrLicenceType: tenancyLicenceDetails.assuredTenancy});
