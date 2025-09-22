@@ -288,7 +288,7 @@ export class CreateCaseAction implements IAction {
     };
     await performAction('clickRadioButton', noticeDetailsData.howDidYouServeNotice);
     if (noticeDetailsData.day && noticeDetailsData.month && noticeDetailsData.year) {
-      await performActions('Enter Date and upload file',
+      await performActions('Enter Date',
         ['inputText', {text: 'Day', index: noticeDetailsData.index}, noticeDetailsData.day],
         ['inputText', {text: 'Month', index: noticeDetailsData.index}, noticeDetailsData.month],
         ['inputText', {text: 'Year', index: noticeDetailsData.index}, noticeDetailsData.year]);
