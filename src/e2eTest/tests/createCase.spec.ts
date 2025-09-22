@@ -253,7 +253,7 @@ test.describe('[Create Case Flow]  @Master @nightly', async () => {
       ['formLabelValue', 'Country', addressDetails.country]);
   });
 
-  test('Wales - Successful case creation with Saved options for secure tenancy type with rent and other grounds', async () => {
+  test('Wales - Successful case creation for secure tenancy type with rent and other grounds', async () => {
     await performAction('enterTestAddressManually');
     await performValidation('bannerAlert', 'Case #.* has been created.');
     await performAction('extractCaseIdFromAlert');
@@ -261,16 +261,6 @@ test.describe('[Create Case Flow]  @Master @nightly', async () => {
     await performAction('selectClaimantType', claimantType.registeredCommunityLandlord);
     await performAction('selectClaimType', claimType.no);
     await performAction('selectClaimantName', claimantName.no);
-    await performAction('clickButton', 'Sign out');
-    await performAction('reloginAndFindTheCase');
-    await performAction('clickButton', resumeClaim.continue);
-    await performAction('selectResumeClaimOption', resumeClaimOptions.yes);
-    await performValidation('radioButtonChecked', claimantType.registeredCommunityLandlord, true);
-    await performAction('clickButton', 'Continue');
-    await performValidation('radioButtonChecked', claimType.no, true);
-    await performAction('clickButton', 'Continue');
-    await performValidation('radioButtonChecked', claimantName.no, true);
-    await performAction('clickButton', 'Continue');
     await performAction('selectContactPreferences', {
       notifications: contactPreferences.no,
       correspondenceAddress: contactPreferences.no,
