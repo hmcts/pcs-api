@@ -155,6 +155,7 @@ class PcsCaseServiceTest {
         PcsCaseEntity savedEntity = pcsCaseEntityCaptor.getValue();
         assertThat(savedEntity).isSameAs(existingPcsCaseEntity);
         verify(existingPcsCaseEntity).setTenancyLicence(any());
+        verify(existingPcsCaseEntity).setPossessionGrounds(any());
         verifyNoMoreInteractions(existingPcsCaseEntity);
     }
 

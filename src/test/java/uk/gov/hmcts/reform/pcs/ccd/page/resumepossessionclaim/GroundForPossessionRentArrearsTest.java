@@ -2,7 +2,9 @@ package uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DiscretionaryGround;
 import uk.gov.hmcts.reform.pcs.ccd.domain.MandatoryGround;
@@ -11,15 +13,14 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsGround;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static uk.gov.hmcts.ccd.sdk.type.YesOrNo.YES;
 
 class GroundForPossessionRentArrearsTest extends BasePageTest {
-
 
     @BeforeEach
     void setUp() {
@@ -30,7 +31,7 @@ class GroundForPossessionRentArrearsTest extends BasePageTest {
     void shouldAutoPopulateMandatoryGroundsWhenSeriousRentArrearsGround8IsSelected() {
         // Given
         PCSCase caseData = PCSCase.builder()
-            .rentArrearsGrounds(List.of(RentArrearsGround.SERIOUS_RENT_ARREARS_GROUND8))
+            .rentArrearsGrounds(Set.of(RentArrearsGround.SERIOUS_RENT_ARREARS_GROUND8))
             .hasOtherAdditionalGrounds(YES)
             .build();
 
@@ -47,7 +48,7 @@ class GroundForPossessionRentArrearsTest extends BasePageTest {
     void shouldAutoPopulateDiscretionaryGroundsWhenRentArrearsGround10IsSelected() {
         // Given
         PCSCase caseData = PCSCase.builder()
-            .rentArrearsGrounds(List.of(RentArrearsGround.RENT_ARREARS_GROUND10))
+            .rentArrearsGrounds(Set.of(RentArrearsGround.RENT_ARREARS_GROUND10))
             .hasOtherAdditionalGrounds(YES)
             .build();
 
@@ -64,7 +65,7 @@ class GroundForPossessionRentArrearsTest extends BasePageTest {
     void shouldAutoPopulateDiscretionaryGroundsWhenPersistentDelayGround11IsSelected() {
         // Given
         PCSCase caseData = PCSCase.builder()
-            .rentArrearsGrounds(List.of(RentArrearsGround.PERSISTENT_DELAY_GROUND11))
+            .rentArrearsGrounds(Set.of(RentArrearsGround.PERSISTENT_DELAY_GROUND11))
             .hasOtherAdditionalGrounds(YES)
             .build();
 
@@ -81,7 +82,7 @@ class GroundForPossessionRentArrearsTest extends BasePageTest {
     void shouldAutoPopulateBothMandatoryAndDiscretionaryGroundsWhenMultipleGroundsAreSelected() {
         // Given
         PCSCase caseData = PCSCase.builder()
-            .rentArrearsGrounds(Arrays.asList(
+            .rentArrearsGrounds(Set.of(
                 RentArrearsGround.SERIOUS_RENT_ARREARS_GROUND8,
                 RentArrearsGround.RENT_ARREARS_GROUND10,
                 RentArrearsGround.PERSISTENT_DELAY_GROUND11
@@ -103,30 +104,10 @@ class GroundForPossessionRentArrearsTest extends BasePageTest {
     }
 
     @Test
-    void shouldNotAddDuplicateGroundsWhenGroundsAlreadyExist() {
-        // Given
-        PCSCase caseData = PCSCase.builder()
-            .rentArrearsGrounds(List.of(RentArrearsGround.SERIOUS_RENT_ARREARS_GROUND8))
-            .mandatoryGrounds(List.of(MandatoryGround.SERIOUS_RENT_ARREARS_GROUND8))
-            .discretionaryGrounds(List.of(DiscretionaryGround.RENT_ARREARS_GROUND10))
-            .hasOtherAdditionalGrounds(YES)
-            .build();
-
-        // When
-        AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
-
-        // Then
-        assertThat(response.getData().getMandatoryGrounds())
-            .containsExactly(MandatoryGround.SERIOUS_RENT_ARREARS_GROUND8);
-        assertThat(response.getData().getDiscretionaryGrounds())
-            .containsExactly(DiscretionaryGround.RENT_ARREARS_GROUND10);
-    }
-
-    @Test
     void shouldNotAutoPopulateWhenNoRentArrearsGroundsAreSelected() {
         // Given
         PCSCase caseData = PCSCase.builder()
-            .rentArrearsGrounds(Collections.emptyList())
+            .rentArrearsGrounds(Set.of())
             .hasOtherAdditionalGrounds(YES)
             .build();
 
@@ -150,21 +131,19 @@ class GroundForPossessionRentArrearsTest extends BasePageTest {
         AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
 
         // Then
-        assertThat(response.getData().getMandatoryGrounds()).isEmpty();
-        assertThat(response.getData().getDiscretionaryGrounds()).isEmpty();
+        assertThat(response.getData().getMandatoryGrounds()).isNull();
+        assertThat(response.getData().getDiscretionaryGrounds()).isNull();
     }
 
     @Test
     void shouldInitializeEmptyListsWhenMandatoryAndDiscretionaryGroundsAreNull() {
         // Given
-        CaseDetails<PCSCase, State> caseDetails = new CaseDetails<>();
         PCSCase caseData = PCSCase.builder()
-            .rentArrearsGrounds(List.of(RentArrearsGround.SERIOUS_RENT_ARREARS_GROUND8))
+            .rentArrearsGrounds(Set.of(RentArrearsGround.SERIOUS_RENT_ARREARS_GROUND8))
             .mandatoryGrounds(null)
             .discretionaryGrounds(null)
             .hasOtherAdditionalGrounds(YES)
             .build();
-        caseDetails.setData(caseData);
 
         // When
         AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
@@ -174,4 +153,53 @@ class GroundForPossessionRentArrearsTest extends BasePageTest {
             .containsExactly(MandatoryGround.SERIOUS_RENT_ARREARS_GROUND8);
         assertThat(response.getData().getDiscretionaryGrounds()).isEmpty();
     }
+
+    @ParameterizedTest
+    @MethodSource("provideRentArrearsChangeScenarios")
+    void shouldOverrideGroundsOnlyWhenSelectedRentArrearsGroundsChange(
+        Set<RentArrearsGround> previousGrounds,
+        Set<RentArrearsGround> currentGrounds,
+        boolean expectOverride) {
+        // Given
+        PCSCase caseData = PCSCase.builder()
+            .rentArrearsGrounds(currentGrounds)
+            .copyOfRentArrearsGrounds(new HashSet<>(previousGrounds))
+            .build();
+
+
+        // When
+        AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
+
+        // Then
+        if (expectOverride) {
+            int totalExpected = currentGrounds.size();
+            int totalActual = response.getData().getMandatoryGrounds().size()
+                + response.getData().getDiscretionaryGrounds().size();
+            assertThat(totalActual).isEqualTo(totalExpected);
+        } else {
+            assertThat(response.getData().getMandatoryGrounds()).isNull();
+            assertThat(response.getData().getDiscretionaryGrounds()).isNull();
+        }
+    }
+
+    private static Stream<Arguments> provideRentArrearsChangeScenarios() {
+        return Stream.of(
+            Arguments.of(
+                Set.of(),
+                Set.of(RentArrearsGround.RENT_ARREARS_GROUND10, RentArrearsGround.PERSISTENT_DELAY_GROUND11),
+                true
+            ),
+            Arguments.of(
+                Set.of(RentArrearsGround.SERIOUS_RENT_ARREARS_GROUND8),
+                Set.of(RentArrearsGround.SERIOUS_RENT_ARREARS_GROUND8),
+                false
+            ),
+            Arguments.of(
+                Set.of(RentArrearsGround.RENT_ARREARS_GROUND10),
+                Set.of(RentArrearsGround.SERIOUS_RENT_ARREARS_GROUND8, RentArrearsGround.PERSISTENT_DELAY_GROUND11),
+                true
+            )
+        );
+    }
+
 }
