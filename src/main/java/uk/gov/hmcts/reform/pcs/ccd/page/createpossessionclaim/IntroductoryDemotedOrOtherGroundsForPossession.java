@@ -57,8 +57,7 @@ public class IntroductoryDemotedOrOtherGroundsForPossession implements CcdPageCo
             );
 
         if (hasOtherDiscretionaryGrounds
-                &&
-            caseData.getHasIntroductoryDemotedOtherGroundsForPossession() == VerticalYesNo.YES) {
+            || caseData.getHasIntroductoryDemotedOtherGroundsForPossession() == VerticalYesNo.NO) {
             caseData.setShowIntroductoryDemotedOtherGroundReasonPage(YesOrNo.YES);
         } else {
             caseData.setShowIntroductoryDemotedOtherGroundReasonPage(YesOrNo.NO);

@@ -40,19 +40,17 @@ public class IntroductoryDemotedOtherGroundsReasons implements CcdPageConfigurat
             .label("introductoryDemotedOtherGroundsReasons-absoluteGrounds-label","""
                 ---
                 <h2 class="govuk-heading-l" tabindex="0">Absolute grounds</h2>
-                <h3 class="govuk-heading-m" tabindex="0">
-                    Why are you making a claim for possession under this ground?
-                </h3>
-                ""","introductoryDemotedOrOtherGroundsCONTAINS\"ABSOLUTE_GROUNDS\"")
+                <h3 class="govuk-heading-m" tabindex="0"> Why are you claiming possession?</h3>
+                ""","introductoryDemotedOrOtherGroundsCONTAINS\"ABSOLUTE_GROUNDS\""
+                       + "OR hasIntroductoryDemotedOtherGroundsForPossession=\"NO\"")
             .mandatory(IntroductoryDemotedOtherGroundReason::getAbsoluteGrounds,
-                    "introductoryDemotedOrOtherGroundsCONTAINS\"ABSOLUTE_GROUNDS\"")
+                    "introductoryDemotedOrOtherGroundsCONTAINS\"ABSOLUTE_GROUNDS\""
+                       + "OR hasIntroductoryDemotedOtherGroundsForPossession=\"NO\"")
 
             .label("introductoryDemotedOtherGroundsReasons-otherGround-label","""
                 ---
                 <h2 class="govuk-heading-l" tabindex="0">Other grounds</h2>
-                <h3 class="govuk-heading-m" tabindex="0">
-                    Why are you making a claim for possession under this ground?
-                </h3>
+                <h3 class="govuk-heading-m" tabindex="0"> Why are you claiming possession?</h3>
                 ""","introductoryDemotedOrOtherGroundsCONTAINS\"OTHER\"")
             .mandatory(IntroductoryDemotedOtherGroundReason::getOtherGround,
                     "introductoryDemotedOrOtherGroundsCONTAINS\"OTHER\"")

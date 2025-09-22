@@ -30,20 +30,6 @@ class IntroductoryDemotedOrOtherGroundsForPossessionTest extends BasePageTest {
     }
 
     @Test
-    void shouldNotShowReasonsPageIfNoGrounds() {
-        // Given
-        PCSCase caseData =
-            PCSCase.builder().hasIntroductoryDemotedOtherGroundsForPossession(VerticalYesNo.NO).build();
-
-        // When
-        AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
-
-        // Then
-        assertThat(
-            response.getData().getShowIntroductoryDemotedOtherGroundReasonPage()).isEqualTo(YesOrNo.NO);
-    }
-
-    @Test
     void shouldNotShowReasonsPageIfRentArrearsGround() {
         // Given
 
@@ -73,6 +59,23 @@ class IntroductoryDemotedOrOtherGroundsForPossessionTest extends BasePageTest {
               .hasIntroductoryDemotedOtherGroundsForPossession(VerticalYesNo.YES)
               .introductoryDemotedOrOtherGrounds(grounds)
               .build();
+
+        // When
+        AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
+
+        // Then
+        assertThat(
+            response.getData().getShowIntroductoryDemotedOtherGroundReasonPage()).isEqualTo(YesOrNo.YES);
+    }
+
+    @Test
+    void shouldShowReasonsPageWhenUserDoesntHaveGroundsForPossession() {
+        // Given
+        PCSCase caseData =
+            PCSCase.builder()
+                .hasIntroductoryDemotedOtherGroundsForPossession(VerticalYesNo.NO)
+                .introductoryDemotedOrOtherGrounds(null)
+                .build();
 
         // When
         AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);

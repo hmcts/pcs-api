@@ -78,6 +78,29 @@ class ClaimGroundServiceTest {
         assertThat(entities.get(0).getGroundReason()).isBlank();
     }
 
+    @Test
+    void shouldSaveAbsoluteGroundsWhenReasonIsPresent() {
+        // Given
+        PCSCase caseData = PCSCase.builder()
+            .hasIntroductoryDemotedOtherGroundsForPossession(VerticalYesNo.YES)
+            .typeOfTenancyLicence(TenancyLicenceType.INTRODUCTORY_TENANCY)
+            .introductoryDemotedOrOtherGrounds(null)
+            .introductoryDemotedOtherGroundReason(
+                IntroductoryDemotedOtherGroundReason.builder()
+                    .absoluteGrounds("Absolute reason")
+                    .build())
+            .hasIntroductoryDemotedOtherGroundsForPossession(VerticalYesNo.NO)
+            .build();
+
+        // When
+        List<ClaimGroundEntity> entities = claimGroundService.getGroundsWithReason(caseData);
+
+        // Then
+        assertThat(entities.size()).isEqualTo(1);
+        assertThat(entities.getFirst().getGroundReason()).isEqualTo("Absolute reason");
+        assertThat(entities.getFirst().getGroundId()).isEqualTo(ABSOLUTE_GROUNDS.name());
+    }
+
     private static Stream<Arguments> testGroundsOtherThanRentArrearsScenarios() {
         return Stream.of(
             arguments(Set.of(ABSOLUTE_GROUNDS)),
