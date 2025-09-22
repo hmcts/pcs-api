@@ -107,6 +107,7 @@ test.describe('[Create Case Flow With Address and Claimant Type] @Master @nightl
       unpaidRentInteractiveOption: dailyRentAmount.no,
       unpaidRentAmountPerDay: '20'
     });
+    await performValidation('mainHeader', moneyJudgment.mainHeader);
     await performAction('selectClaimForMoney', moneyJudgment.yes);
     await performValidation('mainHeader', claimantCircumstance.mainHeader);
     await performAction('selectClaimantCircumstances', {
@@ -182,6 +183,10 @@ test.describe('[Create Case Flow With Address and Claimant Type] @Master @nightl
     await performValidation('mainHeader', moneyJudgment.mainHeader);
     await performAction('selectClaimForMoney', moneyJudgment.yes);
     await performValidation('mainHeader', claimantCircumstance.mainHeader);
+    await performAction('selectClaimantCircumstances', {
+      circumstanceOption: claimantCircumstance.yesOrno,
+      claimantInput: claimantCircumstance.claimantCircumstanceInfoInputData
+    });
     await performAction('clickButton', 'Save and continue');
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
     await performAction('clickTab', 'Property Details');
@@ -245,7 +250,11 @@ test.describe('[Create Case Flow With Address and Claimant Type] @Master @nightl
     });
     await performAction('selectClaimForMoney', moneyJudgment.no);
     await performValidation('mainHeader', claimantCircumstance.mainHeader);
-    await performAction('clickButton', claimantCircumstance.continue);
+    await performAction('selectClaimantCircumstances', {
+      circumstanceOption: claimantCircumstance.yesOrno,
+      claimantInput: claimantCircumstance.claimantCircumstanceInfoInputData
+    });
+    await performAction('clickButton', 'Save and continue');
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
     await performAction('clickTab', 'Property Details');
     await performValidations('address information entered',
