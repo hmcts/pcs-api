@@ -318,10 +318,32 @@ public class PCSCase {
     private String postcodeNotAssignedView;
 
     @CCD(access = {CitizenAccess.class, CaseworkerAccess.class})
-    private DefendantDetails defendant1;
-
-    @CCD(access = {CitizenAccess.class, CaseworkerAccess.class})
     private List<ListValue<DefendantDetails>> defendants;
+
+    // Individual defendant fields for CCD framework compatibility (1-25)
+    @SuppressWarnings("checkstyle:MultipleVariableDeclarations")
+    @CCD(access = {CitizenAccess.class, CaseworkerAccess.class})
+    private DefendantDetails defendant1, defendant2, defendant3, defendant4, defendant5,
+                              defendant6, defendant7, defendant8, defendant9, defendant10,
+                              defendant11, defendant12, defendant13, defendant14, defendant15,
+                              defendant16, defendant17, defendant18, defendant19, defendant20,
+                              defendant21, defendant22, defendant23, defendant24, defendant25;
+
+    // Add another defendant fields (1-25)
+    @SuppressWarnings("checkstyle:MultipleVariableDeclarations")
+    @CCD(
+        label = "Do you need to add another defendant?",
+        access = {CitizenAccess.class, CaseworkerAccess.class}
+    )
+    private VerticalYesNo addAnotherDefendant1, addAnotherDefendant2, addAnotherDefendant3, 
+                          addAnotherDefendant4, addAnotherDefendant5, addAnotherDefendant6, 
+                          addAnotherDefendant7, addAnotherDefendant8, addAnotherDefendant9, 
+                          addAnotherDefendant10, addAnotherDefendant11, addAnotherDefendant12, 
+                          addAnotherDefendant13, addAnotherDefendant14, addAnotherDefendant15, 
+                          addAnotherDefendant16, addAnotherDefendant17, addAnotherDefendant18, 
+                          addAnotherDefendant19, addAnotherDefendant20, addAnotherDefendant21, 
+                          addAnotherDefendant22, addAnotherDefendant23, addAnotherDefendant24, 
+                          addAnotherDefendant25;
     
     // Notice Details fields
     @CCD(
