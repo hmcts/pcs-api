@@ -156,6 +156,7 @@ class PcsCaseServiceTest {
         assertThat(savedEntity).isSameAs(existingPcsCaseEntity);
         verify(existingPcsCaseEntity).setTenancyLicence(any());
         verify(existingPcsCaseEntity).setPossessionGrounds(any());
+        verify(existingPcsCaseEntity).setClaimantCircumstances(any());
         verifyNoMoreInteractions(existingPcsCaseEntity);
     }
 
@@ -415,6 +416,28 @@ class PcsCaseServiceTest {
         assertThat(clearedDefendant.getCorrespondenceAddress()).isNull();
         assertThat(clearedDefendant.getAddressSameAsPossession()).isNull();
         assertThat(clearedDefendant.getEmail()).isNull();
+    }
+
+    @Test
+    void shouldCreateCaseWithClaimantCircumstances() {
+        // Given
+        String claimantCircumstances = "Some circumstances";
+        PCSCase pcsCase = mock(PCSCase.class);
+        when(pcsCase.getClaimantCircumstancesDetails()).thenReturn(claimantCircumstances);
+
+        // When
+        underTest.createCase(CASE_REFERENCE, pcsCase);
+
+        // Then
+        verify(pcsCaseRepository).save(pcsCaseEntityCaptor.capture());
+
+        PcsCaseEntity savedEntity = pcsCaseEntityCaptor.getValue();
+        assertThat(savedEntity.getClaimantCircumstances()).isEqualTo(
+            savedEntity.getClaimantCircumstances().builder()
+                .provided(true)
+                .circumstances(claimantCircumstances)
+                .build()
+        );
     }
 
     private AddressEntity stubAddressUKModelMapper(AddressUK addressUK) {

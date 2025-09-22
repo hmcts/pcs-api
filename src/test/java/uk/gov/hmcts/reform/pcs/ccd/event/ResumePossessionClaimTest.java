@@ -252,8 +252,8 @@ class ResumePossessionClaimTest extends BaseEventTest {
         when(pcsCaseService.patchCase(eq(TEST_CASE_REFERENCE), any(PCSCase.class))).thenReturn(pcsCaseEntity);
 
         ClaimEntity claimEntity = mock(ClaimEntity.class);
-        when(claimService.createAndLinkClaim(any(PcsCaseEntity.class), any(), anyString(), any(PartyRole.class),
-                                             any())).thenReturn(claimEntity);
+        when(claimService.createAndLinkClaim(any(PcsCaseEntity.class), any(), anyString(), any(PartyRole.class)))
+            .thenReturn(claimEntity);
 
         PCSCase caseData = mock(PCSCase.class);
 
@@ -262,7 +262,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
 
         // Then
         verify(claimService)
-            .createAndLinkClaim(eq(pcsCaseEntity), any(), eq("Main Claim"), eq(PartyRole.CLAIMANT), any());
+            .createAndLinkClaim(eq(pcsCaseEntity), any(), eq("Main Claim"), eq(PartyRole.CLAIMANT));
 
         verify(claimService).saveClaim(claimEntity);
     }

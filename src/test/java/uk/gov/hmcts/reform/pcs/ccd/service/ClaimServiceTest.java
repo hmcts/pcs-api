@@ -30,17 +30,15 @@ class ClaimServiceTest {
         PcsCaseEntity caseEntity = new PcsCaseEntity();
         PartyEntity partyEntity = new PartyEntity();
         String claimName = "Main Claim";
-        String claimantCircumstances = "Some circumstances";
 
         ClaimEntity claim = claimService.createAndLinkClaim(caseEntity, partyEntity,
-                                                            claimName, PartyRole.CLAIMANT, claimantCircumstances);
+                                                            claimName, PartyRole.CLAIMANT);
 
         assertThat(claim).isNotNull();
         assertThat(claim.getSummary()).isEqualTo(claimName);
         assertThat(claim.getPcsCase()).isSameAs(caseEntity);
         assertThat(caseEntity.getClaims().iterator().next()).isEqualTo(claim);
         assertThat(claim.getClaimParties().iterator().next().getParty()).isEqualTo(partyEntity);
-        assertThat(claim.getClaimantCircumstances()).isEqualTo(claimantCircumstances);
     }
 
     @Test
@@ -54,22 +52,6 @@ class ClaimServiceTest {
 
         verify(claimRepository, times(1)).save(claim);
         assertThat(result).isEqualTo(claim);
-    }
-
-    @Test
-    void shouldCreateClaimWithClaimantCircumstances() {
-        String claimantCircumstances = "Some circumstances";
-        PcsCaseEntity caseEntity = new PcsCaseEntity();
-        PartyEntity partyEntity = new PartyEntity();
-        String claimName = "Main Claim";
-
-        ClaimEntity claim = claimService.createAndLinkClaim(caseEntity, partyEntity,
-                                                            claimName, PartyRole.CLAIMANT, claimantCircumstances);
-
-        assertThat(claim).isNotNull();
-        assertThat(claim.getSummary()).isEqualTo(claimName);
-        assertThat(claim.getPcsCase()).isSameAs(caseEntity);
-        assertThat(claim.getClaimantCircumstances()).isEqualTo(claimantCircumstances);
     }
 
 }
