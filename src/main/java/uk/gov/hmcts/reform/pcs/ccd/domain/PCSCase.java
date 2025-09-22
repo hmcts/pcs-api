@@ -423,7 +423,7 @@ public class PCSCase {
         hint = "Upload a document to the system",
         typeOverride = FieldType.Collection,
         typeParameterOverride = "Document",
-        access = {CitizenAccess.class, CaseworkerAccess.class}
+        access = {CitizenAccess.class}
     )
     private List<ListValue<Document>> rentStatementDocuments;
 
@@ -431,7 +431,7 @@ public class PCSCase {
         label = "Total rent arrears",
         min = 0,
         typeOverride = FieldType.MoneyGBP,
-        access = {CitizenAccess.class, CaseworkerAccess.class}
+        access = {CitizenAccess.class}
     )
     private String totalRentArrears;
 
@@ -440,7 +440,7 @@ public class PCSCase {
             + "other than the defendants?",
         hint = "This could include payments from Universal Credit, Housing Benefit or any other contributions "
             + "made by a government department, like the Department for Work and Pensions (DWP).",
-        access = {CitizenAccess.class, CaseworkerAccess.class}
+        access = {CitizenAccess.class}
     )
     private VerticalYesNo thirdPartyPayments;
 
@@ -449,13 +449,13 @@ public class PCSCase {
         hint = "Select all that apply",
         typeOverride = FieldType.MultiSelectList,
         typeParameterOverride = "ThirdPartyPaymentSource",
-        access = {CitizenAccess.class, CaseworkerAccess.class}
+        access = {CitizenAccess.class}
     )
     private java.util.List<ThirdPartyPaymentSource> thirdPartyPaymentSources;
 
     @CCD(
         label = "Payment source",
-        access = {CitizenAccess.class, CaseworkerAccess.class}
+        access = {CitizenAccess.class}
     )
     private String thirdPartyPaymentSourceOther;
 
