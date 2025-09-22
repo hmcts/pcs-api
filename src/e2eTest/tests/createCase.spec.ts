@@ -48,7 +48,9 @@ test.describe('[Create Case Flow With Address and Claimant Type] @Master @nightl
     });
     await performValidation('bannerAlert', 'Case #.* has been created.');
     await performAction('clickButton', provideMoreDetailsOfClaim.continue);
+    await performValidation('mainHeader', claimantType.mainHeader);
     await performAction('selectClaimantType', claimantType.registeredProviderForSocialHousing);
+    await performValidation('mainHeader', claimType.mainHeader);
     await performAction('selectClaimType', claimType.no);
     await performAction('selectClaimantName', claimantName.yes);
     await performAction('selectContactPreferences', {
@@ -106,9 +108,11 @@ test.describe('[Create Case Flow With Address and Claimant Type] @Master @nightl
       unpaidRentAmountPerDay: '20'
     });
     await performAction('selectClaimForMoney', moneyJudgment.yes);
-    await performValidation('mainHeader', `"${claimantsName}'s ${claimantCircumstance.mainHeader}"`);
-    await performAction('selectClaimantCircumstances', claimantCircumstance.yes);
-    await performAction('clickButton', claimantCircumstance.continue);
+    await performValidation('mainHeader', claimantCircumstance.mainHeader);
+    await performAction('selectClaimantCircumstances', {
+      circumstanceOption: claimantCircumstance.yesOrno,
+      claimantInput: claimantCircumstance.claimantCircumstanceInfoInputData
+    });
     await performAction('clickButton', 'Save and continue');
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
     await performAction('clickTab', 'Property Details');
@@ -173,7 +177,6 @@ test.describe('[Create Case Flow With Address and Claimant Type] @Master @nightl
     await performAction('clickButton', detailsOfRentArrears.continue);
     await performAction('selectClaimForMoney', moneyJudgment.yes);
     await performValidation('mainHeader', claimantCircumstance.mainHeader);
-    await performAction('clickButton', claimantCircumstance.continue);
     await performAction('clickButton', 'Save and continue');
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
     await performAction('clickTab', 'Property Details');
@@ -239,7 +242,6 @@ test.describe('[Create Case Flow With Address and Claimant Type] @Master @nightl
     await performAction('selectClaimForMoney', moneyJudgment.no);
     await performValidation('mainHeader', claimantCircumstance.mainHeader);
     await performAction('clickButton', claimantCircumstance.continue);
-    await performAction('clickButton', 'Save and continue');
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
     await performAction('clickTab', 'Property Details');
     await performValidations('address information entered',

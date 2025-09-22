@@ -337,14 +337,18 @@ export class CreateCaseAction implements IAction {
 
   private async selectClaimantCircumstances(claimantCircumstances: actionData) {
     const claimData = claimantCircumstances as {
-      claimantCircumstanceOption: string;
+      circumstanceOption: string[],
+      claimantInput: string
     };
+    const nameClaimant = claimantsName.substring(claimantsName.length - 1) == 's' ? `${claimantsName}'` : `${claimantsName}'s`;
+    const claimOption = this.getRandomArrayElement(claimData.circumstanceOption) as string;
     await performAction('clickRadioButton', {
-      question: claimantCircumstance.claimantCircumstanceInfo.replace("Claimants", `${claimantsName}'s`),
-      option: claimData.claimantCircumstanceOption
-    });
-    if (claimData.claimantCircumstanceOption == 'Yes') {
-      await performAction('inputText', claimantCircumstance.claimantCircumstanceInfoTextAreaLabel.replace("Claimants", `${claimantsName}'s`), claimantCircumstance.claimantCircumstanceInfoInputData);
+      question: claimantCircumstance.claimantCircumstanceInfo.replace("Claimants", nameClaimant),
+      option: claimOption
+    }
+    );
+    if (claimOption == 'Yes') {
+      await performAction('inputText', claimantCircumstance.claimantCircumstanceInfoTextAreaLabel.replace("Claimants", nameClaimant), claimData.claimantInput);
     }
     await performAction('clickButton', 'Continue');
   }
@@ -408,4 +412,7 @@ export class CreateCaseAction implements IAction {
       throw new Error('Case could not be created.');
     }
   }
+
+  private getRandomArrayElement = (arr: any[]) =>
+    arr.length ? arr[Math.floor(Math.random() * arr.length)] : undefined;
 }
