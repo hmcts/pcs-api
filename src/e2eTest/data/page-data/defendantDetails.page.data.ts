@@ -14,7 +14,7 @@ export const defendantDetails =
 export const defendant1Details =
     {
         title: 'Create a case - HM Courts & Tribunals Service - GOV.UK',
-        mainHeader: 'Defendant 1 details',
+        mainHeader: 'Defendant 1 Details',
         defendant1FirstNameInput: 'Sheldon',
         defendant1LastNameInput: 'Cooper',
         defendant1EmailIdInput: 'sheldoncooper@gmail.com',
@@ -26,7 +26,7 @@ export const defendant1Details =
 export const defendant2Details =
     {
         title: 'Create a case - HM Courts & Tribunals Service - GOV.UK',
-        mainHeader: 'Defendant 2 details',
+        mainHeader: 'Defendant 2 Details',
         defendant2FirstNameInput: 'Mary',
         defendant2LastNameInput: 'Jane',
         defendant2EmailIdInput: 'maryjane@gmail.com',

@@ -79,6 +79,7 @@ test.describe('[Create Case Flow With Address and Claimant Type] @Master @nightl
       correspondenceAddressSame: defendant2Details.no,
       postcode: defendant2Details.defendant2PostcodeInput
     });
+    await performValidation('mainHeader', defendantList.mainHeader);
     await performAction('addAnotherDefendant', defendantList.no);
     await performValidation('mainHeader', tenancyLicenceDetails.mainHeader);
     await performAction('selectTenancyOrLicenceDetails', {
