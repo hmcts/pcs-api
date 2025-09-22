@@ -125,8 +125,7 @@ test.describe('[Create Case Flow With Address and Claimant Type] @Master @nightl
     )
   });
 
-  //A houskeeping ticket has been created HDPI-1952 to fix this test
-  test.skip('Wales - Successful case creation with Saved options', async () => {
+  test('Wales - Successful case creation with Saved options', async () => {
     await performAction('enterTestAddressManually');
     await performValidation('bannerAlert', 'Case #.* has been created.');
     await performAction('extractCaseIdFromAlert');
@@ -174,7 +173,13 @@ test.describe('[Create Case Flow With Address and Claimant Type] @Master @nightl
     await performValidation('mainHeader', rentDetails.mainHeader);
     await performAction('provideRentDetails', { rentAmount: '850', rentFrequencyOption: 'Other', inputFrequency: rentDetails.rentFrequencyFortnightly, unpaidRentAmountPerDay: '50' });
     await performValidation('mainHeader', detailsOfRentArrears.mainHeader);
-    await performAction('clickButton', detailsOfRentArrears.continue);
+    await performAction('provideDetailsOfRentArrears', {
+      files: ['rentArrears.docx', 'rentArrears.pdf'],
+      rentArrearsAmountOnStatement: '1000',
+      rentPaidByOthersOption: detailsOfRentArrears.yes,
+      paymentOptions: [detailsOfRentArrears.universalCreditOption, detailsOfRentArrears.paymentOtherOption]
+    });
+    await performValidation('mainHeader', moneyJudgment.mainHeader);
     await performAction('selectClaimForMoney', moneyJudgment.yes);
     await performValidation('mainHeader', claimantCircumstance.mainHeader);
     await performAction('clickButton', 'Save and continue');
@@ -188,8 +193,7 @@ test.describe('[Create Case Flow With Address and Claimant Type] @Master @nightl
       ['formLabelValue', 'Country', addressDetails.country]);
   });
 
-  //A houskeeping ticket has been created HDPI-1952 to fix this test
-  test.skip('Wales - Successful case creation without Saved options and Defendants correspondence address is not known', async () => {
+  test('Wales - Successful case creation without Saved options and Defendants correspondence address is not known', async () => {
     await performAction('enterTestAddressManually');
     await performValidation('bannerAlert', 'Case #.* has been created.');
     await performAction('extractCaseIdFromAlert');

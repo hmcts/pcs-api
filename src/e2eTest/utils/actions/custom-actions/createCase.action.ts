@@ -17,6 +17,7 @@ import { accessTokenApiData } from '@data/api-data/accessToken.api.data';
 import { caseApiData } from '@data/api-data/case.api.data';
 import { dailyRentAmount } from '@data/page-data/dailyRentAmount.page.data';
 import { claimantCircumstance } from '@data/page-data/claimantCircumstances.page.data';
+import { detailsOfRentArrears } from '@data/page-data/detailsOfRentArrears.page.data';
 
 export let caseInfo: { id: string; fid: string; state: string };
 let caseNumber: string;
@@ -49,6 +50,7 @@ export class CreateCaseAction implements IAction {
       ['provideRentDetails', () => this.provideRentDetails(fieldName)],
       ['selectDailyRentAmount', () => this.selectDailyRentAmount(fieldName)],
       ['selectClaimantCircumstances', () => this.selectClaimantCircumstances(fieldName)],
+      ['provideDetailsOfRentArrears', () => this.provideDetailsOfRentArrears(fieldName)],
       ['selectClaimForMoney', () => this.selectClaimForMoney(fieldName)]
     ]);
     const actionToPerform = actionsMap.get(action);
@@ -354,6 +356,28 @@ export class CreateCaseAction implements IAction {
   }
 
 
+  private async provideDetailsOfRentArrears(rentArrears: actionData) {
+    const rentArrearsData = rentArrears as {
+      files?: string[],
+      rentArrearsAmountOnStatement: string,
+      rentPaidByOthersOption: string;
+      paymentOptions?: string[];
+    };
+    await performAction('uploadFile', rentArrearsData.files);
+    await performAction('inputText', detailsOfRentArrears.totalRentArrearsLabel, rentArrearsData.rentArrearsAmountOnStatement);
+    await performAction('clickRadioButton', {
+      question: detailsOfRentArrears.periodShownOnRentStatementLabel,
+      option: rentArrearsData.rentPaidByOthersOption
+    });
+    if (rentArrearsData.rentPaidByOthersOption == 'Yes') {
+      await performAction('check', rentArrearsData.paymentOptions);
+      if (rentArrearsData.paymentOptions?.includes('Other')) {
+        await performAction('inputText', detailsOfRentArrears.paymentSourceLabel, detailsOfRentArrears.paymentOptionOtherInput);
+      }
+      await performAction('clickButton', 'Continue');
+    }
+  }
+
   private async selectClaimForMoney(option: actionData) {
     await performAction('clickRadioButton', option);
     await performAction('clickButton', 'Continue');
@@ -372,12 +396,12 @@ export class CreateCaseAction implements IAction {
       'Enter Address Manually'
       , ['clickButton', "I can't enter a UK postcode"]
       , ['inputText', 'Building and Street', addressDetails.buildingAndStreet]
-      , ['inputText', 'Address Line 2', addressDetails.addressLine2]
-      , ['inputText', 'Address Line 3', addressDetails.addressLine3]
+      , ['inputText', 'Address Line 2 (Optional)', addressDetails.addressLine2]
+      , ['inputText', 'Address Line 3 (Optional)', addressDetails.addressLine3]
       , ['inputText', 'Town or City', addressDetails.townOrCity]
-      , ['inputText', 'County', addressDetails.walesCounty]
-      , ['inputText', 'Postcode/Zipcode', addressDetails.walesCourtAssignedPostcode]
-      , ['inputText', 'Country', addressDetails.country]
+      , ['inputText', 'County (Optional)', addressDetails.walesCounty]
+      , ['inputText', 'Postcode', addressDetails.walesCourtAssignedPostcode]
+      , ['inputText', 'Country (Optional)', addressDetails.country]
     );
     await performAction('clickButton', 'Submit');
   }

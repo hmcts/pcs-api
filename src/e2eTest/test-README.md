@@ -99,9 +99,10 @@ Playwright 1.30+ | TypeScript 4.9+
 | selectOtherGrounds                | `performAction('selectOtherGrounds', {mandatory: [‘holidayLet’, ‘ownerOccupier’], discretionary :[‘domesticViolence’,’rentArrears’]})`                                                                     |
 | reloginAndFindTheCase             | `performAction('reloginAndFindTheCase')`                                                                                                                                                                   |
 | selectDailyRentAmount             | `performAction('selectDailyRentAmount', { calculateRentAmount: '£114.29',unpaidRentInteractiveOption: dailyRentAmount.no,unpaidRentAmountPerDay:'20'})`                                                    |
-| extractCaseIdFromAlert | `performAction('extractCaseIdFromAlert', ...)` |
-| selectResumeClaimOption | `performAction('selectResumeClaimOption', ...)` |
 | selectClaimantCircumstances | `performAction('selectClaimantCircumstances', ...)` |
+| provideDetailsOfRentArrears       | `performAction('provideDetailsOfRentArrears', {files: ['tenancyLicence.docx'], rentArrearsAmountOnStatement: '1000',rentPaidByOthersOption: 'Yes',paymentOptions: ['Universal Credit']})`                  | 
+| extractCaseIdFromAlert            | `performAction('extractCaseIdFromAlert')`                                                                                                                                                                  |
+| selectResumeClaimOption           | `performAction('selectResumeClaimOption', 'yes')`                                                                                                                                                          |
 | selectClaimForMoney               | `performAction('selectClaimForMoney', 'yes')`                                                                                                                                                              |
 | selectNoticeDetails               | `performAction('selectNoticeDetails', {howDidYouServeNotice: noticeDetails.byFirstClassPost, day: '', month: '', year: ''})`                                                                               |
 ### Validations
