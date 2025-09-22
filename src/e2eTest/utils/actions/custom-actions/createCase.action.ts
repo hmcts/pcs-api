@@ -16,6 +16,7 @@ import { rentDetails } from '@data/page-data/rentDetails.page.data';
 import { accessTokenApiData } from '@data/api-data/accessToken.api.data';
 import { caseApiData } from '@data/api-data/case.api.data';
 import { dailyRentAmount } from '@data/page-data/dailyRentAmount.page.data';
+import { detailsOfRentArrears } from '@data/page-data/detailsOfRentArrears.page.data';
 
 export let caseInfo: { id: string; fid: string; state: string };
 let caseNumber: string;
@@ -48,6 +49,7 @@ export class CreateCaseAction implements IAction {
       ['provideRentDetails', () => this.provideRentDetails(fieldName)],
       ['addAnotherDefendant', () => this.addAnotherDefendant(fieldName)],
       ['selectDailyRentAmount', () => this.selectDailyRentAmount(fieldName)],
+      ['provideDetailsOfRentArrears', () => this.provideDetailsOfRentArrears(fieldName)],
       ['selectClaimForMoney', () => this.selectClaimForMoney(fieldName)]
     ]);
     const actionToPerform = actionsMap.get(action);
@@ -345,6 +347,28 @@ export class CreateCaseAction implements IAction {
     await performAction('clickButton', 'Continue');
   }
 
+  private async provideDetailsOfRentArrears(rentArrears: actionData) {
+    const rentArrearsData = rentArrears as {
+      files?: string[],
+      rentArrearsAmountOnStatement: string,
+      rentPaidByOthersOption: string;
+      paymentOptions?: string[];
+    };
+    await performAction('uploadFile', rentArrearsData.files);
+    await performAction('inputText', detailsOfRentArrears.totalRentArrearsLabel, rentArrearsData.rentArrearsAmountOnStatement);
+    await performAction('clickRadioButton', {
+      question: detailsOfRentArrears.periodShownOnRentStatementLabel,
+      option: rentArrearsData.rentPaidByOthersOption
+    });
+    if (rentArrearsData.rentPaidByOthersOption == 'Yes') {
+      await performAction('check', rentArrearsData.paymentOptions);
+      if (rentArrearsData.paymentOptions?.includes('Other')) {
+        await performAction('inputText', detailsOfRentArrears.paymentSourceLabel, detailsOfRentArrears.paymentOptionOtherInput);
+      }
+      await performAction('clickButton', 'Continue');
+    }
+  }
+    
   private async selectClaimForMoney(option: actionData) {
     await performAction('clickRadioButton', option);
     await performAction('clickButton', 'Continue');

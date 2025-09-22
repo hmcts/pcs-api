@@ -185,7 +185,13 @@ test.describe('[Create Case Flow With Address and Claimant Type] @Master @nightl
     await performValidation('mainHeader', rentDetails.mainHeader);
     await performAction('provideRentDetails', {rentAmount:'850', rentFrequencyOption:'Other', inputFrequency:rentDetails.rentFrequencyFortnightly,unpaidRentAmountPerDay:'50'});
     await performValidation('mainHeader', detailsOfRentArrears.mainHeader);
-    await performAction('clickButton', detailsOfRentArrears.continue);
+    await performAction('provideDetailsOfRentArrears', {
+      files: ['rentArrears.docx', 'rentArrears.pdf'],
+      rentArrearsAmountOnStatement: '1000',
+      rentPaidByOthersOption: detailsOfRentArrears.yes,
+      paymentOptions: [detailsOfRentArrears.universalCreditOption, detailsOfRentArrears.paymentOtherOption]
+    });
+    await performValidation('mainHeader', moneyJudgment.mainHeader);
     await performAction('selectClaimForMoney', moneyJudgment.yes);
     await performValidation('mainHeader', claimantCircumstances.mainHeader);
     await performAction('clickButton', claimantCircumstances.continue);

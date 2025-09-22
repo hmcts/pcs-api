@@ -13,7 +13,7 @@ import {claimType} from '@data/page-data/claimType.page.data';
 test.beforeEach(async ({page}, testInfo) => {
   initializeExecutor(page);
   await parentSuite('Eligibility Check');
-  await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL, testInfo);
+  await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
   await testInfo.attach('Page URL', {
     body: page.url(),
     contentType: 'text/plain',
