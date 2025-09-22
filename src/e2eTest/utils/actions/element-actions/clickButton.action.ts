@@ -7,7 +7,7 @@ export class ClickButtonAction implements IAction {
                                   [value="${fieldName}"],
                                   :has-text("${fieldName}") + button,
                                   :has-text("${fieldName}") ~ button,
-                                  a:text-is("${fieldName}")`);
+                                  a >> text=${fieldName}`);
     await locator.first().click();
   }
 }
