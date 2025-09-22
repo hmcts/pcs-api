@@ -2,11 +2,11 @@ name: Publish OpenAPI specs
 on:
   push:
     branches:
-      - "master"
+      - "debugswagger"
 
 jobs:
   publish-openapi:
-    uses: hmcts/workflow-publish-openapi-spec/.github/workflows/publish-openapi.yml@main
+    uses: adusumillipraveen/workflow-publish-openapi-spec/.github/workflows/publish-openapi.yml@main
     secrets:
       SWAGGER_PUBLISHER_API_TOKEN: ${{ secrets.SWAGGER_PUBLISHER_API_TOKEN }}
     with:
