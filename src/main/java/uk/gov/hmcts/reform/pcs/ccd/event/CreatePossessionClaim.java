@@ -47,6 +47,7 @@ public class CreatePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             .add(crossBorderPostcodeSelection)
             .add(propertyNotEligible)
             .add(new PostcodeNotAssignedToCourt());
+
     }
 
     private void submit(EventPayload<PCSCase, State> eventPayload) {
