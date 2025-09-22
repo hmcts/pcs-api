@@ -10,7 +10,6 @@ import {defendantDetails} from '@data/page-data/defendantDetails.page.data';
 import {tenancyLicenceDetails} from '@data/page-data/tenancyLicenceDetails.page.data';
 import {groundsForPossession} from '@data/page-data/groundsForPossession.page.data';
 import {rentArrearsPossessionGrounds} from '@data/page-data/rentArrearsPossessionGrounds.page.data';
-import {whatAreYourGrounds} from '@data/page-data/mandatoryAndDiscretionaryGrounds.page.data';
 import {preActionProtocol} from '@data/page-data/preActionProtocol.page.data';
 import {mediationAndSettlement} from '@data/page-data/mediationAndSettlement.page.data';
 import {noticeOfYourIntention} from '@data/page-data/noticeOfYourIntention.page.data';
@@ -21,6 +20,9 @@ import {provideMoreDetailsOfClaim} from '@data/page-data/provideMoreDetailsOfCla
 import {resumeClaim} from '@data/page-data/resumeClaim.page.data';
 import {resumeClaimOptions} from '@data/page-data/resumeClaimOptions.page.data';
 import {detailsOfRentArrears} from '@data/page-data/detailsOfRentArrears.page.data';
+import {whatAreYourGroundsForPossession} from '@data/page-data/whatAreYourGroundsForPossession.page.data';
+import {rentArrearsOrBreachOfTenancy} from '@data/page-data/rentArrearsOrBreachOfTenancy.page.data';
+import {reasonsForPossession} from '@data/page-data/reasonsForPossession.page.data';
 import {moneyJudgment} from '@data/page-data/moneyJudgment.page.data';
 import {claimantCircumstances} from '@data/page-data/claimantCircumstances.page.data';
 
@@ -38,8 +40,8 @@ test.beforeEach(async ({page}, testInfo) => {
   await performAction('housingPossessionClaim');
 });
 
-test.describe('[Create Case Flow With Address and Claimant Type] @Master @nightly', async () => {
-  test('England - Successful case creation', async () => {
+test.describe('[Create Case Flow]  @Master @nightly', async () => {
+  test('England - Successful case creation with Assured tenancy', async () => {
     await performAction('selectAddress', {
       postcode: addressDetails.englandCourtAssignedPostcode,
       addressIndex: addressDetails.addressIndex
@@ -62,7 +64,7 @@ test.describe('[Create Case Flow With Address and Claimant Type] @Master @nightl
     });
     await performValidation('mainHeader', tenancyLicenceDetails.mainHeader);
     await performAction('selectTenancyOrLicenceDetails', {
-      tenancyOrLicenceType: tenancyLicenceDetails.other,
+      tenancyOrLicenceType: tenancyLicenceDetails.assuredTenancy,
       day: tenancyLicenceDetails.day,
       month: tenancyLicenceDetails.month,
       year: tenancyLicenceDetails.year,
@@ -75,9 +77,9 @@ test.describe('[Create Case Flow With Address and Claimant Type] @Master @nightl
       otherGrounds: rentArrearsPossessionGrounds.yes
     });
     await performAction('selectOtherGrounds',{
-      mandatory: [whatAreYourGrounds.mandatory.holidayLet,whatAreYourGrounds.mandatory.ownerOccupier],
-      discretionary: [whatAreYourGrounds.discretionary.domesticViolence,whatAreYourGrounds.discretionary.rentArrears],
-    })
+      mandatory: [whatAreYourGroundsForPossession.mandatory.holidayLet,whatAreYourGroundsForPossession.mandatory.ownerOccupier],
+      discretionary: [whatAreYourGroundsForPossession.discretionary.domesticViolence14A,whatAreYourGroundsForPossession.discretionary.rentArrears],
+    });
     await performValidation('mainHeader', preActionProtocol.mainHeader);
     await performAction('selectPreActionProtocol', preActionProtocol.yes);
     await performValidation('mainHeader', mediationAndSettlement.mainHeader);
@@ -185,7 +187,7 @@ test.describe('[Create Case Flow With Address and Claimant Type] @Master @nightl
       ['formLabelValue', 'Country', addressDetails.country]);
   });
 
-  test('Wales - Successful case creation without Saved options and Defendants correspondence address is not known', async () => {
+  test('Wales - Successful case creation without Saved options and Defendants correspondence address is not known with flexible tenancy', async () => {
     await performAction('enterTestAddressManually');
     await performValidation('bannerAlert', 'Case #.* has been created.');
     await performAction('extractCaseIdFromAlert');
@@ -213,11 +215,96 @@ test.describe('[Create Case Flow With Address and Claimant Type] @Master @nightl
       correspondenceAddress: defendantDetails.no,
       email: defendantDetails.no,
     });
+    await performValidation('mainHeader', tenancyLicenceDetails.mainHeader);
     await performAction('selectTenancyOrLicenceDetails', {
-      tenancyOrLicenceType: tenancyLicenceDetails.assuredTenancy});
-    await performValidation('mainHeader', groundsForPossession.mainHeader);
-    await performAction('selectGroundsForPossession', groundsForPossession.no);
+      tenancyOrLicenceType: tenancyLicenceDetails.flexibleTenancy});
+    await performAction('selectYourPossessionGrounds', {
+      discretionary: [whatAreYourGroundsForPossession.discretionary.rentArrearsOrBreachOfTenancy]
+    });
+    await performValidation('mainHeader', rentArrearsOrBreachOfTenancy.mainHeader);
+    await performAction('selectRentArrearsOrBreachOfTenancy', {
+      rentArrearsOrBreach: [rentArrearsOrBreachOfTenancy.rentArrears]
+    });
+    await performValidation('mainHeader', preActionProtocol.mainHeader);
     await performAction('selectPreActionProtocol', preActionProtocol.yes);
+    await performAction('selectMediationAndSettlement', {
+      attemptedMediationWithDefendantsOption: mediationAndSettlement.yes,
+      settlementWithDefendantsOption: mediationAndSettlement.no,
+    });
+    await performValidation('mainHeader', noticeOfYourIntention.mainHeader);
+    await performAction('selectNoticeOfYourIntention', noticeOfYourIntention.no);
+    await performValidation('mainHeader', rentDetails.mainHeader);
+    await performAction('provideRentDetails', {rentFrequencyOption: 'Monthly', rentAmount: '1000'});
+    await performAction('selectDailyRentAmount', {
+      calculateRentAmount: '£32.85',
+      unpaidRentInteractiveOption: dailyRentAmount.yes
+    });
+    await performAction('selectClaimForMoney', moneyJudgment.yes);
+    await performAction('clickButton', claimantCircumstances.continue);
+    await performAction('clickButton', 'Save and continue');
+    await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
+    await performAction('clickTab', 'Property Details');
+    await performValidations('address information entered',
+      ['formLabelValue', 'Building and Street', addressDetails.buildingAndStreet],
+      ['formLabelValue', 'Address Line 2', addressDetails.addressLine2],
+      ['formLabelValue', 'Town or City', addressDetails.townOrCity],
+      ['formLabelValue', 'Postcode/Zipcode', addressDetails.walesCourtAssignedPostcode],
+      ['formLabelValue', 'Country', addressDetails.country]);
+  });
+
+  test('Wales - Successful case creation with Saved options for secure tenancy type with rent and other grounds', async () => {
+    await performAction('enterTestAddressManually');
+    await performValidation('bannerAlert', 'Case #.* has been created.');
+    await performAction('extractCaseIdFromAlert');
+    await performAction('clickButton', provideMoreDetailsOfClaim.continue);
+    await performAction('selectClaimantType', claimantType.registeredCommunityLandlord);
+    await performAction('selectClaimType', claimType.no);
+    await performAction('selectClaimantName', claimantName.no);
+    await performAction('clickButton', 'Sign out');
+    await performAction('reloginAndFindTheCase');
+    await performAction('clickButton', resumeClaim.continue);
+    await performAction('selectResumeClaimOption', resumeClaimOptions.yes);
+    await performValidation('radioButtonChecked', claimantType.registeredCommunityLandlord, true);
+    await performAction('clickButton', 'Continue');
+    await performValidation('radioButtonChecked', claimType.no, true);
+    await performAction('clickButton', 'Continue');
+    await performValidation('radioButtonChecked', claimantName.no, true);
+    await performAction('clickButton', 'Continue');
+    await performAction('selectContactPreferences', {
+      notifications: contactPreferences.no,
+      correspondenceAddress: contactPreferences.no,
+      phoneNumber: contactPreferences.yes
+    });
+    await performAction('defendantDetails', {
+      name: defendantDetails.yes,
+      correspondenceAddress: defendantDetails.yes,
+      email: defendantDetails.yes,
+      correspondenceAddressSame: defendantDetails.yes
+    });
+    await performAction('selectTenancyOrLicenceDetails', {
+      tenancyOrLicenceType: tenancyLicenceDetails.secureTenancy
+    });
+    await performValidation('mainHeader', whatAreYourGroundsForPossession.mainHeader);
+    await performAction('selectYourPossessionGrounds', {
+      discretionary: [whatAreYourGroundsForPossession.discretionary.rentArrearsOrBreachOfTenancy, whatAreYourGroundsForPossession.discretionary.deteriorationOfFurniture],
+      mandatory: [whatAreYourGroundsForPossession.mandatory.antiSocialBehaviour],
+      mandatoryAccommodation: [whatAreYourGroundsForPossession.mandatoryWithAccommodation.charitableLandlords, whatAreYourGroundsForPossession.mandatoryWithAccommodation.landlordsWorks],
+      discretionaryAccommodation: [whatAreYourGroundsForPossession.discretionaryWithAccommodation.adapted, whatAreYourGroundsForPossession.discretionaryWithAccommodation.tied],
+    });
+    await performValidation('mainHeader', rentArrearsOrBreachOfTenancy.mainHeader);
+    await performAction('selectRentArrearsOrBreachOfTenancy', {
+      rentArrearsOrBreach: [rentArrearsOrBreachOfTenancy.breachOfTenancy, rentArrearsOrBreachOfTenancy.rentArrears]
+    });
+    await performValidation('mainHeader', reasonsForPossession.mainHeader);
+    await performAction('enterReasonForPossession'
+      , [whatAreYourGroundsForPossession.discretionary.deteriorationOfFurniture, whatAreYourGroundsForPossession.mandatory.antiSocialBehaviour,
+        whatAreYourGroundsForPossession.mandatoryWithAccommodation.charitableLandlords, whatAreYourGroundsForPossession.mandatoryWithAccommodation.landlordsWorks,
+        whatAreYourGroundsForPossession.discretionaryWithAccommodation.adapted, whatAreYourGroundsForPossession.discretionaryWithAccommodation.tied,
+        reasonsForPossession.breachOfTenancy
+      ]);
+    await performValidation('mainHeader', preActionProtocol.mainHeader);
+    await performAction('selectPreActionProtocol', preActionProtocol.yes);
+    await performValidation('mainHeader', mediationAndSettlement.mainHeader);
     await performAction('selectMediationAndSettlement', {
       attemptedMediationWithDefendantsOption: mediationAndSettlement.yes,
       settlementWithDefendantsOption: mediationAndSettlement.no,
@@ -229,6 +316,7 @@ test.describe('[Create Case Flow With Address and Claimant Type] @Master @nightl
       index: noticeDetails.byDeliveringAtPermittedPlaceIndex,
       day: '25', month: '02', year: '1970'});
     await performAction('provideRentDetails', {rentFrequencyOption: 'Monthly', rentAmount: '1000'});
+    await performValidation('mainHeader', dailyRentAmount.mainHeader);
     await performAction('selectDailyRentAmount', {
       calculateRentAmount: '£32.85',
       unpaidRentInteractiveOption: dailyRentAmount.yes
