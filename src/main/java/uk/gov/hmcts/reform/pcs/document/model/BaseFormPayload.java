@@ -7,7 +7,7 @@ import uk.gov.hmcts.reform.docassembly.domain.FormPayload;
 
 @Data
 @Component
-public class FormPayloadObj implements FormPayload {
+public class BaseFormPayload implements FormPayload {
     private String applicantName;
     private String caseNumber;
 }

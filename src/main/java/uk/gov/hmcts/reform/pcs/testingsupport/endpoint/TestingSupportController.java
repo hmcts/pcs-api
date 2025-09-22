@@ -22,7 +22,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import uk.gov.hmcts.reform.docassembly.domain.OutputType;
-import uk.gov.hmcts.reform.pcs.document.model.FormPayloadObj;
+import uk.gov.hmcts.reform.pcs.document.model.BaseFormPayload;
 import uk.gov.hmcts.reform.pcs.document.service.DocAssemblyService;
 import uk.gov.hmcts.reform.pcs.document.service.exception.DocAssemblyException;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.EligibilityResult;
@@ -138,7 +138,7 @@ public class TestingSupportController {
             description = "Document generation request containing template ID and form data",
             required = true
         )
-        @RequestBody FormPayloadObj formPayload
+        @RequestBody BaseFormPayload formPayload
     ) {
         try {
             if (formPayload == null) {

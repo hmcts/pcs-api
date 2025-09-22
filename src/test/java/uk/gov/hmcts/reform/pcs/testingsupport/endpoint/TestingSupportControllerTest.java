@@ -12,7 +12,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.ResponseEntity;
 import uk.gov.hmcts.reform.docassembly.domain.FormPayload;
 import uk.gov.hmcts.reform.docassembly.domain.OutputType;
-import uk.gov.hmcts.reform.pcs.document.model.FormPayloadObj;
+import uk.gov.hmcts.reform.pcs.document.model.BaseFormPayload;
 import uk.gov.hmcts.reform.pcs.document.service.DocAssemblyService;
 import uk.gov.hmcts.reform.pcs.document.service.exception.DocAssemblyException;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.EligibilityResult;
@@ -99,7 +99,7 @@ class TestingSupportControllerTest {
 
     @Test
     void testGenerateDocument_WithBasicCaseInformation() {
-        final FormPayloadObj formPayload = new FormPayloadObj();
+        final BaseFormPayload formPayload = new BaseFormPayload();
 
         // Basic case information only
         formPayload.setApplicantName("John Smith");
@@ -144,7 +144,7 @@ class TestingSupportControllerTest {
     @Test
     void testGenerateDocument_WithCustomTemplateId() {
         // Note: Controller uses hardcoded template, but keeping test pattern for consistency
-        final FormPayloadObj formPayload = new FormPayloadObj();
+        final BaseFormPayload formPayload = new BaseFormPayload();
         formPayload.setApplicantName("Jane Doe");
         formPayload.setCaseNumber("PCS-123456789");
 
@@ -174,7 +174,7 @@ class TestingSupportControllerTest {
 
         FormPayload capturedFormPayload = formPayloadCaptor.getValue();
         // Cast back to FormPayloadObj to access specific methods
-        FormPayloadObj capturedFormPayloadObj = (FormPayloadObj) capturedFormPayload;
+        BaseFormPayload capturedFormPayloadObj = (BaseFormPayload) capturedFormPayload;
         assertThat(capturedFormPayloadObj.getApplicantName()).isEqualTo("Jane Doe");
         assertThat(capturedFormPayloadObj.getCaseNumber()).isEqualTo("PCS-123456789");
     }
@@ -182,7 +182,7 @@ class TestingSupportControllerTest {
     @Test
     void testGenerateDocument_WithEmptyTemplateId() {
         // Keeping test pattern
-        final FormPayloadObj formPayload = new FormPayloadObj();
+        final BaseFormPayload formPayload = new BaseFormPayload();
         formPayload.setApplicantName("Test User");
         formPayload.setCaseNumber("PCS-123456789");
 
@@ -212,13 +212,13 @@ class TestingSupportControllerTest {
 
         FormPayload capturedFormPayload = formPayloadCaptor.getValue();
         // Cast back to FormPayloadObj to access specific methods
-        FormPayloadObj capturedFormPayloadObj = (FormPayloadObj) capturedFormPayload;
+        BaseFormPayload capturedFormPayloadObj = (BaseFormPayload) capturedFormPayload;
         assertThat(capturedFormPayloadObj.getCaseNumber()).isEqualTo("PCS-123456789");
     }
 
     @Test
     void testGenerateDocument_Success() {
-        final FormPayloadObj formPayload = new FormPayloadObj();
+        final BaseFormPayload formPayload = new BaseFormPayload();
         formPayload.setApplicantName("Test Case");
         formPayload.setCaseNumber("PCS-123456789");
 
@@ -246,7 +246,7 @@ class TestingSupportControllerTest {
 
     @Test
     void testGenerateDocument_Failure() {
-        final FormPayloadObj formPayload = new FormPayloadObj();
+        final BaseFormPayload formPayload = new BaseFormPayload();
         formPayload.setApplicantName("value1");
         formPayload.setCaseNumber("PCS-123456789");
 
@@ -274,7 +274,7 @@ class TestingSupportControllerTest {
 
     @Test
     void testGenerateDocument_WhitespaceAuthorization() {
-        final FormPayloadObj formPayload = new FormPayloadObj();
+        final BaseFormPayload formPayload = new BaseFormPayload();
         formPayload.setApplicantName("Test");
         formPayload.setCaseNumber("PCS-123456789");
 
@@ -295,7 +295,7 @@ class TestingSupportControllerTest {
 
     @Test
     void testGenerateDocument_NullAuthorization() {
-        final FormPayloadObj formPayload = new FormPayloadObj();
+        final BaseFormPayload formPayload = new BaseFormPayload();
         formPayload.setApplicantName("Test");
         formPayload.setCaseNumber("PCS-123456789");
 
@@ -316,7 +316,7 @@ class TestingSupportControllerTest {
 
     @Test
     void testGenerateDocument_EmptyAuthorization() {
-        final FormPayloadObj formPayload = new FormPayloadObj();
+        final BaseFormPayload formPayload = new BaseFormPayload();
         formPayload.setApplicantName("Test");
         formPayload.setCaseNumber("PCS-123456789");
 
@@ -338,7 +338,7 @@ class TestingSupportControllerTest {
     // Similar fixes for service authorization tests
     @Test
     void testGenerateDocument_NullServiceAuthorization() {
-        final FormPayloadObj formPayload = new FormPayloadObj();
+        final BaseFormPayload formPayload = new BaseFormPayload();
         formPayload.setApplicantName("Test");
         formPayload.setCaseNumber("PCS-123456789");
 
@@ -359,7 +359,7 @@ class TestingSupportControllerTest {
 
     @Test
     void testGenerateDocument_EmptyServiceAuthorization() {
-        final FormPayloadObj formPayload = new FormPayloadObj();
+        final BaseFormPayload formPayload = new BaseFormPayload();
         formPayload.setApplicantName("Test");
         formPayload.setCaseNumber("PCS-123456789");
 
@@ -380,7 +380,7 @@ class TestingSupportControllerTest {
 
     @Test
     void testGenerateDocument_WhitespaceServiceAuthorization() {
-        final FormPayloadObj formPayload = new FormPayloadObj();
+        final BaseFormPayload formPayload = new BaseFormPayload();
         formPayload.setApplicantName("Test");
         formPayload.setCaseNumber("PCS-123456789");
 
@@ -401,7 +401,7 @@ class TestingSupportControllerTest {
 
     @Test
     void testGenerateDocument_DocAssemblyBadRequestException() {
-        final FormPayloadObj formPayload = new FormPayloadObj();
+        final BaseFormPayload formPayload = new BaseFormPayload();
         formPayload.setApplicantName("value1");
         formPayload.setCaseNumber("PCS-123456789");
 
@@ -422,7 +422,7 @@ class TestingSupportControllerTest {
 
     @Test
     void testGenerateDocument_DocAssemblyAuthorizationException() {
-        final FormPayloadObj formPayload = new FormPayloadObj();
+        final BaseFormPayload formPayload = new BaseFormPayload();
         formPayload.setApplicantName("value1");
         formPayload.setCaseNumber("PCS-123456789");
 
@@ -444,7 +444,7 @@ class TestingSupportControllerTest {
 
     @Test
     void testGenerateDocument_DocAssemblyNotFoundException() {
-        final FormPayloadObj formPayload = new FormPayloadObj();
+        final BaseFormPayload formPayload = new BaseFormPayload();
         formPayload.setApplicantName("value1");
         formPayload.setCaseNumber("PCS-123456789");
 
@@ -466,7 +466,7 @@ class TestingSupportControllerTest {
 
     @Test
     void testGenerateDocument_DocAssemblyServiceUnavailableException() {
-        final FormPayloadObj formPayload = new FormPayloadObj();
+        final BaseFormPayload formPayload = new BaseFormPayload();
         formPayload.setApplicantName("value1");
         formPayload.setCaseNumber("PCS-123456789");
 
@@ -489,7 +489,7 @@ class TestingSupportControllerTest {
 
     @Test
     void testGenerateDocument_DocAssemblyServiceErrorException() {
-        final FormPayloadObj formPayload = new FormPayloadObj();
+        final BaseFormPayload formPayload = new BaseFormPayload();
         formPayload.setApplicantName("value1");
         formPayload.setCaseNumber("PCS-123456789");
 
@@ -510,7 +510,7 @@ class TestingSupportControllerTest {
 
     @Test
     void testGenerateDocument_DocAssemblyGenericException() {
-        final FormPayloadObj formPayload = new FormPayloadObj();
+        final BaseFormPayload formPayload = new BaseFormPayload();
         formPayload.setApplicantName("value1");
         formPayload.setCaseNumber("PCS-123456789");
 
@@ -530,7 +530,7 @@ class TestingSupportControllerTest {
 
     @Test
     void testGenerateDocument_IllegalArgumentException() {
-        final FormPayloadObj formPayload = new FormPayloadObj();
+        final BaseFormPayload formPayload = new BaseFormPayload();
         formPayload.setApplicantName("value1");
         formPayload.setCaseNumber("PCS-123456789");
 
