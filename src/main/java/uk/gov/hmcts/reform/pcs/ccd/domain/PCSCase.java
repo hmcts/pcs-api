@@ -167,11 +167,11 @@ public class PCSCase {
     @CCD(
         typeOverride = MultiSelectList,
         typeParameterOverride = "RentArrearsGround",
-        access = {CitizenAccess.class, CaseworkerAccess.class}
+        access = {CitizenAccess.class}
     )
     private Set<RentArrearsGround> copyOfRentArrearsGrounds;
 
-    @CCD(access = {CitizenAccess.class, CaseworkerAccess.class})
+    @CCD(access = {CitizenAccess.class})
     private YesOrNo overrideResumedGrounds;
 
     @CCD(
@@ -475,8 +475,7 @@ public class PCSCase {
         label = "Discretionary grounds",
         hint = "Select all that apply",
         typeOverride = FieldType.MultiSelectList,
-        typeParameterOverride = "SecureOrFlexibleDiscretionaryGrounds",
-        access = {CaseworkerAccess.class}
+        typeParameterOverride = "SecureOrFlexibleDiscretionaryGrounds"
     )
     private Set<SecureOrFlexibleDiscretionaryGrounds> secureOrFlexibleDiscretionaryGrounds;
 
@@ -484,8 +483,7 @@ public class PCSCase {
         label = "Mandatory grounds",
         hint = "Select all that apply",
         typeOverride = FieldType.MultiSelectList,
-        typeParameterOverride = "SecureOrFlexibleMandatoryGrounds",
-        access = {CaseworkerAccess.class}
+        typeParameterOverride = "SecureOrFlexibleMandatoryGrounds"
     )
     private Set<SecureOrFlexibleMandatoryGrounds> secureOrFlexibleMandatoryGrounds;
 
@@ -493,8 +491,7 @@ public class PCSCase {
         label = "Discretionary grounds (if alternative accommodation available)",
         hint = "Select all that apply",
         typeOverride = FieldType.MultiSelectList,
-        typeParameterOverride = "SecureOrFlexibleDiscretionaryGroundsAlternativeAccomm",
-        access = {CaseworkerAccess.class}
+        typeParameterOverride = "SecureOrFlexibleDiscretionaryGroundsAlternativeAccomm"
     )
     private Set<SecureOrFlexibleDiscretionaryGroundsAlternativeAccomm> secureOrFlexibleDiscretionaryGroundsAlt;
 
@@ -502,8 +499,7 @@ public class PCSCase {
         label = "Mandatory grounds (if alternative accommodation available)",
         hint = "Select all that apply",
         typeOverride = FieldType.MultiSelectList,
-        typeParameterOverride = "SecureOrFlexibleMandatoryGroundsAlternativeAccomm",
-        access = {CaseworkerAccess.class}
+        typeParameterOverride = "SecureOrFlexibleMandatoryGroundsAlternativeAccomm"
     )
     private Set<SecureOrFlexibleMandatoryGroundsAlternativeAccomm> secureOrFlexibleMandatoryGroundsAlt;
 
@@ -511,19 +507,18 @@ public class PCSCase {
         label = "What does your ground 1 claim involve?",
         hint = "Select all that apply",
         typeOverride = FieldType.MultiSelectList,
-        typeParameterOverride = "RentArrearsOrBreachOfTenancy",
-        access = {CaseworkerAccess.class}
+        typeParameterOverride = "RentArrearsOrBreachOfTenancy"
     )
     private Set<RentArrearsOrBreachOfTenancy> rentArrearsOrBreachOfTenancy;
 
-    @CCD(searchable = false, access = {CaseworkerAccess.class})
+    @CCD(searchable = false)
     private YesOrNo showBreachOfTenancyTextarea;
 
-    @CCD(searchable = false, access = {CaseworkerAccess.class})
+    @CCD(searchable = false)
     private YesOrNo showReasonsForGroundsPage;
 
     @JsonUnwrapped
-    @CCD(access = {CaseworkerAccess.class})
+    @CCD
     private SecureOrFlexibleGroundsReasons secureOrFlexibleGroundsReasons;
 
     @CCD(
