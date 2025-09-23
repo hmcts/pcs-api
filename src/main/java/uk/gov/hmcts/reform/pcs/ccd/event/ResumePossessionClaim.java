@@ -44,6 +44,8 @@ import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.GroundForPossessio
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.GroundForPossessionRentArrears;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.GroundsForPossession;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.MediationAndSettlement;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.NoRentArrearsGroundsForPossessionOptions;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.NoRentArrearsGroundsForPossessionReason;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.NoticeDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.PreActionProtocol;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.RentArrears;
@@ -122,6 +124,8 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             .add(new GroundsForPossession())
             .add(new GroundForPossessionRentArrears())
             .add(new GroundForPossessionAdditionalGrounds())
+            .add(new NoRentArrearsGroundsForPossessionOptions())
+            .add(new NoRentArrearsGroundsForPossessionReason())
             .add(new PreActionProtocol())
             .add(new MediationAndSettlement())
             .add(new CheckingNotice())
@@ -152,7 +156,8 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
 
         List<DynamicStringListElement> listItems = Arrays.stream(ClaimantType.values())
             .filter(value -> value.isApplicableFor(legislativeCountry))
-            .map(value -> DynamicStringListElement.builder().code(value.name()).label(value.getLabel()).build())
+            .map(value -> DynamicStringListElement.builder().code(value.name()).label(value.getLabel())
+                .build())
             .toList();
 
         DynamicStringList claimantTypeList = DynamicStringList.builder()
