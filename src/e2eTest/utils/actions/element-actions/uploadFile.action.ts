@@ -8,10 +8,10 @@ export class UploadFileAction implements IAction {
     if (typeof files == 'string') {
       await this.uploadFile(page, files);
     } else if (Array.isArray(files)) {
-      for (const file of files) {
-        await this.uploadFile(page, file);
-        // Added wait explicitly to upload multiple files as per application file upload standards
-        await page.waitForTimeout(7000);
+      for (let i = 0; i < files.length; i++) {
+        await this.uploadFile(page, files[i]);
+        if (i == files.length - 1) break;
+        await page.waitForTimeout(5000);
       }
     }
   }

@@ -3,7 +3,8 @@ import {IValidation, validationData} from '../../interfaces/validation.interface
 
 export class VisibilityValidation implements IValidation {
   async validate(page: Page, validation: string, fieldName: string, data: validationData): Promise<void> {
-    let element = page.locator(`label:has-text("${fieldName}")`);
+    let element = page.locator(`label:has-text("${fieldName}"),
+                                         span:has-text("${fieldName}")`);
     const validationsMap = new Map<string, () => Promise<void>>([
       ['elementToBeVisible', () => this.elementToBeVisible(element)],
       ['elementNotToBeVisible', () => this.elementNotToBeVisible(element)],
@@ -23,6 +24,13 @@ export class VisibilityValidation implements IValidation {
   }
 
   private async waitUntilElementDisappears(element: Locator): Promise<void> {
-    await element.waitFor({ state: 'hidden', timeout: 10000 });
+    try {
+      await element.waitFor({state: 'hidden', timeout: 10000});
+    } catch (e) {
+      const elements = await element.all();
+      for (const element of elements) {
+        await element.waitFor({state: 'hidden', timeout: 10000});
+      }
+    }
   }
 }
