@@ -140,14 +140,6 @@ public class TestingSupportController {
         )
         @RequestBody BaseFormPayload formPayload
     ) {
-        log.info("Received document generation request:");
-        log.info("Authorization: {}", authorization);
-        log.info("ServiceAuthorization: {}", serviceAuthorization);
-        log.info("FormPayload: {}", formPayload);
-        if (formPayload != null) {
-            log.info("ApplicantName: {}", formPayload.getApplicantName());
-            log.info("CaseNumber: {}", formPayload.getCaseNumber());
-        }
         try {
             if (formPayload == null) {
                 return ResponseEntity.badRequest().body("FormPayload is required");

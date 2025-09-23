@@ -37,12 +37,6 @@ public class DocAssemblyService {
             String outputFilename
     ) {
         try {
-            log.info("DocAssemblyService.generateDocument called with:");
-            log.info("FormPayload: {}", formPayload);
-            log.info("TemplateId: {}", templateId);
-            log.info("OutputType: {}", outputType);
-            log.info("OutputFilename: {}", outputFilename);
-
             if (formPayload == null) {
                 throw new IllegalArgumentException("FormPayload cannot be null");
             }
