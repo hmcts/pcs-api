@@ -154,10 +154,6 @@ test.describe('[Create Case Flow]  @Master @nightly', async () => {
         groundsForPossession.breachOfTheTenancy, groundsForPossession.absoluteGrounds,groundsForPossession.other]});
     await performAction('enterReasonForPossession'
       , [ groundsForPossession.antiSocialBehaviour, groundsForPossession.breachOfTheTenancy, groundsForPossession.absoluteGrounds,groundsForPossession.otherGrounds]);
-    await performAction('selectYourPossessionGrounds',{
-      mandatory: [whatAreYourGroundsForPossession.mandatory.holidayLet,whatAreYourGroundsForPossession.mandatory.ownerOccupier],
-      discretionary: [whatAreYourGroundsForPossession.discretionary.domesticViolence14A,whatAreYourGroundsForPossession.discretionary.rentArrears],
-    });
     await performValidation('mainHeader', preActionProtocol.mainHeader);
     await performAction('selectPreActionProtocol', preActionProtocol.yes);
     await performValidation('mainHeader', mediationAndSettlement.mainHeader);
