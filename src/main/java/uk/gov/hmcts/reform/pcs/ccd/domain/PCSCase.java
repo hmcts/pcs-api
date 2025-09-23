@@ -1,8 +1,5 @@
 package uk.gov.hmcts.reform.pcs.ccd.domain;
 
-import java.util.HashSet;
-import java.util.List;
-
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import lombok.Builder;
 import lombok.Data;
@@ -21,6 +18,7 @@ import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -501,7 +499,7 @@ public class PCSCase {
     private Set<IntroductoryDemotedOrOtherGrounds> introductoryDemotedOrOtherGrounds;
 
     @CCD(
-            label = "Enter your grounds for Possession",
+            label = "Enter your grounds for possession",
             hint = "You'll be able to explain your reasons for claiming Possession"
                     + " under these grounds on the next screen",
             access = {CitizenAccess.class, CaseworkerAccess.class},
