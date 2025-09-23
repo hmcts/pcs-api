@@ -43,7 +43,7 @@ public class ClaimGroundService {
                 String reasonText = switch (ground) {
                     case ABSOLUTE_GROUNDS -> reasons.getAbsoluteGrounds();
                     case ANTI_SOCIAL -> reasons.getAntiSocialBehaviourGround();
-                    case BREACH_OF_THE_TENANCY -> reasons.getBreachOfTenancyGround();
+                    case BREACH_OF_THE_TENANCY -> reasons.getBreachOfTheTenancyGround();
                     case OTHER -> reasons.getOtherGround();
                     case RENT_ARREARS -> null;
                 };

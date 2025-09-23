@@ -34,7 +34,7 @@ public class IntroductoryDemotedOtherGroundsReasons implements CcdPageConfigurat
                     Why are you making a claim for possession under this ground?
                 </h3>
                 ""","introductoryDemotedOrOtherGroundsCONTAINS\"BREACH_OF_THE_TENANCY\"")
-            .mandatory(IntroductoryDemotedOtherGroundReason::getBreachOfTenancyGround,
+            .mandatory(IntroductoryDemotedOtherGroundReason::getBreachOfTheTenancyGround,
                     "introductoryDemotedOrOtherGroundsCONTAINS\"BREACH_OF_THE_TENANCY\"")
 
             .label("introductoryDemotedOtherGroundsReasons-absoluteGrounds-label","""
