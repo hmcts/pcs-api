@@ -5,12 +5,12 @@ import {performAction, performValidation} from '@utils/controller';
 
 export class UploadFileAction implements IAction {
   async execute(page: Page, action: string, files: actionData): Promise<void> {
-    if (typeof files == 'string') {
+    if (typeof files === 'string') {
       await this.uploadFile(page, files);
     } else if (Array.isArray(files)) {
-      for (let i = 0; i < files.length; i++) {
-        await this.uploadFile(page, files[i]);
-        if (i == files.length - 1) break;
+      for (const [index, file] of files.entries()) {
+        await this.uploadFile(page, file);
+        if (index === files.length - 1) break;
         await page.waitForTimeout(5000);
       }
     }
