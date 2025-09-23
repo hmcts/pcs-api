@@ -26,8 +26,10 @@ public class GroundsForPossession implements CcdPageConfiguration {
     @Override
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
-                .page("groundsForPossession", this::midEvent)
-                .pageLabel("Grounds for possession")
+            .page("groundsForPossession", this::midEvent)
+            .pageLabel("Grounds for possession")
+            .showCondition("typeOfTenancyLicence!=\"SECURE_TENANCY\" "
+                               + "AND typeOfTenancyLicence!=\"FLEXIBLE_TENANCY\"")
                 .label("groundsForPossession-lineSeparator", "---")
                 .mandatory(PCSCase::getGroundsForPossession);
     }

@@ -18,10 +18,11 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenAccess;
 import uk.gov.hmcts.reform.pcs.ccd.domain.model.NoRentArrearsReasonForGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
+
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Set;
-
 
 import static uk.gov.hmcts.ccd.sdk.type.FieldType.DynamicRadioList;
 import static uk.gov.hmcts.ccd.sdk.type.FieldType.MultiSelectList;
@@ -171,7 +172,17 @@ public class PCSCase {
         typeParameterOverride = "RentArrearsGround",
         access = {CitizenAccess.class, CaseworkerAccess.class}
     )
-    private List<RentArrearsGround> rentArrearsGrounds;
+    private Set<RentArrearsGround> rentArrearsGrounds;
+
+    @CCD(
+        typeOverride = MultiSelectList,
+        typeParameterOverride = "RentArrearsGround",
+        access = {CitizenAccess.class, CaseworkerAccess.class}
+    )
+    private Set<RentArrearsGround> copyOfRentArrearsGrounds;
+
+    @CCD(access = {CitizenAccess.class, CaseworkerAccess.class})
+    private YesOrNo overrideResumedGrounds;
 
     @CCD(
         label = "Do you have any other additional grounds for possession?",
@@ -187,7 +198,7 @@ public class PCSCase {
         typeParameterOverride = "MandatoryGround",
         access = {CitizenAccess.class, CaseworkerAccess.class}
     )
-    private List<MandatoryGround> mandatoryGrounds;
+    private Set<MandatoryGround> mandatoryGrounds;
 
     // Additional grounds checkboxes - Discretionary
     @CCD(
@@ -197,7 +208,7 @@ public class PCSCase {
         typeParameterOverride = "DiscretionaryGround",
         access = {CitizenAccess.class, CaseworkerAccess.class}
     )
-    private List<DiscretionaryGround> discretionaryGrounds;
+    private Set<DiscretionaryGround> discretionaryGrounds;
 
     @CCD(
         label = "Have you attempted mediation with the defendants?",
@@ -330,7 +341,7 @@ public class PCSCase {
 
     @CCD(access = {CitizenAccess.class, CaseworkerAccess.class})
     private List<ListValue<DefendantDetails>> defendants;
-    
+
     // Notice Details fields
     @CCD(
         label = "How did you serve the notice?",
@@ -474,6 +485,61 @@ public class PCSCase {
         access = {CitizenAccess.class, CaseworkerAccess.class}
     )
     private String thirdPartyPaymentSourceOther;
+
+    @CCD(
+        label = "Discretionary grounds",
+        hint = "Select all that apply",
+        typeOverride = FieldType.MultiSelectList,
+        typeParameterOverride = "SecureOrFlexibleDiscretionaryGrounds",
+        access = {CaseworkerAccess.class}
+    )
+    private Set<SecureOrFlexibleDiscretionaryGrounds> secureOrFlexibleDiscretionaryGrounds;
+
+    @CCD(
+        label = "Mandatory grounds",
+        hint = "Select all that apply",
+        typeOverride = FieldType.MultiSelectList,
+        typeParameterOverride = "SecureOrFlexibleMandatoryGrounds",
+        access = {CaseworkerAccess.class}
+    )
+    private Set<SecureOrFlexibleMandatoryGrounds> secureOrFlexibleMandatoryGrounds;
+
+    @CCD(
+        label = "Discretionary grounds (if alternative accommodation available)",
+        hint = "Select all that apply",
+        typeOverride = FieldType.MultiSelectList,
+        typeParameterOverride = "SecureOrFlexibleDiscretionaryGroundsAlternativeAccomm",
+        access = {CaseworkerAccess.class}
+    )
+    private Set<SecureOrFlexibleDiscretionaryGroundsAlternativeAccomm> secureOrFlexibleDiscretionaryGroundsAlt;
+
+    @CCD(
+        label = "Mandatory grounds (if alternative accommodation available)",
+        hint = "Select all that apply",
+        typeOverride = FieldType.MultiSelectList,
+        typeParameterOverride = "SecureOrFlexibleMandatoryGroundsAlternativeAccomm",
+        access = {CaseworkerAccess.class}
+    )
+    private Set<SecureOrFlexibleMandatoryGroundsAlternativeAccomm> secureOrFlexibleMandatoryGroundsAlt;
+
+    @CCD(
+        label = "What does your ground 1 claim involve?",
+        hint = "Select all that apply",
+        typeOverride = FieldType.MultiSelectList,
+        typeParameterOverride = "RentArrearsOrBreachOfTenancy",
+        access = {CaseworkerAccess.class}
+    )
+    private Set<RentArrearsOrBreachOfTenancy> rentArrearsOrBreachOfTenancy;
+
+    @CCD(searchable = false, access = {CaseworkerAccess.class})
+    private YesOrNo showBreachOfTenancyTextarea;
+
+    @CCD(searchable = false, access = {CaseworkerAccess.class})
+    private YesOrNo showReasonsForGroundsPage;
+
+    @JsonUnwrapped
+    @CCD(access = {CaseworkerAccess.class})
+    private SecureOrFlexibleGroundsReasons secureOrFlexibleGroundsReasons;
 
     @CCD(
         label = "Do you want the court to make a judgment for the outstanding arrears?",
