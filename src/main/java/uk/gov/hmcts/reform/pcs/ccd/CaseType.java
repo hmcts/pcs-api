@@ -46,23 +46,14 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
         builder.decentralisedCaseType(getCaseType(), getCaseTypeName(), CASE_TYPE_DESCRIPTION);
         builder.jurisdiction(JURISDICTION_ID, JURISDICTION_NAME, JURISDICTION_DESCRIPTION);
 
-        String paymentLabel = "Payment Status";
-
         builder.searchInputFields()
-            .caseReferenceField()
-            .field(PCSCase::getPaymentStatus, paymentLabel);
+            .caseReferenceField();
 
         builder.searchCasesFields()
-            .caseReferenceField()
-            .field(PCSCase::getPaymentStatus, paymentLabel);
+            .caseReferenceField();
 
         builder.searchResultFields()
-            .caseReferenceField()
-            .field(PCSCase::getPaymentStatus, paymentLabel);
-
-        builder.workBasketInputFields()
-            .caseReferenceField()
-            .field(PCSCase::getClaimantName, "Claimant Name");
+            .caseReferenceField();
 
         builder.workBasketResultFields()
             .caseReferenceField()
