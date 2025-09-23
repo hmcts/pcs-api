@@ -1,5 +1,8 @@
 package uk.gov.hmcts.reform.pcs.ccd.domain;
 
+import java.util.HashSet;
+import java.util.List;
+
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import lombok.Builder;
 import lombok.Data;
@@ -12,6 +15,7 @@ import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseworkerAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenAccess;
+import uk.gov.hmcts.reform.pcs.ccd.domain.model.NoRentArrearsReasonForGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
@@ -23,6 +27,7 @@ import java.util.Set;
 import static uk.gov.hmcts.ccd.sdk.type.FieldType.DynamicRadioList;
 import static uk.gov.hmcts.ccd.sdk.type.FieldType.MultiSelectList;
 import static uk.gov.hmcts.ccd.sdk.type.FieldType.TextArea;
+
 
 /**
  * The main domain model representing a possessions case.
@@ -69,6 +74,7 @@ public class PCSCase {
 
     @CCD(searchable = false, access = {CitizenAccess.class, CaseworkerAccess.class})
     private YesOrNo showPropertyNotEligiblePage;
+
     @CCD(
         typeOverride = DynamicRadioList,
         access = {CitizenAccess.class, CaseworkerAccess.class}
@@ -540,5 +546,29 @@ public class PCSCase {
         access = {CitizenAccess.class, CaseworkerAccess.class}
     )
     private YesOrNo arrearsJudgmentWanted;
+
+    @CCD(
+        label = "Mandatory grounds",
+        hint = "Select all that apply",
+        typeOverride = MultiSelectList,
+        typeParameterOverride = "NoRentArrearsMandatoryGrounds",
+        access = {CitizenAccess.class, CaseworkerAccess.class}
+    )
+    @Builder.Default
+    private Set<NoRentArrearsMandatoryGrounds> noRentArrearsMandatoryGroundsOptions = new HashSet<>();
+
+    @CCD(
+        label = "Discretionary grounds",
+        hint = "Select all that apply",
+        typeOverride = MultiSelectList,
+        typeParameterOverride = "NoRentArrearsDiscretionaryGrounds",
+        access = {CitizenAccess.class, CaseworkerAccess.class}
+    )
+    @Builder.Default
+    private Set<NoRentArrearsDiscretionaryGrounds> noRentArrearsDiscretionaryGroundsOptions = new HashSet<>();
+
+    @JsonUnwrapped
+    @CCD(access = {CitizenAccess.class, CaseworkerAccess.class})
+    private NoRentArrearsReasonForGrounds noRentArrearsReasonForGrounds;
 
 }
