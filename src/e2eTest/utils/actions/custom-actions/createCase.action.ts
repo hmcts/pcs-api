@@ -224,16 +224,6 @@ export class CreateCaseAction implements IAction {
     await performAction('clickButton', 'Continue');
   }
 
-  private async enterReasonForPossession(reasons: actionData) {
-    if (!Array.isArray(reasons)) {
-      throw new Error(`EnterReasonForPossession expected an array, but received ${typeof reasons}`);
-    }
-    for (let n = 0; n < reasons.length; n++) {
-      await performAction('inputText',  {text:reasons[n],index: n}, reasonsForPossession.detailsAboutYourReason);
-    }
-    await performAction('clickButton', 'Continue');
-  }
-
   private async selectRentArrearsPossessionGround(rentArrearsPossessionGrounds: actionData) {
     const rentArrearsGrounds = rentArrearsPossessionGrounds as {
       rentArrears: string[];
@@ -241,28 +231,6 @@ export class CreateCaseAction implements IAction {
     };
     await performAction('check', rentArrearsGrounds.rentArrears);
     await performAction('clickRadioButton', rentArrearsGrounds.otherGrounds);
-    await performAction('clickButton', 'Continue');
-  }
-
-  private async selectYourPossessionGrounds(possessionGrounds: actionData) {
-    const grounds = possessionGrounds as {
-      mandatory?: string[];
-      mandatoryAccommodation?: string[];
-      discretionary?: string[];
-      discretionaryAccommodation?: string[];
-    };
-    if (grounds.discretionary) {
-      await performAction('check', grounds.discretionary);
-    }
-    if (grounds.mandatory) {
-      await performAction('check', grounds.mandatory);
-    }
-    if (grounds.mandatoryAccommodation) {
-      await performAction('check', grounds.mandatoryAccommodation);
-    }
-    if (grounds.discretionaryAccommodation) {
-      await performAction('check', grounds.discretionaryAccommodation);
-    }
     await performAction('clickButton', 'Continue');
   }
 
