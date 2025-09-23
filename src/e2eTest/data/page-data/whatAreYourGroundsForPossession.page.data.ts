@@ -4,7 +4,7 @@ export const whatAreYourGroundsForPossession = {
   mandatory:
     {
       antiSocialBehaviour: 'Antisocial behaviour',
-      ownerOccupier: 'Owner Occupier (ground 1)',
+      ownerOccupier: 'Owner occupier (ground 1)',
       holidayLet: 'Holiday let (ground 3)'
     },
   discretionary:
@@ -19,7 +19,7 @@ export const whatAreYourGroundsForPossession = {
       premiumPaidMutualExchange:'Premium paid in connection with mutual exchange (ground 6)',
       unreasonableConduct: 'Unreasonable conduct in tied accommodation (ground 7)',
       refusalToMoveBack: 'Refusal to move back to main home after works completed (ground 8)',
-      rentArrears: 'Rent Arrears (ground 10)',
+      rentArrears: 'Rent arrears (ground 10)',
       domesticViolence14A: 'Domestic violence (ground 14A)'
     },
   mandatoryWithAccommodation:
