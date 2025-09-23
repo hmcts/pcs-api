@@ -191,9 +191,8 @@ class ResumePossessionClaimTest extends BaseEventTest {
             .legislativeCountry(WALES)
             .build();
 
-        when(userDetails.getUid()).thenReturn(UUID.randomUUID().toString());
-
         // When
+        when(userDetails.getUid()).thenReturn(UUID.randomUUID().toString());
         callSubmitHandler(caseData);
 
         // Then
@@ -226,19 +225,20 @@ class ResumePossessionClaimTest extends BaseEventTest {
 
         // When
         when(userDetails.getUid()).thenReturn(userId.toString());
-
         when(pcsCaseService.patchCase(eq(TEST_CASE_REFERENCE), any(PCSCase.class))).thenReturn(pcsCaseEntity);
+
         callSubmitHandler(caseData);
 
         // Then
-        verify(partyService).createAndLinkParty(eq(pcsCaseEntity),
-                                                eq(userId),
-                                                eq(claimantName),
-                                                eq(null),
-                                                eq(claimantContactEmail),
-                                                eq(propertyAddress),
-                                                eq(claimantContactPhoneNumber),
-                                                eq(true)
+        verify(partyService).createAndLinkParty(
+            eq(pcsCaseEntity),
+            eq(userId),
+            eq(claimantName),
+            eq(null),
+            eq(claimantContactEmail),
+            eq(propertyAddress),
+            eq(claimantContactPhoneNumber),
+            eq(true)
         );
     }
 
@@ -260,24 +260,29 @@ class ResumePossessionClaimTest extends BaseEventTest {
         verify(claimService)
             .createAndLinkClaim(eq(pcsCaseEntity), any(), eq("Main Claim"), eq(PartyRole.CLAIMANT),anyList());
 
+
         verify(claimGroundService).getGroundsWithReason(caseData);
     }
 
     private static Stream<Arguments> claimantTypeScenarios() {
         return Stream.of(
-            arguments(ENGLAND, List.of(
-                ClaimantType.PRIVATE_LANDLORD,
-                ClaimantType.PROVIDER_OF_SOCIAL_HOUSING,
-                ClaimantType.MORTGAGE_LENDER,
-                ClaimantType.OTHER
-            )),
+            arguments(
+                ENGLAND, List.of(
+                    ClaimantType.PRIVATE_LANDLORD,
+                    ClaimantType.PROVIDER_OF_SOCIAL_HOUSING,
+                    ClaimantType.MORTGAGE_LENDER,
+                    ClaimantType.OTHER
+                )
+            ),
 
-            arguments(WALES, List.of(
-                ClaimantType.PRIVATE_LANDLORD,
-                ClaimantType.COMMUNITY_LANDLORD,
-                ClaimantType.MORTGAGE_LENDER,
-                ClaimantType.OTHER
-            )),
+            arguments(
+                WALES, List.of(
+                    ClaimantType.PRIVATE_LANDLORD,
+                    ClaimantType.COMMUNITY_LANDLORD,
+                    ClaimantType.MORTGAGE_LENDER,
+                    ClaimantType.OTHER
+                )
+            ),
 
             arguments(SCOTLAND, List.of())
         );

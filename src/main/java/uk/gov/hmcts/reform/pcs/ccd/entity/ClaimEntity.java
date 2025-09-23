@@ -72,6 +72,7 @@ public class ClaimEntity {
         for (ClaimGroundEntity ground : grounds) {
             ground.setClaim(this);
             this.claimGrounds.add(ground);
+
         }
     }
 }
