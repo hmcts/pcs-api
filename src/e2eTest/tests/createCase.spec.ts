@@ -118,7 +118,7 @@ test.describe('[Create Case Flow]  @Master @nightly', async () => {
       ['formLabelValue', 'Country']
     )
   });
-  
+
    test('England - Successful case creation with Assured tenancy with No Rent arrears', async () => {
     await performAction('selectAddress', {
       postcode: addressDetails.englandCourtAssignedPostcode,
@@ -149,7 +149,7 @@ test.describe('[Create Case Flow]  @Master @nightly', async () => {
       files: ['tenancyLicence.docx', 'tenancyLicence.png']
     });
     await performValidation('mainHeader', groundsForPossession.mainHeader);
-    await performAction('selectGroundsForPossession', groundsForPossession.no);
+    await performAction('selectGroundsForPossession', {groundsRadioInput: groundsForPossession.no});
     await performValidation('mainHeader', whatAreYourGroundsForPossession.mainHeader);
     await performAction('selectYourPossessionGrounds', {
       mandatory : [whatAreYourGroundsForPossession.mandatory.holidayLet,whatAreYourGroundsForPossession.mandatory.ownerOccupier],
@@ -271,7 +271,7 @@ test.describe('[Create Case Flow]  @Master @nightly', async () => {
       ['formLabelValue', 'Country']
     )
   });
-  
+
   test('Wales - Successful case creation with Saved options', async () => {
     await performAction('enterTestAddressManually');
     await performValidation('bannerAlert', 'Case #.* has been created.');
