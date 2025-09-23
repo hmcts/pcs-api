@@ -29,7 +29,7 @@ public class IntroductoryDemotedOtherGroundReason {
         typeOverride = TextArea,
         max = 500
     )
-    private String breachOfTenancyGround;
+    private String breachOfTheTenancyGround;
 
 
     @CCD(

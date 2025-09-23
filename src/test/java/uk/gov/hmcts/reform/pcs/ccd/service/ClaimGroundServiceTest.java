@@ -127,7 +127,7 @@ class ClaimGroundServiceTest {
             } else if (ground.equals(BREACH_OF_THE_TENANCY)) {
                 reasonForGround =
                     IntroductoryDemotedOtherGroundReason.builder()
-                        .breachOfTenancyGround("Breach of the tenancy reason")
+                        .breachOfTheTenancyGround("Breach of the tenancy reason")
                         .build();
             } else if (ground.equals(OTHER)) {
                 reasonForGround =
