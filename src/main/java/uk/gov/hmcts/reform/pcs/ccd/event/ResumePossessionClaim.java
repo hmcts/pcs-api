@@ -28,6 +28,9 @@ import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.ClaimantCircumstan
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.IntroductoryDemotedOrOtherGroundsForPossession;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.IntroductoryDemotedOtherGroundsReasons;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.MoneyJudgment;
+import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.RentArrearsOrBreachOfTenancyGround;
+import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.SecureOrFlexibleGroundsForPossession;
+import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.SecureOrFlexibleGroundsForPossessionReasons;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.CheckingNotice;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ClaimTypeNotEligibleEngland;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ClaimTypeNotEligibleWales;
@@ -111,6 +114,9 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             .add(contactPreferences)
             .add(defendantsDetails)
             .add(tenancyLicenceDetails)
+            .add(new SecureOrFlexibleGroundsForPossession())
+            .add(new RentArrearsOrBreachOfTenancyGround())
+            .add(new SecureOrFlexibleGroundsForPossessionReasons())
             .add(new IntroductoryDemotedOrOtherGroundsForPossession())
             .add(new IntroductoryDemotedOtherGroundsReasons())
             .add(new GroundsForPossession())
