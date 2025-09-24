@@ -3,7 +3,7 @@ package uk.gov.hmcts.reform.pcs.ccd.event;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CCDConfig;
-import uk.gov.hmcts.ccd.sdk.api.ConfigBuilder;
+import uk.gov.hmcts.ccd.sdk.api.DecentralisedConfigBuilder;
 import uk.gov.hmcts.ccd.sdk.api.EventPayload;
 import uk.gov.hmcts.ccd.sdk.api.Permission;
 import uk.gov.hmcts.reform.pcs.ccd.ShowConditions;
@@ -21,7 +21,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.citizenSubmitApplication
 public class CitizenSubmitApplication implements CCDConfig<PCSCase, State, UserRole> {
 
     @Override
-    public void configure(final ConfigBuilder<PCSCase, State, UserRole> configBuilder) {
+    public void configureDecentralised(final DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
         configBuilder
             .decentralisedEvent(citizenSubmitApplication.name(), this::submit)
             .forStateTransition(AWAITING_SUBMISSION_TO_HMCTS, CASE_ISSUED)
