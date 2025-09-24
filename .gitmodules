@@ -1,0 +1,4 @@
+[submodule "dtsse-ccd-config-generator"]
+	path = dtsse-ccd-config-generator
+	url = https://github.com/hmcts/dtsse-ccd-config-generator
+	branch = runtimelib
