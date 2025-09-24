@@ -2,3 +2,7 @@
 	path = dtsse-ccd-config-generator
 	url = https://github.com/hmcts/dtsse-ccd-config-generator
 	branch = runtimelib
+[submodule "pcs/ccd-data-store-api"]
+	path = pcs/ccd-data-store-api
+	url = https://github.com/hmcts/ccd-data-store-api.git
+	branch = poc-sow014-changes
