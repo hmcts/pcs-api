@@ -32,7 +32,7 @@ export class CreateCaseAction implements IAction {
       ['selectResumeClaimOption', () => this.selectResumeClaimOption(fieldName)],
       ['extractCaseIdFromAlert', () => this.extractCaseIdFromAlert(page)],
       ['selectClaimantType', () => this.selectClaimantType(fieldName)],
-      ['reloginAndFindTheCase', () => this.reloginAndFindTheCase()],
+      ['reloginAndFindTheCase', () => this.reloginAndFindTheCase(fieldName)],
       ['defendantDetails', () => this.defendantDetails(fieldName)],
       ['selectJurisdictionCaseTypeEvent', () => this.selectJurisdictionCaseTypeEvent()],
       ['enterTestAddressManually', () => this.enterTestAddressManually()],
@@ -411,11 +411,15 @@ export class CreateCaseAction implements IAction {
     await performAction('clickButton', 'Submit');
   }
 
-  private async reloginAndFindTheCase() {
+  private async reloginAndFindTheCase(userInfo: actionData) {
     await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
-    await performAction('login')
-    await performAction('inputText', '16-digit case reference:', caseNumber);
-    await performAction('clickButton', 'Find');
+    await performAction('login', userInfo);
+    await performAction('clickButton', 'Find case');
+    await performAction('select', 'Jurisdiction', createCase.possessionsJurisdiction);
+    await performAction('select', 'Case type', createCase.caseType.civilPossessions);
+    await performAction('inputText', 'Case Number', caseNumber);
+    await performAction('clickButton', 'Apply');
+    await performAction('clickButton', caseNumber);
   }
 
   private async createCaseAction(caseData: actionData): Promise<void> {
