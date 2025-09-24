@@ -31,7 +31,7 @@ class ClaimantInformationTest extends BasePageTest {
         callMidEventHandler(caseData);
 
         // Then
-        assertThat(caseData.getDisplayedClaimantName()).isNull();
+        assertThat(caseData.getClaimantNamePossessiveForm()).isNull();
     }
 
     @ParameterizedTest
@@ -49,7 +49,7 @@ class ClaimantInformationTest extends BasePageTest {
         callMidEventHandler(caseData);
 
         // Then
-        assertThat(caseData.getDisplayedClaimantName()).isEqualTo(expectedDisplayedName);
+        assertThat(caseData.getClaimantNamePossessiveForm()).isEqualTo(expectedDisplayedName);
     }
 
     @ParameterizedTest
@@ -67,7 +67,7 @@ class ClaimantInformationTest extends BasePageTest {
         callMidEventHandler(caseData);
 
         // Then
-        assertThat(caseData.getDisplayedClaimantName()).isEqualTo(expectedDisplayedClaimantName);
+        assertThat(caseData.getClaimantNamePossessiveForm()).isEqualTo(expectedDisplayedClaimantName);
     }
 
     private static Stream<Arguments> claimantNameTestData() {

@@ -14,14 +14,14 @@ public class ClaimantCircumstancesPage implements CcdPageConfiguration {
     private static final String CLAIMANT_CIRCUMSTANCES = "claimantCircumstances";
     private static final String CLAIMANT_CIRCUMSTANCES_LABEL = "Claimant circumstances";
     private static final String GIVE_DETAILS_ABOUT_THE_CLAIMANT_NAME_CIRCUMSTANCES
-        = "Give details about ${displayedClaimantName} circumstances";
+        = "Give details about ${claimantNamePossessiveForm} circumstances";
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
             .page(CLAIMANT_CIRCUMSTANCES)
             .pageLabel(CLAIMANT_CIRCUMSTANCES_LABEL)
-            .readonly(PCSCase::getDisplayedClaimantName, NEVER_SHOW)
+            .readonly(PCSCase::getClaimantNamePossessiveForm, NEVER_SHOW)
             .label(
                 CLAIMANT_CIRCUMSTANCES_INFO, """
                 ---

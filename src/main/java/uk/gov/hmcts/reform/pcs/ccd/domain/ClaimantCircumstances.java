@@ -13,7 +13,7 @@ import lombok.NoArgsConstructor;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class ClaimantCircumstances {
 
-    private boolean provided;
+    private Boolean provided;
     private String circumstances;
 
 }

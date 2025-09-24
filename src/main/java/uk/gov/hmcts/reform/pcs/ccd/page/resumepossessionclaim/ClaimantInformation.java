@@ -37,19 +37,19 @@ public class ClaimantInformation implements CcdPageConfiguration {
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
                                                                   CaseDetails<PCSCase, State> detailsBefore) {
         PCSCase caseData = details.getData();
-        setDisplayedClaimantName(details);
+        setClaimantNamePossessiveForm(details);
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
             .data(caseData)
             .build();
     }
 
-    void setDisplayedClaimantName(CaseDetails<PCSCase, State> details) {
+    private void setClaimantNamePossessiveForm(CaseDetails<PCSCase, State> details) {
         PCSCase caseData = details.getData();
-        String displayedClaimantName = StringUtils.isNotEmpty(caseData.getOverriddenClaimantName())
+        String claimantNamePossessiveForm = StringUtils.isNotEmpty(caseData.getOverriddenClaimantName())
             ? caseData.getOverriddenClaimantName()
             : caseData.getClaimantName();
-        caseData.setDisplayedClaimantName(applyApostrophe(displayedClaimantName));
+        caseData.setClaimantNamePossessiveForm(applyApostrophe(claimantNamePossessiveForm));
     }
 
     private String applyApostrophe(String value) {
