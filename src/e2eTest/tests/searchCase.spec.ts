@@ -6,8 +6,9 @@ import {
   performAction,
   performValidation
 } from '@utils/controller';
-import {createCase} from "@data/page-data/createCase.page.data";
+import {createCase} from '@data/page-data/createCase.page.data';
 import {caseInfo} from '@utils/actions/custom-actions/createCase.action';
+import {user} from '@data/user-data/permanent.user.data';
 
 test.beforeEach(async ({page}, testInfo) => {
     initializeExecutor(page);
@@ -17,7 +18,7 @@ test.beforeEach(async ({page}, testInfo) => {
       body: page.url(),
       contentType: 'text/plain',
     });
-    await performAction('createUserAndLogin', 'claimant', ['caseworker-pcs', 'caseworker']);
+    await performAction('login', user.claimantSolicitor);
     createCaseWithAddress();
 });
 

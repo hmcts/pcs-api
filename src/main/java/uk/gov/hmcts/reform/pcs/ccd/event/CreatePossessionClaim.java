@@ -39,7 +39,7 @@ public class CreatePossessionClaim implements CCDConfig<PCSCase, State, UserRole
                 .decentralisedEvent(createPossessionClaim.name(), this::submit)
                 .initialState(State.AWAITING_FURTHER_CLAIM_DETAILS)
                 .name("Make a claim")
-                .grant(Permission.CRUD, UserRole.PCS_CASE_WORKER);
+                .grant(Permission.CRUD, UserRole.PCS_SOLICITOR);
 
         new PageBuilder(eventBuilder)
             .add(new StartTheService())
