@@ -1,21 +1,24 @@
 import Axios from 'axios';
-import { ServiceAuthUtils } from '@hmcts/playwright-common';
-import { actionData, IAction } from '../../interfaces/action.interface';
-import { Page } from '@playwright/test';
-import { performAction, performActions, performValidation } from '@utils/controller';
-import { createCase } from '@data/page-data/createCase.page.data';
-import { addressDetails } from '@data/page-data/addressDetails.page.data';
-import { housingPossessionClaim } from '@data/page-data/housingPossessionClaim.page.data';
-import { defendantDetails } from "@data/page-data/defendantDetails.page.data";
-import { claimantName } from '@data/page-data/claimantName.page.data';
-import { contactPreferences } from '@data/page-data/contactPreferences.page.data';
-import { mediationAndSettlement } from '@data/page-data/mediationAndSettlement.page.data';
+import {ServiceAuthUtils} from '@hmcts/playwright-common';
+import {actionData, IAction} from '../../interfaces/action.interface';
+import {Page} from '@playwright/test';
+import {performAction, performActions, performValidation} from '@utils/controller';
+import {createCase} from '@data/page-data/createCase.page.data';
+import {addressDetails} from '@data/page-data/addressDetails.page.data';
+import {housingPossessionClaim} from '@data/page-data/housingPossessionClaim.page.data';
+import {defendantDetails} from "@data/page-data/defendantDetails.page.data";
+import {claimantName} from '@data/page-data/claimantName.page.data';
+import {contactPreferences} from '@data/page-data/contactPreferences.page.data';
+import {mediationAndSettlement} from '@data/page-data/mediationAndSettlement.page.data';
 import {tenancyLicenceDetails} from '@data/page-data/tenancyLicenceDetails.page.data';
-import { resumeClaimOptions } from "@data/page-data/resumeClaimOptions.page.data";
-import { rentDetails } from '@data/page-data/rentDetails.page.data';
-import { accessTokenApiData } from '@data/api-data/accessToken.api.data';
-import { caseApiData } from '@data/api-data/case.api.data';
-import { dailyRentAmount } from '@data/page-data/dailyRentAmount.page.data';
+import {resumeClaimOptions} from "@data/page-data/resumeClaimOptions.page.data";
+import {rentDetails} from '@data/page-data/rentDetails.page.data';
+import {accessTokenApiData} from '@data/api-data/accessToken.api.data';
+import {caseApiData} from '@data/api-data/case.api.data';
+import {dailyRentAmount} from '@data/page-data/dailyRentAmount.page.data';
+import {reasonsForPossession} from '@data/page-data/reasonsForPossession.page.data';
+import {detailsOfRentArrears} from '@data/page-data/detailsOfRentArrears.page.data';
+
 
 export let caseInfo: { id: string; fid: string; state: string };
 let caseNumber: string;
@@ -29,7 +32,7 @@ export class CreateCaseAction implements IAction {
       ['selectResumeClaimOption', () => this.selectResumeClaimOption(fieldName)],
       ['extractCaseIdFromAlert', () => this.extractCaseIdFromAlert(page)],
       ['selectClaimantType', () => this.selectClaimantType(fieldName)],
-      ['reloginAndFindTheCase', () => this.reloginAndFindTheCase()],
+      ['reloginAndFindTheCase', () => this.reloginAndFindTheCase(fieldName)],
       ['defendantDetails', () => this.defendantDetails(fieldName)],
       ['selectJurisdictionCaseTypeEvent', () => this.selectJurisdictionCaseTypeEvent()],
       ['enterTestAddressManually', () => this.enterTestAddressManually()],
@@ -43,10 +46,14 @@ export class CreateCaseAction implements IAction {
       ['selectNoticeOfYourIntention', () => this.selectNoticeOfYourIntention(fieldName)],
       ['selectNoticeDetails', () => this.selectNoticeDetails(fieldName)],
       ['selectCountryRadioButton', () => this.selectCountryRadioButton(fieldName)],
-      ['selectOtherGrounds', () => this.selectOtherGrounds(fieldName)],
       ['selectTenancyOrLicenceDetails', () => this.selectTenancyOrLicenceDetails(fieldName)],
+      ['selectOtherGrounds', () => this.selectYourPossessionGrounds(fieldName)],
+      ['selectYourPossessionGrounds', () => this.selectYourPossessionGrounds(fieldName)],
+      ['enterReasonForPossession', () => this.enterReasonForPossession(fieldName)],
+      ['selectRentArrearsOrBreachOfTenancy', () => this.selectRentArrearsOrBreachOfTenancy(fieldName)],
       ['provideRentDetails', () => this.provideRentDetails(fieldName)],
       ['selectDailyRentAmount', () => this.selectDailyRentAmount(fieldName)],
+      ['provideDetailsOfRentArrears', () => this.provideDetailsOfRentArrears(fieldName)],
       ['selectClaimForMoney', () => this.selectClaimForMoney(fieldName)]
     ]);
     const actionToPerform = actionsMap.get(action);
@@ -215,18 +222,6 @@ export class CreateCaseAction implements IAction {
     await performAction('clickButton', 'Continue');
   }
 
-  private async selectOtherGrounds(otherRentArrearsGrounds: actionData){
-    const otherGrounds = otherRentArrearsGrounds as {
-      mandatory?: string[];
-      discretionary?: string[];
-    }
-    if (otherGrounds.mandatory && otherGrounds.discretionary) {
-      await performAction('check', otherGrounds.mandatory);
-      await performAction('check', otherGrounds.discretionary);
-    }
-    await performAction('clickButton', 'Continue');
-  }
-
   private async selectTenancyOrLicenceDetails(tenancyData: actionData) {
     const tenancyLicenceData = tenancyData as {
       tenancyOrLicenceType: string;
@@ -239,16 +234,57 @@ export class CreateCaseAction implements IAction {
     if (tenancyLicenceData.tenancyOrLicenceType === 'Other') {
       await performAction('inputText', 'Give details of the type of tenancy or licence agreement that\'s in place', tenancyLicenceDetails.detailsOfLicence);
     }
-    if(tenancyLicenceData.day && tenancyLicenceData.month &&  tenancyLicenceData.year) {
-      await performAction('inputText', 'Day', tenancyLicenceData.day);
-      await performAction('inputText', 'Month', tenancyLicenceData.month);
-      await performAction('inputText', 'Year', tenancyLicenceData.year);
+    if (tenancyLicenceData.day && tenancyLicenceData.month && tenancyLicenceData.year) {
+      await performActions(
+        'Enter Date',
+        ['inputText', 'Day', tenancyLicenceData.day],
+        ['inputText', 'Month', tenancyLicenceData.month],
+        ['inputText', 'Year', tenancyLicenceData.year]);
     }
     if (tenancyLicenceData.files) {
       for (const file of tenancyLicenceData.files) {
         await performAction('clickButton', 'Add new');
         await performAction('uploadFile', file);
       }
+    }
+    await performAction('clickButton', 'Continue');
+  }
+  private async selectYourPossessionGrounds(possessionGrounds: actionData) {
+    const grounds = possessionGrounds as {
+      mandatory?: string[];
+      mandatoryAccommodation?: string[];
+      discretionary?: string[];
+      discretionaryAccommodation?: string[];
+    };
+    if (grounds.discretionary) {
+      await performAction('check', grounds.discretionary);
+    }
+    if (grounds.mandatory) {
+      await performAction('check', grounds.mandatory);
+    }
+    if (grounds.mandatoryAccommodation) {
+      await performAction('check', grounds.mandatoryAccommodation);
+    }
+    if (grounds.discretionaryAccommodation) {
+      await performAction('check', grounds.discretionaryAccommodation);
+    }
+    await performAction('clickButton', 'Continue');
+  }
+
+  private async selectRentArrearsOrBreachOfTenancy(grounds: actionData) {
+    const rentArrearsOrBreachOfTenancyGrounds = grounds as {
+      rentArrearsOrBreach: string[];
+    }
+    await performAction('check', rentArrearsOrBreachOfTenancyGrounds.rentArrearsOrBreach);
+    await performAction('clickButton', 'Continue');
+  }
+
+  private async enterReasonForPossession(reasons: actionData) {
+    if (!Array.isArray(reasons)) {
+      throw new Error(`EnterReasonForPossession expected an array, but received ${typeof reasons}`);
+    }
+    for (let n = 0; n < reasons.length; n++) {
+      await performAction('inputText',  {text:reasons[n],index: n}, reasonsForPossession.detailsAboutYourReason);
     }
     await performAction('clickButton', 'Continue');
   }
@@ -325,6 +361,28 @@ export class CreateCaseAction implements IAction {
     await performAction('clickButton', 'Continue');
   }
 
+  private async provideDetailsOfRentArrears(rentArrears: actionData) {
+    const rentArrearsData = rentArrears as {
+      files?: string[],
+      rentArrearsAmountOnStatement: string,
+      rentPaidByOthersOption: string;
+      paymentOptions?: string[];
+    };
+    await performAction('uploadFile', rentArrearsData.files);
+    await performAction('inputText', detailsOfRentArrears.totalRentArrearsLabel, rentArrearsData.rentArrearsAmountOnStatement);
+    await performAction('clickRadioButton', {
+      question: detailsOfRentArrears.periodShownOnRentStatementLabel,
+      option: rentArrearsData.rentPaidByOthersOption
+    });
+    if (rentArrearsData.rentPaidByOthersOption == 'Yes') {
+      await performAction('check', rentArrearsData.paymentOptions);
+      if (rentArrearsData.paymentOptions?.includes('Other')) {
+        await performAction('inputText', detailsOfRentArrears.paymentSourceLabel, detailsOfRentArrears.paymentOptionOtherInput);
+      }
+      await performAction('clickButton', 'Continue');
+    }
+  }
+
   private async selectClaimForMoney(option: actionData) {
     await performAction('clickRadioButton', option);
     await performAction('clickButton', 'Continue');
@@ -353,11 +411,15 @@ export class CreateCaseAction implements IAction {
     await performAction('clickButton', 'Submit');
   }
 
-  private async reloginAndFindTheCase() {
+  private async reloginAndFindTheCase(userInfo: actionData) {
     await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
-    await performAction('login')
-    await performAction('inputText', '16-digit case reference:', caseNumber);
-    await performAction('clickButton', 'Find');
+    await performAction('login', userInfo);
+    await performAction('clickButton', 'Find case');
+    await performAction('select', 'Jurisdiction', createCase.possessionsJurisdiction);
+    await performAction('select', 'Case type', createCase.caseType.civilPossessions);
+    await performAction('inputText', 'Case Number', caseNumber);
+    await performAction('clickButton', 'Apply');
+    await performAction('clickButton', caseNumber);
   }
 
   private async createCaseAction(caseData: actionData): Promise<void> {
