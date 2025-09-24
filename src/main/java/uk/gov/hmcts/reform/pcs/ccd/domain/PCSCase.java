@@ -11,6 +11,7 @@ import uk.gov.hmcts.ccd.sdk.type.FieldType;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenAccess;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseworkerReadAccess;
 import uk.gov.hmcts.reform.pcs.ccd.domain.model.NoRentArrearsReasonForGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
@@ -408,7 +409,17 @@ public class PCSCase {
     private String noticeOtherExplanation;
 
     @CCD(
-        label = "What type of tenancy or licence is in place?"
+        label = "Add document",
+        hint = "Upload a document to the system",
+        typeOverride = FieldType.Collection,
+        typeParameterOverride = "Document",
+        access = {CitizenAccess.class, CaseworkerReadAccess.class}
+    )
+    private List<ListValue<Document>> noticeDocuments;
+
+    @CCD(
+        label = "What type of tenancy or licence is in place?",
+        access = {CaseworkerReadAccess.class}
     )
     private TenancyLicenceType typeOfTenancyLicence;
 
