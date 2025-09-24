@@ -25,12 +25,13 @@ import {rentArrearsOrBreachOfTenancy} from '@data/page-data/rentArrearsOrBreachO
 import {reasonsForPossession} from '@data/page-data/reasonsForPossession.page.data';
 import {moneyJudgment} from '@data/page-data/moneyJudgment.page.data';
 import {claimantCircumstances} from '@data/page-data/claimantCircumstances.page.data';
+import {user} from '@data/user-data/permanent.user.data';
 
 test.beforeEach(async ({page}, testInfo) => {
   initializeExecutor(page);
   await parentSuite('Case Creation');
   await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
-  await performAction('createUserAndLogin', 'claimant', ['caseworker-pcs', 'caseworker']);
+  await performAction('login', user.claimantSolicitor);
   await testInfo.attach('Page URL', {
     body: page.url(),
     contentType: 'text/plain',
@@ -95,7 +96,7 @@ test.describe('[Create Case Flow]  @Master @nightly', async () => {
     await performAction('selectNoticeDetails', {
       howDidYouServeNotice: noticeDetails.byFirstClassPost,
       index: noticeDetails.byFirstClassPostIndex,
-      day: '16', month: '07', year: '1985'});
+      day: '16', month: '07', year: '1985', files: 'NoticeDetails.pdf'});
     await performValidation('mainHeader', rentDetails.mainHeader);
     await performAction('provideRentDetails', {rentFrequencyOption:'weekly', rentAmount:'800'});
     await performValidation('mainHeader', dailyRentAmount.mainHeader);
@@ -207,7 +208,7 @@ test.describe('[Create Case Flow]  @Master @nightly', async () => {
     await performAction('selectClaimType', claimType.no);
     await performAction('selectClaimantName', claimantName.no);
     await performAction('clickButton', 'Sign out');
-    await performAction('reloginAndFindTheCase');
+    await performAction('reloginAndFindTheCase', user.claimantSolicitor);
     await performAction('clickButton', resumeClaim.continue);
     await performAction('selectResumeClaimOption', resumeClaimOptions.yes);
     await performValidation('radioButtonChecked', claimantType.registeredCommunityLandlord, true);
@@ -275,7 +276,7 @@ test.describe('[Create Case Flow]  @Master @nightly', async () => {
     await performAction('selectClaimType', claimType.no);
     await performAction('selectClaimantName', claimantName.yes);
     await performAction('clickButton', 'Sign out');
-    await performAction('reloginAndFindTheCase');
+    await performAction('reloginAndFindTheCase', user.claimantSolicitor);
     await performAction('clickButton', resumeClaim.continue);
     await performAction('selectResumeClaimOption', resumeClaimOptions.no);
     await performValidation('radioButtonChecked', claimantType.registeredCommunityLandlord, false);
@@ -331,7 +332,7 @@ test.describe('[Create Case Flow]  @Master @nightly', async () => {
       ['formLabelValue', 'Country', addressDetails.country]);
   });
 
-  test('Wales - Successful case creation with Saved options for secure tenancy type with rent and other grounds', async () => {
+  test('Wales - Successful case creation for secure tenancy type with rent and other grounds', async () => {
     await performAction('enterTestAddressManually');
     await performValidation('bannerAlert', 'Case #.* has been created.');
     await performAction('extractCaseIdFromAlert');
@@ -339,16 +340,6 @@ test.describe('[Create Case Flow]  @Master @nightly', async () => {
     await performAction('selectClaimantType', claimantType.registeredCommunityLandlord);
     await performAction('selectClaimType', claimType.no);
     await performAction('selectClaimantName', claimantName.no);
-    await performAction('clickButton', 'Sign out');
-    await performAction('reloginAndFindTheCase');
-    await performAction('clickButton', resumeClaim.continue);
-    await performAction('selectResumeClaimOption', resumeClaimOptions.yes);
-    await performValidation('radioButtonChecked', claimantType.registeredCommunityLandlord, true);
-    await performAction('clickButton', 'Continue');
-    await performValidation('radioButtonChecked', claimType.no, true);
-    await performAction('clickButton', 'Continue');
-    await performValidation('radioButtonChecked', claimantName.no, true);
-    await performAction('clickButton', 'Continue');
     await performAction('selectContactPreferences', {
       notifications: contactPreferences.no,
       correspondenceAddress: contactPreferences.no,
@@ -393,7 +384,7 @@ test.describe('[Create Case Flow]  @Master @nightly', async () => {
     await performAction('selectNoticeDetails', {
       howDidYouServeNotice: noticeDetails.byDeliveringAtPermittedPlace,
       index: noticeDetails.byDeliveringAtPermittedPlaceIndex,
-      day: '25', month: '02', year: '1970'});
+      day: '25', month: '02', year: '1970', files: 'NoticeDetails.pdf'});
     await performAction('provideRentDetails', {rentFrequencyOption: 'Monthly', rentAmount: '1000'});
     await performValidation('mainHeader', dailyRentAmount.mainHeader);
     await performAction('selectDailyRentAmount', {
