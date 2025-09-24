@@ -1,8 +1,5 @@
 package uk.gov.hmcts.reform.pcs.ccd.domain;
 
-import java.util.HashSet;
-import java.util.List;
-
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import lombok.Builder;
 import lombok.Data;
@@ -20,6 +17,7 @@ import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -538,7 +536,7 @@ public class PCSCase {
         hint = "Select all that apply",
         typeOverride = MultiSelectList,
         typeParameterOverride = "NoRentArrearsMandatoryGrounds",
-        access = {CitizenAccess.class, CaseworkerAccess.class}
+        access = {CitizenAccess.class}
     )
     @Builder.Default
     private Set<NoRentArrearsMandatoryGrounds> noRentArrearsMandatoryGroundsOptions = new HashSet<>();
@@ -548,13 +546,13 @@ public class PCSCase {
         hint = "Select all that apply",
         typeOverride = MultiSelectList,
         typeParameterOverride = "NoRentArrearsDiscretionaryGrounds",
-        access = {CitizenAccess.class, CaseworkerAccess.class}
+        access = {CitizenAccess.class}
     )
     @Builder.Default
     private Set<NoRentArrearsDiscretionaryGrounds> noRentArrearsDiscretionaryGroundsOptions = new HashSet<>();
 
     @JsonUnwrapped
-    @CCD(access = {CitizenAccess.class, CaseworkerAccess.class})
+    @CCD(access = {CitizenAccess.class})
     private NoRentArrearsReasonForGrounds noRentArrearsReasonForGrounds;
 
 }
