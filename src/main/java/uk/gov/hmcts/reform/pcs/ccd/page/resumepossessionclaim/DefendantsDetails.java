@@ -29,8 +29,8 @@ public class DefendantsDetails implements CcdPageConfiguration {
             .complex(PCSCase::getDefendant1)
                 .readonly(DefendantDetails::getNameSectionLabel)
                 .mandatory(DefendantDetails::getNameKnown)
-                .mandatory(DefendantDetails::getFirstName)
-                .mandatory(DefendantDetails::getLastName)
+                .mandatory(DefendantDetails::getFirstName,"nameKnown=\"YES\"")
+                .mandatory(DefendantDetails::getLastName, "nameKnown=\"YES\"")
 
                 .readonly(DefendantDetails::getAddressSectionLabel)
                 .mandatory(DefendantDetails::getAddressKnown)

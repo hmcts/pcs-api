@@ -330,6 +330,7 @@ public class PCSCase {
     @CCD(searchable = false, access = {CitizenAccess.class, CaseworkerAccess.class})
     private String postcodeNotAssignedView;
 
+    @JsonUnwrapped
     @CCD(access = {CitizenAccess.class, CaseworkerAccess.class})
     private DefendantDetails defendant1;
 
