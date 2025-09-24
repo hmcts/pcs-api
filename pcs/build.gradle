@@ -481,3 +481,7 @@ tasks.named("processFunctionalTestResources") {
 tasks.withType(Wrapper) {
   distributionType = Wrapper.DistributionType.ALL
 }
+
+tasks.named("writeManifestccd-data-store-api").configure {
+  it.dependsOn(':ccd-data-store-api:jar')
+}

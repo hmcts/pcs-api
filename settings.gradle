@@ -9,6 +9,7 @@ pluginManagement {
 }
 
 includeBuild("dtsse-ccd-config-generator")
+include('ccd-data-store-api')
 include("pcs")
 
 
