@@ -10,8 +10,8 @@ import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.FieldType;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
-import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseworkerReadAccess;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenAccess;
 import uk.gov.hmcts.reform.pcs.ccd.domain.model.NoRentArrearsReasonForGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
@@ -488,7 +488,7 @@ public class PCSCase {
 
     @CCD(
         label = "Do you have grounds for possession?",
-        access = {CitizenAccess.class, CaseworkerAccess.class}
+        access = {CitizenAccess.class}
     )
     private VerticalYesNo hasIntroductoryDemotedOtherGroundsForPossession;
 
@@ -496,7 +496,7 @@ public class PCSCase {
             label = "What are your grounds for possession?",
             typeOverride = FieldType.MultiSelectList,
             typeParameterOverride = "IntroductoryDemotedOrOtherGrounds",
-            access = {CitizenAccess.class,CaseworkerAccess.class}
+            access = {CitizenAccess.class}
     )
     private Set<IntroductoryDemotedOrOtherGrounds> introductoryDemotedOrOtherGrounds;
 
@@ -504,16 +504,16 @@ public class PCSCase {
             label = "Enter your grounds for possession",
             hint = "You'll be able to explain your reasons for claiming Possession"
                     + " under these grounds on the next screen",
-            access = {CitizenAccess.class, CaseworkerAccess.class},
+            access = {CitizenAccess.class},
             typeOverride = TextArea
     )
     private String otherGroundDescription;
 
-    @CCD(access = {CitizenAccess.class, CaseworkerAccess.class})
+    @CCD(access = {CitizenAccess.class})
     private YesOrNo showIntroductoryDemotedOtherGroundReasonPage;
 
     @JsonUnwrapped
-    @CCD(access = {CitizenAccess.class, CaseworkerAccess.class})
+    @CCD(access = {CitizenAccess.class})
     private IntroductoryDemotedOtherGroundReason introductoryDemotedOtherGroundReason;
 
     @CCD(
