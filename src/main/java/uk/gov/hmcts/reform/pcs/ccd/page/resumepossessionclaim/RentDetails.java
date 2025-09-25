@@ -5,6 +5,8 @@ import java.math.BigDecimal;
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
+import static uk.gov.hmcts.reform.pcs.ccd.common.MultiPageLabel.SAVE_AND_RETURN_HTML;
+
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
@@ -30,7 +32,8 @@ public class RentDetails implements CcdPageConfiguration {
                 .mandatory(PCSCase::getRentFrequency)
                 .mandatory(PCSCase::getOtherRentFrequency, "rentFrequency=\"OTHER\"")
                 .mandatory(PCSCase::getDailyRentChargeAmount, "rentFrequency=\"OTHER\"")
-                .readonly(PCSCase::getCalculatedDailyRentChargeAmount, NEVER_SHOW);
+                .readonly(PCSCase::getCalculatedDailyRentChargeAmount, NEVER_SHOW)
+                .label("rentDetails-saveAndResume", SAVE_AND_RETURN_HTML);
     }
 
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,

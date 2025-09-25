@@ -4,6 +4,8 @@ import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 
+import static uk.gov.hmcts.reform.pcs.ccd.common.MultiPageLabel.SAVE_AND_RETURN_HTML;
+
 public class PreActionProtocol implements CcdPageConfiguration {
 
     @Override
@@ -41,6 +43,7 @@ public class PreActionProtocol implements CcdPageConfiguration {
 
                   """)
                 .mandatoryWithLabel(PCSCase::getPreActionProtocolCompleted,
-                        "Have you followed the pre-action protocol?");
+                        "Have you followed the pre-action protocol?")
+                .label("preActionProtocol-saveAndResume", SAVE_AND_RETURN_HTML);
     }
 }
