@@ -254,6 +254,11 @@ test.describe('[Create Case Flow]  @Master @nightly', async () => {
     });
     await performAction('selectClaimForMoney', moneyJudgment.yes);
     await performAction('clickButton', claimantCircumstances.continue);
+    await performValidation('mainHeader', claimantCircumstances.mainHeader);
+    await performAction('selectClaimantCircumstances', {
+      circumstanceOption: claimantCircumstances.yesOrno,
+      claimantInput: claimantCircumstances.claimantCircumstanceInfoInputData
+    });
     await performAction('clickButton', 'Save and continue');
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
     await performAction('clickTab', 'Property Details');
@@ -329,6 +334,7 @@ test.describe('[Create Case Flow]  @Master @nightly', async () => {
       index: noticeDetails.byDeliveringAtPermittedPlaceIndex,
       day: '25', month: '02', year: '1970'
     });
+    await performValidation('mainHeader', rentDetails.mainHeader);
     await performAction('provideRentDetails', { rentFrequencyOption: 'Monthly', rentAmount: '1000' });
     await performValidation('mainHeader', dailyRentAmount.mainHeader);
     await performAction('selectDailyRentAmount', {

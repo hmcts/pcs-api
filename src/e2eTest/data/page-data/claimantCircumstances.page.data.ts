@@ -1,4 +1,4 @@
-export const claimantCircumstance = {
+export const claimantCircumstances = {
   title: 'Create a case - HM Courts & Tribunals Service - GOV.UK',
   mainHeader: 'Claimant circumstances',
   claimantCircumstanceInfo: 'Is there any information you\'d like to provide about Claimants circumstances?',
