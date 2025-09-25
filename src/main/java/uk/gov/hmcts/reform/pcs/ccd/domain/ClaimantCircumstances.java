@@ -10,7 +10,6 @@ import static uk.gov.hmcts.ccd.sdk.type.FieldType.TextArea;
 @Data
 public class ClaimantCircumstances {
 
-
     @CCD(
         label = "Is there any information you'd like to provide about ${claimantNamePossessiveForm} circumstances?",
         hint = "This can be any information about your financial or general situation that you'd "

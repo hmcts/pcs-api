@@ -11,7 +11,6 @@ import org.modelmapper.ModelMapper;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
-import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantCircumstances;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PaymentStatus;
@@ -87,7 +86,6 @@ class PcsCaseServiceTest {
     void shouldCreateCaseWithNoData() {
         // Given
         PCSCase pcsCase = mock(PCSCase.class);
-        when(pcsCase.getClaimantCircumstances()).thenReturn(mock(ClaimantCircumstances.class));
 
         // When
         underTest.createCase(CASE_REFERENCE, pcsCase);
@@ -112,7 +110,6 @@ class PcsCaseServiceTest {
 
         when(pcsCase.getPropertyAddress()).thenReturn(propertyAddress);
         when(pcsCase.getPreActionProtocolCompleted()).thenReturn(preActionProtocolCompleted);
-        when(pcsCase.getClaimantCircumstances()).thenReturn(mock(ClaimantCircumstances.class));
 
         // When
         underTest.createCase(CASE_REFERENCE, pcsCase);
@@ -148,7 +145,6 @@ class PcsCaseServiceTest {
 
         when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(existingPcsCaseEntity));
         when(pcsCase.getCaseManagementLocation()).thenReturn(null);
-        when(pcsCase.getClaimantCircumstances()).thenReturn(mock(ClaimantCircumstances.class));
 
         // When
         underTest.patchCase(CASE_REFERENCE, pcsCase);
@@ -160,7 +156,6 @@ class PcsCaseServiceTest {
         assertThat(savedEntity).isSameAs(existingPcsCaseEntity);
         verify(existingPcsCaseEntity).setTenancyLicence(any());
         verify(existingPcsCaseEntity).setPossessionGrounds(any());
-        verify(existingPcsCaseEntity).setClaimantCircumstancesInput(any());
         verifyNoMoreInteractions(existingPcsCaseEntity);
     }
 
@@ -174,9 +169,7 @@ class PcsCaseServiceTest {
 
         PcsCaseEntity existingPcsCaseEntity = mock(PcsCaseEntity.class);
         when(pcsCase.getPropertyAddress()).thenReturn(updatedPropertyAddress);
-
         when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(existingPcsCaseEntity));
-        when(pcsCase.getClaimantCircumstances()).thenReturn(mock(ClaimantCircumstances.class));
 
         // When
         underTest.patchCase(CASE_REFERENCE, pcsCase);
@@ -208,7 +201,6 @@ class PcsCaseServiceTest {
         PcsCaseEntity existingPcsCaseEntity = new PcsCaseEntity();
 
         when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(existingPcsCaseEntity));
-        when(pcsCase.getClaimantCircumstances()).thenReturn(mock(ClaimantCircumstances.class));
 
         // When
         underTest.patchCase(CASE_REFERENCE, pcsCase);
@@ -247,7 +239,6 @@ class PcsCaseServiceTest {
         existingPcsCaseEntity.addParty(existingPartyEntity);
 
         when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(existingPcsCaseEntity));
-        when(pcsCase.getClaimantCircumstances()).thenReturn(mock(ClaimantCircumstances.class));
 
         // When
         underTest.patchCase(CASE_REFERENCE, pcsCase);
@@ -275,7 +266,6 @@ class PcsCaseServiceTest {
 
         when(pcsCase.getPaymentStatus()).thenReturn(paymentStatus);
         when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(existingPcsCaseEntity));
-        when(pcsCase.getClaimantCircumstances()).thenReturn(mock(ClaimantCircumstances.class));
 
         // When
         underTest.patchCase(CASE_REFERENCE, pcsCase);
@@ -295,7 +285,6 @@ class PcsCaseServiceTest {
 
         when(pcsCase.getCaseManagementLocation()).thenReturn(location);
         when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(existingPcsCaseEntity));
-        when(pcsCase.getClaimantCircumstances()).thenReturn(mock(ClaimantCircumstances.class));
 
         // When
         underTest.patchCase(CASE_REFERENCE, pcsCase);
@@ -315,7 +304,6 @@ class PcsCaseServiceTest {
 
         when(pcsCase.getPreActionProtocolCompleted()).thenReturn(preActionProtocolCompleted);
         when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(existingPcsCaseEntity));
-        when(pcsCase.getClaimantCircumstances()).thenReturn(mock(ClaimantCircumstances.class));
 
         // When
         underTest.patchCase(CASE_REFERENCE, pcsCase);
@@ -426,29 +414,6 @@ class PcsCaseServiceTest {
         assertThat(clearedDefendant.getCorrespondenceAddress()).isNull();
         assertThat(clearedDefendant.getAddressSameAsPossession()).isNull();
         assertThat(clearedDefendant.getEmail()).isNull();
-    }
-
-    @Test
-    void shouldCreateCaseWithClaimantCircumstances() {
-        // Given
-        String claimantCircumstances = "Some circumstances";
-        PCSCase pcsCase = mock(PCSCase.class);
-        when(pcsCase.getClaimantCircumstances()).thenReturn(mock(ClaimantCircumstances.class));
-        when(pcsCase.getClaimantCircumstances().getClaimantCircumstancesDetails()).thenReturn(claimantCircumstances);
-
-        // When
-        underTest.createCase(CASE_REFERENCE, pcsCase);
-
-        // Then
-        verify(pcsCaseRepository).save(pcsCaseEntityCaptor.capture());
-
-        PcsCaseEntity savedEntity = pcsCaseEntityCaptor.getValue();
-        assertThat(savedEntity.getClaimantCircumstancesInput()).isEqualTo(
-            savedEntity.getClaimantCircumstancesInput().builder()
-                .provided(true)
-                .circumstances(claimantCircumstances)
-                .build()
-        );
     }
 
     private AddressEntity stubAddressUKModelMapper(AddressUK addressUK) {

@@ -116,7 +116,7 @@ public class CCDCaseRepository extends DecentralisedCaseRepository<PCSCase> {
 
     private void setMarkdownFields(PCSCase pcsCase) {
         pcsCase.setPageHeadingMarkdown("""
-                <p class="govuk-!-font-size-24 
+                <p class="govuk-!-font-size-24
                 govuk-!-margin-top-0 govuk-!-margin-bottom-0">
                 #${[CASE_REFERENCE]}</p>""");
 

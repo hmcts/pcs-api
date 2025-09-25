@@ -45,6 +45,7 @@ class ClaimServiceTest {
     void shouldSaveClaim() {
         ClaimEntity claim = new ClaimEntity();
         claim.setSummary("Main claim");
+        claim.setClaimantCircumstances("Some circumstances");
 
         when(claimRepository.save(claim)).thenReturn(claim);
 

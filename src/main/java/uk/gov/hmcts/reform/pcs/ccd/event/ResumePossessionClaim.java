@@ -223,6 +223,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
 
         claimEntity.addClaimGroundEntities(claimGroundEntities);
 
+        claimEntity.setClaimantCircumstances(pcsCase.getClaimantCircumstances().getClaimantCircumstancesDetails());
         claimService.saveClaim(claimEntity);
 
         unsubmittedCaseDataService.deleteUnsubmittedCaseData(caseReference);
