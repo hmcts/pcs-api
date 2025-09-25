@@ -566,6 +566,6 @@ public class PCSCase {
     @CCD(access = {CitizenAccess.class})
     private NoRentArrearsReasonForGrounds noRentArrearsReasonForGrounds;
 
-    private OtherReasonsForPossession otherReasonsForPossession;
+    private AdditionalReasons additionalReasonsForPossession;
 
 }

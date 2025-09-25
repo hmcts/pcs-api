@@ -8,7 +8,6 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
@@ -44,24 +43,23 @@ class PcsCaseServiceTest {
 
     private static final long CASE_REFERENCE = 1234L;
 
-    @Autowired
     private ModelMapper modelMapper;
-
     @Mock
     private PcsCaseRepository pcsCaseRepository;
     @Mock
     private SecurityContextService securityContextService;
+    @Mock
+    private TenancyLicenceService tenancyLicenceService;
     @Captor
     private ArgumentCaptor<PcsCaseEntity> pcsCaseEntityCaptor;
 
     private PcsCaseService underTest;
-    private TenancyLicenceService tenancyLicenceService;
 
     @BeforeEach
     void setUp() {
         MapperConfig config = new MapperConfig();
         modelMapper = spy(config.modelMapper());
-        tenancyLicenceService = mock(TenancyLicenceService.class);
+
         underTest = new PcsCaseService(pcsCaseRepository, securityContextService, modelMapper, tenancyLicenceService);
     }
 
@@ -300,6 +298,45 @@ class PcsCaseServiceTest {
     }
 
     @Test
+    void shouldLoadCaseFromRepository() {
+        // Given
+        PcsCaseEntity expectedPcsCaseEntity = mock(PcsCaseEntity.class);
+        when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(expectedPcsCaseEntity));
+
+        // When
+        PcsCaseEntity actualPcsCaseEntity = underTest.loadCase(CASE_REFERENCE);
+
+        // Then
+        assertThat(actualPcsCaseEntity).isEqualTo(expectedPcsCaseEntity);
+    }
+
+    @Test
+    void shouldThrowExceptionLoadingUnknownCaseReference() {
+        // Given
+        when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE)).thenReturn(Optional.empty());
+
+        // When
+        Throwable throwable = catchThrowable(() -> underTest.loadCase(CASE_REFERENCE));
+
+        // Then
+        assertThat(throwable)
+            .isInstanceOf(CaseNotFoundException.class)
+            .hasMessage("No case found with reference %s", CASE_REFERENCE);
+    }
+
+    @Test
+    void shouldSaveCaseToRepository() {
+        // Given
+        PcsCaseEntity pcsCaseEntity = mock(PcsCaseEntity.class);
+
+        // When
+        underTest.save(pcsCaseEntity);
+
+        // Then
+        verify(pcsCaseRepository).save(pcsCaseEntity);
+    }
+
+    @Test
     void shouldUpdatePreActionProtocolCompletedWhenNotNull() {
         // Given
         PCSCase pcsCase = mock(PCSCase.class);
@@ -325,7 +362,7 @@ class PcsCaseServiceTest {
             .addressLine1("125 Broadway")
             .postCode("W5 8DG")
             .build();
-        DefendantDetails details =  DefendantDetails.builder()
+        DefendantDetails details = DefendantDetails.builder()
             .nameKnown(VerticalYesNo.YES)
             .firstName("John")
             .lastName("Doe")
@@ -342,7 +379,7 @@ class PcsCaseServiceTest {
 
         // Then
         assertThat(result).hasSize(1);
-        Defendant mappedDefendant = result.get(0);
+        Defendant mappedDefendant = result.getFirst();
 
         assertThat(mappedDefendant.getId()).isEqualTo("123");
         assertThat(mappedDefendant.getNameKnown()).isTrue();
@@ -373,7 +410,7 @@ class PcsCaseServiceTest {
         List<ListValue<DefendantDetails>> result = underTest.mapToDefendantDetails(List.of(defendant));
 
         // Then
-        ListValue<DefendantDetails> listValue = result.get(0);
+        ListValue<DefendantDetails> listValue = result.getFirst();
         DefendantDetails mappedDefendantDetails = listValue.getValue();
 
         assertThat(result).hasSize(1);
@@ -412,7 +449,7 @@ class PcsCaseServiceTest {
         underTest.clearHiddenDefendantDetailsFields(defendantsList);
 
         // Then
-        DefendantDetails clearedDefendant = defendantsList.get(0).getValue();
+        DefendantDetails clearedDefendant = defendantsList.getFirst().getValue();
         assertThat(clearedDefendant.getFirstName()).isNull();
         assertThat(clearedDefendant.getLastName()).isNull();
         assertThat(clearedDefendant.getCorrespondenceAddress()).isNull();

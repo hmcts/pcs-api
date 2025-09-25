@@ -37,7 +37,7 @@ public class PcsCaseService {
     private final PcsCaseRepository pcsCaseRepository;
     private final SecurityContextService securityContextService;
     private final ModelMapper modelMapper;
-    private TenancyLicenceService tenancyLicenceService;
+    private final TenancyLicenceService tenancyLicenceService;
 
     public void createCase(long caseReference, AddressUK propertyAddress, LegislativeCountry legislativeCountry) {
 
@@ -69,13 +69,18 @@ public class PcsCaseService {
         pcsCaseEntity.setDefendants(mapFromDefendantDetails(pcsCase.getDefendants()));
         pcsCaseEntity.setTenancyLicence(tenancyLicenceService.buildTenancyLicence(pcsCase));
 
-
         pcsCaseRepository.save(pcsCaseEntity);
     }
 
-    public PcsCaseEntity patchCase(long caseReference, PCSCase pcsCase) {
-        PcsCaseEntity pcsCaseEntity = pcsCaseRepository.findByCaseReference(caseReference)
-            .orElseThrow(() -> new CaseNotFoundException(caseReference));
+    public void patchCase(long caseReference, PCSCase pcsCase) {
+        PcsCaseEntity pcsCaseEntity = loadCase(caseReference);
+
+        mergeCaseData(pcsCaseEntity, pcsCase);
+
+        save(pcsCaseEntity);
+    }
+
+    public void mergeCaseData(PcsCaseEntity pcsCaseEntity, PCSCase pcsCase) {
 
         if (pcsCase.getPropertyAddress() != null) {
             AddressEntity addressEntity = modelMapper.map(pcsCase.getPropertyAddress(), AddressEntity.class);
@@ -102,9 +107,15 @@ public class PcsCaseService {
         pcsCaseEntity.setTenancyLicence(tenancyLicenceService.buildTenancyLicence(pcsCase));
         pcsCaseEntity.setPossessionGrounds(buildPossessionGrounds(pcsCase));
 
-        pcsCaseRepository.save(pcsCaseEntity);
+    }
 
-        return pcsCaseEntity;
+    public PcsCaseEntity loadCase(long caseReference) {
+        return pcsCaseRepository.findByCaseReference(caseReference)
+            .orElseThrow(() -> new CaseNotFoundException(caseReference));
+    }
+
+    public void save(PcsCaseEntity pcsCaseEntity) {
+        pcsCaseRepository.save(pcsCaseEntity);
     }
 
     public List<Defendant> mapFromDefendantDetails(List<ListValue<DefendantDetails>> defendants) {

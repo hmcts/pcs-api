@@ -20,9 +20,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PaymentStatus;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimGroundEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.page.builder.SavingPageBuilderFactory;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.AdditionalReasonsForPossession;
@@ -55,7 +53,6 @@ import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ResumeClaim;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.SelectClaimType;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.SelectClaimantType;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.TenancyLicenceDetails;
-import uk.gov.hmcts.reform.pcs.ccd.service.ClaimGroundService;
 import uk.gov.hmcts.reform.pcs.ccd.service.ClaimService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
@@ -85,7 +82,6 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
     private final SecurityContextService securityContextService;
     private final PartyService partyService;
     private final ClaimService claimService;
-    private final ClaimGroundService claimGroundService;
     private final SavingPageBuilderFactory savingPageBuilderFactory;
     private final ResumeClaim resumeClaim;
     private final UnsubmittedCaseDataService unsubmittedCaseDataService;
@@ -182,8 +178,35 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
     private void submit(EventPayload<PCSCase, State> eventPayload) {
         long caseReference = eventPayload.caseReference();
         PCSCase pcsCase = eventPayload.caseData();
+
         pcsCase.setPaymentStatus(PaymentStatus.UNPAID);
 
+        List<ListValue<DefendantDetails>> defendantsList = new ArrayList<>();
+        if (pcsCase.getDefendant1() != null) {
+            if (VerticalYesNo.YES == pcsCase.getDefendant1().getAddressSameAsPossession()) {
+                pcsCase.getDefendant1().setCorrespondenceAddress(pcsCase.getPropertyAddress());
+            }
+            defendantsList.add(new ListValue<>(UUID.randomUUID().toString(), pcsCase.getDefendant1()));
+            pcsCaseService.clearHiddenDefendantDetailsFields(defendantsList);
+            pcsCase.setDefendants(defendantsList);
+        }
+
+        PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
+
+        pcsCaseService.mergeCaseData(pcsCaseEntity, pcsCase);
+
+        PartyEntity claimantPartyEntity = createClaimantPartyEntity(pcsCase);
+        pcsCaseEntity.addParty(claimantPartyEntity);
+
+        ClaimEntity claimEntity = claimService.createMainClaimEntity(pcsCase, claimantPartyEntity);
+        pcsCaseEntity.addClaim(claimEntity);
+
+        pcsCaseService.save(pcsCaseEntity);
+
+        unsubmittedCaseDataService.deleteUnsubmittedCaseData(caseReference);
+    }
+
+    private PartyEntity createClaimantPartyEntity(PCSCase pcsCase) {
         UserInfo userDetails = securityContextService.getCurrentUserDetails();
         UUID userID = UUID.fromString(userDetails.getUid());
 
@@ -196,40 +219,13 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
         String contactEmail = isNotBlank(pcsCase.getOverriddenClaimantContactEmail())
             ? pcsCase.getOverriddenClaimantContactEmail() : pcsCase.getClaimantContactEmail();
 
-        List<ListValue<DefendantDetails>> defendantsList = new ArrayList<>();
-        if (pcsCase.getDefendant1() != null) {
-            if (VerticalYesNo.YES == pcsCase.getDefendant1().getAddressSameAsPossession()) {
-                pcsCase.getDefendant1().setCorrespondenceAddress(pcsCase.getPropertyAddress());
-            }
-            defendantsList.add(new ListValue<>(UUID.randomUUID().toString(), pcsCase.getDefendant1()));
-            pcsCaseService.clearHiddenDefendantDetailsFields(defendantsList);
-            pcsCase.setDefendants(defendantsList);
-        }
-
-        PcsCaseEntity pcsCaseEntity = pcsCaseService.patchCase(caseReference, pcsCase);
-        PartyEntity party = partyService.createAndLinkParty(
-            pcsCaseEntity,
+        return partyService.createPartyEntity(
             userID,
             claimantName,
             null,
             contactEmail,
             contactAddress,
-            pcsCase.getClaimantContactPhoneNumber(),
-            true);
-
-        ClaimEntity claimEntity = claimService.createAndLinkClaim(
-            pcsCaseEntity,
-            party,
-            "Main Claim",
-            PartyRole.CLAIMANT);
-
-        List<ClaimGroundEntity> claimGroundEntities =
-            claimGroundService.getGroundsWithReason(pcsCase);
-
-        claimEntity.addClaimGroundEntities(claimGroundEntities);
-
-        claimService.saveClaim(claimEntity);
-
-        unsubmittedCaseDataService.deleteUnsubmittedCaseData(caseReference);
+            pcsCase.getClaimantContactPhoneNumber()
+        );
     }
 }
