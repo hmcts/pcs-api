@@ -49,7 +49,7 @@ public class ClaimantInformation implements CcdPageConfiguration {
         String claimantNamePossessiveForm = StringUtils.isNotEmpty(caseData.getOverriddenClaimantName())
             ? caseData.getOverriddenClaimantName()
             : caseData.getClaimantName();
-        caseData.setClaimantNamePossessiveForm(applyApostrophe(claimantNamePossessiveForm));
+        caseData.getClaimantCircumstances().setClaimantNamePossessiveForm(applyApostrophe(claimantNamePossessiveForm));
     }
 
     private String applyApostrophe(String value) {

@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantCircumstances;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
 
@@ -25,13 +26,14 @@ class ClaimantInformationTest extends BasePageTest {
         // Given
         PCSCase caseData = PCSCase.builder()
             .claimantName(null)
+            .claimantCircumstances(ClaimantCircumstances.builder().build())
             .build();
 
         // When
         callMidEventHandler(caseData);
 
         // Then
-        assertThat(caseData.getClaimantNamePossessiveForm()).isNull();
+        assertThat(caseData.getClaimantCircumstances().getClaimantNamePossessiveForm()).isNull();
     }
 
     @ParameterizedTest
@@ -43,13 +45,15 @@ class ClaimantInformationTest extends BasePageTest {
                                                           String expectedDisplayedName) {
         // Given
         PCSCase caseData = PCSCase.builder().claimantName(claimantName)
-            .overriddenClaimantName(overriddenClaimantName).build();
+            .overriddenClaimantName(overriddenClaimantName)
+            .claimantCircumstances(ClaimantCircumstances.builder().build()).build();
 
         // When
         callMidEventHandler(caseData);
 
         // Then
-        assertThat(caseData.getClaimantNamePossessiveForm()).isEqualTo(expectedDisplayedName);
+        assertThat(caseData.getClaimantCircumstances().getClaimantNamePossessiveForm())
+            .isEqualTo(expectedDisplayedName);
     }
 
     @ParameterizedTest
@@ -61,13 +65,15 @@ class ClaimantInformationTest extends BasePageTest {
                                            String expectedDisplayedClaimantName) {
         // Given
         PCSCase caseData = PCSCase.builder().claimantName(claimantName)
-            .overriddenClaimantName(overriddenClaimantName).build();
+            .overriddenClaimantName(overriddenClaimantName)
+            .claimantCircumstances(ClaimantCircumstances.builder().build()).build();
 
         // When
         callMidEventHandler(caseData);
 
         // Then
-        assertThat(caseData.getClaimantNamePossessiveForm()).isEqualTo(expectedDisplayedClaimantName);
+        assertThat(caseData.getClaimantCircumstances().getClaimantNamePossessiveForm())
+            .isEqualTo(expectedDisplayedClaimantName);
     }
 
     private static Stream<Arguments> claimantNameTestData() {

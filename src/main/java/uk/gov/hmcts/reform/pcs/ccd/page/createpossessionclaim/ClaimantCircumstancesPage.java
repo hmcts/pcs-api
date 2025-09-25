@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim;
 
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
+import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantCircumstances;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
@@ -21,18 +22,19 @@ public class ClaimantCircumstancesPage implements CcdPageConfiguration {
         pageBuilder
             .page(CLAIMANT_CIRCUMSTANCES)
             .pageLabel(CLAIMANT_CIRCUMSTANCES_LABEL)
-            .readonly(PCSCase::getClaimantNamePossessiveForm, NEVER_SHOW)
-            .label(
-                CLAIMANT_CIRCUMSTANCES_INFO, """
-                ---
-                """)
-            .mandatory(PCSCase::getClaimantCircumstancesSelect)
-            .mandatory(PCSCase::getClaimantCircumstancesDetails, SHOW_CONDITION,
-                       "",
-                       GIVE_DETAILS_ABOUT_THE_CLAIMANT_NAME_CIRCUMSTANCES,
-                       YOU_CAN_ENTER_UP_TO_950_CHARACTERS,
-                       false
-            );
+            .complex(PCSCase::getClaimantCircumstances)
+                .readonly(ClaimantCircumstances::getClaimantNamePossessiveForm, NEVER_SHOW)
+                .label(
+                    CLAIMANT_CIRCUMSTANCES_INFO, """
+                    ---
+                    """)
+                .mandatory(ClaimantCircumstances::getClaimantCircumstancesSelect)
+                .mandatory(ClaimantCircumstances::getClaimantCircumstancesDetails, SHOW_CONDITION,
+                           "",
+                           GIVE_DETAILS_ABOUT_THE_CLAIMANT_NAME_CIRCUMSTANCES,
+                           YOU_CAN_ENTER_UP_TO_950_CHARACTERS,
+                           false
+                ).done();
     }
 
 }

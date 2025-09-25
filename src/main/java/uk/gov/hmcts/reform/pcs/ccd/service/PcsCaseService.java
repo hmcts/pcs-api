@@ -8,6 +8,7 @@ import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantCircumstances;
+import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantCircumstancesInput;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
@@ -70,15 +71,18 @@ public class PcsCaseService {
         pcsCaseEntity.setDefendants(mapFromDefendantDetails(pcsCase.getDefendants()));
         pcsCaseEntity.setTenancyLicence(tenancyLicenceService.buildTenancyLicence(pcsCase));
 
-        pcsCaseEntity.setClaimantCircumstances(buildClaimantCircumstances(pcsCase));
+        pcsCaseEntity.setClaimantCircumstancesInput(buildClaimantCircumstances(pcsCase));
 
         pcsCaseRepository.save(pcsCaseEntity);
     }
 
-    private ClaimantCircumstances buildClaimantCircumstances(PCSCase pcsCase) {
-        return ClaimantCircumstances.builder()
-            .provided(pcsCase.getClaimantCircumstancesDetails() != null)
-            .circumstances(pcsCase.getClaimantCircumstancesDetails())
+    private ClaimantCircumstancesInput buildClaimantCircumstances(PCSCase pcsCase) {
+        if (pcsCase.getClaimantCircumstances() == null) {
+            pcsCase.setClaimantCircumstances(ClaimantCircumstances.builder().build());
+        }
+        return ClaimantCircumstancesInput.builder()
+            .provided(pcsCase.getClaimantCircumstances().getClaimantCircumstancesDetails() != null)
+            .circumstances(pcsCase.getClaimantCircumstances().getClaimantCircumstancesDetails())
             .build();
     }
 
@@ -111,7 +115,7 @@ public class PcsCaseService {
         pcsCaseEntity.setTenancyLicence(tenancyLicenceService.buildTenancyLicence(pcsCase));
         pcsCaseEntity.setPossessionGrounds(buildPossessionGrounds(pcsCase));
 
-        pcsCaseEntity.setClaimantCircumstances(buildClaimantCircumstances(pcsCase));
+        pcsCaseEntity.setClaimantCircumstancesInput(buildClaimantCircumstances(pcsCase));
         pcsCaseRepository.save(pcsCaseEntity);
 
         return pcsCaseEntity;

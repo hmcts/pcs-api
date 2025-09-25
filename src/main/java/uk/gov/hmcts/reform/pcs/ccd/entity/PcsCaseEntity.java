@@ -20,7 +20,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
-import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantCircumstances;
+import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantCircumstancesInput;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PaymentStatus;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicence;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
@@ -91,7 +91,7 @@ public class PcsCaseEntity {
 
     @Column(name = "claimant_circumstances")
     @JdbcTypeCode(SqlTypes.JSON)
-    private ClaimantCircumstances claimantCircumstances;
+    private ClaimantCircumstancesInput claimantCircumstancesInput;
 
     public void addParty(PartyEntity party) {
         parties.add(party);
