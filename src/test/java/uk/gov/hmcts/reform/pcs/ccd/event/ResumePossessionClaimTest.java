@@ -196,7 +196,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
             .build();
 
         when(userDetails.getUid()).thenReturn(UUID.randomUUID().toString());
-        when(claimService.createAndLinkClaim(any(), any(), eq("Main Claim"), eq(CLAIMANT)))
+        when(claimService.createAndLinkClaim(any(), any(), eq("Main Claim"), eq(CLAIMANT), any()))
             .thenReturn(ClaimEntity.builder().build());
 
         // When
@@ -225,7 +225,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
 
         PcsCaseEntity pcsCaseEntity = mock(PcsCaseEntity.class);
         when(pcsCaseService.patchCase(eq(TEST_CASE_REFERENCE), any(PCSCase.class))).thenReturn(pcsCaseEntity);
-        when(claimService.createAndLinkClaim(any(), any(), eq("Main Claim"), eq(CLAIMANT)))
+        when(claimService.createAndLinkClaim(any(), any(), eq("Main Claim"), eq(CLAIMANT), any()))
             .thenReturn(ClaimEntity.builder().build());
 
         PCSCase caseData = PCSCase.builder()
@@ -262,7 +262,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
         when(pcsCaseService.patchCase(eq(TEST_CASE_REFERENCE), any(PCSCase.class))).thenReturn(pcsCaseEntity);
 
         ClaimEntity claimEntity = mock(ClaimEntity.class);
-        when(claimService.createAndLinkClaim(any(PcsCaseEntity.class), any(), anyString(), any(PartyRole.class)))
+        when(claimService.createAndLinkClaim(any(PcsCaseEntity.class), any(), anyString(), any(PartyRole.class), any()))
             .thenReturn(claimEntity);
 
         PCSCase caseData = mock(PCSCase.class);
@@ -272,7 +272,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
 
         // Then
         verify(claimService)
-            .createAndLinkClaim(eq(pcsCaseEntity), any(), eq("Main Claim"), eq(CLAIMANT));
+            .createAndLinkClaim(eq(pcsCaseEntity), any(), eq("Main Claim"), eq(CLAIMANT), any());
 
         verify(claimService).saveClaim(claimEntity);
     }
