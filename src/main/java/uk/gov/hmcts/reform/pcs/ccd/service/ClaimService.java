@@ -28,7 +28,6 @@ public class ClaimService {
         return claim;
     }
 
-
     public ClaimEntity saveClaim(ClaimEntity claim) {
         return claimRepository.save(claim);
     }
