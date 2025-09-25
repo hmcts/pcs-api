@@ -132,7 +132,5 @@ db-scheduler:
 
 doc_assembly:
   url: ${DOC_ASSEMBLY_URL:http://localhost:8080}
-  templates:
-    default: CV-SPC-CLM-ENG-01356.docx
   s2s-authorised:
     services: pcs_api,ccd_data,ccd_gw,ccd_case_document_am_api,ccd_definition,ccd_admin,ccd_ps,ccd
