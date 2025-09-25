@@ -37,7 +37,8 @@ public class PcsCaseService {
     private final PcsCaseRepository pcsCaseRepository;
     private final SecurityContextService securityContextService;
     private final ModelMapper modelMapper;
-    private TenancyLicenceService tenancyLicenceService;
+    private final TenancyLicenceService tenancyLicenceService;
+    private final GeneralApplicationService generalApplicationService;
 
     public void createCase(long caseReference, AddressUK propertyAddress, LegislativeCountry legislativeCountry) {
 
@@ -68,7 +69,7 @@ public class PcsCaseService {
                         : null);
         pcsCaseEntity.setDefendants(mapFromDefendantDetails(pcsCase.getDefendants()));
         pcsCaseEntity.setTenancyLicence(tenancyLicenceService.buildTenancyLicence(pcsCase));
-
+        pcsCaseEntity.setGeneralApplication(generalApplicationService.buildTGeneralApplication(pcsCase));
 
         pcsCaseRepository.save(pcsCaseEntity);
     }
@@ -101,6 +102,7 @@ public class PcsCaseService {
 
         pcsCaseEntity.setTenancyLicence(tenancyLicenceService.buildTenancyLicence(pcsCase));
         pcsCaseEntity.setPossessionGrounds(buildPossessionGrounds(pcsCase));
+        pcsCaseEntity.setGeneralApplication(generalApplicationService.buildTGeneralApplication(pcsCase));
 
         pcsCaseRepository.save(pcsCaseEntity);
 

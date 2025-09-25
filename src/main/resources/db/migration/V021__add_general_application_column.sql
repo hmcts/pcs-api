@@ -1,0 +1,1 @@
+ALTER TABLE pcs_case ADD COLUMN general_application JSONB; 
