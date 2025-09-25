@@ -147,10 +147,9 @@ public class PCSCase {
     private String claimantContactPhoneNumber;
 
     @CCD(
-        label = "Do you want to ask your costs back?",
+        label = "Do you want to ask for your costs back?",
         hint = "You do not need to provide the exact amount at this stage, but a judge will request a schedule "
-            + "of costs at the hearing",
-        access = {CitizenAccess.class}
+            + "of costs at the hearing"
     )
     private VerticalYesNo claimingCostsWanted;
 
