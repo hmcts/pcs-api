@@ -48,12 +48,15 @@ public class DefendantsDetails implements CcdPageConfiguration {
 
                 .readonly(DefendantDetails::getEmailSectionLabel)
                 .mandatory(DefendantDetails::getEmailKnown)
-                .mandatory(DefendantDetails::getEmail);
-
+                .mandatory(DefendantDetails::getEmail)
+            .done()
+            .readonly(PCSCase::getAdditionalDefendantsSectionLabel)
+            .mandatory(PCSCase::getAddAdditionalDefendant)
+                .mandatory(PCSCase::getAddMoreThan25Defendants, "addAdditionalDefendant=\"Yes\"");
     }
 
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
-                                                                  CaseDetails<PCSCase, State> detailsBefore) {
+                                                                    CaseDetails<PCSCase, State> detailsBefore) {
 
         PCSCase caseData = details.getData();
         DefendantDetails defendantDetails = caseData.getDefendant1();
@@ -73,7 +76,5 @@ public class DefendantsDetails implements CcdPageConfiguration {
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
             .data(caseData)
             .build();
-
     }
-
 }

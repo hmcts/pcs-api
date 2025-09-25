@@ -29,27 +29,7 @@ import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.MoneyJudgment;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.RentArrearsOrBreachOfTenancyGround;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.SecureOrFlexibleGroundsForPossession;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.SecureOrFlexibleGroundsForPossessionReasons;
-import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.CheckingNotice;
-import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ClaimTypeNotEligibleEngland;
-import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ClaimTypeNotEligibleWales;
-import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ClaimantInformation;
-import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ClaimantTypeNotEligibleEngland;
-import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ClaimantTypeNotEligibleWales;
-import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ContactPreferences;
-import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.DailyRentAmount;
-import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.DefendantsDetails;
-import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.GroundForPossessionAdditionalGrounds;
-import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.GroundForPossessionRentArrears;
-import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.GroundsForPossession;
-import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.MediationAndSettlement;
-import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.NoticeDetails;
-import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.PreActionProtocol;
-import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.RentArrears;
-import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.RentDetails;
-import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ResumeClaim;
-import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.SelectClaimType;
-import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.SelectClaimantType;
-import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.TenancyLicenceDetails;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.*;
 import uk.gov.hmcts.reform.pcs.ccd.service.ClaimService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
@@ -86,7 +66,9 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
 
     private final TenancyLicenceDetails tenancyLicenceDetails;
     private final ContactPreferences contactPreferences;
-    private final DefendantsDetails defendantsDetails;
+    private final DefendantsDetails defendantDetails;
+    private final AdditionalDefendantsDetails additionalDefendantsDetails;
+    private final AddMoreThan25DefendantsDetails addMoreThan25DefendantsDetails;
 
     @Override
     public void configure(ConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -109,7 +91,9 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             .add(new ClaimTypeNotEligibleWales())
             .add(new ClaimantInformation())
             .add(contactPreferences)
-            .add(defendantsDetails)
+            .add(defendantDetails)
+            .add(additionalDefendantsDetails)
+            .add(addMoreThan25DefendantsDetails)
             .add(tenancyLicenceDetails)
             .add(new SecureOrFlexibleGroundsForPossession())
             .add(new RentArrearsOrBreachOfTenancyGround())

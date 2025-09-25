@@ -333,8 +333,39 @@ public class PCSCase {
     @CCD(access = {CitizenAccess.class, CaseworkerAccess.class})
     private DefendantDetails defendant1;
 
-    @CCD(access = {CitizenAccess.class, CaseworkerAccess.class})
+    @CCD(label = """
+                ---
+                <h2>Additional defendants</h2>""", typeOverride = FieldType.Label)
+    private String additionalDefendantsSectionLabel;
+
+    @CCD(
+        searchable = false,
+        access = {CitizenAccess.class, CaseworkerAccess.class},
+        label = "Do you want to add additional defendants?"
+    )
+    private YesOrNo addAdditionalDefendant;
+
+
+    @CCD(
+        searchable = false,
+        access = {CitizenAccess.class, CaseworkerAccess.class},
+        label = "Do you need to add more than 24 additional defendants?"
+    )
+    private YesOrNo addMoreThan25Defendants;
+
+    @CCD(
+        access = {CitizenAccess.class, CaseworkerAccess.class}
+    )
     private List<ListValue<DefendantDetails>> defendants;
+
+    @CCD(
+        label = "Add document",
+        hint = "Upload a document to the system",
+        typeOverride = FieldType.Collection,
+        typeParameterOverride = "MoreThan25DefendantsDocument",
+        access = {CitizenAccess.class, CaseworkerAccess.class}
+    )
+    private List<ListValue<MoreThan25DefendantsDocument>> moreThan25DefendantsDocuments;
 
     // Notice Details fields
     @CCD(

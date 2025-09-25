@@ -20,7 +20,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.page.builder.SavingPageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.page.builder.SavingPageBuilderFactory;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ContactPreferences;
-import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.DefendantsDetails;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.AdditionalDefendantsDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.NoticeDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ResumeClaim;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.TenancyLicenceDetails;
@@ -69,7 +69,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
     @Mock
     private ContactPreferences contactPreferences;
     @Mock
-    private DefendantsDetails defendantsDetails;
+    private AdditionalDefendantsDetails defendantsDetails;
     @Mock
     private NoticeDetails noticeDetails;
     @Mock

@@ -12,7 +12,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
-import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.DefendantsDetails;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.AdditionalDefendantsDetails;
 import uk.gov.hmcts.reform.pcs.ccd.service.AddressValidator;
 
 import java.util.List;
@@ -29,7 +29,7 @@ class DefendantsDetailsTest extends BasePageTest {
 
     @BeforeEach
     void setUp() {
-        setPageUnderTest(new DefendantsDetails(addressValidator));
+        setPageUnderTest(new AdditionalDefendantsDetails(addressValidator));
     }
 
     @Test
