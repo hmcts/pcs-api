@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.testingsupport.endpoint;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.github.kagkarlsson.scheduler.SchedulerClient;
 import com.github.kagkarlsson.scheduler.task.Task;
 import io.swagger.v3.oas.annotations.Operation;
@@ -22,7 +23,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import uk.gov.hmcts.reform.docassembly.domain.OutputType;
-import uk.gov.hmcts.reform.pcs.document.model.BaseFormPayload;
 import uk.gov.hmcts.reform.pcs.document.service.DocAssemblyService;
 import uk.gov.hmcts.reform.pcs.document.service.exception.DocAssemblyException;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.EligibilityResult;
@@ -138,8 +138,7 @@ public class TestingSupportController {
             description = "Document generation request containing template ID and form data",
             required = true
         )
-        @RequestBody BaseFormPayload formPayload
-    ) {
+        @RequestBody JsonNode formPayload) {
         try {
             if (formPayload == null) {
                 return ResponseEntity.badRequest().body("FormPayload is required");

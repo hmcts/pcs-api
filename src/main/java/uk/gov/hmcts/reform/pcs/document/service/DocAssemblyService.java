@@ -9,6 +9,8 @@ import uk.gov.hmcts.reform.docassembly.domain.DocAssemblyResponse;
 import uk.gov.hmcts.reform.docassembly.exception.DocumentGenerationFailedException;
 import uk.gov.hmcts.reform.pcs.ccd.CaseType;
 import uk.gov.hmcts.reform.docassembly.domain.FormPayload;
+import com.fasterxml.jackson.databind.JsonNode;
+import uk.gov.hmcts.reform.pcs.document.model.JsonNodeFormPayload;
 import uk.gov.hmcts.reform.docassembly.domain.OutputType;
 import uk.gov.hmcts.reform.pcs.document.service.exception.DocAssemblyException;
 import uk.gov.hmcts.reform.pcs.idam.IdamService;
@@ -44,11 +46,64 @@ public class DocAssemblyService {
             String authorization = idamService.getSystemUserAuthorisation();
             String serviceAuthorization = authTokenGenerator.generate();
 
-            // Build DocAssemblyRequest directly
             DocAssemblyRequest assemblyRequest = DocAssemblyRequest.builder()
                 .templateId(templateId)
                 .outputType(outputType)
                 .formPayload(formPayload)
+                .outputFilename(outputFilename)
+                .caseTypeId(CaseType.getCaseType())
+                .jurisdictionId(CaseType.getJurisdictionId())
+                .secureDocStoreEnabled(true)
+                .build();
+
+            DocAssemblyResponse response = docAssemblyClient.generateOrder(
+                authorization,
+                serviceAuthorization,
+                assemblyRequest
+            );
+
+            String documentUrl = response.getRenditionOutputLocation();
+            if (documentUrl == null || documentUrl.isEmpty()) {
+                log.error("No or empty renditionOutputLocation found in Doc Assembly response");
+                throw new DocAssemblyException("No document URL returned from Doc Assembly service");
+            }
+            log.info("Document generated successfully. URL: {}", documentUrl);
+            return documentUrl;
+
+        } catch (DocumentGenerationFailedException e) {
+            // This is the exception thrown by DocAssemblyClient.generateOrder()
+            log.error("Document generation failed: {}", e.getMessage(), e);
+            throw new DocAssemblyException("Document generation failed", e);
+        } catch (DocAssemblyException e) {
+            throw e;
+        } catch (Exception e) {
+            log.error("Unexpected error occurred during document generation", e);
+            throw new DocAssemblyException("Unexpected error occurred during document generation", e);
+        }
+    }
+
+    public String generateDocument(
+            JsonNode formPayload,
+            String templateId,
+            OutputType outputType,
+            String outputFilename
+    ) {
+        try {
+            if (formPayload == null) {
+                throw new IllegalArgumentException("FormPayload cannot be null");
+            }
+
+            String authorization = idamService.getSystemUserAuthorisation();
+            String serviceAuthorization = authTokenGenerator.generate();
+
+            // Convert JsonNode to FormPayload for DocAssemblyRequest
+            JsonNodeFormPayload formPayloadWrapper = new JsonNodeFormPayload(formPayload);
+
+            // Build DocAssemblyRequest directly
+            DocAssemblyRequest assemblyRequest = DocAssemblyRequest.builder()
+                .templateId(templateId)
+                .outputType(outputType)
+                .formPayload(formPayloadWrapper)
                 .outputFilename(outputFilename)
                 .caseTypeId(CaseType.getCaseType())
                 .jurisdictionId(CaseType.getJurisdictionId())

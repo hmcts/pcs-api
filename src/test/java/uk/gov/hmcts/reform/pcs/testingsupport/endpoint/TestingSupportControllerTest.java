@@ -10,9 +10,9 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.ResponseEntity;
-import uk.gov.hmcts.reform.docassembly.domain.FormPayload;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import uk.gov.hmcts.reform.docassembly.domain.OutputType;
-import uk.gov.hmcts.reform.pcs.document.model.BaseFormPayload;
 import uk.gov.hmcts.reform.pcs.document.service.DocAssemblyService;
 import uk.gov.hmcts.reform.pcs.document.service.exception.DocAssemblyException;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.EligibilityResult;
@@ -43,6 +43,7 @@ class TestingSupportControllerTest {
     private EligibilityService eligibilityService;
 
     private TestingSupportController underTest;
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @BeforeEach
     void setUp() {
@@ -99,15 +100,11 @@ class TestingSupportControllerTest {
 
     @Test
     void testGenerateDocument_WithBasicCaseInformation() {
-        final BaseFormPayload formPayload = new BaseFormPayload();
-
-        // Basic case information only
-        formPayload.setApplicantName("John Smith");
-        formPayload.setCaseNumber("PCS-123456789");
+        final JsonNode formPayload = createJsonNodeFormPayload("John Smith", "PCS-123456789");
 
         String expectedDocumentUrl = "http://dm-store/documents/123";
         when(docAssemblyService.generateDocument(
-            any(FormPayload.class),
+            any(JsonNode.class),
             eq("CV-SPC-CLM-ENG-01356.docx"),
             eq(OutputType.PDF),
             eq("generated-document.pdf")
@@ -121,7 +118,7 @@ class TestingSupportControllerTest {
         assertThat(response.getHeaders().getLocation()).isEqualTo(java.net.URI.create(expectedDocumentUrl));
 
         // Verify the request was passed correctly
-        ArgumentCaptor<FormPayload> formPayloadCaptor = ArgumentCaptor.forClass(FormPayload.class);
+        ArgumentCaptor<JsonNode> formPayloadCaptor = ArgumentCaptor.forClass(JsonNode.class);
         ArgumentCaptor<String> templateIdCaptor = ArgumentCaptor.forClass(String.class);
         ArgumentCaptor<OutputType> outputTypeCaptor = ArgumentCaptor.forClass(OutputType.class);
         ArgumentCaptor<String> outputFilenameCaptor = ArgumentCaptor.forClass(String.class);
@@ -133,7 +130,7 @@ class TestingSupportControllerTest {
             outputFilenameCaptor.capture()
         );
 
-        FormPayload capturedFormPayload = formPayloadCaptor.getValue();
+        JsonNode capturedFormPayload = formPayloadCaptor.getValue();
         assertThat(capturedFormPayload).isSameAs(formPayload);
         assertThat(templateIdCaptor.getValue()).isEqualTo("CV-SPC-CLM-ENG-01356.docx");
         assertThat(outputTypeCaptor.getValue()).isEqualTo(OutputType.PDF);
@@ -144,13 +141,11 @@ class TestingSupportControllerTest {
     @Test
     void testGenerateDocument_WithCustomTemplateId() {
         // Note: Controller uses hardcoded template, but keeping test pattern for consistency
-        final BaseFormPayload formPayload = new BaseFormPayload();
-        formPayload.setApplicantName("Jane Doe");
-        formPayload.setCaseNumber("PCS-123456789");
+        final JsonNode formPayload = createJsonNodeFormPayload("Jane Doe", "PCS-123456789");
 
         String expectedDocumentUrl = "http://dm-store/documents/456";
         when(docAssemblyService.generateDocument(
-            any(FormPayload.class),
+            any(JsonNode.class),
             eq("CV-SPC-CLM-ENG-01356.docx"),
             eq(OutputType.PDF),
             eq("generated-document.pdf")
@@ -164,7 +159,7 @@ class TestingSupportControllerTest {
         assertThat(response.getHeaders().getLocation()).isEqualTo(java.net.URI.create(expectedDocumentUrl));
 
         // Verify the request was passed correctly with hardcoded template
-        ArgumentCaptor<FormPayload> formPayloadCaptor = ArgumentCaptor.forClass(FormPayload.class);
+        ArgumentCaptor<JsonNode> formPayloadCaptor = ArgumentCaptor.forClass(JsonNode.class);
         verify(docAssemblyService).generateDocument(
             formPayloadCaptor.capture(),
             eq("CV-SPC-CLM-ENG-01356.docx"),
@@ -172,23 +167,20 @@ class TestingSupportControllerTest {
             eq("generated-document.pdf")
         );
 
-        FormPayload capturedFormPayload = formPayloadCaptor.getValue();
-        // Cast back to FormPayloadObj to access specific methods
-        BaseFormPayload capturedFormPayloadObj = (BaseFormPayload) capturedFormPayload;
-        assertThat(capturedFormPayloadObj.getApplicantName()).isEqualTo("Jane Doe");
-        assertThat(capturedFormPayloadObj.getCaseNumber()).isEqualTo("PCS-123456789");
+        JsonNode capturedFormPayload = formPayloadCaptor.getValue();
+        // Access JsonNode fields directly
+        assertThat(capturedFormPayload.get("applicantName").asText()).isEqualTo("Jane Doe");
+        assertThat(capturedFormPayload.get("caseNumber").asText()).isEqualTo("PCS-123456789");
     }
 
     @Test
     void testGenerateDocument_WithEmptyTemplateId() {
         // Keeping test pattern
-        final BaseFormPayload formPayload = new BaseFormPayload();
-        formPayload.setApplicantName("Test User");
-        formPayload.setCaseNumber("PCS-123456789");
+        final JsonNode formPayload = createJsonNodeFormPayload("Test User", "PCS-123456789");
 
         String expectedDocumentUrl = "http://dm-store/documents/789";
         when(docAssemblyService.generateDocument(
-            any(FormPayload.class),
+            any(JsonNode.class),
             eq("CV-SPC-CLM-ENG-01356.docx"),
             eq(OutputType.PDF),
             eq("generated-document.pdf")
@@ -202,7 +194,7 @@ class TestingSupportControllerTest {
         assertThat(response.getHeaders().getLocation()).isEqualTo(java.net.URI.create(expectedDocumentUrl));
 
         // Verify the request was passed correctly with hardcoded template
-        ArgumentCaptor<FormPayload> formPayloadCaptor = ArgumentCaptor.forClass(FormPayload.class);
+        ArgumentCaptor<JsonNode> formPayloadCaptor = ArgumentCaptor.forClass(JsonNode.class);
         verify(docAssemblyService).generateDocument(
             formPayloadCaptor.capture(),
             eq("CV-SPC-CLM-ENG-01356.docx"),
@@ -210,21 +202,18 @@ class TestingSupportControllerTest {
             eq("generated-document.pdf")
         );
 
-        FormPayload capturedFormPayload = formPayloadCaptor.getValue();
-        // Cast back to FormPayloadObj to access specific methods
-        BaseFormPayload capturedFormPayloadObj = (BaseFormPayload) capturedFormPayload;
-        assertThat(capturedFormPayloadObj.getCaseNumber()).isEqualTo("PCS-123456789");
+        JsonNode capturedFormPayload = formPayloadCaptor.getValue();
+        // Access JsonNode fields directly
+        assertThat(capturedFormPayload.get("caseNumber").asText()).isEqualTo("PCS-123456789");
     }
 
     @Test
     void testGenerateDocument_Success() {
-        final BaseFormPayload formPayload = new BaseFormPayload();
-        formPayload.setApplicantName("Test Case");
-        formPayload.setCaseNumber("PCS-123456789");
+        final JsonNode formPayload = createJsonNodeFormPayload("Test Case", "PCS-123456789");
 
         String expectedDocumentUrl = "http://dm-store/documents/123";
         when(docAssemblyService.generateDocument(
-            any(FormPayload.class),
+            any(JsonNode.class),
             eq("CV-SPC-CLM-ENG-01356.docx"),
             eq(OutputType.PDF),
             eq("generated-document.pdf")
@@ -246,12 +235,10 @@ class TestingSupportControllerTest {
 
     @Test
     void testGenerateDocument_Failure() {
-        final BaseFormPayload formPayload = new BaseFormPayload();
-        formPayload.setApplicantName("value1");
-        formPayload.setCaseNumber("PCS-123456789");
+        final JsonNode formPayload = createJsonNodeFormPayload("value1", "PCS-123456789");
 
         when(docAssemblyService.generateDocument(
-            any(FormPayload.class),
+            any(JsonNode.class),
             eq("CV-SPC-CLM-ENG-01356.docx"),
             eq(OutputType.PDF),
             eq("generated-document.pdf")
@@ -274,13 +261,11 @@ class TestingSupportControllerTest {
 
     @Test
     void testGenerateDocument_WhitespaceAuthorization() {
-        final BaseFormPayload formPayload = new BaseFormPayload();
-        formPayload.setApplicantName("Test");
-        formPayload.setCaseNumber("PCS-123456789");
+        final JsonNode formPayload = createJsonNodeFormPayload("Test", "PCS-123456789");
 
         String expectedDocumentUrl = "http://dm-store/documents/123";
         when(docAssemblyService.generateDocument(
-            any(FormPayload.class),
+            any(JsonNode.class),
             eq("CV-SPC-CLM-ENG-01356.docx"),
             eq(OutputType.PDF),
             eq("generated-document.pdf")
@@ -295,13 +280,11 @@ class TestingSupportControllerTest {
 
     @Test
     void testGenerateDocument_NullAuthorization() {
-        final BaseFormPayload formPayload = new BaseFormPayload();
-        formPayload.setApplicantName("Test");
-        formPayload.setCaseNumber("PCS-123456789");
+        final JsonNode formPayload = createJsonNodeFormPayload("Test", "PCS-123456789");
 
         String expectedDocumentUrl = "http://dm-store/documents/123";
         when(docAssemblyService.generateDocument(
-            any(FormPayload.class),
+            any(JsonNode.class),
             eq("CV-SPC-CLM-ENG-01356.docx"),
             eq(OutputType.PDF),
             eq("generated-document.pdf")
@@ -316,13 +299,11 @@ class TestingSupportControllerTest {
 
     @Test
     void testGenerateDocument_EmptyAuthorization() {
-        final BaseFormPayload formPayload = new BaseFormPayload();
-        formPayload.setApplicantName("Test");
-        formPayload.setCaseNumber("PCS-123456789");
+        final JsonNode formPayload = createJsonNodeFormPayload("Test", "PCS-123456789");
 
         String expectedDocumentUrl = "http://dm-store/documents/123";
         when(docAssemblyService.generateDocument(
-            any(FormPayload.class),
+            any(JsonNode.class),
             eq("CV-SPC-CLM-ENG-01356.docx"),
             eq(OutputType.PDF),
             eq("generated-document.pdf")
@@ -338,13 +319,11 @@ class TestingSupportControllerTest {
     // Similar fixes for service authorization tests
     @Test
     void testGenerateDocument_NullServiceAuthorization() {
-        final BaseFormPayload formPayload = new BaseFormPayload();
-        formPayload.setApplicantName("Test");
-        formPayload.setCaseNumber("PCS-123456789");
+        final JsonNode formPayload = createJsonNodeFormPayload("Test", "PCS-123456789");
 
         String expectedDocumentUrl = "http://dm-store/documents/123";
         when(docAssemblyService.generateDocument(
-            any(FormPayload.class),
+            any(JsonNode.class),
             eq("CV-SPC-CLM-ENG-01356.docx"),
             eq(OutputType.PDF),
             eq("generated-document.pdf")
@@ -359,13 +338,11 @@ class TestingSupportControllerTest {
 
     @Test
     void testGenerateDocument_EmptyServiceAuthorization() {
-        final BaseFormPayload formPayload = new BaseFormPayload();
-        formPayload.setApplicantName("Test");
-        formPayload.setCaseNumber("PCS-123456789");
+        final JsonNode formPayload = createJsonNodeFormPayload("Test", "PCS-123456789");
 
         String expectedDocumentUrl = "http://dm-store/documents/123";
         when(docAssemblyService.generateDocument(
-            any(FormPayload.class),
+            any(JsonNode.class),
             eq("CV-SPC-CLM-ENG-01356.docx"),
             eq(OutputType.PDF),
             eq("generated-document.pdf")
@@ -380,13 +357,11 @@ class TestingSupportControllerTest {
 
     @Test
     void testGenerateDocument_WhitespaceServiceAuthorization() {
-        final BaseFormPayload formPayload = new BaseFormPayload();
-        formPayload.setApplicantName("Test");
-        formPayload.setCaseNumber("PCS-123456789");
+        final JsonNode formPayload = createJsonNodeFormPayload("Test", "PCS-123456789");
 
         String expectedDocumentUrl = "http://dm-store/documents/123";
         when(docAssemblyService.generateDocument(
-            any(FormPayload.class),
+            any(JsonNode.class),
             eq("CV-SPC-CLM-ENG-01356.docx"),
             eq(OutputType.PDF),
             eq("generated-document.pdf")
@@ -401,12 +376,10 @@ class TestingSupportControllerTest {
 
     @Test
     void testGenerateDocument_DocAssemblyBadRequestException() {
-        final BaseFormPayload formPayload = new BaseFormPayload();
-        formPayload.setApplicantName("value1");
-        formPayload.setCaseNumber("PCS-123456789");
+        final JsonNode formPayload = createJsonNodeFormPayload("value1", "PCS-123456789");
 
         when(docAssemblyService.generateDocument(
-            any(FormPayload.class),
+            any(JsonNode.class),
             eq("CV-SPC-CLM-ENG-01356.docx"),
             eq(OutputType.PDF),
             eq("generated-document.pdf")
@@ -422,12 +395,10 @@ class TestingSupportControllerTest {
 
     @Test
     void testGenerateDocument_DocAssemblyAuthorizationException() {
-        final BaseFormPayload formPayload = new BaseFormPayload();
-        formPayload.setApplicantName("value1");
-        formPayload.setCaseNumber("PCS-123456789");
+        final JsonNode formPayload = createJsonNodeFormPayload("value1", "PCS-123456789");
 
         when(docAssemblyService.generateDocument(
-            any(FormPayload.class),
+            any(JsonNode.class),
             eq("CV-SPC-CLM-ENG-01356.docx"),
             eq(OutputType.PDF),
             eq("generated-document.pdf")
@@ -444,12 +415,10 @@ class TestingSupportControllerTest {
 
     @Test
     void testGenerateDocument_DocAssemblyNotFoundException() {
-        final BaseFormPayload formPayload = new BaseFormPayload();
-        formPayload.setApplicantName("value1");
-        formPayload.setCaseNumber("PCS-123456789");
+        final JsonNode formPayload = createJsonNodeFormPayload("value1", "PCS-123456789");
 
         when(docAssemblyService.generateDocument(
-            any(FormPayload.class),
+            any(JsonNode.class),
             eq("CV-SPC-CLM-ENG-01356.docx"),
             eq(OutputType.PDF),
             eq("generated-document.pdf")
@@ -466,12 +435,10 @@ class TestingSupportControllerTest {
 
     @Test
     void testGenerateDocument_DocAssemblyServiceUnavailableException() {
-        final BaseFormPayload formPayload = new BaseFormPayload();
-        formPayload.setApplicantName("value1");
-        formPayload.setCaseNumber("PCS-123456789");
+        final JsonNode formPayload = createJsonNodeFormPayload("value1", "PCS-123456789");
 
         when(docAssemblyService.generateDocument(
-            any(FormPayload.class),
+            any(JsonNode.class),
             eq("CV-SPC-CLM-ENG-01356.docx"),
             eq(OutputType.PDF),
             eq("generated-document.pdf")
@@ -489,12 +456,10 @@ class TestingSupportControllerTest {
 
     @Test
     void testGenerateDocument_DocAssemblyServiceErrorException() {
-        final BaseFormPayload formPayload = new BaseFormPayload();
-        formPayload.setApplicantName("value1");
-        formPayload.setCaseNumber("PCS-123456789");
+        final JsonNode formPayload = createJsonNodeFormPayload("value1", "PCS-123456789");
 
         when(docAssemblyService.generateDocument(
-            any(FormPayload.class),
+            any(JsonNode.class),
             eq("CV-SPC-CLM-ENG-01356.docx"),
             eq(OutputType.PDF),
             eq("generated-document.pdf")
@@ -510,12 +475,10 @@ class TestingSupportControllerTest {
 
     @Test
     void testGenerateDocument_DocAssemblyGenericException() {
-        final BaseFormPayload formPayload = new BaseFormPayload();
-        formPayload.setApplicantName("value1");
-        formPayload.setCaseNumber("PCS-123456789");
+        final JsonNode formPayload = createJsonNodeFormPayload("value1", "PCS-123456789");
 
         when(docAssemblyService.generateDocument(
-            any(FormPayload.class),
+            any(JsonNode.class),
             eq("CV-SPC-CLM-ENG-01356.docx"),
             eq(OutputType.PDF),
             eq("generated-document.pdf")
@@ -530,12 +493,10 @@ class TestingSupportControllerTest {
 
     @Test
     void testGenerateDocument_IllegalArgumentException() {
-        final BaseFormPayload formPayload = new BaseFormPayload();
-        formPayload.setApplicantName("value1");
-        formPayload.setCaseNumber("PCS-123456789");
+        final JsonNode formPayload = createJsonNodeFormPayload("value1", "PCS-123456789");
 
         when(docAssemblyService.generateDocument(
-            any(FormPayload.class),
+            any(JsonNode.class),
             eq("CV-SPC-CLM-ENG-01356.docx"),
             eq(OutputType.PDF),
             eq("generated-document.pdf")
@@ -601,5 +562,15 @@ class TestingSupportControllerTest {
             .hasMessageContaining("Service error");
 
         verify(eligibilityService).checkEligibility(postcode, null);
+    }
+
+    private JsonNode createJsonNodeFormPayload(String applicantName, String caseNumber) {
+        try {
+            String json = String.format("{\"applicantName\":\"%s\",\"caseNumber\":\"%s\"}",
+                                      applicantName, caseNumber);
+            return objectMapper.readTree(json);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to create JsonNode", e);
+        }
     }
 }
