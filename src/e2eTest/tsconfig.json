@@ -16,6 +16,7 @@
       "@utils/*": ["utils/*"],
       "@config/*": ["config/*"],
       "@data/*": ["data/*"]
+      
     }
   }
 }
