@@ -148,7 +148,8 @@ public class PCSCase {
 
     @CCD(
         label = "Do you want to ask your costs back?",
-        hint = "You do not need to provide the exact amount at this stage, but a judge will request a schedule of costs at the hearing",
+        hint = "You do not need to provide the exact amount at this stage, but a judge will request a schedule "
+            + "of costs at the hearing",
         access = {CitizenAccess.class}
     )
     private VerticalYesNo claimingCostsWanted;
