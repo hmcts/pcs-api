@@ -5,7 +5,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
-import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseworkerAccess;
 
 import static uk.gov.hmcts.ccd.sdk.type.FieldType.TextArea;
 
@@ -19,7 +18,6 @@ public class NoRentArrearsReasonForGrounds {
     @CCD(
             label = "Give details about your reasons for claiming possession",
             hint = "You'll be able to upload documents to support or further explain your reasons later on",
-            access = {CaseworkerAccess.class},
             typeOverride = TextArea,
             max = 500
     )
@@ -29,7 +27,6 @@ public class NoRentArrearsReasonForGrounds {
     @CCD(
             label = "Give details about your reasons for claiming possession",
             hint = "You'll be able to upload documents to support or further explain your reasons later on",
-            access = {CaseworkerAccess.class},
             typeOverride = TextArea,
             max = 500
     )
@@ -39,7 +36,6 @@ public class NoRentArrearsReasonForGrounds {
     @CCD(
             label = "Give details about your reasons for claiming possession",
             hint = "You'll be able to upload documents to support or further explain your reasons later on",
-            access = {CaseworkerAccess.class},
             typeOverride = TextArea,
             max = 500
     )
@@ -49,7 +45,6 @@ public class NoRentArrearsReasonForGrounds {
     @CCD(
             label = "Give details about your reasons for claiming possession",
             hint = "You'll be able to upload documents to support or further explain your reasons later on",
-            access = {CaseworkerAccess.class},
             typeOverride = TextArea,
             max = 500
     )
@@ -59,7 +54,6 @@ public class NoRentArrearsReasonForGrounds {
     @CCD(
             label = "Give details about your reasons for claiming possession",
             hint = "You'll be able to upload documents to support or further explain your reasons later on",
-            access = {CaseworkerAccess.class},
             typeOverride = TextArea,
             max = 500
     )
@@ -69,7 +63,6 @@ public class NoRentArrearsReasonForGrounds {
     @CCD(
             label = "Give details about your reasons for claiming possession",
             hint = "You'll be able to upload documents to support or further explain your reasons later on",
-            access = {CaseworkerAccess.class},
             typeOverride = TextArea,
             max = 500
     )
@@ -79,7 +72,6 @@ public class NoRentArrearsReasonForGrounds {
     @CCD(
             label = "Give details about your reasons for claiming possession",
             hint = "You'll be able to upload documents to support or further explain your reasons later on",
-            access = {CaseworkerAccess.class},
             typeOverride = TextArea,
             max = 500
     )
@@ -89,7 +81,6 @@ public class NoRentArrearsReasonForGrounds {
     @CCD(
             label = "Give details about your reasons for claiming possession",
             hint = "You'll be able to upload documents to support or further explain your reasons later on",
-            access = {CaseworkerAccess.class},
             typeOverride = TextArea,
             max = 500
     )
@@ -99,7 +90,6 @@ public class NoRentArrearsReasonForGrounds {
     @CCD(
             label = "Give details about your reasons for claiming possession",
             hint = "You'll be able to upload documents to support or further explain your reasons later on",
-            access = {CaseworkerAccess.class},
             typeOverride = TextArea,
             max = 500
     )
@@ -109,7 +99,6 @@ public class NoRentArrearsReasonForGrounds {
     @CCD(
             label = "Give details about your reasons for claiming possession",
             hint = "You'll be able to upload documents to support or further explain your reasons later on",
-            access = {CaseworkerAccess.class},
             typeOverride = TextArea,
             max = 500
     )
@@ -119,7 +108,6 @@ public class NoRentArrearsReasonForGrounds {
     @CCD(
             label = "Give details about your reasons for claiming possession",
             hint = "You'll be able to upload documents to support or further explain your reasons later on",
-            access = {CaseworkerAccess.class},
             typeOverride = TextArea,
             max = 500
     )
@@ -129,7 +117,6 @@ public class NoRentArrearsReasonForGrounds {
     @CCD(
             label = "Give details about your reasons for claiming possession",
             hint = "You'll be able to upload documents to support or further explain your reasons later on",
-            access = {CaseworkerAccess.class},
             typeOverride = TextArea,
             max = 500
     )
@@ -139,7 +126,6 @@ public class NoRentArrearsReasonForGrounds {
     @CCD(
             label = "Give details about your reasons for claiming possession",
             hint = "You'll be able to upload documents to support or further explain your reasons later on",
-            access = {CaseworkerAccess.class},
             typeOverride = TextArea,
             max = 500
     )
@@ -149,7 +135,6 @@ public class NoRentArrearsReasonForGrounds {
     @CCD(
             label = "Give details about your reasons for claiming possession",
             hint = "You'll be able to upload documents to support or further explain your reasons later on",
-            access = {CaseworkerAccess.class},
             typeOverride = TextArea,
             max = 500
     )
@@ -159,7 +144,6 @@ public class NoRentArrearsReasonForGrounds {
     @CCD(
             label = "Give details about your reasons for claiming possession",
             hint = "You'll be able to upload documents to support or further explain your reasons later on",
-            access = {CaseworkerAccess.class},
             typeOverride = TextArea,
             max = 500
     )
@@ -169,7 +153,6 @@ public class NoRentArrearsReasonForGrounds {
     @CCD(
             label = "Give details about your reasons for claiming possession",
             hint = "You'll be able to upload documents to support or further explain your reasons later on",
-            access = {CaseworkerAccess.class},
             typeOverride = TextArea,
             max = 500
     )
@@ -179,7 +162,6 @@ public class NoRentArrearsReasonForGrounds {
     @CCD(
             label = "Give details about your reasons for claiming possession",
             hint = "You'll be able to upload documents to support or further explain your reasons later on",
-            access = {CaseworkerAccess.class},
             typeOverride = TextArea,
             max = 500
     )
@@ -189,7 +171,6 @@ public class NoRentArrearsReasonForGrounds {
     @CCD(
             label = "Give details about your reasons for claiming possession",
             hint = "You'll be able to upload documents to support or further explain your reasons later on",
-            access = {CaseworkerAccess.class},
             typeOverride = TextArea,
             max = 500
     )
@@ -199,7 +180,6 @@ public class NoRentArrearsReasonForGrounds {
     @CCD(
             label = "Give details about your reasons for claiming possession",
             hint = "You'll be able to upload documents to support or further explain your reasons later on",
-            access = {CaseworkerAccess.class},
             typeOverride = TextArea,
             max = 500
     )
@@ -209,7 +189,6 @@ public class NoRentArrearsReasonForGrounds {
     @CCD(
             label = "Give details about your reasons for claiming possession",
             hint = "You'll be able to upload documents to support or further explain your reasons later on",
-            access = {CaseworkerAccess.class},
             typeOverride = TextArea,
             max = 500
     )
@@ -219,7 +198,6 @@ public class NoRentArrearsReasonForGrounds {
     @CCD(
             label = "Give details about your reasons for claiming possession",
             hint = "You'll be able to upload documents to support or further explain your reasons later on",
-            access = {CaseworkerAccess.class},
             typeOverride = TextArea,
             max = 500
     )

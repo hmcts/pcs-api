@@ -79,7 +79,7 @@ Playwright 1.30+ | TypeScript 4.9+
 | selectClaimantType                  | `performAction('selectClaimantType', {claimantType : pathToDataFile.claimantTypeOption})`                                                                                                                  |
 | selectAddress                       | `performAction('selectAddress',{postcode: pathToDataFile.englandPostcode,addressIndex: pathToDataFile.addressIndex} )`                                                                                     |
 | createUserAndLogin                  | `performAction('createUserAndLogin', ['caseworker-pcs', 'caseworker'])`                                                                                                                                    |
-| login                               | `performAction('login')`                                                                                                                                                                                   |
+| login                               | `performAction('login', user.claimantSolicitor)`                                                                                                                                                           |
 | enterTestAddressManually            | `performAction('enterTestAddressManually')`                                                                                                                                                                |
 | selectJurisdictionCaseTypeEvent     | `performAction('selectJurisdictionCaseTypeEvent')`                                                                                                                                                         |
 | housingPossessionClaim              | `performAction('selectCountryRadioButton', borderPostcode.countryOptions.england)`                                                                                                                         |
@@ -96,7 +96,7 @@ Playwright 1.30+ | TypeScript 4.9+
 | uploadFile                          | `performAction('uploadFile', 'SampleFile.png')`                                                                                                                                                            |
 | selectGroundsForPossession          | `performAction('selectGroundsForPossession', groundsForPossession.yes)`                                                                                                                                    |
 | selectRentArrearsPossessionGround   | `performAction('selectRentArrearsPossessionGround', {rentArrears: [rentArrearsPossessionGrounds.rentArrears], otherGrounds: rentArrearsPossessionGrounds.no})`                                             |
-| selectOtherGrounds                  | `performAction('selectOtherGrounds', {mandatory: [‘holidayLet’, ‘ownerOccupier’], discretionary :[‘domesticViolence’,’rentArrears’]})`                                                                     |
+| selectOtherGrounds                  | `performAction('selectOtherGrounds', {mandatory: ['holidayLet', 'ownerOccupier'], discretionary :['domesticViolence','rentArrears']})`                                                                     |
 | reloginAndFindTheCase               | `performAction('reloginAndFindTheCase')`                                                                                                                                                                   |
 | selectDailyRentAmount               | `performAction('selectDailyRentAmount', { calculateRentAmount: '£114.29',unpaidRentInteractiveOption: dailyRentAmount.no,unpaidRentAmountPerDay:'20'})`                                                    |
 | extractCaseIdFromAlert              | `performAction('extractCaseIdFromAlert')`                                                                                                                                                                  |
@@ -105,19 +105,21 @@ Playwright 1.30+ | TypeScript 4.9+
 | selectYourPossessionGrounds         | `performAction('selectYourPossessionGrounds', {discretionary: [whatAreYourGroundsForPossession.discretionary.rentArrearsOrBreachOfTenancy]})`                                                              |
 | enterReasonForPossession            | `performAction('enterReasonForPossession', [whatAreYourGroundsForPossession.discretionary.deteriorationOfFurniture])`                                                                                      |
 | selectRentArrearsOrBreachOfTenancy  | `performAction('selectRentArrearsOrBreachOfTenancy', rentArrearsOrBreach: [rentArrearsOrBreachOfTenancy.breachOfTenancy])`                                                                                 |
-| selectClaimForMoney                 | `performAction('selectClaimForMoney', 'yes')`                                                                                                                                                              |
 | provideDetailsOfRentArrears         | `performAction('provideDetailsOfRentArrears', {files: ['tenancyLicence.docx'], rentArrearsAmountOnStatement: '1000',rentPaidByOthersOption: 'Yes',paymentOptions: ['Universal Credit']})`                  |
+| selectClaimForMoney                 | `performAction('selectClaimForMoney', 'yes')`                                                                                                                                                              |
 ### Validations
-| Validation        | Example Usage                                                                                                                        |
-|-------------------|--------------------------------------------------------------------------------------------------------------------------------------|
-| text              | `performValidation('text', 'testElement')`                                                                                           |
-| visibility        | `performValidation('visibility', 'testElement')`                                                                                     |
-| bannerAlert       | `performValidation('bannerAlert', {message: "Case has been created."})`                                                              |
-| formLabelValue    | `performValidation('formLabelValue',  "Applicant's forename", {value:'TestUser'})`                                                   |
-| errorMessage      | `performValidation('errorMessage', {header: claimantType.errorMessage.header,errorHasLink: claimantType.errorMessage.errorMessage})` |
-| optionList        | `performValidation('optionList', 'sectionName', {optionsData})`                                                                      |
-| mainHeader        | `performValidation('mainHeader', borderPostcode.mainHeader)`                                                                         |
-| radioButtonChecked | `performValidation('radioButtonChecked')`                                                                                           |
+| Validation                 | Example Usage                                                                                                                        |
+|----------------------------|--------------------------------------------------------------------------------------------------------------------------------------|
+| text                       | `performValidation('text', 'testElement')`                                                                                           |
+| bannerAlert                | `performValidation('bannerAlert', {message: "Case has been created."})`                                                              |
+| formLabelValue             | `performValidation('formLabelValue',  "Applicant's forename", {value:'TestUser'})`                                                   |
+| errorMessage               | `performValidation('errorMessage', {header: claimantType.errorMessage.header,errorHasLink: claimantType.errorMessage.errorMessage})` |
+| optionList                 | `performValidation('optionList', 'sectionName', {optionsData})`                                                                      |
+| mainHeader                 | `performValidation('mainHeader', borderPostcode.mainHeader)`                                                                         |
+| radioButtonChecked         | `performValidation('radioButtonChecked')`                                                                                            |
+| elementToBeVisible         | `performValidation('elementToBeVisible', 'testElement')`                                                                             |
+| elementNotToBeVisible      | `performValidation('elementNotToBeVisible', 'testElement')`                                                                          |
+| waitUntilElementDisappears | `performValidation('waitUntilElementDisappears', 'testElement')`                                                                     |
 ### Basic Test
 
 ```typescript
