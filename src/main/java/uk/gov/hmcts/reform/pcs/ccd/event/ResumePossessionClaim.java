@@ -219,7 +219,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             party,
             "Main Claim",
             PartyRole.CLAIMANT,
-            pcsCase.getClaimingCostsWanted() != null ? pcsCase.getClaimingCostsWanted().toBoolean() : null);
+            pcsCase.getClaimingCostsWanted().toBoolean());
 
         List<ClaimGroundEntity> claimGroundEntities =
             claimGroundService.getGroundsWithReason(pcsCase);

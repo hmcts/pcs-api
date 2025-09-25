@@ -16,7 +16,7 @@ public class ClaimService {
     private final ClaimRepository claimRepository;
 
     public ClaimEntity createAndLinkClaim(PcsCaseEntity caseEntity, PartyEntity partyEntity,
-                                          String claimName, PartyRole role, Boolean costsClaimed) {
+                                          String claimName, PartyRole role, boolean costsClaimed) {
         ClaimEntity claim = ClaimEntity.builder()
             .summary(claimName)
             .pcsCase(caseEntity)
