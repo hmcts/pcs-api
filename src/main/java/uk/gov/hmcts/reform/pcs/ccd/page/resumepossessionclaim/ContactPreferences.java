@@ -15,6 +15,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.AddressValidator;
 import java.util.List;
 
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
+import static uk.gov.hmcts.reform.pcs.ccd.common.MultiPageLabel.SAVE_AND_RETURN_HTML;
 
 @AllArgsConstructor
 @Component
@@ -88,7 +89,8 @@ public class ContactPreferences implements CcdPageConfiguration {
                 """)
             .mandatory(PCSCase::getClaimantProvidePhoneNumber)
             .mandatory(PCSCase::getClaimantContactPhoneNumber, "claimantProvidePhoneNumber=\"YES\"")
-            .label("contactPreferences-phoneNumber-separator", "---");
+            .label("contactPreferences-phoneNumber-separator", "---")
+            .label("contactPreferences-saveAndResume", SAVE_AND_RETURN_HTML);
     }
 
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,

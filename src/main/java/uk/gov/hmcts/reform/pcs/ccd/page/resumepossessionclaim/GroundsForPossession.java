@@ -14,6 +14,8 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 
 import java.util.Set;
 
+import static uk.gov.hmcts.reform.pcs.ccd.common.MultiPageLabel.SAVE_AND_RETURN_HTML;
+
 
 /**
  * Page configuration for the Grounds for Possession section.
@@ -31,7 +33,8 @@ public class GroundsForPossession implements CcdPageConfiguration {
             .showCondition("typeOfTenancyLicence!=\"SECURE_TENANCY\" "
                                + "AND typeOfTenancyLicence!=\"FLEXIBLE_TENANCY\"")
                 .label("groundsForPossession-lineSeparator", "---")
-                .mandatory(PCSCase::getGroundsForPossession);
+                .mandatory(PCSCase::getGroundsForPossession)
+                .label("groundsForPossession-saveAndResume", SAVE_AND_RETURN_HTML);
     }
 
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
