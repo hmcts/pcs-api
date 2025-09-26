@@ -16,8 +16,6 @@ def secrets = [
     secret('idam-system-user-name', 'IDAM_SYSTEM_USERNAME'),
     secret('idam-system-user-password', 'IDAM_SYSTEM_USER_PASSWORD'),
     secret('pcs-api-idam-secret', 'PCS_API_IDAM_SECRET'),
-    secret('pcs-caseworker-username', 'PCS_CASEWORKER_USERNAME'),
-    secret('pcs-caseworker-password', 'PCS_CASEWORKER_PASSWORD'),
     secret('idam-pcs-user-password', 'IDAM_PCS_USER_PASSWORD')
   ]
 ]
@@ -90,7 +88,6 @@ withPipeline(type, product, component) {
 }
 
 def setPreviewEnvVars() {
-  // TODO: Update URL to include XUI when available
   env.MANAGE_CASE_BASE_URL = "https://xui-pcs-api-pr-${CHANGE_ID}.preview.platform.hmcts.net"
   env.ENVIRONMENT= "preview"
 }
