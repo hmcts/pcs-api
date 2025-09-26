@@ -1,1 +1,1 @@
-ALTER TABLE pcs_case ADD COLUMN claimant_circumstances JSONB;
+ALTER TABLE claim ADD COLUMN claimant_circumstances JSONB;
