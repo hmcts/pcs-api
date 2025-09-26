@@ -57,7 +57,7 @@ public class ClaimEntity {
 
     private String summary;
 
-    private boolean costsClaimed;
+    private Boolean costsClaimed;
 
     public void addParty(PartyEntity party, PartyRole partyRole) {
         ClaimPartyEntity claimPartyEntity = ClaimPartyEntity.builder()

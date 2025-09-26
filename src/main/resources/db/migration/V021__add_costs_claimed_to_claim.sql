@@ -1,2 +1,2 @@
 ALTER TABLE public.claim
-ADD COLUMN costs_claimed BOOLEAN NOT NULL DEFAULT FALSE;
+ADD COLUMN costs_claimed BOOLEAN NOT NULL;
