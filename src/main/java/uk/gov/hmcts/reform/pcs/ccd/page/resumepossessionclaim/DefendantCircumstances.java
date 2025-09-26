@@ -10,7 +10,7 @@ public class DefendantCircumstances implements CcdPageConfiguration {
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
             .page("defendantCircumstances")
-            .pageLabel("Defendant's circumstances")
+            .pageLabel("Defendants' circumstances")
             .label(
                 "defendantCircumstances-info", """
                     ---

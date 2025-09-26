@@ -160,6 +160,7 @@ class PcsCaseServiceTest {
         assertThat(savedEntity).isSameAs(existingPcsCaseEntity);
         verify(existingPcsCaseEntity).setTenancyLicence(any());
         verify(existingPcsCaseEntity).setPossessionGrounds(any());
+        verify(existingPcsCaseEntity).setDefendantCircumstancesInfo(any());
         verifyNoMoreInteractions(existingPcsCaseEntity);
     }
 
@@ -343,7 +344,7 @@ class PcsCaseServiceTest {
 
         // Then
         assertThat(result).hasSize(1);
-        Defendant mappedDefendant = result.get(0);
+        Defendant mappedDefendant = result.getFirst();
 
         assertThat(mappedDefendant.getId()).isEqualTo("123");
         assertThat(mappedDefendant.getNameKnown()).isTrue();
@@ -374,7 +375,7 @@ class PcsCaseServiceTest {
         List<ListValue<DefendantDetails>> result = underTest.mapToDefendantDetails(List.of(defendant));
 
         // Then
-        ListValue<DefendantDetails> listValue = result.get(0);
+        ListValue<DefendantDetails> listValue = result.getFirst();
         DefendantDetails mappedDefendantDetails = listValue.getValue();
 
         assertThat(result).hasSize(1);
@@ -413,7 +414,7 @@ class PcsCaseServiceTest {
         underTest.clearHiddenDefendantDetailsFields(defendantsList);
 
         // Then
-        DefendantDetails clearedDefendant = defendantsList.get(0).getValue();
+        DefendantDetails clearedDefendant = defendantsList.getFirst().getValue();
         assertThat(clearedDefendant.getFirstName()).isNull();
         assertThat(clearedDefendant.getLastName()).isNull();
         assertThat(clearedDefendant.getCorrespondenceAddress()).isNull();
@@ -428,8 +429,12 @@ class PcsCaseServiceTest {
         when(pcsCase.getHasDefendantCircumstancesInfo()).thenReturn(VerticalYesNo.YES);
         when(pcsCase.getDefendantCircumstancesInfo()).thenReturn("Some circumstances");
 
+        PcsCaseEntity existingEntity = new PcsCaseEntity();
+        existingEntity.setDefendantCircumstancesInfo(new DefendantCircumstancesInfo(false, null));
+        when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(existingEntity));
+
         // When
-        underTest.createCase(CASE_REFERENCE, pcsCase);
+        underTest.patchCase(CASE_REFERENCE, pcsCase);
 
         // Then
         verify(pcsCaseRepository).save(pcsCaseEntityCaptor.capture());

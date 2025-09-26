@@ -72,10 +72,10 @@ public class DefendantsDetails implements CcdPageConfiguration {
                     .build();
             }
         }
-        // TODO: Update this once multiple defendant support is implemented.
-        //  Set the text dynamically to "defendants'" when the case has multiple defendants.
-        caseData.setDynamicDefendantText("defendant's");
 
+        // TODO: Update this once multiple defendant support is implemented.
+        //  Set the text dynamically for one/multiple defendants.
+        caseData.setDynamicDefendantText("defendants'");
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
             .data(caseData)
