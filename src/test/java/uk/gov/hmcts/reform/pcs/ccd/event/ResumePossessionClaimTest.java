@@ -6,16 +6,15 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.mockito.ArgumentCaptor;
+import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.domain.PaymentStatus;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.PartyRole;
+import uk.gov.hmcts.reform.pcs.ccd.entity.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.page.builder.SavingPageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.page.builder.SavingPageBuilderFactory;
@@ -24,7 +23,6 @@ import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.DefendantsDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.NoticeDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ResumeClaim;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.TenancyLicenceDetails;
-import uk.gov.hmcts.reform.pcs.ccd.service.ClaimGroundService;
 import uk.gov.hmcts.reform.pcs.ccd.service.ClaimService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
@@ -41,12 +39,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mock.Strictness.LENIENT;
+import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static uk.gov.hmcts.reform.pcs.ccd.entity.PartyRole.CLAIMANT;
 import static uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry.ENGLAND;
 import static uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry.SCOTLAND;
 import static uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry.WALES;
@@ -54,6 +52,7 @@ import static uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry.WAL
 @ExtendWith(MockitoExtension.class)
 class ResumePossessionClaimTest extends BaseEventTest {
 
+    public static final UUID USER_ID = UUID.randomUUID();
     @Mock
     private PcsCaseService pcsCaseService;
     @Mock
@@ -74,12 +73,10 @@ class ResumePossessionClaimTest extends BaseEventTest {
     private DefendantsDetails defendantsDetails;
     @Mock
     private NoticeDetails noticeDetails;
-    @Mock
+    @Mock(strictness = LENIENT)
     private UserInfo userDetails;
     @Mock
     private TenancyLicenceDetails tenancyLicenceDetails;
-    @Mock
-    private ClaimGroundService claimGroundService;
 
     @BeforeEach
     void setUp() {
@@ -88,10 +85,11 @@ class ResumePossessionClaimTest extends BaseEventTest {
         when(savingPageBuilder.add(any())).thenReturn(savingPageBuilder);
 
         when(securityContextService.getCurrentUserDetails()).thenReturn(userDetails);
+        when(userDetails.getUid()).thenReturn(USER_ID.toString());
 
         ResumePossessionClaim underTest = new ResumePossessionClaim(
             pcsCaseService, securityContextService,
-            partyService, claimService, claimGroundService,
+            partyService, claimService,
             savingPageBuilderFactory, resumeClaim,
             unsubmittedCaseDataService, noticeDetails,
             tenancyLicenceDetails, contactPreferences,
@@ -189,27 +187,28 @@ class ResumePossessionClaimTest extends BaseEventTest {
     }
 
     @Test
-    void shouldPatchCaseDataInSubmitCallback() {
+    void shouldMergeCaseDataInSubmitCallback() {
         // Given
         PCSCase caseData = PCSCase.builder()
             .legislativeCountry(WALES)
             .build();
 
-        when(userDetails.getUid()).thenReturn(UUID.randomUUID().toString());
-        when(claimService.createAndLinkClaim(any(), any(), eq("Main Claim"), eq(CLAIMANT)))
-            .thenReturn(ClaimEntity.builder().build());
+        PcsCaseEntity pcsCaseEntity = mock(PcsCaseEntity.class);
+        when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(pcsCaseEntity);
+
+        PartyEntity partyEntity = mock(PartyEntity.class);
+        when(partyService.createPartyEntity(eq(USER_ID), any(), any(), any(), any(), any()))
+            .thenReturn(partyEntity);
+
+        when(claimService.createMainClaimEntity(eq(caseData), any())).thenReturn(ClaimEntity.builder().build());
 
         // When
         callSubmitHandler(caseData);
 
         // Then
-        ArgumentCaptor<PCSCase> pcsCaseCaptor = ArgumentCaptor.forClass(PCSCase.class);
-        verify(pcsCaseService).patchCase(eq(TEST_CASE_REFERENCE), pcsCaseCaptor.capture());
-
-        PCSCase dataToPatchWith = pcsCaseCaptor.getValue();
-        assertThat(dataToPatchWith).isSameAs(caseData);
-        assertThat(dataToPatchWith.getPaymentStatus()).isEqualTo(PaymentStatus.UNPAID);
-        assertThat(dataToPatchWith.getLegislativeCountry()).isEqualTo(WALES);
+        InOrder inOrder = inOrder(pcsCaseService);
+        inOrder.verify(pcsCaseService).mergeCaseData(pcsCaseEntity, caseData);
+        inOrder.verify(pcsCaseService).save(pcsCaseEntity);
     }
 
     @Test
@@ -220,13 +219,8 @@ class ResumePossessionClaimTest extends BaseEventTest {
         String claimantContactEmail = "claimant@test.com";
         String claimantContactPhoneNumber = "01234 567890";
 
-        UUID userId = UUID.randomUUID();
-        when(userDetails.getUid()).thenReturn(userId.toString());
-
         PcsCaseEntity pcsCaseEntity = mock(PcsCaseEntity.class);
-        when(pcsCaseService.patchCase(eq(TEST_CASE_REFERENCE), any(PCSCase.class))).thenReturn(pcsCaseEntity);
-        when(claimService.createAndLinkClaim(any(), any(), eq("Main Claim"), eq(CLAIMANT)))
-            .thenReturn(ClaimEntity.builder().build());
+        when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(pcsCaseEntity);
 
         PCSCase caseData = PCSCase.builder()
             .propertyAddress(propertyAddress)
@@ -240,30 +234,29 @@ class ResumePossessionClaimTest extends BaseEventTest {
         callSubmitHandler(caseData);
 
         // Then
-        verify(partyService).createAndLinkParty(
-            eq(pcsCaseEntity),
-            eq(userId),
+        verify(partyService).createPartyEntity(
+            eq(USER_ID),
             eq(claimantName),
             eq(null),
             eq(claimantContactEmail),
             eq(propertyAddress),
-            eq(claimantContactPhoneNumber),
-            eq(true)
+            eq(claimantContactPhoneNumber)
         );
     }
 
     @Test
     void shouldCreateMainClaimInSubmitCallback() {
         // Given
-        UUID userId = UUID.randomUUID();
-        when(userDetails.getUid()).thenReturn(userId.toString());
 
         PcsCaseEntity pcsCaseEntity = mock(PcsCaseEntity.class);
-        when(pcsCaseService.patchCase(eq(TEST_CASE_REFERENCE), any(PCSCase.class))).thenReturn(pcsCaseEntity);
+        when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(pcsCaseEntity);
+
+        PartyEntity partyEntity = mock(PartyEntity.class);
+        when(partyService.createPartyEntity(eq(USER_ID), any(), any(), any(), any(), any()))
+            .thenReturn(partyEntity);
 
         ClaimEntity claimEntity = mock(ClaimEntity.class);
-        when(claimService.createAndLinkClaim(any(PcsCaseEntity.class), any(), anyString(), any(PartyRole.class)))
-            .thenReturn(claimEntity);
+        when(claimService.createMainClaimEntity(any(PCSCase.class), any(PartyEntity.class))).thenReturn(claimEntity);
 
         PCSCase caseData = mock(PCSCase.class);
 
@@ -271,10 +264,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
         callSubmitHandler(caseData);
 
         // Then
-        verify(claimService)
-            .createAndLinkClaim(eq(pcsCaseEntity), any(), eq("Main Claim"), eq(CLAIMANT));
-
-        verify(claimService).saveClaim(claimEntity);
+        verify(claimService).createMainClaimEntity(caseData, partyEntity);
     }
 
     private static Stream<Arguments> claimantTypeScenarios() {

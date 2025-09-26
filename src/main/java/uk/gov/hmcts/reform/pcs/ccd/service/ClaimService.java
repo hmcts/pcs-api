@@ -3,32 +3,39 @@ package uk.gov.hmcts.reform.pcs.ccd.service;
 
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
+import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimGroundEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyRole;
-import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimRepository;
+
+import java.util.List;
 
 @Service
 @AllArgsConstructor
 public class ClaimService {
 
     private final ClaimRepository claimRepository;
+    private final ClaimGroundService claimGroundService;
 
-    public ClaimEntity createAndLinkClaim(PcsCaseEntity caseEntity, PartyEntity partyEntity,
-                                          String claimName, PartyRole role) {
-        ClaimEntity claim = ClaimEntity.builder()
-            .summary(claimName)
-            .pcsCase(caseEntity)
+    public ClaimEntity createMainClaimEntity(PCSCase pcsCase, PartyEntity claimantPartyEntity) {
+
+        String additionalReasons = pcsCase.getAdditionalReasonsForPossession().getReasons();
+
+        List<ClaimGroundEntity> claimGrounds = claimGroundService.getGroundsWithReason(pcsCase);
+
+        ClaimEntity claimEntity = ClaimEntity.builder()
+            .summary("Main Claim")
+            .additionalReasons(additionalReasons)
             .build();
 
-        caseEntity.getClaims().add(claim);
-        claim.addParty(partyEntity, role);
+        claimEntity.addParty(claimantPartyEntity, PartyRole.CLAIMANT);
+        claimEntity.addClaimGrounds(claimGrounds);
 
-        return claim;
+        claimRepository.save(claimEntity);
+
+        return claimEntity;
     }
 
-    public ClaimEntity saveClaim(ClaimEntity claim) {
-        return claimRepository.save(claim);
-    }
 }
