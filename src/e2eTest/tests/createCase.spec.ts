@@ -41,8 +41,8 @@ test.beforeEach(async ({page}, testInfo) => {
   await performAction('housingPossessionClaim');
 });
 
-test.describe('[Create Case Flow]  @Master @nightly', async () => {
-  test('England - Successful case creation for Assured tenancy with Rent arrears and other possession grounds', async () => {
+test.describe('[Successful Create Case Flow]  @Master @nightly', async () => {
+  test('England - Assured tenancy with Rent arrears and other possession grounds', async () => {
     await performAction('selectAddress', {
       postcode: addressDetails.englandCourtAssignedPostcode,
       addressIndex: addressDetails.addressIndex
@@ -120,7 +120,7 @@ test.describe('[Create Case Flow]  @Master @nightly', async () => {
     )
   });
 
-  test('England - Successful case creation for Assured tenancy with No Rent arrears', async () => {
+  test('England - Assured tenancy with No Rent arrears', async () => {
     await performAction('selectAddress', {
       postcode: addressDetails.englandCourtAssignedPostcode,
       addressIndex: addressDetails.addressIndex
@@ -199,7 +199,7 @@ test.describe('[Create Case Flow]  @Master @nightly', async () => {
     )
   });
 
-  test('England - Successful case creation for Other tenancy with grounds for possession', async () => {
+  test('England - Other tenancy with grounds for possession', async () => {
     await performAction('selectAddress', {
       postcode: addressDetails.englandCourtAssignedPostcode,
       addressIndex: addressDetails.addressIndex
@@ -273,7 +273,7 @@ test.describe('[Create Case Flow]  @Master @nightly', async () => {
     )
   });
 
-  test('England - Successful case creation for Demoted tenancy with no grounds for possession', async () => {
+  test('England - Demoted tenancy with no grounds for possession', async () => {
     await performAction('selectAddress', {
       postcode: addressDetails.englandCourtAssignedPostcode,
       addressIndex: addressDetails.addressIndex
@@ -344,7 +344,7 @@ test.describe('[Create Case Flow]  @Master @nightly', async () => {
     )
   });
 
-  test('Wales - Successful case creation for Assured tenancy with Rent arrears and no other possession grounds', async () => {
+  test('Wales - Assured tenancy with Rent arrears and no other possession grounds', async () => {
     await performAction('enterTestAddressManually');
     await performValidation('bannerAlert', 'Case #.* has been created.');
     await performAction('extractCaseIdFromAlert');
@@ -412,7 +412,7 @@ test.describe('[Create Case Flow]  @Master @nightly', async () => {
       ['formLabelValue', 'Country', addressDetails.country]);
   });
 
-  test('Wales - Successful case creation for Flexible tenancy with Rent arrears only', async () => {
+  test('Wales - Flexible tenancy with Rent arrears only', async () => {
     await performAction('enterTestAddressManually');
     await performValidation('bannerAlert', 'Case #.* has been created.');
     await performAction('extractCaseIdFromAlert');
@@ -477,7 +477,7 @@ test.describe('[Create Case Flow]  @Master @nightly', async () => {
       ['formLabelValue', 'Country', addressDetails.country]);
   });
 
-  test('Wales - Successful case creation for Secure tenancy with Rent and other grounds', async () => {
+  test('Wales - Secure tenancy with Rent and other grounds', async () => {
     await performAction('enterTestAddressManually');
     await performValidation('bannerAlert', 'Case #.* has been created.');
     await performAction('extractCaseIdFromAlert');
