@@ -1,1 +1,2 @@
-ALTER TABLE pcs_case ADD COLUMN defendant_circumstances JSONB;
+ALTER TABLE claim
+  ADD COLUMN defendant_circumstances VARCHAR(950);

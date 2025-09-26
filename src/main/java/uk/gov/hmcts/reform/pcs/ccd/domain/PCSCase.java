@@ -566,24 +566,11 @@ public class PCSCase {
     @CCD(access = {CitizenAccess.class})
     private NoRentArrearsReasonForGrounds noRentArrearsReasonForGrounds;
 
-    @CCD(
-        label = "Is there any information you'd like to provide about the ${dynamicDefendantText} circumstances?",
-        hint = "This can be any known details or any attempts made to obtain details ",
-        access = {CitizenAccess.class}
-    )
-    private VerticalYesNo hasDefendantCircumstancesInfo;
+    @JsonUnwrapped
+    @CCD(access = {CitizenAccess.class})
+    private DefendantCircumstances defendantCircumstances;
 
-    @CCD(
-        label = "Give details about the ${dynamicDefendantText} circumstances",
-        typeOverride = TextArea,
-        max = 950,
-        access = {CitizenAccess.class}
-    )
-    private String defendantCircumstancesInfo;
-
-    @CCD(
-        access = {CitizenAccess.class}
-    )
-    private String dynamicDefendantText;
+    @CCD(access = {CitizenAccess.class})
+    private String dynamicDisplayedDefendantText;
 
 }

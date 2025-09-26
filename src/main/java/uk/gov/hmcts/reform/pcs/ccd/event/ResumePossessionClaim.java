@@ -14,6 +14,7 @@ import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.ShowConditions;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantCircumstances;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PaymentStatus;
@@ -38,7 +39,7 @@ import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ClaimantTypeNotEli
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ClaimantTypeNotEligibleWales;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ContactPreferences;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.DailyRentAmount;
-import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.DefendantCircumstances;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.DefendantCircumstancesPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.DefendantsDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.GroundForPossessionAdditionalGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.GroundForPossessionRentArrears;
@@ -134,7 +135,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             .add(new RentArrears())
             .add(new MoneyJudgment())
             .add(new ClaimantCircumstances())
-            .add(new DefendantCircumstances());
+            .add(new DefendantCircumstancesPage());
     }
 
     private PCSCase start(EventPayload<PCSCase, State> eventPayload) {
@@ -222,8 +223,12 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
 
         List<ClaimGroundEntity> claimGroundEntities =
             claimGroundService.getGroundsWithReason(pcsCase);
+        DefendantCircumstances defendantCircumstances = pcsCase.getDefendantCircumstances();
 
         claimEntity.addClaimGroundEntities(claimGroundEntities);
+        claimEntity.setDefendantCircumstances(
+            defendantCircumstances != null ? defendantCircumstances.getDefendantCircumstancesInfo() : null
+        );
 
         claimService.saveClaim(claimEntity);
 
