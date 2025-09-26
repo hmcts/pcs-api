@@ -16,7 +16,7 @@ public class DefendantCircumstancesPage implements CcdPageConfiguration {
             .pageLabel("Defendants' circumstances")
             .complex(PCSCase::getDefendantCircumstances)
             .mandatory(DefendantCircumstances::getDefendantTermPossessive,NEVER_SHOW)
-            .readonly(DefendantCircumstances::getDefendantCircumstancesLabel)
+            .readonlyNoSummary(DefendantCircumstances::getDefendantCircumstancesLabel)
             .mandatory(DefendantCircumstances::getHasDefendantCircumstancesInfo)
             .mandatory(DefendantCircumstances::getDefendantCircumstancesInfo,
                        "hasDefendantCircumstancesInfo=\"YES\"")
