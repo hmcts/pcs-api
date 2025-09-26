@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim;
+package uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim;
 
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
@@ -41,11 +41,9 @@ public class IntroductoryDemotedOtherGroundsReasons implements CcdPageConfigurat
                 ---
                 <h2 class="govuk-heading-l" tabindex="0">Absolute grounds</h2>
                 <h3 class="govuk-heading-m" tabindex="0"> Why are you claiming possession?</h3>
-                ""","introductoryDemotedOrOtherGroundsCONTAINS\"ABSOLUTE_GROUNDS\""
-                       + "OR hasIntroductoryDemotedOtherGroundsForPossession=\"NO\"")
+                ""","introductoryDemotedOrOtherGroundsCONTAINS\"ABSOLUTE_GROUNDS\"")
             .mandatory(IntroductoryDemotedOtherGroundReason::getAbsoluteGrounds,
-                    "introductoryDemotedOrOtherGroundsCONTAINS\"ABSOLUTE_GROUNDS\""
-                       + "OR hasIntroductoryDemotedOtherGroundsForPossession=\"NO\"")
+                    "introductoryDemotedOrOtherGroundsCONTAINS\"ABSOLUTE_GROUNDS\"")
 
             .label("introductoryDemotedOtherGroundsReasons-otherGround-label","""
                 ---
@@ -54,7 +52,14 @@ public class IntroductoryDemotedOtherGroundsReasons implements CcdPageConfigurat
                 ""","introductoryDemotedOrOtherGroundsCONTAINS\"OTHER\"")
             .mandatory(IntroductoryDemotedOtherGroundReason::getOtherGround,
                     "introductoryDemotedOrOtherGroundsCONTAINS\"OTHER\"")
-                .done();
+            .label("introductoryDemotedOtherGroundsReasons-noGrounds-label","""
+                ---
+                <h2 class="govuk-heading-l" tabindex="0">No grounds</h2>
+                <h3 class="govuk-heading-m" tabindex="0"> Why are you claiming possession?</h3>
+                ""","hasIntroductoryDemotedOtherGroundsForPossession=\"NO\"")
+            .mandatory(IntroductoryDemotedOtherGroundReason::getNoGrounds,
+                       "hasIntroductoryDemotedOtherGroundsForPossession=\"NO\"")
+            .done();
 
     }
 }
