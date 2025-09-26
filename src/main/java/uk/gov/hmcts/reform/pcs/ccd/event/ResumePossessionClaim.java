@@ -34,11 +34,7 @@ import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.RentArrearsOrBreac
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.SecureOrFlexibleGroundsForPossession;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.SecureOrFlexibleGroundsForPossessionReasons;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.CheckingNotice;
-import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ClaimTypeNotEligibleEngland;
-import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ClaimTypeNotEligibleWales;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ClaimantInformation;
-import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ClaimantTypeNotEligibleEngland;
-import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ClaimantTypeNotEligibleWales;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ContactPreferences;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.DailyRentAmount;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.DefendantsDetails;
@@ -51,9 +47,6 @@ import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.PreActionProtocol;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.RentArrears;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.RentDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ResumeClaim;
-import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.SelectClaimType;
-import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.SelectClaimantType;
-import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.TVRDefendantsDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.TenancyLicenceDetails;
 import uk.gov.hmcts.reform.pcs.ccd.service.ClaimService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PartyService;
@@ -107,13 +100,12 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
 
         savingPageBuilderFactory.create(eventBuilder)
             .add(resumeClaim)
-            //.add(new TVRDefendantsDetails())
-//            .add(new SelectClaimantType())
-//            .add(new ClaimantTypeNotEligibleEngland())
-//            .add(new ClaimantTypeNotEligibleWales())
-//            .add(new SelectClaimType())
-//            .add(new ClaimTypeNotEligibleEngland())
-//            .add(new ClaimTypeNotEligibleWales())
+            //.add(new SelectClaimantType())
+            //.add(new ClaimantTypeNotEligibleEngland())
+            //.add(new ClaimantTypeNotEligibleWales())
+            //.add(new SelectClaimType())
+            //.add(new ClaimTypeNotEligibleEngland())
+            //.add(new ClaimTypeNotEligibleWales())
             .add(new ClaimantInformation())
             .add(contactPreferences)
             .add(defendantsDetails)
@@ -212,13 +204,15 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             contactEmail,
             contactAddress,
             pcsCase.getClaimantContactPhoneNumber(),
-            true);
+            true
+        );
 
         ClaimEntity claimEntity = claimService.createAndLinkClaim(
             pcsCaseEntity,
             party,
             "Main Claim",
-            PartyRole.CLAIMANT);
+            PartyRole.CLAIMANT
+        );
 
         List<ClaimGroundEntity> claimGroundEntities =
             claimGroundService.getGroundsWithReason(pcsCase);

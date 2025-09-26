@@ -29,13 +29,14 @@ public class DefendantsDetails implements CcdPageConfiguration {
             .complex(PCSCase::getDefendant1)
                 .readonly(DefendantDetails::getNameSectionLabel)
                 .mandatory(DefendantDetails::getNameKnown)
-                .mandatory(DefendantDetails::getFirstName,"nameKnown=\"YES\"")
-                .mandatory(DefendantDetails::getLastName, "nameKnown=\"YES\"")
+                    .mandatory(DefendantDetails::getFirstName,"nameKnown=\"YES\"")
+                    .mandatory(DefendantDetails::getLastName, "nameKnown=\"YES\"")
 
                 .readonly(DefendantDetails::getAddressSectionLabel)
+
                 .mandatory(DefendantDetails::getAddressKnown)
-                .mandatory(DefendantDetails::getAddressSameAsPossession)
-                .complex(DefendantDetails::getCorrespondenceAddress)
+                .mandatory(DefendantDetails::getAddressSameAsPossession, "addressKnown=\"YES\"")
+                .complex(DefendantDetails::getCorrespondenceAddress, "addressKnown=\"YES\" AND addressSameAsPossession=\"NO\"")
                     .mandatory(AddressUK::getAddressLine1)
                     .optional(AddressUK::getAddressLine2)
                     .optional(AddressUK::getAddressLine3)
@@ -45,10 +46,10 @@ public class DefendantsDetails implements CcdPageConfiguration {
                     .mandatoryWithLabel(AddressUK::getPostCode, "Postcode")
                 .done()
                 .mandatory(DefendantDetails::getCorrespondenceAddress)
-
                 .readonly(DefendantDetails::getEmailSectionLabel)
                 .mandatory(DefendantDetails::getEmailKnown)
-                .mandatory(DefendantDetails::getEmail);
+                .mandatory(DefendantDetails::getEmail, "emailKnown=\"YES\"")
+            .done();
 
     }
 
