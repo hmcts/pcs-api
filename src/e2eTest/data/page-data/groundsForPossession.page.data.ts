@@ -9,6 +9,7 @@ export const groundsForPossession = {
   absoluteGrounds: 'Absolute grounds',
   other: 'Other',
   otherGrounds: 'Other grounds',
+  noGrounds: 'No grounds',
   yes: 'Yes',
   no: 'No'
 };

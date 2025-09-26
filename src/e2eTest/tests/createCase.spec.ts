@@ -304,7 +304,7 @@ test.describe('[Successful Create Case Flow]  @Master @nightly', async () => {
     });
     await performValidation('mainHeader', groundsForPossession.mainHeader);
     await performAction('selectGroundsForPossession', {groundsRadioInput: groundsForPossession.no});
-    await performAction('enterReasonForPossession', [groundsForPossession.absoluteGrounds]);
+    await performAction('enterReasonForPossession', [groundsForPossession.noGrounds]);
     await performValidation('mainHeader', preActionProtocol.mainHeader);
     await performAction('selectPreActionProtocol', preActionProtocol.yes);
     await performValidation('mainHeader', mediationAndSettlement.mainHeader);
