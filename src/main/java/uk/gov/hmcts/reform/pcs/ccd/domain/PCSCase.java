@@ -10,8 +10,8 @@ import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.FieldType;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
-import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseworkerReadAccess;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenAccess;
 import uk.gov.hmcts.reform.pcs.ccd.domain.model.NoRentArrearsReasonForGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
@@ -565,5 +565,25 @@ public class PCSCase {
     @JsonUnwrapped
     @CCD(access = {CitizenAccess.class})
     private NoRentArrearsReasonForGrounds noRentArrearsReasonForGrounds;
+
+    @CCD(
+        label = "Is there any information you'd like to provide about the ${dynamicDefendantText} circumstances?",
+        hint = "This can be any known details or any attempts made to obtain details ",
+        access = {CitizenAccess.class}
+    )
+    private VerticalYesNo hasDefendantCircumstancesInfo;
+
+    @CCD(
+        label = "Give details about the ${dynamicDefendantText} circumstances",
+        typeOverride = TextArea,
+        max = 950,
+        access = {CitizenAccess.class}
+    )
+    private String defendantCircumstancesInfo;
+
+    @CCD(
+        access = {CitizenAccess.class}
+    )
+    private String dynamicDefendantText;
 
 }

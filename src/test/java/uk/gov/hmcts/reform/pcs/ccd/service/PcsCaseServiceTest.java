@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantCircumstancesInfo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PaymentStatus;
@@ -418,6 +419,25 @@ class PcsCaseServiceTest {
         assertThat(clearedDefendant.getCorrespondenceAddress()).isNull();
         assertThat(clearedDefendant.getAddressSameAsPossession()).isNull();
         assertThat(clearedDefendant.getEmail()).isNull();
+    }
+
+    @Test
+    void shouldBuildDefendantCircumstancesInfo() {
+        // Given
+        PCSCase pcsCase = mock(PCSCase.class);
+        when(pcsCase.getHasDefendantCircumstancesInfo()).thenReturn(VerticalYesNo.YES);
+        when(pcsCase.getDefendantCircumstancesInfo()).thenReturn("Some circumstances");
+
+        // When
+        underTest.createCase(CASE_REFERENCE, pcsCase);
+
+        // Then
+        verify(pcsCaseRepository).save(pcsCaseEntityCaptor.capture());
+        PcsCaseEntity savedEntity = pcsCaseEntityCaptor.getValue();
+
+        DefendantCircumstancesInfo circumstancesInfo = savedEntity.getDefendantCircumstancesInfo();
+        assertThat(circumstancesInfo.getInfoProvided()).isTrue();
+        assertThat(circumstancesInfo.getDefendantCircumstances()).isEqualTo("Some circumstances");
     }
 
     private AddressEntity stubAddressUKModelMapper(AddressUK addressUK) {

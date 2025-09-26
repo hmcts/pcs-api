@@ -15,6 +15,8 @@ import uk.gov.hmcts.reform.pcs.ccd.service.AddressValidator;
 
 import java.util.List;
 
+import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
+
 @AllArgsConstructor
 @Component
 public class DefendantsDetails implements CcdPageConfiguration {
@@ -26,6 +28,7 @@ public class DefendantsDetails implements CcdPageConfiguration {
         pageBuilder
             .page("defendantsDetails", this::midEvent)
             .pageLabel("Defendant 1 details")
+            .readonly(PCSCase::getDynamicDefendantText, NEVER_SHOW)
             .complex(PCSCase::getDefendant1)
                 .readonly(DefendantDetails::getNameSectionLabel)
                 .mandatory(DefendantDetails::getNameKnown)
@@ -69,6 +72,10 @@ public class DefendantsDetails implements CcdPageConfiguration {
                     .build();
             }
         }
+        // TODO: Update this once multiple defendant support is implemented.
+        //  Set the text dynamically to "defendants'" when the case has multiple defendants.
+        caseData.setDynamicDefendantText("defendant's");
+
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
             .data(caseData)
