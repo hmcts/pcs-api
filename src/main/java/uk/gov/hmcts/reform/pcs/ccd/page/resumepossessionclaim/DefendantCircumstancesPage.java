@@ -16,14 +16,15 @@ public class DefendantCircumstancesPage implements CcdPageConfiguration {
                 "defendantCircumstances-info", """
                     ---
                     <p class="govuk-body" tabindex="0">
-                     You can use this section to tell us anything relevant about the ${dynamicDefendantText}
+                     You can use this section to tell us anything relevant about the ${defendantTermPossessive}
                      financial or personal situation.
                     </p>
                     """)
             .complex(PCSCase::getDefendantCircumstances)
             .mandatory(DefendantCircumstances::getHasDefendantCircumstancesInfo)
-            .mandatory(DefendantCircumstances::getDefendantCircumstancesInfo, "hasDefendantCircumstancesInfo=\"YES\"");
+            .mandatory(DefendantCircumstances::getDefendantCircumstancesInfo,
+                       "hasDefendantCircumstancesInfo=\"YES\"")
+            .done();
     }
-
 
 }

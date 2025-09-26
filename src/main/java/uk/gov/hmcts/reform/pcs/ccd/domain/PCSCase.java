@@ -571,6 +571,6 @@ public class PCSCase {
     private DefendantCircumstances defendantCircumstances;
 
     @CCD(access = {CitizenAccess.class})
-    private String dynamicDisplayedDefendantText;
+    private String defendantTermPossessive;
 
 }

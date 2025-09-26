@@ -28,7 +28,7 @@ public class DefendantsDetails implements CcdPageConfiguration {
         pageBuilder
             .page("defendantsDetails", this::midEvent)
             .pageLabel("Defendant 1 details")
-            .readonly(PCSCase::getDynamicDisplayedDefendantText, NEVER_SHOW)
+            .readonly(PCSCase::getDefendantTermPossessive, NEVER_SHOW)
             .complex(PCSCase::getDefendant1)
                 .readonly(DefendantDetails::getNameSectionLabel)
                 .mandatory(DefendantDetails::getNameKnown)
@@ -75,7 +75,7 @@ public class DefendantsDetails implements CcdPageConfiguration {
 
         // TODO: Update this once multiple defendant support is implemented.
         //  Set the text dynamically for one/multiple defendants.
-        caseData.setDynamicDisplayedDefendantText("defendants'");
+        caseData.setDefendantTermPossessive("defendants'");
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
             .data(caseData)
