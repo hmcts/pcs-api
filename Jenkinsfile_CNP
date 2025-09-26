@@ -1,8 +1,8 @@
 #!groovy @Library("Infrastructure@testdisablehighleveldatasetup")
 import uk.gov.hmcts.contino.AppPipelineDsl
-import uk.gov.hmcts.contino.AppPipelineConfig
-import uk.gov.hmcts.contino.GithubAPI
 import uk.gov.hmcts.contino.GradleBuilder
+import uk.gov.hmcts.contino.GithubAPI
+import uk.gov.hmcts.contino.AppPipelineConfig
 
 def type = "java"
 def product = "pcs"
