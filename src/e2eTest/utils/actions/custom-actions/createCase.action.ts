@@ -56,7 +56,7 @@ export class CreateCaseAction implements IAction {
       ['selectDailyRentAmount', () => this.selectDailyRentAmount(fieldName)],
       ['provideDetailsOfRentArrears', () => this.provideDetailsOfRentArrears(fieldName)],
       ['selectClaimForMoney', () => this.selectClaimForMoney(fieldName)],
-      ['selectAdditionalReasonsForPossession',()=> this.selectAdditionalReasonsForPossession(fieldName)]
+      ['selectAdditionalReasonsForPossession', ()=> this.selectAdditionalReasonsForPossession(fieldName)]
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) throw new Error(`No action found for '${action}'`);
@@ -419,7 +419,7 @@ export class CreateCaseAction implements IAction {
   private async selectAdditionalReasonsForPossession(reasons: actionData) {
     await performAction('clickRadioButton', reasons);
     if(reasons == additionalReasonsForPossession.yes){
-      await performAction('inputText', additionalReasonsForPossession.additionalReasonsForPossessionLabel,additionalReasonsForPossession.additionalReasonsForPossessionSampleText);
+      await performAction('inputText', additionalReasonsForPossession.additionalReasonsForPossessionLabel, additionalReasonsForPossession.additionalReasonsForPossessionSampleText);
     }
     await performAction('clickButton', additionalReasonsForPossession.continue);
   }
