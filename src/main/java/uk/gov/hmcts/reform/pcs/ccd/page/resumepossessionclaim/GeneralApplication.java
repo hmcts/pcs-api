@@ -44,6 +44,6 @@ public class GeneralApplication implements CcdPageConfiguration {
                   </section>
 
                   """)
-                .mandatory(PCSCase::getGeneralApplicationWanted);
+                .mandatory(PCSCase::getApplicationWithClaim);
     }
 }

@@ -56,16 +56,14 @@ class PcsCaseServiceTest {
 
     private PcsCaseService underTest;
     private TenancyLicenceService tenancyLicenceService;
-    private GeneralApplicationService generalApplicationService;
 
     @BeforeEach
     void setUp() {
         MapperConfig config = new MapperConfig();
         modelMapper = spy(config.modelMapper());
         tenancyLicenceService = mock(TenancyLicenceService.class);
-        generalApplicationService = mock(GeneralApplicationService.class);
         underTest = new PcsCaseService(pcsCaseRepository, securityContextService, modelMapper,
-                tenancyLicenceService, generalApplicationService);
+                tenancyLicenceService);
     }
 
     @Test
@@ -162,7 +160,6 @@ class PcsCaseServiceTest {
         assertThat(savedEntity).isSameAs(existingPcsCaseEntity);
         verify(existingPcsCaseEntity).setTenancyLicence(any());
         verify(existingPcsCaseEntity).setPossessionGrounds(any());
-        verify(existingPcsCaseEntity).setGeneralApplication(any());
         verifyNoMoreInteractions(existingPcsCaseEntity);
     }
 

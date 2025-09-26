@@ -25,7 +25,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicence;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.ccd.model.Defendant;
 import uk.gov.hmcts.reform.pcs.ccd.model.PossessionGrounds;
-import uk.gov.hmcts.reform.pcs.ccd.domain.GeneralApplication;
 
 import java.util.HashSet;
 import java.util.List;
@@ -93,8 +92,5 @@ public class PcsCaseEntity {
         parties.add(party);
         party.setPcsCase(this);
     }
-    
-    @JdbcTypeCode(SqlTypes.JSON)
-    private GeneralApplication generalApplication;
 
 }

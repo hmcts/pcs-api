@@ -56,6 +56,8 @@ public class ClaimEntity {
     private Set<ClaimGroundEntity> claimGroundEntities = new HashSet<>();
 
     private String summary;
+    
+    private Boolean applicationWithClaim;
 
     public void addParty(PartyEntity party, PartyRole partyRole) {
         ClaimPartyEntity claimPartyEntity = ClaimPartyEntity.builder()
