@@ -88,7 +88,6 @@ withPipeline(type, product, component) {
 }
 
 def setPreviewEnvVars() {
-  // TODO: Update URL to include XUI when available
   env.MANAGE_CASE_BASE_URL = "https://xui-pcs-api-pr-${CHANGE_ID}.preview.platform.hmcts.net"
   env.ENVIRONMENT= "preview"
 }
