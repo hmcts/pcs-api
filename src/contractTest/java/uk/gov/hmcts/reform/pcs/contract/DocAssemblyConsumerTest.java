@@ -34,10 +34,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 @ImportAutoConfiguration({FeignAutoConfiguration.class, FeignClientsConfiguration.class,
     HttpMessageConvertersAutoConfiguration.class})
 @EnableFeignClients(clients = DocAssemblyClient.class)
-@TestPropertySource(properties = "doc-assembly.url=http://localhost:8080")
+@TestPropertySource(properties = "doc-assembly.url=http://dg-docassembly-aat.service.core-compute-aat.internal")
 @ExtendWith(PactConsumerTestExt.class)
 @ExtendWith(SpringExtension.class)
-@PactTestFor(providerName = "doc_assembly_template_rendition_provider", port = "8080")
+@PactTestFor(providerName = "doc_assembly_template_rendition_provider", port = "80")
 
 public class DocAssemblyConsumerTest {
 
@@ -74,7 +74,7 @@ public class DocAssemblyConsumerTest {
                 "Content-Type", "application/json"))
             .body(requestBody)
             .willRespondWith()
-            .status(HttpStatus.OK.value())
+            .status(HttpStatus.CREATED.value())
             .headers(Map.of(HttpHeaders.CONTENT_TYPE, "application/json"))
             .body(responseBody)
             .toPact(V4Pact.class);
