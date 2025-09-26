@@ -10,6 +10,7 @@ public class MoneyJudgment implements CcdPageConfiguration {
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
                 .page("moneyJudgment")
+                .showCondition("groundsForPossession=\"Yes\" AND rentFrequency=\"OTHER\"")
                 .pageLabel("Money judgment")
                 .label("moneyJudgment-separator", "---")
                 .mandatory(PCSCase::getArrearsJudgmentWanted);

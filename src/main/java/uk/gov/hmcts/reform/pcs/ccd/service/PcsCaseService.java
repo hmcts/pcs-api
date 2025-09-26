@@ -63,12 +63,11 @@ public class PcsCaseService {
         pcsCaseEntity.setPropertyAddress(addressEntity);
         pcsCaseEntity.setPaymentStatus(pcsCase.getPaymentStatus());
         pcsCaseEntity.setPreActionProtocolCompleted(
-                pcsCase.getPreActionProtocolCompleted() != null
-                        ? pcsCase.getPreActionProtocolCompleted().toBoolean()
-                        : null);
+            pcsCase.getPreActionProtocolCompleted() != null
+                ? pcsCase.getPreActionProtocolCompleted().toBoolean()
+                : null);
         pcsCaseEntity.setDefendants(mapFromDefendantDetails(pcsCase.getDefendants()));
         pcsCaseEntity.setTenancyLicence(tenancyLicenceService.buildTenancyLicence(pcsCase));
-
 
         pcsCaseRepository.save(pcsCaseEntity);
     }
@@ -188,8 +187,10 @@ public class PcsCaseService {
 
     private PossessionGrounds buildPossessionGrounds(PCSCase pcsCase) {
         SecureOrFlexibleReasonsForGrounds reasons = Optional.ofNullable(pcsCase.getSecureOrFlexibleGroundsReasons())
-            .map(grounds -> modelMapper.map(grounds,
-                                            SecureOrFlexibleReasonsForGrounds.class))
+            .map(grounds -> modelMapper.map(
+                grounds,
+                SecureOrFlexibleReasonsForGrounds.class
+            ))
             .orElse(SecureOrFlexibleReasonsForGrounds.builder().build());
 
         return PossessionGrounds.builder()
