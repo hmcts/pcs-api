@@ -33,6 +33,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.domain.IntroductoryDemotedOrOtherGroun
 import static uk.gov.hmcts.reform.pcs.ccd.domain.IntroductoryDemotedOrOtherGrounds.BREACH_OF_THE_TENANCY;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.IntroductoryDemotedOrOtherGrounds.OTHER;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.IntroductoryDemotedOrOtherGrounds.RENT_ARREARS;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.IntroductoryDemotedOrOtherNoGrounds.NO_GROUNDS;
 
 @ExtendWith(MockitoExtension.class)
 class ClaimGroundServiceTest {
@@ -85,7 +86,7 @@ class ClaimGroundServiceTest {
     }
 
     @Test
-    void shouldSaveAbsoluteGroundsWhenReasonIsPresent() {
+    void shouldSaveNoGroundsWhenReasonIsPresent() {
         // Given
         PCSCase caseData = PCSCase.builder()
             .hasIntroductoryDemotedOtherGroundsForPossession(VerticalYesNo.YES)
@@ -93,7 +94,7 @@ class ClaimGroundServiceTest {
             .introductoryDemotedOrOtherGrounds(null)
             .introductoryDemotedOtherGroundReason(
                 IntroductoryDemotedOtherGroundReason.builder()
-                    .absoluteGrounds("Absolute reason")
+                    .noGrounds("No ground reason")
                     .build())
             .hasIntroductoryDemotedOtherGroundsForPossession(VerticalYesNo.NO)
             .build();
@@ -103,8 +104,8 @@ class ClaimGroundServiceTest {
 
         // Then
         assertThat(entities.size()).isEqualTo(1);
-        assertThat(entities.getFirst().getGroundReason()).isEqualTo("Absolute reason");
-        assertThat(entities.getFirst().getGroundId()).isEqualTo(ABSOLUTE_GROUNDS.name());
+        assertThat(entities.getFirst().getGroundReason()).isEqualTo("No ground reason");
+        assertThat(entities.getFirst().getGroundId()).isEqualTo(NO_GROUNDS.name());
     }
 
     private static Stream<Arguments> testGroundsOtherThanRentArrearsScenarios() {

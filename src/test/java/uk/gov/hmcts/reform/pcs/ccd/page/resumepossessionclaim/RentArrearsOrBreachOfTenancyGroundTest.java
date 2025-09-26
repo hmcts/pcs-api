@@ -10,7 +10,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsOrBreachOfTenancy;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
-import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.RentArrearsOrBreachOfTenancyGround;
 
 import java.util.Set;
 import java.util.stream.Stream;
@@ -59,6 +58,5 @@ public class RentArrearsOrBreachOfTenancyGroundTest extends BasePageTest {
             )
         );
     }
-
 
 }

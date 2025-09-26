@@ -16,7 +16,7 @@ import java.util.List;
 import java.util.Set;
 
 import static feign.Util.isNotBlank;
-import static uk.gov.hmcts.reform.pcs.ccd.domain.IntroductoryDemotedOrOtherGrounds.ABSOLUTE_GROUNDS;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.IntroductoryDemotedOrOtherNoGrounds.NO_GROUNDS;
 
 @Service
 public class ClaimGroundService {
@@ -63,12 +63,12 @@ public class ClaimGroundService {
             }
         }
         if (pcsCase.getHasIntroductoryDemotedOtherGroundsForPossession() == VerticalYesNo.NO
-            && isNotBlank(reasons.getAbsoluteGrounds())) {
+            && isNotBlank(reasons.getNoGrounds())) {
 
             entities.add(
                 ClaimGroundEntity.builder()
-                    .groundId(ABSOLUTE_GROUNDS.name())
-                    .groundReason(pcsCase.getIntroductoryDemotedOtherGroundReason().getAbsoluteGrounds())
+                    .groundId(NO_GROUNDS.name())
+                    .groundReason(pcsCase.getIntroductoryDemotedOtherGroundReason().getNoGrounds())
                     .groundDescription(null)
                     .build());
         }
