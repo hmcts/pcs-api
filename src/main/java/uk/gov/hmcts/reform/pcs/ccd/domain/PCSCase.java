@@ -570,7 +570,4 @@ public class PCSCase {
     @CCD(access = {CitizenAccess.class})
     private DefendantCircumstances defendantCircumstances;
 
-    @CCD(access = {CitizenAccess.class})
-    private String defendantTermPossessive;
-
 }
