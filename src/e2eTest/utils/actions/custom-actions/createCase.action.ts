@@ -46,12 +46,14 @@ export class CreateCaseAction implements IAction {
       ['selectNoticeOfYourIntention', () => this.selectNoticeOfYourIntention(fieldName)],
       ['selectNoticeDetails', () => this.selectNoticeDetails(fieldName)],
       ['selectCountryRadioButton', () => this.selectCountryRadioButton(fieldName)],
+      ['selectYourPossessionGrounds', () => this.selectYourPossessionGrounds(fieldName)],
       ['selectTenancyOrLicenceDetails', () => this.selectTenancyOrLicenceDetails(fieldName)],
       ['selectOtherGrounds', () => this.selectYourPossessionGrounds(fieldName)],
       ['selectYourPossessionGrounds', () => this.selectYourPossessionGrounds(fieldName)],
       ['enterReasonForPossession', () => this.enterReasonForPossession(fieldName)],
       ['selectRentArrearsOrBreachOfTenancy', () => this.selectRentArrearsOrBreachOfTenancy(fieldName)],
       ['provideRentDetails', () => this.provideRentDetails(fieldName)],
+      ['addAnotherDefendant', () => this.addAnotherDefendant(fieldName)],
       ['selectDailyRentAmount', () => this.selectDailyRentAmount(fieldName)],
       ['provideDetailsOfRentArrears', () => this.provideDetailsOfRentArrears(fieldName)],
       ['selectClaimForMoney', () => this.selectClaimForMoney(fieldName)]
@@ -172,17 +174,21 @@ export class CreateCaseAction implements IAction {
   private async defendantDetails(defendantVal: actionData) {
     const defendantData = defendantVal as {
       name: string;
+      firstName?: string;
+      lastName?: string;
+      emailId?: string;
       correspondenceAddress: string;
       email: string;
       correspondenceAddressSame?: string
+      postcode?: string;
     };
     await performAction('clickRadioButton', {
       question: defendantDetails.doYouKnowTheDefendantName,
       option: defendantData.name
     });
     if (defendantData.name === 'Yes') {
-      await performAction('inputText', defendantDetails.defendantFirstName, defendantDetails.firstNameInput);
-      await performAction('inputText', defendantDetails.defendantLastName, defendantDetails.lastNameInput);
+      await performAction('inputText', defendantDetails.defendantFirstName, defendantData.firstName);
+      await performAction('inputText', defendantDetails.defendantLastName, defendantData.lastName);
     }
     await performAction('clickRadioButton', {
       question: defendantDetails.defendantCorrespondenceAddress,
@@ -193,12 +199,12 @@ export class CreateCaseAction implements IAction {
         question: defendantDetails.isCorrespondenceAddressSame,
         option: defendantData.correspondenceAddressSame
       });
-      if (defendantData.correspondenceAddressSame === 'No') {
+      if (defendantData.correspondenceAddressSame === 'No' && defendantData.postcode) {
         await performActions(
             'Find Address based on postcode',
-            ['inputText', 'Enter a UK postcode', addressDetails.englandCourtAssignedPostcode],
+            ['inputText', 'Enter a UK postcode', defendantData.postcode],
             ['clickButton', 'Find address'],
-            ['select', 'Select an address', addressDetails.addressIndex]
+            ['select', 'Select an address', defendantDetails.addressIndex]
         );
       }
     }
@@ -207,11 +213,17 @@ export class CreateCaseAction implements IAction {
       option: defendantData.email
     });
     if (defendantData.email === 'Yes') {
-      await performAction('inputText', defendantDetails.enterEmailAddress, defendantDetails.emailIdInput);
+      await performAction('inputText', defendantDetails.enterEmailAddress, defendantData.emailId);
     }
     await performAction('clickButton', 'Continue');
   }
 
+  private async addAnotherDefendant(addADefendant: actionData){
+    const addDefendant = addADefendant as string;
+    await performAction('clickRadioButton', addDefendant);
+    await performAction('clickButton', 'Continue');
+  }
+  
   private async selectRentArrearsPossessionGround(rentArrearsPossessionGrounds: actionData) {
     const rentArrearsGrounds = rentArrearsPossessionGrounds as {
       rentArrears: string[];
@@ -219,6 +231,28 @@ export class CreateCaseAction implements IAction {
     };
     await performAction('check', rentArrearsGrounds.rentArrears);
     await performAction('clickRadioButton', rentArrearsGrounds.otherGrounds);
+    await performAction('clickButton', 'Continue');
+  }
+
+  private async selectYourPossessionGrounds(possessionGrounds: actionData) {
+    const grounds = possessionGrounds as {
+      mandatory?: string[];
+      mandatoryAccommodation?: string[];
+      discretionary?: string[];
+      discretionaryAccommodation?: string[];
+    };
+    if (grounds.discretionary) {
+      await performAction('check', grounds.discretionary);
+    }
+    if (grounds.mandatory) {
+      await performAction('check', grounds.mandatory);
+    }
+    if (grounds.mandatoryAccommodation) {
+      await performAction('check', grounds.mandatoryAccommodation);
+    }
+    if (grounds.discretionaryAccommodation) {
+      await performAction('check', grounds.discretionaryAccommodation);
+    }
     await performAction('clickButton', 'Continue');
   }
 
@@ -249,6 +283,7 @@ export class CreateCaseAction implements IAction {
     }
     await performAction('clickButton', 'Continue');
   }
+  
   private async selectYourPossessionGrounds(possessionGrounds: actionData) {
     const grounds = possessionGrounds as {
       mandatory?: string[];

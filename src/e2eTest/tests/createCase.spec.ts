@@ -6,7 +6,7 @@ import {claimantType} from '@data/page-data/claimantType.page.data';
 import {claimType} from '@data/page-data/claimType.page.data';
 import {claimantName} from '@data/page-data/claimantName.page.data';
 import {contactPreferences} from '@data/page-data/contactPreferences.page.data';
-import {defendantDetails} from '@data/page-data/defendantDetails.page.data';
+import {defendant1Details, defendant2Details} from '@data/page-data/defendantDetails.page.data';
 import {tenancyLicenceDetails} from '@data/page-data/tenancyLicenceDetails.page.data';
 import {groundsForPossession} from '@data/page-data/groundsForPossession.page.data';
 import {rentArrearsPossessionGrounds} from '@data/page-data/rentArrearsPossessionGrounds.page.data';
@@ -20,6 +20,7 @@ import {provideMoreDetailsOfClaim} from '@data/page-data/provideMoreDetailsOfCla
 import {resumeClaim} from '@data/page-data/resumeClaim.page.data';
 import {resumeClaimOptions} from '@data/page-data/resumeClaimOptions.page.data';
 import {detailsOfRentArrears} from '@data/page-data/detailsOfRentArrears.page.data';
+import {defendantList} from '@data/page-data/defendantList.page.data';
 import {whatAreYourGroundsForPossession} from '@data/page-data/whatAreYourGroundsForPossession.page.data';
 import {rentArrearsOrBreachOfTenancy} from '@data/page-data/rentArrearsOrBreachOfTenancy.page.data';
 import {reasonsForPossession} from '@data/page-data/reasonsForPossession.page.data';
@@ -57,12 +58,32 @@ test.describe('[Create Case Flow]  @Master @nightly', async () => {
       correspondenceAddress: contactPreferences.yes,
       phoneNumber: contactPreferences.no
     });
+    await performValidation('mainHeader', defendant1Details.mainHeader);
     await performAction('defendantDetails', {
-      name: defendantDetails.yes,
-      correspondenceAddress: defendantDetails.yes,
-      email: defendantDetails.yes,
-      correspondenceAddressSame: defendantDetails.no
+      name: defendant1Details.yes,
+      firstName: defendant1Details.defendant1FirstNameInput,
+      lastName: defendant1Details.defendant1LastNameInput,
+      emailId: defendant1Details.defendant1EmailIdInput,
+      correspondenceAddress: defendant1Details.yes,
+      email: defendant1Details.yes,
+      correspondenceAddressSame: defendant1Details.no,
+      postcode: defendant1Details.defendant1PostcodeInput
     });
+    await performValidation('mainHeader', defendantList.mainHeader);
+    await performAction('addAnotherDefendant', defendantList.yes);
+    await performValidation('mainHeader', defendant2Details.mainHeader);
+    await performAction('defendantDetails', {
+      name: defendant2Details.yes,
+      firstName: defendant2Details.defendant2FirstNameInput,
+      lastName: defendant2Details.defendant2LastNameInput,
+      emailId: defendant2Details.defendant2EmailIdInput,
+      correspondenceAddress: defendant2Details.yes,
+      email: defendant2Details.yes,
+      correspondenceAddressSame: defendant2Details.no,
+      postcode: defendant2Details.defendant2PostcodeInput
+    });
+    await performValidation('mainHeader', defendantList.mainHeader);
+    await performAction('addAnotherDefendant', defendantList.no);
     await performValidation('mainHeader', tenancyLicenceDetails.mainHeader);
     await performAction('selectTenancyOrLicenceDetails', {
       tenancyOrLicenceType: tenancyLicenceDetails.assuredTenancy,
@@ -223,11 +244,16 @@ test.describe('[Create Case Flow]  @Master @nightly', async () => {
       phoneNumber: contactPreferences.yes
     });
     await performAction('defendantDetails', {
-      name: defendantDetails.yes,
-      correspondenceAddress: defendantDetails.yes,
-      email: defendantDetails.yes,
-      correspondenceAddressSame: defendantDetails.yes
+      name: defendant1Details.yes,
+      firstName: defendant1Details.defendant1FirstNameInput,
+      lastName: defendant1Details.defendant1LastNameInput,
+      correspondenceAddress: defendant1Details.yes,
+      email: defendant1Details.yes,
+      emailId: defendant1Details.defendant1EmailIdInput,
+      correspondenceAddressSame: defendant1Details.yes
     });
+    await performValidation('mainHeader', defendantList.mainHeader);
+    await performAction('addAnotherDefendant', defendantList.no);
     await performAction('selectTenancyOrLicenceDetails', {
       tenancyOrLicenceType: tenancyLicenceDetails.assuredTenancy});
     await performValidation('mainHeader', groundsForPossession.mainHeader);
@@ -291,10 +317,11 @@ test.describe('[Create Case Flow]  @Master @nightly', async () => {
       phoneNumber: contactPreferences.no
     });
     await performAction('defendantDetails', {
-      name: defendantDetails.no,
-      correspondenceAddress: defendantDetails.no,
-      email: defendantDetails.no,
+      name: defendant1Details.no,
+      correspondenceAddress: defendant1Details.no,
+      email: defendant1Details.no,
     });
+    await performAction('addAnotherDefendant', defendantList.no)
     await performValidation('mainHeader', tenancyLicenceDetails.mainHeader);
     await performAction('selectTenancyOrLicenceDetails', {
       tenancyOrLicenceType: tenancyLicenceDetails.flexibleTenancy});
