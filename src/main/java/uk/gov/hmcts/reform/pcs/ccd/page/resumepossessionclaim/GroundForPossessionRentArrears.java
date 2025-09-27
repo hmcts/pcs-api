@@ -15,6 +15,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
+import static uk.gov.hmcts.reform.pcs.ccd.common.MultiPageLabel.SAVE_AND_RETURN_HTML;
 
 /**
  * Page for selecting rent arrears grounds for possession.
@@ -54,7 +55,8 @@ public class GroundForPossessionRentArrears implements CcdPageConfiguration {
                     rent.</p>
                 """)
                 .mandatory(PCSCase::getRentArrearsGrounds)
-                .mandatory(PCSCase::getHasOtherAdditionalGrounds);
+                .mandatory(PCSCase::getHasOtherAdditionalGrounds)
+                .label("groundForPossessionRentArrears-saveAndResume", SAVE_AND_RETURN_HTML);
     }
 
     public AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,

@@ -4,6 +4,8 @@ import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 
+import static uk.gov.hmcts.reform.pcs.ccd.common.MultiPageLabel.SAVE_AND_RETURN_HTML;
+
 public class RentArrears implements CcdPageConfiguration {
 
     @Override
@@ -64,6 +66,7 @@ public class RentArrears implements CcdPageConfiguration {
 
                 // "Other" free text is mandatory when OTHER is selected
                 .mandatory(PCSCase::getThirdPartyPaymentSourceOther,
-                        "thirdPartyPayments=\"YES\" AND thirdPartyPaymentSources CONTAINS \"OTHER\"");
+                        "thirdPartyPayments=\"YES\" AND thirdPartyPaymentSources CONTAINS \"OTHER\"")
+                .label("rentArrears-saveAndResume", SAVE_AND_RETURN_HTML);
     }
 }

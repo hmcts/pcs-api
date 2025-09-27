@@ -12,6 +12,8 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 
 import java.util.List;
 
+import static uk.gov.hmcts.reform.pcs.ccd.common.MultiPageLabel.SAVE_AND_RETURN_HTML;
+
 
 @AllArgsConstructor
 @Component
@@ -33,7 +35,8 @@ public class NoRentArrearsGroundsForPossessionOptions implements CcdPageConfigur
                     if you need to.</p>"""
             )
             .optional(PCSCase::getNoRentArrearsMandatoryGroundsOptions)
-            .optional(PCSCase::getNoRentArrearsDiscretionaryGroundsOptions);
+            .optional(PCSCase::getNoRentArrearsDiscretionaryGroundsOptions)
+            .label("noRentArrearsGroundsForPossessionOptions-saveAndResume", SAVE_AND_RETURN_HTML);
 
     }
 

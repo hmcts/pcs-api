@@ -15,6 +15,8 @@ import uk.gov.hmcts.reform.pcs.ccd.service.AddressValidator;
 
 import java.util.List;
 
+import static uk.gov.hmcts.reform.pcs.ccd.common.MultiPageLabel.SAVE_AND_RETURN_HTML;
+
 @AllArgsConstructor
 @Component
 public class DefendantsDetails implements CcdPageConfiguration {
@@ -48,7 +50,9 @@ public class DefendantsDetails implements CcdPageConfiguration {
 
                 .readonly(DefendantDetails::getEmailSectionLabel)
                 .mandatory(DefendantDetails::getEmailKnown)
-                .mandatory(DefendantDetails::getEmail);
+                .mandatory(DefendantDetails::getEmail)
+            .done()
+            .label("defendantsDetails-saveAndResume", SAVE_AND_RETURN_HTML);
 
     }
 

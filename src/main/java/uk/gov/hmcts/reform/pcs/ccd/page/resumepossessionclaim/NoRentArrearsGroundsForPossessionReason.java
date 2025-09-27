@@ -11,6 +11,8 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.model.NoRentArrearsReasonForGrounds;
 
+import static uk.gov.hmcts.reform.pcs.ccd.common.MultiPageLabel.SAVE_AND_RETURN_HTML;
+
 @AllArgsConstructor
 @Component
 @Slf4j
@@ -297,7 +299,8 @@ public class NoRentArrearsGroundsForPossessionReason implements CcdPageConfigura
             .mandatory(
                 NoRentArrearsReasonForGrounds::getFalseStatementTextArea,
                 "noRentArrearsDiscretionaryGroundsOptionsCONTAINS\"FALSE_STATEMENT\""
-            );
+            )
+            .label("noRentArrearsOptions-saveAndResume", SAVE_AND_RETURN_HTML);
     }
 
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,

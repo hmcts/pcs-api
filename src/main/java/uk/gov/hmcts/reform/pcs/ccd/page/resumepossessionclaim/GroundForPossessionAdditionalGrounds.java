@@ -4,6 +4,8 @@ import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 
+import static uk.gov.hmcts.reform.pcs.ccd.common.MultiPageLabel.SAVE_AND_RETURN_HTML;
+
 /**
  * Page for selecting additional grounds for possession.
  */
@@ -27,6 +29,7 @@ public class GroundForPossessionAdditionalGrounds implements CcdPageConfiguratio
             """)
             .mandatory(PCSCase::getMandatoryGrounds)
             .mandatory(PCSCase::getDiscretionaryGrounds)
+            .label("groundForPossessionAdditionalGrounds-saveAndResume", SAVE_AND_RETURN_HTML)
             .done();
     }
 }
