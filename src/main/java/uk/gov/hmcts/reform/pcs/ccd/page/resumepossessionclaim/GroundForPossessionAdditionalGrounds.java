@@ -16,8 +16,7 @@ public class GroundForPossessionAdditionalGrounds implements CcdPageConfiguratio
             .pageLabel("What are your grounds for possession?")
             .showCondition("hasOtherAdditionalGrounds=\"Yes\""
                            + " AND typeOfTenancyLicence=\"ASSURED_TENANCY\""
-                               + " AND groundsForPossession=\"Yes\""
-            )
+                           + " AND groundsForPossession=\"Yes\"")
             .label("groundForPossessionAdditionalGrounds-info", """
             ---
             <p class="govuk-body">You may have already given the defendants notice of your intention to begin
