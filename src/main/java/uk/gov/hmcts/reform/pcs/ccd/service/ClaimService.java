@@ -16,10 +16,11 @@ public class ClaimService {
     private final ClaimRepository claimRepository;
 
     public ClaimEntity createAndLinkClaim(PcsCaseEntity caseEntity, PartyEntity partyEntity,
-                                          String claimName, PartyRole role) {
+                                          String claimName, PartyRole role, Boolean costsClaimed) {
         ClaimEntity claim = ClaimEntity.builder()
             .summary(claimName)
             .pcsCase(caseEntity)
+            .costsClaimed(costsClaimed)
             .build();
 
         caseEntity.getClaims().add(claim);
