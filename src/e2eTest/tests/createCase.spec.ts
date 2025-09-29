@@ -26,7 +26,7 @@ import {reasonsForPossession} from '@data/page-data/reasonsForPossession.page.da
 import {moneyJudgment} from '@data/page-data/moneyJudgment.page.data';
 import {claimantCircumstances} from '@data/page-data/claimantCircumstances.page.data';
 import {user} from '@data/user-data/permanent.user.data';
-import {claimingCosts} from "@data/page-data/claimingCosts.page.data";
+import {claimingCosts} from '@data/page-data/claimingCosts.page.data';
 
 test.beforeEach(async ({page}, testInfo) => {
   initializeExecutor(page);
