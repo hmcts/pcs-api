@@ -25,6 +25,7 @@ module.exports = defineConfig({
         {
           resultsDir: 'allure-results',
           suiteTitle: false,
+          detail: true,
           environmentInfo: {
             os_version: process.version,
           },
