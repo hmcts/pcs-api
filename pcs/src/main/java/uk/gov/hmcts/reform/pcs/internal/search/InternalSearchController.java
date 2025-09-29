@@ -24,8 +24,12 @@ public class InternalSearchController {
         @RequestBody String jsonData
     ) {
         try {
-            CustomSearchRequest.PocRequest obj = CustomSearchRequest.parse(jsonData);
-            System.out.println(obj);
+            String convertedSql = CustomSearchRequest.parse(jsonData);
+            System.out.println(convertedSql);
+
+            //exec query on db
+            //return CaseSearchResult
+
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

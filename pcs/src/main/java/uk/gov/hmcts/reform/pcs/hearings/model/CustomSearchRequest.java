@@ -39,7 +39,7 @@ public class CustomSearchRequest {
     }
 
     //methods
-    public static PocRequest parse(String json) throws IOException {
+    public static String parse(String json) throws IOException {
         ObjectMapper mapper = new ObjectMapper();
         JsonNode root = mapper.readTree(json);
 
@@ -111,7 +111,7 @@ public class CustomSearchRequest {
             req.nativeEsQuery = nq;
         }
 
-        return req;
+        return convertToSql(req);
     }
 
     private static Optional<String> firstFieldName(JsonNode obj) {
@@ -121,6 +121,12 @@ public class CustomSearchRequest {
 
     private static String textOrNull(JsonNode n) {
         return n.isTextual() ? n.asText() : null;
+    }
+
+    private static String convertToSql(CustomSearchRequest.PocRequest req) {
+        String converted = req.nativeEsQuery.boolQuery.mustMatches.getFirst().query;
+        return "SELECT * FROM public.pcs_case\n" +
+            "ORDER BY id ASC ";
     }
 }
 
