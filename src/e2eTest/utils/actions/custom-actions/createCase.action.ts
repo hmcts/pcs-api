@@ -18,6 +18,7 @@ import {caseApiData} from '@data/api-data/case.api.data';
 import {dailyRentAmount} from '@data/page-data/dailyRentAmount.page.data';
 import {reasonsForPossession} from '@data/page-data/reasonsForPossession.page.data';
 import {detailsOfRentArrears} from '@data/page-data/detailsOfRentArrears.page.data';
+import {applications} from "@data/page-data/applications.page.data";
 
 
 export let caseInfo: { id: string; fid: string; state: string };
@@ -394,7 +395,7 @@ export class CreateCaseAction implements IAction {
 
   private async selectApplications(option: actionData) {
     await performAction('clickRadioButton', option);
-    await performAction('clickButton', 'Continue');
+    await performAction('clickButton', applications.continue);
   }
 
   private async selectJurisdictionCaseTypeEvent() {
