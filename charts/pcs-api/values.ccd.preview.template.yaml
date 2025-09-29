@@ -86,7 +86,7 @@ ccd:
               alias: DEFINITION_STORE_IDAM_KEY
   ccd-data-store-api:
     java:
-      image: 'hmctspublic.azurecr.io/ccd/data-store-api:pr-2496'
+      image: 'hmctspublic.azurecr.io/ccd/data-store-api:pr-2496-3d224a7-20250925055806'
       imagePullPolicy: Always
       devmemoryRequests: '1524Mi'
       devmemoryLimits: '2048Mi'
