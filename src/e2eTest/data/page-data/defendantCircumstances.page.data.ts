@@ -5,7 +5,7 @@ export const defendantCircumstances =
     defendantCircumstancesInfo: 'Is there any information you\'d like to provide about defendants\' circumstances?',
     yes: 'Yes',
     no: 'No',
-    defendantsCircumstancesLabel: 'Give details about defendants\' circumstances',
+    defendantsCircumstancesLabel: 'Give details about the defendants\' circumstances',
     defendantsCircumstancesSampleData: 'Sample Test input data',
     continue: 'Continue',
   }
