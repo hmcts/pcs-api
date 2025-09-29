@@ -151,9 +151,6 @@ class CCDCaseRepositoryTest {
 
     @Test
     void shouldSetPageHeadingMarkdownWhenCaseIsRetrieved() {
-        // Given
-        when(pcsCaseEntity.getPaymentStatus()).thenReturn(PaymentStatus.UNPAID);
-
         // When
         PCSCase pcsCase = underTest.getCase(CASE_REFERENCE, STATE);
 
