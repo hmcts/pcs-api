@@ -11,6 +11,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantCircumstances;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PaymentStatus;
@@ -193,6 +194,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
         // Given
         PCSCase caseData = PCSCase.builder()
             .legislativeCountry(WALES)
+            .claimantCircumstances(mock(ClaimantCircumstances.class))
             .build();
 
         when(userDetails.getUid()).thenReturn(UUID.randomUUID().toString());
@@ -219,6 +221,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
         String claimantName = "Test Claimant";
         String claimantContactEmail = "claimant@test.com";
         String claimantContactPhoneNumber = "01234 567890";
+        String claimantCircumstances = "Some circumstances";
 
         UUID userId = UUID.randomUUID();
         when(userDetails.getUid()).thenReturn(userId.toString());
@@ -234,6 +237,9 @@ class ResumePossessionClaimTest extends BaseEventTest {
             .claimantName(claimantName)
             .claimantContactEmail(claimantContactEmail)
             .claimantContactPhoneNumber(claimantContactPhoneNumber)
+            .claimantCircumstances(ClaimantCircumstances.builder()
+                                       .claimantCircumstancesDetails(claimantCircumstances)
+                                       .build())
             .build();
 
         // When
@@ -266,6 +272,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
             .thenReturn(claimEntity);
 
         PCSCase caseData = mock(PCSCase.class);
+        when(caseData.getClaimantCircumstances()).thenReturn(mock(ClaimantCircumstances.class));
 
         // When
         callSubmitHandler(caseData);
