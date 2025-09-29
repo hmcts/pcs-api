@@ -54,7 +54,8 @@ export class CreateCaseAction implements IAction {
       ['provideRentDetails', () => this.provideRentDetails(fieldName)],
       ['selectDailyRentAmount', () => this.selectDailyRentAmount(fieldName)],
       ['provideDetailsOfRentArrears', () => this.provideDetailsOfRentArrears(fieldName)],
-      ['selectClaimForMoney', () => this.selectClaimForMoney(fieldName)]
+      ['selectClaimForMoney', () => this.selectClaimForMoney(fieldName)],
+      ['selectApplications', () => this.selectApplications(fieldName)]
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) throw new Error(`No action found for '${action}'`);
@@ -387,6 +388,11 @@ export class CreateCaseAction implements IAction {
   }
 
   private async selectClaimForMoney(option: actionData) {
+    await performAction('clickRadioButton', option);
+    await performAction('clickButton', 'Continue');
+  }
+
+  private async selectApplications(option: actionData) {
     await performAction('clickRadioButton', option);
     await performAction('clickButton', 'Continue');
   }
