@@ -24,7 +24,7 @@ test.beforeEach(async ({page}, testInfo) => {
 //Skipping these tests until create case journey is fully developed because tests may fail each time when payload changes for create case API
 test.describe.skip('[Search case by case number] @PR @Master @nightly', () => {
   test('Search for case via caselist', async ({}) => {
-    await performAction('searchCaseById', caseInfo.id);
+    await performAction('searchCaseFromCaseList', caseInfo.id);
     await performValidation(
       'visibility',
       'caseNumber',
@@ -32,7 +32,7 @@ test.describe.skip('[Search case by case number] @PR @Master @nightly', () => {
     );
   });
   test('Search for case via find case', async ({}) => {
-    await performAction('searchCaseById', caseInfo.id);
+    await performAction('searchCaseFromCaseList', caseInfo.id);
     await performValidation(
       'visibility',
       'caseNumber',
