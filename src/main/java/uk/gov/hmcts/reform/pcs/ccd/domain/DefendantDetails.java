@@ -22,10 +22,10 @@ public class DefendantDetails {
     @CCD(label = "Do you know the defendant's name?")
     private VerticalYesNo nameKnown;
 
-    @CCD(label = "Defendant's first name", showCondition = "nameKnown=\"YES\"")
+    @CCD(label = "Defendant's first name")
     private String firstName;
 
-    @CCD(label = "Defendant's last name", showCondition = "nameKnown=\"YES\"")
+    @CCD(label = "Defendant's last name")
     private String lastName;
 
     @CCD(label = """
@@ -40,10 +40,10 @@ public class DefendantDetails {
     private VerticalYesNo addressKnown;
 
     @CCD(label = "Is the defendant's correspondence address the same as the address of the property"
-        + " you're claiming possession of?", showCondition = "addressKnown=\"YES\"")
+        + " you're claiming possession of?")
     private VerticalYesNo addressSameAsPossession;
 
-    @CCD(label = "Enter address details", showCondition = "addressKnown=\"YES\" AND addressSameAsPossession=\"NO\"")
+    @CCD(label = "Enter address details")
     private AddressUK correspondenceAddress;
 
     @CCD(label = """
@@ -54,7 +54,7 @@ public class DefendantDetails {
     @CCD(label = "Do you know the defendant's email address?")
     private VerticalYesNo emailKnown;
 
-    @CCD(label = "Enter email address",  typeOverride = FieldType.Email, showCondition = "emailKnown=\"YES\"")
+    @CCD(label = "Enter email address",  typeOverride = FieldType.Email)
     private String email;
 
 }
