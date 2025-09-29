@@ -9,6 +9,7 @@ import {CreateCaseAction} from "@utils/actions/custom-actions/createCase.action"
 import {ClickButtonAction} from "../actions/element-actions/clickButton.action";
 import {ClickRadioButton} from "../actions/element-actions/clickRadioButton.action";
 import {UploadFileAction} from "@utils/actions/element-actions/uploadFile.action";
+import {searchCaseActions} from "@utils/actions/custom-actions/searchCase.action";
 
 export class ActionRegistry {
   private static actions: Map<string, IAction> = new Map([
@@ -50,7 +51,8 @@ export class ActionRegistry {
     ['provideRentDetails', new CreateCaseAction()],
     ['selectDailyRentAmount', new CreateCaseAction()],
     ['provideDetailsOfRentArrears', new CreateCaseAction()],
-    ['selectClaimForMoney', new CreateCaseAction()]
+    ['selectClaimForMoney', new CreateCaseAction()],
+    ['searchCaseById', new searchCaseActions()]
   ]);
 
   static getAction(actionName: string): IAction {
