@@ -404,7 +404,7 @@ export class CreateCaseAction implements IAction {
   private async selectDefendantCircumstances(defendantDetails: actionData) {
     await performAction('clickRadioButton', defendantDetails);
     if(defendantDetails == defendantCircumstances.yes){
-      await performAction('inputText', defendantCircumstances.defendantsCircumstancesLabel, defendantCircumstances.defendantsCircumstancesSampleData);
+      await performAction('inputText', defendantCircumstances.defendantCircumstancesLabel, defendantCircumstances.defendantCircumstancesSampleData);
     }
     await performAction('clickButton', defendantCircumstances.continue);
   }
