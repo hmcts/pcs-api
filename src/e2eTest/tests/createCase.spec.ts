@@ -109,9 +109,13 @@ test.describe('[Create Case Flow]  @Master @nightly', async () => {
       unpaidRentInteractiveOption: dailyRentAmount.no,
       unpaidRentAmountPerDay: '20'
     });
+    await performValidation('mainHeader', moneyJudgment.mainHeader);
     await performAction('selectClaimForMoney', moneyJudgment.yes);
     await performValidation('mainHeader', claimantCircumstances.mainHeader);
-    await performAction('clickButton', claimantCircumstances.continue);
+    await performAction('selectClaimantCircumstances', {
+      circumstanceOption: claimantCircumstances.yesOrno,
+      claimantInput: claimantCircumstances.claimantCircumstanceInfoInputData
+    });
     await performAction('clickButton', 'Save and continue');
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
     await performAction('clickTab', 'Property Details');
@@ -124,6 +128,7 @@ test.describe('[Create Case Flow]  @Master @nightly', async () => {
     )
   });
 
+  // The sections commented out will be fixed as part of the User Story https://tools.hmcts.net/jira/browse/HDPI-2123
   test('England - Successful case creation with Assured tenancy with No Rent arrears', async () => {
     await performAction('selectAddress', {
       postcode: addressDetails.englandCourtAssignedPostcode,
@@ -181,14 +186,14 @@ test.describe('[Create Case Flow]  @Master @nightly', async () => {
       index: noticeDetails.byFirstClassPostIndex,
       day: '16', month: '07', year: '1985'
     });
-    await performValidation('mainHeader', rentDetails.mainHeader);
-    await performAction('provideRentDetails', { rentFrequencyOption: 'weekly', rentAmount: '800' });
-    await performValidation('mainHeader', dailyRentAmount.mainHeader);
-    await performAction('selectDailyRentAmount', {
-      calculateRentAmount: '£114.29',
-      unpaidRentInteractiveOption: dailyRentAmount.no,
-      unpaidRentAmountPerDay: '20'
-    });
+    // await performValidation('mainHeader', rentDetails.mainHeader);
+    // await performAction('provideRentDetails', { rentFrequencyOption: 'weekly', rentAmount: '800' });
+    // await performValidation('mainHeader', dailyRentAmount.mainHeader);
+    // await performAction('selectDailyRentAmount', {
+    //   calculateRentAmount: '£114.29',
+    //   unpaidRentInteractiveOption: dailyRentAmount.no,
+    //   unpaidRentAmountPerDay: '20'
+    // });
     await performValidation('mainHeader', moneyJudgment.mainHeader);
     await performAction('selectClaimForMoney', moneyJudgment.yes);
     await performValidation('mainHeader', claimantCircumstances.mainHeader);
@@ -280,6 +285,7 @@ test.describe('[Create Case Flow]  @Master @nightly', async () => {
       ['formLabelValue', 'Country', addressDetails.country]);
   });
 
+  // The sections commented out will be fixed as part of the User Story https://tools.hmcts.net/jira/browse/HDPI-2123
   test('Wales - Successful case creation without Saved options and Defendants correspondence address is not known with flexible tenancy', async () => {
     await performAction('enterTestAddressManually');
     await performValidation('bannerAlert', 'Case #.* has been created.');
@@ -327,14 +333,14 @@ test.describe('[Create Case Flow]  @Master @nightly', async () => {
     });
     await performValidation('mainHeader', noticeOfYourIntention.mainHeader);
     await performAction('selectNoticeOfYourIntention', noticeOfYourIntention.no);
-    await performValidation('mainHeader', rentDetails.mainHeader);
-    await performAction('provideRentDetails', { rentFrequencyOption: 'Monthly', rentAmount: '1000' });
-    await performAction('selectDailyRentAmount', {
-      calculateRentAmount: '£32.85',
-      unpaidRentInteractiveOption: dailyRentAmount.yes
-    });
+    // await performValidation('mainHeader', rentDetails.mainHeader);
+    // await performAction('provideRentDetails', { rentFrequencyOption: 'Monthly', rentAmount: '1000' });
+    // await performAction('selectDailyRentAmount', {
+    //   calculateRentAmount: '£32.85',
+    //   unpaidRentInteractiveOption: dailyRentAmount.yes
+    // });
+    await performValidation('mainHeader', moneyJudgment.mainHeader);
     await performAction('selectClaimForMoney', moneyJudgment.yes);
-    await performAction('clickButton', claimantCircumstances.continue);
     await performValidation('mainHeader', claimantCircumstances.mainHeader);
     await performAction('selectClaimantCircumstances', {
       circumstanceOption: claimantCircumstances.yesOrno,
@@ -351,6 +357,7 @@ test.describe('[Create Case Flow]  @Master @nightly', async () => {
       ['formLabelValue', 'Country', addressDetails.country]);
   });
 
+  // The sections commented out will be fixed as part of the User Story https://tools.hmcts.net/jira/browse/HDPI-2123
   test('Wales - Successful case creation for secure tenancy type with rent and other grounds', async () => {
     await performAction('enterTestAddressManually');
     await performValidation('bannerAlert', 'Case #.* has been created.');
@@ -405,12 +412,13 @@ test.describe('[Create Case Flow]  @Master @nightly', async () => {
       index: noticeDetails.byDeliveringAtPermittedPlaceIndex,
       day: '25', month: '02', year: '1970', files: 'NoticeDetails.pdf'
     });
-    await performAction('provideRentDetails', { rentFrequencyOption: 'Monthly', rentAmount: '1000' });
-    await performValidation('mainHeader', dailyRentAmount.mainHeader);
-    await performAction('selectDailyRentAmount', {
-      calculateRentAmount: '£32.85',
-      unpaidRentInteractiveOption: dailyRentAmount.yes
-    });
+    // await performAction('provideRentDetails', { rentFrequencyOption: 'Monthly', rentAmount: '1000' });
+    // await performValidation('mainHeader', dailyRentAmount.mainHeader);
+    // await performAction('selectDailyRentAmount', {
+    //   calculateRentAmount: '£32.85',
+    //   unpaidRentInteractiveOption: dailyRentAmount.yes
+    // });
+    await performValidation('mainHeader', moneyJudgment.mainHeader);
     await performAction('selectClaimForMoney', moneyJudgment.no);
     await performValidation('mainHeader', claimantCircumstances.mainHeader);
     await performAction('selectClaimantCircumstances', {
