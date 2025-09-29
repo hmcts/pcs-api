@@ -342,7 +342,7 @@ class PcsCaseServiceTest {
 
         // Then
         assertThat(result).hasSize(1);
-        Defendant mappedDefendant = result.get(0);
+        Defendant mappedDefendant = result.getFirst();
 
         assertThat(mappedDefendant.getId()).isEqualTo("123");
         assertThat(mappedDefendant.getNameKnown()).isTrue();
@@ -373,7 +373,7 @@ class PcsCaseServiceTest {
         List<ListValue<DefendantDetails>> result = underTest.mapToDefendantDetails(List.of(defendant));
 
         // Then
-        ListValue<DefendantDetails> listValue = result.get(0);
+        ListValue<DefendantDetails> listValue = result.getFirst();
         DefendantDetails mappedDefendantDetails = listValue.getValue();
 
         assertThat(result).hasSize(1);
@@ -412,7 +412,7 @@ class PcsCaseServiceTest {
         underTest.clearHiddenDefendantDetailsFields(defendantsList);
 
         // Then
-        DefendantDetails clearedDefendant = defendantsList.get(0).getValue();
+        DefendantDetails clearedDefendant = defendantsList.getFirst().getValue();
         assertThat(clearedDefendant.getFirstName()).isNull();
         assertThat(clearedDefendant.getLastName()).isNull();
         assertThat(clearedDefendant.getCorrespondenceAddress()).isNull();
