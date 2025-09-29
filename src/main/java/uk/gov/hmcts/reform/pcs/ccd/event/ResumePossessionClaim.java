@@ -26,6 +26,7 @@ import uk.gov.hmcts.reform.pcs.ccd.page.builder.SavingPageBuilderFactory;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.AdditionalReasonsForPossession;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.ClaimantCircumstances;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.ClaimingCosts;
+import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.EntitledToClaimRelief;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.MoneyJudgment;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.RentArrearsOrBreachOfTenancyGround;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.SecureOrFlexibleGroundsForPossession;
@@ -132,7 +133,8 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             .add(new MoneyJudgment())
             .add(new ClaimantCircumstances())
             .add(new ClaimingCosts())
-            .add(new AdditionalReasonsForPossession());
+            .add(new AdditionalReasonsForPossession())
+            .add(new EntitledToClaimRelief());
 
     }
 
