@@ -43,7 +43,7 @@ class BaseEventTest {
         CCDConfig<PCSCase, State, UserRole> eventConfig) {
 
         ConfigBuilderImpl<PCSCase, State, UserRole> configBuilder = createConfigBuilder();
-        eventConfig.configure(configBuilder);
+        eventConfig.configureDecentralised(configBuilder);
         return configBuilder.build();
     }
 
