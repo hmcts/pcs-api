@@ -18,7 +18,7 @@ import {caseApiData} from '@data/api-data/case.api.data';
 import {dailyRentAmount} from '@data/page-data/dailyRentAmount.page.data';
 import {reasonsForPossession} from '@data/page-data/reasonsForPossession.page.data';
 import {detailsOfRentArrears} from '@data/page-data/detailsOfRentArrears.page.data';
-import {claimingCosts} from "@data/page-data/claimingCosts.page.data";
+import {claimingCosts} from '@data/page-data/claimingCosts.page.data';
 
 
 export let caseInfo: { id: string; fid: string; state: string };
