@@ -24,13 +24,9 @@ export class VisibilityValidation implements IValidation {
   }
 
   private async waitUntilElementDisappears(element: Locator): Promise<void> {
-    try {
-      await element.waitFor({state: 'hidden', timeout: 10000});
-    } catch (e) {
-      const elements = await element.all();
-      for (const element of elements) {
-        await element.waitFor({state: 'hidden', timeout: 10000});
-      }
-    }
+    const elements = await element.all();
+    await Promise.all(
+      elements.map(el => el.waitFor({ state: 'hidden', timeout: 10000 }))
+    );
   }
 }
