@@ -10,8 +10,8 @@ import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.FieldType;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
-import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseworkerReadAccess;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenAccess;
 import uk.gov.hmcts.reform.pcs.ccd.domain.model.NoRentArrearsReasonForGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
@@ -565,5 +565,30 @@ public class PCSCase {
     @JsonUnwrapped
     @CCD(access = {CitizenAccess.class})
     private NoRentArrearsReasonForGrounds noRentArrearsReasonForGrounds;
+
+    @CCD(
+        label = "In the alternative to possession, would you like to claim suspension of right to buy"
+            + " or demotion of tenancy",
+        hint = "Select all that apply",
+        typeOverride = MultiSelectList,
+        typeParameterOverride = "AlternativeToPossession",
+        access = {CitizenAccess.class}
+    )
+    private Set<AlternativeToPossession> alternativesToPossession;
+
+    @CCD(
+        label = "Which section of the Housing Act is the suspension of right to buy claim made under?",
+        access = {CitizenAccess.class}
+    )
+    private HousingAct housingActs;
+
+    @CCD(
+        label = "Why are you requesting a suspension order?",
+        hint = "Give details of the defendants' conduct and any other reasons you thing are relevant. You can enter "
+            + "up to 250 characters",
+        typeOverride = TextArea,
+        max = 250
+    )
+    private String reasonForSuspensionOrder;
 
 }
