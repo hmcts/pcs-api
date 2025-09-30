@@ -4,33 +4,43 @@ import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.jupiter.api.Test;
 
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 
 class YesOrNoBooleanTest {
 
     @Test
-    void shouldReturnTrueForYes() {
-        // When
+    void shouldReturnTrueWhenYesOrNoIsYes() {
         Boolean result = YesOrNoToBoolean.convert(YesOrNo.YES);
-
-        // Then
         assertThat(result).isTrue();
     }
 
     @Test
-    void shouldReturnFalseForNo() {
-        // When
+    void shouldReturnFalseWhenYesOrNoIsNo() {
         Boolean result = YesOrNoToBoolean.convert(YesOrNo.NO);
-
-        // Then
         assertThat(result).isFalse();
     }
 
     @Test
-    void shouldReturnNullForNull() {
-        // When
-        Boolean result = YesOrNoToBoolean.convert(null);
+    void shouldReturnNullWhenYesOrNoIsNull() {
+        Boolean result = YesOrNoToBoolean.convert((YesOrNo) null);
+        assertThat(result).isNull();
+    }
 
-        // Then
+    @Test
+    void shouldReturnTrueWhenVerticalYesNoIsYes() {
+        Boolean result = YesOrNoToBoolean.convert(VerticalYesNo.YES);
+        assertThat(result).isTrue();
+    }
+
+    @Test
+    void shouldReturnFalseWhenVerticalYesNoIsNo() {
+        Boolean result = YesOrNoToBoolean.convert(VerticalYesNo.NO);
+        assertThat(result).isFalse();
+    }
+
+    @Test
+    void shouldReturnNullWhenVerticalYesNoIsNull() {
+        Boolean result = YesOrNoToBoolean.convert((VerticalYesNo) null);
         assertThat(result).isNull();
     }
 }
