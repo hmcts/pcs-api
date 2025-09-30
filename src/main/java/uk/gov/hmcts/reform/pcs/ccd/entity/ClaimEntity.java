@@ -58,6 +58,8 @@ public class ClaimEntity {
     private String summary;
     
     private Boolean applicationWithClaim;
+    
+    private String completionNextStep;
 
     public void addParty(PartyEntity party, PartyRole partyRole) {
         ClaimPartyEntity claimPartyEntity = ClaimPartyEntity.builder()
