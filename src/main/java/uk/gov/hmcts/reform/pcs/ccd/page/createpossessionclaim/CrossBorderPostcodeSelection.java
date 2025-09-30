@@ -114,7 +114,7 @@ public class CrossBorderPostcodeSelection implements CcdPageConfiguration {
                 caseData.setPostcodeNotAssignedView(view);
             }
             default -> {
-                //TODO
+                //TODO: HDPI-1838 will handle multiple matches
                 throw new EligibilityCheckException(
                     String.format(
                         "Unexpected eligibility status: %s for postcode %s and country %s",

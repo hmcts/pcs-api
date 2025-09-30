@@ -4,7 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CCDConfig;
-import uk.gov.hmcts.ccd.sdk.api.ConfigBuilder;
+import uk.gov.hmcts.ccd.sdk.api.DecentralisedConfigBuilder;
 import uk.gov.hmcts.ccd.sdk.api.EventPayload;
 import uk.gov.hmcts.ccd.sdk.api.Permission;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
@@ -24,7 +24,7 @@ public class CitizenCreateApplication implements CCDConfig<PCSCase, State, UserR
     private final PcsCaseService pcsCaseService;
 
     @Override
-    public void configure(final ConfigBuilder<PCSCase, State, UserRole> configBuilder) {
+    public void configureDecentralised(final DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
         configBuilder
             .decentralisedEvent(citizenCreateApplication.name(), this::submit)
             .initialState(AWAITING_SUBMISSION_TO_HMCTS)
