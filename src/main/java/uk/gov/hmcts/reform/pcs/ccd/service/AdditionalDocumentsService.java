@@ -15,7 +15,9 @@ public class AdditionalDocumentsService {
 
     /** Prefill a type for any row that doesn't have one yet. */
     public void applyDefaultType(PCSCase data) {
-        if (data == null || data.getAdditionalDocuments() == null) return;
+        if (data == null || data.getAdditionalDocuments() == null) {
+            return;
+        }
 
         for (ListValue<AdditionalDocument> lv : data.getAdditionalDocuments()) {
             AdditionalDocument doc = lv != null ? lv.getValue() : null;

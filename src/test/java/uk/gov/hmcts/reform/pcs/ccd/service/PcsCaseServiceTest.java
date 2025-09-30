@@ -480,7 +480,8 @@ class PcsCaseServiceTest {
         // Given
         PCSCase pcsCase = mock(PCSCase.class);
         String expectedDescription = "Test document description";
-        AdditionalDocument additionalDocument = createTestAdditionalDocument(expectedDescription, AdditionalDocumentType.RENT_STATEMENT);
+        AdditionalDocument additionalDocument = createTestAdditionalDocument(
+                expectedDescription, AdditionalDocumentType.RENT_STATEMENT);
         List<ListValue<AdditionalDocument>> additionalDocuments = List.of(
             ListValue.<AdditionalDocument>builder().id("1").value(additionalDocument).build()
         );
@@ -568,8 +569,10 @@ class PcsCaseServiceTest {
     }
 
     private List<ListValue<AdditionalDocument>> createTestAdditionalDocuments() {
-        AdditionalDocument document1 = createTestAdditionalDocument("Rent receipt for January 2025", AdditionalDocumentType.RENT_STATEMENT);
-        AdditionalDocument document2 = createTestAdditionalDocument("Tenancy agreement document", AdditionalDocumentType.TENANCY_AGREEMENT);
+        AdditionalDocument document1 = createTestAdditionalDocument(
+                "Rent receipt for January 2025", AdditionalDocumentType.RENT_STATEMENT);
+        AdditionalDocument document2 = createTestAdditionalDocument(
+                "Tenancy agreement document", AdditionalDocumentType.TENANCY_AGREEMENT);
         
         return List.of(
             ListValue.<AdditionalDocument>builder().id("1").value(document1).build(),
@@ -578,9 +581,12 @@ class PcsCaseServiceTest {
     }
 
     private List<ListValue<AdditionalDocument>> createMultipleTestDocuments() {
-        AdditionalDocument document1 = createTestAdditionalDocument("Rent receipt for January 2025", AdditionalDocumentType.RENT_STATEMENT);
-        AdditionalDocument document2 = createTestAdditionalDocument("Tenancy agreement document", AdditionalDocumentType.TENANCY_AGREEMENT);
-        AdditionalDocument document3 = createTestAdditionalDocument("Witness statement document", AdditionalDocumentType.WITNESS_STATEMENT);
+        AdditionalDocument document1 = createTestAdditionalDocument(
+                "Rent receipt for January 2025", AdditionalDocumentType.RENT_STATEMENT);
+        AdditionalDocument document2 = createTestAdditionalDocument(
+                "Tenancy agreement document", AdditionalDocumentType.TENANCY_AGREEMENT);
+        AdditionalDocument document3 = createTestAdditionalDocument(
+                "Witness statement document", AdditionalDocumentType.WITNESS_STATEMENT);
         
         return List.of(
             ListValue.<AdditionalDocument>builder().id("1").value(document1).build(),

@@ -15,11 +15,13 @@ public class UploadAdditionalDocumentsDetails implements CcdPageConfiguration {
 
             // ---------- Horizontal separator ----------
             .label("uploadAdditionalDocuments-separator", "---")
-            .label("uploadAdditionalDocuments-separator-help",
-                   """
-                   <p class="govuk-body govuk-!-font-size-19">You must select the type of document you're uploading and give it a short description.</p>
-                   """
-            )
+                .label("uploadAdditionalDocuments-separator-help",
+                       """
+                       <p class="govuk-body govuk-!-font-size-19">
+                       You must select the type of document you're uploading and give it a short description.
+                       </p>
+                       """
+                )
             .label("uploadAdditionalDocuments-heading",
                    """
                    <h2>Before you upload your documents</h2>

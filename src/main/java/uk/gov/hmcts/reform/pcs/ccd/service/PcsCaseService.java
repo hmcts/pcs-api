@@ -215,8 +215,8 @@ public class PcsCaseService {
     }
 
     /**
-     * Builds party documents from PCSCase additionalDocuments field
-     * Maps from CCD domain model to service DTO
+     * Builds party documents from PCSCase additionalDocuments field.
+     * Maps from CCD domain model to service DTO.
      */
     public List<PartyDocumentDto> buildPartyDocuments(PCSCase pcsCase) {
         return ListValueUtils.unwrapListItems(pcsCase.getAdditionalDocuments())
@@ -226,10 +226,11 @@ public class PcsCaseService {
     }
 
     /**
-     * Maps AdditionalDocument to PartyDocumentDto
-     * Only includes essential fields: description, documentType, document
+     * Maps AdditionalDocument to PartyDocumentDto.
+     * Only includes essential fields: description, documentType, document.
      */
-    private PartyDocumentDto mapAdditionalDocumentToPartyDocument(uk.gov.hmcts.reform.pcs.ccd.domain.AdditionalDocument additionalDocument) {
+    private PartyDocumentDto mapAdditionalDocumentToPartyDocument(
+            uk.gov.hmcts.reform.pcs.ccd.domain.AdditionalDocument additionalDocument) {
         return PartyDocumentDto.builder()
                 .description(additionalDocument.getDescription())
                 .documentType(additionalDocument.getDocumentType())
