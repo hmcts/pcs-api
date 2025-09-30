@@ -112,7 +112,6 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
 
         savingPageBuilderFactory.create(eventBuilder)
             .add(resumeClaim)
-            .add(new CompletingYourClaim())
             .add(new SelectClaimantType())
             .add(new ClaimantTypeNotEligibleEngland())
             .add(new ClaimantTypeNotEligibleWales())
@@ -142,8 +141,8 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             .add(new ClaimantCircumstances())
             .add(new GeneralApplication())
             .add(new CompletingYourClaim())
-            .add(new StatementOfTruth())
-            .add(new uk.gov.hmcts.reform.pcs.ccd.page.makeaclaim.CheckYourAnswers());
+            .add(new StatementOfTruth());
+
     }
 
     private PCSCase start(EventPayload<PCSCase, State> eventPayload) {
