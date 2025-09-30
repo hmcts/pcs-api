@@ -41,6 +41,8 @@ import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ClaimantTypeNotEli
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ClaimantTypeNotEligibleWales;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ContactPreferences;
 import uk.gov.hmcts.reform.pcs.ccd.page.makeaclaim.CompletingYourClaim;
+import uk.gov.hmcts.reform.pcs.ccd.page.makeaclaim.StatementOfTruth;
+import uk.gov.hmcts.reform.pcs.ccd.page.makeaclaim.CheckYourAnswers;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.DailyRentAmount;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.DefendantsDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.GeneralApplication;
@@ -64,6 +66,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.UnsubmittedCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 import uk.gov.hmcts.reform.pcs.ccd.utils.YesOrNoToBoolean;
+import uk.gov.hmcts.reform.pcs.ccd.utils.CompletionNextStepToString;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
@@ -139,7 +142,9 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             .add(new MoneyJudgment())
             .add(new ClaimantCircumstances())
             .add(new GeneralApplication())
-            .add(new CompletingYourClaim());
+            .add(new CompletingYourClaim())
+            .add(new StatementOfTruth())
+            .add(new CheckYourAnswers());
     }
 
     private PCSCase start(EventPayload<PCSCase, State> eventPayload) {
@@ -226,6 +231,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             PartyRole.CLAIMANT);
 
         claimEntity.setApplicationWithClaim(YesOrNoToBoolean.convert(pcsCase.getApplicationWithClaim()));
+        claimEntity.setCompletionNextStep(CompletionNextStepToString.convert(pcsCase.getCompletionNextStep()));
 
         List<ClaimGroundEntity> claimGroundEntities =
             claimGroundService.getGroundsWithReason(pcsCase);
