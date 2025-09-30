@@ -4,7 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CCDConfig;
-import uk.gov.hmcts.ccd.sdk.api.ConfigBuilder;
+import uk.gov.hmcts.ccd.sdk.api.DecentralisedConfigBuilder;
 import uk.gov.hmcts.ccd.sdk.api.Event.EventBuilder;
 import uk.gov.hmcts.ccd.sdk.api.EventPayload;
 import uk.gov.hmcts.ccd.sdk.api.Permission;
@@ -94,7 +94,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
     private final DefendantsDetails defendantsDetails;
 
     @Override
-    public void configure(ConfigBuilder<PCSCase, State, UserRole> configBuilder) {
+    public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
         EventBuilder<PCSCase, UserRole, State> eventBuilder =
             configBuilder
                 .decentralisedEvent(resumePossessionClaim.name(), this::submit, this::start)
