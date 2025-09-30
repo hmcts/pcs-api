@@ -13,9 +13,9 @@ public class StatementOfTruth implements CcdPageConfiguration {
             .showCondition("completionNextStep=\"SUBMIT_AND_PAY_NOW\"")
 
             // ---------- Horizontal separator ----------
-            .label("statement-of-truth-separator", "---")
+            .label("statementOfTruth-separator", "---")
             .label(
-                "statement-of-truth-content",
+                "statementOfTruth-content",
                 """
                 <h2 class="govuk-heading-l">Statement of truth</h2>
                 <p class="govuk-body govuk-!-font-size-19">
