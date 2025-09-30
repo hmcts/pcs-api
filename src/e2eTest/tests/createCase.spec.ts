@@ -113,7 +113,7 @@ test.describe('[Create Case Flow]  @Master @nightly', async () => {
     await performAction('selectClaimForMoney', moneyJudgment.yes);
     await performValidation('mainHeader', claimantCircumstances.mainHeader);
     await performAction('selectClaimantCircumstances', {
-      circumstanceOption: claimantCircumstances.yesOrno,
+      circumstanceOption: claimantCircumstances.yes,
       claimantInput: claimantCircumstances.claimantCircumstanceInfoInputData
     });
     await performAction('clickButton', 'Save and continue');
@@ -198,7 +198,7 @@ test.describe('[Create Case Flow]  @Master @nightly', async () => {
     await performAction('selectClaimForMoney', moneyJudgment.yes);
     await performValidation('mainHeader', claimantCircumstances.mainHeader);
     await performAction('selectClaimantCircumstances', {
-      circumstanceOption: claimantCircumstances.yesOrno,
+      circumstanceOption: claimantCircumstances.no,
       claimantInput: claimantCircumstances.claimantCircumstanceInfoInputData
     });
     await performAction('clickButton', 'Save and continue');
@@ -271,7 +271,7 @@ test.describe('[Create Case Flow]  @Master @nightly', async () => {
     await performAction('selectClaimForMoney', moneyJudgment.yes);
     await performValidation('mainHeader', claimantCircumstances.mainHeader);
     await performAction('selectClaimantCircumstances', {
-      circumstanceOption: claimantCircumstances.yesOrno,
+      circumstanceOption: claimantCircumstances.yes,
       claimantInput: claimantCircumstances.claimantCircumstanceInfoInputData
     });
     await performAction('clickButton', 'Save and continue');
@@ -343,7 +343,7 @@ test.describe('[Create Case Flow]  @Master @nightly', async () => {
     await performAction('selectClaimForMoney', moneyJudgment.yes);
     await performValidation('mainHeader', claimantCircumstances.mainHeader);
     await performAction('selectClaimantCircumstances', {
-      circumstanceOption: claimantCircumstances.yesOrno,
+      circumstanceOption: claimantCircumstances.no,
       claimantInput: claimantCircumstances.claimantCircumstanceInfoInputData
     });
     await performAction('clickButton', 'Save and continue');
@@ -422,7 +422,7 @@ test.describe('[Create Case Flow]  @Master @nightly', async () => {
     await performAction('selectClaimForMoney', moneyJudgment.no);
     await performValidation('mainHeader', claimantCircumstances.mainHeader);
     await performAction('selectClaimantCircumstances', {
-      circumstanceOption: claimantCircumstances.yesOrno,
+      circumstanceOption: claimantCircumstances.no,
       claimantInput: claimantCircumstances.claimantCircumstanceInfoInputData
     });
     await performAction('clickButton', 'Save and continue');

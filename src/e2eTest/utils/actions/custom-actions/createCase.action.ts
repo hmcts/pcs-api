@@ -388,11 +388,11 @@ export class CreateCaseAction implements IAction {
 
   private async selectClaimantCircumstances(claimantCircumstance: actionData) {
     const claimData = claimantCircumstance as {
-      circumstanceOption: string[],
+      circumstanceOption: string,
       claimantInput: string
     };
     const nameClaimant = claimantsName.substring(claimantsName.length - 1) == 's' ? `${claimantsName}'` : `${claimantsName}'s`;
-    const claimOption = this.getRandomArrayElement(claimData.circumstanceOption) as string;
+    const claimOption = claimData.circumstanceOption;
     await performAction('clickRadioButton', {
       question: claimantCircumstances.claimantCircumstanceInfo.replace("Claimants", nameClaimant),
       option: claimOption
