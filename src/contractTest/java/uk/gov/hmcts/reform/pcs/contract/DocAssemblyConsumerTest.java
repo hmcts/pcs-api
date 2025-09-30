@@ -71,8 +71,7 @@ public class DocAssemblyConsumerTest {
 
         String renditionLocation = response.jsonPath().getString("renditionOutputLocation");
 
-        assertThat(renditionLocation).isNotNull();
-        assertThat(renditionLocation).contains(RENDITION_OUTPUT_URL);
+        assertThat(renditionLocation).isEqualTo(RENDITION_OUTPUT_URL);
     }
 
     private DslPart createRequestDsl() {
