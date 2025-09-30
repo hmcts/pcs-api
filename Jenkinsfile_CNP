@@ -64,10 +64,6 @@ withPipeline(type, product, component) {
     setPerftestEnvVars()
   }
 
-  before("dockerbuild") {
-    return
-  }
-
   before('highleveldatasetup') {
     onPR{
       env.DEFINITION_STORE_URL_BASE = "https://ccd-definition-store-pcs-api-pr-${CHANGE_ID}.preview.platform.hmcts.net"
