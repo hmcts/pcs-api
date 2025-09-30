@@ -42,7 +42,6 @@ import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ClaimantTypeNotEli
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ContactPreferences;
 import uk.gov.hmcts.reform.pcs.ccd.page.makeaclaim.CompletingYourClaim;
 import uk.gov.hmcts.reform.pcs.ccd.page.makeaclaim.StatementOfTruth;
-import uk.gov.hmcts.reform.pcs.ccd.page.makeaclaim.CheckYourAnswers;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.DailyRentAmount;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.DefendantsDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.GeneralApplication;
@@ -144,7 +143,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             .add(new GeneralApplication())
             .add(new CompletingYourClaim())
             .add(new StatementOfTruth())
-            .add(new CheckYourAnswers());
+            .add(new uk.gov.hmcts.reform.pcs.ccd.page.makeaclaim.CheckYourAnswers());
     }
 
     private PCSCase start(EventPayload<PCSCase, State> eventPayload) {
