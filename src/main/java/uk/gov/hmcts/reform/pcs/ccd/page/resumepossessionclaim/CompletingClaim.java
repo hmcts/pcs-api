@@ -13,9 +13,9 @@ public class CompletingClaim implements CcdPageConfiguration {
             .pageLabel("Completing your claim")
 
             // ---------- Horizontal separator ----------
-            .label("completing-your-claim-separator", "---")
+            .label("completingYourClaim-separator", "---")
             .label(
-                "completing-your-claim-intro",
+                "completingYourClaim-intro",
                 """
                 <p class="govuk-body">
                   There are two options for what to do next:
