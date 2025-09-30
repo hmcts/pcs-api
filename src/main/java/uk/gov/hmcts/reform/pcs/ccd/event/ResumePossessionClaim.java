@@ -54,6 +54,7 @@ import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ResumeClaim;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.SelectClaimType;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.SelectClaimantType;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.TenancyLicenceDetails;
+import uk.gov.hmcts.reform.pcs.ccd.page.makeaclaim.CompletingYourClaim;
 import uk.gov.hmcts.reform.pcs.ccd.service.ClaimService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
@@ -106,6 +107,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
 
         savingPageBuilderFactory.create(eventBuilder)
             .add(resumeClaim)
+            .add(new CompletingYourClaim())
             .add(new SelectClaimantType())
             .add(new ClaimantTypeNotEligibleEngland())
             .add(new ClaimantTypeNotEligibleWales())
