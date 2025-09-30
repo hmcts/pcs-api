@@ -4,7 +4,7 @@ import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 
-public class CompletingClaim implements CcdPageConfiguration {
+public class CompletingYourClaim implements CcdPageConfiguration {
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
@@ -13,9 +13,9 @@ public class CompletingClaim implements CcdPageConfiguration {
             .pageLabel("Completing your claim")
 
             // ---------- Horizontal separator ----------
-            .label("completing-your-claim-separator", "---")
+            .label("completingYourClaim-separator", "---")
             .label(
-                "completing-your-claim-intro",
+                "completingYourClaim-intro",
                 """
                 <p class="govuk-body">
                   There are two options for what to do next:
