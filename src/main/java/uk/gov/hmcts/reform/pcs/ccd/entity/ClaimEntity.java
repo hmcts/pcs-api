@@ -62,9 +62,6 @@ public class ClaimEntity {
     
     private Boolean applicationWithClaim;
 
-    @Enumerated(EnumType.STRING)
-    private CompletionNextStep completionNextStep;
-
     public void addParty(PartyEntity party, PartyRole partyRole) {
         ClaimPartyEntity claimPartyEntity = ClaimPartyEntity.builder()
             .claim(this)
