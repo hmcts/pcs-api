@@ -65,7 +65,6 @@ import uk.gov.hmcts.reform.pcs.ccd.service.UnsubmittedCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 import uk.gov.hmcts.reform.pcs.ccd.utils.YesOrNoToBoolean;
-import uk.gov.hmcts.reform.pcs.ccd.utils.CompletionNextStepToString;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
@@ -229,7 +228,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             PartyRole.CLAIMANT);
 
         claimEntity.setApplicationWithClaim(YesOrNoToBoolean.convert(pcsCase.getApplicationWithClaim()));
-        claimEntity.setCompletionNextStep(CompletionNextStepToString.convert(pcsCase.getCompletionNextStep()));
+        claimEntity.setCompletionNextStep(pcsCase.getCompletionNextStep() != null ? pcsCase.getCompletionNextStep().name() : null);
 
         List<ClaimGroundEntity> claimGroundEntities =
             claimGroundService.getGroundsWithReason(pcsCase);
