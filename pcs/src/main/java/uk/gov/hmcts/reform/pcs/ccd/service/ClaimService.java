@@ -9,6 +9,10 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimRepository;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
 @Service
 @AllArgsConstructor
 public class ClaimService {
@@ -30,5 +34,17 @@ public class ClaimService {
 
     public ClaimEntity saveClaim(ClaimEntity claim) {
         return claimRepository.save(claim);
+    }
+
+//    public ArrayList<ClaimEntity> claims() {
+//        return (ArrayList<ClaimEntity>) claimRepository.findAllNative();
+//    }
+//
+//    public List<Map<String, Object>> claims() {
+//        return claimRepository.findAllNative();
+//    }
+
+    public ArrayList<PcsCaseEntity> claims() {
+        return (ArrayList<PcsCaseEntity>) claimRepository.findAllNative();
     }
 }
