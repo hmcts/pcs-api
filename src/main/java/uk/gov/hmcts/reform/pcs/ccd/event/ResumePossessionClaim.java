@@ -28,6 +28,7 @@ import uk.gov.hmcts.reform.pcs.ccd.page.builder.SavingPageBuilderFactory;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.ClaimantCircumstances;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.NoRentArrearsGroundsForPossessionOptions;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.NoRentArrearsGroundsForPossessionReason;
+import uk.gov.hmcts.reform.pcs.ccd.page.makeaclaim.StatementOfTruth;
 import uk.gov.hmcts.reform.pcs.ccd.service.ClaimGroundService;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.MoneyJudgment;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.RentArrearsOrBreachOfTenancyGround;
@@ -137,7 +138,9 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             .add(new MoneyJudgment())
             .add(new ClaimantCircumstances())
             .add(new GeneralApplication())
-            .add(new CompletingClaim());
+            .add(new CompletingClaim())
+            .add(new StatementOfTruth());
+
     }
 
     private PCSCase start(EventPayload<PCSCase, State> eventPayload) {
@@ -224,6 +227,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             PartyRole.CLAIMANT);
 
         claimEntity.setApplicationWithClaim(YesOrNoToBoolean.convert(pcsCase.getApplicationWithClaim()));
+        claimEntity.setCompletionNextStep(pcsCase.getCompletionNextStep());
 
         List<ClaimGroundEntity> claimGroundEntities =
             claimGroundService.getGroundsWithReason(pcsCase);
