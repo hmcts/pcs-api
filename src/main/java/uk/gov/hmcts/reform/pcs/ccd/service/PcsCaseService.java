@@ -14,8 +14,10 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.model.Defendant;
+import uk.gov.hmcts.reform.pcs.ccd.model.PartyDocumentDto;
 import uk.gov.hmcts.reform.pcs.ccd.model.PossessionGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.model.SecureOrFlexibleReasonsForGrounds;
+import uk.gov.hmcts.reform.pcs.ccd.utils.ListValueUtils;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
@@ -101,6 +103,7 @@ public class PcsCaseService {
 
         pcsCaseEntity.setTenancyLicence(tenancyLicenceService.buildTenancyLicence(pcsCase));
         pcsCaseEntity.setPossessionGrounds(buildPossessionGrounds(pcsCase));
+        pcsCaseEntity.setPartyDocuments(buildPartyDocuments(pcsCase));
 
         pcsCaseRepository.save(pcsCaseEntity);
 
@@ -209,5 +212,28 @@ public class PcsCaseService {
             .stream()
             .map(HasLabel::getLabel)
             .collect(Collectors.toSet());
+    }
+
+    /**
+     * Builds party documents from PCSCase additionalDocuments field
+     * Maps from CCD domain model to service DTO
+     */
+    public List<PartyDocumentDto> buildPartyDocuments(PCSCase pcsCase) {
+        return ListValueUtils.unwrapListItems(pcsCase.getAdditionalDocuments())
+                .stream()
+                .map(this::mapAdditionalDocumentToPartyDocument)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Maps AdditionalDocument to PartyDocumentDto
+     * Only includes essential fields: description, documentType, document
+     */
+    private PartyDocumentDto mapAdditionalDocumentToPartyDocument(uk.gov.hmcts.reform.pcs.ccd.domain.AdditionalDocument additionalDocument) {
+        return PartyDocumentDto.builder()
+                .description(additionalDocument.getDescription())
+                .documentType(additionalDocument.getDocumentType())
+                .document(additionalDocument.getDocument())
+                .build();
     }
 }

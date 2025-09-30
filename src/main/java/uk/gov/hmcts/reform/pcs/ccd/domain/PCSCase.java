@@ -12,6 +12,7 @@ import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseworkerReadAccess;
+import uk.gov.hmcts.reform.pcs.ccd.domain.AdditionalDocument;
 import uk.gov.hmcts.reform.pcs.ccd.domain.model.NoRentArrearsReasonForGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
@@ -566,4 +567,18 @@ public class PCSCase {
     @CCD(access = {CitizenAccess.class})
     private NoRentArrearsReasonForGrounds noRentArrearsReasonForGrounds;
 
+    @CCD(
+        hint = "You can either upload documents now or closer to the hearing date. "
+            + "Any documents you upload now will be included in the pack of documents a judge will "
+            + "receive before the hearing (the bundle).",
+        access = {CitizenAccess.class}
+    )
+    private VerticalYesNo wantToUploadDocuments;
+
+    @CCD(
+        label = "Add document",
+        hint = "Upload a document to the system",
+        access = {CitizenAccess.class}
+    )
+    private java.util.List<ListValue<AdditionalDocument>> additionalDocuments;
 }
