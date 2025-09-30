@@ -9,7 +9,7 @@ public class CompletingYourClaim implements CcdPageConfiguration {
     @Override
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
-            .page("completingYourClaim")
+            .page("completingClaim")
             .pageLabel("Completing your claim")
 
             // ---------- Horizontal separator ----------
