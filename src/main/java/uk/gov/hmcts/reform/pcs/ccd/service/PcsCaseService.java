@@ -37,7 +37,7 @@ public class PcsCaseService {
     private final PcsCaseRepository pcsCaseRepository;
     private final SecurityContextService securityContextService;
     private final ModelMapper modelMapper;
-    private TenancyLicenceService tenancyLicenceService;
+    private final TenancyLicenceService tenancyLicenceService;
 
     public void createCase(long caseReference, AddressUK propertyAddress, LegislativeCountry legislativeCountry) {
 
@@ -68,7 +68,6 @@ public class PcsCaseService {
                         : null);
         pcsCaseEntity.setDefendants(mapFromDefendantDetails(pcsCase.getDefendants()));
         pcsCaseEntity.setTenancyLicence(tenancyLicenceService.buildTenancyLicence(pcsCase));
-
 
         pcsCaseRepository.save(pcsCaseEntity);
     }
