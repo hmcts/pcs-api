@@ -140,9 +140,9 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             .add(new MoneyJudgment())
             .add(new ClaimantCircumstances())
             .add(new AlternativesToPossessionOptions())
-            .add(new ClaimingCosts())
             .add(new SuspensionOfRightToBuyHousingActOptions())
-            .add(new SuspensionOfRightToBuyOrderReason());
+            .add(new SuspensionOfRightToBuyOrderReason())
+            .add(new ClaimingCosts());
     }
 
     private PCSCase start(EventPayload<PCSCase, State> eventPayload) {

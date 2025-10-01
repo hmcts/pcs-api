@@ -1,16 +1,29 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim;
 
+import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
+import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
+import uk.gov.hmcts.reform.pcs.ccd.domain.AlternativesToPossession;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.domain.SuspensionOfRightToBuy;
+
+import java.util.Set;
+
+import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 
 public class AlternativesToPossessionOptions implements CcdPageConfiguration {
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
-            .page("alternativesToPossession")
+            .page("alternativesToPossession", this::midEvent)
             .pageLabel("Alternatives to possession")
+            .complex(PCSCase::getSuspensionOfRightToBuy)
+            .mandatory(SuspensionOfRightToBuy::getShowSuspensionOfRightToBuyHousingActsPage,NEVER_SHOW)
+            .done()
             .label("alternativesToPossession-info", """
                     ---
                     <p class="govuk-body govuk-!-margin-bottom-1" tabindex="0">
@@ -36,5 +49,22 @@ public class AlternativesToPossessionOptions implements CcdPageConfiguration {
                     </p>
                     """)
             .optional(PCSCase::getAlternativesToPossession);
+    }
+
+    private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
+                                                                  CaseDetails<PCSCase, State> detailsBefore) {
+
+        PCSCase caseData = details.getData();
+
+        Set<AlternativesToPossession> altToPossessions = caseData.getAlternativesToPossession();
+
+        boolean showPage = altToPossessions.contains(AlternativesToPossession.SUSPENSION_OF_RIGHT_TO_BUY)
+            && !altToPossessions.contains(AlternativesToPossession.DEMOTION_OF_TENANCY);
+
+        caseData.getSuspensionOfRightToBuy().setShowSuspensionOfRightToBuyHousingActsPage(YesOrNo.from(showPage));
+
+        return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
+            .data(caseData)
+            .build();
     }
 }

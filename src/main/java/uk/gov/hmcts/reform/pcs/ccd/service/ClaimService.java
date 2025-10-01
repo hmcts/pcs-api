@@ -26,8 +26,9 @@ public class ClaimService {
             .summary(claimName)
             .pcsCase(caseEntity)
             .costsClaimed(pcsCase.getClaimingCostsWanted().toBoolean())
-            .suspensionOfRightToBuyHousingAct(pcsCase.getSuspensionOfRightToBuyHousingActs())
-            .suspensionOfRightToBuyReason(pcsCase.getSuspensionOfRightToBuyReason())
+            .suspensionOfRightToBuyHousingAct(pcsCase.getSuspensionOfRightToBuy()
+                                                  .getSuspensionOfRightToBuyHousingActs())
+            .suspensionOfRightToBuyReason(pcsCase.getSuspensionOfRightToBuy().getSuspensionOfRightToBuyReason())
             .build();
 
         caseEntity.getClaims().add(claim);

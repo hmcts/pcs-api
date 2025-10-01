@@ -8,6 +8,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.SuspensionOfRightToBuy;
 import uk.gov.hmcts.reform.pcs.ccd.domain.SuspensionOfRightToBuyHousingAct;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
@@ -43,10 +44,15 @@ class ClaimServiceTest {
         List<ClaimGroundEntity> claimGroundEntities = new ArrayList<>();
         SuspensionOfRightToBuyHousingAct suspensionRightToBuyHousingAct = SuspensionOfRightToBuyHousingAct.SECTION_62A;
         String suspensionOfRightToBuyReason = "suspensionReason";
-        PCSCase pcsCase = PCSCase.builder()
-            .claimingCostsWanted(VerticalYesNo.YES)
+
+        SuspensionOfRightToBuy suspensionOfRightToBuy = SuspensionOfRightToBuy.builder()
             .suspensionOfRightToBuyHousingActs(suspensionRightToBuyHousingAct)
             .suspensionOfRightToBuyReason(suspensionOfRightToBuyReason).build();
+
+        PCSCase pcsCase = PCSCase.builder()
+            .claimingCostsWanted(VerticalYesNo.YES)
+            .suspensionOfRightToBuy(suspensionOfRightToBuy)
+            .build();
 
         claimService.createAndLinkClaim(
             caseEntity, partyEntity, claimName, PartyRole.CLAIMANT, claimGroundEntities,pcsCase);

@@ -3,16 +3,17 @@ package uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.SuspensionOfRightToBuy;
 
 public class SuspensionOfRightToBuyHousingActOptions implements CcdPageConfiguration {
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
-            .page("housingAct")
+            .page("suspensionOfRightToBuyHousingActOptions")
             .pageLabel("Housing Act")
-            .showCondition("alternativesToPossessionCONTAINS\"SUSPENSION_OF_RIGHT_TO_BUY\"")
-            .label("housingAct-info", """
+            .showCondition("showSuspensionOfRightToBuyHousingActsPage=\"Yes\"")
+            .label("suspensionOfRightToBuyHousingActOptions-info", """
                 ---
                   <ul>
                     <li>Section 82A(2) of the housing act 1985 relates to secure tenancies.</li>
@@ -22,6 +23,8 @@ public class SuspensionOfRightToBuyHousingActOptions implements CcdPageConfigura
                     </li>
                   </ul>
                 """)
-            .mandatory(PCSCase::getSuspensionOfRightToBuyHousingActs);
+                .complex(PCSCase::getSuspensionOfRightToBuy)
+                .mandatory(SuspensionOfRightToBuy::getSuspensionOfRightToBuyHousingActs)
+                .done();
     }
 }
