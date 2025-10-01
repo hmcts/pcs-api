@@ -28,6 +28,7 @@ import {claimantCircumstances} from '@data/page-data/claimantCircumstances.page.
 import {applications} from '@data/page-data/applications.page.data';
 import {completeYourClaim} from '@data/page-data/completeYourClaim.page.data';
 import {user} from '@data/user-data/permanent.user.data';
+import {claimingCosts} from '@data/page-data/claimingCosts.page.data';
 
 test.beforeEach(async ({page}, testInfo) => {
   initializeExecutor(page);
@@ -110,6 +111,8 @@ test.describe('[Create Case Flow]  @Master @nightly', async () => {
     await performAction('selectClaimForMoney', moneyJudgment.yes);
     await performValidation('mainHeader', claimantCircumstances.mainHeader);
     await performAction('clickButton', claimantCircumstances.continue);
+    await performValidation('mainHeader', claimingCosts.mainHeader);
+    await performAction('selectClaimingCosts', claimingCosts.yes);
     await performAction('selectApplications', applications.yes);
     await performAction('clickButton', completeYourClaim.continue);
     await performAction('clickButton', 'Save and continue');
@@ -191,6 +194,8 @@ test.describe('[Create Case Flow]  @Master @nightly', async () => {
     await performAction('selectClaimForMoney', moneyJudgment.yes);
     await performValidation('mainHeader', claimantCircumstances.mainHeader);
     await performAction('clickButton', claimantCircumstances.continue);
+    await performValidation('mainHeader', claimingCosts.mainHeader);
+    await performAction('selectClaimingCosts', claimingCosts.no);
     await performAction('selectApplications', applications.no);
     await performAction('clickButton', completeYourClaim.continue);
     await performAction('clickButton', 'Save and continue');
@@ -262,6 +267,8 @@ test.describe('[Create Case Flow]  @Master @nightly', async () => {
     await performAction('selectClaimForMoney', moneyJudgment.yes);
     await performValidation('mainHeader', claimantCircumstances.mainHeader);
     await performAction('clickButton', claimantCircumstances.continue);
+    await performValidation('mainHeader', claimingCosts.mainHeader);
+    await performAction('selectClaimingCosts', claimingCosts.no);
     await performAction('selectApplications', applications.yes);
     await performAction('clickButton', completeYourClaim.continue);
     await performAction('clickButton', 'Save and continue');
@@ -329,6 +336,8 @@ test.describe('[Create Case Flow]  @Master @nightly', async () => {
     });
     await performAction('selectClaimForMoney', moneyJudgment.yes);
     await performAction('clickButton', claimantCircumstances.continue);
+    await performValidation('mainHeader', claimingCosts.mainHeader);
+    await performAction('selectClaimingCosts', claimingCosts.no);
     await performAction('selectApplications', applications.yes);
     await performAction('clickButton', completeYourClaim.continue);
     await performAction('clickButton', 'Save and continue');
@@ -404,6 +413,8 @@ test.describe('[Create Case Flow]  @Master @nightly', async () => {
     await performAction('selectClaimForMoney', moneyJudgment.no);
     await performValidation('mainHeader', claimantCircumstances.mainHeader);
     await performAction('clickButton', claimantCircumstances.continue);
+    await performValidation('mainHeader', claimingCosts.mainHeader);
+    await performAction('selectClaimingCosts', claimingCosts.yes);
     await performAction('selectApplications', applications.yes);
     await performAction('clickButton', completeYourClaim.continue);
     await performAction('clickButton', 'Save and continue');
