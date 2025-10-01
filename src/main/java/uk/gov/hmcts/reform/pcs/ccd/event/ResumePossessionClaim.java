@@ -210,6 +210,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
 
         PcsCaseEntity pcsCaseEntity = pcsCaseService.patchCase(caseReference, pcsCase);
         List<ClaimGroundEntity> claimGrounds = claimGroundService.getGroundsWithReason(pcsCase);
+
         PartyEntity party = partyService.createAndLinkParty(
             pcsCaseEntity,
             userID,
@@ -219,6 +220,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             contactAddress,
             pcsCase.getClaimantContactPhoneNumber(),
             true);
+
         claimService.createAndLinkClaim(pcsCaseEntity, party, "Main Claim", PartyRole.CLAIMANT, claimGrounds,
                                         pcsCase.getClaimingCostsWanted().toBoolean(),
                                         pcsCase.getDefendantCircumstances());

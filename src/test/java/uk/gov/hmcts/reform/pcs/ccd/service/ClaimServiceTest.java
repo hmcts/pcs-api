@@ -39,8 +39,9 @@ class ClaimServiceTest {
         PartyEntity partyEntity = new PartyEntity();
         String claimName = "Main Claim";
         List<ClaimGroundEntity> claimGroundEntities = new ArrayList<>();
+        String circumstancesInfo = "Some circumstance Info";
         DefendantCircumstances defendantCircumstances = DefendantCircumstances.builder()
-            .defendantCircumstancesInfo("Some circumstance").build();
+            .defendantCircumstancesInfo(circumstancesInfo).build();
 
         claimService.createAndLinkClaim(
             caseEntity, partyEntity, claimName, PartyRole.CLAIMANT, claimGroundEntities,
@@ -53,7 +54,7 @@ class ClaimServiceTest {
         assertThat(savedEntity.getPcsCase()).isSameAs(caseEntity);
         assertThat(savedEntity.getClaimParties().iterator().next().getParty()).isEqualTo(partyEntity);
         assertThat(savedEntity.getClaimGrounds().isEmpty());
-        assertThat(savedEntity.getDefendantCircumstances()).isEqualTo(defendantCircumstances);
+        assertThat(savedEntity.getDefendantCircumstances()).isEqualTo(circumstancesInfo);
     }
 
 }
