@@ -30,6 +30,8 @@ import {noticeDetails} from '@data/page-data/noticeDetails.page.data';
 import {moneyJudgment} from '@data/page-data/moneyJudgment.page.data';
 import {whatAreYourGroundsForPossession} from '@data/page-data/whatAreYourGroundsForPossession.page.data';
 import {claimingCosts} from '@data/page-data/claimingCosts.page.data';
+import {homePage} from '@data/page-data/home.page.data';
+import {search} from '@data/page-data/search.page.data';
 
 export let caseInfo: { id: string; fid: string; state: string };
 let caseNumber: string;
@@ -425,9 +427,9 @@ export class CreateCaseAction implements IAction {
 
   private async selectJurisdictionCaseTypeEvent() {
     await performActions('Case option selection'
-      , ['select', 'Jurisdiction', createCase.possessionsJurisdiction]
-      , ['select', 'Case type', createCase.caseType.civilPossessions]
-      , ['select', 'Event', createCase.makeAPossessionClaimEvent]);
+      , ['select', createCase.jurisdictionLabel, createCase.possessionsJurisdiction]
+      , ['select', createCase.caseTypeLabel, createCase.caseType.civilPossessions]
+      , ['select', createCase.eventLabel, createCase.makeAPossessionClaimEvent]);
     await performAction('clickButton', createCase.start);
   }
 
@@ -449,11 +451,11 @@ export class CreateCaseAction implements IAction {
   private async reloginAndFindTheCase(userInfo: actionData) {
     await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
     await performAction('login', userInfo);
-    await performAction('clickButton', 'Find case');
-    await performAction('select', 'Jurisdiction', createCase.possessionsJurisdiction);
-    await performAction('select', 'Case type', createCase.caseType.civilPossessions);
-    await performAction('inputText', 'Case Number', caseNumber);
-    await performAction('clickButton', 'Apply');
+    await performAction('clickButton', homePage.findCaseTab);
+    await performAction('select', search.jurisdictionLabel, search.possessionsJurisdiction);
+    await performAction('select', search.caseTypeLabel, search.caseType.civilPossessions);
+    await performAction('inputText', search.caseNumberLabel, caseNumber);
+    await performAction('clickButton', search.apply);
     await performAction('clickButton', caseNumber);
   }
 

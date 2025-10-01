@@ -29,6 +29,7 @@ import {user} from '@data/user-data/permanent.user.data';
 import {checkYourAnswers} from '@data/page-data/checkYourAnswers.page.data';
 import {propertyDetails} from '@data/page-data/propertyDetails.page.data';
 import {claimingCosts} from '@data/page-data/claimingCosts.page.data';
+import {homePage} from '@data/page-data/home.page.data';
 
 test.beforeEach(async ({page}, testInfo) => {
   initializeExecutor(page);
@@ -39,7 +40,7 @@ test.beforeEach(async ({page}, testInfo) => {
     body: page.url(),
     contentType: 'text/plain',
   });
-  await performAction('clickTab', 'Create case');
+  await performAction('clickTab', homePage.createCaseTab);
   await performAction('selectJurisdictionCaseTypeEvent');
   await performAction('housingPossessionClaim');
 });
@@ -51,7 +52,9 @@ test.describe('[Create Case Flow]  @Master @nightly', async () => {
       addressIndex: addressDetails.addressIndex
     });
     await performValidation('bannerAlert', 'Case #.* has been created.');
+    await performValidation('mainHeader', provideMoreDetailsOfClaim.mainHeader);
     await performAction('clickButton', provideMoreDetailsOfClaim.continue);
+    await performAction('mainHeader', claimantType.mainHeader);
     await performAction('selectClaimantType', claimantType.registeredProviderForSocialHousing);
     await performAction('selectClaimType', claimType.no);
     await performAction('selectClaimantName', claimantName.yes);
@@ -114,7 +117,6 @@ test.describe('[Create Case Flow]  @Master @nightly', async () => {
     await performAction('selectClaimingCosts', claimingCosts.yes);
     await performAction('clickButton', checkYourAnswers.saveAndContinue);
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
-    await performAction('clickTab', 'Property Details');
     await performValidations(
       'address info not null',
       ['formLabelValue', propertyDetails.buildingAndStreetLabel],
@@ -130,6 +132,7 @@ test.describe('[Create Case Flow]  @Master @nightly', async () => {
       addressIndex: addressDetails.addressIndex
     });
     await performValidation('bannerAlert', 'Case #.* has been created.');
+    await performValidation('mainHeader', provideMoreDetailsOfClaim.mainHeader);
     await performAction('clickButton', provideMoreDetailsOfClaim.continue);
     await performAction('selectClaimantType', claimantType.registeredProviderForSocialHousing);
     await performAction('selectClaimType', claimType.no);
@@ -196,7 +199,6 @@ test.describe('[Create Case Flow]  @Master @nightly', async () => {
     await performAction('selectClaimingCosts', claimingCosts.no);
     await performAction('clickButton', checkYourAnswers.saveAndContinue);
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
-    await performAction('clickTab', 'Property Details');
     await performValidations(
       'address info not null',
       ['formLabelValue', propertyDetails.buildingAndStreetLabel],
@@ -210,6 +212,7 @@ test.describe('[Create Case Flow]  @Master @nightly', async () => {
     await performAction('enterTestAddressManually');
     await performValidation('bannerAlert', 'Case #.* has been created.');
     await performAction('extractCaseIdFromAlert');
+    await performValidation('mainHeader', provideMoreDetailsOfClaim.mainHeader);
     await performAction('clickButton', provideMoreDetailsOfClaim.continue);
     await performAction('selectClaimantType', claimantType.registeredCommunityLandlord);
     await performAction('selectClaimType', claimType.no);
@@ -267,7 +270,6 @@ test.describe('[Create Case Flow]  @Master @nightly', async () => {
     await performAction('selectClaimingCosts', claimingCosts.no);
     await performAction('clickButton', checkYourAnswers.saveAndContinue);
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
-    await performAction('clickTab', 'Property Details');
     await performValidations('address information entered',
       ['formLabelValue', propertyDetails.buildingAndStreetLabel, addressDetails.buildingAndStreet],
       ['formLabelValue', propertyDetails.addressLine2Label, addressDetails.addressLine2],
@@ -280,6 +282,7 @@ test.describe('[Create Case Flow]  @Master @nightly', async () => {
     await performAction('enterTestAddressManually');
     await performValidation('bannerAlert', 'Case #.* has been created.');
     await performAction('extractCaseIdFromAlert');
+    await performValidation('mainHeader', provideMoreDetailsOfClaim.mainHeader);
     await performAction('clickButton', provideMoreDetailsOfClaim.continue);
     await performAction('selectClaimantType', claimantType.registeredCommunityLandlord);
     await performAction('selectClaimType', claimType.no);
@@ -334,7 +337,6 @@ test.describe('[Create Case Flow]  @Master @nightly', async () => {
     await performAction('selectClaimingCosts', claimingCosts.no);
     await performAction('clickButton', checkYourAnswers.saveAndContinue);
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
-    await performAction('clickTab', 'Property Details');
     await performValidations('address information entered',
       ['formLabelValue', propertyDetails.buildingAndStreetLabel, addressDetails.buildingAndStreet],
       ['formLabelValue', propertyDetails.addressLine2Label, addressDetails.addressLine2],
@@ -347,6 +349,7 @@ test.describe('[Create Case Flow]  @Master @nightly', async () => {
     await performAction('enterTestAddressManually');
     await performValidation('bannerAlert', 'Case #.* has been created.');
     await performAction('extractCaseIdFromAlert');
+    await performValidation('mainHeader', provideMoreDetailsOfClaim.mainHeader);
     await performAction('clickButton', provideMoreDetailsOfClaim.continue);
     await performAction('selectClaimantType', claimantType.registeredCommunityLandlord);
     await performAction('selectClaimType', claimType.no);
@@ -408,7 +411,6 @@ test.describe('[Create Case Flow]  @Master @nightly', async () => {
     await performAction('selectClaimingCosts', claimingCosts.yes);
     await performAction('clickButton', checkYourAnswers.saveAndContinue);
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
-    await performAction('clickTab', 'Property Details');
     await performValidations('address information entered',
       ['formLabelValue', propertyDetails.buildingAndStreetLabel, addressDetails.buildingAndStreet],
       ['formLabelValue', propertyDetails.addressLine2Label, addressDetails.addressLine2],
