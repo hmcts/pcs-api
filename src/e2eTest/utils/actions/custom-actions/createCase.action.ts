@@ -20,6 +20,8 @@ import {dailyRentAmount} from '@data/page-data/dailyRentAmount.page.data';
 import {reasonsForPossession} from '@data/page-data/reasonsForPossession.page.data';
 import {detailsOfRentArrears} from '@data/page-data/detailsOfRentArrears.page.data';
 import {claimingCosts} from '@data/page-data/claimingCosts.page.data';
+import {alternativesToPossession} from '@data/page-data/alternativesToPossession.page.data';
+import {reasonsForRequestingASuspensionOrder} from "@data/page-data/reasonsForRequestingASuspensionOrder.page.data";
 
 export let caseInfo: { id: string; fid: string; state: string };
 let caseNumber: string;
@@ -56,7 +58,10 @@ export class CreateCaseAction implements IAction {
       ['selectDailyRentAmount', () => this.selectDailyRentAmount(fieldName)],
       ['provideDetailsOfRentArrears', () => this.provideDetailsOfRentArrears(fieldName)],
       ['selectClaimForMoney', () => this.selectClaimForMoney(fieldName)],
-      ['selectClaimingCosts', () => this.selectClaimingCosts(fieldName)]
+      ['selectClaimingCosts', () => this.selectClaimingCosts(fieldName)],
+      ['selectAlternativesToPossession', () => this.selectAlternativesToPossession(fieldName)],
+      ['selectHousingAct', () => this.selectHousingAct(fieldName)],
+      ['enterReasonForRequestingASuspensionOrder', () => this.enterReasonForRequestingASuspensionOrder(fieldName)]
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) throw new Error(`No action found for '${action}'`);
@@ -408,6 +413,21 @@ export class CreateCaseAction implements IAction {
   private async selectClaimingCosts(option: actionData) {
     await performAction('clickRadioButton', option);
     await performAction('clickButton', claimingCosts.continue);
+  }
+
+  private async selectAlternativesToPossession(alternatives: actionData) {
+    await performAction('check', alternatives);
+    await performAction('clickButton', alternativesToPossession.continue);
+  }
+
+  private async selectHousingAct(option: actionData) {
+    await performAction('clickRadioButton', option);
+    await performAction('clickButton', alternativesToPossession.continue);
+  }
+
+  private async enterReasonForRequestingASuspensionOrder(reason: actionData) {
+    await performAction('inputText',  reason, reasonsForRequestingASuspensionOrder.suspensionOrderSampleTestReason);
+    await performAction('clickButton', reasonsForRequestingASuspensionOrder.continue);
   }
 
   private async selectJurisdictionCaseTypeEvent() {

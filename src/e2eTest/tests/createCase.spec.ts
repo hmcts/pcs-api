@@ -27,6 +27,9 @@ import {moneyJudgment} from '@data/page-data/moneyJudgment.page.data';
 import {claimantCircumstances} from '@data/page-data/claimantCircumstances.page.data';
 import {user} from '@data/user-data/permanent.user.data';
 import {claimingCosts} from '@data/page-data/claimingCosts.page.data';
+import {alternativesToPossession} from "@data/page-data/alternativesToPossession.page.data";
+import {housingAct} from "@data/page-data/housingAct.page.data";
+import {reasonsForRequestingASuspensionOrder} from "@data/page-data/reasonsForRequestingASuspensionOrder.page.data";
 
 test.beforeEach(async ({page}, testInfo) => {
   initializeExecutor(page);
@@ -192,6 +195,17 @@ test.describe('[Successful Create Case Flow]  @Master @nightly', async () => {
     await performAction('clickButton', claimantCircumstances.continue);
     await performValidation('mainHeader', claimingCosts.mainHeader);
     await performAction('selectClaimingCosts', claimingCosts.no);
+    //HDPI-1908-QA-after Defendant Circumstances screen
+    await performValidation('mainHeader', alternativesToPossession.mainHeader);
+    await performAction('selectAlternativesToPossession', [alternativesToPossession.suspensionOfRightToBuy]);
+    await performValidation('mainHeader',housingAct.mainHeader);
+    await performAction('selectHousingAct',housingAct.section82AHousingAct1985);
+    await performAction('mainHeader', housingAct.mainHeader);
+    await performAction('selectHousingAct', housingAct.section82AHousingAct1985);
+    await performAction('mainHeader', reasonsForRequestingASuspensionOrder.mainHeader);
+    await performAction('enterReasonForRequestingASuspensionOrder', reasonsForRequestingASuspensionOrder.suspensionOrderSampleTestReason);
+    //claiming cost screen should come
+    //HDPI-1908-QA
     await performAction('clickButton', 'Save and continue');
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
     await performAction('clickTab', 'Property Details');
