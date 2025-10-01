@@ -579,5 +579,5 @@ public class PCSCase {
         hint = "After you've submitted your claim, there will be instructions on how to make an application",
         access = {CitizenAccess.class}
     )
-    private YesOrNo applicationWithClaim;
+    private VerticalYesNo applicationWithClaim;
 }
