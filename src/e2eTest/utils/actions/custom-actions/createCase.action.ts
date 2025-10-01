@@ -232,18 +232,6 @@ export class CreateCaseAction implements IAction {
     await performAction('clickButton', 'Continue');
   }
 
-  private async selectOtherGrounds(otherRentArrearsGrounds: actionData) {
-    const otherGrounds = otherRentArrearsGrounds as {
-      mandatory?: string[];
-      discretionary?: string[];
-    }
-    if (otherGrounds.mandatory && otherGrounds.discretionary) {
-      await performAction('check', otherGrounds.mandatory);
-      await performAction('check', otherGrounds.discretionary);
-    }
-    await performAction('clickButton', 'Continue');
-  }
-
   private async selectTenancyOrLicenceDetails(tenancyData: actionData) {
     const tenancyLicenceData = tenancyData as {
       tenancyOrLicenceType: string;
