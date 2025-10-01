@@ -147,6 +147,13 @@ public class PCSCase {
     private String claimantContactPhoneNumber;
 
     @CCD(
+        label = "Do you want to ask for your costs back?",
+        hint = "You do not need to provide the exact amount at this stage, but a judge will request a schedule "
+            + "of costs at the hearing"
+    )
+    private VerticalYesNo claimingCostsWanted;
+
+    @CCD(
         label = "Have you followed the pre-action protocol?",
         access = {CitizenAccess.class}
     )
@@ -485,6 +492,36 @@ public class PCSCase {
         access = {CitizenAccess.class}
     )
     private String thirdPartyPaymentSourceOther;
+
+    @CCD(
+        label = "Do you have grounds for possession?",
+        access = {CitizenAccess.class}
+    )
+    private VerticalYesNo hasIntroductoryDemotedOtherGroundsForPossession;
+
+    @CCD(
+            label = "What are your grounds for possession?",
+            typeOverride = FieldType.MultiSelectList,
+            typeParameterOverride = "IntroductoryDemotedOrOtherGrounds",
+            access = {CitizenAccess.class}
+    )
+    private Set<IntroductoryDemotedOrOtherGrounds> introductoryDemotedOrOtherGrounds;
+
+    @CCD(
+            label = "Enter your grounds for possession",
+            hint = "You'll be able to explain your reasons for claiming Possession"
+                    + " under these grounds on the next screen",
+            access = {CitizenAccess.class},
+            typeOverride = TextArea
+    )
+    private String otherGroundDescription;
+
+    @CCD(access = {CitizenAccess.class})
+    private YesOrNo showIntroductoryDemotedOtherGroundReasonPage;
+
+    @JsonUnwrapped
+    @CCD(access = {CitizenAccess.class})
+    private IntroductoryDemotedOtherGroundReason introductoryDemotedOtherGroundReason;
 
     @CCD(
         label = "Discretionary grounds",
