@@ -135,6 +135,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             .add(new RentDetails())
             .add(new DailyRentAmount())
             .add(new RentArrears())
+            //TO DO will be routed later on  correctly using tech debt ticket
             .add(new WantToUploadDocuments())
             .add(new UploadAdditionalDocumentsDetails())
             .add(new MoneyJudgment())

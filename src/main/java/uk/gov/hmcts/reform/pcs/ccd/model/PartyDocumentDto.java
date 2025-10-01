@@ -16,7 +16,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.AdditionalDocumentType;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class PartyDocumentDto {
 
-    // Essential fields only
     private String description;
     private AdditionalDocumentType documentType;
     private Document document;

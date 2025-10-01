@@ -25,7 +25,7 @@ public class UploadAdditionalDocumentsDetails implements CcdPageConfiguration {
             .label("uploadAdditionalDocuments-heading",
                    """
                    <h2>Before you upload your documents</h2>
-                   <p class="govuk-body govuk-!-font-size-19">Given your document a name that explains what it is.</p>
+                   <p class="govuk-body govuk-!-font-size-19">Give your document a name that explains what it is.</p>
                    """
             )
 

@@ -581,5 +581,5 @@ public class PCSCase {
         hint = "Upload a document to the system",
         access = {CitizenAccess.class}
     )
-    private java.util.List<ListValue<AdditionalDocument>> additionalDocuments;
+    private List<ListValue<AdditionalDocument>> additionalDocuments;
 }
