@@ -108,6 +108,7 @@ Playwright 1.30+ | TypeScript 4.9+
 | selectMoneyJudgment                 | `performAction('selectMoneyJudgment', 'yes')`                                                                                                                                                              |
 | selectBorderPostcode                | `performAction('selectBorderPostcode', borderPostcode.countryOptions.england)`                                                                                                                             |
 | selectClaimingCosts                 | `performAction('selectClaimingCosts', claimingCosts.yes)`                                                                                                                                                  |
+
 ### Validations
 | Validation                 | Example Usage                                                                                                                        |
 |----------------------------|--------------------------------------------------------------------------------------------------------------------------------------|
