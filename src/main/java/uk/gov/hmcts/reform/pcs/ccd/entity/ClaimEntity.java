@@ -58,6 +58,8 @@ public class ClaimEntity {
     
     private Boolean applicationWithClaim;
 
+    private Boolean costsClaimed;
+
     public void addParty(PartyEntity party, PartyRole partyRole) {
         ClaimPartyEntity claimPartyEntity = ClaimPartyEntity.builder()
             .claim(this)
