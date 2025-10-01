@@ -28,6 +28,7 @@ import {claimantCircumstances} from '@data/page-data/claimantCircumstances.page.
 import {user} from '@data/user-data/permanent.user.data';
 import {checkYourAnswers} from '@data/page-data/checkYourAnswers.page.data';
 import {propertyDetails} from '@data/page-data/propertyDetails.page.data';
+import {claimingCosts} from '@data/page-data/claimingCosts.page.data';
 
 test.beforeEach(async ({page}, testInfo) => {
   initializeExecutor(page);
@@ -109,6 +110,8 @@ test.describe('[Create Case Flow]  @Master @nightly', async () => {
     await performAction('selectMoneyJudgment', moneyJudgment.yes);
     await performValidation('mainHeader', claimantCircumstances.mainHeader);
     await performAction('clickButton', claimantCircumstances.continue);
+    await performValidation('mainHeader', claimingCosts.mainHeader);
+    await performAction('selectClaimingCosts', claimingCosts.yes);
     await performAction('clickButton', checkYourAnswers.saveAndContinue);
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
     await performAction('clickTab', 'Property Details');
@@ -189,6 +192,8 @@ test.describe('[Create Case Flow]  @Master @nightly', async () => {
     await performAction('selectMoneyJudgment', moneyJudgment.yes);
     await performValidation('mainHeader', claimantCircumstances.mainHeader);
     await performAction('clickButton', claimantCircumstances.continue);
+    await performValidation('mainHeader', claimingCosts.mainHeader);
+    await performAction('selectClaimingCosts', claimingCosts.no);
     await performAction('clickButton', checkYourAnswers.saveAndContinue);
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
     await performAction('clickTab', 'Property Details');
@@ -258,6 +263,8 @@ test.describe('[Create Case Flow]  @Master @nightly', async () => {
     await performAction('selectMoneyJudgment', moneyJudgment.yes);
     await performValidation('mainHeader', claimantCircumstances.mainHeader);
     await performAction('clickButton', claimantCircumstances.continue);
+    await performValidation('mainHeader', claimingCosts.mainHeader);
+    await performAction('selectClaimingCosts', claimingCosts.no);
     await performAction('clickButton', checkYourAnswers.saveAndContinue);
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
     await performAction('clickTab', 'Property Details');
@@ -323,6 +330,8 @@ test.describe('[Create Case Flow]  @Master @nightly', async () => {
     });
     await performAction('selectMoneyJudgment', moneyJudgment.yes);
     await performAction('clickButton', claimantCircumstances.continue);
+    await performValidation('mainHeader', claimingCosts.mainHeader);
+    await performAction('selectClaimingCosts', claimingCosts.no);
     await performAction('clickButton', checkYourAnswers.saveAndContinue);
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
     await performAction('clickTab', 'Property Details');
@@ -395,6 +404,8 @@ test.describe('[Create Case Flow]  @Master @nightly', async () => {
     await performAction('selectMoneyJudgment', moneyJudgment.no);
     await performValidation('mainHeader', claimantCircumstances.mainHeader);
     await performAction('clickButton', claimantCircumstances.continue);
+    await performValidation('mainHeader', claimingCosts.mainHeader);
+    await performAction('selectClaimingCosts', claimingCosts.yes);
     await performAction('clickButton', checkYourAnswers.saveAndContinue);
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
     await performAction('clickTab', 'Property Details');

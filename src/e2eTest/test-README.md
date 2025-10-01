@@ -107,6 +107,7 @@ Playwright 1.30+ | TypeScript 4.9+
 | provideDetailsOfRentArrears         | `performAction('provideDetailsOfRentArrears', {files: ['tenancyLicence.docx'], rentArrearsAmountOnStatement: '1000',rentPaidByOthersOption: 'Yes',paymentOptions: ['Universal Credit']})`                  |
 | selectMoneyJudgment                 | `performAction('selectMoneyJudgment', 'yes')`                                                                                                                                                              |
 | selectBorderPostcode                | `performAction('selectBorderPostcode', borderPostcode.countryOptions.england)`                                                                                                                             |
+| selectClaimingCosts                 | `performAction('selectClaimingCosts', claimingCosts.yes)`                                                                                                                                                  |
 ### Validations
 | Validation                 | Example Usage                                                                                                                        |
 |----------------------------|--------------------------------------------------------------------------------------------------------------------------------------|

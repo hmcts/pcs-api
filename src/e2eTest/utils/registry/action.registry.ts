@@ -50,7 +50,8 @@ export class ActionRegistry {
     ['provideRentDetails', new CreateCaseAction()],
     ['selectDailyRentAmount', new CreateCaseAction()],
     ['provideDetailsOfRentArrears', new CreateCaseAction()],
-    ['selectMoneyJudgment', new CreateCaseAction()]
+    ['selectMoneyJudgment', new CreateCaseAction()],
+    ['selectClaimingCosts', new CreateCaseAction()]
   ]);
 
   static getAction(actionName: string): IAction {

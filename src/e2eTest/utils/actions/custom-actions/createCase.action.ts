@@ -29,7 +29,7 @@ import {rentArrearsOrBreachOfTenancy} from '@data/page-data/rentArrearsOrBreachO
 import {noticeDetails} from '@data/page-data/noticeDetails.page.data';
 import {moneyJudgment} from '@data/page-data/moneyJudgment.page.data';
 import {whatAreYourGroundsForPossession} from '@data/page-data/whatAreYourGroundsForPossession.page.data';
-
+import {claimingCosts} from '@data/page-data/claimingCosts.page.data';
 
 export let caseInfo: { id: string; fid: string; state: string };
 let caseNumber: string;
@@ -65,7 +65,8 @@ export class CreateCaseAction implements IAction {
       ['provideRentDetails', () => this.provideRentDetails(fieldName)],
       ['selectDailyRentAmount', () => this.selectDailyRentAmount(fieldName)],
       ['provideDetailsOfRentArrears', () => this.provideDetailsOfRentArrears(fieldName)],
-      ['selectMoneyJudgment', () => this.selectMoneyJudgment(fieldName)]
+      ['selectMoneyJudgment', () => this.selectMoneyJudgment(fieldName)],
+      ['selectClaimingCosts', () => this.selectClaimingCosts(fieldName)]
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) throw new Error(`No action found for '${action}'`);
@@ -415,6 +416,11 @@ export class CreateCaseAction implements IAction {
   private async selectMoneyJudgment(option: actionData) {
     await performAction('clickRadioButton', option);
     await performAction('clickButton', moneyJudgment.continue);
+  }
+
+  private async selectClaimingCosts(option: actionData) {
+    await performAction('clickRadioButton', option);
+    await performAction('clickButton', claimingCosts.continue);
   }
 
   private async selectJurisdictionCaseTypeEvent() {
