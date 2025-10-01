@@ -37,7 +37,8 @@ public class PcsCaseService {
     private final PcsCaseRepository pcsCaseRepository;
     private final SecurityContextService securityContextService;
     private final ModelMapper modelMapper;
-    private TenancyLicenceService tenancyLicenceService;
+    private final TenancyLicenceService tenancyLicenceService;
+    private final PartyDocumentsService partyDocumentsService;
 
     public void createCase(long caseReference, AddressUK propertyAddress, LegislativeCountry legislativeCountry) {
 
@@ -101,6 +102,7 @@ public class PcsCaseService {
 
         pcsCaseEntity.setTenancyLicence(tenancyLicenceService.buildTenancyLicence(pcsCase));
         pcsCaseEntity.setPossessionGrounds(buildPossessionGrounds(pcsCase));
+        pcsCaseEntity.setPartyDocuments(partyDocumentsService.buildPartyDocuments(pcsCase));
 
         pcsCaseRepository.save(pcsCaseEntity);
 
@@ -210,4 +212,5 @@ public class PcsCaseService {
             .map(HasLabel::getLabel)
             .collect(Collectors.toSet());
     }
+
 }

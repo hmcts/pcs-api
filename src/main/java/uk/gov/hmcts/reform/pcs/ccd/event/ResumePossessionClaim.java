@@ -55,6 +55,8 @@ import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ResumeClaim;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.SelectClaimType;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.SelectClaimantType;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.TenancyLicenceDetails;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.UploadAdditionalDocumentsDetails;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.WantToUploadDocuments;
 import uk.gov.hmcts.reform.pcs.ccd.service.ClaimService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
@@ -94,6 +96,8 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
     private final ContactPreferences contactPreferences;
     private final DefendantsDetails defendantsDetails;
 
+
+
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
         EventBuilder<PCSCase, UserRole, State> eventBuilder =
@@ -132,6 +136,9 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             .add(new RentDetails())
             .add(new DailyRentAmount())
             .add(new RentArrears())
+            //TO DO will be routed later on  correctly using tech debt ticket
+            .add(new WantToUploadDocuments())
+            .add(new UploadAdditionalDocumentsDetails())
             .add(new MoneyJudgment())
             .add(new ClaimantCircumstances())
             .add(new ClaimingCosts());
