@@ -255,7 +255,6 @@ class ResumePossessionClaimTest extends BaseEventTest {
         when(pcsCaseService.patchCase(eq(TEST_CASE_REFERENCE), any(PCSCase.class))).thenReturn(pcsCaseEntity);
 
         PCSCase caseData = mock(PCSCase.class);
-        when(caseData.getClaimingCostsWanted()).thenReturn(VerticalYesNo.YES);
 
         // When
         callSubmitHandler(caseData);
@@ -263,7 +262,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
         // Then
         verify(claimService)
             .createAndLinkClaim(eq(pcsCaseEntity), any(), eq("Main Claim"), eq(PartyRole.CLAIMANT),anyList(),
-                                any(boolean.class));
+                              any());
 
         verify(claimGroundService).getGroundsWithReason(caseData);
     }

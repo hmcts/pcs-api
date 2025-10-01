@@ -4,7 +4,7 @@ import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 
-public class HousingActOptions implements CcdPageConfiguration {
+public class SuspensionOfRightToBuyHousingActOptions implements CcdPageConfiguration {
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
@@ -22,6 +22,6 @@ public class HousingActOptions implements CcdPageConfiguration {
                     </li>
                   </ul>
                 """)
-            .mandatory(PCSCase::getHousingActs);
+            .mandatory(PCSCase::getSuspensionOfRightToBuyHousingActs);
     }
 }

@@ -40,7 +40,6 @@ import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.DefendantsDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.GroundForPossessionAdditionalGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.GroundForPossessionRentArrears;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.GroundsForPossession;
-import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.HousingActOptions;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.IntroductoryDemotedOrOtherGroundsForPossession;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.IntroductoryDemotedOtherGroundsReasons;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.MediationAndSettlement;
@@ -56,7 +55,8 @@ import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.SecureOrFlexibleGr
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.SecureOrFlexibleGroundsForPossessionReasons;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.SelectClaimType;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.SelectClaimantType;
-import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.SuspensionOrderReason;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.SuspensionOfRightToBuyHousingActOptions;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.SuspensionOfRightToBuyOrderReason;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.TenancyLicenceDetails;
 import uk.gov.hmcts.reform.pcs.ccd.service.ClaimGroundService;
 import uk.gov.hmcts.reform.pcs.ccd.service.ClaimService;
@@ -141,8 +141,8 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             .add(new ClaimantCircumstances())
             .add(new AlternativesToPossessionOptions())
             .add(new ClaimingCosts())
-            .add(new HousingActOptions())
-            .add(new SuspensionOrderReason());
+            .add(new SuspensionOfRightToBuyHousingActOptions())
+            .add(new SuspensionOfRightToBuyOrderReason());
     }
 
     private PCSCase start(EventPayload<PCSCase, State> eventPayload) {
@@ -224,7 +224,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             true);
 
         claimService.createAndLinkClaim(pcsCaseEntity, party, "Main Claim", PartyRole.CLAIMANT, claimGrounds,
-                                        pcsCase.getClaimingCostsWanted().toBoolean());
+                                        pcsCase);
 
         unsubmittedCaseDataService.deleteUnsubmittedCaseData(caseReference);
     }

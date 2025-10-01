@@ -7,6 +7,9 @@ import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.SuspensionOfRightToBuyHousingAct;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimGroundEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyEntity;
@@ -38,9 +41,15 @@ class ClaimServiceTest {
         PartyEntity partyEntity = new PartyEntity();
         String claimName = "Main Claim";
         List<ClaimGroundEntity> claimGroundEntities = new ArrayList<>();
+        SuspensionOfRightToBuyHousingAct suspensionRightToBuyHousingAct = SuspensionOfRightToBuyHousingAct.SECTION_62A;
+        String suspensionOfRightToBuyReason = "suspensionReason";
+        PCSCase pcsCase = PCSCase.builder()
+            .claimingCostsWanted(VerticalYesNo.YES)
+            .suspensionOfRightToBuyHousingActs(suspensionRightToBuyHousingAct)
+            .suspensionOfRightToBuyReason(suspensionOfRightToBuyReason).build();
 
         claimService.createAndLinkClaim(
-            caseEntity, partyEntity, claimName, PartyRole.CLAIMANT, claimGroundEntities,true);
+            caseEntity, partyEntity, claimName, PartyRole.CLAIMANT, claimGroundEntities,pcsCase);
 
         verify(claimRepository).save(claimCaptor.capture());
         ClaimEntity savedEntity = claimCaptor.getValue();
@@ -49,6 +58,9 @@ class ClaimServiceTest {
         assertThat(savedEntity.getPcsCase()).isSameAs(caseEntity);
         assertThat(savedEntity.getClaimParties().iterator().next().getParty()).isEqualTo(partyEntity);
         assertThat(savedEntity.getClaimGrounds().isEmpty());
+        assertThat(savedEntity.getCostsClaimed()).isEqualTo(VerticalYesNo.YES.toBoolean());
+        assertThat(savedEntity.getSuspensionOfRightToBuyHousingAct()).isEqualTo(suspensionRightToBuyHousingAct);
+        assertThat(savedEntity.getSuspensionOfRightToBuyReason()).isEqualTo(suspensionOfRightToBuyReason);
     }
 
 }

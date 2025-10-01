@@ -608,16 +608,14 @@ public class PCSCase {
             + " or demotion of tenancy",
         hint = "Select all that apply",
         typeOverride = MultiSelectList,
-        typeParameterOverride = "AlternativeToPossession",
-        access = {CitizenAccess.class}
+        typeParameterOverride = "AlternativesToPossession"
     )
-    private Set<AlternativeToPossession> alternativesToPossession;
+    private Set<AlternativesToPossession> alternativesToPossession;
 
     @CCD(
-        label = "Which section of the Housing Act is the suspension of right to buy claim made under?",
-        access = {CitizenAccess.class}
+        label = "Which section of the Housing Act is the suspension of right to buy claim made under?"
     )
-    private HousingAct housingActs;
+    private SuspensionOfRightToBuyHousingAct suspensionOfRightToBuyHousingActs;
 
     @CCD(
         label = "Why are you requesting a suspension order?",
@@ -626,6 +624,6 @@ public class PCSCase {
         typeOverride = TextArea,
         max = 250
     )
-    private String reasonForSuspensionOrder;
+    private String suspensionOfRightToBuyReason;
 
 }

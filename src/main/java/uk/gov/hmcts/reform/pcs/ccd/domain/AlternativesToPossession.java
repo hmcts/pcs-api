@@ -6,7 +6,7 @@ import uk.gov.hmcts.ccd.sdk.api.HasLabel;
 
 @AllArgsConstructor
 @Getter
-public enum AlternativeToPossession implements HasLabel {
+public enum AlternativesToPossession implements HasLabel {
 
     SUSPENSION_OF_RIGHT_TO_BUY("Suspension of right to buy"),
     DEMOTION_OF_TENANCY("Demotion of tenancy");

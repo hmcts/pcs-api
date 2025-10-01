@@ -3,6 +3,7 @@ package uk.gov.hmcts.reform.pcs.ccd.service;
 
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
+import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimGroundEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyEntity;
@@ -19,12 +20,14 @@ public class ClaimService {
     private final ClaimRepository claimRepository;
 
     public void createAndLinkClaim(PcsCaseEntity caseEntity, PartyEntity partyEntity,
-                                          String claimName, PartyRole role,
-                                          List<ClaimGroundEntity> claimGroundEntities, Boolean costsClaimed) {
+                                   String claimName, PartyRole role,
+                                   List<ClaimGroundEntity> claimGroundEntities, PCSCase pcsCase) {
         ClaimEntity claim = ClaimEntity.builder()
             .summary(claimName)
             .pcsCase(caseEntity)
-            .costsClaimed(costsClaimed)
+            .costsClaimed(pcsCase.getClaimingCostsWanted().toBoolean())
+            .suspensionOfRightToBuyHousingAct(pcsCase.getSuspensionOfRightToBuyHousingActs())
+            .suspensionOfRightToBuyReason(pcsCase.getSuspensionOfRightToBuyReason())
             .build();
 
         caseEntity.getClaims().add(claim);

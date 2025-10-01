@@ -4,7 +4,7 @@ import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 
-public class SuspensionOrderReason implements CcdPageConfiguration {
+public class SuspensionOfRightToBuyOrderReason implements CcdPageConfiguration {
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
@@ -13,6 +13,6 @@ public class SuspensionOrderReason implements CcdPageConfiguration {
             .pageLabel("Reasons for requesting a suspension order")
             .showCondition("alternativesToPossessionCONTAINS\"SUSPENSION_OF_RIGHT_TO_BUY\"")
             .label("suspensionOrderReason-info", "---")
-            .mandatory(PCSCase::getReasonForSuspensionOrder);
+            .mandatory(PCSCase::getSuspensionOfRightToBuyReason);
     }
 }
