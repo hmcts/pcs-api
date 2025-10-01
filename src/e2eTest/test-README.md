@@ -66,8 +66,8 @@ Playwright 1.30+ | TypeScript 4.9+
 ## 4. Available Actions and Validations
 
 ### Actions
-| Action                              | Example Usage                                                                                                                                                                                              |
-|-------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Action          | Example Usage |
+|------------------|---------------|
 | inputText                           | `performAction('inputText', 'Email', 'test@example.com')`                                                                                                                                                  |
 | check                               | `performAction('check', 'RememberMe')`                                                                                                                                                                     |
 | navigateToUrl                       | `performAction('navigateToUrl', 'testUrl')`                                                                                                                                                                |
@@ -107,9 +107,10 @@ Playwright 1.30+ | TypeScript 4.9+
 | selectRentArrearsOrBreachOfTenancy  | `performAction('selectRentArrearsOrBreachOfTenancy', rentArrearsOrBreach: [rentArrearsOrBreachOfTenancy.breachOfTenancy])`                                                                                 |
 | provideDetailsOfRentArrears         | `performAction('provideDetailsOfRentArrears', {files: ['tenancyLicence.docx'], rentArrearsAmountOnStatement: '1000',rentPaidByOthersOption: 'Yes',paymentOptions: ['Universal Credit']})`                  |
 | selectClaimForMoney                 | `performAction('selectClaimForMoney', 'yes')`                                                                                                                                                               |
+| selectClaimantCircumstances | `performAction('selectClaimantCircumstances', ...)` |
 ### Validations
-| Validation                 | Example Usage                                                                                                                        |
-|----------------------------|--------------------------------------------------------------------------------------------------------------------------------------|
+| Validation          | Example Usage |
+|------------------|---------------|
 | text                       | `performValidation('text', 'testElement')`                                                                                           |
 | bannerAlert                | `performValidation('bannerAlert', {message: "Case has been created."})`                                                              |
 | formLabelValue             | `performValidation('formLabelValue',  "Applicant's forename", {value:'TestUser'})`                                                   |
