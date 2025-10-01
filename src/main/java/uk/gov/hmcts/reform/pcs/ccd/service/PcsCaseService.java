@@ -61,7 +61,6 @@ public class PcsCaseService {
         PcsCaseEntity pcsCaseEntity = new PcsCaseEntity();
         pcsCaseEntity.setCaseReference(caseReference);
         pcsCaseEntity.setPropertyAddress(addressEntity);
-        pcsCaseEntity.setPaymentStatus(pcsCase.getPaymentStatus());
         pcsCaseEntity.setPreActionProtocolCompleted(
                 pcsCase.getPreActionProtocolCompleted() != null
                         ? pcsCase.getPreActionProtocolCompleted().toBoolean()
@@ -85,10 +84,6 @@ public class PcsCaseService {
         if (pcsCase.getUserPcqId() != null) {
             UUID pcqId = UUID.fromString(pcsCase.getUserPcqId());
             setPcqIdForCurrentUser(pcqId, pcsCaseEntity);
-        }
-
-        if (pcsCase.getPaymentStatus() != null) {
-            pcsCaseEntity.setPaymentStatus(pcsCase.getPaymentStatus());
         }
 
         if (pcsCase.getCaseManagementLocation() != null) {

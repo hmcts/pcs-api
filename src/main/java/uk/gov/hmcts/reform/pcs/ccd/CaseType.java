@@ -76,12 +76,6 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
             .showCondition(ShowConditions.stateNotEquals(AWAITING_FURTHER_CLAIM_DETAILS))
             .field("caseHistory");
 
-        builder.tab("ClaimPayment", "Payment")
-            .showCondition(ShowConditions.stateNotEquals(AWAITING_FURTHER_CLAIM_DETAILS))
-            .showCondition("claimPaymentTabMarkdown!=\"\"")
-            .label("claimPaymentTabMarkdownLabel", null, "${claimPaymentTabMarkdown}")
-            .field("claimPaymentTabMarkdown", NEVER_SHOW);
-
         builder.tab("hidden", "HiddenFields")
             .showCondition(NEVER_SHOW)
             .field(PCSCase::getPageHeadingMarkdown);

@@ -13,7 +13,6 @@ import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.domain.PaymentStatus;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyRole;
@@ -210,7 +209,6 @@ class ResumePossessionClaimTest extends BaseEventTest {
 
         PCSCase dataToPatchWith = pcsCaseCaptor.getValue();
         assertThat(dataToPatchWith).isSameAs(caseData);
-        assertThat(dataToPatchWith.getPaymentStatus()).isEqualTo(PaymentStatus.UNPAID);
         assertThat(dataToPatchWith.getLegislativeCountry()).isEqualTo(WALES);
     }
 
