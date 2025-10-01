@@ -212,8 +212,8 @@ tasks.register('fortifyScan', JavaExec) {
 }
 
 project.ext {
-  pactVersion = getCheckedOutGitCommitHash()
   pacticipant = 'pcs_api'
+  pacticipantVersion = getCheckedOutGitCommitHash()
 }
 
 pact {
