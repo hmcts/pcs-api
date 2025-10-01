@@ -32,7 +32,7 @@ class ClaimServiceTest {
         String claimName = "Main Claim";
 
         ClaimEntity claim = claimService.createAndLinkClaim(caseEntity, partyEntity,
-                                                            claimName, PartyRole.CLAIMANT);
+                                                            claimName, PartyRole.CLAIMANT, true);
 
         assertThat(claim).isNotNull();
         assertThat(claim.getSummary()).isEqualTo(claimName);
