@@ -7,6 +7,7 @@ import uk.gov.hmcts.ccd.sdk.api.HasLabel;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.AdditionalDocument;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
@@ -230,7 +231,7 @@ public class PcsCaseService {
      * Only includes essential fields: description, documentType, document.
      */
     private PartyDocumentDto mapAdditionalDocumentToPartyDocument(
-            uk.gov.hmcts.reform.pcs.ccd.domain.AdditionalDocument additionalDocument) {
+            AdditionalDocument additionalDocument) {
         return PartyDocumentDto.builder()
                 .description(additionalDocument.getDescription())
                 .documentType(additionalDocument.getDocumentType())
