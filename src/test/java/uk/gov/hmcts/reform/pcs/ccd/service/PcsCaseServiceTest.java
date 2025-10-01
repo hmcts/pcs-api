@@ -10,11 +10,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
-import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
-import uk.gov.hmcts.reform.pcs.ccd.domain.AdditionalDocument;
-import uk.gov.hmcts.reform.pcs.ccd.domain.AdditionalDocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PaymentStatus;
@@ -23,7 +20,6 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.model.Defendant;
-import uk.gov.hmcts.reform.pcs.ccd.model.PartyDocumentDto;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.config.MapperConfig;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
@@ -60,13 +56,21 @@ class PcsCaseServiceTest {
 
     private PcsCaseService underTest;
     private TenancyLicenceService tenancyLicenceService;
+    @Mock
+    private PartyDocumentsService partyDocumentsService;
 
     @BeforeEach
     void setUp() {
         MapperConfig config = new MapperConfig();
         modelMapper = spy(config.modelMapper());
         tenancyLicenceService = mock(TenancyLicenceService.class);
-        underTest = new PcsCaseService(pcsCaseRepository, securityContextService, modelMapper, tenancyLicenceService);
+        underTest = new PcsCaseService(
+            pcsCaseRepository, 
+            securityContextService, 
+            modelMapper, 
+            tenancyLicenceService, 
+            partyDocumentsService
+        );
     }
 
     @Test
@@ -425,197 +429,8 @@ class PcsCaseServiceTest {
         assertThat(clearedDefendant.getEmail()).isNull();
     }
 
-    @Test
-    void shouldBuildPartyDocumentsFromAdditionalDocuments() {
-        // Given
-        PCSCase pcsCase = mock(PCSCase.class);
-        List<ListValue<AdditionalDocument>> additionalDocuments = createTestAdditionalDocuments();
-        when(pcsCase.getAdditionalDocuments()).thenReturn(additionalDocuments);
 
-        // When
-        List<PartyDocumentDto> result = underTest.buildPartyDocuments(pcsCase);
 
-        // Then
-        assertThat(result).hasSize(2);
-        
-        PartyDocumentDto firstDocument = result.get(0);
-        assertThat(firstDocument.getDescription()).isEqualTo("Rent receipt for January 2025");
-        assertThat(firstDocument.getDocumentType()).isEqualTo(AdditionalDocumentType.RENT_STATEMENT);
-        assertThat(firstDocument.getDocument().getFilename()).isEqualTo("rent_statement.pdf");
-        
-        PartyDocumentDto secondDocument = result.get(1);
-        assertThat(secondDocument.getDescription()).isEqualTo("Tenancy agreement document");
-        assertThat(secondDocument.getDocumentType()).isEqualTo(AdditionalDocumentType.TENANCY_AGREEMENT);
-        assertThat(secondDocument.getDocument().getFilename()).isEqualTo("tenancy_agreement.pdf");
-    }
-
-    @Test
-    void shouldReturnEmptyListWhenAdditionalDocumentsIsNull() {
-        // Given
-        PCSCase pcsCase = mock(PCSCase.class);
-        when(pcsCase.getAdditionalDocuments()).thenReturn(null);
-
-        // When
-        List<PartyDocumentDto> result = underTest.buildPartyDocuments(pcsCase);
-
-        // Then
-        assertThat(result).isEmpty();
-    }
-
-    @Test
-    void shouldReturnEmptyListWhenAdditionalDocumentsIsEmpty() {
-        // Given
-        PCSCase pcsCase = mock(PCSCase.class);
-        when(pcsCase.getAdditionalDocuments()).thenReturn(List.of());
-
-        // When
-        List<PartyDocumentDto> result = underTest.buildPartyDocuments(pcsCase);
-
-        // Then
-        assertThat(result).isEmpty();
-    }
-
-    @Test
-    void shouldMapDescriptionCorrectly() {
-        // Given
-        PCSCase pcsCase = mock(PCSCase.class);
-        String expectedDescription = "Test document description";
-        AdditionalDocument additionalDocument = createTestAdditionalDocument(
-                expectedDescription, AdditionalDocumentType.RENT_STATEMENT);
-        List<ListValue<AdditionalDocument>> additionalDocuments = List.of(
-            ListValue.<AdditionalDocument>builder().id("1").value(additionalDocument).build()
-        );
-        when(pcsCase.getAdditionalDocuments()).thenReturn(additionalDocuments);
-
-        // When
-        List<PartyDocumentDto> result = underTest.buildPartyDocuments(pcsCase);
-
-        // Then
-        assertThat(result).hasSize(1);
-        assertThat(result.get(0).getDescription()).isEqualTo(expectedDescription);
-    }
-
-    @Test
-    void shouldMapDocumentTypeCorrectly() {
-        // Given
-        PCSCase pcsCase = mock(PCSCase.class);
-        AdditionalDocumentType expectedType = AdditionalDocumentType.TENANCY_AGREEMENT;
-        AdditionalDocument additionalDocument = createTestAdditionalDocument("Test description", expectedType);
-        List<ListValue<AdditionalDocument>> additionalDocuments = List.of(
-            ListValue.<AdditionalDocument>builder().id("1").value(additionalDocument).build()
-        );
-        when(pcsCase.getAdditionalDocuments()).thenReturn(additionalDocuments);
-
-        // When
-        List<PartyDocumentDto> result = underTest.buildPartyDocuments(pcsCase);
-
-        // Then
-        assertThat(result).hasSize(1);
-        assertThat(result.get(0).getDocumentType()).isEqualTo(expectedType);
-    }
-
-    @Test
-    void shouldMapDocumentCorrectly() {
-        // Given
-        PCSCase pcsCase = mock(PCSCase.class);
-        Document expectedDocument = Document.builder()
-            .filename("test_document.pdf")
-            .url("http://example.com/test_document.pdf")
-            .build();
-        AdditionalDocument additionalDocument = AdditionalDocument.builder()
-            .description("Test description")
-            .documentType(AdditionalDocumentType.RENT_STATEMENT)
-            .document(expectedDocument)
-            .build();
-        List<ListValue<AdditionalDocument>> additionalDocuments = List.of(
-            ListValue.<AdditionalDocument>builder().id("1").value(additionalDocument).build()
-        );
-        when(pcsCase.getAdditionalDocuments()).thenReturn(additionalDocuments);
-
-        // When
-        List<PartyDocumentDto> result = underTest.buildPartyDocuments(pcsCase);
-
-        // Then
-        assertThat(result).hasSize(1);
-        assertThat(result.get(0).getDocument()).isEqualTo(expectedDocument);
-    }
-
-    @Test
-    void shouldHandleMultipleDocuments() {
-        // Given
-        PCSCase pcsCase = mock(PCSCase.class);
-        List<ListValue<AdditionalDocument>> additionalDocuments = createMultipleTestDocuments();
-        when(pcsCase.getAdditionalDocuments()).thenReturn(additionalDocuments);
-
-        // When
-        List<PartyDocumentDto> result = underTest.buildPartyDocuments(pcsCase);
-
-        // Then
-        assertThat(result).hasSize(3);
-        assertThat(result)
-            .extracting(PartyDocumentDto::getDescription)
-            .containsExactlyInAnyOrder(
-                "Rent receipt for January 2025",
-                "Tenancy agreement document", 
-                "Witness statement document"
-            );
-        assertThat(result)
-            .extracting(PartyDocumentDto::getDocumentType)
-            .containsExactlyInAnyOrder(
-                AdditionalDocumentType.RENT_STATEMENT,
-                AdditionalDocumentType.TENANCY_AGREEMENT,
-                AdditionalDocumentType.WITNESS_STATEMENT
-            );
-    }
-
-    private List<ListValue<AdditionalDocument>> createTestAdditionalDocuments() {
-        AdditionalDocument document1 = createTestAdditionalDocument(
-                "Rent receipt for January 2025", AdditionalDocumentType.RENT_STATEMENT);
-        AdditionalDocument document2 = createTestAdditionalDocument(
-                "Tenancy agreement document", AdditionalDocumentType.TENANCY_AGREEMENT);
-        
-        return List.of(
-            ListValue.<AdditionalDocument>builder().id("1").value(document1).build(),
-            ListValue.<AdditionalDocument>builder().id("2").value(document2).build()
-        );
-    }
-
-    private List<ListValue<AdditionalDocument>> createMultipleTestDocuments() {
-        AdditionalDocument document1 = createTestAdditionalDocument(
-                "Rent receipt for January 2025", AdditionalDocumentType.RENT_STATEMENT);
-        AdditionalDocument document2 = createTestAdditionalDocument(
-                "Tenancy agreement document", AdditionalDocumentType.TENANCY_AGREEMENT);
-        AdditionalDocument document3 = createTestAdditionalDocument(
-                "Witness statement document", AdditionalDocumentType.WITNESS_STATEMENT);
-        
-        return List.of(
-            ListValue.<AdditionalDocument>builder().id("1").value(document1).build(),
-            ListValue.<AdditionalDocument>builder().id("2").value(document2).build(),
-            ListValue.<AdditionalDocument>builder().id("3").value(document3).build()
-        );
-    }
-
-    private AdditionalDocument createTestAdditionalDocument(String description, AdditionalDocumentType documentType) {
-        Document document = Document.builder()
-            .filename(getFilenameForDocumentType(documentType))
-            .url("http://example.com/" + getFilenameForDocumentType(documentType))
-            .build();
-            
-        return AdditionalDocument.builder()
-            .description(description)
-            .documentType(documentType)
-            .document(document)
-            .build();
-    }
-
-    private String getFilenameForDocumentType(AdditionalDocumentType documentType) {
-        return switch (documentType) {
-            case RENT_STATEMENT -> "rent_statement.pdf";
-            case TENANCY_AGREEMENT -> "tenancy_agreement.pdf";
-            case WITNESS_STATEMENT -> "witness_statement.pdf";
-            default -> "document.pdf";
-        };
-    }
 
     private AddressEntity stubAddressUKModelMapper(AddressUK addressUK) {
         AddressEntity addressEntity = mock(AddressEntity.class);
