@@ -57,6 +57,8 @@ public class ClaimEntity {
 
     private String summary;
 
+    private Boolean costsClaimed;
+
     private String additionalReasons;
 
     public void addParty(PartyEntity party, PartyRole partyRole) {
