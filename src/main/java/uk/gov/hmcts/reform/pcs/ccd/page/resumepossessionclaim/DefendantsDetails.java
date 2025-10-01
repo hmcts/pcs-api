@@ -45,14 +45,10 @@ public class DefendantsDetails implements CcdPageConfiguration {
                     .mandatoryWithLabel(AddressUK::getPostCode, "Postcode")
                 .done()
                 .mandatory(DefendantDetails::getCorrespondenceAddress)
-
-                .readonly(DefendantDetails::getEmailSectionLabel)
-                .mandatory(DefendantDetails::getEmailKnown)
-                .mandatory(DefendantDetails::getEmail)
             .done()
+
             .readonly(PCSCase::getAdditionalDefendantsSectionLabel)
-            .mandatory(PCSCase::getAddAdditionalDefendant)
-                .mandatory(PCSCase::getAddMoreThan25Defendants, "addAdditionalDefendant=\"Yes\"");
+            .mandatory(PCSCase::getAddAdditionalDefendant);
     }
 
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,

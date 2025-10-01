@@ -23,14 +23,12 @@ public class AdditionalDefendantsDetails implements CcdPageConfiguration {
 
     private final AddressValidator addressValidator;
 
-    private static final int MAX_DEFENDANTS = 25;
-
     @Override
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
             .page("additionalDefendantsDetails", this::midEvent)
             .pageLabel("Additional Defendants details")
-            .showCondition("addAdditionalDefendant=\"Yes\" AND addMoreThan25Defendants=\"No\"")
+            .showCondition("addAdditionalDefendant=\"Yes\"")
             .mandatoryWithLabel(PCSCase::getDefendants, "Additional Defendants details");
     }
 
@@ -39,13 +37,6 @@ public class AdditionalDefendantsDetails implements CcdPageConfiguration {
 
         PCSCase caseData = details.getData();
         List<ListValue<DefendantDetails>> defendants = caseData.getDefendants();
-
-        List<String> limitErrors = validateDefendantLimit(defendants);
-        if (!limitErrors.isEmpty()) {
-            return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
-                .errors(limitErrors)
-                .build();
-        }
 
         List<String> addressErrors = validateDefendantAddresses(defendants);
         if (!addressErrors.isEmpty()) {
@@ -57,22 +48,6 @@ public class AdditionalDefendantsDetails implements CcdPageConfiguration {
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
             .data(caseData)
             .build();
-    }
-
-    private List<String> validateDefendantLimit(List<ListValue<DefendantDetails>> defendants) {
-        int totalDefendants = 1; // Always count defendant1
-        if (defendants != null) {
-            totalDefendants += defendants.size();
-        }
-
-        if (totalDefendants > MAX_DEFENDANTS) {
-            return List.of("You cannot add more than " + MAX_DEFENDANTS + " defendants in total using this " +
-                                "screen. Currently you have " + totalDefendants + " defendants. " +
-                                "If you need to add more defendants, please return to the previous page and  select " +
-                                "Yes to the 'Are there more than " + MAX_DEFENDANTS + " defendants?' question.");
-        }
-
-        return List.of();
     }
 
     private List<String> validateDefendantAddresses(List<ListValue<DefendantDetails>> defendants) {

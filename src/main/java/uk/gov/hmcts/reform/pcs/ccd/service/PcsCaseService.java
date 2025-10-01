@@ -156,9 +156,6 @@ public class PcsCaseService {
                     defendant.setCorrespondenceAddress(null);
                     defendant.setAddressSameAsPossession(null);
                 }
-                if (VerticalYesNo.NO == defendant.getEmailKnown()) {
-                    defendant.setEmail(null);
-                }
             }
         }
     }

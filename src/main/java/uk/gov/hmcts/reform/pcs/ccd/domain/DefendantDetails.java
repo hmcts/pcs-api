@@ -45,17 +45,5 @@ public class DefendantDetails {
 
     @CCD(label = "Enter address details", showCondition = "addressKnown=\"YES\" AND addressSameAsPossession=\"NO\"")
     private AddressUK correspondenceAddress;
-
-    @CCD(label = """
-                ---
-                <h2>Defendant's email address</h2>""", typeOverride = FieldType.Label)
-    private String emailSectionLabel;
-
-    @CCD(label = "Do you know the defendant's email address?")
-    private VerticalYesNo emailKnown;
-
-    @CCD(label = "Enter email address",  typeOverride = FieldType.Email, showCondition = "emailKnown=\"YES\"")
-    private String email;
-
 }
 
