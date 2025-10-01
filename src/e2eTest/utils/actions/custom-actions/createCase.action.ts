@@ -24,6 +24,7 @@ import { claimantCircumstances } from '@data/page-data/claimantCircumstances.pag
 export let caseInfo: { id: string; fid: string; state: string };
 let caseNumber: string;
 export let claimantsName: string;
+
 export class CreateCaseAction implements IAction {
   async execute(page: Page, action: string, fieldName: actionData, data?: actionData): Promise<void> {
     const actionsMap = new Map<string, () => Promise<void>>([
@@ -391,7 +392,6 @@ export class CreateCaseAction implements IAction {
     }
     await performAction('clickButton', 'Continue');
   }
-
 
   private async provideDetailsOfRentArrears(rentArrears: actionData) {
     const rentArrearsData = rentArrears as {
