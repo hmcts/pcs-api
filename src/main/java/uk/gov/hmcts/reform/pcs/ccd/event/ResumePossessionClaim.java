@@ -90,6 +90,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
     private final ResumeClaim resumeClaim;
     private final UnsubmittedCaseDataService unsubmittedCaseDataService;
     private final NoticeDetails noticeDetails;
+    private final UploadAdditionalDocumentsDetails uploadAdditionalDocumentsDetails;
 
     private final TenancyLicenceDetails tenancyLicenceDetails;
     private final ContactPreferences contactPreferences;
@@ -137,7 +138,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             .add(new RentArrears())
             //TO DO will be routed later on  correctly using tech debt ticket
             .add(new WantToUploadDocuments())
-            .add(new UploadAdditionalDocumentsDetails())
+            .add(uploadAdditionalDocumentsDetails)
             .add(new MoneyJudgment())
             .add(new ClaimantCircumstances());
     }
