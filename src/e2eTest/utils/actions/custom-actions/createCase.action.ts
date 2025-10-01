@@ -19,7 +19,7 @@ import {dailyRentAmount} from '@data/page-data/dailyRentAmount.page.data';
 import {reasonsForPossession} from '@data/page-data/reasonsForPossession.page.data';
 import {detailsOfRentArrears} from '@data/page-data/detailsOfRentArrears.page.data';
 import {defendantCircumstances} from '@data/page-data/defendantCircumstances.page.data';
-
+import {claimingCosts} from '@data/page-data/claimingCosts.page.data';
 
 export let caseInfo: { id: string; fid: string; state: string };
 let caseNumber: string;
@@ -57,6 +57,7 @@ export class CreateCaseAction implements IAction {
       ['provideDetailsOfRentArrears', () => this.provideDetailsOfRentArrears(fieldName)],
       ['selectClaimForMoney', () => this.selectClaimForMoney(fieldName)],
       ['selectDefendantCircumstances', () => this.selectDefendantCircumstances(fieldName)]
+      ['selectClaimingCosts', () => this.selectClaimingCosts(fieldName)]
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) throw new Error(`No action found for '${action}'`);
@@ -391,6 +392,11 @@ export class CreateCaseAction implements IAction {
   private async selectClaimForMoney(option: actionData) {
     await performAction('clickRadioButton', option);
     await performAction('clickButton', 'Continue');
+  }
+
+  private async selectClaimingCosts(option: actionData) {
+    await performAction('clickRadioButton', option);
+    await performAction('clickButton', claimingCosts.continue);
   }
 
   private async selectJurisdictionCaseTypeEvent() {

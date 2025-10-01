@@ -108,6 +108,7 @@ Playwright 1.30+ | TypeScript 4.9+
 | provideDetailsOfRentArrears         | `performAction('provideDetailsOfRentArrears', {files: ['tenancyLicence.docx'], rentArrearsAmountOnStatement: '1000',rentPaidByOthersOption: 'Yes',paymentOptions: ['Universal Credit']})`                  |
 | selectClaimForMoney                 | `performAction('selectClaimForMoney', 'yes')`                                                                                                                                                              |
 | selectDefendantCircumstances        | `performAction('selectDefendantCircumstances', defendantCircumstances.yes)`                                                                                                                                |
+| selectClaimingCosts                 | `performAction('selectClaimingCosts', claimingCosts.yes)`                                                                                                                                                  |
 ### Validations
 | Validation                 | Example Usage                                                                                                                        |
 |----------------------------|--------------------------------------------------------------------------------------------------------------------------------------|
