@@ -120,8 +120,6 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             .add(contactPreferences)
             .add(defendantsDetails)
             .add(tenancyLicenceDetails)
-            .add(new WantToUploadDocuments())
-            .add(new UploadAdditionalDocumentsDetails())
             .add(new SecureOrFlexibleGroundsForPossession())
             .add(new RentArrearsOrBreachOfTenancyGround())
             .add(new SecureOrFlexibleGroundsForPossessionReasons())
@@ -137,6 +135,8 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             .add(new RentDetails())
             .add(new DailyRentAmount())
             .add(new RentArrears())
+            .add(new WantToUploadDocuments())
+            .add(new UploadAdditionalDocumentsDetails())
             .add(new MoneyJudgment())
             .add(new ClaimantCircumstances());
     }
