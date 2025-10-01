@@ -125,8 +125,7 @@ public class CustomSearchRequest {
 
     private static String convertToSql(CustomSearchRequest.PocRequest req) {
         String converted = req.nativeEsQuery.boolQuery.mustMatches.getFirst().query;
-        return "SELECT * FROM public.pcs_case\n" +
-            "ORDER BY id ASC ";
+        return "SELECT * FROM ccd.case_data\n";
     }
 }
 
