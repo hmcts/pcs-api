@@ -15,6 +15,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantCircumstances;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PaymentStatus;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
@@ -195,10 +196,11 @@ class ResumePossessionClaimTest extends BaseEventTest {
         PCSCase caseData = PCSCase.builder()
             .legislativeCountry(WALES)
             .claimantCircumstances(mock(ClaimantCircumstances.class))
+            .claimingCostsWanted(VerticalYesNo.YES)
             .build();
 
         when(userDetails.getUid()).thenReturn(UUID.randomUUID().toString());
-        when(claimService.createAndLinkClaim(any(), any(), eq("Main Claim"), eq(CLAIMANT)))
+        when(claimService.createAndLinkClaim(any(), any(), eq("Main Claim"), eq(CLAIMANT), any(boolean.class)))
             .thenReturn(ClaimEntity.builder().build());
 
         // When
@@ -228,7 +230,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
 
         PcsCaseEntity pcsCaseEntity = mock(PcsCaseEntity.class);
         when(pcsCaseService.patchCase(eq(TEST_CASE_REFERENCE), any(PCSCase.class))).thenReturn(pcsCaseEntity);
-        when(claimService.createAndLinkClaim(any(), any(), eq("Main Claim"), eq(CLAIMANT)))
+        when(claimService.createAndLinkClaim(any(), any(), eq("Main Claim"), eq(CLAIMANT), any(boolean.class)))
             .thenReturn(ClaimEntity.builder().build());
 
         PCSCase caseData = PCSCase.builder()
@@ -240,6 +242,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
             .claimantCircumstances(ClaimantCircumstances.builder()
                                        .claimantCircumstancesDetails(claimantCircumstances)
                                        .build())
+            .claimingCostsWanted(VerticalYesNo.YES)
             .build();
 
         // When
@@ -268,10 +271,12 @@ class ResumePossessionClaimTest extends BaseEventTest {
         when(pcsCaseService.patchCase(eq(TEST_CASE_REFERENCE), any(PCSCase.class))).thenReturn(pcsCaseEntity);
 
         ClaimEntity claimEntity = mock(ClaimEntity.class);
-        when(claimService.createAndLinkClaim(any(PcsCaseEntity.class), any(), anyString(), any(PartyRole.class)))
+        when(claimService.createAndLinkClaim(
+            any(PcsCaseEntity.class), any(), anyString(), any(PartyRole.class), any(boolean.class)))
             .thenReturn(claimEntity);
 
         PCSCase caseData = mock(PCSCase.class);
+        when(caseData.getClaimingCostsWanted()).thenReturn(VerticalYesNo.YES);
         when(caseData.getClaimantCircumstances()).thenReturn(mock(ClaimantCircumstances.class));
 
         // When
@@ -279,7 +284,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
 
         // Then
         verify(claimService)
-            .createAndLinkClaim(eq(pcsCaseEntity), any(), eq("Main Claim"), eq(CLAIMANT));
+            .createAndLinkClaim(eq(pcsCaseEntity), any(), eq("Main Claim"), eq(CLAIMANT), any(boolean.class));
 
         verify(claimService).saveClaim(claimEntity);
     }
