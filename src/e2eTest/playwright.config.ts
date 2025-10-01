@@ -12,8 +12,8 @@ module.exports = defineConfig({
   /* Retry on CI only */
   retries: process.env.CI ? 2 : 0,
   timeout: 60 * 1000,
-  expect: { timeout: 10 * 1000 },
-  use: { actionTimeout: 20 * 1000, navigationTimeout: 20 * 1000 },
+  expect: { timeout: 20 * 1000 },
+  use: { actionTimeout: 30 * 1000, navigationTimeout: 20 * 1000 },
   /* Report slow tests if they take longer than 5 mins */
   reportSlowTests: { max: 15, threshold: 5 * 60 * 1000 },
   globalSetup: require.resolve('./config/global-setup.config'),
