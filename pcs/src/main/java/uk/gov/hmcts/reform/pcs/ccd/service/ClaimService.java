@@ -37,12 +37,6 @@ public class ClaimService {
         return claimRepository.save(claim);
     }
 
-
-//    public ArrayList<CaseDetailsEntity> claims() {
-//        return (ArrayList<CaseDetailsEntity>) claimRepository.findAllNative();
-//
-//    }
-
     public List<Map<String, Object>> claims() {
         return claimRepository.findAllNative();
     }

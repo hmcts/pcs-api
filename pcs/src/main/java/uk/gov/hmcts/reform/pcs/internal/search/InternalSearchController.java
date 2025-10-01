@@ -4,7 +4,6 @@ package uk.gov.hmcts.reform.pcs.internal.search;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.swagger.v3.core.util.Json;
 import lombok.AllArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -12,18 +11,15 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-//import uk.gov.hmcts.ccd.data.casedetails.CaseDetailsEntity;
 import uk.gov.hmcts.ccd.data.casedetails.SecurityClassification;
 import uk.gov.hmcts.ccd.domain.model.definition.CaseDetails;
 import uk.gov.hmcts.ccd.domain.model.search.CaseSearchResult;
-import uk.gov.hmcts.ccd.domain.model.search.elasticsearch.CaseSearchResultView;
 import uk.gov.hmcts.reform.pcs.ccd.service.ClaimService;
 import uk.gov.hmcts.reform.pcs.hearings.model.CustomSearchRequest;
 
 import java.io.IOException;
 import java.sql.Timestamp;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -49,22 +45,12 @@ public class InternalSearchController {
             String convertedSql = CustomSearchRequest.parse(jsonData);
             System.out.println(convertedSql);
 
+            //todo
             //Results as map, then manually convert
             List<Map<String, Object>> claimList = claimService.claims();
             ArrayList<CaseDetails> caseDetails = mapToCaseDetails(claimList);
-            CaseSearchResult caseSearchResult = new CaseSearchResult((long) caseDetails.size(), caseDetails);
 
-            System.out.println("Data Returned");
-
-            return caseSearchResult;
-
-            //Results as entity
-//            ArrayList<CaseDetailsEntity> claimList = claimService.claims();
-
-            //Todo
-            //return CaseSearchResultView which holds a CaseSearchResult which holds
-            //a list of CaseDetails
-
+            return new CaseSearchResult((long) caseDetails.size(), caseDetails);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -88,13 +74,8 @@ public class InternalSearchController {
             convertedCase.setReference((Long) individualCase.get("reference"));
             convertedCase.setJurisdiction((String) individualCase.get("jurisdiction"));
 
-            // Convert only "data"
-            Object raw = individualCase.get("data");
-            if (!(raw instanceof String)) {
-                throw new IllegalArgumentException("'data' must be a JSON string for readTree");
-            }
 
-            JsonNode dataNode = mapper.readTree((String) raw);
+            JsonNode dataNode = mapper.readTree((String) individualCase.get("data"));
             Map<String, JsonNode> target = new HashMap<>();
             target.put("data", dataNode);
             convertedCase.setData(target);
@@ -105,7 +86,7 @@ public class InternalSearchController {
 
             JsonNode supplementaryDataNode = mapper.readTree((String) individualCase.get("supplementary_data"));
             Map<String, JsonNode> supplementaryTarget = new HashMap<>();
-            target.put("supplementary_data", dataNode);
+            target.put("supplementary_data", supplementaryDataNode);
             convertedCase.setSupplementaryData(supplementaryTarget);
 
             convertedCase.setId(String.valueOf(individualCase.get("id")));
