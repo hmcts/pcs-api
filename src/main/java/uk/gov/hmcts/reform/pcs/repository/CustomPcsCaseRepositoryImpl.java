@@ -5,7 +5,7 @@ import jakarta.persistence.Tuple;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Claim;
-import uk.gov.hmcts.reform.pcs.ccd.domain.PcsCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.entity.PartyRole;
 import uk.gov.hmcts.reform.pcs.service.CcdMoneyFieldFormatter;
@@ -31,7 +31,7 @@ public class CustomPcsCaseRepositoryImpl implements CustomPcsCaseRepository {
     }
 
     @Override
-    public Optional<PcsCase> findDtoByCaseReference(long caseReference) {
+    public Optional<PCSCase> findDtoByCaseReference(long caseReference) {
         return entityManager.createQuery(
                 """
                     select
@@ -51,7 +51,7 @@ public class CustomPcsCaseRepositoryImpl implements CustomPcsCaseRepository {
                         p.surname as partySurname,
                         p.active as partyActive,
                         cp.role as partyRole
-                    from PcsCase pc
+                    from PCSCaseEntity pc
                     left join Address a on pc.id = a.pcsCase.id
                     left join Claim c on pc.id = c.pcsCase.id
                     left join ClaimParty cp on c.id = cp.claim.id
@@ -65,10 +65,10 @@ public class CustomPcsCaseRepositoryImpl implements CustomPcsCaseRepository {
             .stream().findFirst();
     }
 
-    private List<PcsCase> accumulatePcsCaseRow(List<PcsCase> pcsCaseList, Tuple row) {
+    private List<PCSCase> accumulatePcsCaseRow(List<PCSCase> pcsCaseList, Tuple row) {
         Map<UUID, Party> caseParties = new HashMap<>();
 
-        PcsCase currentCase = findOrCreateCase(pcsCaseList, row);
+        PCSCase currentCase = findOrCreateCase(pcsCaseList, row);
 
         UUID claimId = row.get("claimId", UUID.class);
         if (claimId != null) {
@@ -93,7 +93,7 @@ public class CustomPcsCaseRepositoryImpl implements CustomPcsCaseRepository {
         return pcsCaseList;
     }
 
-    private static PcsCase findOrCreateCase(List<PcsCase> pcsCaseList, Tuple row) {
+    private static PCSCase findOrCreateCase(List<PCSCase> pcsCaseList, Tuple row) {
         Long rowCcdReference = row.get("caseReference", Long.class);
 
         return pcsCaseList.stream()
@@ -102,11 +102,12 @@ public class CustomPcsCaseRepositoryImpl implements CustomPcsCaseRepository {
             .orElseGet(() -> {
                 AddressUK propertyAddress = createAddress(row);
 
-                PcsCase pcsCase = PcsCase.builder()
+                PCSCase pcsCase = PCSCase.builder()
                     .ccdCaseReference(rowCcdReference)
                     .applicantForename("<placeholder>")
                     .propertyAddress(propertyAddress)
                     .claims(new ArrayList<>())
+                    .genApps(new ArrayList<>())
                     .build();
 
                 pcsCaseList.add(pcsCase);
@@ -127,7 +128,7 @@ public class CustomPcsCaseRepositoryImpl implements CustomPcsCaseRepository {
             .build();
     }
 
-    private Claim findOrCreateClaim(PcsCase pcsCase, UUID claimId, Tuple row) {
+    private Claim findOrCreateClaim(PCSCase pcsCase, UUID claimId, Tuple row) {
         return pcsCase.getClaims().stream()
             .filter(claim -> claim.getId().equals(claimId))
             .findFirst()
@@ -165,8 +166,8 @@ public class CustomPcsCaseRepositoryImpl implements CustomPcsCaseRepository {
         return party;
     }
 
-    private List<PcsCase> combineLists(List<PcsCase> list1, List<PcsCase> list2) {
-        List<PcsCase> combined = new ArrayList<>(list1);
+    private List<PCSCase> combineLists(List<PCSCase> list1, List<PCSCase> list2) {
+        List<PCSCase> combined = new ArrayList<>(list1);
         combined.addAll(list2);
         return combined;
     }

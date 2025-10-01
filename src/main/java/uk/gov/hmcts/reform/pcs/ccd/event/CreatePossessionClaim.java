@@ -3,17 +3,18 @@ package uk.gov.hmcts.reform.pcs.ccd.event;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CCDConfig;
-import uk.gov.hmcts.ccd.sdk.api.ConfigBuilder;
+import uk.gov.hmcts.ccd.sdk.api.DecentralisedConfigBuilder;
 import uk.gov.hmcts.ccd.sdk.api.EventPayload;
 import uk.gov.hmcts.ccd.sdk.api.Permission;
-import uk.gov.hmcts.reform.pcs.ccd.domain.PcsCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.UserRole;
 import uk.gov.hmcts.reform.pcs.entity.Address;
+import uk.gov.hmcts.reform.pcs.entity.PCSCaseEntity;
 import uk.gov.hmcts.reform.pcs.repository.PcsCaseRepository;
 
 @Component
-public class CreatePossessionClaim implements CCDConfig<PcsCase, State, UserRole> {
+public class CreatePossessionClaim implements CCDConfig<PCSCase, State, UserRole> {
 
     private final PcsCaseRepository pcsCaseRepository;
     private final ModelMapper modelMapper;
@@ -25,24 +26,24 @@ public class CreatePossessionClaim implements CCDConfig<PcsCase, State, UserRole
     }
 
     @Override
-    public void configure(ConfigBuilder<PcsCase, State, UserRole> configBuilder) {
+    public void configureDecentralised(final DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
         configBuilder
             .decentralisedEvent(EventId.createPossessionClaim.name(), this::submit)
             .initialState(State.Open)
             .name("Create a Property Claim")
             .showSummary()
-            .grant(Permission.CRUD, UserRole.CASE_WORKER)
+            .grant(Permission.CRUD, UserRole.PCS_SOLICITOR)
             .fields()
             .page("property details")
-            .mandatory(PcsCase::getPropertyAddress)
+            .mandatory(PCSCase::getPropertyAddress)
             .done();
     }
 
-    private void submit(EventPayload<PcsCase, State> eventPayload) {
+    private void submit(EventPayload<PCSCase, State> eventPayload) {
         long caseReference = eventPayload.caseReference();
-        PcsCase pcsCase = eventPayload.caseData();
+        PCSCase pcsCase = eventPayload.caseData();
 
-        uk.gov.hmcts.reform.pcs.entity.PcsCase pcsCaseEntity = uk.gov.hmcts.reform.pcs.entity.PcsCase.builder()
+        PCSCaseEntity pcsCaseEntity = PCSCaseEntity.builder()
             .caseReference(caseReference)
             .build();
 
@@ -52,7 +53,7 @@ public class CreatePossessionClaim implements CCDConfig<PcsCase, State, UserRole
         pcsCaseRepository.save(pcsCaseEntity);
     }
 
-    private Address createAddressEntity(PcsCase pcsCase) {
+    private Address createAddressEntity(PCSCase pcsCase) {
         return modelMapper.map(pcsCase.getPropertyAddress(), Address.class);
     }
 

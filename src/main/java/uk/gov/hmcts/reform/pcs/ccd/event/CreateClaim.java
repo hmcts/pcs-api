@@ -4,7 +4,7 @@ import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CCDConfig;
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
-import uk.gov.hmcts.ccd.sdk.api.ConfigBuilder;
+import uk.gov.hmcts.ccd.sdk.api.DecentralisedConfigBuilder;
 import uk.gov.hmcts.ccd.sdk.api.EventPayload;
 import uk.gov.hmcts.ccd.sdk.api.Permission;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
@@ -12,15 +12,16 @@ import uk.gov.hmcts.ccd.sdk.type.DynamicListElement;
 import uk.gov.hmcts.ccd.sdk.type.DynamicMultiSelectList;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Claim;
-import uk.gov.hmcts.reform.pcs.ccd.domain.PcsCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.UserRole;
+import uk.gov.hmcts.reform.pcs.entity.PCSCaseEntity;
 import uk.gov.hmcts.reform.pcs.entity.Party;
 import uk.gov.hmcts.reform.pcs.entity.PartyRole;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.repository.ClaimRepository;
-import uk.gov.hmcts.reform.pcs.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.repository.PartyRepository;
+import uk.gov.hmcts.reform.pcs.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.service.CcdMoneyFieldFormatter;
 import uk.gov.hmcts.reform.pcs.service.PartyService;
 
@@ -31,7 +32,7 @@ import java.util.UUID;
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 
 @Component
-public class CreateClaim implements CCDConfig<PcsCase, State, UserRole> {
+public class CreateClaim implements CCDConfig<PCSCase, State, UserRole> {
 
     private final PartyService partyService;
     private final PcsCaseRepository pcsCaseRepository;
@@ -53,30 +54,30 @@ public class CreateClaim implements CCDConfig<PcsCase, State, UserRole> {
     }
 
     @Override
-    public void configure(ConfigBuilder<PcsCase, State, UserRole> configBuilder) {
+    public void configureDecentralised(final DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
         configBuilder
             .decentralisedEvent(EventId.createClaim.name(), this::submit)
             .forAllStates()
             .name("Create claim")
             .showSummary()
             .aboutToStartCallback(this::start)
-            .grant(Permission.CRUD, UserRole.CASE_WORKER)
+            .grant(Permission.CRUD, UserRole.PCS_SOLICITOR)
             .fields()
             .page("summary")
-            .mandatory(PcsCase::getClaimToAdd)
+            .mandatory(PCSCase::getClaimToAdd)
             .page("claimants", this::claimantsSelected)
-            .mandatory(PcsCase::getClaimantsToAdd)
+            .mandatory(PCSCase::getClaimantsToAdd)
             .page("defendants", this::defendantsSelected)
-            .mandatory(PcsCase::getDefendantsToAdd)
+            .mandatory(PCSCase::getDefendantsToAdd)
             .page("interested-parties")
             .showCondition("ipEmpty=\"No\"")
-            .optional(PcsCase::getInterestedPartiesToAdd)
-            .readonly(PcsCase::getIpEmpty, NEVER_SHOW)
+            .optional(PCSCase::getInterestedPartiesToAdd)
+            .readonly(PCSCase::getIpEmpty, NEVER_SHOW)
             .done();
     }
 
-    private AboutToStartOrSubmitResponse<PcsCase, State> start(CaseDetails<PcsCase, State> caseDetails) {
-        PcsCase pcsCase = caseDetails.getData();
+    private AboutToStartOrSubmitResponse<PCSCase, State> start(CaseDetails<PCSCase, State> caseDetails) {
+        PCSCase pcsCase = caseDetails.getData();
 
         List<DynamicListElement> claimantsOptionsList = partyService.getAllPartiesAsOptionsList(caseDetails.getId());
 
@@ -85,15 +86,15 @@ public class CreateClaim implements CCDConfig<PcsCase, State, UserRole> {
             .build();
         pcsCase.setClaimantsToAdd(dynamicList);
 
-        return AboutToStartOrSubmitResponse.<PcsCase, State>builder()
+        return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
             .data(caseDetails.getData())
             .build();
     }
 
-    private AboutToStartOrSubmitResponse<PcsCase, State> claimantsSelected(CaseDetails<PcsCase, State> details,
-                                                                           CaseDetails<PcsCase, State> detailsBefore) {
+    private AboutToStartOrSubmitResponse<PCSCase, State> claimantsSelected(CaseDetails<PCSCase, State> details,
+                                                                           CaseDetails<PCSCase, State> detailsBefore) {
 
-        PcsCase pcsCase = details.getData();
+        PCSCase pcsCase = details.getData();
 
         DynamicMultiSelectList claimantsMultiSelectList = pcsCase.getClaimantsToAdd();
         List<DynamicListElement> selectedClaimants = claimantsMultiSelectList.getValue();
@@ -107,15 +108,15 @@ public class CreateClaim implements CCDConfig<PcsCase, State, UserRole> {
 
         pcsCase.setDefendantsToAdd(defendantsMultiSelectList);
 
-        return AboutToStartOrSubmitResponse.<PcsCase, State>builder()
+        return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
             .data(details.getData())
             .build();
     }
 
-    private AboutToStartOrSubmitResponse<PcsCase, State> defendantsSelected(CaseDetails<PcsCase, State> details,
-                                                                            CaseDetails<PcsCase, State> detailsBefore) {
+    private AboutToStartOrSubmitResponse<PCSCase, State> defendantsSelected(CaseDetails<PCSCase, State> details,
+                                                                            CaseDetails<PCSCase, State> detailsBefore) {
 
-        PcsCase pcsCase = details.getData();
+        PCSCase pcsCase = details.getData();
 
         DynamicMultiSelectList defendantsMultiSelectList = pcsCase.getDefendantsToAdd();
         List<DynamicListElement> selectedDefendants = defendantsMultiSelectList.getValue();
@@ -131,13 +132,13 @@ public class CreateClaim implements CCDConfig<PcsCase, State, UserRole> {
         pcsCase.setInterestedPartiesToAdd(interestedPartiesMultiSelectList);
         pcsCase.setIpEmpty(YesOrNo.from(interestedPartiesOptionsList.isEmpty()));
 
-        return AboutToStartOrSubmitResponse.<PcsCase, State>builder()
+        return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
             .data(details.getData())
             .build();
     }
 
-    private void submit(EventPayload<PcsCase, State> eventPayload) {
-        PcsCase pcsCase = eventPayload.caseData();
+    private void submit(EventPayload<PCSCase, State> eventPayload) {
+        PCSCase pcsCase = eventPayload.caseData();
         Claim claimToAdd = pcsCase.getClaimToAdd();
 
         uk.gov.hmcts.reform.pcs.entity.Claim claimEntity = uk.gov.hmcts.reform.pcs.entity.Claim.builder()
@@ -172,7 +173,7 @@ public class CreateClaim implements CCDConfig<PcsCase, State, UserRole> {
         );
 
         long caseReference = eventPayload.caseReference();
-        uk.gov.hmcts.reform.pcs.entity.PcsCase pcsCaseEntity = pcsCaseRepository.findByCaseReference(caseReference)
+        PCSCaseEntity pcsCaseEntity = pcsCaseRepository.findByCaseReference(caseReference)
             .orElseThrow(() -> new CaseNotFoundException("Case not found for " + caseReference));
 
         pcsCaseEntity.addClaim(claimEntity);

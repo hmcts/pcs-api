@@ -1,0 +1,9 @@
+ccd:
+  elasticsearch:
+    persistence:
+      enabled: true
+    volumeClaimTemplate:
+      resources:
+        requests:
+          storage: 500Mi
+      storageClassName: managed-lrs

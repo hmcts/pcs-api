@@ -1,11 +1,13 @@
 package uk.gov.hmcts.reform.pcs.ccd.domain;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.type.FieldType;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.reform.pcs.entity.PartyRole;
 
 import java.util.UUID;
 
@@ -13,6 +15,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 
 @Builder
 @Data
+@AllArgsConstructor
 public class Party {
 
     @CCD(label = "Party ID", typeOverride = FieldType.Text, showCondition = NEVER_SHOW)
@@ -23,6 +26,9 @@ public class Party {
 
     @CCD(label = "Surname")
     private String surname;
+
+    @CCD(ignore = true)
+    private PartyRole role;
 
     @CCD(label = "Is party active?")
     private final YesOrNo active;

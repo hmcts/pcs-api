@@ -1,11 +1,11 @@
 package uk.gov.hmcts.reform.pcs.repository;
 
-import uk.gov.hmcts.reform.pcs.ccd.domain.PcsCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 
 import java.util.Optional;
 
 public interface CustomPcsCaseRepository {
 
-    Optional<PcsCase> findDtoByCaseReference(long caseReference);
+    Optional<PCSCase> findDtoByCaseReference(long caseReference);
 
 }

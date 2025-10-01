@@ -1,0 +1,23 @@
+{% macro showParties(partyList) %}
+  {% for party in partyList %}
+  {{ party.forename }} {{ party.surname }} ({{ party.role }}) {% if party.active == "NO" %} (inactive) {% endif %}<br>
+  {%- endfor %}
+{% endmacro %}
+
+## General Applications Overview
+
+{% if genApps | length > 0 %}
+
+| Applicants | Summary |
+|------------|---------|
+{% for genApp in genApps %}
+| {{ showParties( genApp.applicants ) }} | {{ genApp.summary }} |
+{% endfor %}
+
+{% else %}
+### No general applications have been added to this case
+{% endif %}
+<a href="/cases/case-details/{{caseReference}}/trigger/{{createGeneralApplicationEvent}}" role="button" class="govuk-button">
+  Create a new general application
+</a>
+

@@ -9,13 +9,13 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.math.BigDecimal;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
@@ -32,7 +32,8 @@ import static jakarta.persistence.FetchType.LAZY;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class Claim {
+@Table(name = "general_application")
+public class GeneralApplicationEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -43,24 +44,21 @@ public class Claim {
     @JsonBackReference
     private PCSCaseEntity pcsCase;
 
-    @OneToMany(fetch = LAZY, cascade = ALL, mappedBy = "claim")
+    @OneToMany(fetch = LAZY, cascade = ALL, mappedBy = "generalApplication")
     @Builder.Default
     @JsonManagedReference
-    private Set<ClaimParty> claimParties = new HashSet<>();
+    private Set<GeneralApplicationParty> generalApplicationParties = new HashSet<>();
 
     private String summary;
 
-    private BigDecimal amount;
-
-    public void addParty(Party party, PartyRole partyRole) {
-        ClaimParty claimParty = ClaimParty.builder()
-            .claim(this)
+    public void addParty(Party party) {
+        GeneralApplicationParty generalApplicationParty = GeneralApplicationParty.builder()
+            .generalApplication(this)
             .party(party)
-            .role(partyRole)
             .build();
 
-        claimParties.add(claimParty);
-        party.getClaimParties().add(claimParty);
+        generalApplicationParties.add(generalApplicationParty);
+        party.getGeneralApplicationParties().add(generalApplicationParty);
     }
 
 }

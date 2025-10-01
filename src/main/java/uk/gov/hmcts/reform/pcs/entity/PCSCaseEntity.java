@@ -7,6 +7,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
+import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -29,7 +30,8 @@ import static jakarta.persistence.FetchType.LAZY;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class PcsCase {
+@Table(name = "pcs_case")
+public class PCSCaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -50,6 +52,11 @@ public class PcsCase {
     @JsonManagedReference
     private Set<Claim> claims = new HashSet<>();
 
+    @OneToMany(mappedBy = "pcsCase", fetch = LAZY, cascade = ALL)
+    @Builder.Default
+    @JsonManagedReference
+    private Set<GeneralApplicationEntity> generalApplications = new HashSet<>();
+
     public void setAddress(Address address) {
         if (this.address != null) {
             this.address.setPcsCase(null);
@@ -66,6 +73,11 @@ public class PcsCase {
     public void addClaim(Claim claim) {
         claims.add(claim);
         claim.setPcsCase(this);
+    }
+
+    public void addGeneralApplication(GeneralApplicationEntity generalApplication) {
+        generalApplications.add(generalApplication);
+        generalApplication.setPcsCase(this);
     }
 
 }

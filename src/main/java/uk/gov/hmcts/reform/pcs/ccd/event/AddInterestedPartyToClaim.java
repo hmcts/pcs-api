@@ -2,13 +2,13 @@ package uk.gov.hmcts.reform.pcs.ccd.event;
 
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CCDConfig;
-import uk.gov.hmcts.ccd.sdk.api.ConfigBuilder;
+import uk.gov.hmcts.ccd.sdk.api.DecentralisedConfigBuilder;
 import uk.gov.hmcts.ccd.sdk.api.EventPayload;
 import uk.gov.hmcts.ccd.sdk.api.Permission;
 import uk.gov.hmcts.ccd.sdk.type.DynamicListElement;
 import uk.gov.hmcts.ccd.sdk.type.DynamicMultiSelectList;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
-import uk.gov.hmcts.reform.pcs.ccd.domain.PcsCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.UserRole;
 import uk.gov.hmcts.reform.pcs.exception.ClaimNotFoundException;
@@ -25,7 +25,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.MultiSelectListUtils.getSelectedCodes;
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 
 @Component
-public class AddInterestedPartyToClaim implements CCDConfig<PcsCase, State, UserRole> {
+public class AddInterestedPartyToClaim implements CCDConfig<PCSCase, State, UserRole> {
 
     private final PartyService partyService;
     private final ClaimService claimService;
@@ -41,24 +41,24 @@ public class AddInterestedPartyToClaim implements CCDConfig<PcsCase, State, User
     }
 
     @Override
-    public void configure(ConfigBuilder<PcsCase, State, UserRole> configBuilder) {
+    public void configureDecentralised(final DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
         configBuilder
             .decentralisedEvent(EventId.addInterestedPartyToClaim.name(), this::submit, this::start)
             .forAllStates()
             .name("Add interested party")
-            .grant(Permission.CRUD, UserRole.CASE_WORKER)
+            .grant(Permission.CRUD, UserRole.PCS_SOLICITOR)
             .showCondition(NEVER_SHOW)
             .fields()
             .page("interested-parties")
-            .mandatory(PcsCase::getInterestedPartiesToAdd)
+            .mandatory(PCSCase::getInterestedPartiesToAdd)
             .label("no-claimants-label", "### There are no unassigned parties for this claim", "partyListEmpty=\"Yes\"")
-            .readonly(PcsCase::getCurrentClaimId, NEVER_SHOW)
-            .readonly(PcsCase::getPartyListEmpty, NEVER_SHOW)
+            .readonly(PCSCase::getCurrentClaimId, NEVER_SHOW)
+            .readonly(PCSCase::getPartyListEmpty, NEVER_SHOW)
             .done();
     }
 
-    private PcsCase start(EventPayload<PcsCase, State> payload) {
-        PcsCase pcsCase = payload.caseData();
+    private PCSCase start(EventPayload<PCSCase, State> payload) {
+        PCSCase pcsCase = payload.caseData();
 
         String claimId = payload.urlParams().getFirst("claimId");
 
@@ -86,8 +86,8 @@ public class AddInterestedPartyToClaim implements CCDConfig<PcsCase, State, User
         return pcsCase;
     }
 
-    private void submit(EventPayload<PcsCase, State> eventPayload) {
-        PcsCase pcsCase = eventPayload.caseData();
+    private void submit(EventPayload<PCSCase, State> eventPayload) {
+        PCSCase pcsCase = eventPayload.caseData();
 
         UUID currentClaimId = UUID.fromString(pcsCase.getCurrentClaimId());
         List<UUID> partiesIdsToAdd = getSelectedCodes(pcsCase.getInterestedPartiesToAdd());

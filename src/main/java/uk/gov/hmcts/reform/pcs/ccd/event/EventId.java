@@ -8,6 +8,7 @@ public enum EventId {
     deactivateParties,
     reactivateParties,
     createClaim,
+    createGeneralApplication,
     addClaimantToClaim,
     addDefendantToClaim,
     addInterestedPartyToClaim

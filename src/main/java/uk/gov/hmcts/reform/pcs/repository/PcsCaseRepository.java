@@ -2,14 +2,14 @@ package uk.gov.hmcts.reform.pcs.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
-import uk.gov.hmcts.reform.pcs.entity.PcsCase;
+import uk.gov.hmcts.reform.pcs.entity.PCSCaseEntity;
 
 import java.util.Optional;
 import java.util.UUID;
 
 @Repository
-public interface PcsCaseRepository extends JpaRepository<PcsCase, UUID>, CustomPcsCaseRepository {
+public interface PcsCaseRepository extends JpaRepository<PCSCaseEntity, UUID>, CustomPcsCaseRepository {
 
-    Optional<PcsCase> findByCaseReference(long caseReference);
+    Optional<PCSCaseEntity> findByCaseReference(long caseReference);
 
 }

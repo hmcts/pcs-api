@@ -3,6 +3,8 @@
 !gradle/wrapper/gradle-wrapper.jar
 *.class
 bin/main/application.yaml
+bin/
+BOOT-INF/
 
 ### STS ###
 .apt_generated
@@ -18,6 +20,9 @@ bin/main/application.yaml
 *.iws
 *.iml
 *.ipr
+
+### VS Code ###
+.vscode/
 
 .DS_Store
 
@@ -40,7 +45,13 @@ applicationinsights-agent-*.jar
 /src/e2eTest/.yarn/
 /src/e2eTest/playwright-report/
 /src/e2eTest/test-results/
+/src/e2eTest/allure-report/
+/src/e2eTest/allure-results/
 /src/e2eTest/node_modules/
 /report-for-functional-tests/
 /target/
 /pacts/
+/cftlib_log_file_IS_UNDEFINED
+/allure-results
+
+node_modules

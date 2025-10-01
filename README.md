@@ -13,34 +13,58 @@ To build the project execute the following command:
   ./gradlew build
 ```
 
-### Running the application
-
-Create the image of the application by executing the following command:
+### Running pcs-api with local CCD
 
 ```bash
-  ./gradlew assemble
+./gradlew bootWithCCD
+```
+Above command starts PCS API + CCD & all dependencies
+
+This will start several containers:
+
+| Container                         | Port |
+|-----------------------------------|------|
+| PCS-API                           | 3206 |
+| XUI Manage case (UI Access point) | 3000 |
+| Elastic search                    | 9200 |
+| Postgres Database                 | 6432 |
+| IDAM Simulator                    | 5062 |
+| XUI Manage org                    | 3001 |
+
+Once successfully loaded open XUI at http://localhost:3000
+See CftlibConfig.java for users and login details.
+
+By default, this runs with local instance of IDAM and
+S2S services. However sometimes it may be required to run
+with the AAT instances of those services, (for example when running both pcs-frontend and pcs-api locally).
+
+To do this, edit the `build.gradle` file before running the `bootWithCCD` task and replace
+
+```
+authMode = AuthMode.Local
 ```
 
-Note: Docker Compose V2 is highly recommended for building and running the application.
-In the Compose V2 old `docker-compose` command is replaced with `docker compose`.
+with
 
-Create docker image:
-
-```bash
-  docker compose build
+```
+authMode = AuthMode.AAT
 ```
 
-Run the distribution (created in `build/install/pcs-api` directory)
-by executing the following command:
+Then set the following environment variables based on the value below or named secret
+from the PCS AAT key vault:
 
-```bash
-  docker compose up
-```
+| Environment Variable     | Value or Secret Name                                             |
+|--------------------------|------------------------------------------------------------------|
+| LOCATION_REF_URL         | http://rd-location-ref-api-aat.service.core-compute-aat.internal |
+| PCS_API_S2S_SECRET       | secret: pcs-api-s2s-secret                                       |
+| IDAM_CLIENT_SECRET       | secret: pcs-api-idam-secret                                      |
+| PCS_IDAM_SYSTEM_USERNAME | secret: idam-system-user-name                                    |
+| PCS_IDAM_SYSTEM_PASSWORD | secret: idam-system-user-password                                |
 
-This will start the API container exposing the application's port `3206`, and a database container running on the port
-`5432`.
 
-In order to test if the application is up, you can call its health endpoint:
+Finally, run the service with the `bootWithCCD` task as above.
+
+In order to test if the API is healthy, you can call its health endpoint:
 
 ```bash
   curl http://localhost:3206/health
@@ -49,44 +73,28 @@ In order to test if the application is up, you can call its health endpoint:
 You should get a response similar to this:
 
 ```
-  {"status":"UP","components":{"db":{"status":"UP","details":{"database":"PostgreSQL","validationQuery":"isValid()"}},"diskSpace":{"status":"UP","details":{"total":62671097856,"free":24688128000,"threshold":10485760,"path":"/opt/app/.","exists":true}},"ping":{"status":"UP"}}}
+  {"status":"UP","components":{"coreCaseData":{"status":"UP"},"db":{"status":"UP","details":{"database":"PostgreSQL","validationQuery":"isValid()"}},"dbScheduler":{"status":"UP","details":{"state":"started"}},"discoveryComposite":{"description":"Discovery Client not initialized","status":"UNKNOWN","components":{"discoveryClient":{"description":"Discovery Client not initialized","status":"UNKNOWN"}}},"diskSpace":{"status":"UP","details":{"total":494384795648,"free":167924658176,"threshold":10485760,"path":"/Users/jakegowler/Documents/HMCTS/pcs/pcs-api/.","exists":true}},"ping":{"status":"UP"},"refreshScope":{"status":"UP"},"serviceAuth":{"status":"UP"},"ssl":{"status":"UP","details":{"validChains":[],"invalidChains":[]}}}}
 ```
 
-### Alternative script to run application
+To access the swagger documentation for the API, go to http://localhost:3206/swagger-ui/index.html.
 
-To skip all the setting up and building, just execute the following command:
+#### Document Management
 
-```bash
-./bin/run-in-docker.sh
-```
-
-For more information:
-
-```bash
-./bin/run-in-docker.sh -h
-```
-
-Script includes bare minimum environment variables necessary to start api instance. Whenever any variable is changed or any other script regarding docker image/container build, the suggested way to ensure all is cleaned up properly is by this command:
-
-```bash
-docker compose rm
-```
-
-It clears stopped containers correctly. Might consider removing clutter of images too, especially the ones fiddled with:
-
-```bash
-docker images
-
-docker image rm <image-id>
-```
-
-There is no need to remove postgres and java or similar core images.
-
----
+- To get document upload working locally, it's easier to connect to AAT dependencies using a VPN.
+- Set the authentication mode to `AuthMode.AAT` as described above.
 
 ### Running the tests
 
 The Functional tests use [Rest Assured](https://rest-assured.io) and [Serenity](https://serenity-bdd.github.io) for reporting, and are located in the `/src/functionalTest` directory.
+
+The following environment variables are needed to run the tests:
+- PCS_API_S2S_SECRET
+- TEST_URL
+- IDAM_S2S_AUTH_URL
+- IDAM_API_URL
+- IDAM_SYSTEM_USERNAME
+- IDAM_SYSTEM_USER_PASSWORD
+- PCS_API_IDAM_SECRET
 
 To run the tests, use:
 ```bash
@@ -106,12 +114,12 @@ After the tests run, the report will be available under the /[report-for-functio
 
 ---
 
-The E2E UI tests use [Playwright](https://playwright.dev/), and in order to access these you need to cd to the `/src/e2eTests` directory.
+The E2E UI tests use [Playwright](https://playwright.dev/), and in order to access these you need to cd to the `/src/e2eTest` directory.
 
 This is done with:
 
 ```bash
-cd src/e2eTests
+cd src/e2eTest
 ````
 
 Before running any tests, please install all required packages:
@@ -119,30 +127,40 @@ Before running any tests, please install all required packages:
 ```bash
 yarn install
 ````
+Running the tests:
 
-The pr suite can be run with the following command:
+The e2e tests use playwright, and are located in the /src/e2eTest directory.
+
+The following environment variables are needed to run the tests:
+
+- CHANGE_ID (same as PR number - Required only pointing to Preview env)
+- MANAGE_CASE_BASE_URL
+- PCS_API_IDAM_SECRET
+- IDAM_SYSTEM_USERNAME
+- IDAM_SYSTEM_USER_PASSWORD
+- IDAM_PCS_USER_PASSWORD
+
+The e2e suite can be run with the following command:
 
 ```bash
-yarn test:functional
+yarn test:chrome
 ```
-
-By default, the tests will run against http://localhost:3206/, please update the value on line 3 of `src/e2eTest/config.ts` to change this.
-
 There are also several custom test scripts available:
 
 - `yarn test:changed` - runs only changed spec files
-- `test:chrome` - runs the full E2E suite in Chrome
-- `test:firefox` - runs the full E2E suite in Firefox
+- `yarn test:chrome` - runs the full E2E suite in Chrome
 
-### Running pcs-api with local CCD
+To open generated Allure report
 
 ```bash
-./gradlew bootWithCCD
+yarn test:openAllureReport
 ```
-Above command starts PCS API + CCD & all dependencies
-
-Once successfully loaded open XUI at http://localhost:3000
-See CftlibConfig.java for users and login details.
+Permanent IDAM Users:
+All permanent users needs to be added to ./data/permanent-users.data
+Temporary IDAM Users:
+During test execution, temporary users are automatically created and tracked in a file ./data/.temp-users.data.json
+Update ./config/global-setup.config with list of roles for which temporary users needs to be created along with the key/name to
+identify them.
 
 ## License
 

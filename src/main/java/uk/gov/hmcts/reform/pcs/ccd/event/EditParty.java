@@ -2,11 +2,11 @@ package uk.gov.hmcts.reform.pcs.ccd.event;
 
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CCDConfig;
-import uk.gov.hmcts.ccd.sdk.api.ConfigBuilder;
+import uk.gov.hmcts.ccd.sdk.api.DecentralisedConfigBuilder;
 import uk.gov.hmcts.ccd.sdk.api.EventPayload;
 import uk.gov.hmcts.ccd.sdk.api.Permission;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
-import uk.gov.hmcts.reform.pcs.ccd.domain.PcsCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.UserRole;
@@ -18,7 +18,7 @@ import java.util.UUID;
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 
 @Component
-public class EditParty implements CCDConfig<PcsCase, State, UserRole> {
+public class EditParty implements CCDConfig<PCSCase, State, UserRole> {
 
     private final PartyRepository partyRepository;
 
@@ -27,22 +27,22 @@ public class EditParty implements CCDConfig<PcsCase, State, UserRole> {
     }
 
     @Override
-    public void configure(ConfigBuilder<PcsCase, State, UserRole> configBuilder) {
+    public void configureDecentralised(final DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
         configBuilder
             .decentralisedEvent(EventId.editParty.name(), this::submit, this::start)
             .forAllStates()
             .name("Edit party")
             .showSummary()
-            .grant(Permission.CRUD, UserRole.CASE_WORKER)
+            .grant(Permission.CRUD, UserRole.PCS_SOLICITOR)
             .showCondition(NEVER_SHOW)
             .fields()
             .page("party")
-            .mandatory(PcsCase::getCurrentParty)
+            .mandatory(PCSCase::getCurrentParty)
             .done();
     }
 
 
-    private PcsCase start(EventPayload<PcsCase, State> payload) {
+    private PCSCase start(EventPayload<PCSCase, State> payload) {
         UUID partyId = UUID.fromString(payload.urlParams().getFirst("partyId"));
 
         uk.gov.hmcts.reform.pcs.entity.Party partyEntity = partyRepository.findById(partyId)
@@ -55,14 +55,14 @@ public class EditParty implements CCDConfig<PcsCase, State, UserRole> {
             .active(YesOrNo.from(partyEntity.getActive()))
             .build();
 
-        PcsCase pcsCase = payload.caseData();
+        PCSCase pcsCase = payload.caseData();
         pcsCase.setCurrentParty(party);
         return pcsCase;
     }
 
-    private void submit(EventPayload<PcsCase, State> eventPayload) {
+    private void submit(EventPayload<PCSCase, State> eventPayload) {
 
-        PcsCase pcsCase = eventPayload.caseData();
+        PCSCase pcsCase = eventPayload.caseData();
 
         Party partyToUpdate = pcsCase.getCurrentParty();
         UUID partyId = partyToUpdate.getId();

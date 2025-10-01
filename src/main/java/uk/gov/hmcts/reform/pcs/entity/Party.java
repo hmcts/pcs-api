@@ -39,12 +39,17 @@ public class Party {
     @ManyToOne(fetch = LAZY)
     @JoinColumn(name = "case_id")
     @JsonBackReference
-    private PcsCase pcsCase;
+    private PCSCaseEntity pcsCase;
 
     @OneToMany(fetch = LAZY, mappedBy = "party")
     @Builder.Default
     @JsonManagedReference
     private Set<ClaimParty> claimParties = new HashSet<>();
+
+    @OneToMany(fetch = LAZY, mappedBy = "party")
+    @Builder.Default
+    @JsonManagedReference
+    private Set<GeneralApplicationParty> generalApplicationParties = new HashSet<>();
 
     private String forename;
     private String surname;

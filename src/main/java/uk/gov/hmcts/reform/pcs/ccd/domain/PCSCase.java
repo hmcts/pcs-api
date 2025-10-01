@@ -17,7 +17,7 @@ import java.util.List;
  */
 @Builder
 @Data
-public class PcsCase {
+public class PCSCase {
 
     @CCD(ignore = true)
     @JsonIgnore
@@ -76,8 +76,15 @@ public class PcsCase {
     @JsonIgnore
     private List<Claim> claims;
 
+    @CCD(ignore = true)
+    @JsonIgnore
+    private List<GeneralApplication> genApps;
+
     @CCD(label = "Claim details")
     private Claim claimToAdd;
+
+    @CCD(label = "General application details")
+    private GeneralApplication genAppToAdd;
 
     @CCD(
         label = "Claimants"
@@ -94,6 +101,11 @@ public class PcsCase {
     )
     private DynamicMultiSelectList interestedPartiesToAdd;
 
+    @CCD(
+        label = "Applicants"
+    )
+    private DynamicMultiSelectList applicantsToAdd;
+
     @CCD(typeOverride = FieldType.YesOrNo)
     private YesOrNo ipEmpty;
 
@@ -104,10 +116,15 @@ public class PcsCase {
     private String currentClaimId;
 
     private String claimsSummaryMarkdown;
+    private String genAppsSummaryMarkdown;
     private String partyRolesMarkdown;
 
     public void addClaim(Claim claim) {
         claims.add(claim);
+    }
+
+    public void addGenApp(GeneralApplication generalApplication) {
+        genApps.add(generalApplication);
     }
 
 }
