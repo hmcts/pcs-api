@@ -7,6 +7,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.pcs.ccd.domain.AdditionalReasons;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimGroundEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimPartyEntity;
@@ -50,6 +51,8 @@ class ClaimServiceTest {
         when(pcsCase.getAdditionalReasonsForPossession()).thenReturn(additionalReasons);
         when(additionalReasons.getReasons()).thenReturn(expectedAdditionalReasons);
 
+        when(pcsCase.getClaimingCostsWanted()).thenReturn(VerticalYesNo.YES);
+
         List<ClaimGroundEntity> expectedClaimGrounds = List.of(mock(ClaimGroundEntity.class));
         when(claimGroundService.getGroundsWithReason(pcsCase)).thenReturn(expectedClaimGrounds);
 
@@ -59,6 +62,7 @@ class ClaimServiceTest {
         // Then
         assertThat(createdClaimEntity.getSummary()).isEqualTo(expectedClaimName);
         assertThat(createdClaimEntity.getAdditionalReasons()).isEqualTo(expectedAdditionalReasons);
+        assertThat(createdClaimEntity.getCostsClaimed()).isTrue();
 
         Set<ClaimPartyEntity> claimParties = createdClaimEntity.getClaimParties();
         assertThat(claimParties).hasSize(1);

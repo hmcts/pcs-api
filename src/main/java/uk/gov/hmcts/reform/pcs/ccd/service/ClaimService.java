@@ -28,6 +28,7 @@ public class ClaimService {
         ClaimEntity claimEntity = ClaimEntity.builder()
             .summary("Main Claim")
             .additionalReasons(additionalReasons)
+            .costsClaimed(pcsCase.getClaimingCostsWanted().toBoolean())
             .build();
 
         claimEntity.addParty(claimantPartyEntity, PartyRole.CLAIMANT);

@@ -13,6 +13,7 @@ import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
@@ -191,6 +192,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
         // Given
         PCSCase caseData = PCSCase.builder()
             .legislativeCountry(WALES)
+            .claimingCostsWanted(VerticalYesNo.YES)
             .build();
 
         PcsCaseEntity pcsCaseEntity = mock(PcsCaseEntity.class);
@@ -228,6 +230,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
             .claimantName(claimantName)
             .claimantContactEmail(claimantContactEmail)
             .claimantContactPhoneNumber(claimantContactPhoneNumber)
+            .claimingCostsWanted(VerticalYesNo.YES)
             .build();
 
         // When
