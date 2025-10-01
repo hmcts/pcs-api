@@ -12,6 +12,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantCircumstances;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PaymentStatus;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
@@ -265,15 +266,20 @@ class ResumePossessionClaimTest extends BaseEventTest {
         when(claimService.createAndLinkClaim(any(PcsCaseEntity.class), any(), anyString(), any(PartyRole.class)))
             .thenReturn(claimEntity);
 
-        PCSCase caseData = mock(PCSCase.class);
+        String expectedCircumstances = "Some circumstance info";
+        PCSCase caseData = PCSCase.builder()
+            .defendantCircumstances(
+                DefendantCircumstances.builder()
+                    .defendantCircumstancesInfo(expectedCircumstances)
+                    .build())
+            .build();
 
         // When
         callSubmitHandler(caseData);
 
         // Then
-        verify(claimService)
-            .createAndLinkClaim(eq(pcsCaseEntity), any(), eq("Main Claim"), eq(CLAIMANT));
-
+        verify(claimService).createAndLinkClaim(eq(pcsCaseEntity), any(), eq("Main Claim"), eq(CLAIMANT));
+        verify(claimEntity).setDefendantCircumstances(expectedCircumstances);
         verify(claimService).saveClaim(claimEntity);
     }
 
