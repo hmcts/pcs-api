@@ -11,7 +11,6 @@ import {claimantName} from '@data/page-data/claimantName.page.data';
 import {contactPreferences} from '@data/page-data/contactPreferences.page.data';
 import {mediationAndSettlement} from '@data/page-data/mediationAndSettlement.page.data';
 import {tenancyLicenceDetails} from '@data/page-data/tenancyLicenceDetails.page.data';
-import {groundsForPossession} from '@data/page-data/groundsForPossession.page.data';
 import {resumeClaimOptions} from '@data/page-data/resumeClaimOptions.page.data';
 import {rentDetails} from '@data/page-data/rentDetails.page.data';
 import {accessTokenApiData} from '@data/api-data/accessToken.api.data';
@@ -127,15 +126,15 @@ export class CreateCaseAction implements IAction {
       grounds?: string[];
     };
     await performAction('clickRadioButton', possessionGrounds.groundsRadioInput);
-    if (possessionGrounds.groundsRadioInput == 'Yes') {
+    if (possessionGrounds.groundsRadioInput == groundsForPossession.yes) {
       if (possessionGrounds.grounds) {
         await performAction('check', possessionGrounds.grounds);
-        if (possessionGrounds.grounds.includes('Other')) {
-          await performAction('inputText', 'Enter your grounds for possession', groundsForPossession.enterYourGroundsForPossessionInput);
+        if (possessionGrounds.grounds.includes(groundsForPossession.other)) {
+          await performAction('inputText', groundsForPossession.enterGroundsForPossessionLabel, groundsForPossession.enterYourGroundsForPossessionInput);
         }
       }
     }
-    await performAction('clickButton', 'Continue');
+    await performAction('clickButton', groundsForPossession.continue);
   }
 
   private async selectPreActionProtocol(caseData: actionData) {

@@ -10,6 +10,7 @@ export const groundsForPossession = {
   other: 'Other',
   otherGrounds: 'Other grounds',
   noGrounds: 'No grounds',
+  enterGroundsForPossessionLabel: 'Enter your grounds for possession',
   yes: 'Yes',
   no: 'No',
   continue: 'Continue'
