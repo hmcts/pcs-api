@@ -306,6 +306,10 @@ ext['snakeyaml.version'] = '2.0'
 ext['netty.version'] = nettyVersion
 
 dependencies {
+// A filtered set of useful CCD POJOs including DTOs and other utilities.
+  implementation('com.github.hmcts.rse-cft-lib:ccd-lib:0.19.1879') {
+    transitive = false
+  }
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-web', version: springFrameworkBootVersion
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-actuator', version: springFrameworkBootVersion
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-aop', version: springFrameworkBootVersion
