@@ -114,7 +114,7 @@ test.describe('[Create Case Flow]  @Master @nightly', async () => {
     await performValidation('mainHeader', claimingCosts.mainHeader);
     await performAction('selectClaimingCosts', claimingCosts.yes);
     await performValidation('mainHeader', additionalReasonsForPossession.mainHeader);
-    await performAction('selectAdditionalReasonsForPossession', additionalReasonsForPossession.no);
+    await performAction('selectAdditionalReasonsForPossession', additionalReasonsForPossession.yes);
     await performValidation('mainHeader', underlesseeOrMortgageeEntitledToClaim.mainHeader);
     await performAction('clickButton', underlesseeOrMortgageeEntitledToClaim.continue);
     await performAction('clickButton', 'Save and continue');
@@ -345,7 +345,7 @@ test.describe('[Create Case Flow]  @Master @nightly', async () => {
     await performValidation('mainHeader', claimingCosts.mainHeader);
     await performAction('selectClaimingCosts', claimingCosts.no);
     await performValidation('mainHeader', additionalReasonsForPossession.mainHeader);
-    await performAction('selectAdditionalReasonsForPossession', additionalReasonsForPossession.no);
+    await performAction('selectAdditionalReasonsForPossession', additionalReasonsForPossession.yes);
     await performValidation('mainHeader', underlesseeOrMortgageeEntitledToClaim.mainHeader);
     await performAction('clickButton', underlesseeOrMortgageeEntitledToClaim.continue);
     await performAction('clickButton', 'Save and continue');
