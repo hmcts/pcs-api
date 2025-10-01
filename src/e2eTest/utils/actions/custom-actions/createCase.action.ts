@@ -1,25 +1,25 @@
 import Axios from 'axios';
-import {ServiceAuthUtils} from '@hmcts/playwright-common';
-import {actionData, IAction} from '../../interfaces/action.interface';
-import {Page} from '@playwright/test';
-import {performAction, performActions, performValidation} from '@utils/controller';
-import {createCase} from '@data/page-data/createCase.page.data';
-import {addressDetails} from '@data/page-data/addressDetails.page.data';
-import {housingPossessionClaim} from '@data/page-data/housingPossessionClaim.page.data';
-import {defendantDetails} from "@data/page-data/defendantDetails.page.data";
-import {claimantName} from '@data/page-data/claimantName.page.data';
-import {contactPreferences} from '@data/page-data/contactPreferences.page.data';
-import {mediationAndSettlement} from '@data/page-data/mediationAndSettlement.page.data';
-import {tenancyLicenceDetails} from '@data/page-data/tenancyLicenceDetails.page.data';
-import {resumeClaimOptions} from "@data/page-data/resumeClaimOptions.page.data";
-import {rentDetails} from '@data/page-data/rentDetails.page.data';
-import {accessTokenApiData} from '@data/api-data/accessToken.api.data';
-import {caseApiData} from '@data/api-data/case.api.data';
-import {dailyRentAmount} from '@data/page-data/dailyRentAmount.page.data';
-import {reasonsForPossession} from '@data/page-data/reasonsForPossession.page.data';
-import {detailsOfRentArrears} from '@data/page-data/detailsOfRentArrears.page.data';
-import {claimantCircumstances} from '@data/page-data/claimantCircumstances.page.data';
-import {claimingCosts} from '@data/page-data/claimingCosts.page.data';
+import { ServiceAuthUtils } from '@hmcts/playwright-common';
+import { actionData, IAction } from '../../interfaces/action.interface';
+import { Page } from '@playwright/test';
+import { performAction, performActions, performValidation } from '@utils/controller';
+import { createCase } from '@data/page-data/createCase.page.data';
+import { addressDetails } from '@data/page-data/addressDetails.page.data';
+import { housingPossessionClaim } from '@data/page-data/housingPossessionClaim.page.data';
+import { defendantDetails } from "@data/page-data/defendantDetails.page.data";
+import { claimantName } from '@data/page-data/claimantName.page.data';
+import { contactPreferences } from '@data/page-data/contactPreferences.page.data';
+import { mediationAndSettlement } from '@data/page-data/mediationAndSettlement.page.data';
+import { tenancyLicenceDetails } from '@data/page-data/tenancyLicenceDetails.page.data';
+import { resumeClaimOptions } from "@data/page-data/resumeClaimOptions.page.data";
+import { rentDetails } from '@data/page-data/rentDetails.page.data';
+import { accessTokenApiData } from '@data/api-data/accessToken.api.data';
+import { caseApiData } from '@data/api-data/case.api.data';
+import { dailyRentAmount } from '@data/page-data/dailyRentAmount.page.data';
+import { reasonsForPossession } from '@data/page-data/reasonsForPossession.page.data';
+import { detailsOfRentArrears } from '@data/page-data/detailsOfRentArrears.page.data';
+import { claimantCircumstances } from '@data/page-data/claimantCircumstances.page.data';
+import { claimingCosts } from '@data/page-data/claimingCosts.page.data';
 
 
 export let caseInfo: { id: string; fid: string; state: string };
@@ -389,10 +389,10 @@ export class CreateCaseAction implements IAction {
       option: claimOption
     }
     );
-    if (claimOption == 'Yes') {
+    if (claimOption == claimantCircumstances.yes) {
       await performAction('inputText', claimantCircumstances.claimantCircumstanceInfoTextAreaLabel.replace("Claimants", nameClaimant), claimData.claimantInput);
     }
-    await performAction('clickButton', 'Continue');
+    await performAction('clickButton', claimantCircumstances.continue);
   }
 
   private async provideDetailsOfRentArrears(rentArrears: actionData) {
