@@ -291,7 +291,7 @@ repositories {
 }
 
 ext {
-  log4JVersion = "2.25.1"
+  log4JVersion = "2.25.2"
   logbackVersion = "1.5.18"
   testcontainersVersion = "1.21.3"
   springFrameworkBootVersion = "3.5.5"
@@ -319,7 +319,7 @@ dependencies {
   implementation group: 'org.flywaydb', name: 'flyway-core', version: flywayVersion
   implementation group: 'org.springdoc', name: 'springdoc-openapi-starter-webmvc-ui', version: '2.8.13'
   implementation group: 'uk.gov.service.notify', name: 'notifications-java-client', version: '5.2.1-RELEASE'
-  implementation platform(group: 'com.azure.spring', name :'spring-cloud-azure-dependencies', version :'5.23.0')
+  implementation platform(group: 'com.azure.spring', name :'spring-cloud-azure-dependencies', version :'6.0.0')
   implementation "com.azure.spring:spring-cloud-azure-starter-servicebus-jms"
   implementation group: 'org.modelmapper', name: 'modelmapper', version: '3.2.4'
 
