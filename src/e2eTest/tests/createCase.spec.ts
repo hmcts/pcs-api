@@ -26,6 +26,8 @@ import {reasonsForPossession} from '@data/page-data/reasonsForPossession.page.da
 import {moneyJudgment} from '@data/page-data/moneyJudgment.page.data';
 import {claimantCircumstances} from '@data/page-data/claimantCircumstances.page.data';
 import {user} from '@data/user-data/permanent.user.data';
+import {checkYourAnswers} from '@data/page-data/checkYourAnswers.page.data';
+import {propertyDetails} from '@data/page-data/propertyDetails.page.data';
 
 test.beforeEach(async ({page}, testInfo) => {
   initializeExecutor(page);
@@ -95,7 +97,6 @@ test.describe('[Create Case Flow]  @Master @nightly', async () => {
     await performValidation('mainHeader', noticeDetails.mainHeader);
     await performAction('selectNoticeDetails', {
       howDidYouServeNotice: noticeDetails.byFirstClassPost,
-      index: noticeDetails.byFirstClassPostIndex,
       day: '16', month: '07', year: '1985', files: 'NoticeDetails.pdf'});
     await performValidation('mainHeader', rentDetails.mainHeader);
     await performAction('provideRentDetails', {rentFrequencyOption:'weekly', rentAmount:'800'});
@@ -105,18 +106,18 @@ test.describe('[Create Case Flow]  @Master @nightly', async () => {
       unpaidRentInteractiveOption: dailyRentAmount.no,
       unpaidRentAmountPerDay: '20'
     });
-    await performAction('selectClaimForMoney', moneyJudgment.yes);
+    await performAction('selectMoneyJudgment', moneyJudgment.yes);
     await performValidation('mainHeader', claimantCircumstances.mainHeader);
     await performAction('clickButton', claimantCircumstances.continue);
-    await performAction('clickButton', 'Save and continue');
+    await performAction('clickButton', checkYourAnswers.saveAndContinue);
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
     await performAction('clickTab', 'Property Details');
     await performValidations(
       'address info not null',
-      ['formLabelValue', 'Building and Street'],
-      ['formLabelValue', 'Town or City'],
-      ['formLabelValue', 'Postcode/Zipcode'],
-      ['formLabelValue', 'Country']
+      ['formLabelValue', propertyDetails.buildingAndStreetLabel],
+      ['formLabelValue', propertyDetails.townOrCityLabel],
+      ['formLabelValue', propertyDetails.postcodeZipcodeLabel],
+      ['formLabelValue', propertyDetails.countryLabel],
     )
   });
 
@@ -173,9 +174,10 @@ test.describe('[Create Case Flow]  @Master @nightly', async () => {
     await performAction('selectNoticeOfYourIntention', noticeOfYourIntention.yes);
     await performValidation('mainHeader', noticeDetails.mainHeader);
     await performAction('selectNoticeDetails', {
-      howDidYouServeNotice: noticeDetails.byFirstClassPost,
-      index: noticeDetails.byFirstClassPostIndex,
-      day: '16', month: '07', year: '1985'});
+      howDidYouServeNotice: noticeDetails.byPersonallyHandling,
+      explanationLabel: noticeDetails.nameOfPersonDocumentWasLeftLabel,
+      explanation: noticeDetails.byPersonallyHandlingExplanation,
+      day: '31', month: '01', year: '1962', hour: '10', minute: '55', second: '30'});
     await performValidation('mainHeader', rentDetails.mainHeader);
     await performAction('provideRentDetails', {rentFrequencyOption:'weekly', rentAmount:'800'});
     await performValidation('mainHeader', dailyRentAmount.mainHeader);
@@ -184,18 +186,18 @@ test.describe('[Create Case Flow]  @Master @nightly', async () => {
       unpaidRentInteractiveOption: dailyRentAmount.no,
       unpaidRentAmountPerDay: '20'
     });
-    await performAction('selectClaimForMoney', moneyJudgment.yes);
+    await performAction('selectMoneyJudgment', moneyJudgment.yes);
     await performValidation('mainHeader', claimantCircumstances.mainHeader);
     await performAction('clickButton', claimantCircumstances.continue);
-    await performAction('clickButton', 'Save and continue');
+    await performAction('clickButton', checkYourAnswers.saveAndContinue);
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
     await performAction('clickTab', 'Property Details');
     await performValidations(
       'address info not null',
-      ['formLabelValue', 'Building and Street'],
-      ['formLabelValue', 'Town or City'],
-      ['formLabelValue', 'Postcode/Zipcode'],
-      ['formLabelValue', 'Country']
+      ['formLabelValue', propertyDetails.buildingAndStreetLabel],
+      ['formLabelValue', propertyDetails.townOrCityLabel],
+      ['formLabelValue', propertyDetails.postcodeZipcodeLabel],
+      ['formLabelValue', propertyDetails.countryLabel]
     )
   });
 
@@ -212,11 +214,11 @@ test.describe('[Create Case Flow]  @Master @nightly', async () => {
     await performAction('clickButton', resumeClaim.continue);
     await performAction('selectResumeClaimOption', resumeClaimOptions.yes);
     await performValidation('radioButtonChecked', claimantType.registeredCommunityLandlord, true);
-    await performAction('clickButton', 'Continue');
+    await performAction('clickButton', claimantType.continue);
     await performValidation('radioButtonChecked', claimType.no, true);
-    await performAction('clickButton', 'Continue');
+    await performAction('clickButton', claimType.continue);
     await performValidation('radioButtonChecked', claimantName.no, true);
-    await performAction('clickButton', 'Continue');
+    await performAction('clickButton', claimantName.continue);
     await performAction('selectContactPreferences', {
       notifications: contactPreferences.no,
       correspondenceAddress: contactPreferences.no,
@@ -253,18 +255,18 @@ test.describe('[Create Case Flow]  @Master @nightly', async () => {
       paymentOptions: [detailsOfRentArrears.universalCreditOption, detailsOfRentArrears.paymentOtherOption]
     });
     await performValidation('mainHeader', moneyJudgment.mainHeader);
-    await performAction('selectClaimForMoney', moneyJudgment.yes);
+    await performAction('selectMoneyJudgment', moneyJudgment.yes);
     await performValidation('mainHeader', claimantCircumstances.mainHeader);
     await performAction('clickButton', claimantCircumstances.continue);
-    await performAction('clickButton', 'Save and continue');
+    await performAction('clickButton', checkYourAnswers.saveAndContinue);
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
     await performAction('clickTab', 'Property Details');
     await performValidations('address information entered',
-      ['formLabelValue', 'Building and Street', addressDetails.buildingAndStreet],
-      ['formLabelValue', 'Address Line 2', addressDetails.addressLine2],
-      ['formLabelValue', 'Town or City', addressDetails.townOrCity],
-      ['formLabelValue', 'Postcode/Zipcode', addressDetails.walesCourtAssignedPostcode],
-      ['formLabelValue', 'Country', addressDetails.country]);
+      ['formLabelValue', propertyDetails.buildingAndStreetLabel, addressDetails.buildingAndStreet],
+      ['formLabelValue', propertyDetails.addressLine2Label, addressDetails.addressLine2],
+      ['formLabelValue', propertyDetails.townOrCityLabel, addressDetails.townOrCity],
+      ['formLabelValue', propertyDetails.postcodeZipcodeLabel, addressDetails.walesCourtAssignedPostcode],
+      ['formLabelValue', propertyDetails.countryLabel, addressDetails.country]);
   });
 
   test('Wales - Successful case creation without Saved options and Defendants correspondence address is not known with flexible tenancy', async () => {
@@ -319,17 +321,17 @@ test.describe('[Create Case Flow]  @Master @nightly', async () => {
       calculateRentAmount: '£32.85',
       unpaidRentInteractiveOption: dailyRentAmount.yes
     });
-    await performAction('selectClaimForMoney', moneyJudgment.yes);
+    await performAction('selectMoneyJudgment', moneyJudgment.yes);
     await performAction('clickButton', claimantCircumstances.continue);
-    await performAction('clickButton', 'Save and continue');
+    await performAction('clickButton', checkYourAnswers.saveAndContinue);
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
     await performAction('clickTab', 'Property Details');
     await performValidations('address information entered',
-      ['formLabelValue', 'Building and Street', addressDetails.buildingAndStreet],
-      ['formLabelValue', 'Address Line 2', addressDetails.addressLine2],
-      ['formLabelValue', 'Town or City', addressDetails.townOrCity],
-      ['formLabelValue', 'Postcode/Zipcode', addressDetails.walesCourtAssignedPostcode],
-      ['formLabelValue', 'Country', addressDetails.country]);
+      ['formLabelValue', propertyDetails.buildingAndStreetLabel, addressDetails.buildingAndStreet],
+      ['formLabelValue', propertyDetails.addressLine2Label, addressDetails.addressLine2],
+      ['formLabelValue', propertyDetails.townOrCityLabel, addressDetails.townOrCity],
+      ['formLabelValue', propertyDetails.postcodeZipcodeLabel, addressDetails.walesCourtAssignedPostcode],
+      ['formLabelValue', propertyDetails.countryLabel, addressDetails.country]);
   });
 
   test('Wales - Successful case creation for secure tenancy type with rent and other grounds', async () => {
@@ -383,7 +385,6 @@ test.describe('[Create Case Flow]  @Master @nightly', async () => {
     await performAction('selectNoticeOfYourIntention', noticeOfYourIntention.yes);
     await performAction('selectNoticeDetails', {
       howDidYouServeNotice: noticeDetails.byDeliveringAtPermittedPlace,
-      index: noticeDetails.byDeliveringAtPermittedPlaceIndex,
       day: '25', month: '02', year: '1970', files: 'NoticeDetails.pdf'});
     await performAction('provideRentDetails', {rentFrequencyOption: 'Monthly', rentAmount: '1000'});
     await performValidation('mainHeader', dailyRentAmount.mainHeader);
@@ -391,17 +392,17 @@ test.describe('[Create Case Flow]  @Master @nightly', async () => {
       calculateRentAmount: '£32.85',
       unpaidRentInteractiveOption: dailyRentAmount.yes
     });
-    await performAction('selectClaimForMoney', moneyJudgment.no);
+    await performAction('selectMoneyJudgment', moneyJudgment.no);
     await performValidation('mainHeader', claimantCircumstances.mainHeader);
     await performAction('clickButton', claimantCircumstances.continue);
-    await performAction('clickButton', 'Save and continue');
+    await performAction('clickButton', checkYourAnswers.saveAndContinue);
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
     await performAction('clickTab', 'Property Details');
     await performValidations('address information entered',
-      ['formLabelValue', 'Building and Street', addressDetails.buildingAndStreet],
-      ['formLabelValue', 'Address Line 2', addressDetails.addressLine2],
-      ['formLabelValue', 'Town or City', addressDetails.townOrCity],
-      ['formLabelValue', 'Postcode/Zipcode', addressDetails.walesCourtAssignedPostcode],
-      ['formLabelValue', 'Country', addressDetails.country]);
+      ['formLabelValue', propertyDetails.buildingAndStreetLabel, addressDetails.buildingAndStreet],
+      ['formLabelValue', propertyDetails.addressLine2Label, addressDetails.addressLine2],
+      ['formLabelValue', propertyDetails.townOrCityLabel, addressDetails.townOrCity],
+      ['formLabelValue', propertyDetails.postcodeZipcodeLabel, addressDetails.walesCourtAssignedPostcode],
+      ['formLabelValue', propertyDetails.countryLabel, addressDetails.country]);
   });
 });

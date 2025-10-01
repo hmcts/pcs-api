@@ -40,13 +40,13 @@ test.describe('[Eligibility checks for cross and non cross border postcodes] @Ma
       "text": borderPostcode.englandWalesInlineContent,
       "elementType": "inlineText"
     });
-    await performAction('selectCountryRadioButton', borderPostcode.countryOptions.england);
+    await performAction('selectBorderPostcode', borderPostcode.countryOptions.england);
     await performValidation('bannerAlert', 'Case #.* has been created.');
     await page.goBack();
     await page.waitForLoadState();
     await page.goBack();
     await page.waitForLoadState();
-    await performAction('selectCountryRadioButton', borderPostcode.countryOptions.wales);
+    await performAction('selectBorderPostcode', borderPostcode.countryOptions.wales);
     await performValidation('mainHeader', borderPostcode.mainHeader);
   });
 
@@ -81,7 +81,7 @@ test.describe('[Eligibility checks for cross and non cross border postcodes] @Ma
       postcode: addressDetails.englandWalesNoCourtCrossBorderPostcode,
       addressIndex: addressDetails.addressIndex
     });
-    await performAction('selectCountryRadioButton', borderPostcode.countryOptions.england);
+    await performAction('selectBorderPostcode', borderPostcode.countryOptions.england);
     await performValidation('mainHeader', propertyIneligible.mainHeader);
   });
 
@@ -118,15 +118,15 @@ test.describe('[Eligibility checks for cross and non cross border postcodes] @Ma
     });
     await performAction('clickButton', provideMoreDetailsOfClaim.continue);
     await performAction('selectClaimantType', claimantType.mortgageLender);
-    await performValidation('mainHeader', 'You\'re not eligible for this online service');
-    await performAction('clickButton', 'Continue');
+    await performValidation('mainHeader', userIneligible.mainHeader);
+    await performAction('clickButton', userIneligible.continue);
     await performValidation('errorMessage', {
       header: userIneligible.eventNotCreated, message: userIneligible.unableToProceed
     });
     await performValidation('errorMessage', {
       header: userIneligible.errors, message: userIneligible.notEligibleForOnlineService
     });
-    await performAction('clickButton', 'Cancel');
+    await performAction('clickButton', userIneligible.cancel);
   });
 
   test('Wales - Unsuccessful case creation journey due to claimant type not in scope of Release1 @R1only', async () => {
@@ -136,15 +136,15 @@ test.describe('[Eligibility checks for cross and non cross border postcodes] @Ma
     });
     await performAction('clickButton', provideMoreDetailsOfClaim.continue);
     await performAction('selectClaimantType', claimantType.privateLandlord);
-    await performValidation('mainHeader', 'You\'re not eligible for this online service');
-    await performAction('clickButton', 'Continue');
+    await performValidation('mainHeader', userIneligible.mainHeader);
+    await performAction('clickButton', userIneligible.continue);
     await performValidation('errorMessage', {
       header: userIneligible.eventNotCreated, message: userIneligible.unableToProceed
     });
     await performValidation('errorMessage', {
       header: userIneligible.errors, message: userIneligible.notEligibleForOnlineService
     });
-    await performAction('clickButton', 'Cancel');
+    await performAction('clickButton', userIneligible.cancel);
   });
 
   test('England - Unsuccessful case creation journey due to claim type not in scope of Release1 @R1only', async () => {
@@ -155,15 +155,15 @@ test.describe('[Eligibility checks for cross and non cross border postcodes] @Ma
     await performAction('clickButton', provideMoreDetailsOfClaim.continue);
     await performAction('selectClaimantType', claimantType.registeredProviderForSocialHousing);
     await performAction('selectClaimType', claimType.yes);
-    await performValidation('mainHeader', 'You\'re not eligible for this online service');
-    await performAction('clickButton', 'Continue');
+    await performValidation('mainHeader', userIneligible.mainHeader);
+    await performAction('clickButton', userIneligible.continue);
     await performValidation('errorMessage', {
       header: userIneligible.eventNotCreated, message: userIneligible.unableToProceed
     });
     await performValidation('errorMessage', {
       header: userIneligible.errors, message: userIneligible.notEligibleForOnlineService
     });
-    await performAction('clickButton', 'Cancel');
+    await performAction('clickButton', userIneligible.cancel);
   });
 })
 

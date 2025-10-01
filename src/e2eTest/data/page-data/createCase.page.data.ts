@@ -9,5 +9,6 @@ export const createCase =
           ? `Civil Possessions ${process.env.CHANGE_ID}`
           : 'Civil Possessions'
       },
-    makeAPossessionClaimEvent: 'Make a claim'
+    makeAPossessionClaimEvent: 'Make a claim',
+    start: 'Start'
   };

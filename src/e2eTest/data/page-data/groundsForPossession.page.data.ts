@@ -3,5 +3,6 @@ export const groundsForPossession = {
   mainHeader: 'Grounds for possession',
   groundsForPossessionSectionInlineText: 'Are you claiming possession because of rent arrears or breach of the tenancy (ground1)?',
   yes: 'Yes',
-  no: 'No'
+  no: 'No',
+  continue: 'Continue'
 };
