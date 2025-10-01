@@ -8,9 +8,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimRepository;
-import uk.gov.hmcts.reform.pcs.hearings.model.CaseDetails;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -37,8 +35,8 @@ public class ClaimService {
         return claimRepository.save(claim);
     }
 
-    public List<Map<String, Object>> claims() {
-        return claimRepository.findAllNative();
+    public List<Map<String, Object>> claims(String convertedSql) {
+        return claimRepository.searchCaseData(convertedSql);
     }
 
 }

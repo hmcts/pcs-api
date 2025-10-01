@@ -47,7 +47,7 @@ public class InternalSearchController {
 
             //todo
             //Results as map, then manually convert
-            List<Map<String, Object>> claimList = claimService.claims();
+            List<Map<String, Object>> claimList = claimService.claims(convertedSql);
             ArrayList<CaseDetails> caseDetails = mapToCaseDetails(claimList);
 
             return new CaseSearchResult((long) caseDetails.size(), caseDetails);
@@ -75,7 +75,7 @@ public class InternalSearchController {
             convertedCase.setJurisdiction((String) individualCase.get("jurisdiction"));
 
 
-            JsonNode dataNode = mapper.readTree((String) individualCase.get("data"));
+            JsonNode dataNode = mapper.readTree(String.valueOf(individualCase.get("data")));
             Map<String, JsonNode> target = new HashMap<>();
             target.put("data", dataNode);
             convertedCase.setData(target);
@@ -84,7 +84,7 @@ public class InternalSearchController {
             convertedCase.setLastStateModifiedDate(((Timestamp) individualCase.get("last_modified")).toLocalDateTime());
             convertedCase.setVersion((Integer) individualCase.get("version"));
 
-            JsonNode supplementaryDataNode = mapper.readTree((String) individualCase.get("supplementary_data"));
+            JsonNode supplementaryDataNode = mapper.readTree(String.valueOf(individualCase.get("supplementary_data")));
             Map<String, JsonNode> supplementaryTarget = new HashMap<>();
             target.put("supplementary_data", supplementaryDataNode);
             convertedCase.setSupplementaryData(supplementaryTarget);
