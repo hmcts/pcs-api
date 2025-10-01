@@ -56,7 +56,7 @@ export class CreateCaseAction implements IAction {
       ['selectDailyRentAmount', () => this.selectDailyRentAmount(fieldName)],
       ['provideDetailsOfRentArrears', () => this.provideDetailsOfRentArrears(fieldName)],
       ['selectClaimForMoney', () => this.selectClaimForMoney(fieldName)],
-      ['selectDefendantCircumstances', () => this.selectDefendantCircumstances(fieldName)]
+      ['selectDefendantCircumstances', () => this.selectDefendantCircumstances(fieldName)],
       ['selectClaimingCosts', () => this.selectClaimingCosts(fieldName)]
     ]);
     const actionToPerform = actionsMap.get(action);
