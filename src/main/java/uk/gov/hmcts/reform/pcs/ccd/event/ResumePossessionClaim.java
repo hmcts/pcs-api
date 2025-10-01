@@ -32,6 +32,7 @@ import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ClaimTypeNotEligib
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ClaimantInformation;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ClaimantTypeNotEligibleEngland;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ClaimantTypeNotEligibleWales;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ClaimingCosts;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ContactPreferences;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.DailyRentAmount;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.DefendantsDetails;
@@ -134,7 +135,8 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             .add(new DailyRentAmount())
             .add(new RentArrears())
             .add(new MoneyJudgment())
-            .add(new ClaimantCircumstances());
+            .add(new ClaimantCircumstances())
+            .add(new ClaimingCosts());
     }
 
     private PCSCase start(EventPayload<PCSCase, State> eventPayload) {
@@ -215,7 +217,8 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             pcsCase.getClaimantContactPhoneNumber(),
             true);
 
-        claimService.createAndLinkClaim(pcsCaseEntity, party, "Main Claim", PartyRole.CLAIMANT, claimGrounds);
+        claimService.createAndLinkClaim(pcsCaseEntity, party, "Main Claim", PartyRole.CLAIMANT, claimGrounds,
+                                        pcsCase.getClaimingCostsWanted().toBoolean());
 
         unsubmittedCaseDataService.deleteUnsubmittedCaseData(caseReference);
     }

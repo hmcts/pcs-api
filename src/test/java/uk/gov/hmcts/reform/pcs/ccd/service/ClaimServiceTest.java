@@ -40,7 +40,7 @@ class ClaimServiceTest {
         List<ClaimGroundEntity> claimGroundEntities = new ArrayList<>();
 
         claimService.createAndLinkClaim(
-            caseEntity, partyEntity, claimName, PartyRole.CLAIMANT, claimGroundEntities);
+            caseEntity, partyEntity, claimName, PartyRole.CLAIMANT, claimGroundEntities,true);
 
         verify(claimRepository).save(claimCaptor.capture());
         ClaimEntity savedEntity = claimCaptor.getValue();
