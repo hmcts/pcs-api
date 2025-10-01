@@ -568,6 +568,7 @@ public class PCSCase {
     private NoRentArrearsReasonForGrounds noRentArrearsReasonForGrounds;
 
     @CCD(
+        label = "Do you want to upload any additional documents?",
         hint = "You can either upload documents now or closer to the hearing date. "
             + "Any documents you upload now will be included in the pack of documents a judge will "
             + "receive before the hearing (the bundle).",

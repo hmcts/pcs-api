@@ -12,10 +12,6 @@ public class WantToUploadDocuments implements CcdPageConfiguration {
             .page("wantToUploadDocuments")
             .pageLabel("Upload additional documents")
             .label("wantToUploadDocuments-separator", "---")
-            .label("wantToUploadDocuments-heading",
-                """
-                <h2 class="govuk-heading-m">Do you want to upload any additional documents?</h2>
-                """)
             .mandatory(PCSCase::getWantToUploadDocuments);
     }
 }
