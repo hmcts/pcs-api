@@ -1,32 +1,33 @@
-import { test } from '@playwright/test';
-import { parentSuite } from 'allure-js-commons';
-import { initializeExecutor, performAction, performValidation, performValidations } from '@utils/controller';
-import { addressDetails } from '@data/page-data/addressDetails.page.data';
-import { claimantType } from '@data/page-data/claimantType.page.data';
-import { claimType } from '@data/page-data/claimType.page.data';
-import { claimantName } from '@data/page-data/claimantName.page.data';
-import { contactPreferences } from '@data/page-data/contactPreferences.page.data';
-import { defendantDetails } from '@data/page-data/defendantDetails.page.data';
-import { tenancyLicenceDetails } from '@data/page-data/tenancyLicenceDetails.page.data';
-import { groundsForPossession } from '@data/page-data/groundsForPossession.page.data';
-import { rentArrearsPossessionGrounds } from '@data/page-data/rentArrearsPossessionGrounds.page.data';
-import { preActionProtocol } from '@data/page-data/preActionProtocol.page.data';
-import { mediationAndSettlement } from '@data/page-data/mediationAndSettlement.page.data';
-import { noticeOfYourIntention } from '@data/page-data/noticeOfYourIntention.page.data';
-import { noticeDetails } from '@data/page-data/noticeDetails.page.data';
-import { rentDetails } from '@data/page-data/rentDetails.page.data';
-import { dailyRentAmount } from '@data/page-data/dailyRentAmount.page.data';
-import { provideMoreDetailsOfClaim } from '@data/page-data/provideMoreDetailsOfClaim.page.data';
-import { resumeClaim } from '@data/page-data/resumeClaim.page.data';
-import { resumeClaimOptions } from '@data/page-data/resumeClaimOptions.page.data';
-import { detailsOfRentArrears } from '@data/page-data/detailsOfRentArrears.page.data';
-import { whatAreYourGroundsForPossession } from '@data/page-data/whatAreYourGroundsForPossession.page.data';
-import { rentArrearsOrBreachOfTenancy } from '@data/page-data/rentArrearsOrBreachOfTenancy.page.data';
-import { reasonsForPossession } from '@data/page-data/reasonsForPossession.page.data';
-import { moneyJudgment } from '@data/page-data/moneyJudgment.page.data';
-import { claimantsName } from '@utils/actions/custom-actions/createCase.action';
-import { claimantCircumstances } from '@data/page-data/claimantCircumstances.page.data';
-import { user } from '@data/user-data/permanent.user.data';
+import {test} from '@playwright/test';
+import {parentSuite} from 'allure-js-commons';
+import {initializeExecutor, performAction, performValidation, performValidations} from '@utils/controller';
+import {addressDetails} from '@data/page-data/addressDetails.page.data';
+import {claimantType} from '@data/page-data/claimantType.page.data';
+import {claimType} from '@data/page-data/claimType.page.data';
+import {claimantName} from '@data/page-data/claimantName.page.data';
+import {contactPreferences} from '@data/page-data/contactPreferences.page.data';
+import {defendantDetails} from '@data/page-data/defendantDetails.page.data';
+import {tenancyLicenceDetails} from '@data/page-data/tenancyLicenceDetails.page.data';
+import {groundsForPossession} from '@data/page-data/groundsForPossession.page.data';
+import {rentArrearsPossessionGrounds} from '@data/page-data/rentArrearsPossessionGrounds.page.data';
+import {preActionProtocol} from '@data/page-data/preActionProtocol.page.data';
+import {mediationAndSettlement} from '@data/page-data/mediationAndSettlement.page.data';
+import {noticeOfYourIntention} from '@data/page-data/noticeOfYourIntention.page.data';
+import {noticeDetails} from '@data/page-data/noticeDetails.page.data';
+import {rentDetails} from '@data/page-data/rentDetails.page.data';
+import {dailyRentAmount} from '@data/page-data/dailyRentAmount.page.data';
+import {provideMoreDetailsOfClaim} from '@data/page-data/provideMoreDetailsOfClaim.page.data';
+import {resumeClaim} from '@data/page-data/resumeClaim.page.data';
+import {resumeClaimOptions} from '@data/page-data/resumeClaimOptions.page.data';
+import {detailsOfRentArrears} from '@data/page-data/detailsOfRentArrears.page.data';
+import {whatAreYourGroundsForPossession} from '@data/page-data/whatAreYourGroundsForPossession.page.data';
+import {rentArrearsOrBreachOfTenancy} from '@data/page-data/rentArrearsOrBreachOfTenancy.page.data';
+import {reasonsForPossession} from '@data/page-data/reasonsForPossession.page.data';
+import {moneyJudgment} from '@data/page-data/moneyJudgment.page.data';
+import {claimantsName} from '@utils/actions/custom-actions/createCase.action';
+import {claimantCircumstances} from '@data/page-data/claimantCircumstances.page.data';
+import {user} from '@data/user-data/permanent.user.data';
+import {claimingCosts} from '@data/page-data/claimingCosts.page.data';
 
 test.beforeEach(async ({ page }, testInfo) => {
   initializeExecutor(page);
@@ -116,6 +117,8 @@ test.describe('[Create Case Flow]  @Master @nightly', async () => {
       circumstanceOption: claimantCircumstances.yes,
       claimantInput: claimantCircumstances.claimantCircumstanceInfoInputData
     });
+    await performValidation('mainHeader', claimingCosts.mainHeader);
+    await performAction('selectClaimingCosts', claimingCosts.yes);
     await performAction('clickButton', 'Save and continue');
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
     await performAction('clickTab', 'Property Details');
@@ -201,6 +204,8 @@ test.describe('[Create Case Flow]  @Master @nightly', async () => {
       circumstanceOption: claimantCircumstances.no,
       claimantInput: claimantCircumstances.claimantCircumstanceInfoInputData
     });
+    await performValidation('mainHeader', claimingCosts.mainHeader);
+    await performAction('selectClaimingCosts', claimingCosts.no);
     await performAction('clickButton', 'Save and continue');
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
     await performAction('clickTab', 'Property Details');
@@ -274,6 +279,8 @@ test.describe('[Create Case Flow]  @Master @nightly', async () => {
       circumstanceOption: claimantCircumstances.yes,
       claimantInput: claimantCircumstances.claimantCircumstanceInfoInputData
     });
+    await performValidation('mainHeader', claimingCosts.mainHeader);
+    await performAction('selectClaimingCosts', claimingCosts.no);
     await performAction('clickButton', 'Save and continue');
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
     await performAction('clickTab', 'Property Details');
@@ -346,6 +353,8 @@ test.describe('[Create Case Flow]  @Master @nightly', async () => {
       circumstanceOption: claimantCircumstances.no,
       claimantInput: claimantCircumstances.claimantCircumstanceInfoInputData
     });
+    await performValidation('mainHeader', claimingCosts.mainHeader);
+    await performAction('selectClaimingCosts', claimingCosts.no);
     await performAction('clickButton', 'Save and continue');
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
     await performAction('clickTab', 'Property Details');
@@ -425,6 +434,8 @@ test.describe('[Create Case Flow]  @Master @nightly', async () => {
       circumstanceOption: claimantCircumstances.no,
       claimantInput: claimantCircumstances.claimantCircumstanceInfoInputData
     });
+    await performValidation('mainHeader', claimingCosts.mainHeader);
+    await performAction('selectClaimingCosts', claimingCosts.yes);
     await performAction('clickButton', 'Save and continue');
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
     await performAction('clickTab', 'Property Details');
