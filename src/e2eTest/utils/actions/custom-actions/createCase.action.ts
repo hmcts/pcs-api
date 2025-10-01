@@ -190,7 +190,7 @@ export class CreateCaseAction implements IAction {
       option: prefData.phoneNumber
     });
     if (prefData.phoneNumber === contactPreferences.yes) {
-      await performAction('inputText', contactPreferences.enterPhoneNumber, contactPreferences.phoneNumberInput);
+      await performAction('inputText', contactPreferences.enterPhoneNumberLabel, contactPreferences.phoneNumberInput);
     }
     await performAction('clickButton', contactPreferences.continue);
   }

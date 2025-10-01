@@ -42,7 +42,7 @@ module.exports = defineConfig({
         trace: 'on-first-retry',
         javaScriptEnabled: true,
         viewport: DEFAULT_VIEWPORT,
-        headless: process.env.CI? true : false,
+        headless: !!process.env.CI,
       },
     },
     ...(process.env.CI ? [
@@ -56,7 +56,7 @@ module.exports = defineConfig({
           trace: 'on-first-retry' as const,
           javaScriptEnabled: true,
           viewport: DEFAULT_VIEWPORT,
-          headless: process.env.CI? true : false,
+          headless: !!process.env.CI,
         }
       }
     ] : [])
