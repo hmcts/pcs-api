@@ -52,9 +52,7 @@ test.describe('[Successful Create Case Flow]  @Master @nightly', async () => {
       addressIndex: addressDetails.addressIndex
     });
     await performValidation('bannerAlert', 'Case #.* has been created.');
-    await performValidation('mainHeader', provideMoreDetailsOfClaim.mainHeader);
     await performAction('clickButton', provideMoreDetailsOfClaim.continue);
-    await performAction('mainHeader', claimantType.mainHeader);
     await performAction('selectClaimantType', claimantType.registeredProviderForSocialHousing);
     await performAction('selectClaimType', claimType.no);
     await performAction('selectClaimantName', claimantName.yes);
@@ -180,10 +178,8 @@ test.describe('[Successful Create Case Flow]  @Master @nightly', async () => {
     await performAction('selectNoticeOfYourIntention', noticeOfYourIntention.yes);
     await performValidation('mainHeader', noticeDetails.mainHeader);
     await performAction('selectNoticeDetails', {
-      howDidYouServeNotice: noticeDetails.byPersonallyHandling,
-      explanationLabel: noticeDetails.nameOfPersonDocumentWasLeftLabel,
-      explanation: noticeDetails.byPersonallyHandlingExplanation,
-      day: '31', month: '01', year: '1962', hour: '10', minute: '55', second: '30'});
+      howDidYouServeNotice: noticeDetails.byDeliveringAtPermittedPlace,
+      day: '31', month: '01', year: '1962'});
     await performValidation('mainHeader', rentDetails.mainHeader);
     await performAction('provideRentDetails', {rentFrequencyOption:'weekly', rentAmount:'800'});
     await performValidation('mainHeader', dailyRentAmount.mainHeader);
@@ -256,8 +252,10 @@ test.describe('[Successful Create Case Flow]  @Master @nightly', async () => {
     await performAction('selectNoticeOfYourIntention', noticeOfYourIntention.yes);
     await performValidation('mainHeader', noticeDetails.mainHeader);
     await performAction('selectNoticeDetails', {
-      howDidYouServeNotice: noticeDetails.byFirstClassPost,
-      day: '16', month: '07', year: '1985'});
+      howDidYouServeNotice: noticeDetails.byPersonallyHandling,
+      explanationLabel: noticeDetails.nameOfPersonDocumentWasLeftLabel,
+      explanation: noticeDetails.byPersonallyHandlingExplanationInput,
+      day: '31', month: '01', year: '1962', hour: '10', minute: '55', second: '30'});
     await performValidation('mainHeader', rentDetails.mainHeader);
     await performAction('provideRentDetails', {rentFrequencyOption:'weekly', rentAmount:'800'});
     await performValidation('mainHeader', dailyRentAmount.mainHeader);
@@ -266,20 +264,19 @@ test.describe('[Successful Create Case Flow]  @Master @nightly', async () => {
       unpaidRentInteractiveOption: dailyRentAmount.no,
       unpaidRentAmountPerDay: '20'
     });
-    await performAction('selectClaimForMoney', moneyJudgment.yes);
+    await performAction('selectMoneyJudgment', moneyJudgment.yes);
     await performValidation('mainHeader', claimantCircumstances.mainHeader);
     await performAction('clickButton', claimantCircumstances.continue);
     await performValidation('mainHeader', claimingCosts.mainHeader);
     await performAction('selectClaimingCosts', claimingCosts.yes);
-    await performAction('clickButton', 'Save and continue');
+    await performAction('clickButton', checkYourAnswers.saveAndContinue);
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
-    await performAction('clickTab', 'Property Details');
     await performValidations(
       'address info not null',
-      ['formLabelValue', 'Building and Street'],
-      ['formLabelValue', 'Town or City'],
-      ['formLabelValue', 'Postcode/Zipcode'],
-      ['formLabelValue', 'Country']
+      ['formLabelValue', propertyDetails.buildingAndStreetLabel],
+      ['formLabelValue', propertyDetails.townOrCityLabel],
+      ['formLabelValue', propertyDetails.postcodeZipcodeLabel],
+      ['formLabelValue', propertyDetails.countryLabel]
     )
   });
 
@@ -328,8 +325,10 @@ test.describe('[Successful Create Case Flow]  @Master @nightly', async () => {
     await performAction('selectNoticeOfYourIntention', noticeOfYourIntention.yes);
     await performValidation('mainHeader', noticeDetails.mainHeader);
     await performAction('selectNoticeDetails', {
-      howDidYouServeNotice: noticeDetails.byFirstClassPost,
-      day: '16', month: '07', year: '1985'});
+      howDidYouServeNotice: noticeDetails.byEmail,
+      explanationLabel: noticeDetails.explainHowServedByEmailLabel,
+      explanation: noticeDetails.byEmailExplanationInput,
+      day: '29', month: '02', year: '2000', hour: '16', minute: '01', second: '56'});
     await performValidation('mainHeader', rentDetails.mainHeader);
     await performAction('provideRentDetails', {rentFrequencyOption:'weekly', rentAmount:'800'});
     await performValidation('mainHeader', dailyRentAmount.mainHeader);
@@ -338,20 +337,19 @@ test.describe('[Successful Create Case Flow]  @Master @nightly', async () => {
       unpaidRentInteractiveOption: dailyRentAmount.no,
       unpaidRentAmountPerDay: '20'
     });
-    await performAction('selectClaimForMoney', moneyJudgment.yes);
+    await performAction('selectMoneyJudgment', moneyJudgment.yes);
     await performValidation('mainHeader', claimantCircumstances.mainHeader);
     await performAction('clickButton', claimantCircumstances.continue);
     await performValidation('mainHeader', claimingCosts.mainHeader);
     await performAction('selectClaimingCosts', claimingCosts.yes);
-    await performAction('clickButton', 'Save and continue');
+    await performAction('clickButton', checkYourAnswers.saveAndContinue);
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
-    await performAction('clickTab', 'Property Details');
     await performValidations(
       'address info not null',
-      ['formLabelValue', 'Building and Street'],
-      ['formLabelValue', 'Town or City'],
-      ['formLabelValue', 'Postcode/Zipcode'],
-      ['formLabelValue', 'Country']
+      ['formLabelValue', propertyDetails.buildingAndStreetLabel],
+      ['formLabelValue', propertyDetails.townOrCityLabel],
+      ['formLabelValue', propertyDetails.postcodeZipcodeLabel],
+      ['formLabelValue', propertyDetails.countryLabel]
     )
   });
 
@@ -359,7 +357,6 @@ test.describe('[Successful Create Case Flow]  @Master @nightly', async () => {
     await performAction('enterTestAddressManually');
     await performValidation('bannerAlert', 'Case #.* has been created.');
     await performAction('extractCaseIdFromAlert');
-    await performValidation('mainHeader', provideMoreDetailsOfClaim.mainHeader);
     await performAction('clickButton', provideMoreDetailsOfClaim.continue);
     await performAction('selectClaimantType', claimantType.registeredCommunityLandlord);
     await performAction('selectClaimType', claimType.no);
@@ -429,7 +426,6 @@ test.describe('[Successful Create Case Flow]  @Master @nightly', async () => {
     await performAction('enterTestAddressManually');
     await performValidation('bannerAlert', 'Case #.* has been created.');
     await performAction('extractCaseIdFromAlert');
-    await performValidation('mainHeader', provideMoreDetailsOfClaim.mainHeader);
     await performAction('clickButton', provideMoreDetailsOfClaim.continue);
     await performAction('selectClaimantType', claimantType.registeredCommunityLandlord);
     await performAction('selectClaimType', claimType.no);
@@ -543,7 +539,7 @@ test.describe('[Successful Create Case Flow]  @Master @nightly', async () => {
     await performValidation('mainHeader', noticeOfYourIntention.mainHeader);
     await performAction('selectNoticeOfYourIntention', noticeOfYourIntention.yes);
     await performAction('selectNoticeDetails', {
-      howDidYouServeNotice: noticeDetails.byDeliveringAtPermittedPlace,
+      howDidYouServeNotice: noticeDetails.byOtherElectronicMethod,
       day: '25', month: '02', year: '1970', files: 'NoticeDetails.pdf'});
     await performAction('provideRentDetails', {rentFrequencyOption: 'Monthly', rentAmount: '1000'});
     await performValidation('mainHeader', dailyRentAmount.mainHeader);
