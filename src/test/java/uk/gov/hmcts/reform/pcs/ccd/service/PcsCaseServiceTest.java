@@ -65,10 +65,10 @@ class PcsCaseServiceTest {
         modelMapper = spy(config.modelMapper());
         tenancyLicenceService = mock(TenancyLicenceService.class);
         underTest = new PcsCaseService(
-            pcsCaseRepository, 
-            securityContextService, 
-            modelMapper, 
-            tenancyLicenceService, 
+            pcsCaseRepository,
+            securityContextService,
+            modelMapper,
+            tenancyLicenceService,
             partyDocumentsService
         );
     }
@@ -428,9 +428,6 @@ class PcsCaseServiceTest {
         assertThat(clearedDefendant.getAddressSameAsPossession()).isNull();
         assertThat(clearedDefendant.getEmail()).isNull();
     }
-
-
-
 
     private AddressEntity stubAddressUKModelMapper(AddressUK addressUK) {
         AddressEntity addressEntity = mock(AddressEntity.class);
