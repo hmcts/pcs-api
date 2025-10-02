@@ -25,8 +25,7 @@ test.beforeEach(async ({page}, testInfo) => {
   await performAction('housingPossessionClaim');
 });
 
-//Skipping these tests as are failing intermittently which will be fixed as part of HDPI-2306
-test.describe.skip('[Eligibility checks for cross and non cross border postcodes] @Master @nightly', async () => {
+test.describe('[Eligibility checks for cross and non cross border postcodes] @Master @nightly', async () => {
   test('Cross border - Verify postcode eligibility check redirection and content for England and Wales', async ({page}) => {
     await performAction('selectAddress', {
       postcode: borderPostcode.englandWalesPostcode,
@@ -117,7 +116,7 @@ test.describe.skip('[Eligibility checks for cross and non cross border postcodes
       postcode: addressDetails.englandCourtAssignedPostcode,
       addressIndex: addressDetails.addressIndex
     });
-    await performAction('clickButton', provideMoreDetailsOfClaim.continue);
+    await performAction('clickButtonAndVerifyPageNavigation', provideMoreDetailsOfClaim.continue, claimantType.mainHeader);
     await performAction('selectClaimantType', claimantType.mortgageLender);
     await performValidation('mainHeader', 'You\'re not eligible for this online service');
     await performAction('clickButton', 'Continue');
@@ -153,7 +152,7 @@ test.describe.skip('[Eligibility checks for cross and non cross border postcodes
       postcode: addressDetails.englandCourtAssignedPostcode,
       addressIndex: addressDetails.addressIndex
     });
-    await performAction('clickButton', provideMoreDetailsOfClaim.continue);
+    await performAction('clickButtonAndVerifyPageNavigation', provideMoreDetailsOfClaim.continue, claimantType.mainHeader);
     await performAction('selectClaimantType', claimantType.registeredProviderForSocialHousing);
     await performAction('selectClaimType', claimType.yes);
     await performValidation('mainHeader', 'You\'re not eligible for this online service');
