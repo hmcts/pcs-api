@@ -22,7 +22,7 @@ public class AlternativesToPossessionOptions implements CcdPageConfiguration {
             .page("alternativesToPossession", this::midEvent)
             .pageLabel("Alternatives to possession")
             .complex(PCSCase::getSuspensionOfRightToBuy)
-            .mandatory(SuspensionOfRightToBuy::getShowSuspensionOfRightToBuyHousingActsPage,NEVER_SHOW)
+            .readonlyNoSummary(SuspensionOfRightToBuy::getShowSuspensionOfRightToBuyHousingActsPage,NEVER_SHOW)
             .done()
             .label("alternativesToPossession-info", """
                     ---

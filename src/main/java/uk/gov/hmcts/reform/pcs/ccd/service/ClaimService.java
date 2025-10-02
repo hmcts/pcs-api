@@ -4,6 +4,7 @@ package uk.gov.hmcts.reform.pcs.ccd.service;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.SuspensionOfRightToBuyHousingAct;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimGroundEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyEntity;
@@ -22,12 +23,16 @@ public class ClaimService {
     public void createAndLinkClaim(PcsCaseEntity caseEntity, PartyEntity partyEntity,
                                    String claimName, PartyRole role,
                                    List<ClaimGroundEntity> claimGroundEntities, PCSCase pcsCase) {
+
+        SuspensionOfRightToBuyHousingAct suspensionOfRightToBuyHousingAct = pcsCase.getSuspensionOfRightToBuy()
+            .getSuspensionOfRightToBuyHousingActs();
+
         ClaimEntity claim = ClaimEntity.builder()
             .summary(claimName)
             .pcsCase(caseEntity)
             .costsClaimed(pcsCase.getClaimingCostsWanted().toBoolean())
-            .suspensionOfRightToBuyHousingAct(pcsCase.getSuspensionOfRightToBuy()
-                                                  .getSuspensionOfRightToBuyHousingActs())
+            .suspensionOfRightToBuyHousingAct(suspensionOfRightToBuyHousingAct == null ? null
+                                                  : suspensionOfRightToBuyHousingAct.name())
             .suspensionOfRightToBuyReason(pcsCase.getSuspensionOfRightToBuy().getSuspensionOfRightToBuyReason())
             .build();
 

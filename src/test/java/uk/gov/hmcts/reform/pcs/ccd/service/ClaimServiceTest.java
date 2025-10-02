@@ -65,7 +65,7 @@ class ClaimServiceTest {
         assertThat(savedEntity.getClaimParties().iterator().next().getParty()).isEqualTo(partyEntity);
         assertThat(savedEntity.getClaimGrounds().isEmpty());
         assertThat(savedEntity.getCostsClaimed()).isEqualTo(VerticalYesNo.YES.toBoolean());
-        assertThat(savedEntity.getSuspensionOfRightToBuyHousingAct()).isEqualTo(suspensionRightToBuyHousingAct);
+        assertThat(savedEntity.getSuspensionOfRightToBuyHousingAct()).isEqualTo(suspensionRightToBuyHousingAct.name());
         assertThat(savedEntity.getSuspensionOfRightToBuyReason()).isEqualTo(suspensionOfRightToBuyReason);
     }
 

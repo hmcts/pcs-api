@@ -22,8 +22,8 @@ public class SuspensionOfRightToBuy {
 
     @CCD(
         label = "Why are you requesting a suspension order?",
-        hint = "Give details of the defendants' conduct and any other reasons you thing are relevant. You can enter "
-            + "up to 250 characters",
+        hint = "Give details of the defendants' conduct and any other reasons you think are relevant. You can enter "
+            + "up to 250 characters.",
         typeOverride = TextArea,
         max = 250
     )

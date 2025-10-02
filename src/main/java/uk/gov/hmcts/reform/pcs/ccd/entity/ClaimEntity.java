@@ -3,8 +3,6 @@ package uk.gov.hmcts.reform.pcs.ccd.entity;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -17,7 +15,6 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import uk.gov.hmcts.reform.pcs.ccd.domain.SuspensionOfRightToBuyHousingAct;
 
 import java.util.HashSet;
 import java.util.List;
@@ -62,8 +59,7 @@ public class ClaimEntity {
 
     private Boolean costsClaimed;
 
-    @Enumerated(EnumType.STRING)
-    private SuspensionOfRightToBuyHousingAct suspensionOfRightToBuyHousingAct;
+    private String suspensionOfRightToBuyHousingAct;
 
     private String suspensionOfRightToBuyReason;
 
