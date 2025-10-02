@@ -8,6 +8,7 @@ import uk.gov.hmcts.ccd.sdk.api.DecentralisedConfigBuilder;
 import uk.gov.hmcts.ccd.sdk.api.Event.EventBuilder;
 import uk.gov.hmcts.ccd.sdk.api.EventPayload;
 import uk.gov.hmcts.ccd.sdk.api.Permission;
+import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
@@ -174,7 +175,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
         return caseData;
     }
 
-    private void submit(EventPayload<PCSCase, State> eventPayload) {
+    private SubmitResponse submit(EventPayload<PCSCase, State> eventPayload) {
         long caseReference = eventPayload.caseReference();
         PCSCase pcsCase = eventPayload.caseData();
         pcsCase.setPaymentStatus(PaymentStatus.UNPAID);
@@ -226,5 +227,6 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
         claimService.saveClaim(claimEntity);
 
         unsubmittedCaseDataService.deleteUnsubmittedCaseData(caseReference);
+        return SubmitResponse.builder().build();
     }
 }
