@@ -429,7 +429,7 @@ export class CreateCaseAction implements IAction {
   }
 
   private async enterReasonForRequestingASuspensionOrder(reason: actionData) {
-    await performAction('inputText',  reason, reasonsForRequestingASuspensionOrder.SampleTestReason);
+    await performAction('inputText',  reason, reasonsForRequestingASuspensionOrder.reason);
     await performAction('clickButton', reasonsForRequestingASuspensionOrder.continue);
   }
 
