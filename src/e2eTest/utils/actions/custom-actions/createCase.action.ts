@@ -31,7 +31,7 @@ import {moneyJudgment} from '@data/page-data/moneyJudgment.page.data';
 import {whatAreYourGroundsForPossession} from '@data/page-data/whatAreYourGroundsForPossession.page.data';
 import {additionalReasonsForPossession} from '@data/page-data/additionalReasonsForPossession.page.data';
 import {claimingCosts} from '@data/page-data/claimingCosts.page.data';
-import {homePage} from '@data/page-data/home.page.data';
+import {home} from '@data/page-data/home.page.data';
 import {search} from '@data/page-data/search.page.data';
 
 export let caseInfo: { id: string; fid: string; state: string };
@@ -473,7 +473,7 @@ export class CreateCaseAction implements IAction {
   private async reloginAndFindTheCase(userInfo: actionData) {
     await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
     await performAction('login', userInfo);
-    await performAction('clickButton', homePage.findCaseTab);
+    await performAction('clickButton', home.findCaseTab);
     await performAction('select', search.jurisdictionLabel, search.possessionsJurisdiction);
     await performAction('select', search.caseTypeLabel, search.caseType.civilPossessions);
     await performAction('inputText', search.caseNumberLabel, caseNumber);
@@ -496,9 +496,9 @@ export class CreateCaseAction implements IAction {
           event_token: process.env.EVENT_TOKEN,
         }
       );
-      caseInfo.id = response.data.id
-      caseInfo.fid =  response.data.id.replace(/(.{4})(?=.)/g, '$1-')
-      caseInfo.state = response.data.state
+      caseInfo.id = response.data.id;
+      caseInfo.fid =  response.data.id.replace(/(.{4})(?=.)/g, '$1-');
+      caseInfo.state = response.data.state;
     }
     catch (error) {
       throw new Error('Case could not be created.');

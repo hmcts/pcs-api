@@ -29,7 +29,7 @@ import {user} from '@data/user-data/permanent.user.data';
 import {checkYourAnswers} from '@data/page-data/checkYourAnswers.page.data';
 import {propertyDetails} from '@data/page-data/propertyDetails.page.data';
 import {claimingCosts} from '@data/page-data/claimingCosts.page.data';
-import {homePage} from '@data/page-data/home.page.data';
+import {home} from '@data/page-data/home.page.data';
 import {additionalReasonsForPossession} from '@data/page-data/additionalReasonsForPossession.page.data';
 import {underlesseeOrMortgageeEntitledToClaim} from '@data/page-data/underlesseeOrMortgageeEntitledToClaim.page.data';
 
@@ -42,7 +42,7 @@ test.beforeEach(async ({page}, testInfo) => {
     body: page.url(),
     contentType: 'text/plain',
   });
-  await performAction('clickTab', homePage.createCaseTab);
+  await performAction('clickTab', home.createCaseTab);
   await performAction('selectJurisdictionCaseTypeEvent');
   await performAction('housingPossessionClaim');
 });

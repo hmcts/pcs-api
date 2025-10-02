@@ -1,4 +1,4 @@
-export const homePage =
+export const home =
   {
     title: 'Create a case - HM Courts & Tribunals Service - GOV.UK',
     caseListTab: 'Case list',
