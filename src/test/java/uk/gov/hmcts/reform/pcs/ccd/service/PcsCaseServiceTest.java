@@ -21,7 +21,6 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.config.MapperConfig;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
-import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.util.List;
 import java.util.Optional;
@@ -51,8 +50,6 @@ class PcsCaseServiceTest {
 
     @Mock
     private PartyDocumentsService partyDocumentsService;
-    @Mock
-    private SecurityContextService securityContextService;
 
     private PcsCaseService underTest;
 
@@ -66,8 +63,7 @@ class PcsCaseServiceTest {
             pcsCaseMergeService,
             modelMapper,
             tenancyLicenceService,
-            partyDocumentsService,
-            securityContextService
+            partyDocumentsService
         );
     }
 

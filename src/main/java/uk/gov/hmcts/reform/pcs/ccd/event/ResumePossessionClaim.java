@@ -91,12 +91,9 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
     private final UnsubmittedCaseDataService unsubmittedCaseDataService;
     private final NoticeDetails noticeDetails;
     private final UploadAdditionalDocumentsDetails uploadAdditionalDocumentsDetails;
-
     private final TenancyLicenceDetails tenancyLicenceDetails;
     private final ContactPreferences contactPreferences;
     private final DefendantsDetails defendantsDetails;
-
-
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
