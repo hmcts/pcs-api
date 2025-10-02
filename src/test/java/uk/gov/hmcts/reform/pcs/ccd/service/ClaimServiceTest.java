@@ -7,6 +7,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.pcs.ccd.domain.AdditionalReasons;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.SuspensionOfRightToBuy;
+import uk.gov.hmcts.reform.pcs.ccd.domain.SuspensionOfRightToBuyHousingAct;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimGroundEntity;
@@ -52,6 +54,7 @@ class ClaimServiceTest {
         when(additionalReasons.getReasons()).thenReturn(expectedAdditionalReasons);
 
         when(pcsCase.getClaimingCostsWanted()).thenReturn(VerticalYesNo.YES);
+        when(pcsCase.getSuspensionOfRightToBuy()).thenReturn(mock(SuspensionOfRightToBuy.class));
 
         List<ClaimGroundEntity> expectedClaimGrounds = List.of(mock(ClaimGroundEntity.class));
         when(claimGroundService.getGroundsWithReason(pcsCase)).thenReturn(expectedClaimGrounds);
@@ -76,6 +79,35 @@ class ClaimServiceTest {
         verify(claimRepository).save(createdClaimEntity);
 
     }
+
+    @Test
+    void shouldCreateMainClaim_WithSuspensionOfRightToBuyDetails() {
+        // Given
+        PCSCase pcsCase = mock(PCSCase.class);
+        PartyEntity claimantPartyEntity = new PartyEntity();
+
+        String expectedSuspensionReason = "some suspension reason";
+        SuspensionOfRightToBuyHousingAct expectedSuspensionAct = SuspensionOfRightToBuyHousingAct.SECTION_62A;
+
+        SuspensionOfRightToBuy suspension = mock(SuspensionOfRightToBuy.class);
+        when(pcsCase.getSuspensionOfRightToBuy()).thenReturn(suspension);
+        when(suspension.getSuspensionOfRightToBuyHousingActs()).thenReturn(expectedSuspensionAct);
+        when(suspension.getSuspensionOfRightToBuyReason()).thenReturn(expectedSuspensionReason);
+
+        AdditionalReasons additionalReasons = mock(AdditionalReasons.class);
+        when(pcsCase.getAdditionalReasonsForPossession()).thenReturn(additionalReasons);
+        when(additionalReasons.getReasons()).thenReturn("example reasons");
+        when(pcsCase.getClaimingCostsWanted()).thenReturn(VerticalYesNo.NO);
+        when(claimGroundService.getGroundsWithReason(pcsCase)).thenReturn(List.of());
+
+        // When
+        ClaimEntity createdClaimEntity = claimService.createMainClaimEntity(pcsCase, claimantPartyEntity);
+
+        // Then
+        assertThat(createdClaimEntity.getSuspensionOfRightToBuyHousingAct()).isEqualTo(expectedSuspensionAct);
+        assertThat(createdClaimEntity.getSuspensionOfRightToBuyReason()).isEqualTo(expectedSuspensionReason);
+    }
+
 
 }
 
