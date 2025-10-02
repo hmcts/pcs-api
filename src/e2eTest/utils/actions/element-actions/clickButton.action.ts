@@ -22,19 +22,20 @@ export class ClickButtonAction implements IAction {
     await page.locator('.spinner-container').waitFor({state: 'detached'});
   }
 
-  private async clickButtonAndVerifyPageNavigation(page: Page, button: Locator, nextPageHeader: string): Promise<void> {
-    for (let i = 0; i < 3; i++) {
+  private async clickButtonAndVerifyPageNavigation(page: Page, button: Locator, nextPageElement: string): Promise<void> {
+    for(let i = 0; i < 3; i++){
       this.clickButton(page, button);
-      const element = page.locator('h1, h1.govuk-heading-xl, h1.govuk-heading-l');
-      if (await element.isVisible() && (await element.textContent()) === nextPageHeader) {
+      const pageElement = page.locator(`h1:has-text("${nextPageElement}")`);
+      if(!await pageElement.isVisible()){
+        //Adding sleep to slow down execution when the application behaves abnormally
+        await page.waitForTimeout(3000);
+      }
+      else{
         break;
       }
-      else if (i === 2) {
-        throw new Error(`Navigation to ${nextPageHeader} page has been failed after 3 attempts`);
+      if (i === 2) {
+        throw new Error(`Navigation to ${nextPageElement} page has been failed after 3 attempts`);
       }
-
-      //Adding sleep to slow down execution when the application behaves abnormally
-      await page.waitForTimeout(3000);
     }
   }
 }
