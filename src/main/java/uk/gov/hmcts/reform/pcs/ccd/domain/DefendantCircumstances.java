@@ -6,7 +6,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.type.FieldType;
-import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenAccess;
 
 import static uk.gov.hmcts.ccd.sdk.type.FieldType.TextArea;
 
@@ -28,19 +27,16 @@ public class DefendantCircumstances {
 
     @CCD(
         label = "Is there any information you'd like to provide about the ${defendantTermPossessive} circumstances?",
-        hint = "This can be any known details or any attempts made to obtain details",
-        access = {CitizenAccess.class}
+        hint = "This can be any known details or any attempts made to obtain details"
     )
     private VerticalYesNo hasDefendantCircumstancesInfo;
 
     @CCD(
         label = "Give details about the ${defendantTermPossessive} circumstances",
         typeOverride = TextArea,
-        max = 950,
-        access = {CitizenAccess.class}
+        max = 950
     )
     private String defendantCircumstancesInfo;
 
-    @CCD(access = {CitizenAccess.class})
     private String defendantTermPossessive;
 }

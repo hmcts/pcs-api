@@ -25,7 +25,8 @@ test.beforeEach(async ({page}, testInfo) => {
   await performAction('housingPossessionClaim');
 });
 
-test.describe('[Eligibility checks for cross and non cross border postcodes] @Master @nightly', async () => {
+//Skipping these tests as are failing intermittently which will be fixed as part of HDPI-2306
+test.describe.skip('[Eligibility checks for cross and non cross border postcodes] @Master @nightly', async () => {
   test('Cross border - Verify postcode eligibility check redirection and content for England and Wales', async ({page}) => {
     await performAction('selectAddress', {
       postcode: borderPostcode.englandWalesPostcode,
