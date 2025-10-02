@@ -19,6 +19,7 @@ import {caseApiData} from '@data/api-data/case.api.data';
 import {dailyRentAmount} from '@data/page-data/dailyRentAmount.page.data';
 import {reasonsForPossession} from '@data/page-data/reasonsForPossession.page.data';
 import {detailsOfRentArrears} from '@data/page-data/detailsOfRentArrears.page.data';
+import {defendantCircumstances} from '@data/page-data/defendantCircumstances.page.data';
 import {additionalReasonsForPossession} from '@data/page-data/additionalReasonsForPossession.page.data';
 import {claimingCosts} from '@data/page-data/claimingCosts.page.data';
 
@@ -57,6 +58,7 @@ export class CreateCaseAction implements IAction {
       ['selectDailyRentAmount', () => this.selectDailyRentAmount(fieldName)],
       ['provideDetailsOfRentArrears', () => this.provideDetailsOfRentArrears(fieldName)],
       ['selectClaimForMoney', () => this.selectClaimForMoney(fieldName)],
+      ['selectDefendantCircumstances', () => this.selectDefendantCircumstances(fieldName)],
       ['selectAdditionalReasonsForPossession', ()=> this.selectAdditionalReasonsForPossession(fieldName)],
       ['selectClaimingCosts', () => this.selectClaimingCosts(fieldName)]
     ]);
@@ -418,6 +420,14 @@ export class CreateCaseAction implements IAction {
       , ['select', 'Case type', createCase.caseType.civilPossessions]
       , ['select', 'Event', createCase.makeAPossessionClaimEvent]);
     await performAction('clickButton', 'Start');
+  }
+
+  private async selectDefendantCircumstances(defendantDetails: actionData) {
+    await performAction('clickRadioButton', defendantDetails);
+    if(defendantDetails == defendantCircumstances.yes){
+      await performAction('inputText', defendantCircumstances.defendantCircumstancesLabel, defendantCircumstances.defendantCircumstancesSampleData);
+    }
+    await performAction('clickButton', defendantCircumstances.continue);
   }
 
   private async enterTestAddressManually() {
