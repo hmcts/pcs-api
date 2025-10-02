@@ -93,6 +93,11 @@ public class PcsCaseEntity {
     @JdbcTypeCode(SqlTypes.JSON)
     private List<PartyDocumentDto> partyDocuments;
 
+    public void addClaim(ClaimEntity claim) {
+        claims.add(claim);
+        claim.setPcsCase(this);
+    }
+
     public void addParty(PartyEntity party) {
         parties.add(party);
         party.setPcsCase(this);

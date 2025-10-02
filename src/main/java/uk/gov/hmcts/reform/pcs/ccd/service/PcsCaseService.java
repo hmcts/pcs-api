@@ -3,23 +3,17 @@ package uk.gov.hmcts.reform.pcs.ccd.service;
 import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
-import uk.gov.hmcts.ccd.sdk.api.HasLabel;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
-import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.model.Defendant;
-import uk.gov.hmcts.reform.pcs.ccd.model.PossessionGrounds;
-import uk.gov.hmcts.reform.pcs.ccd.model.SecureOrFlexibleReasonsForGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
-import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -29,16 +23,23 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import uk.gov.hmcts.reform.idam.client.models.UserInfo;
+import uk.gov.hmcts.reform.pcs.ccd.entity.PartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.model.PossessionGrounds;
+import uk.gov.hmcts.reform.pcs.ccd.model.SecureOrFlexibleReasonsForGrounds;
+import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
+import uk.gov.hmcts.ccd.sdk.api.HasLabel;
 
 @Service
 @AllArgsConstructor
 public class PcsCaseService {
 
     private final PcsCaseRepository pcsCaseRepository;
-    private final SecurityContextService securityContextService;
+    private final PcsCaseMergeService pcsCaseMergeService;
     private final ModelMapper modelMapper;
     private final TenancyLicenceService tenancyLicenceService;
     private final PartyDocumentsService partyDocumentsService;
+    private final SecurityContextService securityContextService;
 
     public void createCase(long caseReference, AddressUK propertyAddress, LegislativeCountry legislativeCountry) {
 
@@ -70,14 +71,27 @@ public class PcsCaseService {
         pcsCaseEntity.setDefendants(mapFromDefendantDetails(pcsCase.getDefendants()));
         pcsCaseEntity.setTenancyLicence(tenancyLicenceService.buildTenancyLicence(pcsCase));
 
-
         pcsCaseRepository.save(pcsCaseEntity);
     }
 
-    public PcsCaseEntity patchCase(long caseReference, PCSCase pcsCase) {
-        PcsCaseEntity pcsCaseEntity = pcsCaseRepository.findByCaseReference(caseReference)
-            .orElseThrow(() -> new CaseNotFoundException(caseReference));
+    public void patchCase(long caseReference, PCSCase pcsCase) {
+        PcsCaseEntity pcsCaseEntity = loadCase(caseReference);
 
+        mergeCaseData(pcsCaseEntity, pcsCase);
+
+        save(pcsCaseEntity);
+    }
+
+    public void mergeCaseData(PcsCaseEntity pcsCaseEntity, PCSCase pcsCase) {
+        pcsCaseMergeService.mergeCaseData(pcsCaseEntity, pcsCase);
+    }
+
+    public PcsCaseEntity loadCase(long caseReference) {
+        return pcsCaseRepository.findByCaseReference(caseReference)
+            .orElseThrow(() -> new CaseNotFoundException(caseReference));
+    }
+
+    private void updatePcsCaseEntity(PcsCaseEntity pcsCaseEntity, PCSCase pcsCase) {
         if (pcsCase.getPropertyAddress() != null) {
             AddressEntity addressEntity = modelMapper.map(pcsCase.getPropertyAddress(), AddressEntity.class);
             pcsCaseEntity.setPropertyAddress(addressEntity);
@@ -103,10 +117,10 @@ public class PcsCaseService {
         pcsCaseEntity.setTenancyLicence(tenancyLicenceService.buildTenancyLicence(pcsCase));
         pcsCaseEntity.setPossessionGrounds(buildPossessionGrounds(pcsCase));
         pcsCaseEntity.setPartyDocuments(partyDocumentsService.buildPartyDocuments(pcsCase));
+    }
 
+    public void save(PcsCaseEntity pcsCaseEntity) {
         pcsCaseRepository.save(pcsCaseEntity);
-
-        return pcsCaseEntity;
     }
 
     public List<Defendant> mapFromDefendantDetails(List<ListValue<DefendantDetails>> defendants) {

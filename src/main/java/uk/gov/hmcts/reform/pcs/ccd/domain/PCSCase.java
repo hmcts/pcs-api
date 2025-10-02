@@ -603,6 +603,8 @@ public class PCSCase {
     @CCD(access = {CitizenAccess.class})
     private NoRentArrearsReasonForGrounds noRentArrearsReasonForGrounds;
 
+    private AdditionalReasons additionalReasonsForPossession;
+
     @CCD(
         label = "Do you want to upload any additional documents?",
         hint = "You can either upload documents now or closer to the hearing date. "
