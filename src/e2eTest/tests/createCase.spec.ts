@@ -27,6 +27,7 @@ import {moneyJudgment} from '@data/page-data/moneyJudgment.page.data';
 import {claimantCircumstances} from '@data/page-data/claimantCircumstances.page.data';
 import {user} from '@data/user-data/permanent.user.data';
 import {claimingCosts} from '@data/page-data/claimingCosts.page.data';
+import {uploadAdditionalDocs} from '@data/page-data/uploadAdditionalDocs.page.data';
 
 test.beforeEach(async ({page}, testInfo) => {
   initializeExecutor(page);
@@ -43,7 +44,7 @@ test.beforeEach(async ({page}, testInfo) => {
 });
 
 //Skipping these tests as are failing intermittently which will be fixed as part of HDPI-2306
-test.describe.skip('[Successful Create Case Flow]  @Master @nightly', async () => {
+test.describe('[Successful Create Case Flow]  @Master @nightly', async () => {
   test('England - Assured tenancy with Rent arrears and other possession grounds', async () => {
     await performAction('selectAddress', {
       postcode: addressDetails.englandCourtAssignedPostcode,
@@ -106,6 +107,14 @@ test.describe.skip('[Successful Create Case Flow]  @Master @nightly', async () =
       calculateRentAmount: '£114.29',
       unpaidRentInteractiveOption: dailyRentAmount.no,
       unpaidRentAmountPerDay: '20'
+    });
+    await performAction('uploadAdditionalDocs', {
+      option: uploadAdditionalDocs.yes,
+      documents: [{
+        type: uploadAdditionalDocs.tenancyAgreementOption,
+        filePath: 'tenancy.pdf',
+        description: uploadAdditionalDocs.shortDescriptionInput
+      }]
     });
     await performAction('selectClaimForMoney', moneyJudgment.yes);
     await performValidation('mainHeader', claimantCircumstances.mainHeader);
