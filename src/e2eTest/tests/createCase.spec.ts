@@ -30,6 +30,8 @@ import {checkYourAnswers} from '@data/page-data/checkYourAnswers.page.data';
 import {propertyDetails} from '@data/page-data/propertyDetails.page.data';
 import {claimingCosts} from '@data/page-data/claimingCosts.page.data';
 import {homePage} from '@data/page-data/home.page.data';
+import {additionalReasonsForPossession} from '@data/page-data/additionalReasonsForPossession.page.data';
+import {underlesseeOrMortgageeEntitledToClaim} from '@data/page-data/underlesseeOrMortgageeEntitledToClaim.page.data';
 
 test.beforeEach(async ({page}, testInfo) => {
   initializeExecutor(page);
@@ -114,6 +116,10 @@ test.describe.skip('[Successful Create Case Flow]  @Master @nightly', async () =
     await performAction('clickButton', claimantCircumstances.continue);
     await performValidation('mainHeader', claimingCosts.mainHeader);
     await performAction('selectClaimingCosts', claimingCosts.yes);
+    await performValidation('mainHeader', additionalReasonsForPossession.mainHeader);
+    await performAction('selectAdditionalReasonsForPossession', additionalReasonsForPossession.yes);
+    await performValidation('mainHeader', underlesseeOrMortgageeEntitledToClaim.mainHeader);
+    await performAction('clickButton', underlesseeOrMortgageeEntitledToClaim.continue);
     await performAction('clickButton', checkYourAnswers.saveAndContinue);
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
     await performValidations(
@@ -193,6 +199,10 @@ test.describe.skip('[Successful Create Case Flow]  @Master @nightly', async () =
     await performAction('clickButton', claimantCircumstances.continue);
     await performValidation('mainHeader', claimingCosts.mainHeader);
     await performAction('selectClaimingCosts', claimingCosts.no);
+    await performValidation('mainHeader', additionalReasonsForPossession.mainHeader);
+    await performAction('selectAdditionalReasonsForPossession', additionalReasonsForPossession.no);
+    await performValidation('mainHeader', underlesseeOrMortgageeEntitledToClaim.mainHeader);
+    await performAction('clickButton', underlesseeOrMortgageeEntitledToClaim.continue);
     await performAction('clickButton', checkYourAnswers.saveAndContinue);
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
     await performValidations(
@@ -269,6 +279,10 @@ test.describe.skip('[Successful Create Case Flow]  @Master @nightly', async () =
     await performAction('clickButton', claimantCircumstances.continue);
     await performValidation('mainHeader', claimingCosts.mainHeader);
     await performAction('selectClaimingCosts', claimingCosts.yes);
+    await performValidation('mainHeader', additionalReasonsForPossession.mainHeader);
+    await performAction('selectAdditionalReasonsForPossession', additionalReasonsForPossession.no);
+    await performValidation('mainHeader', underlesseeOrMortgageeEntitledToClaim.mainHeader);
+    await performAction('clickButton', underlesseeOrMortgageeEntitledToClaim.continue);
     await performAction('clickButton', checkYourAnswers.saveAndContinue);
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
     await performValidations(
@@ -342,6 +356,10 @@ test.describe.skip('[Successful Create Case Flow]  @Master @nightly', async () =
     await performAction('clickButton', claimantCircumstances.continue);
     await performValidation('mainHeader', claimingCosts.mainHeader);
     await performAction('selectClaimingCosts', claimingCosts.yes);
+    await performValidation('mainHeader', additionalReasonsForPossession.mainHeader);
+    await performAction('selectAdditionalReasonsForPossession', additionalReasonsForPossession.no);
+    await performValidation('mainHeader', underlesseeOrMortgageeEntitledToClaim.mainHeader);
+    await performAction('clickButton', underlesseeOrMortgageeEntitledToClaim.continue);
     await performAction('clickButton', checkYourAnswers.saveAndContinue);
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
     await performValidations(
@@ -412,6 +430,10 @@ test.describe.skip('[Successful Create Case Flow]  @Master @nightly', async () =
     await performAction('clickButton', claimantCircumstances.continue);
     await performValidation('mainHeader', claimingCosts.mainHeader);
     await performAction('selectClaimingCosts', claimingCosts.no);
+    await performValidation('mainHeader', additionalReasonsForPossession.mainHeader);
+    await performAction('selectAdditionalReasonsForPossession', additionalReasonsForPossession.no);
+    await performValidation('mainHeader', underlesseeOrMortgageeEntitledToClaim.mainHeader);
+    await performAction('clickButton', underlesseeOrMortgageeEntitledToClaim.continue);
     await performAction('clickButton', checkYourAnswers.saveAndContinue);
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
     await performValidations('address information entered',
@@ -478,6 +500,10 @@ test.describe.skip('[Successful Create Case Flow]  @Master @nightly', async () =
     await performAction('clickButton', claimantCircumstances.continue);
     await performValidation('mainHeader', claimingCosts.mainHeader);
     await performAction('selectClaimingCosts', claimingCosts.no);
+    await performValidation('mainHeader', additionalReasonsForPossession.mainHeader);
+    await performAction('selectAdditionalReasonsForPossession', additionalReasonsForPossession.yes);
+    await performValidation('mainHeader', underlesseeOrMortgageeEntitledToClaim.mainHeader);
+    await performAction('clickButton', underlesseeOrMortgageeEntitledToClaim.continue);
     await performAction('clickButton', checkYourAnswers.saveAndContinue);
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
     await performValidations('address information entered',
@@ -551,6 +577,10 @@ test.describe.skip('[Successful Create Case Flow]  @Master @nightly', async () =
     await performAction('clickButton', claimantCircumstances.continue);
     await performValidation('mainHeader', claimingCosts.mainHeader);
     await performAction('selectClaimingCosts', claimingCosts.yes);
+    await performValidation('mainHeader', additionalReasonsForPossession.mainHeader);
+    await performAction('selectAdditionalReasonsForPossession', additionalReasonsForPossession.no);
+    await performValidation('mainHeader', underlesseeOrMortgageeEntitledToClaim.mainHeader);
+    await performAction('clickButton', underlesseeOrMortgageeEntitledToClaim.continue);
     await performAction('clickButton', checkYourAnswers.saveAndContinue);
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
     await performValidations('address information entered',

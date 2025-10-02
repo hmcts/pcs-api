@@ -29,6 +29,7 @@ import {rentArrearsOrBreachOfTenancy} from '@data/page-data/rentArrearsOrBreachO
 import {noticeDetails} from '@data/page-data/noticeDetails.page.data';
 import {moneyJudgment} from '@data/page-data/moneyJudgment.page.data';
 import {whatAreYourGroundsForPossession} from '@data/page-data/whatAreYourGroundsForPossession.page.data';
+import {additionalReasonsForPossession} from '@data/page-data/additionalReasonsForPossession.page.data';
 import {claimingCosts} from '@data/page-data/claimingCosts.page.data';
 import {homePage} from '@data/page-data/home.page.data';
 import {search} from '@data/page-data/search.page.data';
@@ -68,6 +69,7 @@ export class CreateCaseAction implements IAction {
       ['selectDailyRentAmount', () => this.selectDailyRentAmount(fieldName)],
       ['provideDetailsOfRentArrears', () => this.provideDetailsOfRentArrears(fieldName)],
       ['selectMoneyJudgment', () => this.selectMoneyJudgment(fieldName)],
+      ['selectAdditionalReasonsForPossession', ()=> this.selectAdditionalReasonsForPossession(fieldName)],
       ['selectClaimingCosts', () => this.selectClaimingCosts(fieldName)]
     ]);
     const actionToPerform = actionsMap.get(action);
@@ -458,6 +460,14 @@ export class CreateCaseAction implements IAction {
       , ['inputText', addressDetails.countryLabel, addressDetails.country]
     );
     await performAction('clickButton', addressDetails.submit);
+  }
+
+  private async selectAdditionalReasonsForPossession(reasons: actionData) {
+    await performAction('clickRadioButton', reasons);
+    if(reasons == additionalReasonsForPossession.yes){
+      await performAction('inputText', additionalReasonsForPossession.additionalReasonsForPossessionLabel, additionalReasonsForPossession.additionalReasonsForPossessionSampleText);
+    }
+    await performAction('clickButton', additionalReasonsForPossession.continue);
   }
 
   private async reloginAndFindTheCase(userInfo: actionData) {

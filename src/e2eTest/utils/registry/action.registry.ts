@@ -52,6 +52,7 @@ export class ActionRegistry {
     ['selectDailyRentAmount', new CreateCaseAction()],
     ['provideDetailsOfRentArrears', new CreateCaseAction()],
     ['selectMoneyJudgment', new CreateCaseAction()],
+    ['selectAdditionalReasonsForPossession', new CreateCaseAction()],
     ['searchCaseById', new searchCaseActions()],
     ['selectClaimingCosts', new CreateCaseAction()]
   ]);
