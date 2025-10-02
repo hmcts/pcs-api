@@ -19,6 +19,7 @@ import {caseApiData} from '@data/api-data/case.api.data';
 import {dailyRentAmount} from '@data/page-data/dailyRentAmount.page.data';
 import {reasonsForPossession} from '@data/page-data/reasonsForPossession.page.data';
 import {detailsOfRentArrears} from '@data/page-data/detailsOfRentArrears.page.data';
+import {additionalReasonsForPossession} from '@data/page-data/additionalReasonsForPossession.page.data';
 import {claimingCosts} from '@data/page-data/claimingCosts.page.data';
 import {alternativesToPossession} from '@data/page-data/alternativesToPossession.page.data';
 import {reasonsForRequestingASuspensionOrder} from "@data/page-data/reasonsForRequestingASuspensionOrder.page.data";
@@ -58,10 +59,12 @@ export class CreateCaseAction implements IAction {
       ['selectDailyRentAmount', () => this.selectDailyRentAmount(fieldName)],
       ['provideDetailsOfRentArrears', () => this.provideDetailsOfRentArrears(fieldName)],
       ['selectClaimForMoney', () => this.selectClaimForMoney(fieldName)],
-      ['selectClaimingCosts', () => this.selectClaimingCosts(fieldName)],
       ['selectAlternativesToPossession', () => this.selectAlternativesToPossession(fieldName)],
       ['selectHousingAct', () => this.selectHousingAct(fieldName)],
-      ['enterReasonForRequestingASuspensionOrder', () => this.enterReasonForRequestingASuspensionOrder(fieldName)]
+      ['enterReasonForRequestingASuspensionOrder', () => this.enterReasonForRequestingASuspensionOrder(fieldName)],
+      ['selectClaimingCosts', () => this.selectClaimingCosts(fieldName)],
+      ['selectAdditionalReasonsForPossession', ()=> this.selectAdditionalReasonsForPossession(fieldName)],
+      ['selectClaimingCosts', () => this.selectClaimingCosts(fieldName)]
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) throw new Error(`No action found for '${action}'`);
@@ -451,6 +454,14 @@ export class CreateCaseAction implements IAction {
       , ['inputText', 'Country (Optional)', addressDetails.country]
     );
     await performAction('clickButton', 'Submit');
+  }
+
+  private async selectAdditionalReasonsForPossession(reasons: actionData) {
+    await performAction('clickRadioButton', reasons);
+    if(reasons == additionalReasonsForPossession.yes){
+      await performAction('inputText', additionalReasonsForPossession.additionalReasonsForPossessionLabel, additionalReasonsForPossession.additionalReasonsForPossessionSampleText);
+    }
+    await performAction('clickButton', additionalReasonsForPossession.continue);
   }
 
   private async reloginAndFindTheCase(userInfo: actionData) {
