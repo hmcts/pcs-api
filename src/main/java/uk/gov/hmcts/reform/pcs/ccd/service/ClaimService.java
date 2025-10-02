@@ -8,7 +8,6 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimGroundEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyRole;
-import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimRepository;
 
 import java.util.List;
@@ -18,27 +17,29 @@ import java.util.List;
 public class ClaimService {
 
     private final ClaimRepository claimRepository;
+    private final ClaimGroundService claimGroundService;
 
-    public void createAndLinkClaim(PcsCaseEntity caseEntity, PartyEntity partyEntity,
-                                   String claimName, PartyRole role,
-                                   List<ClaimGroundEntity> claimGroundEntities, PCSCase pcsCase) {
+    public ClaimEntity createMainClaimEntity(PCSCase pcsCase, PartyEntity claimantPartyEntity) {
 
-        ClaimEntity claim = ClaimEntity.builder()
-            .summary(claimName)
-            .pcsCase(caseEntity)
+        String additionalReasons = pcsCase.getAdditionalReasonsForPossession().getReasons();
+
+        List<ClaimGroundEntity> claimGrounds = claimGroundService.getGroundsWithReason(pcsCase);
+
+        ClaimEntity claimEntity = ClaimEntity.builder()
+            .summary("Main Claim")
+            .additionalReasons(additionalReasons)
             .costsClaimed(pcsCase.getClaimingCostsWanted().toBoolean())
             .suspensionOfRightToBuyHousingAct(pcsCase.getSuspensionOfRightToBuy()
                                                   .getSuspensionOfRightToBuyHousingActs())
             .suspensionOfRightToBuyReason(pcsCase.getSuspensionOfRightToBuy().getSuspensionOfRightToBuyReason())
             .build();
 
-        caseEntity.getClaims().add(claim);
-        claim.addParty(partyEntity, role);
-        claim.addClaimGroundEntities(claimGroundEntities);
-        saveClaim(claim);
+        claimEntity.addParty(claimantPartyEntity, PartyRole.CLAIMANT);
+        claimEntity.addClaimGrounds(claimGrounds);
+
+        claimRepository.save(claimEntity);
+
+        return claimEntity;
     }
 
-    public ClaimEntity saveClaim(ClaimEntity claim) {
-        return claimRepository.save(claim);
-    }
 }

@@ -67,6 +67,8 @@ public class ClaimEntity {
 
     private String suspensionOfRightToBuyReason;
 
+    private String additionalReasons;
+
     public void addParty(PartyEntity party, PartyRole partyRole) {
         ClaimPartyEntity claimPartyEntity = ClaimPartyEntity.builder()
             .claim(this)
@@ -78,11 +80,10 @@ public class ClaimEntity {
         party.getClaimParties().add(claimPartyEntity);
     }
 
-    public void addClaimGroundEntities(List<ClaimGroundEntity> grounds) {
+    public void addClaimGrounds(List<ClaimGroundEntity> grounds) {
         for (ClaimGroundEntity ground : grounds) {
             ground.setClaim(this);
             this.claimGrounds.add(ground);
-
         }
     }
 }

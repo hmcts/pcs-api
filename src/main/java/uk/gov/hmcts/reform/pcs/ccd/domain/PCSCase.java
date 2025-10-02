@@ -614,4 +614,7 @@ public class PCSCase {
 
     @JsonUnwrapped
     private SuspensionOfRightToBuy suspensionOfRightToBuy;
+
+    private AdditionalReasons additionalReasonsForPossession;
+
 }
