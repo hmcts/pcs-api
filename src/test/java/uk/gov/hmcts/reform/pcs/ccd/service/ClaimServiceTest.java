@@ -6,6 +6,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.pcs.ccd.domain.AdditionalReasons;
+import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantCircumstances;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
@@ -74,6 +75,31 @@ class ClaimServiceTest {
         assertThat(createdClaimEntity.getClaimGrounds()).containsExactlyElementsOf(expectedClaimGrounds);
 
         verify(claimRepository).save(createdClaimEntity);
+    }
+
+    @Test
+    void shouldCreateMainClaim_WithDefendantCircumstancesDetails() {
+        // Given
+        PCSCase pcsCase = mock(PCSCase.class);
+        PartyEntity claimantPartyEntity = new PartyEntity();
+
+        String circumstancesInfo = "Some circumstance Info";
+
+        DefendantCircumstances defendantCircumstances = mock(DefendantCircumstances.class);
+        when(pcsCase.getDefendantCircumstances()).thenReturn(defendantCircumstances);
+        when(defendantCircumstances.getDefendantCircumstancesInfo()).thenReturn(circumstancesInfo);
+
+        AdditionalReasons additionalReasons = mock(AdditionalReasons.class);
+        when(pcsCase.getAdditionalReasonsForPossession()).thenReturn(additionalReasons);
+        when(additionalReasons.getReasons()).thenReturn("example reasons");
+        when(pcsCase.getClaimingCostsWanted()).thenReturn(VerticalYesNo.NO);
+        when(claimGroundService.getGroundsWithReason(pcsCase)).thenReturn(List.of());
+
+        // When
+        ClaimEntity createdClaimEntity = claimService.createMainClaimEntity(pcsCase, claimantPartyEntity);
+
+        // Then
+        assertThat(createdClaimEntity.getDefendantCircumstances()).isEqualTo(circumstancesInfo);
     }
 
 }
