@@ -18,7 +18,7 @@ import java.util.stream.Stream;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 
-public class AlternativesToPossessionOptionsTest extends BasePageTest {
+class AlternativesToPossessionOptionsTest extends BasePageTest {
 
     @BeforeEach
     void setUp() {

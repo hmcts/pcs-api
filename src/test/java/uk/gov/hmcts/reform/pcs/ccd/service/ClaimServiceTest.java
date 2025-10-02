@@ -37,7 +37,7 @@ class ClaimServiceTest {
     private ArgumentCaptor<ClaimEntity> claimCaptor;
 
     @Test
-    void shouldCreateMainClaimAndLinkPartyAndCase() {
+    void shouldCreateMainClaimAndLinkPartyAndCase_WithSuspensionOfRightToBuyDetails() {
         PcsCaseEntity caseEntity = new PcsCaseEntity();
         PartyEntity partyEntity = new PartyEntity();
         String claimName = "Main Claim";
@@ -65,7 +65,7 @@ class ClaimServiceTest {
         assertThat(savedEntity.getClaimParties().iterator().next().getParty()).isEqualTo(partyEntity);
         assertThat(savedEntity.getClaimGrounds().isEmpty());
         assertThat(savedEntity.getCostsClaimed()).isEqualTo(VerticalYesNo.YES.toBoolean());
-        assertThat(savedEntity.getSuspensionOfRightToBuyHousingAct()).isEqualTo(suspensionRightToBuyHousingAct.name());
+        assertThat(savedEntity.getSuspensionOfRightToBuyHousingAct()).isEqualTo(suspensionRightToBuyHousingAct);
         assertThat(savedEntity.getSuspensionOfRightToBuyReason()).isEqualTo(suspensionOfRightToBuyReason);
     }
 
