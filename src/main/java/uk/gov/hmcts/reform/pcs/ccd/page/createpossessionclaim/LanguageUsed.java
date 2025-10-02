@@ -15,9 +15,9 @@ public class LanguageUsed implements CcdPageConfiguration {
         pageBuilder
             .page("languageUsed")
             .pageLabel("Language used")
-            .label("mainContent",
+            .label("languageUsedMainContent",
                    "<h1 class=\"govuk-heading-l\">Language used</h1>"
                        + "<p class=\"govuk-body\">Did you complete all or part of this claim in Welsh?</p>")
-            .mandatory(PCSCase::getLanguageUsed);
+            .mandatory(PCSCase::getWelshUsed);
     }
 }

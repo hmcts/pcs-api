@@ -44,29 +44,20 @@ class LanguageUsedTest {
     }
 
     @Test
-    @DisplayName("Should build page configuration successfully")
-    void shouldBuildPageConfigurationSuccessfully() {
-        underTest.addTo(pageBuilder);
-
-        verify(fieldBuilder).page(eq("languageUsed"));
-        verify(fieldBuilder).pageLabel(eq("Language used"));
-    }
-
-    @Test
     @DisplayName("Should add main content label with correct heading and text")
     void shouldAddMainContentLabelWithCorrectHeadingAndText() {
         underTest.addTo(pageBuilder);
 
         verify(fieldBuilder).label(
-            eq("mainContent"),
+            eq("languageUsedMainContent"),
             eq("<h1 class=\"govuk-heading-l\">Language used</h1>"
                 + "<p class=\"govuk-body\">Did you complete all or part of this claim in Welsh?</p>")
         );
     }
 
     @Test
-    @DisplayName("Should make languageUsed field mandatory")
-    void shouldMakeLanguageUsedFieldMandatory() {
+    @DisplayName("Should make welshUsed field mandatory")
+    void shouldMakeWelshUsedFieldMandatory() {
         underTest.addTo(pageBuilder);
 
         // Verify that mandatory was called (we can't easily verify the exact method reference)

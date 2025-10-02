@@ -608,7 +608,7 @@ public class PCSCase {
         hint = "The answer to this question will help make sure your claim is translated correctly",
         access = {CitizenAccess.class}
     )
-    private VerticalYesNo languageUsed;
+    private VerticalYesNo welshUsed;
     private AdditionalReasons additionalReasonsForPossession;
 
 }
