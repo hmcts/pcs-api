@@ -84,7 +84,7 @@ public class EnterPropertyAddress implements CcdPageConfiguration {
                 caseData.setShowCrossBorderPage(YesOrNo.NO);
             }
             case MULTIPLE_MATCHES_FOUND -> {
-                // TODO: MULTIPLE_MATCHES_FOUND still needs a ticket
+                // TODO: HDPI-1838 will handle multiple matches
                 throw new UnsupportedOperationException("TODO: Not yet implemented");
             }
             case ELIGIBLE -> {

@@ -16,7 +16,7 @@ import java.util.Set;
 
 
 /**
- * Page configuration for the Grounds for Possession section.
+ * Full implementation will be done in another ticket - responses not captured at the moment.
  */
 @AllArgsConstructor
 @Component
@@ -29,9 +29,12 @@ public class GroundsForPossession implements CcdPageConfiguration {
             .page("groundsForPossession", this::midEvent)
             .pageLabel("Grounds for possession")
             .showCondition("typeOfTenancyLicence!=\"SECURE_TENANCY\" "
-                               + "AND typeOfTenancyLicence!=\"FLEXIBLE_TENANCY\"")
-                .label("groundsForPossession-lineSeparator", "---")
-                .mandatory(PCSCase::getGroundsForPossession);
+                    + "AND typeOfTenancyLicence!=\"FLEXIBLE_TENANCY\" "
+                    + "AND typeOfTenancyLicence!=\"INTRODUCTORY_TENANCY\" "
+                    + "AND typeOfTenancyLicence!=\"DEMOTED_TENANCY\" "
+                    + "AND typeOfTenancyLicence!=\"OTHER\"")
+            .label("groundsForPossession-lineSeparator", "---")
+            .mandatory(PCSCase::getGroundsForPossession);
     }
 
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,

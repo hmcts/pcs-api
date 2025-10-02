@@ -4,8 +4,8 @@ import uk.gov.hmcts.rse.CftlibExec
 
 buildscript {
   ext {
-    flywayVersion = '11.13.0'
-    serenityBddVersion = '4.2.33'
+    flywayVersion = '11.13.2'
+    serenityBddVersion = '4.2.34'
   }
   dependencies {
     classpath("org.flywaydb:flyway-database-postgresql:$flywayVersion")
@@ -16,13 +16,13 @@ plugins {
   id 'application'
   id 'jacoco'
   id 'io.spring.dependency-management' version '1.1.7'
-  id 'org.springframework.boot' version '3.5.5'
-  id 'com.github.ben-manes.versions' version '0.52.0'
+  id 'org.springframework.boot' version '3.5.6'
+  id 'com.github.ben-manes.versions' version '0.53.0'
   id 'org.flywaydb.flyway' version "$flywayVersion"
   id 'org.sonarqube' version '6.3.1.5724'
   id 'net.serenity-bdd.serenity-gradle-plugin' version "$serenityBddVersion"
-  id 'hmcts.ccd.sdk'
-  id 'com.github.hmcts.rse-cft-lib' version '0.19.1874'
+  id 'hmcts.ccd.sdk' version '6.0.2'
+  id 'com.github.hmcts.rse-cft-lib' version '0.19.1877'
   id 'io.freefair.lombok' version '8.14.2'
   id 'au.com.dius.pact' version '4.6.17'
   /*
@@ -262,7 +262,7 @@ sonarqube {
       "**/uk/gov/hmcts/reform/pcs/ccd/accesscontrol/**/*.java," +
       "**/uk/gov/hmcts/reform/pcs/ccd/config/HighLevelDataSetupApp.java," +
       "**/uk/gov/hmcts/reform/pcs/ccd/domain/**/*.java," +
-      "**/uk/gov/hmcts/reform/pcs/ccd/entity/**/*.java" +
+      "**/uk/gov/hmcts/reform/pcs/ccd/entity/**/*.java," +
       "**/entities/**," + "**/model/**"
   }
 }
@@ -291,12 +291,12 @@ repositories {
 }
 
 ext {
-  log4JVersion = "2.25.1"
+  log4JVersion = "2.25.2"
   logbackVersion = "1.5.18"
   testcontainersVersion = "1.21.3"
-  springFrameworkBootVersion = "3.5.5"
-  lombokVersion = "1.18.40"
-  springSecurityVersion = "6.5.4"
+  springFrameworkBootVersion = "3.5.6"
+  lombokVersion = "1.18.42"
+  springSecurityVersion = "6.5.5"
   pactVersion = "4.6.17"
   tomcatEmbedVersion = "11.0.11"
   nettyVersion = "4.1.127.Final"
@@ -323,19 +323,20 @@ dependencies {
   implementation group: 'org.flywaydb', name: 'flyway-core', version: flywayVersion
   implementation group: 'org.springdoc', name: 'springdoc-openapi-starter-webmvc-ui', version: '2.8.13'
   implementation group: 'uk.gov.service.notify', name: 'notifications-java-client', version: '5.2.1-RELEASE'
-  implementation platform(group: 'com.azure.spring', name :'spring-cloud-azure-dependencies', version :'5.23.0')
+  implementation platform(group: 'com.azure.spring', name :'spring-cloud-azure-dependencies', version :'6.0.0')
   implementation "com.azure.spring:spring-cloud-azure-starter-servicebus-jms"
   implementation group: 'org.modelmapper', name: 'modelmapper', version: '3.2.4'
 
   implementation group: 'com.github.hmcts.java-logging', name: 'logging', version: '6.1.9'
   implementation group: 'com.github.hmcts', name: 'core-case-data-store-client', version: '5.2.0'
   implementation group: 'com.github.hmcts', name: 'idam-java-client', version: '3.0.4'
+  implementation group: 'com.github.hmcts', name: 'doc-assembly-client', version: '2.1.0'
 
   implementation group: 'org.apache.logging.log4j', name: 'log4j-api', version: log4JVersion
   implementation group: 'org.apache.logging.log4j', name: 'log4j-to-slf4j', version: log4JVersion
   implementation group: 'ch.qos.logback', name: 'logback-classic', version: logbackVersion
   implementation group: 'ch.qos.logback', name: 'logback-core', version: logbackVersion
-  implementation group: 'org.postgresql', name: 'postgresql', version: '42.7.7'
+  implementation group: 'org.postgresql', name: 'postgresql', version: '42.7.8'
   implementation group: 'com.github.hmcts', name: 'service-auth-provider-java-client', version: '5.3.3'
   implementation group: 'io.pebbletemplates', name: 'pebble', version: '3.2.4'
   implementation group: 'org.springframework.cloud', name: 'spring-cloud-starter-openfeign', version: '4.3.0'
@@ -459,6 +460,7 @@ tasks.withType(CftlibExec).configureEach {
   environment 'SPRING_PROFILES_ACTIVE', 'dev'
   environment 'XUI_JURISDICTIONS', 'PCS'
   environment 'XUI_DOCUMENTS_API_V2', 'http://ccd-case-document-am-api-aat.service.core-compute-aat.internal'
+//  environment 'IDAM_S2S_URL', 'http://rpe-service-auth-provider-aat.service.core-compute-aat.internal'
 }
 
 tasks.register('highLevelDataSetup', JavaExec) {
