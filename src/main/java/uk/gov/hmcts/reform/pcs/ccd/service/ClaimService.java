@@ -29,6 +29,9 @@ public class ClaimService {
             .summary("Main Claim")
             .additionalReasons(additionalReasons)
             .costsClaimed(pcsCase.getClaimingCostsWanted().toBoolean())
+            .suspensionOfRightToBuyHousingAct(pcsCase.getSuspensionOfRightToBuy()
+                                                  .getSuspensionOfRightToBuyHousingActs())
+            .suspensionOfRightToBuyReason(pcsCase.getSuspensionOfRightToBuy().getSuspensionOfRightToBuyReason())
             .build();
 
         claimEntity.addParty(claimantPartyEntity, PartyRole.CLAIMANT);
