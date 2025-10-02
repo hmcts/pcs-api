@@ -22,7 +22,7 @@ import {detailsOfRentArrears} from '@data/page-data/detailsOfRentArrears.page.da
 import {additionalReasonsForPossession} from '@data/page-data/additionalReasonsForPossession.page.data';
 import {claimingCosts} from '@data/page-data/claimingCosts.page.data';
 import {alternativesToPossession} from '@data/page-data/alternativesToPossession.page.data';
-import {reasonsForRequestingASuspensionOrder} from "@data/page-data/reasonsForRequestingASuspensionOrder.page.data";
+import {reasonsForRequestingASuspensionOrder} from '@data/page-data/reasonsForRequestingASuspensionOrder.page.data';
 
 export let caseInfo: { id: string; fid: string; state: string };
 let caseNumber: string;
@@ -61,8 +61,7 @@ export class CreateCaseAction implements IAction {
       ['selectClaimForMoney', () => this.selectClaimForMoney(fieldName)],
       ['selectAlternativesToPossession', () => this.selectAlternativesToPossession(fieldName)],
       ['selectHousingAct', () => this.selectHousingAct(fieldName)],
-      ['enterReasonForRequestingASuspensionOrder', () => this.enterReasonForRequestingASuspensionOrder(fieldName)],
-      ['selectClaimingCosts', () => this.selectClaimingCosts(fieldName)],
+      ['enterReasonForSuspensionOrder', () => this.enterReasonForSuspensionOrder(fieldName)],
       ['selectAdditionalReasonsForPossession', ()=> this.selectAdditionalReasonsForPossession(fieldName)],
       ['selectClaimingCosts', () => this.selectClaimingCosts(fieldName)]
     ]);
@@ -430,8 +429,8 @@ export class CreateCaseAction implements IAction {
     await performAction('clickButton', alternativesToPossession.continue);
   }
 
-  private async enterReasonForRequestingASuspensionOrder(reason: actionData) {
-    await performAction('inputText',  reason, reasonsForRequestingASuspensionOrder.reason);
+  private async enterReasonForSuspensionOrder(reason: actionData) {
+    await performAction('inputText', reason, reasonsForRequestingASuspensionOrder.reason);
     await performAction('clickButton', reasonsForRequestingASuspensionOrder.continue);
   }
 

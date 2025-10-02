@@ -56,7 +56,7 @@ export class ActionRegistry {
     ['searchCaseById', new searchCaseActions()],
     ['selectAlternativesToPossession', new CreateCaseAction()],
     ['selectHousingAct', new CreateCaseAction()],
-    ['enterReasonForRequestingASuspensionOrder', new CreateCaseAction()],
+    ['enterReasonForSuspensionOrder', new CreateCaseAction()],
     ['selectClaimingCosts', new CreateCaseAction()]
   ]);
 

@@ -207,7 +207,7 @@ test.describe('[Successful Create Case Flow]  @Master @nightly', async () => {
     await performValidation('mainHeader', housingAct.mainHeader);
     await performAction('selectHousingAct', housingAct.section6AHousingAct1988);
     await performValidation('mainHeader', reasonsForRequestingASuspensionOrder.mainHeader);
-    await performAction('enterReasonForRequestingASuspensionOrder', reasonsForRequestingASuspensionOrder.reason);
+    await performAction('enterReasonForSuspensionOrder', reasonsForRequestingASuspensionOrder.reason);
     await performValidation('mainHeader', claimingCosts.mainHeader);
     await performAction('selectClaimingCosts', claimingCosts.no);
     await performValidation('mainHeader', additionalReasonsForPossession.mainHeader);
@@ -449,7 +449,7 @@ test.describe('[Successful Create Case Flow]  @Master @nightly', async () => {
     await performValidation('mainHeader', housingAct.mainHeader);
     await performAction('selectHousingAct', housingAct.section82AHousingAct1985);
     await performValidation('mainHeader', reasonsForRequestingASuspensionOrder.mainHeader);
-    await performAction('enterReasonForRequestingASuspensionOrder', reasonsForRequestingASuspensionOrder.reason);
+    await performAction('enterReasonForSuspensionOrder', reasonsForRequestingASuspensionOrder.reason);
     await performValidation('mainHeader', claimingCosts.mainHeader);
     await performAction('selectClaimingCosts', claimingCosts.no);
     await performValidation('mainHeader', additionalReasonsForPossession.mainHeader);
@@ -526,7 +526,7 @@ test.describe('[Successful Create Case Flow]  @Master @nightly', async () => {
     await performValidation('mainHeader', housingAct.mainHeader);
     await performAction('selectHousingAct', housingAct.section121AHousingAct1985);
     await performValidation('mainHeader', reasonsForRequestingASuspensionOrder.mainHeader);
-    await performAction('enterReasonForRequestingASuspensionOrder', reasonsForRequestingASuspensionOrder.reason);
+    await performAction('enterReasonForSuspensionOrder', reasonsForRequestingASuspensionOrder.reason);
     await performValidation('mainHeader', claimingCosts.mainHeader);
     await performAction('selectClaimingCosts', claimingCosts.no);
     await performValidation('mainHeader', additionalReasonsForPossession.mainHeader);
