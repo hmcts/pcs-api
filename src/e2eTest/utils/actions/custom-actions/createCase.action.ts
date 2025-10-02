@@ -42,11 +42,11 @@ export class CreateCaseAction implements IAction {
     const actionsMap = new Map<string, () => Promise<void>>([
       ['createCase', () => this.createCaseAction(fieldName)],
       ['housingPossessionClaim', () => this.housingPossessionClaim()],
-      ['selectAddress', () => this.selectAddress(fieldName)],
+      ['selectAddress', () => this.selectAddress(page, fieldName)],
       ['selectResumeClaimOption', () => this.selectResumeClaimOption(fieldName)],
       ['extractCaseIdFromAlert', () => this.extractCaseIdFromAlert(page)],
       ['selectClaimantType', () => this.selectClaimantType(fieldName)],
-      ['reloginAndFindTheCase', () => this.reloginAndFindTheCase(fieldName)],
+      ['reloginAndFindTheCase', () => this.reloginAndFindTheCase(page, fieldName)],
       ['defendantDetails', () => this.defendantDetails(fieldName)],
       ['selectJurisdictionCaseTypeEvent', () => this.selectJurisdictionCaseTypeEvent()],
       ['enterTestAddressManually', () => this.enterTestAddressManually()],
@@ -88,7 +88,7 @@ export class CreateCaseAction implements IAction {
     await performAction('clickButton', housingPossessionClaim.continue);
   }
 
-  private async selectAddress(caseData: actionData) {
+  private async selectAddress(page: Page, caseData: actionData) {
     const address = caseData as { postcode: string; addressIndex: number };
     await performActions(
       'Find Address based on postcode',
@@ -97,6 +97,7 @@ export class CreateCaseAction implements IAction {
       ['select', addressDetails.selectAddressLabel, address.addressIndex]
     );
     await performAction('clickButton', addressDetails.submit);
+    await page.waitForTimeout(5000);
   }
 
   private async extractCaseIdFromAlert(page: Page): Promise<void> {
@@ -470,7 +471,7 @@ export class CreateCaseAction implements IAction {
     await performAction('clickButton', additionalReasonsForPossession.continue);
   }
 
-  private async reloginAndFindTheCase(userInfo: actionData) {
+  private async reloginAndFindTheCase(page: Page, userInfo: actionData) {
     await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
     await performAction('login', userInfo);
     await performAction('clickButton', homePage.findCaseTab);
@@ -479,6 +480,7 @@ export class CreateCaseAction implements IAction {
     await performAction('inputText', search.caseNumberLabel, caseNumber);
     await performAction('clickButton', search.apply);
     await performAction('clickButton', caseNumber);
+    await page.waitForTimeout(5000);
   }
 
   private async createCaseAction(caseData: actionData): Promise<void> {

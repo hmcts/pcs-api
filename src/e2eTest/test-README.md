@@ -108,9 +108,8 @@ Playwright 1.30+ | TypeScript 4.9+
 | selectMoneyJudgment                 | `performAction('selectMoneyJudgment', 'yes')`                                                                                                                                                              |
 | selectBorderPostcode                | `performAction('selectBorderPostcode', borderPostcode.countryOptions.england)`                                                                                                                             |                                                                                                                                                             |
 | selectAdditionalReasonsForPossession| `performAction('selectAdditionalReasonsForPossession', additionalReasonsForPossession.no)`                                                                                                                 |
-| searchCaseFromCaseList              | `performAction('searchCaseById', caseData.id)`                                                                                                                                                             |
 | selectClaimingCosts                 | `performAction('selectClaimingCosts', claimingCosts.yes)`                                                                                                                                                  |
-
+| searchCaseFromCaseList              | `performAction('searchCaseFromCaseList', caseData.id)`                                                                                                                                                     |
 ### Validations
 | Validation                 | Example Usage                                                                                                                        |
 |----------------------------|--------------------------------------------------------------------------------------------------------------------------------------|
