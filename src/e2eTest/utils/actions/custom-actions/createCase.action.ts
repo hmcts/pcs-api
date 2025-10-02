@@ -427,6 +427,7 @@ export class CreateCaseAction implements IAction {
   }
 
   private async selectClaimingCosts(option: actionData) {
+    await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
     await performAction('clickRadioButton', option);
     await performAction('clickButton', claimingCosts.continue);
   }
