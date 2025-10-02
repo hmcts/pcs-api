@@ -53,7 +53,8 @@ import static uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry.WAL
 @ExtendWith(MockitoExtension.class)
 class ResumePossessionClaimTest extends BaseEventTest {
 
-    public static final UUID USER_ID = UUID.randomUUID();
+    private static final UUID USER_ID = UUID.randomUUID();
+
     @Mock
     private PcsCaseService pcsCaseService;
     @Mock
@@ -293,5 +294,4 @@ class ResumePossessionClaimTest extends BaseEventTest {
             arguments(SCOTLAND, List.of())
         );
     }
-
 }

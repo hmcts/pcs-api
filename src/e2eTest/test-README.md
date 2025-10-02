@@ -109,6 +109,7 @@ Playwright 1.30+ | TypeScript 4.9+
 | selectClaimForMoney                 | `performAction('selectClaimForMoney', 'yes')`                                                                                                                                                              |
 | selectAdditionalReasonsForPossession| `performAction('selectAdditionalReasonsForPossession', additionalReasonsForPossession.no)`                                                                                                                 |
 | selectClaimingCosts                 | `performAction('selectClaimingCosts', claimingCosts.yes)`                                                                                                                                                  |
+
 ### Validations
 | Validation                 | Example Usage                                                                                                                        |
 |----------------------------|--------------------------------------------------------------------------------------------------------------------------------------|
