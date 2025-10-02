@@ -107,6 +107,7 @@ Playwright 1.30+ | TypeScript 4.9+
 | selectRentArrearsOrBreachOfTenancy  | `performAction('selectRentArrearsOrBreachOfTenancy', rentArrearsOrBreach: [rentArrearsOrBreachOfTenancy.breachOfTenancy])`                                                                                 |
 | provideDetailsOfRentArrears         | `performAction('provideDetailsOfRentArrears', {files: ['tenancyLicence.docx'], rentArrearsAmountOnStatement: '1000',rentPaidByOthersOption: 'Yes',paymentOptions: ['Universal Credit']})`                  |
 | selectClaimForMoney                 | `performAction('selectClaimForMoney', 'yes')`                                                                                                                                                              |
+| searchCaseFromCaseList              | `performAction('searchCaseById', caseData.id)`                                                                                                                                                             |
 | selectClaimingCosts                 | `performAction('selectClaimingCosts', claimingCosts.yes)`                                                                                                                                                  |
 
 ### Validations
