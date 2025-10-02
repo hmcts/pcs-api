@@ -8,7 +8,6 @@ import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
-import uk.gov.hmcts.reform.pcs.ccd.domain.AdditionalDocument;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 
@@ -19,12 +18,6 @@ import java.util.List;
 @Component
 @RequiredArgsConstructor
 public class UploadAdditionalDocumentsDetails implements CcdPageConfiguration {
-
-    // Error message constants
-    private static final String DESCRIPTION_REQUIRED_ERROR =
-        "Short description is required";
-    private static final String DESCRIPTION_TOO_SHORT_ERROR =
-        "Short description must be at least 5 characters long";
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
@@ -53,61 +46,28 @@ public class UploadAdditionalDocumentsDetails implements CcdPageConfiguration {
     }
 
     /**
-     * Mid-event validation for additional documents.
-     * Validates that short descriptions are at least 5 characters long.
+     * Mid-event handler to validate additional document descriptions.
+     * Checks that short descriptions do not exceed 62 characters.
      */
     public AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
-                                                                  CaseDetails<PCSCase, State> detailsBefore) {
-        log.info("UploadAdditionalDocumentsDetails midEvent called");
+                                                                CaseDetails<PCSCase, State> detailsBefore) {
         PCSCase caseData = details.getData();
+        List<String> errors = new ArrayList<>();
 
-        List<String> validationErrors = validateAdditionalDocuments(caseData);
-        log.info("Validation errors found: {}", validationErrors);
-
-        if (!validationErrors.isEmpty()) {
-            return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
-                .data(caseData)
-                .errors(validationErrors)
-                .build();
+        if (caseData.getAdditionalDocuments() != null) {
+            caseData.getAdditionalDocuments().stream()
+                .map(ListValue::getValue)
+                .filter(document -> document != null && document.getDescription() != null)
+                .forEach(document -> {
+                    if (document.getDescription().length() > 62) {
+                        errors.add("The explanation must be 62 characters or fewer");
+                    }
+                });
         }
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
             .data(caseData)
+            .errors(errors)
             .build();
-    }
-
-    /**
-     * Validates additional documents and returns any validation errors.
-     * @param caseData the case data containing additional documents
-     * @return list of error messages, empty if no errors
-     */
-    private List<String> validateAdditionalDocuments(PCSCase caseData) {
-        List<String> errors = new ArrayList<>();
-        log.info("Validating additional documents, count: {}", 
-                caseData.getAdditionalDocuments() != null ? caseData.getAdditionalDocuments().size() : 0);
-
-        if (caseData.getAdditionalDocuments() != null) {
-            for (ListValue<AdditionalDocument> doc : caseData.getAdditionalDocuments()) {
-                if (doc.getValue() != null) {
-                    log.info("Validating document description: '{}'", doc.getValue().getDescription());
-                    validateDescription(doc.getValue().getDescription(), errors);
-                }
-            }
-        }
-
-        return errors;
-    }
-
-    /**
-     * Validates a description field with mandatory and minimum length validation.
-     * @param description the description to validate
-     * @param errors the list to add errors to
-     */
-    private void validateDescription(String description, List<String> errors) {
-        if (description == null || description.trim().isEmpty()) {
-            errors.add(DESCRIPTION_REQUIRED_ERROR);
-        } else if (description.trim().length() < 5) {
-            errors.add(DESCRIPTION_TOO_SHORT_ERROR);
-        }
     }
 }
