@@ -67,7 +67,8 @@ class ClaimServiceTest {
         assertThat(createdClaimEntity.getSummary()).isEqualTo(expectedClaimName);
         assertThat(createdClaimEntity.getAdditionalReasons()).isEqualTo(expectedAdditionalReasons);
         assertThat(createdClaimEntity.getCostsClaimed()).isTrue();
-        assertThat(createdClaimEntity.getClaimantCircumstances()).isEqualTo(claimantCircumstances)
+        assertThat(createdClaimEntity.getClaimantCircumstances())
+            .isEqualTo(claimantCircumstances.getClaimantCircumstancesDetails());
 
         Set<ClaimPartyEntity> claimParties = createdClaimEntity.getClaimParties();
         assertThat(claimParties).hasSize(1);

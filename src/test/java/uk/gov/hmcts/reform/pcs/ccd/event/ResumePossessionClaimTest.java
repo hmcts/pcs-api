@@ -25,7 +25,6 @@ import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.DefendantsDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.NoticeDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ResumeClaim;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.TenancyLicenceDetails;
-import uk.gov.hmcts.reform.pcs.ccd.service.ClaimGroundService;
 import uk.gov.hmcts.reform.pcs.ccd.service.ClaimService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
@@ -270,8 +269,6 @@ class ResumePossessionClaimTest extends BaseEventTest {
         when(claimService.createMainClaimEntity(any(PCSCase.class), any(PartyEntity.class))).thenReturn(claimEntity);
 
         PCSCase caseData = mock(PCSCase.class);
-        when(caseData.getClaimingCostsWanted()).thenReturn(VerticalYesNo.YES);
-        when(caseData.getClaimantCircumstances()).thenReturn(mock(ClaimantCircumstances.class));
 
         // When
         callSubmitHandler(caseData);

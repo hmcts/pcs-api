@@ -33,7 +33,7 @@ public class ClaimService {
 
         claimEntity.addParty(claimantPartyEntity, PartyRole.CLAIMANT);
         claimEntity.addClaimGrounds(claimGrounds);
-
+        claimEntity.setClaimantCircumstances(pcsCase.getClaimantCircumstances().getClaimantCircumstancesDetails());
         claimRepository.save(claimEntity);
 
         return claimEntity;
