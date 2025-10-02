@@ -10,6 +10,7 @@ import {provideMoreDetailsOfClaim} from '@data/page-data/provideMoreDetailsOfCla
 import {claimantType} from '@data/page-data/claimantType.page.data';
 import {claimType} from '@data/page-data/claimType.page.data';
 import {user} from '@data/user-data/permanent.user.data';
+import {homePage} from "@data/page-data/home.page.data";
 
 test.beforeEach(async ({page}, testInfo) => {
   initializeExecutor(page);
@@ -20,7 +21,7 @@ test.beforeEach(async ({page}, testInfo) => {
     contentType: 'text/plain',
   });
   await performAction('login', user.claimantSolicitor);
-  await performAction('clickTab', 'Create case');
+  await performAction('clickTab', homePage.createCaseTab);
   await performAction('selectJurisdictionCaseTypeEvent');
   await performAction('housingPossessionClaim');
 });
