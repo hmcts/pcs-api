@@ -18,7 +18,6 @@ import lombok.Setter;
 
 import java.util.UUID;
 
-
 @Builder
 @Getter
 @Setter
@@ -27,6 +26,7 @@ import java.util.UUID;
 @Entity
 @Table(name = "claim_ground")
 public class ClaimGroundEntity {
+
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
@@ -41,5 +41,10 @@ public class ClaimGroundEntity {
 
     @Column(name = "ground_reason")
     private String groundReason;
+
+    @Column(name = "ground_description")
+    private String groundDescription;
 }
+
+
 
