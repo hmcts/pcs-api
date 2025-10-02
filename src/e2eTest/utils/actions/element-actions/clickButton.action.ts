@@ -30,7 +30,7 @@ export class ClickButtonAction implements IAction {
         break;
       }
       else if (i === 2) {
-        throw new Error(`Navigation to ${nextPageHeader} has been failed after 3 attempts`);
+        throw new Error(`Navigation to ${nextPageHeader} page has been failed after 3 attempts`);
       }
 
       //Adding sleep to slow down execution when the application behaves abnormally

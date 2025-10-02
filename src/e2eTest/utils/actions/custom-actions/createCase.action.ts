@@ -21,6 +21,7 @@ import {reasonsForPossession} from '@data/page-data/reasonsForPossession.page.da
 import {detailsOfRentArrears} from '@data/page-data/detailsOfRentArrears.page.data';
 import {additionalReasonsForPossession} from '@data/page-data/additionalReasonsForPossession.page.data';
 import {claimingCosts} from '@data/page-data/claimingCosts.page.data';
+import {claimantType} from '@data/page-data/claimantType.page.data';
 
 export let caseInfo: { id: string; fid: string; state: string };
 let caseNumber: string;
@@ -97,7 +98,7 @@ export class CreateCaseAction implements IAction {
 
   private async selectResumeClaimOption(caseData: actionData) {
     await performAction('clickRadioButton', caseData);
-    await performAction('clickButton', resumeClaimOptions.continue);
+    await performAction('clickButtonAndVerifyPageNavigation', resumeClaimOptions.continue, claimantType.mainHeader);
   }
 
   private async selectClaimantType(caseData: actionData) {
