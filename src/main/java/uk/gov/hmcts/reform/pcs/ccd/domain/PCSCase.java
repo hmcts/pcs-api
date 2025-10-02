@@ -609,5 +609,6 @@ public class PCSCase {
         access = {CitizenAccess.class}
     )
     private VerticalYesNo languageUsed;
+    private AdditionalReasons additionalReasonsForPossession;
 
 }
