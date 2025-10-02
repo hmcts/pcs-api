@@ -13,8 +13,5 @@ import java.util.UUID;
 @Repository
 public interface ClaimRepository extends JpaRepository<ClaimEntity, UUID>, ClaimRepositoryCustom {
 
-    @Query
-        (value = "SELECT * FROM ccd.case_data", nativeQuery = true)
-    List<Map<String, Object>> findAllNative();
 }
 
