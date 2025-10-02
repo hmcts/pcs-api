@@ -66,8 +66,8 @@ Playwright 1.30+ | TypeScript 4.9+
 ## 4. Available Actions and Validations
 
 ### Actions
-| Action                              | Example Usage                                                                                                                                                                                              |
-|-------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Action          | Example Usage |
+|------------------|---------------|
 | inputText                           | `performAction('inputText', 'Email', 'test@example.com')`                                                                                                                                                  |
 | check                               | `performAction('check', 'RememberMe')`                                                                                                                                                                     |
 | navigateToUrl                       | `performAction('navigateToUrl', 'testUrl')`                                                                                                                                                                |
@@ -108,12 +108,14 @@ Playwright 1.30+ | TypeScript 4.9+
 | provideDetailsOfRentArrears         | `performAction('provideDetailsOfRentArrears', {files: ['tenancyLicence.docx'], rentArrearsAmountOnStatement: '1000',rentPaidByOthersOption: 'Yes',paymentOptions: ['Universal Credit']})`                  |
 | selectClaimForMoney                 | `performAction('selectClaimForMoney', 'yes')`                                                                                                                                                              |
 | selectAdditionalReasonsForPossession| `performAction('selectAdditionalReasonsForPossession', additionalReasonsForPossession.no)`                                                                                                                 |
-| searchCaseFromCaseList              | `performAction('searchCaseById', caseData.id)`                                                                                                                                                             |
 | selectClaimingCosts                 | `performAction('selectClaimingCosts', claimingCosts.yes)`                                                                                                                                                  |
-
+| searchCaseById  | `performAction('searchCaseById', ...)` |
+| selectAlternativesToPossession | `performAction('selectAlternativesToPossession', ...)` |
+| selectHousingAct | `performAction('selectHousingAct', ...)` |
+| enterReasonForRequestingASuspensionOrder | `performAction('enterReasonForRequestingASuspensionOrder', ...)` |
 ### Validations
-| Validation                 | Example Usage                                                                                                                        |
-|----------------------------|--------------------------------------------------------------------------------------------------------------------------------------|
+| Validation          | Example Usage |
+|------------------|---------------|
 | text                       | `performValidation('text', 'testElement')`                                                                                           |
 | bannerAlert                | `performValidation('bannerAlert', {message: "Case has been created."})`                                                              |
 | formLabelValue             | `performValidation('formLabelValue',  "Applicant's forename", {value:'TestUser'})`                                                   |

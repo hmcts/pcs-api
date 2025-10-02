@@ -48,7 +48,7 @@ test.beforeEach(async ({page}, testInfo) => {
 });
 
 //Skipping these tests as are failing intermittently which will be fixed as part of HDPI-2306
-test.describe.skip('[Successful Create Case Flow]  @Master @nightly', async () => {
+test.describe('[Successful Create Case Flow]  @Master @nightly', async () => {
   test('England - Assured tenancy with Rent arrears and other possession grounds', async () => {
     await performAction('selectAddress', {
       postcode: addressDetails.englandCourtAssignedPostcode,
@@ -115,6 +115,7 @@ test.describe.skip('[Successful Create Case Flow]  @Master @nightly', async () =
     await performAction('selectClaimForMoney', moneyJudgment.yes);
     await performValidation('mainHeader', claimantCircumstances.mainHeader);
     await performAction('clickButton', claimantCircumstances.continue);
+    await performValidation('mainHeader', alternativesToPossession.mainHeader);
     await performValidation('mainHeader', claimingCosts.mainHeader);
     await performAction('selectClaimingCosts', claimingCosts.yes);
     await performValidation('mainHeader', additionalReasonsForPossession.mainHeader);
@@ -204,10 +205,8 @@ test.describe.skip('[Successful Create Case Flow]  @Master @nightly', async () =
     await performAction('selectAlternativesToPossession', [alternativesToPossession.suspensionOfRightToBuy]);
     await performValidation('mainHeader',housingAct.mainHeader);
     await performAction('selectHousingAct',housingAct.section82AHousingAct1985);
-    await performAction('mainHeader', housingAct.mainHeader);
-    await performAction('selectHousingAct', housingAct.section82AHousingAct1985);
-    await performAction('mainHeader', reasonsForRequestingASuspensionOrder.mainHeader);
-    await performAction('enterReasonForRequestingASuspensionOrder', reasonsForRequestingASuspensionOrder.suspensionOrderSampleTestReason);
+    await performValidation('mainHeader', reasonsForRequestingASuspensionOrder.mainHeader);
+    await performAction('enterReasonForRequestingASuspensionOrder', reasonsForRequestingASuspensionOrder.reason);
     await performValidation('mainHeader', claimingCosts.mainHeader);
     await performAction('selectClaimingCosts', claimingCosts.no);
     await performValidation('mainHeader', additionalReasonsForPossession.mainHeader);
