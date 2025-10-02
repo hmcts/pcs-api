@@ -419,7 +419,9 @@ export class CreateCaseAction implements IAction {
   }
 
   private async selectAlternativesToPossession(alternatives: actionData) {
-    await performAction('check', alternatives);
+    if(alternatives){
+      await performAction('check', alternatives);
+    }
     await performAction('clickButton', alternativesToPossession.continue);
   }
 
