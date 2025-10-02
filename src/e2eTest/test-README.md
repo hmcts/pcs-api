@@ -109,9 +109,8 @@ Playwright 1.30+ | TypeScript 4.9+
 | selectClaimForMoney                 | `performAction('selectClaimForMoney', 'yes')`                                                                                                                                                              |
 | selectApplications                  | `performAction('selectApplications', 'yes')`                                                                                                                                                               |
 | selectAdditionalReasonsForPossession| `performAction('selectAdditionalReasonsForPossession', additionalReasonsForPossession.no)`                                                                                                                 |
-| searchCaseFromCaseList              | `performAction('searchCaseById', caseData.id)`                                                                                                                                                             |
+| searchCaseFromCaseList              | `performAction('searchCaseFromCaseList', caseData.id)`                                                                                                                                                     |
 | selectClaimingCosts                 | `performAction('selectClaimingCosts', claimingCosts.yes)`                                                                                                                                                  |
-
 ### Validations
 | Validation                 | Example Usage                                                                                                                        |
 |----------------------------|--------------------------------------------------------------------------------------------------------------------------------------|
