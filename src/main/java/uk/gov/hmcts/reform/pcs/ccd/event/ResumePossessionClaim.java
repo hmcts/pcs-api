@@ -142,8 +142,10 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
     }
 
     private PCSCase start(EventPayload<PCSCase, State> eventPayload) {
+        log.info("ResumePossessionClaim.start(): starting");
         PCSCase caseData = eventPayload.caseData();
 
+        log.info("ResumePossessionClaim.start(): checking user details");
         String userDetails = securityContextService.getCurrentUserDetails().getSub();
         caseData.setClaimantName(userDetails);
         caseData.setClaimantContactEmail(userDetails);
@@ -176,6 +178,8 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             propertyAddress.getPostCode()
         );
         caseData.setFormattedClaimantContactAddress(formattedAddress);
+
+        log.info("ResumePossessionClaim.start(): returning case data");
 
         return caseData;
     }

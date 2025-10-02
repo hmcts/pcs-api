@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd;
 
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.DecentralisedCaseRepository;
@@ -34,6 +35,7 @@ import java.util.stream.Collectors;
 /**
  * Invoked by CCD to load PCS cases under the decentralised model.
  */
+@Slf4j
 @Component
 @AllArgsConstructor
 public class CCDCaseRepository extends DecentralisedCaseRepository<PCSCase> {
@@ -52,12 +54,16 @@ public class CCDCaseRepository extends DecentralisedCaseRepository<PCSCase> {
      */
     @Override
     public PCSCase getCase(long caseReference, String state) {
+        log.info("CCDCaseRepository.getCase(): starting for " + caseReference);
+
         PCSCase pcsCase = getSubmittedCase(caseReference);
 
         boolean hasUnsubmittedCaseData = caseHasUnsubmittedData(caseReference, state);
         pcsCase.setHasUnsubmittedCaseData(YesOrNo.from(hasUnsubmittedCaseData));
 
         setMarkdownFields(pcsCase);
+
+        log.info("CCDCaseRepository.getCase(): returning for " + caseReference);
 
         return pcsCase;
     }
@@ -116,7 +122,7 @@ public class CCDCaseRepository extends DecentralisedCaseRepository<PCSCase> {
 
     private void setMarkdownFields(PCSCase pcsCase) {
         pcsCase.setPageHeadingMarkdown("""
-                <p class="govuk-!-font-size-24 
+                <p class="govuk-!-font-size-24
                 govuk-!-margin-top-0 govuk-!-margin-bottom-0">
                 #${[CASE_REFERENCE]}</p>""");
 
