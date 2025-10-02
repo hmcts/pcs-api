@@ -494,6 +494,36 @@ public class PCSCase {
     private String thirdPartyPaymentSourceOther;
 
     @CCD(
+        label = "Do you have grounds for possession?",
+        access = {CitizenAccess.class}
+    )
+    private VerticalYesNo hasIntroductoryDemotedOtherGroundsForPossession;
+
+    @CCD(
+            label = "What are your grounds for possession?",
+            typeOverride = FieldType.MultiSelectList,
+            typeParameterOverride = "IntroductoryDemotedOrOtherGrounds",
+            access = {CitizenAccess.class}
+    )
+    private Set<IntroductoryDemotedOrOtherGrounds> introductoryDemotedOrOtherGrounds;
+
+    @CCD(
+            label = "Enter your grounds for possession",
+            hint = "You'll be able to explain your reasons for claiming Possession"
+                    + " under these grounds on the next screen",
+            access = {CitizenAccess.class},
+            typeOverride = TextArea
+    )
+    private String otherGroundDescription;
+
+    @CCD(access = {CitizenAccess.class})
+    private YesOrNo showIntroductoryDemotedOtherGroundReasonPage;
+
+    @JsonUnwrapped
+    @CCD(access = {CitizenAccess.class})
+    private IntroductoryDemotedOtherGroundReason introductoryDemotedOtherGroundReason;
+
+    @CCD(
         label = "Discretionary grounds",
         hint = "Select all that apply",
         typeOverride = FieldType.MultiSelectList,
