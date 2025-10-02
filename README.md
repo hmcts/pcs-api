@@ -113,7 +113,7 @@ Additionally, you can configure the tags to run in the pipeline by editing the f
 After the tests run, the report will be available under the /[report-for-functional-tests](report-for-functional-tests) folder, in a file named `index.html`.
 
 ---
-.
+
 The E2E UI tests use [Playwright](https://playwright.dev/), and in order to access these you need to cd to the `/src/e2eTest` directory.
 
 This is done with:
