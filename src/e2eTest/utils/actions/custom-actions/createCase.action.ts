@@ -20,7 +20,7 @@ import {reasonsForPossession} from '@data/page-data/reasonsForPossession.page.da
 import {detailsOfRentArrears} from '@data/page-data/detailsOfRentArrears.page.data';
 import {applications} from '@data/page-data/applications.page.data';
 import {claimingCosts} from '@data/page-data/claimingCosts.page.data';
-import {completeYourClaim} from "@data/page-data/completeYourClaim.page.data";
+import {completeYourClaim} from '@data/page-data/completeYourClaim.page.data';
 
 export let caseInfo: { id: string; fid: string; state: string };
 let caseNumber: string;

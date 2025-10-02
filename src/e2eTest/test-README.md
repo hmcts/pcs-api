@@ -66,8 +66,8 @@ Playwright 1.30+ | TypeScript 4.9+
 ## 4. Available Actions and Validations
 
 ### Actions
-| Action                             | Example Usage                                                                                                                                                                                              |
-|------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Action                             | Example Usage |
+|------------------------------------|---------------|
 | inputText                          | `performAction('inputText', 'Email', 'test@example.com')`                                                                                                                                                  |
 | check                              | `performAction('check', 'RememberMe')`                                                                                                                                                                     |
 | navigateToUrl                      | `performAction('navigateToUrl', 'testUrl')`                                                                                                                                                                |
@@ -109,7 +109,7 @@ Playwright 1.30+ | TypeScript 4.9+
 | selectClaimForMoney                | `performAction('selectClaimForMoney', 'yes')`                                                                                                                                                              |
 | selectApplications                 | `performAction('selectApplications', 'yes')`                                                                                                                                                               |
 | selectClaimingCosts                | `performAction('selectClaimingCosts', claimingCosts.yes)`                                                                                                                                                  |
-| completingYourClaim                | `performAction('completingYourClaim', ...)`                                                                                                                                                                |
+| completingYourClaim                | `performAction('completingYourClaim', ...)` |
 ### Validations
 | Validation                 | Example Usage                                                                                                                        |
 |----------------------------|--------------------------------------------------------------------------------------------------------------------------------------|
