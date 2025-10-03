@@ -110,7 +110,7 @@ Playwright 1.30+ | TypeScript 4.9+
 | selectAdditionalReasonsForPossession| `performAction('selectAdditionalReasonsForPossession', additionalReasonsForPossession.no)`                                                                                                                 |
 | searchCaseFromCaseList              | `performAction('searchCaseById', caseData.id)`                                                                                                                                                             |
 | selectClaimingCosts                 | `performAction('selectClaimingCosts', claimingCosts.yes)`                                                                                                                                                  |
-
+| selectClaimantCircumstances         | `performAction('selectClaimantCircumstances', {circumstanceOption: claimantCircumstances.no,claimantInput: claimantCircumstances.claimantCircumstanceInfoInputData})`                                      |                                                                                                                  | 
 ### Validations
 | Validation                 | Example Usage                                                                                                                        |
 |----------------------------|--------------------------------------------------------------------------------------------------------------------------------------|

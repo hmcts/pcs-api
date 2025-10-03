@@ -19,11 +19,13 @@ import {caseApiData} from '@data/api-data/case.api.data';
 import {dailyRentAmount} from '@data/page-data/dailyRentAmount.page.data';
 import {reasonsForPossession} from '@data/page-data/reasonsForPossession.page.data';
 import {detailsOfRentArrears} from '@data/page-data/detailsOfRentArrears.page.data';
+import {claimantCircumstances} from '@data/page-data/claimantCircumstances.page.data';
 import {additionalReasonsForPossession} from '@data/page-data/additionalReasonsForPossession.page.data';
 import {claimingCosts} from '@data/page-data/claimingCosts.page.data';
 
 export let caseInfo: { id: string; fid: string; state: string };
 let caseNumber: string;
+export let claimantsName: string;
 
 export class CreateCaseAction implements IAction {
   async execute(page: Page, action: string, fieldName: actionData, data?: actionData): Promise<void> {
@@ -39,7 +41,7 @@ export class CreateCaseAction implements IAction {
       ['selectJurisdictionCaseTypeEvent', () => this.selectJurisdictionCaseTypeEvent()],
       ['enterTestAddressManually', () => this.enterTestAddressManually()],
       ['selectClaimType', () => this.selectClaimType(fieldName)],
-      ['selectClaimantName', () => this.selectClaimantName(fieldName)],
+      ['selectClaimantName', () => this.selectClaimantName(page, fieldName)],
       ['selectContactPreferences', () => this.selectContactPreferences(fieldName)],
       ['selectRentArrearsPossessionGround', () => this.selectRentArrearsPossessionGround(fieldName)],
       ['selectGroundsForPossession', () => this.selectGroundsForPossession(fieldName)],
@@ -55,6 +57,7 @@ export class CreateCaseAction implements IAction {
       ['selectRentArrearsOrBreachOfTenancy', () => this.selectRentArrearsOrBreachOfTenancy(fieldName)],
       ['provideRentDetails', () => this.provideRentDetails(fieldName)],
       ['selectDailyRentAmount', () => this.selectDailyRentAmount(fieldName)],
+      ['selectClaimantCircumstances', () => this.selectClaimantCircumstances(fieldName)],
       ['provideDetailsOfRentArrears', () => this.provideDetailsOfRentArrears(fieldName)],
       ['selectClaimForMoney', () => this.selectClaimForMoney(fieldName)],
       ['selectAdditionalReasonsForPossession', ()=> this.selectAdditionalReasonsForPossession(fieldName)],
@@ -110,6 +113,13 @@ export class CreateCaseAction implements IAction {
     await performAction('clickButton', 'Continue');
   }
 
+  private async extractClaimantName(page: Page, caseData: string): Promise<string> {
+    const loc = page.locator(`dl.case-field > dt.case-field__label:has-text("${caseData}")`)
+      .locator('xpath=../..')
+      .locator('span.text-16');
+    return await loc.innerText();
+  }
+
   private async selectGroundsForPossession(caseData: actionData) {
     const possessionGrounds = caseData as {
       groundsRadioInput: string;
@@ -142,11 +152,12 @@ export class CreateCaseAction implements IAction {
     await performAction('clickButton', 'Submit');
   }
 
-  private async selectClaimantName(caseData: actionData) {
+  private async selectClaimantName(page: Page, caseData: actionData) {
     await performAction('clickRadioButton', caseData);
-    if(caseData == claimantName.no){
+    if (caseData == claimantName.no) {
       await performAction('inputText', claimantName.whatIsCorrectClaimantName, claimantName.correctClaimantNameInput);
     }
+    claimantsName = caseData == "No" ? claimantName.correctClaimantNameInput : await this.extractClaimantName(page, claimantName.yourClaimantNameRegisteredWithHMCTS);
     await performAction('clickButton', 'Continue');
   }
 
@@ -169,10 +180,10 @@ export class CreateCaseAction implements IAction {
     });
     if (prefData.correspondenceAddress === 'No') {
       await performActions(
-          'Find Address based on postcode',
-          ['inputText', 'Enter a UK postcode', addressDetails.englandCourtAssignedPostcode],
-          ['clickButton', 'Find address'],
-          ['select', 'Select an address', addressDetails.addressIndex]
+        'Find Address based on postcode',
+        ['inputText', 'Enter a UK postcode', addressDetails.englandCourtAssignedPostcode],
+        ['clickButton', 'Find address'],
+        ['select', 'Select an address', addressDetails.addressIndex]
       );
     }
     await performAction('clickRadioButton', {
@@ -211,10 +222,10 @@ export class CreateCaseAction implements IAction {
       });
       if (defendantData.correspondenceAddressSame === 'No') {
         await performActions(
-            'Find Address based on postcode',
-            ['inputText', 'Enter a UK postcode', addressDetails.englandCourtAssignedPostcode],
-            ['clickButton', 'Find address'],
-            ['select', 'Select an address', addressDetails.addressIndex]
+          'Find Address based on postcode',
+          ['inputText', 'Enter a UK postcode', addressDetails.englandCourtAssignedPostcode],
+          ['clickButton', 'Find address'],
+          ['select', 'Select an address', addressDetails.addressIndex]
         );
       }
     }
@@ -300,7 +311,7 @@ export class CreateCaseAction implements IAction {
       throw new Error(`EnterReasonForPossession expected an array, but received ${typeof reasons}`);
     }
     for (let n = 0; n < reasons.length; n++) {
-      await performAction('inputText',  {text:reasons[n],index: n}, reasonsForPossession.detailsAboutYourReason);
+      await performAction('inputText', { text: reasons[n], index: n }, reasonsForPossession.detailsAboutYourReason);
     }
     await performAction('clickButton', 'Continue');
   }
@@ -339,9 +350,9 @@ export class CreateCaseAction implements IAction {
     await performAction('clickRadioButton', noticeDetailsData.howDidYouServeNotice);
     if (noticeDetailsData.day && noticeDetailsData.month && noticeDetailsData.year) {
       await performActions('Enter Date',
-        ['inputText', {text: 'Day', index: noticeDetailsData.index}, noticeDetailsData.day],
-        ['inputText', {text: 'Month', index: noticeDetailsData.index}, noticeDetailsData.month],
-        ['inputText', {text: 'Year', index: noticeDetailsData.index}, noticeDetailsData.year]);
+        ['inputText', { text: 'Day', index: noticeDetailsData.index }, noticeDetailsData.day],
+        ['inputText', { text: 'Month', index: noticeDetailsData.index }, noticeDetailsData.month],
+        ['inputText', { text: 'Year', index: noticeDetailsData.index }, noticeDetailsData.year]);
       await performAction('uploadFile', noticeDetailsData.files);
     }
     await performAction('clickButton', 'Continue');
@@ -356,7 +367,7 @@ export class CreateCaseAction implements IAction {
     };
     await performAction('inputText', rentDetails.HowMuchRentLabel, rentData.rentAmount);
     await performAction('clickRadioButton', rentData.rentFrequencyOption);
-    if(rentData.rentFrequencyOption == 'Other'){
+    if (rentData.rentFrequencyOption == 'Other') {
       await performAction('inputText', rentDetails.rentFrequencyLabel, rentData.inputFrequency);
       await performAction('inputText', rentDetails.amountPerDayInputLabel, rentData.unpaidRentAmountPerDay);
     }
@@ -374,10 +385,28 @@ export class CreateCaseAction implements IAction {
       elementType: 'paragraph'
     });
     await performAction('clickRadioButton', rentAmount.unpaidRentInteractiveOption);
-    if(rentAmount.unpaidRentInteractiveOption == 'No'){
+    if (rentAmount.unpaidRentInteractiveOption == 'No') {
       await performAction('inputText', dailyRentAmount.enterAmountPerDayLabel, rentAmount.unpaidRentAmountPerDay);
     }
     await performAction('clickButton', 'Continue');
+  }
+
+  private async selectClaimantCircumstances(claimantCircumstance: actionData) {
+    const claimData = claimantCircumstance as {
+      circumstanceOption: string,
+      claimantInput: string
+    };
+    const nameClaimant = claimantsName.substring(claimantsName.length - 1) == 's' ? `${claimantsName}'` : `${claimantsName}'s`;
+    const claimOption = claimData.circumstanceOption;
+    await performAction('clickRadioButton', {
+      question: claimantCircumstances.claimantCircumstanceInfo.replace("Claimants", nameClaimant),
+      option: claimOption
+    }
+    );
+    if (claimOption == claimantCircumstances.yes) {
+      await performAction('inputText', claimantCircumstances.claimantCircumstanceInfoTextAreaLabel.replace("Claimants", nameClaimant), claimData.claimantInput);
+    }
+    await performAction('clickButton', claimantCircumstances.continue);
   }
 
   private async provideDetailsOfRentArrears(rentArrears: actionData) {
@@ -456,7 +485,7 @@ export class CreateCaseAction implements IAction {
 
   private async createCaseAction(caseData: actionData): Promise<void> {
     process.env.S2S_URL = accessTokenApiData.s2sUrl;
-    process.env.SERVICE_AUTH_TOKEN = await new ServiceAuthUtils().retrieveToken({microservice: caseApiData.microservice});
+    process.env.SERVICE_AUTH_TOKEN = await new ServiceAuthUtils().retrieveToken({ microservice: caseApiData.microservice });
     process.env.IDAM_AUTH_TOKEN = (await Axios.create().post(accessTokenApiData.accessTokenApiEndPoint, accessTokenApiData.accessTokenApiPayload)).data.access_token;
     const createCaseApi = Axios.create(caseApiData.createCaseApiInstance);
     process.env.EVENT_TOKEN = (await createCaseApi.get(caseApiData.eventTokenApiEndPoint)).data.token;
@@ -465,16 +494,19 @@ export class CreateCaseAction implements IAction {
       const response = await createCaseApi.post(caseApiData.createCaseApiEndPoint,
         {
           data: payloadData,
-          event: {id: `${caseApiData.eventName}`},
+          event: { id: `${caseApiData.eventName}` },
           event_token: process.env.EVENT_TOKEN,
         }
       );
       caseInfo.id = response.data.id,
-      caseInfo.fid =  response.data.id.replace(/(.{4})(?=.)/g, '$1-'),
-      caseInfo.state = response.data.state
+        caseInfo.fid = response.data.id.replace(/(.{4})(?=.)/g, '$1-'),
+        caseInfo.state = response.data.state
     }
     catch (error) {
       throw new Error('Case could not be created.');
     }
   }
+
+  private getRandomArrayElement = (arr: any[]) =>
+    arr.length ? arr[Math.floor(Math.random() * arr.length)] : undefined;
 }
