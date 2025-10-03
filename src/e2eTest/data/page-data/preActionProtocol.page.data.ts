@@ -5,4 +5,5 @@ export const preActionProtocol = {
   preActionProtocolInlineText: 'Your case could be delayed or rejected if you have not followed the pre-action protocol and completed all the steps.',
   yes: 'Yes',
   no: 'No',
+  continue: 'Continue'
 };
