@@ -62,6 +62,7 @@ export class CreateCaseAction implements IAction {
       ['selectClaimForMoney', () => this.selectClaimForMoney(fieldName)],
       ['selectDefendantCircumstances', () => this.selectDefendantCircumstances(fieldName)],
       ['selectApplications', () => this.selectApplications(fieldName)],
+      ['selectClaimingCosts', () => this.selectClaimingCosts(fieldName)],
       ['completingYourClaim', () => this.completingYourClaim(fieldName)],
       ['selectAdditionalReasonsForPossession', ()=> this.selectAdditionalReasonsForPossession(fieldName)]
     ]);
