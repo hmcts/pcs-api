@@ -21,7 +21,8 @@ public class DemotionOfTenancy {
     private DemotionOfTenancyHousingAct demotionOfTenancyHousingActs;
 
     @CCD(
-        label = "Have you served the defendants with a statement of the express terms which will apply to the demoted tenancy?"
+        label = "Have you served the defendants with a statement of the express terms which will apply "
+            + "to the demoted tenancy?"
     )
     private VerticalYesNo statementOfExpressTermsServed;
 
@@ -35,7 +36,8 @@ public class DemotionOfTenancy {
 
     @CCD(
         label = "Why are you requesting a demotion order?",
-        hint = "Give details of the defendants' conduct and any other reasons you think are relevant. You can enter up to 250 characters",
+        hint = "Give details of the defendants' conduct and any other reasons you think are relevant. "
+            + "You can enter up to 250 characters",
         typeOverride = TextArea,
         max = 250
     )

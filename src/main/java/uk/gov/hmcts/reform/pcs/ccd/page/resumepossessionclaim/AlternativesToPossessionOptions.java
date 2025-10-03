@@ -68,8 +68,10 @@ public class AlternativesToPossessionOptions implements CcdPageConfiguration {
         boolean showDemotionPage = altToPossessions.contains(AlternativesToPossession.DEMOTION_OF_TENANCY)
             && !altToPossessions.contains(AlternativesToPossession.SUSPENSION_OF_RIGHT_TO_BUY);
 
-        caseData.getSuspensionOfRightToBuy().setShowSuspensionOfRightToBuyHousingActsPage(YesOrNo.from(showSuspensionPage));
-        caseData.getDemotionOfTenancy().setShowDemotionOfTenancyHousingActsPage(YesOrNo.from(showDemotionPage));
+        caseData.getSuspensionOfRightToBuy()
+            .setShowSuspensionOfRightToBuyHousingActsPage(YesOrNo.from(showSuspensionPage));
+        caseData.getDemotionOfTenancy()
+            .setShowDemotionOfTenancyHousingActsPage(YesOrNo.from(showDemotionPage));
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
             .data(caseData)

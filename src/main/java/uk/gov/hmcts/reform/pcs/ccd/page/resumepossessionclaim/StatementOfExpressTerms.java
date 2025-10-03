@@ -16,7 +16,8 @@ public class StatementOfExpressTerms implements CcdPageConfiguration {
             .label("statementOfExpressTerms-info", "---")
                 .complex(PCSCase::getDemotionOfTenancy)
                 .mandatory(DemotionOfTenancy::getStatementOfExpressTermsServed)
-                .mandatory(DemotionOfTenancy::getStatementOfExpressTermsDetails, "statementOfExpressTermsServed=\"YES\"")
+                .mandatory(DemotionOfTenancy::getStatementOfExpressTermsDetails,
+                    "statementOfExpressTermsServed=\"YES\"")
                 .done();
     }
 }

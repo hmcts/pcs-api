@@ -33,13 +33,17 @@ public class ClaimService {
             .defendantCircumstances(defendantCircumstances != null
                                         ? defendantCircumstances.getDefendantCircumstancesInfo() : null)
             .suspensionOfRightToBuyHousingAct(pcsCase.getSuspensionOfRightToBuy() != null
-                                                  ? pcsCase.getSuspensionOfRightToBuy().getSuspensionOfRightToBuyHousingActs() : null)
+                                                  ? pcsCase.getSuspensionOfRightToBuy()
+                                                      .getSuspensionOfRightToBuyHousingActs() : null)
             .suspensionOfRightToBuyReason(pcsCase.getSuspensionOfRightToBuy() != null
-                                              ? pcsCase.getSuspensionOfRightToBuy().getSuspensionOfRightToBuyReason() : null)
+                                              ? pcsCase.getSuspensionOfRightToBuy()
+                                                  .getSuspensionOfRightToBuyReason() : null)
             .demotionOfTenancyHousingAct(pcsCase.getDemotionOfTenancy() != null
-                                             ? pcsCase.getDemotionOfTenancy().getDemotionOfTenancyHousingActs() : null)
+                                             ? pcsCase.getDemotionOfTenancy()
+                                                 .getDemotionOfTenancyHousingActs() : null)
             .demotionOfTenancyReason(pcsCase.getDemotionOfTenancy() != null
-                                         ? pcsCase.getDemotionOfTenancy().getDemotionOfTenancyReason() : null)
+                                         ? pcsCase.getDemotionOfTenancy()
+                                             .getDemotionOfTenancyReason() : null)
             .costsClaimed(pcsCase.getClaimingCostsWanted().toBoolean())
             .additionalReasons(additionalReasons)
             .applicationWithClaim(YesOrNoToBoolean.convert(pcsCase.getApplicationWithClaim()))
