@@ -9,7 +9,6 @@ import org.modelmapper.ModelMapper;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.domain.PaymentStatus;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyEntity;
@@ -145,23 +144,6 @@ class PcsCaseMergeServiceTest {
                 }
             );
 
-    }
-
-    @Test
-    void shouldUpdatePaymentStatusWhenNotNull() {
-        // Given
-        PCSCase pcsCase = mock(PCSCase.class);
-        PcsCaseEntity pcsCaseEntity = mock(PcsCaseEntity.class);
-
-        PaymentStatus paymentStatus = PaymentStatus.PAID;
-
-        when(pcsCase.getPaymentStatus()).thenReturn(paymentStatus);
-
-        // When
-        underTest.mergeCaseData(pcsCaseEntity, pcsCase);
-
-        // Then
-        verify(pcsCaseEntity).setPaymentStatus(paymentStatus);
     }
 
     @Test

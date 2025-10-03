@@ -26,7 +26,7 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 import static java.util.Map.entry;
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.IntroductoryDemotedOrOtherGrounds.ABSOLUTE_GROUNDS;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.IntroductoryDemotedOrOtherGrounds.ANTI_SOCIAL;
@@ -176,7 +176,7 @@ class ClaimGroundServiceTest {
         Set<NoRentArrearsMandatoryGrounds> mandatory = EnumSet.allOf(NoRentArrearsMandatoryGrounds.class);
         Set<NoRentArrearsDiscretionaryGrounds> discretionary = EnumSet.allOf(NoRentArrearsDiscretionaryGrounds.class);
 
-        PCSCase caseDate = PCSCase.builder()
+        PCSCase caseData = PCSCase.builder()
             .noRentArrearsDiscretionaryGroundsOptions(discretionary)
             .noRentArrearsMandatoryGroundsOptions(mandatory)
             .noRentArrearsReasonForGrounds(grounds)
@@ -184,11 +184,11 @@ class ClaimGroundServiceTest {
             .build();
 
         List<ClaimGroundEntity> entities = claimGroundService.getGroundsWithReason(
-            caseDate
+            caseData
         );
 
         // Check size
-        assertThat(entities.size()).isEqualTo(mandatory.size() + discretionary.size());
+        assertThat(entities).hasSize(mandatory.size() + discretionary.size());
 
         // Expected pairs: ground ID -> reason
         Map<String, String> expectedReasons = Map.ofEntries(
@@ -220,5 +220,19 @@ class ClaimGroundServiceTest {
                                         e -> e.getGroundId().equals(groundId) && e.getGroundReason().equals(reason)
                                     )).isTrue()
         );
+    }
+
+    @Test
+    void shouldIgnoreNullGrounds() {
+        // Given
+        PCSCase caseData = PCSCase.builder()
+            .typeOfTenancyLicence(TenancyLicenceType.ASSURED_TENANCY)
+            .build();
+
+        // When
+        List<ClaimGroundEntity> groundEntities = claimGroundService.getGroundsWithReason(caseData);
+
+        // Then
+        assertThat(groundEntities).isEmpty();
     }
 }

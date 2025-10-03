@@ -39,10 +39,6 @@ public class PcsCaseMergeService {
             setPcqIdForCurrentUser(pcqId, pcsCaseEntity);
         }
 
-        if (pcsCase.getPaymentStatus() != null) {
-            pcsCaseEntity.setPaymentStatus(pcsCase.getPaymentStatus());
-        }
-
         if (pcsCase.getCaseManagementLocation() != null) {
             pcsCaseEntity.setCaseManagementLocation(pcsCase.getCaseManagementLocation());
         }
