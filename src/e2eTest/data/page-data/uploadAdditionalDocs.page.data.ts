@@ -7,5 +7,6 @@ export const uploadAdditionalDocs = {
   typeOfDocument: 'Type of document',
   shortDescriptionLabel: 'Short Description',
   tenancyAgreementOption: 'Tenancy Agreement',
-  shortDescriptionInput: 'This is a tenancy agreement'
+  shortDescriptionInput: 'This is a tenancy agreement',
+  uploadAnyAdditionalDocumentsLabel: 'Do you want to upload any additional documents?',
 }

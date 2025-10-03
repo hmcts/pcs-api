@@ -57,7 +57,7 @@ export class ActionRegistry {
     ['selectAdditionalReasonsForPossession', new CreateCaseAction()],
     ['searchCaseFromCaseList', new searchCaseActions()],
     ['selectClaimingCosts', new CreateCaseAction()],
-     ['uploadAdditionalDocs', new CreateCaseAction()]
+    ['uploadAdditionalDocs', new CreateCaseAction()]
   ]);
 
   static getAction(actionName: string): IAction {

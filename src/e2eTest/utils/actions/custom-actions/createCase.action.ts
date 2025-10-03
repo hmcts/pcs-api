@@ -422,13 +422,17 @@ export class CreateCaseAction implements IAction {
     await performAction('clickRadioButton', option);
     await performAction('clickButton', applications.continue);
   }
-  
+
   private async uploadAdditionalDocs(documentsData: actionData | actionRecord) {
     const additionalDocs = documentsData as {
+      question: string;
       option: string;
       documents: { type: string; filePath: string; description: string }[];
     };
-    await performAction('clickRadioButton', additionalDocs.option);
+    await performAction('clickRadioButton', {
+      question: additionalDocs.question,
+      option: additionalDocs.option
+    });
     await performAction('clickButton', uploadAdditionalDocs.continue);
     if (additionalDocs.option == 'Yes') {
       for (const doc of additionalDocs.documents) {
@@ -439,8 +443,9 @@ export class CreateCaseAction implements IAction {
           ['inputText', uploadAdditionalDocs.shortDescriptionLabel, doc.description]
         );
       }
-    await performAction('clickButton', uploadAdditionalDocs.continue);
+      await performAction('clickButton', uploadAdditionalDocs.continue);
     }
+  }
 
   private async selectJurisdictionCaseTypeEvent() {
     await performActions('Case option selection'
