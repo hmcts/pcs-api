@@ -51,7 +51,7 @@ test.beforeEach(async ({page}, testInfo) => {
 });
 
 //Skipping these tests as are failing intermittently which will be fixed as part of HDPI-2306
-test.describe.skip('[Successful Create Case Flow]  @Master @nightly', async () => {
+test.describe('[Successful Create Case Flow]  @Master @nightly', async () => {
   test('England - Assured tenancy with Rent arrears and other possession grounds', async () => {
     await performAction('selectAddress', {
       postcode: addressDetails.englandCourtAssignedPostcode,
@@ -233,6 +233,7 @@ test.describe.skip('[Successful Create Case Flow]  @Master @nightly', async () =
       addressIndex: addressDetails.addressIndex
     });
     await performValidation('bannerAlert', 'Case #.* has been created.');
+    await performAction('extractCaseIdFromAlert');
     await performAction('clickButton', provideMoreDetailsOfClaim.continue);
     await performAction('selectClaimantType', claimantType.registeredProviderForSocialHousing);
     await performAction('selectClaimType', claimType.no);
@@ -317,6 +318,7 @@ test.describe.skip('[Successful Create Case Flow]  @Master @nightly', async () =
       addressIndex: addressDetails.addressIndex
     });
     await performValidation('bannerAlert', 'Case #.* has been created.');
+    await performAction('extractCaseIdFromAlert');
     await performAction('clickButton', provideMoreDetailsOfClaim.continue);
     await performAction('selectClaimantType', claimantType.registeredProviderForSocialHousing);
     await performAction('selectClaimType', claimType.no);
