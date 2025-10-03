@@ -13,5 +13,6 @@ export const defendantDetails =
     enterEmailAddress: 'Enter email address',
     emailIdInput:'test_user@gmail.com',
     yes: 'Yes',
-    no: 'No'
+    no: 'No',
+    continue: 'Continue'
   };
