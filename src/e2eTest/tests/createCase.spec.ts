@@ -229,6 +229,7 @@ test.describe.skip('[Successful Create Case Flow]  @Master @nightly', async () =
     )
   });
 
+  // The sections commented out will be fixed as part of the User Story https://tools.hmcts.net/jira/browse/HDPI-2123
   test('England - Other tenancy with grounds for possession', async () => {
     await performAction('selectAddress', {
       postcode: addressDetails.englandCourtAssignedPostcode,
@@ -280,17 +281,21 @@ test.describe.skip('[Successful Create Case Flow]  @Master @nightly', async () =
       howDidYouServeNotice: noticeDetails.byFirstClassPost,
       index: noticeDetails.byFirstClassPostIndex,
       day: '16', month: '07', year: '1985'});
-    await performValidation('mainHeader', rentDetails.mainHeader);
-    await performAction('provideRentDetails', {rentFrequencyOption:'weekly', rentAmount:'800'});
-    await performValidation('mainHeader', dailyRentAmount.mainHeader);
-    await performAction('selectDailyRentAmount', {
-      calculateRentAmount: '£114.29',
-      unpaidRentInteractiveOption: dailyRentAmount.no,
-      unpaidRentAmountPerDay: '20'
-    });
+    // await performValidation('mainHeader', rentDetails.mainHeader);
+    // await performAction('provideRentDetails', {rentFrequencyOption:'weekly', rentAmount:'800'});
+    // await performValidation('mainHeader', dailyRentAmount.mainHeader);
+    // await performAction('selectDailyRentAmount', {
+    //   calculateRentAmount: '£114.29',
+    //   unpaidRentInteractiveOption: dailyRentAmount.no,
+    //   unpaidRentAmountPerDay: '20'
+    // });
+    await performValidation('mainHeader', moneyJudgment.mainHeader);
     await performAction('selectClaimForMoney', moneyJudgment.yes);
     await performValidation('mainHeader', claimantCircumstances.mainHeader);
-    await performAction('clickButton', claimantCircumstances.continue);
+    await performAction('selectClaimantCircumstances', {
+      circumstanceOption: claimantCircumstances.yes,
+      claimantInput: claimantCircumstances.claimantCircumstanceInfoInputData
+    });
     await performValidation('mainHeader', claimingCosts.mainHeader);
     await performAction('selectClaimingCosts', claimingCosts.yes);
     await performValidation('mainHeader', additionalReasonsForPossession.mainHeader);
@@ -309,6 +314,7 @@ test.describe.skip('[Successful Create Case Flow]  @Master @nightly', async () =
     )
   });
 
+  // The sections commented out will be fixed as part of the User Story https://tools.hmcts.net/jira/browse/HDPI-2123
   test('England - Demoted tenancy with no grounds for possession', async () => {
     await performAction('selectAddress', {
       postcode: addressDetails.englandCourtAssignedPostcode,
@@ -357,17 +363,21 @@ test.describe.skip('[Successful Create Case Flow]  @Master @nightly', async () =
       howDidYouServeNotice: noticeDetails.byFirstClassPost,
       index: noticeDetails.byFirstClassPostIndex,
       day: '16', month: '07', year: '1985'});
-    await performValidation('mainHeader', rentDetails.mainHeader);
-    await performAction('provideRentDetails', {rentFrequencyOption:'weekly', rentAmount:'800'});
-    await performValidation('mainHeader', dailyRentAmount.mainHeader);
-    await performAction('selectDailyRentAmount', {
-      calculateRentAmount: '£114.29',
-      unpaidRentInteractiveOption: dailyRentAmount.no,
-      unpaidRentAmountPerDay: '20'
-    });
+    // await performValidation('mainHeader', rentDetails.mainHeader);
+    // await performAction('provideRentDetails', {rentFrequencyOption:'weekly', rentAmount:'800'});
+    // await performValidation('mainHeader', dailyRentAmount.mainHeader);
+    // await performAction('selectDailyRentAmount', {
+    //   calculateRentAmount: '£114.29',
+    //   unpaidRentInteractiveOption: dailyRentAmount.no,
+    //   unpaidRentAmountPerDay: '20'
+    // });
+    await performValidation('mainHeader', moneyJudgment.mainHeader);
     await performAction('selectClaimForMoney', moneyJudgment.yes);
     await performValidation('mainHeader', claimantCircumstances.mainHeader);
-    await performAction('clickButton', claimantCircumstances.continue);
+    await performAction('selectClaimantCircumstances', {
+      circumstanceOption: claimantCircumstances.yes,
+      claimantInput: claimantCircumstances.claimantCircumstanceInfoInputData
+    });
     await performValidation('mainHeader', claimingCosts.mainHeader);
     await performAction('selectClaimingCosts', claimingCosts.yes);
     await performValidation('mainHeader', additionalReasonsForPossession.mainHeader);
