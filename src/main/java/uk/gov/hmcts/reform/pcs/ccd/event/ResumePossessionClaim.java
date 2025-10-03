@@ -36,8 +36,10 @@ import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ClaimantTypeNotEli
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ClaimantTypeNotEligibleWales;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ClaimingCosts;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ContactPreferences;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.CompletingClaim;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.DailyRentAmount;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.DefendantsDetails;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.GeneralApplication;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.GroundForPossessionAdditionalGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.GroundForPossessionRentArrears;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.GroundsForPossession;
@@ -139,7 +141,10 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             .add(new LanguageUsed())
             .add(new ClaimingCosts())
             .add(new AdditionalReasonsForPossession())
-            .add(new EntitledToClaimRelief());
+            .add(new EntitledToClaimRelief())
+            .add(new GeneralApplication())
+            .add(new CompletingClaim());
+
     }
 
     private PCSCase start(EventPayload<PCSCase, State> eventPayload) {
