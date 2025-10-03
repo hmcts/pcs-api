@@ -42,7 +42,7 @@ export let caseInfo: { id: string; fid: string; state: string };
 let caseNumber: string;
 
 export class CreateCaseAction implements IAction {
-  async execute(page: Page, action: string, fieldName:   actionRecord | actionData, data?: actionData): Promise<void> {
+  async execute(page: Page, action: string, fieldName: actionRecord | actionData, data?: actionData): Promise<void> {
     const actionsMap = new Map<string, () => Promise<void>>([
       ['createCase', () => this.createCaseAction(fieldName)],
       ['housingPossessionClaim', () => this.housingPossessionClaim()],
@@ -456,13 +456,13 @@ export class CreateCaseAction implements IAction {
     await performAction('clickButton', alternativesToPossession.continue);
   }
 
-  private async selectHousingAct(suspension: actionRecord) {
-    await performAction('clickRadioButton', {question: suspension.question, option: suspension.option});
+  private async selectHousingAct(housingAct: actionRecord) {
+    await performAction('clickRadioButton', {question: housingAct.question, option: housingAct.option});
     await performAction('clickButton', alternativesToPossession.continue);
   }
 
   private async enterReasonForSuspensionOrder(reason: actionData) {
-    await performAction('inputText', reason, reasonsForRequestingASuspensionOrder.reason);
+    await performAction('inputText', reason, reasonsForRequestingASuspensionOrder.sampleTestReason);
     await performAction('clickButton', reasonsForRequestingASuspensionOrder.continue);
   }
   private async selectApplications(option: actionData) {

@@ -66,8 +66,8 @@ Playwright 1.30+ | TypeScript 4.9+
 ## 4. Available Actions and Validations
 
 ### Actions
-| Action          | Example Usage |
-|------------------|---------------|
+| Action                              | Example Usage                                                                                                                                                                                              |
+|-------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | inputText                           | `performAction('inputText', 'Email', 'test@example.com')`                                                                                                                                                  |
 | check                               | `performAction('check', 'RememberMe')`                                                                                                                                                                     |
 | navigateToUrl                       | `performAction('navigateToUrl', 'testUrl')`                                                                                                                                                                |
@@ -112,13 +112,12 @@ Playwright 1.30+ | TypeScript 4.9+
 | selectAdditionalReasonsForPossession| `performAction('selectAdditionalReasonsForPossession', additionalReasonsForPossession.no)`                                                                                                                 |
 | searchCaseFromCaseList              | `performAction('searchCaseFromCaseList', caseData.id)`                                                                                                                                                     |
 | selectClaimingCosts                 | `performAction('selectClaimingCosts', claimingCosts.yes)`                                                                                                                                                  |
-| searchCaseById  | `performAction('searchCaseById', ...)` |
-| selectAlternativesToPossession | `performAction('selectAlternativesToPossession', ...)` |
-| selectHousingAct | `performAction('selectHousingAct', ...)` |
-| enterReasonForSuspensionOrder | `performAction('enterReasonForSuspensionOrder', ...)` |
+| selectAlternativesToPossession      | `performAction('selectAlternativesToPossession', {question: suspensionOrDemotion, option: [alternativesToPossession.suspensionOfRightToBuy]})`                                                             |
+| selectHousingAct                    | `performAction('selectHousingAct', {question: whichSection,option: housingAct.suspensionOfRightToBuy.section6AHousingAct1988})`                                                                            |
+| enterReasonForSuspensionOrder       | `performAction('enterReasonForSuspensionOrder', reasonsForRequestingASuspensionOrder.question)`                                                                                                            |
 ### Validations
-| Validation          | Example Usage |
-|------------------|---------------|
+| Validation                 | Example Usage                                                                                                                        |
+|----------------------------|--------------------------------------------------------------------------------------------------------------------------------------|
 | text                       | `performValidation('text', 'testElement')`                                                                                           |
 | bannerAlert                | `performValidation('bannerAlert', {message: "Case has been created."})`                                                              |
 | formLabelValue             | `performValidation('formLabelValue',  "Applicant's forename", {value:'TestUser'})`                                                   |
