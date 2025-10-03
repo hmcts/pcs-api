@@ -5,5 +5,6 @@ export const rentArrearsPossessionGrounds = {
   rentArrears: 'Rent arrears (ground 10)',
   persistentDelayInPayingRent: 'Persistent delay in paying rent (ground 11)',
   yes: 'Yes',
-  no: 'No'
+  no: 'No',
+  continue: 'Continue'
 };
