@@ -11,6 +11,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimRepository;
 
 import java.util.List;
+import java.util.Map;
 
 @Service
 @AllArgsConstructor
@@ -39,4 +40,7 @@ public class ClaimService {
         return claimEntity;
     }
 
+    public List<Map<String, Object>> claims(String convertedSql) {
+        return claimRepository.searchCaseData(convertedSql);
+    }
 }
