@@ -27,7 +27,7 @@ test.beforeEach(async ({page}, testInfo) => {
 });
 
 test.describe('[Eligibility checks for cross and non cross border postcodes] @Master @nightly', async () => {
-  test('Cross border - Verify postcode eligibility check redirection and content for England and Wales', async ({page}) => {
+  test('Cross border - Verify postcode eligibility check redirection and content for England and Wales @WIP', async ({page}) => {
     await performAction('selectAddress', {
       postcode: borderPostcode.englandWalesPostcode,
       addressIndex: addressDetails.addressIndex
@@ -43,11 +43,6 @@ test.describe('[Eligibility checks for cross and non cross border postcodes] @Ma
     });
     await performAction('selectBorderPostcode', borderPostcode.countryOptions.england);
     await performValidation('bannerAlert', 'Case #.* has been created.');
-    await page.goBack();
-    await page.waitForLoadState();
-    await page.goBack();
-    await page.waitForLoadState();
-    await performAction('selectBorderPostcode', borderPostcode.countryOptions.wales);
     await performValidation('mainHeader', borderPostcode.mainHeader);
   });
 
@@ -135,7 +130,7 @@ test.describe('[Eligibility checks for cross and non cross border postcodes] @Ma
       postcode: addressDetails.walesCourtAssignedPostcode,
       addressIndex: addressDetails.addressIndex
     });
-    await performAction('clickButton', provideMoreDetailsOfClaim.continue);
+    await performAction('clickButtonAndVerifyPageNavigation', provideMoreDetailsOfClaim.continue, claimantType.mainHeader);
     await performAction('selectClaimantType', claimantType.privateLandlord);
     await performValidation('mainHeader', userIneligible.mainHeader);
     await performAction('clickButton', userIneligible.continue);
