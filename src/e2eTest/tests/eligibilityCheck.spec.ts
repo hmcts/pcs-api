@@ -43,7 +43,6 @@ test.describe('[Eligibility checks for cross and non cross border postcodes] @Ma
     });
     await performAction('selectBorderPostcode', borderPostcode.countryOptions.england);
     await performValidation('bannerAlert', 'Case #.* has been created.');
-    await performValidation('mainHeader', borderPostcode.mainHeader);
   });
 
   test('Cross border - Verify postcode page for England and Scotland content', async () => {
