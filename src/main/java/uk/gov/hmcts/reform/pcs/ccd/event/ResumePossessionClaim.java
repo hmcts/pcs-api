@@ -35,8 +35,10 @@ import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ClaimantTypeNotEli
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ClaimantTypeNotEligibleWales;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ClaimingCosts;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ContactPreferences;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.CompletingClaim;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.DailyRentAmount;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.DefendantsDetails;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.GeneralApplication;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.GroundForPossessionAdditionalGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.GroundForPossessionRentArrears;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.GroundsForPossession;
@@ -135,14 +137,16 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             .add(new RentDetails())
             .add(new DailyRentAmount())
             .add(new RentArrears())
-            //TO DO will be routed later on  correctly using tech debt ticket
-            .add(new WantToUploadDocuments())
-            .add(uploadAdditionalDocumentsDetails)
             .add(new MoneyJudgment())
             .add(new ClaimantCircumstances())
             .add(new ClaimingCosts())
             .add(new AdditionalReasonsForPossession())
-            .add(new EntitledToClaimRelief());
+            .add(new EntitledToClaimRelief())
+            //TO DO will be routed later on  correctly using tech debt ticket
+            .add(new WantToUploadDocuments())
+            .add(uploadAdditionalDocumentsDetails)
+            .add(new GeneralApplication())
+            .add(new CompletingClaim());
 
     }
 

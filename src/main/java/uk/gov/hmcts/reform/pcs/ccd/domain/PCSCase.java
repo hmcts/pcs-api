@@ -620,4 +620,11 @@ public class PCSCase {
         access = {CitizenAccess.class}
     )
     private List<ListValue<AdditionalDocument>> additionalDocuments;
+
+    @CCD(
+        label = "Are you planning to make an application at the same time as your claim?",
+        hint = "After you've submitted your claim, there will be instructions on how to make an application",
+        access = {CitizenAccess.class}
+    )
+    private VerticalYesNo applicationWithClaim;
 }
