@@ -603,9 +603,15 @@ public class PCSCase {
     @CCD(access = {CitizenAccess.class})
     private NoRentArrearsReasonForGrounds noRentArrearsReasonForGrounds;
 
+    @CCD(
+        label = "Did you complete all or part of this claim in Welsh?",
+        hint = "The answer to this question will help make sure your claim is translated correctly",
+        access = {CitizenAccess.class}
+    )
+    private VerticalYesNo welshUsed;
+  
     @JsonUnwrapped
     private DefendantCircumstances defendantCircumstances;
-
     private AdditionalReasons additionalReasonsForPossession;
 
     @CCD(
