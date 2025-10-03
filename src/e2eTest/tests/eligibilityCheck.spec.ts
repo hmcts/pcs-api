@@ -27,7 +27,7 @@ test.beforeEach(async ({page}, testInfo) => {
 });
 
 test.describe('[Eligibility checks for cross and non cross border postcodes] @Master @nightly', async () => {
-  test('Cross border - Verify postcode eligibility check redirection and content for England and Wales @WIP', async ({page}) => {
+  test('Cross border - Verify postcode eligibility check redirection and content for England and Wales', async ({page}) => {
     await performAction('selectAddress', {
       postcode: borderPostcode.englandWalesPostcode,
       addressIndex: addressDetails.addressIndex
