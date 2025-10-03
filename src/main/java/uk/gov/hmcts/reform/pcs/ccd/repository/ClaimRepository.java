@@ -8,6 +8,6 @@ import java.util.UUID;
 
 
 @Repository
-public interface ClaimRepository extends JpaRepository<ClaimEntity, UUID> {
+public interface ClaimRepository extends JpaRepository<ClaimEntity, UUID>, ClaimRepositoryCustom {
 
 }

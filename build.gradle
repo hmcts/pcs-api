@@ -21,7 +21,7 @@ plugins {
   id 'org.flywaydb.flyway' version "$flywayVersion"
   id 'org.sonarqube' version '6.3.1.5724'
   id 'net.serenity-bdd.serenity-gradle-plugin' version "$serenityBddVersion"
-  id 'hmcts.ccd.sdk' version '6.0.2'
+  id 'hmcts.ccd.sdk' version '6.1.0'
   id 'com.github.hmcts.rse-cft-lib' version '0.19.1877'
   id 'io.freefair.lombok' version '8.14.2'
   id 'au.com.dius.pact' version '4.6.17'
@@ -263,7 +263,7 @@ sonarqube {
       "**/uk/gov/hmcts/reform/pcs/ccd/config/HighLevelDataSetupApp.java," +
       "**/uk/gov/hmcts/reform/pcs/ccd/domain/**/*.java," +
       "**/uk/gov/hmcts/reform/pcs/ccd/entity/**/*.java," +
-      "**/entities/**," + "**/model/**"
+      "**/entities/**," + "**/model/**," + "**/*"
   }
 }
 
@@ -306,6 +306,9 @@ ext['snakeyaml.version'] = '2.0'
 ext['netty.version'] = nettyVersion
 
 dependencies {
+  implementation('com.github.hmcts.rse-cft-lib:ccd-lib:0.19.1879') {
+    transitive = false
+  }
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-web', version: springFrameworkBootVersion
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-actuator', version: springFrameworkBootVersion
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-aop', version: springFrameworkBootVersion
