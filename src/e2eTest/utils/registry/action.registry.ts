@@ -52,9 +52,12 @@ export class ActionRegistry {
     ['selectDailyRentAmount', new CreateCaseAction()],
     ['provideDetailsOfRentArrears', new CreateCaseAction()],
     ['selectClaimForMoney', new CreateCaseAction()],
-    ['searchCaseById', new searchCaseActions()],
+    ['selectDefendantCircumstances', new CreateCaseAction()],
+    ['selectApplications', new CreateCaseAction()],
+    ['selectAdditionalReasonsForPossession', new CreateCaseAction()],
+    ['searchCaseFromCaseList', new searchCaseActions()],
     ['selectClaimingCosts', new CreateCaseAction()],
-    ['uploadAdditionalDocs', new CreateCaseAction()]
+     ['uploadAdditionalDocs', new CreateCaseAction()]
   ]);
 
   static getAction(actionName: string): IAction {

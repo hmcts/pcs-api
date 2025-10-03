@@ -19,6 +19,9 @@ import {caseApiData} from '@data/api-data/case.api.data';
 import {dailyRentAmount} from '@data/page-data/dailyRentAmount.page.data';
 import {reasonsForPossession} from '@data/page-data/reasonsForPossession.page.data';
 import {detailsOfRentArrears} from '@data/page-data/detailsOfRentArrears.page.data';
+import {defendantCircumstances} from '@data/page-data/defendantCircumstances.page.data';
+import {applications} from '@data/page-data/applications.page.data';
+import {additionalReasonsForPossession} from '@data/page-data/additionalReasonsForPossession.page.data';
 import {claimingCosts} from '@data/page-data/claimingCosts.page.data';
 import {uploadAdditionalDocs} from '@data/page-data/uploadAdditionalDocs.page.data';
 
@@ -57,6 +60,9 @@ export class CreateCaseAction implements IAction {
       ['selectDailyRentAmount', () => this.selectDailyRentAmount(fieldName)],
       ['provideDetailsOfRentArrears', () => this.provideDetailsOfRentArrears(fieldName)],
       ['selectClaimForMoney', () => this.selectClaimForMoney(fieldName)],
+      ['selectDefendantCircumstances', () => this.selectDefendantCircumstances(fieldName)],
+      ['selectApplications', () => this.selectApplications(fieldName)],
+      ['selectAdditionalReasonsForPossession', ()=> this.selectAdditionalReasonsForPossession(fieldName)],
       ['selectClaimingCosts', () => this.selectClaimingCosts(fieldName)],
       ['uploadAdditionalDocs', () => this.uploadAdditionalDocs(fieldName)]
     ]);
@@ -412,6 +418,11 @@ export class CreateCaseAction implements IAction {
     await performAction('clickButton', claimingCosts.continue);
   }
 
+  private async selectApplications(option: actionData) {
+    await performAction('clickRadioButton', option);
+    await performAction('clickButton', applications.continue);
+  }
+  
   private async uploadAdditionalDocs(documentsData: actionData | actionRecord) {
     const additionalDocs = documentsData as {
       option: string;
@@ -430,7 +441,6 @@ export class CreateCaseAction implements IAction {
       }
     await performAction('clickButton', uploadAdditionalDocs.continue);
     }
-  }
 
   private async selectJurisdictionCaseTypeEvent() {
     await performActions('Case option selection'
@@ -438,6 +448,14 @@ export class CreateCaseAction implements IAction {
       , ['select', 'Case type', createCase.caseType.civilPossessions]
       , ['select', 'Event', createCase.makeAPossessionClaimEvent]);
     await performAction('clickButton', 'Start');
+  }
+
+  private async selectDefendantCircumstances(defendantDetails: actionData) {
+    await performAction('clickRadioButton', defendantDetails);
+    if(defendantDetails == defendantCircumstances.yes){
+      await performAction('inputText', defendantCircumstances.defendantCircumstancesLabel, defendantCircumstances.defendantCircumstancesSampleData);
+    }
+    await performAction('clickButton', defendantCircumstances.continue);
   }
 
   private async enterTestAddressManually() {
@@ -453,6 +471,14 @@ export class CreateCaseAction implements IAction {
       , ['inputText', 'Country (Optional)', addressDetails.country]
     );
     await performAction('clickButton', 'Submit');
+  }
+
+  private async selectAdditionalReasonsForPossession(reasons: actionData) {
+    await performAction('clickRadioButton', reasons);
+    if(reasons == additionalReasonsForPossession.yes){
+      await performAction('inputText', additionalReasonsForPossession.additionalReasonsForPossessionLabel, additionalReasonsForPossession.additionalReasonsForPossessionSampleText);
+    }
+    await performAction('clickButton', additionalReasonsForPossession.continue);
   }
 
   private async reloginAndFindTheCase(userInfo: actionData) {

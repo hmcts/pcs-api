@@ -107,9 +107,11 @@ Playwright 1.30+ | TypeScript 4.9+
 | selectRentArrearsOrBreachOfTenancy  | `performAction('selectRentArrearsOrBreachOfTenancy', rentArrearsOrBreach: [rentArrearsOrBreachOfTenancy.breachOfTenancy])`                                                                                 |
 | provideDetailsOfRentArrears         | `performAction('provideDetailsOfRentArrears', {files: ['tenancyLicence.docx'], rentArrearsAmountOnStatement: '1000',rentPaidByOthersOption: 'Yes',paymentOptions: ['Universal Credit']})`                  |
 | selectClaimForMoney                 | `performAction('selectClaimForMoney', 'yes')`                                                                                                                                                              |
+| selectDefendantCircumstances        | `performAction('selectDefendantCircumstances', defendantCircumstances.yes)`                                                                                                                                |
+| selectApplications                  | `performAction('selectApplications', 'yes')`                                                                                                                                                               |
+| selectAdditionalReasonsForPossession| `performAction('selectAdditionalReasonsForPossession', additionalReasonsForPossession.no)`                                                                                                                 |
+| searchCaseFromCaseList              | `performAction('searchCaseFromCaseList', caseData.id)`                                                                                                                                                     |
 | selectClaimingCosts                 | `performAction('selectClaimingCosts', claimingCosts.yes)`                                                                                                                                                  |
-| searchCaseById  | `performAction('searchCaseById', ...)` |
-| uploadAdditionalDocs | `performAction('uploadAdditionalDocs', ...)` |
 ### Validations
 | Validation          | Example Usage |
 |------------------|---------------|
