@@ -609,6 +609,9 @@ public class PCSCase {
         access = {CitizenAccess.class}
     )
     private VerticalYesNo welshUsed;
+  
+    @JsonUnwrapped
+    private DefendantCircumstances defendantCircumstances;
     private AdditionalReasons additionalReasonsForPossession;
 
     @CCD(
@@ -617,4 +620,5 @@ public class PCSCase {
         access = {CitizenAccess.class}
     )
     private VerticalYesNo applicationWithClaim;
+
 }
