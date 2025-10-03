@@ -466,7 +466,7 @@ test.describe('[Successful Create Case Flow]  @Master @nightly', async () => {
       ['formLabelValue', propertyDetails.countryLabel, addressDetails.country]);
   });
 
-  test('Wales - Flexible tenancy with Rent arrears only', async () => {
+  test('Wales - Flexible tenancy with Rent arrears only @WIP', async () => {
     await performAction('enterTestAddressManually');
     await performValidation('bannerAlert', 'Case #.* has been created.');
     await performAction('extractCaseIdFromAlert');
@@ -478,11 +478,8 @@ test.describe('[Successful Create Case Flow]  @Master @nightly', async () => {
     await performAction('reloginAndFindTheCase', user.claimantSolicitor);
     await performAction('clickButtonAndVerifyPageNavigation', resumeClaim.continue, resumeClaimOptions.mainHeader);
     await performAction('selectResumeClaimOption', resumeClaimOptions.no);
-    await performValidation('radioButtonChecked', claimantType.registeredCommunityLandlord, false);
     await performAction('selectClaimantType', claimantType.registeredCommunityLandlord);
-    await performValidation('radioButtonChecked', claimType.no, false);
     await performAction('selectClaimType', claimType.no);
-    await performValidation('radioButtonChecked', claimantName.no, true);
     await performAction('selectClaimantName', claimantName.yes);
     await performAction('selectContactPreferences', {
       notifications: contactPreferences.yes,

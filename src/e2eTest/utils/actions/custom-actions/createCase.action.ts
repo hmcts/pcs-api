@@ -118,7 +118,7 @@ export class CreateCaseAction implements IAction {
 
   private async selectClaimantType(caseData: actionData) {
     await performAction('clickRadioButton', caseData);
-    await performAction('clickButton', claimantType.continue);
+    await performAction('clickButtonAndVerifyPageNavigation', claimantType.continue, claimType.mainHeader);
   }
 
   private async selectClaimType(caseData: actionData) {
@@ -163,7 +163,7 @@ export class CreateCaseAction implements IAction {
     if(caseData == claimantName.no){
       await performAction('inputText', claimantName.whatIsCorrectClaimantName, claimantName.correctClaimantNameInput);
     }
-    await performAction('clickButton', claimantName.continue);
+    await performAction('clickButtonAndVerifyPageNavigation', claimantName.continue, contactPreferences.mainHeader);
   }
 
   private async selectContactPreferences(preferences: actionData) {
