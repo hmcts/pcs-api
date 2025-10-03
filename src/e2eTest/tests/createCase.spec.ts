@@ -29,6 +29,10 @@ import {user} from '@data/user-data/permanent.user.data';
 import {claimingCosts} from '@data/page-data/claimingCosts.page.data';
 import {additionalReasonsForPossession} from '@data/page-data/additionalReasonsForPossession.page.data';
 import {underlesseeOrMortgageeEntitledToClaim} from '@data/page-data/underlesseeOrMortgageeEntitledToClaim.page.data';
+import {alternativesToPossession} from '@data/page-data/alternativesToPossession.page.data';
+import {housingAct} from "@data/page-data/housingAct.page.data";
+import {reasonsForRequestingADemotionOrder} from "@data/page-data/reasonsForRequestingADemotionOrder.page.data";
+import {statementOfExpressTerms} from "@data/page-data/statementOfExpressTerms.page.data";
 
 test.beforeEach(async ({page}, testInfo) => {
   initializeExecutor(page);
@@ -215,7 +219,7 @@ test.describe.skip('[Successful Create Case Flow]  @Master @nightly', async () =
     )
   });
 
-  test('England - Other tenancy with grounds for possession', async () => {
+  test('England - Other tenancy with grounds for possession - Demotion order', async () => {
     await performAction('selectAddress', {
       postcode: addressDetails.englandCourtAssignedPostcode,
       addressIndex: addressDetails.addressIndex
@@ -277,6 +281,13 @@ test.describe.skip('[Successful Create Case Flow]  @Master @nightly', async () =
     await performAction('selectClaimForMoney', moneyJudgment.yes);
     await performValidation('mainHeader', claimantCircumstances.mainHeader);
     await performAction('clickButton', claimantCircumstances.continue);
+    await performValidation('mainHeader', alternativesToPossession.mainHeader);
+    await performAction('selectAlternativesToPossession', [alternativesToPossession.demotionOfTenancy]);
+    await performValidation('mainHeader', housingAct.mainHeader);
+    await performAction('selectHousingAct', housingAct.section82AHousingAct1985);
+    await performAction('selectStatementOfExpressTerms', statementOfExpressTerms.yes);
+    await performValidation('mainHeader', reasonsForRequestingADemotionOrder.mainHeader);
+    await performAction('enterReasonForDemotionOrder', reasonsForRequestingADemotionOrder.reason);
     await performValidation('mainHeader', claimingCosts.mainHeader);
     await performAction('selectClaimingCosts', claimingCosts.yes);
     await performValidation('mainHeader', additionalReasonsForPossession.mainHeader);
