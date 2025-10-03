@@ -11,7 +11,8 @@ import {claimantName} from '@data/page-data/claimantName.page.data';
 import {contactPreferences} from '@data/page-data/contactPreferences.page.data';
 import {mediationAndSettlement} from '@data/page-data/mediationAndSettlement.page.data';
 import {tenancyLicenceDetails} from '@data/page-data/tenancyLicenceDetails.page.data';
-import {resumeClaimOptions} from "@data/page-data/resumeClaimOptions.page.data";
+import {groundsForPossession} from '@data/page-data/groundsForPossession.page.data';
+import {resumeClaimOptions} from '@data/page-data/resumeClaimOptions.page.data';
 import {rentDetails} from '@data/page-data/rentDetails.page.data';
 import {accessTokenApiData} from '@data/api-data/accessToken.api.data';
 import {caseApiData} from '@data/api-data/case.api.data';
@@ -21,6 +22,8 @@ import {detailsOfRentArrears} from '@data/page-data/detailsOfRentArrears.page.da
 import {applications} from '@data/page-data/applications.page.data';
 import {claimingCosts} from '@data/page-data/claimingCosts.page.data';
 import {completeYourClaim} from '@data/page-data/completeYourClaim.page.data';
+import {additionalReasonsForPossession} from '@data/page-data/additionalReasonsForPossession.page.data';
+import {claimingCosts} from '@data/page-data/claimingCosts.page.data';
 
 export let caseInfo: { id: string; fid: string; state: string };
 let caseNumber: string;
@@ -60,6 +63,8 @@ export class CreateCaseAction implements IAction {
       ['selectClaimingCosts', () => this.selectClaimingCosts(fieldName)],
       ['selectApplications', () => this.selectApplications(fieldName)],
       ['completingYourClaim', () => this.completingYourClaim(fieldName)]
+      ['selectAdditionalReasonsForPossession', ()=> this.selectAdditionalReasonsForPossession(fieldName)],
+      ['selectClaimingCosts', () => this.selectClaimingCosts(fieldName)]
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) throw new Error(`No action found for '${action}'`);
@@ -112,7 +117,19 @@ export class CreateCaseAction implements IAction {
   }
 
   private async selectGroundsForPossession(caseData: actionData) {
-    await performAction('clickRadioButton', caseData);
+    const possessionGrounds = caseData as {
+      groundsRadioInput: string;
+      grounds?: string[];
+    };
+    await performAction('clickRadioButton', possessionGrounds.groundsRadioInput);
+    if (possessionGrounds.groundsRadioInput == 'Yes') {
+      if (possessionGrounds.grounds) {
+        await performAction('check', possessionGrounds.grounds);
+        if (possessionGrounds.grounds.includes('Other')) {
+          await performAction('inputText', 'Enter your grounds for possession', groundsForPossession.enterYourGroundsForPossessionInput);
+        }
+      }
+    }
     await performAction('clickButton', 'Continue');
   }
 
@@ -432,6 +449,14 @@ export class CreateCaseAction implements IAction {
       , ['inputText', 'Country (Optional)', addressDetails.country]
     );
     await performAction('clickButton', 'Submit');
+  }
+
+  private async selectAdditionalReasonsForPossession(reasons: actionData) {
+    await performAction('clickRadioButton', reasons);
+    if(reasons == additionalReasonsForPossession.yes){
+      await performAction('inputText', additionalReasonsForPossession.additionalReasonsForPossessionLabel, additionalReasonsForPossession.additionalReasonsForPossessionSampleText);
+    }
+    await performAction('clickButton', additionalReasonsForPossession.continue);
   }
 
   private async reloginAndFindTheCase(userInfo: actionData) {
