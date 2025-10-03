@@ -120,7 +120,7 @@ class DocAssemblyServiceTest {
 
             DocAssemblyRequest capturedRequest = requestCaptor.getValue();
             assertThat(capturedRequest.getFormPayload()).isInstanceOf(JsonNodeFormPayload.class);
-            
+
             JsonNodeFormPayload wrapper = (JsonNodeFormPayload) capturedRequest.getFormPayload();
             assertThat(wrapper.getData()).isEqualTo(formPayload);
         }
@@ -192,7 +192,7 @@ class DocAssemblyServiceTest {
 
         @ParameterizedTest
         @ValueSource(strings = {"PDF", "DOCX"})
-        @DisplayName("Should handle different output types")
+        @DisplayName("Should handle different file output types")
         void shouldHandleDifferentOutputTypes(String outputTypeStr) {
             final JsonNode formPayload = createValidJsonNode();
             DocAssemblyResponse mockResponse = createMockResponse(EXPECTED_DOCUMENT_URL);
