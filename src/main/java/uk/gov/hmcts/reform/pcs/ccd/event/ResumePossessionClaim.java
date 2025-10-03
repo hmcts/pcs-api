@@ -100,7 +100,6 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
                 .decentralisedEvent(resumePossessionClaim.name(), this::submit, this::start)
                 .forStateTransition(AWAITING_FURTHER_CLAIM_DETAILS, AWAITING_SUBMISSION_TO_HMCTS)
                 .name("Make a claim")
-                .showCondition(ShowConditions.NEVER_SHOW)
                 .grant(Permission.CRUD, UserRole.PCS_SOLICITOR)
                 .showSummary();
 
