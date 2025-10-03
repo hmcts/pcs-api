@@ -1,6 +1,6 @@
 import Axios from 'axios';
 import {ServiceAuthUtils} from '@hmcts/playwright-common';
-import {actionData, IAction} from '../../interfaces/action.interface';
+import {actionData, actionRecord, IAction} from '../../interfaces/action.interface';
 import {Page} from '@playwright/test';
 import {performAction, performActions, performValidation} from '@utils/controller';
 import {createCase} from '@data/page-data/createCase.page.data';
@@ -33,6 +33,7 @@ import {defendantCircumstances} from '@data/page-data/defendantCircumstances.pag
 import {applications} from '@data/page-data/applications.page.data';
 import {additionalReasonsForPossession} from '@data/page-data/additionalReasonsForPossession.page.data';
 import {claimingCosts} from '@data/page-data/claimingCosts.page.data';
+import {uploadAdditionalDocs} from '@data/page-data/uploadAdditionalDocs.page.data';
 import {home} from '@data/page-data/home.page.data';
 import {search} from '@data/page-data/search.page.data';
 
@@ -74,7 +75,8 @@ export class CreateCaseAction implements IAction {
       ['selectDefendantCircumstances', () => this.selectDefendantCircumstances(fieldName)],
       ['selectApplications', () => this.selectApplications(fieldName)],
       ['selectAdditionalReasonsForPossession', ()=> this.selectAdditionalReasonsForPossession(fieldName)],
-      ['selectClaimingCosts', () => this.selectClaimingCosts(fieldName)]
+      ['selectClaimingCosts', () => this.selectClaimingCosts(fieldName)],
+      ['uploadAdditionalDocs', () => this.uploadAdditionalDocs(fieldName)]
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) throw new Error(`No action found for '${action}'`);
@@ -446,6 +448,30 @@ export class CreateCaseAction implements IAction {
   private async selectApplications(option: actionData) {
     await performAction('clickRadioButton', option);
     await performAction('clickButton', applications.continue);
+  }
+
+  private async uploadAdditionalDocs(documentsData: actionData | actionRecord) {
+    const additionalDocs = documentsData as {
+      question: string;
+      option: string;
+      documents: { type: string; filePath: string; description: string }[];
+    };
+    await performAction('clickRadioButton', {
+      question: additionalDocs.question,
+      option: additionalDocs.option
+    });
+    await performAction('clickButton', uploadAdditionalDocs.continue);
+    if (additionalDocs.option == 'Yes') {
+      for (const doc of additionalDocs.documents) {
+        await performActions(
+          'Add Document',
+          ['uploadFile', doc.filePath],
+          ['select', uploadAdditionalDocs.typeOfDocument, doc.type],
+          ['inputText', uploadAdditionalDocs.shortDescriptionLabel, doc.description]
+        );
+      }
+      await performAction('clickButton', uploadAdditionalDocs.continue);
+    }
   }
 
   private async selectJurisdictionCaseTypeEvent() {
