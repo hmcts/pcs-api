@@ -28,7 +28,7 @@ export class ClickButtonAction implements IAction {
       const pageElement = page.locator(`h1:has-text("${nextPageElement}")`);
       if(!await pageElement.isVisible()){
         //Adding sleep to slow down execution when the application behaves abnormally
-        await page.waitForTimeout(3000);
+        await page.waitForTimeout(5000);
       }
       else{
         break;

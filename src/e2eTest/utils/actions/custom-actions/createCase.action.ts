@@ -33,7 +33,6 @@ import {defendantCircumstances} from '@data/page-data/defendantCircumstances.pag
 import {applications} from '@data/page-data/applications.page.data';
 import {additionalReasonsForPossession} from '@data/page-data/additionalReasonsForPossession.page.data';
 import {claimingCosts} from '@data/page-data/claimingCosts.page.data';
-import {claimantType} from '@data/page-data/claimantType.page.data';
 import {home} from '@data/page-data/home.page.data';
 import {search} from '@data/page-data/search.page.data';
 
