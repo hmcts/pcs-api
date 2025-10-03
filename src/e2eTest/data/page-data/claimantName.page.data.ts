@@ -6,5 +6,6 @@ export const claimantName =
   no: 'No',
   whatIsCorrectClaimantName: 'What is the correct claimant name?',
   correctClaimantNameInput: 'Jessie Owens',
-  yourClaimantNameRegisteredWithHMCTS: 'Your claimant name registered with My HMCTS is:'
+  yourClaimantNameRegisteredWithHMCTS: 'Your claimant name registered with My HMCTS is:',
+  continue: 'Continue'
 }
