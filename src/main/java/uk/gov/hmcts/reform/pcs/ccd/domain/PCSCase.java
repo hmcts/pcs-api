@@ -603,6 +603,9 @@ public class PCSCase {
     @CCD(access = {CitizenAccess.class})
     private NoRentArrearsReasonForGrounds noRentArrearsReasonForGrounds;
 
+    @JsonUnwrapped
+    private DefendantCircumstances defendantCircumstances;
+
     @CCD(
         label = "In the alternative to possession, would you like to claim suspension of right to buy"
             + " or demotion of tenancy?",
@@ -616,5 +619,12 @@ public class PCSCase {
     private SuspensionOfRightToBuy suspensionOfRightToBuy;
 
     private AdditionalReasons additionalReasonsForPossession;
+
+    @CCD(
+        label = "Are you planning to make an application at the same time as your claim?",
+        hint = "After you’ve submitted your claim, there will be instructions on how to make an application",
+        access = {CitizenAccess.class}
+    )
+    private VerticalYesNo applicationWithClaim;
 
 }

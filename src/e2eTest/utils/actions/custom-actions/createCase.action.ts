@@ -19,6 +19,8 @@ import {caseApiData} from '@data/api-data/case.api.data';
 import {dailyRentAmount} from '@data/page-data/dailyRentAmount.page.data';
 import {reasonsForPossession} from '@data/page-data/reasonsForPossession.page.data';
 import {detailsOfRentArrears} from '@data/page-data/detailsOfRentArrears.page.data';
+import {defendantCircumstances} from '@data/page-data/defendantCircumstances.page.data';
+import {applications} from '@data/page-data/applications.page.data';
 import {additionalReasonsForPossession} from '@data/page-data/additionalReasonsForPossession.page.data';
 import {claimingCosts} from '@data/page-data/claimingCosts.page.data';
 import {alternativesToPossession} from '@data/page-data/alternativesToPossession.page.data';
@@ -62,6 +64,8 @@ export class CreateCaseAction implements IAction {
       ['selectAlternativesToPossession', () => this.selectAlternativesToPossession(fieldName)],
       ['selectHousingAct', () => this.selectHousingAct(fieldName)],
       ['enterReasonForSuspensionOrder', () => this.enterReasonForSuspensionOrder(fieldName)],
+      ['selectDefendantCircumstances', () => this.selectDefendantCircumstances(fieldName)],
+      ['selectApplications', () => this.selectApplications(fieldName)],
       ['selectAdditionalReasonsForPossession', ()=> this.selectAdditionalReasonsForPossession(fieldName)],
       ['selectClaimingCosts', () => this.selectClaimingCosts(fieldName)]
     ]);
@@ -432,6 +436,9 @@ export class CreateCaseAction implements IAction {
   private async enterReasonForSuspensionOrder(reason: actionData) {
     await performAction('inputText', reason, reasonsForRequestingASuspensionOrder.reason);
     await performAction('clickButton', reasonsForRequestingASuspensionOrder.continue);
+  private async selectApplications(option: actionData) {
+    await performAction('clickRadioButton', option);
+    await performAction('clickButton', applications.continue);
   }
 
   private async selectJurisdictionCaseTypeEvent() {
@@ -440,6 +447,14 @@ export class CreateCaseAction implements IAction {
       , ['select', 'Case type', createCase.caseType.civilPossessions]
       , ['select', 'Event', createCase.makeAPossessionClaimEvent]);
     await performAction('clickButton', 'Start');
+  }
+
+  private async selectDefendantCircumstances(defendantDetails: actionData) {
+    await performAction('clickRadioButton', defendantDetails);
+    if(defendantDetails == defendantCircumstances.yes){
+      await performAction('inputText', defendantCircumstances.defendantCircumstancesLabel, defendantCircumstances.defendantCircumstancesSampleData);
+    }
+    await performAction('clickButton', defendantCircumstances.continue);
   }
 
   private async enterTestAddressManually() {
