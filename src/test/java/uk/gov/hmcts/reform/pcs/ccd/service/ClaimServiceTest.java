@@ -82,6 +82,7 @@ class ClaimServiceTest {
         verify(claimRepository).save(createdClaimEntity);
 
     }
+
     @Test
     void shouldCreateMainClaim_WithDefendantCircumstancesDetails() {
         // Given
@@ -99,6 +100,7 @@ class ClaimServiceTest {
         when(additionalReasons.getReasons()).thenReturn("example reasons");
         when(pcsCase.getClaimingCostsWanted()).thenReturn(VerticalYesNo.NO);
         when(claimGroundService.getGroundsWithReason(pcsCase)).thenReturn(List.of());
+        when(pcsCase.getSuspensionOfRightToBuy()).thenReturn(mock(SuspensionOfRightToBuy.class));
 
         // When
         ClaimEntity createdClaimEntity = claimService.createMainClaimEntity(pcsCase, claimantPartyEntity);
