@@ -30,6 +30,7 @@ import {completeYourClaim} from '@data/page-data/completeYourClaim.page.data';
 import {user} from '@data/user-data/permanent.user.data';
 import {checkYourAnswers} from '@data/page-data/checkYourAnswers.page.data';
 import {propertyDetails} from '@data/page-data/propertyDetails.page.data';
+import {defendantCircumstances} from '@data/page-data/defendantCircumstances.page.data';
 import {claimingCosts} from '@data/page-data/claimingCosts.page.data';
 import {home} from '@data/page-data/home.page.data';
 import {additionalReasonsForPossession} from '@data/page-data/additionalReasonsForPossession.page.data';
@@ -116,6 +117,8 @@ test.describe.skip('[Successful Create Case Flow]  @Master @nightly', async () =
     await performAction('selectMoneyJudgment', moneyJudgment.yes);
     await performValidation('mainHeader', claimantCircumstances.mainHeader);
     await performAction('clickButton', claimantCircumstances.continue);
+    await performValidation('mainHeader', defendantCircumstances.mainHeader);
+    await performAction('selectDefendantCircumstances', defendantCircumstances.yes);
     await performValidation('mainHeader', claimingCosts.mainHeader);
     await performAction('selectClaimingCosts', claimingCosts.yes);
     await performValidation('mainHeader', additionalReasonsForPossession.mainHeader);
@@ -201,6 +204,8 @@ test.describe.skip('[Successful Create Case Flow]  @Master @nightly', async () =
     await performAction('selectMoneyJudgment', moneyJudgment.yes);
     await performValidation('mainHeader', claimantCircumstances.mainHeader);
     await performAction('clickButton', claimantCircumstances.continue);
+    await performValidation('mainHeader', defendantCircumstances.mainHeader);
+    await performAction('selectDefendantCircumstances', defendantCircumstances.no);
     await performValidation('mainHeader', claimingCosts.mainHeader);
     await performAction('selectClaimingCosts', claimingCosts.no);
     await performValidation('mainHeader', additionalReasonsForPossession.mainHeader);
@@ -283,12 +288,16 @@ test.describe.skip('[Successful Create Case Flow]  @Master @nightly', async () =
     await performAction('selectMoneyJudgment', moneyJudgment.yes);
     await performValidation('mainHeader', claimantCircumstances.mainHeader);
     await performAction('clickButton', claimantCircumstances.continue);
+    await performValidation('mainHeader', defendantCircumstances.mainHeader);
+    await performAction('selectDefendantCircumstances', defendantCircumstances.no);
     await performValidation('mainHeader', claimingCosts.mainHeader);
     await performAction('selectClaimingCosts', claimingCosts.yes);
     await performValidation('mainHeader', additionalReasonsForPossession.mainHeader);
     await performAction('selectAdditionalReasonsForPossession', additionalReasonsForPossession.no);
     await performValidation('mainHeader', underlesseeOrMortgageeEntitledToClaim.mainHeader);
     await performAction('clickButton', underlesseeOrMortgageeEntitledToClaim.continue);
+    await performAction('selectApplications', applications.yes);
+    await performAction('clickButton', completeYourClaim.continue);
     await performAction('clickButton', checkYourAnswers.saveAndContinue);
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
     await performValidations(
@@ -360,6 +369,8 @@ test.describe.skip('[Successful Create Case Flow]  @Master @nightly', async () =
     await performAction('selectMoneyJudgment', moneyJudgment.yes);
     await performValidation('mainHeader', claimantCircumstances.mainHeader);
     await performAction('clickButton', claimantCircumstances.continue);
+    await performValidation('mainHeader', defendantCircumstances.mainHeader);
+    await performAction('selectDefendantCircumstances', defendantCircumstances.no);
     await performValidation('mainHeader', claimingCosts.mainHeader);
     await performAction('selectClaimingCosts', claimingCosts.yes);
     await performValidation('mainHeader', additionalReasonsForPossession.mainHeader);
@@ -436,6 +447,8 @@ test.describe.skip('[Successful Create Case Flow]  @Master @nightly', async () =
     await performAction('selectMoneyJudgment', moneyJudgment.yes);
     await performValidation('mainHeader', claimantCircumstances.mainHeader);
     await performAction('clickButton', claimantCircumstances.continue);
+    await performValidation('mainHeader', defendantCircumstances.mainHeader);
+    await performAction('selectDefendantCircumstances', defendantCircumstances.no);
     await performValidation('mainHeader', claimingCosts.mainHeader);
     await performAction('selectClaimingCosts', claimingCosts.no);
     await performValidation('mainHeader', additionalReasonsForPossession.mainHeader);
@@ -508,6 +521,8 @@ test.describe.skip('[Successful Create Case Flow]  @Master @nightly', async () =
     });
     await performAction('selectMoneyJudgment', moneyJudgment.yes);
     await performAction('clickButton', claimantCircumstances.continue);
+    await performValidation('mainHeader', defendantCircumstances.mainHeader);
+    await performAction('selectDefendantCircumstances', defendantCircumstances.no);
     await performValidation('mainHeader', claimingCosts.mainHeader);
     await performAction('selectClaimingCosts', claimingCosts.no);
     await performValidation('mainHeader', additionalReasonsForPossession.mainHeader);
@@ -587,6 +602,8 @@ test.describe.skip('[Successful Create Case Flow]  @Master @nightly', async () =
     await performAction('selectMoneyJudgment', moneyJudgment.no);
     await performValidation('mainHeader', claimantCircumstances.mainHeader);
     await performAction('clickButton', claimantCircumstances.continue);
+    await performValidation('mainHeader', defendantCircumstances.mainHeader);
+    await performAction('selectDefendantCircumstances', defendantCircumstances.yes);
     await performValidation('mainHeader', claimingCosts.mainHeader);
     await performAction('selectClaimingCosts', claimingCosts.yes);
     await performValidation('mainHeader', additionalReasonsForPossession.mainHeader);
