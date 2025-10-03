@@ -1,14 +1,15 @@
-import { IAction } from '../interfaces/action.interface';
-import { ClickTabAction } from '../actions/element-actions/clickTab.action';
-import { InputTextAction } from '../actions/element-actions/inputText.action';
-import { CheckAction } from '../actions/element-actions/check.action';
-import { SelectAction } from '../actions/element-actions/select.action';
-import { LoginAction } from "../actions/custom-actions/login.action";
-import { NavigateToUrl } from "@utils/actions/custom-actions/navigateToUrl.action";
-import { CreateCaseAction } from "@utils/actions/custom-actions/createCase.action";
-import { ClickButtonAction } from "../actions/element-actions/clickButton.action";
-import { ClickRadioButton } from "../actions/element-actions/clickRadioButton.action";
-import { UploadFileAction } from "@utils/actions/element-actions/uploadFile.action";
+import {IAction} from '../interfaces/action.interface';
+import {ClickTabAction} from '../actions/element-actions/clickTab.action';
+import {InputTextAction} from '../actions/element-actions/inputText.action';
+import {CheckAction} from '../actions/element-actions/check.action';
+import {SelectAction} from '../actions/element-actions/select.action';
+import {LoginAction} from "../actions/custom-actions/login.action";
+import {NavigateToUrl} from "@utils/actions/custom-actions/navigateToUrl.action";
+import {CreateCaseAction} from "@utils/actions/custom-actions/createCase.action";
+import {ClickButtonAction} from "../actions/element-actions/clickButton.action";
+import {ClickRadioButton} from "../actions/element-actions/clickRadioButton.action";
+import {UploadFileAction} from "@utils/actions/element-actions/uploadFile.action";
+import {searchCaseActions} from "@utils/actions/custom-actions/searchCase.action";
 
 export class ActionRegistry {
   private static actions: Map<string, IAction> = new Map([
@@ -52,6 +53,8 @@ export class ActionRegistry {
     ['selectClaimantCircumstances', new CreateCaseAction()],
     ['provideDetailsOfRentArrears', new CreateCaseAction()],
     ['selectClaimForMoney', new CreateCaseAction()],
+    ['selectAdditionalReasonsForPossession', new CreateCaseAction()],
+    ['searchCaseById', new searchCaseActions()],
     ['selectClaimingCosts', new CreateCaseAction()]
   ]);
 

@@ -1,18 +1,27 @@
 package uk.gov.hmcts.reform.pcs.ccd.service;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.hmcts.reform.pcs.ccd.domain.AdditionalReasons;
+import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantCircumstances;
+import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimGroundEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyRole;
-import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimRepository;
 
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.mockito.Mockito.times;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -21,38 +30,56 @@ class ClaimServiceTest {
 
     @Mock
     private ClaimRepository claimRepository;
+    @Mock
+    private ClaimGroundService claimGroundService;
 
-    @InjectMocks
     private ClaimService claimService;
 
-    @Test
-    void shouldCreateMainClaimAndLinkPartyAndCase() {
-        PcsCaseEntity caseEntity = new PcsCaseEntity();
-        PartyEntity partyEntity = new PartyEntity();
-        String claimName = "Main Claim";
-
-        ClaimEntity claim = claimService.createAndLinkClaim(caseEntity, partyEntity,
-                                                            claimName, PartyRole.CLAIMANT, true);
-
-        assertThat(claim).isNotNull();
-        assertThat(claim.getSummary()).isEqualTo(claimName);
-        assertThat(claim.getPcsCase()).isSameAs(caseEntity);
-        assertThat(caseEntity.getClaims().iterator().next()).isEqualTo(claim);
-        assertThat(claim.getClaimParties().iterator().next().getParty()).isEqualTo(partyEntity);
+    @BeforeEach
+    void setUp() {
+        claimService = new ClaimService(claimRepository, claimGroundService);
     }
 
     @Test
-    void shouldSaveClaim() {
-        ClaimEntity claim = new ClaimEntity();
-        claim.setSummary("Main claim");
-        claim.setClaimantCircumstances("Some circumstances");
+    void shouldCreateMainClaim() {
+        // Given
+        String expectedClaimName = "Main Claim";
+        String expectedAdditionalReasons = "some additional reasons";
+        String claimantCircumstancesDetails = UUID.randomUUID().toString();
+        PCSCase pcsCase = mock(PCSCase.class);
+        PartyEntity claimantPartyEntity = new PartyEntity();
 
-        when(claimRepository.save(claim)).thenReturn(claim);
+        AdditionalReasons additionalReasons = mock(AdditionalReasons.class);
+        when(pcsCase.getAdditionalReasonsForPossession()).thenReturn(additionalReasons);
+        when(additionalReasons.getReasons()).thenReturn(expectedAdditionalReasons);
 
-        ClaimEntity result = claimService.saveClaim(claim);
+        when(pcsCase.getClaimingCostsWanted()).thenReturn(VerticalYesNo.YES);
+        ClaimantCircumstances claimantCircumstances = mock(ClaimantCircumstances.class);
+        when(pcsCase.getClaimantCircumstances()).thenReturn(claimantCircumstances);
+        when(claimantCircumstances.getClaimantCircumstancesDetails()).thenReturn(claimantCircumstancesDetails);
+        List<ClaimGroundEntity> expectedClaimGrounds = List.of(mock(ClaimGroundEntity.class));
+        when(claimGroundService.getGroundsWithReason(pcsCase)).thenReturn(expectedClaimGrounds);
 
-        verify(claimRepository, times(1)).save(claim);
-        assertThat(result).isEqualTo(claim);
+        // When
+        ClaimEntity createdClaimEntity = claimService.createMainClaimEntity(pcsCase, claimantPartyEntity);
+
+        // Then
+        assertThat(createdClaimEntity.getSummary()).isEqualTo(expectedClaimName);
+        assertThat(createdClaimEntity.getAdditionalReasons()).isEqualTo(expectedAdditionalReasons);
+        assertThat(createdClaimEntity.getCostsClaimed()).isTrue();
+        assertThat(createdClaimEntity.getClaimantCircumstances())
+            .isEqualTo(claimantCircumstances.getClaimantCircumstancesDetails());
+
+        Set<ClaimPartyEntity> claimParties = createdClaimEntity.getClaimParties();
+        assertThat(claimParties).hasSize(1);
+
+        ClaimPartyEntity claimParty = claimParties.iterator().next();
+        assertThat(claimParty.getParty()).isEqualTo(claimantPartyEntity);
+        assertThat(claimParty.getRole()).isEqualTo(PartyRole.CLAIMANT);
+
+        assertThat(createdClaimEntity.getClaimGrounds()).containsExactlyElementsOf(expectedClaimGrounds);
+
+        verify(claimRepository).save(createdClaimEntity);
     }
 
 }
