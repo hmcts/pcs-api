@@ -10,5 +10,6 @@ export const detailsOfRentArrears = {
   universalCreditOption: 'Universal Credit',
   paymentOtherOption: 'Other',
   paymentSourceLabel: 'Payment source',
-  paymentOptionOtherInput: 'credit'
+  paymentOptionOtherInput: 'credit',
+  other: 'Other'
 }

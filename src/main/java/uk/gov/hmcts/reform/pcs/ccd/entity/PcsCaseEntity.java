@@ -22,9 +22,9 @@ import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PaymentStatus;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicence;
-import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.ccd.model.Defendant;
 import uk.gov.hmcts.reform.pcs.ccd.model.PossessionGrounds;
+import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
 import java.util.HashSet;
 import java.util.List;
@@ -87,6 +87,11 @@ public class PcsCaseEntity {
     @Column(name = "defendant_details")
     @JdbcTypeCode(SqlTypes.JSON)
     private List<Defendant> defendants;
+
+    public void addClaim(ClaimEntity claim) {
+        claims.add(claim);
+        claim.setPcsCase(this);
+    }
 
     public void addParty(PartyEntity party) {
         parties.add(party);
