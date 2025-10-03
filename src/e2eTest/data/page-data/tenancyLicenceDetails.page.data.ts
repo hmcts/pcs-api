@@ -9,8 +9,14 @@ export const tenancyLicenceDetails = {
   demotedTenancy: 'Demoted tenancy',
   other: 'Other',
   tenancyOrLicenceStartDate: 'What date did the tenancy or licence begin?',
+  dayLabel: 'Day',
+  monthLabel: 'Month',
+  yearLabel: 'Year',
   day: '16',
   month: '04',
   year: '2021',
+  giveDetailsOfTypeOfTenancyOrLicenceAgreement: 'Give details of the type of tenancy or licence agreement that\'s in place',
   detailsOfLicence: 'This is the details of Licence or Tenancy agreement.',
+  addNew: 'Add new',
+  continue: 'Continue'
 }
