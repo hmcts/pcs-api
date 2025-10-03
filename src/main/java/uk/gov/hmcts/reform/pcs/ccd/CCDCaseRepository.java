@@ -145,7 +145,7 @@ public class CCDCaseRepository extends DecentralisedCaseRepository<PCSCase> {
             pcsCase.setNextStepsMarkdown("""
                                              <h2 class="govuk-heading-m">Provide more details about your claim</h2>
                                              Your answers will be saved from this point so you can return to your draft
-                                             later.
+                                             later. The case is in state ${[STATE]}.
                                              <br>
                                              <br>
                                              <a href="/cases/case-details/${[CASE_REFERENCE]}/trigger/%s"
