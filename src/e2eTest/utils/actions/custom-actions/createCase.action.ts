@@ -23,7 +23,6 @@ import {applications} from '@data/page-data/applications.page.data';
 import {claimingCosts} from '@data/page-data/claimingCosts.page.data';
 import {completeYourClaim} from '@data/page-data/completeYourClaim.page.data';
 import {additionalReasonsForPossession} from '@data/page-data/additionalReasonsForPossession.page.data';
-import {claimingCosts} from '@data/page-data/claimingCosts.page.data';
 
 export let caseInfo: { id: string; fid: string; state: string };
 let caseNumber: string;
@@ -62,9 +61,8 @@ export class CreateCaseAction implements IAction {
       ['selectClaimForMoney', () => this.selectClaimForMoney(fieldName)],
       ['selectClaimingCosts', () => this.selectClaimingCosts(fieldName)],
       ['selectApplications', () => this.selectApplications(fieldName)],
-      ['completingYourClaim', () => this.completingYourClaim(fieldName)]
-      ['selectAdditionalReasonsForPossession', ()=> this.selectAdditionalReasonsForPossession(fieldName)],
-      ['selectClaimingCosts', () => this.selectClaimingCosts(fieldName)]
+      ['completingYourClaim', () => this.completingYourClaim(fieldName)],
+      ['selectAdditionalReasonsForPossession', ()=> this.selectAdditionalReasonsForPossession(fieldName)]
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) throw new Error(`No action found for '${action}'`);
