@@ -603,6 +603,9 @@ public class PCSCase {
     @CCD(access = {CitizenAccess.class})
     private NoRentArrearsReasonForGrounds noRentArrearsReasonForGrounds;
 
+    @JsonUnwrapped
+    private DefendantCircumstances defendantCircumstances;
+
     private AdditionalReasons additionalReasonsForPossession;
 
     @CCD(
@@ -611,4 +614,5 @@ public class PCSCase {
         access = {CitizenAccess.class}
     )
     private VerticalYesNo applicationWithClaim;
+
 }
