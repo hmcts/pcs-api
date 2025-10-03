@@ -1,6 +1,6 @@
 import Axios from 'axios';
 import {ServiceAuthUtils} from '@hmcts/playwright-common';
-import {actionData, IAction} from '../../interfaces/action.interface';
+import {actionData, actionRecord, IAction} from '../../interfaces/action.interface';
 import {Page} from '@playwright/test';
 import {performAction, performActions, performValidation} from '@utils/controller';
 import {createCase} from '@data/page-data/createCase.page.data';
@@ -30,7 +30,7 @@ export let caseInfo: { id: string; fid: string; state: string };
 let caseNumber: string;
 
 export class CreateCaseAction implements IAction {
-  async execute(page: Page, action: string, fieldName: actionData, data?: actionData): Promise<void> {
+  async execute(page: Page, action: string, fieldName:   actionRecord | actionData, data?: actionData): Promise<void> {
     const actionsMap = new Map<string, () => Promise<void>>([
       ['createCase', () => this.createCaseAction(fieldName)],
       ['housingPossessionClaim', () => this.housingPossessionClaim()],
@@ -62,7 +62,7 @@ export class CreateCaseAction implements IAction {
       ['provideDetailsOfRentArrears', () => this.provideDetailsOfRentArrears(fieldName)],
       ['selectClaimForMoney', () => this.selectClaimForMoney(fieldName)],
       ['selectAlternativesToPossession', () => this.selectAlternativesToPossession(fieldName)],
-      ['selectHousingAct', () => this.selectHousingAct(fieldName)],
+      ['selectHousingAct', () => this.selectHousingAct(fieldName as actionRecord)],
       ['enterReasonForSuspensionOrder', () => this.enterReasonForSuspensionOrder(fieldName)],
       ['selectDefendantCircumstances', () => this.selectDefendantCircumstances(fieldName)],
       ['selectApplications', () => this.selectApplications(fieldName)],
@@ -428,14 +428,15 @@ export class CreateCaseAction implements IAction {
     await performAction('clickButton', alternativesToPossession.continue);
   }
 
-  private async selectHousingAct(option: actionData) {
-    await performAction('clickRadioButton', option);
+  private async selectHousingAct(suspension: actionRecord) {
+    await performAction('clickRadioButton', {question: suspension.question, option: suspension.option});
     await performAction('clickButton', alternativesToPossession.continue);
   }
 
   private async enterReasonForSuspensionOrder(reason: actionData) {
     await performAction('inputText', reason, reasonsForRequestingASuspensionOrder.reason);
     await performAction('clickButton', reasonsForRequestingASuspensionOrder.continue);
+  }
   private async selectApplications(option: actionData) {
     await performAction('clickRadioButton', option);
     await performAction('clickButton', applications.continue);
