@@ -30,9 +30,9 @@ import {claimingCosts} from '@data/page-data/claimingCosts.page.data';
 import {additionalReasonsForPossession} from '@data/page-data/additionalReasonsForPossession.page.data';
 import {underlesseeOrMortgageeEntitledToClaim} from '@data/page-data/underlesseeOrMortgageeEntitledToClaim.page.data';
 import {alternativesToPossession} from '@data/page-data/alternativesToPossession.page.data';
-import {housingAct} from "@data/page-data/housingAct.page.data";
-import {reasonsForRequestingADemotionOrder} from "@data/page-data/reasonsForRequestingADemotionOrder.page.data";
-import {statementOfExpressTerms} from "@data/page-data/statementOfExpressTerms.page.data";
+import {housingActDemotion} from '@data/page-data/housingActDemotion.page.data';
+import {reasonsForRequestingADemotionOrder} from '@data/page-data/reasonsForRequestingADemotionOrder.page.data';
+import {statementOfExpressTerms} from '@data/page-data/statementOfExpressTerms.page.data';
 
 test.beforeEach(async ({page}, testInfo) => {
   initializeExecutor(page);
@@ -283,8 +283,8 @@ test.describe.skip('[Successful Create Case Flow]  @Master @nightly', async () =
     await performAction('clickButton', claimantCircumstances.continue);
     await performValidation('mainHeader', alternativesToPossession.mainHeader);
     await performAction('selectAlternativesToPossession', [alternativesToPossession.demotionOfTenancy]);
-    await performValidation('mainHeader', housingAct.mainHeader);
-    await performAction('selectHousingAct', housingAct.section82AHousingAct1985);
+    await performValidation('mainHeader', housingActDemotion.mainHeader);
+    await performAction('selectHousingAct', housingActDemotion.section82AHousingAct1985);
     await performAction('selectStatementOfExpressTerms', statementOfExpressTerms.yes);
     await performValidation('mainHeader', reasonsForRequestingADemotionOrder.mainHeader);
     await performAction('enterReasonForDemotionOrder', reasonsForRequestingADemotionOrder.reason);
