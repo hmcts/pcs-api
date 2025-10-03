@@ -49,8 +49,9 @@ public class CustomSearchRequestMapper {
         JsonNode supp = root.path("supplementary_data");
         if (supp.isArray()) {
             for (JsonNode n : supp) {
-                if (n.isTextual())
+                if (n.isTextual()) {
                     req.supplementaryData.add(n.asText());
+                }
             }
         }
 
@@ -67,8 +68,9 @@ public class CustomSearchRequestMapper {
             JsonNode sortNode = nativeQuery.path("sort");
             if (sortNode.isArray()) {
                 for (JsonNode s : sortNode) {
-                    if (s.isTextual())
+                    if (s.isTextual()) {
                         nq.sort.add(s.asText());
+                    }
                 }
             }
 

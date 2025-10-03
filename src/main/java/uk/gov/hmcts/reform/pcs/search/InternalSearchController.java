@@ -57,7 +57,8 @@ public class InternalSearchController {
     // map of objects).
     //This method converts the sql result set, into our CaseDetails DTO to slot back into the existing flow.
     //This however does mean we also have to depend on ccd
-    private ArrayList<CaseDetails> mapToCaseDetails(List<Map<String, Object>> claimList) throws JsonProcessingException {
+    private ArrayList<CaseDetails> mapToCaseDetails(List<Map<String, Object>> claimList)
+        throws JsonProcessingException {
         ArrayList<CaseDetails> convertedCaseDetails = new ArrayList<>();
 
         for (Map<String, Object> individualCase : claimList) {

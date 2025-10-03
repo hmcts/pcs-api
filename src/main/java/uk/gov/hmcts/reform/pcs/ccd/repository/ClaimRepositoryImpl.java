@@ -9,7 +9,6 @@ import java.util.Map;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
-import jakarta.persistence.Query;
 
 @AllArgsConstructor
 @Repository
@@ -22,7 +21,6 @@ public class ClaimRepositoryImpl implements ClaimRepositoryCustom {
 
     @Override
     public List<Map<String, Object>> searchCaseData(String sql) {
-        List<Map<String, Object>> rows = jdbcTemplate.queryForList(sql, Map.of());
-        return rows;
+        return jdbcTemplate.queryForList(sql, Map.of());
     }
 }
