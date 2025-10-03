@@ -9,6 +9,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.AlternativesToPossession;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.SuspensionOfRightToBuy;
+import uk.gov.hmcts.reform.pcs.ccd.domain.DemotionOfTenancy;
 
 import java.util.Set;
 
@@ -23,6 +24,9 @@ public class AlternativesToPossessionOptions implements CcdPageConfiguration {
             .pageLabel("Alternatives to possession")
             .complex(PCSCase::getSuspensionOfRightToBuy)
             .readonlyNoSummary(SuspensionOfRightToBuy::getShowSuspensionOfRightToBuyHousingActsPage,NEVER_SHOW)
+            .done()
+            .complex(PCSCase::getDemotionOfTenancy)
+            .readonlyNoSummary(DemotionOfTenancy::getShowDemotionOfTenancyHousingActsPage,NEVER_SHOW)
             .done()
             .label("alternativesToPossession-info", """
                     ---
@@ -58,10 +62,20 @@ public class AlternativesToPossessionOptions implements CcdPageConfiguration {
 
         Set<AlternativesToPossession> altToPossessions = caseData.getAlternativesToPossession();
 
-        boolean showPage = altToPossessions.contains(AlternativesToPossession.SUSPENSION_OF_RIGHT_TO_BUY)
+        boolean showSuspensionPage = altToPossessions.contains(AlternativesToPossession.SUSPENSION_OF_RIGHT_TO_BUY)
             && !altToPossessions.contains(AlternativesToPossession.DEMOTION_OF_TENANCY);
 
-        caseData.getSuspensionOfRightToBuy().setShowSuspensionOfRightToBuyHousingActsPage(YesOrNo.from(showPage));
+        boolean showDemotionPage = altToPossessions.contains(AlternativesToPossession.DEMOTION_OF_TENANCY)
+            && !altToPossessions.contains(AlternativesToPossession.SUSPENSION_OF_RIGHT_TO_BUY);
+
+        if (caseData.getSuspensionOfRightToBuy() != null) {
+            caseData.getSuspensionOfRightToBuy()
+                .setShowSuspensionOfRightToBuyHousingActsPage(YesOrNo.from(showSuspensionPage));
+        }
+        if (caseData.getDemotionOfTenancy() != null) {
+            caseData.getDemotionOfTenancy()
+                .setShowDemotionOfTenancyHousingActsPage(YesOrNo.from(showDemotionPage));
+        }
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
             .data(caseData)

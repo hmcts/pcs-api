@@ -18,6 +18,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import uk.gov.hmcts.reform.pcs.ccd.domain.SuspensionOfRightToBuyHousingAct;
+import uk.gov.hmcts.reform.pcs.ccd.domain.DemotionOfTenancyHousingAct;
 
 import java.util.HashSet;
 import java.util.List;
@@ -70,6 +71,11 @@ public class ClaimEntity {
     private SuspensionOfRightToBuyHousingAct suspensionOfRightToBuyHousingAct;
 
     private String suspensionOfRightToBuyReason;
+
+    @Enumerated(EnumType.STRING)
+    private DemotionOfTenancyHousingAct demotionOfTenancyHousingAct;
+
+    private String demotionOfTenancyReason;
 
     private String additionalReasons;
 
