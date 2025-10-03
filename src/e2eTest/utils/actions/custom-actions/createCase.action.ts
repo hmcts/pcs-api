@@ -20,6 +20,7 @@ import {dailyRentAmount} from '@data/page-data/dailyRentAmount.page.data';
 import {reasonsForPossession} from '@data/page-data/reasonsForPossession.page.data';
 import {detailsOfRentArrears} from '@data/page-data/detailsOfRentArrears.page.data';
 import {defendantCircumstances} from '@data/page-data/defendantCircumstances.page.data';
+import {applications} from '@data/page-data/applications.page.data';
 import {additionalReasonsForPossession} from '@data/page-data/additionalReasonsForPossession.page.data';
 import {claimingCosts} from '@data/page-data/claimingCosts.page.data';
 
@@ -59,6 +60,7 @@ export class CreateCaseAction implements IAction {
       ['provideDetailsOfRentArrears', () => this.provideDetailsOfRentArrears(fieldName)],
       ['selectClaimForMoney', () => this.selectClaimForMoney(fieldName)],
       ['selectDefendantCircumstances', () => this.selectDefendantCircumstances(fieldName)],
+      ['selectApplications', () => this.selectApplications(fieldName)],
       ['selectAdditionalReasonsForPossession', ()=> this.selectAdditionalReasonsForPossession(fieldName)],
       ['selectClaimingCosts', () => this.selectClaimingCosts(fieldName)]
     ]);
@@ -412,6 +414,11 @@ export class CreateCaseAction implements IAction {
   private async selectClaimingCosts(option: actionData) {
     await performAction('clickRadioButton', option);
     await performAction('clickButton', claimingCosts.continue);
+  }
+
+  private async selectApplications(option: actionData) {
+    await performAction('clickRadioButton', option);
+    await performAction('clickButton', applications.continue);
   }
 
   private async selectJurisdictionCaseTypeEvent() {

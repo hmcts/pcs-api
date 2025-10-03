@@ -56,6 +56,8 @@ public class ClaimEntity {
     private Set<ClaimGroundEntity> claimGrounds = new HashSet<>();
 
     private String summary;
+    
+    private Boolean applicationWithClaim;
 
     private String defendantCircumstances;
 

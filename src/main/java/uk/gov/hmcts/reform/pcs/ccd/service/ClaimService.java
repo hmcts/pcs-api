@@ -10,6 +10,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimGroundEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimRepository;
+import uk.gov.hmcts.reform.pcs.ccd.utils.YesOrNoToBoolean;
 
 import java.util.List;
 
@@ -33,6 +34,8 @@ public class ClaimService {
             .costsClaimed(pcsCase.getClaimingCostsWanted().toBoolean())
             .defendantCircumstances(defendantCircumstances != null
                                         ? defendantCircumstances.getDefendantCircumstancesInfo() : null)
+            .applicationWithClaim(YesOrNoToBoolean.convert(pcsCase.getApplicationWithClaim()))
+
             .build();
 
         claimEntity.addParty(claimantPartyEntity, PartyRole.CLAIMANT);
