@@ -112,6 +112,9 @@ Playwright 1.30+ | TypeScript 4.9+
 | selectAdditionalReasonsForPossession| `performAction('selectAdditionalReasonsForPossession', additionalReasonsForPossession.no)`                                                                                                                 |
 | searchCaseFromCaseList              | `performAction('searchCaseFromCaseList', caseData.id)`                                                                                                                                                     |
 | selectClaimingCosts                 | `performAction('selectClaimingCosts', claimingCosts.yes)`                                                                                                                                                  |
+| selectAlternativesToPossession      | `performAction('selectAlternativesToPossession', {question: suspensionOrDemotion, option: [alternativesToPossession.suspensionOfRightToBuy]})`                                                             |
+| selectHousingAct                    | `performAction('selectHousingAct', {question: whichSection,option: housingAct.suspensionOfRightToBuy.section6AHousingAct1988})`                                                                            |
+| enterReasonForSuspensionOrder       | `performAction('enterReasonForSuspensionOrder', reasonsForRequestingASuspensionOrder.question)`                                                                                                            |
 ### Validations
 | Validation                 | Example Usage                                                                                                                        |
 |----------------------------|--------------------------------------------------------------------------------------------------------------------------------------|

@@ -56,6 +56,9 @@ export class ActionRegistry {
     ['selectDefendantCircumstances', new CreateCaseAction()],
     ['selectApplications', new CreateCaseAction()],
     ['selectAdditionalReasonsForPossession', new CreateCaseAction()],
+    ['selectAlternativesToPossession', new CreateCaseAction()],
+    ['selectHousingAct', new CreateCaseAction()],
+    ['enterReasonForSuspensionOrder', new CreateCaseAction()],
     ['searchCaseFromCaseList', new searchCaseActions()],
     ['selectClaimingCosts', new CreateCaseAction()]
   ]);
