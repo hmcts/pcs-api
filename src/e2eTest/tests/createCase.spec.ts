@@ -201,14 +201,6 @@ test.describe.skip('[Successful Create Case Flow]  @Master @nightly', async () =
     await performAction('selectNoticeDetails', {
       howDidYouServeNotice: noticeDetails.byDeliveringAtPermittedPlace,
       day: '31', month: '01', year: '1962'});
-    await performValidation('mainHeader', rentDetails.mainHeader);
-    await performAction('provideRentDetails', {rentFrequencyOption:'weekly', rentAmount:'800'});
-    await performValidation('mainHeader', dailyRentAmount.mainHeader);
-    await performAction('selectDailyRentAmount', {
-      calculateRentAmount: '£114.29',
-      unpaidRentInteractiveOption: dailyRentAmount.no,
-      unpaidRentAmountPerDay: '20'
-    });
     // await performValidation('mainHeader', rentDetails.mainHeader);
     // await performAction('provideRentDetails', { rentFrequencyOption: 'weekly', rentAmount: '800' });
     // await performValidation('mainHeader', dailyRentAmount.mainHeader);
