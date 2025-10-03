@@ -9,4 +9,5 @@ export const claimantType =
     other: 'Other',
     registeredProviderForSocialHousing: 'Registered provider of social housing',
     header: 'There is a problem',
+    continue: 'Continue'
   };
