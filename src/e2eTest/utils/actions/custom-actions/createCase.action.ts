@@ -123,7 +123,7 @@ export class CreateCaseAction implements IAction {
 
   private async selectClaimType(caseData: actionData) {
     await performAction('clickRadioButton', caseData);
-    await performAction('clickButton', claimType.continue);
+    await performAction('clickButtonAndVerifyPageNavigation', claimType.continue, claimantName.mainHeader);
   }
 
   private async selectGroundsForPossession(caseData: actionData) {
