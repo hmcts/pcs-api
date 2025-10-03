@@ -58,6 +58,8 @@ public class ClaimEntity {
     
     private Boolean applicationWithClaim;
 
+    private String defendantCircumstances;
+
     private Boolean costsClaimed;
 
     private String additionalReasons;

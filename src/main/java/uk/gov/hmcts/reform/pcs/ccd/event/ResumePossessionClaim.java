@@ -40,6 +40,7 @@ import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ClaimingCosts;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ContactPreferences;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.CompletingYourClaim;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.DailyRentAmount;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.DefendantCircumstancesPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.DefendantsDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.GeneralApplication;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.GroundForPossessionAdditionalGrounds;
@@ -140,6 +141,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             .add(new RentArrears())
             .add(new MoneyJudgment())
             .add(new ClaimantCircumstances())
+            .add(new DefendantCircumstancesPage())
             .add(new ClaimingCosts())
             .add(new AdditionalReasonsForPossession())
             .add(new EntitledToClaimRelief())

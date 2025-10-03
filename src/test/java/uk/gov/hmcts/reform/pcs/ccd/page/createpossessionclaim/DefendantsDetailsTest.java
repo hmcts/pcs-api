@@ -7,6 +7,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
+import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantCircumstances;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
@@ -55,5 +56,28 @@ class DefendantsDetailsTest extends BasePageTest {
 
         // Then
         assertThat(response.getErrors()).isEqualTo(expectedValidationErrors);
+
+    }
+
+    @Test
+    void shouldSetDefendantTermPossessive() {
+        // Given
+        DefendantCircumstances defendantCircumstances = new DefendantCircumstances();
+        String expectedTermPossessive = "defendants'";
+        DefendantDetails defendantDetails = DefendantDetails.builder()
+            .addressSameAsPossession(VerticalYesNo.YES)
+            .build();
+
+        PCSCase caseData = PCSCase.builder()
+            .defendant1(defendantDetails)
+            .defendantCircumstances(defendantCircumstances)
+            .build();
+
+        // When
+        AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
+
+        // Then
+        assertThat(expectedTermPossessive).isEqualTo(response.getData()
+                                                .getDefendantCircumstances().getDefendantTermPossessive());
     }
 }
