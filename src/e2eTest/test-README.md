@@ -114,8 +114,8 @@ Playwright 1.30+ | TypeScript 4.9+
 | selectClaimingCosts                  | `performAction('selectClaimingCosts', claimingCosts.yes)`                                                                                                                                                  |
 | uploadAdditionalDocs                 | `performAction('uploadAdditionalDocs', {question:'sample', option:'no'})`                                                                                                                                  |
 ### Validations
-| Validation          | Example Usage |
-|------------------|---------------|
+| Validation                 | Example Usage                                                                                                                        |
+|----------------------------|--------------------------------------------------------------------------------------------------------------------------------------|
 | text                       | `performValidation('text', 'testElement')`                                                                                           |
 | bannerAlert                | `performValidation('bannerAlert', {message: "Case has been created."})`                                                              |
 | formLabelValue             | `performValidation('formLabelValue',  "Applicant's forename", {value:'TestUser'})`                                                   |
