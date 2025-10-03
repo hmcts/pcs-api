@@ -6,6 +6,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.pcs.ccd.domain.AdditionalReasons;
+import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantCircumstances;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantCircumstances;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
@@ -18,6 +19,7 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimRepository;
 
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
@@ -44,7 +46,7 @@ class ClaimServiceTest {
         // Given
         String expectedClaimName = "Main Claim";
         String expectedAdditionalReasons = "some additional reasons";
-
+        String claimantCircumstancesDetails = UUID.randomUUID().toString();
         PCSCase pcsCase = mock(PCSCase.class);
         PartyEntity claimantPartyEntity = new PartyEntity();
 
@@ -53,8 +55,10 @@ class ClaimServiceTest {
         when(additionalReasons.getReasons()).thenReturn(expectedAdditionalReasons);
 
         when(pcsCase.getClaimingCostsWanted()).thenReturn(VerticalYesNo.YES);
+        ClaimantCircumstances claimantCircumstances = mock(ClaimantCircumstances.class);
+        when(pcsCase.getClaimantCircumstances()).thenReturn(claimantCircumstances);
+        when(claimantCircumstances.getClaimantCircumstancesDetails()).thenReturn(claimantCircumstancesDetails);
         when(pcsCase.getApplicationWithClaim()).thenReturn(VerticalYesNo.YES);
-
         List<ClaimGroundEntity> expectedClaimGrounds = List.of(mock(ClaimGroundEntity.class));
         when(claimGroundService.getGroundsWithReason(pcsCase)).thenReturn(expectedClaimGrounds);
 
@@ -66,6 +70,8 @@ class ClaimServiceTest {
         assertThat(createdClaimEntity.getAdditionalReasons()).isEqualTo(expectedAdditionalReasons);
         assertThat(createdClaimEntity.getCostsClaimed()).isTrue();
         assertThat(createdClaimEntity.getApplicationWithClaim()).isTrue();
+        assertThat(createdClaimEntity.getClaimantCircumstances())
+            .isEqualTo(claimantCircumstances.getClaimantCircumstancesDetails());
 
         Set<ClaimPartyEntity> claimParties = createdClaimEntity.getClaimParties();
         assertThat(claimParties).hasSize(1);
@@ -96,6 +102,7 @@ class ClaimServiceTest {
         when(additionalReasons.getReasons()).thenReturn("example reasons");
         when(pcsCase.getClaimingCostsWanted()).thenReturn(VerticalYesNo.NO);
         when(claimGroundService.getGroundsWithReason(pcsCase)).thenReturn(List.of());
+        when(pcsCase.getClaimantCircumstances()).thenReturn(mock(ClaimantCircumstances.class));
 
         // When
         ClaimEntity createdClaimEntity = claimService.createMainClaimEntity(pcsCase, claimantPartyEntity);
