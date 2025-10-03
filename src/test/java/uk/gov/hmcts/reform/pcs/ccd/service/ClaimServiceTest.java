@@ -52,6 +52,7 @@ class ClaimServiceTest {
         when(additionalReasons.getReasons()).thenReturn(expectedAdditionalReasons);
 
         when(pcsCase.getClaimingCostsWanted()).thenReturn(VerticalYesNo.YES);
+        when(pcsCase.getApplicationWithClaim()).thenReturn(VerticalYesNo.YES);
 
         List<ClaimGroundEntity> expectedClaimGrounds = List.of(mock(ClaimGroundEntity.class));
         when(claimGroundService.getGroundsWithReason(pcsCase)).thenReturn(expectedClaimGrounds);
@@ -63,6 +64,7 @@ class ClaimServiceTest {
         assertThat(createdClaimEntity.getSummary()).isEqualTo(expectedClaimName);
         assertThat(createdClaimEntity.getAdditionalReasons()).isEqualTo(expectedAdditionalReasons);
         assertThat(createdClaimEntity.getCostsClaimed()).isTrue();
+        assertThat(createdClaimEntity.getApplicationWithClaim()).isTrue();
 
         Set<ClaimPartyEntity> claimParties = createdClaimEntity.getClaimParties();
         assertThat(claimParties).hasSize(1);
