@@ -24,6 +24,7 @@ import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.DefendantsDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.NoticeDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ResumeClaim;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.TenancyLicenceDetails;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.UploadAdditionalDocumentsDetails;
 import uk.gov.hmcts.reform.pcs.ccd.service.ClaimService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
@@ -79,6 +80,8 @@ class ResumePossessionClaimTest extends BaseEventTest {
     private UserInfo userDetails;
     @Mock
     private TenancyLicenceDetails tenancyLicenceDetails;
+    @Mock
+    private UploadAdditionalDocumentsDetails uploadAdditionalDocumentsDetails;
 
     @BeforeEach
     void setUp() {
@@ -94,7 +97,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
             partyService, claimService,
             savingPageBuilderFactory, resumeClaim,
             unsubmittedCaseDataService, noticeDetails,
-            tenancyLicenceDetails, contactPreferences,
+            uploadAdditionalDocumentsDetails, tenancyLicenceDetails, contactPreferences,
             defendantsDetails
         );
 

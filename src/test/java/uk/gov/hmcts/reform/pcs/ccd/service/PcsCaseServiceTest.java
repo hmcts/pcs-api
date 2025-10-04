@@ -48,14 +48,23 @@ class PcsCaseServiceTest {
     @Captor
     private ArgumentCaptor<PcsCaseEntity> pcsCaseEntityCaptor;
 
+    @Mock
+    private PartyDocumentsService partyDocumentsService;
+
     private PcsCaseService underTest;
 
     @BeforeEach
     void setUp() {
         MapperConfig config = new MapperConfig();
         modelMapper = spy(config.modelMapper());
-
-        underTest = new PcsCaseService(pcsCaseRepository, pcsCaseMergeService, modelMapper, tenancyLicenceService);
+        tenancyLicenceService = mock(TenancyLicenceService.class);
+        underTest = new PcsCaseService(
+            pcsCaseRepository,
+            pcsCaseMergeService,
+            modelMapper,
+            tenancyLicenceService,
+            partyDocumentsService
+        );
     }
 
     @Test
@@ -173,7 +182,8 @@ class PcsCaseServiceTest {
         PcsCaseEntity actualPcsCaseEntity = underTest.loadCase(CASE_REFERENCE);
 
         // Then
-        assertThat(actualPcsCaseEntity).isEqualTo(expectedPcsCaseEntity);
+        verify(pcsCaseRepository).findByCaseReference(CASE_REFERENCE);
+        assertThat(actualPcsCaseEntity).isSameAs(expectedPcsCaseEntity);
     }
 
     @Test
