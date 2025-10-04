@@ -33,6 +33,9 @@ import {defendantCircumstances} from '@data/page-data/defendantCircumstances.pag
 import {applications} from '@data/page-data/applications.page.data';
 import {additionalReasonsForPossession} from '@data/page-data/additionalReasonsForPossession.page.data';
 import {claimingCosts} from '@data/page-data/claimingCosts.page.data';
+import {alternativesToPossession} from '@data/page-data/alternativesToPossession.page.data';
+import {reasonsForRequestingADemotionOrder} from '@data/page-data/reasonsForRequestingADemotionOrder.page.data';
+import {statementOfExpressTerms} from '@data/page-data/statementOfExpressTerms.page.data';
 import {home} from '@data/page-data/home.page.data';
 import {search} from '@data/page-data/search.page.data';
 
@@ -70,6 +73,11 @@ export class CreateCaseAction implements IAction {
       ['provideRentDetails', () => this.provideRentDetails(fieldName)],
       ['selectDailyRentAmount', () => this.selectDailyRentAmount(fieldName)],
       ['provideDetailsOfRentArrears', () => this.provideDetailsOfRentArrears(fieldName)],
+      ['selectClaimForMoney', () => this.selectClaimForMoney(fieldName)],
+      ['selectAlternativesToPossession', () => this.selectAlternativesToPossession(fieldName)],
+      ['selectHousingAct', () => this.selectHousingAct(fieldName)],
+      ['selectStatementOfExpressTerms', () => this.selectStatementOfExpressTerms(fieldName)],
+      ['enterReasonForDemotionOrder', () => this.enterReasonForDemotionOrder(fieldName)],
       ['selectMoneyJudgment', () => this.selectMoneyJudgment(fieldName)],
       ['selectDefendantCircumstances', () => this.selectDefendantCircumstances(fieldName)],
       ['selectApplications', () => this.selectApplications(fieldName)],
@@ -441,6 +449,31 @@ export class CreateCaseAction implements IAction {
   private async selectClaimingCosts(option: actionData) {
     await performAction('clickRadioButton', option);
     await performAction('clickButton', claimingCosts.continue);
+  }
+
+  private async selectAlternativesToPossession(alternatives: actionData) {
+    if(alternatives){
+      await performAction('check', alternatives);
+    }
+    await performAction('clickButton', alternativesToPossession.continue);
+  }
+
+  private async selectHousingAct(option: actionData) {
+    await performAction('clickRadioButton', option);
+    await performAction('clickButton', alternativesToPossession.continue);
+  }
+
+  private async selectStatementOfExpressTerms(option: actionData) {
+    await performAction('clickRadioButton', option);
+    if(option == 'Yes'){
+      await performAction('inputText', statementOfExpressTerms.giveDetailsOfTermsLabel, statementOfExpressTerms.sampleTestReason);
+    }
+    await performAction('clickButton', alternativesToPossession.continue);
+  }
+
+  private async enterReasonForDemotionOrder(reason: actionData) {
+    await performAction('inputText', reason, reasonsForRequestingADemotionOrder.reason);
+    await performAction('clickButton', reasonsForRequestingADemotionOrder.continue);
   }
 
   private async selectApplications(option: actionData) {
