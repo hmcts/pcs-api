@@ -1,24 +1,20 @@
 import * as process from 'node:process';
+
 import { defineConfig, devices } from '@playwright/test';
 
 const DEFAULT_VIEWPORT = { width: 1920, height: 1080 };
 
 module.exports = defineConfig({
   testDir: 'tests/',
+  /* Run tests in files in parallel */
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
-  retries: process.env.CI ? 2 : 0,  // retry on CI
+  /* Retry on CI only */
+  retries: process.env.CI ? 1 : 0,
   timeout: 60 * 1000,
   expect: { timeout: 20 * 1000 },
-  use: {
-    actionTimeout: 30 * 1000,
-    navigationTimeout: 20 * 1000,
-    screenshot: 'only-on-failure',       // capture screenshot on any failed attempt
-    video: 'retain-on-failure',          // capture video on any failed attempt
-    trace: 'on-first-retry',             // keep trace only on first retry
-    headless: !!process.env.CI,
-    viewport: DEFAULT_VIEWPORT,
-  },
+  use: { actionTimeout: 30 * 1000, navigationTimeout: 20 * 1000 },
+  /* Report slow tests if they take longer than 5 mins */
   reportSlowTests: { max: 15, threshold: 5 * 60 * 1000 },
   globalSetup: require.resolve('./config/global-setup.config'),
   globalTeardown: require.resolve('./config/global-teardown.config'),
@@ -32,8 +28,6 @@ module.exports = defineConfig({
         environmentInfo: {
           os_version: process.version,
         },
-        // this ensures attachments from all failed retries are included
-        attachments: { includeAllRetries: true },
       },
     ],
   ],
@@ -43,18 +37,28 @@ module.exports = defineConfig({
       use: {
         ...devices['Desktop Chrome'],
         channel: 'chrome',
+        screenshot: 'only-on-failure',
+        video: 'retain-on-failure',
+        trace: 'on-first-retry',
+        javaScriptEnabled: true,
+        viewport: DEFAULT_VIEWPORT,
+        headless: !!process.env.CI,
       },
     },
-    ...(process.env.CI
-      ? [
-        {
-          name: 'firefox',
-          use: {
-            ...devices['Desktop Firefox'],
-            channel: 'firefox',
-          },
-        },
-      ]
-      : []),
-  ],
+    ...(process.env.CI ? [
+      {
+        name: 'firefox',
+        use: {
+          ...devices["Desktop Firefox"],
+          channel: 'firefox',
+          screenshot: 'only-on-failure' as const,
+          video: 'retain-on-failure' as const,
+          trace: 'on-first-retry' as const,
+          javaScriptEnabled: true,
+          viewport: DEFAULT_VIEWPORT,
+          headless: !!process.env.CI,
+        }
+      }
+    ] : [])
+  ]
 });
