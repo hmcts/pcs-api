@@ -50,11 +50,13 @@ export class ActionRegistry {
     ['selectRentArrearsOrBreachOfTenancy', new CreateCaseAction()],
     ['provideRentDetails', new CreateCaseAction()],
     ['selectDailyRentAmount', new CreateCaseAction()],
+    ['selectClaimantCircumstances', new CreateCaseAction()],
     ['provideDetailsOfRentArrears', new CreateCaseAction()],
     ['selectMoneyJudgment', new CreateCaseAction()],
     ['selectClaimingCosts', new CreateCaseAction()],
     ['selectDefendantCircumstances', new CreateCaseAction()],
     ['selectApplications', new CreateCaseAction()],
+    ['completingYourClaim', new CreateCaseAction()],
     ['selectAdditionalReasonsForPossession', new CreateCaseAction()],
     ['searchCaseFromCaseList', new searchCaseActions()],
     ['selectClaimingCosts', new CreateCaseAction()]
