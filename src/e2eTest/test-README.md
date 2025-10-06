@@ -115,6 +115,7 @@ Playwright 1.30+ | TypeScript 4.9+
 | selectAlternativesToPossession      | `performAction('selectAlternativesToPossession', {question: suspensionOrDemotion, option: [alternativesToPossession.suspensionOfRightToBuy]})`                                                             |
 | selectHousingAct                    | `performAction('selectHousingAct', {question: whichSection,option: housingAct.suspensionOfRightToBuy.section6AHousingAct1988})`                                                                            |
 | enterReasonForSuspensionOrder       | `performAction('enterReasonForSuspensionOrder', reasonsForRequestingASuspensionOrder.question)`                                                                                                            |
+| completingYourClaim                 | `performAction('completingYourClaim', 'yes')`                                                                                                                                                              |
 ### Validations
 | Validation                 | Example Usage                                                                                                                        |
 |----------------------------|--------------------------------------------------------------------------------------------------------------------------------------|
