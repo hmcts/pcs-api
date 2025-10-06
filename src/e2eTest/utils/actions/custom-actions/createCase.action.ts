@@ -31,6 +31,7 @@ import {moneyJudgment} from '@data/page-data/moneyJudgment.page.data';
 import {whatAreYourGroundsForPossession} from '@data/page-data/whatAreYourGroundsForPossession.page.data';
 import {defendantCircumstances} from '@data/page-data/defendantCircumstances.page.data';
 import {applications} from '@data/page-data/applications.page.data';
+import {claimantCircumstances} from '@data/page-data/claimantCircumstances.page.data';
 import {claimingCosts} from '@data/page-data/claimingCosts.page.data';
 import {completeYourClaim} from '@data/page-data/completeYourClaim.page.data';
 import {additionalReasonsForPossession} from '@data/page-data/additionalReasonsForPossession.page.data';
@@ -40,6 +41,7 @@ import {userIneligible} from '@data/page-data/userIneligible.page.data';
 
 export let caseInfo: { id: string; fid: string; state: string };
 let caseNumber: string;
+export let claimantsName: string;
 
 export class CreateCaseAction implements IAction {
   async execute(page: Page, action: string, fieldName: actionData, data?: actionData): Promise<void> {
@@ -55,7 +57,7 @@ export class CreateCaseAction implements IAction {
       ['selectJurisdictionCaseTypeEvent', () => this.selectJurisdictionCaseTypeEvent()],
       ['enterTestAddressManually', () => this.enterTestAddressManually()],
       ['selectClaimType', () => this.selectClaimType(fieldName)],
-      ['selectClaimantName', () => this.selectClaimantName(fieldName)],
+      ['selectClaimantName', () => this.selectClaimantName(page,fieldName)],
       ['selectContactPreferences', () => this.selectContactPreferences(fieldName)],
       ['selectRentArrearsPossessionGround', () => this.selectRentArrearsPossessionGround(fieldName)],
       ['selectGroundsForPossession', () => this.selectGroundsForPossession(fieldName)],
@@ -71,6 +73,7 @@ export class CreateCaseAction implements IAction {
       ['selectRentArrearsOrBreachOfTenancy', () => this.selectRentArrearsOrBreachOfTenancy(fieldName)],
       ['provideRentDetails', () => this.provideRentDetails(fieldName)],
       ['selectDailyRentAmount', () => this.selectDailyRentAmount(fieldName)],
+      ['selectClaimantCircumstances', () => this.selectClaimantCircumstances(fieldName)],
       ['provideDetailsOfRentArrears', () => this.provideDetailsOfRentArrears(fieldName)],
       ['selectMoneyJudgment', () => this.selectMoneyJudgment(fieldName)],
       ['selectDefendantCircumstances', () => this.selectDefendantCircumstances(fieldName)],
@@ -139,6 +142,13 @@ export class CreateCaseAction implements IAction {
     }
   }
 
+  private async extractClaimantName(page: Page, caseData: string): Promise<string> {
+    const loc = page.locator(`dl.case-field > dt.case-field__label:has-text("${caseData}")`)
+      .locator('xpath=../..')
+      .locator('span.text-16');
+    return await loc.innerText();
+  }
+
   private async selectGroundsForPossession(caseData: actionData) {
     const possessionGrounds = caseData as {
       groundsRadioInput: string;
@@ -171,11 +181,12 @@ export class CreateCaseAction implements IAction {
     await performAction('clickButton', borderPostcode.submit);
   }
 
-  private async selectClaimantName(caseData: actionData) {
+  private async selectClaimantName(page: Page, caseData: actionData) {
     await performAction('clickRadioButton', caseData);
     if(caseData == claimantName.no){
       await performAction('inputText', claimantName.whatIsCorrectClaimantName, claimantName.correctClaimantNameInput);
     }
+    claimantsName = caseData == "No" ? claimantName.correctClaimantNameInput : await this.extractClaimantName(page, claimantName.yourClaimantNameRegisteredWithHMCTS);
     await performAction('clickButtonAndVerifyPageNavigation', claimantName.continue, contactPreferences.mainHeader);
   }
 
@@ -424,6 +435,24 @@ export class CreateCaseAction implements IAction {
     await performAction('clickButton', dailyRentAmount.continue);
   }
 
+  private async selectClaimantCircumstances(claimantCircumstance: actionData) {
+    const claimData = claimantCircumstance as {
+      circumstanceOption: string,
+      claimantInput: string
+    };
+    const nameClaimant = claimantsName.substring(claimantsName.length - 1) == 's' ? `${claimantsName}'` : `${claimantsName}'s`;
+    const claimOption = claimData.circumstanceOption;
+    await performAction('clickRadioButton', {
+      question: claimantCircumstances.claimantCircumstanceInfo.replace("Claimants", nameClaimant),
+      option: claimOption
+    }
+    );
+    if (claimOption == claimantCircumstances.yes) {
+      await performAction('inputText', claimantCircumstances.claimantCircumstanceInfoTextAreaLabel.replace("Claimants", nameClaimant), claimData.claimantInput);
+    }
+    await performAction('clickButton', claimantCircumstances.continue);
+  }
+
   private async provideDetailsOfRentArrears(rentArrears: actionData) {
     const rentArrearsData = rentArrears as {
       files?: string[],
@@ -465,7 +494,7 @@ export class CreateCaseAction implements IAction {
     await performAction('clickRadioButton', option);
     await performAction('clickButton', completeYourClaim.continue);
   }
-  
+
   private async selectJurisdictionCaseTypeEvent() {
     await performActions('Case option selection'
       , ['select', createCase.jurisdictionLabel, createCase.possessionsJurisdiction]
