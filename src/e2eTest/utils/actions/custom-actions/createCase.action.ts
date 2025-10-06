@@ -35,6 +35,7 @@ import {additionalReasonsForPossession} from '@data/page-data/additionalReasonsF
 import {claimingCosts} from '@data/page-data/claimingCosts.page.data';
 import {home} from '@data/page-data/home.page.data';
 import {search} from '@data/page-data/search.page.data';
+import {userIneligible} from '@data/page-data/userIneligible.page.data';
 
 export let caseInfo: { id: string; fid: string; state: string };
 let caseNumber: string;
@@ -118,12 +119,22 @@ export class CreateCaseAction implements IAction {
 
   private async selectClaimantType(caseData: actionData) {
     await performAction('clickRadioButton', caseData);
-    await performAction('clickButtonAndVerifyPageNavigation', claimantType.continue, claimType.mainHeader);
+    if(caseData === claimantType.registeredProviderForSocialHousing || caseData === claimantType.registeredCommunityLandlord){
+      await performAction('clickButtonAndVerifyPageNavigation', claimantType.continue, claimType.mainHeader);
+    }
+    else{
+      await performAction('clickButtonAndVerifyPageNavigation', claimantType.continue, userIneligible.mainHeader);
+    }
   }
 
   private async selectClaimType(caseData: actionData) {
     await performAction('clickRadioButton', caseData);
-    await performAction('clickButtonAndVerifyPageNavigation', claimType.continue, claimantName.mainHeader);
+    if(caseData === claimType.no){
+      await performAction('clickButtonAndVerifyPageNavigation', claimType.continue, claimantName.mainHeader);
+    }
+    else{
+      await performAction('clickButtonAndVerifyPageNavigation', claimantType.continue, userIneligible.mainHeader);
+    }
   }
 
   private async selectGroundsForPossession(caseData: actionData) {

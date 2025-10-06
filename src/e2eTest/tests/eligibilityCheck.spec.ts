@@ -113,7 +113,6 @@ test.describe('[Eligibility checks for cross and non cross border postcodes] @Ma
     });
     await performAction('clickButtonAndVerifyPageNavigation', provideMoreDetailsOfClaim.continue, claimantType.mainHeader);
     await performAction('selectClaimantType', claimantType.mortgageLender);
-    await performValidation('mainHeader', userIneligible.mainHeader);
     await performAction('clickButton', userIneligible.continue);
     await performValidation('errorMessage', {
       header: userIneligible.eventNotCreated, message: userIneligible.unableToProceed
@@ -131,7 +130,6 @@ test.describe('[Eligibility checks for cross and non cross border postcodes] @Ma
     });
     await performAction('clickButtonAndVerifyPageNavigation', provideMoreDetailsOfClaim.continue, claimantType.mainHeader);
     await performAction('selectClaimantType', claimantType.privateLandlord);
-    await performValidation('mainHeader', userIneligible.mainHeader);
     await performAction('clickButton', userIneligible.continue);
     await performValidation('errorMessage', {
       header: userIneligible.eventNotCreated, message: userIneligible.unableToProceed
@@ -150,7 +148,6 @@ test.describe('[Eligibility checks for cross and non cross border postcodes] @Ma
     await performAction('clickButtonAndVerifyPageNavigation', provideMoreDetailsOfClaim.continue, claimantType.mainHeader);
     await performAction('selectClaimantType', claimantType.registeredProviderForSocialHousing);
     await performAction('selectClaimType', claimType.yes);
-    await performValidation('mainHeader', userIneligible.mainHeader);
     await performAction('clickButton', userIneligible.continue);
     await performValidation('errorMessage', {
       header: userIneligible.eventNotCreated, message: userIneligible.unableToProceed
