@@ -3,6 +3,7 @@ import * as process from 'node:process';
 import { defineConfig, devices } from '@playwright/test';
 
 const DEFAULT_VIEWPORT = { width: 1920, height: 1080 };
+export const waitForCustomTimeout = 3000 as const;
 
 module.exports = defineConfig({
   testDir: 'tests/',

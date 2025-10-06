@@ -1,5 +1,6 @@
 import { Page, Locator } from '@playwright/test';
 import { IAction } from '../../interfaces/action.interface';
+import { waitForCustomTimeout } from '../../../playwright.config';
 
 export class ClickButtonAction implements IAction {
   async execute(page: Page, action: string, buttonText: string , actionParams: string): Promise<void> {
@@ -30,7 +31,7 @@ export class ClickButtonAction implements IAction {
         this.clickButton(page, button);
         if(!await pageElement.isVisible()) {
           //Adding sleep to slow down execution when the application behaves abnormally
-          await page.waitForTimeout(3000);
+          await page.waitForTimeout(waitForCustomTimeout);
         }
       }
       else{
