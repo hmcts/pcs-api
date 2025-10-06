@@ -7,6 +7,7 @@ import uk.gov.hmcts.ccd.sdk.api.DecentralisedConfigBuilder;
 import uk.gov.hmcts.ccd.sdk.api.Event;
 import uk.gov.hmcts.ccd.sdk.api.EventPayload;
 import uk.gov.hmcts.ccd.sdk.api.Permission;
+import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
@@ -43,7 +44,7 @@ public class ProcessClaimPayment implements CCDConfig<PCSCase, State, UserRole> 
             .add(new ClaimPayment());
     }
 
-    private void submit(EventPayload<PCSCase, State> payload) {
+    private SubmitResponse submit(EventPayload<PCSCase, State> payload) {
 
         PCSCase pcsCase = payload.caseData();
         pcsCase.setPaymentStatus(PaymentStatus.PAID);
@@ -52,6 +53,8 @@ public class ProcessClaimPayment implements CCDConfig<PCSCase, State, UserRole> 
         // Note: For the real payment implementation, we should make the
         // payments at the claim level rather than the case
         pcsCaseService.patchCase(payload.caseReference(), pcsCase);
+
+        return SubmitResponse.builder().build();
     }
 
 }

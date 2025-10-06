@@ -15,7 +15,6 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -56,6 +55,10 @@ public class ClaimEntity {
     private Set<ClaimGroundEntity> claimGrounds = new HashSet<>();
 
     private String summary;
+    
+    private Boolean applicationWithClaim;
+
+    private String defendantCircumstances;
 
     private Boolean costsClaimed;
 
