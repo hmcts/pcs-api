@@ -72,7 +72,7 @@ export class CreateCaseAction implements IAction {
       ['provideRentDetails', () => this.provideRentDetails(fieldName)],
       ['selectDailyRentAmount', () => this.selectDailyRentAmount(fieldName)],
       ['provideDetailsOfRentArrears', () => this.provideDetailsOfRentArrears(fieldName)],
-      ['selectAlternativesToPossession', () => this.selectAlternativesToPossession(fieldName)],
+      ['selectAlternativesToPossession', () => this.selectAlternativesToPossession(fieldName as actionRecord)],
       ['selectHousingAct', () => this.selectHousingAct(fieldName as actionRecord)],
       ['enterReasonForSuspensionOrder', () => this.enterReasonForSuspensionOrder(fieldName)],
       ['selectMoneyJudgment', () => this.selectMoneyJudgment(fieldName)],
@@ -448,9 +448,9 @@ export class CreateCaseAction implements IAction {
     await performAction('clickButton', claimingCosts.continue);
   }
 
-  private async selectAlternativesToPossession(alternatives: actionData) {
+  private async selectAlternativesToPossession(alternatives: actionRecord) {
     if(alternatives){
-      await performAction('check', alternatives);
+      await performAction('check', {question: alternatives.question, option: alternatives.option});
     }
     await performAction('clickButton', alternativesToPossession.continue);
   }
