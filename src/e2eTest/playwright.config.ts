@@ -5,7 +5,7 @@ import { defineConfig, devices } from '@playwright/test';
 const DEFAULT_VIEWPORT = { width: 1920, height: 1080 };
 export const waitForCustomTimeout = 3000 as const;
 
-module.exports = defineConfig({
+export default defineConfig({
   testDir: 'tests/',
   /* Run tests in files in parallel */
   fullyParallel: true,
