@@ -5,5 +5,6 @@ export const claimantName =
     yes: 'Yes',
     no: 'No',
     whatIsCorrectClaimantName: 'What is the correct claimant name?',
-    correctClaimantNameInput: 'Test claimant name'
+    correctClaimantNameInput: 'Test claimant name',
+    continue: 'Continue'
   }
