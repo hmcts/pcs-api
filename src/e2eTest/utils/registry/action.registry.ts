@@ -56,6 +56,7 @@ export class ActionRegistry {
     ['selectClaimingCosts', new CreateCaseAction()],
     ['selectDefendantCircumstances', new CreateCaseAction()],
     ['selectApplications', new CreateCaseAction()],
+    ['completingYourClaim', new CreateCaseAction()],
     ['selectAdditionalReasonsForPossession', new CreateCaseAction()],
     ['searchCaseFromCaseList', new searchCaseActions()],
     ['selectClaimingCosts', new CreateCaseAction()]

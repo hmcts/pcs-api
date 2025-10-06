@@ -113,7 +113,7 @@ Playwright 1.30+ | TypeScript 4.9+
 | searchCaseFromCaseList              | `performAction('searchCaseFromCaseList', caseData.id)`                                                                                                                                                     |
 | selectClaimingCosts                 | `performAction('selectClaimingCosts', claimingCosts.yes)`                                                                                                                                                  |
 | clickButtonAndVerifyPageNavigation  | `performAction('clickButtonAndVerifyPageNavigation', provideMoreDetailsOfClaim.continue, claimantType.mainHeader);`                                                                                        |
-
+| completingYourClaim                 | `performAction('completingYourClaim', 'yes')`                                                                                                                                                              |
 ### Validations
 | Validation                 | Example Usage                                                                                                                        |
 |----------------------------|--------------------------------------------------------------------------------------------------------------------------------------|
