@@ -31,9 +31,10 @@ import {moneyJudgment} from '@data/page-data/moneyJudgment.page.data';
 import {whatAreYourGroundsForPossession} from '@data/page-data/whatAreYourGroundsForPossession.page.data';
 import {defendantCircumstances} from '@data/page-data/defendantCircumstances.page.data';
 import {applications} from '@data/page-data/applications.page.data';
-import {additionalReasonsForPossession} from '@data/page-data/additionalReasonsForPossession.page.data';
 import {claimingCosts} from '@data/page-data/claimingCosts.page.data';
 import {uploadAdditionalDocs} from '@data/page-data/uploadAdditionalDocs.page.data';
+import {completeYourClaim} from '@data/page-data/completeYourClaim.page.data';
+import {additionalReasonsForPossession} from '@data/page-data/additionalReasonsForPossession.page.data';
 import {home} from '@data/page-data/home.page.data';
 import {search} from '@data/page-data/search.page.data';
 
@@ -74,8 +75,9 @@ export class CreateCaseAction implements IAction {
       ['selectMoneyJudgment', () => this.selectMoneyJudgment(fieldName)],
       ['selectDefendantCircumstances', () => this.selectDefendantCircumstances(fieldName)],
       ['selectApplications', () => this.selectApplications(fieldName)],
-      ['selectAdditionalReasonsForPossession', ()=> this.selectAdditionalReasonsForPossession(fieldName)],
       ['selectClaimingCosts', () => this.selectClaimingCosts(fieldName)],
+      ['completingYourClaim', () => this.completingYourClaim(fieldName)],
+      ['selectAdditionalReasonsForPossession', ()=> this.selectAdditionalReasonsForPossession(fieldName)],
       ['wantToUploadDocuments', () => this.wantToUploadDocuments(fieldName as actionRecord)],
       ['uploadAdditionalDocs', () => this.uploadAdditionalDocs(fieldName as actionRecord)]
     ]);
@@ -473,6 +475,11 @@ export class CreateCaseAction implements IAction {
     }
   }
 
+  private async completingYourClaim(option: actionData) {
+    await performAction('clickRadioButton', option);
+    await performAction('clickButton', completeYourClaim.continue);
+  }
+  
   private async selectJurisdictionCaseTypeEvent() {
     await performActions('Case option selection'
       , ['select', createCase.jurisdictionLabel, createCase.possessionsJurisdiction]

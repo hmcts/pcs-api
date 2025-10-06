@@ -114,6 +114,7 @@ Playwright 1.30+ | TypeScript 4.9+
 | selectClaimingCosts                  | `performAction('selectClaimingCosts', claimingCosts.yes)`                                                                                                                                                  |
 | uploadAdditionalDocs                 | `performAction('uploadAdditionalDocs', {documents:[{ type: 'Tenancy Agreement', fileName: 'tenancyAgreement.pdf', description: 'Signed agreement' }]})`                                                    |
 | wantToUploadDocuments                | `performAction('wantToUploadDocuments', {question:'sample', option:'no'})`                                                                                                                                 |
+| completingYourClaim                  | `performAction('completingYourClaim', 'yes')`                                                                                                                                                               |
 ### Validations
 | Validation                 | Example Usage                                                                                                                        |
 |----------------------------|--------------------------------------------------------------------------------------------------------------------------------------|
