@@ -21,6 +21,7 @@ export async function performAction(action: string, fieldName?: actionData | act
   const executor = getExecutor();
   const actionInstance = ActionRegistry.getAction(action);
   await test.step(`Perform action: ${action} on "${fieldName}"${value !== undefined ? ` with value "${value}"` : ''}`, async () => {
+    await actionInstance.execute(executor.page, action, fieldName, value);
   });
 }
 
@@ -31,12 +32,13 @@ export async function performValidation(validation: string, inputFieldName: vali
     : ['', inputFieldName];
   const validationInstance = ValidationRegistry.getValidation(validation);
   await test.step(`Perform validation on ${validation}`, async () => {
+    await validationInstance.validate(executor.page, validation, fieldName, data);
   });
 }
 
 export async function performActions(groupName: string, ...actions: actionTuple[]): Promise<void> {
   getExecutor();
-  await test.step(`Performed action group: ${groupName}`, async () => {
+  await test.step(`Performing action group: ${groupName}`, async () => {
     for (const action of actions) {
       const [actionName, fieldName, value] = action;
       await performAction(actionName, fieldName, value);
@@ -46,11 +48,10 @@ export async function performActions(groupName: string, ...actions: actionTuple[
 
 export async function performValidations(groupName: string, ...validations: validationTuple[]): Promise<void> {
   getExecutor();
-  await test.step(`Performed validation group: ${groupName}`, async () => {
+  await test.step(`Performing validation group: ${groupName}`, async () => {
     for (const validation of validations) {
       const [validationType, fieldName, data] = validation;
       await performValidation(validationType, fieldName, data);
     }
   });
 }
-
