@@ -72,7 +72,6 @@ export class CreateCaseAction implements IAction {
       ['provideRentDetails', () => this.provideRentDetails(fieldName)],
       ['selectDailyRentAmount', () => this.selectDailyRentAmount(fieldName)],
       ['provideDetailsOfRentArrears', () => this.provideDetailsOfRentArrears(fieldName)],
-      ['selectClaimForMoney', () => this.selectClaimForMoney(fieldName)],
       ['selectAlternativesToPossession', () => this.selectAlternativesToPossession(fieldName)],
       ['selectHousingAct', () => this.selectHousingAct(fieldName as actionRecord)],
       ['enterReasonForSuspensionOrder', () => this.enterReasonForSuspensionOrder(fieldName)],

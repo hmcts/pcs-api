@@ -14,19 +14,15 @@ export class CheckAction implements IAction {
 
       if (Array.isArray(params.option)) {
         for (const opt of params.option) {
-          await fieldset.getByRole('checkbox', { name: opt }).check();
+          await fieldset.getByRole('checkbox', { name: opt, exact: true }).check();
         }
       } else {
-        await fieldset.getByRole('checkbox', { name: params.option as string }).check();
+        await fieldset.getByRole('checkbox', { name: params.option as string, exact: true }).check();
       }
     }
   }
 
   private async clickCheckBox(page: Page, label: string) {
-    const checkbox = page.locator(`input[type="checkbox"] + label:text-is("${label}")`);
-    //const checkbox = page.locator(`input[type="checkbox"] + label:has-text("${label}")`);
-    //const checkbox = page.locator(`input[type="checkbox"] + :has-text("${label}")`);
-    //const checkbox = page.getByText("Continue", { exact: true }) // strict
-    await checkbox.click();
+    await page.getByLabel(label, { exact: true }).check();
   }
 }
