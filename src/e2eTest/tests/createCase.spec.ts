@@ -404,11 +404,11 @@ test.describe('[Successful Create Case Flow]  @Master @nightly', async () => {
     await performAction('clickButtonAndVerifyPageNavigation', resumeClaim.continue, resumeClaimOptions.mainHeader);
     await performAction('selectResumeClaimOption', resumeClaimOptions.yes);
     await performValidation('radioButtonChecked', claimantType.registeredCommunityLandlord, true);
-    await performAction('verifyPageAndClickButton', claimType.mainHeader, claimantType.continue);
+    await performAction('clickButton', claimantType.continue);
     await performValidation('radioButtonChecked', claimType.no, true);
-    await performAction('verifyPageAndClickButton', claimType.mainHeader, claimType.continue);
+    await performAction('clickButton', claimType.continue);
     await performValidation('radioButtonChecked', claimantName.no, true);
-    await performAction('verifyPageAndClickButton', claimantName.mainHeader, claimantName.continue);
+    await performAction('clickButton', claimantName.continue);
     await performAction('selectContactPreferences', {
       notifications: contactPreferences.no,
       correspondenceAddress: contactPreferences.no,
