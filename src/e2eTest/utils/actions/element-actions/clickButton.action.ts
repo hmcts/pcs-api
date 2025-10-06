@@ -30,7 +30,7 @@ export class ClickButtonAction implements IAction {
         this.clickButton(page, button);
         if(!await pageElement.isVisible()) {
           //Adding sleep to slow down execution when the application behaves abnormally
-          await page.waitForTimeout(2000);
+          await page.waitForTimeout(3000);
         }
       }
       else{
