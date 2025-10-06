@@ -134,7 +134,7 @@ public class CustomSearchRequestMapper {
      */
     private static String convertToSql(CustomSearchRequestMapper.PocRequest req) {
 
-        if (!req.nativeEsQuery.boolQuery.mustMatches.isEmpty()){
+        if (!req.nativeEsQuery.boolQuery.mustMatches.isEmpty()) {
             //extract object with search filters
             PocMatch mustMatch = req.nativeEsQuery.boolQuery.mustMatches.getFirst();
             String query = mustMatch.query;
