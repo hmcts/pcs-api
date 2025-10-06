@@ -508,7 +508,7 @@ test.describe('[Successful Create Case Flow]  @Master @nightly', async () => {
     await performAction('selectClaimantType', claimantType.registeredCommunityLandlord);
     await performValidation('radioButtonChecked', claimType.no, false);
     await performAction('selectClaimType', claimType.no);
-    await performValidation('radioButtonChecked', claimantName.no, true);
+    await performValidation('radioButtonChecked', claimantName.no, false);
     await performAction('selectClaimantName', claimantName.yes);
     await performAction('selectContactPreferences', {
       notifications: contactPreferences.yes,

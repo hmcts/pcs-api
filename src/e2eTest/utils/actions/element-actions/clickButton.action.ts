@@ -24,12 +24,14 @@ export class ClickButtonAction implements IAction {
   }
 
   private async clickButtonAndVerifyPageNavigation(page: Page, button: Locator, nextPageElement: string): Promise<void> {
+    const pageElement = page.locator(`h1:has-text("${nextPageElement}")`);
     for(let i = 0; i < 3; i++){
-      this.clickButton(page, button);
-      const pageElement = page.locator(`h1:has-text("${nextPageElement}")`);
       if(!await pageElement.isVisible()){
-        //Adding sleep to slow down execution when the application behaves abnormally
-        await page.waitForTimeout(3000);
+        this.clickButton(page, button);
+        if(!await pageElement.isVisible()) {
+          //Adding sleep to slow down execution when the application behaves abnormally
+          await page.waitForTimeout(2000);
+        }
       }
       else{
         break;
