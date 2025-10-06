@@ -2,7 +2,7 @@ import { Page } from '@playwright/test';
 import { actionRecord, IAction } from '../../interfaces/action.interface';
 
 export class CheckAction implements IAction {
-  async execute(page: Page, action: string, params: string | string[] | actionRecord): Promise<void> {
+  async execute(page: Page, action: string, params: string | actionRecord): Promise<void> {
     if (typeof params === 'string') {
       await this.clickCheckBox(page, params);
     } else if (Array.isArray(params)) {
