@@ -631,4 +631,11 @@ public class PCSCase {
     )
     private VerticalYesNo applicationWithClaim;
 
+    @CCD(
+        label = "What would you like to do next?",
+        typeOverride = FieldType.FixedRadioList,
+        typeParameterOverride = "CompletionNextStep",
+        access = {CitizenAccess.class}
+    )
+    private CompletionNextStep completionNextStep;
 }
