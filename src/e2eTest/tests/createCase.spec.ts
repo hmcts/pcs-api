@@ -36,7 +36,7 @@ import {home} from '@data/page-data/home.page.data';
 import {additionalReasonsForPossession} from '@data/page-data/additionalReasonsForPossession.page.data';
 import {underlesseeOrMortgageeEntitledToClaim} from '@data/page-data/underlesseeOrMortgageeEntitledToClaim.page.data';
 import {alternativesToPossession} from '@data/page-data/alternativesToPossession.page.data';
-import {housingActDemotion} from '@data/page-data/housingActDemotion.page.data';
+import {housingAct} from '@data/page-data/housingAct.page.data';
 import {reasonsForRequestingADemotionOrder} from '@data/page-data/reasonsForRequestingADemotionOrder.page.data';
 import {statementOfExpressTerms} from '@data/page-data/statementOfExpressTerms.page.data';
 
@@ -55,7 +55,7 @@ test.beforeEach(async ({page}, testInfo) => {
 });
 
 //Skipping these tests as are failing intermittently which will be fixed as part of HDPI-2306
-test.describe.skip('[Successful Create Case Flow]  @Master @nightly', async () => {
+test.describe('[Successful Create Case Flow]  @Master @nightly', async () => {
   test('England - Assured tenancy with Rent arrears and other possession grounds', async () => {
     await performAction('selectAddress', {
       postcode: addressDetails.englandCourtAssignedPostcode,
@@ -295,12 +295,14 @@ test.describe.skip('[Successful Create Case Flow]  @Master @nightly', async () =
     await performValidation('mainHeader', defendantCircumstances.mainHeader);
     await performAction('selectDefendantCircumstances', defendantCircumstances.no);
     await performValidation('mainHeader', alternativesToPossession.mainHeader);
-    await performAction('selectAlternativesToPossession', [alternativesToPossession.demotionOfTenancy]);
-    await performValidation('mainHeader', housingActDemotion.mainHeader);
-    await performAction('selectHousingAct', housingActDemotion.section82AHousingAct1985);
+    await performAction('selectAlternativesToPossession', {question: alternativesToPossession.demotionOfTenancy
+      , option: [alternativesToPossession.demotionOfTenancy]});
+    await performValidation('mainHeader', housingAct.mainHeader);
+    await performAction('selectHousingAct', {question: housingAct.demotionOfTenancy.whichSection
+      ,option: housingAct.demotionOfTenancy.section82AHousingAct1985});
     await performAction('selectStatementOfExpressTerms', statementOfExpressTerms.yes);
     await performValidation('mainHeader', reasonsForRequestingADemotionOrder.mainHeader);
-    await performAction('enterReasonForDemotionOrder', reasonsForRequestingADemotionOrder.reason);
+    await performAction('enterReasonForDemotionOrder', reasonsForRequestingADemotionOrder.question);
     await performValidation('mainHeader', claimingCosts.mainHeader);
     await performAction('selectClaimingCosts', claimingCosts.yes);
     await performValidation('mainHeader', additionalReasonsForPossession.mainHeader);
@@ -401,7 +403,7 @@ test.describe.skip('[Successful Create Case Flow]  @Master @nightly', async () =
     )
   });
 
-  test('Wales - Assured tenancy with Rent arrears and no other possession grounds', async () => {
+  test('Wales - Assured tenancy with Rent arrears and no other possession grounds - Demoted tenancy', async () => {
     await performAction('enterTestAddressManually');
     await performValidation('bannerAlert', 'Case #.* has been created.');
     await performAction('extractCaseIdFromAlert');
@@ -460,6 +462,15 @@ test.describe.skip('[Successful Create Case Flow]  @Master @nightly', async () =
     await performAction('clickButton', claimantCircumstances.continue);
     await performValidation('mainHeader', defendantCircumstances.mainHeader);
     await performAction('selectDefendantCircumstances', defendantCircumstances.no);
+    await performValidation('mainHeader', alternativesToPossession.mainHeader);
+    await performAction('selectAlternativesToPossession', {question: alternativesToPossession.demotionOfTenancy
+      , option: [alternativesToPossession.demotionOfTenancy]});
+    await performValidation('mainHeader', housingAct.mainHeader);
+    await performAction('selectHousingAct', {question: housingAct.demotionOfTenancy.whichSection
+      , option: housingAct.demotionOfTenancy.section6AHousingAct1988});
+    await performAction('selectStatementOfExpressTerms', statementOfExpressTerms.no);
+    await performValidation('mainHeader', reasonsForRequestingADemotionOrder.mainHeader);
+    await performAction('enterReasonForDemotionOrder', reasonsForRequestingADemotionOrder.question);
     await performValidation('mainHeader', claimingCosts.mainHeader);
     await performAction('selectClaimingCosts', claimingCosts.no);
     await performValidation('mainHeader', additionalReasonsForPossession.mainHeader);

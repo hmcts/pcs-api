@@ -1,6 +1,6 @@
 import Axios from 'axios';
 import {ServiceAuthUtils} from '@hmcts/playwright-common';
-import {actionData, IAction} from '../../interfaces/action.interface';
+import {actionData, actionRecord, IAction} from '../../interfaces/action.interface';
 import {Page} from '@playwright/test';
 import {performAction, performActions, performValidation} from '@utils/controller';
 import {createCase} from '@data/page-data/createCase.page.data';
@@ -73,9 +73,8 @@ export class CreateCaseAction implements IAction {
       ['provideRentDetails', () => this.provideRentDetails(fieldName)],
       ['selectDailyRentAmount', () => this.selectDailyRentAmount(fieldName)],
       ['provideDetailsOfRentArrears', () => this.provideDetailsOfRentArrears(fieldName)],
-      ['selectClaimForMoney', () => this.selectClaimForMoney(fieldName)],
-      ['selectAlternativesToPossession', () => this.selectAlternativesToPossession(fieldName)],
-      ['selectHousingAct', () => this.selectHousingAct(fieldName)],
+      ['selectAlternativesToPossession', () => this.selectAlternativesToPossession(fieldName as actionRecord)],
+      ['selectHousingAct', () => this.selectHousingAct(fieldName as actionRecord)],
       ['selectStatementOfExpressTerms', () => this.selectStatementOfExpressTerms(fieldName)],
       ['enterReasonForDemotionOrder', () => this.enterReasonForDemotionOrder(fieldName)],
       ['selectMoneyJudgment', () => this.selectMoneyJudgment(fieldName)],
@@ -451,15 +450,15 @@ export class CreateCaseAction implements IAction {
     await performAction('clickButton', claimingCosts.continue);
   }
 
-  private async selectAlternativesToPossession(alternatives: actionData) {
+  private async selectAlternativesToPossession(alternatives: actionRecord) {
     if(alternatives){
-      await performAction('check', alternatives);
+      await performAction('check', {question: alternatives.question, option: alternatives.option});
     }
     await performAction('clickButton', alternativesToPossession.continue);
   }
 
-  private async selectHousingAct(option: actionData) {
-    await performAction('clickRadioButton', option);
+  private async selectHousingAct(housingAct: actionRecord) {
+    await performAction('clickRadioButton', {question: housingAct.question, option: housingAct.option});
     await performAction('clickButton', alternativesToPossession.continue);
   }
 
@@ -472,7 +471,7 @@ export class CreateCaseAction implements IAction {
   }
 
   private async enterReasonForDemotionOrder(reason: actionData) {
-    await performAction('inputText', reason, reasonsForRequestingADemotionOrder.reason);
+    await performAction('inputText', reason, reasonsForRequestingADemotionOrder.sampleTestReason);
     await performAction('clickButton', reasonsForRequestingADemotionOrder.continue);
   }
 
