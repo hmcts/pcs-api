@@ -56,7 +56,7 @@ export class CreateCaseAction implements IAction {
       ['selectJurisdictionCaseTypeEvent', () => this.selectJurisdictionCaseTypeEvent()],
       ['enterTestAddressManually', () => this.enterTestAddressManually()],
       ['selectClaimType', () => this.selectClaimType(fieldName)],
-      ['selectClaimantName', () => this.selectClaimantName(fieldName)],
+      ['selectClaimantName', () => this.selectClaimantName(page,fieldName)],
       ['selectContactPreferences', () => this.selectContactPreferences(fieldName)],
       ['selectRentArrearsPossessionGround', () => this.selectRentArrearsPossessionGround(fieldName)],
       ['selectGroundsForPossession', () => this.selectGroundsForPossession(fieldName)],
@@ -170,12 +170,13 @@ export class CreateCaseAction implements IAction {
     await performAction('clickButton', borderPostcode.submit);
   }
 
-  private async selectClaimantName(caseData: actionData) {
+  private async selectClaimantName(page: Page, caseData: actionData) {
     await performAction('clickRadioButton', caseData);
-    if(caseData == claimantName.no){
+    if (caseData == claimantName.no) {
       await performAction('inputText', claimantName.whatIsCorrectClaimantName, claimantName.correctClaimantNameInput);
     }
-    await performAction('clickButton', claimantName.continue);
+    claimantsName = caseData == "No" ? claimantName.correctClaimantNameInput : await this.extractClaimantName(page, claimantName.yourClaimantNameRegisteredWithHMCTS);
+    await performAction('clickButton', 'Continue');
   }
 
   private async selectContactPreferences(preferences: actionData) {
