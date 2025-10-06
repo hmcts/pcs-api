@@ -10,7 +10,7 @@ export class CheckAction implements IAction {
         await this.clickCheckBox(page, option);
       }
     } else {
-      const fieldset = page.locator('legend', { has: page.locator(`text=${params.question}`) }).locator('..');
+      const fieldset = page.locator('fieldset', {has: page.getByText(params.question as string, { exact: true })});
       if (Array.isArray(params.option)) {
         for (const opt of params.option) {
           await fieldset.getByRole('checkbox', { name: opt, exact: true }).check();
