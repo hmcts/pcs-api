@@ -146,7 +146,8 @@ public class CustomSearchRequestMapper {
                 query = query.replaceAll("-","");
                 String[] referenceIds = query.split("OR");
 
-                return "SELECT * FROM ccd.case_data WHERE reference IN(" + referenceIds[0] + "," + referenceIds[1] + ")";
+                return "SELECT * FROM ccd.case_data WHERE reference IN("
+                    + referenceIds[0] + "," + referenceIds[1] + ")";
             }
         }
 
