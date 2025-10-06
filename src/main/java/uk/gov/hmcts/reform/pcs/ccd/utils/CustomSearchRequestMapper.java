@@ -125,8 +125,32 @@ public class CustomSearchRequestMapper {
         return n.isTextual() ? n.asText() : null;
     }
 
+    /**
+     * This method should be used to convert from our PocRequest object into raw sql.
+     * For the sake of a proof of concept, I simply extract multiple case numbers and
+     * search for both of them. THIS IS BY NO MEANS SECURE OR A FINAL PRODUCT.
+     * @param req ElasticSearch object to convert.
+     * @return raw Sql.
+     */
     private static String convertToSql(CustomSearchRequestMapper.PocRequest req) {
-        String converted = req.nativeEsQuery.boolQuery.mustMatches.getFirst().query;
+
+        if (!req.nativeEsQuery.boolQuery.mustMatches.isEmpty()){
+            //extract object with search filters
+            PocMatch mustMatch = req.nativeEsQuery.boolQuery.mustMatches.getFirst();
+            String query = mustMatch.query;
+
+            //Search containing OR
+            if (query.contains(" OR ")) {
+                //split string and format
+                query = query.replaceAll(" ", "");
+                query = query.replaceAll("-","");
+                String[] referenceIds = query.split("OR");
+
+                return "SELECT * FROM ccd.case_data WHERE reference IN(" + referenceIds[0] + "," + referenceIds[1] + ")";
+            }
+        }
+
+        //All other cases
         return "SELECT * FROM ccd.case_data\n";
     }
 }
