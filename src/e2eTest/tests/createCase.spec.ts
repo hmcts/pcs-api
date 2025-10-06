@@ -36,6 +36,7 @@ import {uploadAdditionalDocs} from '@data/page-data/uploadAdditionalDocs.page.da
 import {home} from '@data/page-data/home.page.data';
 import {additionalReasonsForPossession} from '@data/page-data/additionalReasonsForPossession.page.data';
 import {underlesseeOrMortgageeEntitledToClaim} from '@data/page-data/underlesseeOrMortgageeEntitledToClaim.page.data';
+import {wantToUploadDocuments} from '@data/page-data/wantToUploadDocuments.page.data';
 
 test.beforeEach(async ({page}, testInfo) => {
   initializeExecutor(page);
@@ -126,12 +127,14 @@ test.describe('[Successful Create Case Flow]  @Master @nightly', async () => {
     await performAction('selectAdditionalReasonsForPossession', additionalReasonsForPossession.yes);
     await performValidation('mainHeader', underlesseeOrMortgageeEntitledToClaim.mainHeader);
     await performAction('clickButton', underlesseeOrMortgageeEntitledToClaim.continue);
+    await performAction('wantToUploadDocuments', {
+      question: wantToUploadDocuments.uploadAnyAdditionalDocumentsLabel,
+      option: wantToUploadDocuments.yes
+    });
     await performAction('uploadAdditionalDocs', {
-      question: uploadAdditionalDocs.uploadAnyAdditionalDocumentsLabel,
-      option: uploadAdditionalDocs.yes,
       documents: [{
         type: uploadAdditionalDocs.tenancyAgreementOption,
-        filePath: 'tenancy.pdf',
+        fileName: 'tenancy.pdf',
         description: uploadAdditionalDocs.shortDescriptionInput
       }]
     });
@@ -222,9 +225,9 @@ test.describe('[Successful Create Case Flow]  @Master @nightly', async () => {
     await performAction('selectAdditionalReasonsForPossession', additionalReasonsForPossession.no);
     await performValidation('mainHeader', underlesseeOrMortgageeEntitledToClaim.mainHeader);
     await performAction('clickButton', underlesseeOrMortgageeEntitledToClaim.continue);
-    await performAction('uploadAdditionalDocs', {
-      question: uploadAdditionalDocs.uploadAnyAdditionalDocumentsLabel,
-      option: uploadAdditionalDocs.no
+    await performAction('wantToUploadDocuments', {
+      question: wantToUploadDocuments.uploadAnyAdditionalDocumentsLabel,
+      option: wantToUploadDocuments.no
     });
     await performAction('selectApplications', applications.no);
     await performAction('clickButton', completeYourClaim.continue);
@@ -310,9 +313,9 @@ test.describe('[Successful Create Case Flow]  @Master @nightly', async () => {
     await performAction('selectAdditionalReasonsForPossession', additionalReasonsForPossession.no);
     await performValidation('mainHeader', underlesseeOrMortgageeEntitledToClaim.mainHeader);
     await performAction('clickButton', underlesseeOrMortgageeEntitledToClaim.continue);
-    await performAction('uploadAdditionalDocs', {
-      question: uploadAdditionalDocs.uploadAnyAdditionalDocumentsLabel,
-      option: uploadAdditionalDocs.no
+    await performAction('wantToUploadDocuments', {
+      question: wantToUploadDocuments.uploadAnyAdditionalDocumentsLabel,
+      option: wantToUploadDocuments.no
     });
     await performAction('selectApplications', applications.no);
     await performAction('clickButton', completeYourClaim.continue);
@@ -395,9 +398,9 @@ test.describe('[Successful Create Case Flow]  @Master @nightly', async () => {
     await performAction('selectAdditionalReasonsForPossession', additionalReasonsForPossession.no);
     await performValidation('mainHeader', underlesseeOrMortgageeEntitledToClaim.mainHeader);
     await performAction('clickButton', underlesseeOrMortgageeEntitledToClaim.continue);
-    await performAction('uploadAdditionalDocs', {
-      question: uploadAdditionalDocs.uploadAnyAdditionalDocumentsLabel,
-      option: uploadAdditionalDocs.no
+    await performAction('wantToUploadDocuments', {
+      question: wantToUploadDocuments.uploadAnyAdditionalDocumentsLabel,
+      option: wantToUploadDocuments.no
     });
     await performAction('selectApplications', applications.no);
     await performAction('clickButton', completeYourClaim.continue);
@@ -477,9 +480,9 @@ test.describe('[Successful Create Case Flow]  @Master @nightly', async () => {
     await performAction('selectAdditionalReasonsForPossession', additionalReasonsForPossession.no);
     await performValidation('mainHeader', underlesseeOrMortgageeEntitledToClaim.mainHeader);
     await performAction('clickButton', underlesseeOrMortgageeEntitledToClaim.continue);
-    await performAction('uploadAdditionalDocs', {
-      question: uploadAdditionalDocs.uploadAnyAdditionalDocumentsLabel,
-      option: uploadAdditionalDocs.no
+    await performAction('wantToUploadDocuments', {
+      question: wantToUploadDocuments.uploadAnyAdditionalDocumentsLabel,
+      option: wantToUploadDocuments.no
     });
     await performAction('selectApplications', applications.yes);
     await performAction('clickButton', completeYourClaim.continue);
@@ -555,9 +558,9 @@ test.describe('[Successful Create Case Flow]  @Master @nightly', async () => {
     await performAction('selectAdditionalReasonsForPossession', additionalReasonsForPossession.yes);
     await performValidation('mainHeader', underlesseeOrMortgageeEntitledToClaim.mainHeader);
     await performAction('clickButton', underlesseeOrMortgageeEntitledToClaim.continue);
-    await performAction('uploadAdditionalDocs', {
-      question: uploadAdditionalDocs.uploadAnyAdditionalDocumentsLabel,
-      option: uploadAdditionalDocs.no
+    await performAction('wantToUploadDocuments', {
+      question: wantToUploadDocuments.uploadAnyAdditionalDocumentsLabel,
+      option: wantToUploadDocuments.no
     });
     await performAction('selectApplications', applications.yes);
     await performAction('clickButton', completeYourClaim.continue);
@@ -640,9 +643,9 @@ test.describe('[Successful Create Case Flow]  @Master @nightly', async () => {
     await performAction('selectAdditionalReasonsForPossession', additionalReasonsForPossession.no);
     await performValidation('mainHeader', underlesseeOrMortgageeEntitledToClaim.mainHeader);
     await performAction('clickButton', underlesseeOrMortgageeEntitledToClaim.continue);
-    await performAction('uploadAdditionalDocs', {
-      question: uploadAdditionalDocs.uploadAnyAdditionalDocumentsLabel,
-      option: uploadAdditionalDocs.no
+    await performAction('wantToUploadDocuments', {
+      question: wantToUploadDocuments.uploadAnyAdditionalDocumentsLabel,
+      option: wantToUploadDocuments.no
     });
      await performAction('selectApplications', applications.yes);
     await performAction('clickButton', completeYourClaim.continue);

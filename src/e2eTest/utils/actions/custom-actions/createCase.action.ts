@@ -41,7 +41,7 @@ export let caseInfo: { id: string; fid: string; state: string };
 let caseNumber: string;
 
 export class CreateCaseAction implements IAction {
-  async execute(page: Page, action: string, fieldName: actionData, data?: actionData): Promise<void> {
+  async execute(page: Page, action: string, fieldName: actionData | actionRecord, data?: actionData): Promise<void> {
     const actionsMap = new Map<string, () => Promise<void>>([
       ['createCase', () => this.createCaseAction(fieldName)],
       ['housingPossessionClaim', () => this.housingPossessionClaim()],
@@ -76,7 +76,8 @@ export class CreateCaseAction implements IAction {
       ['selectApplications', () => this.selectApplications(fieldName)],
       ['selectAdditionalReasonsForPossession', ()=> this.selectAdditionalReasonsForPossession(fieldName)],
       ['selectClaimingCosts', () => this.selectClaimingCosts(fieldName)],
-      ['uploadAdditionalDocs', () => this.uploadAdditionalDocs(fieldName)]
+      ['wantToUploadDocuments', () => this.wantToUploadDocuments(fieldName as actionRecord)],
+      ['uploadAdditionalDocs', () => this.uploadAdditionalDocs(fieldName as actionRecord)]
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) throw new Error(`No action found for '${action}'`);
@@ -450,24 +451,22 @@ export class CreateCaseAction implements IAction {
     await performAction('clickButton', applications.continue);
   }
 
-  private async uploadAdditionalDocs(documentsData: actionData | actionRecord) {
-    const additionalDocs = documentsData as {
-      question: string;
-      option: string;
-      documents: { type: string; filePath: string; description: string }[];
-    };
+  private async wantToUploadDocuments(documentsData: actionRecord) {
     await performAction('clickRadioButton', {
-      question: additionalDocs.question,
-      option: additionalDocs.option
+      question: documentsData.question,
+      option: documentsData.option
     });
     await performAction('clickButton', uploadAdditionalDocs.continue);
-    if (additionalDocs.option == 'Yes') {
-      for (const doc of additionalDocs.documents) {
+  }
+
+  private async uploadAdditionalDocs(documentsData: actionRecord) {
+    if (Array.isArray(documentsData.documents)) {
+      for (const document of documentsData.documents) {
         await performActions(
           'Add Document',
-          ['uploadFile', doc.filePath],
-          ['select', uploadAdditionalDocs.typeOfDocument, doc.type],
-          ['inputText', uploadAdditionalDocs.shortDescriptionLabel, doc.description]
+          ['uploadFile', document.fileName],
+          ['select', uploadAdditionalDocs.typeOfDocument, document.type],
+          ['inputText', uploadAdditionalDocs.shortDescriptionLabel, document.description]
         );
       }
       await performAction('clickButton', uploadAdditionalDocs.continue);

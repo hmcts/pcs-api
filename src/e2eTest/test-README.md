@@ -112,7 +112,8 @@ Playwright 1.30+ | TypeScript 4.9+
 | selectAdditionalReasonsForPossession | `performAction('selectAdditionalReasonsForPossession', additionalReasonsForPossession.no)`                                                                                                                 |
 | searchCaseFromCaseList               | `performAction('searchCaseFromCaseList', caseData.id)`                                                                                                                                                     |
 | selectClaimingCosts                  | `performAction('selectClaimingCosts', claimingCosts.yes)`                                                                                                                                                  |
-| uploadAdditionalDocs                 | `performAction('uploadAdditionalDocs', {question:'sample', option:'no'})`                                                                                                                                  |
+| uploadAdditionalDocs                 | `performAction('uploadAdditionalDocs', {documents:[{ type: 'Tenancy Agreement', fileName: 'tenancyAgreement.pdf', description: 'Signed agreement' }]})`                                                    |
+| wantToUploadDocuments                | `performAction('wantToUploadDocuments', {question:'sample', option:'no'})`                                                                                                                                 |
 ### Validations
 | Validation                 | Example Usage                                                                                                                        |
 |----------------------------|--------------------------------------------------------------------------------------------------------------------------------------|

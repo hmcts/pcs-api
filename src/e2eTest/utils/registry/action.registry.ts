@@ -58,6 +58,7 @@ export class ActionRegistry {
     ['selectAdditionalReasonsForPossession', new CreateCaseAction()],
     ['searchCaseFromCaseList', new searchCaseActions()],
     ['selectClaimingCosts', new CreateCaseAction()],
+    ['wantToUploadDocuments', new CreateCaseAction()],
     ['uploadAdditionalDocs', new CreateCaseAction()]
   ]);
 
