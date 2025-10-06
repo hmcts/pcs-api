@@ -24,6 +24,7 @@ module.exports = defineConfig({
         'allure-playwright',
         {
           resultsDir: 'allure-results',
+          detail: true,
           suiteTitle: false,
           environmentInfo: {
             os_version: process.version,
