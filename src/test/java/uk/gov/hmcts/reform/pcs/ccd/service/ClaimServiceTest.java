@@ -146,12 +146,14 @@ class ClaimServiceTest {
         PartyEntity claimantPartyEntity = new PartyEntity();
 
         String expectedDemotionReason = "some demotion reason";
+        String expectedStatementDetails = "some statement details";
         DemotionOfTenancyHousingAct expectedDemotionAct = DemotionOfTenancyHousingAct.SECTION_82A;
 
         DemotionOfTenancy demotion = mock(DemotionOfTenancy.class);
         when(pcsCase.getDemotionOfTenancy()).thenReturn(demotion);
         when(demotion.getDemotionOfTenancyHousingActs()).thenReturn(expectedDemotionAct);
         when(demotion.getDemotionOfTenancyReason()).thenReturn(expectedDemotionReason);
+        when(demotion.getStatementOfExpressTermsDetails()).thenReturn(expectedStatementDetails);
 
         AdditionalReasons additionalReasons = mock(AdditionalReasons.class);
         when(pcsCase.getAdditionalReasonsForPossession()).thenReturn(additionalReasons);
@@ -166,6 +168,7 @@ class ClaimServiceTest {
         // Then
         assertThat(createdClaimEntity.getDemotionOfTenancyHousingAct()).isEqualTo(expectedDemotionAct);
         assertThat(createdClaimEntity.getDemotionOfTenancyReason()).isEqualTo(expectedDemotionReason);
+        assertThat(createdClaimEntity.getStatementOfExpressTermsDetails()).isEqualTo(expectedStatementDetails);
     }
 }
 

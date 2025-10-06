@@ -77,6 +77,8 @@ public class ClaimEntity {
 
     private String demotionOfTenancyReason;
 
+    private String statementOfExpressTermsDetails;
+
     private String additionalReasons;
 
     public void addParty(PartyEntity party, PartyRole partyRole) {

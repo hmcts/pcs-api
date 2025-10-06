@@ -44,6 +44,9 @@ public class ClaimService {
             .demotionOfTenancyReason(pcsCase.getDemotionOfTenancy() != null
                                          ? pcsCase.getDemotionOfTenancy()
                                              .getDemotionOfTenancyReason() : null)
+            .statementOfExpressTermsDetails(pcsCase.getDemotionOfTenancy() != null
+                                                ? pcsCase.getDemotionOfTenancy()
+                                                    .getStatementOfExpressTermsDetails() : null)
             .costsClaimed(pcsCase.getClaimingCostsWanted().toBoolean())
             .additionalReasons(additionalReasons)
             .applicationWithClaim(YesOrNoToBoolean.convert(pcsCase.getApplicationWithClaim()))
