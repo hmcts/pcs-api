@@ -58,7 +58,6 @@ test.describe('[Successful Create Case Flow]  @Master @nightly', async () => {
     await performAction('clickButton', provideMoreDetailsOfClaim.continue);
     await performAction('selectClaimantType', claimantType.registeredProviderForSocialHousing);
     await performAction('selectClaimType', claimType.no);
-    await performAction('selectClaimantName', claimantName.yes);
     await performAction('selectContactPreferences', {
       notifications: contactPreferences.yes,
       correspondenceAddress: contactPreferences.yes,
