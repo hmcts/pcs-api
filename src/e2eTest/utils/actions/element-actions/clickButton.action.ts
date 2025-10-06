@@ -25,7 +25,7 @@ export class ClickButtonAction implements IAction {
 
   private async clickButtonAndVerifyPageNavigation(page: Page, button: Locator, nextPageElement: string): Promise<void> {
     const pageElement = page.locator(`h1:has-text("${nextPageElement}")`);
-    for(let retry = 1; retry <=3 ; retry++){
+    for(let retry = 0; retry < 3; retry++){
       if(!await pageElement.isVisible()){
         this.clickButton(page, button);
         if(!await pageElement.isVisible()) {
@@ -36,7 +36,7 @@ export class ClickButtonAction implements IAction {
       else{
         break;
       }
-      if (retry === 3 ) {
+      if (retry === 2) {
         throw new Error(`Navigation to ${nextPageElement} page/element has been failed after 3 attempts`);
       }
     }
