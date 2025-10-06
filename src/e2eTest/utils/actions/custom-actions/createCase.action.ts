@@ -32,8 +32,9 @@ import {whatAreYourGroundsForPossession} from '@data/page-data/whatAreYourGround
 import {defendantCircumstances} from '@data/page-data/defendantCircumstances.page.data';
 import {applications} from '@data/page-data/applications.page.data';
 import {claimantCircumstances} from '@data/page-data/claimantCircumstances.page.data';
-import {additionalReasonsForPossession} from '@data/page-data/additionalReasonsForPossession.page.data';
 import {claimingCosts} from '@data/page-data/claimingCosts.page.data';
+import {completeYourClaim} from '@data/page-data/completeYourClaim.page.data';
+import {additionalReasonsForPossession} from '@data/page-data/additionalReasonsForPossession.page.data';
 import {home} from '@data/page-data/home.page.data';
 import {search} from '@data/page-data/search.page.data';
 
@@ -55,7 +56,7 @@ export class CreateCaseAction implements IAction {
       ['selectJurisdictionCaseTypeEvent', () => this.selectJurisdictionCaseTypeEvent()],
       ['enterTestAddressManually', () => this.enterTestAddressManually()],
       ['selectClaimType', () => this.selectClaimType(fieldName)],
-      ['selectClaimantName', () => this.selectClaimantName(page, fieldName)],
+      ['selectClaimantName', () => this.selectClaimantName(fieldName)],
       ['selectContactPreferences', () => this.selectContactPreferences(fieldName)],
       ['selectRentArrearsPossessionGround', () => this.selectRentArrearsPossessionGround(fieldName)],
       ['selectGroundsForPossession', () => this.selectGroundsForPossession(fieldName)],
@@ -76,8 +77,9 @@ export class CreateCaseAction implements IAction {
       ['selectMoneyJudgment', () => this.selectMoneyJudgment(fieldName)],
       ['selectDefendantCircumstances', () => this.selectDefendantCircumstances(fieldName)],
       ['selectApplications', () => this.selectApplications(fieldName)],
-      ['selectAdditionalReasonsForPossession', ()=> this.selectAdditionalReasonsForPossession(fieldName)],
-      ['selectClaimingCosts', () => this.selectClaimingCosts(fieldName)]
+      ['selectClaimingCosts', () => this.selectClaimingCosts(fieldName)],
+      ['completingYourClaim', () => this.completingYourClaim(fieldName)],
+      ['selectAdditionalReasonsForPossession', ()=> this.selectAdditionalReasonsForPossession(fieldName)]
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) throw new Error(`No action found for '${action}'`);
@@ -168,12 +170,11 @@ export class CreateCaseAction implements IAction {
     await performAction('clickButton', borderPostcode.submit);
   }
 
-  private async selectClaimantName(page: Page, caseData: actionData) {
+  private async selectClaimantName(caseData: actionData) {
     await performAction('clickRadioButton', caseData);
-    if (caseData == claimantName.no) {
+    if(caseData == claimantName.no){
       await performAction('inputText', claimantName.whatIsCorrectClaimantName, claimantName.correctClaimantNameInput);
     }
-    claimantsName = caseData == "No" ? claimantName.correctClaimantNameInput : await this.extractClaimantName(page, claimantName.yourClaimantNameRegisteredWithHMCTS);
     await performAction('clickButton', claimantName.continue);
   }
 
@@ -475,6 +476,11 @@ export class CreateCaseAction implements IAction {
   private async selectApplications(option: actionData) {
     await performAction('clickRadioButton', option);
     await performAction('clickButton', applications.continue);
+  }
+
+  private async completingYourClaim(option: actionData) {
+    await performAction('clickRadioButton', option);
+    await performAction('clickButton', completeYourClaim.continue);
   }
 
   private async selectJurisdictionCaseTypeEvent() {
