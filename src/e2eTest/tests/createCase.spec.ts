@@ -59,6 +59,7 @@ test.describe.skip('[Successful Create Case Flow]  @Master @nightly', async () =
       addressIndex: addressDetails.addressIndex
     });
     await performValidation('bannerAlert', 'Case #.* has been created.');
+    await performAction('extractCaseIdFromAlert');
     await performAction('clickButton', provideMoreDetailsOfClaim.continue);
     await performAction('selectClaimantType', claimantType.registeredProviderForSocialHousing);
     await performAction('selectClaimType', claimType.no);
@@ -146,6 +147,7 @@ test.describe.skip('[Successful Create Case Flow]  @Master @nightly', async () =
       addressIndex: addressDetails.addressIndex
     });
     await performValidation('bannerAlert', 'Case #.* has been created.');
+    await performAction('extractCaseIdFromAlert');
     await performAction('clickButton', provideMoreDetailsOfClaim.continue);
     await performAction('selectClaimantType', claimantType.registeredProviderForSocialHousing);
     await performAction('selectClaimType', claimType.no);
@@ -233,6 +235,7 @@ test.describe.skip('[Successful Create Case Flow]  @Master @nightly', async () =
       addressIndex: addressDetails.addressIndex
     });
     await performValidation('bannerAlert', 'Case #.* has been created.');
+    await performAction('extractCaseIdFromAlert');
     await performAction('clickButton', provideMoreDetailsOfClaim.continue);
     await performAction('selectClaimantType', claimantType.registeredProviderForSocialHousing);
     await performAction('selectClaimType', claimType.no);
@@ -317,6 +320,7 @@ test.describe.skip('[Successful Create Case Flow]  @Master @nightly', async () =
       addressIndex: addressDetails.addressIndex
     });
     await performValidation('bannerAlert', 'Case #.* has been created.');
+    await performAction('extractCaseIdFromAlert');
     await performAction('clickButton', provideMoreDetailsOfClaim.continue);
     await performAction('selectClaimantType', claimantType.registeredProviderForSocialHousing);
     await performAction('selectClaimType', claimType.no);
