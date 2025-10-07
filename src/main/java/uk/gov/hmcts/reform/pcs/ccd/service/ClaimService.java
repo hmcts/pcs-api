@@ -30,12 +30,26 @@ public class ClaimService {
 
         ClaimEntity claimEntity = ClaimEntity.builder()
             .summary("Main Claim")
-            .additionalReasons(additionalReasons)
-            .costsClaimed(pcsCase.getClaimingCostsWanted().toBoolean())
             .defendantCircumstances(defendantCircumstances != null
                                         ? defendantCircumstances.getDefendantCircumstancesInfo() : null)
+            .suspensionOfRightToBuyHousingAct(pcsCase.getSuspensionOfRightToBuy() != null
+                                                  ? pcsCase.getSuspensionOfRightToBuy()
+                                                      .getSuspensionOfRightToBuyHousingActs() : null)
+            .suspensionOfRightToBuyReason(pcsCase.getSuspensionOfRightToBuy() != null
+                                              ? pcsCase.getSuspensionOfRightToBuy()
+                                                  .getSuspensionOfRightToBuyReason() : null)
+            .demotionOfTenancyHousingAct(pcsCase.getDemotionOfTenancy() != null
+                                             ? pcsCase.getDemotionOfTenancy()
+                                                 .getDemotionOfTenancyHousingActs() : null)
+            .demotionOfTenancyReason(pcsCase.getDemotionOfTenancy() != null
+                                         ? pcsCase.getDemotionOfTenancy()
+                                             .getDemotionOfTenancyReason() : null)
+            .statementOfExpressTermsDetails(pcsCase.getDemotionOfTenancy() != null
+                                                ? pcsCase.getDemotionOfTenancy()
+                                                    .getStatementOfExpressTermsDetails() : null)
+            .costsClaimed(pcsCase.getClaimingCostsWanted().toBoolean())
+            .additionalReasons(additionalReasons)
             .applicationWithClaim(YesOrNoToBoolean.convert(pcsCase.getApplicationWithClaim()))
-
             .build();
 
         claimEntity.addParty(claimantPartyEntity, PartyRole.CLAIMANT);

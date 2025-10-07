@@ -61,10 +61,11 @@ export class ActionRegistry {
     ['completingYourClaim', new CreateCaseAction()],
     ['selectAdditionalReasonsForPossession', new CreateCaseAction()],
     ['searchCaseById', new searchCaseActions()],
-    ['selectAlternativesToPossession', new CreateCaseAction()],
-    ['selectHousingAct', new CreateCaseAction()],
     ['enterReasonForDemotionOrder', new CreateCaseAction()],
     ['selectStatementOfExpressTerms', new CreateCaseAction()],
+    ['selectAlternativesToPossession', new CreateCaseAction()],
+    ['selectHousingAct', new CreateCaseAction()],
+    ['enterReasonForSuspensionOrder', new CreateCaseAction()],
     ['searchCaseFromCaseList', new searchCaseActions()],
     ['selectClaimingCosts', new CreateCaseAction()]
   ]);

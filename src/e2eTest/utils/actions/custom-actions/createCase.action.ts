@@ -37,7 +37,9 @@ import {alternativesToPossession} from '@data/page-data/alternativesToPossession
 import {reasonsForRequestingADemotionOrder} from '@data/page-data/reasonsForRequestingADemotionOrder.page.data';
 import {statementOfExpressTerms} from '@data/page-data/statementOfExpressTerms.page.data';
 import {completeYourClaim} from '@data/page-data/completeYourClaim.page.data';
+import {reasonsForRequestingASuspensionOrder} from '@data/page-data/reasonsForRequestingASuspensionOrder.page.data';
 import {additionalReasonsForPossession} from '@data/page-data/additionalReasonsForPossession.page.data';
+import {completeYourClaim} from '@data/page-data/completeYourClaim.page.data';
 import {home} from '@data/page-data/home.page.data';
 import {search} from '@data/page-data/search.page.data';
 import {userIneligible} from '@data/page-data/userIneligible.page.data';
@@ -47,7 +49,7 @@ let caseNumber: string;
 export let claimantsName: string;
 
 export class CreateCaseAction implements IAction {
-  async execute(page: Page, action: string, fieldName: actionData, data?: actionData): Promise<void> {
+  async execute(page: Page, action: string, fieldName: actionRecord | actionData, data?: actionData): Promise<void> {
     const actionsMap = new Map<string, () => Promise<void>>([
       ['createCase', () => this.createCaseAction(fieldName)],
       ['housingPossessionClaim', () => this.housingPossessionClaim()],
@@ -82,6 +84,7 @@ export class CreateCaseAction implements IAction {
       ['selectHousingAct', () => this.selectHousingAct(fieldName as actionRecord)],
       ['selectStatementOfExpressTerms', () => this.selectStatementOfExpressTerms(fieldName)],
       ['enterReasonForDemotionOrder', () => this.enterReasonForDemotionOrder(fieldName)],
+      ['enterReasonForSuspensionOrder', () => this.enterReasonForSuspensionOrder(fieldName)],
       ['selectMoneyJudgment', () => this.selectMoneyJudgment(fieldName)],
       ['selectDefendantCircumstances', () => this.selectDefendantCircumstances(fieldName)],
       ['selectApplications', () => this.selectApplications(fieldName)],
@@ -538,6 +541,10 @@ export class CreateCaseAction implements IAction {
     await performAction('clickButton', reasonsForRequestingADemotionOrder.continue);
   }
 
+  private async enterReasonForSuspensionOrder(reason: actionData) {
+    await performAction('inputText', reason, reasonsForRequestingASuspensionOrder.sampleTestReason);
+    await performAction('clickButton', reasonsForRequestingASuspensionOrder.continue);
+  }
   private async selectApplications(option: actionData) {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
     await performAction('clickRadioButton', option);

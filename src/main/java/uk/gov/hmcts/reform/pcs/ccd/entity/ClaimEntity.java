@@ -3,6 +3,8 @@ package uk.gov.hmcts.reform.pcs.ccd.entity;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -15,6 +17,9 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import uk.gov.hmcts.reform.pcs.ccd.domain.SuspensionOfRightToBuyHousingAct;
+import uk.gov.hmcts.reform.pcs.ccd.domain.DemotionOfTenancyHousingAct;
+
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -55,12 +60,24 @@ public class ClaimEntity {
     private Set<ClaimGroundEntity> claimGrounds = new HashSet<>();
 
     private String summary;
-    
+
     private Boolean applicationWithClaim;
 
     private String defendantCircumstances;
 
     private Boolean costsClaimed;
+
+    @Enumerated(EnumType.STRING)
+    private SuspensionOfRightToBuyHousingAct suspensionOfRightToBuyHousingAct;
+
+    private String suspensionOfRightToBuyReason;
+
+    @Enumerated(EnumType.STRING)
+    private DemotionOfTenancyHousingAct demotionOfTenancyHousingAct;
+
+    private String demotionOfTenancyReason;
+
+    private String statementOfExpressTermsDetails;
 
     private String additionalReasons;
 
