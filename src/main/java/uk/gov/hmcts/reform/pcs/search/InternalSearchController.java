@@ -1,9 +1,12 @@
 package uk.gov.hmcts.reform.pcs.search;
 
+import com.azure.json.models.JsonObject;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.AllArgsConstructor;
+import org.postgresql.util.PGobject;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -13,6 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 import uk.gov.hmcts.ccd.data.casedetails.SecurityClassification;
 import uk.gov.hmcts.ccd.domain.model.definition.CaseDetails;
 import uk.gov.hmcts.ccd.domain.model.search.CaseSearchResult;
+import uk.gov.hmcts.ccd.domain.model.search.CaseTypeResults;
 import uk.gov.hmcts.reform.pcs.ccd.service.ClaimService;
 import uk.gov.hmcts.reform.pcs.ccd.utils.CustomSearchRequestMapper;
 
@@ -46,7 +50,10 @@ public class InternalSearchController {
             List<Map<String, Object>> claimList = claimService.claims(convertedSql);
             ArrayList<CaseDetails> caseDetails = mapToCaseDetails(claimList);
 
-            return new CaseSearchResult((long) caseDetails.size(), caseDetails);
+            ArrayList<CaseTypeResults> caseTypeResults = new ArrayList<>();
+            caseTypeResults.add(new CaseTypeResults("PCS", 1));
+
+            return new CaseSearchResult((long) caseDetails.size(), caseDetails, caseTypeResults);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -71,20 +78,32 @@ public class InternalSearchController {
             convertedCase.setReference((Long) individualCase.get("reference"));
             convertedCase.setJurisdiction((String) individualCase.get("jurisdiction"));
 
+            Map<String, JsonNode> data = new HashMap<>();
 
-            JsonNode dataNode = mapper.readTree(String.valueOf(individualCase.get("data")));
-            Map<String, JsonNode> target = new HashMap<>();
-            target.put("data", dataNode);
-            convertedCase.setData(target);
+            //address
+            PGobject dataObject = (PGobject) individualCase.get("data");
+            String dataString = dataObject.getValue();
+            JsonNode dataNode = mapper.readTree(dataString);
+            String propertyString = dataNode.get("formattedClaimantContactAddress").toString();
+            propertyString = propertyString.substring(1, propertyString.length()-1);
+
+            String[] propertyStringArray = propertyString.split("<br>");
+
+            ObjectNode value = mapper.createObjectNode();
+            value.put("AddressLine3", "");
+            value.put("AddressLine2", "");
+            value.put("AddressLine1", propertyStringArray[0]);
+            value.put("Country", "United Kingdom");
+            value.put("PostTown", propertyStringArray[1]);
+            value.put("PostCode", propertyStringArray[2]);
+            value.put("County", "");
+            data.put("propertyAddress", value);
+
+            convertedCase.setData(data);
 
             convertedCase.setState((String) individualCase.get("state"));
             convertedCase.setLastStateModifiedDate(((Timestamp) individualCase.get("last_modified")).toLocalDateTime());
             convertedCase.setVersion((Integer) individualCase.get("version"));
-
-            JsonNode supplementaryDataNode = mapper.readTree(String.valueOf(individualCase.get("supplementary_data")));
-            Map<String, JsonNode> supplementaryTarget = new HashMap<>();
-            target.put("supplementary_data", supplementaryDataNode);
-            convertedCase.setSupplementaryData(supplementaryTarget);
 
             convertedCase.setId(String.valueOf(individualCase.get("id")));
             convertedCase.setLastModified(((Timestamp) individualCase.get("last_modified")).toLocalDateTime());
