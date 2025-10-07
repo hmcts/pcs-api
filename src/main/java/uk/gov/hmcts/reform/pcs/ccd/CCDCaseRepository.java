@@ -148,7 +148,7 @@ public class CCDCaseRepository extends DecentralisedCaseRepository<PCSCase> {
                                              later. The case is in state ${[STATE]}.
                                              <br>
                                              <br>
-                                             <a href="https://xui-pcs-api-pr-689.preview.platform.hmcts.net/cases/case-details/${[CASE_REFERENCE]}/trigger/%s"
+                                             <a href="/cases/case-details/${[CASE_REFERENCE]}/trigger/%s"
                                                 role="button"
                                                 class="govuk-button govuk-link govuk-link--no-visited-state">
                                                Continue
