@@ -126,6 +126,14 @@ def runE2eTests(String context) {
     stage('E2E Test - ' + context) {
       sh './gradlew runE2eChromeTests'
     }
+    publishHTML([
+      allowMissing: true,
+      alwaysLinkToLastBuild: true,
+      keepAll: true,
+      reportDir: "src/e2eTest/playwright-report",
+      reportFiles: 'index.html',
+      reportName: 'ExUI e2e Test PW Report'
+        ])
   } finally {
     publishHTML([
       allowMissing: true,
