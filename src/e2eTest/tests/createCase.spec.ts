@@ -29,8 +29,6 @@ import {claimantCircumstances} from '@data/page-data/claimantCircumstances.page.
 import {applications} from '@data/page-data/applications.page.data';
 import {completeYourClaim} from '@data/page-data/completeYourClaim.page.data';
 import {user} from '@data/user-data/permanent.user.data';
-import {alternativesToPossession} from '@data/page-data/alternativesToPossession.page.data';
-import {housingAct} from '@data/page-data/housingAct.page.data';
 import {reasonsForRequestingASuspensionOrder} from '@data/page-data/reasonsForRequestingASuspensionOrder.page.data';
 import {checkYourAnswers} from '@data/page-data/checkYourAnswers.page.data';
 import {propertyDetails} from '@data/page-data/propertyDetails.page.data';
@@ -256,7 +254,7 @@ test.describe('[Successful Create Case Flow]  @Master @nightly', async () => {
   });
 
   // The sections commented out will be fixed as part of the User Story https://tools.hmcts.net/jira/browse/HDPI-2123
-    test('England - Other tenancy with grounds for possession - Demotion order', async () => {
+    test('England - Other tenancy with grounds for possession - Demoted tenancy', async () => {
     await performAction('selectAddress', {
       postcode: addressDetails.englandCourtAssignedPostcode,
       addressIndex: addressDetails.addressIndex
