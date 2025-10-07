@@ -118,11 +118,13 @@ export class CreateCaseAction implements IAction {
   }
 
   private async selectResumeClaimOption(caseData: actionData) {
+    await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
     await performAction('clickRadioButton', caseData);
     await performAction('clickButtonAndVerifyPageNavigation', resumeClaimOptions.continue, claimantType.mainHeader);
   }
 
   private async selectClaimantType(caseData: actionData) {
+    await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
     await performAction('clickRadioButton', caseData);
     if(caseData === claimantType.registeredProviderForSocialHousing || caseData === claimantType.registeredCommunityLandlord){
       await performAction('clickButtonAndVerifyPageNavigation', claimantType.continue, claimType.mainHeader);
@@ -133,6 +135,7 @@ export class CreateCaseAction implements IAction {
   }
 
   private async selectClaimType(caseData: actionData) {
+    await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
     await performAction('clickRadioButton', caseData);
     if(caseData === claimType.no){
       await performAction('clickButtonAndVerifyPageNavigation', claimType.continue, claimantName.mainHeader);
@@ -150,6 +153,7 @@ export class CreateCaseAction implements IAction {
   }
 
   private async selectGroundsForPossession(caseData: actionData) {
+    await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
     const possessionGrounds = caseData as {
       groundsRadioInput: string;
       grounds?: string[];
@@ -167,11 +171,13 @@ export class CreateCaseAction implements IAction {
   }
 
   private async selectPreActionProtocol(caseData: actionData) {
+    await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
     await performAction('clickRadioButton', caseData);
     await performAction('clickButton', preActionProtocol.continue);
   }
 
   private async selectNoticeOfYourIntention(caseData: actionData) {
+    await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
     await performAction('clickRadioButton', caseData);
     await performAction('clickButton', noticeOfYourIntention.continue);
   }
@@ -182,6 +188,7 @@ export class CreateCaseAction implements IAction {
   }
 
   private async selectClaimantName(page: Page, caseData: actionData) {
+    await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
     await performAction('clickRadioButton', caseData);
     if(caseData == claimantName.no){
       await performAction('inputText', claimantName.whatIsCorrectClaimantName, claimantName.correctClaimantNameInput);
@@ -191,6 +198,7 @@ export class CreateCaseAction implements IAction {
   }
 
   private async selectContactPreferences(preferences: actionData) {
+    await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
     const prefData = preferences as {
       notifications: string;
       correspondenceAddress: string;
@@ -226,6 +234,7 @@ export class CreateCaseAction implements IAction {
   }
 
   private async defendantDetails(defendantVal: actionData) {
+    await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
     const defendantData = defendantVal as {
       name: string;
       correspondenceAddress: string;
@@ -269,6 +278,7 @@ export class CreateCaseAction implements IAction {
   }
 
   private async selectRentArrearsPossessionGround(rentArrearsPossession: actionData) {
+    await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
     const rentArrearsGrounds = rentArrearsPossession as {
       rentArrears: string[];
       otherGrounds: string;
@@ -279,6 +289,7 @@ export class CreateCaseAction implements IAction {
   }
 
   private async selectTenancyOrLicenceDetails(tenancyData: actionData) {
+    await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
     const tenancyLicenceData = tenancyData as {
       tenancyOrLicenceType: string;
       day?: string;
@@ -306,6 +317,7 @@ export class CreateCaseAction implements IAction {
     await performAction('clickButton', tenancyLicenceDetails.continue);
   }
   private async selectYourPossessionGrounds(possessionGrounds: actionData) {
+    await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
     const grounds = possessionGrounds as {
       mandatory?: string[];
       mandatoryAccommodation?: string[];
@@ -328,6 +340,7 @@ export class CreateCaseAction implements IAction {
   }
 
   private async selectRentArrearsOrBreachOfTenancy(grounds: actionData) {
+    await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
     const rentArrearsOrBreachOfTenancyGrounds = grounds as {
       rentArrearsOrBreach: string[];
     }
@@ -336,6 +349,7 @@ export class CreateCaseAction implements IAction {
   }
 
   private async enterReasonForPossession(reasons: actionData) {
+    await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
     if (!Array.isArray(reasons)) {
       throw new Error(`EnterReasonForPossession expected an array, but received ${typeof reasons}`);
     }
@@ -346,6 +360,7 @@ export class CreateCaseAction implements IAction {
   }
 
   private async selectMediationAndSettlement(mediationSettlement: actionData) {
+    await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
     const prefData = mediationSettlement as {
       attemptedMediationWithDefendantsOption: string;
       settlementWithDefendantsOption: string;
@@ -368,6 +383,7 @@ export class CreateCaseAction implements IAction {
   }
 
   private async selectNoticeDetails(noticeData: actionData) {
+    await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
     const noticeDetailsData = noticeData as {
       howDidYouServeNotice: string;
       explanationLabel?: string;
@@ -403,6 +419,7 @@ export class CreateCaseAction implements IAction {
   }
 
   private async provideRentDetails(rentFrequency: actionData) {
+    await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
     const rentData = rentFrequency as {
       rentFrequencyOption: string;
       rentAmount?: string;
@@ -419,6 +436,7 @@ export class CreateCaseAction implements IAction {
   }
 
   private async selectDailyRentAmount(dailyRentAmountData: actionData) {
+    await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
     const rentAmount = dailyRentAmountData as {
       calculateRentAmount: string,
       unpaidRentInteractiveOption: string,
@@ -454,6 +472,7 @@ export class CreateCaseAction implements IAction {
   }
 
   private async provideDetailsOfRentArrears(rentArrears: actionData) {
+    await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
     const rentArrearsData = rentArrears as {
       files?: string[],
       rentArrearsAmountOnStatement: string,
@@ -476,21 +495,25 @@ export class CreateCaseAction implements IAction {
   }
 
   private async selectMoneyJudgment(option: actionData) {
+    await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
     await performAction('clickRadioButton', option);
     await performAction('clickButton', moneyJudgment.continue);
   }
 
   private async selectClaimingCosts(option: actionData) {
+    await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
     await performAction('clickRadioButton', option);
     await performAction('clickButton', claimingCosts.continue);
   }
 
   private async selectApplications(option: actionData) {
+    await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
     await performAction('clickRadioButton', option);
     await performAction('clickButton', applications.continue);
   }
 
   private async completingYourClaim(option: actionData) {
+    await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
     await performAction('clickRadioButton', option);
     await performAction('clickButton', completeYourClaim.continue);
   }
@@ -504,6 +527,7 @@ export class CreateCaseAction implements IAction {
   }
 
   private async selectDefendantCircumstances(defendantDetails: actionData) {
+    await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
     await performAction('clickRadioButton', defendantDetails);
     if(defendantDetails == defendantCircumstances.yes){
       await performAction('inputText', defendantCircumstances.defendantCircumstancesLabel, defendantCircumstances.defendantCircumstancesSampleData);
@@ -527,6 +551,7 @@ export class CreateCaseAction implements IAction {
   }
 
   private async selectAdditionalReasonsForPossession(reasons: actionData) {
+    await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
     await performAction('clickRadioButton', reasons);
     if(reasons == additionalReasonsForPossession.yes){
       await performAction('inputText', additionalReasonsForPossession.additionalReasonsForPossessionLabel, additionalReasonsForPossession.additionalReasonsForPossessionSampleText);
