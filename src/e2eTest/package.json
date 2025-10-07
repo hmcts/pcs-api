@@ -6,7 +6,7 @@
     "node": ">=18.0.0"
   },
   "scripts": {
-    "test:chrome": "yarn playwright install && yarn playwright test --project chrome; EXIT_CODE=$?;allure generate src/e2eTest/allure-results --clean -o src/e2eTest/allure-report; exit $EXIT_CODE",
+    "test:chrome": "yarn playwright install && yarn playwright test --project chrome; EXIT_CODE=$?;allure generate allure-results --clean -o allure-report; exit $EXIT_CODE",
     "test:firefox": "yarn playwright install && yarn playwright test --project firefox; EXIT_CODE=$?; allure generate --clean; exit $EXIT_CODE",
     "test:openAllureReport": "allure serve src/e2eTest/allure-results"
   },
