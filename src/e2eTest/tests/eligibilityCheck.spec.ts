@@ -13,10 +13,6 @@ import {user} from '@data/user-data/permanent.user.data';
 import {home} from '@data/page-data/home.page.data';
 
 test.beforeEach(async ({page}, testInfo) => {
-  await testInfo.attach('Page URL', {
-    body: page.url(),
-    contentType: 'text/plain',
-  });
   initializeExecutor(page);
   await parentSuite('Eligibility Check');
   await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
@@ -24,6 +20,13 @@ test.beforeEach(async ({page}, testInfo) => {
   await performAction('clickTab', home.createCaseTab);
   await performAction('selectJurisdictionCaseTypeEvent');
   await performAction('housingPossessionClaim');
+});
+
+test.afterEach(async ({ page }, testInfo) => {
+  await testInfo.attach('Page URL', {
+    body: page.url(),
+    contentType: 'text/plain',
+  });
 });
 
 test.describe('[Eligibility checks for cross and non cross border postcodes] @Master @nightly', async () => {

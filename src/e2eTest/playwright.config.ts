@@ -21,13 +21,18 @@ export default defineConfig({
   globalSetup: require.resolve('./config/global-setup.config'),
   globalTeardown: require.resolve('./config/global-teardown.config'),
   reporter: [
-    ['html'],
-      [
-        'allure-playwright',
-        {
-          resultsDir: './allure-results',
-          suiteTitle: false,
-        },
+    ['html',
+      {
+        open: process.env.CI ? 'never' : 'always'
+      }
+    ],
+    ['allure-playwright',
+      {
+        resultsDir: 'src/e2eTest/allure-results',
+        suiteTitle: false,
+        detail: true,
+        attachments: true
+      },
     ],
   ],
   projects: [

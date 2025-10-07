@@ -8,10 +8,10 @@
   "scripts": {
     "test:chrome": "yarn playwright install && yarn playwright test --project chrome; EXIT_CODE=$?; allure generate --clean; exit $EXIT_CODE",
     "test:firefox": "yarn playwright install && yarn playwright test --project firefox; EXIT_CODE=$?; allure generate --clean; exit $EXIT_CODE",
-    "test:openAllureReport": "yarn allure open allure-report"
+    "test:openAllureReport": "allure serve src/e2eTest/allure-results"
   },
   "devDependencies": {
-    "@playwright/test": "^1.49.0",
+    "@playwright/test": "^1.56.0",
     "@types/node": "^22.15.31",
     "allure-commandline": "^2.34.1",
     "allure-js-commons": "^3.3.0",
