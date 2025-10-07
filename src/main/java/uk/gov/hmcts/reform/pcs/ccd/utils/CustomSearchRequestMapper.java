@@ -144,7 +144,7 @@ public class CustomSearchRequestMapper {
             query = query.replaceAll("-","");
 
             //Search containing OR
-            if (query.contains(" OR ")) {
+            if (query.contains("OR")) {
                 //split string and format
                 String[] referenceIds = query.split("OR");
 
