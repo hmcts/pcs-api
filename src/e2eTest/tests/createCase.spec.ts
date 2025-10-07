@@ -24,7 +24,6 @@ import {whatAreYourGroundsForPossession} from '@data/page-data/whatAreYourGround
 import {rentArrearsOrBreachOfTenancy} from '@data/page-data/rentArrearsOrBreachOfTenancy.page.data';
 import {reasonsForPossession} from '@data/page-data/reasonsForPossession.page.data';
 import {moneyJudgment} from '@data/page-data/moneyJudgment.page.data';
-import {claimantsName} from '@utils/actions/custom-actions/createCase.action';
 import {claimantCircumstances} from '@data/page-data/claimantCircumstances.page.data';
 import {applications} from '@data/page-data/applications.page.data';
 import {completeYourClaim} from '@data/page-data/completeYourClaim.page.data';
@@ -53,13 +52,13 @@ test.beforeEach(async ({page}, testInfo) => {
 });
 
 //Skipping these tests as are failing intermittently which will be fixed as part of HDPI-2306
-test.describe.skip('[Successful Create Case Flow]  @Master @nightly', async () => {
+test.describe('[Successful Create Case Flow]  @Master @nightly', async () => {
   test('England - Assured tenancy with Rent arrears and other possession grounds', async () => {
     await performAction('selectAddress', {
       postcode: addressDetails.englandCourtAssignedPostcode,
       addressIndex: addressDetails.addressIndex
     });
-    await performValidation('bannerAlert', 'Case #.* has been created.');
+    await performValidation('bannerAlert', 'Cse #.* has been created.');
     await performAction('clickButton', provideMoreDetailsOfClaim.continue);
     await performValidation('mainHeader', claimantType.mainHeader);
     await performAction('selectClaimantType', claimantType.registeredProviderForSocialHousing);
@@ -148,7 +147,7 @@ test.describe.skip('[Successful Create Case Flow]  @Master @nightly', async () =
   });
 
   // The sections commented out will be fixed as part of the User Story https://tools.hmcts.net/jira/browse/HDPI-2123
-  test('England - Assured tenancy with No Rent arrears', async () => {
+  test.skip('England - Assured tenancy with No Rent arrears', async () => {
     await performAction('selectAddress', {
       postcode: addressDetails.englandCourtAssignedPostcode,
       addressIndex: addressDetails.addressIndex
@@ -240,7 +239,7 @@ test.describe.skip('[Successful Create Case Flow]  @Master @nightly', async () =
   });
 
   // The sections commented out will be fixed as part of the User Story https://tools.hmcts.net/jira/browse/HDPI-2123
-  test('England - Other tenancy with grounds for possession', async () => {
+  test.skip('England - Other tenancy with grounds for possession', async () => {
     await performAction('selectAddress', {
       postcode: addressDetails.englandCourtAssignedPostcode,
       addressIndex: addressDetails.addressIndex
@@ -329,7 +328,7 @@ test.describe.skip('[Successful Create Case Flow]  @Master @nightly', async () =
   });
 
   // The sections commented out will be fixed as part of the User Story https://tools.hmcts.net/jira/browse/HDPI-2123
-  test('England - Demoted tenancy with no grounds for possession', async () => {
+  test.skip('England - Demoted tenancy with no grounds for possession', async () => {
     await performAction('selectAddress', {
       postcode: addressDetails.englandCourtAssignedPostcode,
       addressIndex: addressDetails.addressIndex
@@ -414,7 +413,7 @@ test.describe.skip('[Successful Create Case Flow]  @Master @nightly', async () =
     )
   });
 
-  test('Wales - Assured tenancy with Rent arrears and no other possession grounds', async () => {
+  test.skip('Wales - Assured tenancy with Rent arrears and no other possession grounds', async () => {
     await performAction('enterTestAddressManually');
     await performValidation('bannerAlert', 'Case #.* has been created.');
     await performAction('extractCaseIdFromAlert');
@@ -495,7 +494,7 @@ test.describe.skip('[Successful Create Case Flow]  @Master @nightly', async () =
   });
 
   // The sections commented out will be fixed as part of the User Story https://tools.hmcts.net/jira/browse/HDPI-2123
-  test('Wales - Flexible tenancy with Rent arrears only', async () => {
+  test.skip('Wales - Flexible tenancy with Rent arrears only', async () => {
     await performAction('enterTestAddressManually');
     await performValidation('bannerAlert', 'Case #.* has been created.');
     await performAction('extractCaseIdFromAlert');
@@ -575,7 +574,7 @@ test.describe.skip('[Successful Create Case Flow]  @Master @nightly', async () =
   });
 
   // The sections commented out will be fixed as part of the User Story https://tools.hmcts.net/jira/browse/HDPI-2123
-  test('Wales - Secure tenancy with Rent and other grounds', async () => {
+  test.skip('Wales - Secure tenancy with Rent and other grounds', async () => {
     await performAction('enterTestAddressManually');
     await performValidation('bannerAlert', 'Case #.* has been created.');
     await performAction('extractCaseIdFromAlert');
