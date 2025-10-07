@@ -12,7 +12,7 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   /* Retry on CI only */
   retries: process.env.CI ? 2 : 0,
-  workers: process.env.CI ? 4 : 2,  
+  workers: process.env.CI ? 4 : 2,
   timeout: 90 * 1000,
   expect: { timeout: 10 * 1000 },
   use: { actionTimeout: 10 * 1000, navigationTimeout: 10 * 1000 },
@@ -26,6 +26,7 @@ export default defineConfig({
         'allure-playwright',
         {
           resultsDir: 'allure-results',
+          detail: true,
           suiteTitle: false,
           environmentInfo: {
             os_version: process.version,
