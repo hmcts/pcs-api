@@ -1,6 +1,6 @@
 import { Page, Locator } from '@playwright/test';
 import { IAction } from '../../interfaces/action.interface';
-import { waitForCustomTimeout } from '../../../playwright.config';
+import { waitForPageRedirectionTimeout } from '../../../playwright.config';
 
 export class ClickButtonAction implements IAction {
   async execute(page: Page, action: string, buttonText: string , actionParams: string): Promise<void> {
@@ -26,20 +26,16 @@ export class ClickButtonAction implements IAction {
 
   private async clickButtonAndVerifyPageNavigation(page: Page, button: Locator, nextPageElement: string): Promise<void> {
     const pageElement = page.locator(`h1:has-text("${nextPageElement}")`);
-    for(let retry = 0; retry < 3; retry++){
-      if(!await pageElement.isVisible()){
+    let retry = 0;
+    for(; retry < 3 && !await pageElement.isVisible(); retry++){
         this.clickButton(page, button);
         if(!await pageElement.isVisible()) {
           //Adding sleep to slow down execution when the application behaves abnormally
-          await page.waitForTimeout(waitForCustomTimeout);
+          await page.waitForTimeout(waitForPageRedirectionTimeout);
         }
-      }
-      else{
-        break;
-      }
-      if (retry === 2) {
-        throw new Error(`Navigation to ${nextPageElement} page/element has been failed after 3 attempts`);
-      }
+    }
+    if (retry === 3) {
+      throw new Error(`Navigation to ${nextPageElement} page/element has been failed after 3 attempts`);
     }
   }
 
