@@ -11,7 +11,7 @@ export default defineConfig({
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   /* Retry on CI only */
-  retries: process.env.CI ? 0 : 0,
+  retries: process.env.CI ? 2 : 0,
   workers: process.env.CI ? 4 : 2,
   timeout: 90 * 1000,
   expect: { timeout: 10 * 1000 },
@@ -22,17 +22,11 @@ export default defineConfig({
   globalTeardown: require.resolve('./config/global-teardown.config'),
   reporter: [
     ['list'],
-      [
-        'allure-playwright',
-        {
-          resultsDir: 'allure-results',
-          detail: true,
-          suiteTitle: false,
-          environmentInfo: {
-            os_version: process.version,
-          },
-        },
-    ],
+    ['allure-playwright', {
+      resultsDir: 'allure-results',
+      detail: true,
+      suiteTitle: false,
+    }],
   ],
   projects: [
     {
@@ -40,9 +34,9 @@ export default defineConfig({
       use: {
         ...devices['Desktop Chrome'],
         channel: 'chrome',
-        screenshot: 'on',
-        video: 'on',
-        trace: 'on-first-retry',
+        screenshot: 'only-on-failure',
+        video: 'retain-on-failure',
+        trace: 'retain-on-failure',  // optional but helpful
         javaScriptEnabled: true,
         viewport: DEFAULT_VIEWPORT,
         headless: !!process.env.CI,
