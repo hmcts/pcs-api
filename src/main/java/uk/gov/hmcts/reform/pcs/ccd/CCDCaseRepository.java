@@ -118,7 +118,7 @@ public class CCDCaseRepository extends DecentralisedCaseRepository<PCSCase> {
         pcsCase.setPageHeadingMarkdown("""
                 <p class="govuk-!-font-size-24 
                 govuk-!-margin-top-0 govuk-!-margin-bottom-0">
-                #${[CASE_REFERENCE]}</p>""");
+                Case number: ${[CASE_REFERENCE]}</p>""");
 
         if (pcsCase.getHasUnsubmittedCaseData() == YesOrNo.YES) {
             pcsCase.setNextStepsMarkdown("""
