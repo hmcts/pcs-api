@@ -60,6 +60,7 @@ test.describe('[Successful Create Case Flow]  @Master @nightly', async () => {
       addressIndex: addressDetails.addressIndex
     });
     await performValidation('bannerAlert', 'Case #.* has been created.');
+    await performAction('extractCaseIdFromAlert');
     await performAction('clickButtonAndVerifyPageNavigation', provideMoreDetailsOfClaim.continue, claimantType.mainHeader);
     await performAction('selectClaimantType', claimantType.registeredProviderForSocialHousing);
     await performAction('selectClaimType', claimType.no);
@@ -152,6 +153,7 @@ test.describe('[Successful Create Case Flow]  @Master @nightly', async () => {
       addressIndex: addressDetails.addressIndex
     });
     await performValidation('bannerAlert', 'Case #.* has been created.');
+    await performAction('extractCaseIdFromAlert');
     await performAction('clickButtonAndVerifyPageNavigation', provideMoreDetailsOfClaim.continue, claimantType.mainHeader);
     await performAction('selectClaimantType', claimantType.registeredProviderForSocialHousing);
     await performAction('selectClaimType', claimType.no);
@@ -244,6 +246,7 @@ test.describe('[Successful Create Case Flow]  @Master @nightly', async () => {
       addressIndex: addressDetails.addressIndex
     });
     await performValidation('bannerAlert', 'Case #.* has been created.');
+    await performAction('extractCaseIdFromAlert');
     await performAction('clickButtonAndVerifyPageNavigation', provideMoreDetailsOfClaim.continue, claimantType.mainHeader);
     await performAction('selectClaimantType', claimantType.registeredProviderForSocialHousing);
     await performAction('selectClaimType', claimType.no);
@@ -333,6 +336,7 @@ test.describe('[Successful Create Case Flow]  @Master @nightly', async () => {
       addressIndex: addressDetails.addressIndex
     });
     await performValidation('bannerAlert', 'Case #.* has been created.');
+    await performAction('extractCaseIdFromAlert');
     await performAction('clickButtonAndVerifyPageNavigation', provideMoreDetailsOfClaim.continue, claimantType.mainHeader);
     await performAction('selectClaimantType', claimantType.registeredProviderForSocialHousing);
     await performAction('selectClaimType', claimType.no);
