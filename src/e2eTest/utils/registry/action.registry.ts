@@ -61,7 +61,9 @@ export class ActionRegistry {
     ['completingYourClaim', new CreateCaseAction()],
     ['selectAdditionalReasonsForPossession', new CreateCaseAction()],
     ['searchCaseFromCaseList', new searchCaseActions()],
-    ['selectClaimingCosts', new CreateCaseAction()]
+    ['selectClaimingCosts', new CreateCaseAction()],
+    ['wantToUploadDocuments', new CreateCaseAction()],
+    ['uploadAdditionalDocs', new CreateCaseAction()]
   ]);
 
   static getAction(actionName: string): IAction {
