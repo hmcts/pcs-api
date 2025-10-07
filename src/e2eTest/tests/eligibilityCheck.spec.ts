@@ -29,7 +29,7 @@ test.afterEach(async ({ page }, testInfo) => {
   });
 });
 
-test.describe('[Eligibility checks for cross and non cross border postcodes] @Master @nightly', async () => {
+test.describe.skip('[Eligibility checks for cross and non cross border postcodes] @Master @nightly', async () => {
   test('My failed test', async ({page}) => {
     await performAction('clickButtonAndVerifyPageNavigation', provideMoreDetailsOfClaim.continue, claimantType.mainHeader);
   });

@@ -28,7 +28,7 @@ export default defineConfig({
     ],
     ['allure-playwright',
       {
-        resultsDir: 'allure-results',
+        resultsDir: './allure-results',
         suiteTitle: false,
         detail: true,
         attachments: true
@@ -41,9 +41,9 @@ export default defineConfig({
       use: {
         ...devices['Desktop Chrome'],
         channel: 'chrome',
-        screenshot: 'on',
-        video: 'on',
-        trace: 'retain-on-failure',
+        screenshot: 'only-on-failure' as const,
+        video: 'retain-on-failure' as const,
+        trace: 'retain-on-failure' as const,
         javaScriptEnabled: true,
         viewport: DEFAULT_VIEWPORT,
         headless: !!process.env.CI,
