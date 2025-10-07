@@ -107,6 +107,7 @@ export class CreateCaseAction implements IAction {
       ['select', addressDetails.selectAddressLabel, address.addressIndex]
     );
     await performAction('clickButton', addressDetails.submit);
+    await performAction('extractCaseIdFromAlert');
   }
 
   private async extractCaseIdFromAlert(page: Page): Promise<void> {
@@ -508,11 +509,13 @@ export class CreateCaseAction implements IAction {
   }
 
   private async selectApplications(option: actionData) {
+    await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
     await performAction('clickRadioButton', option);
     await performAction('clickButton', applications.continue);
   }
 
   private async completingYourClaim(option: actionData) {
+    await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
     await performAction('clickRadioButton', option);
     await performAction('clickButton', completeYourClaim.continue);
   }
@@ -526,6 +529,7 @@ export class CreateCaseAction implements IAction {
   }
 
   private async selectDefendantCircumstances(defendantDetails: actionData) {
+    await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
     await performAction('clickRadioButton', defendantDetails);
     if(defendantDetails == defendantCircumstances.yes){
       await performAction('inputText', defendantCircumstances.defendantCircumstancesLabel, defendantCircumstances.defendantCircumstancesSampleData);
@@ -546,9 +550,11 @@ export class CreateCaseAction implements IAction {
       , ['inputText', addressDetails.countryLabel, addressDetails.country]
     );
     await performAction('clickButton', addressDetails.submit);
+    await performAction('extractCaseIdFromAlert');
   }
 
   private async selectAdditionalReasonsForPossession(reasons: actionData) {
+    await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
     await performAction('clickRadioButton', reasons);
     if(reasons == additionalReasonsForPossession.yes){
       await performAction('inputText', additionalReasonsForPossession.additionalReasonsForPossessionLabel, additionalReasonsForPossession.additionalReasonsForPossessionSampleText);

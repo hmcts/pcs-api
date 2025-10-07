@@ -59,7 +59,6 @@ test.describe('[Successful Create Case Flow]  @Master @nightly', async () => {
       addressIndex: addressDetails.addressIndex
     });
     await performValidation('bannerAlert', 'Case #.* has been created.');
-    await performAction('extractCaseIdFromAlert');
     await performAction('clickButtonAndVerifyPageNavigation', provideMoreDetailsOfClaim.continue, claimantType.mainHeader);
     await performAction('selectClaimantType', claimantType.registeredProviderForSocialHousing);
     await performAction('selectClaimType', claimType.no);
@@ -152,7 +151,6 @@ test.describe('[Successful Create Case Flow]  @Master @nightly', async () => {
       addressIndex: addressDetails.addressIndex
     });
     await performValidation('bannerAlert', 'Case #.* has been created.');
-    await performAction('extractCaseIdFromAlert');
     await performAction('clickButtonAndVerifyPageNavigation', provideMoreDetailsOfClaim.continue, claimantType.mainHeader);
     await performAction('selectClaimantType', claimantType.registeredProviderForSocialHousing);
     await performAction('selectClaimType', claimType.no);
@@ -245,7 +243,6 @@ test.describe('[Successful Create Case Flow]  @Master @nightly', async () => {
       addressIndex: addressDetails.addressIndex
     });
     await performValidation('bannerAlert', 'Case #.* has been created.');
-    await performAction('extractCaseIdFromAlert');
     await performAction('clickButtonAndVerifyPageNavigation', provideMoreDetailsOfClaim.continue, claimantType.mainHeader);
     await performAction('selectClaimantType', claimantType.registeredProviderForSocialHousing);
     await performAction('selectClaimType', claimType.no);
@@ -335,7 +332,6 @@ test.describe('[Successful Create Case Flow]  @Master @nightly', async () => {
       addressIndex: addressDetails.addressIndex
     });
     await performValidation('bannerAlert', 'Case #.* has been created.');
-    await performAction('extractCaseIdFromAlert');
     await performAction('clickButtonAndVerifyPageNavigation', provideMoreDetailsOfClaim.continue, claimantType.mainHeader);
     await performAction('selectClaimantType', claimantType.registeredProviderForSocialHousing);
     await performAction('selectClaimType', claimType.no);
@@ -418,7 +414,6 @@ test.describe('[Successful Create Case Flow]  @Master @nightly', async () => {
   test('Wales - Assured tenancy with Rent arrears and no other possession grounds', async () => {
     await performAction('enterTestAddressManually');
     await performValidation('bannerAlert', 'Case #.* has been created.');
-    await performAction('extractCaseIdFromAlert');
     await performAction('clickButtonAndVerifyPageNavigation', provideMoreDetailsOfClaim.continue, claimantType.mainHeader);
     await performAction('selectClaimantType', claimantType.registeredCommunityLandlord);
     await performAction('selectClaimType', claimType.no);
@@ -499,7 +494,6 @@ test.describe('[Successful Create Case Flow]  @Master @nightly', async () => {
   test('Wales - Flexible tenancy with Rent arrears only', async () => {
     await performAction('enterTestAddressManually');
     await performValidation('bannerAlert', 'Case #.* has been created.');
-    await performAction('extractCaseIdFromAlert');
     await performAction('clickButtonAndVerifyPageNavigation', provideMoreDetailsOfClaim.continue, claimantType.mainHeader);
     await performAction('selectClaimantType', claimantType.registeredCommunityLandlord);
     await performAction('selectClaimType', claimType.no);
@@ -579,7 +573,6 @@ test.describe('[Successful Create Case Flow]  @Master @nightly', async () => {
   test('Wales - Secure tenancy with Rent and other grounds', async () => {
     await performAction('enterTestAddressManually');
     await performValidation('bannerAlert', 'Case #.* has been created.');
-    await performAction('extractCaseIdFromAlert');
     await performAction('clickButtonAndVerifyPageNavigation', provideMoreDetailsOfClaim.continue, claimantType.mainHeader);
     await performAction('selectClaimantType', claimantType.registeredCommunityLandlord);
     await performAction('selectClaimType', claimType.no);
