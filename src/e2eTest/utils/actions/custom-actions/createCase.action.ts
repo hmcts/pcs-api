@@ -39,6 +39,7 @@ import {additionalReasonsForPossession} from '@data/page-data/additionalReasonsF
 import {completeYourClaim} from '@data/page-data/completeYourClaim.page.data';
 import {home} from '@data/page-data/home.page.data';
 import {search} from '@data/page-data/search.page.data';
+import {userIneligible} from '@data/page-data/userIneligible.page.data';
 
 export let caseInfo: { id: string; fid: string; state: string };
 let caseNumber: string;
@@ -123,17 +124,27 @@ export class CreateCaseAction implements IAction {
 
   private async selectResumeClaimOption(caseData: actionData) {
     await performAction('clickRadioButton', caseData);
-    await performAction('clickButton', resumeClaimOptions.continue);
+    await performAction('clickButtonAndVerifyPageNavigation', resumeClaimOptions.continue, claimantType.mainHeader);
   }
 
   private async selectClaimantType(caseData: actionData) {
     await performAction('clickRadioButton', caseData);
-    await performAction('clickButton', claimantType.continue);
+    if(caseData === claimantType.registeredProviderForSocialHousing || caseData === claimantType.registeredCommunityLandlord){
+      await performAction('clickButtonAndVerifyPageNavigation', claimantType.continue, claimType.mainHeader);
+    }
+    else{
+      await performAction('clickButtonAndVerifyPageNavigation', claimantType.continue, userIneligible.mainHeader);
+    }
   }
 
   private async selectClaimType(caseData: actionData) {
     await performAction('clickRadioButton', caseData);
-    await performAction('clickButton', claimType.continue);
+    if(caseData === claimType.no){
+      await performAction('clickButtonAndVerifyPageNavigation', claimType.continue, claimantName.mainHeader);
+    }
+    else{
+      await performAction('clickButtonAndVerifyPageNavigation', claimantType.continue, userIneligible.mainHeader);
+    }
   }
 
   private async extractClaimantName(page: Page, caseData: string): Promise<string> {
@@ -177,11 +188,11 @@ export class CreateCaseAction implements IAction {
 
   private async selectClaimantName(page: Page, caseData: actionData) {
     await performAction('clickRadioButton', caseData);
-    if (caseData == claimantName.no) {
+    if(caseData == claimantName.no){
       await performAction('inputText', claimantName.whatIsCorrectClaimantName, claimantName.correctClaimantNameInput);
     }
     claimantsName = caseData == "No" ? claimantName.correctClaimantNameInput : await this.extractClaimantName(page, claimantName.yourClaimantNameRegisteredWithHMCTS);
-    await performAction('clickButton', 'Continue');
+    await performAction('clickButtonAndVerifyPageNavigation', claimantName.continue, contactPreferences.mainHeader);
   }
 
   private async selectContactPreferences(preferences: actionData) {
@@ -578,7 +589,4 @@ export class CreateCaseAction implements IAction {
       throw new Error('Case could not be created.');
     }
   }
-
-  private getRandomArrayElement = (arr: any[]) =>
-    arr.length ? arr[Math.floor(Math.random() * arr.length)] : undefined;
 }
