@@ -15,7 +15,6 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -59,9 +58,13 @@ public class ClaimEntity {
     
     private Boolean applicationWithClaim;
 
+    private String defendantCircumstances;
+
     private Boolean costsClaimed;
 
     private String additionalReasons;
+
+    private String claimantCircumstances;
 
     public void addParty(PartyEntity party, PartyRole partyRole) {
         ClaimPartyEntity claimPartyEntity = ClaimPartyEntity.builder()

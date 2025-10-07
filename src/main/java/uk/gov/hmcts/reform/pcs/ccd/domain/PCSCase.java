@@ -450,16 +450,14 @@ public class PCSCase {
     private String thirdPartyPaymentSourceOther;
 
     @CCD(
-        label = "Do you have grounds for possession?",
-        access = {CitizenAccess.class}
+        label = "Do you have grounds for possession?"
     )
     private VerticalYesNo hasIntroductoryDemotedOtherGroundsForPossession;
 
     @CCD(
             label = "What are your grounds for possession?",
             typeOverride = FieldType.MultiSelectList,
-            typeParameterOverride = "IntroductoryDemotedOrOtherGrounds",
-            access = {CitizenAccess.class}
+            typeParameterOverride = "IntroductoryDemotedOrOtherGrounds"
     )
     private Set<IntroductoryDemotedOrOtherGrounds> introductoryDemotedOrOtherGrounds;
 
@@ -467,16 +465,15 @@ public class PCSCase {
             label = "Enter your grounds for possession",
             hint = "You'll be able to explain your reasons for claiming Possession"
                     + " under these grounds on the next screen",
-            access = {CitizenAccess.class},
             typeOverride = TextArea
     )
     private String otherGroundDescription;
 
-    @CCD(access = {CitizenAccess.class})
+    @CCD
     private YesOrNo showIntroductoryDemotedOtherGroundReasonPage;
 
     @JsonUnwrapped
-    @CCD(access = {CitizenAccess.class})
+    @CCD
     private IntroductoryDemotedOtherGroundReason introductoryDemotedOtherGroundReason;
 
     @CCD(
@@ -553,12 +550,25 @@ public class PCSCase {
     @JsonUnwrapped
     private NoRentArrearsReasonForGrounds noRentArrearsReasonForGrounds;
 
+    @JsonUnwrapped
+    private DefendantCircumstances defendantCircumstances;
+
     private AdditionalReasons additionalReasonsForPossession;
+
+    @JsonUnwrapped
+    @CCD
+    private ClaimantCircumstances claimantCircumstances;
 
     @CCD(
         label = "Are you planning to make an application at the same time as your claim?",
-        hint = "After you’ve submitted your claim, there will be instructions on how to make an application",
-        access = {CitizenAccess.class}
+        hint = "After you've submitted your claim, there will be instructions on how to make an application"
     )
     private VerticalYesNo applicationWithClaim;
+
+    @CCD(
+        label = "What would you like to do next?",
+        typeOverride = FieldType.FixedRadioList,
+        typeParameterOverride = "CompletionNextStep"
+    )
+    private CompletionNextStep completionNextStep;
 }

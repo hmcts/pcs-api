@@ -16,7 +16,7 @@ export const whatAreYourGroundsForPossession = {
       deteriorationInPropertyCondition: 'Deterioration in the condition of the property (ground 3)',
       deteriorationOfFurniture: 'Deterioration of furniture (ground 4)',
       tenancyObtainedByFalseStatement: 'Tenancy obtained by false statement (ground 5)',
-      premiumPaidMutualExchange:'Premium paid in connection with mutual exchange (ground 6)',
+      premiumPaidMutualExchange: 'Premium paid in connection with mutual exchange (ground 6)',
       unreasonableConduct: 'Unreasonable conduct in tied accommodation (ground 7)',
       refusalToMoveBack: 'Refusal to move back to main home after works completed (ground 8)',
       rentArrears: 'Rent arrears (ground 10)',
@@ -36,5 +36,6 @@ export const whatAreYourGroundsForPossession = {
       housingAssociationSpecialCircumstance: 'Housing association special circumstances accommodation (ground 14)',
       specialNeeds: 'Special needs accommodation (ground 15)',
       underOccupying: 'Under occupying after succession (ground 15A)'
-    }
+    },
+  continue: 'Continue'
 };
