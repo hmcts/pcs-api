@@ -111,6 +111,15 @@ class CCDCaseRepositoryTest {
     }
 
     @Test
+    void shouldSetPageHeadingMarkdownWhenCaseIsRetrieved() {
+        // When
+        PCSCase pcsCase = underTest.getCase(CASE_REFERENCE, STATE);
+
+        // Then
+        assertThat(pcsCase.getPageHeadingMarkdown()).isNotBlank();
+    }
+
+    @Test
     void shouldMapPropertyAddress() {
         // Given
         AddressEntity addressEntity = mock(AddressEntity.class);
