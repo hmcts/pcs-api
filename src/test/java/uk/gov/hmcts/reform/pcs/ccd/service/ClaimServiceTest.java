@@ -137,9 +137,11 @@ class ClaimServiceTest {
         when(additionalReasons.getReasons()).thenReturn("example reasons");
         when(pcsCase.getClaimingCostsWanted()).thenReturn(VerticalYesNo.NO);
         when(claimGroundService.getGroundsWithReason(pcsCase)).thenReturn(List.of());
+        when(pcsCase.getClaimantCircumstances()).thenReturn(mock(ClaimantCircumstances.class));
 
         // When
         ClaimEntity createdClaimEntity = claimService.createMainClaimEntity(pcsCase, claimantPartyEntity);
+
 
         // Then
         assertThat(createdClaimEntity.getSuspensionOfRightToBuyHousingAct()).isEqualTo(expectedSuspensionAct);
