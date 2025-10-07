@@ -613,6 +613,22 @@ public class PCSCase {
     private ClaimantCircumstances claimantCircumstances;
 
     @CCD(
+        label = "Do you want to upload any additional documents?",
+        hint = "You can either upload documents now or closer to the hearing date. "
+            + "Any documents you upload now will be included in the pack of documents a judge will "
+            + "receive before the hearing (the bundle).",
+        access = {CitizenAccess.class}
+    )
+    private VerticalYesNo wantToUploadDocuments;
+
+    @CCD(
+        label = "Add document",
+        hint = "Upload a document to the system",
+        access = {CitizenAccess.class}
+    )
+    private List<ListValue<AdditionalDocument>> additionalDocuments;
+
+    @CCD(
         label = "Are you planning to make an application at the same time as your claim?",
         hint = "After you've submitted your claim, there will be instructions on how to make an application",
         access = {CitizenAccess.class}
