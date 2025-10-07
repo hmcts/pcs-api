@@ -37,7 +37,7 @@ export default defineConfig({
   ],
   projects: [
     {
-      name: 'Skipped tests - chrome',
+      name: 'chrome',
       use: {
         ...devices['Desktop Chrome'],
         channel: 'chrome',
