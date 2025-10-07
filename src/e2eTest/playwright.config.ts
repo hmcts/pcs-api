@@ -28,7 +28,7 @@ export default defineConfig({
     ],
     ['allure-playwright',
       {
-        resultsDir: 'allure-results',
+        resultsDir: './src/e2eTest/allure-results',
         suiteTitle: false,
         detail: true,
         attachments: true
