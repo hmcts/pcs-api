@@ -80,10 +80,10 @@ public class InternalSearchController {
 
             Map<String, JsonNode> data = new HashMap<>();
 
-                //address
-                PGobject dataObject = (PGobject) individualCase.get("data");
-                String dataString = dataObject.getValue();
-                JsonNode dataNode = mapper.readTree(dataString);
+            //address
+            PGobject dataObject = (PGobject) individualCase.get("data");
+            String dataString = dataObject.getValue();
+            JsonNode dataNode = mapper.readTree(dataString);
 
             try {
                 String propertyString = dataNode.get("formattedClaimantContactAddress").toString();
@@ -102,7 +102,7 @@ public class InternalSearchController {
                 data.put("propertyAddress", value);
 
                 convertedCase.setData(data);
-            } catch (NullPointerException exception){
+            } catch (NullPointerException exception) {
 
                 //It looks like the current data returned by SQL query only contains address
                 // when the case has been issued. To handle this, in this POC, I set defaults
