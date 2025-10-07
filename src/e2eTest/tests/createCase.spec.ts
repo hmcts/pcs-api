@@ -58,7 +58,7 @@ test.describe('[Successful Create Case Flow]  @Master @nightly', async () => {
       postcode: addressDetails.englandCourtAssignedPostcode,
       addressIndex: addressDetails.addressIndex
     });
-    await performValidation('bannerAlert', 'Case #.* has been created.');
+    await performValidation('bannerAlert', 'Case #.* has been createdd.');
     await performAction('extractCaseIdFromAlert');
     await performAction('clickButtonAndVerifyPageNavigation', provideMoreDetailsOfClaim.continue, claimantType.mainHeader);
     await performAction('selectClaimantType', claimantType.registeredProviderForSocialHousing);
