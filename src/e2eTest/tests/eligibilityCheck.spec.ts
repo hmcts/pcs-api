@@ -16,7 +16,7 @@ test.beforeEach(async ({page}, testInfo) => {
   initializeExecutor(page);
   await parentSuite('Eligibility Check');
   await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
-  await performAction('login', user.claimantSolicitor);
+  // await performAction('login', user.claimantSolicitor);
   await performAction('clickTab', home.createCaseTab);
   await performAction('selectJurisdictionCaseTypeEvent');
   await performAction('housingPossessionClaim');
