@@ -22,16 +22,11 @@ test.beforeEach(async ({page}, testInfo) => {
   await performAction('housingPossessionClaim');
 });
 
+test.describe('[Eligibility checks for cross and non cross border postcodes] @Master @nightly', async () => {
   test('My failed test', async ({page}) => {
-    await performAction('selectAddress', {
-      postcode: borderPostcode.englandWalesPostcode,
-      addressIndex: addressDetails.addressIndex
-    });
-    await performValidation('text', {"text": borderPostcode.submit, "elementType": "button"})
+    await performAction('clickButtonAndVerifyPageNavigation', provideMoreDetailsOfClaim.continue, claimantType.mainHeader);
   });
-
-test.describe.skip('[Eligibility checks for cross and non cross border postcodes] @Master @nightly', async () => {
-  test('Cross border - Verify postcode eligibility check redirection and content for England and Wales', async ({page}) => {
+  test.skip('Cross border - Verify postcode eligibility check redirection and content for England and Wales', async ({page}) => {
     await performAction('selectAddress', {
       postcode: borderPostcode.englandWalesPostcode,
       addressIndex: addressDetails.addressIndex
@@ -49,7 +44,7 @@ test.describe.skip('[Eligibility checks for cross and non cross border postcodes
     await performValidation('bannerAlert', 'Case #.* has been created.');
   });
 
-  test('Cross border - Verify postcode page for England and Scotland content', async () => {
+  test.skip('Cross border - Verify postcode page for England and Scotland content', async () => {
     await performAction('selectAddress', {
       postcode: borderPostcode.englandScotlandPostcode,
       addressIndex: addressDetails.addressIndex
@@ -67,7 +62,7 @@ test.describe.skip('[Eligibility checks for cross and non cross border postcodes
     await performValidation('text', {"text": borderPostcode.cancel, "elementType": "link"})
   });
 
-  test('Cross border England - Verify postcode eligibility check', async () => {
+  test.skip('Cross border England - Verify postcode eligibility check', async () => {
     await performAction('selectAddress', {
       postcode: addressDetails.englandCourtAssignedPostcode,
       addressIndex: addressDetails.addressIndex
@@ -75,7 +70,7 @@ test.describe.skip('[Eligibility checks for cross and non cross border postcodes
     await performValidation('bannerAlert', 'Case #.* has been created.');
   });
 
-  test('Cross border England - Verify postcode not assigned to court - Can not use this service page', async () => {
+  test.skip('Cross border England - Verify postcode not assigned to court - Can not use this service page', async () => {
     await performAction('selectAddress', {
       postcode: addressDetails.englandWalesNoCourtCrossBorderPostcode,
       addressIndex: addressDetails.addressIndex
@@ -84,7 +79,7 @@ test.describe.skip('[Eligibility checks for cross and non cross border postcodes
     await performValidation('mainHeader', propertyIneligible.mainHeader);
   });
 
-  test('Wales - Verify non cross border postcode eligibility check for Wales', async () => {
+  test.skip('Wales - Verify non cross border postcode eligibility check for Wales', async () => {
     await performAction('selectAddress', {
       postcode: addressDetails.walesCourtAssignedPostcode,
       addressIndex: addressDetails.addressIndex
@@ -92,7 +87,7 @@ test.describe.skip('[Eligibility checks for cross and non cross border postcodes
     await performValidation('bannerAlert', 'Case #.* has been created.');
   });
 
-  test('England - Verify postcode not assigned to court - Can not use this service page', async () => {
+  test.skip('England - Verify postcode not assigned to court - Can not use this service page', async () => {
     await performAction('selectAddress', {
       postcode: addressDetails.englandNoCourtAssignedPostcode,
       addressIndex: addressDetails.addressIndex
@@ -110,7 +105,7 @@ test.describe.skip('[Eligibility checks for cross and non cross border postcodes
     })
   });
 
-  test('England - Unsuccessful case creation journey due to claimant type not in scope of Release1 @R1only', async () => {
+  test.skip('England - Unsuccessful case creation journey due to claimant type not in scope of Release1 @R1only', async () => {
     await performAction('selectAddress', {
       postcode: addressDetails.englandCourtAssignedPostcode,
       addressIndex: addressDetails.addressIndex
@@ -127,7 +122,7 @@ test.describe.skip('[Eligibility checks for cross and non cross border postcodes
     await performAction('clickButton', userIneligible.cancel);
   });
 
-  test('Wales - Unsuccessful case creation journey due to claimant type not in scope of Release1 @R1only', async () => {
+  test.skip('Wales - Unsuccessful case creation journey due to claimant type not in scope of Release1 @R1only', async () => {
     await performAction('selectAddress', {
       postcode: addressDetails.walesCourtAssignedPostcode,
       addressIndex: addressDetails.addressIndex
@@ -144,7 +139,7 @@ test.describe.skip('[Eligibility checks for cross and non cross border postcodes
     await performAction('clickButton', userIneligible.cancel);
   });
 
-  test('England - Unsuccessful case creation journey due to claim type not in scope of Release1 @R1only', async () => {
+  test.skip('England - Unsuccessful case creation journey due to claim type not in scope of Release1 @R1only', async () => {
     await performAction('selectAddress', {
       postcode: addressDetails.englandCourtAssignedPostcode,
       addressIndex: addressDetails.addressIndex
