@@ -1,5 +1,7 @@
 import * as process from 'node:process';
-
+import { test as base } from '@playwright/test';
+import fs from 'fs';
+import path from 'path';
 import { defineConfig, devices } from '@playwright/test';
 
 const DEFAULT_VIEWPORT = { width: 1920, height: 1080 };
@@ -69,4 +71,29 @@ module.exports = defineConfig({
       }
     ] : [])
   ]
+});
+
+export const test = base.extend({
+  // Add afterEach to attach artifacts manually
+  async page({ page }, use, testInfo) {
+    await use(page);
+
+    if (testInfo.status !== testInfo.expectedStatus) {
+      // Copy screenshot
+      const screenshotPath = path.join(testInfo.outputDir, `${testInfo.title.replace(/[/\\?%*:|"<>]/g, '_')}.png`);
+      await page.screenshot({ path: screenshotPath, fullPage: true });
+
+      // Copy video if it exists
+      if (testInfo.attachments) {
+        for (const attachment of testInfo.attachments) {
+          if (attachment.name === 'video' && attachment.path) {
+            const videoFile = path.basename(attachment.path);
+            const allureResultsDir = path.join(process.cwd(), 'allure-results');
+            if (!fs.existsSync(allureResultsDir)) fs.mkdirSync(allureResultsDir, { recursive: true });
+            fs.copyFileSync(attachment.path, path.join(allureResultsDir, videoFile));
+          }
+        }
+      }
+    }
+  },
 });
