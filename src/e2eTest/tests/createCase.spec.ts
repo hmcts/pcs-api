@@ -48,7 +48,12 @@ test.beforeEach(async ({page}, testInfo) => {
   await performAction('housingPossessionClaim');
 });
 
-
+test.afterEach(async ({ page }, testInfo) => {
+  await testInfo.attach('Page URL', {
+    body: page.url(),
+    contentType: 'text/plain',
+  });
+});
 
 test.describe('[Successful Create Case Flow]  @Master @nightly', async () => {
   test('My failed test', async ({page}) => {

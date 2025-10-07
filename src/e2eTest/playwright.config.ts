@@ -37,13 +37,13 @@ export default defineConfig({
   ],
   projects: [
     {
-      name: 'chrome',
+      name: 'Skipped tests - chrome',
       use: {
         ...devices['Desktop Chrome'],
         channel: 'chrome',
-        screenshot: 'only-on-failure',
-        video: 'retain-on-failure',
-        trace: 'on-first-retry',
+        screenshot: 'on',
+        video: 'on',
+        trace: 'retain-on-failure',
         javaScriptEnabled: true,
         viewport: DEFAULT_VIEWPORT,
         headless: !!process.env.CI,
