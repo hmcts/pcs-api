@@ -608,6 +608,10 @@ public class PCSCase {
 
     private AdditionalReasons additionalReasonsForPossession;
 
+    @JsonUnwrapped
+    @CCD(access = {CitizenAccess.class})
+    private ClaimantCircumstances claimantCircumstances;
+
     @CCD(
         label = "Do you want to upload any additional documents?",
         hint = "You can either upload documents now or closer to the hearing date. "
