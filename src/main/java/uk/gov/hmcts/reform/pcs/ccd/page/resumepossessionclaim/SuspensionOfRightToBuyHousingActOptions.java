@@ -15,7 +15,7 @@ public class SuspensionOfRightToBuyHousingActOptions implements CcdPageConfigura
             .showCondition("showSuspensionOfRightToBuyHousingActsPage=\"Yes\"")
             .label("suspensionOfRightToBuyHousingActOptions-info", """
                 ---
-                  <ul>
+                  <ul tabindex="0">
                     <li>Section 82A(2) of the Housing Act 1985 relates to secure tenancies.</li>
                     <li>Section 6A(2) of the Housing Act 1988 relates to assured tenancies.</li>
                     <li>Section 121A of the Housing Act 1985 relates to an order suspending the right to buy for
