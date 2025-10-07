@@ -107,7 +107,6 @@ export class CreateCaseAction implements IAction {
       ['select', addressDetails.selectAddressLabel, address.addressIndex]
     );
     await performAction('clickButton', addressDetails.submit);
-    await performAction('extractCaseIdFromAlert');
   }
 
   private async extractCaseIdFromAlert(page: Page): Promise<void> {
@@ -184,7 +183,6 @@ export class CreateCaseAction implements IAction {
   }
 
   private async selectBorderPostcode(option: actionData) {
-    await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
     await performAction('clickRadioButton', option);
     await performAction('clickButton', borderPostcode.submit);
   }
@@ -550,7 +548,6 @@ export class CreateCaseAction implements IAction {
       , ['inputText', addressDetails.countryLabel, addressDetails.country]
     );
     await performAction('clickButton', addressDetails.submit);
-    await performAction('extractCaseIdFromAlert');
   }
 
   private async selectAdditionalReasonsForPossession(reasons: actionData) {

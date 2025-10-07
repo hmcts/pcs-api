@@ -111,6 +111,7 @@ test.describe('[Eligibility checks for cross and non cross border postcodes] @Ma
       postcode: addressDetails.englandCourtAssignedPostcode,
       addressIndex: addressDetails.addressIndex
     });
+    await performAction('extractCaseIdFromAlert');
     await performAction('clickButtonAndVerifyPageNavigation', provideMoreDetailsOfClaim.continue, claimantType.mainHeader);
     await performAction('selectClaimantType', claimantType.mortgageLender);
     await performAction('clickButton', userIneligible.continue);
@@ -128,6 +129,7 @@ test.describe('[Eligibility checks for cross and non cross border postcodes] @Ma
       postcode: addressDetails.walesCourtAssignedPostcode,
       addressIndex: addressDetails.addressIndex
     });
+    await performAction('extractCaseIdFromAlert');
     await performAction('clickButtonAndVerifyPageNavigation', provideMoreDetailsOfClaim.continue, claimantType.mainHeader);
     await performAction('selectClaimantType', claimantType.privateLandlord);
     await performAction('clickButton', userIneligible.continue);
@@ -145,6 +147,7 @@ test.describe('[Eligibility checks for cross and non cross border postcodes] @Ma
       postcode: addressDetails.englandCourtAssignedPostcode,
       addressIndex: addressDetails.addressIndex
     });
+    await performAction('extractCaseIdFromAlert');
     await performAction('clickButtonAndVerifyPageNavigation', provideMoreDetailsOfClaim.continue, claimantType.mainHeader);
     await performAction('selectClaimantType', claimantType.registeredProviderForSocialHousing);
     await performAction('selectClaimType', claimType.yes);
