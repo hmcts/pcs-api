@@ -41,6 +41,7 @@ export default defineConfig({
         viewport: DEFAULT_VIEWPORT,
         headless: !!process.env.CI,
       },
+
     },
     ...(process.env.CI ? [
       {
