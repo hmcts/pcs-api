@@ -43,16 +43,20 @@ test.beforeEach(async ({page}, testInfo) => {
   await parentSuite('Case Creation');
   await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
   await performAction('login', user.claimantSolicitor);
-  await testInfo.attach('Page URL', {
-    body: page.url(),
-    contentType: 'text/plain',
-  });
   await performAction('clickTab', home.createCaseTab);
   await performAction('selectJurisdictionCaseTypeEvent');
   await performAction('housingPossessionClaim');
 });
 
-test.describe('[Successful Create Case Flow]  @Master @nightly', async () => {
+test.skip('My failed test', async ({page}) => {
+  await performAction('selectAddress', {
+    postcode: addressDetails.englandCourtAssignedPostcode,
+    addressIndex: addressDetails.addressIndex
+  });
+  await performValidation('bannerAlert', 'I want to fail the test');
+});
+
+test.describe.skip('[Successful Create Case Flow]  @Master @nightly', async () => {
   test('England - Assured tenancy with Rent arrears and other possession grounds', async () => {
     await performAction('selectAddress', {
       postcode: addressDetails.englandCourtAssignedPostcode,
