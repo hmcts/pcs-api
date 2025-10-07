@@ -161,7 +161,7 @@ public class PCSCase {
 
     @CCD(
         label = "Are you claiming possession because of rent arrears?",
-        hint = "You'll be able to add additional grounds later if you select yes.",
+        hint = "You'll be able to add additional grounds later if you select yes",
         access = {CitizenAccess.class}
     )
     private YesOrNo groundsForPossession;
@@ -256,7 +256,7 @@ public class PCSCase {
 
     @CCD(
         label = "Who is the claimant in this case?",
-        hint = "If you’re a legal representative, you should select the type of claimant you’re representing.",
+        hint = "If you’re a legal representative, you should select the type of claimant you’re representing",
         typeOverride = DynamicRadioList
     )
     private DynamicStringList claimantType;
@@ -408,7 +408,7 @@ public class PCSCase {
     private String noticeEmailExplanation;
 
     @CCD(
-        label = "Explain what the other means were",
+        label = "Explain what the other means were. You can enter up to 250 characters",
         access = {CitizenAccess.class},
         max = 250,
         typeOverride = TextArea
@@ -473,7 +473,7 @@ public class PCSCase {
         label = "For the period shown on the rent statement, have any rent payments been paid by someone "
             + "other than the defendants?",
         hint = "This could include payments from Universal Credit, Housing Benefit or any other contributions "
-            + "made by a government department, like the Department for Work and Pensions (DWP).",
+            + "made by a government department, like the Department for Work and Pensions (DWP)",
         access = {CitizenAccess.class}
     )
     private VerticalYesNo thirdPartyPayments;
@@ -485,7 +485,7 @@ public class PCSCase {
         typeParameterOverride = "ThirdPartyPaymentSource",
         access = {CitizenAccess.class}
     )
-    private java.util.List<ThirdPartyPaymentSource> thirdPartyPaymentSources;
+    private List<ThirdPartyPaymentSource> thirdPartyPaymentSources;
 
     @CCD(
         label = "Payment source",
