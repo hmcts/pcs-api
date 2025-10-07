@@ -127,7 +127,7 @@ class ClaimServiceTest {
         PartyEntity claimantPartyEntity = new PartyEntity();
 
         String expectedSuspensionReason = "some suspension reason";
-        SuspensionOfRightToBuyHousingAct expectedSuspensionAct = SuspensionOfRightToBuyHousingAct.SECTION_62A;
+        SuspensionOfRightToBuyHousingAct expectedSuspensionAct = SuspensionOfRightToBuyHousingAct.SECTION_6A2;
 
         SuspensionOfRightToBuy suspension = mock(SuspensionOfRightToBuy.class);
         when(pcsCase.getSuspensionOfRightToBuy()).thenReturn(suspension);
