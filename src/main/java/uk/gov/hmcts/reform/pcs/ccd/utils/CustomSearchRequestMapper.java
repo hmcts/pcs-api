@@ -139,15 +139,22 @@ public class CustomSearchRequestMapper {
             PocMatch mustMatch = req.nativeEsQuery.boolQuery.mustMatches.getFirst();
             String query = mustMatch.query;
 
+            //match search format to database format
+            query = query.replaceAll(" ", "");
+            query = query.replaceAll("-","");
+
             //Search containing OR
             if (query.contains(" OR ")) {
                 //split string and format
-                query = query.replaceAll(" ", "");
-                query = query.replaceAll("-","");
                 String[] referenceIds = query.split("OR");
 
                 return "SELECT * FROM ccd.case_data WHERE reference IN("
                     + referenceIds[0] + "," + referenceIds[1] + ")";
+            } else if (query.contains("*")) {
+                String referenceId = query.substring(0, query.indexOf("*"));
+
+                return "SELECT * FROM ccd.case_data WHERE reference::text LIKE '"
+                    + referenceId + "%'";
             }
         }
 
