@@ -1,6 +1,5 @@
 package uk.gov.hmcts.reform.pcs.search;
 
-import com.azure.json.models.JsonObject;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -24,6 +23,7 @@ import java.io.IOException;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -80,27 +80,45 @@ public class InternalSearchController {
 
             Map<String, JsonNode> data = new HashMap<>();
 
-            //address
-            PGobject dataObject = (PGobject) individualCase.get("data");
-            String dataString = dataObject.getValue();
-            JsonNode dataNode = mapper.readTree(dataString);
-            String propertyString = dataNode.get("formattedClaimantContactAddress").toString();
-            propertyString = propertyString.substring(1, propertyString.length()-1);
+                //address
+                PGobject dataObject = (PGobject) individualCase.get("data");
+                String dataString = dataObject.getValue();
+                JsonNode dataNode = mapper.readTree(dataString);
 
-            String[] propertyStringArray = propertyString.split("<br>");
+            try {
+                String propertyString = dataNode.get("formattedClaimantContactAddress").toString();
+                propertyString = propertyString.substring(1, propertyString.length() - 1);
 
-            ObjectNode value = mapper.createObjectNode();
-            value.put("AddressLine3", "");
-            value.put("AddressLine2", "");
-            value.put("AddressLine1", propertyStringArray[0]);
-            value.put("Country", "United Kingdom");
-            value.put("PostTown", propertyStringArray[1]);
-            value.put("PostCode", propertyStringArray[2]);
-            value.put("County", "");
-            data.put("propertyAddress", value);
+                String[] propertyStringArray = propertyString.split("<br>");
 
-            convertedCase.setData(data);
+                ObjectNode value = mapper.createObjectNode();
+                value.put("AddressLine3", "");
+                value.put("AddressLine2", "");
+                value.put("AddressLine1", propertyStringArray[0]);
+                value.put("Country", "United Kingdom");
+                value.put("PostTown", propertyStringArray[1]);
+                value.put("PostCode", propertyStringArray[2]);
+                value.put("County", "");
+                data.put("propertyAddress", value);
 
+                convertedCase.setData(data);
+            } catch (NullPointerException exception){
+
+                //It looks like the current data returned by SQL query only contains address
+                // when the case has been issued. To handle this, in this POC, I set defaults
+
+                ObjectNode value = mapper.createObjectNode();
+
+                value.put("AddressLine3", "");
+                value.put("AddressLine2", "");
+                value.put("AddressLine1", "1 Rse Way");
+                value.put("Country", "United Kingdom");
+                value.put("PostTown", "London");
+                value.put("PostCode", "W37RX");
+                value.put("County", "");
+                data.put("propertyAddress", value);
+                convertedCase.setData(Collections.emptyMap());
+            }
             convertedCase.setState((String) individualCase.get("state"));
             convertedCase.setLastStateModifiedDate(((Timestamp) individualCase.get("last_modified")).toLocalDateTime());
             convertedCase.setVersion((Integer) individualCase.get("version"));
