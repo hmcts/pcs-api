@@ -1,7 +1,7 @@
 export const statementOfExpressTerms = {
   title: 'Create a case - HM Courts & Tribunals Service - GOV.UK',
   mainHeader: 'Statement of express terms',
-  statementOfExpressTermsQuestion: 'Have you served the defendants with a statement of express terms which will apply to the demoted tenancy?',
+  statementOfExpressTermsQuestion: 'Have you served the defendants with a statement of the express terms which will apply to the demoted tenancy?',
   yes: 'Yes',
   no: 'No',
   giveDetailsOfTermsLabel: 'Give details of the terms',
