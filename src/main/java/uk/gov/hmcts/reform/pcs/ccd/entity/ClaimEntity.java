@@ -65,6 +65,8 @@ public class ClaimEntity {
 
     private String additionalReasons;
 
+    private String languageUsed;
+
     public void addParty(PartyEntity party, PartyRole partyRole) {
         ClaimPartyEntity claimPartyEntity = ClaimPartyEntity.builder()
             .claim(this)

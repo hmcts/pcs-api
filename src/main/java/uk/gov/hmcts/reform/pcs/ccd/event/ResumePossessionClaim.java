@@ -140,11 +140,11 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             .add(new RentArrears())
             .add(new MoneyJudgment())
             .add(new ClaimantCircumstances())
-            .add(new LanguageUsed())
             .add(new DefendantCircumstancesPage())
             .add(new ClaimingCosts())
             .add(new AdditionalReasonsForPossession())
             .add(new EntitledToClaimRelief())
+            .add(new LanguageUsed())
             .add(new GeneralApplication())
             .add(new CompletingClaim());
 

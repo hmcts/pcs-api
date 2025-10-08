@@ -1,0 +1,1 @@
+ALTER TABLE claim ADD COLUMN language_used VARCHAR(255);

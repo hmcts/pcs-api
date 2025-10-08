@@ -35,6 +35,7 @@ public class ClaimService {
             .defendantCircumstances(defendantCircumstances != null
                                         ? defendantCircumstances.getDefendantCircumstancesInfo() : null)
             .applicationWithClaim(YesOrNoToBoolean.convert(pcsCase.getApplicationWithClaim()))
+            .languageUsed(pcsCase.getLanguageUsed() != null ? pcsCase.getLanguageUsed().name() : null)
 
             .build();
 
