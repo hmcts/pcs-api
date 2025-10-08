@@ -24,7 +24,6 @@ public class AlternativesToPossessionOptions implements CcdPageConfiguration {
             .pageLabel("Alternatives to possession")
             .complex(PCSCase::getSuspensionOfRightToBuy)
             .readonlyNoSummary(SuspensionOfRightToBuy::getShowSuspensionOfRightToBuyHousingActsPage,NEVER_SHOW)
-            .done()
             .complex(PCSCase::getDemotionOfTenancy)
             .readonlyNoSummary(DemotionOfTenancy::getShowDemotionOfTenancyHousingActsPage,NEVER_SHOW)
             .done()
