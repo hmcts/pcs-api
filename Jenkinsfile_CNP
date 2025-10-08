@@ -48,6 +48,9 @@ withPipeline(type, product, component) {
     if (githubApi.getLabelsbyPattern(env.BRANCH_NAME, "pr-values:ccd").size() > 0) {
       enableHighLevelDataSetup()
     }
+    if (githubApi.getLabelsbyPattern(env.BRANCH_NAME, "pr:runE2eTests").size() > 0) {
+          runE2eTests(env.ENVIRONMENT)
+    }
   }
 
   onMaster() {
@@ -87,9 +90,6 @@ withPipeline(type, product, component) {
 
   afterAlways('functionalTest:preview') {
     archiveFunctionalTestReports()
-    if (githubApi.getLabelsbyPattern(env.BRANCH_NAME, "pr:runE2eTests").size() > 0) {
-          runE2eTests(env.ENVIRONMENT)
-    }
   }
 
   afterAlways('functionalTest:aat') {
@@ -133,6 +133,7 @@ def runE2eTests(String context) {
       sh './gradlew runE2eChromeTests'
     }
   } finally {
+    steps.archiveArtifacts artifacts: "src/e2eTest/allure-report"
     publishHTML([
       allowMissing: true,
       alwaysLinkToLastBuild: true,
@@ -146,7 +147,6 @@ def runE2eTests(String context) {
       alwaysLinkToLastBuild: true,
       keepAll: true,
       reportDir: "src/e2eTest/playwright-report",
-      reportFiles: 'index.html',
       reportName: 'EXUI E2E PW Report'
     ])
   }
