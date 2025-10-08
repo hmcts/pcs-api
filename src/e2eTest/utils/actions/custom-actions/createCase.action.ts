@@ -528,11 +528,14 @@ export class CreateCaseAction implements IAction {
   }
 
   private async selectStatementOfExpressTerms(option: actionData) {
-    await performAction('clickRadioButton', option);
+    await performAction('clickRadioButton', {
+      question: statementOfExpressTerms.statementOfExpressTermsQuestion,
+      option: option
+    });
     if(option == statementOfExpressTerms.yes){
       await performAction('inputText', statementOfExpressTerms.giveDetailsOfTermsLabel, statementOfExpressTerms.sampleTestReason);
     }
-    await performAction('clickButton', alternativesToPossession.continue);
+    await performAction('clickButton', statementOfExpressTerms.continue);
   }
 
   private async enterReasonForDemotionOrder(reason: actionData) {
