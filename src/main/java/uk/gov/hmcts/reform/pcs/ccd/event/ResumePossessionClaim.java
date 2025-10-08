@@ -17,7 +17,6 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.domain.PaymentStatus;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
@@ -63,6 +62,8 @@ import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.SecureOrFlexibleGr
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.SelectClaimType;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.SelectClaimantType;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.TenancyLicenceDetails;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.UploadAdditionalDocumentsDetails;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.WantToUploadDocuments;
 import uk.gov.hmcts.reform.pcs.ccd.service.ClaimService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
@@ -95,7 +96,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
     private final ResumeClaim resumeClaim;
     private final UnsubmittedCaseDataService unsubmittedCaseDataService;
     private final NoticeDetails noticeDetails;
-
+    private final UploadAdditionalDocumentsDetails uploadAdditionalDocumentsDetails;
     private final TenancyLicenceDetails tenancyLicenceDetails;
     private final ContactPreferences contactPreferences;
     private final DefendantsDetails defendantsDetails;
@@ -146,6 +147,9 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             .add(new ClaimingCosts())
             .add(new AdditionalReasonsForPossession())
             .add(new EntitledToClaimRelief())
+            //TO DO will be routed later on  correctly using tech debt ticket
+            .add(new WantToUploadDocuments())
+            .add(uploadAdditionalDocumentsDetails)
             .add(new GeneralApplication())
             .add(new CompletingYourClaim())
             .add(new StatementOfTruth());
@@ -194,8 +198,6 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
     private SubmitResponse submit(EventPayload<PCSCase, State> eventPayload) {
         long caseReference = eventPayload.caseReference();
         PCSCase pcsCase = eventPayload.caseData();
-
-        pcsCase.setPaymentStatus(PaymentStatus.UNPAID);
 
         List<ListValue<DefendantDetails>> defendantsList = new ArrayList<>();
         if (pcsCase.getDefendant1() != null) {
