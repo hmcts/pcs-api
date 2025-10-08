@@ -64,7 +64,9 @@ export class ActionRegistry {
     ['selectHousingAct', new CreateCaseAction()],
     ['enterReasonForSuspensionOrder', new CreateCaseAction()],
     ['searchCaseFromCaseList', new searchCaseActions()],
-    ['selectClaimingCosts', new CreateCaseAction()]
+    ['selectClaimingCosts', new CreateCaseAction()],
+    ['wantToUploadDocuments', new CreateCaseAction()],
+    ['uploadAdditionalDocs', new CreateCaseAction()]
   ]);
 
   static getAction(actionName: string): IAction {

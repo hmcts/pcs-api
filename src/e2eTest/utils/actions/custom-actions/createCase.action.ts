@@ -35,6 +35,8 @@ import {claimantCircumstances} from '@data/page-data/claimantCircumstances.page.
 import {claimingCosts} from '@data/page-data/claimingCosts.page.data';
 import {alternativesToPossession} from '@data/page-data/alternativesToPossession.page.data';
 import {reasonsForRequestingASuspensionOrder} from '@data/page-data/reasonsForRequestingASuspensionOrder.page.data';
+import {uploadAdditionalDocs} from '@data/page-data/uploadAdditionalDocs.page.data';
+import {completeYourClaim} from '@data/page-data/completeYourClaim.page.data';
 import {additionalReasonsForPossession} from '@data/page-data/additionalReasonsForPossession.page.data';
 import {completeYourClaim} from '@data/page-data/completeYourClaim.page.data';
 import {home} from '@data/page-data/home.page.data';
@@ -46,7 +48,7 @@ let caseNumber: string;
 export let claimantsName: string;
 
 export class CreateCaseAction implements IAction {
-  async execute(page: Page, action: string, fieldName: actionRecord | actionData, data?: actionData): Promise<void> {
+  async execute(page: Page, action: string, fieldName: actionData | actionRecord, data?: actionData): Promise<void> {
     const actionsMap = new Map<string, () => Promise<void>>([
       ['createCase', () => this.createCaseAction(fieldName)],
       ['housingPossessionClaim', () => this.housingPossessionClaim()],
@@ -85,7 +87,9 @@ export class CreateCaseAction implements IAction {
       ['selectApplications', () => this.selectApplications(fieldName)],
       ['selectClaimingCosts', () => this.selectClaimingCosts(fieldName)],
       ['completingYourClaim', () => this.completingYourClaim(fieldName)],
-      ['selectAdditionalReasonsForPossession', ()=> this.selectAdditionalReasonsForPossession(fieldName)]
+      ['selectAdditionalReasonsForPossession', ()=> this.selectAdditionalReasonsForPossession(fieldName)],
+      ['wantToUploadDocuments', () => this.wantToUploadDocuments(fieldName as actionRecord)],
+      ['uploadAdditionalDocs', () => this.uploadAdditionalDocs(fieldName as actionRecord)]
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) throw new Error(`No action found for '${action}'`);
@@ -531,6 +535,28 @@ export class CreateCaseAction implements IAction {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
     await performAction('clickRadioButton', option);
     await performAction('clickButton', applications.continue);
+  }
+
+  private async wantToUploadDocuments(documentsData: actionRecord) {
+    await performAction('clickRadioButton', {
+      question: documentsData.question,
+      option: documentsData.option
+    });
+    await performAction('clickButton', uploadAdditionalDocs.continue);
+  }
+
+  private async uploadAdditionalDocs(documentsData: actionRecord) {
+    if (Array.isArray(documentsData.documents)) {
+      for (const document of documentsData.documents) {
+        await performActions(
+          'Add Document',
+          ['uploadFile', document.fileName],
+          ['select', uploadAdditionalDocs.typeOfDocument, document.type],
+          ['inputText', uploadAdditionalDocs.shortDescriptionLabel, document.description]
+        );
+      }
+      await performAction('clickButton', uploadAdditionalDocs.continue);
+    }
   }
 
   private async completingYourClaim(option: actionData) {
