@@ -660,4 +660,24 @@ test.describe('[Successful Create Case Flow]  @Master @nightly', async () => {
       ['formLabelValue', propertyDetails.postcodeZipcodeLabel, addressDetails.walesCourtAssignedPostcode],
       ['formLabelValue', propertyDetails.countryLabel, addressDetails.country]);
   });
+
+  test.afterEach(async ({ page }, testInfo) => {
+    // 🧩 Capture screenshot if test failed
+    if (testInfo.status !== testInfo.expectedStatus) {
+      const screenshot = await page.screenshot({ fullPage: true });
+      await testInfo.attach('Failure Screenshot', {
+        body: screenshot,
+        contentType: 'image/png',
+      });
+    }
+
+    // 🎥 Capture and attach video if available
+    const video = testInfo.attachments.find(a => a.name === 'video');
+    if (video?.path) {
+      await testInfo.attach('Test Video', {
+        path: video.path,
+        contentType: 'video/webm',
+      });
+    }
+  });
 });
