@@ -29,6 +29,9 @@ import {claimantCircumstances} from '@data/page-data/claimantCircumstances.page.
 import {applications} from '@data/page-data/applications.page.data';
 import {completeYourClaim} from '@data/page-data/completeYourClaim.page.data';
 import {user} from '@data/user-data/permanent.user.data';
+import {alternativesToPossession} from '@data/page-data/alternativesToPossession.page.data';
+import {housingAct} from '@data/page-data/housingAct.page.data';
+import {reasonsForRequestingASuspensionOrder} from '@data/page-data/reasonsForRequestingASuspensionOrder.page.data';
 import {checkYourAnswers} from '@data/page-data/checkYourAnswers.page.data';
 import {propertyDetails} from '@data/page-data/propertyDetails.page.data';
 import {defendantCircumstances} from '@data/page-data/defendantCircumstances.page.data';
@@ -130,6 +133,8 @@ test.describe('[Successful Create Case Flow]  @Master @nightly', async () => {
     });
     await performValidation('mainHeader', defendantCircumstances.mainHeader);
     await performAction('selectDefendantCircumstances', defendantCircumstances.yes);
+    await performValidation('mainHeader', alternativesToPossession.mainHeader);
+    await performAction('selectAlternativesToPossession');
     await performValidation('mainHeader', claimingCosts.mainHeader);
     await performAction('selectClaimingCosts', claimingCosts.yes);
     await performValidation('mainHeader', additionalReasonsForPossession.mainHeader);
@@ -235,6 +240,14 @@ test.describe('[Successful Create Case Flow]  @Master @nightly', async () => {
     });
     await performValidation('mainHeader', defendantCircumstances.mainHeader);
     await performAction('selectDefendantCircumstances', defendantCircumstances.no);
+    await performValidation('mainHeader', alternativesToPossession.mainHeader);
+    await performAction('selectAlternativesToPossession', {question: alternativesToPossession.suspensionOrDemotion
+      , option: [alternativesToPossession.suspensionOfRightToBuy]});
+    await performValidation('mainHeader', housingAct.mainHeader);
+    await performAction('selectHousingAct', {question: housingAct.suspensionOfRightToBuy.whichSection
+      , option: housingAct.suspensionOfRightToBuy.section6AHousingAct1988});
+    await performValidation('mainHeader', reasonsForRequestingASuspensionOrder.mainHeader);
+    await performAction('enterReasonForSuspensionOrder', reasonsForRequestingASuspensionOrder.question);
     await performValidation('mainHeader', claimingCosts.mainHeader);
     await performAction('selectClaimingCosts', claimingCosts.no);
     await performValidation('mainHeader', additionalReasonsForPossession.mainHeader);
@@ -329,6 +342,9 @@ test.describe('[Successful Create Case Flow]  @Master @nightly', async () => {
     });
     await performValidation('mainHeader', defendantCircumstances.mainHeader);
     await performAction('selectDefendantCircumstances', defendantCircumstances.no);
+    await performValidation('mainHeader', alternativesToPossession.mainHeader);
+    await performAction('selectAlternativesToPossession', {question: alternativesToPossession.suspensionOrDemotion
+      , option: [alternativesToPossession.demotionOfTenancy]});
     await performValidation('mainHeader', claimingCosts.mainHeader);
     await performAction('selectClaimingCosts', claimingCosts.yes);
     await performValidation('mainHeader', additionalReasonsForPossession.mainHeader);
@@ -420,6 +436,9 @@ test.describe('[Successful Create Case Flow]  @Master @nightly', async () => {
     });
     await performValidation('mainHeader', defendantCircumstances.mainHeader);
     await performAction('selectDefendantCircumstances', defendantCircumstances.no);
+    await performValidation('mainHeader', alternativesToPossession.mainHeader);
+    await performAction('selectAlternativesToPossession', {question: alternativesToPossession.suspensionOrDemotion
+      , option: [alternativesToPossession.suspensionOfRightToBuy, alternativesToPossession.demotionOfTenancy]});
     await performValidation('mainHeader', claimingCosts.mainHeader);
     await performAction('selectClaimingCosts', claimingCosts.yes);
     await performValidation('mainHeader', additionalReasonsForPossession.mainHeader);
@@ -505,6 +524,14 @@ test.describe('[Successful Create Case Flow]  @Master @nightly', async () => {
     });
     await performValidation('mainHeader', defendantCircumstances.mainHeader);
     await performAction('selectDefendantCircumstances', defendantCircumstances.no);
+    await performValidation('mainHeader', alternativesToPossession.mainHeader);
+    await performAction('selectAlternativesToPossession', {question: alternativesToPossession.suspensionOrDemotion
+      , option: [alternativesToPossession.suspensionOfRightToBuy]});
+    await performValidation('mainHeader', housingAct.mainHeader);
+    await performAction('selectHousingAct', {question: housingAct.suspensionOfRightToBuy.whichSection
+      ,option: housingAct.suspensionOfRightToBuy.section82AHousingAct1985});
+    await performValidation('mainHeader', reasonsForRequestingASuspensionOrder.mainHeader);
+    await performAction('enterReasonForSuspensionOrder', reasonsForRequestingASuspensionOrder.question);
     await performValidation('mainHeader', claimingCosts.mainHeader);
     await performAction('selectClaimingCosts', claimingCosts.no);
     await performValidation('mainHeader', additionalReasonsForPossession.mainHeader);
@@ -589,6 +616,14 @@ test.describe('[Successful Create Case Flow]  @Master @nightly', async () => {
     });
     await performValidation('mainHeader', defendantCircumstances.mainHeader);
     await performAction('selectDefendantCircumstances', defendantCircumstances.no);
+    await performValidation('mainHeader', alternativesToPossession.mainHeader);
+    await performAction('selectAlternativesToPossession', {question: alternativesToPossession.suspensionOrDemotion
+      , option: [alternativesToPossession.suspensionOfRightToBuy]});
+    await performValidation('mainHeader', housingAct.mainHeader);
+    await performAction('selectHousingAct', {question: housingAct.suspensionOfRightToBuy.whichSection
+      ,option: housingAct.suspensionOfRightToBuy.section121AHousingAct1985});
+    await performValidation('mainHeader', reasonsForRequestingASuspensionOrder.mainHeader);
+    await performAction('enterReasonForSuspensionOrder', reasonsForRequestingASuspensionOrder.question);
     await performValidation('mainHeader', claimingCosts.mainHeader);
     await performAction('selectClaimingCosts', claimingCosts.no);
     await performValidation('mainHeader', additionalReasonsForPossession.mainHeader);
@@ -679,6 +714,9 @@ test.describe('[Successful Create Case Flow]  @Master @nightly', async () => {
     });
     await performValidation('mainHeader', defendantCircumstances.mainHeader);
     await performAction('selectDefendantCircumstances', defendantCircumstances.yes);
+    await performValidation('mainHeader', alternativesToPossession.mainHeader);
+    await performAction('selectAlternativesToPossession', {question: alternativesToPossession.suspensionOrDemotion
+      , option: [alternativesToPossession.suspensionOfRightToBuy, alternativesToPossession.demotionOfTenancy]});
     await performValidation('mainHeader', claimingCosts.mainHeader);
     await performAction('selectClaimingCosts', claimingCosts.yes);
     await performValidation('mainHeader', additionalReasonsForPossession.mainHeader);
