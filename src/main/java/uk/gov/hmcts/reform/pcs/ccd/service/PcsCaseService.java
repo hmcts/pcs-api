@@ -53,7 +53,6 @@ public class PcsCaseService {
         PcsCaseEntity pcsCaseEntity = new PcsCaseEntity();
         pcsCaseEntity.setCaseReference(caseReference);
         pcsCaseEntity.setPropertyAddress(addressEntity);
-        pcsCaseEntity.setPaymentStatus(pcsCase.getPaymentStatus());
         pcsCaseEntity.setPreActionProtocolCompleted(
                 pcsCase.getPreActionProtocolCompleted() != null
                         ? pcsCase.getPreActionProtocolCompleted().toBoolean()
