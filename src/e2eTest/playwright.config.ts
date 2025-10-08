@@ -12,7 +12,7 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   /* Retry on CI only */
   retries: process.env.CI ? 2 : 0,
-  workers: process.env.CI ? 4 : 2,  
+  workers: process.env.CI ? 4 : 2,
   timeout: 90 * 1000,
   expect: { timeout: 10 * 1000 },
   use: { actionTimeout: 10 * 1000, navigationTimeout: 10 * 1000 },
@@ -41,10 +41,10 @@ export default defineConfig({
         channel: 'chrome',
         screenshot: 'only-on-failure',
         video: 'retain-on-failure',
-        trace: 'on-first-retry',
+        trace: 'retain-on-failure',
         javaScriptEnabled: true,
         viewport: DEFAULT_VIEWPORT,
-        headless: process.env.CI? true : false,
+        headless: !!process.env.CI,
       },
     },
     ...(process.env.CI ? [
@@ -55,10 +55,10 @@ export default defineConfig({
           channel: 'firefox',
           screenshot: 'only-on-failure' as const,
           video: 'retain-on-failure' as const,
-          trace: 'on-first-retry' as const,
+          trace: 'retain-on-failure' as const,
           javaScriptEnabled: true,
           viewport: DEFAULT_VIEWPORT,
-          headless: process.env.CI? true : false,
+          headless: !!process.env.CI,
         }
       }
     ] : [])
