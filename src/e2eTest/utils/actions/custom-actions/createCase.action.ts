@@ -33,9 +33,11 @@ import {defendantCircumstances} from '@data/page-data/defendantCircumstances.pag
 import {applications} from '@data/page-data/applications.page.data';
 import {claimantCircumstances} from '@data/page-data/claimantCircumstances.page.data';
 import {claimingCosts} from '@data/page-data/claimingCosts.page.data';
+import {alternativesToPossession} from '@data/page-data/alternativesToPossession.page.data';
+import {reasonsForRequestingASuspensionOrder} from '@data/page-data/reasonsForRequestingASuspensionOrder.page.data';
 import {uploadAdditionalDocs} from '@data/page-data/uploadAdditionalDocs.page.data';
-import {completeYourClaim} from '@data/page-data/completeYourClaim.page.data';
 import {additionalReasonsForPossession} from '@data/page-data/additionalReasonsForPossession.page.data';
+import {completeYourClaim} from '@data/page-data/completeYourClaim.page.data';
 import {home} from '@data/page-data/home.page.data';
 import {search} from '@data/page-data/search.page.data';
 import {userIneligible} from '@data/page-data/userIneligible.page.data';
@@ -76,6 +78,9 @@ export class CreateCaseAction implements IAction {
       ['selectDailyRentAmount', () => this.selectDailyRentAmount(fieldName)],
       ['selectClaimantCircumstances', () => this.selectClaimantCircumstances(fieldName)],
       ['provideDetailsOfRentArrears', () => this.provideDetailsOfRentArrears(fieldName)],
+      ['selectAlternativesToPossession', () => this.selectAlternativesToPossession(fieldName as actionRecord)],
+      ['selectHousingAct', () => this.selectHousingAct(fieldName as actionRecord)],
+      ['enterReasonForSuspensionOrder', () => this.enterReasonForSuspensionOrder(fieldName)],
       ['selectMoneyJudgment', () => this.selectMoneyJudgment(fieldName)],
       ['selectDefendantCircumstances', () => this.selectDefendantCircumstances(fieldName)],
       ['selectApplications', () => this.selectApplications(fieldName)],
@@ -509,6 +514,22 @@ export class CreateCaseAction implements IAction {
     await performAction('clickButton', claimingCosts.continue);
   }
 
+  private async selectAlternativesToPossession(alternatives: actionRecord) {
+    if(alternatives){
+      await performAction('check', {question: alternatives.question, option: alternatives.option});
+    }
+    await performAction('clickButton', alternativesToPossession.continue);
+  }
+
+  private async selectHousingAct(housingAct: actionRecord) {
+    await performAction('clickRadioButton', {question: housingAct.question, option: housingAct.option});
+    await performAction('clickButton', alternativesToPossession.continue);
+  }
+
+  private async enterReasonForSuspensionOrder(reason: actionData) {
+    await performAction('inputText', reason, reasonsForRequestingASuspensionOrder.sampleTestReason);
+    await performAction('clickButton', reasonsForRequestingASuspensionOrder.continue);
+  }
   private async selectApplications(option: actionData) {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
     await performAction('clickRadioButton', option);
