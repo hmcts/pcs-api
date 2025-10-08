@@ -552,8 +552,7 @@ public class PCSCase {
 
     @CCD(
         label = "Did you complete all or part of this claim in Welsh?",
-        hint = "The answer to this question will help make sure your claim is translated correctly",
-        access = {CitizenAccess.class}
+        hint = "The answer to this question will help make sure your claim is translated correctly"
     )
     private VerticalYesNo welshUsed;
 
@@ -569,15 +568,13 @@ public class PCSCase {
         label = "Do you want to upload any additional documents?",
         hint = "You can either upload documents now or closer to the hearing date. "
             + "Any documents you upload now will be included in the pack of documents a judge will "
-            + "receive before the hearing (the bundle).",
-        access = {CitizenAccess.class}
+            + "receive before the hearing (the bundle)"
     )
     private VerticalYesNo wantToUploadDocuments;
 
     @CCD(
         label = "Add document",
-        hint = "Upload a document to the system",
-        access = {CitizenAccess.class}
+        hint = "Upload a document to the system"
     )
     private List<ListValue<AdditionalDocument>> additionalDocuments;
 
