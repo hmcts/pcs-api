@@ -44,7 +44,7 @@ export default defineConfig({
         trace: 'on-first-retry',
         javaScriptEnabled: true,
         viewport: DEFAULT_VIEWPORT,
-        headless: !!process.env.CI,
+        headless: process.env.CI? true : false,
       },
     },
     ...(process.env.CI ? [
@@ -58,7 +58,7 @@ export default defineConfig({
           trace: 'on-first-retry' as const,
           javaScriptEnabled: true,
           viewport: DEFAULT_VIEWPORT,
-          headless: !!process.env.CI,
+          headless: process.env.CI? true : false,
         }
       }
     ] : [])
