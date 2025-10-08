@@ -118,6 +118,7 @@ Playwright 1.30+ | TypeScript 4.9+
 | clickButtonAndVerifyPageNavigation   | `performAction('clickButtonAndVerifyPageNavigation', provideMoreDetailsOfClaim.continue, claimantType.mainHeader);`                                                                                        |                                                                                      
 | verifyPageAndClickButton             | `performAction('verifyPageAndClickButton', 'pageName', 'buttonName')`                                                                                                                                      |
 | selectClaimantCircumstances          | `performAction('selectClaimantCircumstances', {circumstanceOption: claimantCircumstances.no,claimantInput: claimantCircumstances.claimantCircumstanceInfoInputData})`                                      |
+| selectLanguageUsed                   | `performAction('selectLanguageUsed', languageUsed.no)`                                                                                                                                                     |
 ### Validations
 | Validation                 | Example Usage                                                                                                                        |
 |----------------------------|--------------------------------------------------------------------------------------------------------------------------------------|
