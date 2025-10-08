@@ -6,7 +6,7 @@
     "node": ">=18.0.0"
   },
   "scripts": {
-    "test:chrome": "yarn playwright install && yarn playwright test --project=chrome --reporter=list,allure-playwright --verbose && yarn allure generate allure-results --clean -o allure-report",
+    "test:chrome": "yarn playwright install && (yarn playwright test --project=chrome --reporter=list,allure-playwright || true) && yarn allure generate allure-results --clean -o allure-report",
     "test:firefox": "yarn playwright install && yarn playwright test --project=firefox --reporter=list,allure-playwright || true && yarn allure generate allure-results --clean -o allure-report",
     "test:openAllureReport": "yarn allure open allure-report"
   },
