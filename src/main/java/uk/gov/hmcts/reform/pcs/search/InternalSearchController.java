@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.postgresql.util.PGobject;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -30,6 +31,7 @@ import java.util.Map;
 
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 
+@Slf4j
 @AllArgsConstructor
 @RestController
 @RequestMapping("")
@@ -103,7 +105,7 @@ public class InternalSearchController {
 
                 convertedCase.setData(data);
             } catch (NullPointerException exception) {
-
+                log.error(exception.getMessage());
                 //It looks like the current data returned by SQL query only contains address
                 // when the case has been issued. To handle this, in this POC, I set defaults
 
@@ -117,7 +119,7 @@ public class InternalSearchController {
                 value.put("PostCode", "W37RX");
                 value.put("County", "");
                 data.put("propertyAddress", value);
-                convertedCase.setData(Collections.emptyMap());
+                convertedCase.setData(data);
             }
             convertedCase.setState((String) individualCase.get("state"));
             convertedCase.setLastStateModifiedDate(((Timestamp) individualCase.get("last_modified")).toLocalDateTime());
