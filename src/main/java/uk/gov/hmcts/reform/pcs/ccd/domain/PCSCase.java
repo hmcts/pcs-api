@@ -18,7 +18,6 @@ import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -64,29 +63,26 @@ public class PCSCase {
     @External
     private AddressUK propertyAddress;
 
-    @CCD(searchable = false, access = {CitizenAccess.class})
+    @CCD(searchable = false)
     private YesOrNo showCrossBorderPage;
 
-    @CCD(searchable = false, access = {CitizenAccess.class})
+    @CCD(searchable = false)
     private YesOrNo showPropertyNotEligiblePage;
 
     @CCD(
-        typeOverride = DynamicRadioList,
-        access = {CitizenAccess.class}
+        typeOverride = DynamicRadioList
     )
     @External
     private DynamicStringList crossBorderCountriesList;
 
     @CCD(
-        searchable = false,
-        access = {CitizenAccess.class}
+        searchable = false
     )
     @External
     private String crossBorderCountry1;
 
     @CCD(
-        searchable = false,
-        access = {CitizenAccess.class}
+        searchable = false
     )
     @External
     private String crossBorderCountry2;
@@ -98,25 +94,20 @@ public class PCSCase {
     @External
     private String userPcqId;
 
-    @CCD(searchable = false, access = {CitizenAccess.class})
+    @CCD(
+        searchable = false,
+        access = {CitizenAccess.class}
+    )
     private YesOrNo userPcqIdSet;
 
     @CCD(
-        label = "Case management location",
-        access = {CitizenAccess.class}
+        label = "Case management location"
     )
     private Integer caseManagementLocation;
 
     @CCD(
-        label = "Payment status",
-        access = {CitizenAccess.class}
-    )
-    private PaymentStatus paymentStatus;
-
-    @CCD(
         label = "Amount to pay",
-        hint = "£400",
-        access = {CitizenAccess.class}
+        hint = "£400"
     )
     private PaymentType paymentType;
 
@@ -154,15 +145,13 @@ public class PCSCase {
     private VerticalYesNo claimingCostsWanted;
 
     @CCD(
-        label = "Have you followed the pre-action protocol?",
-        access = {CitizenAccess.class}
+        label = "Have you followed the pre-action protocol?"
     )
     private VerticalYesNo preActionProtocolCompleted;
 
     @CCD(
         label = "Are you claiming possession because of rent arrears?",
-        hint = "You'll be able to add additional grounds later if you select yes.",
-        access = {CitizenAccess.class}
+        hint = "You'll be able to add additional grounds later if you select yes."
     )
     private YesOrNo groundsForPossession;
 
@@ -171,24 +160,21 @@ public class PCSCase {
         label = "What are your grounds for possession?",
         hint = "Select all that apply",
         typeOverride = MultiSelectList,
-        typeParameterOverride = "RentArrearsGround",
-        access = {CitizenAccess.class}
+        typeParameterOverride = "RentArrearsGround"
     )
     private Set<RentArrearsGround> rentArrearsGrounds;
 
     @CCD(
         typeOverride = MultiSelectList,
-        typeParameterOverride = "RentArrearsGround",
-        access = {CitizenAccess.class}
+        typeParameterOverride = "RentArrearsGround"
     )
     private Set<RentArrearsGround> copyOfRentArrearsGrounds;
 
-    @CCD(access = {CitizenAccess.class})
+    @CCD
     private YesOrNo overrideResumedGrounds;
 
     @CCD(
-        label = "Do you have any other additional grounds for possession?",
-        access = {CitizenAccess.class}
+        label = "Do you have any other additional grounds for possession?"
     )
     private YesOrNo hasOtherAdditionalGrounds;
 
@@ -197,8 +183,7 @@ public class PCSCase {
         label = "Mandatory grounds",
         hint = "Select all that apply",
         typeOverride = MultiSelectList,
-        typeParameterOverride = "MandatoryGround",
-        access = {CitizenAccess.class}
+        typeParameterOverride = "MandatoryGround"
     )
     private Set<MandatoryGround> mandatoryGrounds;
 
@@ -207,44 +192,38 @@ public class PCSCase {
         label = "Discretionary grounds",
         hint = "Select all that apply",
         typeOverride = MultiSelectList,
-        typeParameterOverride = "DiscretionaryGround",
-        access = {CitizenAccess.class}
+        typeParameterOverride = "DiscretionaryGround"
     )
     private Set<DiscretionaryGround> discretionaryGrounds;
 
     @CCD(
-        label = "Have you attempted mediation with the defendants?",
-        access = {CitizenAccess.class}
+        label = "Have you attempted mediation with the defendants?"
     )
     private VerticalYesNo mediationAttempted;
 
     @CCD(
         label = "Give details about the attempted mediation and what the outcome was",
         hint = "You can enter up to 250 characters",
-        access = {CitizenAccess.class},
         max = 250,
         typeOverride = TextArea
     )
     private String mediationAttemptedDetails;
 
     @CCD(
-        label = "Have you tried to reach a settlement with the defendants?",
-        access = {CitizenAccess.class}
+        label = "Have you tried to reach a settlement with the defendants?"
     )
     private VerticalYesNo settlementAttempted;
 
     @CCD(
         label = "Explain what steps you've taken to reach a settlement",
         hint = "You can enter up to 250 characters",
-        access = {CitizenAccess.class},
         max = 250,
         typeOverride = TextArea
     )
     private String settlementAttemptedDetails;
 
     @CCD(
-        label = "Have you served notice to the defendants?",
-        access = {CitizenAccess.class}
+        label = "Have you served notice to the defendants?"
     )
     private YesOrNo noticeServed;
 
@@ -281,127 +260,111 @@ public class PCSCase {
     @CCD(
         label = "How much is the rent?",
         typeOverride = FieldType.MoneyGBP,
-        min = 0,
-        access = {CitizenAccess.class}
+        min = 0
     )
     private String currentRent;
 
     @CCD(
-        label = "How frequently should rent be paid?",
-        access = {CitizenAccess.class}
+        label = "How frequently should rent be paid?"
     )
     private RentPaymentFrequency rentFrequency;
 
     @CCD(
         label = "Enter frequency",
-        hint = "Please specify the frequency",
-        access = {CitizenAccess.class}
+        hint = "Please specify the frequency"
     )
     private String otherRentFrequency;
 
     @CCD(
         label = "Enter the amount per day that unpaid rent should be charged at",
         typeOverride = FieldType.MoneyGBP,
-        min = 0,
-        access = {CitizenAccess.class}
+        min = 0
     )
     private String dailyRentChargeAmount;
 
     @CCD(
-        label = "Is the amount per day that unpaid rent should be charged at correct?",
-        access = {CitizenAccess.class}
+        label = "Is the amount per day that unpaid rent should be charged at correct?"
     )
     private VerticalYesNo rentPerDayCorrect;
 
     @CCD(
         label = "Enter amount per day that unpaid rent should be charged at",
         typeOverride = FieldType.MoneyGBP,
-        min = 0,
-        access = {CitizenAccess.class}
+        min = 0
     )
     private String amendedDailyRentChargeAmount;
 
     @CCD(
-        typeOverride = FieldType.MoneyGBP,
-        access = {CitizenAccess.class}
+        typeOverride = FieldType.MoneyGBP
     )
     private String calculatedDailyRentChargeAmount;
 
-    @CCD(access = {CitizenAccess.class})
+    @CCD
     private String formattedCalculatedDailyRentChargeAmount;
 
-    @CCD(searchable = false, access = {CitizenAccess.class})
+    @CCD(searchable = false)
     private YesOrNo showPostcodeNotAssignedToCourt;
 
-    @CCD(searchable = false, access = {CitizenAccess.class})
+    @CCD(searchable = false)
     private String postcodeNotAssignedView;
 
-    @CCD(access = {CitizenAccess.class})
+    @CCD
     private DefendantDetails defendant1;
 
-    @CCD(access = {CitizenAccess.class})
+    @CCD
     private List<ListValue<DefendantDetails>> defendants;
 
     // Notice Details fields
     @CCD(
-        label = "How did you serve the notice?",
-        access = {CitizenAccess.class}
+        label = "How did you serve the notice?"
     )
     private NoticeServiceMethod noticeServiceMethod;
 
     // Date fields for different service methods
     @CCD(
         label = "Date the document was posted",
-        hint = "For example, 16 4 2021",
-        access = {CitizenAccess.class}
+        hint = "For example, 16 4 2021"
     )
     private LocalDate noticePostedDate;
 
     @CCD(
         label = "Date the document was delivered",
-        hint = "For example, 16 4 2021",
-        access = {CitizenAccess.class}
+        hint = "For example, 16 4 2021"
     )
     private LocalDate noticeDeliveredDate;
 
     @CCD(
         label = "Date and time the document was handed over",
-        hint = "For example, 16 4 2021, 11 15",
-        access = {CitizenAccess.class}
+        hint = "For example, 16 4 2021, 11 15"
     )
     private LocalDateTime noticeHandedOverDateTime;
 
     @CCD(
         label = "Date and time the document was handed over",
-        hint = "For example, 16 4 2021, 11 15",
-        access = {CitizenAccess.class}
+        hint = "For example, 16 4 2021, 11 15"
     )
     private LocalDateTime noticeEmailSentDateTime;
 
     @CCD(
         label = "Date and time email or message sent",
-        hint = "For example, 16 4 2021, 11 15",
-        access = {CitizenAccess.class}
+        hint = "For example, 16 4 2021, 11 15"
     )
     private LocalDateTime noticeOtherElectronicDateTime;
 
     @CCD(
         label = "Date and time the document was handed over",
-        hint = "For example, 16 4 2021, 11 15",
-        access = {CitizenAccess.class}
+        hint = "For example, 16 4 2021, 11 15"
     )
     private LocalDateTime noticeOtherDateTime;
 
     // Text fields for different service methods
     @CCD(
-        label = "Name of person the document was left with",
-        access = {CitizenAccess.class}
+        label = "Name of person the document was left with"
     )
     private String noticePersonName;
 
     @CCD(
         label = "Explain how it was served by email",
-        access = {CitizenAccess.class},
         max = 250,
         typeOverride = TextArea
     )
@@ -409,7 +372,6 @@ public class PCSCase {
 
     @CCD(
         label = "Explain what the other means were",
-        access = {CitizenAccess.class},
         max = 250,
         typeOverride = TextArea
     )
@@ -420,7 +382,7 @@ public class PCSCase {
         hint = "Upload a document to the system",
         typeOverride = FieldType.Collection,
         typeParameterOverride = "Document",
-        access = {CitizenAccess.class, CaseworkerReadAccess.class}
+        access = {CaseworkerReadAccess.class}
     )
     private List<ListValue<Document>> noticeDocuments;
 
@@ -443,8 +405,7 @@ public class PCSCase {
     private LocalDate tenancyLicenceDate;
 
     @CCD(
-        label = "Add document",hint = "Upload a document to the system",
-        access = {CitizenAccess.class}
+        label = "Add document",hint = "Upload a document to the system"
     )
     private List<ListValue<Document>> tenancyLicenceDocuments;
 
@@ -456,16 +417,14 @@ public class PCSCase {
         label = "Add document",
         hint = "Upload a document to the system",
         typeOverride = FieldType.Collection,
-        typeParameterOverride = "Document",
-        access = {CitizenAccess.class}
+        typeParameterOverride = "Document"
     )
     private List<ListValue<Document>> rentStatementDocuments;
 
     @CCD(
         label = "Total rent arrears",
         min = 0,
-        typeOverride = FieldType.MoneyGBP,
-        access = {CitizenAccess.class}
+        typeOverride = FieldType.MoneyGBP
     )
     private String totalRentArrears;
 
@@ -473,8 +432,7 @@ public class PCSCase {
         label = "For the period shown on the rent statement, have any rent payments been paid by someone "
             + "other than the defendants?",
         hint = "This could include payments from Universal Credit, Housing Benefit or any other contributions "
-            + "made by a government department, like the Department for Work and Pensions (DWP).",
-        access = {CitizenAccess.class}
+            + "made by a government department, like the Department for Work and Pensions (DWP)."
     )
     private VerticalYesNo thirdPartyPayments;
 
@@ -482,28 +440,24 @@ public class PCSCase {
         label = "Where have the payments come from?",
         hint = "Select all that apply",
         typeOverride = FieldType.MultiSelectList,
-        typeParameterOverride = "ThirdPartyPaymentSource",
-        access = {CitizenAccess.class}
+        typeParameterOverride = "ThirdPartyPaymentSource"
     )
-    private java.util.List<ThirdPartyPaymentSource> thirdPartyPaymentSources;
+    private List<ThirdPartyPaymentSource> thirdPartyPaymentSources;
 
     @CCD(
-        label = "Payment source",
-        access = {CitizenAccess.class}
+        label = "Payment source"
     )
     private String thirdPartyPaymentSourceOther;
 
     @CCD(
-        label = "Do you have grounds for possession?",
-        access = {CitizenAccess.class}
+        label = "Do you have grounds for possession?"
     )
     private VerticalYesNo hasIntroductoryDemotedOtherGroundsForPossession;
 
     @CCD(
             label = "What are your grounds for possession?",
             typeOverride = FieldType.MultiSelectList,
-            typeParameterOverride = "IntroductoryDemotedOrOtherGrounds",
-            access = {CitizenAccess.class}
+            typeParameterOverride = "IntroductoryDemotedOrOtherGrounds"
     )
     private Set<IntroductoryDemotedOrOtherGrounds> introductoryDemotedOrOtherGrounds;
 
@@ -511,16 +465,15 @@ public class PCSCase {
             label = "Enter your grounds for possession",
             hint = "You'll be able to explain your reasons for claiming Possession"
                     + " under these grounds on the next screen",
-            access = {CitizenAccess.class},
             typeOverride = TextArea
     )
     private String otherGroundDescription;
 
-    @CCD(access = {CitizenAccess.class})
+    @CCD
     private YesOrNo showIntroductoryDemotedOtherGroundReasonPage;
 
     @JsonUnwrapped
-    @CCD(access = {CitizenAccess.class})
+    @CCD
     private IntroductoryDemotedOtherGroundReason introductoryDemotedOtherGroundReason;
 
     @CCD(
@@ -574,8 +527,7 @@ public class PCSCase {
     private SecureOrFlexibleGroundsReasons secureOrFlexibleGroundsReasons;
 
     @CCD(
-        label = "Do you want the court to make a judgment for the outstanding arrears?",
-        access = {CitizenAccess.class}
+        label = "Do you want the court to make a judgment for the outstanding arrears?"
     )
     private YesOrNo arrearsJudgmentWanted;
 
@@ -583,24 +535,19 @@ public class PCSCase {
         label = "Mandatory grounds",
         hint = "Select all that apply",
         typeOverride = MultiSelectList,
-        typeParameterOverride = "NoRentArrearsMandatoryGrounds",
-        access = {CitizenAccess.class}
+        typeParameterOverride = "NoRentArrearsMandatoryGrounds"
     )
-    @Builder.Default
-    private Set<NoRentArrearsMandatoryGrounds> noRentArrearsMandatoryGroundsOptions = new HashSet<>();
+    private Set<NoRentArrearsMandatoryGrounds> noRentArrearsMandatoryGroundsOptions;
 
     @CCD(
         label = "Discretionary grounds",
         hint = "Select all that apply",
         typeOverride = MultiSelectList,
-        typeParameterOverride = "NoRentArrearsDiscretionaryGrounds",
-        access = {CitizenAccess.class}
+        typeParameterOverride = "NoRentArrearsDiscretionaryGrounds"
     )
-    @Builder.Default
-    private Set<NoRentArrearsDiscretionaryGrounds> noRentArrearsDiscretionaryGroundsOptions = new HashSet<>();
+    private Set<NoRentArrearsDiscretionaryGrounds> noRentArrearsDiscretionaryGroundsOptions;
 
     @JsonUnwrapped
-    @CCD(access = {CitizenAccess.class})
     private NoRentArrearsReasonForGrounds noRentArrearsReasonForGrounds;
 
     @CCD(
@@ -614,18 +561,36 @@ public class PCSCase {
     private DefendantCircumstances defendantCircumstances;
     private AdditionalReasons additionalReasonsForPossession;
 
+    @JsonUnwrapped
+    @CCD
+    private ClaimantCircumstances claimantCircumstances;
+
+    @CCD(
+        label = "Do you want to upload any additional documents?",
+        hint = "You can either upload documents now or closer to the hearing date. "
+            + "Any documents you upload now will be included in the pack of documents a judge will "
+            + "receive before the hearing (the bundle).",
+        access = {CitizenAccess.class}
+    )
+    private VerticalYesNo wantToUploadDocuments;
+
+    @CCD(
+        label = "Add document",
+        hint = "Upload a document to the system",
+        access = {CitizenAccess.class}
+    )
+    private List<ListValue<AdditionalDocument>> additionalDocuments;
+
     @CCD(
         label = "Are you planning to make an application at the same time as your claim?",
-        hint = "After you've submitted your claim, there will be instructions on how to make an application",
-        access = {CitizenAccess.class}
+        hint = "After you've submitted your claim, there will be instructions on how to make an application"
     )
     private VerticalYesNo applicationWithClaim;
 
     @CCD(
         label = "What would you like to do next?",
         typeOverride = FieldType.FixedRadioList,
-        typeParameterOverride = "CompletionNextStep",
-        access = {CitizenAccess.class}
+        typeParameterOverride = "CompletionNextStep"
     )
     private CompletionNextStep completionNextStep;
 }
