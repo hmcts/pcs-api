@@ -553,8 +553,8 @@ export class CreateCaseAction implements IAction {
     await performAction('clickButton', createCase.start);
   }
   
-  private async selectLanguageUsed(language: actionData) {
-    await performAction('clickRadioButton', language);
+  private async selectLanguageUsed(option: actionData) {
+    await performAction('clickRadioButton', option);
     await performAction('clickButton', languageUsed.continue);
   }
 
