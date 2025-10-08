@@ -137,7 +137,7 @@ def runE2eTests(String context) {
       allowMissing: true,
       alwaysLinkToLastBuild: true,
       keepAll: true,
-      reportDir: "src/e2eTest/playwright-report",
+      reportDir: "allure-report",
       reportFiles: 'index.html',
       reportName: 'EXUI E2E Test Report'
     ])
