@@ -60,7 +60,6 @@ export class ActionRegistry {
     ['selectApplications', new CreateCaseAction()],
     ['completingYourClaim', new CreateCaseAction()],
     ['selectAdditionalReasonsForPossession', new CreateCaseAction()],
-    ['searchCaseById', new searchCaseActions()],
     ['enterReasonForDemotionOrder', new CreateCaseAction()],
     ['selectStatementOfExpressTerms', new CreateCaseAction()],
     ['selectAlternativesToPossession', new CreateCaseAction()],
