@@ -35,12 +35,15 @@ withPipeline(type, product, component) {
   def githubApi = new GithubAPI(this)
   env.IDAM_S2S_AUTH_URL = "http://rpe-service-auth-provider-aat.service.core-compute-aat.internal"
   env.IDAM_API_URL = "https://idam-api.aat.platform.hmcts.net"
+  env.PACT_BROKER_URL = "https://pact-broker.platform.hmcts.net"
   loadVaultSecrets(secrets)
   enableDbMigration('pcs')
 
   onPR() {
-    // Skipping PACT publish on PRs until contracts are verified and CONSUMER_DEPLOY_CHECK can be added
-    // enablePactAs([AppPipelineDsl.PactRoles.CONSUMER])
+    enablePactAs([
+      AppPipelineDsl.PactRoles.CONSUMER,
+      AppPipelineDsl.PactRoles.CONSUMER_DEPLOY_CHECK
+    ])
     setPreviewEnvVars()
     if (githubApi.getLabelsbyPattern(env.BRANCH_NAME, "pr-values:ccd").size() > 0) {
       enableHighLevelDataSetup()
@@ -48,7 +51,10 @@ withPipeline(type, product, component) {
   }
 
   onMaster() {
-    enablePactAs([AppPipelineDsl.PactRoles.CONSUMER])
+    enablePactAs([
+      AppPipelineDsl.PactRoles.CONSUMER,
+      AppPipelineDsl.PactRoles.CONSUMER_DEPLOY_CHECK
+    ])
     enableHighLevelDataSetup("", true)
     setAatEnvVars()
   }
