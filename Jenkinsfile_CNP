@@ -133,7 +133,7 @@ def runE2eTests(String context) {
       sh './gradlew runE2eChromeTests'
     }
   } finally {
-    steps.archiveArtifacts artifacts: "src/e2eTest/allure-report"
+    steps.archiveArtifacts artifacts: "**/src/e2eTest/allure-report"
     publishHTML([
       allowMissing: true,
       alwaysLinkToLastBuild: true,
