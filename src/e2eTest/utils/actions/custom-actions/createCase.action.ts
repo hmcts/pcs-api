@@ -36,7 +36,6 @@ import {claimingCosts} from '@data/page-data/claimingCosts.page.data';
 import {alternativesToPossession} from '@data/page-data/alternativesToPossession.page.data';
 import {reasonsForRequestingASuspensionOrder} from '@data/page-data/reasonsForRequestingASuspensionOrder.page.data';
 import {uploadAdditionalDocs} from '@data/page-data/uploadAdditionalDocs.page.data';
-import {completeYourClaim} from '@data/page-data/completeYourClaim.page.data';
 import {additionalReasonsForPossession} from '@data/page-data/additionalReasonsForPossession.page.data';
 import {completeYourClaim} from '@data/page-data/completeYourClaim.page.data';
 import {home} from '@data/page-data/home.page.data';
