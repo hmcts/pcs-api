@@ -14,13 +14,11 @@ import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
-import uk.gov.hmcts.reform.pcs.ccd.domain.PaymentStatus;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.renderer.ClaimPaymentTabRenderer;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.UnsubmittedCaseDataService;
@@ -36,11 +34,7 @@ import java.util.stream.Stream;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -56,8 +50,6 @@ class CCDCaseRepositoryTest {
     @Mock
     private ModelMapper modelMapper;
     @Mock
-    private ClaimPaymentTabRenderer claimPaymentTabRenderer;
-    @Mock
     private PcsCaseService pcsCaseService;
     @Mock
     private UnsubmittedCaseDataService unsubmittedCaseDataService;
@@ -71,7 +63,7 @@ class CCDCaseRepositoryTest {
         when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(pcsCaseEntity));
 
         underTest = new CCDCaseRepository(pcsCaseRepository, securityContextService,
-                modelMapper, claimPaymentTabRenderer, pcsCaseService, unsubmittedCaseDataService);
+                modelMapper, pcsCaseService, unsubmittedCaseDataService);
     }
 
     @Test
@@ -111,9 +103,6 @@ class CCDCaseRepositoryTest {
 
     @Test
     void shouldReturnCaseWithNoPropertyAddress() {
-        // Given
-        when(pcsCaseEntity.getPaymentStatus()).thenReturn(PaymentStatus.UNPAID);
-
         // When
         PCSCase pcsCase = underTest.getCase(CASE_REFERENCE, STATE);
 
@@ -122,31 +111,12 @@ class CCDCaseRepositoryTest {
     }
 
     @Test
-    void shouldRenderClaimPaymentMarkdownWhenPaymentStatusIsNotNull() {
-        // Given
-        when(pcsCaseEntity.getPaymentStatus()).thenReturn(PaymentStatus.UNPAID);
-
-        String expectedPaymentMarkdown = "payment markdown";
-        when(claimPaymentTabRenderer.render(CASE_REFERENCE, PaymentStatus.UNPAID)).thenReturn(expectedPaymentMarkdown);
-
+    void shouldSetPageHeadingMarkdownWhenCaseIsRetrieved() {
         // When
         PCSCase pcsCase = underTest.getCase(CASE_REFERENCE, STATE);
 
         // Then
-        assertThat(pcsCase.getClaimPaymentTabMarkdown()).isEqualTo(expectedPaymentMarkdown);
-    }
-
-    @Test
-    void shouldNotRenderClaimPaymentMarkdownWhenNoPaymentStatus() {
-        // Given
-        when(pcsCaseEntity.getPaymentStatus()).thenReturn(null); // Stated for clarity
-
-        // When
-        PCSCase pcsCase = underTest.getCase(CASE_REFERENCE, STATE);
-
-        // Then
-        assertThat(pcsCase.getClaimPaymentTabMarkdown()).isNull();
-        verify(claimPaymentTabRenderer, never()).render(anyLong(), any());
+        assertThat(pcsCase.getPageHeadingMarkdown()).isNotBlank();
     }
 
     @Test
@@ -163,7 +133,6 @@ class CCDCaseRepositoryTest {
         // Given
         AddressEntity addressEntity = mock(AddressEntity.class);
         when(pcsCaseEntity.getPropertyAddress()).thenReturn(addressEntity);
-        when(pcsCaseEntity.getPaymentStatus()).thenReturn(PaymentStatus.UNPAID);
         AddressUK addressUK = stubAddressEntityModelMapper(addressEntity);
 
         // When
@@ -182,7 +151,6 @@ class CCDCaseRepositoryTest {
         Party party = mock(Party.class);
 
         when(modelMapper.map(partyEntity, Party.class)).thenReturn(party);
-        when(pcsCaseEntity.getPaymentStatus()).thenReturn(PaymentStatus.UNPAID);
 
         // When
         PCSCase pcsCase = underTest.getCase(CASE_REFERENCE, STATE);

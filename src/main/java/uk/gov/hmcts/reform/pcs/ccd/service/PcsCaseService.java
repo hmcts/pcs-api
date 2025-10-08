@@ -12,6 +12,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.model.Defendant;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
+import uk.gov.hmcts.reform.pcs.ccd.service.PartyDocumentsService;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
@@ -28,6 +29,7 @@ public class PcsCaseService {
     private final PcsCaseMergeService pcsCaseMergeService;
     private final ModelMapper modelMapper;
     private final TenancyLicenceService tenancyLicenceService;
+    private final PartyDocumentsService partyDocumentsService;
 
     public void createCase(long caseReference, AddressUK propertyAddress, LegislativeCountry legislativeCountry) {
 
@@ -51,13 +53,13 @@ public class PcsCaseService {
         PcsCaseEntity pcsCaseEntity = new PcsCaseEntity();
         pcsCaseEntity.setCaseReference(caseReference);
         pcsCaseEntity.setPropertyAddress(addressEntity);
-        pcsCaseEntity.setPaymentStatus(pcsCase.getPaymentStatus());
         pcsCaseEntity.setPreActionProtocolCompleted(
                 pcsCase.getPreActionProtocolCompleted() != null
                         ? pcsCase.getPreActionProtocolCompleted().toBoolean()
                         : null);
         pcsCaseEntity.setDefendants(mapFromDefendantDetails(pcsCase.getDefendants()));
         pcsCaseEntity.setTenancyLicence(tenancyLicenceService.buildTenancyLicence(pcsCase));
+        pcsCaseEntity.setPartyDocuments(partyDocumentsService.buildPartyDocuments(pcsCase));
 
         pcsCaseRepository.save(pcsCaseEntity);
     }
@@ -72,6 +74,7 @@ public class PcsCaseService {
 
     public void mergeCaseData(PcsCaseEntity pcsCaseEntity, PCSCase pcsCase) {
         pcsCaseMergeService.mergeCaseData(pcsCaseEntity, pcsCase);
+        pcsCaseEntity.setPartyDocuments(partyDocumentsService.buildPartyDocuments(pcsCase));
     }
 
     public PcsCaseEntity loadCase(long caseReference) {
