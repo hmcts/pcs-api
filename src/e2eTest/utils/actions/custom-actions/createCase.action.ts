@@ -529,7 +529,7 @@ export class CreateCaseAction implements IAction {
 
   private async selectStatementOfExpressTerms(option: actionData) {
     await performAction('clickRadioButton', option);
-    if(option == 'Yes'){
+    if(option == statementOfExpressTerms.yes){
       await performAction('inputText', statementOfExpressTerms.giveDetailsOfTermsLabel, statementOfExpressTerms.sampleTestReason);
     }
     await performAction('clickButton', alternativesToPossession.continue);
