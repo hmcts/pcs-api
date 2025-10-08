@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import uk.gov.hmcts.ccd.sdk.External;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
+import uk.gov.hmcts.ccd.sdk.api.Label;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.FieldType;
@@ -346,10 +347,12 @@ public class PCSCase {
         access = {CitizenAccess.class, CaseworkerAccess.class},
         label = "Do you want to add additional defendants?"
     )
-    private YesOrNo addAdditionalDefendant;
+    private VerticalYesNo addAdditionalDefendant;
 
     @CCD(
-        access = {CitizenAccess.class, CaseworkerAccess.class}
+        access = {CitizenAccess.class, CaseworkerAccess.class},
+        label = "Add defendant",
+        hint = "Add a defendant to the case"
     )
     private List<ListValue<DefendantDetails>> defendants;
 

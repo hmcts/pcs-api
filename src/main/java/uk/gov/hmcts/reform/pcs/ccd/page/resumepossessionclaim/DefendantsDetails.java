@@ -48,7 +48,8 @@ public class DefendantsDetails implements CcdPageConfiguration {
             .done()
 
             .readonly(PCSCase::getAdditionalDefendantsSectionLabel)
-            .mandatory(PCSCase::getAddAdditionalDefendant);
+            .mandatory(PCSCase::getAddAdditionalDefendant)
+                .mandatory(PCSCase::getDefendants, "addAdditionalDefendant=\"YES\"");
     }
 
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,

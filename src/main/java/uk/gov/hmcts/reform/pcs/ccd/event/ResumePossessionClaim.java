@@ -88,7 +88,6 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
     private final TenancyLicenceDetails tenancyLicenceDetails;
     private final ContactPreferences contactPreferences;
     private final DefendantsDetails defendantDetails;
-    private final AdditionalDefendantsDetails additionalDefendantsDetails;
 
     @Override
     public void configure(ConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -112,7 +111,6 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             .add(new ClaimantInformation())
             .add(contactPreferences)
             .add(defendantDetails)
-            .add(additionalDefendantsDetails)
             .add(tenancyLicenceDetails)
             .add(new SecureOrFlexibleGroundsForPossession())
             .add(new RentArrearsOrBreachOfTenancyGround())
