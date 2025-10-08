@@ -556,9 +556,22 @@ public class PCSCase {
         access = {CitizenAccess.class}
     )
     private VerticalYesNo welshUsed;
-  
+
     @JsonUnwrapped
     private DefendantCircumstances defendantCircumstances;
+
+    @CCD(
+        label = "In the alternative to possession, would you like to claim suspension of right to buy"
+            + " or demotion of tenancy?",
+        hint = "Select all that apply",
+        typeOverride = MultiSelectList,
+        typeParameterOverride = "AlternativesToPossession"
+    )
+    private Set<AlternativesToPossession> alternativesToPossession;
+
+    @JsonUnwrapped
+    private SuspensionOfRightToBuy suspensionOfRightToBuy;
+
     private AdditionalReasons additionalReasonsForPossession;
 
     @JsonUnwrapped
