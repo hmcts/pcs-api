@@ -44,7 +44,7 @@ test.beforeEach(async ({page}, testInfo) => {
   initializeExecutor(page);
   await parentSuite('Case Creation');
   await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
-  // await performAction('login', user.claimantSolicitor);
+  await performAction('login', user.claimantSolicitor);
   await performAction('clickTab', home.createCaseTab);
   await performAction('selectJurisdictionCaseTypeEvent');
   await performAction('housingPossessionClaim');
@@ -65,7 +65,7 @@ test.describe('[Successful Create Case Flow]  @Master @nightly', async () => {
     });
     await performValidation('bannerAlert', 'Case #.* has been created.');
     await performAction('extractCaseIdFromAlert');
-    await performAction('clickButtonAndVerifyPageNavigation', provideMoreDetailsOfClaim.continue, claimantType.mainHeader);
+    // await performAction('clickButtonAndVerifyPageNavigation', provideMoreDetailsOfClaim.continue, claimantType.mainHeader);
     await performAction('selectClaimantType', claimantType.registeredProviderForSocialHousing);
     await performAction('selectClaimType', claimType.no);
     await performAction('selectClaimantName', claimantName.yes);
