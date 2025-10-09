@@ -21,6 +21,9 @@ import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.StartTheService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.feesandpay.service.FeesAndPayService;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.createPossessionClaim;
 
 
@@ -35,6 +38,8 @@ public class CreatePossessionClaim implements CCDConfig<PCSCase, State, UserRole
     private final CrossBorderPostcodeSelection crossBorderPostcodeSelection;
     private final PropertyNotEligible propertyNotEligible;
 
+    private static final String FEE = "£0";
+
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
         EventBuilder<PCSCase, UserRole, State> eventBuilder =
@@ -45,12 +50,21 @@ public class CreatePossessionClaim implements CCDConfig<PCSCase, State, UserRole
                 .grant(Permission.CRUD, UserRole.PCS_SOLICITOR);
 
         new PageBuilder(eventBuilder)
-            .add(new StartTheService(feesAndPayService))
+            .add(new StartTheService(start()))
             .add(enterPropertyAddress)
             .add(crossBorderPostcodeSelection)
             .add(propertyNotEligible)
             .add(new PostcodeNotAssignedToCourt());
 
+    }
+
+    private String start() {
+        try {
+            return formatAsCurrency(feesAndPayService.getFee("caseIssueFee").getCalculatedAmount());
+        } catch (Exception e) {
+            // Fallback to default fee if API is unavailable (during config generation)
+            return FEE;
+        }
     }
 
     private SubmitResponse submit(EventPayload<PCSCase, State> eventPayload) {
@@ -62,4 +76,10 @@ public class CreatePossessionClaim implements CCDConfig<PCSCase, State, UserRole
         return SubmitResponse.builder().build();
     }
 
+    private String formatAsCurrency(BigDecimal amount) {
+        if (amount == null) {
+            return FEE;
+        }
+        return "£" + amount.setScale(0, RoundingMode.HALF_UP);
+    }
 }

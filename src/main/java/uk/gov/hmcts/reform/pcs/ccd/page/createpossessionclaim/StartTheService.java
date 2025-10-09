@@ -2,27 +2,20 @@ package uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim;
 
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
-import uk.gov.hmcts.reform.pcs.feesandpay.service.FeesAndPayService;
-
-import java.math.BigDecimal;
-import java.math.RoundingMode;
 
 /**
  * CCD page configuration for making a housing possession claim online.
  */
 public class StartTheService implements CcdPageConfiguration {
 
-    private final FeesAndPayService feesAndPayService;
-    private static final String DEFAULT_FEE = "£0";
+    private final String fee;
 
-    public StartTheService(FeesAndPayService feesAndPayService) {
-        this.feesAndPayService = feesAndPayService;
+    public StartTheService(String fee) {
+        this.fee = fee;
     }
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
-        String formattedFee = getFeeOrDefault();
-
         pageBuilder
             .page("startTheService")
             .label("mainContent",
@@ -32,7 +25,7 @@ public class StartTheService implements CcdPageConfiguration {
                        + "you want to claim possession of is in England or Wales.</p>"
                        + "<p class=\"govuk-body\">This service is also available "
                        + "<a href=\"javascript:void(0)\" class=\"govuk-link\">in Welsh (Cymraeg)</a>.</p>"
-                       + "<p class=\"govuk-body\">The claim fee is " + formattedFee + ". You can pay by card or through"
+                       + "<p class=\"govuk-body\">The claim fee is " + fee + ". You can pay by card or through"
                        + "Payment By Account (PBA).</p>"
                        + "<p class=\"govuk-body\">Your claim will be saved as you answer the questions, so you'll be "
                        + "able to close and return to your draft.</p>"
@@ -58,21 +51,5 @@ public class StartTheService implements CcdPageConfiguration {
                        + "can then return to sign, submit and pay at a later date</li>"
                        + "</ul>"
             );
-    }
-
-    private String getFeeOrDefault() {
-        try {
-            return formatAsCurrency(feesAndPayService.getFee("caseIssueFee").getCalculatedAmount());
-        } catch (Exception e) {
-            // Fallback to default fee if API is unavailable (during config generation)
-            return DEFAULT_FEE;
-        }
-    }
-
-    private String formatAsCurrency(BigDecimal amount) {
-        if (amount == null) {
-            return DEFAULT_FEE;
-        }
-        return "£" + amount.setScale(0, RoundingMode.HALF_UP);
     }
 }
