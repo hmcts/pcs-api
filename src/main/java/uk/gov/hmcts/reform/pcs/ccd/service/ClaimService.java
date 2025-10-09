@@ -30,12 +30,14 @@ public class ClaimService {
 
         ClaimEntity claimEntity = ClaimEntity.builder()
             .summary("Main Claim")
-            .additionalReasons(additionalReasons)
-            .costsClaimed(pcsCase.getClaimingCostsWanted().toBoolean())
             .defendantCircumstances(defendantCircumstances != null
                                         ? defendantCircumstances.getDefendantCircumstancesInfo() : null)
+            .suspensionOfRightToBuyHousingAct(pcsCase.getSuspensionOfRightToBuy()
+                                                  .getSuspensionOfRightToBuyHousingActs())
+            .suspensionOfRightToBuyReason(pcsCase.getSuspensionOfRightToBuy().getSuspensionOfRightToBuyReason())
+            .costsClaimed(pcsCase.getClaimingCostsWanted().toBoolean())
+            .additionalReasons(additionalReasons)
             .applicationWithClaim(YesOrNoToBoolean.convert(pcsCase.getApplicationWithClaim()))
-
             .build();
 
         claimEntity.addParty(claimantPartyEntity, PartyRole.CLAIMANT);
