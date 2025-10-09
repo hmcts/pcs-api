@@ -15,7 +15,7 @@ public class ClaimantDetailsWales {
         label = "Were you registered under Part 1 of the Housing (Wales) Act 2014?",
         access = {CitizenAccess.class}
     )
-    private LicensingOption walesRegistrationLicensed;
+    private YesNoNotApplicable walesRegistrationLicensed;
 
     @CCD(
         label = "What's your registration number?",
@@ -28,7 +28,7 @@ public class ClaimantDetailsWales {
         label = "Were you licensed under Part 1 of the Housing (Wales) Act 2014?",
         access = {CitizenAccess.class}
     )
-    private LicensingOption walesLicenseLicensed;
+    private YesNoNotApplicable walesLicenseLicensed;
 
     @CCD(
         label = "What's your licence number?",
@@ -41,7 +41,7 @@ public class ClaimantDetailsWales {
         label = "Have you appointed a licensed agent to be responsible for all the property management work in relation to the dwelling as permitted under Part 1 of the Housing (Wales) Act 2014?",
         access = {CitizenAccess.class}
     )
-    private LicensingOption walesLicensedAgentAppointed;
+    private YesNoNotApplicable walesLicensedAgentAppointed;
 
     @CCD(
         label = "Agent's first name",

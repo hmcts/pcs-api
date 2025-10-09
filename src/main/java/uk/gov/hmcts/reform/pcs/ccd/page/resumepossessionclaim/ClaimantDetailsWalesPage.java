@@ -15,7 +15,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
-import static uk.gov.hmcts.reform.pcs.ccd.domain.LicensingOption.YES;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotApplicable.YES;
 
 @Component
 public class ClaimantDetailsWalesPage implements CcdPageConfiguration {
