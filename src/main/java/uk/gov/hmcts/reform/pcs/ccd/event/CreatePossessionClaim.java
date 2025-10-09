@@ -22,7 +22,6 @@ import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.feesandpay.service.FeesAndPayService;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.createPossessionClaim;
 
@@ -88,6 +87,6 @@ public class CreatePossessionClaim implements CCDConfig<PCSCase, State, UserRole
         if (amount == null) {
             return FEE;
         }
-        return "£" + amount.setScale(0, RoundingMode.HALF_UP);
+        return "£" + amount.stripTrailingZeros().toPlainString();
     }
 }
