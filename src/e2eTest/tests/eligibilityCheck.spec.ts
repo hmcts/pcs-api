@@ -36,7 +36,7 @@ test.describe('[Eligibility Check - Create Case] @Master @nightly', async () => 
       "elementType": "inlineText"
     });
     await performAction('selectBorderPostcode', borderPostcode.countryOptions.england);
-    await performValidation('bannerAlert', 'Cse #.* has been created.');
+    await performValidation('bannerAlert', 'Case #.* has been created.');
   });
 
   test('Cross border - Verify postcode page for England and Scotland content', async () => {
