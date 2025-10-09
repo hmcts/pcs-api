@@ -51,6 +51,12 @@ public class SuspensionOfRightToBuyDemotionOfTenancy {
     )
     private String expressTermsDetails;
 
+    @CCD(
+        label = "Have you served the defendants with a statement of the express terms which will apply "
+            + "to the demoted tenancy?"
+    )
+    private VerticalYesNo hasServedStatementExpressTerms;
+
     private YesOrNo suspensionToBuyDemotionOfTenancyPages;
 
 
