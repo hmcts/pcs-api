@@ -35,25 +35,25 @@ public class ClaimService {
                                         ? defendantCircumstances.getDefendantCircumstancesInfo() : null)
             .suspensionOfRightToBuyHousingAct(pcsCase.getSuspensionOfRightToBuy() != null
                                                   ? pcsCase.getSuspensionOfRightToBuy()
-                                                    .getSuspensionOfRightToBuyHousingActs() : null)
+                                                      .getSuspensionOfRightToBuyHousingActs() : null)
             .suspensionOfRightToBuyReason(pcsCase.getSuspensionOfRightToBuy() != null
                                               ? pcsCase.getSuspensionOfRightToBuy()
-                                                 .getSuspensionOfRightToBuyReason() : null)
+                                                   .getSuspensionOfRightToBuyReason() : null)
             .demotionOfTenancyHousingAct(pcsCase.getDemotionOfTenancy() != null
                                              ? pcsCase.getDemotionOfTenancy()
-                                               .getDemotionOfTenancyHousingActs() : null)
+                                                 .getDemotionOfTenancyHousingActs() : null)
             .demotionOfTenancyReason(pcsCase.getDemotionOfTenancy() != null
                                          ? pcsCase.getDemotionOfTenancy()
-                                           .getDemotionOfTenancyReason() : null)
+                                             .getDemotionOfTenancyReason() : null)
             .statementOfExpressTermsDetails(pcsCase.getDemotionOfTenancy() != null
                                                 ? pcsCase.getDemotionOfTenancy()
-                                                  .getStatementOfExpressTermsDetails() : null)
+                                                    .getStatementOfExpressTermsDetails() : null)
             .costsClaimed(pcsCase.getClaimingCostsWanted().toBoolean())
             .additionalReasons(additionalReasons)
             .applicationWithClaim(YesOrNoToBoolean.convert(pcsCase.getApplicationWithClaim()))
             .build();
 
-        populateSuspensionAndDemotionOrders(claimEntity, pcsCase.getSuspensionOfRightToBuyDemotionOfTenancy());
+        applyCombinedSuspensionDemotionOrders(claimEntity, pcsCase.getSuspensionOfRightToBuyDemotionOfTenancy());
 
         claimEntity.addParty(claimantPartyEntity, PartyRole.CLAIMANT);
         claimEntity.addClaimGrounds(claimGrounds);
@@ -63,8 +63,8 @@ public class ClaimService {
         return claimEntity;
     }
 
-    private void populateSuspensionAndDemotionOrders(ClaimEntity claimEntity,
-                                                       SuspensionOfRightToBuyDemotionOfTenancy suspensionAndDemotion) {
+    private void applyCombinedSuspensionDemotionOrders(ClaimEntity claimEntity,
+                                                                    SuspensionOfRightToBuyDemotionOfTenancy suspensionAndDemotion) {
         if (suspensionAndDemotion == null) {
             return;
         }
