@@ -13,19 +13,14 @@ import {home} from '@data/page-data/home.page.data';
 
 test.beforeEach(async ({page}) => {
   initializeExecutor(page);
-  //await parentSuite('Eligibility Check');
   await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
-/*  await testInfo.attach('Page URL', {
-    body: page.url(),
-    contentType: 'text/plain',
-  });*/
   await performAction('login', user.claimantSolicitor);
   await performAction('clickTab', home.createCaseTab);
   await performAction('selectJurisdictionCaseTypeEvent');
   await performAction('housingPossessionClaim');
 });
 
-test.describe('[Eligibility checks for cross and non cross border postcodes] @Master @nightly', async () => {
+test.describe('[Eligibility check - Create Case] @Master @nightly', async () => {
   test('Cross border - Verify postcode eligibility check redirection and content for England and Wales', async () => {
     await performAction('selectAddress', {
       postcode: borderPostcode.englandWalesPostcode,
