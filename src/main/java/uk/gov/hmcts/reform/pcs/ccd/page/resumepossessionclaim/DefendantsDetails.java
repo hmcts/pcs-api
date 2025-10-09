@@ -5,15 +5,20 @@ import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
+import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
+import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantDOBDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.service.AddressValidator;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 @AllArgsConstructor
 @Component
@@ -48,7 +53,8 @@ public class DefendantsDetails implements CcdPageConfiguration {
             .done()
 
             .readonly(PCSCase::getAdditionalDefendantsSectionLabel)
-            .mandatory(PCSCase::getAddAdditionalDefendant);
+            .mandatory(PCSCase::getAddAdditionalDefendant)
+                .mandatory(PCSCase::getDefendants, "addAdditionalDefendant=\"YES\"");
     }
 
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
@@ -68,6 +74,28 @@ public class DefendantsDetails implements CcdPageConfiguration {
                     .build();
             }
         }
+
+
+        List<ListValue<DefendantDetails>> defendants = caseData.getDefendants();
+        List<ListValue<DefendantDOBDetails>> defendantsDOB = new ArrayList<>();
+
+        int index = 0;
+        for (ListValue<DefendantDetails> defendant : defendants) {
+            DefendantDOBDetails dobDetails = DefendantDOBDetails.builder()
+                .firstName(defendant.getValue().getFirstName())
+                .lastName(defendant.getValue().getLastName())
+                .dob(null)
+                .build();
+
+            ListValue<DefendantDOBDetails> lv = new ListValue<>(
+                String.valueOf(index++),
+                dobDetails
+            );
+
+            defendantsDOB.add(lv);
+        }
+
+        caseData.setDefendantsDOB(defendantsDOB);
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
             .data(caseData)
