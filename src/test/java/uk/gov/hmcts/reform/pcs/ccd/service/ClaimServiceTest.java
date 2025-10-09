@@ -8,11 +8,11 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.pcs.ccd.domain.AdditionalReasons;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantCircumstances;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantCircumstances;
+import uk.gov.hmcts.reform.pcs.ccd.domain.DemotionOfTenancy;
+import uk.gov.hmcts.reform.pcs.ccd.domain.DemotionOfTenancyHousingAct;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.SuspensionOfRightToBuy;
 import uk.gov.hmcts.reform.pcs.ccd.domain.SuspensionOfRightToBuyHousingAct;
-import uk.gov.hmcts.reform.pcs.ccd.domain.DemotionOfTenancy;
-import uk.gov.hmcts.reform.pcs.ccd.domain.DemotionOfTenancyHousingAct;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimGroundEntity;
@@ -127,7 +127,7 @@ class ClaimServiceTest {
         PartyEntity claimantPartyEntity = new PartyEntity();
 
         String expectedSuspensionReason = "some suspension reason";
-        SuspensionOfRightToBuyHousingAct expectedSuspensionAct = SuspensionOfRightToBuyHousingAct.SECTION_6A2;
+        SuspensionOfRightToBuyHousingAct expectedSuspensionAct = SuspensionOfRightToBuyHousingAct.SECTION_6A_2;
 
         SuspensionOfRightToBuy suspension = mock(SuspensionOfRightToBuy.class);
         when(pcsCase.getSuspensionOfRightToBuy()).thenReturn(suspension);
@@ -158,7 +158,7 @@ class ClaimServiceTest {
 
         String expectedDemotionReason = "some demotion reason";
         String expectedStatementDetails = "some statement details";
-        DemotionOfTenancyHousingAct expectedDemotionAct = DemotionOfTenancyHousingAct.SECTION_82A;
+        DemotionOfTenancyHousingAct expectedDemotionAct = DemotionOfTenancyHousingAct.SECTION_82A_2;
 
         DemotionOfTenancy demotion = mock(DemotionOfTenancy.class);
         when(pcsCase.getDemotionOfTenancy()).thenReturn(demotion);

@@ -4,7 +4,10 @@ package uk.gov.hmcts.reform.pcs.ccd.service;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantCircumstances;
+import uk.gov.hmcts.reform.pcs.ccd.domain.DemotionOfTenancy;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.SuspensionOfRightToBuy;
+import uk.gov.hmcts.reform.pcs.ccd.domain.SuspensionOfRightToBuyDemotionOfTenancy;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimGroundEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyEntity;
@@ -25,6 +28,11 @@ public class ClaimService {
 
         String additionalReasons = pcsCase.getAdditionalReasonsForPossession().getReasons();
 
+        SuspensionOfRightToBuyDemotionOfTenancy suspensionAndDemotion = pcsCase
+                                                                          .getSuspensionOfRightToBuyDemotionOfTenancy();
+        SuspensionOfRightToBuy suspensionOfRightToBuy = pcsCase.getSuspensionOfRightToBuy();
+        DemotionOfTenancy demotionOfTenancy = pcsCase.getDemotionOfTenancy();
+
         List<ClaimGroundEntity> claimGrounds = claimGroundService.getGroundsWithReason(pcsCase);
         DefendantCircumstances defendantCircumstances = pcsCase.getDefendantCircumstances();
 
@@ -32,21 +40,21 @@ public class ClaimService {
             .summary("Main Claim")
             .defendantCircumstances(defendantCircumstances != null
                                         ? defendantCircumstances.getDefendantCircumstancesInfo() : null)
-            .suspensionOfRightToBuyHousingAct(pcsCase.getSuspensionOfRightToBuy() != null
-                                                  ? pcsCase.getSuspensionOfRightToBuy()
-                                                      .getSuspensionOfRightToBuyHousingActs() : null)
-            .suspensionOfRightToBuyReason(pcsCase.getSuspensionOfRightToBuy() != null
-                                              ? pcsCase.getSuspensionOfRightToBuy()
-                                                  .getSuspensionOfRightToBuyReason() : null)
-            .demotionOfTenancyHousingAct(pcsCase.getDemotionOfTenancy() != null
-                                             ? pcsCase.getDemotionOfTenancy()
-                                                 .getDemotionOfTenancyHousingActs() : null)
-            .demotionOfTenancyReason(pcsCase.getDemotionOfTenancy() != null
-                                         ? pcsCase.getDemotionOfTenancy()
-                                             .getDemotionOfTenancyReason() : null)
-            .statementOfExpressTermsDetails(pcsCase.getDemotionOfTenancy() != null
-                                                ? pcsCase.getDemotionOfTenancy()
-                                                    .getStatementOfExpressTermsDetails() : null)
+            .suspensionOfRightToBuyHousingAct(suspensionOfRightToBuy.getSuspensionOfRightToBuyHousingActs() != null
+                                                  ? suspensionOfRightToBuy.getSuspensionOfRightToBuyHousingActs()
+                                                  : suspensionAndDemotion.getSuspensionOfRightToBuyActs())
+            .suspensionOfRightToBuyReason(suspensionOfRightToBuy.getSuspensionOfRightToBuyReason() != null
+                                              ? suspensionOfRightToBuy.getSuspensionOfRightToBuyReason()
+                                              : suspensionAndDemotion.getSuspensionOrderReason())
+            .demotionOfTenancyHousingAct(demotionOfTenancy.getDemotionOfTenancyHousingActs() != null
+                                             ? demotionOfTenancy.getDemotionOfTenancyHousingActs()
+                                             : suspensionAndDemotion.getDemotionOfTenancyActs())
+            .demotionOfTenancyReason(demotionOfTenancy.getDemotionOfTenancyReason() != null
+                                         ? demotionOfTenancy.getDemotionOfTenancyReason()
+                                         : suspensionAndDemotion.getDemotionOrderReason())
+            .statementOfExpressTermsDetails(demotionOfTenancy.getStatementOfExpressTermsDetails() != null
+                                                ? demotionOfTenancy.getStatementOfExpressTermsDetails()
+                                                : suspensionAndDemotion.getExpressTermsDetails())
             .costsClaimed(pcsCase.getClaimingCostsWanted().toBoolean())
             .additionalReasons(additionalReasons)
             .applicationWithClaim(YesOrNoToBoolean.convert(pcsCase.getApplicationWithClaim()))
