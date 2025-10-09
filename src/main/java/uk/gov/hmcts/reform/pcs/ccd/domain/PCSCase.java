@@ -351,8 +351,8 @@ public class PCSCase {
 
     @CCD(
         access = {CitizenAccess.class, CaseworkerAccess.class},
-        label = "Add defendant",
-        hint = "Add a defendant to the case"
+        label = "Additional defendant",
+        hint = "Add an additional defendant to the case"
     )
     private List<ListValue<DefendantDetails>> defendants;
 

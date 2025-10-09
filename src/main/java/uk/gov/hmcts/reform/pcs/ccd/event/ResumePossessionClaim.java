@@ -29,7 +29,6 @@ import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.MoneyJudgment;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.RentArrearsOrBreachOfTenancyGround;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.SecureOrFlexibleGroundsForPossession;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.SecureOrFlexibleGroundsForPossessionReasons;
-import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.AdditionalDefendantsDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.CheckingNotice;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ClaimTypeNotEligibleEngland;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ClaimTypeNotEligibleWales;
