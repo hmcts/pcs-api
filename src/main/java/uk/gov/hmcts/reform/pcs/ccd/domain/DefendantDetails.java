@@ -8,6 +8,8 @@ import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.FieldType;
 
+import java.time.LocalDate;
+
 @Builder
 @Data
 @NoArgsConstructor
@@ -27,6 +29,16 @@ public class DefendantDetails {
 
     @CCD(label = "Defendant's last name", showCondition = "nameKnown=\"YES\"")
     private String lastName;
+
+    @CCD(label = "Do you know the defendant's date of birth?")
+    private VerticalYesNo dobKnown;
+
+    @CCD(
+        label = "What is this defendant's date of birth?",
+        hint = "For example, 16 4 2021",
+        showCondition = "dobKnown=\"YES\""
+    )
+    private LocalDate dob;
 
     @CCD(label = """
                 ---

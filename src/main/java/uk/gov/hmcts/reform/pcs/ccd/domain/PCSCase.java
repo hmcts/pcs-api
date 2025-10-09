@@ -19,6 +19,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 
 import static uk.gov.hmcts.ccd.sdk.type.FieldType.DynamicRadioList;
 import static uk.gov.hmcts.ccd.sdk.type.FieldType.MultiSelectList;
@@ -352,6 +353,22 @@ public class PCSCase {
         access = {CitizenAccess.class, CaseworkerAccess.class}
     )
     private List<ListValue<DefendantDetails>> defendants;
+
+    @CCD(label = "Do you know the defendant's date of birth?")
+    private VerticalYesNo dobKnown;
+
+    @CCD(
+        access = {CitizenAccess.class, CaseworkerAccess.class}
+    )
+    @Builder.Default
+    private List<ListValue<DefendantDOBDetails>> defendantsDOB = List.of(
+        new ListValue<>(UUID.randomUUID().toString(), new DefendantDOBDetails("Billy", "Wright", LocalDate.of(1990, 5, 12))),
+        new ListValue<>(UUID.randomUUID().toString(), new DefendantDOBDetails("Brian", "Springford", LocalDate.of(1985, 11, 3)))
+    );
+
+    @CCD(
+        access = {CitizenAccess.class, CaseworkerAccess.class})
+    private DefendantDOBDetails  defendantsDOB1;
 
     // Notice Details fields
     @CCD(
