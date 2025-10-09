@@ -41,7 +41,7 @@ public class TenancyLicence {
     private LocalDateTime noticeOtherElectronicDateTime;
     private LocalDateTime noticeOtherDateTime;
     private String noticeOtherExplanation;
-    
+
     private String tenancyLicenceType;
 
     private String detailsOfOtherTypeOfTenancyLicence;
@@ -49,8 +49,12 @@ public class TenancyLicence {
     private LocalDate tenancyLicenceDate;
 
     private List<Document> supportingDocuments;
-    
+
     private Boolean arrearsJudgmentWanted;
+
+    private List<Document> rentStatementDocuments;
+
+    private List<Document> noticeDocuments;
 
     private BigDecimal totalRentArrears;
 

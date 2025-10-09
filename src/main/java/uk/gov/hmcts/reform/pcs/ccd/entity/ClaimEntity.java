@@ -3,6 +3,8 @@ package uk.gov.hmcts.reform.pcs.ccd.entity;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -15,8 +17,10 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import uk.gov.hmcts.reform.pcs.ccd.domain.SuspensionOfRightToBuyHousingAct;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -49,7 +53,27 @@ public class ClaimEntity {
     @JsonManagedReference
     private Set<ClaimPartyEntity> claimParties = new HashSet<>();
 
+    @OneToMany(fetch = LAZY, cascade = ALL, mappedBy = "claim")
+    @Builder.Default
+    @JsonManagedReference
+    private Set<ClaimGroundEntity> claimGrounds = new HashSet<>();
+
     private String summary;
+
+    private Boolean applicationWithClaim;
+
+    private String defendantCircumstances;
+
+    private Boolean costsClaimed;
+
+    @Enumerated(EnumType.STRING)
+    private SuspensionOfRightToBuyHousingAct suspensionOfRightToBuyHousingAct;
+
+    private String suspensionOfRightToBuyReason;
+
+    private String additionalReasons;
+
+    private String claimantCircumstances;
 
     public void addParty(PartyEntity party, PartyRole partyRole) {
         ClaimPartyEntity claimPartyEntity = ClaimPartyEntity.builder()
@@ -62,4 +86,10 @@ public class ClaimEntity {
         party.getClaimParties().add(claimPartyEntity);
     }
 
+    public void addClaimGrounds(List<ClaimGroundEntity> grounds) {
+        for (ClaimGroundEntity ground : grounds) {
+            ground.setClaim(this);
+            this.claimGrounds.add(ground);
+        }
+    }
 }

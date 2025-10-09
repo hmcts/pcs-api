@@ -11,13 +11,15 @@ import {RadioButtonValidation} from "@utils/validations/element-validations/radi
 export class ValidationRegistry {
   private static validations: Map<string, IValidation> = new Map([
     ['text', new TextValidation()],
-    ['visibility', new VisibilityValidation()],
     ['bannerAlert', new BannerAlertValidation()],
     ['formLabelValue', new FormLabelValueValidation()],
     ['optionList', new OptionListValidation()],
     ['mainHeader', new MainHeaderValidation()],
     ['errorMessage', new ErrorMessageValidation()],
-    ['radioButtonChecked', new RadioButtonValidation()]
+    ['radioButtonChecked', new RadioButtonValidation()],
+    ['elementToBeVisible', new VisibilityValidation()],
+    ['elementNotToBeVisible', new VisibilityValidation()],
+    ['waitUntilElementDisappears', new VisibilityValidation()]
   ]);
 
   static getValidation(validationType: string): IValidation {

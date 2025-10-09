@@ -75,6 +75,32 @@ public class DefendantsDetails implements CcdPageConfiguration {
             }
         }
 
+        // TODO: Update this once multiple defendant support is implemented.
+        //  Set the text dynamically for one/multiple defendants.
+        caseData.getDefendantCircumstances().setDefendantTermPossessive("defendants'");
+
+
+        List<ListValue<DefendantDetails>> defendants = caseData.getDefendants();
+        List<ListValue<DefendantDOBDetails>> defendantsDOB = new ArrayList<>();
+
+        int index = 0;
+        for (ListValue<DefendantDetails> defendant : defendants) {
+            DefendantDOBDetails dobDetails = DefendantDOBDetails.builder()
+                .firstName(defendant.getValue().getFirstName())
+                .lastName(defendant.getValue().getLastName())
+                .dob(null)
+                .build();
+
+            ListValue<DefendantDOBDetails> lv = new ListValue<>(
+                String.valueOf(index++),
+                dobDetails
+            );
+
+            defendantsDOB.add(lv);
+        }
+
+        caseData.setDefendantsDOB(defendantsDOB);
+
 
         List<ListValue<DefendantDetails>> defendants = caseData.getDefendants();
         List<ListValue<DefendantDOBDetails>> defendantsDOB = new ArrayList<>();
