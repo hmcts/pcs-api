@@ -133,22 +133,25 @@ def runE2eTests(String context) {
       sh './gradlew runE2eChromeTests'
     }
   } finally {
-    steps.archiveArtifacts artifacts: "**/src/e2eTest/allure-report"
-    publishHTML([
-      allowMissing: true,
-      alwaysLinkToLastBuild: true,
-      keepAll: true,
-      reportDir: "src/e2eTest/allure-report",
-      reportFiles: 'index.html',
-      reportName: 'EXUI E2E Test Report'
-    ])
-    publishHTML([
-      allowMissing: true,
-      alwaysLinkToLastBuild: true,
-      keepAll: true,
-      reportDir: "src/e2eTest/playwright-report",
-      reportName: 'EXUI E2E PW Report'
-    ])
+    steps {
+      archiveArtifacts artifacts: "src/e2eTest/allure-report/**/*"
+      publishHTML([
+        allowMissing: true,
+        alwaysLinkToLastBuild: true,
+        keepAll: true,
+        reportDir: "src/e2eTest/allure-report",
+        reportFiles: 'index.html',
+        reportName: 'ExUI e2e Test Report'
+      ])
+      publishHTML([
+          allowMissing: true,
+          alwaysLinkToLastBuild: true,
+          keepAll: true,
+          reportDir: "src/e2eTest/playwright-report",
+          reportName: 'EXUI e2e PW Report'
+      ])
+    }
+
   }
 }
 
