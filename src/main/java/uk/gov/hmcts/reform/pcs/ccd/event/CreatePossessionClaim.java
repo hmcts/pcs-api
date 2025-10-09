@@ -63,6 +63,7 @@ public class CreatePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             return formatAsCurrency(feesAndPayService.getFee("caseIssueFee").getCalculatedAmount());
         } catch (Exception e) {
             // Fallback to default fee if API is unavailable (during config generation)
+            log.error("Error while getting fee", e);
             return FEE;
         }
     }
