@@ -29,6 +29,7 @@ import {rentArrearsOrBreachOfTenancy} from '@data/page-data/rentArrearsOrBreachO
 import {noticeDetails} from '@data/page-data/noticeDetails.page.data';
 import {moneyJudgment} from '@data/page-data/moneyJudgment.page.data';
 import {whatAreYourGroundsForPossession} from '@data/page-data/whatAreYourGroundsForPossession.page.data';
+import {languageUsed} from '@data/page-data/languageUsed.page.data';
 import {defendantCircumstances} from '@data/page-data/defendantCircumstances.page.data';
 import {applications} from '@data/page-data/applications.page.data';
 import {claimantCircumstances} from '@data/page-data/claimantCircumstances.page.data';
@@ -87,6 +88,7 @@ export class CreateCaseAction implements IAction {
       ['enterReasonForDemotionOrder', () => this.enterReasonForDemotionOrder(fieldName)],
       ['enterReasonForSuspensionOrder', () => this.enterReasonForSuspensionOrder(fieldName)],
       ['selectMoneyJudgment', () => this.selectMoneyJudgment(fieldName)],
+      ['selectLanguageUsed', () => this.selectLanguageUsed(fieldName)],
       ['selectDefendantCircumstances', () => this.selectDefendantCircumstances(fieldName)],
       ['selectApplications', () => this.selectApplications(fieldName)],
       ['selectClaimingCosts', () => this.selectClaimingCosts(fieldName)],
@@ -607,6 +609,11 @@ export class CreateCaseAction implements IAction {
       , ['select', createCase.caseTypeLabel, createCase.caseType.civilPossessions]
       , ['select', createCase.eventLabel, createCase.makeAPossessionClaimEvent]);
     await performAction('clickButton', createCase.start);
+  }
+  
+  private async selectLanguageUsed(option: actionData) {
+    await performAction('clickRadioButton', option);
+    await performAction('clickButton', languageUsed.continue);
   }
 
   private async selectDefendantCircumstances(defendantDetails: actionData) {
