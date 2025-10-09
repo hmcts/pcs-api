@@ -39,9 +39,11 @@ public class FeesAndPayTaskComponent {
 
     /**
      * Creates a scheduled task for fetching fees from the Fees Register API.
-     * The task accepts a fee type string as data, allowing support for multiple fee types.
+     * and retrieves the corresponding fee information. On successful completion, the task
+     * removes itself from the scheduler. On failure, the task will be retried with
+     * exponential backoff.
      *
-     * @return CustomTask configured with retry logic and automatic removal on completion
+     * @return CustomTask configured with retry logic and exponential backoff on failure
      */
     @Bean
     public CustomTask<String> feesAndPayCaseIssuedTask() {
