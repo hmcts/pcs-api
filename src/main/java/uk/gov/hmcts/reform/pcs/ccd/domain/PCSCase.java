@@ -5,7 +5,6 @@ import lombok.Builder;
 import lombok.Data;
 import uk.gov.hmcts.ccd.sdk.External;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
-import uk.gov.hmcts.ccd.sdk.api.Label;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.FieldType;
@@ -323,13 +322,13 @@ public class PCSCase {
 
     @CCD(
         searchable = false,
-        access = {CitizenAccess.class, CaseworkerAccess.class},
+        access = {CitizenAccess.class},
         label = "Do you want to add additional defendants?"
     )
     private VerticalYesNo addAdditionalDefendant;
 
     @CCD(
-        access = {CitizenAccess.class, CaseworkerAccess.class},
+        access = {CitizenAccess.class},
         label = "Additional defendant",
         hint = "Add an additional defendant to the case"
     )
@@ -339,14 +338,14 @@ public class PCSCase {
     private VerticalYesNo dobKnown;
 
     @CCD(
-        access = {CitizenAccess.class, CaseworkerAccess.class},
+        access = {CitizenAccess.class},
         typeParameterOverride = "DefendantDOBDetails",
     typeOverride = FieldType.Collection
     )
     private List<ListValue<DefendantDOBDetails>> defendantsDOB;
 
     @CCD(
-        access = {CitizenAccess.class, CaseworkerAccess.class})
+        access = {CitizenAccess.class})
     private DefendantDOBDetails  defendantsDOB1;
 
     // Notice Details fields
