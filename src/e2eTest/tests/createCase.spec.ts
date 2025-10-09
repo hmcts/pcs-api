@@ -32,6 +32,7 @@ import {housingAct} from '@data/page-data/housingAct.page.data';
 import {reasonsForRequestingASuspensionOrder} from '@data/page-data/reasonsForRequestingASuspensionOrder.page.data';
 import {checkYourAnswers} from '@data/page-data/checkYourAnswers.page.data';
 import {propertyDetails} from '@data/page-data/propertyDetails.page.data';
+import {languageUsed} from '@data/page-data/languageUsed.page.data';
 import {defendantCircumstances} from '@data/page-data/defendantCircumstances.page.data';
 import {claimingCosts} from '@data/page-data/claimingCosts.page.data';
 import {uploadAdditionalDocs} from '@data/page-data/uploadAdditionalDocs.page.data';
@@ -126,6 +127,7 @@ test.describe('[Successful Create Case Flow]  @Master @nightly', async () => {
       circumstanceOption: claimantCircumstances.yes,
       claimantInput: claimantCircumstances.claimantCircumstanceInfoInputData
     });
+    await performAction('selectLanguageUsed', languageUsed.no);
     await performValidation('mainHeader', defendantCircumstances.mainHeader);
     await performAction('selectDefendantCircumstances', defendantCircumstances.yes);
     await performValidation('mainHeader', alternativesToPossession.mainHeader);
@@ -233,6 +235,7 @@ test.describe('[Successful Create Case Flow]  @Master @nightly', async () => {
       circumstanceOption: claimantCircumstances.no,
       claimantInput: claimantCircumstances.claimantCircumstanceInfoInputData
     });
+    await performAction('selectLanguageUsed', languageUsed.no);
     await performValidation('mainHeader', defendantCircumstances.mainHeader);
     await performAction('selectDefendantCircumstances', defendantCircumstances.no);
     await performValidation('mainHeader', alternativesToPossession.mainHeader);
@@ -335,6 +338,7 @@ test.describe('[Successful Create Case Flow]  @Master @nightly', async () => {
       circumstanceOption: claimantCircumstances.yes,
       claimantInput: claimantCircumstances.claimantCircumstanceInfoInputData
     });
+    await performAction('selectLanguageUsed', languageUsed.no);
     await performValidation('mainHeader', defendantCircumstances.mainHeader);
     await performAction('selectDefendantCircumstances', defendantCircumstances.no);
     await performValidation('mainHeader', alternativesToPossession.mainHeader);
@@ -429,6 +433,7 @@ test.describe('[Successful Create Case Flow]  @Master @nightly', async () => {
       circumstanceOption: claimantCircumstances.yes,
       claimantInput: claimantCircumstances.claimantCircumstanceInfoInputData
     });
+    await performAction('selectLanguageUsed', languageUsed.no);
     await performValidation('mainHeader', defendantCircumstances.mainHeader);
     await performAction('selectDefendantCircumstances', defendantCircumstances.no);
     await performValidation('mainHeader', alternativesToPossession.mainHeader);
@@ -517,6 +522,7 @@ test.describe('[Successful Create Case Flow]  @Master @nightly', async () => {
       circumstanceOption: claimantCircumstances.yes,
       claimantInput: claimantCircumstances.claimantCircumstanceInfoInputData
     });
+    await performAction('selectLanguageUsed', languageUsed.no);
     await performValidation('mainHeader', defendantCircumstances.mainHeader);
     await performAction('selectDefendantCircumstances', defendantCircumstances.no);
     await performValidation('mainHeader', alternativesToPossession.mainHeader);
@@ -609,6 +615,7 @@ test.describe('[Successful Create Case Flow]  @Master @nightly', async () => {
       circumstanceOption: claimantCircumstances.no,
       claimantInput: claimantCircumstances.claimantCircumstanceInfoInputData
     });
+    await performAction('selectLanguageUsed', languageUsed.no);
     await performValidation('mainHeader', defendantCircumstances.mainHeader);
     await performAction('selectDefendantCircumstances', defendantCircumstances.no);
     await performValidation('mainHeader', alternativesToPossession.mainHeader);
@@ -707,6 +714,7 @@ test.describe('[Successful Create Case Flow]  @Master @nightly', async () => {
       circumstanceOption: claimantCircumstances.no,
       claimantInput: claimantCircumstances.claimantCircumstanceInfoInputData
     });
+    await performAction('selectLanguageUsed', languageUsed.no);
     await performValidation('mainHeader', defendantCircumstances.mainHeader);
     await performAction('selectDefendantCircumstances', defendantCircumstances.yes);
     await performValidation('mainHeader', alternativesToPossession.mainHeader);

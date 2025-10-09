@@ -121,6 +121,7 @@ Playwright 1.30+ | TypeScript 4.9+
 | selectHousingAct                     | `performAction('selectHousingAct', {question: whichSection,option: housingAct.suspensionOfRightToBuy.section6AHousingAct1988})`                                                                            |
 | enterReasonForSuspensionOrder        | `performAction('enterReasonForSuspensionOrder', reasonsForRequestingASuspensionOrder.question)`                                                                                                            |
 | selectClaimantCircumstances          | `performAction('selectClaimantCircumstances', {circumstanceOption: claimantCircumstances.no,claimantInput: claimantCircumstances.claimantCircumstanceInfoInputData})`                                      |
+| selectLanguageUsed                   | `performAction('selectLanguageUsed', languageUsed.no)`                                                                                                                                                     |
 ### Validations
 | Validation                 | Example Usage                                                                                                                        |
 |----------------------------|--------------------------------------------------------------------------------------------------------------------------------------|
