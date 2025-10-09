@@ -44,7 +44,6 @@ import {completeYourClaim} from '@data/page-data/completeYourClaim.page.data';
 import {home} from '@data/page-data/home.page.data';
 import {search} from '@data/page-data/search.page.data';
 import {userIneligible} from '@data/page-data/userIneligible.page.data';
-import {languageUsed} from "@data/page-data/languageUsed.page.data";
 
 export let caseInfo: { id: string; fid: string; state: string };
 let caseNumber: string;
@@ -95,7 +94,6 @@ export class CreateCaseAction implements IAction {
       ['completingYourClaim', () => this.completingYourClaim(fieldName)],
       ['selectAdditionalReasonsForPossession', ()=> this.selectAdditionalReasonsForPossession(fieldName)],
       ['wantToUploadDocuments', () => this.wantToUploadDocuments(fieldName as actionRecord)],
-      ['languageUsed', () => this.languageUsed(fieldName)],
       ['uploadAdditionalDocs', () => this.uploadAdditionalDocs(fieldName as actionRecord)]
     ]);
     const actionToPerform = actionsMap.get(action);
@@ -549,15 +547,6 @@ export class CreateCaseAction implements IAction {
     await performAction('clickButton', statementOfExpressTerms.continue);
   }
 
-  private async languageUsed(option: actionData) {
-    await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
-    await performAction('clickRadioButton', {
-      question: languageUsed.allPartsOfClaimWelshQuestion,
-      option: option
-    });
-    await performAction('clickButton', languageUsed.continue);
-  }
-
   private async enterReasonForDemotionOrder(reason: actionData) {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
     await performAction('inputText', reason, reasonsForRequestingADemotionOrder.sampleTestReason);
@@ -610,7 +599,7 @@ export class CreateCaseAction implements IAction {
       , ['select', createCase.eventLabel, createCase.makeAPossessionClaimEvent]);
     await performAction('clickButton', createCase.start);
   }
-  
+
   private async selectLanguageUsed(option: actionData) {
     await performAction('clickRadioButton', option);
     await performAction('clickButton', languageUsed.continue);
