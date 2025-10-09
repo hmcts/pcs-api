@@ -38,7 +38,7 @@ public class ClaimService {
             .costsClaimed(pcsCase.getClaimingCostsWanted().toBoolean())
             .additionalReasons(additionalReasons)
             .applicationWithClaim(YesOrNoToBoolean.convert(pcsCase.getApplicationWithClaim()))
-            .languageUsed(pcsCase.getLanguageUsed() != null ? pcsCase.getLanguageUsed().name() : null)
+            .languageUsed(pcsCase.getLanguageUsed())
 
             .build();
 

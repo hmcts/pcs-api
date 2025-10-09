@@ -78,9 +78,8 @@ class ClaimServiceTest {
         assertThat(createdClaimEntity.getCostsClaimed()).isTrue();
         assertThat(createdClaimEntity.getApplicationWithClaim()).isTrue();
         assertThat(createdClaimEntity.getClaimantCircumstances())
-            .isEqualTo(claimantCircumstances.getClaimantCircumstancesDetails());
-        assertThat(createdClaimEntity.getLanguageUsed()).isEqualTo("ENGLISH");
-
+                .isEqualTo(claimantCircumstances.getClaimantCircumstancesDetails());
+        assertThat(createdClaimEntity.getLanguageUsed()).isEqualTo(LanguageUsed.ENGLISH);
 
         Set<ClaimPartyEntity> claimParties = createdClaimEntity.getClaimParties();
         assertThat(claimParties).hasSize(1);
@@ -146,10 +145,8 @@ class ClaimServiceTest {
         // When
         ClaimEntity createdClaimEntity = claimService.createMainClaimEntity(pcsCase, claimantPartyEntity);
 
-
         // Then
         assertThat(createdClaimEntity.getSuspensionOfRightToBuyHousingAct()).isEqualTo(expectedSuspensionAct);
         assertThat(createdClaimEntity.getSuspensionOfRightToBuyReason()).isEqualTo(expectedSuspensionReason);
     }
 }
-

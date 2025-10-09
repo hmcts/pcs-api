@@ -1,1 +1,1 @@
-ALTER TABLE claim ADD COLUMN language_used VARCHAR(255);
+ALTER TABLE claim ADD COLUMN language_used VARCHAR(30);
