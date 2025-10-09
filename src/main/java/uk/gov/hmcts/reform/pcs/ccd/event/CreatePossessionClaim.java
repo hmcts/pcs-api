@@ -44,13 +44,13 @@ public class CreatePossessionClaim implements CCDConfig<PCSCase, State, UserRole
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
         EventBuilder<PCSCase, UserRole, State> eventBuilder =
             configBuilder
-                .decentralisedEvent(createPossessionClaim.name(), this::submit)
+                .decentralisedEvent(createPossessionClaim.name(), this::submit, this::start)
                 .initialState(State.AWAITING_FURTHER_CLAIM_DETAILS)
                 .name("Make a claim")
                 .grant(Permission.CRUD, UserRole.PCS_SOLICITOR);
 
         new PageBuilder(eventBuilder)
-            .add(new StartTheService(start()))
+            .add(new StartTheService())
             .add(enterPropertyAddress)
             .add(crossBorderPostcodeSelection)
             .add(propertyNotEligible)
@@ -58,14 +58,20 @@ public class CreatePossessionClaim implements CCDConfig<PCSCase, State, UserRole
 
     }
 
-    private String start() {
+    private PCSCase start(EventPayload<PCSCase, State> eventPayload) {
+        PCSCase caseData = eventPayload.caseData();
+
         try {
-            return formatAsCurrency(feesAndPayService.getFee("caseIssueFee").getCalculatedAmount());
+            caseData.setFeeAmount(formatAsCurrency(
+                feesAndPayService.getFee("caseIssueFee").getCalculatedAmount()
+            ));
         } catch (Exception e) {
             // Fallback to default fee if API is unavailable (during config generation)
             log.error("Error while getting fee", e);
-            return FEE;
+            caseData.setFeeAmount(FEE);
         }
+
+        return caseData;
     }
 
     private SubmitResponse submit(EventPayload<PCSCase, State> eventPayload) {

@@ -2,17 +2,14 @@ package uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim;
 
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
+import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+
+import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 
 /**
  * CCD page configuration for making a housing possession claim online.
  */
 public class StartTheService implements CcdPageConfiguration {
-
-    private final String fee;
-
-    public StartTheService(String fee) {
-        this.fee = fee;
-    }
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
@@ -25,7 +22,7 @@ public class StartTheService implements CcdPageConfiguration {
                        + "you want to claim possession of is in England or Wales.</p>"
                        + "<p class=\"govuk-body\">This service is also available "
                        + "<a href=\"javascript:void(0)\" class=\"govuk-link\">in Welsh (Cymraeg)</a>.</p>"
-                       + "<p class=\"govuk-body\">The claim fee is " + fee + ". You can pay by card or through"
+                       + "<p class=\"govuk-body\">The claim fee is ${feeAmount}. You can pay by card or through "
                        + "Payment By Account (PBA).</p>"
                        + "<p class=\"govuk-body\">Your claim will be saved as you answer the questions, so you'll be "
                        + "able to close and return to your draft.</p>"
@@ -50,6 +47,7 @@ public class StartTheService implements CcdPageConfiguration {
                        + "<li class=\"govuk-list govuk-!-font-size-19\">save it as a draft. You or someone else "
                        + "can then return to sign, submit and pay at a later date</li>"
                        + "</ul>"
-            );
+            )
+            .readonly(PCSCase::getFeeAmount, NEVER_SHOW, true);
     }
 }
