@@ -56,7 +56,7 @@ public class ClaimantDetailsWalesPage implements CcdPageConfiguration {
             .done();
     }
 
-    private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
+    public AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
                                                                   CaseDetails<PCSCase, State> detailsBefore) {
         PCSCase caseData = details.getData();
         List<String> errors = new ArrayList<>();
