@@ -257,61 +257,10 @@ public class PCSCase {
     @CCD(searchable = false)
     private YesOrNo showClaimTypeNotEligibleWales;
 
-    // Wales-specific claimant details fields
-    @CCD(
-        label = "Were you registered under Part 1 of the Housing (Wales) Act 2014?",
-        access = {CitizenAccess.class}
-    )
-    private WalesLicensingOption walesRegistrationLicensed;
-
-    @CCD(
-        label = "What's your registration number?",
-        access = {CitizenAccess.class}
-    )
-    private String walesRegistrationNumber;
-
-    @CCD(
-        label = "Were you licensed under Part 1 of the Housing (Wales) Act 2014?",
-        access = {CitizenAccess.class}
-    )
-    private WalesLicensingOption walesLicenceLicensed;
-
-    @CCD(
-        label = "What's your licence number?",
-        access = {CitizenAccess.class}
-    )
-    private String walesLicenceNumber;
-
-    @CCD(
-        label = "Have you appointed a licensed agent to be responsible for all the property management work in relation to the dwelling as permitted under Part 1 of the Housing (Wales) Act 2014?",
-        access = {CitizenAccess.class}
-    )
-    private WalesLicensingOption walesLicensedAgentAppointed;
-
-    @CCD(
-        label = "Agent's first name",
-        access = {CitizenAccess.class}
-    )
-    private String walesAgentFirstName;
-
-    @CCD(
-        label = "Agent's last name",
-        access = {CitizenAccess.class}
-    )
-    private String walesAgentLastName;
-
-    @CCD(
-        label = "Agent's licence number",
-        access = {CitizenAccess.class}
-    )
-    private String walesAgentLicenceNumber;
-
-    @CCD(
-        label = "Agent's date of appointment",
-        hint = "For example, 16 4 2021",
-        access = {CitizenAccess.class}
-    )
-    private LocalDate walesAgentAppointmentDate;
+    // Wales-specific claimant details
+    @JsonUnwrapped
+    @CCD
+    private ClaimantDetailsWales walesClaimantDetails;
 
     @CCD(
         label = "How much is the rent?",
