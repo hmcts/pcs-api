@@ -38,6 +38,7 @@ public class CreatePossessionClaim implements CCDConfig<PCSCase, State, UserRole
     private final CrossBorderPostcodeSelection crossBorderPostcodeSelection;
     private final PropertyNotEligible propertyNotEligible;
 
+    private static final String CASE_ISSUED_FEE_TYPE = "caseIssueFee";
     private static final String FEE = "£0";
 
     @Override
@@ -63,7 +64,7 @@ public class CreatePossessionClaim implements CCDConfig<PCSCase, State, UserRole
 
         try {
             caseData.setFeeAmount(formatAsCurrency(
-                feesAndPayService.getFee("caseIssueFee").getCalculatedAmount()
+                feesAndPayService.getFee(CASE_ISSUED_FEE_TYPE).getCalculatedAmount()
             ));
         } catch (Exception e) {
             // Fallback to default fee if API is unavailable (during config generation)
