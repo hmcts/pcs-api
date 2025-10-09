@@ -355,7 +355,7 @@ test.describe('[Successful Create Case Flow]  @Master @nightly', async () => {
       ,option: housingAct.demotionOfTenancy.section82AHousingAct1985});
     await performAction('selectStatementOfExpressTerms', statementOfExpressTerms.yes);
     await performValidation('mainHeader', reasonsForRequestingADemotionOrder.mainHeader);
-    await performAction('enterReasonForDemotionOrder', reasonsForRequestingADemotionOrder.question);
+    await performAction('enterReasonForDemotionOrder', reasonsForRequestingADemotionOrder.requestDemotionOrderQuestion);
     await performValidation('mainHeader', claimingCosts.mainHeader);
     await performAction('selectClaimingCosts', claimingCosts.yes);
     await performValidation('mainHeader', additionalReasonsForPossession.mainHeader);
@@ -547,7 +547,7 @@ test.describe('[Successful Create Case Flow]  @Master @nightly', async () => {
       , option: housingAct.demotionOfTenancy.section6AHousingAct1988});
     await performAction('selectStatementOfExpressTerms', statementOfExpressTerms.no);
     await performValidation('mainHeader', reasonsForRequestingADemotionOrder.mainHeader);
-    await performAction('enterReasonForDemotionOrder', reasonsForRequestingADemotionOrder.question);
+    await performAction('enterReasonForDemotionOrder', reasonsForRequestingADemotionOrder.requestDemotionOrderQuestion);
     await performValidation('mainHeader', claimingCosts.mainHeader);
     await performAction('selectClaimingCosts', claimingCosts.no);
     await performValidation('mainHeader', additionalReasonsForPossession.mainHeader);
