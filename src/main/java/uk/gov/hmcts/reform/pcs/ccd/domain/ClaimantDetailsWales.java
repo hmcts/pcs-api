@@ -38,7 +38,8 @@ public class ClaimantDetailsWales {
     private String walesLicenseNumber;
 
     @CCD(
-        label = "Have you appointed a licensed agent to be responsible for all the property management work in relation to the dwelling as permitted under Part 1 of the Housing (Wales) Act 2014?",
+        label = "Have you appointed a licensed agent to be responsible for all the property management work "
+            + "in relation to the dwelling as permitted under Part 1 of the Housing (Wales) Act 2014?",
         access = {CitizenAccess.class}
     )
     private YesNoNotApplicable walesLicensedAgentAppointed;

@@ -11,7 +11,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotApplicable;
 import java.time.Clock;
 import java.time.LocalDate;
 import java.time.ZoneId;
-import java.time.ZonedDateTime;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
