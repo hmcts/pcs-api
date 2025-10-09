@@ -123,6 +123,7 @@ Playwright 1.30+ | TypeScript 4.9+
 | selectClaimantCircumstances          | `performAction('selectClaimantCircumstances', {circumstanceOption: claimantCircumstances.no,claimantInput: claimantCircumstances.claimantCircumstanceInfoInputData})`                                      |
 | enterReasonForDemotionOrder          | `performAction('enterReasonForDemotionOrder',  reasonsForRequestingADemotionOrder.question)`                                                                                                               |
 | selectStatementOfExpressTerms        | `performAction('selectStatementOfExpressTerms', statementOfExpressTerms.yes)`                                                                                                                              |
+| selectLanguageUsed                   | `performAction('selectLanguageUsed', languageUsed.no)`                                                                                                                                                     |
 ### Validations
 | Validation                 | Example Usage                                                                                                                        |
 |----------------------------|--------------------------------------------------------------------------------------------------------------------------------------|
