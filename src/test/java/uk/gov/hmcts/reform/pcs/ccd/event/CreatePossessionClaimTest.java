@@ -11,6 +11,7 @@ import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.CrossBorderPostcod
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.EnterPropertyAddress;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.PropertyNotEligible;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
+import uk.gov.hmcts.reform.pcs.feesandpay.service.FeesAndPayService;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
 import static org.mockito.Mockito.mock;
@@ -23,6 +24,8 @@ class CreatePossessionClaimTest extends BaseEventTest {
     @Mock
     private PcsCaseService pcsCaseService;
     @Mock
+    private FeesAndPayService feesAndPayService;
+    @Mock
     private EnterPropertyAddress enterPropertyAddress;
     @Mock
     private CrossBorderPostcodeSelection crossBorderPostcodeSelection;
@@ -31,8 +34,9 @@ class CreatePossessionClaimTest extends BaseEventTest {
 
     @BeforeEach
     void setUp() {
-        CreatePossessionClaim underTest = new CreatePossessionClaim(pcsCaseService, enterPropertyAddress,
-                                                                    crossBorderPostcodeSelection, propertyNotEligible);
+        CreatePossessionClaim underTest = new CreatePossessionClaim(pcsCaseService, feesAndPayService,
+                                                                    enterPropertyAddress, crossBorderPostcodeSelection,
+                                                                    propertyNotEligible);
 
         setEventUnderTest(underTest);
     }

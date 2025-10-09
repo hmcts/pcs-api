@@ -19,6 +19,7 @@ import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.PostcodeNotAssigne
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.PropertyNotEligible;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.StartTheService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
+import uk.gov.hmcts.reform.pcs.feesandpay.service.FeesAndPayService;
 
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.createPossessionClaim;
 
@@ -29,6 +30,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.createPossessionClaim;
 public class CreatePossessionClaim implements CCDConfig<PCSCase, State, UserRole> {
 
     private final PcsCaseService pcsCaseService;
+    private final FeesAndPayService feesAndPayService;
     private final EnterPropertyAddress enterPropertyAddress;
     private final CrossBorderPostcodeSelection crossBorderPostcodeSelection;
     private final PropertyNotEligible propertyNotEligible;
@@ -43,7 +45,7 @@ public class CreatePossessionClaim implements CCDConfig<PCSCase, State, UserRole
                 .grant(Permission.CRUD, UserRole.PCS_SOLICITOR);
 
         new PageBuilder(eventBuilder)
-            .add(new StartTheService())
+            .add(new StartTheService(feesAndPayService))
             .add(enterPropertyAddress)
             .add(crossBorderPostcodeSelection)
             .add(propertyNotEligible)
