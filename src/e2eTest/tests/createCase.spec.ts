@@ -44,7 +44,6 @@ import {housingAct} from '@data/page-data/housingAct.page.data';
 import {reasonsForRequestingADemotionOrder} from '@data/page-data/reasonsForRequestingADemotionOrder.page.data';
 import {statementOfExpressTerms} from '@data/page-data/statementOfExpressTerms.page.data';
 import {wantToUploadDocuments} from '@data/page-data/wantToUploadDocuments.page.data';
-import {languageUsed} from "@data/page-data/languageUsed.page.data";
 
 test.beforeEach(async ({page}, testInfo) => {
   initializeExecutor(page);

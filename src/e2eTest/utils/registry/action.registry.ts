@@ -69,7 +69,6 @@ export class ActionRegistry {
     ['searchCaseFromCaseList', new searchCaseActions()],
     ['selectClaimingCosts', new CreateCaseAction()],
     ['wantToUploadDocuments', new CreateCaseAction()],
-    ['languageUsed', new CreateCaseAction()],
     ['uploadAdditionalDocs', new CreateCaseAction()]
   ]);
 
