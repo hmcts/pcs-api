@@ -16,6 +16,7 @@ public abstract class AbstractPostgresContainerIT {
 
     @DynamicPropertySource
     static void configure(DynamicPropertyRegistry registry) {
+        registry.add("spring.flyway.locations", () -> "classpath:db/migration");
         registry.add("spring.datasource.url", postgres::getJdbcUrl);
         registry.add("spring.datasource.username", postgres::getUsername);
         registry.add("spring.datasource.password", postgres::getPassword);
