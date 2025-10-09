@@ -1,5 +1,4 @@
 import {test} from '@playwright/test';
-import {parentSuite} from 'allure-js-commons';
 import {caseApiData} from '@data/api-data/case.api.data';
 import {
   initializeExecutor,
@@ -9,14 +8,14 @@ import {
 import {caseInfo} from '@utils/actions/custom-actions/createCase.action';
 import {user} from '@data/user-data/permanent.user.data';
 
-test.beforeEach(async ({page}, testInfo) => {
+test.beforeEach(async ({page}) => {
     initializeExecutor(page);
-    await parentSuite('Search Case');
+    //await parentSuite('Search Case');
     await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
-    await testInfo.attach('Page URL', {
+    /*await testInfo.attach('Page URL', {
       body: page.url(),
       contentType: 'text/plain',
-    });
+    });*/
     await performAction('login', user.claimantSolicitor);
   await performAction('createCase', {data: caseApiData.createCasePayload});
 });
