@@ -64,7 +64,7 @@ public class ClaimService {
     }
 
     private void applyCombinedSuspensionDemotionOrders(ClaimEntity claimEntity,
-                                                                    SuspensionOfRightToBuyDemotionOfTenancy suspensionAndDemotion) {
+                                                       SuspensionOfRightToBuyDemotionOfTenancy suspensionAndDemotion) {
         if (suspensionAndDemotion == null) {
             return;
         }
