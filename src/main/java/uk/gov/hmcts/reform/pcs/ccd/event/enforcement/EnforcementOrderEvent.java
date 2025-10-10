@@ -24,7 +24,6 @@ import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.enforceTheOrder;
 public class EnforcementOrderEvent implements CCDConfig<PCSCase, State, UserRole> {
 
     private final SavingPageBuilderFactory savingPageBuilderFactory;
-    private final EnforcementApplicationPage enforcementApplicationPage;
 
     @Override
     public void configureDecentralised(
@@ -36,7 +35,7 @@ public class EnforcementOrderEvent implements CCDConfig<PCSCase, State, UserRole
                         .name("Enforce the order")
                         .grant(Permission.CRUD, UserRole.PCS_SOLICITOR);
 
-        savingPageBuilderFactory.create(eventBuilder).add(enforcementApplicationPage);
+        savingPageBuilderFactory.create(eventBuilder).add(new EnforcementApplicationPage());
     }
 
     private SubmitResponse submit(EventPayload<PCSCase, State> eventPayload) {

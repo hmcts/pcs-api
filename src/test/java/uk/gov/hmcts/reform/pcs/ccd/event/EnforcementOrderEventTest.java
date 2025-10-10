@@ -7,7 +7,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.pcs.ccd.event.enforcement.EnforcementOrderEvent;
 import uk.gov.hmcts.reform.pcs.ccd.page.builder.SavingPageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.page.builder.SavingPageBuilderFactory;
-import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.EnforcementApplicationPage;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -18,8 +17,6 @@ class EnforcementOrderEventTest extends BaseEventTest {
 
     @Mock
     private SavingPageBuilderFactory savingPageBuilderFactory;
-    @Mock
-    EnforcementApplicationPage enforcementApplicationPage;
 
     @BeforeEach
     void setUp() {
@@ -28,7 +25,7 @@ class EnforcementOrderEventTest extends BaseEventTest {
         when(savingPageBuilder.add(any())).thenReturn(savingPageBuilder);
 
         EnforcementOrderEvent underTest =
-                new EnforcementOrderEvent(savingPageBuilderFactory, enforcementApplicationPage);
+                new EnforcementOrderEvent(savingPageBuilderFactory);
 
         setEventUnderTest(underTest);
     }
