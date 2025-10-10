@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.pcs.feesandpay.api;
 
 import com.github.tomakehurst.wiremock.client.MappingBuilder;
+import feign.FeignException;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -94,7 +95,7 @@ class FeesRegisterApiIT {
             ALL_APPLICANT_TYPE,
             AMOUNT_OR_VOLUME,
             null
-        )).isInstanceOf(Exception.class);
+        )).isInstanceOf(FeignException.class);
     }
 
     @Test

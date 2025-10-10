@@ -5,6 +5,7 @@ import com.github.kagkarlsson.scheduler.task.Execution;
 import com.github.kagkarlsson.scheduler.task.ExecutionContext;
 import com.github.kagkarlsson.scheduler.task.TaskInstance;
 import com.github.kagkarlsson.scheduler.task.helper.CustomTask;
+import lombok.Getter;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -51,6 +52,30 @@ class FeesAndPayTaskComponentTest {
     private static final String CASE_ISSUE_FEE_TYPE = "caseIssueFee";
     private static final String HEARING_FEE_TYPE = "hearingFee";
 
+    /**
+     * Test-specific enum for fee codes used in unit tests.
+     */
+    @Getter
+    public enum TestFeeCode {
+        RECOVERY_OF_LAND("FEE0412", "Recovery of Land - County Court"),
+        HEARING_FEE("FEE9999", "Hearing Fee"),
+        WAIVED_FEE("FEE0000", "Waived Fee"),
+        HIGH_VALUE_FEE("FEE8888", "High Value Fee"),
+        GENERIC_TEST_FEE("FEE0001", "Test Fee"),
+        SPECIAL_CHAR_FEE("FEE0002", "Special Fee"),
+        APPEAL_FEE("FEE0003", "Appeal Fee"),
+        COPY_FEE("FEE0004", "Copy Fee");
+
+        private final String code;
+        private final String description;
+
+        TestFeeCode(String code, String description) {
+            this.code = code;
+            this.description = description;
+        }
+
+    }
+
     @BeforeEach
     void setUp() {
         int maxRetriesFeesAndPay = 5;
@@ -94,8 +119,8 @@ class FeesAndPayTaskComponentTest {
         @DisplayName("Should retrieve case issue fee successfully")
         void shouldRetrieveCaseIssueFeeSuccessfully() {
             Fee expectedFee = Fee.builder()
-                .code("FEE0412")
-                .description("Recovery of Land - County Court")
+                .code(TestFeeCode.RECOVERY_OF_LAND.getCode())
+                .description(TestFeeCode.RECOVERY_OF_LAND.getDescription())
                 .version("4")
                 .calculatedAmount(new BigDecimal("404.00"))
                 .build();
@@ -115,8 +140,8 @@ class FeesAndPayTaskComponentTest {
         @DisplayName("Should retrieve hearing fee successfully")
         void shouldRetrieveHearingFeeSuccessfully() {
             Fee expectedFee = Fee.builder()
-                .code("FEE9999")
-                .description("Hearing Fee")
+                .code(TestFeeCode.HEARING_FEE.getCode())
+                .description(TestFeeCode.HEARING_FEE.getDescription())
                 .version("1")
                 .calculatedAmount(new BigDecimal("100.00"))
                 .build();
@@ -136,8 +161,8 @@ class FeesAndPayTaskComponentTest {
         @DisplayName("Should handle fee with zero amount")
         void shouldHandleFeeWithZeroAmount() {
             Fee zeroFee = Fee.builder()
-                .code("FEE0000")
-                .description("Waived Fee")
+                .code(TestFeeCode.WAIVED_FEE.getCode())
+                .description(TestFeeCode.WAIVED_FEE.getDescription())
                 .version("1")
                 .calculatedAmount(BigDecimal.ZERO)
                 .build();
@@ -157,8 +182,8 @@ class FeesAndPayTaskComponentTest {
         @DisplayName("Should handle fee with large amount")
         void shouldHandleFeeWithLargeAmount() {
             Fee largeFee = Fee.builder()
-                .code("FEE9999")
-                .description("High Value Fee")
+                .code(TestFeeCode.HIGH_VALUE_FEE.getCode())
+                .description(TestFeeCode.HIGH_VALUE_FEE.getDescription())
                 .version("1")
                 .calculatedAmount(new BigDecimal("10000.00"))
                 .build();
@@ -282,11 +307,20 @@ class FeesAndPayTaskComponentTest {
         @DisplayName("Should handle different fee types")
         void shouldHandleDifferentFeeTypes() {
             String[] feeTypes = {"caseIssueFee", "hearingFee", "appealFee", "copyFee"};
+            TestFeeCode[] feeCodes = {
+                TestFeeCode.GENERIC_TEST_FEE,
+                TestFeeCode.HEARING_FEE,
+                TestFeeCode.APPEAL_FEE,
+                TestFeeCode.COPY_FEE
+            };
 
-            for (String feeType : feeTypes) {
+            for (int i = 0; i < feeTypes.length; i++) {
+                String feeType = feeTypes[i];
+                TestFeeCode feeCode = feeCodes[i];
+
                 Fee fee = Fee.builder()
-                    .code("FEE" + feeType.hashCode())
-                    .description("Fee for " + feeType)
+                    .code(feeCode.getCode())
+                    .description(feeCode.getDescription())
                     .version("1")
                     .calculatedAmount(new BigDecimal("100.00"))
                     .build();
@@ -340,8 +374,8 @@ class FeesAndPayTaskComponentTest {
         void shouldHandleFeeTypeWithSpecialCharacters() {
             String specialFeeType = "case-issue_fee.v2";
             Fee fee = Fee.builder()
-                .code("FEE0001")
-                .description("Special Fee")
+                .code(TestFeeCode.SPECIAL_CHAR_FEE.getCode())
+                .description(TestFeeCode.SPECIAL_CHAR_FEE.getDescription())
                 .version("2")
                 .calculatedAmount(new BigDecimal("200.00"))
                 .build();
@@ -418,8 +452,8 @@ class FeesAndPayTaskComponentTest {
         @DisplayName("Should handle complete successful flow")
         void shouldHandleCompleteSuccessfulFlow() {
             Fee expectedFee = Fee.builder()
-                .code("FEE0412")
-                .description("Recovery of Land - County Court")
+                .code(TestFeeCode.RECOVERY_OF_LAND.getCode())
+                .description(TestFeeCode.RECOVERY_OF_LAND.getDescription())
                 .version("4")
                 .calculatedAmount(new BigDecimal("404.00"))
                 .build();
@@ -456,11 +490,19 @@ class FeesAndPayTaskComponentTest {
         @DisplayName("Should handle flow with multiple different fee types sequentially")
         void shouldHandleFlowWithMultipleDifferentFeeTypesSequentially() {
             String[] feeTypes = {CASE_ISSUE_FEE_TYPE, HEARING_FEE_TYPE, "appealFee"};
+            TestFeeCode[] feeCodes = {
+                TestFeeCode.GENERIC_TEST_FEE,
+                TestFeeCode.HEARING_FEE,
+                TestFeeCode.APPEAL_FEE
+            };
 
-            for (String feeType : feeTypes) {
+            for (int i = 0; i < feeTypes.length; i++) {
+                String feeType = feeTypes[i];
+                TestFeeCode feeCode = feeCodes[i];
+
                 Fee fee = Fee.builder()
-                    .code("FEE_" + feeType)
-                    .description("Fee for " + feeType)
+                    .code(feeCode.getCode())
+                    .description(feeCode.getDescription())
                     .version("1")
                     .calculatedAmount(new BigDecimal("150.00"))
                     .build();
@@ -486,7 +528,7 @@ class FeesAndPayTaskComponentTest {
         @DisplayName("Should handle fee with null description")
         void shouldHandleFeeWithNullDescription() {
             Fee feeWithNullDescription = Fee.builder()
-                .code("FEE0001")
+                .code(TestFeeCode.GENERIC_TEST_FEE.getCode())
                 .description(null)
                 .version("1")
                 .calculatedAmount(new BigDecimal("100.00"))
@@ -507,8 +549,8 @@ class FeesAndPayTaskComponentTest {
         @DisplayName("Should handle fee with null version")
         void shouldHandleFeeWithNullVersion() {
             Fee feeWithNullVersion = Fee.builder()
-                .code("FEE0001")
-                .description("Test Fee")
+                .code(TestFeeCode.GENERIC_TEST_FEE.getCode())
+                .description(TestFeeCode.GENERIC_TEST_FEE.getDescription())
                 .version(null)
                 .calculatedAmount(new BigDecimal("100.00"))
                 .build();
@@ -529,7 +571,7 @@ class FeesAndPayTaskComponentTest {
         void shouldHandleFeeWithVeryLongDescription() {
             String longDescription = "A".repeat(1000);
             Fee feeWithLongDescription = Fee.builder()
-                .code("FEE0001")
+                .code(TestFeeCode.GENERIC_TEST_FEE.getCode())
                 .description(longDescription)
                 .version("1")
                 .calculatedAmount(new BigDecimal("100.00"))
@@ -550,8 +592,8 @@ class FeesAndPayTaskComponentTest {
         @DisplayName("Should handle fee with decimal precision")
         void shouldHandleFeeWithDecimalPrecision() {
             Fee feeWithPrecision = Fee.builder()
-                .code("FEE0001")
-                .description("Precise Fee")
+                .code(TestFeeCode.GENERIC_TEST_FEE.getCode())
+                .description(TestFeeCode.GENERIC_TEST_FEE.getDescription())
                 .version("1")
                 .calculatedAmount(new BigDecimal("123.456789"))
                 .build();

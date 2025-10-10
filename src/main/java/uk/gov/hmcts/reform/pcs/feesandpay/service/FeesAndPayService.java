@@ -41,7 +41,7 @@ public class FeesAndPayService {
 
         try {
             FeeResponse feeResponse = makeFeeRequest(feeType);
-            log.info("Received fee response: {}", feeResponse);
+            log.debug("Received fee response: {}", feeResponse);
 
             return Fee.builder()
                 .code(feeResponse.getCode())
