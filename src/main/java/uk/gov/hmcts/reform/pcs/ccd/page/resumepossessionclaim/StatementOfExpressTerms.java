@@ -14,21 +14,21 @@ public class StatementOfExpressTerms implements CcdPageConfiguration {
             .page("statementOfExpressTerms")
             .pageLabel("Statement of express terms")
             .showCondition("showDemotionOfTenancyHousingActsPage=\"Yes\""
-                            + " OR suspensionToBuyDemotionOfTenancyPages=\"Yes\"")
+                               + " OR suspensionToBuyDemotionOfTenancyPages=\"Yes\"")
             .label("statementOfExpressTerms-info", "---")
                 .complex(PCSCase::getDemotionOfTenancy)
                 .mandatory(DemotionOfTenancy::getStatementOfExpressTermsServed,
                            "suspensionToBuyDemotionOfTenancyPages=\"No\"")
                 .mandatory(DemotionOfTenancy::getStatementOfExpressTermsDetails,
-                    "statementOfExpressTermsServed=\"YES\""
-                        + " AND suspensionToBuyDemotionOfTenancyPages=\"No\"")
+                           "statementOfExpressTermsServed=\"YES\""
+                               + " AND suspensionToBuyDemotionOfTenancyPages=\"No\"")
                 .done()
                 .complex(PCSCase::getSuspensionOfRightToBuyDemotionOfTenancy)
                 .mandatory(SuspensionOfRightToBuyDemotionOfTenancy::getHasServedStatementExpressTerms,
                            "suspensionToBuyDemotionOfTenancyPages=\"Yes\"")
                 .mandatory(SuspensionOfRightToBuyDemotionOfTenancy::getExpressTermsDetails,
-                       "hasServedStatementExpressTerms=\"YES\""
-                           + " AND suspensionToBuyDemotionOfTenancyPages=\"Yes\"")
+                           "hasServedStatementExpressTerms=\"YES\""
+                               + " AND suspensionToBuyDemotionOfTenancyPages=\"Yes\"")
                 .done();
     }
 }
