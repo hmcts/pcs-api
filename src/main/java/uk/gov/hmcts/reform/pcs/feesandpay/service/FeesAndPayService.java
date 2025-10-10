@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.pcs.feesandpay.service;
 
 import feign.FeignException;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
@@ -11,23 +12,14 @@ import uk.gov.hmcts.reform.pcs.feesandpay.entity.Fee;
 import uk.gov.hmcts.reform.pcs.feesandpay.exception.FeeNotFoundException;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeResponse;
 
-@Service
 @Slf4j
+@Service
+@RequiredArgsConstructor
 public class FeesAndPayService {
 
     private final AuthTokenGenerator authTokenGenerator;
     private final FeesConfiguration feesConfiguration;
     private final FeesRegisterApi feesRegisterApi;
-
-    public FeesAndPayService(
-            AuthTokenGenerator authTokenGenerator,
-            FeesConfiguration feesConfiguration,
-            FeesRegisterApi feesRegisterApi
-    ) {
-        this.authTokenGenerator = authTokenGenerator;
-        this.feesConfiguration = feesConfiguration;
-        this.feesRegisterApi = feesRegisterApi;
-    }
 
     /**
      * Retrieves fee information from the fees register API.
