@@ -12,7 +12,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.WalesHousingAct;
 
 import java.time.Clock;
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
 
 import static uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotApplicable.YES;
@@ -59,7 +58,6 @@ public class ClaimantDetailsWalesPage implements CcdPageConfiguration {
     public AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
                                                                   CaseDetails<PCSCase, State> detailsBefore) {
         PCSCase caseData = details.getData();
-        List<String> errors = new ArrayList<>();
 
         // Validate agent appointment date is in the past
         WalesHousingAct walesHousingAct = caseData.getWalesHousingAct();
@@ -68,15 +66,11 @@ public class ClaimantDetailsWalesPage implements CcdPageConfiguration {
             if (appointmentDate != null && walesHousingAct.getLicensedAgentAppointed() == YES) {
                 LocalDate currentDate = LocalDate.now(ukClock);
                 if (appointmentDate.isAfter(currentDate)) {
-                    errors.add("The agent's date of appointment must be in the past");
+                    return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
+                        .errors(List.of("The agent's date of appointment must be in the past"))
+                        .build();
                 }
             }
-        }
-
-        if (!errors.isEmpty()) {
-            return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
-                .errors(errors)
-                .build();
         }
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
