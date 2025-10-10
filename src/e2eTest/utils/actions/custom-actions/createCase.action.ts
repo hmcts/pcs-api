@@ -566,6 +566,7 @@ export class CreateCaseAction implements IAction {
   }
 
   private async enterReasonForSuspensionAndDemotionOrder(reason: actionRecord) {
+    await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
     await performAction('inputText', reason.suspension, reasonsForRequestingASuspensionOrder.sampleTestReason);
     await performAction('inputText', reason.demotion, reasonsForRequestingADemotionOrder.sampleTestReason);
     await performAction('clickButton', reasonsForRequestingASuspensionAndDemotionOrder.continue);
