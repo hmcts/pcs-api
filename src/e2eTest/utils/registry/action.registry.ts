@@ -36,6 +36,7 @@ export class ActionRegistry {
     ['createCase', new CreateCaseAction()],
     ['selectClaimType', new CreateCaseAction()],
     ['selectClaimantName', new CreateCaseAction()],
+    ['selectClaimantDetails', new CreateCaseAction()],
     ['selectContactPreferences', new CreateCaseAction()],
     ['housingPossessionClaim', new CreateCaseAction()],
     ['selectGroundsForPossession', new CreateCaseAction()],

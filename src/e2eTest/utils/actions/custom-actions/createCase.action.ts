@@ -29,6 +29,7 @@ import {rentArrearsOrBreachOfTenancy} from '@data/page-data/rentArrearsOrBreachO
 import {noticeDetails} from '@data/page-data/noticeDetails.page.data';
 import {moneyJudgment} from '@data/page-data/moneyJudgment.page.data';
 import {whatAreYourGroundsForPossession} from '@data/page-data/whatAreYourGroundsForPossession.page.data';
+import {languageUsed} from '@data/page-data/languageUsed.page.data';
 import {defendantCircumstances} from '@data/page-data/defendantCircumstances.page.data';
 import {applications} from '@data/page-data/applications.page.data';
 import {claimantCircumstances} from '@data/page-data/claimantCircumstances.page.data';
@@ -41,6 +42,7 @@ import {completeYourClaim} from '@data/page-data/completeYourClaim.page.data';
 import {home} from '@data/page-data/home.page.data';
 import {search} from '@data/page-data/search.page.data';
 import {userIneligible} from '@data/page-data/userIneligible.page.data';
+import {claimantDetails} from "@data/page-data/claimantDetails.page.data";
 
 export let caseInfo: { id: string; fid: string; state: string };
 let caseNumber: string;
@@ -82,6 +84,7 @@ export class CreateCaseAction implements IAction {
       ['selectHousingAct', () => this.selectHousingAct(fieldName as actionRecord)],
       ['enterReasonForSuspensionOrder', () => this.enterReasonForSuspensionOrder(fieldName)],
       ['selectMoneyJudgment', () => this.selectMoneyJudgment(fieldName)],
+      ['selectLanguageUsed', () => this.selectLanguageUsed(fieldName)],
       ['selectDefendantCircumstances', () => this.selectDefendantCircumstances(fieldName)],
       ['selectApplications', () => this.selectApplications(fieldName)],
       ['selectClaimingCosts', () => this.selectClaimingCosts(fieldName)],
@@ -160,6 +163,28 @@ export class CreateCaseAction implements IAction {
     return await loc.innerText();
   }
 
+  private async selectClaimantDetails(claimant: actionRecord) {
+    await performValidation('text', {elementType: 'paragraph', text: 'Case number: ' + caseNumber});
+    await performAction('clickRadioButton', {question: claimant.question1, option: claimant.option1});
+    if (claimant.option1 == claimantDetails.yes) {
+      await performAction('inputText', claimantDetails.whatsYourRegistrationNumber, claimantDetails.sampleTestRegistrationNumber);
+    }
+    await performAction('clickRadioButton', {question: claimant.question2, option: claimant.option2});
+    if (claimant.option2 == claimantDetails.yes) {
+      await performAction('inputText', claimantDetails.whatsYourLicenseNumber, claimantDetails.sampleTestLicenseNumber);
+    }
+    await performAction('clickRadioButton', {question: claimant.question3, option: claimant.option3});
+    if (claimant.option3 == claimantDetails.yes) {
+      await performAction('inputText', claimantDetails.agentsFirstnameLabel, claimantDetails.agentsFirstname);
+      await performAction('inputText', claimantDetails.agentsLastnameLabel, claimantDetails.agentsLastname);
+      await performAction('inputText', claimantDetails.agentsLicenseNumberLabel, claimantDetails.agentsLicenseNumber);
+      await performActions('Enter Date',
+        ['inputText', claimantDetails.dayLabel, claimantDetails.day],
+        ['inputText', claimantDetails.monthLabel, claimantDetails.month],
+        ['inputText', claimantDetails.yearLabel, claimantDetails.year]);
+    }
+  }
+
   private async selectGroundsForPossession(caseData: actionData) {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
     const possessionGrounds = caseData as {
@@ -226,9 +251,9 @@ export class CreateCaseAction implements IAction {
     if (prefData.correspondenceAddress === contactPreferences.no) {
       await performActions(
         'Find Address based on postcode',
-          ['inputText', addressDetails.enterUKPostcodeLabel, addressDetails.englandCourtAssignedPostcode],
-          ['clickButton', addressDetails.findAddressLabel],
-          ['select', addressDetails.selectAddressLabel, addressDetails.addressIndex]
+        ['inputText', addressDetails.enterUKPostcodeLabel, addressDetails.englandCourtAssignedPostcode],
+        ['clickButton', addressDetails.findAddressLabel],
+        ['select', addressDetails.selectAddressLabel, addressDetails.addressIndex]
       );
     }
     await performAction('clickRadioButton', {
@@ -268,10 +293,10 @@ export class CreateCaseAction implements IAction {
       });
       if (defendantData.correspondenceAddressSame === defendantDetails.no) {
         await performActions(
-            'Find Address based on postcode',
-            ['inputText', addressDetails.enterUKPostcodeLabel, addressDetails.englandCourtAssignedPostcode],
-            ['clickButton', addressDetails.findAddressLabel],
-            ['select', addressDetails.selectAddressLabel, addressDetails.addressIndex]
+          'Find Address based on postcode',
+          ['inputText', addressDetails.enterUKPostcodeLabel, addressDetails.englandCourtAssignedPostcode],
+          ['clickButton', addressDetails.findAddressLabel],
+          ['select', addressDetails.selectAddressLabel, addressDetails.addressIndex]
         );
       }
     }
@@ -469,9 +494,9 @@ export class CreateCaseAction implements IAction {
     const nameClaimant = claimantsName.substring(claimantsName.length - 1) == 's' ? `${claimantsName}'` : `${claimantsName}'s`;
     const claimOption = claimData.circumstanceOption;
     await performAction('clickRadioButton', {
-      question: claimantCircumstances.claimantCircumstanceInfo.replace("Claimants", nameClaimant),
-      option: claimOption
-    }
+        question: claimantCircumstances.claimantCircumstanceInfo.replace("Claimants", nameClaimant),
+        option: claimOption
+      }
     );
     if (claimOption == claimantCircumstances.yes) {
       await performAction('inputText', claimantCircumstances.claimantCircumstanceInfoTextAreaLabel.replace("Claimants", nameClaimant), claimData.claimantInput);
@@ -570,6 +595,11 @@ export class CreateCaseAction implements IAction {
       , ['select', createCase.caseTypeLabel, createCase.caseType.civilPossessions]
       , ['select', createCase.eventLabel, createCase.makeAPossessionClaimEvent]);
     await performAction('clickButton', createCase.start);
+  }
+
+  private async selectLanguageUsed(option: actionData) {
+    await performAction('clickRadioButton', option);
+    await performAction('clickButton', languageUsed.continue);
   }
 
   private async selectDefendantCircumstances(defendantDetails: actionData) {
