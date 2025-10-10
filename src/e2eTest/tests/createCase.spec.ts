@@ -346,7 +346,7 @@ test.describe('[Successful Create Case Flow]  @Master @nightly', async () => {
     await performValidation('mainHeader', defendantCircumstances.mainHeader);
     await performAction('selectDefendantCircumstances', defendantCircumstances.no);
     await performValidation('mainHeader', alternativesToPossession.mainHeader);
-    await performAction('selectAlternativesToPossession', {question: alternativesToPossession.demotionOfTenancy
+    await performAction('selectAlternativesToPossession', {question: alternativesToPossession.suspensionOrDemotion
       , option: [alternativesToPossession.demotionOfTenancy]});
     await performValidation('mainHeader', housingAct.mainHeader);
     await performAction('selectHousingAct', [{question: housingAct.demotionOfTenancy.whichSection
@@ -549,7 +549,7 @@ test.describe('[Successful Create Case Flow]  @Master @nightly', async () => {
     await performValidation('mainHeader', defendantCircumstances.mainHeader);
     await performAction('selectDefendantCircumstances', defendantCircumstances.no);
     await performValidation('mainHeader', alternativesToPossession.mainHeader);
-    await performAction('selectAlternativesToPossession', {question: alternativesToPossession.demotionOfTenancy
+    await performAction('selectAlternativesToPossession', {question: alternativesToPossession.suspensionOrDemotion
       , option: [alternativesToPossession.demotionOfTenancy]});
     await performValidation('mainHeader', housingAct.mainHeader);
     await performAction('selectHousingAct', [{question: housingAct.demotionOfTenancy.whichSection
