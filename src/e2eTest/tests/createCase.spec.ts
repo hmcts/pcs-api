@@ -580,6 +580,7 @@ test.describe('[Successful Create Case Flow]  @Master @nightly', async () => {
     await performAction('selectClaimType', claimType.no);
     await performValidation('radioButtonChecked', claimantName.no, false);
     await performAction('selectClaimantName', claimantName.yes);
+    await performValidation('mainHeader', claimantDetails.mainHeader);
     await performAction('selectClaimantDetails',
       {question1: claimantDetails.wereYouRegisteredUnderPart1OfTheHousingAct2014, option1: claimantDetails.no,
         question2: claimantDetails.wereYouLicensedUnderPart1OfTheHousingAct2014, option2: claimantDetails.no,
@@ -667,6 +668,7 @@ test.describe('[Successful Create Case Flow]  @Master @nightly', async () => {
     await performAction('selectClaimantType', claimantType.registeredCommunityLandlord);
     await performAction('selectClaimType', claimType.no);
     await performAction('selectClaimantName', claimantName.no);
+    await performValidation('mainHeader', claimantDetails.mainHeader);
     await performAction('selectClaimantDetails',
       {question1: claimantDetails.wereYouRegisteredUnderPart1OfTheHousingAct2014, option1: claimantDetails.notApplicable,
        question2: claimantDetails.wereYouLicensedUnderPart1OfTheHousingAct2014, option2: claimantDetails.notApplicable,
