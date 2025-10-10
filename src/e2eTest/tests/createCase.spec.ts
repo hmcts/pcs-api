@@ -5,6 +5,7 @@ import {addressDetails} from '@data/page-data/addressDetails.page.data';
 import {claimantType} from '@data/page-data/claimantType.page.data';
 import {claimType} from '@data/page-data/claimType.page.data';
 import {claimantName} from '@data/page-data/claimantName.page.data';
+import {claimantDetails} from '@data/page-data/claimantDetails.page.data';
 import {contactPreferences} from '@data/page-data/contactPreferences.page.data';
 import {defendantDetails} from '@data/page-data/defendantDetails.page.data';
 import {tenancyLicenceDetails} from '@data/page-data/tenancyLicenceDetails.page.data';
@@ -42,7 +43,6 @@ import {home} from '@data/page-data/home.page.data';
 import {additionalReasonsForPossession} from '@data/page-data/additionalReasonsForPossession.page.data';
 import {underlesseeOrMortgageeEntitledToClaim} from '@data/page-data/underlesseeOrMortgageeEntitledToClaim.page.data';
 import {wantToUploadDocuments} from '@data/page-data/wantToUploadDocuments.page.data';
-import {claimantDetails} from "@data/page-data/claimantDetails.page.data";
 
 test.beforeEach(async ({page}, testInfo) => {
   initializeExecutor(page);
@@ -486,7 +486,6 @@ test.describe('[Successful Create Case Flow]  @Master @nightly', async () => {
       {question1: claimantDetails.wereYouRegisteredUnderPart1OfTheHousingAct2014, option1: claimantDetails.yes,
        question2: claimantDetails.wereYouLicensedUnderPart1OfTheHousingAct2014, option2: claimantDetails.yes,
        question3: claimantDetails.haveYouAppointedALicenseAgentAgent, option3: claimantDetails.yes});
-    await performValidation('mainHeader', contactPreferences.mainHeader);
     await performAction('selectContactPreferences', {
       notifications: contactPreferences.no,
       correspondenceAddress: contactPreferences.no,

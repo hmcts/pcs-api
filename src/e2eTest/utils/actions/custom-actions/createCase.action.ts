@@ -42,7 +42,7 @@ import {completeYourClaim} from '@data/page-data/completeYourClaim.page.data';
 import {home} from '@data/page-data/home.page.data';
 import {search} from '@data/page-data/search.page.data';
 import {userIneligible} from '@data/page-data/userIneligible.page.data';
-import {claimantDetails} from "@data/page-data/claimantDetails.page.data";
+import {claimantDetails} from '@data/page-data/claimantDetails.page.data';
 
 export let caseInfo: { id: string; fid: string; state: string };
 let caseNumber: string;
