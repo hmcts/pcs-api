@@ -24,10 +24,8 @@ public class SuspensionToBuyDemotionOfTenancyActs implements CcdPageConfiguratio
                   </ul>
                 """)
             .complex(PCSCase::getSuspensionOfRightToBuyDemotionOfTenancy)
-            .mandatory(SuspensionOfRightToBuyDemotionOfTenancy::getSuspensionOfRightToBuyActs)
-            .done()
-            .complex(PCSCase::getSuspensionOfRightToBuyDemotionOfTenancy)
-            .mandatory(SuspensionOfRightToBuyDemotionOfTenancy::getDemotionOfTenancyActs)
+                .mandatory(SuspensionOfRightToBuyDemotionOfTenancy::getSuspensionOfRightToBuyActs)
+                .mandatory(SuspensionOfRightToBuyDemotionOfTenancy::getDemotionOfTenancyActs)
             .done();
     }
 

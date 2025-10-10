@@ -15,8 +15,8 @@ public class SuspensionToBuyDemotionOfTenancyOrderReasons implements CcdPageConf
             .showCondition("suspensionToBuyDemotionOfTenancyPages=\"Yes\"")
             .label("suspensionToBuyDemotionOfTenancyOrderReasons-info", "---")
             .complex(PCSCase::getSuspensionOfRightToBuyDemotionOfTenancy)
-            .mandatory(SuspensionOfRightToBuyDemotionOfTenancy::getSuspensionOrderReason)
-            .mandatory(SuspensionOfRightToBuyDemotionOfTenancy::getDemotionOrderReason)
+                .mandatory(SuspensionOfRightToBuyDemotionOfTenancy::getSuspensionOrderReason)
+                .mandatory(SuspensionOfRightToBuyDemotionOfTenancy::getDemotionOrderReason)
             .done();
     }
 }
