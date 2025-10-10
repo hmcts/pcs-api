@@ -11,6 +11,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantCircumstances;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
@@ -24,6 +25,7 @@ import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.DefendantsDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.NoticeDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ResumeClaim;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.TenancyLicenceDetails;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.UploadAdditionalDocumentsDetails;
 import uk.gov.hmcts.reform.pcs.ccd.service.ClaimService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
@@ -79,6 +81,8 @@ class ResumePossessionClaimTest extends BaseEventTest {
     private UserInfo userDetails;
     @Mock
     private TenancyLicenceDetails tenancyLicenceDetails;
+    @Mock
+    private UploadAdditionalDocumentsDetails uploadAdditionalDocumentsDetails;
 
     @BeforeEach
     void setUp() {
@@ -94,7 +98,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
             partyService, claimService,
             savingPageBuilderFactory, resumeClaim,
             unsubmittedCaseDataService, noticeDetails,
-            tenancyLicenceDetails, contactPreferences,
+            uploadAdditionalDocumentsDetails, tenancyLicenceDetails, contactPreferences,
             defendantsDetails
         );
 
@@ -193,6 +197,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
         // Given
         PCSCase caseData = PCSCase.builder()
             .legislativeCountry(WALES)
+            .claimantCircumstances(mock(ClaimantCircumstances.class))
             .claimingCostsWanted(VerticalYesNo.YES)
             .build();
 
@@ -221,6 +226,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
         String claimantName = "Test Claimant";
         String claimantContactEmail = "claimant@test.com";
         String claimantContactPhoneNumber = "01234 567890";
+        String claimantCircumstances = "Some circumstances";
 
         PcsCaseEntity pcsCaseEntity = mock(PcsCaseEntity.class);
         when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(pcsCaseEntity);
@@ -231,6 +237,9 @@ class ResumePossessionClaimTest extends BaseEventTest {
             .claimantName(claimantName)
             .claimantContactEmail(claimantContactEmail)
             .claimantContactPhoneNumber(claimantContactPhoneNumber)
+            .claimantCircumstances(ClaimantCircumstances.builder()
+                                       .claimantCircumstancesDetails(claimantCircumstances)
+                                       .build())
             .claimingCostsWanted(VerticalYesNo.YES)
             .build();
 

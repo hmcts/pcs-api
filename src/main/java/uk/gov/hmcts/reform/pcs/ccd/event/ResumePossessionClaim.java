@@ -8,6 +8,7 @@ import uk.gov.hmcts.ccd.sdk.api.DecentralisedConfigBuilder;
 import uk.gov.hmcts.ccd.sdk.api.Event.EventBuilder;
 import uk.gov.hmcts.ccd.sdk.api.EventPayload;
 import uk.gov.hmcts.ccd.sdk.api.Permission;
+import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
@@ -16,7 +17,6 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.domain.PaymentStatus;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
@@ -24,9 +24,12 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.page.builder.SavingPageBuilderFactory;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.AdditionalReasonsForPossession;
-import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.ClaimantCircumstances;
+import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.ClaimantCircumstancesPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.EntitledToClaimRelief;
+import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.LanguageUsed;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.MoneyJudgment;
+import uk.gov.hmcts.reform.pcs.ccd.page.makeaclaim.StatementOfTruth;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.AlternativesToPossessionOptions;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.CheckingNotice;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ClaimTypeNotEligibleEngland;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ClaimTypeNotEligibleWales;
@@ -34,7 +37,7 @@ import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ClaimantInformatio
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ClaimantTypeNotEligibleEngland;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ClaimantTypeNotEligibleWales;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ClaimingCosts;
-import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.CompletingClaim;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.CompletingYourClaim;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ContactPreferences;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.DailyRentAmount;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.DefendantCircumstancesPage;
@@ -58,7 +61,11 @@ import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.SecureOrFlexibleGr
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.SecureOrFlexibleGroundsForPossessionReasons;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.SelectClaimType;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.SelectClaimantType;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.SuspensionOfRightToBuyHousingActOptions;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.SuspensionOfRightToBuyOrderReason;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.TenancyLicenceDetails;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.UploadAdditionalDocumentsDetails;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.WantToUploadDocuments;
 import uk.gov.hmcts.reform.pcs.ccd.service.ClaimService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
@@ -91,7 +98,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
     private final ResumeClaim resumeClaim;
     private final UnsubmittedCaseDataService unsubmittedCaseDataService;
     private final NoticeDetails noticeDetails;
-
+    private final UploadAdditionalDocumentsDetails uploadAdditionalDocumentsDetails;
     private final TenancyLicenceDetails tenancyLicenceDetails;
     private final ContactPreferences contactPreferences;
     private final DefendantsDetails defendantsDetails;
@@ -137,13 +144,21 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             .add(new DailyRentAmount())
             .add(new RentArrears())
             .add(new MoneyJudgment())
-            .add(new ClaimantCircumstances())
+            .add(new ClaimantCircumstancesPage())
+            .add(new LanguageUsed())
             .add(new DefendantCircumstancesPage())
+            .add(new AlternativesToPossessionOptions())
+            .add(new SuspensionOfRightToBuyHousingActOptions())
+            .add(new SuspensionOfRightToBuyOrderReason())
             .add(new ClaimingCosts())
             .add(new AdditionalReasonsForPossession())
             .add(new EntitledToClaimRelief())
+            //TO DO will be routed later on  correctly using tech debt ticket
+            .add(new WantToUploadDocuments())
+            .add(uploadAdditionalDocumentsDetails)
             .add(new GeneralApplication())
-            .add(new CompletingClaim());
+            .add(new CompletingYourClaim())
+            .add(new StatementOfTruth());
 
     }
 
@@ -186,11 +201,9 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
         return caseData;
     }
 
-    private void submit(EventPayload<PCSCase, State> eventPayload) {
+    private SubmitResponse submit(EventPayload<PCSCase, State> eventPayload) {
         long caseReference = eventPayload.caseReference();
         PCSCase pcsCase = eventPayload.caseData();
-
-        pcsCase.setPaymentStatus(PaymentStatus.UNPAID);
 
         List<ListValue<DefendantDetails>> defendantsList = new ArrayList<>();
         if (pcsCase.getDefendant1() != null) {
@@ -215,6 +228,8 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
         pcsCaseService.save(pcsCaseEntity);
 
         unsubmittedCaseDataService.deleteUnsubmittedCaseData(caseReference);
+
+        return SubmitResponse.builder().build();
     }
 
     private PartyEntity createClaimantPartyEntity(PCSCase pcsCase) {

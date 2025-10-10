@@ -6,11 +6,9 @@ import uk.gov.hmcts.ccd.sdk.api.HasLabel;
 
 @AllArgsConstructor
 @Getter
-public enum PaymentStatus implements HasLabel  {
-
-    PAID("Paid"),
-    UNPAID("Unpaid");
+public enum CompletionNextStep implements HasLabel {
+    SUBMIT_AND_PAY_NOW("Submit and pay for my claim now"),
+    SAVE_IT_FOR_LATER("Save it for later");
 
     private final String label;
-    
 }
