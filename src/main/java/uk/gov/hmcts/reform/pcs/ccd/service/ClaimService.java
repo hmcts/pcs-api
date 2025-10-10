@@ -10,7 +10,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimGroundEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimRepository;
-import uk.gov.hmcts.reform.pcs.ccd.utils.YesOrNoToBoolean;
+import uk.gov.hmcts.reform.pcs.ccd.util.YesOrNoToBoolean;
 
 import java.util.List;
 
