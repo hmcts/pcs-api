@@ -3,7 +3,7 @@ package uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim;
 import org.junit.jupiter.api.Test;
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
-import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantDetailsWales;
+import uk.gov.hmcts.reform.pcs.ccd.domain.WalesHousingAct;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotApplicable;
@@ -25,20 +25,20 @@ class ClaimantDetailsWalesPageTest {
         
         LocalDate futureDate = today.plusDays(1);
         
-        ClaimantDetailsWales walesDetails = ClaimantDetailsWales.builder()
-            .walesRegistrationLicensed(YesNoNotApplicable.YES)
-            .walesRegistrationNumber("REG123")
-            .walesLicenseLicensed(YesNoNotApplicable.YES)
-            .walesLicenseNumber("LIC456")
-            .walesLicensedAgentAppointed(YesNoNotApplicable.YES)
-            .walesAgentFirstName("John")
-            .walesAgentLastName("Smith")
-            .walesAgentLicenseNumber("AGENT789")
-            .walesAgentAppointmentDate(futureDate)
+        WalesHousingAct walesHousingAct = WalesHousingAct.builder()
+            .registered(YesNoNotApplicable.YES)
+            .registrationNumber("REG123")
+            .licensed(YesNoNotApplicable.YES)
+            .licenceNumber("LIC456")
+            .licensedAgentAppointed(YesNoNotApplicable.YES)
+            .agentFirstName("John")
+            .agentLastName("Smith")
+            .agentLicenceNumber("AGENT789")
+            .agentAppointmentDate(futureDate)
             .build();
 
         PCSCase caseData = PCSCase.builder()
-            .walesClaimantDetails(walesDetails)
+            .walesHousingAct(walesHousingAct)
             .build();
 
         CaseDetails<PCSCase, State> caseDetails = CaseDetails.<PCSCase, State>builder()
@@ -51,7 +51,6 @@ class ClaimantDetailsWalesPageTest {
 
         // Then
         assertThat(response).isNotNull();
-        assertThat(response.getErrors()).hasSize(1);
-        assertThat(response.getErrors().get(0)).isEqualTo("The agent's date of appointment must be in the past");
+        assertThat(response.getErrors()).containsExactly("The agent's date of appointment must be in the past");
     }
 }

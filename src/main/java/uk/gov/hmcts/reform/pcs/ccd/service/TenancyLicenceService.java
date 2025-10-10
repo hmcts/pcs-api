@@ -42,25 +42,25 @@ public class TenancyLicenceService {
                 .noticeOtherDateTime(pcsCase.getNoticeOtherDateTime())
                 .noticeOtherExplanation(pcsCase.getNoticeOtherExplanation())
                 .arrearsJudgmentWanted(YesOrNoToBoolean.convert(pcsCase.getArrearsJudgmentWanted()))
-                // Add Wales-specific claimant details
-                .walesRegistrationLicensed(pcsCase.getWalesClaimantDetails() != null 
-                    ? pcsCase.getWalesClaimantDetails().getWalesRegistrationLicensed() : null)
-                .walesRegistrationNumber(pcsCase.getWalesClaimantDetails() != null 
-                    ? pcsCase.getWalesClaimantDetails().getWalesRegistrationNumber() : null)
-                .walesLicenseLicensed(pcsCase.getWalesClaimantDetails() != null 
-                    ? pcsCase.getWalesClaimantDetails().getWalesLicenseLicensed() : null)
-                .walesLicenseNumber(pcsCase.getWalesClaimantDetails() != null 
-                    ? pcsCase.getWalesClaimantDetails().getWalesLicenseNumber() : null)
-                .walesLicensedAgentAppointed(pcsCase.getWalesClaimantDetails() != null 
-                    ? pcsCase.getWalesClaimantDetails().getWalesLicensedAgentAppointed() : null)
-                .walesAgentFirstName(pcsCase.getWalesClaimantDetails() != null 
-                    ? pcsCase.getWalesClaimantDetails().getWalesAgentFirstName() : null)
-                .walesAgentLastName(pcsCase.getWalesClaimantDetails() != null 
-                    ? pcsCase.getWalesClaimantDetails().getWalesAgentLastName() : null)
-                .walesAgentLicenseNumber(pcsCase.getWalesClaimantDetails() != null 
-                    ? pcsCase.getWalesClaimantDetails().getWalesAgentLicenseNumber() : null)
-                .walesAgentAppointmentDate(pcsCase.getWalesClaimantDetails() != null 
-                    ? pcsCase.getWalesClaimantDetails().getWalesAgentAppointmentDate() : null)
+                // Add Wales Housing Act details
+                .registered(pcsCase.getWalesHousingAct() != null 
+                    ? pcsCase.getWalesHousingAct().getRegistered() : null)
+                .registrationNumber(pcsCase.getWalesHousingAct() != null 
+                    ? pcsCase.getWalesHousingAct().getRegistrationNumber() : null)
+                .licensed(pcsCase.getWalesHousingAct() != null 
+                    ? pcsCase.getWalesHousingAct().getLicensed() : null)
+                .licenceNumber(pcsCase.getWalesHousingAct() != null 
+                    ? pcsCase.getWalesHousingAct().getLicenceNumber() : null)
+                .licensedAgentAppointed(pcsCase.getWalesHousingAct() != null 
+                    ? pcsCase.getWalesHousingAct().getLicensedAgentAppointed() : null)
+                .agentFirstName(pcsCase.getWalesHousingAct() != null 
+                    ? pcsCase.getWalesHousingAct().getAgentFirstName() : null)
+                .agentLastName(pcsCase.getWalesHousingAct() != null 
+                    ? pcsCase.getWalesHousingAct().getAgentLastName() : null)
+                .agentLicenceNumber(pcsCase.getWalesHousingAct() != null 
+                    ? pcsCase.getWalesHousingAct().getAgentLicenceNumber() : null)
+                .agentAppointmentDate(pcsCase.getWalesHousingAct() != null 
+                    ? pcsCase.getWalesHousingAct().getAgentAppointmentDate() : null)
                 .build();
     }
 

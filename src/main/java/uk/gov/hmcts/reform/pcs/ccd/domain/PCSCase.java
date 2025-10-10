@@ -259,7 +259,7 @@ public class PCSCase {
 
     @JsonUnwrapped
     @CCD
-    private ClaimantDetailsWales walesClaimantDetails;
+    private WalesHousingAct walesHousingAct;
 
     @CCD(
         label = "How much is the rent?",

@@ -7,7 +7,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
-import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantDetailsWales;
+import uk.gov.hmcts.reform.pcs.ccd.domain.WalesHousingAct;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentPaymentFrequency;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicence;
@@ -306,76 +306,76 @@ class TenancyLicenceServiceTest {
     }
 
     @Test
-    void shouldMapWalesClaimantDetailsWhenPresent() {
+    void shouldMapWalesHousingActDetailsWhenPresent() {
         // Given
         LocalDate appointmentDate = LocalDate.of(2024, 3, 15);
-        ClaimantDetailsWales walesDetails = ClaimantDetailsWales.builder()
-            .walesRegistrationLicensed(YesNoNotApplicable.YES)
-            .walesRegistrationNumber("REG123456")
-            .walesLicenseLicensed(YesNoNotApplicable.YES)
-            .walesLicenseNumber("LIC789012")
-            .walesLicensedAgentAppointed(YesNoNotApplicable.YES)
-            .walesAgentFirstName("John")
-            .walesAgentLastName("Smith")
-            .walesAgentLicenseNumber("AGENT345678")
-            .walesAgentAppointmentDate(appointmentDate)
+        WalesHousingAct walesHousingAct = WalesHousingAct.builder()
+            .registered(YesNoNotApplicable.YES)
+            .registrationNumber("REG123456")
+            .licensed(YesNoNotApplicable.YES)
+            .licenceNumber("LIC789012")
+            .licensedAgentAppointed(YesNoNotApplicable.YES)
+            .agentFirstName("John")
+            .agentLastName("Smith")
+            .agentLicenceNumber("AGENT345678")
+            .agentAppointmentDate(appointmentDate)
             .build();
         
-        when(pcsCase.getWalesClaimantDetails()).thenReturn(walesDetails);
+        when(pcsCase.getWalesHousingAct()).thenReturn(walesHousingAct);
         
         // When
         TenancyLicence result = tenancyLicenceService.buildTenancyLicence(pcsCase);
         
         // Then
-        assertThat(result.getWalesRegistrationLicensed()).isEqualTo(YesNoNotApplicable.YES);
-        assertThat(result.getWalesRegistrationNumber()).isEqualTo("REG123456");
-        assertThat(result.getWalesLicenseLicensed()).isEqualTo(YesNoNotApplicable.YES);
-        assertThat(result.getWalesLicenseNumber()).isEqualTo("LIC789012");
-        assertThat(result.getWalesLicensedAgentAppointed()).isEqualTo(YesNoNotApplicable.YES);
-        assertThat(result.getWalesAgentFirstName()).isEqualTo("John");
-        assertThat(result.getWalesAgentLastName()).isEqualTo("Smith");
-        assertThat(result.getWalesAgentLicenseNumber()).isEqualTo("AGENT345678");
-        assertThat(result.getWalesAgentAppointmentDate()).isEqualTo(appointmentDate);
+        assertThat(result.getRegistered()).isEqualTo(YesNoNotApplicable.YES);
+        assertThat(result.getRegistrationNumber()).isEqualTo("REG123456");
+        assertThat(result.getLicensed()).isEqualTo(YesNoNotApplicable.YES);
+        assertThat(result.getLicenceNumber()).isEqualTo("LIC789012");
+        assertThat(result.getLicensedAgentAppointed()).isEqualTo(YesNoNotApplicable.YES);
+        assertThat(result.getAgentFirstName()).isEqualTo("John");
+        assertThat(result.getAgentLastName()).isEqualTo("Smith");
+        assertThat(result.getAgentLicenceNumber()).isEqualTo("AGENT345678");
+        assertThat(result.getAgentAppointmentDate()).isEqualTo(appointmentDate);
     }
 
     @Test
-    void shouldHandleNullWalesClaimantDetails() {
+    void shouldHandleNullWalesHousingActDetails() {
         // Given
-        when(pcsCase.getWalesClaimantDetails()).thenReturn(null);
+        when(pcsCase.getWalesHousingAct()).thenReturn(null);
         
         // When
         TenancyLicence result = tenancyLicenceService.buildTenancyLicence(pcsCase);
         
         // Then
-        assertThat(result.getWalesRegistrationLicensed()).isNull();
-        assertThat(result.getWalesRegistrationNumber()).isNull();
-        assertThat(result.getWalesLicenseLicensed()).isNull();
-        assertThat(result.getWalesLicenseNumber()).isNull();
-        assertThat(result.getWalesLicensedAgentAppointed()).isNull();
-        assertThat(result.getWalesAgentFirstName()).isNull();
-        assertThat(result.getWalesAgentLastName()).isNull();
-        assertThat(result.getWalesAgentLicenseNumber()).isNull();
-        assertThat(result.getWalesAgentAppointmentDate()).isNull();
+        assertThat(result.getRegistered()).isNull();
+        assertThat(result.getRegistrationNumber()).isNull();
+        assertThat(result.getLicensed()).isNull();
+        assertThat(result.getLicenceNumber()).isNull();
+        assertThat(result.getLicensedAgentAppointed()).isNull();
+        assertThat(result.getAgentFirstName()).isNull();
+        assertThat(result.getAgentLastName()).isNull();
+        assertThat(result.getAgentLicenceNumber()).isNull();
+        assertThat(result.getAgentAppointmentDate()).isNull();
     }
 
     @Test
-    void shouldHandleWalesClaimantDetailsWithNotApplicableValues() {
+    void shouldHandleWalesHousingActDetailsWithNotApplicableValues() {
         // Given
-        ClaimantDetailsWales walesDetails = ClaimantDetailsWales.builder()
-            .walesRegistrationLicensed(YesNoNotApplicable.NOT_APPLICABLE)
-            .walesLicenseLicensed(YesNoNotApplicable.NO)
-            .walesLicensedAgentAppointed(YesNoNotApplicable.NOT_APPLICABLE)
+        WalesHousingAct walesHousingAct = WalesHousingAct.builder()
+            .registered(YesNoNotApplicable.NOT_APPLICABLE)
+            .licensed(YesNoNotApplicable.NO)
+            .licensedAgentAppointed(YesNoNotApplicable.NOT_APPLICABLE)
             .build();
         
-        when(pcsCase.getWalesClaimantDetails()).thenReturn(walesDetails);
+        when(pcsCase.getWalesHousingAct()).thenReturn(walesHousingAct);
         
         // When
         TenancyLicence result = tenancyLicenceService.buildTenancyLicence(pcsCase);
         
         // Then
-        assertThat(result.getWalesRegistrationLicensed()).isEqualTo(YesNoNotApplicable.NOT_APPLICABLE);
-        assertThat(result.getWalesLicenseLicensed()).isEqualTo(YesNoNotApplicable.NO);
-        assertThat(result.getWalesLicensedAgentAppointed()).isEqualTo(YesNoNotApplicable.NOT_APPLICABLE);
+        assertThat(result.getRegistered()).isEqualTo(YesNoNotApplicable.NOT_APPLICABLE);
+        assertThat(result.getLicensed()).isEqualTo(YesNoNotApplicable.NO);
+        assertThat(result.getLicensedAgentAppointed()).isEqualTo(YesNoNotApplicable.NOT_APPLICABLE);
     }
 
 }
