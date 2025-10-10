@@ -1,10 +1,10 @@
-package uk.gov.hmcts.reform.pcs.ccd.utils;
+package uk.gov.hmcts.reform.pcs.ccd.util;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.jupiter.api.Test;
-
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 class YesOrNoBooleanTest {
 
