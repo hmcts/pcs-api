@@ -129,7 +129,6 @@ test.describe('[Successful Create Case Flow]  @Master @nightly', async () => {
       circumstanceOption: claimantCircumstances.yes,
       claimantInput: claimantCircumstances.claimantCircumstanceInfoInputData
     });
-    await performAction('selectLanguageUsed', languageUsed.no);
     await performValidation('mainHeader', defendantCircumstances.mainHeader);
     await performAction('selectDefendantCircumstances', defendantCircumstances.yes);
     await performValidation('mainHeader', alternativesToPossession.mainHeader);
@@ -152,6 +151,7 @@ test.describe('[Successful Create Case Flow]  @Master @nightly', async () => {
       }]
     });
     await performAction('selectApplications', applications.yes);
+    await performAction('selectLanguageUsed', {question: languageUsed.whichLanguageUsedQuestion, option: languageUsed.english});
     await performAction('completingYourClaim', completeYourClaim.submitAndClaimNow);
     await performAction('clickButton', statementOfTruth.continue);
     await performAction('clickButton', checkYourAnswers.saveAndContinue);
@@ -237,7 +237,6 @@ test.describe('[Successful Create Case Flow]  @Master @nightly', async () => {
       circumstanceOption: claimantCircumstances.no,
       claimantInput: claimantCircumstances.claimantCircumstanceInfoInputData
     });
-    await performAction('selectLanguageUsed', languageUsed.no);
     await performValidation('mainHeader', defendantCircumstances.mainHeader);
     await performAction('selectDefendantCircumstances', defendantCircumstances.no);
     await performValidation('mainHeader', alternativesToPossession.mainHeader);
@@ -259,6 +258,7 @@ test.describe('[Successful Create Case Flow]  @Master @nightly', async () => {
       option: wantToUploadDocuments.no
     });
     await performAction('selectApplications', applications.no);
+    await performAction('selectLanguageUsed', {question: languageUsed.whichLanguageUsedQuestion, option: languageUsed.welsh});
     await performAction('completingYourClaim', completeYourClaim.saveItForLater);
     await performAction('clickButton', checkYourAnswers.saveAndContinue);
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
@@ -340,7 +340,6 @@ test.describe('[Successful Create Case Flow]  @Master @nightly', async () => {
       circumstanceOption: claimantCircumstances.yes,
       claimantInput: claimantCircumstances.claimantCircumstanceInfoInputData
     });
-    await performAction('selectLanguageUsed', languageUsed.no);
     await performValidation('mainHeader', defendantCircumstances.mainHeader);
     await performAction('selectDefendantCircumstances', defendantCircumstances.no);
     await performValidation('mainHeader', alternativesToPossession.mainHeader);
@@ -357,6 +356,7 @@ test.describe('[Successful Create Case Flow]  @Master @nightly', async () => {
       option: wantToUploadDocuments.no
     });
     await performAction('selectApplications', applications.no);
+    await performAction('selectLanguageUsed', {question: languageUsed.whichLanguageUsedQuestion, option: languageUsed.englishAndWelsh});
     await performAction('completingYourClaim', completeYourClaim.saveItForLater);
     await performAction('clickButton', checkYourAnswers.saveAndContinue);
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
@@ -435,7 +435,6 @@ test.describe('[Successful Create Case Flow]  @Master @nightly', async () => {
       circumstanceOption: claimantCircumstances.yes,
       claimantInput: claimantCircumstances.claimantCircumstanceInfoInputData
     });
-    await performAction('selectLanguageUsed', languageUsed.no);
     await performValidation('mainHeader', defendantCircumstances.mainHeader);
     await performAction('selectDefendantCircumstances', defendantCircumstances.no);
     await performValidation('mainHeader', alternativesToPossession.mainHeader);
@@ -452,7 +451,8 @@ test.describe('[Successful Create Case Flow]  @Master @nightly', async () => {
       option: wantToUploadDocuments.no
     });
     await performAction('selectApplications', applications.no);
-      await performAction('completingYourClaim', completeYourClaim.saveItForLater);
+    await performAction('selectLanguageUsed', {question: languageUsed.whichLanguageUsedQuestion, option: languageUsed.english});
+    await performAction('completingYourClaim', completeYourClaim.saveItForLater);
     await performAction('clickButton', checkYourAnswers.saveAndContinue);
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
     await performValidations(
@@ -524,7 +524,6 @@ test.describe('[Successful Create Case Flow]  @Master @nightly', async () => {
       circumstanceOption: claimantCircumstances.yes,
       claimantInput: claimantCircumstances.claimantCircumstanceInfoInputData
     });
-    await performAction('selectLanguageUsed', languageUsed.no);
     await performValidation('mainHeader', defendantCircumstances.mainHeader);
     await performAction('selectDefendantCircumstances', defendantCircumstances.no);
     await performValidation('mainHeader', alternativesToPossession.mainHeader);
@@ -546,6 +545,7 @@ test.describe('[Successful Create Case Flow]  @Master @nightly', async () => {
       option: wantToUploadDocuments.no
     });
     await performAction('selectApplications', applications.yes);
+    await performAction('selectLanguageUsed', {question: languageUsed.whichLanguageUsedQuestion, option: languageUsed.english});
     await performAction('completingYourClaim', completeYourClaim.saveItForLater);
      await performAction('clickButton', checkYourAnswers.saveAndContinue);
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
@@ -617,7 +617,6 @@ test.describe('[Successful Create Case Flow]  @Master @nightly', async () => {
       circumstanceOption: claimantCircumstances.no,
       claimantInput: claimantCircumstances.claimantCircumstanceInfoInputData
     });
-    await performAction('selectLanguageUsed', languageUsed.no);
     await performValidation('mainHeader', defendantCircumstances.mainHeader);
     await performAction('selectDefendantCircumstances', defendantCircumstances.no);
     await performValidation('mainHeader', alternativesToPossession.mainHeader);
@@ -639,6 +638,7 @@ test.describe('[Successful Create Case Flow]  @Master @nightly', async () => {
       option: wantToUploadDocuments.no
     });
     await performAction('selectApplications', applications.yes);
+    await performAction('selectLanguageUsed', {question: languageUsed.whichLanguageUsedQuestion, option: languageUsed.english});
     await performAction('completingYourClaim', completeYourClaim.saveItForLater);
     await performAction('clickButton', checkYourAnswers.saveAndContinue);
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
@@ -716,7 +716,6 @@ test.describe('[Successful Create Case Flow]  @Master @nightly', async () => {
       circumstanceOption: claimantCircumstances.no,
       claimantInput: claimantCircumstances.claimantCircumstanceInfoInputData
     });
-    await performAction('selectLanguageUsed', languageUsed.no);
     await performValidation('mainHeader', defendantCircumstances.mainHeader);
     await performAction('selectDefendantCircumstances', defendantCircumstances.yes);
     await performValidation('mainHeader', alternativesToPossession.mainHeader);
@@ -733,6 +732,7 @@ test.describe('[Successful Create Case Flow]  @Master @nightly', async () => {
       option: wantToUploadDocuments.no
     });
     await performAction('selectApplications', applications.yes);
+    await performAction('selectLanguageUsed', {question: languageUsed.whichLanguageUsedQuestion, option: languageUsed.english});
     await performAction('completingYourClaim', completeYourClaim.saveItForLater);
     await performAction('clickButton', checkYourAnswers.saveAndContinue);
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
