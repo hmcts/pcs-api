@@ -606,4 +606,20 @@ public class PCSCase {
         typeParameterOverride = "CompletionNextStep"
     )
     private CompletionNextStep completionNextStep;
+
+    @CCD(
+        label = """
+        <ul>
+          <li>Are violent or aggressive</li>
+          <li>Possess a firearm or other weapon</li>
+          <li>Have a history of criminal or antisocial behaviour</li>
+          <li>Have made verbal or written threats towards you</li>
+          <li>Are a member of a group that protests evictions</li>
+          <li>Have had visits from the police or social services</li>
+          <li>Own an aggressive dog or other animal</li>
+        </ul>
+        """,
+        typeOverride = FieldType.Label
+    )
+    private String riskFactorsList;
 }
