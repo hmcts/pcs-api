@@ -606,4 +606,27 @@ public class PCSCase {
         typeParameterOverride = "CompletionNextStep"
     )
     private CompletionNextStep completionNextStep;
+
+    @CCD(
+        label = "Discretionary grounds",
+        hint = "Select all that apply",
+        typeOverride = FieldType.MultiSelectList,
+        typeParameterOverride = "SecureContractDiscretionaryGrounds"
+    )
+    private Set<SecureContractDiscretionaryGrounds> secureContractDiscretionaryGrounds;
+
+    @CCD(
+        label = "Mandatory grounds",
+        hint = "Select all that apply",
+        typeOverride = FieldType.MultiSelectList,
+        typeParameterOverride = "SecureContractMandatoryGrounds"
+    )
+    private Set<SecureContractMandatoryGrounds> secureContractMandatoryGrounds;
+
+    @CCD(
+        label = "Estate management grounds",
+        typeOverride = FieldType.MultiSelectList,
+        typeParameterOverride = "EstateManagementGrounds"
+    )
+    private Set<EstateManagementGrounds> estateManagementGrounds;
 }
