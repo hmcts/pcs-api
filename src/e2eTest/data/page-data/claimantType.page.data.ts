@@ -4,7 +4,7 @@ export const claimantType =
     mainHeader: 'Claimant type',
     elementType: 'radio',
     privateLandlord: 'Private landlord',
-    registeredCommunityLandlord: 'Registered community landlord',
+    communityLandlord: 'Community landlord',
     mortgageLender: 'Mortgage lender',
     other: 'Other',
     registeredProviderForSocialHousing: 'Registered provider of social housing',

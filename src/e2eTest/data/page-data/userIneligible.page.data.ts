@@ -6,5 +6,7 @@ export const userIneligible = {
   errors: 'Errors',
   notEligibleForOnlineService: 'You\'re not eligible for this online service',
   continue: 'Continue',
-  cancel: 'Cancel'
+  cancel: 'Cancel',
+  formN5Wales: 'Use form N5 Wales and the correct particulars of claim form.',
+  propertyPossessionsFullListLink: 'View the full list of property possessions forms (opens in a new tab).'
 }
