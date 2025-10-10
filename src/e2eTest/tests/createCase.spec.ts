@@ -507,7 +507,8 @@ test.describe('[Successful Create Case Flow]  @Master @nightly', async () => {
       settlementWithDefendantsOption: mediationAndSettlement.no,
     });
     await performValidation('mainHeader', noticeOfYourIntention.mainHeader);
-    await performAction('selectNoticeOfYourIntention', noticeOfYourIntention.no);
+    await performAction('selectNoticeOfYourIntention', {question: noticeOfYourIntention.servedNoticeInteractiveText
+      , option: [noticeOfYourIntention.no]});
     await performValidation('mainHeader', rentDetails.mainHeader);
     await performAction('provideRentDetails', {rentAmount:'850', rentFrequencyOption:'Other', inputFrequency:rentDetails.rentFrequencyFortnightly,unpaidRentAmountPerDay:'50'});
     await performValidation('mainHeader', detailsOfRentArrears.mainHeader);
@@ -603,7 +604,8 @@ test.describe('[Successful Create Case Flow]  @Master @nightly', async () => {
       settlementWithDefendantsOption: mediationAndSettlement.no,
     });
     await performValidation('mainHeader', noticeOfYourIntention.mainHeader);
-    await performAction('selectNoticeOfYourIntention', noticeOfYourIntention.no);
+    await performAction('selectNoticeOfYourIntention', {question: noticeOfYourIntention.servedNoticeInteractiveText
+      , option: [noticeOfYourIntention.no]});
     // await performValidation('mainHeader', rentDetails.mainHeader);
     // await performAction('provideRentDetails', {rentFrequencyOption: 'Monthly', rentAmount: '1000'});
     // await performAction('selectDailyRentAmount', {
@@ -699,7 +701,8 @@ test.describe('[Successful Create Case Flow]  @Master @nightly', async () => {
       settlementWithDefendantsOption: mediationAndSettlement.no,
     });
     await performValidation('mainHeader', noticeOfYourIntention.mainHeader);
-    await performAction('selectNoticeOfYourIntention', noticeOfYourIntention.yes);
+    await performAction('selectNoticeOfYourIntention', {question: noticeOfYourIntention.servedNoticeInteractiveText
+      , option: [noticeOfYourIntention.yes]});
     await performAction('selectNoticeDetails', {
       howDidYouServeNotice: noticeDetails.byOtherElectronicMethod,
       day: '25', month: '02', year: '1970', hour: '22', minute: '45', second: '10', files: 'NoticeDetails.pdf'});

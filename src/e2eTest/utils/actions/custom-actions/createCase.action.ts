@@ -67,7 +67,7 @@ export class CreateCaseAction implements IAction {
       ['selectGroundsForPossession', () => this.selectGroundsForPossession(fieldName)],
       ['selectPreActionProtocol', () => this.selectPreActionProtocol(fieldName)],
       ['selectMediationAndSettlement', () => this.selectMediationAndSettlement(fieldName)],
-      ['selectNoticeOfYourIntention', () => this.selectNoticeOfYourIntention(fieldName)],
+      ['selectNoticeOfYourIntention', () => this.selectNoticeOfYourIntention(fieldName as actionRecord)],
       ['selectNoticeDetails', () => this.selectNoticeDetails(fieldName)],
       ['selectBorderPostcode', () => this.selectBorderPostcode(fieldName)],
       ['selectTenancyOrLicenceDetails', () => this.selectTenancyOrLicenceDetails(fieldName)],
@@ -186,9 +186,12 @@ export class CreateCaseAction implements IAction {
     await performAction('clickButton', preActionProtocol.continue);
   }
 
-  private async selectNoticeOfYourIntention(caseData: actionData) {
+  private async selectNoticeOfYourIntention(caseData: actionRecord) {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
     await performAction('clickRadioButton', caseData);
+    if(caseData.option == noticeOfYourIntention.yes){
+      await performAction('inputText', noticeOfYourIntention.typeOfNotice, noticeOfYourIntention.typeOfNoticeInput);
+    }
     await performAction('clickButton', noticeOfYourIntention.continue);
   }
 
@@ -573,7 +576,7 @@ export class CreateCaseAction implements IAction {
       , ['select', createCase.eventLabel, createCase.makeAPossessionClaimEvent]);
     await performAction('clickButton', createCase.start);
   }
-  
+
   private async selectLanguageUsed(option: actionData) {
     await performAction('clickRadioButton', option);
     await performAction('clickButton', languageUsed.continue);
