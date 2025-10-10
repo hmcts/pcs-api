@@ -27,7 +27,7 @@ test.beforeEach(async ({page}, testInfo) => {
 });
 
 test.describe('[Eligibility checks for cross and non cross border postcodes] @Master @nightly', async () => {
-  test('Cross border - Verify postcode eligibility check redirection and content for England and Wales', async ({page}) => {
+  test('Cross border - Verify postcode eligibility check redirection and content for England and Wales', async () => {
     await performAction('selectAddress', {
       postcode: borderPostcode.englandWalesPostcode,
       addressIndex: addressDetails.addressIndex
@@ -132,6 +132,29 @@ test.describe('[Eligibility checks for cross and non cross border postcodes] @Ma
     await performAction('extractCaseIdFromAlert');
     await performAction('clickButtonAndVerifyPageNavigation', provideMoreDetailsOfClaim.continue, claimantType.mainHeader);
     await performAction('selectClaimantType', claimantType.privateLandlord);
+    await performValidation('text', {"text": userIneligible.formN5Wales, "elementType": "paragraph"})
+    await performValidation('text', {"text": userIneligible.propertyPossessionsFullListLink, "elementType": "paragraph"})
+    await performAction('clickButton', userIneligible.continue);
+    await performValidation('errorMessage', {
+      header: userIneligible.eventNotCreated, message: userIneligible.unableToProceed
+    });
+    await performValidation('errorMessage', {
+      header: userIneligible.errors, message: userIneligible.notEligibleForOnlineService
+    });
+    await performAction('clickButton', userIneligible.cancel);
+  });
+
+  test('Wales - Unsuccessful case creation journey due to claim type not in scope of Release1 @R1only', async () => {
+    await performAction('selectAddress', {
+      postcode: addressDetails.walesCourtAssignedPostcode,
+      addressIndex: addressDetails.addressIndex
+    });
+    await performAction('extractCaseIdFromAlert');
+    await performAction('clickButtonAndVerifyPageNavigation', provideMoreDetailsOfClaim.continue, claimantType.mainHeader);
+    await performAction('selectClaimantType', claimantType.communityLandlord);
+    await performAction('selectClaimType', claimType.yes);
+    await performValidation('text', {"text": userIneligible.formN5Wales, "elementType": "paragraph"})
+    await performValidation('text', {"text": userIneligible.propertyPossessionsFullListLink, "elementType": "paragraph"})
     await performAction('clickButton', userIneligible.continue);
     await performValidation('errorMessage', {
       header: userIneligible.eventNotCreated, message: userIneligible.unableToProceed

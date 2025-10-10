@@ -24,7 +24,6 @@ import {whatAreYourGroundsForPossession} from '@data/page-data/whatAreYourGround
 import {rentArrearsOrBreachOfTenancy} from '@data/page-data/rentArrearsOrBreachOfTenancy.page.data';
 import {reasonsForPossession} from '@data/page-data/reasonsForPossession.page.data';
 import {moneyJudgment} from '@data/page-data/moneyJudgment.page.data';
-import {claimantsName} from '@utils/actions/custom-actions/createCase.action';
 import {claimantCircumstances} from '@data/page-data/claimantCircumstances.page.data';
 import {applications} from '@data/page-data/applications.page.data';
 import {completeYourClaim} from '@data/page-data/completeYourClaim.page.data';
@@ -469,14 +468,14 @@ test.describe('[Successful Create Case Flow]  @Master @nightly', async () => {
     await performValidation('bannerAlert', 'Case #.* has been created.');
     await performAction('extractCaseIdFromAlert');
     await performAction('clickButtonAndVerifyPageNavigation', provideMoreDetailsOfClaim.continue, claimantType.mainHeader);
-    await performAction('selectClaimantType', claimantType.registeredCommunityLandlord);
+    await performAction('selectClaimantType', claimantType.communityLandlord);
     await performAction('selectClaimType', claimType.no);
     await performAction('selectClaimantName', claimantName.no);
     await performAction('clickButton', 'Sign out');
     await performAction('reloginAndFindTheCase', user.claimantSolicitor);
     await performAction('clickButtonAndVerifyPageNavigation', resumeClaim.continue, resumeClaimOptions.mainHeader);
     await performAction('selectResumeClaimOption', resumeClaimOptions.yes);
-    await performValidation('radioButtonChecked', claimantType.registeredCommunityLandlord, true);
+    await performValidation('radioButtonChecked', claimantType.communityLandlord, true);
     await performAction('verifyPageAndClickButton', claimantType.continue, claimantType.mainHeader);
     await performValidation('radioButtonChecked', claimType.no, true);
     await performAction('verifyPageAndClickButton', claimType.continue, claimType.mainHeader);
@@ -563,15 +562,15 @@ test.describe('[Successful Create Case Flow]  @Master @nightly', async () => {
     await performValidation('bannerAlert', 'Case #.* has been created.');
     await performAction('extractCaseIdFromAlert');
     await performAction('clickButtonAndVerifyPageNavigation', provideMoreDetailsOfClaim.continue, claimantType.mainHeader);
-    await performAction('selectClaimantType', claimantType.registeredCommunityLandlord);
+    await performAction('selectClaimantType', claimantType.communityLandlord);
     await performAction('selectClaimType', claimType.no);
     await performAction('selectClaimantName', claimantName.yes);
     await performAction('clickButton', 'Sign out');
     await performAction('reloginAndFindTheCase', user.claimantSolicitor);
     await performAction('clickButtonAndVerifyPageNavigation', resumeClaim.continue, resumeClaimOptions.mainHeader);
     await performAction('selectResumeClaimOption', resumeClaimOptions.no);
-    await performValidation('radioButtonChecked', claimantType.registeredCommunityLandlord, false);
-    await performAction('selectClaimantType', claimantType.registeredCommunityLandlord);
+    await performValidation('radioButtonChecked', claimantType.communityLandlord, false);
+    await performAction('selectClaimantType', claimantType.communityLandlord);
     await performValidation('radioButtonChecked', claimType.no, false);
     await performAction('selectClaimType', claimType.no);
     await performValidation('radioButtonChecked', claimantName.no, false);
@@ -656,7 +655,7 @@ test.describe('[Successful Create Case Flow]  @Master @nightly', async () => {
     await performValidation('bannerAlert', 'Case #.* has been created.');
     await performAction('extractCaseIdFromAlert');
     await performAction('clickButtonAndVerifyPageNavigation', provideMoreDetailsOfClaim.continue, claimantType.mainHeader);
-    await performAction('selectClaimantType', claimantType.registeredCommunityLandlord);
+    await performAction('selectClaimantType', claimantType.communityLandlord);
     await performAction('selectClaimType', claimType.no);
     await performAction('selectClaimantName', claimantName.no);
     await performAction('selectContactPreferences', {
