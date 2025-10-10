@@ -30,11 +30,8 @@ public class DefendantsDobDetails implements CcdPageConfiguration {
             .label("defDobLine", "---")
             .pageLabel("The defendants’ dates of birth")
             .mandatory(PCSCase::getDobKnown)
-            .optional(PCSCase::getDefendantsDOB, "dobKnown=\"YES\"")
-            // does not work due to complex/optional not being able to handle lists
-//            .complex(PCSCase::getDefendantsDOB1, "dobKnown=\"YES\"")
-//            .optional(DefendantDOBDetails::getDob)
-//            .done()
-        ;
+            .optional(PCSCase::getDefendantsDOB, "dobKnown=\"YES\"");
+//            .complex(PCSCase::getDefendantsDOB, "dobKnown=\"YES\"")
+//            .optional(i-> i.iterator().next().getValue().getDob());
     }
 }

@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
+import uk.gov.hmcts.ccd.sdk.api.ComplexType;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.FieldType;
 
@@ -16,11 +17,10 @@ import java.time.LocalDate;
 @AllArgsConstructor
 public class DefendantDOBDetails {
 
-    @CCD(label = "Defendant's first name")
-    private String firstName;
-
-    @CCD(label = "Defendant's last name")
-    private String lastName;
+    @CCD(
+        label = "Defendant’s name"
+    )
+    private String name;
 
     @CCD(
         label = "What is this Defendant's date of birth?",

@@ -86,8 +86,7 @@ public class DefendantsDetails implements CcdPageConfiguration {
         int index = 0;
         for (ListValue<DefendantDetails> defendant : defendants) {
             DefendantDOBDetails dobDetails = DefendantDOBDetails.builder()
-                .firstName(defendant.getValue().getFirstName())
-                .lastName(defendant.getValue().getLastName())
+                .name(defendant.getValue().getFirstName() + " " + defendant.getValue().getLastName())
                 .dob(null)
                 .build();
 
@@ -100,9 +99,6 @@ public class DefendantsDetails implements CcdPageConfiguration {
         }
 
         caseData.setDefendantsDOB(defendantsDOB);
-
-
-
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
             .data(caseData)
