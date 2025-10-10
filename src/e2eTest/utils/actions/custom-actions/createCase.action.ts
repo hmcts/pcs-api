@@ -63,6 +63,7 @@ export class CreateCaseAction implements IAction {
       ['enterTestAddressManually', () => this.enterTestAddressManually()],
       ['selectClaimType', () => this.selectClaimType(fieldName)],
       ['selectClaimantName', () => this.selectClaimantName(page,fieldName)],
+      ['selectClaimantDetails', () => this.selectClaimantDetails(fieldName as actionRecord)],
       ['selectContactPreferences', () => this.selectContactPreferences(fieldName)],
       ['selectRentArrearsPossessionGround', () => this.selectRentArrearsPossessionGround(fieldName)],
       ['selectGroundsForPossession', () => this.selectGroundsForPossession(fieldName)],
@@ -183,6 +184,7 @@ export class CreateCaseAction implements IAction {
         ['inputText', claimantDetails.monthLabel, claimantDetails.month],
         ['inputText', claimantDetails.yearLabel, claimantDetails.year]);
     }
+    await performAction('clickButton', claimantDetails.continue);
   }
 
   private async selectGroundsForPossession(caseData: actionData) {
@@ -227,7 +229,7 @@ export class CreateCaseAction implements IAction {
       await performAction('inputText', claimantName.whatIsCorrectClaimantName, claimantName.correctClaimantNameInput);
     }
     claimantsName = caseData == "No" ? claimantName.correctClaimantNameInput : await this.extractClaimantName(page, claimantName.yourClaimantNameRegisteredWithHMCTS);
-    await performAction('clickButtonAndVerifyPageNavigation', claimantName.continue, contactPreferences.mainHeader);
+    await performAction('clickButton', claimantName.continue);
   }
 
   private async selectContactPreferences(preferences: actionData) {
@@ -595,11 +597,6 @@ export class CreateCaseAction implements IAction {
       , ['select', createCase.caseTypeLabel, createCase.caseType.civilPossessions]
       , ['select', createCase.eventLabel, createCase.makeAPossessionClaimEvent]);
     await performAction('clickButton', createCase.start);
-  }
-  
-  private async selectLanguageUsed(option: actionData) {
-    await performAction('clickRadioButton', option);
-    await performAction('clickButton', languageUsed.continue);
   }
 
   private async selectLanguageUsed(option: actionData) {

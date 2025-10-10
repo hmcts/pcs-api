@@ -481,11 +481,12 @@ test.describe('[Successful Create Case Flow]  @Master @nightly', async () => {
     await performValidation('radioButtonChecked', claimType.no, true);
     await performAction('verifyPageAndClickButton', claimType.continue, claimType.mainHeader);
     await performValidation('radioButtonChecked', claimantName.no, true);
+    await performAction('clickButtonAndVerifyPageNavigation', claimantName.continue, claimantDetails.mainHeader);
     await performAction('selectClaimantDetails',
       {question1: claimantDetails.wereYouRegisteredUnderPart1OfTheHousingAct2014, option1: claimantDetails.yes,
-        question2: claimantDetails.wereYouLicensedUnderPart1OfTheHousingAct2014, option2: claimantDetails.yes,
-        question3: claimantDetails.haveYouAppointedALicenseAgentAgent, option3: claimantDetails.yes});
-    await performAction('clickButtonAndVerifyPageNavigation', claimantName.continue, contactPreferences.mainHeader);
+       question2: claimantDetails.wereYouLicensedUnderPart1OfTheHousingAct2014, option2: claimantDetails.yes,
+       question3: claimantDetails.haveYouAppointedALicenseAgentAgent, option3: claimantDetails.yes});
+    await performValidation('mainHeader', contactPreferences.mainHeader);
     await performAction('selectContactPreferences', {
       notifications: contactPreferences.no,
       correspondenceAddress: contactPreferences.no,
@@ -669,8 +670,8 @@ test.describe('[Successful Create Case Flow]  @Master @nightly', async () => {
     await performAction('selectClaimantName', claimantName.no);
     await performAction('selectClaimantDetails',
       {question1: claimantDetails.wereYouRegisteredUnderPart1OfTheHousingAct2014, option1: claimantDetails.notApplicable,
-        question2: claimantDetails.wereYouLicensedUnderPart1OfTheHousingAct2014, option2: claimantDetails.notApplicable,
-        question3: claimantDetails.haveYouAppointedALicenseAgentAgent, option3: claimantDetails.notApplicable});
+       question2: claimantDetails.wereYouLicensedUnderPart1OfTheHousingAct2014, option2: claimantDetails.notApplicable,
+       question3: claimantDetails.haveYouAppointedALicenseAgentAgent, option3: claimantDetails.notApplicable});
     await performAction('selectContactPreferences', {
       notifications: contactPreferences.no,
       correspondenceAddress: contactPreferences.no,
