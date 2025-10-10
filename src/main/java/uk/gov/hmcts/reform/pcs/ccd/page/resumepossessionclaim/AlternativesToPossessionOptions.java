@@ -6,10 +6,11 @@ import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.AlternativesToPossession;
+import uk.gov.hmcts.reform.pcs.ccd.domain.DemotionOfTenancy;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.SuspensionOfRightToBuy;
-import uk.gov.hmcts.reform.pcs.ccd.domain.DemotionOfTenancy;
+import uk.gov.hmcts.reform.pcs.ccd.domain.SuspensionOfRightToBuyDemotionOfTenancy;
 
 import java.util.Set;
 
@@ -27,6 +28,10 @@ public class AlternativesToPossessionOptions implements CcdPageConfiguration {
             .done()
             .complex(PCSCase::getDemotionOfTenancy)
             .readonlyNoSummary(DemotionOfTenancy::getShowDemotionOfTenancyHousingActsPage,NEVER_SHOW)
+            .done()
+            .complex(PCSCase::getSuspensionOfRightToBuyDemotionOfTenancy)
+            .readonlyNoSummary(SuspensionOfRightToBuyDemotionOfTenancy::getSuspensionToBuyDemotionOfTenancyPages,
+                               NEVER_SHOW)
             .done()
             .label("alternativesToPossession-info", """
                     ---
@@ -68,6 +73,9 @@ public class AlternativesToPossessionOptions implements CcdPageConfiguration {
         boolean showDemotionPage = altToPossessions.contains(AlternativesToPossession.DEMOTION_OF_TENANCY)
             && !altToPossessions.contains(AlternativesToPossession.SUSPENSION_OF_RIGHT_TO_BUY);
 
+        boolean showSuspensionAndDemotionPage = altToPossessions.contains(AlternativesToPossession.DEMOTION_OF_TENANCY)
+            && altToPossessions.contains(AlternativesToPossession.SUSPENSION_OF_RIGHT_TO_BUY);
+
         if (caseData.getSuspensionOfRightToBuy() != null) {
             caseData.getSuspensionOfRightToBuy()
                 .setShowSuspensionOfRightToBuyHousingActsPage(YesOrNo.from(showSuspensionPage));
@@ -75,6 +83,11 @@ public class AlternativesToPossessionOptions implements CcdPageConfiguration {
         if (caseData.getDemotionOfTenancy() != null) {
             caseData.getDemotionOfTenancy()
                 .setShowDemotionOfTenancyHousingActsPage(YesOrNo.from(showDemotionPage));
+        }
+
+        if (caseData.getSuspensionOfRightToBuyDemotionOfTenancy() != null) {
+            caseData.getSuspensionOfRightToBuyDemotionOfTenancy()
+                .setSuspensionToBuyDemotionOfTenancyPages(YesOrNo.from(showSuspensionAndDemotionPage));
         }
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()

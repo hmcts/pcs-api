@@ -8,8 +8,8 @@ import uk.gov.hmcts.ccd.sdk.api.HasLabel;
 @Getter
 public enum DemotionOfTenancyHousingAct implements HasLabel {
 
-    SECTION_82A("Section 82A(2) of the Housing Act 1985"),
-    SECTION_6A("Section 6A(2) of the Housing Act 1988");
+    SECTION_82A_2("Section 82A(2) of the Housing Act 1985"),
+    SECTION_6A_2("Section 6A(2) of the Housing Act 1988");
 
     private String label;
 }

@@ -7,9 +7,11 @@ import org.junit.jupiter.params.provider.MethodSource;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.AlternativesToPossession;
+import uk.gov.hmcts.reform.pcs.ccd.domain.DemotionOfTenancy;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.SuspensionOfRightToBuy;
+import uk.gov.hmcts.reform.pcs.ccd.domain.SuspensionOfRightToBuyDemotionOfTenancy;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
 
 import java.util.Set;
@@ -27,37 +29,61 @@ class AlternativesToPossessionOptionsTest extends BasePageTest {
 
     @ParameterizedTest
     @MethodSource("midEventScenarios")
-    void shouldSetDisplayFlagForSuspensionOfRightToBuyHousingActsPage(
+    void shouldSetDisplayFlagsForSuspensionDemotionAndCombinedPages(
         Set<AlternativesToPossession> alternativesToPossessionOptions,
-        YesOrNo expectedShowCondition) {
+        YesOrNo expectedSuspensionPageFlag,
+        YesOrNo expectedDemotionPageFlag,
+        YesOrNo expectedCombinedPageFlag) {
 
         // Given
         PCSCase caseData = PCSCase.builder()
             .alternativesToPossession(alternativesToPossessionOptions)
             .suspensionOfRightToBuy(SuspensionOfRightToBuy.builder().build())
+            .demotionOfTenancy(DemotionOfTenancy.builder().build())
+            .suspensionOfRightToBuyDemotionOfTenancy(SuspensionOfRightToBuyDemotionOfTenancy.builder().build())
             .build();
 
         // When
         AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
 
         // Then
-        assertThat(response.getData().getSuspensionOfRightToBuy().getShowSuspensionOfRightToBuyHousingActsPage())
-            .isEqualTo(expectedShowCondition);
+        assertThat(response.getData().getSuspensionOfRightToBuy()
+                       .getShowSuspensionOfRightToBuyHousingActsPage()).isEqualTo(expectedSuspensionPageFlag);
+        assertThat(response.getData().getDemotionOfTenancy()
+                       .getShowDemotionOfTenancyHousingActsPage()).isEqualTo(expectedDemotionPageFlag);
+        assertThat(response.getData().getSuspensionOfRightToBuyDemotionOfTenancy()
+                       .getSuspensionToBuyDemotionOfTenancyPages()).isEqualTo(expectedCombinedPageFlag);
     }
 
     private static Stream<Arguments> midEventScenarios() {
         return Stream.of(
+            // Only suspension selected
             arguments(
                 Set.of(AlternativesToPossession.SUSPENSION_OF_RIGHT_TO_BUY),
-                YesOrNo.YES
+                YesOrNo.YES,
+                YesOrNo.NO,
+                YesOrNo.NO
             ),
+            // Only demotion selected
+            arguments(
+                Set.of(AlternativesToPossession.DEMOTION_OF_TENANCY),
+                YesOrNo.NO,
+                YesOrNo.YES,
+                YesOrNo.NO
+            ),
+            // Both suspension and demotion selected
             arguments(
                 Set.of(AlternativesToPossession.SUSPENSION_OF_RIGHT_TO_BUY,
                        AlternativesToPossession.DEMOTION_OF_TENANCY),
-                YesOrNo.NO
+                YesOrNo.NO,
+                YesOrNo.NO,
+                YesOrNo.YES
             ),
+            // Neither selected
             arguments(
-                Set.of(AlternativesToPossession.DEMOTION_OF_TENANCY),
+                Set.of(),
+                YesOrNo.NO,
+                YesOrNo.NO,
                 YesOrNo.NO
             )
         );
