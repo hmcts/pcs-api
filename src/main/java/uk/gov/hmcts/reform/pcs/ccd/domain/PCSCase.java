@@ -257,7 +257,6 @@ public class PCSCase {
     @CCD(searchable = false)
     private YesOrNo showClaimTypeNotEligibleWales;
 
-    // Wales-specific claimant details
     @JsonUnwrapped
     @CCD
     private ClaimantDetailsWales walesClaimantDetails;
