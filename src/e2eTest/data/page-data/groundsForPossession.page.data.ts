@@ -3,7 +3,8 @@ export const groundsForPossession = {
   mainHeader: 'Grounds for possession',
   groundsForPossessionSectionInlineText: 'Are you claiming possession because of rent arrears or breach of the tenancy (ground1)?',
   enterYourGroundsForPossessionInput: 'These are the grounds for possession',
-  rentArrears: 'Rent arrears',
+  //This needs to be modified as 'Rent arrears, during the fix of https://tools.hmcts.net/jira/browse/HDPI-2348
+  rentArrears: 'Rent Arrears',
   antiSocialBehaviour: 'Antisocial behaviour',
   breachOfTheTenancy: 'Breach of the tenancy',
   absoluteGrounds: 'Absolute grounds',

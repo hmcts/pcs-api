@@ -24,17 +24,25 @@ import {whatAreYourGroundsForPossession} from '@data/page-data/whatAreYourGround
 import {rentArrearsOrBreachOfTenancy} from '@data/page-data/rentArrearsOrBreachOfTenancy.page.data';
 import {reasonsForPossession} from '@data/page-data/reasonsForPossession.page.data';
 import {moneyJudgment} from '@data/page-data/moneyJudgment.page.data';
+import {claimantsName} from '@utils/actions/custom-actions/createCase.action';
 import {claimantCircumstances} from '@data/page-data/claimantCircumstances.page.data';
 import {applications} from '@data/page-data/applications.page.data';
 import {completeYourClaim} from '@data/page-data/completeYourClaim.page.data';
 import {user} from '@data/user-data/permanent.user.data';
+import {alternativesToPossession} from '@data/page-data/alternativesToPossession.page.data';
+import {housingAct} from '@data/page-data/housingAct.page.data';
+import {reasonsForRequestingASuspensionOrder} from '@data/page-data/reasonsForRequestingASuspensionOrder.page.data';
 import {checkYourAnswers} from '@data/page-data/checkYourAnswers.page.data';
 import {propertyDetails} from '@data/page-data/propertyDetails.page.data';
+import {languageUsed} from '@data/page-data/languageUsed.page.data';
 import {defendantCircumstances} from '@data/page-data/defendantCircumstances.page.data';
 import {claimingCosts} from '@data/page-data/claimingCosts.page.data';
+import {uploadAdditionalDocs} from '@data/page-data/uploadAdditionalDocs.page.data';
+import {statementOfTruth} from '@data/page-data/statementOfTruth.page.data';
 import {home} from '@data/page-data/home.page.data';
 import {additionalReasonsForPossession} from '@data/page-data/additionalReasonsForPossession.page.data';
 import {underlesseeOrMortgageeEntitledToClaim} from '@data/page-data/underlesseeOrMortgageeEntitledToClaim.page.data';
+import {wantToUploadDocuments} from '@data/page-data/wantToUploadDocuments.page.data';
 
 test.beforeEach(async ({page}, testInfo) => {
   initializeExecutor(page);
@@ -50,15 +58,15 @@ test.beforeEach(async ({page}, testInfo) => {
   await performAction('housingPossessionClaim');
 });
 
-//Skipping these tests as are failing intermittently which will be fixed as part of HDPI-2306
-test.describe.skip('[Successful Create Case Flow]  @Master @nightly', async () => {
+test.describe('[Successful Create Case Flow]  @Master @nightly', async () => {
   test('England - Assured tenancy with Rent arrears and other possession grounds', async () => {
     await performAction('selectAddress', {
       postcode: addressDetails.englandCourtAssignedPostcode,
       addressIndex: addressDetails.addressIndex
     });
     await performValidation('bannerAlert', 'Case #.* has been created.');
-    await performAction('clickButton', provideMoreDetailsOfClaim.continue);
+    await performAction('extractCaseIdFromAlert');
+    await performAction('clickButtonAndVerifyPageNavigation', provideMoreDetailsOfClaim.continue, claimantType.mainHeader);
     await performAction('selectClaimantType', claimantType.registeredProviderForSocialHousing);
     await performAction('selectClaimType', claimType.no);
     await performAction('selectClaimantName', claimantName.yes);
@@ -114,19 +122,38 @@ test.describe.skip('[Successful Create Case Flow]  @Master @nightly', async () =
       unpaidRentInteractiveOption: dailyRentAmount.no,
       unpaidRentAmountPerDay: '20'
     });
+    await performValidation('mainHeader', moneyJudgment.mainHeader);
     await performAction('selectMoneyJudgment', moneyJudgment.yes);
     await performValidation('mainHeader', claimantCircumstances.mainHeader);
-    await performAction('clickButton', claimantCircumstances.continue);
+    await performAction('selectClaimantCircumstances', {
+      circumstanceOption: claimantCircumstances.yes,
+      claimantInput: claimantCircumstances.claimantCircumstanceInfoInputData
+    });
+    await performAction('selectLanguageUsed', languageUsed.no);
     await performValidation('mainHeader', defendantCircumstances.mainHeader);
     await performAction('selectDefendantCircumstances', defendantCircumstances.yes);
+    await performValidation('mainHeader', alternativesToPossession.mainHeader);
+    await performAction('selectAlternativesToPossession');
     await performValidation('mainHeader', claimingCosts.mainHeader);
     await performAction('selectClaimingCosts', claimingCosts.yes);
     await performValidation('mainHeader', additionalReasonsForPossession.mainHeader);
     await performAction('selectAdditionalReasonsForPossession', additionalReasonsForPossession.yes);
     await performValidation('mainHeader', underlesseeOrMortgageeEntitledToClaim.mainHeader);
     await performAction('clickButton', underlesseeOrMortgageeEntitledToClaim.continue);
+    await performAction('wantToUploadDocuments', {
+      question: wantToUploadDocuments.uploadAnyAdditionalDocumentsLabel,
+      option: wantToUploadDocuments.yes
+    });
+    await performAction('uploadAdditionalDocs', {
+      documents: [{
+        type: uploadAdditionalDocs.tenancyAgreementOption,
+        fileName: 'tenancy.pdf',
+        description: uploadAdditionalDocs.shortDescriptionInput
+      }]
+    });
     await performAction('selectApplications', applications.yes);
-    await performAction('clickButton', completeYourClaim.continue);
+    await performAction('completingYourClaim', completeYourClaim.submitAndClaimNow);
+    await performAction('clickButton', statementOfTruth.continue);
     await performAction('clickButton', checkYourAnswers.saveAndContinue);
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
     await performValidations(
@@ -138,13 +165,15 @@ test.describe.skip('[Successful Create Case Flow]  @Master @nightly', async () =
     )
   });
 
+  // The sections commented out will be fixed as part of the User Story https://tools.hmcts.net/jira/browse/HDPI-2123
   test('England - Assured tenancy with No Rent arrears', async () => {
     await performAction('selectAddress', {
       postcode: addressDetails.englandCourtAssignedPostcode,
       addressIndex: addressDetails.addressIndex
     });
     await performValidation('bannerAlert', 'Case #.* has been created.');
-    await performAction('clickButton', provideMoreDetailsOfClaim.continue);
+    await performAction('extractCaseIdFromAlert');
+    await performAction('clickButtonAndVerifyPageNavigation', provideMoreDetailsOfClaim.continue, claimantType.mainHeader);
     await performAction('selectClaimantType', claimantType.registeredProviderForSocialHousing);
     await performAction('selectClaimType', claimType.no);
     await performAction('selectClaimantName', claimantName.yes);
@@ -193,27 +222,44 @@ test.describe.skip('[Successful Create Case Flow]  @Master @nightly', async () =
     await performAction('selectNoticeDetails', {
       howDidYouServeNotice: noticeDetails.byDeliveringAtPermittedPlace,
       day: '31', month: '01', year: '1962'});
-    await performValidation('mainHeader', rentDetails.mainHeader);
-    await performAction('provideRentDetails', {rentFrequencyOption:'weekly', rentAmount:'800'});
-    await performValidation('mainHeader', dailyRentAmount.mainHeader);
-    await performAction('selectDailyRentAmount', {
-      calculateRentAmount: '£114.29',
-      unpaidRentInteractiveOption: dailyRentAmount.no,
-      unpaidRentAmountPerDay: '20'
-    });
+    // await performValidation('mainHeader', rentDetails.mainHeader);
+    // await performAction('provideRentDetails', { rentFrequencyOption: 'weekly', rentAmount: '800' });
+    // await performValidation('mainHeader', dailyRentAmount.mainHeader);
+    // await performAction('selectDailyRentAmount', {
+    //   calculateRentAmount: '£114.29',
+    //   unpaidRentInteractiveOption: dailyRentAmount.no,
+    //   unpaidRentAmountPerDay: '20'
+    // });
+    await performValidation('mainHeader', moneyJudgment.mainHeader);
     await performAction('selectMoneyJudgment', moneyJudgment.yes);
     await performValidation('mainHeader', claimantCircumstances.mainHeader);
-    await performAction('clickButton', claimantCircumstances.continue);
+    await performAction('selectClaimantCircumstances', {
+      circumstanceOption: claimantCircumstances.no,
+      claimantInput: claimantCircumstances.claimantCircumstanceInfoInputData
+    });
+    await performAction('selectLanguageUsed', languageUsed.no);
     await performValidation('mainHeader', defendantCircumstances.mainHeader);
     await performAction('selectDefendantCircumstances', defendantCircumstances.no);
+    await performValidation('mainHeader', alternativesToPossession.mainHeader);
+    await performAction('selectAlternativesToPossession', {question: alternativesToPossession.suspensionOrDemotion
+      , option: [alternativesToPossession.suspensionOfRightToBuy]});
+    await performValidation('mainHeader', housingAct.mainHeader);
+    await performAction('selectHousingAct', {question: housingAct.suspensionOfRightToBuy.whichSection
+      , option: housingAct.suspensionOfRightToBuy.section6AHousingAct1988});
+    await performValidation('mainHeader', reasonsForRequestingASuspensionOrder.mainHeader);
+    await performAction('enterReasonForSuspensionOrder', reasonsForRequestingASuspensionOrder.question);
     await performValidation('mainHeader', claimingCosts.mainHeader);
     await performAction('selectClaimingCosts', claimingCosts.no);
     await performValidation('mainHeader', additionalReasonsForPossession.mainHeader);
     await performAction('selectAdditionalReasonsForPossession', additionalReasonsForPossession.no);
     await performValidation('mainHeader', underlesseeOrMortgageeEntitledToClaim.mainHeader);
     await performAction('clickButton', underlesseeOrMortgageeEntitledToClaim.continue);
+    await performAction('wantToUploadDocuments', {
+      question: wantToUploadDocuments.uploadAnyAdditionalDocumentsLabel,
+      option: wantToUploadDocuments.no
+    });
     await performAction('selectApplications', applications.no);
-    await performAction('clickButton', completeYourClaim.continue);
+    await performAction('completingYourClaim', completeYourClaim.saveItForLater);
     await performAction('clickButton', checkYourAnswers.saveAndContinue);
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
     await performValidations(
@@ -225,13 +271,15 @@ test.describe.skip('[Successful Create Case Flow]  @Master @nightly', async () =
     )
   });
 
+  // The sections commented out will be fixed as part of the User Story https://tools.hmcts.net/jira/browse/HDPI-2123
   test('England - Other tenancy with grounds for possession', async () => {
     await performAction('selectAddress', {
       postcode: addressDetails.englandCourtAssignedPostcode,
       addressIndex: addressDetails.addressIndex
     });
     await performValidation('bannerAlert', 'Case #.* has been created.');
-    await performAction('clickButton', provideMoreDetailsOfClaim.continue);
+    await performAction('extractCaseIdFromAlert');
+    await performAction('clickButtonAndVerifyPageNavigation', provideMoreDetailsOfClaim.continue, claimantType.mainHeader);
     await performAction('selectClaimantType', claimantType.registeredProviderForSocialHousing);
     await performAction('selectClaimType', claimType.no);
     await performAction('selectClaimantName', claimantName.yes);
@@ -277,27 +325,39 @@ test.describe.skip('[Successful Create Case Flow]  @Master @nightly', async () =
       explanationLabel: noticeDetails.nameOfPersonDocumentWasLeftLabel,
       explanation: noticeDetails.byPersonallyHandlingExplanationInput,
       day: '31', month: '01', year: '1962', hour: '10', minute: '55', second: '30'});
-    await performValidation('mainHeader', rentDetails.mainHeader);
-    await performAction('provideRentDetails', {rentFrequencyOption:'weekly', rentAmount:'800'});
-    await performValidation('mainHeader', dailyRentAmount.mainHeader);
-    await performAction('selectDailyRentAmount', {
-      calculateRentAmount: '£114.29',
-      unpaidRentInteractiveOption: dailyRentAmount.no,
-      unpaidRentAmountPerDay: '20'
-    });
+    // await performValidation('mainHeader', rentDetails.mainHeader);
+    // await performAction('provideRentDetails', {rentFrequencyOption:'weekly', rentAmount:'800'});
+    // await performValidation('mainHeader', dailyRentAmount.mainHeader);
+    // await performAction('selectDailyRentAmount', {
+    //   calculateRentAmount: '£114.29',
+    //   unpaidRentInteractiveOption: dailyRentAmount.no,
+    //   unpaidRentAmountPerDay: '20'
+    // });
+    await performValidation('mainHeader', moneyJudgment.mainHeader);
     await performAction('selectMoneyJudgment', moneyJudgment.yes);
     await performValidation('mainHeader', claimantCircumstances.mainHeader);
-    await performAction('clickButton', claimantCircumstances.continue);
+    await performAction('selectClaimantCircumstances', {
+      circumstanceOption: claimantCircumstances.yes,
+      claimantInput: claimantCircumstances.claimantCircumstanceInfoInputData
+    });
+    await performAction('selectLanguageUsed', languageUsed.no);
     await performValidation('mainHeader', defendantCircumstances.mainHeader);
     await performAction('selectDefendantCircumstances', defendantCircumstances.no);
+    await performValidation('mainHeader', alternativesToPossession.mainHeader);
+    await performAction('selectAlternativesToPossession', {question: alternativesToPossession.suspensionOrDemotion
+      , option: [alternativesToPossession.demotionOfTenancy]});
     await performValidation('mainHeader', claimingCosts.mainHeader);
     await performAction('selectClaimingCosts', claimingCosts.yes);
     await performValidation('mainHeader', additionalReasonsForPossession.mainHeader);
     await performAction('selectAdditionalReasonsForPossession', additionalReasonsForPossession.no);
     await performValidation('mainHeader', underlesseeOrMortgageeEntitledToClaim.mainHeader);
     await performAction('clickButton', underlesseeOrMortgageeEntitledToClaim.continue);
-    await performAction('selectApplications', applications.yes);
-    await performAction('clickButton', completeYourClaim.continue);
+    await performAction('wantToUploadDocuments', {
+      question: wantToUploadDocuments.uploadAnyAdditionalDocumentsLabel,
+      option: wantToUploadDocuments.no
+    });
+    await performAction('selectApplications', applications.no);
+    await performAction('completingYourClaim', completeYourClaim.saveItForLater);
     await performAction('clickButton', checkYourAnswers.saveAndContinue);
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
     await performValidations(
@@ -309,13 +369,15 @@ test.describe.skip('[Successful Create Case Flow]  @Master @nightly', async () =
     )
   });
 
+  // The sections commented out will be fixed as part of the User Story https://tools.hmcts.net/jira/browse/HDPI-2123
   test('England - Demoted tenancy with no grounds for possession', async () => {
     await performAction('selectAddress', {
       postcode: addressDetails.englandCourtAssignedPostcode,
       addressIndex: addressDetails.addressIndex
     });
     await performValidation('bannerAlert', 'Case #.* has been created.');
-    await performAction('clickButton', provideMoreDetailsOfClaim.continue);
+    await performAction('extractCaseIdFromAlert');
+    await performAction('clickButtonAndVerifyPageNavigation', provideMoreDetailsOfClaim.continue, claimantType.mainHeader);
     await performAction('selectClaimantType', claimantType.registeredProviderForSocialHousing);
     await performAction('selectClaimType', claimType.no);
     await performAction('selectClaimantName', claimantName.yes);
@@ -358,27 +420,39 @@ test.describe.skip('[Successful Create Case Flow]  @Master @nightly', async () =
       explanationLabel: noticeDetails.explainHowServedByEmailLabel,
       explanation: noticeDetails.byEmailExplanationInput,
       day: '29', month: '02', year: '2000', hour: '16', minute: '01', second: '56'});
-    await performValidation('mainHeader', rentDetails.mainHeader);
-    await performAction('provideRentDetails', {rentFrequencyOption:'weekly', rentAmount:'800'});
-    await performValidation('mainHeader', dailyRentAmount.mainHeader);
-    await performAction('selectDailyRentAmount', {
-      calculateRentAmount: '£114.29',
-      unpaidRentInteractiveOption: dailyRentAmount.no,
-      unpaidRentAmountPerDay: '20'
-    });
+    // await performValidation('mainHeader', rentDetails.mainHeader);
+    // await performAction('provideRentDetails', {rentFrequencyOption:'weekly', rentAmount:'800'});
+    // await performValidation('mainHeader', dailyRentAmount.mainHeader);
+    // await performAction('selectDailyRentAmount', {
+    //   calculateRentAmount: '£114.29',
+    //   unpaidRentInteractiveOption: dailyRentAmount.no,
+    //   unpaidRentAmountPerDay: '20'
+    // });
+    await performValidation('mainHeader', moneyJudgment.mainHeader);
     await performAction('selectMoneyJudgment', moneyJudgment.yes);
     await performValidation('mainHeader', claimantCircumstances.mainHeader);
-    await performAction('clickButton', claimantCircumstances.continue);
+    await performAction('selectClaimantCircumstances', {
+      circumstanceOption: claimantCircumstances.yes,
+      claimantInput: claimantCircumstances.claimantCircumstanceInfoInputData
+    });
+    await performAction('selectLanguageUsed', languageUsed.no);
     await performValidation('mainHeader', defendantCircumstances.mainHeader);
     await performAction('selectDefendantCircumstances', defendantCircumstances.no);
+    await performValidation('mainHeader', alternativesToPossession.mainHeader);
+    await performAction('selectAlternativesToPossession', {question: alternativesToPossession.suspensionOrDemotion
+      , option: [alternativesToPossession.suspensionOfRightToBuy, alternativesToPossession.demotionOfTenancy]});
     await performValidation('mainHeader', claimingCosts.mainHeader);
     await performAction('selectClaimingCosts', claimingCosts.yes);
     await performValidation('mainHeader', additionalReasonsForPossession.mainHeader);
     await performAction('selectAdditionalReasonsForPossession', additionalReasonsForPossession.no);
     await performValidation('mainHeader', underlesseeOrMortgageeEntitledToClaim.mainHeader);
     await performAction('clickButton', underlesseeOrMortgageeEntitledToClaim.continue);
-    await performAction('selectApplications', applications.yes);
-    await performAction('clickButton', completeYourClaim.continue);
+    await performAction('wantToUploadDocuments', {
+      question: wantToUploadDocuments.uploadAnyAdditionalDocumentsLabel,
+      option: wantToUploadDocuments.no
+    });
+    await performAction('selectApplications', applications.no);
+      await performAction('completingYourClaim', completeYourClaim.saveItForLater);
     await performAction('clickButton', checkYourAnswers.saveAndContinue);
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
     await performValidations(
@@ -394,20 +468,20 @@ test.describe.skip('[Successful Create Case Flow]  @Master @nightly', async () =
     await performAction('enterTestAddressManually');
     await performValidation('bannerAlert', 'Case #.* has been created.');
     await performAction('extractCaseIdFromAlert');
-    await performAction('clickButton', provideMoreDetailsOfClaim.continue);
+    await performAction('clickButtonAndVerifyPageNavigation', provideMoreDetailsOfClaim.continue, claimantType.mainHeader);
     await performAction('selectClaimantType', claimantType.registeredCommunityLandlord);
     await performAction('selectClaimType', claimType.no);
     await performAction('selectClaimantName', claimantName.no);
     await performAction('clickButton', 'Sign out');
     await performAction('reloginAndFindTheCase', user.claimantSolicitor);
-    await performAction('clickButton', resumeClaim.continue);
+    await performAction('clickButtonAndVerifyPageNavigation', resumeClaim.continue, resumeClaimOptions.mainHeader);
     await performAction('selectResumeClaimOption', resumeClaimOptions.yes);
     await performValidation('radioButtonChecked', claimantType.registeredCommunityLandlord, true);
-    await performAction('clickButton', claimantType.continue);
+    await performAction('verifyPageAndClickButton', claimantType.continue, claimantType.mainHeader);
     await performValidation('radioButtonChecked', claimType.no, true);
-    await performAction('clickButton', claimType.continue);
+    await performAction('verifyPageAndClickButton', claimType.continue, claimType.mainHeader);
     await performValidation('radioButtonChecked', claimantName.no, true);
-    await performAction('clickButton', claimantName.continue);
+    await performAction('clickButtonAndVerifyPageNavigation', claimantName.continue, contactPreferences.mainHeader);
     await performAction('selectContactPreferences', {
       notifications: contactPreferences.no,
       correspondenceAddress: contactPreferences.no,
@@ -446,18 +520,34 @@ test.describe.skip('[Successful Create Case Flow]  @Master @nightly', async () =
     await performValidation('mainHeader', moneyJudgment.mainHeader);
     await performAction('selectMoneyJudgment', moneyJudgment.yes);
     await performValidation('mainHeader', claimantCircumstances.mainHeader);
-    await performAction('clickButton', claimantCircumstances.continue);
+    await performAction('selectClaimantCircumstances', {
+      circumstanceOption: claimantCircumstances.yes,
+      claimantInput: claimantCircumstances.claimantCircumstanceInfoInputData
+    });
+    await performAction('selectLanguageUsed', languageUsed.no);
     await performValidation('mainHeader', defendantCircumstances.mainHeader);
     await performAction('selectDefendantCircumstances', defendantCircumstances.no);
+    await performValidation('mainHeader', alternativesToPossession.mainHeader);
+    await performAction('selectAlternativesToPossession', {question: alternativesToPossession.suspensionOrDemotion
+      , option: [alternativesToPossession.suspensionOfRightToBuy]});
+    await performValidation('mainHeader', housingAct.mainHeader);
+    await performAction('selectHousingAct', {question: housingAct.suspensionOfRightToBuy.whichSection
+      ,option: housingAct.suspensionOfRightToBuy.section82AHousingAct1985});
+    await performValidation('mainHeader', reasonsForRequestingASuspensionOrder.mainHeader);
+    await performAction('enterReasonForSuspensionOrder', reasonsForRequestingASuspensionOrder.question);
     await performValidation('mainHeader', claimingCosts.mainHeader);
     await performAction('selectClaimingCosts', claimingCosts.no);
     await performValidation('mainHeader', additionalReasonsForPossession.mainHeader);
     await performAction('selectAdditionalReasonsForPossession', additionalReasonsForPossession.no);
     await performValidation('mainHeader', underlesseeOrMortgageeEntitledToClaim.mainHeader);
     await performAction('clickButton', underlesseeOrMortgageeEntitledToClaim.continue);
+    await performAction('wantToUploadDocuments', {
+      question: wantToUploadDocuments.uploadAnyAdditionalDocumentsLabel,
+      option: wantToUploadDocuments.no
+    });
     await performAction('selectApplications', applications.yes);
-    await performAction('clickButton', completeYourClaim.continue);
-    await performAction('clickButton', checkYourAnswers.saveAndContinue);
+    await performAction('completingYourClaim', completeYourClaim.saveItForLater);
+     await performAction('clickButton', checkYourAnswers.saveAndContinue);
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
     await performValidations('address information entered',
       ['formLabelValue', propertyDetails.buildingAndStreetLabel, addressDetails.buildingAndStreet],
@@ -467,23 +557,24 @@ test.describe.skip('[Successful Create Case Flow]  @Master @nightly', async () =
       ['formLabelValue', propertyDetails.countryLabel, addressDetails.country]);
   });
 
+  // The sections commented out will be fixed as part of the User Story https://tools.hmcts.net/jira/browse/HDPI-2123
   test('Wales - Flexible tenancy with Rent arrears only', async () => {
     await performAction('enterTestAddressManually');
     await performValidation('bannerAlert', 'Case #.* has been created.');
     await performAction('extractCaseIdFromAlert');
-    await performAction('clickButton', provideMoreDetailsOfClaim.continue);
+    await performAction('clickButtonAndVerifyPageNavigation', provideMoreDetailsOfClaim.continue, claimantType.mainHeader);
     await performAction('selectClaimantType', claimantType.registeredCommunityLandlord);
     await performAction('selectClaimType', claimType.no);
     await performAction('selectClaimantName', claimantName.yes);
     await performAction('clickButton', 'Sign out');
     await performAction('reloginAndFindTheCase', user.claimantSolicitor);
-    await performAction('clickButton', resumeClaim.continue);
+    await performAction('clickButtonAndVerifyPageNavigation', resumeClaim.continue, resumeClaimOptions.mainHeader);
     await performAction('selectResumeClaimOption', resumeClaimOptions.no);
     await performValidation('radioButtonChecked', claimantType.registeredCommunityLandlord, false);
     await performAction('selectClaimantType', claimantType.registeredCommunityLandlord);
     await performValidation('radioButtonChecked', claimType.no, false);
     await performAction('selectClaimType', claimType.no);
-    await performValidation('radioButtonChecked', claimantName.no, true);
+    await performValidation('radioButtonChecked', claimantName.no, false);
     await performAction('selectClaimantName', claimantName.yes);
     await performAction('selectContactPreferences', {
       notifications: contactPreferences.yes,
@@ -513,24 +604,42 @@ test.describe.skip('[Successful Create Case Flow]  @Master @nightly', async () =
     });
     await performValidation('mainHeader', noticeOfYourIntention.mainHeader);
     await performAction('selectNoticeOfYourIntention', noticeOfYourIntention.no);
-    await performValidation('mainHeader', rentDetails.mainHeader);
-    await performAction('provideRentDetails', {rentFrequencyOption: 'Monthly', rentAmount: '1000'});
-    await performAction('selectDailyRentAmount', {
-      calculateRentAmount: '£32.85',
-      unpaidRentInteractiveOption: dailyRentAmount.yes
-    });
+    // await performValidation('mainHeader', rentDetails.mainHeader);
+    // await performAction('provideRentDetails', {rentFrequencyOption: 'Monthly', rentAmount: '1000'});
+    // await performAction('selectDailyRentAmount', {
+    //   calculateRentAmount: '£32.85',
+    //   unpaidRentInteractiveOption: dailyRentAmount.yes
+    // });
+    await performValidation('mainHeader', moneyJudgment.mainHeader);
     await performAction('selectMoneyJudgment', moneyJudgment.yes);
-    await performAction('clickButton', claimantCircumstances.continue);
+    await performValidation('mainHeader', claimantCircumstances.mainHeader);
+    await performAction('selectClaimantCircumstances', {
+      circumstanceOption: claimantCircumstances.no,
+      claimantInput: claimantCircumstances.claimantCircumstanceInfoInputData
+    });
+    await performAction('selectLanguageUsed', languageUsed.no);
     await performValidation('mainHeader', defendantCircumstances.mainHeader);
     await performAction('selectDefendantCircumstances', defendantCircumstances.no);
+    await performValidation('mainHeader', alternativesToPossession.mainHeader);
+    await performAction('selectAlternativesToPossession', {question: alternativesToPossession.suspensionOrDemotion
+      , option: [alternativesToPossession.suspensionOfRightToBuy]});
+    await performValidation('mainHeader', housingAct.mainHeader);
+    await performAction('selectHousingAct', {question: housingAct.suspensionOfRightToBuy.whichSection
+      ,option: housingAct.suspensionOfRightToBuy.section121AHousingAct1985});
+    await performValidation('mainHeader', reasonsForRequestingASuspensionOrder.mainHeader);
+    await performAction('enterReasonForSuspensionOrder', reasonsForRequestingASuspensionOrder.question);
     await performValidation('mainHeader', claimingCosts.mainHeader);
     await performAction('selectClaimingCosts', claimingCosts.no);
     await performValidation('mainHeader', additionalReasonsForPossession.mainHeader);
     await performAction('selectAdditionalReasonsForPossession', additionalReasonsForPossession.yes);
     await performValidation('mainHeader', underlesseeOrMortgageeEntitledToClaim.mainHeader);
     await performAction('clickButton', underlesseeOrMortgageeEntitledToClaim.continue);
+    await performAction('wantToUploadDocuments', {
+      question: wantToUploadDocuments.uploadAnyAdditionalDocumentsLabel,
+      option: wantToUploadDocuments.no
+    });
     await performAction('selectApplications', applications.yes);
-    await performAction('clickButton', completeYourClaim.continue);
+    await performAction('completingYourClaim', completeYourClaim.saveItForLater);
     await performAction('clickButton', checkYourAnswers.saveAndContinue);
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
     await performValidations('address information entered',
@@ -541,11 +650,12 @@ test.describe.skip('[Successful Create Case Flow]  @Master @nightly', async () =
       ['formLabelValue', propertyDetails.countryLabel, addressDetails.country]);
   });
 
+  // The sections commented out will be fixed as part of the User Story https://tools.hmcts.net/jira/browse/HDPI-2123
   test('Wales - Secure tenancy with Rent and other grounds', async () => {
     await performAction('enterTestAddressManually');
     await performValidation('bannerAlert', 'Case #.* has been created.');
     await performAction('extractCaseIdFromAlert');
-    await performAction('clickButton', provideMoreDetailsOfClaim.continue);
+    await performAction('clickButtonAndVerifyPageNavigation', provideMoreDetailsOfClaim.continue, claimantType.mainHeader);
     await performAction('selectClaimantType', claimantType.registeredCommunityLandlord);
     await performAction('selectClaimType', claimType.no);
     await performAction('selectClaimantName', claimantName.no);
@@ -593,25 +703,37 @@ test.describe.skip('[Successful Create Case Flow]  @Master @nightly', async () =
     await performAction('selectNoticeDetails', {
       howDidYouServeNotice: noticeDetails.byOtherElectronicMethod,
       day: '25', month: '02', year: '1970', hour: '22', minute: '45', second: '10', files: 'NoticeDetails.pdf'});
-    await performAction('provideRentDetails', {rentFrequencyOption: 'Monthly', rentAmount: '1000'});
-    await performValidation('mainHeader', dailyRentAmount.mainHeader);
-    await performAction('selectDailyRentAmount', {
-      calculateRentAmount: '£32.85',
-      unpaidRentInteractiveOption: dailyRentAmount.yes
-    });
+    // await performAction('provideRentDetails', {rentFrequencyOption: 'Monthly', rentAmount: '1000'});
+    // await performValidation('mainHeader', dailyRentAmount.mainHeader);
+    // await performAction('selectDailyRentAmount', {
+    //   calculateRentAmount: '£32.85',
+    //   unpaidRentInteractiveOption: dailyRentAmount.yes
+    // });
+    await performValidation('mainHeader', moneyJudgment.mainHeader);
     await performAction('selectMoneyJudgment', moneyJudgment.no);
     await performValidation('mainHeader', claimantCircumstances.mainHeader);
-    await performAction('clickButton', claimantCircumstances.continue);
+    await performAction('selectClaimantCircumstances', {
+      circumstanceOption: claimantCircumstances.no,
+      claimantInput: claimantCircumstances.claimantCircumstanceInfoInputData
+    });
+    await performAction('selectLanguageUsed', languageUsed.no);
     await performValidation('mainHeader', defendantCircumstances.mainHeader);
     await performAction('selectDefendantCircumstances', defendantCircumstances.yes);
+    await performValidation('mainHeader', alternativesToPossession.mainHeader);
+    await performAction('selectAlternativesToPossession', {question: alternativesToPossession.suspensionOrDemotion
+      , option: [alternativesToPossession.suspensionOfRightToBuy, alternativesToPossession.demotionOfTenancy]});
     await performValidation('mainHeader', claimingCosts.mainHeader);
     await performAction('selectClaimingCosts', claimingCosts.yes);
     await performValidation('mainHeader', additionalReasonsForPossession.mainHeader);
     await performAction('selectAdditionalReasonsForPossession', additionalReasonsForPossession.no);
     await performValidation('mainHeader', underlesseeOrMortgageeEntitledToClaim.mainHeader);
     await performAction('clickButton', underlesseeOrMortgageeEntitledToClaim.continue);
-     await performAction('selectApplications', applications.yes);
-    await performAction('clickButton', completeYourClaim.continue);
+    await performAction('wantToUploadDocuments', {
+      question: wantToUploadDocuments.uploadAnyAdditionalDocumentsLabel,
+      option: wantToUploadDocuments.no
+    });
+    await performAction('selectApplications', applications.yes);
+    await performAction('completingYourClaim', completeYourClaim.saveItForLater);
     await performAction('clickButton', checkYourAnswers.saveAndContinue);
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
     await performValidations('address information entered',

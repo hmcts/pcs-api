@@ -14,6 +14,8 @@ import {searchCaseActions} from "@utils/actions/custom-actions/searchCase.action
 export class ActionRegistry {
   private static actions: Map<string, IAction> = new Map([
     ['clickButton', new ClickButtonAction()],
+    ['clickButtonAndVerifyPageNavigation', new ClickButtonAction()],
+    ['verifyPageAndClickButton', new ClickButtonAction()],
     ['clickTab', new ClickTabAction()],
     ['inputText', new InputTextAction()],
     ['check', new CheckAction()],
@@ -50,14 +52,22 @@ export class ActionRegistry {
     ['selectRentArrearsOrBreachOfTenancy', new CreateCaseAction()],
     ['provideRentDetails', new CreateCaseAction()],
     ['selectDailyRentAmount', new CreateCaseAction()],
+    ['selectClaimantCircumstances', new CreateCaseAction()],
     ['provideDetailsOfRentArrears', new CreateCaseAction()],
     ['selectMoneyJudgment', new CreateCaseAction()],
     ['selectClaimingCosts', new CreateCaseAction()],
+    ['selectLanguageUsed', new CreateCaseAction()],
     ['selectDefendantCircumstances', new CreateCaseAction()],
     ['selectApplications', new CreateCaseAction()],
+    ['completingYourClaim', new CreateCaseAction()],
     ['selectAdditionalReasonsForPossession', new CreateCaseAction()],
+    ['selectAlternativesToPossession', new CreateCaseAction()],
+    ['selectHousingAct', new CreateCaseAction()],
+    ['enterReasonForSuspensionOrder', new CreateCaseAction()],
     ['searchCaseFromCaseList', new searchCaseActions()],
-    ['selectClaimingCosts', new CreateCaseAction()]
+    ['selectClaimingCosts', new CreateCaseAction()],
+    ['wantToUploadDocuments', new CreateCaseAction()],
+    ['uploadAdditionalDocs', new CreateCaseAction()]
   ]);
 
   static getAction(actionName: string): IAction {
