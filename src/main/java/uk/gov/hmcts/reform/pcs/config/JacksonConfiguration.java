@@ -1,6 +1,6 @@
 package uk.gov.hmcts.reform.pcs.config;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
@@ -29,7 +29,7 @@ public class JacksonConfiguration {
             .configure(ACCEPT_CASE_INSENSITIVE_ENUMS, true)
             .enable(INFER_BUILDER_TYPE_BINDINGS)
             .disable(AUTO_CLOSE_JSON_CONTENT)
-            .serializationInclusion(JsonInclude.Include.NON_NULL)
+            .serializationInclusion(Include.NON_NULL)
             .build();
 
         JavaTimeModule datetime = new JavaTimeModule();
@@ -53,6 +53,7 @@ public class JacksonConfiguration {
             .build();
 
         mapper.addMixIn(PCSCase.class, UnsubmittedCaseDataMixIn.class);
+        mapper.setSerializationInclusion(Include.NON_NULL);
 
         mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
         mapper.setDateFormat(new StdDateFormat());
