@@ -572,6 +572,9 @@ public class PCSCase {
     @JsonUnwrapped
     private SuspensionOfRightToBuy suspensionOfRightToBuy;
 
+    @JsonUnwrapped
+    private DemotionOfTenancy demotionOfTenancy;
+
     private AdditionalReasons additionalReasonsForPossession;
 
     @JsonUnwrapped
@@ -606,4 +609,8 @@ public class PCSCase {
         typeParameterOverride = "CompletionNextStep"
     )
     private CompletionNextStep completionNextStep;
+
+    @JsonUnwrapped
+    private SuspensionOfRightToBuyDemotionOfTenancy  suspensionOfRightToBuyDemotionOfTenancy;
+
 }

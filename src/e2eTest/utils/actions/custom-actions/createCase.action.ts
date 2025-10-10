@@ -470,6 +470,7 @@ export class CreateCaseAction implements IAction {
   }
 
   private async selectClaimantCircumstances(claimantCircumstance: actionData) {
+    await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
     const claimData = claimantCircumstance as {
       circumstanceOption: string,
       claimantInput: string
@@ -523,6 +524,7 @@ export class CreateCaseAction implements IAction {
   }
 
   private async selectAlternativesToPossession(alternatives: actionRecord) {
+    await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
     if(alternatives){
       await performAction('check', {question: alternatives.question, option: alternatives.option});
     }
@@ -541,7 +543,10 @@ export class CreateCaseAction implements IAction {
 
   private async selectStatementOfExpressTerms(option: actionData) {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
-    await performAction('clickRadioButton', {question: statementOfExpressTerms.statementOfExpressTermsQuestion, option: option});
+    await performAction('clickRadioButton', {
+      question: statementOfExpressTerms.statementOfExpressTermsQuestion,
+      option: option
+    });
     if(option == statementOfExpressTerms.yes){
       await performAction('inputText', statementOfExpressTerms.giveDetailsOfTermsLabel, statementOfExpressTerms.sampleTestReason);
     }
@@ -555,6 +560,7 @@ export class CreateCaseAction implements IAction {
   }
 
   private async enterReasonForSuspensionOrder(reason: actionData) {
+    await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
     await performAction('inputText', reason, reasonsForRequestingASuspensionOrder.sampleTestReason);
     await performAction('clickButton', reasonsForRequestingASuspensionOrder.continue);
   }
