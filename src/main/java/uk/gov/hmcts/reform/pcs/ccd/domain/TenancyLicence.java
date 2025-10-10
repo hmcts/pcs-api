@@ -63,14 +63,14 @@ public class TenancyLicence {
     private String thirdPartyPaymentSourceOther;
 
     // Wales Housing Act details
-    private YesNoNotApplicable registered;
-    private String registrationNumber;
-    private YesNoNotApplicable licensed;
-    private String licenceNumber;
-    private YesNoNotApplicable licensedAgentAppointed;
-    private String agentFirstName;
-    private String agentLastName;
-    private String agentLicenceNumber;
-    private LocalDate agentAppointmentDate;
+    private YesNoNotApplicable walesRegistered;
+    private String walesRegistrationNumber;
+    private YesNoNotApplicable walesLicensed;
+    private String walesLicenceNumber;
+    private YesNoNotApplicable walesLicensedAgentAppointed;
+    private String walesAgentFirstName;
+    private String walesAgentLastName;
+    private String walesAgentLicenceNumber;
+    private LocalDate walesAgentAppointmentDate;
 
 }

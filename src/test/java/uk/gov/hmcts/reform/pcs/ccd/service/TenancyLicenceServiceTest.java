@@ -327,15 +327,15 @@ class TenancyLicenceServiceTest {
         TenancyLicence result = tenancyLicenceService.buildTenancyLicence(pcsCase);
         
         // Then
-        assertThat(result.getRegistered()).isEqualTo(YesNoNotApplicable.YES);
-        assertThat(result.getRegistrationNumber()).isEqualTo("REG123456");
-        assertThat(result.getLicensed()).isEqualTo(YesNoNotApplicable.YES);
-        assertThat(result.getLicenceNumber()).isEqualTo("LIC789012");
-        assertThat(result.getLicensedAgentAppointed()).isEqualTo(YesNoNotApplicable.YES);
-        assertThat(result.getAgentFirstName()).isEqualTo("John");
-        assertThat(result.getAgentLastName()).isEqualTo("Smith");
-        assertThat(result.getAgentLicenceNumber()).isEqualTo("AGENT345678");
-        assertThat(result.getAgentAppointmentDate()).isEqualTo(appointmentDate);
+        assertThat(result.getWalesRegistered()).isEqualTo(YesNoNotApplicable.YES);
+        assertThat(result.getWalesRegistrationNumber()).isEqualTo("REG123456");
+        assertThat(result.getWalesLicensed()).isEqualTo(YesNoNotApplicable.YES);
+        assertThat(result.getWalesLicenceNumber()).isEqualTo("LIC789012");
+        assertThat(result.getWalesLicensedAgentAppointed()).isEqualTo(YesNoNotApplicable.YES);
+        assertThat(result.getWalesAgentFirstName()).isEqualTo("John");
+        assertThat(result.getWalesAgentLastName()).isEqualTo("Smith");
+        assertThat(result.getWalesAgentLicenceNumber()).isEqualTo("AGENT345678");
+        assertThat(result.getWalesAgentAppointmentDate()).isEqualTo(appointmentDate);
     }
 
     @Test
@@ -347,15 +347,15 @@ class TenancyLicenceServiceTest {
         TenancyLicence result = tenancyLicenceService.buildTenancyLicence(pcsCase);
         
         // Then
-        assertThat(result.getRegistered()).isNull();
-        assertThat(result.getRegistrationNumber()).isNull();
-        assertThat(result.getLicensed()).isNull();
-        assertThat(result.getLicenceNumber()).isNull();
-        assertThat(result.getLicensedAgentAppointed()).isNull();
-        assertThat(result.getAgentFirstName()).isNull();
-        assertThat(result.getAgentLastName()).isNull();
-        assertThat(result.getAgentLicenceNumber()).isNull();
-        assertThat(result.getAgentAppointmentDate()).isNull();
+        assertThat(result.getWalesRegistered()).isNull();
+        assertThat(result.getWalesRegistrationNumber()).isNull();
+        assertThat(result.getWalesLicensed()).isNull();
+        assertThat(result.getWalesLicenceNumber()).isNull();
+        assertThat(result.getWalesLicensedAgentAppointed()).isNull();
+        assertThat(result.getWalesAgentFirstName()).isNull();
+        assertThat(result.getWalesAgentLastName()).isNull();
+        assertThat(result.getWalesAgentLicenceNumber()).isNull();
+        assertThat(result.getWalesAgentAppointmentDate()).isNull();
     }
 
     @Test
@@ -373,9 +373,9 @@ class TenancyLicenceServiceTest {
         TenancyLicence result = tenancyLicenceService.buildTenancyLicence(pcsCase);
         
         // Then
-        assertThat(result.getRegistered()).isEqualTo(YesNoNotApplicable.NOT_APPLICABLE);
-        assertThat(result.getLicensed()).isEqualTo(YesNoNotApplicable.NO);
-        assertThat(result.getLicensedAgentAppointed()).isEqualTo(YesNoNotApplicable.NOT_APPLICABLE);
+        assertThat(result.getWalesRegistered()).isEqualTo(YesNoNotApplicable.NOT_APPLICABLE);
+        assertThat(result.getWalesLicensed()).isEqualTo(YesNoNotApplicable.NO);
+        assertThat(result.getWalesLicensedAgentAppointed()).isEqualTo(YesNoNotApplicable.NOT_APPLICABLE);
     }
 
 }
