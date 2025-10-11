@@ -8,7 +8,7 @@ import uk.gov.hmcts.ccd.sdk.api.HasLabel;
 @Getter
 public enum IntroductoryDemotedOrOtherGrounds implements HasLabel {
 
-    RENT_ARREARS("Rent Arrears"),
+    RENT_ARREARS("Rent arrears"),
     ANTI_SOCIAL("Antisocial behaviour"),
     BREACH_OF_THE_TENANCY("Breach of the tenancy"),
     ABSOLUTE_GROUNDS("Absolute grounds"),
