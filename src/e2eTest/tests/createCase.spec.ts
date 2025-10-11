@@ -1,5 +1,4 @@
 import {test} from '@playwright/test';
-import {parentSuite} from 'allure-js-commons';
 import {initializeExecutor, performAction, performValidation, performValidations} from '@utils/controller';
 import {addressDetails} from '@data/page-data/addressDetails.page.data';
 import {claimantType} from '@data/page-data/claimantType.page.data';
@@ -24,7 +23,6 @@ import {whatAreYourGroundsForPossession} from '@data/page-data/whatAreYourGround
 import {rentArrearsOrBreachOfTenancy} from '@data/page-data/rentArrearsOrBreachOfTenancy.page.data';
 import {reasonsForPossession} from '@data/page-data/reasonsForPossession.page.data';
 import {moneyJudgment} from '@data/page-data/moneyJudgment.page.data';
-import {claimantsName} from '@utils/actions/custom-actions/createCase.action';
 import {claimantCircumstances} from '@data/page-data/claimantCircumstances.page.data';
 import {applications} from '@data/page-data/applications.page.data';
 import {completeYourClaim} from '@data/page-data/completeYourClaim.page.data';
@@ -44,21 +42,16 @@ import {additionalReasonsForPossession} from '@data/page-data/additionalReasonsF
 import {underlesseeOrMortgageeEntitledToClaim} from '@data/page-data/underlesseeOrMortgageeEntitledToClaim.page.data';
 import {wantToUploadDocuments} from '@data/page-data/wantToUploadDocuments.page.data';
 
-test.beforeEach(async ({page}, testInfo) => {
+test.beforeEach(async ({page}) => {
   initializeExecutor(page);
-  await parentSuite('Case Creation');
   await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
   await performAction('login', user.claimantSolicitor);
-  await testInfo.attach('Page URL', {
-    body: page.url(),
-    contentType: 'text/plain',
-  });
   await performAction('clickTab', home.createCaseTab);
   await performAction('selectJurisdictionCaseTypeEvent');
   await performAction('housingPossessionClaim');
 });
 
-test.describe('[Successful Create Case Flow]  @Master @nightly', async () => {
+test.describe('[Create Case] @Master @nightly', async () => {
   test('England - Assured tenancy with Rent arrears and other possession grounds', async () => {
     await performAction('selectAddress', {
       postcode: addressDetails.englandCourtAssignedPostcode,
