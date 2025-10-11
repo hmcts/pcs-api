@@ -12,7 +12,6 @@ import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
-import uk.gov.hmcts.reform.pcs.ccd.ShowConditions;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantDetails;
@@ -110,7 +109,6 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
                 .decentralisedEvent(resumePossessionClaim.name(), this::submit, this::start)
                 .forStateTransition(AWAITING_FURTHER_CLAIM_DETAILS, AWAITING_SUBMISSION_TO_HMCTS)
                 .name("Make a claim")
-                .showCondition(ShowConditions.NEVER_SHOW)
                 .grant(Permission.CRUD, UserRole.PCS_SOLICITOR)
                 .showSummary();
 
@@ -163,8 +161,10 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
     }
 
     private PCSCase start(EventPayload<PCSCase, State> eventPayload) {
+        log.info("ResumePossessionClaim.start(): starting");
         PCSCase caseData = eventPayload.caseData();
 
+        log.info("ResumePossessionClaim.start(): checking user details");
         String userDetails = securityContextService.getCurrentUserDetails().getSub();
         caseData.setClaimantName(userDetails);
         caseData.setClaimantContactEmail(userDetails);
@@ -197,6 +197,8 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             propertyAddress.getPostCode()
         );
         caseData.setFormattedClaimantContactAddress(formattedAddress);
+
+        log.info("ResumePossessionClaim.start(): returning case data");
 
         return caseData;
     }
