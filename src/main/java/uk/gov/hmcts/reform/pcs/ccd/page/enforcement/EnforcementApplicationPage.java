@@ -11,10 +11,9 @@ public class EnforcementApplicationPage implements CcdPageConfiguration {
                 .page("Enforce the order")
                 .pageLabel("Your application")
                 .label(
-                        "enforcement application-info",
+                        "EnforcementApplicationPage-info",
                         """
                         ---
-                                
                         """);
     }
 }
