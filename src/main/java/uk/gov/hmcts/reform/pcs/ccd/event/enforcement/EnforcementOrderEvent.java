@@ -10,9 +10,9 @@ import uk.gov.hmcts.ccd.sdk.api.EventPayload;
 import uk.gov.hmcts.ccd.sdk.api.Permission;
 import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
+import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.page.builder.SavingPageBuilderFactory;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.EnforcementApplicationPage;
 
 import static uk.gov.hmcts.reform.pcs.ccd.domain.State.AWAITING_SUBMISSION_TO_HMCTS;
@@ -22,8 +22,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.enforceTheOrder;
 @Component
 @AllArgsConstructor
 public class EnforcementOrderEvent implements CCDConfig<PCSCase, State, UserRole> {
-
-    private final SavingPageBuilderFactory savingPageBuilderFactory;
+    // TODO: Business requirements to be agreed on for the conditions when this event can be triggereed
 
     @Override
     public void configureDecentralised(
@@ -35,7 +34,7 @@ public class EnforcementOrderEvent implements CCDConfig<PCSCase, State, UserRole
                         .name("Enforce the order")
                         .grant(Permission.CRUD, UserRole.PCS_SOLICITOR);
 
-        savingPageBuilderFactory.create(eventBuilder).add(new EnforcementApplicationPage());
+        new PageBuilder(eventBuilder).add(new EnforcementApplicationPage());
     }
 
     private SubmitResponse submit(EventPayload<PCSCase, State> eventPayload) {
