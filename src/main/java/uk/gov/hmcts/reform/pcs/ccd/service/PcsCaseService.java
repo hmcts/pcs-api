@@ -5,6 +5,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
+import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
@@ -60,6 +61,11 @@ public class PcsCaseService {
         pcsCaseEntity.setDefendants(mapFromDefendantDetails(pcsCase.getDefendants()));
         pcsCaseEntity.setTenancyLicence(tenancyLicenceService.buildTenancyLicence(pcsCase));
         pcsCaseEntity.setPartyDocuments(partyDocumentsService.buildPartyDocuments(pcsCase));
+        // Set claimant type if available
+        if (pcsCase.getClaimantType() != null && pcsCase.getClaimantType().getValueCode() != null) {
+            ClaimantType claimantType = ClaimantType.valueOf(pcsCase.getClaimantType().getValueCode());
+            pcsCaseEntity.setClaimantType(claimantType);
+        }
 
         pcsCaseRepository.save(pcsCaseEntity);
     }

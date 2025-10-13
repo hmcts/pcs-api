@@ -10,7 +10,10 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.modelmapper.ModelMapper;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
+import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
+import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
+import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
@@ -319,4 +322,32 @@ class PcsCaseServiceTest {
         when(modelMapper.map(addressUK, AddressEntity.class)).thenReturn(addressEntity);
         return addressEntity;
     }
+
+    @Test
+    void shouldPersistClaimantTypeWhenCreatingCase() {
+        // Given
+        PCSCase pcsCase = mock(PCSCase.class);
+        AddressUK propertyAddress = mock(AddressUK.class);
+        final AddressEntity propertyAddressEntity = stubAddressUKModelMapper(propertyAddress);
+        
+        DynamicStringList claimantTypeList = DynamicStringList.builder()
+            .value(DynamicStringListElement.builder()
+                .code(ClaimantType.PRIVATE_LANDLORD.name())
+                .label(ClaimantType.PRIVATE_LANDLORD.getLabel())
+                .build())
+            .build();
+
+        when(pcsCase.getPropertyAddress()).thenReturn(propertyAddress);
+        when(pcsCase.getClaimantType()).thenReturn(claimantTypeList);
+
+        // When
+        underTest.createCase(CASE_REFERENCE, pcsCase);
+
+        // Then
+        verify(pcsCaseRepository).save(pcsCaseEntityCaptor.capture());
+
+        PcsCaseEntity savedEntity = pcsCaseEntityCaptor.getValue();
+        assertThat(savedEntity.getClaimantType()).isEqualTo(ClaimantType.PRIVATE_LANDLORD);
+    }
+
 }
