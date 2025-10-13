@@ -34,8 +34,8 @@ export class ClickButtonAction implements IAction {
           await page.waitForTimeout(waitForPageRedirectionTimeout);
         }
     }
-    if (retry === 3) {
-      throw new Error(`Navigation to ${nextPageElement} page/element has been failed after 3 attempts`);
+    if (retry === 5) {
+      throw new Error(`Navigation to ${nextPageElement} page/element has been failed after 5 attempts`);
     }
   }
 
