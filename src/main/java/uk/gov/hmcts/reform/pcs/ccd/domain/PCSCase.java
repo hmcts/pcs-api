@@ -624,4 +624,34 @@ public class PCSCase {
         label = "Does anyone living at the property pose a risk to the bailiff?"
     )
     private VerticalChoice confirmLivingAtProperty;
+
+    // --- Enforcement Risks (2243) ---
+    @CCD(
+        label = "What kind of risks do they pose to the bailiff?",
+        hint = "Include any risks posed by the defendants and also anyone else living at the property",
+        typeOverride = MultiSelectList,
+        typeParameterOverride = "RiskCategory"
+    )
+    private Set<RiskCategory> enforcementRiskCategories;
+
+    @CCD(
+        label = "How have they been violent or aggressive?",
+        max = 6800,
+        typeOverride = TextArea
+    )
+    private String enforcementViolentDetails;
+
+    @CCD(
+        label = "What is their history of firearm possession?",
+        max = 6800,
+        typeOverride = TextArea
+    )
+    private String enforcementFirearmsDetails;
+
+    @CCD(
+        label = "What is their history of criminal or antisocial behaviour?",
+        max = 6800,
+        typeOverride = TextArea
+    )
+    private String enforcementCriminalDetails;
 }
