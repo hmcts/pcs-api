@@ -195,12 +195,14 @@ class ClaimServiceTest {
         String expectedStatementDetails = "some statement details";
 
         SuspensionOfRightToBuyDemotionOfTenancy combinedOrders = mock(SuspensionOfRightToBuyDemotionOfTenancy.class);
+        DemotionOfTenancy demotion = mock(DemotionOfTenancy.class);
         when(pcsCase.getSuspensionOfRightToBuyDemotionOfTenancy()).thenReturn(combinedOrders);
         when(combinedOrders.getSuspensionOfRightToBuyActs()).thenReturn(expectedSuspensionAct);
         when(combinedOrders.getSuspensionOrderReason()).thenReturn(expectedSuspensionReason);
         when(combinedOrders.getDemotionOfTenancyActs()).thenReturn(expectedDemotionAct);
         when(combinedOrders.getDemotionOrderReason()).thenReturn(expectedDemotionReason);
-        when(combinedOrders.getExpressTermsDetails()).thenReturn(expectedStatementDetails);
+        when(pcsCase.getDemotionOfTenancy()).thenReturn(demotion);
+        when(demotion.getStatementOfExpressTermsDetails()).thenReturn(expectedStatementDetails);
 
         AdditionalReasons additionalReasons = mock(AdditionalReasons.class);
         when(pcsCase.getAdditionalReasonsForPossession()).thenReturn(additionalReasons);

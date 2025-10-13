@@ -43,21 +43,6 @@ public class SuspensionOfRightToBuyDemotionOfTenancy {
     )
     private String demotionOrderReason;
 
-    @CCD(
-        label = "Give details of the terms",
-        hint = "You can enter up to 950 characters",
-        typeOverride = TextArea,
-        max = 950
-    )
-    private String expressTermsDetails;
-
-    @CCD(
-        label = "Have you served the defendants with a statement of the express terms which will apply "
-            + "to the demoted tenancy?"
-    )
-    private VerticalYesNo hasServedStatementExpressTerms;
-
     private YesOrNo suspensionToBuyDemotionOfTenancyPages;
-
 
 }

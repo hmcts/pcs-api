@@ -84,7 +84,7 @@ public class ClaimService {
             return DemotionOfTenancy.builder()
                 .demotionOfTenancyHousingActs(combined.getDemotionOfTenancyActs())
                 .demotionOfTenancyReason(combined.getDemotionOrderReason())
-                .statementOfExpressTermsDetails(combined.getExpressTermsDetails())
+                .statementOfExpressTermsDetails(demotion != null ? demotion.getStatementOfExpressTermsDetails() : null)
                 .build();
         }
         return demotion;

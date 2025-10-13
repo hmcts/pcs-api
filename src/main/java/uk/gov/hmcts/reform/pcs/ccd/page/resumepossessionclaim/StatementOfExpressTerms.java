@@ -4,7 +4,6 @@ import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DemotionOfTenancy;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.domain.SuspensionOfRightToBuyDemotionOfTenancy;
 
 public class StatementOfExpressTerms implements CcdPageConfiguration {
 
@@ -17,18 +16,9 @@ public class StatementOfExpressTerms implements CcdPageConfiguration {
                                + " OR suspensionToBuyDemotionOfTenancyPages=\"Yes\"")
             .label("statementOfExpressTerms-info", "---")
                 .complex(PCSCase::getDemotionOfTenancy)
-                .mandatory(DemotionOfTenancy::getStatementOfExpressTermsServed,
-                           "suspensionToBuyDemotionOfTenancyPages=\"No\"")
+                .mandatory(DemotionOfTenancy::getStatementOfExpressTermsServed)
                 .mandatory(DemotionOfTenancy::getStatementOfExpressTermsDetails,
-                           "statementOfExpressTermsServed=\"YES\""
-                               + " AND suspensionToBuyDemotionOfTenancyPages=\"No\"")
-                .done()
-                .complex(PCSCase::getSuspensionOfRightToBuyDemotionOfTenancy)
-                .mandatory(SuspensionOfRightToBuyDemotionOfTenancy::getHasServedStatementExpressTerms,
-                           "suspensionToBuyDemotionOfTenancyPages=\"Yes\"")
-                .mandatory(SuspensionOfRightToBuyDemotionOfTenancy::getExpressTermsDetails,
-                           "hasServedStatementExpressTerms=\"YES\""
-                               + " AND suspensionToBuyDemotionOfTenancyPages=\"Yes\"")
+                           "statementOfExpressTermsServed=\"YES\"")
                 .done();
     }
 }
