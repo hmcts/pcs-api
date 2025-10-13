@@ -22,7 +22,7 @@ export const walesClaimantDetails =
   dayLabel: 'Day',
   day: '01',
   monthLabel: 'Month',
-  month: '11',
+  month: '10',
   yearLabel: 'Year',
   year: '2025',
   yes: 'Yes',
