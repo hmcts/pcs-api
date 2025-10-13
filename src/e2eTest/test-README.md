@@ -122,7 +122,7 @@ Playwright 1.30+ | TypeScript 4.9+
 | enterReasonForSuspensionOrder        | `performAction('enterReasonForSuspensionOrder', reasonsForRequestingASuspensionOrder.question)`                                                                                                            |
 | selectClaimantCircumstances          | `performAction('selectClaimantCircumstances', {circumstanceOption: claimantCircumstances.no,claimantInput: claimantCircumstances.claimantCircumstanceInfoInputData})`                                      |
 | selectLanguageUsed                   | `performAction('selectLanguageUsed', languageUsed.no)`                                                                                                                                                     |
-| selectClaimantDetails | `performAction('selectClaimantDetails', ...)` |
+| selectClaimantDetails                | `performAction('selectClaimantDetails', claimantDetails)`                                                                                                                                                  |
 ### Validations
 | Validation          | Example Usage |
 |------------------|---------------|
