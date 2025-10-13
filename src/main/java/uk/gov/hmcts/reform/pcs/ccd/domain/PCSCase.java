@@ -152,7 +152,7 @@ public class PCSCase {
 
     @CCD(
         label = "Are you claiming possession because of rent arrears?",
-        hint = "You'll be able to add additional grounds later if you select yes."
+        hint = "You'll be able to add additional grounds later if you select yes"
     )
     private YesOrNo groundsForPossession;
 
@@ -236,7 +236,7 @@ public class PCSCase {
 
     @CCD(
         label = "Who is the claimant in this case?",
-        hint = "If you’re a legal representative, you should select the type of claimant you’re representing.",
+        hint = "If you’re a legal representative, you should select the type of claimant you’re representing",
         typeOverride = DynamicRadioList
     )
     private DynamicStringList claimantType;
@@ -372,7 +372,7 @@ public class PCSCase {
     private String noticeEmailExplanation;
 
     @CCD(
-        label = "Explain what the other means were",
+        label = "Explain what the other means were. You can enter up to 250 characters",
         max = 250,
         typeOverride = TextArea
     )
@@ -433,7 +433,7 @@ public class PCSCase {
         label = "For the period shown on the rent statement, have any rent payments been paid by someone "
             + "other than the defendants?",
         hint = "This could include payments from Universal Credit, Housing Benefit or any other contributions "
-            + "made by a government department, like the Department for Work and Pensions (DWP)."
+            + "made by a government department, like the Department for Work and Pensions (DWP)"
     )
     private VerticalYesNo thirdPartyPayments;
 
@@ -553,8 +553,7 @@ public class PCSCase {
 
     @CCD(
         label = "Did you complete all or part of this claim in Welsh?",
-        hint = "The answer to this question will help make sure your claim is translated correctly",
-        access = {CitizenAccess.class}
+        hint = "The answer to this question will help make sure your claim is translated correctly"
     )
     private VerticalYesNo welshUsed;
 
@@ -583,15 +582,13 @@ public class PCSCase {
         label = "Do you want to upload any additional documents?",
         hint = "You can either upload documents now or closer to the hearing date. "
             + "Any documents you upload now will be included in the pack of documents a judge will "
-            + "receive before the hearing (the bundle).",
-        access = {CitizenAccess.class}
+            + "receive before the hearing (the bundle)"
     )
     private VerticalYesNo wantToUploadDocuments;
 
     @CCD(
         label = "Add document",
-        hint = "Upload a document to the system",
-        access = {CitizenAccess.class}
+        hint = "Upload a document to the system"
     )
     private List<ListValue<AdditionalDocument>> additionalDocuments;
 
