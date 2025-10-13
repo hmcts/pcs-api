@@ -23,6 +23,7 @@ import java.util.Set;
 
 import static uk.gov.hmcts.ccd.sdk.type.FieldType.DynamicRadioList;
 import static uk.gov.hmcts.ccd.sdk.type.FieldType.MultiSelectList;
+import static uk.gov.hmcts.ccd.sdk.type.FieldType.Text;
 import static uk.gov.hmcts.ccd.sdk.type.FieldType.TextArea;
 
 
@@ -606,4 +607,17 @@ public class PCSCase {
         typeParameterOverride = "CompletionNextStep"
     )
     private CompletionNextStep completionNextStep;
+
+    @CCD(
+        label = "Have you served notice to the defendants?"
+    )
+    private YesOrNo walesNoticeServed;
+
+    @CCD(
+        label = "What type of notice did you serve?",
+        hint = "For example, Form RHW20",
+        typeOverride = Text,
+        max = 10
+    )
+    private String walesTypeOfNoticeServed;
 }
