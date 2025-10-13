@@ -17,7 +17,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
-import uk.gov.hmcts.reform.pcs.ccd.service.UnsubmittedCaseDataService;
+import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.utils.ListValueUtils;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
@@ -40,7 +40,7 @@ public class CCDCaseRepository extends DecentralisedCaseRepository<PCSCase> {
     private final SecurityContextService securityContextService;
     private final ModelMapper modelMapper;
     private final PcsCaseService pcsCaseService;
-    private final UnsubmittedCaseDataService unsubmittedCaseDataService;
+    private final DraftCaseDataService draftCaseDataService;
 
     /**
      * Invoked by CCD to load PCS cases by reference.
@@ -61,7 +61,7 @@ public class CCDCaseRepository extends DecentralisedCaseRepository<PCSCase> {
 
     private boolean caseHasUnsubmittedData(long caseReference, String state) {
         if (State.AWAITING_FURTHER_CLAIM_DETAILS.name().equals(state)) {
-            return unsubmittedCaseDataService.hasUnsubmittedCaseData(caseReference);
+            return draftCaseDataService.hasUnsubmittedCaseData(caseReference);
         } else {
             return false;
         }

@@ -14,6 +14,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.builder.SavingPageBuilderFactory;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.EnforcementApplicationPage;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.NameAndAddressForEvictionPage;
 
 import static uk.gov.hmcts.reform.pcs.ccd.domain.State.AWAITING_SUBMISSION_TO_HMCTS;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.enforceTheOrder;
@@ -24,7 +25,6 @@ import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.enforceTheOrder;
 public class EnforcementOrderEvent implements CCDConfig<PCSCase, State, UserRole> {
 
     private final SavingPageBuilderFactory savingPageBuilderFactory;
-    private final EnforcementApplicationPage enforcementApplicationPage;
 
     @Override
     public void configureDecentralised(
@@ -36,7 +36,13 @@ public class EnforcementOrderEvent implements CCDConfig<PCSCase, State, UserRole
                         .name("Enforce the order")
                         .grant(Permission.CRUD, UserRole.PCS_SOLICITOR);
 
-        savingPageBuilderFactory.create(eventBuilder).add(enforcementApplicationPage);
+        configurePages(eventBuilder);
+    }
+
+    void configurePages(Event.EventBuilder<PCSCase, UserRole, State> eventBuilder) {
+        savingPageBuilderFactory.create(eventBuilder)
+                .add(new EnforcementApplicationPage())
+                .add(new NameAndAddressForEvictionPage());
     }
 
     private SubmitResponse submit(EventPayload<PCSCase, State> eventPayload) {

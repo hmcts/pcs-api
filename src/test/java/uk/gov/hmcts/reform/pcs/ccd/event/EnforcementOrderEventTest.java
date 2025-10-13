@@ -18,8 +18,6 @@ class EnforcementOrderEventTest extends BaseEventTest {
 
     @Mock
     private SavingPageBuilderFactory savingPageBuilderFactory;
-    @Mock
-    EnforcementApplicationPage enforcementApplicationPage;
 
     @BeforeEach
     void setUp() {
@@ -28,7 +26,7 @@ class EnforcementOrderEventTest extends BaseEventTest {
         when(savingPageBuilder.add(any())).thenReturn(savingPageBuilder);
 
         EnforcementOrderEvent underTest =
-                new EnforcementOrderEvent(savingPageBuilderFactory, enforcementApplicationPage);
+                new EnforcementOrderEvent(savingPageBuilderFactory);
 
         setEventUnderTest(underTest);
     }
