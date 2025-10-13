@@ -345,14 +345,14 @@ public class PCSCase {
     @CCD(
         searchable = false,
         access = {CitizenAccess.class, CaseworkerAccess.class},
-        label = "Do you want to add additional defendants?"
+        label = "Do you need to add another defendant?"
     )
     private VerticalYesNo addAdditionalDefendant;
 
     @CCD(
         access = {CitizenAccess.class, CaseworkerAccess.class},
-        label = "Additional defendant",
-        hint = "Add an additional defendant to the case"
+        label = "Add defendant",
+        hint = "Add a defendant to the case"
     )
     private List<ListValue<DefendantDetails>> defendants;
 
