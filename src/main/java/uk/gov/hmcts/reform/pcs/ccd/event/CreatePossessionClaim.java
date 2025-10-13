@@ -38,7 +38,7 @@ public class CreatePossessionClaim implements CCDConfig<PCSCase, State, UserRole
     private final PropertyNotEligible propertyNotEligible;
 
     private static final String CASE_ISSUED_FEE_TYPE = "caseIssueFee";
-    private static final String FEE = "£0";
+    private static final String FEE = "Unable to retrieve";
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {

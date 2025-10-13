@@ -133,7 +133,7 @@ class CreatePossessionClaimTest extends BaseEventTest {
         PCSCase result = callStartHandler(caseData);
 
         // Then
-        assertThat(result.getFeeAmount()).isEqualTo("£0");
+        assertThat(result.getFeeAmount()).isEqualTo("Unable to retrieve");
     }
 
     @Test
@@ -148,7 +148,7 @@ class CreatePossessionClaimTest extends BaseEventTest {
         PCSCase result = callStartHandler(caseData);
 
         // Then
-        assertThat(result.getFeeAmount()).isEqualTo("£0");
+        assertThat(result.getFeeAmount()).isEqualTo("Unable to retrieve");
         verify(feesAndPayService).getFee("caseIssueFee");
     }
 
@@ -164,7 +164,7 @@ class CreatePossessionClaimTest extends BaseEventTest {
         PCSCase result = callStartHandler(caseData);
 
         // Then
-        assertThat(result.getFeeAmount()).isEqualTo("£0");
+        assertThat(result.getFeeAmount()).isEqualTo("Unable to retrieve");
         verify(feesAndPayService).getFee("caseIssueFee");
     }
 }
