@@ -14,7 +14,7 @@ public class ClaimantInformation implements CcdPageConfiguration {
 
     private static final String UPDATED_CLAIMANT_NAME_HINT = """
         Changing your claimant name here only updates it for this claim.
-        It does not change your registered claimant name on My HMCTS.
+        It does not change your registered claimant name on My HMCTS
         """;
 
     @Override
