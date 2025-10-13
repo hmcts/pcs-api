@@ -583,8 +583,8 @@ test.describe('[Successful Create Case Flow]  @Master @nightly', async () => {
     await performValidation('mainHeader', claimantDetails.mainHeader);
     await performAction('selectClaimantDetails',
       {question1: claimantDetails.wereYouRegisteredUnderPart1OfTheHousingAct2014, option1: claimantDetails.no,
-        question2: claimantDetails.wereYouLicensedUnderPart1OfTheHousingAct2014, option2: claimantDetails.no,
-        question3: claimantDetails.haveYouAppointedALicenseAgentAgent, option3: claimantDetails.no});
+       question2: claimantDetails.wereYouLicensedUnderPart1OfTheHousingAct2014, option2: claimantDetails.no,
+       question3: claimantDetails.haveYouAppointedALicenseAgentAgent, option3: claimantDetails.no});
     await performAction('selectContactPreferences', {
       notifications: contactPreferences.yes,
       correspondenceAddress: contactPreferences.yes,
