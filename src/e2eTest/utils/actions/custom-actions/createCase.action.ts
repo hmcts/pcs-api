@@ -42,10 +42,9 @@ import {completeYourClaim} from '@data/page-data/completeYourClaim.page.data';
 import {home} from '@data/page-data/home.page.data';
 import {search} from '@data/page-data/search.page.data';
 import {userIneligible} from '@data/page-data/userIneligible.page.data';
-import {walesClaimantDetails} from '@data/page-data/walesClaimantDetails.page.data';
 
 export let caseInfo: { id: string; fid: string; state: string };
-let caseNumber: string;
+export let caseNumber: string;
 export let claimantsName: string;
 
 export class CreateCaseAction implements IAction {
@@ -63,7 +62,6 @@ export class CreateCaseAction implements IAction {
       ['enterTestAddressManually', () => this.enterTestAddressManually()],
       ['selectClaimType', () => this.selectClaimType(fieldName)],
       ['selectClaimantName', () => this.selectClaimantName(page,fieldName)],
-      ['selectClaimantDetails', () => this.selectClaimantDetails(fieldName as actionRecord)],
       ['selectContactPreferences', () => this.selectContactPreferences(fieldName)],
       ['selectRentArrearsPossessionGround', () => this.selectRentArrearsPossessionGround(fieldName)],
       ['selectGroundsForPossession', () => this.selectGroundsForPossession(fieldName)],
@@ -162,29 +160,6 @@ export class CreateCaseAction implements IAction {
       .locator('xpath=../..')
       .locator('span.text-16');
     return await loc.innerText();
-  }
-
-  private async selectClaimantDetails(claimant: actionRecord) {
-    await performValidation('text', {elementType: 'paragraph', text: 'Case number: ' + caseNumber});
-    await performAction('clickRadioButton', {question: claimant.question1, option: claimant.option1});
-    if (claimant.option1 == walesClaimantDetails.yes) {
-      await performAction('inputText', walesClaimantDetails.whatsYourRegistrationNumber, walesClaimantDetails.sampleTestRegistrationNumber);
-    }
-    await performAction('clickRadioButton', {question: claimant.question2, option: claimant.option2});
-    if (claimant.option2 == walesClaimantDetails.yes) {
-      await performAction('inputText', walesClaimantDetails.whatsYourLicenseNumber, walesClaimantDetails.sampleTestLicenseNumber);
-    }
-    await performAction('clickRadioButton', {question: claimant.question3, option: claimant.option3});
-    if (claimant.option3 == walesClaimantDetails.yes) {
-      await performAction('inputText', walesClaimantDetails.agentsFirstnameLabel, walesClaimantDetails.agentsFirstname);
-      await performAction('inputText', walesClaimantDetails.agentsLastnameLabel, walesClaimantDetails.agentsLastname);
-      await performAction('inputText', walesClaimantDetails.agentsLicenseNumberLabel, walesClaimantDetails.agentsLicenseNumber);
-      await performActions('Enter Date',
-        ['inputText', walesClaimantDetails.dayLabel, walesClaimantDetails.day],
-        ['inputText', walesClaimantDetails.monthLabel, walesClaimantDetails.month],
-        ['inputText', walesClaimantDetails.yearLabel, walesClaimantDetails.year]);
-    }
-    await performAction('clickButton', walesClaimantDetails.continue);
   }
 
   private async selectGroundsForPossession(caseData: actionData) {

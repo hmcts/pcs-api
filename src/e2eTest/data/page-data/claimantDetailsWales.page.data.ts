@@ -1,4 +1,4 @@
-export const walesClaimantDetails =
+export const claimantDetailsWales =
 {
   title: 'Create a case - HM Courts & Tribunals Service - GOV.UK',
   mainHeader: 'Claimant details',
