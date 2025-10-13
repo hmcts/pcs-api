@@ -151,7 +151,7 @@ test.describe('[Eligibility checks for cross and non cross border postcodes] @Ma
     });
     await performAction('extractCaseIdFromAlert');
     await performAction('clickButtonAndVerifyPageNavigation', provideMoreDetailsOfClaim.continue, claimantType.mainHeader);
-    await performAction('selectClaimantType', claimantType.communityLandlord);
+    await performAction('selectClaimantType', claimantType.walesCommunityLandlord);
     await performAction('selectClaimType', claimType.yes);
     await performValidation('text', {"text": userIneligible.formN5Wales, "elementType": "paragraph"})
     await performValidation('text', {"text": userIneligible.propertyPossessionsFullListLink, "elementType": "paragraph"})
@@ -172,7 +172,7 @@ test.describe('[Eligibility checks for cross and non cross border postcodes] @Ma
     });
     await performAction('extractCaseIdFromAlert');
     await performAction('clickButtonAndVerifyPageNavigation', provideMoreDetailsOfClaim.continue, claimantType.mainHeader);
-    await performAction('selectClaimantType', claimantType.registeredProviderForSocialHousing);
+    await performAction('selectClaimantType', claimantType.englandRegisteredProviderForSocialHousing);
     await performAction('selectClaimType', claimType.yes);
     await performAction('clickButton', userIneligible.continue);
     await performValidation('errorMessage', {
