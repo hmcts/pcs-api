@@ -8,13 +8,17 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.modelmapper.ModelMapper;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.EstateManagementGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.SecureContractDiscretionaryGrounds;
+import uk.gov.hmcts.reform.pcs.ccd.domain.SecureContractMandatoryGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
+import java.util.Set;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -178,6 +182,46 @@ class PcsCaseMergeServiceTest {
 
         // Then
         verify(pcsCaseEntity).setPreActionProtocolCompleted(preActionProtocolCompleted.toBoolean());
+    }
+
+    @Test
+    void shouldMapWalesPossessionGroundsToJsonb() {
+        PCSCase pcsCase = mock(PCSCase.class);
+
+        Set<SecureContractDiscretionaryGrounds> discretionaryGrounds = Set.of(
+                SecureContractDiscretionaryGrounds.RENT_ARREARS,
+                SecureContractDiscretionaryGrounds.ANTISOCIAL_BEHAVIOUR);
+        Set<SecureContractMandatoryGrounds> mandatoryGrounds = Set.of(
+                SecureContractMandatoryGrounds.FAILURE_TO_GIVE_UP_POSSESSION_SECTION_170);
+        Set<EstateManagementGrounds> estateManagementGrounds = Set.of(
+                EstateManagementGrounds.BUILDING_WORKS,
+                EstateManagementGrounds.REDEVELOPMENT_SCHEMES);
+
+        when(pcsCase.getSecureContractDiscretionaryGrounds()).thenReturn(discretionaryGrounds);
+        when(pcsCase.getSecureContractMandatoryGrounds()).thenReturn(mandatoryGrounds);
+        when(pcsCase.getEstateManagementGrounds()).thenReturn(estateManagementGrounds);
+        when(pcsCase.getSecureOrFlexibleDiscretionaryGrounds()).thenReturn(null);
+        when(pcsCase.getSecureOrFlexibleMandatoryGrounds()).thenReturn(null);
+        when(pcsCase.getSecureOrFlexibleDiscretionaryGroundsAlt()).thenReturn(null);
+        when(pcsCase.getSecureOrFlexibleMandatoryGroundsAlt()).thenReturn(null);
+        when(pcsCase.getSecureOrFlexibleGroundsReasons()).thenReturn(null);
+
+        PcsCaseEntity pcsCaseEntity = new PcsCaseEntity();
+
+        underTest.mergeCaseData(pcsCaseEntity, pcsCase);
+
+        assertThat(pcsCaseEntity.getPossessionGrounds()).isNotNull();
+        assertThat(pcsCaseEntity.getPossessionGrounds().getWalesDiscretionaryGrounds())
+                .contains(
+                        SecureContractDiscretionaryGrounds.RENT_ARREARS.getLabel(),
+                        SecureContractDiscretionaryGrounds.ANTISOCIAL_BEHAVIOUR.getLabel());
+        assertThat(pcsCaseEntity.getPossessionGrounds().getWalesMandatoryGrounds())
+                .contains(
+                        SecureContractMandatoryGrounds.FAILURE_TO_GIVE_UP_POSSESSION_SECTION_170.getLabel());
+        assertThat(pcsCaseEntity.getPossessionGrounds().getWalesEstateManagementGrounds())
+                .contains(
+                        EstateManagementGrounds.BUILDING_WORKS.getLabel(),
+                        EstateManagementGrounds.REDEVELOPMENT_SCHEMES.getLabel());
     }
 
     private AddressEntity stubAddressUKModelMapper(AddressUK addressUK) {

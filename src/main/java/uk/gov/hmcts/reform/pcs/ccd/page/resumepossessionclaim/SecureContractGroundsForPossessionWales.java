@@ -37,7 +37,8 @@ public class SecureContractGroundsForPossessionWales implements CcdPageConfigura
 
                """)
                 .optional(PCSCase::getSecureContractDiscretionaryGrounds)
-                .optional(PCSCase::getEstateManagementGrounds, "secureContractDiscretionaryGrounds=\"ESTATE_MANAGEMENT_GROUNDS\"")
+                .optional(PCSCase::getEstateManagementGrounds, 
+                    "secureContractDiscretionaryGrounds=\"ESTATE_MANAGEMENT_GROUNDS\"")
                 .optional(PCSCase::getSecureContractMandatoryGrounds);
     }
 

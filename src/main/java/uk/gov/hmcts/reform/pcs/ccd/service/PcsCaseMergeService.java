@@ -88,6 +88,9 @@ public class PcsCaseMergeService {
                 pcsCase.getSecureOrFlexibleDiscretionaryGroundsAlt())
             )
             .mandatoryGroundsAlternativeAccommodation(mapToLabels(pcsCase.getSecureOrFlexibleMandatoryGroundsAlt()))
+            .walesDiscretionaryGrounds(mapToLabels(pcsCase.getSecureContractDiscretionaryGrounds()))
+            .walesMandatoryGrounds(mapToLabels(pcsCase.getSecureContractMandatoryGrounds()))
+            .walesEstateManagementGrounds(mapToLabels(pcsCase.getEstateManagementGrounds()))
             .secureOrFlexibleReasonsForGrounds(reasons)
             .build();
     }
