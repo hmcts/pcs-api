@@ -1,54 +1,84 @@
 package uk.gov.hmcts.reform.pcs.contract;
 
-import au.com.dius.pact.consumer.MockServer;
 import au.com.dius.pact.consumer.dsl.PactDslJsonBody;
-import au.com.dius.pact.consumer.dsl.PactBuilder;
+import au.com.dius.pact.consumer.dsl.PactDslWithProvider;
 import au.com.dius.pact.consumer.junit5.PactConsumerTestExt;
 import au.com.dius.pact.consumer.junit5.PactTestFor;
 import au.com.dius.pact.core.model.V4Pact;
 import au.com.dius.pact.core.model.annotations.Pact;
-import io.restassured.http.ContentType;
-import io.restassured.response.Response;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
+import org.springframework.boot.autoconfigure.http.HttpMessageConvertersAutoConfiguration;
+import org.springframework.cloud.openfeign.EnableFeignClients;
+import org.springframework.cloud.openfeign.FeignAutoConfiguration;
+import org.springframework.cloud.openfeign.FeignClientsConfiguration;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
+import uk.gov.hmcts.reform.pcs.feesandpay.api.FeesRegisterApi;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeResponse;
 
+import java.math.BigDecimal;
 import java.util.Map;
 
-import static io.restassured.RestAssured.given;
 import static org.assertj.core.api.Assertions.assertThat;
 
-@ExtendWith(PactConsumerTestExt.class)
-@PactTestFor(providerName = "feeRegister_lookUp", port = "8080")
-public class FeeRegistrationLookupConsumerTest {
+@ImportAutoConfiguration({
+    FeignAutoConfiguration.class,
+    FeignClientsConfiguration.class,
+    HttpMessageConvertersAutoConfiguration.class
+})
+@EnableFeignClients(clients = FeesRegisterApi.class)
+@TestPropertySource(properties = "fees-register.api.url=http://localhost:8484")
+@ExtendWith({PactConsumerTestExt.class, SpringExtension.class})
+@PactTestFor(providerName = "FeesRegisterAPI", port = "8484")
+class FeeRegistrationLookupConsumerTest {
 
-    private static final String SERVICE_AUTHORIZATION = "ServiceAuthorization";
-    private static final String SERVICE_TOKEN = "Bearer serviceToken";
+    @Autowired
+    private FeesRegisterApi feesRegisterApi;
 
-    @Pact(provider = "feeRegister_lookUp", consumer = "pcs_api")
-    public V4Pact createFeeLookupPact(PactBuilder builder) {
+    private static final String SERVICE_AUTH_TOKEN = "Bearer test-token";
+    private static final String LOOKUP_ENDPOINT = "/fees-register/fees/lookup";
+
+    private static final String POSSESSION_SERVICE = "possession claim";
+    private static final String CIVIL_JURISDICTION = "civil";
+    private static final String COUNTY_COURT = "county court";
+    private static final String DEFAULT_CHANNEL = "default";
+    private static final String ISSUE_EVENT = "issue";
+    private static final String ALL_APPLICANT_TYPE = "all";
+    private static final String AMOUNT_OR_VOLUME = "1";
+    private static final String POSSESSION_KEYWORD = "PossessionCC";
+
+    @Pact(provider = "FeesRegisterAPI", consumer = "pcs_api")
+    public V4Pact createFeeLookupPact(PactDslWithProvider builder) {
 
         PactDslJsonBody responseBody = new PactDslJsonBody()
-            .stringType("code")
-            .stringType("description")
-            .numberType("version")
-            .decimalType("fee_amount");
+            .stringType("code", "FEE0412")
+            .stringType("description", "Recovery of Land - County Court")
+            .stringType("version", "4")
+            .decimalType("fee_amount", 404.00);
 
         return builder
-            .usingLegacyDsl()
-            .given("Fees exist for Probate")//change to other state
-            .uponReceiving("a request for fees lookup")
-            .path("/fees-register/fees/lookup")
+            .given("Fees exist for possession claim")
+            .uponReceiving("A request to lookup a possession claim fee")
+            .path(LOOKUP_ENDPOINT)
             .method("GET")
             .headers(Map.of(
-                HttpHeaders.ACCEPT, ContentType.JSON.toString(),
-                SERVICE_AUTHORIZATION, SERVICE_TOKEN
+                "ServiceAuthorization", SERVICE_AUTH_TOKEN
             ))
-            .query("service=possession claim&jurisdiction1=civil&jurisdiction2=county court"
-                       + "&channel=default&applicant_type=all&event=issue"
-                       + "&amount_or_volume=1&keyword=PossessionCC")
+            .query("service=possession claim"
+                       + "&jurisdiction1=civil"
+                       + "&jurisdiction2=county court"
+                       + "&channel=default"
+                       + "&event=issue"
+                       + "&applicantType=all"
+                       + "&amountOrVolume=1"
+                       + "&keyword=PossessionCC")
             .willRespondWith()
-            .status(200)
+            .status(HttpStatus.OK.value())
             .headers(Map.of(HttpHeaders.CONTENT_TYPE, "application/json"))
             .body(responseBody)
             .toPact(V4Pact.class);
@@ -56,30 +86,23 @@ public class FeeRegistrationLookupConsumerTest {
 
     @Test
     @PactTestFor(pactMethod = "createFeeLookupPact")
-    void shouldReturnFeeLookupSuccessfully(MockServer mockServer) {
+    void shouldSuccessfullyLookupFee() {
+        FeeResponse response = feesRegisterApi.lookupFee(
+            SERVICE_AUTH_TOKEN,
+            POSSESSION_SERVICE,
+            CIVIL_JURISDICTION,
+            COUNTY_COURT,
+            DEFAULT_CHANNEL,
+            ISSUE_EVENT,
+            ALL_APPLICANT_TYPE,
+            AMOUNT_OR_VOLUME,
+            POSSESSION_KEYWORD
+        );
 
-        Response response = given()
-            .relaxedHTTPSValidation()
-            .header("Accept", ContentType.JSON)
-            .header(SERVICE_AUTHORIZATION, SERVICE_TOKEN)
-            .queryParam("service", "possession claim")
-            .queryParam("jurisdiction1", "civil")
-            .queryParam("jurisdiction2", "county court")
-            .queryParam("channel", "default")
-            .queryParam("applicant_type", "all")
-            .queryParam("event", "issue")
-            .queryParam("amount_or_volume", "1")
-            .queryParam("keyword", "PossessionCC")
-            .when()
-            .get(mockServer.getUrl() + "/fees-register/fees/lookup")
-            .then()
-            .statusCode(200)
-            .extract()
-            .response();
-
-        assertThat(response.jsonPath().getString("code")).isNotEmpty();
-        assertThat(response.jsonPath().getString("description")).isNotEmpty();
-        assertThat(response.jsonPath().getInt("version")).isGreaterThanOrEqualTo(0);
-        assertThat(response.jsonPath().getDouble("fee_amount")).isGreaterThanOrEqualTo(0.0);
+        assertThat(response).isNotNull();
+        assertThat(response.getCode()).isEqualTo("FEE0412");
+        assertThat(response.getDescription()).isEqualTo("Recovery of Land - County Court");
+        assertThat(response.getVersion()).isEqualTo("4");
+        assertThat(response.getFeeAmount()).isEqualByComparingTo(new BigDecimal("404.00"));
     }
 }
