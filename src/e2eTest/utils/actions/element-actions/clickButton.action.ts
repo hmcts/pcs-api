@@ -32,11 +32,11 @@ export class ClickButtonAction implements IAction {
       const pageElement = page.locator(`h1:has-text("${nextPageElement}")`);
       isPageVisible = await pageElement.isVisible();
       if (!isPageVisible) {
-        // Slow down if navigation is abnormal
+        //Adding sleep to slow down execution when the application behaves abnormally
         await page.waitForTimeout(waitForPageRedirectionTimeout);
       }
       retry++;
-    } while (retry < 3 && !isPageVisible);
+    } while (retry < 5 && !isPageVisible);
 
     if (!isPageVisible) {
       throw new Error(
