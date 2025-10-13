@@ -3,6 +3,7 @@ package uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.WalesNoticeDetails;
 
 public class WalesCheckingNotice implements CcdPageConfiguration {
 
@@ -18,8 +19,8 @@ public class WalesCheckingNotice implements CcdPageConfiguration {
                    <section tabindex="0">
                    <p class="govuk-body">
                        You may have already served the defendants with notice of your intention to begin
-                       possession proceedings. Notice periods vary between grounds and some do not require any notice to be served.
-                       You should read the <a href="https://www.gov.wales/understanding-possession-process-guidance-private-landlords"
+                       possession proceedings. Notice periods vary between grounds and some do not require any
+                       notice to be served. You should read the <a href="https://www.gov.wales/understanding-possession-process-guidance-private-landlords"
                        rel="noreferrer noopener" target="_blank" class="govuk-link"> guidance on
                        possession notice periods (opens in a new tab)</a>
                        to make sure your claim is valid.
@@ -35,7 +36,9 @@ public class WalesCheckingNotice implements CcdPageConfiguration {
                    </div>
                    </section>
                    """)
-            .mandatory(PCSCase::getWalesNoticeServed)
-            .mandatory(PCSCase::getWalesTypeOfNoticeServed,"walesNoticeServed=\"Yes\"");
+            .complex(PCSCase::getWalesNoticeDetails)
+            .mandatory(WalesNoticeDetails::getNoticeServed)
+            .mandatory(WalesNoticeDetails::getTypeOfNoticeServed,"walesNoticeServed=\"Yes\"")
+            .done();
     }
 }
