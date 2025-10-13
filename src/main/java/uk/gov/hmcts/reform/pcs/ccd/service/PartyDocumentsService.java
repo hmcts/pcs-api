@@ -5,7 +5,7 @@ import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.pcs.ccd.domain.AdditionalDocument;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.model.PartyDocumentDto;
-import uk.gov.hmcts.reform.pcs.ccd.utils.ListValueUtils;
+import uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils;
 
 import java.util.List;
 import java.util.stream.Collectors;
