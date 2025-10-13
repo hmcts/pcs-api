@@ -4,10 +4,10 @@ export const claimantType =
     mainHeader: 'Claimant type',
     elementType: 'radio',
     privateLandlord: 'Private landlord',
-    communityLandlord: 'Community landlord',
+    walesCommunityLandlord: 'Community landlord',
     mortgageLender: 'Mortgage lender',
     other: 'Other',
-    registeredProviderForSocialHousing: 'Registered provider of social housing',
+    englandRegisteredProviderForSocialHousing: 'Registered provider of social housing',
     header: 'There is a problem',
     continue: 'Continue'
   };
