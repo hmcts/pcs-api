@@ -22,6 +22,7 @@ import uk.gov.hmcts.reform.pcs.ccd.CaseType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.page.ClaimantNamePageDefinitions;
 import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
 import uk.gov.hmcts.rse.ccd.lib.test.CftlibTest;
 
@@ -59,16 +60,22 @@ class CitizenCreateApplicationTest extends CftlibTest {
     void citizenCreatesApplication() {
 
         PCSCase caseData = PCSCase.builder()
-            .claimantName("Wrong Name")
-            .isClaimantNameCorrect(VerticalYesNo.NO)
-            .overriddenClaimantName("New Name")
-            .propertyAddress(AddressUK.builder()
-                                 .addressLine1("123 Baker Street")
-                                 .addressLine2("Marylebone")
-                                 .postTown("London")
-                                 .county("Greater London")
-                                 .postCode("NW1 6XE")
-                                 .build())
+            .propertyAddress(
+                AddressUK.builder()
+                    .addressLine1("123 Baker Street")
+                    .addressLine2("Marylebone")
+                    .postTown("London")
+                    .county("Greater London")
+                    .postCode("NW1 6XE")
+                    .build()
+            )
+            .claimantNamePageDefinitions(
+                ClaimantNamePageDefinitions.builder()
+                    .claimantName("Wrong name")
+                    .isClaimantNameCorrect(VerticalYesNo.NO)
+                    .overriddenClaimantName("New Name")
+                    .build()
+            )
             .build();
 
         CaseDetails caseDetails = startAndSubmitCreationEvent(citizenCreateApplication, caseData);

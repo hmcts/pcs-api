@@ -15,6 +15,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantCircumstances;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.page.ClaimantNamePageDefinitions;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
@@ -234,12 +235,16 @@ class ResumePossessionClaimTest extends BaseEventTest {
         PCSCase caseData = PCSCase.builder()
             .propertyAddress(propertyAddress)
             .legislativeCountry(WALES)
-            .claimantName(claimantName)
+            .claimantNamePageDefinitions(
+                ClaimantNamePageDefinitions.builder()
+                    .claimantName(claimantName)
+                    .build())
             .claimantContactEmail(claimantContactEmail)
             .claimantContactPhoneNumber(claimantContactPhoneNumber)
-            .claimantCircumstances(ClaimantCircumstances.builder()
-                                       .claimantCircumstancesDetails(claimantCircumstances)
-                                       .build())
+            .claimantCircumstances(
+                ClaimantCircumstances.builder()
+                    .claimantCircumstancesDetails(claimantCircumstances)
+                    .build())
             .claimingCostsWanted(VerticalYesNo.YES)
             .build();
 

@@ -8,6 +8,7 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantCircumstances;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.page.ClaimantNamePageDefinitions;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
 
 import java.util.stream.Stream;
@@ -25,7 +26,7 @@ class ClaimantInformationTest extends BasePageTest {
     void shouldHandleNullClaimantName() {
         // Given
         PCSCase caseData = PCSCase.builder()
-            .claimantName(null)
+            .claimantNamePageDefinitions(ClaimantNamePageDefinitions.builder().claimantName(null).build())
             .claimantCircumstances(ClaimantCircumstances.builder().build())
             .build();
 
@@ -44,8 +45,12 @@ class ClaimantInformationTest extends BasePageTest {
                                                           String overriddenClaimantName,
                                                           String expectedDisplayedName) {
         // Given
-        PCSCase caseData = PCSCase.builder().claimantName(claimantName)
-            .overriddenClaimantName(overriddenClaimantName)
+        PCSCase caseData = PCSCase.builder()
+            .claimantNamePageDefinitions(
+                ClaimantNamePageDefinitions.builder()
+                    .claimantName(claimantName)
+                    .overriddenClaimantName(overriddenClaimantName)
+                    .build())
             .claimantCircumstances(ClaimantCircumstances.builder().build()).build();
 
         // When
@@ -64,8 +69,12 @@ class ClaimantInformationTest extends BasePageTest {
                                            String overriddenClaimantName,
                                            String expectedDisplayedClaimantName) {
         // Given
-        PCSCase caseData = PCSCase.builder().claimantName(claimantName)
-            .overriddenClaimantName(overriddenClaimantName)
+        PCSCase caseData = PCSCase.builder()
+            .claimantNamePageDefinitions(
+                ClaimantNamePageDefinitions.builder()
+                    .claimantName(claimantName)
+                    .overriddenClaimantName(overriddenClaimantName)
+                    .build())
             .claimantCircumstances(ClaimantCircumstances.builder().build()).build();
 
         // When
