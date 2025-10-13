@@ -25,17 +25,23 @@ export class ClickButtonAction implements IAction {
   }
 
   private async clickButtonAndVerifyPageNavigation(page: Page, button: Locator, nextPageElement: string): Promise<void> {
-    const pageElement = page.locator(`h1:has-text("${nextPageElement}")`);
     let retry = 0;
-    for(; retry < 3 && !await pageElement.isVisible(); retry++){
-        this.clickButton(page, button);
-        if(!await pageElement.isVisible()) {
-          //Adding sleep to slow down execution when the application behaves abnormally
-          await page.waitForTimeout(waitForPageRedirectionTimeout);
-        }
-    }
-    if (retry === 3) {
-      throw new Error(`Navigation to ${nextPageElement} page/element has been failed after 3 attempts`);
+    let isPageVisible = false;
+    do {
+      await this.clickButton(page, button);
+      const pageElement = page.locator(`h1:has-text("${nextPageElement}")`);
+      isPageVisible = await pageElement.isVisible();
+      if (!isPageVisible) {
+        // Slow down if navigation is abnormal
+        await page.waitForTimeout(waitForPageRedirectionTimeout);
+      }
+      retry++;
+    } while (retry < 3 && !isPageVisible);
+
+    if (!isPageVisible) {
+      throw new Error(
+        `Navigation to ${nextPageElement} page/element has failed after ${retry} attempts`
+      );
     }
   }
 
