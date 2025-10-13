@@ -6,8 +6,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.module.paramnames.ParameterNamesModule;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.skyscreamer.jsonassert.JSONAssert;
-import org.skyscreamer.jsonassert.JSONCompareMode;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
@@ -18,6 +16,8 @@ import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
 import java.util.List;
+
+import static net.javacrumbs.jsonunit.assertj.JsonAssertions.assertThatJson;
 
 class DraftCaseJsonMergerTest {
 
@@ -94,7 +94,8 @@ class DraftCaseJsonMergerTest {
              }
             """;
 
-        JSONAssert.assertEquals(expectedJson, mergedJson, JSONCompareMode.STRICT);
+        assertThatJson(mergedJson)
+            .isEqualTo(expectedJson);
     }
 
     private DynamicStringListElement createListElement(ClaimantType value) {
