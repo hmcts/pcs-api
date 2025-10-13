@@ -19,7 +19,6 @@ import java.util.Set;
  */
 @AllArgsConstructor
 @Component
-@Slf4j
 public class EvictionDelayWarning implements CcdPageConfiguration {
 
     @Override
@@ -27,20 +26,13 @@ public class EvictionDelayWarning implements CcdPageConfiguration {
         pageBuilder
             .page("evictionDelayWarning")
             .pageLabel("The eviction could be delayed if the bailiff identifies a risk on the day")
-          ;//  .showCondition("confirmLivingAtProperty=\"YES\"");
+            .showCondition("confirmLivingAtProperty=\"NOT_SURE\"")
+            .label("evictionDelayWarning-line-separator", "---")
+            .label(
+                "evictionDelayText",
+                """
+                    <p class=\"govuk-body\"><strong>The bailiff may not be able to carry out the eviction if they identify a risk on the eviction day</strong></p>
+                    <p class=\"govuk-body\"> For example, if the bailiffs arrive to carry out the eviction and they discover a dangerous dog on the premises.</p>""");
     }
 
-    private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
-                                                                  CaseDetails<PCSCase, State> detailsBefore) {
-        PCSCase caseData = details.getData();
-
-        //resetting options
-        if (caseData.getGroundsForPossession() == YesOrNo.YES) {
-            caseData.setNoRentArrearsMandatoryGroundsOptions(Set.of());
-            caseData.setNoRentArrearsDiscretionaryGroundsOptions(Set.of());
-        }
-        return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
-            .data(caseData)
-            .build();
-    }
 }

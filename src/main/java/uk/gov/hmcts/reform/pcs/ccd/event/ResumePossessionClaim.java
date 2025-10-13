@@ -43,6 +43,8 @@ import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.DailyRentAmount;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.DefendantCircumstancesPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.DefendantsDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.EvictionDelayWarning;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.EvictionRisksPosedPage;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.EvictionVulnerableAdultsChildrenPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.GeneralApplication;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.GroundForPossessionAdditionalGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.GroundForPossessionRentArrears;
@@ -120,6 +122,8 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             .add(resumeClaim)
             .add(new LivingInThePropertyPage())
             .add(new EvictionDelayWarning())
+            .add(new EvictionRisksPosedPage())
+            .add(new EvictionVulnerableAdultsChildrenPage())
             .add(new SelectClaimantType())
             .add(new ClaimantTypeNotEligibleEngland())
             .add(new ClaimantTypeNotEligibleWales())
