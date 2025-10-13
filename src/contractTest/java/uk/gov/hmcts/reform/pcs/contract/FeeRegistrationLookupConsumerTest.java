@@ -34,7 +34,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @EnableFeignClients(clients = FeesRegisterApi.class)
 @TestPropertySource(properties = "fees-register.api.url=http://localhost:8484")
 @ExtendWith({PactConsumerTestExt.class, SpringExtension.class})
-@PactTestFor(providerName = "FeesRegisterAPI", port = "8484")
+@PactTestFor(providerName = "feeRegister_lookUp", port = "8484")
 class FeeRegistrationLookupConsumerTest {
 
     @Autowired
@@ -62,8 +62,8 @@ class FeeRegistrationLookupConsumerTest {
             .decimalType("fee_amount", 404.00);
 
         return builder
-            .given("Fees exist for possession claim")
-            .uponReceiving("A request to lookup a possession claim fee")
+            .given("Fees exist for Probate")
+            .uponReceiving("a request for Probate fees")
             .path(LOOKUP_ENDPOINT)
             .method("GET")
             .headers(Map.of(
