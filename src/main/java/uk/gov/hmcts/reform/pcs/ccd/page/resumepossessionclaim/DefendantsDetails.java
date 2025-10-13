@@ -25,7 +25,7 @@ public class DefendantsDetails implements CcdPageConfiguration {
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
             .page("defendantsDetails", this::midEvent)
-            .pageLabel("Defendant 1 details")
+            .pageLabel("Defendant details")
             .complex(PCSCase::getDefendant1)
                 .readonly(DefendantDetails::getNameSectionLabel)
                 .mandatory(DefendantDetails::getNameKnown)
