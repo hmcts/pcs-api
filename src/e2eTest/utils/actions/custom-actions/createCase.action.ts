@@ -105,6 +105,10 @@ export class CreateCaseAction implements IAction {
       'text': housingPossessionClaim.mainHeader,
       'elementType': 'heading'
     });
+    await performValidation('text', {
+      'text': housingPossessionClaim.claimFeeText,
+      'elementType': 'paragraph'
+    });
     await performAction('clickButton', housingPossessionClaim.continue);
   }
 
@@ -573,7 +577,7 @@ export class CreateCaseAction implements IAction {
       , ['select', createCase.eventLabel, createCase.makeAPossessionClaimEvent]);
     await performAction('clickButton', createCase.start);
   }
-  
+
   private async selectLanguageUsed(option: actionData) {
     await performAction('clickRadioButton', option);
     await performAction('clickButton', languageUsed.continue);
