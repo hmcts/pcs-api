@@ -35,23 +35,23 @@ public class ClaimantDetailsWalesPage implements CcdPageConfiguration {
             .complex(PCSCase::getWalesHousingAct)
                 .mandatory(WalesHousingAct::getRegistered)
                 .mandatory(WalesHousingAct::getRegistrationNumber,
-                    "walesRegistered=\"YES\"")
+                    "registered=\"YES\"")
                 .mandatory(WalesHousingAct::getLicensed)
                 .mandatory(WalesHousingAct::getLicenceNumber,
-                    "walesLicensed=\"YES\"")
+                    "licensed=\"YES\"")
                 .mandatory(WalesHousingAct::getLicensedAgentAppointed)
-                .label("walesAgentDetails-label", """
+                .label("agentDetails-label", """
                 <h3 class="govuk-heading-s">Give details of your licensed agent</h3>
                 """,
-                    "walesLicensedAgentAppointed=\"YES\"")
+                    "licensedAgentAppointed=\"YES\"")
                 .mandatory(WalesHousingAct::getAgentFirstName,
-                    "walesLicensedAgentAppointed=\"YES\"")
+                    "licensedAgentAppointed=\"YES\"")
                 .mandatory(WalesHousingAct::getAgentLastName,
-                    "walesLicensedAgentAppointed=\"YES\"")
+                    "licensedAgentAppointed=\"YES\"")
                 .mandatory(WalesHousingAct::getAgentLicenceNumber,
-                    "walesLicensedAgentAppointed=\"YES\"")
+                    "licensedAgentAppointed=\"YES\"")
                 .mandatory(WalesHousingAct::getAgentAppointmentDate,
-                    "walesLicensedAgentAppointed=\"YES\"")
+                    "licensedAgentAppointed=\"YES\"")
             .done();
     }
 
