@@ -58,6 +58,7 @@ test.beforeEach(async ({page}, testInfo) => {
   await performAction('housingPossessionClaim');
 });
 
+//Skipping these tests as are failing intermittently which will be fixed as part of HDPI-2306
 test.describe('[Successful Create Case Flow]  @Master @nightly', async () => {
   test('England - Assured tenancy with Rent arrears and other possession grounds', async () => {
     await performAction('selectAddress', {

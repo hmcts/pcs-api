@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd;
 
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.DecentralisedCaseRepository;
@@ -32,6 +33,7 @@ import java.util.stream.Collectors;
 /**
  * Invoked by CCD to load PCS cases under the decentralised model.
  */
+@Slf4j
 @Component
 @AllArgsConstructor
 public class CCDCaseRepository extends DecentralisedCaseRepository<PCSCase> {
@@ -49,12 +51,16 @@ public class CCDCaseRepository extends DecentralisedCaseRepository<PCSCase> {
      */
     @Override
     public PCSCase getCase(long caseReference, String state) {
+        log.info("CCDCaseRepository.getCase(): starting for " + caseReference);
+
         PCSCase pcsCase = getSubmittedCase(caseReference);
 
         boolean hasUnsubmittedCaseData = caseHasUnsubmittedData(caseReference, state);
         pcsCase.setHasUnsubmittedCaseData(YesOrNo.from(hasUnsubmittedCaseData));
 
         setMarkdownFields(pcsCase);
+
+        log.info("CCDCaseRepository.getCase(): returning for " + caseReference);
 
         return pcsCase;
     }
@@ -132,7 +138,7 @@ public class CCDCaseRepository extends DecentralisedCaseRepository<PCSCase> {
             pcsCase.setNextStepsMarkdown("""
                                              <h2 class="govuk-heading-m">Provide more details about your claim</h2>
                                              Your answers will be saved from this point so you can return to your draft
-                                             later.
+                                             later. The case is in state ${[STATE]}.
                                              <br>
                                              <br>
                                              <a href="/cases/case-details/${[CASE_REFERENCE]}/trigger/%s"
