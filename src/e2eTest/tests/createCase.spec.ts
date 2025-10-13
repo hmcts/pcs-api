@@ -5,7 +5,7 @@ import {addressDetails} from '@data/page-data/addressDetails.page.data';
 import {claimantType} from '@data/page-data/claimantType.page.data';
 import {claimType} from '@data/page-data/claimType.page.data';
 import {claimantName} from '@data/page-data/claimantName.page.data';
-import {claimantDetails} from '@data/page-data/claimantDetails.page.data';
+import {walesClaimantDetails} from '@data/page-data/walesClaimantDetails.page.data';
 import {contactPreferences} from '@data/page-data/contactPreferences.page.data';
 import {defendantDetails} from '@data/page-data/defendantDetails.page.data';
 import {tenancyLicenceDetails} from '@data/page-data/tenancyLicenceDetails.page.data';
@@ -476,7 +476,7 @@ test.describe('[Successful Create Case Flow]  @Master @nightly', async () => {
     await performAction('selectClaimantType', claimantType.registeredCommunityLandlord);
     await performAction('selectClaimType', claimType.no);
     await performAction('selectClaimantName', claimantName.no);
-    await performAction('clickButtonAndVerifyPageNavigation', claimantName.continue, claimantDetails.mainHeader);
+    await performAction('clickButtonAndVerifyPageNavigation', claimantName.continue, walesClaimantDetails.mainHeader);
     await performAction('clickButton', 'Sign out');
     await performAction('reloginAndFindTheCase', user.claimantSolicitor);
     await performAction('clickButtonAndVerifyPageNavigation', resumeClaim.continue, resumeClaimOptions.mainHeader);
@@ -486,11 +486,11 @@ test.describe('[Successful Create Case Flow]  @Master @nightly', async () => {
     await performValidation('radioButtonChecked', claimType.no, true);
     await performAction('verifyPageAndClickButton', claimType.continue, claimType.mainHeader);
     await performValidation('radioButtonChecked', claimantName.no, true);
-    await performAction('clickButtonAndVerifyPageNavigation', claimantName.continue, claimantDetails.mainHeader);
+    await performAction('clickButtonAndVerifyPageNavigation', claimantName.continue, walesClaimantDetails.mainHeader);
     await performAction('selectClaimantDetails',
-      {question1: claimantDetails.wereYouRegisteredUnderPart1OfTheHousingAct2014, option1: claimantDetails.yes,
-       question2: claimantDetails.wereYouLicensedUnderPart1OfTheHousingAct2014, option2: claimantDetails.yes,
-       question3: claimantDetails.haveYouAppointedALicenseAgentAgent, option3: claimantDetails.yes});
+      {question1: walesClaimantDetails.wereYouRegisteredUnderPart1OfTheHousingAct2014, option1: walesClaimantDetails.yes,
+       question2: walesClaimantDetails.wereYouLicensedUnderPart1OfTheHousingAct2014, option2: walesClaimantDetails.yes,
+       question3: walesClaimantDetails.haveYouAppointedALicenseAgentAgent, option3: walesClaimantDetails.yes});
     await performAction('selectContactPreferences', {
       notifications: contactPreferences.no,
       correspondenceAddress: contactPreferences.no,
@@ -575,7 +575,7 @@ test.describe('[Successful Create Case Flow]  @Master @nightly', async () => {
     await performAction('selectClaimantType', claimantType.registeredCommunityLandlord);
     await performAction('selectClaimType', claimType.no);
     await performAction('selectClaimantName', claimantName.yes);
-    await performAction('clickButtonAndVerifyPageNavigation', claimantName.continue, claimantDetails.mainHeader);
+    await performAction('clickButtonAndVerifyPageNavigation', claimantName.continue, walesClaimantDetails.mainHeader);
     await performAction('clickButton', 'Sign out');
     await performAction('reloginAndFindTheCase', user.claimantSolicitor);
     await performAction('clickButtonAndVerifyPageNavigation', resumeClaim.continue, resumeClaimOptions.mainHeader);
@@ -586,11 +586,11 @@ test.describe('[Successful Create Case Flow]  @Master @nightly', async () => {
     await performAction('selectClaimType', claimType.no);
     await performValidation('radioButtonChecked', claimantName.no, false);
     await performAction('selectClaimantName', claimantName.yes);
-    await performAction('clickButtonAndVerifyPageNavigation', claimantName.continue, claimantDetails.mainHeader);
+    await performAction('clickButtonAndVerifyPageNavigation', claimantName.continue, walesClaimantDetails.mainHeader);
     await performAction('selectClaimantDetails',
-      {question1: claimantDetails.wereYouRegisteredUnderPart1OfTheHousingAct2014, option1: claimantDetails.no,
-       question2: claimantDetails.wereYouLicensedUnderPart1OfTheHousingAct2014, option2: claimantDetails.no,
-       question3: claimantDetails.haveYouAppointedALicenseAgentAgent, option3: claimantDetails.no});
+      {question1: walesClaimantDetails.wereYouRegisteredUnderPart1OfTheHousingAct2014, option1: walesClaimantDetails.no,
+       question2: walesClaimantDetails.wereYouLicensedUnderPart1OfTheHousingAct2014, option2: walesClaimantDetails.no,
+       question3: walesClaimantDetails.haveYouAppointedALicenseAgentAgent, option3: walesClaimantDetails.no});
     await performAction('selectContactPreferences', {
       notifications: contactPreferences.yes,
       correspondenceAddress: contactPreferences.yes,
@@ -674,11 +674,11 @@ test.describe('[Successful Create Case Flow]  @Master @nightly', async () => {
     await performAction('selectClaimantType', claimantType.registeredCommunityLandlord);
     await performAction('selectClaimType', claimType.no);
     await performAction('selectClaimantName', claimantName.no);
-    await performAction('clickButtonAndVerifyPageNavigation', claimantName.continue, claimantDetails.mainHeader);
+    await performAction('clickButtonAndVerifyPageNavigation', claimantName.continue, walesClaimantDetails.mainHeader);
     await performAction('selectClaimantDetails',
-      {question1: claimantDetails.wereYouRegisteredUnderPart1OfTheHousingAct2014, option1: claimantDetails.notApplicable,
-       question2: claimantDetails.wereYouLicensedUnderPart1OfTheHousingAct2014, option2: claimantDetails.notApplicable,
-       question3: claimantDetails.haveYouAppointedALicenseAgentAgent, option3: claimantDetails.notApplicable});
+      {question1: walesClaimantDetails.wereYouRegisteredUnderPart1OfTheHousingAct2014, option1: walesClaimantDetails.notApplicable,
+       question2: walesClaimantDetails.wereYouLicensedUnderPart1OfTheHousingAct2014, option2: walesClaimantDetails.notApplicable,
+       question3: walesClaimantDetails.haveYouAppointedALicenseAgentAgent, option3: walesClaimantDetails.notApplicable});
     await performAction('selectContactPreferences', {
       notifications: contactPreferences.no,
       correspondenceAddress: contactPreferences.no,
