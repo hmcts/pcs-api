@@ -5,6 +5,8 @@ import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.DecentralisedCaseRepository;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
+import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
+import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
@@ -18,7 +20,7 @@ import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.UnsubmittedCaseDataService;
-import uk.gov.hmcts.reform.pcs.ccd.utils.ListValueUtils;
+import uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
@@ -73,6 +75,14 @@ public class CCDCaseRepository extends DecentralisedCaseRepository<PCSCase> {
             .propertyAddress(convertAddress(pcsCaseEntity.getPropertyAddress()))
             .legislativeCountry(pcsCaseEntity.getLegislativeCountry())
             .caseManagementLocation(pcsCaseEntity.getCaseManagementLocation())
+            .claimantType(pcsCaseEntity.getClaimantType() != null 
+                ? DynamicStringList.builder()
+                    .value(DynamicStringListElement.builder()
+                        .code(pcsCaseEntity.getClaimantType().name())
+                        .label(pcsCaseEntity.getClaimantType().getLabel())
+                        .build())
+                    .build() 
+                : null)
             .preActionProtocolCompleted(pcsCaseEntity.getPreActionProtocolCompleted() != null
                 ? VerticalYesNo.from(pcsCaseEntity.getPreActionProtocolCompleted())
                 : null)

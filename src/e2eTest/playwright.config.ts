@@ -11,8 +11,8 @@ export default defineConfig({
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   /* Retry on CI only */
-  retries: process.env.CI ? 2 : 0,
-  workers: process.env.CI ? 4 : 2,  
+  retries: process.env.CI ? 3 : 0,
+  workers: process.env.CI ? 4 : 2,
   timeout: 150 * 1000,
   expect: { timeout: 10 * 1000 },
   use: { actionTimeout: 10 * 1000, navigationTimeout: 10 * 1000 },
@@ -44,7 +44,7 @@ export default defineConfig({
         trace: 'on-first-retry',
         javaScriptEnabled: true,
         viewport: DEFAULT_VIEWPORT,
-        headless: process.env.CI? true : false,
+        headless: !!process.env.CI,
       },
     },
     ...(process.env.CI ? [
@@ -58,7 +58,7 @@ export default defineConfig({
           trace: 'on-first-retry' as const,
           javaScriptEnabled: true,
           viewport: DEFAULT_VIEWPORT,
-          headless: process.env.CI? true : false,
+          headless: !!process.env.CI,
         }
       }
     ] : [])
