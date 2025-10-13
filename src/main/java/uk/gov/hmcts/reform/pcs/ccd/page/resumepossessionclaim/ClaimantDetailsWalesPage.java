@@ -33,24 +33,24 @@ public class ClaimantDetailsWalesPage implements CcdPageConfiguration {
             .showCondition("legislativeCountry=\"Wales\"")
             .label("claimantDetailsWales-info", "---")
             .complex(PCSCase::getWalesHousingAct)
-                .mandatory(WalesHousingAct::getRegistered)
-                .mandatory(WalesHousingAct::getRegistrationNumber,
+                .mandatory(WalesHousingAct::getWalesRegistered)
+                .mandatory(WalesHousingAct::getWalesRegistrationNumber,
                     "walesRegistered=\"YES\"")
-                .mandatory(WalesHousingAct::getLicensed)
-                .mandatory(WalesHousingAct::getLicenceNumber,
+                .mandatory(WalesHousingAct::getWalesLicensed)
+                .mandatory(WalesHousingAct::getWalesLicenceNumber,
                     "walesLicensed=\"YES\"")
-                .mandatory(WalesHousingAct::getLicensedAgentAppointed)
+                .mandatory(WalesHousingAct::getWalesLicensedAgentAppointed)
                 .label("walesAgentDetails-label", """
                 <h3 class="govuk-heading-s">Give details of your licensed agent</h3>
                 """,
                     "walesLicensedAgentAppointed=\"YES\"")
-                .mandatory(WalesHousingAct::getAgentFirstName,
+                .mandatory(WalesHousingAct::getWalesAgentFirstName,
                     "walesLicensedAgentAppointed=\"YES\"")
-                .mandatory(WalesHousingAct::getAgentLastName,
+                .mandatory(WalesHousingAct::getWalesAgentLastName,
                     "walesLicensedAgentAppointed=\"YES\"")
-                .mandatory(WalesHousingAct::getAgentLicenceNumber,
+                .mandatory(WalesHousingAct::getWalesAgentLicenceNumber,
                     "walesLicensedAgentAppointed=\"YES\"")
-                .mandatory(WalesHousingAct::getAgentAppointmentDate,
+                .mandatory(WalesHousingAct::getWalesAgentAppointmentDate,
                     "walesLicensedAgentAppointed=\"YES\"")
             .done();
     }
@@ -62,8 +62,8 @@ public class ClaimantDetailsWalesPage implements CcdPageConfiguration {
         // Validate agent appointment date is in the past
         WalesHousingAct walesHousingAct = caseData.getWalesHousingAct();
         if (walesHousingAct != null) {
-            LocalDate appointmentDate = walesHousingAct.getAgentAppointmentDate();
-            if (appointmentDate != null && walesHousingAct.getLicensedAgentAppointed() == YES) {
+            LocalDate appointmentDate = walesHousingAct.getWalesAgentAppointmentDate();
+            if (appointmentDate != null && walesHousingAct.getWalesLicensedAgentAppointed() == YES) {
                 LocalDate currentDate = LocalDate.now(ukClock);
                 if (appointmentDate.isAfter(currentDate)) {
                     return AboutToStartOrSubmitResponse.<PCSCase, State>builder()

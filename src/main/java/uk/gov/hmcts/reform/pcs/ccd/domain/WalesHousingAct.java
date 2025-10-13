@@ -13,52 +13,52 @@ public class WalesHousingAct {
     @CCD(
         label = "Were you registered under Part 1 of the Housing (Wales) Act 2014?"
     )
-    private YesNoNotApplicable registered;
+    private YesNoNotApplicable walesRegistered;
 
     @CCD(
         label = "What's your registration number?",
         max = 40
     )
-    private String registrationNumber;
+    private String walesRegistrationNumber;
 
     @CCD(
         label = "Were you licensed under Part 1 of the Housing (Wales) Act 2014?"
     )
-    private YesNoNotApplicable licensed;
+    private YesNoNotApplicable walesLicensed;
 
     @CCD(
         label = "What's your licence number?",
         max = 40
     )
-    private String licenceNumber;
+    private String walesLicenceNumber;
 
     @CCD(
         label = "Have you appointed a licensed agent to be responsible for all the property management work "
             + "in relation to the dwelling as permitted under Part 1 of the Housing (Wales) Act 2014?"
     )
-    private YesNoNotApplicable licensedAgentAppointed;
+    private YesNoNotApplicable walesLicensedAgentAppointed;
 
     @CCD(
         label = "Agent's first name",
         max = 40
     )
-    private String agentFirstName;
+    private String walesAgentFirstName;
 
     @CCD(
         label = "Agent's last name",
         max = 40
     )
-    private String agentLastName;
+    private String walesAgentLastName;
 
     @CCD(
         label = "Agent's licence number",
         max = 40
     )
-    private String agentLicenceNumber;
+    private String walesAgentLicenceNumber;
 
     @CCD(
         label = "Agent's date of appointment",
         hint = "For example, 16 4 2021"
     )
-    private LocalDate agentAppointmentDate;
+    private LocalDate walesAgentAppointmentDate;
 }
