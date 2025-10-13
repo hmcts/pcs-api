@@ -351,8 +351,7 @@ test.describe('[Successful Create Case Flow]  @Master @nightly', async () => {
     await performValidation('mainHeader', housingAct.mainHeader);
     await performAction('selectHousingAct', [{question: housingAct.demotionOfTenancy.whichSection
       , option: housingAct.demotionOfTenancy.section82AHousingAct1985}]);
-    //Modified as 'No' to proceed further, will be reverted once we have confirmation from dev on duplicator label
-    await performAction('selectStatementOfExpressTerms', statementOfExpressTerms.no);
+    await performAction('selectStatementOfExpressTerms', statementOfExpressTerms.yes);
     await performValidation('mainHeader', reasonsForRequestingADemotionOrder.mainHeader);
     await performAction('enterReasonForDemotionOrder', reasonsForRequestingADemotionOrder.requestDemotionOrderQuestion);
     await performValidation('mainHeader', claimingCosts.mainHeader);
@@ -456,8 +455,7 @@ test.describe('[Successful Create Case Flow]  @Master @nightly', async () => {
       , {question: housingAct.demotionOfTenancy.whichSection
       , option: housingAct.demotionOfTenancy.section82AHousingAct1985}]);
     await performValidation('mainHeader', statementOfExpressTerms.mainHeader);
-    //Modified as 'No' to proceed further, will be reverted once we have confirmation from dev on duplicator label
-    await performAction('selectStatementOfExpressTerms', statementOfExpressTerms.no);
+    await performAction('selectStatementOfExpressTerms', statementOfExpressTerms.yes);
     await performValidation('mainHeader', reasonsForRequestingASuspensionAndDemotionOrder.mainHeader);
     await performAction('enterReasonForSuspensionAndDemotionOrder'
       , {suspension: reasonsForRequestingASuspensionAndDemotionOrder.requestSuspensionOrderQuestion
