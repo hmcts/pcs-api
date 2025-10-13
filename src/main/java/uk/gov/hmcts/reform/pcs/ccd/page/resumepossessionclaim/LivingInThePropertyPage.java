@@ -29,6 +29,7 @@ public class LivingInThePropertyPage implements CcdPageConfiguration {
                        <li>Own an aggressive dog or other animal</li>
                      </ul>
                     """)
+            .mandatory(PCSCase::getConfirmLivingAtProperty)
             .done();
     }
 

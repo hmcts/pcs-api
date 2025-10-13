@@ -622,4 +622,9 @@ public class PCSCase {
         typeOverride = FieldType.Label
     )
     private String riskFactorsList;
+
+    @CCD(
+        label = "Does anyone living at the property pose a risk to the bailiff?"
+    )
+    private VerticalChoice confirmLivingAtProperty;
 }
