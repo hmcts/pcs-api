@@ -166,7 +166,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
         PCSCase caseData = eventPayload.caseData();
 
         String userDetails = securityContextService.getCurrentUserDetails().getSub();
-        caseData.setClaimantName(userDetails);
+        caseData.getClaimantNamePageDefinitions().setClaimantName(userDetails);
         caseData.setClaimantContactEmail(userDetails);
 
         AddressUK propertyAddress = caseData.getPropertyAddress();
@@ -236,8 +236,9 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
         UserInfo userDetails = securityContextService.getCurrentUserDetails();
         UUID userID = UUID.fromString(userDetails.getUid());
 
-        String claimantName = isNotBlank(pcsCase.getOverriddenClaimantName())
-            ? pcsCase.getOverriddenClaimantName() : pcsCase.getClaimantName();
+        String claimantName = isNotBlank(pcsCase.getClaimantNamePageDefinitions().getOverriddenClaimantName())
+            ? pcsCase.getClaimantNamePageDefinitions().getOverriddenClaimantName()
+            : pcsCase.getClaimantNamePageDefinitions().getClaimantName();
 
         AddressUK contactAddress = pcsCase.getOverriddenClaimantContactAddress() != null
             ? pcsCase.getOverriddenClaimantContactAddress() : pcsCase.getPropertyAddress();

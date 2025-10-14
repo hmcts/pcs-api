@@ -12,6 +12,7 @@ import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.domain.page.CrossBorderPageDefinitions;
 import uk.gov.hmcts.reform.pcs.postcodecourt.exception.EligibilityCheckException;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.EligibilityResult;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
@@ -34,37 +35,39 @@ public class CrossBorderPostcodeSelection implements CcdPageConfiguration {
             .page("crossBorderPostcodeSelection", this::midEvent)
             .pageLabel("Border postcode")
             .showCondition("showCrossBorderPage=\"Yes\"")
-            .readonly(PCSCase::getShowCrossBorderPage, NEVER_SHOW)
-            .readonly(PCSCase::getCrossBorderCountry1, NEVER_SHOW, true)
-            .readonly(PCSCase::getCrossBorderCountry2, NEVER_SHOW, true)
-            .label("crossBorderPostcodeSelection-info", """
-                ---
-                <section tabindex="0">
-                <p class="govuk-body">
-                Your postcode includes properties in ${crossBorderCountry1} and ${crossBorderCountry2}. We need to know
-                which country your property is in, as the law is different in each country.
-                </p>
+            .complex(PCSCase::getCrossBorderPageDefinitions)
+                .readonly(CrossBorderPageDefinitions::getShowCrossBorderPage, NEVER_SHOW)
+                .readonly(CrossBorderPageDefinitions::getCrossBorderCountry1, NEVER_SHOW, true)
+                .readonly(CrossBorderPageDefinitions::getCrossBorderCountry2, NEVER_SHOW, true)
+                .label("crossBorderPostcodeSelection-info", """
+                    ---
+                    <section tabindex="0">
+                    <p class="govuk-body">
+                    Your postcode includes properties in ${crossBorderCountry1} and ${crossBorderCountry2}.
+                     We need to know which country your property is in, as the law is different in each country.
+                    </p>
 
-                <p class="govuk-body">
-                If you're not sure which country your property is in, try searching for your
-                address on the land and property register.
-                </p>
+                    <p class="govuk-body">
+                    If you're not sure which country your property is in, try searching for your
+                    address on the land and property register.
+                    </p>
 
-                <div class="govuk-warning-text" role="alert" aria-labelledby="warning-message">
-                  <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
-                  <strong class="govuk-warning-text__text">
-                    <span class="govuk-warning-text__assistive">Warning</span>
-                    <span id="warning-message">
-                      Your case could be delayed or rejected if you select the wrong country.
-                    </span>
-                  </strong>
-                </div>
-                </section>
-                """)
-            .mandatory(PCSCase::getCrossBorderCountriesList,
-                null,
-                null,
-                "Is the property located in ${crossBorderCountry1} or ${crossBorderCountry2}?");
+                    <div class="govuk-warning-text" role="alert" aria-labelledby="warning-message">
+                      <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+                      <strong class="govuk-warning-text__text">
+                        <span class="govuk-warning-text__assistive">Warning</span>
+                        <span id="warning-message">
+                          Your case could be delayed or rejected if you select the wrong country.
+                        </span>
+                      </strong>
+                    </div>
+                    </section>
+                    """)
+                .mandatory(CrossBorderPageDefinitions::getCrossBorderCountriesList,
+                    null,
+                    null,
+                    "Is the property located in ${crossBorderCountry1} or ${crossBorderCountry2}?")
+                .done();
     }
 
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
@@ -130,7 +133,7 @@ public class CrossBorderPostcodeSelection implements CcdPageConfiguration {
     }
 
     private String getSelectedCountryCode(PCSCase caseData) {
-        return caseData.getCrossBorderCountriesList().getValue().getCode();
+        return caseData.getCrossBorderPageDefinitions().getCrossBorderCountriesList().getValue().getCode();
     }
 
     private String getPostcode(PCSCase caseData) {

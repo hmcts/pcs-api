@@ -111,6 +111,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
         // Given
         PCSCase caseData = PCSCase.builder()
             .legislativeCountry(WALES)
+            .claimantNamePageDefinitions(new ClaimantNamePageDefinitions())
             .build();
 
         // When
@@ -127,6 +128,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
         // Given
         PCSCase caseData = PCSCase.builder()
             .propertyAddress(mock(AddressUK.class))
+            .claimantNamePageDefinitions(new ClaimantNamePageDefinitions())
             .build();
 
         // When
@@ -155,6 +157,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
 
         PCSCase caseData = PCSCase.builder()
             .propertyAddress(propertyAddress)
+            .claimantNamePageDefinitions(new ClaimantNamePageDefinitions())
             .legislativeCountry(WALES)
             .build();
 
@@ -162,7 +165,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
         PCSCase updatedCaseData = callStartHandler(caseData);
 
         // Then
-        assertThat(updatedCaseData.getClaimantName()).isEqualTo(expectedUserEmail);
+        assertThat(updatedCaseData.getClaimantNamePageDefinitions().getClaimantName()).isEqualTo(expectedUserEmail);
         assertThat(updatedCaseData.getClaimantContactEmail()).isEqualTo(expectedUserEmail);
         assertThat(updatedCaseData.getFormattedClaimantContactAddress())
             .isEqualTo("10 High Street<br>London<br>W1 2BC");
@@ -175,6 +178,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
         // Given
         PCSCase caseData = PCSCase.builder()
             .propertyAddress(mock(AddressUK.class))
+            .claimantNamePageDefinitions(new ClaimantNamePageDefinitions())
             .legislativeCountry(legislativeCountry)
             .build();
 
@@ -198,6 +202,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
         // Given
         PCSCase caseData = PCSCase.builder()
             .legislativeCountry(WALES)
+            .claimantNamePageDefinitions(new ClaimantNamePageDefinitions())
             .claimantCircumstances(mock(ClaimantCircumstances.class))
             .claimingCostsWanted(VerticalYesNo.YES)
             .build();
@@ -253,12 +258,12 @@ class ResumePossessionClaimTest extends BaseEventTest {
 
         // Then
         verify(partyService).createPartyEntity(
-            eq(USER_ID),
-            eq(claimantName),
-            eq(null),
-            eq(claimantContactEmail),
-            eq(propertyAddress),
-            eq(claimantContactPhoneNumber)
+            USER_ID,
+            claimantName,
+            null,
+            claimantContactEmail,
+            propertyAddress,
+            claimantContactPhoneNumber
         );
     }
 
@@ -276,7 +281,11 @@ class ResumePossessionClaimTest extends BaseEventTest {
         ClaimEntity claimEntity = mock(ClaimEntity.class);
         when(claimService.createMainClaimEntity(any(PCSCase.class), any(PartyEntity.class))).thenReturn(claimEntity);
 
-        PCSCase caseData = mock(PCSCase.class);
+        PCSCase caseData = PCSCase.builder()
+            .claimantNamePageDefinitions(new ClaimantNamePageDefinitions())
+            .legislativeCountry(WALES)
+            .claimingCostsWanted(VerticalYesNo.YES)
+            .build();
 
         // When
         callSubmitHandler(caseData);

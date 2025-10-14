@@ -55,10 +55,9 @@ public class PCSCase {
     @CCD(label = "Do you want to resume your claim using your saved answers?")
     private YesOrNo resumeClaimKeepAnswers;
 
-    @Delegate
+    @CCD
     @JsonUnwrapped
-    @Builder.Default
-    private ClaimantNamePageDefinitions claimantNamePageDefinitions = ClaimantNamePageDefinitions.builder().build();
+    private ClaimantNamePageDefinitions claimantNamePageDefinitions;
 
     @CCD(
         searchable = false,

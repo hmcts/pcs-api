@@ -73,7 +73,7 @@ public class EnterPropertyAddress implements CcdPageConfiguration {
                 setupCrossBorderData(caseData, eligibilityResult.getLegislativeCountries());
             }
             case NOT_ELIGIBLE -> {
-                caseData.setShowCrossBorderPage(YesOrNo.NO);
+                caseData.getCrossBorderPageDefinitions().setShowCrossBorderPage(YesOrNo.NO);
                 caseData.setShowPropertyNotEligiblePage(YesOrNo.YES);
                 caseData.setLegislativeCountry(eligibilityResult.getLegislativeCountry());
             }
@@ -81,14 +81,14 @@ public class EnterPropertyAddress implements CcdPageConfiguration {
                 log.debug("No court found for postcode: {}", postcode);
                 caseData.setShowPostcodeNotAssignedToCourt(YesOrNo.YES);
                 caseData.setPostcodeNotAssignedView("ALL_COUNTRIES");
-                caseData.setShowCrossBorderPage(YesOrNo.NO);
+                caseData.getCrossBorderPageDefinitions().setShowCrossBorderPage(YesOrNo.NO);
             }
             case MULTIPLE_MATCHES_FOUND -> {
                 // TODO: HDPI-1838 will handle multiple matches
                 throw new UnsupportedOperationException("TODO: Not yet implemented");
             }
             case ELIGIBLE -> {
-                caseData.setShowCrossBorderPage(YesOrNo.NO);
+                caseData.getCrossBorderPageDefinitions().setShowCrossBorderPage(YesOrNo.NO);
                 caseData.setShowPostcodeNotAssignedToCourt(YesOrNo.NO);
                 caseData.setLegislativeCountry(eligibilityResult.getLegislativeCountry());
             }
@@ -111,7 +111,7 @@ public class EnterPropertyAddress implements CcdPageConfiguration {
     }
 
     private void setupCrossBorderData(PCSCase caseData, List<LegislativeCountry> legislativeCountries) {
-        caseData.setShowCrossBorderPage(YesOrNo.YES);
+        caseData.getCrossBorderPageDefinitions().setShowCrossBorderPage(YesOrNo.YES);
 
         List<DynamicStringListElement> crossBorderCountries =
             createCrossBorderCountriesList(legislativeCountries);
@@ -119,10 +119,10 @@ public class EnterPropertyAddress implements CcdPageConfiguration {
             .listItems(crossBorderCountries)
             .build();
 
-        caseData.setCrossBorderCountriesList(crossBorderCountriesList);
+        caseData.getCrossBorderPageDefinitions().setCrossBorderCountriesList(crossBorderCountriesList);
         // Set individual cross border countries
-        caseData.setCrossBorderCountry1(crossBorderCountries.get(0).getLabel());
-        caseData.setCrossBorderCountry2(crossBorderCountries.get(1).getLabel());
+        caseData.getCrossBorderPageDefinitions().setCrossBorderCountry1(crossBorderCountries.get(0).getLabel());
+        caseData.getCrossBorderPageDefinitions().setCrossBorderCountry2(crossBorderCountries.get(1).getLabel());
     }
 
     private List<DynamicStringListElement> createCrossBorderCountriesList(

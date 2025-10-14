@@ -60,6 +60,7 @@ class CitizenCreateApplicationTest extends CftlibTest {
     void citizenCreatesApplication() {
 
         PCSCase caseData = PCSCase.builder()
+            .claimantNamePageDefinitions(ClaimantNamePageDefinitions.builder().build())
             .propertyAddress(
                 AddressUK.builder()
                     .addressLine1("123 Baker Street")
@@ -69,14 +70,11 @@ class CitizenCreateApplicationTest extends CftlibTest {
                     .postCode("NW1 6XE")
                     .build()
             )
-            .claimantNamePageDefinitions(
-                ClaimantNamePageDefinitions.builder()
-                    .claimantName("Wrong name")
-                    .isClaimantNameCorrect(VerticalYesNo.NO)
-                    .overriddenClaimantName("New Name")
-                    .build()
-            )
             .build();
+
+        caseData.getClaimantNamePageDefinitions().setClaimantName("Wrong name");
+        caseData.getClaimantNamePageDefinitions().setIsClaimantNameCorrect(VerticalYesNo.NO);
+        caseData.getClaimantNamePageDefinitions().setOverriddenClaimantName("New Name");
 
         CaseDetails caseDetails = startAndSubmitCreationEvent(citizenCreateApplication, caseData);
 
