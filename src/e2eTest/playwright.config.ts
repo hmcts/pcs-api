@@ -12,10 +12,10 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   /* Retry on CI only */
   retries: process.env.CI ? 3 : 0,
-  workers: process.env.CI ? 4 : 2,
+  workers: process.env.CI ? 2 : 2,
   timeout: 150 * 1000,
   expect: { timeout: 10 * 1000 },
-  use: { actionTimeout: 20 * 1000, navigationTimeout: 10 * 1000 },
+  use: { actionTimeout: 10 * 1000, navigationTimeout: 10 * 1000 },
   /* Report slow tests if they take longer than 5 mins */
   reportSlowTests: { max: 15, threshold: 5 * 60 * 1000 },
   globalSetup: require.resolve('./config/global-setup.config'),
