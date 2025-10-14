@@ -43,6 +43,7 @@ import {housingAct} from '@data/page-data/housingAct.page.data';
 import {reasonsForRequestingADemotionOrder} from '@data/page-data/reasonsForRequestingADemotionOrder.page.data';
 import {statementOfExpressTerms} from '@data/page-data/statementOfExpressTerms.page.data';
 import {wantToUploadDocuments} from '@data/page-data/wantToUploadDocuments.page.data';
+import {occupationContractOrLicenceDetailsWales} from '@data/page-data/occupationContractOrLicenceDetailsWales.page.data';
 
 test.beforeEach(async ({page}) => {
   initializeExecutor(page);
@@ -494,8 +495,12 @@ test.describe('[Create Case] @Master @nightly', async () => {
       email: defendantDetails.yes,
       correspondenceAddressSame: defendantDetails.yes
     });
-    await performAction('selectTenancyOrLicenceDetails', {
-      tenancyOrLicenceType: tenancyLicenceDetails.assuredTenancy});
+    await performAction('selectOccupationContractOrLicenceDetails', {
+      occupationContractType: occupationContractOrLicenceDetailsWales.secureContract,
+      day: occupationContractOrLicenceDetailsWales.day,
+      month: occupationContractOrLicenceDetailsWales.month,
+      year: occupationContractOrLicenceDetailsWales.year,
+      files: 'occupationContract.pdf'});
     await performValidation('mainHeader', groundsForPossession.mainHeader);
     await performAction('selectGroundsForPossession', {groundsRadioInput: groundsForPossession.yes});
     await performAction('selectRentArrearsPossessionGround', {
@@ -589,8 +594,8 @@ test.describe('[Create Case] @Master @nightly', async () => {
       email: defendantDetails.no,
     });
     await performValidation('mainHeader', tenancyLicenceDetails.mainHeader);
-    await performAction('selectTenancyOrLicenceDetails', {
-      tenancyOrLicenceType: tenancyLicenceDetails.flexibleTenancy});
+    await performAction('selectOccupationContractOrLicenceDetails', {
+      occupationContractType: occupationContractOrLicenceDetailsWales.secureContract});
     await performAction('selectYourPossessionGrounds', {
       discretionary: [whatAreYourGroundsForPossession.discretionary.rentArrearsOrBreachOfTenancy]
     });
@@ -672,9 +677,8 @@ test.describe('[Create Case] @Master @nightly', async () => {
       email: defendantDetails.yes,
       correspondenceAddressSame: defendantDetails.yes
     });
-    await performAction('selectTenancyOrLicenceDetails', {
-      tenancyOrLicenceType: tenancyLicenceDetails.secureTenancy
-    });
+    await performAction('selectOccupationContractOrLicenceDetails', {
+      occupationContractType: occupationContractOrLicenceDetailsWales.secureContract});
     await performValidation('mainHeader', whatAreYourGroundsForPossession.mainHeader);
     await performAction('selectYourPossessionGrounds', {
       discretionary: [whatAreYourGroundsForPossession.discretionary.rentArrearsOrBreachOfTenancy, whatAreYourGroundsForPossession.discretionary.deteriorationOfFurniture],

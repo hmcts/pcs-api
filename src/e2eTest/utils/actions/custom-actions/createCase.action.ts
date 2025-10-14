@@ -46,7 +46,7 @@ import {search} from '@data/page-data/search.page.data';
 import {userIneligible} from '@data/page-data/userIneligible.page.data';
 
 export let caseInfo: { id: string; fid: string; state: string };
-let caseNumber: string;
+export let caseNumber: string;
 export let claimantsName: string;
 
 export class CreateCaseAction implements IAction {
@@ -330,6 +330,7 @@ export class CreateCaseAction implements IAction {
     }
     await performAction('clickButton', tenancyLicenceDetails.continue);
   }
+
   private async selectYourPossessionGrounds(possessionGrounds: actionData) {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
     const grounds = possessionGrounds as {
