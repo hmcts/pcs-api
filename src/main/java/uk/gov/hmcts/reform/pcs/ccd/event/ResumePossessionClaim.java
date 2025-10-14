@@ -175,7 +175,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             caseData.setOrganisationName(organisationName);
         } else {
             // Fallback to user details if organisation name cannot be retrieved
-            caseData.setClaimantName(userDetails);
+            caseData.setOrganisationName(userDetails);
             log.warn("Could not retrieve organisation name, using user details as fallback");
         }
 
