@@ -63,7 +63,7 @@ public class EnforcementOrderEvent implements CCDConfig<PCSCase, State, UserRole
             );
         AddressUK propertyAddress = caseData.getPropertyAddress();
         String formattedAddress = String.format(
-            "%s<br>%s<br>%s",
+            "%s<br />%s<br />%s",
             propertyAddress.getAddressLine1(),
             propertyAddress.getPostTown(),
             propertyAddress.getPostCode()

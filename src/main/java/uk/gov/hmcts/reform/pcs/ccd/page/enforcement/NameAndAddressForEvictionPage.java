@@ -1,11 +1,8 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.enforcement;
 
-import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
-import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.EnforcementMultiLabel;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.EnforcementOrder;
 
@@ -16,7 +13,7 @@ public class NameAndAddressForEvictionPage implements CcdPageConfiguration {
     @Override
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
-            .page("enforcementEvictionNameAndAddress", this::midEvent)
+            .page("enforcementEvictionNameAndAddress")
             .pageLabel("The name and address for the eviction")
             .readonly(PCSCase::getDefendant1, NEVER_SHOW)
             .label(
@@ -31,7 +28,7 @@ public class NameAndAddressForEvictionPage implements CcdPageConfiguration {
                                 <h3 class="govuk-heading-s">Defendants</h3>
                               </div>
                               <div class="govuk-grid-column-one-third">
-                                <p class="govuk-body">${defendant1.firstName}</p>
+                                <p class="govuk-body">${defendant1.firstName} ${defendant1.lastName}</p>
                               </div>
                             </div>
                           </main>
@@ -65,13 +62,6 @@ public class NameAndAddressForEvictionPage implements CcdPageConfiguration {
             .mandatory(EnforcementOrder::getNameAndAddressForEviction)
             .label("enforcementNameAndAddressPage-details-save-and-return", EnforcementMultiLabel.SAVE_AND_RETURN);
 
-    }
-
-    private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
-                                                                  CaseDetails<PCSCase, State> detailsBefore) {
-        return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
-            .data(details.getData())
-            .build();
     }
 
 }
