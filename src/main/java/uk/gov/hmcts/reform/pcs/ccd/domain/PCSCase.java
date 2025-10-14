@@ -629,4 +629,7 @@ public class PCSCase {
         typeParameterOverride = "EstateManagementGrounds"
     )
     private Set<EstateManagementGrounds> estateManagementGrounds;
+
+    @CCD(searchable = false)
+    private YesOrNo showReasonsForGroundsPageWales;
 }

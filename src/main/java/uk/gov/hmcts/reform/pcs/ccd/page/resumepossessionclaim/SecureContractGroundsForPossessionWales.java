@@ -5,6 +5,7 @@ import java.util.Set;
 
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.EstateManagementGrounds;
@@ -67,6 +68,9 @@ public class SecureContractGroundsForPossessionWales implements CcdPageConfigura
                     .errors(List.of("Please select at least one ground"))
                     .build();
         }
+
+        caseData.setShowReasonsForGroundsPageWales(YesOrNo.YES);
+
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
                 .data(caseData)
                 .build();
