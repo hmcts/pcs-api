@@ -464,7 +464,7 @@ public class PCSCase {
 
     @CCD(
             label = "Enter your grounds for possession",
-            hint = "You'll be able to explain your reasons for claiming Possession"
+            hint = "You'll be able to explain your reasons for claiming possession"
                     + " under these grounds on the next screen",
             typeOverride = TextArea
     )
@@ -571,6 +571,9 @@ public class PCSCase {
 
     @JsonUnwrapped
     private SuspensionOfRightToBuy suspensionOfRightToBuy;
+
+    @JsonUnwrapped
+    private DemotionOfTenancy demotionOfTenancy;
 
     private AdditionalReasons additionalReasonsForPossession;
 
