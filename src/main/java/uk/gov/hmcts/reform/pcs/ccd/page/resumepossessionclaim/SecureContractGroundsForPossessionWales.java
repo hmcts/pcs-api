@@ -20,6 +20,8 @@ public class SecureContractGroundsForPossessionWales implements CcdPageConfigura
         pageBuilder
                 .page("secureOrFlexibleGroundsForPossessionWales", this::midEvent)
                 .pageLabel("What are your grounds for possession? (Wales)")
+                // TODO - Once HDPI-2365 is implemented the condition can be added
+                // .showCondition("typeOfTenancyLicence=\"SECURE_CONTRACT\" ") 
                 .label("secureOrFlexibleGroundsForPossessionWales-info", """
                ---
                <p class="govuk-body" tabindex="0">
@@ -37,8 +39,8 @@ public class SecureContractGroundsForPossessionWales implements CcdPageConfigura
 
                """)
                 .optional(PCSCase::getSecureContractDiscretionaryGrounds)
-                .optional(PCSCase::getEstateManagementGrounds, 
-                    "secureContractDiscretionaryGrounds=\"ESTATE_MANAGEMENT_GROUNDS\"")
+                .optional(PCSCase::getEstateManagementGrounds,
+                        "secureContractDiscretionaryGroundsCONTAINS\"ESTATE_MANAGEMENT_GROUNDS\"")
                 .optional(PCSCase::getSecureContractMandatoryGrounds);
     }
 
