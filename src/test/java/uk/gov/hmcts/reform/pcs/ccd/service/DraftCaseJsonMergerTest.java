@@ -1,23 +1,21 @@
 package uk.gov.hmcts.reform.pcs.ccd.service;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.module.paramnames.ParameterNamesModule;
+import org.instancio.Instancio;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.domain.UnsubmittedCaseDataMixIn;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.model.NoRentArrearsReasonForGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
-import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
+import uk.gov.hmcts.reform.pcs.config.JacksonConfiguration;
 
 import java.util.List;
 
-import static net.javacrumbs.jsonunit.assertj.JsonAssertions.assertThatJson;
+import static org.assertj.core.api.Assertions.assertThat;
 
 class DraftCaseJsonMergerTest {
 
@@ -27,87 +25,68 @@ class DraftCaseJsonMergerTest {
 
     @BeforeEach
     void setUp() {
-        objectMapper = createObjectMapper();
+        // Use the real object mapper, (without the Mixin), to ensure that it is also configured correctly
+        objectMapper = new JacksonConfiguration().unsubmittedCaseDataObjectMapper();
+        objectMapper.addMixIn(PCSCase.class, null);
+
         underTest = new DraftCaseJsonMerger(objectMapper);
     }
 
     @Test
-    void shouldMergeJson() throws JsonProcessingException {
+    void shouldKeepExistingFieldsWhenMerging() throws JsonProcessingException {
         // Given
-        DynamicStringListElement privateLandlordElement = createListElement(ClaimantType.PRIVATE_LANDLORD);
-        DynamicStringListElement communityLandlordElement = createListElement(ClaimantType.COMMUNITY_LANDLORD);
+        PCSCase existingCaseData = Instancio.create(PCSCase.class);
+        existingCaseData.setWelshUsed(VerticalYesNo.NO);
+        String baseJson = objectMapper.writeValueAsString(existingCaseData);
 
-        List<DynamicStringListElement> listItems = List.of(privateLandlordElement, communityLandlordElement);
-
-        DynamicStringList claimantTypeList = DynamicStringList.builder()
-            .value(privateLandlordElement)
-            .listItems(listItems)
-            .build();
-
-        PCSCase basePcsCase = PCSCase.builder()
-            .legislativeCountry(LegislativeCountry.ENGLAND)
-            .arrearsJudgmentWanted(YesOrNo.YES)
-            .claimantType(claimantTypeList)
-            .build();
-
-        String baseJson = objectMapper.writeValueAsString(basePcsCase);
-
-        claimantTypeList = DynamicStringList.builder()
-            .value(communityLandlordElement)
-            .listItems(listItems)
-            .build();
-
-        PCSCase updatedPcsCase = PCSCase.builder()
-            .arrearsJudgmentWanted(YesOrNo.NO)
+        DynamicStringList claimantTypeList = createClaimantTypeList();
+        PCSCase patchCaseData = PCSCase.builder()
             .otherGroundDescription("some other ground description")
             .welshUsed(VerticalYesNo.YES)
             .claimantType(claimantTypeList)
+            .noRentArrearsReasonForGrounds(NoRentArrearsReasonForGrounds.builder()
+                                               .holidayLetTextArea("some holiday let details")
+                                               .build())
             .build();
 
-        String patchJson = objectMapper.writeValueAsString(updatedPcsCase);
-
+        String patchJson = objectMapper.writeValueAsString(patchCaseData);
 
         // When
         String mergedJson = underTest.mergeJson(baseJson, patchJson);
 
         // Then
-        String expectedJson = """
-            {
-               "legislativeCountry" : "England",
-               "claimantType" : {
-                 "value" : {
-                   "code" : "COMMUNITY_LANDLORD",
-                   "label" : "Registered community landlord"
-                 },
-                 "valueCode" : "COMMUNITY_LANDLORD",
-                 "list_items" : [{
-                   "code" : "PRIVATE_LANDLORD",
-                   "label" : "Private landlord"
-                 }, {
-                   "code" : "COMMUNITY_LANDLORD",
-                   "label" : "Registered community landlord"
-                 } ]
-               },
-               "otherGroundDescription" : "some other ground description",
-               "arrearsJudgmentWanted" : "No",
-               "welshUsed" : "YES"
-             }
-            """;
+        PCSCase mergedCaseData = objectMapper.readValue(mergedJson, PCSCase.class);
 
-        assertThatJson(mergedJson)
-            .isEqualTo(expectedJson);
+        assertThat(mergedCaseData)
+            .usingRecursiveComparison()
+            .ignoringFields("otherGroundDescription",
+                            "welshUsed",
+                            "claimantType",
+                            "noRentArrearsReasonForGrounds.holidayLetTextArea")
+            .isEqualTo(existingCaseData);
+
+        assertThat(mergedCaseData.getOtherGroundDescription()).isEqualTo("some other ground description");
+        assertThat(mergedCaseData.getWelshUsed()).isEqualTo(VerticalYesNo.YES);
+        assertThat(mergedCaseData.getClaimantType()).isEqualTo(claimantTypeList);
+        assertThat(mergedCaseData.getNoRentArrearsReasonForGrounds().getHolidayLetTextArea())
+            .isEqualTo("some holiday let details");
+
+    }
+
+    private DynamicStringList createClaimantTypeList() {
+        DynamicStringListElement privateLandlordElement = createListElement(ClaimantType.PRIVATE_LANDLORD);
+        DynamicStringListElement communityLandlordElement = createListElement(ClaimantType.COMMUNITY_LANDLORD);
+
+        List<DynamicStringListElement> listItems = List.of(privateLandlordElement, communityLandlordElement);
+
+        return DynamicStringList.builder()
+            .value(privateLandlordElement)
+            .listItems(listItems)
+            .build();
     }
 
     private DynamicStringListElement createListElement(ClaimantType value) {
         return DynamicStringListElement.builder().code(value.name()).label(value.getLabel()).build();
-    }
-
-    private ObjectMapper createObjectMapper() {
-        ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.addMixIn(PCSCase.class, UnsubmittedCaseDataMixIn.class);
-        objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
-        objectMapper.registerModules(new ParameterNamesModule());
-        return objectMapper;
     }
 
 }
