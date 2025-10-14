@@ -145,6 +145,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
         // Given
         String expectedUserEmail = "user@test.com";
         when(userDetails.getSub()).thenReturn(expectedUserEmail);
+        when(organisationNameService.getOrganisationNameForCurrentUser()).thenReturn(null);
 
         AddressUK propertyAddress = AddressUK.builder()
             .addressLine1("10 High Street")
@@ -164,7 +165,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
         PCSCase updatedCaseData = callStartHandler(caseData);
 
         // Then
-        assertThat(updatedCaseData.getClaimantName()).isEqualTo(expectedUserEmail);
+        assertThat(updatedCaseData.getOrganisationName()).isEqualTo(expectedUserEmail);
         assertThat(updatedCaseData.getClaimantContactEmail()).isEqualTo(expectedUserEmail);
         assertThat(updatedCaseData.getFormattedClaimantContactAddress())
             .isEqualTo("10 High Street<br>London<br>W1 2BC");
