@@ -173,7 +173,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
     private PCSCase start(EventPayload<PCSCase, State> eventPayload) {
         PCSCase caseData = eventPayload.caseData();
 
-        String userDetails = securityContextService.getCurrentUserDetails().getSub();
+        String userEmail = securityContextService.getCurrentUserDetails().getSub();
 
         // Fetch organisation name from rd-professional API
         String organisationName = organisationNameService.getOrganisationNameForCurrentUser();
@@ -181,11 +181,11 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             caseData.setOrganisationName(organisationName);
         } else {
             // Fallback to user details if organisation name cannot be retrieved
-            caseData.setOrganisationName(userDetails);
+            caseData.setOrganisationName(userEmail);
             log.warn("Could not retrieve organisation name, using user details as fallback");
         }
 
-        caseData.setClaimantContactEmail(userDetails);
+        caseData.setClaimantContactEmail(userEmail);
 
         AddressUK propertyAddress = caseData.getPropertyAddress();
         if (propertyAddress == null) {

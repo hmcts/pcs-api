@@ -46,8 +46,7 @@ public class PCSCase {
     private String claimantName;
 
     @CCD(
-        label = "Organisation Name",
-        access = {CitizenAccess.class}
+        label = "Organisation Name"
     )
     @External
     private String organisationName;

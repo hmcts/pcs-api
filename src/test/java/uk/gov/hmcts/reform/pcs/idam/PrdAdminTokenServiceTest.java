@@ -18,7 +18,6 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class PrdAdminTokenServiceTest {
 
-    private static final String IDAM_API_URL = "https://idam-api.aat.platform.hmcts.net";
     private static final String PRD_ADMIN_USERNAME = "pcs-prd-admin@hmcts.net";
     private static final String PRD_ADMIN_PASSWORD = "HMcts@123";
     private static final String CLIENT_ID = "pcs-api";

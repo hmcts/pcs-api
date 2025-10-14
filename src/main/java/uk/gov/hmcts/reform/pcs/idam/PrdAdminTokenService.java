@@ -54,7 +54,7 @@ public class PrdAdminTokenService {
                 return BEARER_PREFIX + response.getAccessToken();
             } else {
                 log.error("Failed to retrieve PRD Admin token: Response or access token is null");
-                throw new IdamException("Failed to retrieve PRD Admin token: Invalid response", null);
+                throw new IdamException("Failed to retrieve PRD Admin token: Invalid response");
             }
 
         } catch (FeignException ex) {
