@@ -108,7 +108,7 @@ export class CreateCaseAction implements IAction {
     await performAction('clickButton', housingPossessionClaim.continue);
   }
 
-  private async selectAddress(caseData: actionData) {
+  private async selectAddress(caseData: actionData):Promise<void> {
     const address = caseData as { postcode: string; addressIndex: number };
     await performActions(
       'Find Address based on postcode',

@@ -1,8 +1,8 @@
 import { Page, test } from '@playwright/test';
 import { actionData, actionRecord, actionTuple } from './interfaces/action.interface';
 import { validationData, validationRecord, validationTuple } from './interfaces/validation.interface';
-import { ActionRegistry } from './registry/registry-enforcement/action-enforcement.registry';
 import { ValidationRegistry } from './registry/registry-enforcement/validation-enforcement.registry';
+import { ActionRegistry } from './registry/registry-enforcement/action-enforcement.registry';
 
 let testExecutor: { page: Page };
 
@@ -26,13 +26,13 @@ export async function performAction(action: string, fieldName?: actionData | act
 }
 
 export async function performValidation(validation: string, inputFieldName: validationData | validationRecord, inputData?: validationData | validationRecord): Promise<void> {
-  const executor = getExecutor();
+  let executor = getExecutor();
   const [fieldName, data] = typeof inputFieldName === 'string'
     ? [inputFieldName, inputData]
     : ['', inputFieldName];
   const validationInstance = ValidationRegistry.getValidation(validation);
   await test.step(`Validated ${validation} - '${typeof fieldName === 'object' ? readValuesFromInputObjects(fieldName) : fieldName}'${data !== undefined ? ` with value '${typeof data === 'object' ? readValuesFromInputObjects(data) : data}'` : ''}`, async () => {
-    await validationInstance.validate(executor.page, validation, fieldName, data);
+    await validationInstance.validate(testExecutor.page, validation, fieldName, data);
   });
 }
 
