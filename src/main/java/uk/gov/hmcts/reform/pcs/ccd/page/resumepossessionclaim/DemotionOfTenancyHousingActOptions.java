@@ -15,7 +15,7 @@ public class DemotionOfTenancyHousingActOptions implements CcdPageConfiguration 
             .showCondition("showDemotionOfTenancyHousingActsPage=\"Yes\"")
             .label("demotionOfTenancyHousingActOptions-info", """
                 ---
-                  <ul>
+                  <ul tabindex="0">
                     <li>Section 82A(2) of the Housing Act 1985 relates to secure tenancies.</li>
                     <li>Section 6A(2) of the Housing Act 1988 relates to assured tenancies.</li>
                   </ul>
