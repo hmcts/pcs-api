@@ -68,6 +68,7 @@ public class EnforcementOrderEvent implements CCDConfig<PCSCase, State, UserRole
             propertyAddress.getPostTown(),
             propertyAddress.getPostCode()
         );
+
         caseData.setFormattedClaimantContactAddress(formattedAddress);
         return caseData;
     }
