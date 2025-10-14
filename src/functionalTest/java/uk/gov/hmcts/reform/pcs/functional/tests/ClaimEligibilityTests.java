@@ -4,12 +4,12 @@ import net.serenitybdd.annotations.Issue;
 import net.serenitybdd.annotations.Steps;
 import net.serenitybdd.annotations.Title;
 import net.serenitybdd.junit5.SerenityJUnit5Extension;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import uk.gov.hmcts.reform.pcs.functional.config.TestConstants;
 import uk.gov.hmcts.reform.pcs.functional.steps.ApiSteps;
+import uk.gov.hmcts.reform.pcs.functional.steps.BaseApi;
 
 import java.io.IOException;
 
@@ -18,15 +18,10 @@ import java.io.IOException;
 @Issue("HDPI-1285")
 @Tag("Functional")
 @ExtendWith(SerenityJUnit5Extension.class)
-class ClaimEligibilityTests {
+class ClaimEligibilityTests extends BaseApi {
 
     @Steps
     ApiSteps apiSteps;
-
-    @BeforeEach
-    void beforeEach() {
-        apiSteps.setUp();
-    }
 
     @Title("Claim Eligibility endpoint - returns 200 and ELIGIBLE for an active whitelisted postcode")
     @Test

@@ -20,6 +20,10 @@ management:
       enabled: false
 
 springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+  api-docs:
+    path: /v3/api-docs
   packages-to-scan:
     - uk.gov.hmcts.reform.pcs
   writer-with-order-by-keys: true
@@ -40,7 +44,7 @@ spring:
     name: pcs api
   datasource:
     driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://${PCS_DB_HOST:localhost}:${PCS_DB_PORT:6432}/${PCS_DB_NAME:postgres}${PCS_DB_OPTIONS:}
+    url: jdbc:postgresql://${PCS_DB_HOST:localhost}:${PCS_DB_PORT:6432}/${PCS_DB_NAME:pcs}${PCS_DB_OPTIONS:}
     username: ${PCS_DB_USER_NAME:postgres}
     password: ${PCS_DB_PASSWORD:}
     properties:
@@ -88,6 +92,10 @@ idam:
   system-user:
     username: ${PCS_IDAM_SYSTEM_USERNAME:pcs-system-user@localhost}
     password: ${PCS_IDAM_SYSTEM_PASSWORD:password}
+  prd-admin:
+    username: ${PCS_PRD_ADMIN_USERNAME:}
+    password: ${PCS_PRD_ADMIN_PASSWORD:}
+    scope: ${IDAM_PRD_ADMIN_SCOPE:openid profile roles}
   client:
     id: ${IDAM_CLIENT_ID:pcs-api}
     secret: ${IDAM_CLIENT_SECRET:123456}
@@ -126,7 +134,10 @@ db-scheduler:
   polling-interval-seconds: 10
   threads: 10
 
-doc-assembly:
+doc_assembly:
   url: ${DOC_ASSEMBLY_URL:http://localhost:8080}
   s2s-authorised:
     services: pcs_api,ccd_data,ccd_gw,ccd_case_document_am_api,ccd_definition,ccd_admin,ccd_ps,ccd
+
+rd-professional:
+  api-url: ${RD_PROFESSIONAL_API_URL:http://rd-professional-api-aat.service.core-compute-aat.internal}

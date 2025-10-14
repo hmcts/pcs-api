@@ -1,27 +1,36 @@
-import { IAction } from '../interfaces/action.interface';
-import { ClickTabAction } from '../actions/element-actions/clickTab.action';
-import { InputTextAction } from '../actions/element-actions/inputText.action';
-import { CheckAction } from '../actions/element-actions/check.action';
-import { SelectAction } from '../actions/element-actions/select.action';
-import { CreateUserAndLoginAction } from "../actions/custom-actions/createUserAndLogin.action";
-import { NavigateToUrl } from "@utils/actions/custom-actions/navigateToUrl.action";
-import { CreateCaseAction } from "@utils/actions/custom-actions/createCase.action";
-import { ClickButtonAction } from "../actions/element-actions/clickButton.action";
-import { ClickRadioButton } from "../actions/element-actions/clickRadioButton.action";
+import {IAction} from '../interfaces/action.interface';
+import {ClickTabAction} from '../actions/element-actions/clickTab.action';
+import {InputTextAction} from '../actions/element-actions/inputText.action';
+import {CheckAction} from '../actions/element-actions/check.action';
+import {SelectAction} from '../actions/element-actions/select.action';
+import {LoginAction} from "../actions/custom-actions/login.action";
+import {NavigateToUrl} from "@utils/actions/custom-actions/navigateToUrl.action";
+import {CreateCaseAction} from "@utils/actions/custom-actions/createCase.action";
+import {ClickButtonAction} from "../actions/element-actions/clickButton.action";
+import {ClickRadioButton} from "../actions/element-actions/clickRadioButton.action";
+import {UploadFileAction} from "@utils/actions/element-actions/uploadFile.action";
+import {searchCaseActions} from "@utils/actions/custom-actions/searchCase.action";
 
 export class ActionRegistry {
   private static actions: Map<string, IAction> = new Map([
     ['clickButton', new ClickButtonAction()],
+    ['clickButtonAndVerifyPageNavigation', new ClickButtonAction()],
+    ['verifyPageAndClickButton', new ClickButtonAction()],
     ['clickTab', new ClickTabAction()],
     ['inputText', new InputTextAction()],
     ['check', new CheckAction()],
     ['select', new SelectAction()],
-    ['createUserAndLogin', new CreateUserAndLoginAction()],
+    ['createUserAndLogin', new LoginAction()],
+    ['login', new LoginAction()],
     ['navigateToUrl', new NavigateToUrl()],
     ['clickRadioButton', new ClickRadioButton()],
+    ['uploadFile', new UploadFileAction()],
     ['selectAddress', new CreateCaseAction()],
-    ['selectLegislativeCountry', new CreateCaseAction()],
+    ['extractCaseIdFromAlert', new CreateCaseAction()],
+    ['selectResumeClaimOption', new CreateCaseAction()],
     ['selectClaimantType', new CreateCaseAction()],
+    ['defendantDetails', new CreateCaseAction()],
+    ['selectRentArrearsPossessionGround', new CreateCaseAction()],
     ['selectJurisdictionCaseTypeEvent', new CreateCaseAction()],
     ['enterTestAddressManually', new CreateCaseAction()],
     ['createCase', new CreateCaseAction()],
@@ -29,11 +38,38 @@ export class ActionRegistry {
     ['selectClaimantName', new CreateCaseAction()],
     ['selectContactPreferences', new CreateCaseAction()],
     ['housingPossessionClaim', new CreateCaseAction()],
-    ['selectGroundsForPossission', new CreateCaseAction()],
+    ['selectGroundsForPossession', new CreateCaseAction()],
     ['selectPreActionProtocol', new CreateCaseAction()],
     ['selectMediationAndSettlement', new CreateCaseAction()],
     ['selectNoticeOfYourIntention', new CreateCaseAction()],
-    ['selectCountryRadioButton', new CreateCaseAction()]
+    ['selectNoticeDetails', new CreateCaseAction()],
+    ['selectBorderPostcode', new CreateCaseAction()],
+    ['selectYourPossessionGrounds', new CreateCaseAction()],
+    ['selectOtherGrounds', new CreateCaseAction()],
+    ['selectTenancyOrLicenceDetails', new CreateCaseAction()],
+    ['enterReasonForPossession', new CreateCaseAction()],
+    ['reloginAndFindTheCase', new CreateCaseAction()],
+    ['selectRentArrearsOrBreachOfTenancy', new CreateCaseAction()],
+    ['provideRentDetails', new CreateCaseAction()],
+    ['selectDailyRentAmount', new CreateCaseAction()],
+    ['selectClaimantCircumstances', new CreateCaseAction()],
+    ['provideDetailsOfRentArrears', new CreateCaseAction()],
+    ['selectMoneyJudgment', new CreateCaseAction()],
+    ['selectClaimingCosts', new CreateCaseAction()],
+    ['selectLanguageUsed', new CreateCaseAction()],
+    ['selectDefendantCircumstances', new CreateCaseAction()],
+    ['selectApplications', new CreateCaseAction()],
+    ['completingYourClaim', new CreateCaseAction()],
+    ['selectAdditionalReasonsForPossession', new CreateCaseAction()],
+    ['enterReasonForDemotionOrder', new CreateCaseAction()],
+    ['selectStatementOfExpressTerms', new CreateCaseAction()],
+    ['selectAlternativesToPossession', new CreateCaseAction()],
+    ['selectHousingAct', new CreateCaseAction()],
+    ['enterReasonForSuspensionOrder', new CreateCaseAction()],
+    ['searchCaseFromCaseList', new searchCaseActions()],
+    ['selectClaimingCosts', new CreateCaseAction()],
+    ['wantToUploadDocuments', new CreateCaseAction()],
+    ['uploadAdditionalDocs', new CreateCaseAction()]
   ]);
 
   static getAction(actionName: string): IAction {

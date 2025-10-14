@@ -60,6 +60,8 @@ from the PCS AAT key vault:
 | IDAM_CLIENT_SECRET       | secret: pcs-api-idam-secret                                      |
 | PCS_IDAM_SYSTEM_USERNAME | secret: idam-system-user-name                                    |
 | PCS_IDAM_SYSTEM_PASSWORD | secret: idam-system-user-password                                |
+| PCS_PRD_ADMIN_USERNAME   | secret: pcs-prd-admin-username                                   |
+| PCS_PRD_ADMIN_PASSWORD   | secret: pcs-prd-admin-password                                   |
 
 
 Finally, run the service with the `bootWithCCD` task as above.
@@ -133,17 +135,17 @@ The e2e tests use playwright, and are located in the /src/e2eTest directory.
 
 The following environment variables are needed to run the tests:
 
+- CHANGE_ID (same as PR number - Required only pointing to Preview env)
+- MANAGE_CASE_BASE_URL
+- PCS_API_IDAM_SECRET
 - IDAM_SYSTEM_USERNAME
 - IDAM_SYSTEM_USER_PASSWORD
-- PCS_IDAM_TEST_USER_PASSWORD
-- PCS_API_IDAM_SECRET
-- MANAGE_CASE_BASE_URL
-- CHANGE_ID (same as PR number - Required only pointing to Preview env)
+- IDAM_PCS_USER_PASSWORD
 
 The e2e suite can be run with the following command:
 
 ```bash
-yarn test:e2e
+yarn test:chrome
 ```
 There are also several custom test scripts available:
 

@@ -21,6 +21,9 @@ BOOT-INF/
 *.iml
 *.ipr
 
+### VS Code ###
+.vscode/
+
 .DS_Store
 
 applicationinsights-agent-*.jar
@@ -49,5 +52,7 @@ applicationinsights-agent-*.jar
 /target/
 /pacts/
 /cftlib_log_file_IS_UNDEFINED
+/allure-results
 
 node_modules
+*.code-workspace

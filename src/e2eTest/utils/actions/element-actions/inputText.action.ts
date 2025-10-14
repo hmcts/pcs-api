@@ -1,16 +1,20 @@
 import { Page } from '@playwright/test';
-import { IAction } from '../../interfaces/action.interface';
+import { actionRecord, IAction } from '../../interfaces/action.interface';
 
 export class InputTextAction implements IAction {
-  async execute(page: Page, action: string, fieldName: string, value?: string): Promise<void> {
-    if (!value) {
-      throw new Error('inputText action requires a value');
-    }
-    const locator = page.locator(`label:has-text("${fieldName}") + input,
-           label:has-text("${fieldName}") + textarea,
-           label:has-text("${fieldName}") ~ input,
-           [aria-label="${fieldName}"],
-           [placeholder="${fieldName}"]`);
+  async execute(page: Page, action: string, fieldParams: string | actionRecord, value: string): Promise<void> {
+    const locator = typeof fieldParams === 'string'
+      ? await this.getStringFieldLocator(page, fieldParams)
+      : page.locator(`fieldset:has(h2:text-is("${fieldParams.text}")) textarea:visible:enabled`).nth(Number(fieldParams.index));
     await locator.fill(value);
+  }
+
+  private async getStringFieldLocator(page: Page, fieldParams: string) {
+    const roleLocator = page.getByRole('textbox', { name: fieldParams, exact: true });
+    return (await roleLocator.count() > 0)
+      ? roleLocator
+      : page.locator(`:has-text("${fieldParams}") ~ input:visible:enabled,
+                      label:has-text("${fieldParams}") ~ textarea,
+                      label:has-text("${fieldParams}") + div input`);
   }
 }

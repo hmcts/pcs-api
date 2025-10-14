@@ -7,15 +7,16 @@ import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
-import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.ccd.client.CoreCaseDataApi;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDataContent;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.ccd.client.model.Event;
+import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
 import uk.gov.hmcts.reform.pcs.ccd.CaseType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.domain.PaymentStatus;
+import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
+import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.rse.ccd.lib.test.CftlibTest;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -30,25 +31,18 @@ public class TestWithCCD extends CftlibTest {
     @Autowired
     private IdamClient idamClient;
 
-    CaseDetails caseDetails;
-    String idamToken;
-    String s2sToken;
-    String userId;
+    private String idamToken;
+    private String s2sToken;
 
     @BeforeAll
     public void setup() {
-        idamToken = idamClient.getAccessToken("caseworker@pcs.com", "password");
+        idamToken = idamClient.getAccessToken("pcs-solicitor1@test.com", "password");
         s2sToken = generateDummyS2SToken("ccd_gw");
-        userId = idamClient.getUserInfo(idamToken).getUid();
     }
 
     @Test
-    public void createsPossessionCase() {
-        var r = ccdApi.startCase(idamToken, s2sToken, CaseType.getCaseType(), "createPossessionClaim");
+    public void createsShellPossessionCase() {
         PCSCase caseData = PCSCase.builder()
-            .claimantName("Wrong Name")
-            .isClaimantNameCorrect(YesOrNo.NO)
-            .overriddenClaimantName("Updated Name")
             .propertyAddress(AddressUK.builder()
                                  .addressLine1("123 Baker Street")
                                  .addressLine2("Marylebone")
@@ -56,18 +50,30 @@ public class TestWithCCD extends CftlibTest {
                                  .county("Greater London")
                                  .postCode("NW1 6XE")
                                  .build())
-            .paymentStatus(PaymentStatus.UNPAID)
+            .legislativeCountry(LegislativeCountry.ENGLAND)
             .build();
-        var content = CaseDataContent.builder()
-            .data(caseData)
-            .event(Event.builder().id("createPossessionClaim").build())
-            .eventToken(r.getToken())
-            .build();
-        caseDetails = ccdApi.submitForCaseworker(idamToken, s2sToken, userId,
-                                                 "PCS", CaseType.getCaseType(), false, content
-        );
+
+        CaseDetails caseDetails = startAndSubmitCreationEvent(EventId.createPossessionClaim, caseData);
 
         assertThat(caseDetails.getId()).isNotNull();
+    }
+
+    @SuppressWarnings("SameParameterValue")
+    private CaseDetails startAndSubmitCreationEvent(EventId eventId, PCSCase caseData) {
+        StartEventResponse startEventResponse = ccdApi.startCase(
+            idamToken,
+            s2sToken,
+            CaseType.getCaseType(),
+            eventId.name()
+        );
+
+        CaseDataContent content = CaseDataContent.builder()
+            .data(caseData)
+            .event(Event.builder().id(eventId.name()).build())
+            .eventToken(startEventResponse.getToken())
+            .build();
+
+        return ccdApi.submitCaseCreation(idamToken, s2sToken, CaseType.getCaseType(), content);
     }
 
 }

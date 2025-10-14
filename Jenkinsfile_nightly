@@ -16,12 +16,12 @@ properties([
     ),
     booleanParam(
       name: 'CHROME_TESTS',
-      defaultValue: true,
+      defaultValue: false,
       description: 'Tick the checkbox to run E2E tests in Chrome.'
     ),
     booleanParam(
       name: 'FIREFOX_TESTS',
-      defaultValue: true,
+      defaultValue: false,
       description: 'Tick the checkbox to run E2E tests in Firefox.'
     ),
   ])
@@ -46,9 +46,9 @@ def secrets = [
     secret('pcs-api-idam-secret', 'PCS_API_IDAM_SECRET'),
     secret('idam-system-user-name', 'IDAM_SYSTEM_USERNAME'),
     secret('idam-system-user-password', 'IDAM_SYSTEM_USER_PASSWORD'),
-    secret('pcs-idam-test-user-password', 'PCS_IDAM_TEST_USER_PASSWORD'),
-    secret('pcs-caseworker-username', 'PCS_CASEWORKER_USERNAME'),
-    secret('pcs-caseworker-password', 'PCS_CASEWORKER_PASSWORD'),
+    secret('idam-pcs-user-password', 'IDAM_PCS_USER_PASSWORD'),
+    secret('pcs-prd-admin-username', 'PCS_PRD_ADMIN_USERNAME'),
+    secret('pcs-prd-admin-password', 'PCS_PRD_ADMIN_PASSWORD')
   ]
 ]
 
@@ -58,13 +58,11 @@ withNightlyPipeline(type, product, component) {
   loadVaultSecrets(secrets)
   handleEnvironmentSetting()
   enableFortifyScan()
-  afterSuccess('fortify-scan') {
-    steps.archiveArtifacts allowEmptyArchive: true,
-      artifacts: '**/Fortify Scan/**/*'
-  }
-  afterAlways('FortifyScan') {
-    runE2eTests()
-    publishE2EReport()
+  afterAlways('fortify-scan') {
+    steps.archiveArtifacts allowEmptyArchive: true, artifacts: '**/Fortify Scan/**/*'
+    //Skipping e2e tests as the decentralisation is not currently supported in aat
+    //runE2eTests()
+    //publishE2EReport()
   }
 }
 

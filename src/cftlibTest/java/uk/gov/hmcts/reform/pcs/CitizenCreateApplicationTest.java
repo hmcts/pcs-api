@@ -11,7 +11,6 @@ import org.junit.jupiter.api.TestMethodOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
-import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.ccd.client.CoreCaseDataApi;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDataContent;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
@@ -21,8 +20,8 @@ import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
 import uk.gov.hmcts.reform.pcs.ccd.CaseType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.domain.PaymentStatus;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
 import uk.gov.hmcts.rse.ccd.lib.test.CftlibTest;
 
@@ -61,7 +60,7 @@ class CitizenCreateApplicationTest extends CftlibTest {
 
         PCSCase caseData = PCSCase.builder()
             .claimantName("Wrong Name")
-            .isClaimantNameCorrect(YesOrNo.NO)
+            .isClaimantNameCorrect(VerticalYesNo.NO)
             .overriddenClaimantName("New Name")
             .propertyAddress(AddressUK.builder()
                                  .addressLine1("123 Baker Street")
@@ -70,7 +69,6 @@ class CitizenCreateApplicationTest extends CftlibTest {
                                  .county("Greater London")
                                  .postCode("NW1 6XE")
                                  .build())
-            .paymentStatus(PaymentStatus.UNPAID)
             .build();
 
         CaseDetails caseDetails = startAndSubmitCreationEvent(citizenCreateApplication, caseData);

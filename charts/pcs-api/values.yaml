@@ -21,6 +21,10 @@ java:
           alias: PCS_IDAM_SYSTEM_USERNAME
         - name: idam-system-user-password
           alias: PCS_IDAM_SYSTEM_PASSWORD
+        - name: pcs-prd-admin-username
+          alias: PCS_PRD_ADMIN_USERNAME
+        - name: pcs-prd-admin-password
+          alias: PCS_PRD_ADMIN_PASSWORD
   environment:
     PCS_DB_PORT: "5432"
     PCS_DB_USER_NAME: pgadmin
