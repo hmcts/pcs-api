@@ -179,7 +179,7 @@ class CrossBorderPostcodeSelectionTest extends BasePageTest {
         // Then
         var data = resp.getData();
         assertThat(data.getShowPropertyNotEligiblePage()).isEqualTo(YesOrNo.NO);
-        assertThat(data.getShowCrossBorderPage()).isEqualTo(YesOrNo.YES);
+        assertThat(data.getCrossBorderPageDefinitions().getShowCrossBorderPage()).isEqualTo(YesOrNo.YES);
     }
 
     @ParameterizedTest
@@ -206,7 +206,7 @@ class CrossBorderPostcodeSelectionTest extends BasePageTest {
         // Then: show PNE, keep cross-border for 'Previous'
         var data = resp.getData();
         assertThat(data.getShowPropertyNotEligiblePage()).isEqualTo(YesOrNo.YES);
-        assertThat(data.getShowCrossBorderPage()).isEqualTo(YesOrNo.YES);
+        assertThat(data.getCrossBorderPageDefinitions().getShowCrossBorderPage()).isEqualTo(YesOrNo.YES);
     }
 
     private static Stream<Arguments> eligibleCountries() {
@@ -238,5 +238,4 @@ class CrossBorderPostcodeSelectionTest extends BasePageTest {
             .showPropertyNotEligiblePage(YesOrNo.NO)
             .build();
     }
-
 }

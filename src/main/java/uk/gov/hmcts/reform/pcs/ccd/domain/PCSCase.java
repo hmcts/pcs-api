@@ -3,7 +3,6 @@ package uk.gov.hmcts.reform.pcs.ccd.domain;
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import lombok.Builder;
 import lombok.Data;
-import lombok.experimental.Delegate;
 import uk.gov.hmcts.ccd.sdk.External;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
@@ -45,10 +44,10 @@ public class PCSCase {
     @CCD(searchable = false)
     private YesOrNo showPropertyNotEligiblePage;
 
-    @Delegate
+    @CCD
     @JsonUnwrapped
     @Builder.Default
-    private CrossBorderPageDefinitions crossBorderPageDefinitions = CrossBorderPageDefinitions.builder().build();
+    private CrossBorderPageDefinitions crossBorderPageDefinitions = new CrossBorderPageDefinitions();
 
     private YesOrNo hasUnsubmittedCaseData;
 
@@ -57,7 +56,8 @@ public class PCSCase {
 
     @CCD
     @JsonUnwrapped
-    private ClaimantNamePageDefinitions claimantNamePageDefinitions;
+    @Builder.Default
+    private ClaimantNamePageDefinitions claimantNamePageDefinitions = new ClaimantNamePageDefinitions();
 
     @CCD(
         searchable = false,
