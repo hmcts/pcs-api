@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.ccd.utils;
+package uk.gov.hmcts.reform.pcs.ccd.util;
 
 import org.junit.jupiter.api.Test;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;

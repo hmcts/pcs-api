@@ -10,7 +10,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimGroundEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimRepository;
-import uk.gov.hmcts.reform.pcs.ccd.utils.YesOrNoToBoolean;
+import uk.gov.hmcts.reform.pcs.ccd.util.YesOrNoToBoolean;
 
 import java.util.List;
 
@@ -32,9 +32,21 @@ public class ClaimService {
             .summary("Main Claim")
             .defendantCircumstances(defendantCircumstances != null
                                         ? defendantCircumstances.getDefendantCircumstancesInfo() : null)
-            .suspensionOfRightToBuyHousingAct(pcsCase.getSuspensionOfRightToBuy()
-                                                  .getSuspensionOfRightToBuyHousingActs())
-            .suspensionOfRightToBuyReason(pcsCase.getSuspensionOfRightToBuy().getSuspensionOfRightToBuyReason())
+            .suspensionOfRightToBuyHousingAct(pcsCase.getSuspensionOfRightToBuy() != null
+                                                  ? pcsCase.getSuspensionOfRightToBuy()
+                                                      .getSuspensionOfRightToBuyHousingActs() : null)
+            .suspensionOfRightToBuyReason(pcsCase.getSuspensionOfRightToBuy() != null
+                                              ? pcsCase.getSuspensionOfRightToBuy()
+                                                  .getSuspensionOfRightToBuyReason() : null)
+            .demotionOfTenancyHousingAct(pcsCase.getDemotionOfTenancy() != null
+                                             ? pcsCase.getDemotionOfTenancy()
+                                                 .getDemotionOfTenancyHousingActs() : null)
+            .demotionOfTenancyReason(pcsCase.getDemotionOfTenancy() != null
+                                         ? pcsCase.getDemotionOfTenancy()
+                                             .getDemotionOfTenancyReason() : null)
+            .statementOfExpressTermsDetails(pcsCase.getDemotionOfTenancy() != null
+                                                ? pcsCase.getDemotionOfTenancy()
+                                                    .getStatementOfExpressTermsDetails() : null)
             .costsClaimed(pcsCase.getClaimingCostsWanted().toBoolean())
             .additionalReasons(additionalReasons)
             .applicationWithClaim(YesOrNoToBoolean.convert(pcsCase.getApplicationWithClaim()))

@@ -108,7 +108,7 @@ public class NoticeDetails implements CcdPageConfiguration {
                 certificate of service? (Optional)</h2>
                 <p class="govuk-hint">You can either upload this now or closer to the hearing date.
                 Any documents you upload now will be included in the pack of documents a judge will
-                receive before the hearing (the bundle).</p>
+                receive before the hearing (the bundle)</p>
                 """)
               .optional(PCSCase::getNoticeDocuments);
     }

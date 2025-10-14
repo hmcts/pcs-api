@@ -3,8 +3,8 @@ package uk.gov.hmcts.reform.pcs.ccd.service;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicence;
-import uk.gov.hmcts.reform.pcs.ccd.utils.ListValueUtils;
-import uk.gov.hmcts.reform.pcs.ccd.utils.YesOrNoToBoolean;
+import uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils;
+import uk.gov.hmcts.reform.pcs.ccd.util.YesOrNoToBoolean;
 
 import java.math.BigDecimal;
 
