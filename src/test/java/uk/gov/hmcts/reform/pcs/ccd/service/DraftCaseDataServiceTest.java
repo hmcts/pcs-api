@@ -131,15 +131,6 @@ class DraftCaseDataServiceTest {
     }
 
     @Test
-    void shouldDeleteUnsubmittedDataByCaseReference() {
-        // When
-        underTest.deleteUnsubmittedCaseData(CASE_REFERENCE);
-
-        // Then
-        verify(draftCaseDataRepository).deleteByCaseReference(CASE_REFERENCE);
-    }
-
-    @Test
     void shouldThrowExceptionForJsonExceptionWhenReading() throws JsonProcessingException {
         // Given
         String unsubmittedCaseDataJson = "case data json";

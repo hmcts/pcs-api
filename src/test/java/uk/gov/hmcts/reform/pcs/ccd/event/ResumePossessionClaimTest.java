@@ -29,7 +29,6 @@ import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.UploadAdditionalDo
 import uk.gov.hmcts.reform.pcs.ccd.service.ClaimService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
-import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
@@ -70,8 +69,6 @@ class ResumePossessionClaimTest extends BaseEventTest {
     @Mock
     private ResumeClaim resumeClaim;
     @Mock
-    private DraftCaseDataService draftCaseDataService;
-    @Mock
     private ContactPreferences contactPreferences;
     @Mock
     private DefendantsDetails defendantsDetails;
@@ -96,8 +93,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
         ResumePossessionClaim underTest = new ResumePossessionClaim(
             pcsCaseService, securityContextService,
             partyService, claimService,
-            savingPageBuilderFactory, resumeClaim,
-            draftCaseDataService, noticeDetails,
+            savingPageBuilderFactory, resumeClaim, noticeDetails,
             uploadAdditionalDocumentsDetails, tenancyLicenceDetails, contactPreferences,
             defendantsDetails
         );

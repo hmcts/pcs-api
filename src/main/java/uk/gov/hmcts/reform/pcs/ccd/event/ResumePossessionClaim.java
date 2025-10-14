@@ -69,7 +69,6 @@ import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.WantToUploadDocume
 import uk.gov.hmcts.reform.pcs.ccd.service.ClaimService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
-import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
@@ -96,7 +95,6 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
     private final ClaimService claimService;
     private final SavingPageBuilderFactory savingPageBuilderFactory;
     private final ResumeClaim resumeClaim;
-    private final DraftCaseDataService draftCaseDataService;
     private final NoticeDetails noticeDetails;
     private final UploadAdditionalDocumentsDetails uploadAdditionalDocumentsDetails;
     private final TenancyLicenceDetails tenancyLicenceDetails;
@@ -226,8 +224,6 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
         pcsCaseEntity.addClaim(claimEntity);
 
         pcsCaseService.save(pcsCaseEntity);
-
-        draftCaseDataService.deleteUnsubmittedCaseData(caseReference);
 
         return SubmitResponse.builder().build();
     }

@@ -25,7 +25,7 @@ public class NameAndAddressForEvictionPage implements CcdPageConfiguration {
                                 <p class="govuk-body">Defendants</p>
                               </div>
                               <div class="govuk-grid-column-one-third">
-                                <p class="govuk-body">defendant 1</p>
+                                <p class="govuk-body">${defendant1.firstName}</p>
                               </div>
                             </div>
                             <hr />
@@ -34,7 +34,7 @@ public class NameAndAddressForEvictionPage implements CcdPageConfiguration {
                                 <p class="govuk-body">Address</p>
                               </div>
                               <div class="govuk-grid-column-one-third">
-                                <p class="govuk-body">property address</p>
+                                <p class="govuk-body"></p>
                               </div>
                             </div>
                           </main>

@@ -4,9 +4,11 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.modelmapper.ModelMapper;
 import uk.gov.hmcts.reform.pcs.ccd.event.enforcement.EnforcementOrderEvent;
 import uk.gov.hmcts.reform.pcs.ccd.page.builder.SavingPageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.page.builder.SavingPageBuilderFactory;
+import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -17,6 +19,10 @@ class EnforcementOrderEventTest extends BaseEventTest {
 
     @Mock
     private SavingPageBuilderFactory savingPageBuilderFactory;
+    @Mock
+    private DraftCaseDataService draftCaseDataService;
+    @Mock
+    private ModelMapper modelMapper;
 
     @BeforeEach
     void setUp() {
@@ -25,7 +31,7 @@ class EnforcementOrderEventTest extends BaseEventTest {
         when(savingPageBuilder.add(any())).thenReturn(savingPageBuilder);
 
         EnforcementOrderEvent underTest =
-                new EnforcementOrderEvent(savingPageBuilderFactory);
+                new EnforcementOrderEvent(savingPageBuilderFactory, draftCaseDataService, modelMapper);
 
         setEventUnderTest(underTest);
     }
