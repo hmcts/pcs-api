@@ -52,7 +52,7 @@ class FeeRegistrationLookupConsumerTest {
     private static final String AMOUNT_OR_VOLUME = "1";
     private static final String POSSESSION_KEYWORD = "PossessionCC";
 
-    @Pact(provider = "FeesRegisterAPI", consumer = "pcs_api")
+    @Pact(provider = "feeRegister_lookUp", consumer = "pcs_api")
     public V4Pact createFeeLookupPact(PactDslWithProvider builder) {
 
         PactDslJsonBody responseBody = new PactDslJsonBody()
