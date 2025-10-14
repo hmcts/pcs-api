@@ -76,7 +76,7 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
             .showCondition(ShowConditions.stateNotEquals(AWAITING_FURTHER_CLAIM_DETAILS))
             .field("caseHistory");
 
-        builder.tab("EnforcementSummary", "Enforcement Summary")
+        builder.tab("EnforcementSummary", "Summary")
             .showCondition(ShowConditions.stateNotEquals(AWAITING_FURTHER_CLAIM_DETAILS))
             .label("possessionOrderMarkdownLabel", null, "${possessionOrderMarkdown}")
             .field("possessionOrderMarkdown", NEVER_SHOW)
