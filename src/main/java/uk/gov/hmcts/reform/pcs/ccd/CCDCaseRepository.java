@@ -23,7 +23,10 @@ import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -55,7 +58,8 @@ public class CCDCaseRepository extends DecentralisedCaseRepository<PCSCase> {
         pcsCase.setHasUnsubmittedCaseData(YesOrNo.from(hasUnsubmittedCaseData));
 
         setMarkdownFields(pcsCase);
-
+        pcsCase.setPossessionsOrderDate(LocalDate.now());
+        pcsCase.setPossessionOrderMarkdown(buildEnforcementMarkdown(pcsCase));
         return pcsCase;
     }
 
@@ -106,6 +110,27 @@ public class CCDCaseRepository extends DecentralisedCaseRepository<PCSCase> {
 
         pcsCase.setParties(mapAndWrapParties(pcsCaseEntity.getParties()));
     }
+
+    private String buildEnforcementMarkdown(PCSCase pcsCase) {
+        return
+            """
+               <h1>Enforce the possession order</h1>
+               <p>The deadline for the defendants to leave the property or\s
+               make a repayment by
+               """
+                +
+                pcsCase.getPossessionsOrderDate().format(
+                    DateTimeFormatter.ofPattern("d MMMM yyyy", Locale.UK))
+                +
+                """
+                has now passed.</p>
+                <p>You can now enforce the possession order
+                 (use a bailiff to evict them). </p>
+                <p>To enforce the possession order, select\s
+                'Enforce the order from the dropdown menu.</p>
+               """;
+    }
+
 
     private void setMarkdownFields(PCSCase pcsCase) {
         pcsCase.setPageHeadingMarkdown("""

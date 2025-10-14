@@ -35,6 +35,10 @@ public class PCSCase {
 
     private YesOrNo hasUnsubmittedCaseData;
 
+    private LocalDate possessionsOrderDate;
+
+    private String possessionOrderMarkdown;
+
     @CCD(label = "Do you want to resume your claim using your saved answers?")
     private YesOrNo resumeClaimKeepAnswers;
 
