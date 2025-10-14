@@ -40,8 +40,7 @@ class FeeRegistrationLookupConsumerTest {
     @Autowired
     private FeesRegisterApi feesRegisterApi;
 
-    private static final String SERVICE_AUTH_TOKEN = "Bearer test-token";
-    private static final String LOOKUP_ENDPOINT = "/fees-register/fees/lookup";
+    private static final String SERVICE_AUTH_TOKEN = "Bearer serviceToken";
 
     private static final String POSSESSION_SERVICE = "possession claim";
     private static final String CIVIL_JURISDICTION = "civil";
@@ -63,20 +62,20 @@ class FeeRegistrationLookupConsumerTest {
 
         return builder
             .given("Fees exist for Probate")
-            .uponReceiving("a request for Probate fees")
-            .path(LOOKUP_ENDPOINT)
+            .uponReceiving("a request for Possession fees")
+            .path("/fees-register/fees/lookup")
             .method("GET")
             .headers(Map.of(
                 "ServiceAuthorization", SERVICE_AUTH_TOKEN
             ))
             .query("service=possession claim"
-                       + "&jurisdiction1=civil"
-                       + "&jurisdiction2=county court"
-                       + "&channel=default"
-                       + "&event=issue"
-                       + "&applicantType=all"
-                       + "&amountOrVolume=1"
-                       + "&keyword=PossessionCC")
+                       + "&jurisdiction1=" + CIVIL_JURISDICTION
+                       + "&jurisdiction2=" + COUNTY_COURT
+                       + "&channel=" + DEFAULT_CHANNEL
+                       + "&event=" + ISSUE_EVENT
+                       + "&applicantType=" + ALL_APPLICANT_TYPE
+                       + "&amountOrVolume=" + AMOUNT_OR_VOLUME
+                       + "&keyword="+ POSSESSION_KEYWORD)
             .willRespondWith()
             .status(HttpStatus.OK.value())
             .headers(Map.of(HttpHeaders.CONTENT_TYPE, "application/json"))
@@ -99,7 +98,6 @@ class FeeRegistrationLookupConsumerTest {
             POSSESSION_KEYWORD
         );
 
-        assertThat(response).isNotNull();
         assertThat(response.getCode()).isEqualTo("FEE0412");
         assertThat(response.getDescription()).isEqualTo("Recovery of Land - County Court");
         assertThat(response.getVersion()).isEqualTo("4");
