@@ -6,7 +6,7 @@ export const noticeOfYourIntention = {
   judgementInlineText: 'A judge might not grant a possession order if you have not followed the correct notice procedure',
   servedNoticeInteractiveText: 'Have you served notice to the defendants?',
   typeOfNotice: 'What type of notice did you serve?',
-  typeOfNoticeInput: 'Sample type of notice',
+  typeOfNoticeInput: 'RWH20',
   yes: 'Yes',
   no: 'No'
 }
