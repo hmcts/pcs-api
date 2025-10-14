@@ -79,10 +79,13 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
         builder.tab("EnforcementSummary", "Enforcement Summary")
             .showCondition(ShowConditions.stateNotEquals(AWAITING_FURTHER_CLAIM_DETAILS))
             .label("possessionOrderMarkdownLabel", null, "${possessionOrderMarkdown}")
-            .field("possessionOrderMarkdown", NEVER_SHOW);
+            .field("possessionOrderMarkdown", NEVER_SHOW)
+            .label("CaseTypePossessionDetailsLabel", null, "<h2>Possession details</h2>")
+            .field(PCSCase::getPropertyAddress);
 
         builder.tab("hidden", "HiddenFields")
             .showCondition(NEVER_SHOW)
-            .field(PCSCase::getPageHeadingMarkdown);
+            .field(PCSCase::getPageHeadingMarkdown)
+            .field(PCSCase::getDiscretionaryGrounds);
     }
 }

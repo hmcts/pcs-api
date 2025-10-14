@@ -114,7 +114,7 @@ public class CCDCaseRepository extends DecentralisedCaseRepository<PCSCase> {
     private String buildEnforcementMarkdown(PCSCase pcsCase) {
         return
             """
-               <h1>Enforce the possession order</h1>
+               <h2>Enforce the possession order</h2>
                <p>The deadline for the defendants to leave the property or\s
                make a repayment by
                """
