@@ -336,9 +336,7 @@ public class PCSCase {
 
     @CCD(label = """
                 ---
-                <h2>Additional defendants</h2>
-                """,
-        typeOverride = FieldType.Label
+                <h2>Additional defendants</h2>""", typeOverride = FieldType.Label
     )
     private String additionalDefendantsSectionLabel;
 
