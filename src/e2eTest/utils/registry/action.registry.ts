@@ -63,6 +63,8 @@ export class ActionRegistry {
     ['selectApplications', new CreateCaseAction()],
     ['completingYourClaim', new CreateCaseAction()],
     ['selectAdditionalReasonsForPossession', new CreateCaseAction()],
+    ['enterReasonForDemotionOrder', new CreateCaseAction()],
+    ['selectStatementOfExpressTerms', new CreateCaseAction()],
     ['selectAlternativesToPossession', new CreateCaseAction()],
     ['selectHousingAct', new CreateCaseAction()],
     ['enterReasonForSuspensionOrder', new CreateCaseAction()],

@@ -26,15 +26,15 @@ class ClaimantDetailsWalesPageTest {
         LocalDate futureDate = today.plusDays(1);
         
         WalesHousingAct walesHousingAct = WalesHousingAct.builder()
-            .walesRegistered(YesNoNotApplicable.YES)
-            .walesRegistrationNumber("REG123")
-            .walesLicensed(YesNoNotApplicable.YES)
-            .walesLicenceNumber("LIC456")
-            .walesLicensedAgentAppointed(YesNoNotApplicable.YES)
-            .walesAgentFirstName("John")
-            .walesAgentLastName("Smith")
-            .walesAgentLicenceNumber("AGENT789")
-            .walesAgentAppointmentDate(futureDate)
+            .registered(YesNoNotApplicable.YES)
+            .registrationNumber("REG123")
+            .licensed(YesNoNotApplicable.YES)
+            .licenceNumber("LIC456")
+            .licensedAgentAppointed(YesNoNotApplicable.YES)
+            .agentFirstName("John")
+            .agentLastName("Smith")
+            .agentLicenceNumber("AGENT789")
+            .agentAppointmentDate(futureDate)
             .build();
 
         PCSCase caseData = PCSCase.builder()
