@@ -35,7 +35,7 @@ export class ClickButtonAction implements IAction {
       }
     }
     if (retry === 5) {
-      throw new Error(`Navigation to ${nextPageElement} page/element has been failed after 3 attempts`);
+      throw new Error(`Navigation to ${nextPageElement} page/element has been failed after 5 attempts`);
     }
   }
 
