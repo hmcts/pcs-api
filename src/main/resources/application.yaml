@@ -92,6 +92,10 @@ idam:
   system-user:
     username: ${PCS_IDAM_SYSTEM_USERNAME:pcs-system-user@localhost}
     password: ${PCS_IDAM_SYSTEM_PASSWORD:password}
+  prd-admin:
+    username: ${PCS_PRD_ADMIN_USERNAME:}
+    password: ${PCS_PRD_ADMIN_PASSWORD:}
+    scope: ${IDAM_PRD_ADMIN_SCOPE:openid profile roles}
   client:
     id: ${IDAM_CLIENT_ID:pcs-api}
     secret: ${IDAM_CLIENT_SECRET:123456}
@@ -134,3 +138,6 @@ doc_assembly:
   url: ${DOC_ASSEMBLY_URL:http://localhost:8080}
   s2s-authorised:
     services: pcs_api,ccd_data,ccd_gw,ccd_case_document_am_api,ccd_definition,ccd_admin,ccd_ps,ccd
+
+rd-professional:
+  api-url: ${RD_PROFESSIONAL_API_URL:http://rd-professional-api-aat.service.core-compute-aat.internal}

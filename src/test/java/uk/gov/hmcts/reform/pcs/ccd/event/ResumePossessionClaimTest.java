@@ -32,6 +32,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.UnsubmittedCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
+import uk.gov.hmcts.reform.pcs.reference.service.OrganisationNameService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.util.List;
@@ -83,6 +84,8 @@ class ResumePossessionClaimTest extends BaseEventTest {
     private TenancyLicenceDetails tenancyLicenceDetails;
     @Mock
     private UploadAdditionalDocumentsDetails uploadAdditionalDocumentsDetails;
+    @Mock
+    private OrganisationNameService organisationNameService;
 
     @BeforeEach
     void setUp() {
@@ -99,7 +102,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
             savingPageBuilderFactory, resumeClaim,
             unsubmittedCaseDataService, noticeDetails,
             uploadAdditionalDocumentsDetails, tenancyLicenceDetails, contactPreferences,
-            defendantsDetails
+            defendantsDetails, organisationNameService
         );
 
         setEventUnderTest(underTest);

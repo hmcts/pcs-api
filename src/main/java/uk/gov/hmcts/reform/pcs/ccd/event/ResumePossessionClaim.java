@@ -73,6 +73,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.UnsubmittedCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
+import uk.gov.hmcts.reform.pcs.reference.service.OrganisationNameService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.util.ArrayList;
@@ -102,6 +103,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
     private final TenancyLicenceDetails tenancyLicenceDetails;
     private final ContactPreferences contactPreferences;
     private final DefendantsDetails defendantsDetails;
+    private final OrganisationNameService organisationNameService;
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -166,7 +168,17 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
         PCSCase caseData = eventPayload.caseData();
 
         String userDetails = securityContextService.getCurrentUserDetails().getSub();
-        caseData.setClaimantName(userDetails);
+
+        // Fetch organisation name from rd-professional API
+        String organisationName = organisationNameService.getOrganisationNameForCurrentUser();
+        if (organisationName != null) {
+            caseData.setOrganisationName(organisationName);
+        } else {
+            // Fallback to user details if organisation name cannot be retrieved
+            caseData.setClaimantName(userDetails);
+            log.warn("Could not retrieve organisation name, using user details as fallback");
+        }
+
         caseData.setClaimantContactEmail(userDetails);
 
         AddressUK propertyAddress = caseData.getPropertyAddress();

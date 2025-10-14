@@ -23,7 +23,7 @@ public class ClaimantInformation implements CcdPageConfiguration {
             .page("claimantInformation", this::midEvent)
             .pageLabel("Claimant name")
             .label("claimantInformation-separator", "---")
-            .readonlyWithLabel(PCSCase::getClaimantName, "Your claimant name registered with My HMCTS is:")
+            .readonlyWithLabel(PCSCase::getOrganisationName, "Your organisation name registered with My HMCTS is:")
             .mandatoryWithLabel(PCSCase::getIsClaimantNameCorrect,"Is this the correct claimant name?")
             .mandatory(PCSCase::getOverriddenClaimantName,
                     "isClaimantNameCorrect=\"NO\"",
