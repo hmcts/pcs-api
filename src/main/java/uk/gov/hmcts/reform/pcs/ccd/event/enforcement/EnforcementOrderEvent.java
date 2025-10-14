@@ -10,6 +10,7 @@ import uk.gov.hmcts.ccd.sdk.api.Event;
 import uk.gov.hmcts.ccd.sdk.api.EventPayload;
 import uk.gov.hmcts.ccd.sdk.api.Permission;
 import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
+import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
@@ -60,6 +61,14 @@ public class EnforcementOrderEvent implements CCDConfig<PCSCase, State, UserRole
                     throw new UnsubmittedDataException("No unsubmitted case data found for case " + caseReference);
                 }
             );
+        AddressUK propertyAddress = caseData.getPropertyAddress();
+        String formattedAddress = String.format(
+            "%s<br>%s<br>%s",
+            propertyAddress.getAddressLine1(),
+            propertyAddress.getPostTown(),
+            propertyAddress.getPostCode()
+        );
+        caseData.setFormattedClaimantContactAddress(formattedAddress);
         return caseData;
     }
 
