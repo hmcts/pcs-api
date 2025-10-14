@@ -75,7 +75,7 @@ class FeeRegistrationLookupConsumerTest {
                        + "&event=" + ISSUE_EVENT
                        + "&applicantType=" + ALL_APPLICANT_TYPE
                        + "&amountOrVolume=" + AMOUNT_OR_VOLUME
-                       + "&keyword="+ POSSESSION_KEYWORD)
+                       + "&keyword=" + POSSESSION_KEYWORD)
             .willRespondWith()
             .status(HttpStatus.OK.value())
             .headers(Map.of(HttpHeaders.CONTENT_TYPE, "application/json"))
