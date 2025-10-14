@@ -58,7 +58,7 @@ class FeeRegistrationLookupConsumerTest {
         PactDslJsonBody responseBody = new PactDslJsonBody()
             .stringType("code", "FEE0412")
             .stringType("description", "Recovery of Land - County Court")
-            .stringType("version", "4")
+            .integerType("version", 4)
             .decimalType("fee_amount", 404.00);
 
         return builder
