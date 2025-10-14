@@ -257,7 +257,7 @@ public class PCSCase {
     @CCD(searchable = false)
     private YesOrNo showClaimTypeNotEligibleWales;
 
-    @JsonUnwrapped
+    @JsonUnwrapped(prefix = "wales")
     @CCD
     private WalesHousingAct walesHousingAct;
 

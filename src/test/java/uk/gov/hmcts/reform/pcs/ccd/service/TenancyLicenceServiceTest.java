@@ -310,15 +310,15 @@ class TenancyLicenceServiceTest {
         // Given
         LocalDate appointmentDate = LocalDate.of(2024, 3, 15);
         WalesHousingAct walesHousingAct = WalesHousingAct.builder()
-            .walesRegistered(YesNoNotApplicable.YES)
-            .walesRegistrationNumber("REG123456")
-            .walesLicensed(YesNoNotApplicable.YES)
-            .walesLicenceNumber("LIC789012")
-            .walesLicensedAgentAppointed(YesNoNotApplicable.YES)
-            .walesAgentFirstName("John")
-            .walesAgentLastName("Smith")
-            .walesAgentLicenceNumber("AGENT345678")
-            .walesAgentAppointmentDate(appointmentDate)
+            .registered(YesNoNotApplicable.YES)
+            .registrationNumber("REG123456")
+            .licensed(YesNoNotApplicable.YES)
+            .licenceNumber("LIC789012")
+            .licensedAgentAppointed(YesNoNotApplicable.YES)
+            .agentFirstName("John")
+            .agentLastName("Smith")
+            .agentLicenceNumber("AGENT345678")
+            .agentAppointmentDate(appointmentDate)
             .build();
         
         when(pcsCase.getWalesHousingAct()).thenReturn(walesHousingAct);
@@ -362,9 +362,9 @@ class TenancyLicenceServiceTest {
     void shouldHandleWalesHousingActDetailsWithNotApplicableValues() {
         // Given
         WalesHousingAct walesHousingAct = WalesHousingAct.builder()
-            .walesRegistered(YesNoNotApplicable.NOT_APPLICABLE)
-            .walesLicensed(YesNoNotApplicable.NO)
-            .walesLicensedAgentAppointed(YesNoNotApplicable.NOT_APPLICABLE)
+            .registered(YesNoNotApplicable.NOT_APPLICABLE)
+            .licensed(YesNoNotApplicable.NO)
+            .licensedAgentAppointed(YesNoNotApplicable.NOT_APPLICABLE)
             .build();
         
         when(pcsCase.getWalesHousingAct()).thenReturn(walesHousingAct);
