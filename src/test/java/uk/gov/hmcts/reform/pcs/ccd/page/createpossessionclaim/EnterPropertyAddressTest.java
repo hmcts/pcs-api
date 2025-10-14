@@ -111,7 +111,8 @@ class EnterPropertyAddressTest extends BasePageTest {
         AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
         // Then
         PCSCase resultData = response.getData();
-        assertThat(resultData.getShowCrossBorderPage()).isEqualTo(expectedShowCrossBorder);
+        assertThat(resultData.getCrossBorderPageDefinitions().getShowCrossBorderPage())
+            .isEqualTo(expectedShowCrossBorder);
 
         if (status == EligibilityStatus.NO_MATCH_FOUND) {
             assertThat(resultData.getShowPostcodeNotAssignedToCourt()).isEqualTo(YES);
@@ -119,9 +120,9 @@ class EnterPropertyAddressTest extends BasePageTest {
         }
 
         if (expectedShowCrossBorder == YES) {
-            assertThat(resultData.getCrossBorderCountriesList()).isNotNull();
-            assertThat(resultData.getCrossBorderCountry1()).isEqualTo(expectedCountry1);
-            assertThat(resultData.getCrossBorderCountry2()).isEqualTo(expectedCountry2);
+            assertThat(resultData.getCrossBorderPageDefinitions().getCrossBorderCountriesList()).isNotNull();
+            assertThat(resultData.getCrossBorderPageDefinitions().getCrossBorderCountry1()).isEqualTo(expectedCountry1);
+            assertThat(resultData.getCrossBorderPageDefinitions().getCrossBorderCountry2()).isEqualTo(expectedCountry2);
         }
     }
 
@@ -174,7 +175,7 @@ class EnterPropertyAddressTest extends BasePageTest {
 
         // Then
         PCSCase data = resp.getData();
-        assertThat(data.getShowCrossBorderPage()).isEqualTo(YesOrNo.NO);
+        assertThat(data.getCrossBorderPageDefinitions().getShowCrossBorderPage()).isEqualTo(YesOrNo.NO);
         assertThat(data.getShowPropertyNotEligiblePage()).isEqualTo(YesOrNo.YES);
     }
 

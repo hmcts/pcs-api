@@ -14,6 +14,7 @@ import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.domain.page.CrossBorderPageDefinitions;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
@@ -54,7 +55,11 @@ class CrossBorderPostcodeSelectionTest extends BasePageTest {
 
         PCSCase caseData = PCSCase.builder()
             .propertyAddress(propertyAddress)
-            .crossBorderCountriesList(createCountryListWithSelectedValue(expectedLegislativeCountry))
+            .crossBorderPageDefinitions(
+                CrossBorderPageDefinitions.builder()
+                    .crossBorderCountriesList(createCountryListWithSelectedValue(expectedLegislativeCountry))
+                    .build()
+            )
             .build();
 
         EligibilityResult eligibilityResult = EligibilityResult.builder()
@@ -81,7 +86,11 @@ class CrossBorderPostcodeSelectionTest extends BasePageTest {
         // Given
         PCSCase caseData = PCSCase.builder()
             .propertyAddress(AddressUK.builder().postCode(postcode).build())
-            .crossBorderCountriesList(createCountryListWithSelectedValue(selectedCountry))
+            .crossBorderPageDefinitions(
+                CrossBorderPageDefinitions.builder()
+                    .crossBorderCountriesList(createCountryListWithSelectedValue(selectedCountry))
+                    .build()
+            )
             .build();
 
         EligibilityResult eligibilityResult = EligibilityResult.builder()
@@ -170,7 +179,7 @@ class CrossBorderPostcodeSelectionTest extends BasePageTest {
         // Then
         var data = resp.getData();
         assertThat(data.getShowPropertyNotEligiblePage()).isEqualTo(YesOrNo.NO);
-        assertThat(data.getShowCrossBorderPage()).isEqualTo(YesOrNo.YES);
+        assertThat(data.getCrossBorderPageDefinitions().getShowCrossBorderPage()).isEqualTo(YesOrNo.YES);
     }
 
     @ParameterizedTest
@@ -197,7 +206,7 @@ class CrossBorderPostcodeSelectionTest extends BasePageTest {
         // Then: show PNE, keep cross-border for 'Previous'
         var data = resp.getData();
         assertThat(data.getShowPropertyNotEligiblePage()).isEqualTo(YesOrNo.YES);
-        assertThat(data.getShowCrossBorderPage()).isEqualTo(YesOrNo.YES);
+        assertThat(data.getCrossBorderPageDefinitions().getShowCrossBorderPage()).isEqualTo(YesOrNo.YES);
     }
 
     private static Stream<Arguments> eligibleCountries() {
@@ -220,10 +229,13 @@ class CrossBorderPostcodeSelectionTest extends BasePageTest {
 
         return PCSCase.builder()
             .propertyAddress(AddressUK.builder().postCode(CrossBorderPostcodeSelectionTest.SOME_POSTCODE).build())
-            .crossBorderCountriesList(dynamicStringList)
-            .showCrossBorderPage(YesOrNo.YES)
+            .crossBorderPageDefinitions(
+                CrossBorderPageDefinitions.builder()
+                    .crossBorderCountriesList(dynamicStringList)
+                    .showCrossBorderPage(YesOrNo.YES)
+                    .build()
+            )
             .showPropertyNotEligiblePage(YesOrNo.NO)
             .build();
     }
-
 }
