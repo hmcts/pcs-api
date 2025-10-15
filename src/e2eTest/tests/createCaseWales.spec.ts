@@ -95,8 +95,7 @@ test.describe('[Create Case - Wales] @Master @nightly', async () => {
     await performValidation('mainHeader', noticeOfYourIntention.mainHeader);
     await performAction('selectNoticeOfYourIntention', {
       question: noticeOfYourIntention.servedNoticeInteractiveText,
-      option: noticeOfYourIntention.no,
-      region: 'wales'
+      option: noticeOfYourIntention.no
     });
     await performValidation('mainHeader', rentDetails.mainHeader);
     await performAction('provideRentDetails', {rentAmount:'850', rentFrequencyOption:'Other', inputFrequency:rentDetails.rentFrequencyFortnightly,unpaidRentAmountPerDay:'50'});
@@ -197,7 +196,6 @@ test.describe('[Create Case - Wales] @Master @nightly', async () => {
     await performAction('selectNoticeOfYourIntention', {
       question: noticeOfYourIntention.servedNoticeInteractiveText,
       option: noticeOfYourIntention.no,
-      region: 'wales'
     });
     // await performValidation('mainHeader', rentDetails.mainHeader);
     // await performAction('provideRentDetails', {rentFrequencyOption: 'Monthly', rentAmount: '1000'});
