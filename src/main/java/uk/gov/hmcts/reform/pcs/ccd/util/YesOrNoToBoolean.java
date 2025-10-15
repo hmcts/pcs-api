@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.ccd.utils;
+package uk.gov.hmcts.reform.pcs.ccd.util;
 
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;

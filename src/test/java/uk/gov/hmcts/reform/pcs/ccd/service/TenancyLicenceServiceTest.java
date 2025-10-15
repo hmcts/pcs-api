@@ -12,6 +12,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.RentPaymentFrequency;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicence;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ThirdPartyPaymentSource;
+import uk.gov.hmcts.reform.pcs.ccd.domain.WalesNoticeDetails;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -301,6 +302,25 @@ class TenancyLicenceServiceTest {
         TenancyLicence result = tenancyLicenceService.buildTenancyLicence(pcsCase);
         // Then
         assertThat(result.getNoticeDocuments()).isEmpty();
+    }
+
+    @Test
+    void shouldMapWalesNoticeFieldsWhenPresent() {
+        // Given
+        String typeOfNoticeServed = "Some notice type";
+
+        WalesNoticeDetails walesNoticeDetails = WalesNoticeDetails.builder()
+            .noticeServed(YesOrNo.YES)
+            .typeOfNoticeServed(typeOfNoticeServed)
+            .build();
+        when(pcsCase.getWalesNoticeDetails()).thenReturn(walesNoticeDetails);
+
+        // When
+        TenancyLicence result = tenancyLicenceService.buildTenancyLicence(pcsCase);
+
+        // Then
+        assertThat(result.getWalesNoticeServed()).isTrue();
+        assertThat(result.getWalesTypeOfNoticeServed()).isEqualTo(typeOfNoticeServed);
     }
 
 }

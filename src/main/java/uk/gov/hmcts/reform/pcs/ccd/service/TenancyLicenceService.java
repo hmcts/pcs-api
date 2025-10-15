@@ -3,8 +3,8 @@ package uk.gov.hmcts.reform.pcs.ccd.service;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicence;
-import uk.gov.hmcts.reform.pcs.ccd.utils.ListValueUtils;
-import uk.gov.hmcts.reform.pcs.ccd.utils.YesOrNoToBoolean;
+import uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils;
+import uk.gov.hmcts.reform.pcs.ccd.util.YesOrNoToBoolean;
 
 import java.math.BigDecimal;
 
@@ -21,6 +21,11 @@ public class TenancyLicenceService {
                 .rentStatementDocuments(ListValueUtils.unwrapListItems(pcsCase.getRentStatementDocuments()))
                 .noticeDocuments(ListValueUtils.unwrapListItems(pcsCase.getNoticeDocuments()))
                 .noticeServed(YesOrNoToBoolean.convert(pcsCase.getNoticeServed()))
+                .walesNoticeServed(YesOrNoToBoolean.convert(pcsCase.getWalesNoticeDetails() != null
+                                                                ? pcsCase.getWalesNoticeDetails().getNoticeServed()
+                                                                : null))
+                .walesTypeOfNoticeServed(pcsCase.getWalesNoticeDetails() != null
+                                             ? pcsCase.getWalesNoticeDetails().getTypeOfNoticeServed() : null)
                 .rentAmount(penceToPounds(pcsCase.getCurrentRent()))
                 .rentPaymentFrequency(pcsCase.getRentFrequency())
                 .otherRentFrequency(pcsCase.getOtherRentFrequency())
