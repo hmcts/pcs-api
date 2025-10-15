@@ -66,8 +66,8 @@ Playwright 1.30+ | TypeScript 4.9+
 ## 4. Available Actions and Validations
 
 ### Actions
-| Action                               | Example Usage                                                                                                                                                                                              |
-|--------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Action          | Example Usage |
+|------------------|---------------|
 | inputText                            | `performAction('inputText', 'Email', 'test@example.com')`                                                                                                                                                  |
 | check                                | `performAction('check', 'RememberMe')`                                                                                                                                                                     |
 | navigateToUrl                        | `performAction('navigateToUrl', 'testUrl')`                                                                                                                                                                |
@@ -124,9 +124,10 @@ Playwright 1.30+ | TypeScript 4.9+
 | enterReasonForDemotionOrder          | `performAction('enterReasonForDemotionOrder',  reasonsForRequestingADemotionOrder.question)`                                                                                                               |
 | selectStatementOfExpressTerms        | `performAction('selectStatementOfExpressTerms', statementOfExpressTerms.yes)`                                                                                                                              |
 | selectLanguageUsed                   | `performAction('selectLanguageUsed', languageUsed.no)`                                                                                                                                                     |
+| selectClaimantDetails | `performAction('selectClaimantDetails', ...)` |
 ### Validations
-| Validation                 | Example Usage                                                                                                                        |
-|----------------------------|--------------------------------------------------------------------------------------------------------------------------------------|
+| Validation          | Example Usage |
+|------------------|---------------|
 | text                       | `performValidation('text', 'testElement')`                                                                                           |
 | bannerAlert                | `performValidation('bannerAlert', {message: "Case has been created."})`                                                              |
 | formLabelValue             | `performValidation('formLabelValue',  "Applicant's forename", {value:'TestUser'})`                                                   |
@@ -137,6 +138,7 @@ Playwright 1.30+ | TypeScript 4.9+
 | elementToBeVisible         | `performValidation('elementToBeVisible', 'testElement')`                                                                             |
 | elementNotToBeVisible      | `performValidation('elementNotToBeVisible', 'testElement')`                                                                          |
 | waitUntilElementDisappears | `performValidation('waitUntilElementDisappears', 'testElement')`                                                                     |
+| compareWithFigma | `performValidation('compareWithFigma', ...)` |
 ### Basic Test
 
 ```typescript
