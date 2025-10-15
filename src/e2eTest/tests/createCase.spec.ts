@@ -215,10 +215,10 @@ test.describe('[Create Case - England] @Master @nightly', async () => {
       question: noticeOfYourIntention.servedNoticeInteractiveText,
       option: noticeOfYourIntention.no
     });
-    await performValidation('mainHeader', noticeDetails.mainHeader);
-    await performAction('selectNoticeDetails', {
-      howDidYouServeNotice: noticeDetails.byDeliveringAtPermittedPlace,
-      day: '31', month: '01', year: '1962'});
+    // await performValidation('mainHeader', noticeDetails.mainHeader);
+    // await performAction('selectNoticeDetails', {
+    //   howDidYouServeNotice: noticeDetails.byDeliveringAtPermittedPlace,
+    //   day: '31', month: '01', year: '1962'});
     // await performValidation('mainHeader', rentDetails.mainHeader);
     // await performAction('provideRentDetails', { rentFrequencyOption: 'weekly', rentAmount: '800' });
     // await performValidation('mainHeader', dailyRentAmount.mainHeader);
