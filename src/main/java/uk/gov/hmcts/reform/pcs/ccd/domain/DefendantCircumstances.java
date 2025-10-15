@@ -33,8 +33,7 @@ public class DefendantCircumstances {
 
     @CCD(
         label = "Give details about the ${defendantTermPossessive} circumstances",
-        typeOverride = TextArea,
-        max = 950
+        typeOverride = TextArea
     )
     private String defendantCircumstancesInfo;
 

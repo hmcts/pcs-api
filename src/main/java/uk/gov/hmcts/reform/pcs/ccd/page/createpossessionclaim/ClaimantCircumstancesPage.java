@@ -9,7 +9,7 @@ import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantCircumstances;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.validation.TextAreaValidationUtil;
+import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,7 +20,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 @Component
 public class ClaimantCircumstancesPage implements CcdPageConfiguration {
 
-    private final TextAreaValidationUtil textAreaValidationUtil;
+    private final TextAreaValidationService textAreaValidationService;
 
     private static final String YOU_CAN_ENTER_UP_TO_950_CHARACTERS = "You can enter up to 950 characters";
     private static final String SHOW_CONDITION = "claimantCircumstancesSelect=\"YES\"";
@@ -60,15 +60,15 @@ public class ClaimantCircumstancesPage implements CcdPageConfiguration {
             // Use the actual dynamic label that's displayed to the user
             String dynamicLabel = "Give details about " + claimantCircumstances.getClaimantNamePossessiveForm() + "'s circumstances";
             
-            List<String> validationErrors = textAreaValidationUtil.validateSingleTextArea(
+            List<String> validationErrors = textAreaValidationService.validateSingleTextArea(
                 claimantCircumstances.getClaimantCircumstancesDetails(),
                 dynamicLabel,
                 950
             );
             
-            return textAreaValidationUtil.createValidationResponse(caseData, validationErrors);
+            return textAreaValidationService.createValidationResponse(caseData, validationErrors);
         }
         
-        return textAreaValidationUtil.createValidationResponse(caseData, new ArrayList<>());
+        return textAreaValidationService.createValidationResponse(caseData, new ArrayList<>());
     }
 }

@@ -1,16 +1,29 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim;
 
+import lombok.AllArgsConstructor;
+import org.springframework.stereotype.Component;
+import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
+import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.IntroductoryDemotedOtherGroundReason;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 
+import java.util.ArrayList;
+import java.util.List;
+
+@AllArgsConstructor
+@Component
 public class IntroductoryDemotedOtherGroundsReasons implements CcdPageConfiguration {
+
+    private final TextAreaValidationService textAreaValidationService;
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
-            .page("introductoryDemotedOtherGroundsReasons")
+            .page("introductoryDemotedOtherGroundsReasons", this::midEvent)
             .pageLabel("Reasons for possession ")
             .showCondition("showIntroductoryDemotedOtherGroundReasonPage=\"Yes\""
                     + " AND (typeOfTenancyLicence=\"INTRODUCTORY_TENANCY\""
@@ -61,5 +74,46 @@ public class IntroductoryDemotedOtherGroundsReasons implements CcdPageConfigurat
                        "hasIntroductoryDemotedOtherGroundsForPossession=\"NO\"")
             .done();
 
+    }
+
+    private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
+                                                                  CaseDetails<PCSCase, State> detailsBefore) {
+        PCSCase caseData = details.getData();
+        
+        // Validate all text area fields for character limit - ultra simple approach
+        IntroductoryDemotedOtherGroundReason introductoryDemotedOtherGroundReason = caseData.getIntroductoryDemotedOtherGroundReason();
+        if (introductoryDemotedOtherGroundReason != null) {
+            List<String> validationErrors = textAreaValidationService.validateMultipleTextAreas(
+                TextAreaValidationService.FieldValidation.of(
+                    introductoryDemotedOtherGroundReason.getAntiSocialBehaviourGround(),
+                    "Antisocial behaviour",
+                    500
+                ),
+                TextAreaValidationService.FieldValidation.of(
+                    introductoryDemotedOtherGroundReason.getBreachOfTheTenancyGround(),
+                    "Breach of the tenancy",
+                    500
+                ),
+                TextAreaValidationService.FieldValidation.of(
+                    introductoryDemotedOtherGroundReason.getAbsoluteGrounds(),
+                    "Absolute grounds",
+                    500
+                ),
+                TextAreaValidationService.FieldValidation.of(
+                    introductoryDemotedOtherGroundReason.getOtherGround(),
+                    "Other grounds",
+                    500
+                ),
+                TextAreaValidationService.FieldValidation.of(
+                    introductoryDemotedOtherGroundReason.getNoGrounds(),
+                    "No grounds",
+                    500
+                )
+            );
+            
+            return textAreaValidationService.createValidationResponse(caseData, validationErrors);
+        }
+        
+        return textAreaValidationService.createValidationResponse(caseData, new ArrayList<>());
     }
 }

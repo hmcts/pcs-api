@@ -8,7 +8,7 @@ import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.validation.TextAreaValidationUtil;
+import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 
 import java.util.List;
 
@@ -21,7 +21,7 @@ import java.util.List;
 @Component
 public class MediationAndSettlement implements CcdPageConfiguration {
 
-    private final TextAreaValidationUtil textAreaValidationUtil;
+    private final TextAreaValidationService textAreaValidationService;
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
@@ -59,19 +59,19 @@ public class MediationAndSettlement implements CcdPageConfiguration {
         PCSCase caseData = details.getData();
         
         // Validate text area fields for character limit - ultra simple approach
-        List<String> validationErrors = textAreaValidationUtil.validateMultipleTextAreas(
-            TextAreaValidationUtil.FieldValidation.of(
+        List<String> validationErrors = textAreaValidationService.validateMultipleTextAreas(
+            TextAreaValidationService.FieldValidation.of(
                 caseData.getMediationAttemptedDetails(),
                 "Give details about the attempted mediation and what the outcome was",
                 250
             ),
-            TextAreaValidationUtil.FieldValidation.of(
+            TextAreaValidationService.FieldValidation.of(
                 caseData.getSettlementAttemptedDetails(),
                 "Explain what steps you've taken to reach a settlement",
                 250
             )
         );
         
-        return textAreaValidationUtil.createValidationResponse(caseData, validationErrors);
+        return textAreaValidationService.createValidationResponse(caseData, validationErrors);
     }
 }

@@ -1,17 +1,21 @@
-package uk.gov.hmcts.reform.pcs.ccd.validation;
+package uk.gov.hmcts.reform.pcs.ccd.service;
 
-import org.springframework.stereotype.Component;
+import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Utility class for validating text area fields with character limits.
+ * Service for validating text area fields with character limits.
  * Provides reusable validation logic for midEvent callbacks across different pages.
  */
-@Component
-public class TextAreaValidationUtil {
+@Slf4j
+@Service
+@AllArgsConstructor
+public class TextAreaValidationService {
 
     /**
      * Validates a text area field and adds an error message if the character limit is exceeded.

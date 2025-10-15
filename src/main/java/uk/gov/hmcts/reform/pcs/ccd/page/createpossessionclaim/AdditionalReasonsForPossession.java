@@ -10,7 +10,7 @@ import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.AdditionalReasons;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.validation.TextAreaValidationUtil;
+import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,7 +21,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo.YES;
 @Component
 public class AdditionalReasonsForPossession implements CcdPageConfiguration {
 
-    private final TextAreaValidationUtil textAreaValidationUtil;
+    private final TextAreaValidationService textAreaValidationService;
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
@@ -44,16 +44,16 @@ public class AdditionalReasonsForPossession implements CcdPageConfiguration {
         // Validate text area field for character limit - ultra simple approach
         AdditionalReasons additionalReasons = caseData.getAdditionalReasonsForPossession();
         if (additionalReasons != null) {
-            List<String> validationErrors = textAreaValidationUtil.validateSingleTextArea(
+            List<String> validationErrors = textAreaValidationService.validateSingleTextArea(
                 additionalReasons.getReasons(),
                 "Additional reasons for possession",
                 6400
             );
             
-            return textAreaValidationUtil.createValidationResponse(caseData, validationErrors);
+            return textAreaValidationService.createValidationResponse(caseData, validationErrors);
         }
         
-        return textAreaValidationUtil.createValidationResponse(caseData, new ArrayList<>());
+        return textAreaValidationService.createValidationResponse(caseData, new ArrayList<>());
     }
 
 }

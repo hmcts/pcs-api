@@ -110,6 +110,11 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
     private final SecureOrFlexibleGroundsForPossessionReasons secureOrFlexibleGroundsForPossessionReasons;
     private final MediationAndSettlement mediationAndSettlement;
     private final ClaimantCircumstancesPage claimantCircumstancesPage;
+    private final IntroductoryDemotedOtherGroundsReasons introductoryDemotedOtherGroundsReasons;
+    private final DefendantCircumstancesPage defendantCircumstancesPage;
+    private final SuspensionOfRightToBuyOrderReason suspensionOfRightToBuyOrderReason;
+    private final StatementOfExpressTerms statementOfExpressTerms;
+    private final DemotionOfTenancyOrderReason demotionOfTenancyOrderReason;
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -138,7 +143,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             .add(new RentArrearsOrBreachOfTenancyGround())
             .add(secureOrFlexibleGroundsForPossessionReasons)
             .add(new IntroductoryDemotedOrOtherGroundsForPossession())
-            .add(new IntroductoryDemotedOtherGroundsReasons())
+            .add(introductoryDemotedOtherGroundsReasons)
             .add(new GroundsForPossession())
             .add(new GroundForPossessionRentArrears())
             .add(new GroundForPossessionAdditionalGrounds())
@@ -154,13 +159,13 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             .add(new MoneyJudgment())
             .add(claimantCircumstancesPage)
             .add(new LanguageUsed())
-            .add(new DefendantCircumstancesPage())
+            .add(defendantCircumstancesPage)
             .add(new AlternativesToPossessionOptions())
             .add(new SuspensionOfRightToBuyHousingActOptions())
-            .add(new SuspensionOfRightToBuyOrderReason())
+            .add(suspensionOfRightToBuyOrderReason)
             .add(new DemotionOfTenancyHousingActOptions())
-            .add(new StatementOfExpressTerms())
-            .add(new DemotionOfTenancyOrderReason())
+            .add(statementOfExpressTerms)
+            .add(demotionOfTenancyOrderReason)
             .add(new ClaimingCosts())
             .add(additionalReasonsForPossession)
             .add(new EntitledToClaimRelief())

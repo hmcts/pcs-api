@@ -10,7 +10,7 @@ import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.model.NoRentArrearsReasonForGrounds;
-import uk.gov.hmcts.reform.pcs.ccd.validation.TextAreaValidationUtil;
+import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,7 +20,7 @@ import java.util.List;
 @Slf4j
 public class NoRentArrearsGroundsForPossessionReason implements CcdPageConfiguration {
 
-    private final TextAreaValidationUtil textAreaValidationUtil;
+    private final TextAreaValidationService textAreaValidationService;
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
@@ -313,117 +313,117 @@ public class NoRentArrearsGroundsForPossessionReason implements CcdPageConfigura
         // Validate all text area fields for character limit - ultra simple approach
         NoRentArrearsReasonForGrounds noRentArrearsReason = caseData.getNoRentArrearsReasonForGrounds();
         if (noRentArrearsReason != null) {
-            List<String> validationErrors = textAreaValidationUtil.validateMultipleTextAreas(
-                TextAreaValidationUtil.FieldValidation.of(
+            List<String> validationErrors = textAreaValidationService.validateMultipleTextAreas(
+                TextAreaValidationService.FieldValidation.of(
                     noRentArrearsReason.getOwnerOccupierTextArea(),
                     "Owner occupier (ground 1)",
                     500
                 ),
-                TextAreaValidationUtil.FieldValidation.of(
+                TextAreaValidationService.FieldValidation.of(
                     noRentArrearsReason.getRepossessionByLenderTextArea(),
                     "Repossession by the landlord's mortgage lender (ground 2)",
                     500
                 ),
-                TextAreaValidationUtil.FieldValidation.of(
+                TextAreaValidationService.FieldValidation.of(
                     noRentArrearsReason.getHolidayLetTextArea(),
                     "Holiday let (ground 3)",
                     500
                 ),
-                TextAreaValidationUtil.FieldValidation.of(
+                TextAreaValidationService.FieldValidation.of(
                     noRentArrearsReason.getStudentLetTextArea(),
                     "Student let (ground 4)",
                     500
                 ),
-                TextAreaValidationUtil.FieldValidation.of(
+                TextAreaValidationService.FieldValidation.of(
                     noRentArrearsReason.getMinisterOfReligionTextArea(),
                     "Property required for minister of religion (ground 5)",
                     500
                 ),
-                TextAreaValidationUtil.FieldValidation.of(
+                TextAreaValidationService.FieldValidation.of(
                     noRentArrearsReason.getRedevelopmentTextArea(),
                     "Property required for redevelopment (ground 6)",
                     500
                 ),
-                TextAreaValidationUtil.FieldValidation.of(
+                TextAreaValidationService.FieldValidation.of(
                     noRentArrearsReason.getDeathOfTenantTextArea(),
                     "Death of the tenant (ground 7)",
                     500
                 ),
-                TextAreaValidationUtil.FieldValidation.of(
+                TextAreaValidationService.FieldValidation.of(
                     noRentArrearsReason.getAntisocialBehaviourTextArea(),
                     "Antisocial behaviour (ground 7A)",
                     500
                 ),
-                TextAreaValidationUtil.FieldValidation.of(
+                TextAreaValidationService.FieldValidation.of(
                     noRentArrearsReason.getNoRightToRentTextArea(),
                     "Tenant does not have a right to rent (ground 7B)",
                     500
                 ),
-                TextAreaValidationUtil.FieldValidation.of(
+                TextAreaValidationService.FieldValidation.of(
                     noRentArrearsReason.getSeriousRentArrearsTextArea(),
                     "Serious rent arrears (ground 8)",
                     500
                 ),
-                TextAreaValidationUtil.FieldValidation.of(
+                TextAreaValidationService.FieldValidation.of(
                     noRentArrearsReason.getSuitableAccomTextArea(),
                     "Suitable alternative accommodation (ground 9)",
                     500
                 ),
-                TextAreaValidationUtil.FieldValidation.of(
+                TextAreaValidationService.FieldValidation.of(
                     noRentArrearsReason.getRentArrearsTextArea(),
                     "Rent arrears (ground 10)",
                     500
                 ),
-                TextAreaValidationUtil.FieldValidation.of(
+                TextAreaValidationService.FieldValidation.of(
                     noRentArrearsReason.getRentPaymentDelayTextArea(),
                     "Persistent delay in paying rent (ground 11)",
                     500
                 ),
-                TextAreaValidationUtil.FieldValidation.of(
+                TextAreaValidationService.FieldValidation.of(
                     noRentArrearsReason.getBreachOfTenancyConditionsTextArea(),
                     "Breach of tenancy conditions (ground 12)",
                     500
                 ),
-                TextAreaValidationUtil.FieldValidation.of(
+                TextAreaValidationService.FieldValidation.of(
                     noRentArrearsReason.getPropertyDeteriorationTextArea(),
                     "Deterioration in the condition of the property (ground 13)",
                     500
                 ),
-                TextAreaValidationUtil.FieldValidation.of(
+                TextAreaValidationService.FieldValidation.of(
                     noRentArrearsReason.getNuisanceOrIllegalUseTextArea(),
                     "Nuisance, annoyance, illegal or immoral use of the property (ground 14)",
                     500
                 ),
-                TextAreaValidationUtil.FieldValidation.of(
+                TextAreaValidationService.FieldValidation.of(
                     noRentArrearsReason.getDomesticViolenceTextArea(),
                     "Domestic violence (ground 14A)",
                     500
                 ),
-                TextAreaValidationUtil.FieldValidation.of(
+                TextAreaValidationService.FieldValidation.of(
                     noRentArrearsReason.getOffenceDuringRiotTextArea(),
                     "Offence during a riot (ground 14ZA)",
                     500
                 ),
-                TextAreaValidationUtil.FieldValidation.of(
+                TextAreaValidationService.FieldValidation.of(
                     noRentArrearsReason.getFurnitureDeteriorationTextArea(),
                     "Deterioration of furniture (ground 15)",
                     500
                 ),
-                TextAreaValidationUtil.FieldValidation.of(
+                TextAreaValidationService.FieldValidation.of(
                     noRentArrearsReason.getLandlordEmployeeTextArea(),
                     "Employee of the landlord (ground 16)",
                     500
                 ),
-                TextAreaValidationUtil.FieldValidation.of(
+                TextAreaValidationService.FieldValidation.of(
                     noRentArrearsReason.getFalseStatementTextArea(),
                     "Tenancy obtained by false statement (ground 17)",
                     500
                 )
             );
             
-            return textAreaValidationUtil.createValidationResponse(caseData, validationErrors);
+            return textAreaValidationService.createValidationResponse(caseData, validationErrors);
         }
         
-        return textAreaValidationUtil.createValidationResponse(caseData, new ArrayList<>());
+        return textAreaValidationService.createValidationResponse(caseData, new ArrayList<>());
     }
 }
