@@ -126,24 +126,15 @@ public class NoticeDetails implements CcdPageConfiguration {
             TextAreaValidationService.FieldValidation.of(
                 caseData.getNoticeEmailExplanation(),
                 "Explain how it was served by email",
-                250
+                TextAreaValidationService.SHORT_TEXT_LIMIT
             ),
             TextAreaValidationService.FieldValidation.of(
                 caseData.getNoticeOtherExplanation(),
                 "Explain what the other means were. You can enter up to 250 characters",
-                250
+                TextAreaValidationService.SHORT_TEXT_LIMIT
             )
         ));
 
-        if (!validationErrors.isEmpty()) {
-            return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
-                .data(caseData)
-                .errors(validationErrors)
-                .build();
-        }
-
-        return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
-            .data(caseData)
-            .build();
+        return textAreaValidationService.createValidationResponse(caseData, validationErrors);
     }
 }

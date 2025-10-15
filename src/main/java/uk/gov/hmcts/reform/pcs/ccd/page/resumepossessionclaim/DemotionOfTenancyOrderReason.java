@@ -42,7 +42,7 @@ public class DemotionOfTenancyOrderReason implements CcdPageConfiguration {
             List<String> validationErrors = textAreaValidationService.validateSingleTextArea(
                 demotionOfTenancy.getDemotionOfTenancyReason(),
                 "Why are you requesting a demotion order?",
-                250
+                TextAreaValidationService.SHORT_TEXT_LIMIT
             );
             
             return textAreaValidationService.createValidationResponse(caseData, validationErrors);

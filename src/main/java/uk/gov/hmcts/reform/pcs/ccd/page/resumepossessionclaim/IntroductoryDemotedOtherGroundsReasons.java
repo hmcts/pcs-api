@@ -87,27 +87,27 @@ public class IntroductoryDemotedOtherGroundsReasons implements CcdPageConfigurat
                 TextAreaValidationService.FieldValidation.of(
                     introductoryDemotedOtherGroundReason.getAntiSocialBehaviourGround(),
                     "Antisocial behaviour",
-                    500
+                    TextAreaValidationService.MEDIUM_TEXT_LIMIT
                 ),
                 TextAreaValidationService.FieldValidation.of(
                     introductoryDemotedOtherGroundReason.getBreachOfTheTenancyGround(),
                     "Breach of the tenancy",
-                    500
+                    TextAreaValidationService.MEDIUM_TEXT_LIMIT
                 ),
                 TextAreaValidationService.FieldValidation.of(
                     introductoryDemotedOtherGroundReason.getAbsoluteGrounds(),
                     "Absolute grounds",
-                    500
+                    TextAreaValidationService.MEDIUM_TEXT_LIMIT
                 ),
                 TextAreaValidationService.FieldValidation.of(
                     introductoryDemotedOtherGroundReason.getOtherGround(),
                     "Other grounds",
-                    500
+                    TextAreaValidationService.MEDIUM_TEXT_LIMIT
                 ),
                 TextAreaValidationService.FieldValidation.of(
                     introductoryDemotedOtherGroundReason.getNoGrounds(),
                     "No grounds",
-                    500
+                    TextAreaValidationService.MEDIUM_TEXT_LIMIT
                 )
             );
             

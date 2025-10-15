@@ -317,107 +317,107 @@ public class NoRentArrearsGroundsForPossessionReason implements CcdPageConfigura
                 TextAreaValidationService.FieldValidation.of(
                     noRentArrearsReason.getOwnerOccupierTextArea(),
                     "Owner occupier (ground 1)",
-                    500
+                    TextAreaValidationService.MEDIUM_TEXT_LIMIT
                 ),
                 TextAreaValidationService.FieldValidation.of(
                     noRentArrearsReason.getRepossessionByLenderTextArea(),
                     "Repossession by the landlord's mortgage lender (ground 2)",
-                    500
+                    TextAreaValidationService.MEDIUM_TEXT_LIMIT
                 ),
                 TextAreaValidationService.FieldValidation.of(
                     noRentArrearsReason.getHolidayLetTextArea(),
                     "Holiday let (ground 3)",
-                    500
+                    TextAreaValidationService.MEDIUM_TEXT_LIMIT
                 ),
                 TextAreaValidationService.FieldValidation.of(
                     noRentArrearsReason.getStudentLetTextArea(),
                     "Student let (ground 4)",
-                    500
+                    TextAreaValidationService.MEDIUM_TEXT_LIMIT
                 ),
                 TextAreaValidationService.FieldValidation.of(
                     noRentArrearsReason.getMinisterOfReligionTextArea(),
                     "Property required for minister of religion (ground 5)",
-                    500
+                    TextAreaValidationService.MEDIUM_TEXT_LIMIT
                 ),
                 TextAreaValidationService.FieldValidation.of(
                     noRentArrearsReason.getRedevelopmentTextArea(),
                     "Property required for redevelopment (ground 6)",
-                    500
+                    TextAreaValidationService.MEDIUM_TEXT_LIMIT
                 ),
                 TextAreaValidationService.FieldValidation.of(
                     noRentArrearsReason.getDeathOfTenantTextArea(),
                     "Death of the tenant (ground 7)",
-                    500
+                    TextAreaValidationService.MEDIUM_TEXT_LIMIT
                 ),
                 TextAreaValidationService.FieldValidation.of(
                     noRentArrearsReason.getAntisocialBehaviourTextArea(),
                     "Antisocial behaviour (ground 7A)",
-                    500
+                    TextAreaValidationService.MEDIUM_TEXT_LIMIT
                 ),
                 TextAreaValidationService.FieldValidation.of(
                     noRentArrearsReason.getNoRightToRentTextArea(),
                     "Tenant does not have a right to rent (ground 7B)",
-                    500
+                    TextAreaValidationService.MEDIUM_TEXT_LIMIT
                 ),
                 TextAreaValidationService.FieldValidation.of(
                     noRentArrearsReason.getSeriousRentArrearsTextArea(),
                     "Serious rent arrears (ground 8)",
-                    500
+                    TextAreaValidationService.MEDIUM_TEXT_LIMIT
                 ),
                 TextAreaValidationService.FieldValidation.of(
                     noRentArrearsReason.getSuitableAccomTextArea(),
                     "Suitable alternative accommodation (ground 9)",
-                    500
+                    TextAreaValidationService.MEDIUM_TEXT_LIMIT
                 ),
                 TextAreaValidationService.FieldValidation.of(
                     noRentArrearsReason.getRentArrearsTextArea(),
                     "Rent arrears (ground 10)",
-                    500
+                    TextAreaValidationService.MEDIUM_TEXT_LIMIT
                 ),
                 TextAreaValidationService.FieldValidation.of(
                     noRentArrearsReason.getRentPaymentDelayTextArea(),
                     "Persistent delay in paying rent (ground 11)",
-                    500
+                    TextAreaValidationService.MEDIUM_TEXT_LIMIT
                 ),
                 TextAreaValidationService.FieldValidation.of(
                     noRentArrearsReason.getBreachOfTenancyConditionsTextArea(),
                     "Breach of tenancy conditions (ground 12)",
-                    500
+                    TextAreaValidationService.MEDIUM_TEXT_LIMIT
                 ),
                 TextAreaValidationService.FieldValidation.of(
                     noRentArrearsReason.getPropertyDeteriorationTextArea(),
                     "Deterioration in the condition of the property (ground 13)",
-                    500
+                    TextAreaValidationService.MEDIUM_TEXT_LIMIT
                 ),
                 TextAreaValidationService.FieldValidation.of(
                     noRentArrearsReason.getNuisanceOrIllegalUseTextArea(),
                     "Nuisance, annoyance, illegal or immoral use of the property (ground 14)",
-                    500
+                    TextAreaValidationService.MEDIUM_TEXT_LIMIT
                 ),
                 TextAreaValidationService.FieldValidation.of(
                     noRentArrearsReason.getDomesticViolenceTextArea(),
                     "Domestic violence (ground 14A)",
-                    500
+                    TextAreaValidationService.MEDIUM_TEXT_LIMIT
                 ),
                 TextAreaValidationService.FieldValidation.of(
                     noRentArrearsReason.getOffenceDuringRiotTextArea(),
                     "Offence during a riot (ground 14ZA)",
-                    500
+                    TextAreaValidationService.MEDIUM_TEXT_LIMIT
                 ),
                 TextAreaValidationService.FieldValidation.of(
                     noRentArrearsReason.getFurnitureDeteriorationTextArea(),
                     "Deterioration of furniture (ground 15)",
-                    500
+                    TextAreaValidationService.MEDIUM_TEXT_LIMIT
                 ),
                 TextAreaValidationService.FieldValidation.of(
                     noRentArrearsReason.getLandlordEmployeeTextArea(),
                     "Employee of the landlord (ground 16)",
-                    500
+                    TextAreaValidationService.MEDIUM_TEXT_LIMIT
                 ),
                 TextAreaValidationService.FieldValidation.of(
                     noRentArrearsReason.getFalseStatementTextArea(),
                     "Tenancy obtained by false statement (ground 17)",
-                    500
+                    TextAreaValidationService.MEDIUM_TEXT_LIMIT
                 )
             );
             

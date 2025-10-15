@@ -49,7 +49,7 @@ public class DefendantCircumstancesPage implements CcdPageConfiguration {
             List<String> validationErrors = textAreaValidationService.validateSingleTextArea(
                 defendantCircumstances.getDefendantCircumstancesInfo(),
                 dynamicLabel,
-                950
+                TextAreaValidationService.LONG_TEXT_LIMIT
             );
             
             return textAreaValidationService.createValidationResponse(caseData, validationErrors);

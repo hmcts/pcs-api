@@ -17,6 +17,15 @@ import java.util.List;
 @AllArgsConstructor
 public class TextAreaValidationService {
 
+    // Common character limits used across the application
+    public static final int SHORT_TEXT_LIMIT = 250;
+    public static final int MEDIUM_TEXT_LIMIT = 500;
+    public static final int LONG_TEXT_LIMIT = 950;
+    public static final int EXTRA_LONG_TEXT_LIMIT = 6400;
+    
+    // Error message template for character limit validation
+    public static final String CHARACTER_LIMIT_ERROR_TEMPLATE = "In '%s', you have entered more than the maximum number of %d characters";
+
     /**
      * Validates a text area field and adds an error message if the character limit is exceeded.
      *
@@ -28,7 +37,7 @@ public class TextAreaValidationService {
     public void validateTextArea(String fieldValue, String fieldLabel, int maxCharacters, List<String> errors) {
         if (fieldValue != null && fieldValue.length() > maxCharacters) {
             String errorMessage = String.format(
-                "In '%s', you have entered more than the maximum number of %d characters",
+                CHARACTER_LIMIT_ERROR_TEMPLATE,
                 fieldLabel,
                 maxCharacters
             );
@@ -89,6 +98,27 @@ public class TextAreaValidationService {
         }
         
         return errors;
+    }
+
+    /**
+     * Validates a single text area field with null-safe object access.
+     * This reduces boilerplate code for pages that need to validate a single field from a nested object.
+     *
+     * @param object The object containing the field (can be null)
+     * @param fieldExtractor Function to extract the field value from the object
+     * @param fieldLabel The label of the field (for error message)
+     * @param maxCharacters The maximum number of characters allowed
+     * @param <T> The type of the object
+     * @return List of validation errors
+     */
+    public <T> List<String> validateSingleField(T object, java.util.function.Function<T, String> fieldExtractor, 
+                                                String fieldLabel, int maxCharacters) {
+        if (object == null) {
+            return new ArrayList<>();
+        }
+        
+        String fieldValue = fieldExtractor.apply(object);
+        return validateSingleTextArea(fieldValue, fieldLabel, maxCharacters);
     }
 
     /**

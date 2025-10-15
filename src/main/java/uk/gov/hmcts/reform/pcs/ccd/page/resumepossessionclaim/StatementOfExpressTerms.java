@@ -44,7 +44,7 @@ public class StatementOfExpressTerms implements CcdPageConfiguration {
             List<String> validationErrors = textAreaValidationService.validateSingleTextArea(
                 demotionOfTenancy.getStatementOfExpressTermsDetails(),
                 "Give details of the terms",
-                950
+                TextAreaValidationService.LONG_TEXT_LIMIT
             );
             
             return textAreaValidationService.createValidationResponse(caseData, validationErrors);

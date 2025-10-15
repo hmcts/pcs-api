@@ -63,12 +63,12 @@ public class MediationAndSettlement implements CcdPageConfiguration {
             TextAreaValidationService.FieldValidation.of(
                 caseData.getMediationAttemptedDetails(),
                 "Give details about the attempted mediation and what the outcome was",
-                250
+                TextAreaValidationService.SHORT_TEXT_LIMIT
             ),
             TextAreaValidationService.FieldValidation.of(
                 caseData.getSettlementAttemptedDetails(),
                 "Explain what steps you've taken to reach a settlement",
-                250
+                TextAreaValidationService.SHORT_TEXT_LIMIT
             )
         );
         

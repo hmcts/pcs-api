@@ -47,7 +47,7 @@ public class AdditionalReasonsForPossession implements CcdPageConfiguration {
             List<String> validationErrors = textAreaValidationService.validateSingleTextArea(
                 additionalReasons.getReasons(),
                 "Additional reasons for possession",
-                6400
+                TextAreaValidationService.EXTRA_LONG_TEXT_LIMIT
             );
             
             return textAreaValidationService.createValidationResponse(caseData, validationErrors);

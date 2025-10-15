@@ -42,7 +42,7 @@ public class SuspensionOfRightToBuyOrderReason implements CcdPageConfiguration {
             List<String> validationErrors = textAreaValidationService.validateSingleTextArea(
                 suspensionOfRightToBuy.getSuspensionOfRightToBuyReason(),
                 "Why are you requesting a suspension order?",
-                250
+                TextAreaValidationService.SHORT_TEXT_LIMIT
             );
             
             return textAreaValidationService.createValidationResponse(caseData, validationErrors);
