@@ -183,18 +183,23 @@ public class PCSCase {
         label = "Mandatory grounds",
         hint = "Select all that apply",
         typeOverride = MultiSelectList,
-        typeParameterOverride = "MandatoryGround"
+        typeParameterOverride = "RentArrearsMandatoryGrounds"
     )
-    private Set<MandatoryGround> mandatoryGrounds;
+    private Set<RentArrearsMandatoryGrounds> rentArrearsMandatoryGrounds;
 
     // Additional grounds checkboxes - Discretionary
     @CCD(
         label = "Discretionary grounds",
         hint = "Select all that apply",
         typeOverride = MultiSelectList,
-        typeParameterOverride = "DiscretionaryGround"
+        typeParameterOverride = "RentArrearsDiscretionaryGrounds"
     )
-    private Set<DiscretionaryGround> discretionaryGrounds;
+    private Set<RentArrearsDiscretionaryGrounds> rentArrearsDiscretionaryGrounds;
+
+    @JsonUnwrapped
+    private RentArrearsGroundReasons rentArrearsGroundReasons;
+
+    private YesOrNo showRentArrearsReasonsForGroundsPage;
 
     @CCD(
         label = "Have you attempted mediation with the defendants?"
@@ -549,6 +554,8 @@ public class PCSCase {
 
     @JsonUnwrapped
     private NoRentArrearsReasonForGrounds noRentArrearsReasonForGrounds;
+
+    private YesOrNo showNoRentArrearsGroundsReasonsPage;
 
     @CCD(
         label = "Did you complete all or part of this claim in Welsh?",
