@@ -104,8 +104,11 @@ test.describe('[Create Case] @Master @nightly', async () => {
     await performValidation('mainHeader', noticeOfYourIntention.mainHeader);
     await performValidation('text', {"text": noticeOfYourIntention.guidanceOnPosessionNoticePeriodsLink, "elementType": "paragraphLink"})
     await performValidation('text', {"text": noticeOfYourIntention.servedNoticeInteractiveText, "elementType": "inlineText"});
-    await performAction('selectNoticeOfYourIntentionEngland', noticeOfYourIntention.yes);
-    await performValidation('mainHeader', noticeDetails.mainHeader);
+    await performAction('selectNoticeOfYourIntention', {
+      question: noticeOfYourIntention.servedNoticeInteractiveText,
+      option: [noticeOfYourIntention.yes],
+      region: 'england'
+    });    await performValidation('mainHeader', noticeDetails.mainHeader);
     await performAction('selectNoticeDetails', {
       howDidYouServeNotice: noticeDetails.byFirstClassPost,
       day: '16', month: '07', year: '1985', files: 'NoticeDetails.pdf'});
@@ -212,7 +215,11 @@ test.describe('[Create Case] @Master @nightly', async () => {
     await performValidation('mainHeader', noticeOfYourIntention.mainHeader);
     await performValidation('text', {"text": noticeOfYourIntention.guidanceOnPosessionNoticePeriodsLink, "elementType": "paragraphLink"})
     await performValidation('text', {"text": noticeOfYourIntention.servedNoticeInteractiveText, "elementType": "inlineText"});
-    await performAction('selectNoticeOfYourIntentionEngland', noticeOfYourIntention.yes);
+    await performAction('selectNoticeOfYourIntention', {
+      question: noticeOfYourIntention.servedNoticeInteractiveText,
+      option: [noticeOfYourIntention.no],
+      region: 'england'
+    });
     await performValidation('mainHeader', noticeDetails.mainHeader);
     await performAction('selectNoticeDetails', {
       howDidYouServeNotice: noticeDetails.byDeliveringAtPermittedPlace,
@@ -313,8 +320,11 @@ test.describe('[Create Case] @Master @nightly', async () => {
     await performValidation('mainHeader', noticeOfYourIntention.mainHeader);
     await performValidation('text', {"text": noticeOfYourIntention.guidanceOnPosessionNoticePeriodsLink, "elementType": "paragraphLink"})
     await performValidation('text', {"text": noticeOfYourIntention.servedNoticeInteractiveText, "elementType": "inlineText"});
-    await performAction('selectNoticeOfYourIntentionEngland', noticeOfYourIntention.yes);
-    await performValidation('mainHeader', noticeDetails.mainHeader);
+    await performAction('selectNoticeOfYourIntention', {
+      question: noticeOfYourIntention.servedNoticeInteractiveText,
+      option: [noticeOfYourIntention.yes],
+      region: 'england'
+    });    await performValidation('mainHeader', noticeDetails.mainHeader);
     await performAction('selectNoticeDetails', {
       howDidYouServeNotice: noticeDetails.byPersonallyHandling,
       explanationLabel: noticeDetails.nameOfPersonDocumentWasLeftLabel,
@@ -414,8 +424,11 @@ test.describe('[Create Case] @Master @nightly', async () => {
     await performValidation('mainHeader', noticeOfYourIntention.mainHeader);
     await performValidation('text', {"text": noticeOfYourIntention.guidanceOnPosessionNoticePeriodsLink, "elementType": "paragraphLink"})
     await performValidation('text', {"text": noticeOfYourIntention.servedNoticeInteractiveText, "elementType": "inlineText"});
-    await performAction('selectNoticeOfYourIntentionEngland', noticeOfYourIntention.yes);
-    await performValidation('mainHeader', noticeDetails.mainHeader);
+    await performAction('selectNoticeOfYourIntention', {
+      question: noticeOfYourIntention.servedNoticeInteractiveText,
+      option: [noticeOfYourIntention.yes],
+      region: 'england'
+    });    await performValidation('mainHeader', noticeDetails.mainHeader);
     await performAction('selectNoticeDetails', {
       howDidYouServeNotice: noticeDetails.byEmail,
       explanationLabel: noticeDetails.explainHowServedByEmailLabel,
@@ -508,8 +521,11 @@ test.describe('[Create Case] @Master @nightly', async () => {
       settlementWithDefendantsOption: mediationAndSettlement.no,
     });
     await performValidation('mainHeader', noticeOfYourIntention.mainHeader);
-    await performAction('selectNoticeOfYourIntentionWales', {question: noticeOfYourIntention.servedNoticeInteractiveText
-      , option: [noticeOfYourIntention.no]});
+    await performAction('selectNoticeOfYourIntention', {
+      question: noticeOfYourIntention.servedNoticeInteractiveText,
+      option: [noticeOfYourIntention.no],
+      region: 'wales'
+    });
     await performValidation('mainHeader', rentDetails.mainHeader);
     await performAction('provideRentDetails', {rentAmount:'850', rentFrequencyOption:'Other', inputFrequency:rentDetails.rentFrequencyFortnightly,unpaidRentAmountPerDay:'50'});
     await performValidation('mainHeader', detailsOfRentArrears.mainHeader);
@@ -606,8 +622,11 @@ test.describe('[Create Case] @Master @nightly', async () => {
       settlementWithDefendantsOption: mediationAndSettlement.no,
     });
     await performValidation('mainHeader', noticeOfYourIntention.mainHeader);
-    await performAction('selectNoticeOfYourIntentionWales', {question: noticeOfYourIntention.servedNoticeInteractiveText
-      , option: [noticeOfYourIntention.no]});
+    await performAction('selectNoticeOfYourIntention', {
+      question: noticeOfYourIntention.servedNoticeInteractiveText,
+      option: [noticeOfYourIntention.no],
+      region: 'wales'
+    });
     // await performValidation('mainHeader', rentDetails.mainHeader);
     // await performAction('provideRentDetails', {rentFrequencyOption: 'Monthly', rentAmount: '1000'});
     // await performAction('selectDailyRentAmount', {
@@ -703,8 +722,11 @@ test.describe('[Create Case] @Master @nightly', async () => {
       settlementWithDefendantsOption: mediationAndSettlement.no,
     });
     await performValidation('mainHeader', noticeOfYourIntention.mainHeader);
-    await performAction('selectNoticeOfYourIntentionWales', {question: noticeOfYourIntention.servedNoticeInteractiveText
-      , option: [noticeOfYourIntention.yes]});
+    await performAction('selectNoticeOfYourIntention', {
+      question: noticeOfYourIntention.servedNoticeInteractiveText,
+      option: [noticeOfYourIntention.yes],
+      region: 'wales'
+    });
     //selectNoticeDetails has been commented out and will be modified as part of https://tools.hmcts.net/jira/browse/HDPI-2515 + https://tools.hmcts.net/jira/browse/HDPI-2516
     // await performAction('selectNoticeDetails', {
     //   howDidYouServeNotice: noticeDetails.byOtherElectronicMethod,

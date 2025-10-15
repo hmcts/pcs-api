@@ -123,8 +123,7 @@ Playwright 1.30+ | TypeScript 4.9+
 | enterReasonForDemotionOrder          | `performAction('enterReasonForDemotionOrder',  reasonsForRequestingADemotionOrder.question)`                                                                                                               |
 | selectStatementOfExpressTerms        | `performAction('selectStatementOfExpressTerms', statementOfExpressTerms.yes)`                                                                                                                              |
 | selectLanguageUsed                   | `performAction('selectLanguageUsed', languageUsed.no)`                                                                                                                                                     |
-| selectNoticeOfYourIntentionEngland   | `performAction('selectNoticeOfYourIntentionEngland', {question: noticeOfYourIntention.servedNoticeInteractiveText, option: [noticeOfYourIntention.yes]})`                                                  |
-| selectNoticeOfYourIntentionWales     | `performAction('selectNoticeOfYourIntentionWales', {question: noticeOfYourIntention.servedNoticeInteractiveText, option: [noticeOfYourIntention.yes]})`                                                    |
+| selectNoticeOfYourIntention          | `performAction('selectNoticeOfYourIntention',{question: noticeOfYourIntention.servedNoticeInteractiveText,option:[noticeOfYourIntention.no],region: 'wales')`                                              |
 ### Validations
 | Validation                 | Example Usage                                                                                                                        |
 |----------------------------|--------------------------------------------------------------------------------------------------------------------------------------|
