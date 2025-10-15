@@ -7,7 +7,7 @@ export class ClickRadioButton implements IAction {
       ? page.locator(`input[type="radio"] + label:has-text("${params}")`)
       : page.locator(`legend:has-text("${params.question}")`)
             .locator('..')
-            .getByRole('radio', { name: params.option as string });
+            .getByRole('radio', { name: params.option as string, exact: true });
     await radioButton.click();
   }
 }
