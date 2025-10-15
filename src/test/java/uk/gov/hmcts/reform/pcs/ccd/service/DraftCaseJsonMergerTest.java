@@ -36,13 +36,13 @@ class DraftCaseJsonMergerTest {
     void shouldKeepExistingFieldsWhenMerging() throws JsonProcessingException {
         // Given
         PCSCase existingCaseData = Instancio.create(PCSCase.class);
-        existingCaseData.setWelshUsed(VerticalYesNo.NO);
+        existingCaseData.setApplicationWithClaim(VerticalYesNo.NO);
         String baseJson = objectMapper.writeValueAsString(existingCaseData);
 
         DynamicStringList claimantTypeList = createClaimantTypeList();
         PCSCase patchCaseData = PCSCase.builder()
             .otherGroundDescription("some other ground description")
-            .welshUsed(VerticalYesNo.YES)
+            .applicationWithClaim(VerticalYesNo.YES)
             .claimantType(claimantTypeList)
             .noRentArrearsReasonForGrounds(NoRentArrearsReasonForGrounds.builder()
                                                .holidayLetTextArea("some holiday let details")
@@ -60,13 +60,13 @@ class DraftCaseJsonMergerTest {
         assertThat(mergedCaseData)
             .usingRecursiveComparison()
             .ignoringFields("otherGroundDescription",
-                            "welshUsed",
+                            "applicationWithClaim",
                             "claimantType",
                             "noRentArrearsReasonForGrounds.holidayLetTextArea")
             .isEqualTo(existingCaseData);
 
         assertThat(mergedCaseData.getOtherGroundDescription()).isEqualTo("some other ground description");
-        assertThat(mergedCaseData.getWelshUsed()).isEqualTo(VerticalYesNo.YES);
+        assertThat(mergedCaseData.getApplicationWithClaim()).isEqualTo(VerticalYesNo.YES);
         assertThat(mergedCaseData.getClaimantType()).isEqualTo(claimantTypeList);
         assertThat(mergedCaseData.getNoRentArrearsReasonForGrounds().getHolidayLetTextArea())
             .isEqualTo("some holiday let details");
