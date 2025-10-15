@@ -21,6 +21,9 @@ BOOT-INF/
 *.iml
 *.ipr
 
+### VS Code ###
+.vscode/
+
 .DS_Store
 
 applicationinsights-agent-*.jar

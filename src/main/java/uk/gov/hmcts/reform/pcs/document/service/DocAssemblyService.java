@@ -1,114 +1,86 @@
 package uk.gov.hmcts.reform.pcs.document.service;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import feign.FeignException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
+import uk.gov.hmcts.reform.docassembly.DocAssemblyClient;
+import uk.gov.hmcts.reform.docassembly.domain.DocAssemblyRequest;
+import uk.gov.hmcts.reform.docassembly.domain.DocAssemblyResponse;
+import uk.gov.hmcts.reform.docassembly.exception.DocumentGenerationFailedException;
+import uk.gov.hmcts.reform.pcs.ccd.CaseType;
+import com.fasterxml.jackson.databind.JsonNode;
+import uk.gov.hmcts.reform.pcs.document.model.JsonNodeFormPayload;
+import uk.gov.hmcts.reform.docassembly.domain.OutputType;
 import uk.gov.hmcts.reform.pcs.document.service.exception.DocAssemblyException;
 import uk.gov.hmcts.reform.pcs.idam.IdamService;
-import uk.gov.hmcts.reform.pcs.testingsupport.model.DocAssemblyRequest;
-
-import java.util.Base64;
 
 @Slf4j
 @Service
 public class DocAssemblyService {
-    private final DocAssemblyApi docAssemblyApi;
+    private final DocAssemblyClient docAssemblyClient;
     private final IdamService idamService;
     private final AuthTokenGenerator authTokenGenerator;
-    private final ObjectMapper objectMapper;
-    private static final String DEFAULT_TEMPLATE_ID = "CV-SPC-CLM-ENG-01356.docx";
 
     public DocAssemblyService(
-        DocAssemblyApi docAssemblyApi,
+        DocAssemblyClient docAssemblyClient,
         IdamService idamService,
-        AuthTokenGenerator authTokenGenerator,
-        ObjectMapper objectMapper
+        AuthTokenGenerator authTokenGenerator
     ) {
-        this.docAssemblyApi = docAssemblyApi;
+        this.docAssemblyClient = docAssemblyClient;
         this.idamService = idamService;
         this.authTokenGenerator = authTokenGenerator;
-        this.objectMapper = objectMapper;
     }
 
-    public String generateDocument(DocAssemblyRequest request) {
-        if (request == null) {
-            throw new IllegalArgumentException("Request cannot be null");
-        }
-        // Use templateId from request, or default if not provided
-        if (request.getTemplateId() == null || request.getTemplateId().trim().isEmpty()) {
-            request.setTemplateId(DEFAULT_TEMPLATE_ID);
-        }
-        // Set output type if not provided
-        if (request.getOutputType() == null || request.getOutputType().trim().isEmpty()) {
-            request.setOutputType("PDF");
-        }
-
-        // Encode template ID to base64 as required by Doc Assembly service
-        String encodedTemplateId = Base64.getEncoder().encodeToString(request.getTemplateId().getBytes());
-        request.setTemplateId(encodedTemplateId);
-
-        String authorization = idamService.getSystemUserAuthorisation();
-        String serviceAuthorization = authTokenGenerator.generate();
-
+    public String generateDocument(
+            JsonNode formPayload,
+            String templateId,
+            OutputType outputType,
+            String outputFilename
+    ) {
         try {
-            String response = docAssemblyApi.generateDocument(
+            if (formPayload == null) {
+                throw new IllegalArgumentException("JsonNode formPayload cannot be null");
+            }
+
+            String authorization = idamService.getSystemUserAuthorisation();
+            String serviceAuthorization = authTokenGenerator.generate();
+
+            JsonNodeFormPayload formPayloadWrapper = new JsonNodeFormPayload(formPayload);
+
+            DocAssemblyRequest assemblyRequest = DocAssemblyRequest.builder()
+                .templateId(templateId)
+                .outputType(outputType)
+                .formPayload(formPayloadWrapper)
+                .outputFilename(outputFilename)
+                .caseTypeId(CaseType.getCaseType())
+                .jurisdictionId(CaseType.getJurisdictionId())
+                .secureDocStoreEnabled(true)
+                .build();
+
+            DocAssemblyResponse response = docAssemblyClient.generateOrder(
                 authorization,
                 serviceAuthorization,
-                request
+                assemblyRequest
             );
-            // Parse the JSON response to extract the document URL
-            JsonNode jsonNode = objectMapper.readTree(response);
-            JsonNode renditionOutputLocationNode = jsonNode.get("renditionOutputLocation");
-            String documentUrl = null;
-            if (renditionOutputLocationNode != null && !renditionOutputLocationNode.isNull()) {
-                documentUrl = renditionOutputLocationNode.asText();
-            }
+
+            // Extract document URL directly from response object
+            String documentUrl = response.getRenditionOutputLocation();
             if (documentUrl == null || documentUrl.isEmpty()) {
-                log.error("No or empty renditionOutputLocation found in Doc Assembly response: {}", response);
+                log.error("No or empty renditionOutputLocation found in Doc Assembly response");
                 throw new DocAssemblyException("No document URL returned from Doc Assembly service");
             }
             log.info("Document generated successfully. URL: {}", documentUrl);
             return documentUrl;
 
-        } catch (FeignException e) {
-            handleFeignException(e);
-            throw new DocAssemblyException("Unexpected error occurred during document generation", e);
+        } catch (DocumentGenerationFailedException e) {
+            // This is the exception thrown by DocAssemblyClient.generateOrder()
+            log.error("Document generation failed: {}", e.getMessage(), e);
+            throw new DocAssemblyException("Document generation failed", e);
         } catch (DocAssemblyException e) {
             throw e;
         } catch (Exception e) {
-            log.error("Failed to parse Doc Assembly response", e);
-            throw new DocAssemblyException("Failed to parse Doc Assembly response", e);
-        }
-    }
-
-    private void handleFeignException(FeignException e) {
-        int status = e.status();
-        String message = e.getMessage();
-
-        log.error("Doc Assembly API call failed with status {}: {}", status, message, e);
-
-        switch (status) {
-            case 400:
-                throw new DocAssemblyException("Bad request to Doc Assembly service: " + message, e);
-            case 401:
-            case 403:
-                throw new DocAssemblyException("Authorization failed for Doc Assembly service: " + message, e);
-            case 404:
-                throw new DocAssemblyException("Doc Assembly service endpoint not found: " + message, e);
-            case 500:
-            case 502:
-            case 503:
-            case 504:
-                throw new DocAssemblyException("Doc Assembly service is temporarily unavailable: " + message, e);
-            default:
-                if (status >= 500) {
-                    throw new DocAssemblyException("Doc Assembly service error: " + message, e);
-                } else {
-                    throw new DocAssemblyException("Doc Assembly service request failed: " + message, e);
-                }
+            log.error("Unexpected error occurred during document generation", e);
+            throw new DocAssemblyException("Unexpected error occurred during document generation", e);
         }
     }
 

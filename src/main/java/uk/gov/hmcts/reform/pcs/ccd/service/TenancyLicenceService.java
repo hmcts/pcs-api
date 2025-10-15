@@ -1,10 +1,10 @@
 package uk.gov.hmcts.reform.pcs.ccd.service;
 
 import org.springframework.stereotype.Service;
-import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicence;
-import uk.gov.hmcts.reform.pcs.ccd.utils.ListValueUtils;
+import uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils;
+import uk.gov.hmcts.reform.pcs.ccd.util.YesOrNoToBoolean;
 
 import java.math.BigDecimal;
 
@@ -18,16 +18,31 @@ public class TenancyLicenceService {
                 .tenancyLicenceDate(pcsCase.getTenancyLicenceDate())
                 .detailsOfOtherTypeOfTenancyLicence(pcsCase.getDetailsOfOtherTypeOfTenancyLicence())
                 .supportingDocuments(ListValueUtils.unwrapListItems(pcsCase.getTenancyLicenceDocuments()))
-                .noticeServed(toBooleanOrNull(pcsCase.getNoticeServed()))
+                .rentStatementDocuments(ListValueUtils.unwrapListItems(pcsCase.getRentStatementDocuments()))
+                .noticeDocuments(ListValueUtils.unwrapListItems(pcsCase.getNoticeDocuments()))
+                .noticeServed(YesOrNoToBoolean.convert(pcsCase.getNoticeServed()))
                 .rentAmount(penceToPounds(pcsCase.getCurrentRent()))
                 .rentPaymentFrequency(pcsCase.getRentFrequency())
                 .otherRentFrequency(pcsCase.getOtherRentFrequency())
                 .dailyRentChargeAmount(getDailyRentAmount(pcsCase))
+                .totalRentArrears(penceToPounds(pcsCase.getTotalRentArrears()))
+                .thirdPartyPaymentSources(pcsCase.getThirdPartyPaymentSources())
+                .thirdPartyPaymentSourceOther(pcsCase.getThirdPartyPaymentSourceOther())
+                // Add notice details fields
+                .noticeServiceMethod(pcsCase.getNoticeServiceMethod() != null
+                                    ? pcsCase.getNoticeServiceMethod().name()
+                                    : null)
+                .noticePostedDate(pcsCase.getNoticePostedDate())
+                .noticeDeliveredDate(pcsCase.getNoticeDeliveredDate())
+                .noticeHandedOverDateTime(pcsCase.getNoticeHandedOverDateTime())
+                .noticePersonName(pcsCase.getNoticePersonName())
+                .noticeEmailSentDateTime(pcsCase.getNoticeEmailSentDateTime())
+                .noticeEmailExplanation(pcsCase.getNoticeEmailExplanation())
+                .noticeOtherElectronicDateTime(pcsCase.getNoticeOtherElectronicDateTime())
+                .noticeOtherDateTime(pcsCase.getNoticeOtherDateTime())
+                .noticeOtherExplanation(pcsCase.getNoticeOtherExplanation())
+                .arrearsJudgmentWanted(YesOrNoToBoolean.convert(pcsCase.getArrearsJudgmentWanted()))
                 .build();
-    }
-
-    private static Boolean toBooleanOrNull(YesOrNo yesOrNo) {
-        return yesOrNo != null ? yesOrNo.toBoolean() : null;
     }
 
     private BigDecimal getDailyRentAmount(PCSCase pcsCase) {

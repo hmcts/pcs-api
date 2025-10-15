@@ -20,6 +20,10 @@ management:
       enabled: false
 
 springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+  api-docs:
+    path: /v3/api-docs
   packages-to-scan:
     - uk.gov.hmcts.reform.pcs
   writer-with-order-by-keys: true
@@ -126,7 +130,24 @@ db-scheduler:
   polling-interval-seconds: 10
   threads: 10
 
-doc-assembly:
+doc_assembly:
   url: ${DOC_ASSEMBLY_URL:http://localhost:8080}
   s2s-authorised:
     services: pcs_api,ccd_data,ccd_gw,ccd_case_document_am_api,ccd_definition,ccd_admin,ccd_ps,ccd
+
+fees-register:
+  api:
+    url: ${FEES_REGISTER_API_URL:http://localhost:8991}
+  fees:
+    caseIssueFee:
+      service: possession claim
+      jurisdiction1: civil
+      jurisdiction2: county court
+      channel: default
+      event: issue
+      applicantType: all
+      amountOrVolume: 1
+      keyword: PossessionCC
+  request:
+    max-retries: ${NOTIFY_CHECK_STATUS_MAX_RETRIES:5}
+    backoff-delay-seconds: ${NOTIFY_CHECK_STATUS_BACKOFF_DELAY_SECONDS:3600s}

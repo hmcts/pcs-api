@@ -5,12 +5,13 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.jms.annotation.EnableJms;
 import uk.gov.hmcts.reform.idam.client.IdamApi;
+import uk.gov.hmcts.reform.pcs.feesandpay.api.FeesRegisterApi;
 import uk.gov.hmcts.reform.pcs.hearings.service.api.HmcHearingApi;
 import uk.gov.hmcts.reform.pcs.location.service.api.LocationReferenceApi;
-import uk.gov.hmcts.reform.pcs.document.service.DocAssemblyApi;
 
 @SpringBootApplication(
     scanBasePackages = {
+        "uk.gov.hmcts.reform.docassembly",
         "uk.gov.hmcts.reform.pcs",
         "uk.gov.hmcts.ccd.sdk"
     })
@@ -20,7 +21,7 @@ import uk.gov.hmcts.reform.pcs.document.service.DocAssemblyApi;
         HmcHearingApi.class,
         LocationReferenceApi.class,
         IdamApi.class,
-        DocAssemblyApi.class
+        FeesRegisterApi.class
     }
 )
 @EnableJms

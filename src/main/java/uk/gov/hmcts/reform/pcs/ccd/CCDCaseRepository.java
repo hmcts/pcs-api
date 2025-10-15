@@ -9,18 +9,16 @@ import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
-import uk.gov.hmcts.reform.pcs.ccd.domain.PaymentStatus;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
-import uk.gov.hmcts.reform.pcs.ccd.renderer.ClaimPaymentTabRenderer;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.UnsubmittedCaseDataService;
-import uk.gov.hmcts.reform.pcs.ccd.utils.ListValueUtils;
+import uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
@@ -41,7 +39,6 @@ public class CCDCaseRepository extends DecentralisedCaseRepository<PCSCase> {
     private final PcsCaseRepository pcsCaseRepository;
     private final SecurityContextService securityContextService;
     private final ModelMapper modelMapper;
-    private final ClaimPaymentTabRenderer claimPaymentTabRenderer;
     private final PcsCaseService pcsCaseService;
     private final UnsubmittedCaseDataService unsubmittedCaseDataService;
 
@@ -95,28 +92,26 @@ public class CCDCaseRepository extends DecentralisedCaseRepository<PCSCase> {
             .defendants(pcsCaseService.mapToDefendantDetails(pcsCaseEntity.getDefendants()))
             .build();
 
-        setDerivedProperties(caseReference, pcsCase, pcsCaseEntity);
+        setDerivedProperties(pcsCase, pcsCaseEntity);
 
         return pcsCase;
     }
 
-    private void setDerivedProperties(long caseRef, PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {
+    private void setDerivedProperties(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {
         boolean pcqIdSet = findPartyForCurrentUser(pcsCaseEntity)
             .map(party -> party.getPcqId() != null)
             .orElse(false);
 
         pcsCase.setUserPcqIdSet(YesOrNo.from(pcqIdSet));
 
-        PaymentStatus paymentStatus = pcsCaseEntity.getPaymentStatus();
-        if (paymentStatus != null) {
-            pcsCase.setClaimPaymentTabMarkdown(claimPaymentTabRenderer.render(caseRef, paymentStatus));
-        }
         pcsCase.setParties(mapAndWrapParties(pcsCaseEntity.getParties()));
     }
 
     private void setMarkdownFields(PCSCase pcsCase) {
         pcsCase.setPageHeadingMarkdown("""
-                                       <p class="govuk-!-font-size-24">#${[CASE_REFERENCE]}</p>""");
+                <p class="govuk-!-font-size-24
+                govuk-!-margin-top-0 govuk-!-margin-bottom-0">
+                Case number: ${[CASE_REFERENCE]}</p>""");
 
         if (pcsCase.getHasUnsubmittedCaseData() == YesOrNo.YES) {
             pcsCase.setNextStepsMarkdown("""

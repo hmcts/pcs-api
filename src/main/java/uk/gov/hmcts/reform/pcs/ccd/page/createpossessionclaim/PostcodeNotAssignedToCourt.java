@@ -31,14 +31,13 @@ public class PostcodeNotAssignedToCourt implements CcdPageConfiguration {
             .showCondition(SHOW_PAGE)
             .readonly(PCSCase::getShowPostcodeNotAssignedToCourt, NEVER_SHOW)
             .readonly(PCSCase::getPostcodeNotAssignedView, NEVER_SHOW)
-            .readonly(PCSCase::getLegislativeCountry, NEVER_SHOW)
             .label(
                 "postcodeNotAssignedToCourt-header",
                 """
                 ---
                 <section tabindex="0">
                 <p class="govuk-body">
-                Based on the postcode you provided, we cannot determine which court your claim should be 
+                Based on the postcode you provided, we cannot determine which court your claim should be
                 assigned to, so you cannot use this online service.
                 </p>
 
@@ -50,11 +49,11 @@ public class PostcodeNotAssignedToCourt implements CcdPageConfiguration {
                 """
                 <ul class="govuk-list govuk-list--bullet">
                     <li class="govuk-list govuk-!-font-size-19">
-                        <span class="govuk-!-font-weight-bold">For rental or mortgage arrears claims</span> – 
+                        <span class="govuk-!-font-weight-bold">For rental or mortgage arrears claims</span> –
                         use the %s.
                     </li>
                     <li class="govuk-list govuk-!-font-size-19">
-                        <span class="govuk-!-font-weight-bold">For other types of claims</span> – fill in form 
+                        <span class="govuk-!-font-weight-bold">For other types of claims</span> – fill in form
                         N5 and the correct particulars of claim form.
                     </li>
                 </ul>
@@ -73,27 +72,27 @@ public class PostcodeNotAssignedToCourt implements CcdPageConfiguration {
                 """
                 <ul class="govuk-list govuk-list--bullet">
                     <li class="govuk-list govuk-!-font-size-19">
-                        <span class="govuk-!-font-weight-bold">For rental or mortgage arrears claims in 
+                        <span class="govuk-!-font-weight-bold">For rental or mortgage arrears claims in
                         England</span> – use the %s.
                     </li>
                     <li class="govuk-list govuk-!-font-size-19">
-                        <span class="govuk-!-font-weight-bold">For other types of claims in England</span> – fill in 
+                        <span class="govuk-!-font-weight-bold">For other types of claims in England</span> – fill in
                         form N5 and the correct particulars of claim form.
                     </li>
                     <li class="govuk-list govuk-!-font-size-19">
-                        <span class="govuk-!-font-weight-bold">For claims in Wales</span> - Use form N5 Wales and the 
+                        <span class="govuk-!-font-weight-bold">For claims in Wales</span> - Use form N5 Wales and the
                         correct particulars of claim form.
                     </li>
                     <li class="govuk-list govuk-!-font-size-19">
-                        <span class="govuk-!-font-weight-bold">For claims in Scotland</span> - use your 
-                        <a href="https://www.scotcourts.gov.uk/home" rel="noreferrer noopener" target="_blank" 
+                        <span class="govuk-!-font-weight-bold">For claims in Scotland</span> - use your
+                        <a href="https://www.scotcourts.gov.uk/home" rel="noreferrer noopener" target="_blank"
                         class="govuk-link" aria-label="Go to Scottish Courts website (opens in new tab)">
                         local sheriff court (opens in new tab)</a>.
                     </li>
                     <li class="govuk-list govuk-!-font-size-19">
-                        <span class="govuk-!-font-weight-bold">For claims in Northern Ireland</span> - use the 
-                        <a href="https://www.nidirect.gov.uk/articles/enforcement-civil-court-orders-northern-ireland" 
-                        rel="noreferrer noopener" target="_blank" class="govuk-link" 
+                        <span class="govuk-!-font-weight-bold">For claims in Northern Ireland</span> - use the
+                        <a href="https://www.nidirect.gov.uk/articles/enforcement-civil-court-orders-northern-ireland"
+                        rel="noreferrer noopener" target="_blank" class="govuk-link"
                         aria-label="Go to Enforcement of Judgments Office website (opens in new tab)">
                         Enforcement of Judgments Office (EJO) (opens in new tab)</a>.
                     </li>
@@ -118,15 +117,15 @@ public class PostcodeNotAssignedToCourt implements CcdPageConfiguration {
     }
 
     private static final String PCOL_LINK = """
-            <a href="https://www.gov.uk/possession-claim-online-recover-property" 
-            rel="noreferrer noopener" target="_blank" class="govuk-link" 
+            <a href="https://www.gov.uk/possession-claim-online-recover-property"
+            rel="noreferrer noopener" target="_blank" class="govuk-link"
             aria-label="Go to Possession Claim Online service (opens in new tab)">
             Possession Claim Online (PCOL) service (opens in new tab)</a>""";
 
     private static final String FORMS_LINK = """
             <p class="govuk-body">
-            <a href="https://www.gov.uk/government/collections/property-possession-forms" 
-            rel="noreferrer noopener" target="_blank" class="govuk-link" 
+            <a href="https://www.gov.uk/government/collections/property-possession-forms"
+            rel="noreferrer noopener" target="_blank" class="govuk-link"
             aria-label="View all property possession forms (opens in new tab)">
             View the full list of property possessions forms (opens in a new tab)</a>.
             </p>""";

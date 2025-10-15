@@ -29,6 +29,10 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
         return withChangeId(CASE_TYPE_ID, "-");
     }
 
+    public static String getJurisdictionId() {
+        return JURISDICTION_ID;
+    }
+
     public static String getCaseTypeName() {
         return withChangeId(CASE_TYPE_NAME, " ");
     }
@@ -43,26 +47,17 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
     public void configure(final ConfigBuilder<PCSCase, State, UserRole> builder) {
         builder.setCallbackHost(getenv().getOrDefault("CASE_API_URL", "http://localhost:3206"));
 
-        builder.decentralisedCaseType(getCaseType(), getCaseTypeName(), CASE_TYPE_DESCRIPTION);
+        builder.caseType(getCaseType(), getCaseTypeName(), CASE_TYPE_DESCRIPTION);
         builder.jurisdiction(JURISDICTION_ID, JURISDICTION_NAME, JURISDICTION_DESCRIPTION);
 
-        String paymentLabel = "Payment Status";
-
         builder.searchInputFields()
-            .caseReferenceField()
-            .field(PCSCase::getPaymentStatus, paymentLabel);
+            .caseReferenceField();
 
         builder.searchCasesFields()
-            .caseReferenceField()
-            .field(PCSCase::getPaymentStatus, paymentLabel);
+            .caseReferenceField();
 
         builder.searchResultFields()
-            .caseReferenceField()
-            .field(PCSCase::getPaymentStatus, paymentLabel);
-
-        builder.workBasketInputFields()
-            .caseReferenceField()
-            .field(PCSCase::getClaimantName, "Claimant Name");
+            .caseReferenceField();
 
         builder.workBasketResultFields()
             .caseReferenceField()
@@ -80,12 +75,6 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
         builder.tab("CaseHistory", "History")
             .showCondition(ShowConditions.stateNotEquals(AWAITING_FURTHER_CLAIM_DETAILS))
             .field("caseHistory");
-
-        builder.tab("ClaimPayment", "Payment")
-            .showCondition(ShowConditions.stateNotEquals(AWAITING_FURTHER_CLAIM_DETAILS))
-            .showCondition("claimPaymentTabMarkdown!=\"\"")
-            .label("claimPaymentTabMarkdownLabel", null, "${claimPaymentTabMarkdown}")
-            .field("claimPaymentTabMarkdown", NEVER_SHOW);
 
         builder.tab("hidden", "HiddenFields")
             .showCondition(NEVER_SHOW)

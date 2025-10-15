@@ -6,3 +6,5 @@ Dockerfile
 build.gradle
 charts/**/Chart.yaml
 .github/workflows/*.yaml
+
+src/e2eTest @hmcts/possession-claim-service-qa-admins @hmcts/possession-claim-service-admins
