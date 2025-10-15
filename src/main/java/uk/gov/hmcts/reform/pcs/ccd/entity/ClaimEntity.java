@@ -17,7 +17,9 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
 import uk.gov.hmcts.reform.pcs.ccd.domain.SuspensionOfRightToBuyHousingAct;
+import uk.gov.hmcts.reform.pcs.ccd.domain.DemotionOfTenancyHousingAct;
 
 import java.util.HashSet;
 import java.util.List;
@@ -71,9 +73,19 @@ public class ClaimEntity {
 
     private String suspensionOfRightToBuyReason;
 
+    @Enumerated(EnumType.STRING)
+    private DemotionOfTenancyHousingAct demotionOfTenancyHousingAct;
+
+    private String demotionOfTenancyReason;
+
+    private String statementOfExpressTermsDetails;
+
     private String additionalReasons;
 
     private String claimantCircumstances;
+
+    @Enumerated(EnumType.STRING)
+    private LanguageUsed languageUsed;
 
     public void addParty(PartyEntity party, PartyRole partyRole) {
         ClaimPartyEntity claimPartyEntity = ClaimPartyEntity.builder()

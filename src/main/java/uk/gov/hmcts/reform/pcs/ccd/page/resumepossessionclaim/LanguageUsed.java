@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim;
+package uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim;
 
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
@@ -16,6 +16,6 @@ public class LanguageUsed implements CcdPageConfiguration {
             .page("languageUsed")
             .pageLabel("Language used")
             .label("languageUsed-separator", "---")
-            .mandatory(PCSCase::getWelshUsed);
+            .mandatory(PCSCase::getLanguageUsed);
     }
 }
