@@ -6,7 +6,7 @@ import uk.gov.hmcts.ccd.sdk.api.HasLabel;
 
 @AllArgsConstructor
 @Getter
-public enum EstateManagementGrounds implements HasLabel {
+public enum EstateManagementGroundsWales implements HasLabel {
 
     BUILDING_WORKS("Building works (ground A)"),
     REDEVELOPMENT_SCHEMES("Redevelopment schemes (ground B)"),

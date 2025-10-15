@@ -611,24 +611,24 @@ public class PCSCase {
         label = "Discretionary grounds",
         hint = "Select all that apply",
         typeOverride = FieldType.MultiSelectList,
-        typeParameterOverride = "SecureContractDiscretionaryGrounds"
+        typeParameterOverride = "SecureContractDiscretionaryGroundsWales"
     )
-    private Set<SecureContractDiscretionaryGrounds> secureContractDiscretionaryGrounds;
+    private Set<SecureContractDiscretionaryGroundsWales> secureContractDiscretionaryGroundsWales;
 
     @CCD(
         label = "Mandatory grounds",
         hint = "Select all that apply",
         typeOverride = FieldType.MultiSelectList,
-        typeParameterOverride = "SecureContractMandatoryGrounds"
+        typeParameterOverride = "SecureContractMandatoryGroundsWales"
     )
-    private Set<SecureContractMandatoryGrounds> secureContractMandatoryGrounds;
+    private Set<SecureContractMandatoryGroundsWales> secureContractMandatoryGroundsWales;
 
     @CCD(
         label = "Estate management grounds",
         typeOverride = FieldType.MultiSelectList,
-        typeParameterOverride = "EstateManagementGrounds"
+        typeParameterOverride = "EstateManagementGroundsWales"
     )
-    private Set<EstateManagementGrounds> estateManagementGrounds;
+    private Set<EstateManagementGroundsWales> estateManagementGroundsWales;
 
     @CCD(searchable = false)
     private YesOrNo showReasonsForGroundsPageWales;

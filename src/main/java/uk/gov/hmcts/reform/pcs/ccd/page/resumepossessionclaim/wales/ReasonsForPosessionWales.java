@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim;
+package uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales;
 
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;

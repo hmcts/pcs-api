@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim;
+package uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales;
 
 import java.util.Set;
 import java.util.stream.Stream;
@@ -11,10 +11,10 @@ import static org.junit.jupiter.params.provider.Arguments.arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
-import uk.gov.hmcts.reform.pcs.ccd.domain.EstateManagementGrounds;
+import uk.gov.hmcts.reform.pcs.ccd.domain.EstateManagementGroundsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.domain.SecureContractDiscretionaryGrounds;
-import uk.gov.hmcts.reform.pcs.ccd.domain.SecureContractMandatoryGrounds;
+import uk.gov.hmcts.reform.pcs.ccd.domain.SecureContractDiscretionaryGroundsWales;
+import uk.gov.hmcts.reform.pcs.ccd.domain.SecureContractMandatoryGroundsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
 
@@ -28,18 +28,18 @@ public class SecureContractGroundsForPossessionWalesTest extends BasePageTest {
     @ParameterizedTest
     @MethodSource("groundScenarios")
     void shouldValidateWalesGroundInputs(
-            Set<SecureContractDiscretionaryGrounds> discretionaryGrounds,
-            Set<SecureContractMandatoryGrounds> mandatoryGrounds,
-            Set<EstateManagementGrounds> estateGrounds,
+            Set<SecureContractDiscretionaryGroundsWales> discretionaryGrounds,
+            Set<SecureContractMandatoryGroundsWales> mandatoryGrounds,
+            Set<EstateManagementGroundsWales> estateGrounds,
             boolean expectEstateError,
             boolean expectGroundsError,
             boolean expectValid
     ) {
         // Given
         PCSCase caseData = PCSCase.builder()
-                .secureContractDiscretionaryGrounds(discretionaryGrounds)
-                .secureContractMandatoryGrounds(mandatoryGrounds)
-                .estateManagementGrounds(estateGrounds)
+                .secureContractDiscretionaryGroundsWales(discretionaryGrounds)
+                .secureContractMandatoryGroundsWales(mandatoryGrounds)
+                .estateManagementGroundsWales(estateGrounds)
                 .build();
 
         // When
@@ -65,43 +65,43 @@ public class SecureContractGroundsForPossessionWalesTest extends BasePageTest {
                 // ESTATE_MANAGEMENT_GROUNDS selected with no estate details 
                 // - should error on missing estate management grounds
                 arguments(
-                        Set.of(SecureContractDiscretionaryGrounds.ESTATE_MANAGEMENT_GROUNDS),
+                        Set.of(SecureContractDiscretionaryGroundsWales.ESTATE_MANAGEMENT_GROUNDS),
                         Set.of(), Set.of(),
                         true, false, false
                 ),
                 // ESTATE_MANAGEMENT_GROUNDS + BUILDING_WORKS provided - should be valid
                 arguments(
-                        Set.of(SecureContractDiscretionaryGrounds.ESTATE_MANAGEMENT_GROUNDS),
+                        Set.of(SecureContractDiscretionaryGroundsWales.ESTATE_MANAGEMENT_GROUNDS),
                         Set.of(),
-                        Set.of(EstateManagementGrounds.BUILDING_WORKS),
+                        Set.of(EstateManagementGroundsWales.BUILDING_WORKS),
                         false, false, true
                 ),
                 // Only mandatory ground present, should be valid
                 arguments(
                         Set.of(),
-                        Set.of(SecureContractMandatoryGrounds.FAILURE_TO_GIVE_UP_POSSESSION_SECTION_170),
+                        Set.of(SecureContractMandatoryGroundsWales.FAILURE_TO_GIVE_UP_POSSESSION_SECTION_170),
                         Set.of(),
                         false, false, true
                 ),
                 // Multiple discretionary (incl ESTATE_MANAGEMENT_GROUNDS)+ valid estate - should be valid
                 arguments(
                         Set.of(
-                                SecureContractDiscretionaryGrounds.RENT_ARREARS,
-                                SecureContractDiscretionaryGrounds.ESTATE_MANAGEMENT_GROUNDS),
+                                SecureContractDiscretionaryGroundsWales.RENT_ARREARS,
+                                SecureContractDiscretionaryGroundsWales.ESTATE_MANAGEMENT_GROUNDS),
                         Set.of(),
-                        Set.of(EstateManagementGrounds.REDEVELOPMENT_SCHEMES),
+                        Set.of(EstateManagementGroundsWales.REDEVELOPMENT_SCHEMES),
                         false, false, true
                 ),
                 // discretionary non-estate ground (ANTISOCIAL_BEHAVIOUR) - should be valid
                 arguments(
-                        Set.of(SecureContractDiscretionaryGrounds.ANTISOCIAL_BEHAVIOUR),
+                        Set.of(SecureContractDiscretionaryGroundsWales.ANTISOCIAL_BEHAVIOUR),
                         Set.of(), Set.of(),
                         false, false, true
                 ),
                 // Discretionary (OTHER_BREACH_OF_CONTRACT) + mandatory (LANDLORD_NOTICE_SECTION_186) - should be valid
                 arguments(
-                        Set.of(SecureContractDiscretionaryGrounds.OTHER_BREACH_OF_CONTRACT),
-                        Set.of(SecureContractMandatoryGrounds.LANDLORD_NOTICE_SECTION_186),
+                        Set.of(SecureContractDiscretionaryGroundsWales.OTHER_BREACH_OF_CONTRACT),
+                        Set.of(SecureContractMandatoryGroundsWales.LANDLORD_NOTICE_SECTION_186),
                         Set.of(),
                         false, false, true
                 )

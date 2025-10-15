@@ -6,7 +6,7 @@ import uk.gov.hmcts.ccd.sdk.api.HasLabel;
 
 @AllArgsConstructor
 @Getter
-public enum SecureContractMandatoryGrounds implements HasLabel {
+public enum SecureContractMandatoryGroundsWales implements HasLabel {
 
     FAILURE_TO_GIVE_UP_POSSESSION_SECTION_170("Failure to give up possession on date "
             + "specified in contract-holder’s notice (section 170)"),

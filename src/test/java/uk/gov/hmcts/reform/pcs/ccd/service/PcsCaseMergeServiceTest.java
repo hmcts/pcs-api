@@ -8,10 +8,10 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.modelmapper.ModelMapper;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
-import uk.gov.hmcts.reform.pcs.ccd.domain.EstateManagementGrounds;
+import uk.gov.hmcts.reform.pcs.ccd.domain.EstateManagementGroundsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.domain.SecureContractDiscretionaryGrounds;
-import uk.gov.hmcts.reform.pcs.ccd.domain.SecureContractMandatoryGrounds;
+import uk.gov.hmcts.reform.pcs.ccd.domain.SecureContractDiscretionaryGroundsWales;
+import uk.gov.hmcts.reform.pcs.ccd.domain.SecureContractMandatoryGroundsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyEntity;
@@ -188,18 +188,18 @@ class PcsCaseMergeServiceTest {
     void shouldMapWalesPossessionGroundsToJsonb() {
         PCSCase pcsCase = mock(PCSCase.class);
 
-        Set<SecureContractDiscretionaryGrounds> discretionaryGrounds = Set.of(
-                SecureContractDiscretionaryGrounds.RENT_ARREARS,
-                SecureContractDiscretionaryGrounds.ANTISOCIAL_BEHAVIOUR);
-        Set<SecureContractMandatoryGrounds> mandatoryGrounds = Set.of(
-                SecureContractMandatoryGrounds.FAILURE_TO_GIVE_UP_POSSESSION_SECTION_170);
-        Set<EstateManagementGrounds> estateManagementGrounds = Set.of(
-                EstateManagementGrounds.BUILDING_WORKS,
-                EstateManagementGrounds.REDEVELOPMENT_SCHEMES);
+        Set<SecureContractDiscretionaryGroundsWales> discretionaryGrounds = Set.of(
+                SecureContractDiscretionaryGroundsWales.RENT_ARREARS,
+                SecureContractDiscretionaryGroundsWales.ANTISOCIAL_BEHAVIOUR);
+        Set<SecureContractMandatoryGroundsWales> mandatoryGrounds = Set.of(
+                SecureContractMandatoryGroundsWales.FAILURE_TO_GIVE_UP_POSSESSION_SECTION_170);
+        Set<EstateManagementGroundsWales> estateManagementGrounds = Set.of(
+                EstateManagementGroundsWales.BUILDING_WORKS,
+                EstateManagementGroundsWales.REDEVELOPMENT_SCHEMES);
 
-        when(pcsCase.getSecureContractDiscretionaryGrounds()).thenReturn(discretionaryGrounds);
-        when(pcsCase.getSecureContractMandatoryGrounds()).thenReturn(mandatoryGrounds);
-        when(pcsCase.getEstateManagementGrounds()).thenReturn(estateManagementGrounds);
+        when(pcsCase.getSecureContractDiscretionaryGroundsWales()).thenReturn(discretionaryGrounds);
+        when(pcsCase.getSecureContractMandatoryGroundsWales()).thenReturn(mandatoryGrounds);
+        when(pcsCase.getEstateManagementGroundsWales()).thenReturn(estateManagementGrounds);
         when(pcsCase.getSecureOrFlexibleDiscretionaryGrounds()).thenReturn(null);
         when(pcsCase.getSecureOrFlexibleMandatoryGrounds()).thenReturn(null);
         when(pcsCase.getSecureOrFlexibleDiscretionaryGroundsAlt()).thenReturn(null);
@@ -213,15 +213,15 @@ class PcsCaseMergeServiceTest {
         assertThat(pcsCaseEntity.getPossessionGrounds()).isNotNull();
         assertThat(pcsCaseEntity.getPossessionGrounds().getWalesDiscretionaryGrounds())
                 .contains(
-                        SecureContractDiscretionaryGrounds.RENT_ARREARS.getLabel(),
-                        SecureContractDiscretionaryGrounds.ANTISOCIAL_BEHAVIOUR.getLabel());
+                        SecureContractDiscretionaryGroundsWales.RENT_ARREARS.getLabel(),
+                        SecureContractDiscretionaryGroundsWales.ANTISOCIAL_BEHAVIOUR.getLabel());
         assertThat(pcsCaseEntity.getPossessionGrounds().getWalesMandatoryGrounds())
                 .contains(
-                        SecureContractMandatoryGrounds.FAILURE_TO_GIVE_UP_POSSESSION_SECTION_170.getLabel());
+                        SecureContractMandatoryGroundsWales.FAILURE_TO_GIVE_UP_POSSESSION_SECTION_170.getLabel());
         assertThat(pcsCaseEntity.getPossessionGrounds().getWalesEstateManagementGrounds())
                 .contains(
-                        EstateManagementGrounds.BUILDING_WORKS.getLabel(),
-                        EstateManagementGrounds.REDEVELOPMENT_SCHEMES.getLabel());
+                        EstateManagementGroundsWales.BUILDING_WORKS.getLabel(),
+                        EstateManagementGroundsWales.REDEVELOPMENT_SCHEMES.getLabel());
     }
 
     private AddressEntity stubAddressUKModelMapper(AddressUK addressUK) {

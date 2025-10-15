@@ -6,7 +6,7 @@ import uk.gov.hmcts.ccd.sdk.api.HasLabel;
 
 @AllArgsConstructor
 @Getter
-public enum SecureContractDiscretionaryGrounds implements HasLabel {
+public enum SecureContractDiscretionaryGroundsWales implements HasLabel {
 
     RENT_ARREARS("Rent arrears (breach of contract(section 157))"),
     ANTISOCIAL_BEHAVIOUR("Anti-social behaviour (breach of contract)(section 157)"),

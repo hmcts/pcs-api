@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim;
+package uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales;
 
 import java.util.List;
 import java.util.Set;
@@ -8,10 +8,10 @@ import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
-import uk.gov.hmcts.reform.pcs.ccd.domain.EstateManagementGrounds;
+import uk.gov.hmcts.reform.pcs.ccd.domain.EstateManagementGroundsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.domain.SecureContractDiscretionaryGrounds;
-import uk.gov.hmcts.reform.pcs.ccd.domain.SecureContractMandatoryGrounds;
+import uk.gov.hmcts.reform.pcs.ccd.domain.SecureContractDiscretionaryGroundsWales;
+import uk.gov.hmcts.reform.pcs.ccd.domain.SecureContractMandatoryGroundsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 
 public class SecureContractGroundsForPossessionWales implements CcdPageConfiguration {
@@ -39,10 +39,10 @@ public class SecureContractGroundsForPossessionWales implements CcdPageConfigura
                 </p>
 
                """)
-                .optional(PCSCase::getSecureContractDiscretionaryGrounds)
-                .optional(PCSCase::getEstateManagementGrounds,
-                        "secureContractDiscretionaryGroundsCONTAINS\"ESTATE_MANAGEMENT_GROUNDS\"")
-                .optional(PCSCase::getSecureContractMandatoryGrounds);
+                .optional(PCSCase::getSecureContractDiscretionaryGroundsWales)
+                .optional(PCSCase::getEstateManagementGroundsWales,
+                        "secureContractDiscretionaryGroundsWalesCONTAINS\"ESTATE_MANAGEMENT_GROUNDS\"")
+                .optional(PCSCase::getSecureContractMandatoryGroundsWales);
     }
 
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
@@ -50,13 +50,14 @@ public class SecureContractGroundsForPossessionWales implements CcdPageConfigura
                 
         PCSCase caseData = details.getData();
 
-        Set<SecureContractDiscretionaryGrounds> discretionaryGrounds = caseData.getSecureContractDiscretionaryGrounds();
+        Set<SecureContractDiscretionaryGroundsWales> discretionaryGrounds = 
+                                                caseData.getSecureContractDiscretionaryGroundsWales();
 
-        Set<SecureContractMandatoryGrounds> mandatoryGrounds = caseData.getSecureContractMandatoryGrounds();
+        Set<SecureContractMandatoryGroundsWales> mandatoryGrounds = caseData.getSecureContractMandatoryGroundsWales();
 
-        Set<EstateManagementGrounds> estateManagement = caseData.getEstateManagementGrounds();
+        Set<EstateManagementGroundsWales> estateManagement = caseData.getEstateManagementGroundsWales();
 
-        if (discretionaryGrounds.contains(SecureContractDiscretionaryGrounds.ESTATE_MANAGEMENT_GROUNDS)
+        if (discretionaryGrounds.contains(SecureContractDiscretionaryGroundsWales.ESTATE_MANAGEMENT_GROUNDS)
                 && estateManagement.isEmpty()) {
             return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
                     .errors(List.of("Please select at least one Estate management ground"))
