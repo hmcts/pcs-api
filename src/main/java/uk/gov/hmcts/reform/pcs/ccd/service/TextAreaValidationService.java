@@ -24,7 +24,8 @@ public class TextAreaValidationService {
     public static final int EXTRA_LONG_TEXT_LIMIT = 6400;
     
     // Error message template for character limit validation
-    public static final String CHARACTER_LIMIT_ERROR_TEMPLATE = "In '%s', you have entered more than the maximum number of %d characters";
+    public static final String CHARACTER_LIMIT_ERROR_TEMPLATE = 
+        "In '%s', you have entered more than the maximum number of %d characters";
 
     /**
      * Validates a text area field and adds an error message if the character limit is exceeded.
@@ -70,8 +71,9 @@ public class TextAreaValidationService {
      * @param <S> The state type
      * @return AboutToStartOrSubmitResponse with errors if any, or success response
      */
-    public <T, S> AboutToStartOrSubmitResponse<T, S> createValidationResponse(T caseData, List<String> validationErrors) {
-        if (!validationErrors.isEmpty()) {
+    public <T, S> AboutToStartOrSubmitResponse<T, S> createValidationResponse(
+            T caseData, List<String> validationErrors) {
+        if (validationErrors != null && !validationErrors.isEmpty()) {
             return AboutToStartOrSubmitResponse.<T, S>builder()
                 .data(caseData)
                 .errors(validationErrors)
@@ -126,9 +128,9 @@ public class TextAreaValidationService {
      * Makes it easy to define multiple field validations.
      */
     public static class FieldValidation {
-        private final String fieldValue;
-        private final String fieldLabel;
-        private final int maxCharacters;
+        public final String fieldValue;
+        public final String fieldLabel;
+        public final int maxCharacters;
 
         public FieldValidation(String fieldValue, String fieldLabel, int maxCharacters) {
             this.fieldValue = fieldValue;

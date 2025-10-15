@@ -58,7 +58,9 @@ public class ClaimantCircumstancesPage implements CcdPageConfiguration {
         ClaimantCircumstances claimantCircumstances = caseData.getClaimantCircumstances();
         if (claimantCircumstances != null) {
             // Use the actual dynamic label that's displayed to the user
-            String dynamicLabel = "Give details about " + claimantCircumstances.getClaimantNamePossessiveForm() + "'s circumstances";
+            String dynamicLabel = "Give details about " 
+                + claimantCircumstances.getClaimantNamePossessiveForm() 
+                + "'s circumstances";
             
             List<String> validationErrors = textAreaValidationService.validateSingleTextArea(
                 claimantCircumstances.getClaimantCircumstancesDetails(),

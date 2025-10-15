@@ -81,7 +81,8 @@ public class IntroductoryDemotedOtherGroundsReasons implements CcdPageConfigurat
         PCSCase caseData = details.getData();
         
         // Validate all text area fields for character limit - ultra simple approach
-        IntroductoryDemotedOtherGroundReason introductoryDemotedOtherGroundReason = caseData.getIntroductoryDemotedOtherGroundReason();
+        IntroductoryDemotedOtherGroundReason introductoryDemotedOtherGroundReason = 
+            caseData.getIntroductoryDemotedOtherGroundReason();
         if (introductoryDemotedOtherGroundReason != null) {
             List<String> validationErrors = textAreaValidationService.validateMultipleTextAreas(
                 TextAreaValidationService.FieldValidation.of(

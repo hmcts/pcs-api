@@ -27,6 +27,16 @@ import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.NoticeDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ResumeClaim;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.TenancyLicenceDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.UploadAdditionalDocumentsDetails;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.NoRentArrearsGroundsForPossessionReason;
+import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.AdditionalReasonsForPossession;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.SecureOrFlexibleGroundsForPossessionReasons;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.MediationAndSettlement;
+import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.ClaimantCircumstancesPage;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.IntroductoryDemotedOtherGroundsReasons;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.DefendantCircumstancesPage;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.SuspensionOfRightToBuyOrderReason;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.StatementOfExpressTerms;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.DemotionOfTenancyOrderReason;
 import uk.gov.hmcts.reform.pcs.ccd.service.ClaimService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
@@ -85,6 +95,26 @@ class ResumePossessionClaimTest extends BaseEventTest {
     @Mock
     private UploadAdditionalDocumentsDetails uploadAdditionalDocumentsDetails;
     @Mock
+    private NoRentArrearsGroundsForPossessionReason noRentArrearsGroundsForPossessionReason;
+    @Mock
+    private AdditionalReasonsForPossession additionalReasonsForPossession;
+    @Mock
+    private SecureOrFlexibleGroundsForPossessionReasons secureOrFlexibleGroundsForPossessionReasons;
+    @Mock
+    private MediationAndSettlement mediationAndSettlement;
+    @Mock
+    private ClaimantCircumstancesPage claimantCircumstancesPage;
+    @Mock
+    private IntroductoryDemotedOtherGroundsReasons introductoryDemotedOtherGroundsReasons;
+    @Mock
+    private DefendantCircumstancesPage defendantCircumstancesPage;
+    @Mock
+    private SuspensionOfRightToBuyOrderReason suspensionOfRightToBuyOrderReason;
+    @Mock
+    private StatementOfExpressTerms statementOfExpressTerms;
+    @Mock
+    private DemotionOfTenancyOrderReason demotionOfTenancyOrderReason;
+    @Mock
     private SchedulerClient schedulerClient;
 
     @BeforeEach
@@ -102,7 +132,10 @@ class ResumePossessionClaimTest extends BaseEventTest {
             savingPageBuilderFactory, resumeClaim,
             unsubmittedCaseDataService, noticeDetails,
             uploadAdditionalDocumentsDetails, tenancyLicenceDetails, contactPreferences,
-            defendantsDetails, schedulerClient
+            defendantsDetails, noRentArrearsGroundsForPossessionReason, additionalReasonsForPossession,
+            secureOrFlexibleGroundsForPossessionReasons, mediationAndSettlement, claimantCircumstancesPage,
+            introductoryDemotedOtherGroundsReasons, defendantCircumstancesPage, suspensionOfRightToBuyOrderReason,
+            statementOfExpressTerms, demotionOfTenancyOrderReason, schedulerClient
         );
 
         setEventUnderTest(underTest);
