@@ -45,7 +45,7 @@ public class GroundsForPossessionWales
                 """
             )
             // -------- Discretionary --------
-            .mandatory(PCSCase::getDiscretionaryGroundsWales)
+            .optional(PCSCase::getDiscretionaryGroundsWales)
             .optional(
                 PCSCase::getEstateManagementGroundsWales,
                 "discretionaryGroundsWales CONTAINS "
@@ -61,23 +61,37 @@ public class GroundsForPossessionWales
         PCSCase data = details.getData();
         List<String> errors = new ArrayList<>();
 
-        Set<DiscretionaryGroundWales> disc = data.getDiscretionaryGroundsWales();
+        Set<DiscretionaryGroundWales> disc =
+            data.getDiscretionaryGroundsWales();
+        var mand = data.getMandatoryGroundsWales();
+        var estate = data.getEstateManagementGroundsWales();
 
-        // Rule 1: at least one discretionary checkbox
-        if (disc == null || disc.isEmpty()) {
-            errors.add("Select at least one discretionary ground.");
+        boolean hasDiscretionary =
+            disc != null && !disc.isEmpty();
+        boolean hasMandatory =
+            mand != null && !mand.isEmpty();
+
+        // at least one from Discretionary OR Mandatory
+        if (!hasDiscretionary && !hasMandatory) {
+            errors.add(
+                "Please select at least one ground."
+            );
         }
 
-        // Rule 2: if estate mgmt parent ticked, require sub-selection
-        if (disc != null
+        // if Estate management parent ticked, require sub-selection
+        if (hasDiscretionary
             && disc.contains(
-                DiscretionaryGroundWales.ESTATE_MANAGEMENT_GROUNDS_SECTION_160)) {
+            DiscretionaryGroundWales
+                .ESTATE_MANAGEMENT_GROUNDS_SECTION_160)) {
 
-            var estate = data.getEstateManagementGroundsWales();
-            if (estate == null || estate.isEmpty()) {
+            boolean hasEstate =
+                estate != null && !estate.isEmpty();
+
+            if (!hasEstate) {
                 errors.add(
                     "Select at least one estate management ground when "
-                        + "'Estate management grounds (section 160)' is selected."
+                        + "‘Estate management grounds (section 160)’ "
+                        + "is selected."
                 );
             }
         }

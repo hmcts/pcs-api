@@ -1,5 +1,9 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales;
 
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Stream;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -11,10 +15,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.wales.DiscretionaryGroundWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.EstateManagementGroundWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.MandatoryGroundWales;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
-
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
@@ -43,11 +43,13 @@ public class GroundsForPossessionWalesTest extends BasePageTest {
                 .build();
 
         // When
-        AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
+        AboutToStartOrSubmitResponse<PCSCase, State> response =
+                callMidEventHandler(caseData);
 
         // Then
         if (expectedErrors != null && !expectedErrors.isEmpty()) {
-            assertThat(response.getErrors()).containsExactlyInAnyOrderElementsOf(expectedErrors);
+            assertThat(response.getErrors())
+                    .containsExactlyInAnyOrderElementsOf(expectedErrors);
         } else {
             assertThat(response.getErrors()).isNullOrEmpty();
         }
@@ -55,21 +57,23 @@ public class GroundsForPossessionWalesTest extends BasePageTest {
 
     private static Stream<Arguments> groundsScenarios() {
         return Stream.of(
-                // Valid: Only discretionary ground (not estate management)
+                // Valid: Only discretionary (non-estate)
                 arguments(
                         Set.of(DiscretionaryGroundWales.RENT_ARREARS_SECTION_157),
                         Set.of(),
                         Set.of(),
                         List.of()
                 ),
-                // Valid: Discretionary with estate management parent and sub-selection
+
+                // Valid: Discretionary with estate parent + one sub-selection
                 arguments(
                         Set.of(ESTATE_MANAGEMENT_GROUNDS_SECTION_160),
                         Set.of(EstateManagementGroundWales.BUILDING_WORKS_A),
                         Set.of(),
                         List.of()
                 ),
-                // Valid: Multiple discretionary grounds including estate management with sub-selection
+
+                // Valid: Multiple discretionary incl. estate + sub-selections
                 arguments(
                         Set.of(
                                 DiscretionaryGroundWales.RENT_ARREARS_SECTION_157,
@@ -82,54 +86,64 @@ public class GroundsForPossessionWalesTest extends BasePageTest {
                         Set.of(),
                         List.of()
                 ),
-                // Valid: Only mandatory ground
+
+                // Valid: Only mandatory (discretionary empty)
                 arguments(
-                        Set.of(DiscretionaryGroundWales.ANTISOCIAL_BEHAVIOUR_SECTION_157),
+                        Set.of(),
                         Set.of(),
                         Set.of(MandatoryGroundWales.SERIOUS_ARREARS_PERIODIC_S181),
                         List.of()
                 ),
-                // Valid: Mixed discretionary and mandatory
+
+                // Valid: Null discretionary but mandatory present
                 arguments(
-                        Set.of(DiscretionaryGroundWales.OTHER_BREACH_SECTION_157),
+                        null,
                         Set.of(),
-                        Set.of(
-                                MandatoryGroundWales.FAIL_TO_GIVE_UP_S170,
-                                MandatoryGroundWales.LANDLORD_NOTICE_PERIODIC_S178
-                        ),
+                        Set.of(MandatoryGroundWales.FAIL_TO_GIVE_UP_S170),
                         List.of()
                 ),
-                // Invalid: No grounds selected
+
+                // Invalid: No grounds at all
                 arguments(
                         Set.of(),
                         Set.of(),
                         Set.of(),
-                        List.of("Select at least one discretionary ground.")
+                        List.of("Please select at least one ground.")
                 ),
-                // Invalid: Null discretionary grounds
+
+                // Invalid: Null discretionary and empty mandatory
                 arguments(
                         null,
                         Set.of(),
                         Set.of(),
-                        List.of("Select at least one discretionary ground.")
+                        List.of("Please select at least one ground.")
                 ),
-                // Invalid: Estate management parent selected but no sub-selection
+
+                // Invalid: Estate parent selected, no sub-selection
                 arguments(
                         Set.of(ESTATE_MANAGEMENT_GROUNDS_SECTION_160),
                         Set.of(),
                         Set.of(),
-                        List.of("Select at least one estate management ground when "
-                                + "'Estate management grounds (section 160)' is selected.")
+                        List.of(
+                                "Select at least one estate management ground when "
+                                        + "‘Estate management grounds (section 160)’ "
+                                        + "is selected."
+                        )
                 ),
-                // Invalid: Estate management parent with null sub-selection
+
+                // Invalid: Estate parent selected, null sub-selection
                 arguments(
                         Set.of(ESTATE_MANAGEMENT_GROUNDS_SECTION_160),
                         null,
                         Set.of(),
-                        List.of("Select at least one estate management ground when "
-                                + "'Estate management grounds (section 160)' is selected.")
+                        List.of(
+                                "Select at least one estate management ground when "
+                                        + "‘Estate management grounds (section 160)’ "
+                                        + "is selected."
+                        )
                 ),
-                // Invalid: Multiple discretionary including estate management but no sub-selection
+
+                // Invalid: Multiple discretionary incl. estate, no sub-selection
                 arguments(
                         Set.of(
                                 DiscretionaryGroundWales.RENT_ARREARS_SECTION_157,
@@ -137,8 +151,11 @@ public class GroundsForPossessionWalesTest extends BasePageTest {
                         ),
                         Set.of(),
                         Set.of(),
-                        List.of("Select at least one estate management ground when "
-                                + "'Estate management grounds (section 160)' is selected.")
+                        List.of(
+                                "Select at least one estate management ground when "
+                                        + "‘Estate management grounds (section 160)’ "
+                                        + "is selected."
+                        )
                 )
         );
     }
