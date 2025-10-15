@@ -1,12 +1,9 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales;
 
 import lombok.extern.slf4j.Slf4j;
-import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
-import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 
 
 @Slf4j
@@ -15,8 +12,8 @@ public class OccupationLicenseDetailsWales implements CcdPageConfiguration {
     @Override
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
-            .page("occupationLicenseDetailsWales", this::midEvent)
-            .pageLabel(" License Details")
+            .page("occupationLicenseDetailsWales")
+            .pageLabel("License Details")
             .showCondition("legislativeCountry=\"Wales\"")
             .label("occupationLicenseDetailsWales-info", """
                 ---
@@ -27,15 +24,6 @@ public class OccupationLicenseDetailsWales implements CcdPageConfiguration {
                   </p>
                 </section>
                 """)
-            .mandatory(PCSCase::getOccupationContractLicenseDetailsOptionsWales);
-    }
-
-    private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
-                                                                   CaseDetails<PCSCase, State> detailsBefore) {
-        PCSCase caseData = details.getData();
-
-        return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
-            .data(caseData)
-            .build();
+            .mandatory(PCSCase::getOccupationContractLicenceDetailsOptionsWales);
     }
 }

@@ -2,7 +2,7 @@ package uk.gov.hmcts.reform.pcs.ccd.domain.wales;
 
 import uk.gov.hmcts.ccd.sdk.api.HasLabel;
 
-public enum OccupationContractLicenseDetailsOptionsWales implements HasLabel {
+public enum OccupationContractLicenceDetailsOptionsWales implements HasLabel {
 
     SECURE("Secure"),
     STANDARD("Standard"),
@@ -10,7 +10,7 @@ public enum OccupationContractLicenseDetailsOptionsWales implements HasLabel {
 
     private final String label;
 
-    OccupationContractLicenseDetailsOptionsWales(String label) {
+    OccupationContractLicenceDetailsOptionsWales(String label) {
         this.label = label;
     }
 

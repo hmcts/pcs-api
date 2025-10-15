@@ -192,11 +192,6 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             throw new IllegalStateException("Cannot resume claim without legislative country already set");
         }
 
-        log.info("ResumePossessionClaim event started for case. Legislative Country: {} (name={})",
-                 legislativeCountry, legislativeCountry.name());
-        log.debug("Legislative Country details - Label: {}, Enum Name: {}",
-                  legislativeCountry.getLabel(), legislativeCountry.name());
-
         List<DynamicStringListElement> listItems = Arrays.stream(ClaimantType.values())
             .filter(value -> value.isApplicableFor(legislativeCountry))
             .map(value -> DynamicStringListElement.builder().code(value.name()).label(value.getLabel())

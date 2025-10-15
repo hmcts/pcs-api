@@ -11,6 +11,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.model.PossessionGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.model.SecureOrFlexibleReasonsForGrounds;
+import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.util.Collections;
@@ -79,12 +80,11 @@ public class PcsCaseMergeService {
         PossessionGrounds.PossessionGroundsBuilder builder = PossessionGrounds.builder();
 
         // Handle Welsh grounds if legislative country is Wales
-        if (pcsCase.getLegislativeCountry() != null
-            && pcsCase.getLegislativeCountry().name().equals("WALES")) {
+        if (pcsCase.getLegislativeCountry() == LegislativeCountry.WALES) {
             builder
-                .welshDiscretionaryGrounds(mapToLabels(pcsCase.getDiscretionaryGroundsWales()))
-                .welshMandatoryGrounds(mapToLabels(pcsCase.getMandatoryGroundsWales()))
-                .welshEstateManagementGrounds(mapToLabels(pcsCase.getEstateManagementGroundsWales()));
+                .walesDiscretionaryGrounds(mapToLabels(pcsCase.getDiscretionaryGroundsWales()))
+                .walesMandatoryGrounds(mapToLabels(pcsCase.getMandatoryGroundsWales()))
+                .walesEstateManagementGrounds(mapToLabels(pcsCase.getEstateManagementGroundsWales()));
         } else {
             // Handle English grounds for all other cases
             SecureOrFlexibleReasonsForGrounds reasons = Optional.ofNullable(pcsCase.getSecureOrFlexibleGroundsReasons())
