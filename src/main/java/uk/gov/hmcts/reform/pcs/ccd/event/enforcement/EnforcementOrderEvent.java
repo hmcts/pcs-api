@@ -14,7 +14,7 @@ import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.EnforcementApplicationPage;
-import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.EvictionDelayWarning;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.EvictionDelayWarningPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.EvictionRisksPosedPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.EvictionVulnerableAdultsChildrenPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.LivingInThePropertyPage;
@@ -38,10 +38,10 @@ public class EnforcementOrderEvent implements CCDConfig<PCSCase, State, UserRole
                         .name("Enforce the order")
                         .grant(Permission.CRUD, UserRole.PCS_SOLICITOR);
 
-        new PageBuilder(eventBuilder).
-            add(new EnforcementApplicationPage())
+        new PageBuilder(eventBuilder)
+            .add(new EnforcementApplicationPage())
             .add(new LivingInThePropertyPage())
-            .add(new EvictionDelayWarning())
+            .add(new EvictionDelayWarningPage())
             .add(new EvictionRisksPosedPage())
             .add(new EvictionVulnerableAdultsChildrenPage());
     }
