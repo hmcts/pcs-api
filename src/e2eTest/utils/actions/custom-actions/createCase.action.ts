@@ -44,7 +44,7 @@ import {search} from '@data/page-data/search.page.data';
 import {userIneligible} from '@data/page-data/userIneligible.page.data';
 
 export let caseInfo: { id: string; fid: string; state: string };
-let caseNumber: string;
+export let caseNumber: string;
 export let claimantsName: string;
 
 export class CreateCaseAction implements IAction {
@@ -95,6 +95,7 @@ export class CreateCaseAction implements IAction {
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) throw new Error(`No action found for '${action}'`);
     await actionToPerform();
+    //initializeExecutor(page);
   }
 
   private async housingPossessionClaim() {

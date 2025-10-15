@@ -2,7 +2,7 @@ import { Page, test } from '@playwright/test';
 import { actionData, actionRecord, actionTuple } from './interfaces/action.interface';
 import { validationData, validationRecord, validationTuple } from './interfaces/validation.interface';
 import { ValidationRegistry } from './registry/registry-enforcement/validation-enforcement.registry';
-import { ActionRegistry } from './registry/registry-enforcement/action-enforcement.registry';
+import { ActionEnforcementRegistry } from './registry/registry-enforcement/action-enforcement.registry';
 
 let testExecutor: { page: Page };
 
@@ -19,20 +19,20 @@ function getExecutor(): { page: Page } {
 
 export async function performAction(action: string, fieldName?: actionData | actionRecord, value?: actionData | actionRecord): Promise<void> {
   const executor = getExecutor();
-  const actionInstance = ActionRegistry.getAction(action);
+  const actionInstance = ActionEnforcementRegistry.getAction(action);
   await test.step(`${action}${fieldName !== undefined ? ` - ${typeof fieldName === 'object' ? readValuesFromInputObjects(fieldName) : fieldName}` : ''} ${value !== undefined ? ` with value '${typeof value === 'object' ? readValuesFromInputObjects(value) : value}'` : ''}`, async () => {
     await actionInstance.execute(executor.page, action, fieldName, value);
   });
 }
 
 export async function performValidation(validation: string, inputFieldName: validationData | validationRecord, inputData?: validationData | validationRecord): Promise<void> {
-  let executor = getExecutor();
+  const executor = getExecutor();
   const [fieldName, data] = typeof inputFieldName === 'string'
     ? [inputFieldName, inputData]
     : ['', inputFieldName];
   const validationInstance = ValidationRegistry.getValidation(validation);
   await test.step(`Validated ${validation} - '${typeof fieldName === 'object' ? readValuesFromInputObjects(fieldName) : fieldName}'${data !== undefined ? ` with value '${typeof data === 'object' ? readValuesFromInputObjects(data) : data}'` : ''}`, async () => {
-    await validationInstance.validate(testExecutor.page, validation, fieldName, data);
+    await validationInstance.validate(executor.page, validation, fieldName, data);
   });
 }
 

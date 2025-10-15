@@ -1,35 +1,48 @@
+import { Page } from "@playwright/test";
 import { home } from "@data/page-data/home.page.data";
 import { caseList } from "@data/page-data/page-data-enforcement/caseList.page.data"
-import { Page } from "@playwright/test";
-import { performAction} from "@utils/controller-enforcement";
-import { actionData, actionRecord, IAction } from "@utils/interfaces/action.interface";
+import { performAction } from "@utils/controller-enforcement";
+import { IAction, actionData, actionRecord } from "@utils/interfaces/action.interface";
+import { waitForPageRedirectionTimeout } from "playwright.config";
 
-export let caseNumber : string;
+export let randomCaseNumber: string;
+export let noCaseFound: boolean;
+
 export class EnforcementAction implements IAction {
   async execute(page: Page, action: string, fieldName: string | actionRecord, data?: actionData): Promise<void> {
     const actionsMap = new Map<string, () => Promise<void>>([
       ['caseFilter', () => this.caseFilter(page, fieldName)],
-      ['loginEnforcement', () => this.login(fieldName)]
+      ['loginEnforcement', () => this.login(fieldName)],
+      ['findCase', () => this.findTheCase(fieldName)],
+      ['pickAnyCase', () => this.pickAnyCase(page)],
+      ['yourCases', () => this.yourCases(page)]
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) throw new Error(`No action found for '${action}'`);
     await actionToPerform();
   }
 
-  private async caseFilter(page: Page, claimState: actionData) {
+  private async caseFilter(page: Page, caseState: actionData) {
     await performAction('clickButton', home.caseListTab)
     await performAction('select', caseList.jurisdictionLabel, caseList.possessionsJurisdiction);
     await performAction('select', caseList.caseTypeLabel, caseList.caseType.civilPossessions);
-    await performAction('select', caseList.stateLabel, claimState);
+    await performAction('select', caseList.stateLabel, caseState);
     await performAction('clickButton', caseList.apply);
-    if (!this.caseCount(page)) {
+    await page.waitForTimeout(waitForPageRedirectionTimeout);
+  }
 
-      console.log("run make a claim");
-    } else {
-      caseNumber = await page.locator('a[aria-label*="go to case with Case reference"]').innerText();
-      console.log("case number :" + caseNumber)
-      await performAction('clickButton', caseNumber);
-    }
+  private async findTheCase(caseNumber: actionData) {
+    await performAction('clickButton', home.findCaseTab);
+    await performAction('select', caseList.jurisdictionLabel, caseList.possessionsJurisdiction);
+    await performAction('select', caseList.caseTypeLabel, caseList.caseType.civilPossessions);
+    await performAction('inputText', caseList.caseNumberLabel, caseNumber);
+    await performAction('clickButton', caseList.apply);
+    await performAction('clickButton', caseNumber);
+  }
+
+  private async pickAnyCase(page: Page) {
+   randomCaseNumber = await page.locator('a[aria-label*="go to case with Case reference"]').first().innerText();
+    await performAction('clickButton', randomCaseNumber);
   }
 
   private async login(user: string | actionRecord) {
@@ -43,10 +56,8 @@ export class EnforcementAction implements IAction {
     await performAction('clickButton', 'Sign in');
   }
 
-  private async caseCount(page: Page): Promise<boolean> {
-    const caseLocator = page.locator('div#search-result:has-text("No cases found")');
-    // let count = await caseLocator.isVisible();
-    // console.log("cases count "+count)
-    return await caseLocator.isVisible();;
+  private async yourCases(page: Page): Promise<void> {
+    const caseLocator = page.locator('div#search-result:has-text("No cases found. Try using different filters.")').first();
+    noCaseFound = await caseLocator.isVisible();
   }
 }
