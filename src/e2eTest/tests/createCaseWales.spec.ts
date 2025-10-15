@@ -50,7 +50,7 @@ test.beforeEach(async ({page}) => {
   await performAction('housingPossessionClaim');
 });
 
-test.describe('[Create Case] @Master @nightly', async () => {
+test.describe('[Create Case - Wales] @Master @nightly', async () => {
   test('Wales - Assured tenancy with Rent arrears and no other possession grounds - Demoted tenancy', async () => {
     await performAction('enterTestAddressManually');
     await performValidation('bannerAlert', 'Case #.* has been created.');
