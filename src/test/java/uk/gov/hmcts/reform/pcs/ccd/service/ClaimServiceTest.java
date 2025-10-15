@@ -15,6 +15,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.SuspensionOfRightToBuy;
 import uk.gov.hmcts.reform.pcs.ccd.domain.SuspensionOfRightToBuyDemotionOfTenancy;
 import uk.gov.hmcts.reform.pcs.ccd.domain.SuspensionOfRightToBuyHousingAct;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimGroundEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimPartyEntity;
@@ -66,6 +67,7 @@ class ClaimServiceTest {
         when(claimantCircumstances.getClaimantCircumstancesDetails()).thenReturn(claimantCircumstancesDetails);
 
         when(pcsCase.getApplicationWithClaim()).thenReturn(VerticalYesNo.YES);
+        when(pcsCase.getLanguageUsed()).thenReturn(LanguageUsed.ENGLISH);
         List<ClaimGroundEntity> expectedClaimGrounds = List.of(mock(ClaimGroundEntity.class));
         when(claimGroundService.getGroundsWithReason(pcsCase)).thenReturn(expectedClaimGrounds);
 
@@ -78,7 +80,8 @@ class ClaimServiceTest {
         assertThat(createdClaimEntity.getCostsClaimed()).isTrue();
         assertThat(createdClaimEntity.getApplicationWithClaim()).isTrue();
         assertThat(createdClaimEntity.getClaimantCircumstances())
-            .isEqualTo(claimantCircumstances.getClaimantCircumstancesDetails());
+                .isEqualTo(claimantCircumstances.getClaimantCircumstancesDetails());
+        assertThat(createdClaimEntity.getLanguageUsed()).isEqualTo(LanguageUsed.ENGLISH);
 
         Set<ClaimPartyEntity> claimParties = createdClaimEntity.getClaimParties();
         assertThat(claimParties).hasSize(1);
@@ -142,7 +145,6 @@ class ClaimServiceTest {
 
         // When
         ClaimEntity createdClaimEntity = claimService.createMainClaimEntity(pcsCase, claimantPartyEntity);
-
 
         // Then
         assertThat(createdClaimEntity.getSuspensionOfRightToBuyHousingAct()).isEqualTo(expectedSuspensionAct);
@@ -224,4 +226,3 @@ class ClaimServiceTest {
     }
 
 }
-
