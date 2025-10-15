@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.event;
 
+import com.github.kagkarlsson.scheduler.SchedulerClient;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -75,9 +76,11 @@ import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.UnsubmittedCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
+import uk.gov.hmcts.reform.pcs.feesandpay.task.FeesAndPayTaskComponent;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -105,6 +108,9 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
     private final TenancyLicenceDetails tenancyLicenceDetails;
     private final ContactPreferences contactPreferences;
     private final DefendantsDetails defendantsDetails;
+    private final SchedulerClient schedulerClient;
+
+    private static final String CASE_ISSUED_FEE_TYPE = "caseIssueFee";
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -234,6 +240,15 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
         pcsCaseService.save(pcsCaseEntity);
 
         unsubmittedCaseDataService.deleteUnsubmittedCaseData(caseReference);
+
+        String taskId = UUID.randomUUID().toString();
+
+        schedulerClient.scheduleIfNotExists(
+            FeesAndPayTaskComponent.FEE_CASE_ISSUED_TASK_DESCRIPTOR
+                .instance(taskId)
+                .data(CASE_ISSUED_FEE_TYPE)
+                .scheduledTo(Instant.now())
+        );
 
         return SubmitResponse.builder().build();
     }

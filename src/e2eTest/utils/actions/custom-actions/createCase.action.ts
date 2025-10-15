@@ -109,6 +109,10 @@ export class CreateCaseAction implements IAction {
       'text': housingPossessionClaim.mainHeader,
       'elementType': 'heading'
     });
+    await performValidation('text', {
+      'text': housingPossessionClaim.claimFeeText,
+      'elementType': 'paragraph'
+    });
     await performAction('clickButton', housingPossessionClaim.continue);
   }
 
