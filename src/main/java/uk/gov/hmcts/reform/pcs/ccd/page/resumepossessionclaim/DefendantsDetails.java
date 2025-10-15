@@ -5,6 +5,8 @@ import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
+import uk.gov.hmcts.ccd.sdk.type.DynamicListElement;
+import uk.gov.hmcts.ccd.sdk.type.DynamicMultiSelectList;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
@@ -16,6 +18,8 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.service.AddressValidator;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -97,6 +101,28 @@ public class DefendantsDetails implements CcdPageConfiguration {
 
             defendantsDOB.add(lv);
         }
+
+        List<DynamicListElement> defendantElements = new ArrayList<>();
+
+        for (ListValue<DefendantDetails> defendant : defendants) {
+            DefendantDetails value = defendant.getValue();
+            String label = value.getFirstName() + " " + value.getLastName();
+
+            // Create a DynamicListElement for each defendant
+            DynamicListElement element = DynamicListElement.builder()
+                .code(UUID.nameUUIDFromBytes(label.getBytes()))
+                .label(label)
+                .build();
+
+            defendantElements.add(element);
+        }
+
+        DynamicMultiSelectList defendantsDynamic = DynamicMultiSelectList.builder()
+            .listItems(defendantElements)
+            .value(Collections.emptyList())
+            .build();
+
+        caseData.setDefendantsDynamic(defendantsDynamic);
 
         caseData.setDefendantsDOB(defendantsDOB);
 

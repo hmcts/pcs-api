@@ -42,7 +42,8 @@ import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ContactPreferences
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.DailyRentAmount;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.DefendantCircumstancesPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.DefendantsDetails;
-import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.DefendantsDobDetails;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.DefendantsDobDetailsFirstSpike;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.DefendantsDobDetailsSecondSpike;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.GeneralApplication;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.GroundForPossessionAdditionalGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.GroundForPossessionRentArrears;
@@ -126,7 +127,8 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             .add(new ClaimantInformation())
             .add(contactPreferences)
             .add(defendantDetails)
-            .add(new DefendantsDobDetails())
+            .add(new DefendantsDobDetailsFirstSpike())
+            .add(new DefendantsDobDetailsSecondSpike())
             .add(tenancyLicenceDetails)
             .add(new SecureOrFlexibleGroundsForPossession())
             .add(new RentArrearsOrBreachOfTenancyGround())

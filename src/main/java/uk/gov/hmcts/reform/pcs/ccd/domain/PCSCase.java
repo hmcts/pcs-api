@@ -5,8 +5,10 @@ import lombok.Builder;
 import lombok.Data;
 import uk.gov.hmcts.ccd.sdk.External;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
+import uk.gov.hmcts.ccd.sdk.api.Permission;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.Document;
+import uk.gov.hmcts.ccd.sdk.type.DynamicMultiSelectList;
 import uk.gov.hmcts.ccd.sdk.type.FieldType;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
@@ -339,10 +341,25 @@ public class PCSCase {
 
     @CCD(
         access = {CitizenAccess.class},
-        typeParameterOverride = "DefendantDOBDetails",
-    typeOverride = FieldType.Collection
+        label = "Additional defendant dob"
     )
     private List<ListValue<DefendantDOBDetails>> defendantsDOB;
+
+    @CCD(
+        label = "Which defendants' dates of birth do you know?",
+        hint = "Select all that apply"
+    )
+    private DynamicMultiSelectList defendantsDynamic;
+
+    @CCD(
+        label = "Please enter defendants' date of birth",
+        access = {CitizenAccess.class}
+    )
+    private DynamicMultiSelectList defendantsDynamicDOB;
+
+    @CCD(
+        label = "Please enter all the Date of births")
+    private Set<ListValue<DefendantDOBDynamicDetails>> defendantKnownDOB;
 
     @CCD(
         access = {CitizenAccess.class})
