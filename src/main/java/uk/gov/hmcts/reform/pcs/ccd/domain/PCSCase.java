@@ -34,6 +34,12 @@ import static uk.gov.hmcts.ccd.sdk.type.FieldType.TextArea;
 @Data
 public class PCSCase {
 
+    @CCD(
+        searchable = false
+    )
+    @External
+    private String feeAmount;
+
     private YesOrNo hasUnsubmittedCaseData;
 
     @CCD(label = "Do you want to resume your claim using your saved answers?")
@@ -552,11 +558,13 @@ public class PCSCase {
     private NoRentArrearsReasonForGrounds noRentArrearsReasonForGrounds;
 
     @CCD(
-        label = "Did you complete all or part of this claim in Welsh?",
-        hint = "The answer to this question will help make sure your claim is translated correctly"
+        label = "Which language did you use to complete this service?",
+        hint = "If someone else helped you to answer a question in this service, "
+            + "ask them if they answered any questions in Welsh. We’ll use this to "
+            + "make sure your claim is processed correctly"
     )
-    private VerticalYesNo welshUsed;
-
+    private LanguageUsed languageUsed;
+  
     @JsonUnwrapped
     private DefendantCircumstances defendantCircumstances;
 
