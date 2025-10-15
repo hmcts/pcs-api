@@ -40,6 +40,7 @@ import {housingAct} from '@data/page-data/housingAct.page.data';
 import {reasonsForRequestingADemotionOrder} from '@data/page-data/reasonsForRequestingADemotionOrder.page.data';
 import {statementOfExpressTerms} from '@data/page-data/statementOfExpressTerms.page.data';
 import {wantToUploadDocuments} from '@data/page-data/wantToUploadDocuments.page.data';
+import {whatAreYourGroundsForPossessionWales} from '@data/page-data/whatAreYourGroundsForPossessionWales.page.data';
 
 test.beforeEach(async ({page}) => {
   initializeExecutor(page);
@@ -80,9 +81,16 @@ test.describe('[Create Case - Wales] @Master @nightly', async () => {
       email: defendantDetails.yes,
       correspondenceAddressSame: defendantDetails.yes
     });
+    //Following 85 86 line can be updated to securecontractLicenceDetails once HDPI-2365 is done
     await performAction('selectTenancyOrLicenceDetails', {
       tenancyOrLicenceType: tenancyLicenceDetails.assuredTenancy});
-    await performValidation('mainHeader', groundsForPossession.mainHeader);
+    await performValidation('mainHeader', whatAreYourGroundsForPossessionWales.mainHeader);
+    await performAction('selectYourPossessionGrounds', {
+      discretionary: [whatAreYourGroundsForPossessionWales.discretionary.rentArrears],
+      mandatory: [whatAreYourGroundsForPossessionWales.mandatory.failureToGiveupPossession]
+    });
+    await performAction('clickButton', reasonsForPossession.continue);
+    // following code can be removed once wales journey routing is done HDPI-2365
     await performAction('selectGroundsForPossession', {groundsRadioInput: groundsForPossession.yes});
     await performAction('selectRentArrearsPossessionGround', {
       rentArrears: [rentArrearsPossessionGrounds.rentArrears],
@@ -174,9 +182,18 @@ test.describe('[Create Case - Wales] @Master @nightly', async () => {
       correspondenceAddress: defendantDetails.no,
       email: defendantDetails.no,
     });
+    //Following 186 to 188 needs update once routing is done for wales journey HDPI-2365
     await performValidation('mainHeader', tenancyLicenceDetails.mainHeader);
     await performAction('selectTenancyOrLicenceDetails', {
       tenancyOrLicenceType: tenancyLicenceDetails.flexibleTenancy});
+    await performValidation('mainHeader', whatAreYourGroundsForPossessionWales.mainHeader);
+    await performAction('selectYourPossessionGrounds', {
+      discretionary: [whatAreYourGroundsForPossessionWales.discretionary.estateManagementGrounds],
+      discretionaryEstateGrounds: [whatAreYourGroundsForPossessionWales.discretionary.buildingWorks],
+      mandatory: [whatAreYourGroundsForPossessionWales.mandatory.breakClauseNotice],
+    });
+    await performAction('clickButton', reasonsForPossession.continue);
+    // following code can be removed once wales journey routing is done HDPI-2365
     await performAction('selectYourPossessionGrounds', {
       discretionary: [whatAreYourGroundsForPossession.discretionary.rentArrearsOrBreachOfTenancy]
     });
@@ -261,7 +278,12 @@ test.describe('[Create Case - Wales] @Master @nightly', async () => {
     await performAction('selectTenancyOrLicenceDetails', {
       tenancyOrLicenceType: tenancyLicenceDetails.secureTenancy
     });
-    await performValidation('mainHeader', whatAreYourGroundsForPossession.mainHeader);
+    await performValidation('mainHeader', whatAreYourGroundsForPossessionWales.mainHeader);
+    await performAction('selectYourPossessionGrounds', {
+      discretionary: [whatAreYourGroundsForPossessionWales.discretionary.antiSocialBehaviour],
+    });
+    await performAction('clickButton', reasonsForPossession.continue);
+    // following code can be removed once wales journey routing is done HDPI-2365
     await performAction('selectYourPossessionGrounds', {
       discretionary: [whatAreYourGroundsForPossession.discretionary.rentArrearsOrBreachOfTenancy, whatAreYourGroundsForPossession.discretionary.deteriorationOfFurniture],
       mandatory: [whatAreYourGroundsForPossession.mandatory.antiSocialBehaviour],

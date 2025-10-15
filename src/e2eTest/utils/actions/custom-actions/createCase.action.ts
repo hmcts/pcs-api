@@ -44,6 +44,8 @@ import {completeYourClaim} from '@data/page-data/completeYourClaim.page.data';
 import {home} from '@data/page-data/home.page.data';
 import {search} from '@data/page-data/search.page.data';
 import {userIneligible} from '@data/page-data/userIneligible.page.data';
+import {whatAreYourGroundsForPossessionWales} from '@data/page-data/whatAreYourGroundsForPossessionWales.page.data';
+
 
 export let caseInfo: { id: string; fid: string; state: string };
 export let caseNumber: string;
@@ -73,8 +75,8 @@ export class CreateCaseAction implements IAction {
       ['selectNoticeDetails', () => this.selectNoticeDetails(fieldName)],
       ['selectBorderPostcode', () => this.selectBorderPostcode(fieldName)],
       ['selectTenancyOrLicenceDetails', () => this.selectTenancyOrLicenceDetails(fieldName)],
-      ['selectOtherGrounds', () => this.selectYourPossessionGrounds(fieldName)],
-      ['selectYourPossessionGrounds', () => this.selectYourPossessionGrounds(fieldName)],
+      ['selectOtherGrounds', () => this.selectYourPossessionGrounds(fieldName as actionRecord)],
+      ['selectYourPossessionGrounds', () => this.selectYourPossessionGrounds(fieldName as actionRecord)],
       ['enterReasonForPossession', () => this.enterReasonForPossession(fieldName)],
       ['selectRentArrearsOrBreachOfTenancy', () => this.selectRentArrearsOrBreachOfTenancy(fieldName)],
       ['provideRentDetails', () => this.provideRentDetails(fieldName)],
@@ -334,25 +336,24 @@ export class CreateCaseAction implements IAction {
     }
     await performAction('clickButton', tenancyLicenceDetails.continue);
   }
-  private async selectYourPossessionGrounds(possessionGrounds: actionData) {
-    await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
-    const grounds = possessionGrounds as {
-      mandatory?: string[];
-      mandatoryAccommodation?: string[];
-      discretionary?: string[];
-      discretionaryAccommodation?: string[];
-    };
-    if (grounds.discretionary) {
-      await performAction('check', grounds.discretionary);
+
+  private async selectYourPossessionGrounds(possessionGrounds: actionRecord) {
+    await performValidation('text', {elementType: 'paragraph', text: 'Case number: ' + caseNumber});
+    if (possessionGrounds.discretionary) {
+      await performAction('check', possessionGrounds.discretionary);
+      if (Array.isArray(possessionGrounds.discretionary) &&
+        possessionGrounds.discretionary.includes(whatAreYourGroundsForPossessionWales.discretionary.estateManagementGrounds)) {
+        await performAction('check', possessionGrounds.discretionaryEstateGrounds);
+      }
     }
-    if (grounds.mandatory) {
-      await performAction('check', grounds.mandatory);
+    if (possessionGrounds.mandatory) {
+      await performAction('check', possessionGrounds.mandatory);
     }
-    if (grounds.mandatoryAccommodation) {
-      await performAction('check', grounds.mandatoryAccommodation);
+    if (possessionGrounds.mandatoryAccommodation) {
+      await performAction('check', possessionGrounds.mandatoryAccommodation);
     }
-    if (grounds.discretionaryAccommodation) {
-      await performAction('check', grounds.discretionaryAccommodation);
+    if (possessionGrounds.discretionaryAccommodation) {
+      await performAction('check', possessionGrounds.discretionaryAccommodation);
     }
     await performAction('clickButton', whatAreYourGroundsForPossession.continue);
   }
