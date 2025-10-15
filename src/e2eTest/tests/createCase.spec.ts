@@ -102,9 +102,9 @@ test.describe('[Create Case - England] @Master @nightly', async () => {
     await performValidation('text', {"text": noticeOfYourIntention.servedNoticeInteractiveText, "elementType": "inlineText"});
     await performAction('selectNoticeOfYourIntention', {
       question: noticeOfYourIntention.servedNoticeInteractiveText,
-      option: [noticeOfYourIntention.yes],
-      region: 'england'
-    });    await performValidation('mainHeader', noticeDetails.mainHeader);
+      option: noticeOfYourIntention.yes
+    });
+    await performValidation('mainHeader', noticeDetails.mainHeader);
     await performAction('selectNoticeDetails', {
       howDidYouServeNotice: noticeDetails.byFirstClassPost,
       day: '16', month: '07', year: '1985', files: 'NoticeDetails.pdf'});
@@ -213,8 +213,7 @@ test.describe('[Create Case - England] @Master @nightly', async () => {
     await performValidation('text', {"text": noticeOfYourIntention.servedNoticeInteractiveText, "elementType": "inlineText"});
     await performAction('selectNoticeOfYourIntention', {
       question: noticeOfYourIntention.servedNoticeInteractiveText,
-      option: [noticeOfYourIntention.no],
-      region: 'england'
+      option: noticeOfYourIntention.no
     });
     await performValidation('mainHeader', noticeDetails.mainHeader);
     await performAction('selectNoticeDetails', {
@@ -318,9 +317,9 @@ test.describe('[Create Case - England] @Master @nightly', async () => {
     await performValidation('text', {"text": noticeOfYourIntention.servedNoticeInteractiveText, "elementType": "inlineText"});
     await performAction('selectNoticeOfYourIntention', {
       question: noticeOfYourIntention.servedNoticeInteractiveText,
-      option: [noticeOfYourIntention.yes],
-      region: 'england'
-    });    await performValidation('mainHeader', noticeDetails.mainHeader);
+      option: noticeOfYourIntention.yes
+    });
+    await performValidation('mainHeader', noticeDetails.mainHeader);
     await performAction('selectNoticeDetails', {
       howDidYouServeNotice: noticeDetails.byPersonallyHandling,
       explanationLabel: noticeDetails.nameOfPersonDocumentWasLeftLabel,
@@ -422,9 +421,9 @@ test.describe('[Create Case - England] @Master @nightly', async () => {
     await performValidation('text', {"text": noticeOfYourIntention.servedNoticeInteractiveText, "elementType": "inlineText"});
     await performAction('selectNoticeOfYourIntention', {
       question: noticeOfYourIntention.servedNoticeInteractiveText,
-      option: [noticeOfYourIntention.yes],
-      region: 'england'
-    });    await performValidation('mainHeader', noticeDetails.mainHeader);
+      option: noticeOfYourIntention.yes
+    });
+    await performValidation('mainHeader', noticeDetails.mainHeader);
     await performAction('selectNoticeDetails', {
       howDidYouServeNotice: noticeDetails.byEmail,
       explanationLabel: noticeDetails.explainHowServedByEmailLabel,

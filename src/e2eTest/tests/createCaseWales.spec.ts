@@ -12,7 +12,6 @@ import {rentArrearsPossessionGrounds} from '@data/page-data/rentArrearsPossessio
 import {preActionProtocol} from '@data/page-data/preActionProtocol.page.data';
 import {mediationAndSettlement} from '@data/page-data/mediationAndSettlement.page.data';
 import {noticeOfYourIntention} from '@data/page-data/noticeOfYourIntention.page.data';
-import {noticeDetails} from '@data/page-data/noticeDetails.page.data';
 import {rentDetails} from '@data/page-data/rentDetails.page.data';
 import {provideMoreDetailsOfClaim} from '@data/page-data/provideMoreDetailsOfClaim.page.data';
 import {resumeClaim} from '@data/page-data/resumeClaim.page.data';
@@ -96,7 +95,7 @@ test.describe('[Create Case - Wales] @Master @nightly', async () => {
     await performValidation('mainHeader', noticeOfYourIntention.mainHeader);
     await performAction('selectNoticeOfYourIntention', {
       question: noticeOfYourIntention.servedNoticeInteractiveText,
-      option: [noticeOfYourIntention.no],
+      option: noticeOfYourIntention.no,
       region: 'wales'
     });
     await performValidation('mainHeader', rentDetails.mainHeader);
@@ -197,7 +196,7 @@ test.describe('[Create Case - Wales] @Master @nightly', async () => {
     await performValidation('mainHeader', noticeOfYourIntention.mainHeader);
     await performAction('selectNoticeOfYourIntention', {
       question: noticeOfYourIntention.servedNoticeInteractiveText,
-      option: [noticeOfYourIntention.no],
+      option: noticeOfYourIntention.no,
       region: 'wales'
     });
     // await performValidation('mainHeader', rentDetails.mainHeader);
@@ -297,8 +296,8 @@ test.describe('[Create Case - Wales] @Master @nightly', async () => {
     await performValidation('mainHeader', noticeOfYourIntention.mainHeader);
     await performAction('selectNoticeOfYourIntention', {
       question: noticeOfYourIntention.servedNoticeInteractiveText,
-      option: [noticeOfYourIntention.yes],
-      region: 'wales'
+      option: noticeOfYourIntention.yes,
+      typeOfNotice: noticeOfYourIntention.typeOfNoticeInput
     });
     //selectNoticeDetails has been commented out and will be modified as part of https://tools.hmcts.net/jira/browse/HDPI-2515 + https://tools.hmcts.net/jira/browse/HDPI-2516
     // await performAction('selectNoticeDetails', {

@@ -197,7 +197,7 @@ export class CreateCaseAction implements IAction {
   private async selectNoticeOfYourIntention(caseData: actionRecord) {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: ' + caseNumber});
     await performAction('clickRadioButton', caseData);
-    if (caseData.region === 'wales' && Array.isArray(caseData.option) && caseData.option.includes(noticeOfYourIntention.yes)) {
+    if ( caseData.option === noticeOfYourIntention.yes && caseData.typeOfNotice) {
       await performAction('inputText', noticeOfYourIntention.typeOfNotice, noticeOfYourIntention.typeOfNoticeInput);
     }
     await performAction('clickButton', noticeOfYourIntention.continue);
