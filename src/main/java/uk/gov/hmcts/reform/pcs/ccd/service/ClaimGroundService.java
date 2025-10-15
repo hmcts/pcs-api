@@ -37,16 +37,16 @@ public class ClaimGroundService {
         };
     }
 
-    private List<ClaimGroundEntity> getAssuredTenancyGroundsWithReason(PCSCase pcsCase){
+    private List<ClaimGroundEntity> getAssuredTenancyGroundsWithReason(PCSCase pcsCase) {
 
-        if(pcsCase.getGroundsForPossession() == YesOrNo.YES) {
+        if (pcsCase.getGroundsForPossession() == YesOrNo.YES) {
             return assuredTenancyRentArrearsGroundsWithReason(pcsCase);
         } else {
             return assuredTenancyNoRentArrearsGroundsWithReason(pcsCase);
         }
     }
 
-    private List<ClaimGroundEntity> assuredTenancyRentArrearsGroundsWithReason(PCSCase pcsCase){
+    private List<ClaimGroundEntity> assuredTenancyRentArrearsGroundsWithReason(PCSCase pcsCase) {
         Set<RentArrearsMandatoryGrounds> rentArrearsMandatoryGrounds = pcsCase
             .getRentArrearsMandatoryGrounds();
         Set<RentArrearsDiscretionaryGrounds> rentArrearsDiscretionaryGrounds = pcsCase
@@ -61,8 +61,8 @@ public class ClaimGroundService {
                     case OWNER_OCCUPIER_GROUND1 -> grounds.getOwnerOccupierReason();
                     case REPOSSESSION_GROUND2 -> grounds.getRepossessionByLenderReason();
                     case HOLIDAY_LET_GROUND3 -> grounds.getHolidayLetReason();
-                    case STUDENT_LET_GROUND4-> grounds.getStudentLetReason();
-                    case MINISTER_RELIGION_GROUND5-> grounds.getMinisterOfReligionReason();
+                    case STUDENT_LET_GROUND4 -> grounds.getStudentLetReason();
+                    case MINISTER_RELIGION_GROUND5 -> grounds.getMinisterOfReligionReason();
                     case REDEVELOPMENT_GROUND6 -> grounds.getRedevelopmentReason();
                     case DEATH_OF_TENANT_GROUND7 -> grounds.getDeathOfTenantReason();
                     case ANTISOCIAL_BEHAVIOUR_GROUND7A -> grounds.getAntisocialBehaviourReason();
@@ -82,8 +82,8 @@ public class ClaimGroundService {
                 String reasonText = switch (ground) {
                     case ALTERNATIVE_ACCOMMODATION_GROUND9 -> grounds.getSuitableAltAccommodationReason();
                     case RENT_ARREARS_GROUND10, PERSISTENT_DELAY_GROUND11 -> null;
-                    case BREACH_TENANCY_GROUND12-> grounds.getBreachOfTenancyConditionsReason();
-                    case DETERIORATION_PROPERTY_GROUND13-> grounds.getPropertyDeteriorationReason();
+                    case BREACH_TENANCY_GROUND12 -> grounds.getBreachOfTenancyConditionsReason();
+                    case DETERIORATION_PROPERTY_GROUND13 -> grounds.getPropertyDeteriorationReason();
                     case NUISANCE_ANNOYANCE_GROUND14 -> grounds.getNuisanceAnnoyanceReason();
                     case DOMESTIC_VIOLENCE_GROUND14A -> grounds.getDomesticViolenceReason();
                     case OFFENCE_RIOT_GROUND14ZA -> grounds.getOffenceDuringRiotReason();

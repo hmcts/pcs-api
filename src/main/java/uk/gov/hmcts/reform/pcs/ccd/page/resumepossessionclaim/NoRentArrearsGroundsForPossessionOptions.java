@@ -42,30 +42,29 @@ public class NoRentArrearsGroundsForPossessionOptions implements CcdPageConfigur
             .optional(PCSCase::getNoRentArrearsMandatoryGroundsOptions)
             .optional(PCSCase::getNoRentArrearsDiscretionaryGroundsOptions);
     }
+
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
                                                                   CaseDetails<PCSCase, State> detailsBefore) {
         PCSCase caseData = details.getData();
         Set<NoRentArrearsMandatoryGrounds> mandatoryGrounds = caseData.getNoRentArrearsMandatoryGroundsOptions();
         Set<NoRentArrearsDiscretionaryGrounds> discretionaryGrounds =
             caseData.getNoRentArrearsDiscretionaryGroundsOptions();
+
         if (mandatoryGrounds.isEmpty() && discretionaryGrounds.isEmpty()) {
             return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
                 .errors(List.of("Please select at least one ground"))
                 .build();
         }
 
-        boolean hasOtherMandatoryGrounds = mandatoryGrounds
-            .stream()
+        boolean hasOtherMandatoryGrounds = mandatoryGrounds.stream()
             .anyMatch(ground -> ground
                 != NoRentArrearsMandatoryGrounds.SERIOUS_RENT_ARREARS);
 
-        boolean hasOtherDiscretionaryGrounds =  discretionaryGrounds
-            .stream()
+        boolean hasOtherDiscretionaryGrounds =  discretionaryGrounds.stream()
             .anyMatch(ground -> ground != NoRentArrearsDiscretionaryGrounds.RENT_ARREARS
                 && ground != NoRentArrearsDiscretionaryGrounds.RENT_PAYMENT_DELAY);
 
         boolean shouldShowReasonsPage = hasOtherDiscretionaryGrounds || hasOtherMandatoryGrounds;
-
         caseData.setShowNoRentArrearsGroundsReasonsPage(shouldShowReasonsPage ? YesOrNo.YES : YesOrNo.NO);
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()

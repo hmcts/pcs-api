@@ -10,7 +10,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsDiscretionaryGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsMandatoryGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 
-import java.util.List;
 import java.util.Set;
 
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
@@ -40,18 +39,13 @@ public class RentArrearsGroundForPossessionAdditionalGrounds implements CcdPageC
             .mandatory(PCSCase::getRentArrearsDiscretionaryGrounds)
             .done();
     }
+
     public AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
                                                                  CaseDetails<PCSCase, State> detailsBefore) {
 
         PCSCase caseData = details.getData();
         Set<RentArrearsMandatoryGrounds> mandatoryGrounds = caseData.getRentArrearsMandatoryGrounds();
         Set<RentArrearsDiscretionaryGrounds> discretionaryGrounds = caseData.getRentArrearsDiscretionaryGrounds();
-
-        if (mandatoryGrounds.isEmpty() && discretionaryGrounds.isEmpty()) {
-            return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
-                .errors(List.of("Please select at least one ground"))
-                .build();
-        }
 
         boolean hasOtherMandatoryGrounds = mandatoryGrounds
             .stream()
@@ -60,7 +54,7 @@ public class RentArrearsGroundForPossessionAdditionalGrounds implements CcdPageC
         boolean hasOtherDiscretionaryGrounds =  discretionaryGrounds
             .stream()
             .anyMatch(ground -> ground != RentArrearsDiscretionaryGrounds.RENT_ARREARS_GROUND10
-                && ground != RentArrearsDiscretionaryGrounds.PERSISTENT_DELAY_GROUND11  );
+                && ground != RentArrearsDiscretionaryGrounds.PERSISTENT_DELAY_GROUND11);
 
         boolean shouldShowReasonsPage = hasOtherDiscretionaryGrounds || hasOtherMandatoryGrounds;
 

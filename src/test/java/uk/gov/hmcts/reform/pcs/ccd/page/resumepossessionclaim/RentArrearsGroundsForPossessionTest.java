@@ -13,7 +13,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsMandatoryGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
 
-import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -39,7 +38,7 @@ class RentArrearsGroundsForPossessionTest extends BasePageTest {
         AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
 
         // Then
-        assertThat(response.getData().getRentArrersMandatoryGrounds())
+        assertThat(response.getData().getRentArrearsMandatoryGrounds())
             .containsExactly(RentArrearsMandatoryGrounds.SERIOUS_RENT_ARREARS_GROUND8);
         assertThat(response.getData().getRentArrearsDiscretionaryGrounds()).isEmpty();
     }
@@ -58,7 +57,7 @@ class RentArrearsGroundsForPossessionTest extends BasePageTest {
         // Then
         assertThat(response.getData().getRentArrearsDiscretionaryGrounds())
             .containsExactly(RentArrearsDiscretionaryGrounds.RENT_ARREARS_GROUND10);
-        assertThat(response.getData().getRentArrersMandatoryGrounds()).isEmpty();
+        assertThat(response.getData().getRentArrearsMandatoryGrounds()).isEmpty();
     }
 
     @Test
@@ -75,7 +74,7 @@ class RentArrearsGroundsForPossessionTest extends BasePageTest {
         // Then
         assertThat(response.getData().getRentArrearsDiscretionaryGrounds())
             .containsExactly(RentArrearsDiscretionaryGrounds.PERSISTENT_DELAY_GROUND11);
-        assertThat(response.getData().getRentArrersMandatoryGrounds()).isEmpty();
+        assertThat(response.getData().getRentArrearsMandatoryGrounds()).isEmpty();
     }
 
     @Test
@@ -94,7 +93,7 @@ class RentArrearsGroundsForPossessionTest extends BasePageTest {
         AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
 
         // Then
-        assertThat(response.getData().getRentArrersMandatoryGrounds())
+        assertThat(response.getData().getRentArrearsMandatoryGrounds())
             .containsExactly(RentArrearsMandatoryGrounds.SERIOUS_RENT_ARREARS_GROUND8);
         assertThat(response.getData().getRentArrearsDiscretionaryGrounds())
             .containsExactlyInAnyOrder(
@@ -115,7 +114,7 @@ class RentArrearsGroundsForPossessionTest extends BasePageTest {
         AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
 
         // Then
-        assertThat(response.getData().getRentArrersMandatoryGrounds()).isEmpty();
+        assertThat(response.getData().getRentArrearsMandatoryGrounds()).isEmpty();
         assertThat(response.getData().getRentArrearsDiscretionaryGrounds()).isEmpty();
     }
 
@@ -131,7 +130,7 @@ class RentArrearsGroundsForPossessionTest extends BasePageTest {
         AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
 
         // Then
-        assertThat(response.getData().getRentArrersMandatoryGrounds()).isNull();
+        assertThat(response.getData().getRentArrearsMandatoryGrounds()).isNull();
         assertThat(response.getData().getRentArrearsDiscretionaryGrounds()).isNull();
     }
 
@@ -140,7 +139,7 @@ class RentArrearsGroundsForPossessionTest extends BasePageTest {
         // Given
         PCSCase caseData = PCSCase.builder()
             .rentArrearsGrounds(Set.of(RentArrearsGround.SERIOUS_RENT_ARREARS_GROUND8))
-            .rentArrersMandatoryGrounds(null)
+            .rentArrearsMandatoryGrounds(null)
             .rentArrearsDiscretionaryGrounds(null)
             .hasOtherAdditionalGrounds(YES)
             .build();
@@ -149,7 +148,7 @@ class RentArrearsGroundsForPossessionTest extends BasePageTest {
         AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
 
         // Then
-        assertThat(response.getData().getRentArrersMandatoryGrounds())
+        assertThat(response.getData().getRentArrearsMandatoryGrounds())
             .containsExactly(RentArrearsMandatoryGrounds.SERIOUS_RENT_ARREARS_GROUND8);
         assertThat(response.getData().getRentArrearsDiscretionaryGrounds()).isEmpty();
     }
@@ -163,9 +162,8 @@ class RentArrearsGroundsForPossessionTest extends BasePageTest {
         // Given
         PCSCase caseData = PCSCase.builder()
             .rentArrearsGrounds(currentGrounds)
-            .copyOfRentArrearsGrounds(new HashSet<>(previousGrounds))
+            .copyOfRentArrearsGrounds(previousGrounds)
             .build();
-
 
         // When
         AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
@@ -173,11 +171,11 @@ class RentArrearsGroundsForPossessionTest extends BasePageTest {
         // Then
         if (expectOverride) {
             int totalExpected = currentGrounds.size();
-            int totalActual = response.getData().getRentArrersMandatoryGrounds().size()
+            int totalActual = response.getData().getRentArrearsMandatoryGrounds().size()
                 + response.getData().getRentArrearsDiscretionaryGrounds().size();
             assertThat(totalActual).isEqualTo(totalExpected);
         } else {
-            assertThat(response.getData().getRentArrersMandatoryGrounds()).isNull();
+            assertThat(response.getData().getRentArrearsMandatoryGrounds()).isNull();
             assertThat(response.getData().getRentArrearsDiscretionaryGrounds()).isNull();
         }
     }
