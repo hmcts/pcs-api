@@ -111,7 +111,6 @@ test.describe('[Create Case - Wales] @Master @nightly', async () => {
       circumstanceOption: claimantCircumstances.yes,
       claimantInput: claimantCircumstances.claimantCircumstanceInfoInputData
     });
-    await performAction('selectLanguageUsed', languageUsed.no);
     await performValidation('mainHeader', defendantCircumstances.mainHeader);
     await performAction('selectDefendantCircumstances', defendantCircumstances.no);
     await performValidation('mainHeader', alternativesToPossession.mainHeader);
@@ -134,8 +133,9 @@ test.describe('[Create Case - Wales] @Master @nightly', async () => {
       option: wantToUploadDocuments.no
     });
     await performAction('selectApplications', applications.yes);
+    await performAction('selectLanguageUsed', {question: languageUsed.whichLanguageUsedQuestion, option: languageUsed.english});
     await performAction('completingYourClaim', completeYourClaim.saveItForLater);
-     await performAction('clickButton', checkYourAnswers.saveAndContinue);
+    await performAction('clickButton', checkYourAnswers.saveAndContinue);
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
     await performValidations('address information entered',
       ['formLabelValue', propertyDetails.buildingAndStreetLabel, addressDetails.buildingAndStreet],
@@ -205,7 +205,6 @@ test.describe('[Create Case - Wales] @Master @nightly', async () => {
       circumstanceOption: claimantCircumstances.no,
       claimantInput: claimantCircumstances.claimantCircumstanceInfoInputData
     });
-    await performAction('selectLanguageUsed', languageUsed.no);
     await performValidation('mainHeader', defendantCircumstances.mainHeader);
     await performAction('selectDefendantCircumstances', defendantCircumstances.no);
     await performValidation('mainHeader', alternativesToPossession.mainHeader);
@@ -227,6 +226,7 @@ test.describe('[Create Case - Wales] @Master @nightly', async () => {
       option: wantToUploadDocuments.no
     });
     await performAction('selectApplications', applications.yes);
+    await performAction('selectLanguageUsed', {question: languageUsed.whichLanguageUsedQuestion, option: languageUsed.english});
     await performAction('completingYourClaim', completeYourClaim.saveItForLater);
     await performAction('clickButton', checkYourAnswers.saveAndContinue);
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
@@ -304,7 +304,6 @@ test.describe('[Create Case - Wales] @Master @nightly', async () => {
       circumstanceOption: claimantCircumstances.no,
       claimantInput: claimantCircumstances.claimantCircumstanceInfoInputData
     });
-    await performAction('selectLanguageUsed', languageUsed.no);
     await performValidation('mainHeader', defendantCircumstances.mainHeader);
     await performAction('selectDefendantCircumstances', defendantCircumstances.yes);
     await performValidation('mainHeader', alternativesToPossession.mainHeader);
@@ -321,6 +320,7 @@ test.describe('[Create Case - Wales] @Master @nightly', async () => {
       option: wantToUploadDocuments.no
     });
     await performAction('selectApplications', applications.yes);
+    await performAction('selectLanguageUsed', {question: languageUsed.whichLanguageUsedQuestion, option: languageUsed.english});
     await performAction('completingYourClaim', completeYourClaim.saveItForLater);
     await performAction('clickButton', checkYourAnswers.saveAndContinue);
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
