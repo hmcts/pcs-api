@@ -231,6 +231,7 @@ public class PCSCase {
 
     private String claimPaymentTabMarkdown;
 
+    @CCD(label = "Legislative Country")
     private LegislativeCountry legislativeCountry;
 
     @CCD(
@@ -606,4 +607,44 @@ public class PCSCase {
         typeParameterOverride = "CompletionNextStep"
     )
     private CompletionNextStep completionNextStep;
+
+    @CCD(
+        label = "What type of tenancy or licence is in place?",
+        hint = "This question is only available for Welsh legislative country",
+        typeOverride = FieldType.FixedRadioList,
+        typeParameterOverride = "WelshDummyOptions"
+    )
+    private WelshDummyOptions welshDummyOption;
+
+    // PCSCase fields (insert into PCSCase.java, imports omitted for brevity)
+    @CCD(
+        label = "Discretionary grounds",
+        hint = "Select all that apply",
+        typeOverride = FieldType.MultiSelectList,
+        typeParameterOverride = "WelshDiscretionaryGround",
+        access = {CitizenAccess.class}
+    )
+    private java.util.Set<WelshDiscretionaryGround>
+        welshDiscretionaryGrounds;
+
+    @CCD(
+        label = "Estate management grounds",
+        hint = "Select all that apply",
+        typeOverride = FieldType.MultiSelectList,
+        typeParameterOverride = "WelshEstateManagementGround",
+        access = {CitizenAccess.class}
+    )
+    private java.util.Set<WelshEstateManagementGround>
+        welshEstateManagementGrounds;
+
+    @CCD(
+        label = "Mandatory grounds",
+        hint = "Select all that apply",
+        typeOverride = FieldType.MultiSelectList,
+        typeParameterOverride = "WelshMandatoryGround",
+        access = {CitizenAccess.class}
+    )
+    private java.util.Set<WelshMandatoryGround>
+        welshMandatoryGrounds;
+
 }

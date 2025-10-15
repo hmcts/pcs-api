@@ -76,20 +76,32 @@ public class PcsCaseMergeService {
     }
 
     private PossessionGrounds buildPossessionGrounds(PCSCase pcsCase) {
-        SecureOrFlexibleReasonsForGrounds reasons = Optional.ofNullable(pcsCase.getSecureOrFlexibleGroundsReasons())
-            .map(grounds -> modelMapper.map(grounds,
-                                            SecureOrFlexibleReasonsForGrounds.class))
-            .orElse(SecureOrFlexibleReasonsForGrounds.builder().build());
+        PossessionGrounds.PossessionGroundsBuilder builder = PossessionGrounds.builder();
 
-        return PossessionGrounds.builder()
-            .discretionaryGrounds(mapToLabels(pcsCase.getSecureOrFlexibleDiscretionaryGrounds()))
-            .mandatoryGrounds(mapToLabels(pcsCase.getSecureOrFlexibleMandatoryGrounds()))
-            .discretionaryGroundsAlternativeAccommodation(mapToLabels(
-                pcsCase.getSecureOrFlexibleDiscretionaryGroundsAlt())
-            )
-            .mandatoryGroundsAlternativeAccommodation(mapToLabels(pcsCase.getSecureOrFlexibleMandatoryGroundsAlt()))
-            .secureOrFlexibleReasonsForGrounds(reasons)
-            .build();
+        // Handle Welsh grounds if legislative country is Wales
+        if (pcsCase.getLegislativeCountry() != null && 
+            pcsCase.getLegislativeCountry().name().equals("WALES")) {
+            builder
+                .welshDiscretionaryGrounds(mapToLabels(pcsCase.getWelshDiscretionaryGrounds()))
+                .welshMandatoryGrounds(mapToLabels(pcsCase.getWelshMandatoryGrounds()))
+                .welshEstateManagementGrounds(mapToLabels(pcsCase.getWelshEstateManagementGrounds()));
+        } else {
+            // Handle English grounds for all other cases
+            SecureOrFlexibleReasonsForGrounds reasons = Optional.ofNullable(pcsCase.getSecureOrFlexibleGroundsReasons())
+                .map(grounds -> modelMapper.map(grounds, SecureOrFlexibleReasonsForGrounds.class))
+                .orElse(SecureOrFlexibleReasonsForGrounds.builder().build());
+
+            builder
+                .discretionaryGrounds(mapToLabels(pcsCase.getSecureOrFlexibleDiscretionaryGrounds()))
+                .mandatoryGrounds(mapToLabels(pcsCase.getSecureOrFlexibleMandatoryGrounds()))
+                .discretionaryGroundsAlternativeAccommodation(mapToLabels(
+                    pcsCase.getSecureOrFlexibleDiscretionaryGroundsAlt())
+                )
+                .mandatoryGroundsAlternativeAccommodation(mapToLabels(pcsCase.getSecureOrFlexibleMandatoryGroundsAlt()))
+                .secureOrFlexibleReasonsForGrounds(reasons);
+        }
+
+        return builder.build();
     }
 
     private <T extends HasLabel> Set<String> mapToLabels(Set<T> items) {
