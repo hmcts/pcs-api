@@ -38,6 +38,8 @@ import {additionalReasonsForPossession} from '@data/page-data/additionalReasonsF
 import {underlesseeOrMortgageeEntitledToClaim} from '@data/page-data/underlesseeOrMortgageeEntitledToClaim.page.data';
 import {alternativesToPossession} from '@data/page-data/alternativesToPossession.page.data';
 import {housingAct} from '@data/page-data/housingAct.page.data';
+import {reasonsForRequestingADemotionOrder} from '@data/page-data/reasonsForRequestingADemotionOrder.page.data';
+import {statementOfExpressTerms} from '@data/page-data/statementOfExpressTerms.page.data';
 import {wantToUploadDocuments} from '@data/page-data/wantToUploadDocuments.page.data';
 
 test.beforeEach(async ({page}) => {
@@ -49,7 +51,7 @@ test.beforeEach(async ({page}) => {
   await performAction('housingPossessionClaim');
 });
 
-test.describe('[Create Case] @Master @nightly', async () => {
+test.describe('[Create Case - Wales] @Master @nightly', async () => {
   test('Wales - Assured tenancy with Rent arrears and no other possession grounds - Demoted tenancy', async () => {
     await performAction('enterTestAddressManually');
     await performValidation('bannerAlert', 'Case #.* has been created.');
@@ -115,17 +117,17 @@ test.describe('[Create Case] @Master @nightly', async () => {
       circumstanceOption: claimantCircumstances.yes,
       claimantInput: claimantCircumstances.claimantCircumstanceInfoInputData
     });
-    await performAction('selectLanguageUsed', languageUsed.no);
     await performValidation('mainHeader', defendantCircumstances.mainHeader);
     await performAction('selectDefendantCircumstances', defendantCircumstances.no);
     await performValidation('mainHeader', alternativesToPossession.mainHeader);
-    await performAction('selectAlternativesToPossession', {question: alternativesToPossession.suspensionOrDemotion
-      , option: [alternativesToPossession.suspensionOfRightToBuy]});
+    await performAction('selectAlternativesToPossession', {question: alternativesToPossession.demotionOfTenancy
+      , option: [alternativesToPossession.demotionOfTenancy]});
     await performValidation('mainHeader', housingAct.mainHeader);
-    await performAction('selectHousingAct', {question: housingAct.suspensionOfRightToBuy.whichSection
-      ,option: housingAct.suspensionOfRightToBuy.section82AHousingAct1985});
-    await performValidation('mainHeader', reasonsForRequestingASuspensionOrder.mainHeader);
-    await performAction('enterReasonForSuspensionOrder', reasonsForRequestingASuspensionOrder.question);
+    await performAction('selectHousingAct', {question: housingAct.demotionOfTenancy.whichSection
+      , option: housingAct.demotionOfTenancy.section6AHousingAct1988});
+    await performAction('selectStatementOfExpressTerms', statementOfExpressTerms.no);
+    await performValidation('mainHeader', reasonsForRequestingADemotionOrder.mainHeader);
+    await performAction('enterReasonForDemotionOrder', reasonsForRequestingADemotionOrder.requestDemotionOrderQuestion);
     await performValidation('mainHeader', claimingCosts.mainHeader);
     await performAction('selectClaimingCosts', claimingCosts.no);
     await performValidation('mainHeader', additionalReasonsForPossession.mainHeader);
@@ -137,6 +139,7 @@ test.describe('[Create Case] @Master @nightly', async () => {
       option: wantToUploadDocuments.no
     });
     await performAction('selectApplications', applications.yes);
+    await performAction('selectLanguageUsed', {question: languageUsed.whichLanguageUsedQuestion, option: languageUsed.english});
     await performAction('completingYourClaim', completeYourClaim.saveItForLater);
     await performAction('clickButton', checkYourAnswers.saveAndContinue);
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
@@ -214,7 +217,6 @@ test.describe('[Create Case] @Master @nightly', async () => {
       circumstanceOption: claimantCircumstances.no,
       claimantInput: claimantCircumstances.claimantCircumstanceInfoInputData
     });
-    await performAction('selectLanguageUsed', languageUsed.no);
     await performValidation('mainHeader', defendantCircumstances.mainHeader);
     await performAction('selectDefendantCircumstances', defendantCircumstances.no);
     await performValidation('mainHeader', alternativesToPossession.mainHeader);
@@ -236,6 +238,7 @@ test.describe('[Create Case] @Master @nightly', async () => {
       option: wantToUploadDocuments.no
     });
     await performAction('selectApplications', applications.yes);
+    await performAction('selectLanguageUsed', {question: languageUsed.whichLanguageUsedQuestion, option: languageUsed.english});
     await performAction('completingYourClaim', completeYourClaim.saveItForLater);
     await performAction('clickButton', checkYourAnswers.saveAndContinue);
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
@@ -318,7 +321,6 @@ test.describe('[Create Case] @Master @nightly', async () => {
       circumstanceOption: claimantCircumstances.no,
       claimantInput: claimantCircumstances.claimantCircumstanceInfoInputData
     });
-    await performAction('selectLanguageUsed', languageUsed.no);
     await performValidation('mainHeader', defendantCircumstances.mainHeader);
     await performAction('selectDefendantCircumstances', defendantCircumstances.yes);
     await performValidation('mainHeader', alternativesToPossession.mainHeader);
@@ -335,6 +337,7 @@ test.describe('[Create Case] @Master @nightly', async () => {
       option: wantToUploadDocuments.no
     });
     await performAction('selectApplications', applications.yes);
+    await performAction('selectLanguageUsed', {question: languageUsed.whichLanguageUsedQuestion, option: languageUsed.english});
     await performAction('completingYourClaim', completeYourClaim.saveItForLater);
     await performAction('clickButton', checkYourAnswers.saveAndContinue);
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');

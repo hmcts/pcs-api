@@ -50,6 +50,8 @@ public class ClaimService {
             .costsClaimed(pcsCase.getClaimingCostsWanted().toBoolean())
             .additionalReasons(additionalReasons)
             .applicationWithClaim(YesOrNoToBoolean.convert(pcsCase.getApplicationWithClaim()))
+            .languageUsed(pcsCase.getLanguageUsed())
+
             .build();
 
         claimEntity.addParty(claimantPartyEntity, PartyRole.CLAIMANT);
