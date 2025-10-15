@@ -21,7 +21,7 @@ public class RentArrearsGroundReasons {
         typeOverride = TextArea,
         max = 500
     )
-    private String ownerOccupierGround;
+    private String ownerOccupierReason;
 
     @CCD(
         label = "Give details about your reasons for claiming possession (Repossession by the landlord's"
@@ -30,7 +30,7 @@ public class RentArrearsGroundReasons {
         typeOverride = TextArea,
         max = 500
     )
-    private String repossessionByLenderGround;
+    private String repossessionByLenderReason;
 
     @CCD(
         label = "Give details about your reasons for claiming possession (Holiday let (ground 3))",
@@ -38,7 +38,7 @@ public class RentArrearsGroundReasons {
         typeOverride = TextArea,
         max = 500
     )
-    private String holidayLetGround;
+    private String holidayLetReason;
 
     @CCD(
         label = "Give details about your reasons for claiming possession (Student let (ground 4))",
@@ -46,7 +46,7 @@ public class RentArrearsGroundReasons {
         typeOverride = TextArea,
         max = 500
     )
-    private String studentLetGround;
+    private String studentLetReason;
 
     @CCD(
         label = "Give details about your reasons for claiming possession (Property required for minister of"
@@ -55,7 +55,7 @@ public class RentArrearsGroundReasons {
         typeOverride = TextArea,
         max = 500
     )
-    private String ministerOfReligionGround;
+    private String ministerOfReligionReason;
 
     @CCD(
         label = "Give details about your reasons for claiming possession (Property required for "
@@ -64,7 +64,7 @@ public class RentArrearsGroundReasons {
         typeOverride = TextArea,
         max = 500
     )
-    private String redevelopmentGround;
+    private String redevelopmentReason;
 
     @CCD(
         label = "Give details about your reasons for claiming possession (Death of the tenant (ground 7))",
@@ -72,7 +72,7 @@ public class RentArrearsGroundReasons {
         typeOverride = TextArea,
         max = 500
     )
-    private String deathOfTenantGround;
+    private String deathOfTenantReason;
 
     @CCD(
         label = "Give details about your reasons for claiming possession (Antisocial behaviour (ground 7A))",
@@ -80,7 +80,7 @@ public class RentArrearsGroundReasons {
         typeOverride = TextArea,
         max = 500
     )
-    private String antisocialBehaviourGround;
+    private String antisocialBehaviourReason;
 
     @CCD(
         label = "Give details about your reasons for claiming possession (Tenant does not have a right "
@@ -89,16 +89,7 @@ public class RentArrearsGroundReasons {
         typeOverride = TextArea,
         max = 500
     )
-    private String noRightToRentGround;
-
-    @CCD(
-        label = "Give details about your reasons for claiming possession (Serious rent arrears (ground 8))",
-        hint = "You'll be able to upload documents to support or further explain your reasons later on",
-        typeOverride = TextArea,
-        max = 500
-    )
-    private String seriousRentArrearsGround;
-
+    private String noRightToRentReason;
 
     // ---------- Discretionary grounds ----------
     @CCD(
@@ -108,24 +99,7 @@ public class RentArrearsGroundReasons {
         typeOverride = TextArea,
         max = 500
     )
-    private String suitableAltAccommodationGround;
-
-    @CCD(
-        label = "Give details about your reasons for claiming possession (Rent arrears (ground 10))",
-        hint = "You'll be able to upload documents to support or further explain your reasons later on",
-        typeOverride = TextArea,
-        max = 500
-    )
-    private String rentArrearsGround;
-
-    @CCD(
-        label = "Give details about your reasons for claiming possession (Persistent delay in paying "
-            + "rent (ground 11))",
-        hint = "You'll be able to upload documents to support or further explain your reasons later on",
-        typeOverride = TextArea,
-        max = 500
-    )
-    private String persistentDelayRentGround;
+    private String suitableAltAccommodationReason;
 
     @CCD(
         label = "Give details about your reasons for claiming possession (Breach of tenancy conditions (ground 12))",
@@ -133,7 +107,7 @@ public class RentArrearsGroundReasons {
         typeOverride = TextArea,
         max = 500
     )
-    private String breachOfTenancyConditionsGround;
+    private String breachOfTenancyConditionsReason;
 
     @CCD(
         label = "Give details about your reasons for claiming possession (Deterioration in the condition "
@@ -142,7 +116,7 @@ public class RentArrearsGroundReasons {
         typeOverride = TextArea,
         max = 500
     )
-    private String propertyDeteriorationGround;
+    private String propertyDeteriorationReason;
 
     @CCD(
         label = "Give details about your reasons for claiming possession (Nuisance, annoyance, illegal or "
@@ -151,7 +125,7 @@ public class RentArrearsGroundReasons {
         typeOverride = TextArea,
         max = 500
     )
-    private String nuisanceAnnoyanceGround;
+    private String nuisanceAnnoyanceReason;
 
     @CCD(
         label = "Give details about your reasons for claiming possession (Domestic violence (ground 14A))",
@@ -159,7 +133,7 @@ public class RentArrearsGroundReasons {
         typeOverride = TextArea,
         max = 500
     )
-    private String domesticViolenceGround;
+    private String domesticViolenceReason;
 
     @CCD(
         label = "Give details about your reasons for claiming possession (Offence during a riot (ground 14ZA))",
@@ -167,7 +141,7 @@ public class RentArrearsGroundReasons {
         typeOverride = TextArea,
         max = 500
     )
-    private String offenceDuringRiotGround;
+    private String offenceDuringRiotReason;
 
     @CCD(
         label = "Give details about your reasons for claiming possession (Deterioration of furniture (ground 15))",
@@ -175,7 +149,7 @@ public class RentArrearsGroundReasons {
         typeOverride = TextArea,
         max = 500
     )
-    private String furnitureDeteriorationGround;
+    private String furnitureDeteriorationReason;
 
     @CCD(
         label = "Give details about your reasons for claiming possession (Employee of the landlord (ground 16))",
@@ -183,7 +157,7 @@ public class RentArrearsGroundReasons {
         typeOverride = TextArea,
         max = 500
     )
-    private String employeeOfLandlordGround;
+    private String employeeOfLandlordReason;
 
     @CCD(
         label = "Give details about your reasons for claiming possession (Tenancy obtained by false "
@@ -192,5 +166,5 @@ public class RentArrearsGroundReasons {
         typeOverride = TextArea,
         max = 500
     )
-    private String tenancyByFalseStatementGround;
+    private String tenancyByFalseStatementReason;
 }

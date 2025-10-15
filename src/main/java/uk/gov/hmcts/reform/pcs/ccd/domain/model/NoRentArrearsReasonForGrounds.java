@@ -95,15 +95,6 @@ public class NoRentArrearsReasonForGrounds {
     )
     private String noRightToRentTextArea;
 
-//    // Ground 8
-//    @CCD(
-//            label = "Give details about your reasons for claiming possession",
-//            hint = "You'll be able to upload documents to support or further explain your reasons later on",
-//            typeOverride = TextArea,
-//            max = 500
-//    )
-//    private String seriousRentArrearsTextArea;
-
     // Ground 9
     @CCD(
             label = "Give details about your reasons for claiming possession",
@@ -112,24 +103,6 @@ public class NoRentArrearsReasonForGrounds {
             max = 500
     )
     private String suitableAccomTextArea;
-
-//    // Ground 10
-//    @CCD(
-//            label = "Give details about your reasons for claiming possession",
-//            hint = "You'll be able to upload documents to support or further explain your reasons later on",
-//            typeOverride = TextArea,
-//            max = 500
-//    )
-//    private String rentArrearsTextArea;
-
-    // Ground 11
-    @CCD(
-            label = "Give details about your reasons for claiming possession",
-            hint = "You'll be able to upload documents to support or further explain your reasons later on",
-            typeOverride = TextArea,
-            max = 500
-    )
-    private String rentPaymentDelayTextArea;
 
     // Ground 12
     @CCD(
