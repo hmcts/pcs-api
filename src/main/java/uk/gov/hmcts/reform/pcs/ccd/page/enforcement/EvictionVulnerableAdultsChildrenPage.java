@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim;
+package uk.gov.hmcts.reform.pcs.ccd.page.enforcement;
 
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
