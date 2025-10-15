@@ -60,15 +60,15 @@ public class GroundsForPossessionWales
         PCSCase data = details.getData();
         List<String> errors = new ArrayList<>();
 
-        Set<DiscretionaryGroundWales> disc =
+        Set<DiscretionaryGroundWales> discretionaryGrounds =
             data.getDiscretionaryGroundsWales();
-        var mand = data.getMandatoryGroundsWales();
-        var estate = data.getEstateManagementGroundsWales();
+        var mandatoryGrounds = data.getMandatoryGroundsWales();
+        var estateManagementGrounds = data.getEstateManagementGroundsWales();
 
         boolean hasDiscretionary =
-            disc != null && !disc.isEmpty();
+            discretionaryGrounds != null && !discretionaryGrounds.isEmpty();
         boolean hasMandatory =
-            mand != null && !mand.isEmpty();
+            mandatoryGrounds != null && !mandatoryGrounds.isEmpty();
 
         // at least one from Discretionary OR Mandatory
         if (!hasDiscretionary && !hasMandatory) {
@@ -79,12 +79,12 @@ public class GroundsForPossessionWales
 
         // if Estate management parent ticked, require sub-selection
         if (hasDiscretionary
-            && disc.contains(
+            && discretionaryGrounds.contains(
             DiscretionaryGroundWales
                 .ESTATE_MANAGEMENT_GROUNDS_SECTION_160)) {
 
             boolean hasEstate =
-                estate != null && !estate.isEmpty();
+                estateManagementGrounds != null && !estateManagementGrounds.isEmpty();
 
             if (!hasEstate) {
                 errors.add(
