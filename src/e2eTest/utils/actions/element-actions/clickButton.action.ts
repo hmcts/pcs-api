@@ -28,11 +28,11 @@ export class ClickButtonAction implements IAction {
     const pageElement = page.locator(`h1:has-text("${nextPageElement}")`);
     let retry = 0;
     for(; retry < 5 && !await pageElement.isVisible(); retry++){
-        this.clickButton(page, button);
-        if(!await pageElement.isVisible()) {
-          //Adding sleep to slow down execution when the application behaves abnormally
-          await page.waitForTimeout(waitForPageRedirectionTimeout);
-        }
+      this.clickButton(page, button);
+      if(!await pageElement.isVisible()) {
+        //Adding sleep to slow down execution when the application behaves abnormally
+        await page.waitForTimeout(waitForPageRedirectionTimeout);
+      }
     }
     if (retry === 5) {
       throw new Error(`Navigation to ${nextPageElement} page/element has been failed after 5 attempts`);
