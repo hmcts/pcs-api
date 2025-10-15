@@ -67,7 +67,8 @@ export class CreateCaseAction implements IAction {
       ['selectGroundsForPossession', () => this.selectGroundsForPossession(fieldName)],
       ['selectPreActionProtocol', () => this.selectPreActionProtocol(fieldName)],
       ['selectMediationAndSettlement', () => this.selectMediationAndSettlement(fieldName)],
-      ['selectNoticeOfYourIntention', () => this.selectNoticeOfYourIntention(fieldName as actionRecord)],
+      ['selectNoticeOfYourIntentionWales', () => this.selectNoticeOfYourIntentionWales(fieldName as actionRecord)],
+      ['selectNoticeOfYourIntentionEngland', () => this.selectNoticeOfYourIntentionEngland(fieldName as actionRecord)],
       ['selectNoticeDetails', () => this.selectNoticeDetails(fieldName)],
       ['selectBorderPostcode', () => this.selectBorderPostcode(fieldName)],
       ['selectTenancyOrLicenceDetails', () => this.selectTenancyOrLicenceDetails(fieldName)],
@@ -186,7 +187,7 @@ export class CreateCaseAction implements IAction {
     await performAction('clickButton', preActionProtocol.continue);
   }
 
-  private async selectNoticeOfYourIntention(caseData: actionRecord) {
+  private async selectNoticeOfYourIntentionWales(caseData: actionRecord) {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
     await performAction('clickRadioButton', caseData);
     if(caseData.option == noticeOfYourIntention.yes){
@@ -195,6 +196,11 @@ export class CreateCaseAction implements IAction {
     await performAction('clickButton', noticeOfYourIntention.continue);
   }
 
+  private async selectNoticeOfYourIntentionEngland(caseData: actionRecord) {
+    await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
+    await performAction('clickRadioButton', caseData);
+    await performAction('clickButton', noticeOfYourIntention.continue);
+  }
   private async selectBorderPostcode(option: actionData) {
     await performAction('clickRadioButton', option);
     await performAction('clickButton', borderPostcode.submit);
