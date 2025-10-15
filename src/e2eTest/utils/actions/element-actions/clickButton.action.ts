@@ -1,6 +1,6 @@
 import { Page, Locator } from '@playwright/test';
 import { IAction } from '../../interfaces/action.interface';
-import {ActionRetries, waitForPageRedirectionTimeout} from '../../../playwright.config';
+import {actionRetries, waitForPageRedirectionTimeout} from '../../../playwright.config';
 
 export class ClickButtonAction implements IAction {
   async execute(page: Page, action: string, buttonText: string , actionParams: string): Promise<void> {
@@ -34,7 +34,7 @@ export class ClickButtonAction implements IAction {
       //Adding sleep to slow down execution when the application behaves abnormally
       await page.waitForTimeout(waitForPageRedirectionTimeout);
       nextPageElementIsVisible = await pageElement.isVisible();
-    } while (!nextPageElementIsVisible && attempt < ActionRetries);
+    } while (!nextPageElementIsVisible && attempt < actionRetries);
     if (!nextPageElementIsVisible) {
       throw new Error(`Navigation to "${nextPageElement}" page/element failed after ${attempt} attempts`);
     }

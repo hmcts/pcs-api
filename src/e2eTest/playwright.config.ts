@@ -4,7 +4,7 @@ import { defineConfig, devices } from '@playwright/test';
 
 const DEFAULT_VIEWPORT = { width: 1920, height: 1080 };
 export const waitForPageRedirectionTimeout = 3000;
-export const ActionRetries = 3;
+export const actionRetries = 3;
 
 export default defineConfig({
   testDir: 'tests/',
