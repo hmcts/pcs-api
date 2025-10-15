@@ -28,7 +28,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
-import java.util.Random;
+import java.security.SecureRandom;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -45,7 +45,7 @@ public class CCDCaseRepository extends DecentralisedCaseRepository<PCSCase> {
     private final ModelMapper modelMapper;
     private final PcsCaseService pcsCaseService;
     private final UnsubmittedCaseDataService unsubmittedCaseDataService;
-    private final Random random = new Random();
+    private final SecureRandom random = new SecureRandom();
 
     /**
      * Invoked by CCD to load PCS cases by reference.
