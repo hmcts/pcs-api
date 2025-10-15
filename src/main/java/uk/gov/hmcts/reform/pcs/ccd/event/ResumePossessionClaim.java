@@ -29,7 +29,7 @@ import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.EntitledToClaimRel
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.LanguageUsed;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.MoneyJudgment;
 import uk.gov.hmcts.reform.pcs.ccd.page.makeaclaim.StatementOfTruth;
-import uk.gov.hmcts.reform.pcs.ccd.page.makeaclaim.WelshGroundsForPossession;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.GroundsForPossessionWales;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.AlternativesToPossessionOptions;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.CheckingNotice;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ClaimTypeNotEligibleEngland;
@@ -70,8 +70,9 @@ import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.DemotionOfTenancyO
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.TenancyLicenceDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.UploadAdditionalDocumentsDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.WantToUploadDocuments;
-import uk.gov.hmcts.reform.pcs.ccd.page.dummy.DummyLicenseDetails;
-import uk.gov.hmcts.reform.pcs.ccd.page.makeaclaim.WelshGfpGroundsForPossession;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.OccupationLicenseDetailsWales;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.GroundsForPossessionWales;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.ReasonsForPossessionWales;
 import uk.gov.hmcts.reform.pcs.ccd.service.ClaimService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
@@ -131,8 +132,9 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             .add(new ClaimantInformation())
             .add(contactPreferences)
             .add(defendantsDetails)
-            .add(new DummyLicenseDetails())
-            .add(new WelshGroundsForPossession())
+            .add(new OccupationLicenseDetailsWales())
+            .add(new GroundsForPossessionWales())
+            .add(new ReasonsForPossessionWales())
             .add(tenancyLicenceDetails)
             .add(new SecureOrFlexibleGroundsForPossession())
             .add(new RentArrearsOrBreachOfTenancyGround())

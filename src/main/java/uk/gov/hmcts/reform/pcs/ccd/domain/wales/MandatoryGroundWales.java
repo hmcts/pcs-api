@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.ccd.domain;
+package uk.gov.hmcts.reform.pcs.ccd.domain.wales;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -6,7 +6,7 @@ import uk.gov.hmcts.ccd.sdk.api.HasLabel;
 
 @AllArgsConstructor
 @Getter
-public enum WelshMandatoryGround implements HasLabel {
+public enum MandatoryGroundWales implements HasLabel {
   FAIL_TO_GIVE_UP_S170(
       "Failure to give up possession on date specified in "
           + "contract-holder's notice (section 170)"),

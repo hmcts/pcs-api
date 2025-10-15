@@ -30,7 +30,7 @@ springdoc:
 
 logging:
   level:
-    uk.gov.hmcts.reform.pcs.ccd.page.dummy.DummyLicenseDetails: INFO
+    uk.gov.hmcts.reform.pcs.ccd.page.dummy.uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.DummyLicenseDetails: INFO
     uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.TenancyLicenceDetails: INFO
     uk.gov.hmcts.reform.pcs.ccd.event.ResumePossessionClaim: INFO
     uk.gov.hmcts.reform.pcs.ccd: DEBUG

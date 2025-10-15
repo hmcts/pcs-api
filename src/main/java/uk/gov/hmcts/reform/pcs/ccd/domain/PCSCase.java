@@ -13,6 +13,10 @@ import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseworkerReadAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenAccess;
 import uk.gov.hmcts.reform.pcs.ccd.domain.model.NoRentArrearsReasonForGrounds;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.DiscretionaryGroundWales;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationContractLicenseDetailsOptionsWales;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.EstateManagementGroundWales;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.MandatoryGroundWales;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
@@ -612,39 +616,36 @@ public class PCSCase {
         label = "What type of tenancy or licence is in place?",
         hint = "This question is only available for Welsh legislative country",
         typeOverride = FieldType.FixedRadioList,
-        typeParameterOverride = "WelshDummyOptions"
+        typeParameterOverride = "OccupationContractLicenseDetailsOptionsWales"
     )
-    private WelshDummyOptions welshDummyOption;
+    private OccupationContractLicenseDetailsOptionsWales occupationContractLicenseDetailsOptionsWales;
 
     // PCSCase fields (insert into PCSCase.java, imports omitted for brevity)
     @CCD(
         label = "Discretionary grounds",
         hint = "Select all that apply",
         typeOverride = FieldType.MultiSelectList,
-        typeParameterOverride = "WelshDiscretionaryGround",
-        access = {CitizenAccess.class}
+        typeParameterOverride = "DiscretionaryGroundWales"
     )
-    private java.util.Set<WelshDiscretionaryGround>
-        welshDiscretionaryGrounds;
+    private java.util.Set<DiscretionaryGroundWales>
+        discretionaryGroundsWales;
 
     @CCD(
         label = "Estate management grounds",
         hint = "Select all that apply",
         typeOverride = FieldType.MultiSelectList,
-        typeParameterOverride = "WelshEstateManagementGround",
-        access = {CitizenAccess.class}
+        typeParameterOverride = "EstateManagementGroundWales"
     )
-    private java.util.Set<WelshEstateManagementGround>
-        welshEstateManagementGrounds;
+    private java.util.Set<EstateManagementGroundWales>
+        estateManagementGroundsWales;
 
     @CCD(
         label = "Mandatory grounds",
         hint = "Select all that apply",
         typeOverride = FieldType.MultiSelectList,
-        typeParameterOverride = "WelshMandatoryGround",
-        access = {CitizenAccess.class}
+        typeParameterOverride = "MandatoryGroundWales"
     )
-    private java.util.Set<WelshMandatoryGround>
-        welshMandatoryGrounds;
+    private java.util.Set<MandatoryGroundWales>
+        mandatoryGroundsWales;
 
 }

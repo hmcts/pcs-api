@@ -79,12 +79,12 @@ public class PcsCaseMergeService {
         PossessionGrounds.PossessionGroundsBuilder builder = PossessionGrounds.builder();
 
         // Handle Welsh grounds if legislative country is Wales
-        if (pcsCase.getLegislativeCountry() != null && 
-            pcsCase.getLegislativeCountry().name().equals("WALES")) {
+        if (pcsCase.getLegislativeCountry() != null
+            && pcsCase.getLegislativeCountry().name().equals("WALES")) {
             builder
-                .welshDiscretionaryGrounds(mapToLabels(pcsCase.getWelshDiscretionaryGrounds()))
-                .welshMandatoryGrounds(mapToLabels(pcsCase.getWelshMandatoryGrounds()))
-                .welshEstateManagementGrounds(mapToLabels(pcsCase.getWelshEstateManagementGrounds()));
+                .welshDiscretionaryGrounds(mapToLabels(pcsCase.getDiscretionaryGroundsWales()))
+                .welshMandatoryGrounds(mapToLabels(pcsCase.getMandatoryGroundsWales()))
+                .welshEstateManagementGrounds(mapToLabels(pcsCase.getEstateManagementGroundsWales()));
         } else {
             // Handle English grounds for all other cases
             SecureOrFlexibleReasonsForGrounds reasons = Optional.ofNullable(pcsCase.getSecureOrFlexibleGroundsReasons())

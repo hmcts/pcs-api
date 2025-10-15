@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.ccd.page.dummy;
+package uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales;
 
 import lombok.extern.slf4j.Slf4j;
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
@@ -13,12 +13,12 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
  * Contains fields for license-related information.
  */
 @Slf4j
-public class DummyLicenseDetails implements CcdPageConfiguration {
+public class OccupationLicenseDetailsWales implements CcdPageConfiguration {
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
-            .page("dummyLicenseDetails", this::midEvent)
+            .page("Place holder page ", this::midEvent)
             .pageLabel("Dummy License Details")
             .showCondition("legislativeCountry=\"Wales\"")
             .label("dummyLicenseDetails-info", """
@@ -30,13 +30,12 @@ public class DummyLicenseDetails implements CcdPageConfiguration {
                   </p>
                 </section>
                 """)
-            .mandatory(PCSCase::getWelshDummyOption);
+            .mandatory(PCSCase::getOccupationContractLicenseDetailsOptionsWales);
     }
 
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
                                                                    CaseDetails<PCSCase, State> detailsBefore) {
         PCSCase caseData = details.getData();
-        log.info("DummyLicenseDetails page accessed. Legislative Country: {}", caseData.getLegislativeCountry());
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
             .data(caseData)
