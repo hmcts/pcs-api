@@ -10,7 +10,6 @@ import java.util.List;
 
 /**
  * Service for validating text area fields with character limits.
- * Provides reusable validation logic for midEvent callbacks across different pages.
  */
 @Slf4j
 @Service
@@ -92,7 +91,7 @@ public class TextAreaValidationService {
             this.fieldLabel = fieldLabel;
             this.maxCharacters = maxCharacters;
         }
-        
+
         public static FieldValidation of(String fieldValue, String fieldLabel, int maxCharacters) {
             return new FieldValidation(fieldValue, fieldLabel, maxCharacters);
         }

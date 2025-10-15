@@ -36,7 +36,6 @@ public class DemotionOfTenancyOrderReason implements CcdPageConfiguration {
                                                                   CaseDetails<PCSCase, State> detailsBefore) {
         PCSCase caseData = details.getData();
         
-        // Validate text area field for character limit - ultra simple approach
         DemotionOfTenancy demotionOfTenancy = caseData.getDemotionOfTenancy();
         if (demotionOfTenancy != null) {
             List<String> validationErrors = textAreaValidationService.validateSingleTextArea(

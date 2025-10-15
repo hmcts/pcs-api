@@ -54,10 +54,8 @@ public class ClaimantCircumstancesPage implements CcdPageConfiguration {
                                                                   CaseDetails<PCSCase, State> detailsBefore) {
         PCSCase caseData = details.getData();
         
-        // Validate text area field for character limit - ultra simple approach
         ClaimantCircumstances claimantCircumstances = caseData.getClaimantCircumstances();
         if (claimantCircumstances != null) {
-            // Use the actual dynamic label that's displayed to the user
             String dynamicLabel = "Give details about " 
                 + claimantCircumstances.getClaimantNamePossessiveForm() 
                 + "'s circumstances";

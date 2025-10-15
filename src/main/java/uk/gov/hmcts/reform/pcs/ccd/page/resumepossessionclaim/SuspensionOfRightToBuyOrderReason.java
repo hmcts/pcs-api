@@ -36,7 +36,6 @@ public class SuspensionOfRightToBuyOrderReason implements CcdPageConfiguration {
                                                                   CaseDetails<PCSCase, State> detailsBefore) {
         PCSCase caseData = details.getData();
         
-        // Validate text area field for character limit - ultra simple approach
         SuspensionOfRightToBuy suspensionOfRightToBuy = caseData.getSuspensionOfRightToBuy();
         if (suspensionOfRightToBuy != null) {
             List<String> validationErrors = textAreaValidationService.validateSingleTextArea(
