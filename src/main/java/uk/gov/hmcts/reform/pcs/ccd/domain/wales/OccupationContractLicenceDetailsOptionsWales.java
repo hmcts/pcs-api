@@ -1,7 +1,11 @@
 package uk.gov.hmcts.reform.pcs.ccd.domain.wales;
 
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 import uk.gov.hmcts.ccd.sdk.api.HasLabel;
 
+@AllArgsConstructor
+@Getter
 public enum OccupationContractLicenceDetailsOptionsWales implements HasLabel {
 
     SECURE("Secure"),
@@ -9,13 +13,4 @@ public enum OccupationContractLicenceDetailsOptionsWales implements HasLabel {
     OTHER("Other");
 
     private final String label;
-
-    OccupationContractLicenceDetailsOptionsWales(String label) {
-        this.label = label;
-    }
-
-    @Override
-    public String getLabel() {
-        return label;
-    }
 }

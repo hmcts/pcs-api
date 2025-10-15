@@ -235,7 +235,6 @@ public class PCSCase {
 
     private String claimPaymentTabMarkdown;
 
-    @CCD(label = "Legislative Country")
     private LegislativeCountry legislativeCountry;
 
     @CCD(
