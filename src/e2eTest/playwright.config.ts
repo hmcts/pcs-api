@@ -4,6 +4,7 @@ import { defineConfig, devices } from '@playwright/test';
 
 const DEFAULT_VIEWPORT = { width: 1920, height: 1080 };
 export const waitForPageRedirectionTimeout = 3000;
+export const actionRetries = 5;
 
 export default defineConfig({
   testDir: 'tests/',
@@ -12,7 +13,8 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   /* Retry on CI only */
   retries: process.env.CI ? 3 : 0,
-  workers: process.env.CI ? 4 : 2,
+  // Reduced workers from 4 → 2 due to server/login contention issues
+  workers: 2,
   timeout: 150 * 1000,
   expect: { timeout: 10 * 1000 },
   use: { actionTimeout: 10 * 1000, navigationTimeout: 10 * 1000 },
