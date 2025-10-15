@@ -73,8 +73,8 @@ test.describe('[Create Case - Wales] @Master @nightly', async () => {
     await performAction('clickButtonAndVerifyPageNavigation', claimantName.continue, claimantDetailsWales.mainHeader);
     await performAction('selectClaimantDetails',
         {question1: claimantDetailsWales.wereYouRegisteredUnderPart1OfTheHousingAct2014, option1: claimantDetailsWales.yes,
-          question2: claimantDetailsWales.wereYouLicensedUnderPart1OfTheHousingAct2014, option2: claimantDetailsWales.yes,
-          question3: claimantDetailsWales.haveYouAppointedALicenseAgentAgent, option3: claimantDetailsWales.yes});
+         question2: claimantDetailsWales.wereYouLicensedUnderPart1OfTheHousingAct2014, option2: claimantDetailsWales.yes,
+         question3: claimantDetailsWales.haveYouAppointedALicenseAgentAgent, option3: claimantDetailsWales.yes});
     await performAction('selectContactPreferences', {
       notifications: contactPreferences.no,
       correspondenceAddress: contactPreferences.no,
@@ -174,8 +174,8 @@ test.describe('[Create Case - Wales] @Master @nightly', async () => {
     await performAction('clickButtonAndVerifyPageNavigation', claimantName.continue, claimantDetailsWales.mainHeader);
     await performAction('selectClaimantDetails',
         {question1: claimantDetailsWales.wereYouRegisteredUnderPart1OfTheHousingAct2014, option1: claimantDetailsWales.no,
-          question2: claimantDetailsWales.wereYouLicensedUnderPart1OfTheHousingAct2014, option2: claimantDetailsWales.no,
-          question3: claimantDetailsWales.haveYouAppointedALicenseAgentAgent, option3: claimantDetailsWales.no});
+         question2: claimantDetailsWales.wereYouLicensedUnderPart1OfTheHousingAct2014, option2: claimantDetailsWales.no,
+         question3: claimantDetailsWales.haveYouAppointedALicenseAgentAgent, option3: claimantDetailsWales.no});
     await performAction('selectContactPreferences', {
       notifications: contactPreferences.yes,
       correspondenceAddress: contactPreferences.yes,
@@ -262,8 +262,8 @@ test.describe('[Create Case - Wales] @Master @nightly', async () => {
     await performAction('clickButtonAndVerifyPageNavigation', claimantName.continue, claimantDetailsWales.mainHeader);
     await performAction('selectClaimantDetails',
         {question1: claimantDetailsWales.wereYouRegisteredUnderPart1OfTheHousingAct2014, option1: claimantDetailsWales.notApplicable,
-          question2: claimantDetailsWales.wereYouLicensedUnderPart1OfTheHousingAct2014, option2: claimantDetailsWales.notApplicable,
-          question3: claimantDetailsWales.haveYouAppointedALicenseAgentAgent, option3: claimantDetailsWales.notApplicable});
+         question2: claimantDetailsWales.wereYouLicensedUnderPart1OfTheHousingAct2014, option2: claimantDetailsWales.notApplicable,
+         question3: claimantDetailsWales.haveYouAppointedALicenseAgentAgent, option3: claimantDetailsWales.notApplicable});
     await performAction('selectContactPreferences', {
       notifications: contactPreferences.no,
       correspondenceAddress: contactPreferences.no,
