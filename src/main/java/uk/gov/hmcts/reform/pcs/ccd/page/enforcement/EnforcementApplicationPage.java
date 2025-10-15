@@ -17,11 +17,7 @@ public class EnforcementApplicationPage implements CcdPageConfiguration {
         pageBuilder
                 .page("enforcementApplicationPage", this::midEvent)
                 .pageLabel("Your application")
-                .label(
-                        "enforcementApplicationPage-content",
-                        """
-                        ---
-                        """)
+                .label("enforcementApplicationPage-content", "---")
                 .complex(PCSCase::getEnforcementOrder)
                 .mandatory(EnforcementOrder::getSelectEnforcementType)
                 .label("enforcementApplicationPage-clarification", WRIT_OR_WARRENT_CLARIFICATION);

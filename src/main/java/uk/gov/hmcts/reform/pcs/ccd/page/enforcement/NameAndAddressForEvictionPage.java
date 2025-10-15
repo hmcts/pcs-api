@@ -17,7 +17,7 @@ public class NameAndAddressForEvictionPage implements CcdPageConfiguration {
             .pageLabel("The name and address for the eviction")
             .readonly(PCSCase::getDefendant1, NEVER_SHOW)
             .label(
-                "enforcementNameAndAddressPage-details-defendants-check",
+                "enforcementEvictionNameAndAddress-details-defendants-check",
                 """
                     <hr />
                     <h2 class="govuk-heading-m">Check the name and address for the eviction</h2>
@@ -36,7 +36,7 @@ public class NameAndAddressForEvictionPage implements CcdPageConfiguration {
                 """)
             .readonly(PCSCase::getFormattedClaimantContactAddress, NEVER_SHOW)
             .label(
-                "enforcementNameAndAddressPage-details-address-check",
+                "enforcementEvictionNameAndAddress-details-address-check",
                 """
                     <hr />
                     <div class="govuk-width-container">
