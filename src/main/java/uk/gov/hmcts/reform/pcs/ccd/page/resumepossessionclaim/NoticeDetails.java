@@ -10,6 +10,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServiceMethod;
 import uk.gov.hmcts.reform.pcs.ccd.service.NoticeDetailsService;
+import uk.gov.hmcts.reform.pcs.ccd.validation.TextAreaValidationUtil;
 
 import java.util.List;
 
@@ -22,6 +23,7 @@ import java.util.List;
 public class NoticeDetails implements CcdPageConfiguration {
 
     private final NoticeDetailsService noticeDetailsService;
+    private final TextAreaValidationUtil textAreaValidationUtil;
 
     private static final String NOTICE_SERVICE_METHOD_CONDITION = "noticeServiceMethod=\"";
 
@@ -118,6 +120,20 @@ public class NoticeDetails implements CcdPageConfiguration {
         PCSCase caseData = details.getData();
 
         List<String> validationErrors = noticeDetailsService.validateNoticeDetails(caseData);
+        
+        // Add textarea validation
+        validationErrors.addAll(textAreaValidationUtil.validateMultipleTextAreas(
+            TextAreaValidationUtil.FieldValidation.of(
+                caseData.getNoticeEmailExplanation(),
+                "Explain how it was served by email",
+                250
+            ),
+            TextAreaValidationUtil.FieldValidation.of(
+                caseData.getNoticeOtherExplanation(),
+                "Explain what the other means were. You can enter up to 250 characters",
+                250
+            )
+        ));
 
         if (!validationErrors.isEmpty()) {
             return AboutToStartOrSubmitResponse.<PCSCase, State>builder()

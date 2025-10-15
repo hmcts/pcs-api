@@ -1,18 +1,31 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim;
 
+import lombok.AllArgsConstructor;
+import org.springframework.stereotype.Component;
+import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
+import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.SecureOrFlexibleGroundsReasons;
+import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.validation.TextAreaValidationUtil;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 
+@AllArgsConstructor
+@Component
 public class SecureOrFlexibleGroundsForPossessionReasons implements CcdPageConfiguration {
+
+    private final TextAreaValidationUtil textAreaValidationUtil;
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
-            .page("secureOrFlexibleGroundsForPossessionReasons")
+            .page("secureOrFlexibleGroundsForPossessionReasons", this::midEvent)
             .pageLabel("Reasons for possession")
             .showCondition(
                     "typeOfTenancyLicence=\"SECURE_TENANCY\""
@@ -278,6 +291,122 @@ public class SecureOrFlexibleGroundsForPossessionReasons implements CcdPageConfi
                 .readonly(PCSCase::getShowBreachOfTenancyTextarea,NEVER_SHOW)
                 .readonly(PCSCase::getShowReasonsForGroundsPage,NEVER_SHOW);
 
+    }
+
+    private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
+                                                                  CaseDetails<PCSCase, State> detailsBefore) {
+        PCSCase caseData = details.getData();
+        
+        // Validate all text area fields for character limit - ultra simple approach
+        SecureOrFlexibleGroundsReasons secureOrFlexibleGrounds = caseData.getSecureOrFlexibleGroundsReasons();
+        if (secureOrFlexibleGrounds != null) {
+            List<String> validationErrors = textAreaValidationUtil.validateMultipleTextAreas(
+                TextAreaValidationUtil.FieldValidation.of(
+                    secureOrFlexibleGrounds.getBreachOfTenancyGround(),
+                    "Breach of the tenancy (ground 1)",
+                    500
+                ),
+                TextAreaValidationUtil.FieldValidation.of(
+                    secureOrFlexibleGrounds.getNuisanceOrImmoralUseGround(),
+                    "Nuisance, annoyance, illegal or immoral use of the property (ground 2)",
+                    500
+                ),
+                TextAreaValidationUtil.FieldValidation.of(
+                    secureOrFlexibleGrounds.getDomesticViolenceGround(),
+                    "Domestic violence (ground 2A)",
+                    500
+                ),
+                TextAreaValidationUtil.FieldValidation.of(
+                    secureOrFlexibleGrounds.getRiotOffenceGround(),
+                    "Offence during a riot (ground 2ZA)",
+                    500
+                ),
+                TextAreaValidationUtil.FieldValidation.of(
+                    secureOrFlexibleGrounds.getPropertyDeteriorationGround(),
+                    "Deterioration in the condition of the property (ground 3)",
+                    500
+                ),
+                TextAreaValidationUtil.FieldValidation.of(
+                    secureOrFlexibleGrounds.getFurnitureDeteriorationGround(),
+                    "Deterioration of furniture (ground 4)",
+                    500
+                ),
+                TextAreaValidationUtil.FieldValidation.of(
+                    secureOrFlexibleGrounds.getTenancyByFalseStatementGround(),
+                    "Tenancy obtained by false statement (ground 5)",
+                    500
+                ),
+                TextAreaValidationUtil.FieldValidation.of(
+                    secureOrFlexibleGrounds.getPremiumMutualExchangeGround(),
+                    "Premium paid in connection with mutual exchange (ground 6)",
+                    500
+                ),
+                TextAreaValidationUtil.FieldValidation.of(
+                    secureOrFlexibleGrounds.getUnreasonableConductGround(),
+                    "Unreasonable conduct in tied accommodation (ground 7)",
+                    500
+                ),
+                TextAreaValidationUtil.FieldValidation.of(
+                    secureOrFlexibleGrounds.getRefusalToMoveBackGround(),
+                    "Refusal to move back to main home after works completed (ground 8)",
+                    500
+                ),
+                TextAreaValidationUtil.FieldValidation.of(
+                    secureOrFlexibleGrounds.getAntiSocialGround(),
+                    "Antisocial behaviour",
+                    500
+                ),
+                TextAreaValidationUtil.FieldValidation.of(
+                    secureOrFlexibleGrounds.getOvercrowdingGround(),
+                    "Overcrowding (ground 9)",
+                    500
+                ),
+                TextAreaValidationUtil.FieldValidation.of(
+                    secureOrFlexibleGrounds.getLandlordWorksGround(),
+                    "Landlord's works (ground 10)",
+                    500
+                ),
+                TextAreaValidationUtil.FieldValidation.of(
+                    secureOrFlexibleGrounds.getPropertySoldGround(),
+                    "Property sold for redevelopment (ground 10A)",
+                    500
+                ),
+                TextAreaValidationUtil.FieldValidation.of(
+                    secureOrFlexibleGrounds.getCharitableLandlordGround(),
+                    "Charitable landlords (ground 11)",
+                    500
+                ),
+                TextAreaValidationUtil.FieldValidation.of(
+                    secureOrFlexibleGrounds.getTiedAccommodationGround(),
+                    "Tied accommodation needed for another employee (ground 12)",
+                    500
+                ),
+                TextAreaValidationUtil.FieldValidation.of(
+                    secureOrFlexibleGrounds.getAdaptedAccommodationGround(),
+                    "Adapted accommodation (ground 13)",
+                    500
+                ),
+                TextAreaValidationUtil.FieldValidation.of(
+                    secureOrFlexibleGrounds.getHousingAssocSpecialGround(),
+                    "Housing association special circumstances accommodation (ground 14)",
+                    500
+                ),
+                TextAreaValidationUtil.FieldValidation.of(
+                    secureOrFlexibleGrounds.getSpecialNeedsAccommodationGround(),
+                    "Special needs accommodation (ground 15)",
+                    500
+                ),
+                TextAreaValidationUtil.FieldValidation.of(
+                    secureOrFlexibleGrounds.getUnderOccupancySuccessionGround(),
+                    "Under occupying after succession (ground 15A)",
+                    500
+                )
+            );
+            
+            return textAreaValidationUtil.createValidationResponse(caseData, validationErrors);
+        }
+        
+        return textAreaValidationUtil.createValidationResponse(caseData, new ArrayList<>());
     }
 }
 

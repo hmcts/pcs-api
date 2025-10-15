@@ -105,6 +105,11 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
     private final TenancyLicenceDetails tenancyLicenceDetails;
     private final ContactPreferences contactPreferences;
     private final DefendantsDetails defendantsDetails;
+    private final NoRentArrearsGroundsForPossessionReason noRentArrearsGroundsForPossessionReason;
+    private final AdditionalReasonsForPossession additionalReasonsForPossession;
+    private final SecureOrFlexibleGroundsForPossessionReasons secureOrFlexibleGroundsForPossessionReasons;
+    private final MediationAndSettlement mediationAndSettlement;
+    private final ClaimantCircumstancesPage claimantCircumstancesPage;
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -131,23 +136,23 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             .add(tenancyLicenceDetails)
             .add(new SecureOrFlexibleGroundsForPossession())
             .add(new RentArrearsOrBreachOfTenancyGround())
-            .add(new SecureOrFlexibleGroundsForPossessionReasons())
+            .add(secureOrFlexibleGroundsForPossessionReasons)
             .add(new IntroductoryDemotedOrOtherGroundsForPossession())
             .add(new IntroductoryDemotedOtherGroundsReasons())
             .add(new GroundsForPossession())
             .add(new GroundForPossessionRentArrears())
             .add(new GroundForPossessionAdditionalGrounds())
             .add(new NoRentArrearsGroundsForPossessionOptions())
-            .add(new NoRentArrearsGroundsForPossessionReason())
+            .add(noRentArrearsGroundsForPossessionReason)
             .add(new PreActionProtocol())
-            .add(new MediationAndSettlement())
+            .add(mediationAndSettlement)
             .add(new CheckingNotice())
             .add(noticeDetails)
             .add(new RentDetails())
             .add(new DailyRentAmount())
             .add(new RentArrears())
             .add(new MoneyJudgment())
-            .add(new ClaimantCircumstancesPage())
+            .add(claimantCircumstancesPage)
             .add(new LanguageUsed())
             .add(new DefendantCircumstancesPage())
             .add(new AlternativesToPossessionOptions())
@@ -157,7 +162,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             .add(new StatementOfExpressTerms())
             .add(new DemotionOfTenancyOrderReason())
             .add(new ClaimingCosts())
-            .add(new AdditionalReasonsForPossession())
+            .add(additionalReasonsForPossession)
             .add(new EntitledToClaimRelief())
             //TO DO will be routed later on  correctly using tech debt ticket
             .add(new WantToUploadDocuments())
