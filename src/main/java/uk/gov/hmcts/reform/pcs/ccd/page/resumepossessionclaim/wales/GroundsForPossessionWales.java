@@ -44,7 +44,6 @@ public class GroundsForPossessionWales
                 </p>
                 """
             )
-            // -------- Discretionary --------
             .optional(PCSCase::getDiscretionaryGroundsWales)
             .optional(
                 PCSCase::getEstateManagementGroundsWales,
