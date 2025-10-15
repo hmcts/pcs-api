@@ -22,11 +22,11 @@ public class GroundsForPossessionWales
     @Override
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
-            .page("welshGfpGroundsForPossession", this::midEvent)
+            .page("groundsForPossessionWales", this::midEvent)
             .pageLabel("What are your grounds for possession?")
             .showCondition("legislativeCountry=\"Wales\"")
             .label(
-                "WelshGfpGroundsForPossession",
+                "groundsForPossessionWales-info",
                 """
                   ---
                   <p class="govuk-body" tabindex="0">

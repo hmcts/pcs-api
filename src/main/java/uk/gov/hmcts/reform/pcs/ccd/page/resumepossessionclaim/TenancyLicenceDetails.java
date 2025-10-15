@@ -1,7 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim;
 
 
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
@@ -17,7 +16,6 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Set;
 
-@Slf4j
 @Component
 public class TenancyLicenceDetails implements CcdPageConfiguration {
 
@@ -61,14 +59,10 @@ public class TenancyLicenceDetails implements CcdPageConfiguration {
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
                                                                   CaseDetails<PCSCase, State> detailsBefore) {
         PCSCase caseData = details.getData();
-        log.info("TenancyLicenceDetails page accessed. Legislative Country: {}", caseData.getLegislativeCountry());
-
         LocalDate tenancyLicenceDate = details.getData().getTenancyLicenceDate();
         LocalDate currentDate = LocalDate.now(ukClock);
 
         if (tenancyLicenceDate != null && !tenancyLicenceDate.isBefore(currentDate)) {
-            log.warn("TenancyLicenceDetails validation failed: Date must be in the past. Provided date: {}",
-                     tenancyLicenceDate);
             return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
             .errors(List.of("Date the tenancy or licence began must be in the past"))
             .build();

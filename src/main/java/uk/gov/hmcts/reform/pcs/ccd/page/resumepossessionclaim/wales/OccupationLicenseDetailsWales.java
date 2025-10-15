@@ -8,25 +8,22 @@ import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 
-/**
- * Dummy license details page configuration.
- * Contains fields for license-related information.
- */
+
 @Slf4j
 public class OccupationLicenseDetailsWales implements CcdPageConfiguration {
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
-            .page("Place holder page ", this::midEvent)
-            .pageLabel("Dummy License Details")
+            .page("occupationLicenseDetailsWales", this::midEvent)
+            .pageLabel(" License Details")
             .showCondition("legislativeCountry=\"Wales\"")
-            .label("dummyLicenseDetails-info", """
+            .label("occupationLicenseDetailsWales-info", """
                 ---
                 <section tabindex="0">
                   <h2 class="govuk-heading-l">License Details</h2>
                   <p class="govuk-body">
-                    Please provide the license details for this case.
+                    Place holder page
                   </p>
                 </section>
                 """)

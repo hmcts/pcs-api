@@ -620,7 +620,6 @@ public class PCSCase {
     )
     private OccupationContractLicenseDetailsOptionsWales occupationContractLicenseDetailsOptionsWales;
 
-    // PCSCase fields (insert into PCSCase.java, imports omitted for brevity)
     @CCD(
         label = "Discretionary grounds",
         hint = "Select all that apply",
