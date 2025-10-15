@@ -508,7 +508,7 @@ test.describe('[Create Case] @Master @nightly', async () => {
       settlementWithDefendantsOption: mediationAndSettlement.no,
     });
     await performValidation('mainHeader', noticeOfYourIntention.mainHeader);
-    await performAction('selectNoticeOfYourIntention', {question: noticeOfYourIntention.servedNoticeInteractiveText
+    await performAction('selectNoticeOfYourIntentionWales', {question: noticeOfYourIntention.servedNoticeInteractiveText
       , option: [noticeOfYourIntention.no]});
     await performValidation('mainHeader', rentDetails.mainHeader);
     await performAction('provideRentDetails', {rentAmount:'850', rentFrequencyOption:'Other', inputFrequency:rentDetails.rentFrequencyFortnightly,unpaidRentAmountPerDay:'50'});
@@ -606,7 +606,7 @@ test.describe('[Create Case] @Master @nightly', async () => {
       settlementWithDefendantsOption: mediationAndSettlement.no,
     });
     await performValidation('mainHeader', noticeOfYourIntention.mainHeader);
-    await performAction('selectNoticeOfYourIntention', {question: noticeOfYourIntention.servedNoticeInteractiveText
+    await performAction('selectNoticeOfYourIntentionWales', {question: noticeOfYourIntention.servedNoticeInteractiveText
       , option: [noticeOfYourIntention.no]});
     // await performValidation('mainHeader', rentDetails.mainHeader);
     // await performAction('provideRentDetails', {rentFrequencyOption: 'Monthly', rentAmount: '1000'});
@@ -703,7 +703,7 @@ test.describe('[Create Case] @Master @nightly', async () => {
       settlementWithDefendantsOption: mediationAndSettlement.no,
     });
     await performValidation('mainHeader', noticeOfYourIntention.mainHeader);
-    await performAction('selectNoticeOfYourIntention', {question: noticeOfYourIntention.servedNoticeInteractiveText
+    await performAction('selectNoticeOfYourIntentionWales', {question: noticeOfYourIntention.servedNoticeInteractiveText
       , option: [noticeOfYourIntention.yes]});
     //selectNoticeDetails has been commented out and will be modified as part of https://tools.hmcts.net/jira/browse/HDPI-2515 + https://tools.hmcts.net/jira/browse/HDPI-2516
     // await performAction('selectNoticeDetails', {
