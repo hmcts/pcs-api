@@ -75,6 +75,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
+import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatUtil;
 import uk.gov.hmcts.reform.pcs.feesandpay.task.FeesAndPayTaskComponent;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
@@ -199,14 +200,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             .listItems(listItems)
             .build();
         caseData.setClaimantType(claimantTypeList);
-
-        String formattedAddress = String.format(
-            "%s<br>%s<br>%s",
-            propertyAddress.getAddressLine1(),
-            propertyAddress.getPostTown(),
-            propertyAddress.getPostCode()
-        );
-        caseData.setFormattedClaimantContactAddress(formattedAddress);
+        caseData.setFormattedClaimantContactAddress(AddressFormatUtil.getFormattedAddress(caseData));
 
         return caseData;
     }

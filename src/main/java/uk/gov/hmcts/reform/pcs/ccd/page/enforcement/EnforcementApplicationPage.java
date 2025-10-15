@@ -8,7 +8,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.EnforcementOrder;
 
-import static uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.EnforcementMultiLabel.WRIT_OR_WARRENT_CLARIFICATION;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.EnforcementMultiLabel.WRIT_OR_WARRANT_CLARIFICATION;
 
 public class EnforcementApplicationPage implements CcdPageConfiguration {
 
@@ -20,7 +20,7 @@ public class EnforcementApplicationPage implements CcdPageConfiguration {
                 .label("enforcementApplicationPage-content", "---")
                 .complex(PCSCase::getEnforcementOrder)
                 .mandatory(EnforcementOrder::getSelectEnforcementType)
-                .label("enforcementApplicationPage-clarification", WRIT_OR_WARRENT_CLARIFICATION);
+                .label("enforcementApplicationPage-clarification", WRIT_OR_WARRANT_CLARIFICATION);
     }
 
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,

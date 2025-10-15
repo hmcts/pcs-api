@@ -8,8 +8,8 @@ import uk.gov.hmcts.ccd.sdk.api.HasLabel;
 @Getter
 public enum SelectEnforcementType implements HasLabel {
 
-    WARRENT("Warrent of possession"),
+    WARRANT("Warrant of possession"),
     WRIT("Writ of possession");
 
-    private String label;
+    private final String label;
 }
