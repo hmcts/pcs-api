@@ -13,6 +13,7 @@ import {searchCaseActions} from "@utils/actions/custom-actions/searchCase.action
 
 export class ActionRegistry {
   private static actions: Map<string, IAction> = new Map([
+    //element-actions
     ['clickButton', new ClickButtonAction()],
     ['clickButtonAndVerifyPageNavigation', new ClickButtonAction()],
     ['verifyPageAndClickButton', new ClickButtonAction()],
@@ -20,11 +21,15 @@ export class ActionRegistry {
     ['inputText', new InputTextAction()],
     ['check', new CheckAction()],
     ['select', new SelectAction()],
-    ['createUserAndLogin', new LoginAction()],
-    ['login', new LoginAction()],
-    ['navigateToUrl', new NavigateToUrl()],
     ['clickRadioButton', new ClickRadioButton()],
     ['uploadFile', new UploadFileAction()],
+    ['navigateToUrl', new NavigateToUrl()],
+
+    //login-custom-actions
+    ['createUserAndLogin', new LoginAction()],
+    ['login', new LoginAction()],
+
+    //create-case-custom-actions
     ['selectAddress', new CreateCaseAction()],
     ['extractCaseIdFromAlert', new CreateCaseAction()],
     ['selectResumeClaimOption', new CreateCaseAction()],
