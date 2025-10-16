@@ -12,9 +12,9 @@ let testCaseNumber: string;
 test.beforeEach(async ({ page }) => {
   initializeExecutor(page);
   await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
-  await performAction('login', user.claimantSolicitor);
+  await performAction('loginEnforcement', user.claimantSolicitor);
   await performAction('caseFilter', caseList.state);
-  await performAction('caseCount')
+  await performAction('yourCases')
   if (noCaseFound == false) {
     await performAction("pickAnyCase");
   } else {

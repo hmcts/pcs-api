@@ -122,7 +122,6 @@ export class MakeClaimAction implements IAction {
             circumstanceOption: claimantCircumstances.yes,
             claimantInput: claimantCircumstances.claimantCircumstanceInfoInputData
         });
-        await performAction('selectLanguageUsed', languageUsed.no);
         await performValidation('mainHeader', defendantCircumstances.mainHeader);
         await performAction('selectDefendantCircumstances', defendantCircumstances.yes);
         await performValidation('mainHeader', alternativesToPossession.mainHeader);
@@ -145,6 +144,7 @@ export class MakeClaimAction implements IAction {
             }]
         });
         await performAction('selectApplications', applications.yes);
+        await performAction('selectLanguageUsed', {question: languageUsed.whichLanguageUsedQuestion, option: languageUsed.english});
         await performAction('completingYourClaim', completeYourClaim.submitAndClaimNow);
         await performAction('clickButton', statementOfTruth.continue);
         await performAction('clickButton', checkYourAnswers.saveAndContinue);
