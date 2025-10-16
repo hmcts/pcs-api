@@ -34,14 +34,11 @@ public class GroundsForPossessionWales
                   If you have, you should have written the grounds you’re making your claim under. You should select
                   these grounds here and select any extra grounds you’d like to add to your claim, if you need to.
                 </p>
-                <p class="govuk-body">
-                  <a class="govuk-link" target="_blank"
-                     rel="noreferrer noopener"
-                     href="https://www.gov.uk/">
-                    More information about possession grounds
-                    (opens in new tab)
-                  </a>.
-                </p>
+                    <p class="govuk-body">
+                           <a class="govuk-link" target="_blank" rel="noreferrer noopener" href="https://www.gov.uk/">
+                             More information about possession grounds (opens in new tab)
+                           </a>.
+                         </p>
                 """
             )
             .optional(PCSCase::getDiscretionaryGroundsWales)
