@@ -12,6 +12,7 @@ import org.modelmapper.ModelMapper;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
@@ -201,6 +202,58 @@ class CCDCaseRepositoryTest {
 
         // Then
         assertThat(pcsCase.getLegislativeCountry()).isEqualTo(expectedLegislativeCountry);
+    }
+
+    @Test
+    void shouldMapClaimantTypeFromDatabaseToCCD() {
+        // Given
+        ClaimantType expectedClaimantType = ClaimantType.COMMUNITY_LANDLORD;
+        when(pcsCaseEntity.getClaimantType()).thenReturn(expectedClaimantType);
+
+        // When
+        PCSCase pcsCase = underTest.getCase(CASE_REFERENCE, STATE);
+
+        // Then
+        assertThat(pcsCase.getClaimantType()).isNotNull();
+        assertThat(pcsCase.getClaimantType().getValue().getCode()).isEqualTo(expectedClaimantType.name());
+        assertThat(pcsCase.getClaimantType().getValue().getLabel()).isEqualTo(expectedClaimantType.getLabel());
+    }
+
+    @Test
+    void shouldHandleNullClaimantType() {
+        // Given
+        when(pcsCaseEntity.getClaimantType()).thenReturn(null);
+
+        // When
+        PCSCase pcsCase = underTest.getCase(CASE_REFERENCE, STATE);
+
+        // Then
+        assertThat(pcsCase.getClaimantType()).isNull();
+    }
+
+    @ParameterizedTest
+    @MethodSource("claimantTypeMappingScenarios")
+    void shouldMapAllClaimantTypes(ClaimantType claimantType) {
+        // Given
+        when(pcsCaseEntity.getClaimantType()).thenReturn(claimantType);
+
+        // When
+        PCSCase pcsCase = underTest.getCase(CASE_REFERENCE, STATE);
+
+        // Then
+        assertThat(pcsCase.getClaimantType()).isNotNull();
+        assertThat(pcsCase.getClaimantType().getValue().getCode()).isEqualTo(claimantType.name());
+        assertThat(pcsCase.getClaimantType().getValue().getLabel()).isEqualTo(claimantType.getLabel());
+    }
+
+    private static Stream<Arguments> claimantTypeMappingScenarios() {
+        return Stream.of(
+            arguments(ClaimantType.PRIVATE_LANDLORD),
+            arguments(ClaimantType.PROVIDER_OF_SOCIAL_HOUSING),
+            arguments(ClaimantType.COMMUNITY_LANDLORD),
+            arguments(ClaimantType.MORTGAGE_LENDER),
+            arguments(ClaimantType.OTHER)
+        );
     }
 
     private AddressUK stubAddressEntityModelMapper(AddressEntity addressEntity) {
