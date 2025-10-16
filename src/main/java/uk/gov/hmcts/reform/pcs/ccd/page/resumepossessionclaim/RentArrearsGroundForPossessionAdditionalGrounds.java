@@ -58,7 +58,7 @@ public class RentArrearsGroundForPossessionAdditionalGrounds implements CcdPageC
 
         boolean shouldShowReasonsPage = hasOtherDiscretionaryGrounds || hasOtherMandatoryGrounds;
 
-        caseData.setShowRentArrearsGroundReasonPage(shouldShowReasonsPage ? YesOrNo.YES : YesOrNo.NO);
+        caseData.setShowRentArrearsGroundReasonPage(YesOrNo.from(shouldShowReasonsPage));
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
             .data(caseData)
