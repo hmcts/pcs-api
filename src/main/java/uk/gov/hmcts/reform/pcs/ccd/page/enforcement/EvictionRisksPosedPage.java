@@ -26,7 +26,7 @@ public class EvictionRisksPosedPage implements CcdPageConfiguration {
             .showCondition("confirmLivingAtProperty=\"YES\"")
             .label("evictionRisksPosedPage-info", "---")
             .label("evictionRisksPosedPage-hint", "Include any risks posed by the defendants and also anyone else living at the property")
-            .optional(PCSCase::getEnforcementRiskCategories, "Select all that apply", "RiskCategory");
+            .optional(PCSCase::getEnforcementRiskCategories);
     }
 
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
