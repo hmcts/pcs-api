@@ -30,7 +30,7 @@ test.describe('[Create Case - England] @Master @nightly', async () => {
     await performAction('clickButtonAndVerifyPageNavigation', provideMoreDetailsOfClaim.continue, claimantType.mainHeader);
     await performAction('selectClaimantType', claimantType.registeredCommunityLandlord);
     await performValidation('compareWithSnapshot','claimType');
-    await performAction('clickRadioButton', 'No');
+    await performAction('clickRadioButton', 'Yes');
     await performValidation('compareWithSnapshot','claimTypeYes');
   });
   test('App snapshot compare- positive scenario', async ({page}) => {
@@ -43,7 +43,7 @@ test.describe('[Create Case - England] @Master @nightly', async () => {
     await performAction('clickButtonAndVerifyPageNavigation', provideMoreDetailsOfClaim.continue, claimantType.mainHeader);
     await performAction('selectClaimantType', claimantType.registeredCommunityLandlord);
     await performValidation('compareWithSnapshot','claimType');
-    await performAction('clickRadioButton', 'Yes');
+    await performAction('clickRadioButton', 'No');
     await performValidation('compareWithSnapshot','claimTypeYes');
   });
 });

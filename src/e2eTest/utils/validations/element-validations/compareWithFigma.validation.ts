@@ -16,7 +16,7 @@ export class compareWithFigmaValidation implements IValidation {
     console.log(`Starting visual validation for: ${pageName}`);
 
     // Load Figma baseline
-    const baselinePath = path.resolve(`figma/${pageName}.png`);
+    const baselinePath = path.resolve(`figmaExport/${pageName}.png`);
     if (!fs.existsSync(baselinePath)) {
       throw new Error(`Figma baseline not found at ${baselinePath}`);
     }
@@ -74,11 +74,23 @@ export class compareWithFigmaValidation implements IValidation {
     await page.waitForTimeout(500);
 
     // Take a debug screenshot after masking
+// Wait for DOM to be interactive and visible content to settle,
+// but don't rely on networkidle (since apps keep polling)
+    try {
+      await page.waitForLoadState('domcontentloaded', {timeout: 15000});
+      await page.waitForSelector('main, body', {state: 'visible', timeout: 10000});
+      await page.waitForTimeout(1000); // small settle delay
+      console.log('✅ Page rendered and stable');
+    } catch (err) {
+      console.warn('⚠️ Page did not fully settle before screenshot:', err);
+    }
+    await page.waitForSelector('body', {state: 'visible', timeout: 10000});
+    await page.waitForTimeout(500);
     const debugAfterMaskingBuffer = await page.screenshot({
       fullPage: false,
       timeout: 10000
     });
-    fs.writeFileSync(path.resolve(`figma/${pageName}-debug-after-masking.png`), debugAfterMaskingBuffer);
+    fs.writeFileSync(path.resolve(`figmaExport/${pageName}-debug-after-masking.png`), debugAfterMaskingBuffer);
 
     // Take screenshot with multiple fallback strategies
     let currentBuffer: Buffer;
@@ -117,16 +129,16 @@ export class compareWithFigmaValidation implements IValidation {
     const currentPNG = PNG.sync.read(currentBuffer);
 
     // Compare images
-    const { numDiffPixels, diffPNG } = this.compareImages(currentPNG, baselinePNG);
+    const {numDiffPixels, diffPNG} = this.compareImages(currentPNG, baselinePNG);
     const maxDiffPixels = this.calculateMaxDiffPixels(baselinePNG.width, baselinePNG.height);
 
     console.log(`Pixel difference: ${numDiffPixels}, Threshold: ${maxDiffPixels}`);
 
     if (numDiffPixels > maxDiffPixels) {
-      const diffPath = path.resolve(`figma/${pageName}-diff.png`);
+      const diffPath = path.resolve(`figmaExport/${pageName}-diff.png`);
       fs.writeFileSync(diffPath, PNG.sync.write(diffPNG));
 
-      const currentPath = path.resolve(`figma/${pageName}-current.png`);
+      const currentPath = path.resolve(`figmaExport/${pageName}-current.png`);
       fs.writeFileSync(currentPath, currentBuffer);
 
       throw new Error(
@@ -143,7 +155,7 @@ export class compareWithFigmaValidation implements IValidation {
     await page.waitForLoadState('domcontentloaded');
 
     // Wait for body to be available and visible
-    await page.waitForSelector('body', { state: 'attached' });
+    await page.waitForSelector('body', {state: 'attached'});
 
     // Wait for any main content element
     await page.waitForSelector('body :not(script):not(style):not(link)', {
@@ -236,7 +248,7 @@ export class compareWithFigmaValidation implements IValidation {
         }
     );
 
-    return { numDiffPixels, diffPNG };
+    return {numDiffPixels, diffPNG};
   }
 
   private calculateMaxDiffPixels(width: number, height: number): number {
@@ -252,150 +264,69 @@ export class compareWithFigmaValidation implements IValidation {
   private async maskDynamicContent(page: Page): Promise<void> {
     console.log('Applying dynamic content masking...');
 
-    // Define comprehensive masking rules
-    const maskingRules = [
-      // Case number and similar identifiers
-      { selector: 'p:has-text("Case number:")', description: 'Case number paragraph' },
-      { selector: 'span:has-text("Case number:")', description: 'Case number span' },
-      { selector: 'div:has-text("Case number:")', description: 'Case number div' },
-      { selector: '[data-testid*="case-number"]', description: 'Case number test ID' },
-      { selector: '[id*="case-number"]', description: 'Case number ID' },
-      { selector: '[class*="case-number"]', description: 'Case number class' },
+    await page.evaluate(() => {
+      // Helper function to apply the mask styles to an element
+      const maskElement = (el: HTMLElement) => {
+        if (!el || el.style.color === 'transparent') return;
+        const rect = el.getBoundingClientRect();
+        if (rect.width > 600 || rect.height > 300 || rect.width < 5) return;
 
-      // Timestamps and dates
-      { selector: '.timestamp', description: 'Timestamp class' },
-      { selector: '[data-testid*="timestamp"]', description: 'Timestamp test ID' },
-      { selector: 'time', description: 'Time element' },
-      { selector: '[datetime]', description: 'Datetime attribute' },
+        el.style.backgroundColor = '#e0e0e0';
+        el.style.color = 'transparent';
+        el.style.textShadow = 'none';
+        el.style.filter = 'blur(4px)';
+      };
 
-      // Dynamic content markers
-      { selector: '.dynamic', description: 'Dynamic content class' },
-      { selector: '.banner', description: 'Banner class' },
-      { selector: '.notification', description: 'Notification class' },
-      { selector: '[aria-live]', description: 'ARIA live regions' },
+      // --- NEW STRATEGY: MASK PARTIAL TEXT (E.G., JUST THE CASE NUMBER) ---
+      // This is the most precise way to handle your specific request.
+      console.log('Running partial text masking for case numbers...');
+      const elements = document.querySelectorAll('body *');
+      // Regex to find "Case number: " followed by the number to be masked
+      const caseNumberRegex = /(Case number: )(\s*[\d-]+)/i;
 
-      // User-specific content
-      { selector: '[data-testid*="user"]', description: 'User data' },
-      { selector: '[class*="user"]', description: 'User class' },
-      { selector: '[id*="user"]', description: 'User ID' },
+      elements.forEach(el => {
+        // Check only elements that are not scripts and contain child nodes
+        if (el.tagName === 'SCRIPT' || el.children.length > 0) {
+          return;
+        }
 
-      // Session and temporary data
-      { selector: '[data-testid*="session"]', description: 'Session data' },
-      { selector: '[class*="session"]', description: 'Session class' },
+        // If the element's text content matches, replace its HTML
+        if (caseNumberRegex.test(el.textContent || '')) {
+          // The magic happens here: we wrap the number (group 2) in a styled span
+          el.innerHTML = (el.textContent || '').replace(
+              caseNumberRegex,
+              `$1<span style="background-color: #e0e0e0; color: transparent; filter: blur(4px);">$2</span>`
+          );
+        }
+      });
 
-      // Additional text-based masking for dynamic content
-      { selector: 'text=Today', description: '"Today" text' },
-      { selector: 'text=Yesterday', description: '"Yesterday" text' },
-      { selector: 'text=Now', description: '"Now" text' },
-    ];
+      // --- STRATEGY 2: PRE-DEFINED SENSITIVE SELECTORS ---
+      const sensitiveSelectors = [
+        '[data-testid*="case-number-value"]', // A specific test-id for the value is ideal
+        '[data-testid*="user"]',
+        '.timestamp',
+        'time',
+        '[datetime]',
+      ];
+      document.querySelectorAll(sensitiveSelectors.join(',')).forEach(el => maskElement(el as HTMLElement));
 
-    // Apply CSS-based masking
-    for (const rule of maskingRules) {
-      try {
-        const elements = await page.$$(rule.selector);
-        if (elements.length > 0) {
-          console.log(`Masking ${elements.length} elements for: ${rule.description}`);
-
-          for (const element of elements) {
-            await element.evaluate((el: Element) => {
-              const htmlEl = el as HTMLElement;
-              htmlEl.style.visibility = 'hidden';
-              htmlEl.style.opacity = '0';
-              htmlEl.style.background = 'transparent';
-            });
+      // --- STRATEGY 3: TEXT PATTERN MATCHING (FALLBACK) ---
+      // This is a fallback for other dynamic data like dates or random IDs
+      document.querySelectorAll('body *').forEach(el => {
+        const htmlEl = el as HTMLElement;
+        // Only act on "leaf" nodes that have no other elements inside them
+        if (htmlEl.children.length === 0 && htmlEl.textContent) {
+          const text = htmlEl.textContent.trim();
+          if (
+              /\d{2}\/\d{2}\/\d{4}/.test(text) ||   // Date format dd/mm/yyyy
+              /\b[A-Z0-9]{8,}\b/.test(text) && !/case number/i.test(text) // Generic ID, but ignore if already handled
+          ) {
+            maskElement(htmlEl);
           }
         }
-      } catch (error) {
-        // @ts-ignore
-        console.log(`Could not mask ${rule.description}: ${error.message}`);
-        // Continue with other masking rules
-      }
-    }
-
-    // Additional text content masking using evaluate for broader coverage
-    await page.evaluate(() => {
-      // Mask elements containing specific patterns
-      const elements = document.querySelectorAll('*');
-
-      elements.forEach((element) => {
-        const text = element.textContent?.trim() || '';
-        const htmlEl = element as HTMLElement;
-
-        // Mask case numbers (format: Case number: ABC123)
-        if (text.match(/Case number:\s*\w+/i)) {
-          htmlEl.style.visibility = 'hidden';
-          htmlEl.style.opacity = '0';
-        }
-
-        // Mask dates in various formats
-        if (text.match(/\d{1,2}\/\d{1,2}\/\d{4}/) || // MM/DD/YYYY
-            text.match(/\d{1,2}-\d{1,2}-\d{4}/) || // MM-DD-YYYY
-            text.match(/\d{1,2}:\d{2}\s*(AM|PM)/i)) { // Time
-          htmlEl.style.visibility = 'hidden';
-          htmlEl.style.opacity = '0';
-        }
-
-        // Mask IDs and codes
-        if (text.match(/\b[A-Z0-9]{6,12}\b/) && text.length < 20) {
-          // Likely an ID/code if it's all caps/numbers and reasonably short
-          htmlEl.style.visibility = 'hidden';
-          htmlEl.style.opacity = '0';
-        }
       });
     });
 
-    // Specific locator-based masking for more precise control
-    const specificLocators = [
-      page.locator('p:has-text("Case number:")'),
-      page.locator('span:has-text("Case number:")'),
-      page.locator('div:has-text("Case number:")'),
-    ];
-
-    for (const locator of specificLocators) {
-      try {
-        const count = await locator.count();
-        if (count > 0) {
-          console.log(`Masking ${count} specific case number locators`);
-          await locator.evaluateAll((elements: Element[]) => {
-            elements.forEach((el) => {
-              const htmlEl = el as HTMLElement;
-              htmlEl.style.visibility = 'hidden';
-              htmlEl.style.opacity = '0';
-              htmlEl.style.background = 'transparent';
-            });
-          });
-        }
-      } catch (error) {
-        // @ts-ignore
-        console.log(`Could not mask specific locator: ${error.message}`);
-      }
-    }
-
-    console.log('Dynamic content masking completed');
-  }
-
-  // Optional: Method to generate masking report
-  async generateMaskingReport(page: Page, pageName: string): Promise<void> {
-    const maskedElements = await page.evaluate(() => {
-      const elements = document.querySelectorAll('*');
-      const masked: Array<{ selector: string, text: string }> = [];
-
-      elements.forEach((element) => {
-        const htmlEl = element as HTMLElement;
-        if (htmlEl.style.visibility === 'hidden' || htmlEl.style.opacity === '0') {
-          masked.push({
-            selector: element.tagName + (element.className ? `.${element.className}` : ''),
-            text: element.textContent?.substring(0, 50) || ''
-          });
-        }
-      });
-
-      return masked;
-    });
-
-    console.log(`Masking report for ${pageName}:`, {
-      totalMaskedElements: maskedElements.length,
-      maskedElements: maskedElements.slice(0, 10) // Show first 10
-    });
+    console.log('✅ Dynamic content masking applied.');
   }
 }
