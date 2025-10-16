@@ -39,8 +39,8 @@ public class GroundsForPossessionWales
                      rel="noreferrer noopener"
                      href="https://www.gov.uk/">
                     More information about possession grounds
-                    (opens in new tab).
-                  </a>
+                    (opens in new tab)
+                  </a>.
                 </p>
                 """
             )
