@@ -26,8 +26,8 @@ test.beforeEach(async ({ page }) => {
   testCaseNumber = searchReturnFromFilter == false ? firstFromTheListCaseNumber : caseNumber;
 });
 
-test.describe('[Enforcement  @Master @nightly', async () => {
-  test('Enforcement apply for Warrant ', async () => {    
+test.describe('[Enforcement - Warrant of Possession] @Master @nightly', async () => {
+  test('Apply for a Warrant of Possession ', async () => {    
     await performAction('select', caseSummary.nextStepLabel, caseSummary.selectEnforceTheOrderEvent);
     await performAction('clickButtonAndVerifyPageNavigation', caseSummary.go, yourApplication.mainHeader);
   });
