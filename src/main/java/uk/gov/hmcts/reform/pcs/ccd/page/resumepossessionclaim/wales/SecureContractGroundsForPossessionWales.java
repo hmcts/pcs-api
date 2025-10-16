@@ -20,7 +20,7 @@ public class SecureContractGroundsForPossessionWales implements CcdPageConfigura
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
                 .page("secureOrFlexibleGroundsForPossessionWales", this::midEvent)
-                .pageLabel("What are your grounds for possession? (Wales)")
+                .pageLabel("What are your grounds for possession?")
                 // TODO - Once HDPI-2365 is implemented the condition can be added
                 // .showCondition("typeOfTenancyLicence=\"SECURE_CONTRACT\" ") 
                 .label("secureOrFlexibleGroundsForPossessionWales-info", """
