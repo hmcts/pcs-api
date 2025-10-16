@@ -18,7 +18,7 @@ public interface PaymentApi {
     @PostMapping(value = "/service-request", consumes = "application/json")
     ServiceRequestResponse createServiceRequest(
         @RequestHeader(value = "Authorization") String authorization,
-        @RequestHeader(value = "serviceAuthorization") String serviceAuthorization,
+        @RequestHeader(value = "ServiceAuthorization") String serviceAuthorization,
         @RequestBody ServiceRequestBody requestBody
         );
 }
