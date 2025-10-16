@@ -606,4 +606,8 @@ public class PCSCase {
         typeParameterOverride = "CompletionNextStep"
     )
     private CompletionNextStep completionNextStep;
+
+    @JsonUnwrapped
+    @CCD
+    private OccupationContractDetails occupationContractDetails;
 }

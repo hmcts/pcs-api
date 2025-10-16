@@ -66,6 +66,7 @@ import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.SuspensionOfRightT
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.TenancyLicenceDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.UploadAdditionalDocumentsDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.WantToUploadDocuments;
+import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.OccupationContractDetailsPage;
 import uk.gov.hmcts.reform.pcs.ccd.service.ClaimService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
@@ -75,6 +76,7 @@ import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
+import java.time.Clock;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -126,6 +128,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             .add(contactPreferences)
             .add(defendantsDetails)
             .add(tenancyLicenceDetails)
+            .add(new OccupationContractDetailsPage(Clock.systemDefaultZone()))
             .add(new SecureOrFlexibleGroundsForPossession())
             .add(new RentArrearsOrBreachOfTenancyGround())
             .add(new SecureOrFlexibleGroundsForPossessionReasons())
