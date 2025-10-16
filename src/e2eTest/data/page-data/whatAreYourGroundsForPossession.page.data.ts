@@ -16,6 +16,7 @@ export const whatAreYourGroundsForPossession = {
     },
   discretionary:
     {
+      rentArrearsOrBreachOfTenancy: 'Rent arrears or breach of the tenancy (ground 1)',
       nuisanceAnnoyance: 'Nuisance, annoyance, illegal or immoral use of the property (ground 14)',
       domesticViolence2A: 'Domestic violence (ground 2A)',
       offenceDuringRiot: 'Offence during a riot (ground 14ZA)',
