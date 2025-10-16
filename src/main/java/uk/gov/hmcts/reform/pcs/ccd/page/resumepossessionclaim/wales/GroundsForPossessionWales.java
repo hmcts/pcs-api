@@ -69,9 +69,7 @@ public class GroundsForPossessionWales
 
         // at least one from Discretionary OR Mandatory
         if (!hasDiscretionary && !hasMandatory) {
-            errors.add(
-                "Please select at least one ground."
-            );
+            errors.add("Please select at least one ground.");
         }
 
         // if Estate management parent ticked, require sub-selection
@@ -82,9 +80,8 @@ public class GroundsForPossessionWales
 
             if (!hasEstate) {
                 errors.add(
-                    "Select at least one estate management ground when "
-                        + "‘Estate management grounds (section 160)’ "
-                        + "is selected."
+                    "Select at least one estate management ground "
+                        + "when ‘Estate management grounds (section 160)’ is selected."
                 );
             }
         }
