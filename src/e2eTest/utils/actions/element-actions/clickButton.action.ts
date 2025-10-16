@@ -1,6 +1,6 @@
 import { Page, Locator } from '@playwright/test';
 import { IAction } from '../../interfaces/action.interface';
-import { waitForPageRedirectionTimeout } from '../../../playwright.config';
+import {actionRetries, waitForPageRedirectionTimeout} from '../../../playwright.config';
 
 export class ClickButtonAction implements IAction {
   async execute(page: Page, action: string, buttonText: string , actionParams: string): Promise<void> {
@@ -26,23 +26,24 @@ export class ClickButtonAction implements IAction {
 
   private async clickButtonAndVerifyPageNavigation(page: Page, button: Locator, nextPageElement: string): Promise<void> {
     const pageElement = page.locator(`h1:has-text("${nextPageElement}")`);
-    let retry = 0;
-    for(; retry < 5 && !await pageElement.isVisible(); retry++){
-      this.clickButton(page, button);
-      if(!await pageElement.isVisible()) {
-        //Adding sleep to slow down execution when the application behaves abnormally
-        await page.waitForTimeout(waitForPageRedirectionTimeout);
-      }
-    }
-    if (retry === 5) {
-      throw new Error(`Navigation to ${nextPageElement} page/element has been failed after 5 attempts`);
+    let attempt = 0;
+    let nextPageElementIsVisible = false;
+    do {
+      attempt++;
+      await this.clickButton(page, button);
+      //Adding sleep to slow down execution when the application behaves abnormally
+      await page.waitForTimeout(waitForPageRedirectionTimeout);
+      nextPageElementIsVisible = await pageElement.isVisible();
+    } while (!nextPageElementIsVisible && attempt < actionRetries);
+    if (!nextPageElementIsVisible) {
+      throw new Error(`Navigation to "${nextPageElement}" page/element failed after ${attempt} attempts`);
     }
   }
 
   private async verifyPageAndClickButton(page: Page, currentPageHeader: string, button: Locator): Promise<void> {
     await page.locator('.spinner-container').waitFor({state: 'detached'});
     if(await page.locator('h1,h1.govuk-heading-xl, h1.govuk-heading-l').textContent() === currentPageHeader){
-      this.clickButton(page, button);
+      await this.clickButton(page, button);
     }
   }
 }
