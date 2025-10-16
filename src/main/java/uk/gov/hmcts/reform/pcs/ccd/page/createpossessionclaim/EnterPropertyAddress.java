@@ -90,6 +90,7 @@ public class EnterPropertyAddress implements CcdPageConfiguration {
             case ELIGIBLE -> {
                 caseData.setShowCrossBorderPage(YesOrNo.NO);
                 caseData.setShowPostcodeNotAssignedToCourt(YesOrNo.NO);
+                caseData.setShowPropertyNotEligiblePage(YesOrNo.NO);
                 caseData.setLegislativeCountry(eligibilityResult.getLegislativeCountry());
             }
         }

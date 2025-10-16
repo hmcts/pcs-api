@@ -157,6 +157,28 @@ class EnterPropertyAddressTest extends BasePageTest {
     }
 
     @Test
+    void shouldNotShowPropertyNotEligibleOrCrossBorderPagesOnEligible() {
+        // Given
+        AddressUK propertyAddress = AddressUK.builder().postCode("M1 1AA").build();
+        PCSCase caseData = PCSCase.builder().propertyAddress(propertyAddress).build();
+
+        var result = EligibilityResult.builder()
+            .status(EligibilityStatus.ELIGIBLE)
+            .legislativeCountry(ENGLAND)
+            .build();
+
+        when(eligibilityService.checkEligibility("M1 1AA", null)).thenReturn(result);
+
+        // When
+        AboutToStartOrSubmitResponse<PCSCase, State> resp = callMidEventHandler(caseData);
+
+        // Then
+        PCSCase data = resp.getData();
+        assertThat(data.getShowCrossBorderPage()).isEqualTo(YesOrNo.NO);
+        assertThat(data.getShowPropertyNotEligiblePage()).isEqualTo(YesOrNo.NO);
+    }
+
+    @Test
     void shouldShowPropertyNotEligiblePageOnNotEligible() {
         // Given
         AddressUK propertyAddress = AddressUK.builder().postCode("M1 1AA").build();
