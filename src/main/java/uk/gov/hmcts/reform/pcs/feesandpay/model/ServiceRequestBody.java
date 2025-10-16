@@ -14,7 +14,7 @@ import uk.gov.hmcts.reform.pcs.feesandpay.dto.FeeDto;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class ServiceRequestBody {
 
-    @JsonProperty("callback_url")
+    @JsonProperty("call_back_url")
     private String callbackUrl;
     @JsonProperty("case_payment_request")
     private CasePaymentRequestDto casePaymentRequest;
