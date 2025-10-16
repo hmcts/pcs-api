@@ -151,3 +151,10 @@ fees-register:
   request:
     max-retries: ${NOTIFY_CHECK_STATUS_MAX_RETRIES:5}
     backoff-delay-seconds: ${NOTIFY_CHECK_STATUS_BACKOFF_DELAY_SECONDS:3600s}
+
+payment:
+  url: ${PAYMENT_API_URL:http://localhost:8083}
+  callback-url: ${PAY_CALLBACK_URL:http://host.docker.internal:8096/service-request-update}
+  params:
+    organisationUrn: Mortgage and Landlord Possession Claims
+    siteId: AAA3

@@ -202,6 +202,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
             .legislativeCountry(WALES)
             .claimantCircumstances(mock(ClaimantCircumstances.class))
             .claimingCostsWanted(VerticalYesNo.YES)
+            .claimantName("Test Claimant")
             .build();
 
         PcsCaseEntity pcsCaseEntity = mock(PcsCaseEntity.class);
@@ -251,19 +252,12 @@ class ResumePossessionClaimTest extends BaseEventTest {
 
         // Then
         verify(partyService).createPartyEntity(
-            eq(USER_ID),
-            eq(claimantName),
-            eq(null),
-            eq(claimantContactEmail),
-            eq(propertyAddress),
-            eq(claimantContactPhoneNumber)
-        );
+            USER_ID, claimantName, null, claimantContactEmail, propertyAddress, claimantContactPhoneNumber);
     }
 
     @Test
     void shouldCreateMainClaimInSubmitCallback() {
         // Given
-
         PcsCaseEntity pcsCaseEntity = mock(PcsCaseEntity.class);
         when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(pcsCaseEntity);
 
@@ -274,7 +268,9 @@ class ResumePossessionClaimTest extends BaseEventTest {
         ClaimEntity claimEntity = mock(ClaimEntity.class);
         when(claimService.createMainClaimEntity(any(PCSCase.class), any(PartyEntity.class))).thenReturn(claimEntity);
 
-        PCSCase caseData = mock(PCSCase.class);
+        PCSCase caseData = PCSCase.builder()
+            .claimantName("Test Claimant")
+            .build();
 
         // When
         callSubmitHandler(caseData);

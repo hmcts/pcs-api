@@ -76,6 +76,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.UnsubmittedCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.FeesAndPayTaskData;
 import uk.gov.hmcts.reform.pcs.feesandpay.task.FeesAndPayTaskComponent;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
@@ -111,6 +112,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
     private final SchedulerClient schedulerClient;
 
     private static final String CASE_ISSUED_FEE_TYPE = "caseIssueFee";
+    private static final Integer CASE_ISSUED_FEE_VOLUME = 1;
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -238,15 +240,22 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
         pcsCaseEntity.addClaim(claimEntity);
 
         pcsCaseService.save(pcsCaseEntity);
-
         unsubmittedCaseDataService.deleteUnsubmittedCaseData(caseReference);
 
         String taskId = UUID.randomUUID().toString();
 
+        FeesAndPayTaskData feesAndPayTaskData = FeesAndPayTaskData.builder()
+            .feeType(CASE_ISSUED_FEE_TYPE)
+            .ccdCaseNumber(String.valueOf(caseReference))
+            .caseReference(String.valueOf(pcsCaseEntity.getCaseReference()))
+            .volume(CASE_ISSUED_FEE_VOLUME)
+            .responsibleParty(pcsCase.getClaimantName())
+            .build();
+
         schedulerClient.scheduleIfNotExists(
             FeesAndPayTaskComponent.FEE_CASE_ISSUED_TASK_DESCRIPTOR
                 .instance(taskId)
-                .data(CASE_ISSUED_FEE_TYPE)
+                .data(feesAndPayTaskData)
                 .scheduledTo(Instant.now())
         );
 
