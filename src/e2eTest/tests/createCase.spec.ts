@@ -58,7 +58,7 @@ test.describe('[Create Case - England] @Master @nightly', async () => {
     await performValidation('bannerAlert', 'Case #.* has been created.');
     await performAction('extractCaseIdFromAlert');
     await performAction('clickButtonAndVerifyPageNavigation', provideMoreDetailsOfClaim.continue, claimantType.mainHeader);
-    await performAction('selectClaimantType', claimantType.registeredProviderForSocialHousing);
+    await performAction('selectClaimantType', claimantType.england.registeredProviderForSocialHousing);
     await performAction('selectClaimType', claimType.no);
     await performAction('selectClaimantName', claimantName.yes);
     await performAction('selectContactPreferences', {
@@ -168,7 +168,7 @@ test.describe('[Create Case - England] @Master @nightly', async () => {
     await performValidation('bannerAlert', 'Case #.* has been created.');
     await performAction('extractCaseIdFromAlert');
     await performAction('clickButtonAndVerifyPageNavigation', provideMoreDetailsOfClaim.continue, claimantType.mainHeader);
-    await performAction('selectClaimantType', claimantType.registeredProviderForSocialHousing);
+    await performAction('selectClaimantType', claimantType.england.registeredProviderForSocialHousing);
     await performAction('selectClaimType', claimType.no);
     await performAction('selectClaimantName', claimantName.yes);
     await performAction('selectContactPreferences', {
@@ -274,7 +274,7 @@ test.describe('[Create Case - England] @Master @nightly', async () => {
     await performValidation('bannerAlert', 'Case #.* has been created.');
     await performAction('extractCaseIdFromAlert');
     await performAction('clickButtonAndVerifyPageNavigation', provideMoreDetailsOfClaim.continue, claimantType.mainHeader);
-    await performAction('selectClaimantType', claimantType.registeredProviderForSocialHousing);
+    await performAction('selectClaimantType', claimantType.england.registeredProviderForSocialHousing);
     await performAction('selectClaimType', claimType.no);
     await performAction('selectClaimantName', claimantName.yes);
     await performAction('selectContactPreferences', {
@@ -378,7 +378,7 @@ test.describe('[Create Case - England] @Master @nightly', async () => {
     await performValidation('bannerAlert', 'Case #.* has been created.');
     await performAction('extractCaseIdFromAlert');
     await performAction('clickButtonAndVerifyPageNavigation', provideMoreDetailsOfClaim.continue, claimantType.mainHeader);
-    await performAction('selectClaimantType', claimantType.registeredProviderForSocialHousing);
+    await performAction('selectClaimantType', claimantType.england.registeredProviderForSocialHousing);
     await performAction('selectClaimType', claimType.no);
     await performAction('selectClaimantName', claimantName.yes);
     await performAction('selectContactPreferences', {
