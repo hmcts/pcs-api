@@ -46,7 +46,7 @@ import {search} from '@data/page-data/search.page.data';
 import {userIneligible} from '@data/page-data/userIneligible.page.data';
 
 export let caseInfo: { id: string; fid: string; state: string };
-let caseNumber: string;
+export let caseNumber: string;
 export let claimantsName: string;
 
 export class CreateCaseAction implements IAction {
@@ -87,7 +87,7 @@ export class CreateCaseAction implements IAction {
       ['enterReasonForDemotionOrder', () => this.enterReasonForDemotionOrder(fieldName)],
       ['enterReasonForSuspensionOrder', () => this.enterReasonForSuspensionOrder(fieldName)],
       ['selectMoneyJudgment', () => this.selectMoneyJudgment(fieldName)],
-      ['selectLanguageUsed', () => this.selectLanguageUsed(fieldName)],
+      ['selectLanguageUsed', () => this.selectLanguageUsed(fieldName as actionRecord)],
       ['selectDefendantCircumstances', () => this.selectDefendantCircumstances(fieldName)],
       ['selectApplications', () => this.selectApplications(fieldName)],
       ['selectClaimingCosts', () => this.selectClaimingCosts(fieldName)],
@@ -108,6 +108,10 @@ export class CreateCaseAction implements IAction {
     await performValidation('text', {
       'text': housingPossessionClaim.mainHeader,
       'elementType': 'heading'
+    });
+    await performValidation('text', {
+      'text': housingPossessionClaim.claimFeeText,
+      'elementType': 'paragraph'
     });
     await performAction('clickButton', housingPossessionClaim.continue);
   }
@@ -140,7 +144,7 @@ export class CreateCaseAction implements IAction {
   private async selectClaimantType(caseData: actionData) {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
     await performAction('clickRadioButton', caseData);
-    if(caseData === claimantType.registeredProviderForSocialHousing || caseData === claimantType.registeredCommunityLandlord){
+    if(caseData === claimantType.england.registeredProviderForSocialHousing || caseData === claimantType.wales.communityLandlord){
       await performAction('clickButtonAndVerifyPageNavigation', claimantType.continue, claimType.mainHeader);
     }
     else{
@@ -600,8 +604,8 @@ export class CreateCaseAction implements IAction {
     await performAction('clickButton', createCase.start);
   }
 
-  private async selectLanguageUsed(option: actionData) {
-    await performAction('clickRadioButton', option);
+  private async selectLanguageUsed(languageDetails: actionRecord) {
+    await performAction('clickRadioButton', {question: languageDetails.question, option: languageDetails.option});
     await performAction('clickButton', languageUsed.continue);
   }
 
