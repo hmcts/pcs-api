@@ -56,6 +56,8 @@ class PaymentApiIT {
     private static final Integer FEE_VOLUME = 1;
     private static final String RESPONSIBLE_PARTY = "Test Claimant";
     private static final String ACTION = "case-issue";
+    private static final String MEMO_LINE = "Test memo line";
+    private static final String REFERENCE = "TEST-REF-001";
 
     @Test
     void shouldSuccessfullyCreateServiceRequest() {
@@ -84,35 +86,35 @@ class PaymentApiIT {
         verify(
             postRequestedFor(urlPathEqualTo(SERVICE_REQUEST_ENDPOINT)).withRequestBody(equalToJson("""
                 {
-                    "ccd_case_number": "%s",
-                    "hmcts_org_id": "%s",
-                    "case_reference": "%s",
-                    "callback_url": "%s",
-                    "case_payment_request": {
-                        "action": "%s",
-                        "responsible_party": "%s"
-                    },
-                    "fees": [
-                        {
-                            "code": "%s",
-                            "version": "%s",
-                            "calculated_amount": %.2f,
-                            "volume": %d
-                        }
-                    ]
+                  "call_back_url": "%s",
+                  "case_payment_request": {
+                    "action": "%s",
+                    "responsible_party": "%s"
+                  },
+                  "case_reference": "%s",
+                  "ccd_case_number": "%s",
+                  "fees": [
+                    {
+                      "code": "%s",
+                      "version": "%s",
+                      "calculated_amount": %s,
+                      "volume": %d
+                    }
+                  ],
+                  "hmcts_org_id": "%s"
                 }
                 """.formatted(
-                    CCD_CASE_NUMBER,
-                       HMCTS_ORG_ID,
-                       CASE_REFERENCE,
-                       CALLBACK_URL,
-                       ACTION,
-                       RESPONSIBLE_PARTY,
-                       FEE_CODE,
-                       FEE_VERSION,
-                       FEE_AMOUNT,
-                       FEE_VOLUME
-                   ), true, true)));
+                CALLBACK_URL,
+                ACTION,
+                RESPONSIBLE_PARTY,
+                CASE_REFERENCE,
+                CCD_CASE_NUMBER,
+                FEE_CODE,
+                FEE_VERSION,
+                String.valueOf(FEE_AMOUNT),
+                FEE_VOLUME,
+                HMCTS_ORG_ID
+            ), true, true)));
     }
 
     @Test
@@ -162,9 +164,9 @@ class PaymentApiIT {
             .version(FEE_VERSION)
             .calculatedAmount(FEE_AMOUNT)
             .volume(FEE_VOLUME)
-            .memoLine("Test memo line")
+            .memoLine(MEMO_LINE)
             .ccdCaseNumber(CCD_CASE_NUMBER)
-            .reference("TEST-REF-001")
+            .reference(REFERENCE)
             .build();
 
         ServiceRequestBody requestBody = ServiceRequestBody.builder()
@@ -185,37 +187,40 @@ class PaymentApiIT {
         verify(postRequestedFor(urlPathEqualTo(SERVICE_REQUEST_ENDPOINT))
                    .withRequestBody(equalToJson("""
                 {
-                    "ccd_case_number": "%s",
-                    "case_reference": "%s",
-                    "callback_url": "%s",
-                    "hmcts_org_id": "AAA3",
-                    "case_payment_request": {
-                        "action": "%s",
-                        "responsible_party": "%s"
-                    },
-                    "fees": [
-                        {
-                            "code": "%s",
-                            "version": "%s",
-                            "calculated_amount": %.2f,
-                            "volume": %d,
-                            "memoLine": "Test memo line",
-                            "ccdCaseNumber": "%s",
-                            "reference": "TEST-REF-001"
-                        }
-                    ]
+                  "call_back_url": "%s",
+                  "case_payment_request": {
+                    "action": "%s",
+                    "responsible_party": "%s"
+                  },
+                  "case_reference": "%s",
+                  "ccd_case_number": "%s",
+                  "fees": [
+                    {
+                      "code": "%s",
+                      "version": "%s",
+                      "calculated_amount": %s,
+                      "volume": %d,
+                      "memoLine": "%s",
+                      "ccdCaseNumber": "%s",
+                      "reference": "%s"
+                    }
+                  ],
+                  "hmcts_org_id": "%s"
                 }
                 """.formatted(
-                       CCD_CASE_NUMBER,
-                       CASE_REFERENCE,
                        CALLBACK_URL,
                        ACTION,
                        RESPONSIBLE_PARTY,
+                       CASE_REFERENCE,
+                       CCD_CASE_NUMBER,
                        FEE_CODE,
                        FEE_VERSION,
-                       FEE_AMOUNT,
+                       String.valueOf(FEE_AMOUNT),
                        FEE_VOLUME,
-                       CCD_CASE_NUMBER
+                       MEMO_LINE,
+                       CCD_CASE_NUMBER,
+                       REFERENCE,
+                       HMCTS_ORG_ID
                    ), true, true)));
     }
 
@@ -236,7 +241,7 @@ class PaymentApiIT {
         verify(postRequestedFor(urlPathEqualTo(SERVICE_REQUEST_ENDPOINT))
                    .withRequestBody(equalToJson("""
                 {
-                    "hmcts_org_id": "AAA3"
+                  "hmcts_org_id": "AAA3"
                 }
                 """, false, true)));
     }
@@ -250,7 +255,7 @@ class PaymentApiIT {
                                     .withHeader("Content-Type", "application/json")
                                     .withBody("""
                     {
-                        "message": "Unauthorized"
+                      "message": "Unauthorized"
                     }
                     """)));
 
@@ -272,7 +277,7 @@ class PaymentApiIT {
                                     .withHeader("Content-Type", "application/json")
                                     .withBody("""
                     {
-                        "message": "Service authorization failed"
+                      "message": "Service authorization failed"
                     }
                     """)));
 
@@ -293,8 +298,8 @@ class PaymentApiIT {
                                     .withHeader("Content-Type", "application/json")
                                     .withBody("""
                     {
-                        "message": "Invalid request body",
-                        "errors": ["ccd_case_number is required"]
+                      "message": "Invalid request body",
+                      "errors": ["ccd_case_number is required"]
                     }
                     """)));
 
@@ -317,7 +322,7 @@ class PaymentApiIT {
                                     .withHeader("Content-Type", "application/json")
                                     .withBody("""
                     {
-                        "message": "Internal server error"
+                      "message": "Internal server error"
                     }
                     """)));
 
@@ -338,7 +343,7 @@ class PaymentApiIT {
                                     .withHeader("Content-Type", "application/json")
                                     .withBody("""
                     {
-                        "message": "Service temporarily unavailable"
+                      "message": "Service temporarily unavailable"
                     }
                     """)));
 
@@ -394,9 +399,9 @@ class PaymentApiIT {
                                     .withHeader("Content-Type", "application/json")
                                     .withBody("""
                     {
-                        "service_request_reference": "2024-EXTRA-FIELDS",
-                        "status": "Created",
-                        "date_created": "2024-01-15T10:30:00Z"
+                      "service_request_reference": "2024-EXTRA-FIELDS",
+                      "status": "Created",
+                      "date_created": "2024-01-15T10:30:00Z"
                     }
                     """)));
 
@@ -468,7 +473,7 @@ class PaymentApiIT {
                                     .withHeader("Content-Type", "application/json")
                                     .withBody(String.format("""
                     {
-                        "service_request_reference": "%s"
+                      "service_request_reference": "%s"
                     }
                     """, serviceRequestReference))));
     }
