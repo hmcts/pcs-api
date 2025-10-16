@@ -3,7 +3,8 @@ export const whatAreYourGroundsForPossession = {
   mainHeader: 'What are your grounds for possession?',
   mandatory:
     {
-      antiSocialBehaviour: 'Antisocial behaviour (ground 7A)',
+      antiSocialBehaviour: 'Antisocial behaviour',
+      antiSocialBehaviour7A: 'Antisocial behaviour (ground 7A)',
       ownerOccupier: 'Owner occupier (ground 1)',
       holidayLet: 'Holiday let (ground 3)',
       repossessionByLandlord: 'Repossession by the landlord\'s mortgage lender (ground 2)',
@@ -17,12 +18,17 @@ export const whatAreYourGroundsForPossession = {
   discretionary:
     {
       rentArrearsOrBreachOfTenancy: 'Rent arrears or breach of the tenancy (ground 1)',
+      nuisanceAnnoyance2: 'Nuisance, annoyance, illegal or immoral use of the property (ground 2)',
       nuisanceAnnoyance: 'Nuisance, annoyance, illegal or immoral use of the property (ground 14)',
       domesticViolence2A: 'Domestic violence (ground 2A)',
       offenceDuringRiot: 'Offence during a riot (ground 14ZA)',
+      offenceDuringRiot2A: 'Offence during a riot (ground 2ZA)',
       deteriorationInPropertyCondition: 'Deterioration in the condition of the property (ground 13)',
+      deteriorationInPropertyCondition3: 'Deterioration in the condition of the property (ground 3)',
       deteriorationOfFurniture: 'Deterioration of furniture (ground 15)',
+      deteriorationOfFurniture4: 'Deterioration of furniture (ground 4)',
       tenancyObtainedByFalseStatement: 'Tenancy obtained by false statement (ground 17)',
+      tenancyObtainedByFalseStatement5: 'Tenancy obtained by false statement (ground 5)',
       premiumPaidMutualExchange: 'Premium paid in connection with mutual exchange (ground 6)',
       unreasonableConduct: 'Unreasonable conduct in tied accommodation (ground 7)',
       refusalToMoveBack: 'Refusal to move back to main home after works completed (ground 8)',
