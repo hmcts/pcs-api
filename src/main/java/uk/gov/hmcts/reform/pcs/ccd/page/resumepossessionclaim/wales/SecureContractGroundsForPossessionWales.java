@@ -34,8 +34,7 @@ public class SecureContractGroundsForPossessionWales implements CcdPageConfigura
                <p class="govuk-body" tabindex="0">
                   <a class="govuk-link govuk-!-margin-bottom-3" href="#"  rel="noreferrer noopener" 
                   target="_blank" aria-label="More information about possession grounds (opens in new tab)">
-                        More information about possession grounds (opens in new tab)
-                  </a>.
+                        More information about possession grounds (opens in new tab)</a>.
                 </p>
 
                """)
