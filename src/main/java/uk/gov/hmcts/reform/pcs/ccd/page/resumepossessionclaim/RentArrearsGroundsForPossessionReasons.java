@@ -17,11 +17,11 @@ public class RentArrearsGroundsForPossessionReasons implements CcdPageConfigurat
                                + " AND showRentArrearsGroundReasonPage=\"Yes\""
                                + " AND hasOtherAdditionalGrounds=\"Yes\""
             )
+            .label("rentArrearsGrounds-lineSeparator","---")
             .complex(PCSCase::getRentArrearsGroundsReasons)
 
             // ---------- Mandatory grounds ----------
             .label("rentArrears-ownerOccupier-label", """
-                ---
                 <h2 class="govuk-heading-l" tabindex="0">
                     Owner occupier (ground 1)
                 </h2>
