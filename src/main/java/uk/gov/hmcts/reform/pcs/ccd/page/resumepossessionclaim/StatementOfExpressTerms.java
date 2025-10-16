@@ -6,8 +6,8 @@ import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
-import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DemotionOfTenancy;
+import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 
@@ -25,12 +25,13 @@ public class StatementOfExpressTerms implements CcdPageConfiguration {
         pageBuilder
             .page("statementOfExpressTerms", this::midEvent)
             .pageLabel("Statement of express terms")
-            .showCondition("showDemotionOfTenancyHousingActsPage=\"Yes\"")
+            .showCondition("showDemotionOfTenancyHousingActsPage=\"Yes\""
+                               + " OR suspensionToBuyDemotionOfTenancyPages=\"Yes\"")
             .label("statementOfExpressTerms-info", "---")
                 .complex(PCSCase::getDemotionOfTenancy)
                 .mandatory(DemotionOfTenancy::getStatementOfExpressTermsServed)
                 .mandatory(DemotionOfTenancy::getStatementOfExpressTermsDetails,
-                    "statementOfExpressTermsServed=\"YES\"")
+                           "statementOfExpressTermsServed=\"YES\"")
                 .done();
     }
 
