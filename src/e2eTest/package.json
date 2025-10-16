@@ -7,12 +7,14 @@
   },
   "scripts": {
     "test:chrome": "yarn playwright install && yarn playwright test --project chrome; EXIT_CODE=$?; allure generate --clean; exit $EXIT_CODE",
+    "test:functional": "yarn playwright install && yarn playwright test --project chrome --grep @functional; EXIT_CODE=$?; allure generate --clean; exit $EXIT_CODE",
     "test:firefox": "yarn playwright install && yarn playwright test --project firefox; EXIT_CODE=$?; allure generate --clean; exit $EXIT_CODE",
     "test:openAllureReport": "yarn allure open allure-report"
   },
   "devDependencies": {
-    "@playwright/test": "^1.49.0",
+    "@playwright/test": "^1.56.0",
     "@types/node": "^22.15.31",
+    "@types/pngjs": "^6.0.5",
     "allure-commandline": "^2.34.1",
     "allure-js-commons": "^3.3.0",
     "allure-playwright": "^3.3.0",
@@ -25,6 +27,8 @@
     "@axe-core/playwright": "^4.10.2",
     "@hmcts/playwright-common": "^1.0.33",
     "oauth4webapi": "^3.5.1",
+    "pixelmatch": "^7.1.0",
+    "pngjs": "^7.0.0",
     "uuid": "^13.0.0"
   }
 }

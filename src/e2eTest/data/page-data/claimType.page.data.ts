@@ -4,5 +4,9 @@ export const claimType =
     mainHeader: 'Claim type',
     yes: 'Yes',
     no: 'No',
-    continue: 'Continue'
+    continue: 'Continue',
+    selector:
+      {
+        caseNumber: 'p:has-text("Case number:")'
+      }
   }

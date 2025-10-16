@@ -66,9 +66,8 @@ Playwright 1.30+ | TypeScript 4.9+
 ## 4. Available Actions and Validations
 
 ### Actions
-=======
-| Action                               | Example Usage                                                                                                                                                                                              |
-|--------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Action          | Example Usage |
+|------------------|---------------|
 | inputText                            | `performAction('inputText', 'Email', 'test@example.com')`                                                                                                                                                  |
 | check                                | `performAction('check', 'RememberMe')`                                                                                                                                                                     |
 | navigateToUrl                        | `performAction('navigateToUrl', 'testUrl')`                                                                                                                                                                |
@@ -126,9 +125,10 @@ Playwright 1.30+ | TypeScript 4.9+
 | selectStatementOfExpressTerms        | `performAction('selectStatementOfExpressTerms', statementOfExpressTerms.yes)`                                                                                                                              |
 | selectLanguageUsed                   | `performAction('selectLanguageUsed', languageUsed.no)`                                                                                                                                                     |
 | enterReasonForSuspensionAndDemotionOrder | `performAction('enterReasonForSuspensionAndDemotionOrder', suspension)`                                                                                                                                |
+| selectClaimantDetails | `performAction('selectClaimantDetails', ...)` |
 ### Validations
-| Validation                 | Example Usage                                                                                                                        |
-|----------------------------|--------------------------------------------------------------------------------------------------------------------------------------|
+| Validation          | Example Usage |
+|------------------|---------------|
 | text                       | `performValidation('text', 'testElement')`                                                                                           |
 | bannerAlert                | `performValidation('bannerAlert', {message: "Case has been created."})`                                                              |
 | formLabelValue             | `performValidation('formLabelValue',  "Applicant's forename", {value:'TestUser'})`                                                   |
@@ -139,6 +139,7 @@ Playwright 1.30+ | TypeScript 4.9+
 | elementToBeVisible         | `performValidation('elementToBeVisible', 'testElement')`                                                                             |
 | elementNotToBeVisible      | `performValidation('elementNotToBeVisible', 'testElement')`                                                                          |
 | waitUntilElementDisappears | `performValidation('waitUntilElementDisappears', 'testElement')`                                                                     |
+| compareWithSnapshot | `performValidation('compareWithSnapshot', ...)` |
 ### Basic Test
 
 ```typescript
@@ -218,3 +219,33 @@ yarn test:chrome
 | "Validation not found" | Check registration                          |
 | Locator failures       | Verify fieldName matches UI text/attributes |
 | Timeout errors         | Add explicit waits in components            |
+
+
+## 8. Visual Regression Testing
+
+This project uses visual testing to catch UI bugs. It works by comparing screenshots of the application against an approved "baseline" image.
+If the new screenshot is different, the test will fail.
+
+**How to Update Snapshots**
+
+You must update the baseline snapshot whenever you:
+Add a test for a new page.
+Make an intentional UI change (e.g., change a button color).
+
+To do this, run your test with the -u (or --update-snapshots) flag.
+
+**Update All Snapshots**
+npx playwright test --update-snapshots
+
+**Update a Single File**
+npx playwright test src/e2eTest/tests/createCase.visual.spec.ts -u
+
+**Reviewing Failures**
+When a test fails, open the Allure Report and look at the attachments:
+
+Baseline Screenshot: The old, "golden" image.
+
+Current Screenshot: The new image that failed.
+
+Diff Highlighted Screenshot: An image showing all changed pixels highlighted in red. This tells you exactly what broke.You must update the baseline snapshot whenever you:
+

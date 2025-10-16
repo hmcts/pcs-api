@@ -126,6 +126,7 @@ export class CreateCaseAction implements IAction {
       ['clickButton', addressDetails.findAddressLabel],
       ['select', addressDetails.selectAddressLabel, address.addressIndex]
     );
+    //await performValidation('compareWithSnapshot','selectAddressDetails');
     await performAction('clickButton', addressDetails.submit);
   }
 
