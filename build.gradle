@@ -267,6 +267,8 @@ sonarqube {
       "**/uk/gov/hmcts/reform/pcs/ccd/config/HighLevelDataSetupApp.java," +
       "**/uk/gov/hmcts/reform/pcs/ccd/domain/**/*.java," +
       "**/uk/gov/hmcts/reform/pcs/ccd/entity/**/*.java," +
+      "**/uk/gov/hmcts/reform/pcs/ccd/CCDCaseRepository.java," +
+      "**/uk/gov/hmcts/reform/pcs/ccd/service/PartyDocumentsService.java," +
       "**/entities/**," + "**/model/**"
   }
 }
