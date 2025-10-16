@@ -368,7 +368,7 @@ public class PCSCase {
     private String noticePersonName;
 
     @CCD(
-        label = "Explain how it was served by email",
+        label = "Explain how it was served by email. You can enter up to 250 characters",
         typeOverride = TextArea
     )
     private String noticeEmailExplanation;
@@ -396,6 +396,7 @@ public class PCSCase {
 
     @CCD(
         label = "Give details of the type of tenancy or licence agreement that's in place",
+        hint = "You can enter up to 500 characters",
         typeOverride = TextArea
     )
     private String detailsOfOtherTypeOfTenancyLicence;
@@ -559,7 +560,7 @@ public class PCSCase {
             + "make sure your claim is processed correctly"
     )
     private LanguageUsed languageUsed;
-  
+
     @JsonUnwrapped
     private DefendantCircumstances defendantCircumstances;
 
