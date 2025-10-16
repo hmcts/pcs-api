@@ -57,14 +57,14 @@ test.describe('[Create Case - Wales] @Master @nightly', async () => {
     await performValidation('bannerAlert', 'Case #.* has been created.');
     await performAction('extractCaseIdFromAlert');
     await performAction('clickButtonAndVerifyPageNavigation', provideMoreDetailsOfClaim.continue, claimantType.mainHeader);
-    await performAction('selectClaimantType', claimantType.registeredCommunityLandlord);
+    await performAction('selectClaimantType', claimantType.wales.communityLandlord);
     await performAction('selectClaimType', claimType.no);
     await performAction('selectClaimantName', claimantName.no);
     await performAction('clickButton', 'Sign out');
     await performAction('reloginAndFindTheCase', user.claimantSolicitor);
     await performAction('clickButtonAndVerifyPageNavigation', resumeClaim.continue, resumeClaimOptions.mainHeader);
     await performAction('selectResumeClaimOption', resumeClaimOptions.yes);
-    await performValidation('radioButtonChecked', claimantType.registeredCommunityLandlord, true);
+    await performValidation('radioButtonChecked', claimantType.wales.communityLandlord, true);
     await performAction('verifyPageAndClickButton', claimantType.continue, claimantType.mainHeader);
     await performValidation('radioButtonChecked', claimType.no, true);
     await performAction('verifyPageAndClickButton', claimType.continue, claimType.mainHeader);
@@ -153,15 +153,15 @@ test.describe('[Create Case - Wales] @Master @nightly', async () => {
     await performValidation('bannerAlert', 'Case #.* has been created.');
     await performAction('extractCaseIdFromAlert');
     await performAction('clickButtonAndVerifyPageNavigation', provideMoreDetailsOfClaim.continue, claimantType.mainHeader);
-    await performAction('selectClaimantType', claimantType.registeredCommunityLandlord);
+    await performAction('selectClaimantType', claimantType.wales.communityLandlord);
     await performAction('selectClaimType', claimType.no);
     await performAction('selectClaimantName', claimantName.yes);
     await performAction('clickButton', 'Sign out');
     await performAction('reloginAndFindTheCase', user.claimantSolicitor);
     await performAction('clickButtonAndVerifyPageNavigation', resumeClaim.continue, resumeClaimOptions.mainHeader);
     await performAction('selectResumeClaimOption', resumeClaimOptions.no);
-    await performValidation('radioButtonChecked', claimantType.registeredCommunityLandlord, false);
-    await performAction('selectClaimantType', claimantType.registeredCommunityLandlord);
+    await performValidation('radioButtonChecked', claimantType.wales.communityLandlord, false);
+    await performAction('selectClaimantType', claimantType.wales.communityLandlord);
     await performValidation('radioButtonChecked', claimType.no, false);
     await performAction('selectClaimType', claimType.no);
     await performValidation('radioButtonChecked', claimantName.no, false);
@@ -247,7 +247,7 @@ test.describe('[Create Case - Wales] @Master @nightly', async () => {
     await performValidation('bannerAlert', 'Case #.* has been created.');
     await performAction('extractCaseIdFromAlert');
     await performAction('clickButtonAndVerifyPageNavigation', provideMoreDetailsOfClaim.continue, claimantType.mainHeader);
-    await performAction('selectClaimantType', claimantType.registeredCommunityLandlord);
+    await performAction('selectClaimantType', claimantType.wales.communityLandlord);
     await performAction('selectClaimType', claimType.no);
     await performAction('selectClaimantName', claimantName.no);
     await performAction('selectContactPreferences', {
