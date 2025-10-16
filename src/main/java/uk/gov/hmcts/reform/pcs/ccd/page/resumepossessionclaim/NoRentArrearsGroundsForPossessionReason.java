@@ -20,7 +20,7 @@ public class NoRentArrearsGroundsForPossessionReason implements CcdPageConfigura
             .pageLabel("Reasons for possession")
             .showCondition("groundsForPossession=\"No\" "
                                + "AND typeOfTenancyLicence=\"ASSURED_TENANCY\""
-                               + " AND showNoRentArrearsGroundsReasonsPage=\"Yes\"")
+                               + " AND showNoRentArrearsGroundReasonPage=\"Yes\"")
             .label("noRentArrearsOptions-lineSeparator", "---")
             .complex(PCSCase::getNoRentArrearsReasonForGrounds)
             // Ground 1

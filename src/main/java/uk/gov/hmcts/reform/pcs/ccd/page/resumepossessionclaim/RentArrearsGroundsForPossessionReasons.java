@@ -3,7 +3,7 @@ package uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsGroundReasons;
+import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsGroundsReasons;
 
 public class RentArrearsGroundsForPossessionReasons implements CcdPageConfiguration {
 
@@ -14,8 +14,8 @@ public class RentArrearsGroundsForPossessionReasons implements CcdPageConfigurat
             .pageLabel("Grounds for possession")
             .showCondition("groundsForPossession=\"Yes\""
                                + " AND typeOfTenancyLicence=\"ASSURED_TENANCY\""
-                               + " AND showRentArrearsReasonsForGroundsPage=\"Yes\"")
-            .complex(PCSCase::getRentArrearsGroundReasons)
+                               + " AND showRentArrearsGroundReasonPage=\"Yes\"")
+            .complex(PCSCase::getRentArrearsGroundsReasons)
 
             // ---------- Mandatory grounds ----------
             .label("rentArrears-ownerOccupier-label", """
@@ -27,7 +27,7 @@ public class RentArrearsGroundsForPossessionReasons implements CcdPageConfigurat
                 </h3>
                 """, "rentArrearsMandatoryGroundsCONTAINS\"OWNER_OCCUPIER_GROUND1\"")
             .mandatory(
-                RentArrearsGroundReasons::getOwnerOccupierReason,
+                RentArrearsGroundsReasons::getOwnerOccupierReason,
                 "rentArrearsMandatoryGroundsCONTAINS\"OWNER_OCCUPIER_GROUND1\"")
 
             .label("rentArrears-repossessionByLender-label", """
@@ -39,7 +39,7 @@ public class RentArrearsGroundsForPossessionReasons implements CcdPageConfigurat
                 </h3>
                 """, "rentArrearsMandatoryGroundsCONTAINS\"REPOSSESSION_GROUND2\"")
             .mandatory(
-                RentArrearsGroundReasons::getRepossessionByLenderReason,
+                RentArrearsGroundsReasons::getRepossessionByLenderReason,
                 "rentArrearsMandatoryGroundsCONTAINS\"REPOSSESSION_GROUND2\"")
 
             .label("rentArrears-holidayLet-label", """
@@ -51,7 +51,7 @@ public class RentArrearsGroundsForPossessionReasons implements CcdPageConfigurat
                 </h3>
                 """, "rentArrearsMandatoryGroundsCONTAINS\"HOLIDAY_LET_GROUND3\"")
             .mandatory(
-                RentArrearsGroundReasons::getHolidayLetReason,
+                RentArrearsGroundsReasons::getHolidayLetReason,
                 "rentArrearsMandatoryGroundsCONTAINS\"HOLIDAY_LET_GROUND3\"")
 
             .label("rentArrears-studentLet-label", """
@@ -63,7 +63,7 @@ public class RentArrearsGroundsForPossessionReasons implements CcdPageConfigurat
                 </h3>
                 """, "rentArrearsMandatoryGroundsCONTAINS\"STUDENT_LET_GROUND4\"")
             .mandatory(
-                RentArrearsGroundReasons::getStudentLetReason,
+                RentArrearsGroundsReasons::getStudentLetReason,
                 "rentArrearsMandatoryGroundsCONTAINS\"STUDENT_LET_GROUND4\"")
 
             .label("rentArrears-ministerOfReligion-label", """
@@ -75,7 +75,7 @@ public class RentArrearsGroundsForPossessionReasons implements CcdPageConfigurat
                 </h3>
                 """, "rentArrearsMandatoryGroundsCONTAINS\"MINISTER_RELIGION_GROUND5\"")
             .mandatory(
-                RentArrearsGroundReasons::getMinisterOfReligionReason,
+                RentArrearsGroundsReasons::getMinisterOfReligionReason,
                 "rentArrearsMandatoryGroundsCONTAINS\"MINISTER_RELIGION_GROUND5\"")
 
             .label("rentArrears-redevelopment-label", """
@@ -87,7 +87,7 @@ public class RentArrearsGroundsForPossessionReasons implements CcdPageConfigurat
                 </h3>
                 """, "rentArrearsMandatoryGroundsCONTAINS\"REDEVELOPMENT_GROUND6\"")
             .mandatory(
-                RentArrearsGroundReasons::getRedevelopmentReason,
+                RentArrearsGroundsReasons::getRedevelopmentReason,
                 "rentArrearsMandatoryGroundsCONTAINS\"REDEVELOPMENT_GROUND6\"")
 
             .label("rentArrears-deathOfTenant-label", """
@@ -99,7 +99,7 @@ public class RentArrearsGroundsForPossessionReasons implements CcdPageConfigurat
                 </h3>
                 """, "rentArrearsMandatoryGroundsCONTAINS\"DEATH_OF_TENANT_GROUND7\"")
             .mandatory(
-                RentArrearsGroundReasons::getDeathOfTenantReason,
+                RentArrearsGroundsReasons::getDeathOfTenantReason,
                 "rentArrearsMandatoryGroundsCONTAINS\"DEATH_OF_TENANT_GROUND7\"")
 
             .label("rentArrears-antisocialBehaviour-label", """
@@ -111,7 +111,7 @@ public class RentArrearsGroundsForPossessionReasons implements CcdPageConfigurat
                 </h3>
                 """, "rentArrearsMandatoryGroundsCONTAINS\"ANTISOCIAL_BEHAVIOUR_GROUND7A\"")
             .mandatory(
-                RentArrearsGroundReasons::getAntisocialBehaviourReason,
+                RentArrearsGroundsReasons::getAntisocialBehaviourReason,
                 "rentArrearsMandatoryGroundsCONTAINS\"ANTISOCIAL_BEHAVIOUR_GROUND7A\"")
 
             .label("rentArrears-noRightToRent-label", """
@@ -123,7 +123,7 @@ public class RentArrearsGroundsForPossessionReasons implements CcdPageConfigurat
                 </h3>
                 """, "rentArrearsMandatoryGroundsCONTAINS\"NO_RIGHT_TO_RENT_GROUND7B\"")
             .mandatory(
-                RentArrearsGroundReasons::getNoRightToRentReason,
+                RentArrearsGroundsReasons::getNoRightToRentReason,
                 "rentArrearsMandatoryGroundsCONTAINS\"NO_RIGHT_TO_RENT_GROUND7B\"")
 
             // ---------- Discretionary grounds ----------
@@ -136,7 +136,7 @@ public class RentArrearsGroundsForPossessionReasons implements CcdPageConfigurat
                 </h3>
                 """, "rentArrearsDiscretionaryGroundsCONTAINS\"ALTERNATIVE_ACCOMMODATION_GROUND9\"")
             .mandatory(
-                RentArrearsGroundReasons::getSuitableAltAccommodationReason,
+                RentArrearsGroundsReasons::getSuitableAltAccommodationReason,
                 "rentArrearsDiscretionaryGroundsCONTAINS\"ALTERNATIVE_ACCOMMODATION_GROUND9\"")
 
             .label("rentArrears-breachOfTenancyConditions-label", """
@@ -148,7 +148,7 @@ public class RentArrearsGroundsForPossessionReasons implements CcdPageConfigurat
                 </h3>
                 """, "rentArrearsDiscretionaryGroundsCONTAINS\"BREACH_TENANCY_GROUND12\"")
             .mandatory(
-                RentArrearsGroundReasons::getBreachOfTenancyConditionsReason,
+                RentArrearsGroundsReasons::getBreachOfTenancyConditionsReason,
                 "rentArrearsDiscretionaryGroundsCONTAINS\"BREACH_TENANCY_GROUND12\"")
 
             .label("rentArrears-propertyDeterioration-label", """
@@ -160,7 +160,7 @@ public class RentArrearsGroundsForPossessionReasons implements CcdPageConfigurat
                 </h3>
                 """, "rentArrearsDiscretionaryGroundsCONTAINS\"DETERIORATION_PROPERTY_GROUND13\"")
             .mandatory(
-                RentArrearsGroundReasons::getPropertyDeteriorationReason,
+                RentArrearsGroundsReasons::getPropertyDeteriorationReason,
                 "rentArrearsDiscretionaryGroundsCONTAINS\"DETERIORATION_PROPERTY_GROUND13\"")
 
             .label("rentArrears-nuisanceAnnoyance-label", """
@@ -172,7 +172,7 @@ public class RentArrearsGroundsForPossessionReasons implements CcdPageConfigurat
                 </h3>
                 """, "rentArrearsDiscretionaryGroundsCONTAINS\"NUISANCE_ANNOYANCE_GROUND14\"")
             .mandatory(
-                RentArrearsGroundReasons::getNuisanceAnnoyanceReason,
+                RentArrearsGroundsReasons::getNuisanceAnnoyanceReason,
                 "rentArrearsDiscretionaryGroundsCONTAINS\"NUISANCE_ANNOYANCE_GROUND14\"")
 
             .label("rentArrears-domesticViolence-label", """
@@ -184,7 +184,7 @@ public class RentArrearsGroundsForPossessionReasons implements CcdPageConfigurat
                 </h3>
                 """, "rentArrearsDiscretionaryGroundsCONTAINS\"DOMESTIC_VIOLENCE_GROUND14A\"")
             .mandatory(
-                RentArrearsGroundReasons::getDomesticViolenceReason,
+                RentArrearsGroundsReasons::getDomesticViolenceReason,
                 "rentArrearsDiscretionaryGroundsCONTAINS\"DOMESTIC_VIOLENCE_GROUND14A\"")
 
             .label("rentArrears-offenceDuringRiot-label", """
@@ -196,7 +196,7 @@ public class RentArrearsGroundsForPossessionReasons implements CcdPageConfigurat
                 </h3>
                 """, "rentArrearsDiscretionaryGroundsCONTAINS\"OFFENCE_RIOT_GROUND14ZA\"")
             .mandatory(
-                RentArrearsGroundReasons::getOffenceDuringRiotReason,
+                RentArrearsGroundsReasons::getOffenceDuringRiotReason,
                 "rentArrearsDiscretionaryGroundsCONTAINS\"OFFENCE_RIOT_GROUND14ZA\"")
 
             .label("rentArrears-furnitureDeterioration-label", """
@@ -208,7 +208,7 @@ public class RentArrearsGroundsForPossessionReasons implements CcdPageConfigurat
                 </h3>
                 """, "rentArrearsDiscretionaryGroundsCONTAINS\"DETERIORATION_FURNITURE_GROUND15\"")
             .mandatory(
-                RentArrearsGroundReasons::getFurnitureDeteriorationReason,
+                RentArrearsGroundsReasons::getFurnitureDeteriorationReason,
                 "rentArrearsDiscretionaryGroundsCONTAINS\"DETERIORATION_FURNITURE_GROUND15\"")
 
             .label("rentArrears-employeeOfLandlord-label", """
@@ -220,7 +220,7 @@ public class RentArrearsGroundsForPossessionReasons implements CcdPageConfigurat
                 </h3>
                 """, "rentArrearsDiscretionaryGroundsCONTAINS\"EMPLOYEE_LANDLORD_GROUND16\"")
             .mandatory(
-                RentArrearsGroundReasons::getEmployeeOfLandlordReason,
+                RentArrearsGroundsReasons::getEmployeeOfLandlordReason,
                 "rentArrearsDiscretionaryGroundsCONTAINS\"EMPLOYEE_LANDLORD_GROUND16\"")
 
             .label("rentArrears-tenancyByFalseStatement-label", """
@@ -232,7 +232,7 @@ public class RentArrearsGroundsForPossessionReasons implements CcdPageConfigurat
                 </h3>
                 """, "rentArrearsDiscretionaryGroundsCONTAINS\"FALSE_STATEMENT_GROUND17\"")
             .mandatory(
-                RentArrearsGroundReasons::getTenancyByFalseStatementReason,
+                RentArrearsGroundsReasons::getTenancyByFalseStatementReason,
                 "rentArrearsDiscretionaryGroundsCONTAINS\"FALSE_STATEMENT_GROUND17\"")
             .done();
     }

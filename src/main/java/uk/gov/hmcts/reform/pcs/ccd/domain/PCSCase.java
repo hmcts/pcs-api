@@ -203,9 +203,9 @@ public class PCSCase {
     private Set<RentArrearsDiscretionaryGrounds> rentArrearsDiscretionaryGrounds;
 
     @JsonUnwrapped
-    private RentArrearsGroundReasons rentArrearsGroundReasons;
+    private RentArrearsGroundsReasons rentArrearsGroundsReasons;
 
-    private YesOrNo showRentArrearsReasonsForGroundsPage;
+    private YesOrNo showRentArrearsGroundReasonPage;
 
     @CCD(
         label = "Have you attempted mediation with the defendants?"
@@ -561,7 +561,7 @@ public class PCSCase {
     @JsonUnwrapped
     private NoRentArrearsReasonForGrounds noRentArrearsReasonForGrounds;
 
-    private YesOrNo showNoRentArrearsGroundsReasonsPage;
+    private YesOrNo showNoRentArrearsGroundReasonPage;
 
     @CCD(
         label = "Which language did you use to complete this service?",
@@ -570,7 +570,7 @@ public class PCSCase {
             + "make sure your claim is processed correctly"
     )
     private LanguageUsed languageUsed;
-  
+
     @JsonUnwrapped
     private DefendantCircumstances defendantCircumstances;
 

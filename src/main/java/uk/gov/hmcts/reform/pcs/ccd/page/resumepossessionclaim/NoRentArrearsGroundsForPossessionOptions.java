@@ -30,7 +30,7 @@ public class NoRentArrearsGroundsForPossessionOptions implements CcdPageConfigur
             .page("noRentArrearsGroundsForPossessionOptions", this::midEvent)
             .pageLabel("What are your grounds for possession?")
             .showCondition("groundsForPossession=\"No\" AND typeOfTenancyLicence=\"ASSURED_TENANCY\"")
-            .readonly(PCSCase::getShowNoRentArrearsGroundsReasonsPage, NEVER_SHOW)
+            .readonly(PCSCase::getShowNoRentArrearsGroundReasonPage, NEVER_SHOW)
             .label(
                 "NoRentArrearsGroundsForPossessionOptions-information", """
                     ---
@@ -65,7 +65,7 @@ public class NoRentArrearsGroundsForPossessionOptions implements CcdPageConfigur
                 && ground != NoRentArrearsDiscretionaryGrounds.RENT_PAYMENT_DELAY);
 
         boolean shouldShowReasonsPage = hasOtherDiscretionaryGrounds || hasOtherMandatoryGrounds;
-        caseData.setShowNoRentArrearsGroundsReasonsPage(shouldShowReasonsPage ? YesOrNo.YES : YesOrNo.NO);
+        caseData.setShowNoRentArrearsGroundReasonPage(shouldShowReasonsPage ? YesOrNo.YES : YesOrNo.NO);
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
             .data(caseData)

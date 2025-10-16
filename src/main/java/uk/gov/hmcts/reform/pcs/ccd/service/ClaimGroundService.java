@@ -8,7 +8,8 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.NoRentArrearsDiscretionaryGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.NoRentArrearsMandatoryGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsDiscretionaryGrounds;
-import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsGroundReasons;
+import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsGround;
+import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsGroundsReasons;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsMandatoryGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
@@ -47,13 +48,26 @@ public class ClaimGroundService {
     }
 
     private List<ClaimGroundEntity> assuredTenancyRentArrearsGroundsWithReason(PCSCase pcsCase) {
+
+        Set<RentArrearsGround> rentArrearsGrounds = pcsCase.getRentArrearsGrounds();
         Set<RentArrearsMandatoryGrounds> rentArrearsMandatoryGrounds = pcsCase
             .getRentArrearsMandatoryGrounds();
         Set<RentArrearsDiscretionaryGrounds> rentArrearsDiscretionaryGrounds = pcsCase
             .getRentArrearsDiscretionaryGrounds();
-        RentArrearsGroundReasons grounds = pcsCase.getRentArrearsGroundReasons();
+        RentArrearsGroundsReasons grounds = pcsCase.getRentArrearsGroundsReasons();
 
         List<ClaimGroundEntity> entities = new ArrayList<>();
+
+        if (rentArrearsMandatoryGrounds == null && rentArrearsDiscretionaryGrounds == null) {
+            rentArrearsGrounds.forEach(rentArrearsGround -> {
+                entities.add(ClaimGroundEntity.builder()
+                                 .groundId(rentArrearsGround.name())
+                                 .groundReason(null)
+                                 .groundDescription(null)
+                                 .build());
+            });
+            return entities;
+        }
 
         if (rentArrearsMandatoryGrounds != null) {
             for (RentArrearsMandatoryGrounds ground : rentArrearsMandatoryGrounds) {

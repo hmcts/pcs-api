@@ -8,11 +8,16 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.InjectMocks;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.IntroductoryDemotedOrOtherGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.IntroductoryDemotedOtherGroundReason;
 import uk.gov.hmcts.reform.pcs.ccd.domain.NoRentArrearsDiscretionaryGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.NoRentArrearsMandatoryGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsDiscretionaryGrounds;
+import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsGround;
+import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsGroundsReasons;
+import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsMandatoryGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
@@ -23,6 +28,7 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static java.util.Map.entry;
@@ -42,8 +48,8 @@ class ClaimGroundServiceTest {
     private ClaimGroundService claimGroundService;
 
     @ParameterizedTest
-    @MethodSource("testGroundsOtherThanRentArrearsScenarios")
-    void shouldHaveReasonIfGroundOtherThanRentArrears(
+    @MethodSource("groundsOtherThanRentArrearsScenarios")
+    void shouldReturnClaimGroundEntities_WhenIntroDemotionOrOtherTenancy(
         Set<IntroductoryDemotedOrOtherGrounds> grounds) {
         // Given
         CaseDetails<PCSCase, State> caseDetails = new CaseDetails<>();
@@ -66,7 +72,7 @@ class ClaimGroundServiceTest {
     }
 
     @Test
-    void shouldNotHaveReasonIfRentArrearsGround() {
+    void shouldNotHaveReasonIfRentArrearsGround_WhenIntroDemotionOrOtherTenancy() {
         // Given
         Set<IntroductoryDemotedOrOtherGrounds> grounds = Set.of(RENT_ARREARS);
 
@@ -86,7 +92,7 @@ class ClaimGroundServiceTest {
     }
 
     @Test
-    void shouldSaveNoGroundsWhenReasonIsPresent() {
+    void shouldSaveNoGroundsIfReasonIsPresent_WhenIntroDemotionOrOtherTenancy() {
         // Given
         PCSCase caseData = PCSCase.builder()
             .hasIntroductoryDemotedOtherGroundsForPossession(VerticalYesNo.YES)
@@ -108,47 +114,8 @@ class ClaimGroundServiceTest {
         assertThat(entities.getFirst().getGroundId()).isEqualTo(NO_GROUNDS.name());
     }
 
-    private static Stream<Arguments> testGroundsOtherThanRentArrearsScenarios() {
-        return Stream.of(
-            arguments(Set.of(ABSOLUTE_GROUNDS)),
-            arguments(Set.of(IntroductoryDemotedOrOtherGrounds.ANTI_SOCIAL)),
-            arguments(Set.of(IntroductoryDemotedOrOtherGrounds.BREACH_OF_THE_TENANCY)),
-            arguments(Set.of(IntroductoryDemotedOrOtherGrounds.OTHER))
-        );
-    }
-
-    private static IntroductoryDemotedOtherGroundReason getReasonForGround(
-        Set<IntroductoryDemotedOrOtherGrounds> grounds) {
-        IntroductoryDemotedOtherGroundReason reasonForGround = null;
-
-        for (IntroductoryDemotedOrOtherGrounds ground : grounds) {
-            if (ground.equals(ABSOLUTE_GROUNDS)) {
-                reasonForGround =
-                    IntroductoryDemotedOtherGroundReason.builder()
-                        .absoluteGrounds("Absolute reason")
-                        .build();
-            } else if (ground.equals(ANTI_SOCIAL)) {
-                reasonForGround =
-                    IntroductoryDemotedOtherGroundReason.builder()
-                        .antiSocialBehaviourGround("Antisocial behaviour reason")
-                        .build();
-            } else if (ground.equals(BREACH_OF_THE_TENANCY)) {
-                reasonForGround =
-                    IntroductoryDemotedOtherGroundReason.builder()
-                        .breachOfTheTenancyGround("Breach of the tenancy reason")
-                        .build();
-            } else if (ground.equals(OTHER)) {
-                reasonForGround =
-                    IntroductoryDemotedOtherGroundReason.builder()
-                        .otherGround("Other grounds reason")
-                        .build();
-            }
-        }
-        return reasonForGround;
-    }
-
     @Test
-    void shouldReturnClaimGroundEntitiesForMandatoryAndDiscretionaryGrounds() {
+    void shouldReturnClaimGroundEntities_WhenAssuredTenancyNoRentArrears() {
         NoRentArrearsReasonForGrounds grounds = NoRentArrearsReasonForGrounds.builder()
             .ownerOccupierTextArea("Owner occupier reason")
             .repossessionByLenderTextArea("Repossession reason")
@@ -217,7 +184,7 @@ class ClaimGroundServiceTest {
     }
 
     @Test
-    void shouldIgnoreNullGrounds() {
+    void shouldIgnoreNullGrounds_WhenAssuredTenancyNoRentArrears() {
         // Given
         PCSCase caseData = PCSCase.builder()
             .typeOfTenancyLicence(TenancyLicenceType.ASSURED_TENANCY)
@@ -228,5 +195,118 @@ class ClaimGroundServiceTest {
 
         // Then
         assertThat(groundEntities).isEmpty();
+    }
+
+    @Test
+    void shouldReturnClaimGroundEntities_WhenAssuredTenancyRentArrears() {
+        // Given
+        Set<RentArrearsMandatoryGrounds> mandatoryGrounds = Set.of(
+            RentArrearsMandatoryGrounds.OWNER_OCCUPIER_GROUND1,
+            RentArrearsMandatoryGrounds.REDEVELOPMENT_GROUND6
+        );
+
+        Set<RentArrearsDiscretionaryGrounds> discretionaryGrounds = Set.of(
+            RentArrearsDiscretionaryGrounds.BREACH_TENANCY_GROUND12,
+            RentArrearsDiscretionaryGrounds.NUISANCE_ANNOYANCE_GROUND14
+        );
+
+        RentArrearsGroundsReasons reasons = RentArrearsGroundsReasons.builder()
+            .ownerOccupierReason("Owner occupier needs the property")
+            .redevelopmentReason("Redevelopment planned")
+            .breachOfTenancyConditionsReason("Tenant breached agreement")
+            .nuisanceAnnoyanceReason("Tenant caused nuisance")
+            .build();
+
+        PCSCase caseData = PCSCase.builder()
+            .typeOfTenancyLicence(TenancyLicenceType.ASSURED_TENANCY)
+            .groundsForPossession(YesOrNo.YES)
+            .rentArrearsMandatoryGrounds(mandatoryGrounds)
+            .rentArrearsDiscretionaryGrounds(discretionaryGrounds)
+            .rentArrearsGroundsReasons(reasons)
+            .build();
+
+        // When
+        List<ClaimGroundEntity> result = claimGroundService.getGroundsWithReason(caseData);
+
+        // Then
+        assertThat(result).hasSize(mandatoryGrounds.size() + discretionaryGrounds.size());
+
+        Map<String, String> groundAndReason = result.stream()
+            .collect(Collectors.toMap(ClaimGroundEntity::getGroundId, ClaimGroundEntity::getGroundReason));
+
+        assertThat(groundAndReason)
+            .containsEntry("OWNER_OCCUPIER_GROUND1", "Owner occupier needs the property")
+            .containsEntry("REDEVELOPMENT_GROUND6", "Redevelopment planned")
+            .containsEntry("BREACH_TENANCY_GROUND12", "Tenant breached agreement")
+            .containsEntry("NUISANCE_ANNOYANCE_GROUND14", "Tenant caused nuisance");
+    }
+
+    @Test
+    void shouldSaveOnlyRentArrearsGrounds_WhenAssuredTenancyRentArrears() {
+        // Given
+        Set<RentArrearsGround> rentArrearsGrounds = Set.of(
+            RentArrearsGround.SERIOUS_RENT_ARREARS_GROUND8,
+            RentArrearsGround.RENT_ARREARS_GROUND10,
+            RentArrearsGround.PERSISTENT_DELAY_GROUND11
+        );
+
+        PCSCase caseData = PCSCase.builder()
+            .typeOfTenancyLicence(TenancyLicenceType.ASSURED_TENANCY)
+            .groundsForPossession(YesOrNo.YES)
+            .rentArrearsGrounds(rentArrearsGrounds)
+            .build();
+
+        // When
+        List<ClaimGroundEntity> result = claimGroundService.getGroundsWithReason(caseData);
+
+        // Then
+        assertThat(result).hasSize(rentArrearsGrounds.size());
+
+        Set<String> savedGrounds = result.stream()
+            .map(entity -> entity.getGroundId()).collect(Collectors.toSet());
+
+        assertThat(savedGrounds).contains(RentArrearsGround.SERIOUS_RENT_ARREARS_GROUND8.name());
+        assertThat(savedGrounds).contains(RentArrearsGround.RENT_ARREARS_GROUND10.name());
+        assertThat(savedGrounds).contains(RentArrearsGround.PERSISTENT_DELAY_GROUND11.name());
+
+    }
+
+    private static IntroductoryDemotedOtherGroundReason getReasonForGround(
+        Set<IntroductoryDemotedOrOtherGrounds> grounds) {
+        IntroductoryDemotedOtherGroundReason reasonForGround = null;
+
+        for (IntroductoryDemotedOrOtherGrounds ground : grounds) {
+            if (ground.equals(ABSOLUTE_GROUNDS)) {
+                reasonForGround =
+                    IntroductoryDemotedOtherGroundReason.builder()
+                        .absoluteGrounds("Absolute reason")
+                        .build();
+            } else if (ground.equals(ANTI_SOCIAL)) {
+                reasonForGround =
+                    IntroductoryDemotedOtherGroundReason.builder()
+                        .antiSocialBehaviourGround("Antisocial behaviour reason")
+                        .build();
+            } else if (ground.equals(BREACH_OF_THE_TENANCY)) {
+                reasonForGround =
+                    IntroductoryDemotedOtherGroundReason.builder()
+                        .breachOfTheTenancyGround("Breach of the tenancy reason")
+                        .build();
+            } else if (ground.equals(OTHER)) {
+                reasonForGround =
+                    IntroductoryDemotedOtherGroundReason.builder()
+                        .otherGround("Other grounds reason")
+                        .build();
+            }
+        }
+        return reasonForGround;
+    }
+
+    private static Stream<Arguments> groundsOtherThanRentArrearsScenarios() {
+        return Stream.of(
+            arguments(Set.of(ABSOLUTE_GROUNDS)),
+            arguments(Set.of(IntroductoryDemotedOrOtherGrounds.ANTI_SOCIAL)),
+            arguments(Set.of(IntroductoryDemotedOrOtherGrounds.BREACH_OF_THE_TENANCY)),
+            arguments(Set.of(IntroductoryDemotedOrOtherGrounds.OTHER))
+        );
     }
 }

@@ -42,7 +42,7 @@ class NoRentArrearsGroundsForPossessionOptionsTest extends BasePageTest {
 
         PCSCase updatedCaseData = response.getData();
 
-        assertThat(updatedCaseData.getShowNoRentArrearsGroundsReasonsPage()).isEqualTo(expectedShowFlag);
+        assertThat(updatedCaseData.getShowNoRentArrearsGroundReasonPage()).isEqualTo(expectedShowFlag);
     }
 
     private static Stream<Arguments> provideRentArrearsScenarios() {

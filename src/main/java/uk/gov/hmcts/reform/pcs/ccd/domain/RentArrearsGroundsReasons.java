@@ -12,7 +12,7 @@ import static uk.gov.hmcts.ccd.sdk.type.FieldType.TextArea;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class RentArrearsGroundReasons {
+public class RentArrearsGroundsReasons {
 
     // ---------- Mandatory grounds ----------
     @CCD(

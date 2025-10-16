@@ -27,7 +27,7 @@ public class RentArrearsGroundForPossessionAdditionalGrounds implements CcdPageC
             .showCondition("hasOtherAdditionalGrounds=\"Yes\""
                            + " AND typeOfTenancyLicence=\"ASSURED_TENANCY\""
                            + " AND groundsForPossession=\"Yes\"")
-            .readonly(PCSCase::getShowRentArrearsReasonsForGroundsPage, NEVER_SHOW)
+            .readonly(PCSCase::getShowRentArrearsGroundReasonPage, NEVER_SHOW)
             .label("groundForPossessionAdditionalGrounds-info", """
             ---
             <p class="govuk-body">You may have already given the defendants notice of your intention to begin
@@ -58,7 +58,7 @@ public class RentArrearsGroundForPossessionAdditionalGrounds implements CcdPageC
 
         boolean shouldShowReasonsPage = hasOtherDiscretionaryGrounds || hasOtherMandatoryGrounds;
 
-        caseData.setShowRentArrearsReasonsForGroundsPage(shouldShowReasonsPage ? YesOrNo.YES : YesOrNo.NO);
+        caseData.setShowRentArrearsGroundReasonPage(shouldShowReasonsPage ? YesOrNo.YES : YesOrNo.NO);
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
             .data(caseData)
