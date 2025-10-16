@@ -65,7 +65,7 @@ public class NoRentArrearsGroundsForPossessionOptions implements CcdPageConfigur
                 && ground != NoRentArrearsDiscretionaryGrounds.RENT_PAYMENT_DELAY);
 
         boolean shouldShowReasonsPage = hasOtherDiscretionaryGrounds || hasOtherMandatoryGrounds;
-        caseData.setShowNoRentArrearsGroundReasonPage(shouldShowReasonsPage ? YesOrNo.YES : YesOrNo.NO);
+        caseData.setShowNoRentArrearsGroundReasonPage(YesOrNo.from(shouldShowReasonsPage) );
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
             .data(caseData)

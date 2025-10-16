@@ -62,8 +62,6 @@ public class ClaimGroundService {
             rentArrearsGrounds.forEach(rentArrearsGround -> {
                 entities.add(ClaimGroundEntity.builder()
                                  .groundId(rentArrearsGround.name())
-                                 .groundReason(null)
-                                 .groundDescription(null)
                                  .build());
             });
             return entities;
@@ -208,7 +206,6 @@ public class ClaimGroundService {
                 ClaimGroundEntity.builder()
                     .groundId(NO_GROUNDS.name())
                     .groundReason(pcsCase.getIntroductoryDemotedOtherGroundReason().getNoGrounds())
-                    .groundDescription(null)
                     .build());
         }
 
