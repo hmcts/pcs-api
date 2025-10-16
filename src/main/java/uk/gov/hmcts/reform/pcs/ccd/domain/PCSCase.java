@@ -393,6 +393,15 @@ public class PCSCase {
     private List<ListValue<Document>> noticeDocuments;
 
     @CCD(
+        label = "Citizen documents",
+        hint = "Documents uploaded by the citizen",
+        typeOverride = FieldType.Collection,
+        typeParameterOverride = "AdditionalDocument",
+        access = {CitizenAccess.class}
+    )
+    private List<ListValue<AdditionalDocument>> citizenDocuments;
+
+    @CCD(
         label = "What type of tenancy or licence is in place?",
         access = {CaseworkerReadAccess.class}
     )

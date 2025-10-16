@@ -81,6 +81,7 @@ public class PcsCaseService {
     public void mergeCaseData(PcsCaseEntity pcsCaseEntity, PCSCase pcsCase) {
         pcsCaseMergeService.mergeCaseData(pcsCaseEntity, pcsCase);
         pcsCaseEntity.setPartyDocuments(partyDocumentsService.buildPartyDocuments(pcsCase));
+        pcsCaseEntity.setCitizenDocuments(partyDocumentsService.buildCitizenDocuments(pcsCase));
     }
 
     public PcsCaseEntity loadCase(long caseReference) {

@@ -9,6 +9,7 @@ import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.AdditionalDocument;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
@@ -17,6 +18,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
+import uk.gov.hmcts.reform.pcs.ccd.model.PartyDocumentDto;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.UnsubmittedCaseDataService;
@@ -25,10 +27,7 @@ import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.math.BigDecimal;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -100,6 +99,7 @@ public class CCDCaseRepository extends DecentralisedCaseRepository<PCSCase> {
                 && pcsCaseEntity.getTenancyLicence().getNoticeServed() != null
                 ? YesOrNo.from(pcsCaseEntity.getTenancyLicence().getNoticeServed()) : null)
             .defendants(pcsCaseService.mapToDefendantDetails(pcsCaseEntity.getDefendants()))
+            .citizenDocuments(mapCitizenDocumentsToListValue(pcsCaseEntity.getCitizenDocuments()))
             .build();
 
         setDerivedProperties(pcsCase, pcsCaseEntity);
@@ -186,6 +186,24 @@ public class CCDCaseRepository extends DecentralisedCaseRepository<PCSCase> {
         return partyEntities.stream()
             .map(entity -> modelMapper.map(entity, Party.class))
             .collect(Collectors.collectingAndThen(Collectors.toList(), ListValueUtils::wrapListItems));
+    }
+
+    private List<ListValue<AdditionalDocument>> mapCitizenDocumentsToListValue(
+        List<PartyDocumentDto> citizenDocuments) {
+        if (citizenDocuments == null || citizenDocuments.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        return citizenDocuments.stream()
+            .map(dto -> AdditionalDocument.builder()
+                .documentType(dto.getDocumentType())
+                .document(dto.getDocument())
+                .description(dto.getDescription())
+                .build())
+            .collect(Collectors.collectingAndThen(
+                Collectors.toList(),
+                ListValueUtils::wrapListItems
+            ));
     }
 
     private static String poundsToPence(BigDecimal pounds) {
