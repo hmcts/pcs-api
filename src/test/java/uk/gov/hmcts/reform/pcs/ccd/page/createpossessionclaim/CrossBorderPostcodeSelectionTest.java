@@ -149,7 +149,7 @@ class CrossBorderPostcodeSelectionTest extends BasePageTest {
     }
 
     @Test
-    @DisplayName("Should not show Property Not Eligible page is property is eligible")
+    @DisplayName("Should not show Property Not Eligible page if property is eligible")
     void shouldNotShowNotEligibleOrNotAssignedPagesIfPropertyIsEligible() {
 
         // Given: page visible (from MakeAClaim), PNE hidden
