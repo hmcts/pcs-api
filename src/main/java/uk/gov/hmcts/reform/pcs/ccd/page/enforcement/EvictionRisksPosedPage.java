@@ -11,9 +11,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.RiskCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 
 
-/**
- * Full implementation will be done in another ticket - responses not captured at the moment.
- */
 @AllArgsConstructor
 @Component
 public class EvictionRisksPosedPage implements CcdPageConfiguration {
@@ -24,9 +21,9 @@ public class EvictionRisksPosedPage implements CcdPageConfiguration {
             .page("evictionRisksPosedPage", this::midEvent)
             .pageLabel("The risks posed by everyone at the property")
             .showCondition("confirmLivingAtProperty=\"YES\"")
-            .label("evictionRisksPosedPage-info", "---")
-            .label("evictionRisksPosedPage-hint", "Include any risks posed by the defendants and also anyone else living at the property")
-            .optional(PCSCase::getEnforcementRiskCategories);
+            .label("evictionRisksPosedPage-line-separator", "---")
+
+            .mandatory(PCSCase::getEnforcementRiskCategories);
     }
 
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,

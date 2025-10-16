@@ -20,7 +20,8 @@ public class EvictionFirearmsPossessionDetailsPage implements CcdPageConfigurati
             .page("evictionFirearmsPossessionDetails", this::midEvent)
             .pageLabel("Their history of firearm possession")
             .showCondition("enforcementRiskCategoriesCONTAINS\"FIREARMS_POSSESSION\"")
-            .optional(PCSCase::getEnforcementFirearmsDetails);
+            .label("evictionFirearmsPossessionDetails-line-separator", "---")
+            .mandatory(PCSCase::getEnforcementFirearmsDetails);
     }
 
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,

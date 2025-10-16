@@ -20,7 +20,8 @@ public class EvictionCriminalAntisocialDetailsPage implements CcdPageConfigurati
             .page("evictionCriminalAntisocialDetails", this::midEvent)
             .pageLabel("Their history of criminal or antisocial behaviour")
             .showCondition("enforcementRiskCategoriesCONTAINS\"CRIMINAL_OR_ANTISOCIAL\"")
-            .optional(PCSCase::getEnforcementCriminalDetails);
+            .label("evictionCriminalAntisocialDetails-line-separator", "---")
+            .mandatory(PCSCase::getEnforcementCriminalDetails);
     }
 
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,

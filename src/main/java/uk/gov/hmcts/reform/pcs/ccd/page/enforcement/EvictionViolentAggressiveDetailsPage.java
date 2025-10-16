@@ -20,7 +20,8 @@ public class EvictionViolentAggressiveDetailsPage implements CcdPageConfiguratio
             .page("evictionViolentAggressiveDetails", this::midEvent)
             .pageLabel("Their violent or aggressive behaviour")
             .showCondition("enforcementRiskCategoriesCONTAINS\"VIOLENT_OR_AGGRESSIVE\"")
-            .optional(PCSCase::getEnforcementViolentDetails);
+            .label("evictionViolentAggressiveDetails-line-separator", "---")
+            .mandatory(PCSCase::getEnforcementViolentDetails);
     }
 
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
