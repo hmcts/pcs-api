@@ -4,6 +4,7 @@ import { defineConfig, devices } from '@playwright/test';
 
 const DEFAULT_VIEWPORT = { width: 1920, height: 1080 };
 export const waitForPageRedirectionTimeout = 3000;
+export const actionRetries = 5;
 
 export default defineConfig({
   testDir: 'tests/',
@@ -11,9 +12,10 @@ export default defineConfig({
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   /* Retry on CI only */
-  retries: process.env.CI ? 2 : 0,
-  workers: process.env.CI ? 4 : 2,  
-  timeout: 90 * 1000,
+  retries: process.env.CI ? 3 : 0,
+  // Reduced workers from 4 → 2 due to server/login contention issues
+  workers: 2,
+  timeout: 150 * 1000,
   expect: { timeout: 10 * 1000 },
   use: { actionTimeout: 10 * 1000, navigationTimeout: 10 * 1000 },
   /* Report slow tests if they take longer than 5 mins */
@@ -44,7 +46,7 @@ export default defineConfig({
         trace: 'on-first-retry',
         javaScriptEnabled: true,
         viewport: DEFAULT_VIEWPORT,
-        headless: process.env.CI? true : false,
+        headless: !!process.env.CI,
       },
     },
     ...(process.env.CI ? [
@@ -58,7 +60,7 @@ export default defineConfig({
           trace: 'on-first-retry' as const,
           javaScriptEnabled: true,
           viewport: DEFAULT_VIEWPORT,
-          headless: process.env.CI? true : false,
+          headless: !!process.env.CI,
         }
       }
     ] : [])

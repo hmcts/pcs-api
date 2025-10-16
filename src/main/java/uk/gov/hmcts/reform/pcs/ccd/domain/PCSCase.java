@@ -33,6 +33,12 @@ import static uk.gov.hmcts.ccd.sdk.type.FieldType.TextArea;
 @Data
 public class PCSCase {
 
+    @CCD(
+        searchable = false
+    )
+    @External
+    private String feeAmount;
+
     private YesOrNo hasUnsubmittedCaseData;
 
     @CCD(label = "Do you want to resume your claim using your saved answers?")
@@ -151,7 +157,7 @@ public class PCSCase {
 
     @CCD(
         label = "Are you claiming possession because of rent arrears?",
-        hint = "You'll be able to add additional grounds later if you select yes."
+        hint = "You'll be able to add additional grounds later if you select yes"
     )
     private YesOrNo groundsForPossession;
 
@@ -235,7 +241,7 @@ public class PCSCase {
 
     @CCD(
         label = "Who is the claimant in this case?",
-        hint = "If you’re a legal representative, you should select the type of claimant you’re representing.",
+        hint = "If you’re a legal representative, you should select the type of claimant you’re representing",
         typeOverride = DynamicRadioList
     )
     private DynamicStringList claimantType;
@@ -371,7 +377,7 @@ public class PCSCase {
     private String noticeEmailExplanation;
 
     @CCD(
-        label = "Explain what the other means were",
+        label = "Explain what the other means were. You can enter up to 250 characters",
         max = 250,
         typeOverride = TextArea
     )
@@ -432,7 +438,7 @@ public class PCSCase {
         label = "For the period shown on the rent statement, have any rent payments been paid by someone "
             + "other than the defendants?",
         hint = "This could include payments from Universal Credit, Housing Benefit or any other contributions "
-            + "made by a government department, like the Department for Work and Pensions (DWP)."
+            + "made by a government department, like the Department for Work and Pensions (DWP)"
     )
     private VerticalYesNo thirdPartyPayments;
 
@@ -463,7 +469,7 @@ public class PCSCase {
 
     @CCD(
             label = "Enter your grounds for possession",
-            hint = "You'll be able to explain your reasons for claiming Possession"
+            hint = "You'll be able to explain your reasons for claiming possession"
                     + " under these grounds on the next screen",
             typeOverride = TextArea
     )
@@ -551,12 +557,13 @@ public class PCSCase {
     private NoRentArrearsReasonForGrounds noRentArrearsReasonForGrounds;
 
     @CCD(
-        label = "Did you complete all or part of this claim in Welsh?",
-        hint = "The answer to this question will help make sure your claim is translated correctly",
-        access = {CitizenAccess.class}
+        label = "Which language did you use to complete this service?",
+        hint = "If someone else helped you to answer a question in this service, "
+            + "ask them if they answered any questions in Welsh. We’ll use this to "
+            + "make sure your claim is processed correctly"
     )
-    private VerticalYesNo welshUsed;
-
+    private LanguageUsed languageUsed;
+  
     @JsonUnwrapped
     private DefendantCircumstances defendantCircumstances;
 
@@ -572,6 +579,9 @@ public class PCSCase {
     @JsonUnwrapped
     private SuspensionOfRightToBuy suspensionOfRightToBuy;
 
+    @JsonUnwrapped
+    private DemotionOfTenancy demotionOfTenancy;
+
     private AdditionalReasons additionalReasonsForPossession;
 
     @JsonUnwrapped
@@ -582,15 +592,13 @@ public class PCSCase {
         label = "Do you want to upload any additional documents?",
         hint = "You can either upload documents now or closer to the hearing date. "
             + "Any documents you upload now will be included in the pack of documents a judge will "
-            + "receive before the hearing (the bundle).",
-        access = {CitizenAccess.class}
+            + "receive before the hearing (the bundle)"
     )
     private VerticalYesNo wantToUploadDocuments;
 
     @CCD(
         label = "Add document",
-        hint = "Upload a document to the system",
-        access = {CitizenAccess.class}
+        hint = "Upload a document to the system"
     )
     private List<ListValue<AdditionalDocument>> additionalDocuments;
 
@@ -606,6 +614,10 @@ public class PCSCase {
         typeParameterOverride = "CompletionNextStep"
     )
     private CompletionNextStep completionNextStep;
+
+    @JsonUnwrapped
+    private SuspensionOfRightToBuyDemotionOfTenancy  suspensionOfRightToBuyDemotionOfTenancy;
+
 
     @JsonUnwrapped
     @CCD
