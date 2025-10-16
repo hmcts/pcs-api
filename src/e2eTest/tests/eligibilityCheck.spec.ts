@@ -1,5 +1,4 @@
 import {test} from '@playwright/test';
-import {parentSuite} from 'allure-js-commons';
 import {initializeExecutor, performAction, performValidation} from '@utils/controller';
 import {borderPostcode} from '@data/page-data/borderPostcode.page.data';
 import {addressDetails} from '@data/page-data/addressDetails.page.data';
@@ -12,22 +11,17 @@ import {claimType} from '@data/page-data/claimType.page.data';
 import {user} from '@data/user-data/permanent.user.data';
 import {home} from '@data/page-data/home.page.data';
 
-test.beforeEach(async ({page}, testInfo) => {
+test.beforeEach(async ({page}) => {
   initializeExecutor(page);
-  await parentSuite('Eligibility Check');
   await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
-  await testInfo.attach('Page URL', {
-    body: page.url(),
-    contentType: 'text/plain',
-  });
   await performAction('login', user.claimantSolicitor);
   await performAction('clickTab', home.createCaseTab);
   await performAction('selectJurisdictionCaseTypeEvent');
   await performAction('housingPossessionClaim');
 });
 
-test.describe('[Eligibility checks for cross and non cross border postcodes] @Master @nightly', async () => {
-  test('Cross border - Verify postcode eligibility check redirection and content for England and Wales', async ({page}) => {
+test.describe('[Eligibility Check - Create Case] @Master @nightly', async () => {
+  test('Cross border - Verify postcode eligibility check redirection and content for England and Wales', async () => {
     await performAction('selectAddress', {
       postcode: borderPostcode.englandWalesPostcode,
       addressIndex: addressDetails.addressIndex
@@ -132,6 +126,29 @@ test.describe('[Eligibility checks for cross and non cross border postcodes] @Ma
     await performAction('extractCaseIdFromAlert');
     await performAction('clickButtonAndVerifyPageNavigation', provideMoreDetailsOfClaim.continue, claimantType.mainHeader);
     await performAction('selectClaimantType', claimantType.privateLandlord);
+    await performValidation('text', {"text": userIneligible.formN5Wales, "elementType": "paragraph"})
+    await performValidation('text', {"text": userIneligible.propertyPossessionsFullListLink, "elementType": "paragraph"})
+    await performAction('clickButton', userIneligible.continue);
+    await performValidation('errorMessage', {
+      header: userIneligible.eventNotCreated, message: userIneligible.unableToProceed
+    });
+    await performValidation('errorMessage', {
+      header: userIneligible.errors, message: userIneligible.notEligibleForOnlineService
+    });
+    await performAction('clickButton', userIneligible.cancel);
+  });
+
+  test('Wales - Unsuccessful case creation journey due to claim type not in scope of Release1 @R1only', async () => {
+    await performAction('selectAddress', {
+      postcode: addressDetails.walesCourtAssignedPostcode,
+      addressIndex: addressDetails.addressIndex
+    });
+    await performAction('extractCaseIdFromAlert');
+    await performAction('clickButtonAndVerifyPageNavigation', provideMoreDetailsOfClaim.continue, claimantType.mainHeader);
+    await performAction('selectClaimantType', claimantType.wales.communityLandlord);
+    await performAction('selectClaimType', claimType.yes);
+    await performValidation('text', {"text": userIneligible.formN5Wales, "elementType": "paragraph"})
+    await performValidation('text', {"text": userIneligible.propertyPossessionsFullListLink, "elementType": "paragraph"})
     await performAction('clickButton', userIneligible.continue);
     await performValidation('errorMessage', {
       header: userIneligible.eventNotCreated, message: userIneligible.unableToProceed
@@ -149,7 +166,7 @@ test.describe('[Eligibility checks for cross and non cross border postcodes] @Ma
     });
     await performAction('extractCaseIdFromAlert');
     await performAction('clickButtonAndVerifyPageNavigation', provideMoreDetailsOfClaim.continue, claimantType.mainHeader);
-    await performAction('selectClaimantType', claimantType.registeredProviderForSocialHousing);
+    await performAction('selectClaimantType', claimantType.england.registeredProviderForSocialHousing);
     await performAction('selectClaimType', claimType.yes);
     await performAction('clickButton', userIneligible.continue);
     await performValidation('errorMessage', {
