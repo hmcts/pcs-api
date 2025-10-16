@@ -31,7 +31,7 @@ public class EvictionDelayWarningPage implements CcdPageConfiguration {
                             eviction day
                         </strong>
                       </div>
-                      <p class=\"govuk-body\"> For example, if the bailiffs arrive to carry out the eviction and they
+                      <p class=\"govuk-body\">For example, if the bailiffs arrive to carry out the eviction and they
                       discover a dangerous dog on the premises.</p>""");
     }
 
