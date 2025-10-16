@@ -42,9 +42,13 @@ public class DefendantCircumstancesPage implements CcdPageConfiguration {
         
         DefendantCircumstances defendantCircumstances = caseData.getDefendantCircumstances();
         if (defendantCircumstances != null) {
-            String dynamicLabel = "Give details about the " 
-                + defendantCircumstances.getDefendantTermPossessive() 
-                + " circumstances";
+            // Use fallback if defendantTermPossessive is not set
+            String defendantTerm = defendantCircumstances.getDefendantTermPossessive();
+            if (defendantTerm == null || defendantTerm.trim().isEmpty()) {
+                defendantTerm = "defendants'";
+            }
+            
+            String dynamicLabel = "Give details about the " + defendantTerm + " circumstances";
             
             List<String> validationErrors = textAreaValidationService.validateSingleTextArea(
                 defendantCircumstances.getDefendantCircumstancesInfo(),
