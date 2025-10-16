@@ -44,7 +44,6 @@ export class MakeClaimAction implements IAction {
         const actionToPerform = actionsMap.get(action);
         if (!actionToPerform) throw new Error(`No action found for '${action}'`);
         await actionToPerform();
-        initializeExecutor(page);
     }
 
     private async makeClaim(page: Page): Promise<void> {

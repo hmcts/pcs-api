@@ -1,9 +1,8 @@
 import { Page } from "@playwright/test";
 import { home } from "@data/page-data/home.page.data";
 import { caseList } from "@data/page-data/page-data-enforcement/caseList.page.data"
-import { performAction } from "@utils/controller-enforcement";
+import { performAction, performValidation } from "@utils/controller-enforcement";
 import { IAction, actionData, actionRecord } from "@utils/interfaces/action.interface";
-import { waitForPageRedirectionTimeout } from "playwright.config";
 
 export let randomCaseNumber: string;
 export let noCaseFound: boolean;
@@ -28,7 +27,6 @@ export class EnforcementAction implements IAction {
     await performAction('select', caseList.caseTypeLabel, caseList.caseType.civilPossessions);
     await performAction('select', caseList.stateLabel, caseState);
     await performAction('clickButton', caseList.apply);
-    await page.waitForTimeout(waitForPageRedirectionTimeout);
   }
 
   private async findTheCase(caseNumber: actionData) {
@@ -43,6 +41,8 @@ export class EnforcementAction implements IAction {
   private async pickAnyCase(page: Page) {
    randomCaseNumber = await page.locator('a[aria-label*="go to case with Case reference"]').first().innerText();
     await performAction('clickButton', randomCaseNumber);
+    await page.waitForURL(`${process.env.MANAGE_CASE_BASE_URL}/cases/case-details/${randomCaseNumber.replaceAll('-','')}#Summary`);
+    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + randomCaseNumber});
   }
 
   private async login(user: string | actionRecord) {
