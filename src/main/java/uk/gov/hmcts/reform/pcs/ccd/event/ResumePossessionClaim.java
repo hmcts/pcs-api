@@ -138,9 +138,9 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             .add(new ClaimantInformation())
             .add(contactPreferences)
             .add(defendantsDetails)
-            .add(new OccupationLicenseDetailsWales())
+            .add(new OccupationLicenseDetailsWales())//TO DO wire once  HDPI-2365 is merged to master
             .add(new GroundsForPossessionWales())
-            .add(new ReasonsForPossessionWales())
+            .add(new ReasonsForPossessionWales())//TO DO wire once it is merged to master
             .add(tenancyLicenceDetails)
             .add(new SecureOrFlexibleGroundsForPossession())
             .add(new RentArrearsOrBreachOfTenancyGround())

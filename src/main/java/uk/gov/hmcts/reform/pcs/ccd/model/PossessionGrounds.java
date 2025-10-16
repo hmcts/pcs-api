@@ -22,7 +22,7 @@ public class PossessionGrounds {
 
     private SecureOrFlexibleReasonsForGrounds secureOrFlexibleReasonsForGrounds;
 
-    // Welsh-specific grounds
+    // Wales-specific grounds
     private Set<String> walesDiscretionaryGrounds;
     private Set<String> walesMandatoryGrounds;
     private Set<String> walesEstateManagementGrounds;
