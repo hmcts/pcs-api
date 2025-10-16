@@ -6,8 +6,9 @@ import {SelectAction} from '@utils/actions/element-actions/select.action';
 import {NavigateToUrl} from "@utils/actions/custom-actions/navigateToUrl.action";
 import {ClickButtonAction} from "@utils/actions/element-actions/clickButton.action";
 import {ClickRadioButton} from "@utils/actions/element-actions/clickRadioButton.action";
-import {EnforcementAction} from '@utils/actions/custom-actions/custom-actions-enforcement/enforcement.action';
 import {MakeClaimAction} from '@utils/actions/custom-actions/custom-actions-enforcement/makeClaim.action';
+import {LoginAction} from '@utils/actions/custom-actions/login.action';
+import {SearchCaseAction} from '@utils/actions/custom-actions/searchCase.action';
 
 export class ActionEnforcementRegistry {
   private static actions: Map<string, IAction> = new Map([
@@ -18,14 +19,14 @@ export class ActionEnforcementRegistry {
     ['inputText', new InputTextAction()],
     ['check', new CheckAction()],
     ['select', new SelectAction()],
-    ['loginEnforcement', new EnforcementAction()],
+    ['login', new LoginAction()],
     ['navigateToUrl', new NavigateToUrl()],
     ['clickRadioButton', new ClickRadioButton()],
-    ['caseFilter', new EnforcementAction()],
-    ['makeClaim', new MakeClaimAction()],
-    ['findCase', new EnforcementAction()],
-    ['pickAnyCase', new EnforcementAction()],
-    ['yourCases', new EnforcementAction()]
+    ['filterCaseFromCaseList', new SearchCaseAction()],
+    ['createNewCase', new MakeClaimAction()],
+    ['searchMyCaseFromFindCase', new SearchCaseAction()],
+    ['selectFirstCaseFromTheFilter', new SearchCaseAction()],
+    ['NoCasesFoundAfterSearch', new SearchCaseAction()]
   ]);
 
   static getAction(actionName: string): IAction {

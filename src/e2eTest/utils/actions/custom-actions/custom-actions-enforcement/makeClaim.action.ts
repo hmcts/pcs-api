@@ -39,14 +39,14 @@ export class MakeClaimAction implements IAction {
     async execute(page: Page, action: string, fieldName?: actionData | actionRecord, value?: actionData | actionRecord): Promise<void> {
 
         const actionsMap = new Map<string, () => Promise<void>>([
-            ['makeClaim', () => this.makeClaim(page)]
+            ['createNewCase', () => this.createNewCase(page)]
         ]);
         const actionToPerform = actionsMap.get(action);
         if (!actionToPerform) throw new Error(`No action found for '${action}'`);
         await actionToPerform();
     }
 
-    private async makeClaim(page: Page): Promise<void> {
+    private async createNewCase(page: Page): Promise<void> {
         initializeExecutor(page);
         await performAction('clickTab', home.createCaseTab);
         await performAction('selectJurisdictionCaseTypeEvent');

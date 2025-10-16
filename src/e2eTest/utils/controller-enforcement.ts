@@ -6,7 +6,7 @@ import { ActionEnforcementRegistry } from './registry/registry-enforcement/actio
 
 let testExecutor: { page: Page };
 
-export function initializeExecutor(page: Page): void {
+export function initializeEnforcementExecutor(page: Page): void {
   testExecutor = { page };
 }
 

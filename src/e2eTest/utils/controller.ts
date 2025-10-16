@@ -1,4 +1,4 @@
-import { Page, test } from '@playwright/test';
+import {Page, test} from '@playwright/test';
 import {actionData, actionRecord, actionTuple} from './interfaces/action.interface';
 import {validationData, validationRecord, validationTuple} from './interfaces/validation.interface';
 import {ActionRegistry} from './registry/action.registry';
