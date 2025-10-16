@@ -8,7 +8,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.EnforcementOrder;
 
-import static uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.EnforcementMultiLabel.WRIT_OR_WARRANT_CLARIFICATION;
+import static uk.gov.hmcts.reform.pcs.ccd.page.enforcement.EnforcementMultiLabel.WRIT_OR_WARRANT_CLARIFICATION;
 
 public class EnforcementApplicationPage implements CcdPageConfiguration {
 

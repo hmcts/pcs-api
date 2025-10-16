@@ -3,10 +3,10 @@ package uk.gov.hmcts.reform.pcs.ccd.page.enforcement;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.EnforcementMultiLabel;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.EnforcementOrder;
 
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
+import static uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent.SAVE_AND_RETURN;
 
 public class NameAndAddressForEvictionPage implements CcdPageConfiguration {
 
@@ -60,7 +60,7 @@ public class NameAndAddressForEvictionPage implements CcdPageConfiguration {
                 """)
             .complex(PCSCase::getEnforcementOrder)
             .mandatory(EnforcementOrder::getNameAndAddressForEviction)
-            .label("enforcementNameAndAddressPage-details-save-and-return", EnforcementMultiLabel.SAVE_AND_RETURN);
+            .label("enforcementNameAndAddressPage-details-save-and-return", SAVE_AND_RETURN);
 
     }
 
