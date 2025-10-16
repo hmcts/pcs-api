@@ -7,11 +7,13 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 
+import java.io.Serializable;
+
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class FeesAndPayTaskData {
+public class FeesAndPayTaskData implements Serializable {
 
     @NonNull @NotNull
     private String feeType;
