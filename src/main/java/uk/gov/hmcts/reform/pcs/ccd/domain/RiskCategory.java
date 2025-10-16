@@ -1,29 +1,28 @@
 package uk.gov.hmcts.reform.pcs.ccd.domain;
 
-import uk.gov.hmcts.ccd.sdk.api.CCD;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import uk.gov.hmcts.ccd.sdk.api.HasLabel;
 
-public enum RiskCategory {
+@AllArgsConstructor
+@Getter
+public enum RiskCategory implements HasLabel {
 
-    @CCD(label = "Violent or aggressive behaviour")
-    VIOLENT_OR_AGGRESSIVE,
+    VIOLENT_OR_AGGRESSIVE("Violent or aggressive behaviour"),
 
-    @CCD(label = "History of firearm possession")
-    FIREARMS_POSSESSION,
+    FIREARMS_POSSESSION("History of firearm possession"),
 
-    @CCD(label = "Criminal or antisocial behaviour")
-    CRIMINAL_OR_ANTISOCIAL,
+    CRIMINAL_OR_ANTISOCIAL("Criminal or antisocial behaviour"),
 
-    @CCD(label = "Verbal or written threats")
-    VERBAL_OR_WRITTEN_THREATS,
+    VERBAL_OR_WRITTEN_THREATS("Verbal or written threats"),
 
-    @CCD(label = "Member of a group that protests evictions")
-    PROTEST_GROUP_MEMBER,
+    PROTEST_GROUP_MEMBER("Member of a group that protests evictions"),
 
-    @CCD(label = "Police or social services visits to the property")
-    AGENCY_VISITS,
+    AGENCY_VISITS("Police or social services visits to the property"),
 
-    @CCD(label = "Aggressive dogs or other animals")
-    AGGRESSIVE_ANIMALS
+    AGGRESSIVE_ANIMALS("Aggressive dogs or other animals");
+
+    private final String label;
 }
 
 
