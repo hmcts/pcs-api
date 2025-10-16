@@ -11,6 +11,7 @@ import {ClickRadioButton} from "../actions/element-actions/clickRadioButton.acti
 import {UploadFileAction} from "@utils/actions/element-actions/uploadFile.action";
 import {searchCaseActions} from "@utils/actions/custom-actions/searchCase.action";
 import {CreateCaseWalesAction} from "@utils/actions/custom-actions/createCaseWales.action";
+import {NavigateToUrlAndHandleCookies} from "@utils/actions/custom-actions/navigateToUrlAndHandleCookies.action";
 
 export class ActionRegistry {
   private static actions: Map<string, IAction> = new Map([
@@ -24,6 +25,7 @@ export class ActionRegistry {
     ['createUserAndLogin', new LoginAction()],
     ['login', new LoginAction()],
     ['navigateToUrl', new NavigateToUrl()],
+    ['NavigateToUrlAndHandleCookies', new NavigateToUrlAndHandleCookies()],
     ['clickRadioButton', new ClickRadioButton()],
     ['uploadFile', new UploadFileAction()],
     ['selectAddress', new CreateCaseAction()],

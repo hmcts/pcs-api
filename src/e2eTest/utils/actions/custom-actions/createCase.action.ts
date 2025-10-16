@@ -597,10 +597,10 @@ export class CreateCaseAction implements IAction {
   }
 
   private async selectJurisdictionCaseTypeEvent() {
-    await performActions('Case option selection'
-      , ['select', createCase.jurisdictionLabel, createCase.possessionsJurisdiction]
-      , ['select', createCase.caseTypeLabel, createCase.caseType.civilPossessions]
-      , ['select', createCase.eventLabel, createCase.makeAPossessionClaimEvent]);
+    // await performActions('Case option selection'
+    //   , ['select', createCase.jurisdictionLabel, createCase.possessionsJurisdiction]
+    //   , ['select', createCase.caseTypeLabel, createCase.caseType.civilPossessions]
+    //   , ['select', createCase.eventLabel, createCase.makeAPossessionClaimEvent]);
     await performAction('clickButton', createCase.start);
   }
 

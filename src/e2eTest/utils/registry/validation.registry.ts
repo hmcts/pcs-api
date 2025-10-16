@@ -7,6 +7,7 @@ import {OptionListValidation} from "@utils/validations/element-validations/optio
 import {MainHeaderValidation} from "@utils/validations/element-validations/pageHeader.validation";
 import {ErrorMessageValidation} from "@utils/validations/element-validations/error-message.validation";
 import {RadioButtonValidation} from "@utils/validations/element-validations/radioButton.validation";
+import {compareWithSnapshotValidation} from "@utils/validations/element-validations/compareWithSnapshot.validation";
 import {compareWithFigmaValidation} from "@utils/validations/element-validations/compareWithFigma.validation";
 
 export class ValidationRegistry {
@@ -22,6 +23,7 @@ export class ValidationRegistry {
     ['elementNotToBeVisible', new VisibilityValidation()],
     ['waitUntilElementDisappears', new VisibilityValidation()],
     ['compareWithFigma', new compareWithFigmaValidation()],
+    ['compareWithSnapshot', new compareWithSnapshotValidation()]
   ]);
 
   static getValidation(validationType: string): IValidation {

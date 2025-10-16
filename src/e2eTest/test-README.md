@@ -125,6 +125,7 @@ Playwright 1.30+ | TypeScript 4.9+
 | selectStatementOfExpressTerms        | `performAction('selectStatementOfExpressTerms', statementOfExpressTerms.yes)`                                                                                                                              |
 | selectLanguageUsed                   | `performAction('selectLanguageUsed', languageUsed.no)`                                                                                                                                                     |
 | selectClaimantDetails | `performAction('selectClaimantDetails', ...)` |
+| NavigateToUrlAndHandleCookies | `performAction('NavigateToUrlAndHandleCookies', ...)` |
 ### Validations
 | Validation          | Example Usage |
 |------------------|---------------|
@@ -139,6 +140,7 @@ Playwright 1.30+ | TypeScript 4.9+
 | elementNotToBeVisible      | `performValidation('elementNotToBeVisible', 'testElement')`                                                                          |
 | waitUntilElementDisappears | `performValidation('waitUntilElementDisappears', 'testElement')`                                                                     |
 | compareWithFigma | `performValidation('compareWithFigma', ...)` |
+| compareWithSnapshot | `performValidation('compareWithSnapshot', ...)` |
 ### Basic Test
 
 ```typescript
