@@ -144,7 +144,7 @@ export class CreateCaseAction implements IAction {
   private async selectClaimantType(caseData: actionData) {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
     await performAction('clickRadioButton', caseData);
-    if(caseData === claimantType.registeredProviderForSocialHousing || caseData === claimantType.registeredCommunityLandlord){
+    if(caseData === claimantType.england.registeredProviderForSocialHousing || caseData === claimantType.wales.communityLandlord){
       await performAction('clickButtonAndVerifyPageNavigation', claimantType.continue, claimType.mainHeader);
     }
     else{
