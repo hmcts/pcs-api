@@ -636,21 +636,18 @@ public class PCSCase {
 
     @CCD(
         label = "How have they been violent or aggressive?",
-        max = 6800,
         typeOverride = TextArea
     )
     private String enforcementViolentDetails;
 
     @CCD(
         label = "What is their history of firearm possession?",
-        max = 6800,
         typeOverride = TextArea
     )
     private String enforcementFirearmsDetails;
 
     @CCD(
         label = "What is their history of criminal or antisocial behaviour?",
-        max = 6800,
         typeOverride = TextArea
     )
     private String enforcementCriminalDetails;
