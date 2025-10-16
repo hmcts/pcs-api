@@ -25,7 +25,6 @@ import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.anyList;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.doReturn;
 
 @ExtendWith(MockitoExtension.class)
 class NoticeDetailsTest extends BasePageTest {
@@ -39,7 +38,8 @@ class NoticeDetailsTest extends BasePageTest {
     @BeforeEach
     void setUp() {
         // Configure TextAreaValidationService mocks
-        lenient().doReturn(new ArrayList<>()).when(textAreaValidationService).validateMultipleTextAreas(any(), any());
+        lenient().doReturn(new ArrayList<>()).when(textAreaValidationService)
+            .validateMultipleTextAreas(any(), any());
         doAnswer(invocation -> {
             Object caseData = invocation.getArgument(0);
             List<String> errors = invocation.getArgument(1);

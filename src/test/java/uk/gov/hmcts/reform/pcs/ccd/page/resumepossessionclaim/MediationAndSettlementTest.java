@@ -8,7 +8,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
-import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
@@ -19,7 +18,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.anyList;
 import static org.mockito.Mockito.lenient;
@@ -35,7 +33,8 @@ class MediationAndSettlementTest extends BasePageTest {
     @BeforeEach
     void setUp() {
         // Configure TextAreaValidationService mocks
-        lenient().doReturn(new ArrayList<>()).when(textAreaValidationService).validateMultipleTextAreas(any(), any());
+        lenient().doReturn(new ArrayList<>()).when(textAreaValidationService)
+            .validateMultipleTextAreas(any(), any());
         doAnswer(invocation -> {
             Object caseData = invocation.getArgument(0);
             List<String> errors = invocation.getArgument(1);

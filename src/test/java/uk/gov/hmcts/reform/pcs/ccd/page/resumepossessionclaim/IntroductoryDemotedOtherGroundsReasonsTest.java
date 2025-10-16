@@ -18,7 +18,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.anyList;
 import static org.mockito.Mockito.lenient;
@@ -34,7 +33,8 @@ class IntroductoryDemotedOtherGroundsReasonsTest extends BasePageTest {
     @BeforeEach
     void setUp() {
         // Configure TextAreaValidationService mocks
-        lenient().doReturn(new ArrayList<>()).when(textAreaValidationService).validateMultipleTextAreas(any(), any());
+        lenient().doReturn(new ArrayList<>()).when(textAreaValidationService)
+            .validateMultipleTextAreas(any(), any());
         doAnswer(invocation -> {
             Object caseData = invocation.getArgument(0);
             List<String> errors = invocation.getArgument(1);
@@ -52,7 +52,8 @@ class IntroductoryDemotedOtherGroundsReasonsTest extends BasePageTest {
     class ValidationIntegrationTests {
 
         @Test
-        @DisplayName("Should validate all text area fields when introductory demoted other grounds reasons are provided")
+        @DisplayName("Should validate all text area fields when introductory demoted other grounds " 
+            + "reasons are provided")
         void shouldValidateAllTextAreaFieldsWhenIntroductoryDemotedOtherGroundsReasonsAreProvided() {
             // Given
             PCSCase caseData = PCSCase.builder()

@@ -19,7 +19,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.anyInt;
 import static org.mockito.Mockito.anyList;
@@ -36,7 +35,8 @@ class ClaimantCircumstancesPageTest extends BasePageTest {
     @BeforeEach
     void setUp() {
         // Configure TextAreaValidationService mocks
-        lenient().doReturn(new ArrayList<>()).when(textAreaValidationService).validateSingleTextArea(any(), any(), anyInt());
+        lenient().doReturn(new ArrayList<>()).when(textAreaValidationService)
+            .validateSingleTextArea(any(), any(), anyInt());
         doAnswer(invocation -> {
             Object caseData = invocation.getArgument(0);
             List<String> errors = invocation.getArgument(1);
