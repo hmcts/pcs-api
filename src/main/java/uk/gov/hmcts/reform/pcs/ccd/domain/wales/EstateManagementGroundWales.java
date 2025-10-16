@@ -17,5 +17,5 @@ public enum EstateManagementGroundWales implements HasLabel {
   JOINT_CONTRACT_HOLDERS_H("Joint contract-holders (ground H)"),
   OTHER_ESTATE_MGMT_I("Other estate management reasons (ground I)");
 
-  private final String label;
+    private final String label;
 }
