@@ -11,10 +11,12 @@ public class RentArrearsGroundsForPossessionReasons implements CcdPageConfigurat
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
             .page("rentArrearsGroundsForPossessionReasons")
-            .pageLabel("Grounds for possession")
+            .pageLabel("Reasons for possession")
             .showCondition("groundsForPossession=\"Yes\""
                                + " AND typeOfTenancyLicence=\"ASSURED_TENANCY\""
-                               + " AND showRentArrearsGroundReasonPage=\"Yes\"")
+                               + " AND showRentArrearsGroundReasonPage=\"Yes\""
+                               + " AND hasOtherAdditionalGrounds=\"Yes\""
+            )
             .complex(PCSCase::getRentArrearsGroundsReasons)
 
             // ---------- Mandatory grounds ----------
