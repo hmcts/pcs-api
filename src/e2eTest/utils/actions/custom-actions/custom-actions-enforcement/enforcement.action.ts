@@ -1,6 +1,6 @@
 import { Page } from "@playwright/test";
 import { home } from "@data/page-data/home.page.data";
-import { caseList } from "@data/page-data/page-data-enforcement/caseList.page.data"
+import { caseList } from "@data/page-data/caseList.page.data"
 import { performAction, performValidation } from "@utils/controller-enforcement";
 import { IAction, actionData, actionRecord } from "@utils/interfaces/action.interface";
 

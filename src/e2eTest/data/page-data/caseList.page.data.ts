@@ -13,6 +13,6 @@ title: 'Create a case - HM Courts & Tribunals Service - GOV.UK',
           : 'Civil Possessions'
       },
     stateLabel: 'State',
-    state: 'Awaiting Submission to HMCTS',
+    stateAwaitingSubmission: 'Awaiting Submission to HMCTS',
     apply: 'Apply'
 }

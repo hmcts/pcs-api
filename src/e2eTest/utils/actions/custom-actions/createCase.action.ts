@@ -99,7 +99,6 @@ export class CreateCaseAction implements IAction {
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) throw new Error(`No action found for '${action}'`);
     await actionToPerform();
-    //initializeExecutor(page);
   }
 
   private async housingPossessionClaim() {
@@ -117,7 +116,7 @@ export class CreateCaseAction implements IAction {
     await performAction('clickButton', housingPossessionClaim.continue);
   }
 
-  private async selectAddress(caseData: actionData):Promise<void> {
+  private async selectAddress(caseData: actionData) {
     const address = caseData as { postcode: string; addressIndex: number };
     await performActions(
       'Find Address based on postcode',
