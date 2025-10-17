@@ -47,7 +47,8 @@ public class SecureContractGroundsForPossessionWalesTest extends BasePageTest {
 
         // Then
         if (expectEstateError) {
-            assertThat(response.getErrors()).containsExactly("Please select at least one Estate management ground");
+            assertThat(response.getErrors()).containsExactly(
+                "Please select at least one ground in 'Estate management grounds (section 160)'.");
         } else if (expectGroundsError) {
             assertThat(response.getErrors()).containsExactly("Please select at least one ground");
         } else if (expectValid) {
