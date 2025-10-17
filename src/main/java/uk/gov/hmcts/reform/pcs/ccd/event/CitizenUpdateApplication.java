@@ -34,6 +34,7 @@ public class CitizenUpdateApplication implements CCDConfig<PCSCase, State, UserR
             .name("Patch case")
             .description("Patch a possession case")
             .grant(Permission.CRU, CREATOR)
+            .grant(Permission.CRU, UserRole.CITIZEN)
             .grant(Permission.R, UserRole.PCS_CASE_WORKER);
     }
 

@@ -7,6 +7,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.model.PartyDocumentDto;
 import uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -27,6 +28,21 @@ public class PartyDocumentsService {
                 .stream()
                 .map(this::mapAdditionalDocumentToPartyDocument)
                 .collect(Collectors.toList());
+    }
+
+    /**
+     * Builds citizen documents from PCSCase citizenDocuments field.
+     * Maps from CCD domain model to service DTO.
+     */
+    public List<PartyDocumentDto> buildCitizenDocuments(PCSCase pcsCase) {
+        if (pcsCase.getCitizenDocuments() == null) {
+            return Collections.emptyList();
+        }
+
+        return ListValueUtils.unwrapListItems(pcsCase.getCitizenDocuments())
+            .stream()
+            .map(this::mapAdditionalDocumentToPartyDocument)
+            .collect(Collectors.toList());
     }
 
     /**
