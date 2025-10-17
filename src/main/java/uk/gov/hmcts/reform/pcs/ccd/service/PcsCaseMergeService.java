@@ -12,6 +12,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.model.PossessionGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.model.SecureOrFlexibleReasonsForGrounds;
+import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.util.Collections;
@@ -83,20 +84,31 @@ public class PcsCaseMergeService {
     }
 
     private PossessionGrounds buildPossessionGrounds(PCSCase pcsCase) {
-        SecureOrFlexibleReasonsForGrounds reasons = Optional.ofNullable(pcsCase.getSecureOrFlexibleGroundsReasons())
-            .map(grounds -> modelMapper.map(grounds,
-                                            SecureOrFlexibleReasonsForGrounds.class))
-            .orElse(SecureOrFlexibleReasonsForGrounds.builder().build());
+        PossessionGrounds.PossessionGroundsBuilder builder = PossessionGrounds.builder();
 
-        return PossessionGrounds.builder()
-            .discretionaryGrounds(mapToLabels(pcsCase.getSecureOrFlexibleDiscretionaryGrounds()))
-            .mandatoryGrounds(mapToLabels(pcsCase.getSecureOrFlexibleMandatoryGrounds()))
-            .discretionaryGroundsAlternativeAccommodation(mapToLabels(
-                pcsCase.getSecureOrFlexibleDiscretionaryGroundsAlt())
-            )
-            .mandatoryGroundsAlternativeAccommodation(mapToLabels(pcsCase.getSecureOrFlexibleMandatoryGroundsAlt()))
-            .secureOrFlexibleReasonsForGrounds(reasons)
-            .build();
+        // Handle Welsh grounds if legislative country is Wales
+        if (pcsCase.getLegislativeCountry() == LegislativeCountry.WALES) {
+            builder
+                .walesDiscretionaryGrounds(mapToLabels(pcsCase.getDiscretionaryGroundsWales()))
+                .walesMandatoryGrounds(mapToLabels(pcsCase.getMandatoryGroundsWales()))
+                .walesEstateManagementGrounds(mapToLabels(pcsCase.getEstateManagementGroundsWales()));
+        } else {
+            // Handle English grounds for all other cases
+            SecureOrFlexibleReasonsForGrounds reasons = Optional.ofNullable(pcsCase.getSecureOrFlexibleGroundsReasons())
+                .map(grounds -> modelMapper.map(grounds, SecureOrFlexibleReasonsForGrounds.class))
+                .orElse(SecureOrFlexibleReasonsForGrounds.builder().build());
+
+            builder
+                .discretionaryGrounds(mapToLabels(pcsCase.getSecureOrFlexibleDiscretionaryGrounds()))
+                .mandatoryGrounds(mapToLabels(pcsCase.getSecureOrFlexibleMandatoryGrounds()))
+                .discretionaryGroundsAlternativeAccommodation(mapToLabels(
+                    pcsCase.getSecureOrFlexibleDiscretionaryGroundsAlt())
+                )
+                .mandatoryGroundsAlternativeAccommodation(mapToLabels(pcsCase.getSecureOrFlexibleMandatoryGroundsAlt()))
+                .secureOrFlexibleReasonsForGrounds(reasons);
+        }
+
+        return builder.build();
     }
 
     private <T extends HasLabel> Set<String> mapToLabels(Set<T> items) {

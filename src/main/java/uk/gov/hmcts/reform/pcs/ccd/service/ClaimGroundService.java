@@ -12,6 +12,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.model.NoRentArrearsReasonForGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimGroundEntity;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -23,6 +24,10 @@ public class ClaimGroundService {
 
     public List<ClaimGroundEntity> getGroundsWithReason(PCSCase pcsCase) {
         TenancyLicenceType tenancyLicenceType = pcsCase.getTypeOfTenancyLicence();
+
+        if (tenancyLicenceType == null) {
+            return Collections.emptyList();
+        }
 
         return switch (tenancyLicenceType) {
             case ASSURED_TENANCY -> getAssuredTenancyGroundsWithReason(pcsCase);
