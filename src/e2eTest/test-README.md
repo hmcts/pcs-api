@@ -66,6 +66,7 @@ Playwright 1.30+ | TypeScript 4.9+
 ## 4. Available Actions and Validations
 
 ### Actions
+=======
 | Action                               | Example Usage                                                                                                                                                                                              |
 |--------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | inputText                            | `performAction('inputText', 'Email', 'test@example.com')`                                                                                                                                                  |
@@ -124,6 +125,8 @@ Playwright 1.30+ | TypeScript 4.9+
 | enterReasonForDemotionOrder          | `performAction('enterReasonForDemotionOrder',  reasonsForRequestingADemotionOrder.question)`                                                                                                               |
 | selectStatementOfExpressTerms        | `performAction('selectStatementOfExpressTerms', statementOfExpressTerms.yes)`                                                                                                                              |
 | selectLanguageUsed                   | `performAction('selectLanguageUsed', languageUsed.no)`                                                                                                                                                     |
+| selectClaimantDetails                | `performAction('selectClaimantDetails', claimantDetails)`                                                                                                                                                  |
+| enterReasonForSuspensionAndDemotionOrder | `performAction('enterReasonForSuspensionAndDemotionOrder', suspension)`                                                                                                                                |
 ### Validations
 | Validation                 | Example Usage                                                                                                                        |
 |----------------------------|--------------------------------------------------------------------------------------------------------------------------------------|
