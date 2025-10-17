@@ -1,0 +1,801 @@
+/* container */
+
+/* Auto layout */
+display: flex;
+flex-direction: column;
+justify-content: center;
+align-items: flex-start;
+padding: 0px 140px;
+
+width: 1240px;
+height: 645px;
+
+/* Inside auto layout */
+flex: none;
+order: 1;
+align-self: stretch;
+flex-grow: 0;
+
+/* left hand column */
+
+/* Auto layout */
+display: flex;
+flex-direction: column;
+align-items: flex-start;
+padding: 0px;
+
+width: 630px;
+height: 645px;
+
+/* Background */
+background: #ffffff;
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+flex-grow: 0;
+
+/* ExUI Page heading lockup */
+
+/* Auto layout */
+display: flex;
+flex-direction: column;
+align-items: flex-start;
+padding: 20px 0px 0px;
+
+width: 630px;
+height: 241px;
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+align-self: stretch;
+flex-grow: 0;
+
+/* Caption */
+
+/* Auto layout */
+display: flex;
+flex-direction: column;
+align-items: flex-start;
+padding: 0px;
+
+width: 630px;
+height: 30px;
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+align-self: stretch;
+flex-grow: 0;
+
+/* Content: Caption */
+
+width: 630px;
+height: 30px;
+
+/* ExUI/Desktop/Heading/govuk-caption-l */
+font-family: "GDS Transport Website";
+font-style: normal;
+font-weight: 300;
+font-size: 24px;
+line-height: 30px;
+/* identical to box height, or 125% */
+
+/* Text/Secondary */
+color: #505a5f;
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+align-self: stretch;
+flex-grow: 0;
+
+/* Main heading */
+
+/* Auto layout */
+display: flex;
+flex-direction: column;
+align-items: flex-start;
+padding: 0px 0px 20px;
+
+width: 630px;
+height: 100px;
+
+/* Inside auto layout */
+flex: none;
+order: 1;
+align-self: stretch;
+flex-grow: 0;
+
+/* Content: Main heading */
+
+width: 630px;
+height: 80px;
+
+/* ExUI/Desktop/Heading/govuk-heading-l */
+font-family: "GDS Transport Website";
+font-style: normal;
+font-weight: 700;
+font-size: 36px;
+line-height: 40px;
+/* or 111% */
+
+/* Text/Primary */
+color: #0b0c0c;
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+align-self: stretch;
+flex-grow: 0;
+
+/* ExUI Building blocks/ExUI Subheader menu */
+
+/* Auto layout */
+display: flex;
+flex-direction: column;
+align-items: flex-start;
+padding: 0px;
+
+width: 630px;
+height: 30px;
+
+/* Inside auto layout */
+flex: none;
+order: 2;
+flex-grow: 0;
+
+/* Content: Subheading */
+
+width: 630px;
+height: 30px;
+
+/* ExUI/Desktop/Heading/govuk-caption-l */
+font-family: "GDS Transport Website";
+font-style: normal;
+font-weight: 300;
+font-size: 24px;
+line-height: 30px;
+/* identical to box height, or 125% */
+
+color: #0b0c0c;
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+flex-grow: 0;
+
+/* Content: Subheading */
+
+display: none;
+width: 630px;
+height: 30px;
+
+/* ExUI/Desktop/Heading/govuk-caption-l */
+font-family: "GDS Transport Website";
+font-style: normal;
+font-weight: 300;
+font-size: 24px;
+line-height: 30px;
+/* identical to box height, or 125% */
+
+/* Text/Primary */
+color: #0b0c0c;
+
+/* Inside auto layout */
+flex: none;
+order: 1;
+flex-grow: 0;
+
+/* Content: Subheading */
+
+display: none;
+width: 630px;
+height: 30px;
+
+/* ExUI/Desktop/Heading/govuk-caption-l */
+font-family: "GDS Transport Website";
+font-style: normal;
+font-weight: 300;
+font-size: 24px;
+line-height: 30px;
+/* identical to box height, or 125% */
+
+/* Text/Primary */
+color: #0b0c0c;
+
+/* Inside auto layout */
+flex: none;
+order: 2;
+flex-grow: 0;
+
+/* ExUI Section break */
+
+/* Auto layout */
+display: flex;
+flex-direction: column;
+justify-content: center;
+align-items: center;
+padding: 20px 0px 40px;
+
+width: 630px;
+height: 61px;
+
+/* Inside auto layout */
+flex: none;
+order: 3;
+align-self: stretch;
+flex-grow: 0;
+
+/* Section Break */
+
+width: 630px;
+height: 1px;
+
+/* Border/Default */
+background: #b1b4b6;
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+align-self: stretch;
+flex-grow: 0;
+
+/* ExUI Warning */
+
+/* Auto layout */
+display: flex;
+flex-direction: row;
+align-items: flex-start;
+padding: 0px 0px 30px;
+gap: 10px;
+
+display: none;
+width: 630px;
+height: 81px;
+
+/* Inside auto layout */
+flex: none;
+order: 1;
+flex-grow: 0;
+
+/* text field */
+
+/* Auto layout */
+display: flex;
+flex-direction: column;
+align-items: flex-start;
+padding: 0px;
+gap: 5px;
+
+width: 630px;
+height: 227px;
+
+/* Inside auto layout */
+flex: none;
+order: 2;
+flex-grow: 0;
+
+/* ExUI Heading interactive */
+
+/* Auto layout */
+display: flex;
+flex-direction: column;
+align-items: flex-start;
+padding: 0px;
+
+width: 630px;
+height: 62px;
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+align-self: stretch;
+flex-grow: 0;
+
+/* Content: Legend */
+
+width: 630px;
+height: 24px;
+
+/* ExUI/Desktop/Heading/govuk-heading-s */
+font-family: "GDS Transport Website";
+font-style: normal;
+font-weight: 700;
+font-size: 19px;
+line-height: 24px;
+/* identical to box height, or 126% */
+
+/* Text/Primary */
+color: #0b0c0c;
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+align-self: stretch;
+flex-grow: 0;
+
+/* Content: Label */
+
+display: none;
+width: 630px;
+height: 24px;
+
+/* ExUI/Desktop/Paragraph/body */
+font-family: "GDS Transport Website";
+font-style: normal;
+font-weight: 300;
+font-size: 19px;
+line-height: 24px;
+/* identical to box height, or 126% */
+
+/* Text/Primary */
+color: #0b0c0c;
+
+/* Inside auto layout */
+flex: none;
+order: 1;
+align-self: stretch;
+flex-grow: 0;
+
+/* Content: Hint */
+
+width: 630px;
+height: 38px;
+
+/* ExUI/Desktop/Paragraph/body-small */
+font-family: "GDS Transport Website";
+font-style: normal;
+font-weight: 300;
+font-size: 16px;
+line-height: 19px;
+/* or 119% */
+
+/* Text/Secondary */
+color: #505a5f;
+
+/* Inside auto layout */
+flex: none;
+order: 2;
+align-self: stretch;
+flex-grow: 0;
+
+/* ExUI Building blocks/ExUI Input areas */
+
+box-sizing: border-box;
+
+/* Auto layout */
+display: flex;
+flex-direction: row;
+align-items: flex-start;
+padding: 8px 6px 8px 8px;
+
+width: 630px;
+height: 160px;
+
+/* Background */
+background: #ffffff;
+/* Text/Primary */
+border: 1px solid #0b0c0c;
+
+/* Inside auto layout */
+flex: none;
+order: 1;
+align-self: stretch;
+flex-grow: 0;
+
+/* Input */
+
+display: none;
+width: 946px;
+height: 48px;
+
+/* ExUI/Desktop/Paragraph/body */
+font-family: "GDS Transport Website";
+font-style: normal;
+font-weight: 300;
+font-size: 19px;
+line-height: 24px;
+/* or 126% */
+
+/* Text/Primary */
+color: #0b0c0c;
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+flex-grow: 1;
+
+/* 6 rows */
+
+width: 2px;
+height: 144px;
+
+/* Background */
+background: #ffffff;
+
+/* Inside auto layout */
+flex: none;
+order: 1;
+flex-grow: 0;
+
+/* Minimum height spacer */
+
+position: absolute;
+left: 0%;
+right: 0%;
+top: 0%;
+bottom: 0%;
+
+/* Background */
+background: #ffffff;
+
+/* 12 rows */
+
+display: none;
+width: 2px;
+height: 288px;
+
+/* Background */
+background: #ffffff;
+
+/* Inside auto layout */
+flex: none;
+order: 2;
+flex-grow: 0;
+
+/* Content: Hint */
+
+display: none;
+width: 630px;
+height: 19px;
+
+/* hint small */
+font-family: "GDS Transport Website";
+font-style: normal;
+font-weight: 300;
+font-size: 16px;
+line-height: 19px;
+/* identical to box height, or 119% */
+display: flex;
+align-items: flex-end;
+
+/* Text/Secondary */
+color: #505a5f;
+
+/* Inside auto layout */
+flex: none;
+order: 2;
+align-self: stretch;
+flex-grow: 0;
+
+/* Save and return details */
+
+/* Auto layout */
+display: flex;
+flex-direction: column;
+align-items: flex-start;
+padding: 30px 0px 0px;
+
+width: 630px;
+height: 55px;
+
+/* Inside auto layout */
+flex: none;
+order: 3;
+flex-grow: 0;
+
+/* Save and return details COMPONENT */
+
+/* Auto layout */
+display: flex;
+flex-direction: column;
+align-items: flex-start;
+padding: 0px;
+
+width: 630px;
+height: 25px;
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+flex-grow: 0;
+
+/* Save and return details summary */
+
+/* Auto layout */
+display: flex;
+flex-direction: column;
+align-items: flex-start;
+padding: 0px;
+gap: 5px;
+
+width: 630px;
+height: 25px;
+
+/* Background */
+background: #ffffff;
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+flex-grow: 0;
+
+/* Building blocks/Details/Summary */
+
+/* Auto layout */
+display: flex;
+flex-direction: row;
+align-items: center;
+padding: 4px 0px 2px;
+gap: 13px;
+
+width: 432px;
+height: 25px;
+
+/* Background */
+background: #ffffff;
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+flex-grow: 0;
+
+/* Icons/Details */
+
+width: 12px;
+height: 14px;
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+flex-grow: 0;
+
+/* Icon: Details */
+
+position: absolute;
+left: 0%;
+right: 0%;
+top: 0%;
+bottom: 0%;
+
+/* Link/Default */
+background: #1d70b8;
+
+/* Content: Span */
+
+/* Auto layout */
+display: flex;
+flex-direction: row;
+align-items: center;
+padding: 0px;
+
+width: 407px;
+height: 19px;
+
+/* Background */
+background: #ffffff;
+box-shadow: inset 0px -1px 0px #1d70b8;
+
+/* Inside auto layout */
+flex: none;
+order: 1;
+flex-grow: 0;
+
+/* Content: Span */
+
+width: 407px;
+height: 19px;
+
+font-family: "GDS Transport Website";
+font-style: normal;
+font-weight: 300;
+font-size: 19px;
+line-height: 19px;
+/* identical to box height, or 100% */
+
+/* Link/Default */
+color: #1d70b8;
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+flex-grow: 0;
+
+/* Content: Body */
+
+/* Auto layout */
+display: flex;
+flex-direction: column;
+align-items: flex-start;
+padding: 16px 0px 14px 25px;
+gap: 15px;
+
+display: none;
+width: 300px;
+height: 305px;
+
+/* Background */
+background: #ffffff;
+
+/* Inside auto layout */
+flex: none;
+order: 1;
+align-self: stretch;
+flex-grow: 0;
+
+/* ExUI Buttons */
+
+/* Auto layout */
+display: flex;
+flex-direction: column;
+align-items: flex-start;
+padding: 40px 0px 0px;
+
+width: 198px;
+height: 122px;
+
+/* Inside auto layout */
+flex: none;
+order: 4;
+flex-grow: 0;
+
+/* Lockup */
+
+/* Auto layout */
+display: flex;
+flex-direction: column;
+align-items: flex-start;
+padding: 0px;
+gap: 20px;
+
+width: 198px;
+height: 82px;
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+flex-grow: 0;
+
+/* Buttons */
+
+/* Auto layout */
+display: flex;
+flex-direction: row;
+align-items: flex-start;
+padding: 0px;
+gap: 3px;
+
+width: 198px;
+height: 38px;
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+flex-grow: 0;
+
+/* ExUi Button */
+
+/* Auto layout */
+display: flex;
+flex-direction: row;
+justify-content: center;
+align-items: center;
+padding: 7px 12px;
+
+width: 95px;
+height: 38px;
+
+/* Other/Light Grey */
+background: #f3f2f1;
+box-shadow: inset 0px -2px 0px #929191;
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+flex-grow: 0;
+
+/* Content: Text */
+
+width: 71px;
+height: 24px;
+
+/* ExUI/Desktop/Paragraph/body */
+font-family: "GDS Transport Website";
+font-style: normal;
+font-weight: 300;
+font-size: 19px;
+line-height: 24px;
+/* identical to box height, or 126% */
+text-align: center;
+
+/* Text/Primary */
+color: #0b0c0c;
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+flex-grow: 0;
+
+/* Building Blocks/ExUI Button */
+
+/* Auto layout */
+display: flex;
+flex-direction: column;
+justify-content: center;
+align-items: center;
+padding: 7px 12px;
+
+width: 100px;
+height: 38px;
+
+/* Other/Green */
+background: #00703c;
+box-shadow: inset 0px -2px 0px #002d18;
+
+/* Inside auto layout */
+flex: none;
+order: 1;
+flex-grow: 0;
+
+/* Content: Text */
+
+width: 76px;
+height: 24px;
+
+/* ExUI/Desktop/Paragraph/body */
+font-family: "GDS Transport Website";
+font-style: normal;
+font-weight: 300;
+font-size: 19px;
+line-height: 24px;
+/* identical to box height, or 126% */
+text-align: center;
+
+/* Background */
+color: #ffffff;
+
+/* Inside auto layout */
+flex: none;
+order: 0;
+flex-grow: 0;
+
+/* Cancel */
+
+width: 58px;
+height: 24px;
+
+/* ExUI/Desktop/Link/body-link */
+font-family: "GDS Transport Website";
+font-style: normal;
+font-weight: 300;
+font-size: 19px;
+line-height: 24px;
+/* identical to box height, or 126% */
+text-decoration-line: underline;
+
+/* Link/Default */
+color: #1d70b8;
+
+/* Inside auto layout */
+flex: none;
+order: 1;
+flex-grow: 0;
+
+
+
+Enforce the order
+Their history of criminal or antisocial behaviour
+Case number: 1234-5678-9101-1121
+Mr John Doe v Ms Jane Smith
+Subheading 3
+What is their history of criminal or antisocial behaviour?
+Label
+For example, include the crime reference number if you have called police to the property or reported an incident. You can enter up to 6,800 characters.
+Police have visited 15 Garden Drive in March 2025 because Billy made threats to his neighbour and broke a window on their property. The crime reference number for this is 281 00 95/25. 
+You can enter up to 6,800 characters
+I want to save this application and return to it later
+Previous
+Continue
+Cancel
