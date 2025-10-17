@@ -76,10 +76,7 @@ public class GroundsForPossessionWales
             boolean hasEstate = estateManagementGrounds != null && !estateManagementGrounds.isEmpty();
 
             if (!hasEstate) {
-                errors.add(
-                    "Select at least one estate management ground "
-                        + "when ‘Estate management grounds (section 160)’ is selected."
-                );
+                errors.add("Please select at least one ground in 'Estate management grounds (section 160)'.");
             }
         }
 
