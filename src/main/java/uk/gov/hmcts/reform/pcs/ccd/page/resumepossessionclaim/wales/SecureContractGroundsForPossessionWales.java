@@ -59,7 +59,7 @@ public class SecureContractGroundsForPossessionWales implements CcdPageConfigura
         if (discretionaryGrounds.contains(SecureContractDiscretionaryGroundsWales.ESTATE_MANAGEMENT_GROUNDS)
                 && estateManagement.isEmpty()) {
             return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
-                    .errors(List.of("Please select at least one Estate management ground"))
+                    .errors(List.of("Please select at least one ground in 'Estate management grounds (section 160)'."))
                     .build();
         }
 
