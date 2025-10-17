@@ -234,11 +234,11 @@ Make an intentional UI change (e.g., change a button color).
 
 To do this, run your test with the -u (or --update-snapshots) flag.
 
-**Update All Snapshots**
-npx playwright test --update-snapshots
+**Update All Snapshots under the spec**
+yarn playwright test --update-snapshots
 
-**Update a Single File**
-npx playwright test src/e2eTest/tests/createCase.visual.spec.ts -u
+specific to a spec file
+yarn playwright test src/e2eTest/tests/createCase.visual.spec.ts -u
 
 **Reviewing Failures**
 When a test fails, open the Allure Report and look at the attachments:
@@ -247,5 +247,5 @@ Baseline Screenshot: The old, "golden" image.
 
 Current Screenshot: The new image that failed.
 
-Diff Highlighted Screenshot: An image showing all changed pixels highlighted in red. This tells you exactly what broke.You must update the baseline snapshot whenever you:
+Diff Highlighted Screenshot: An image showing all changed pixels highlighted in red. This tells you exactly what broke.
 

@@ -48,22 +48,25 @@ test.beforeEach(async ({page}) => {
   await performAction('login', user.claimantSolicitor);
   await performAction('clickButton', 'Accept analytics cookies');
   await page.locator('#cookie-banner').waitFor({ state: 'hidden' });
-  //await performValidation('compareWithSnapshot','caseList');//Observation: list of case displayed is dynamic, so lot of content will change
+  await performValidation('compareWithSnapshot','caseList');//Observation: list of case displayed is dynamic, so lot of content will change
   await performAction('clickTab', home.createCaseTab);
-  //await performValidation('compareWithSnapshot','createCase');//Observation:PR number is dynamic
+  await page.waitForTimeout(2000);
+  await page.waitForSelector('selector-indicating-page-ready');
+  await performValidation('compareWithSnapshot','createCase');//Observation:PR number is dynamic
   await performAction('selectJurisdictionCaseTypeEvent')
+  await page.waitForTimeout(1000);
   await performValidation('compareWithSnapshot','makeAClaim');
   await performAction('housingPossessionClaim');
 });
 
 test.describe('[Create Case - England] @functional', async () => {
   test('England Journey - Visual Validations with masked data', async () => {
-    //await performValidation('compareWithSnapshot','selectAddress');//Observation:Need to add one more compare inside selectAddress
+    await performValidation('compareWithSnapshot','selectAddress');//Observation:Need to add one more compare inside selectAddress
     await performAction('selectAddress', {
       postcode: addressDetails.englandCourtAssignedPostcode,
       addressIndex: addressDetails.addressIndex
     });
-    //await performValidation('compareWithSnapshot','provideMoreDetails');
+    await performValidation('compareWithSnapshot','provideMoreDetails', {selectorsToMask: [commonSelectors.caseNumber,commonSelectors.caseAlert]});
     await performValidation('bannerAlert', 'Case #.* has been created.');
     await performAction('extractCaseIdFromAlert');
     await performAction('clickButtonAndVerifyPageNavigation', provideMoreDetailsOfClaim.continue, claimantType.mainHeader);
@@ -76,31 +79,35 @@ test.describe('[Create Case - England] @functional', async () => {
     await performValidation('compareWithSnapshot','claimantNameNo', {selectorsToMask: [commonSelectors.caseNumber]});
     await performAction('selectClaimantName', claimantName.yes);
     await performValidation('compareWithSnapshot','contactPreferences', {selectorsToMask: [commonSelectors.caseNumber]});//Observation: email and address are dynamic
-    // await performAction('selectContactPreferences', {
-    //   notifications: contactPreferences.yes,
-    //   correspondenceAddress: contactPreferences.yes,
-    //   phoneNumber: contactPreferences.no
-    // });
-    // await performAction('defendantDetails', {
-    //   name: defendantDetails.yes,
-    //   correspondenceAddress: defendantDetails.yes,
-    //   email: defendantDetails.yes,
-    //   correspondenceAddressSame: defendantDetails.no
-    // });
-    // await performValidation('mainHeader', tenancyLicenceDetails.mainHeader);
-    // await performAction('selectTenancyOrLicenceDetails', {
-    //   tenancyOrLicenceType: tenancyLicenceDetails.assuredTenancy,
-    //   day: tenancyLicenceDetails.day,
-    //   month: tenancyLicenceDetails.month,
-    //   year: tenancyLicenceDetails.year,
-    //   files: ['tenancyLicence.docx', 'tenancyLicence.png']
-    // });
-    // await performValidation('mainHeader', groundsForPossession.mainHeader);
-    // await performAction('selectGroundsForPossession',{groundsRadioInput: groundsForPossession.yes});
-    // await performAction('selectRentArrearsPossessionGround', {
-    //   rentArrears: [rentArrearsPossessionGrounds.rentArrears, rentArrearsPossessionGrounds.seriousRentArrears, rentArrearsPossessionGrounds.persistentDelayInPayingRent],
-    //   otherGrounds: rentArrearsPossessionGrounds.yes
-    // });
+    await performAction('selectContactPreferences', {
+      notifications: contactPreferences.yes,
+      correspondenceAddress: contactPreferences.yes,
+      phoneNumber: contactPreferences.no
+    });
+    await performValidation('compareWithSnapshot','defendantDetails', {selectorsToMask: [commonSelectors.caseNumber]});//Observation: email and address are dynamic
+    await performAction('defendantDetails', {
+      name: defendantDetails.yes,
+      correspondenceAddress: defendantDetails.yes,
+      email: defendantDetails.yes,
+      correspondenceAddressSame: defendantDetails.no
+    });
+    await performValidation('compareWithSnapshot','tenancyLicenceDetails', {selectorsToMask: [commonSelectors.caseNumber]});//Observation: email and address are dynamic
+    await performValidation('mainHeader', tenancyLicenceDetails.mainHeader);
+    await performAction('selectTenancyOrLicenceDetails', {
+      tenancyOrLicenceType: tenancyLicenceDetails.assuredTenancy,
+      day: tenancyLicenceDetails.day,
+      month: tenancyLicenceDetails.month,
+      year: tenancyLicenceDetails.year,
+      files: ['tenancyLicence.docx', 'tenancyLicence.png']
+    });
+    await performValidation('mainHeader', groundsForPossession.mainHeader);
+    await performValidation('compareWithSnapshot','groundsForPossession', {selectorsToMask: [commonSelectors.caseNumber]});//Observation: email and address are dynamic
+    await performAction('selectGroundsForPossession',{groundsRadioInput: groundsForPossession.yes});
+    await performValidation('compareWithSnapshot','rentArrearsPossessionGrounds', {selectorsToMask: [commonSelectors.caseNumber]});//Observation: email and address are dynamic
+    await performAction('selectRentArrearsPossessionGround', {
+      rentArrears: [rentArrearsPossessionGrounds.rentArrears, rentArrearsPossessionGrounds.seriousRentArrears, rentArrearsPossessionGrounds.persistentDelayInPayingRent],
+      otherGrounds: rentArrearsPossessionGrounds.yes
+    });
     // await performAction('selectYourPossessionGrounds',{
     //   mandatory: [whatAreYourGroundsForPossession.mandatory.holidayLet,whatAreYourGroundsForPossession.mandatory.ownerOccupier],
     //   discretionary: [whatAreYourGroundsForPossession.discretionary.domesticViolence14A,whatAreYourGroundsForPossession.discretionary.rentArrears],

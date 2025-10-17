@@ -8,10 +8,10 @@ import pixelmatch from 'pixelmatch';
 export class compareWithSnapshotValidation implements IValidation {
 
   async validate(
-    page: Page,
-    validation: string,
-    fieldName?: validationData | validationRecord,
-    data?: validationData | validationRecord
+      page: Page,
+      validation: string,
+      fieldName?: validationData | validationRecord,
+      data?: validationData | validationRecord
   ): Promise<void> {
 
     if (typeof fieldName !== 'string') {
@@ -21,18 +21,15 @@ export class compareWithSnapshotValidation implements IValidation {
 
     let locatorsToMask: Locator[] = [];
 
-    // --- THIS IS THE KEY ---
     // 1. We check if 'data' is an object and if 'selectorsToMask' is a key 'in' it.
     if (typeof data === 'object' && data !== null && !Array.isArray(data) && 'selectorsToMask' in data) {
 
       // 2. We then use 'as string[]' to tell TypeScript what's inside.
-      // This works because the interface is generic (object).
       const selectorStrings = data.selectorsToMask as string[];
 
       // 3. Convert the strings into real Locators
       locatorsToMask = selectorStrings.map(selector => page.locator(selector));
     }
-    // --- END OF KEY SECTION ---
 
     // --- Paths ---
     const baselinePath = path.resolve(`baselineSnapshots/${pageName}.png`);
@@ -50,7 +47,14 @@ export class compareWithSnapshotValidation implements IValidation {
     });
 
     // --- Handle Baseline Creation/Updates ---
-    const isUpdateMode = (test.info().project as any).updateSnapshots === 'all';
+    // --- THIS IS THE FIX ---
+    // 1. Get the update mode from the correct path.
+    const updateMode = (test.info() as any).config.updateSnapshots;
+
+    // 2. Check if the mode is 'all' OR 'changed'.
+    const isUpdateMode = updateMode === 'all' || updateMode === 'changed';
+    // --- END OF FIX ---
+
     if (isUpdateMode || !fs.existsSync(baselinePath)) {
       fs.copyFileSync(actualPath, baselinePath);
       console.log(`✅ Baseline snapshot created/updated at: ${baselinePath}`);
@@ -67,7 +71,7 @@ export class compareWithSnapshotValidation implements IValidation {
 
     if (imgBaseline.width !== imgActual.width || imgBaseline.height !== imgActual.height) {
       throw new Error(
-        `Image size mismatch: baseline ${imgBaseline.width}x${imgBaseline.height}, actual ${imgActual.width}x${imgActual.height}`
+          `Image size mismatch for page "${pageName}": baseline ${imgBaseline.width}x${imgBaseline.height}, actual ${imgActual.width}x${imgActual.height}`
       );
     }
 
@@ -76,18 +80,18 @@ export class compareWithSnapshotValidation implements IValidation {
 
     // --- Restored pixelmatch arguments ---
     const diffPixels = pixelmatch(
-      imgBaseline.data,
-      imgActual.data,
-      diff.data,
-      width,
-      height,
-      {
-        threshold: 0.1,
-        includeAA: true,
-        alpha: 0.7,
-        diffColor: [255, 0, 0],
-        diffColorAlt: [0, 255, 0],
-      }
+        imgBaseline.data,
+        imgActual.data,
+        diff.data,
+        width,
+        height,
+        {
+          threshold: 0.1,
+          includeAA: true,
+          alpha: 0.7,
+          diffColor: [255, 0, 0],
+          diffColorAlt: [0, 255, 0],
+        }
     );
 
     // --- Attach reports ---
@@ -111,8 +115,10 @@ export class compareWithSnapshotValidation implements IValidation {
     }
 
     expect(
-      diffPixels,
-      `Visual diff exceeds threshold (${maxDiffPixels} pixels differ)`
+        diffPixels,
+        // --- THIS IS THE FIX ---
+        `Visual diff for page "${pageName}" exceeds threshold. ${diffPixels} pixels differ (max allowed: ${maxDiffPixels}).`
+        // --- END OF FIX ---
     ).toBeLessThanOrEqual(maxDiffPixels);
   }
 }
