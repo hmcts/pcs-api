@@ -14,7 +14,7 @@ import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
-import uk.gov.hmcts.reform.pcs.ccd.service.UnsubmittedCaseDataService;
+import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.exception.UnsubmittedDataException;
 
 import java.util.Optional;
@@ -35,13 +35,13 @@ import static org.mockito.Mockito.when;
 class ResumeClaimTest extends BasePageTest {
 
     @Mock(strictness = LENIENT)
-    private UnsubmittedCaseDataService unsubmittedCaseDataService;
+    private DraftCaseDataService draftCaseDataService;
     @Mock
     private ModelMapper modelMapper;
 
     @BeforeEach
     void setUp() {
-        setPageUnderTest(new ResumeClaim(unsubmittedCaseDataService, modelMapper));
+        setPageUnderTest(new ResumeClaim(draftCaseDataService, modelMapper));
     }
 
     @ParameterizedTest
@@ -50,7 +50,7 @@ class ResumeClaimTest extends BasePageTest {
         // Given
         PCSCase caseData = mock(PCSCase.class);
 
-        when(unsubmittedCaseDataService.getUnsubmittedCaseData(TEST_CASE_REFERENCE))
+        when(draftCaseDataService.getUnsubmittedCaseData(TEST_CASE_REFERENCE))
             .thenReturn(Optional.ofNullable(unsubmittedCaseData));
 
         when(caseData.getResumeClaimKeepAnswers()).thenReturn(keepAnswers);
@@ -83,7 +83,7 @@ class ResumeClaimTest extends BasePageTest {
         // Given
         PCSCase caseData = mock(PCSCase.class);
 
-        when(unsubmittedCaseDataService.getUnsubmittedCaseData(TEST_CASE_REFERENCE)).thenReturn(Optional.empty());
+        when(draftCaseDataService.getUnsubmittedCaseData(TEST_CASE_REFERENCE)).thenReturn(Optional.empty());
 
         when(caseData.getResumeClaimKeepAnswers()).thenReturn(YesOrNo.YES);
 

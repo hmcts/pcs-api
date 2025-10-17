@@ -17,10 +17,10 @@ import java.util.UUID;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(schema = "draft", name = "unsubmitted_case_data")
+@Table(schema = "draft", name = "draft_case_data")
 @Getter
 @Setter
-public class UnsubmittedCaseDataEntity {
+public class DraftCaseDataEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)

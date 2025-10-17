@@ -9,7 +9,7 @@ import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
  * should not be persisted as draft data, (e.g. derived fields)
  */
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public abstract class UnsubmittedCaseDataMixIn {
+public abstract class DraftCaseDataMixIn {
 
     @JsonIgnore
     private YesOrNo decentralised;
