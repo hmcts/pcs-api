@@ -8,7 +8,7 @@ import { waitForPageRedirectionTimeout } from 'playwright.config';
 
 let firstFromTheListCaseNumber: string;
 
-export let searchReturnFromFilter: boolean;
+export let caseFoundAfterFilter: boolean;
 
 export let enforcementTestCaseNumber: string;
 
@@ -47,7 +47,7 @@ export class SearchCaseAction implements IAction {
       caseNumber: string,
       criteria: boolean,
     };
-      if(searchCondition.criteria == true){
+      if(searchCondition.criteria){
       await performAction('clickButton', home.findCaseTab);
       await performAction('select', caseList.jurisdictionLabel, caseList.possessionsJurisdiction);
       await performAction('select', caseList.caseTypeLabel, caseList.caseType.civilPossessions);
@@ -62,7 +62,7 @@ export class SearchCaseAction implements IAction {
     }
   
     private async selectFirstCaseFromTheFilter(page: Page,criteria: actionData) {
-      if (criteria == false) {
+      if (!criteria) {
         firstFromTheListCaseNumber = await page.locator('a[aria-label*="go to case with Case reference"]').first().innerText();
       await performAction('clickButton', firstFromTheListCaseNumber);
       //the below line will be moved to Utils in upcoming User story automation
@@ -74,6 +74,6 @@ export class SearchCaseAction implements IAction {
   
     private async NoCasesFoundAfterSearch(page: Page): Promise<void> {
       const caseLocator = page.locator('div#search-result:has-text("No cases found. Try using different filters.")').first();
-      searchReturnFromFilter = await caseLocator.isVisible();    
+      caseFoundAfterFilter = await caseLocator.isVisible();    
     }
 }

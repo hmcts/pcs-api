@@ -62,6 +62,7 @@ export class MakeClaimAction implements IAction {
       await performAction('selectClaimantType', claimantType.england.registeredProviderForSocialHousing);
       await performAction('selectClaimType', claimType.no);
       await performAction('selectClaimantName', claimantName.yes);
+      await performAction('clickButtonAndVerifyPageNavigation', claimantName.continue, contactPreferences.mainHeader);
       await performAction('selectContactPreferences', {
         notifications: contactPreferences.yes,
         correspondenceAddress: contactPreferences.yes,
