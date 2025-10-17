@@ -6,6 +6,7 @@ import au.com.dius.pact.consumer.junit5.PactConsumerTestExt;
 import au.com.dius.pact.consumer.junit5.PactTestFor;
 import au.com.dius.pact.core.model.V4Pact;
 import au.com.dius.pact.core.model.annotations.Pact;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,7 +38,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 @ExtendWith({PactConsumerTestExt.class, SpringExtension.class})
 @PactTestFor(providerName = "referenceData_organisationalDetailsInternal", port = "6668")
 
-
+//Test is disabled until provider test is implemented - DTSRD-5190
+@Disabled
 public class InternalOrgReferenceDataConsumerTest {
 
     private static final String SERVICE_AUTH_TOKEN = "Bearer serviceToken";
