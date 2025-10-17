@@ -147,10 +147,14 @@ class EvictionRisksPosedPageTest extends BasePageTest {
             arguments(Set.of(RiskCategory.PROTEST_GROUP_MEMBER), "Single protest group selection"),
             arguments(Set.of(RiskCategory.AGENCY_VISITS), "Single agency visits selection"),
             arguments(Set.of(RiskCategory.AGGRESSIVE_ANIMALS), "Single aggressive animals selection"),
-            arguments(Set.of(RiskCategory.VIOLENT_OR_AGGRESSIVE, RiskCategory.FIREARMS_POSSESSION), "Two detail categories"),
-            arguments(Set.of(RiskCategory.VIOLENT_OR_AGGRESSIVE, RiskCategory.FIREARMS_POSSESSION, RiskCategory.CRIMINAL_OR_ANTISOCIAL), "All three detail categories"),
-            arguments(Set.of(RiskCategory.VERBAL_OR_WRITTEN_THREATS, RiskCategory.PROTEST_GROUP_MEMBER, RiskCategory.AGENCY_VISITS, RiskCategory.AGGRESSIVE_ANIMALS), "All non-detail categories"),
-            arguments(Set.of(RiskCategory.VIOLENT_OR_AGGRESSIVE, RiskCategory.VERBAL_OR_WRITTEN_THREATS, RiskCategory.PROTEST_GROUP_MEMBER), "Mixed detail and non-detail categories")
+            arguments(Set.of(RiskCategory.VIOLENT_OR_AGGRESSIVE, RiskCategory.FIREARMS_POSSESSION), 
+                "Two detail categories"),
+            arguments(Set.of(RiskCategory.VIOLENT_OR_AGGRESSIVE, RiskCategory.FIREARMS_POSSESSION, 
+                RiskCategory.CRIMINAL_OR_ANTISOCIAL), "All three detail categories"),
+            arguments(Set.of(RiskCategory.VERBAL_OR_WRITTEN_THREATS, RiskCategory.PROTEST_GROUP_MEMBER, 
+                RiskCategory.AGENCY_VISITS, RiskCategory.AGGRESSIVE_ANIMALS), "All non-detail categories"),
+            arguments(Set.of(RiskCategory.VIOLENT_OR_AGGRESSIVE, RiskCategory.VERBAL_OR_WRITTEN_THREATS, 
+                RiskCategory.PROTEST_GROUP_MEMBER), "Mixed detail and non-detail categories")
         );
     }
 }

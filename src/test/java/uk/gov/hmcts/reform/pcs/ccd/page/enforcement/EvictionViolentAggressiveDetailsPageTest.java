@@ -117,7 +117,8 @@ class EvictionViolentAggressiveDetailsPageTest extends BasePageTest {
 
         // Then
         assertThat(response.getErrors()).containsExactly(
-            "In 'How have they been violent or aggressive?', you have entered more than the maximum number of characters (6800)"
+            "In 'How have they been violent or aggressive?', you have entered more than the "
+                + "maximum number of characters (6800)"
         );
     }
 
@@ -135,7 +136,8 @@ class EvictionViolentAggressiveDetailsPageTest extends BasePageTest {
 
         // Then
         assertThat(response.getErrors()).containsExactly(
-            "In 'How have they been violent or aggressive?', you have entered more than the maximum number of characters (6800)"
+            "In 'How have they been violent or aggressive?', you have entered more than the "
+                + "maximum number of characters (6800)"
         );
     }
 

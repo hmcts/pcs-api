@@ -35,7 +35,8 @@ public class EvictionViolentAggressiveDetailsPage implements CcdPageConfiguratio
         if (txt == null || txt.isBlank()) {
             errors.add("Enter details");
         } else if (txt.length() > 6800) {
-            errors.add("In 'How have they been violent or aggressive?', you have entered more than the maximum number of characters (6800)");
+            errors.add("In 'How have they been violent or aggressive?', you have entered more than the "
+                + "maximum number of characters (6800)");
         }
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()

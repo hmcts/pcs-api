@@ -117,7 +117,8 @@ class EvictionFirearmsPossessionDetailsPageTest extends BasePageTest {
 
         // Then
         assertThat(response.getErrors()).containsExactly(
-            "In 'What is their history of firearm possession?', you have entered more than the maximum number of characters (6800)"
+            "In 'What is their history of firearm possession?', you have entered more than the "
+                + "maximum number of characters (6800)"
         );
     }
 
@@ -135,7 +136,8 @@ class EvictionFirearmsPossessionDetailsPageTest extends BasePageTest {
 
         // Then
         assertThat(response.getErrors()).containsExactly(
-            "In 'What is their history of firearm possession?', you have entered more than the maximum number of characters (6800)"
+            "In 'What is their history of firearm possession?', you have entered more than the "
+                + "maximum number of characters (6800)"
         );
     }
 

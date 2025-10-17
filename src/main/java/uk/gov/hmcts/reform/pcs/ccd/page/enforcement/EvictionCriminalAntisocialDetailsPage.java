@@ -35,7 +35,8 @@ public class EvictionCriminalAntisocialDetailsPage implements CcdPageConfigurati
         if (txt == null || txt.isBlank()) {
             errors.add("Enter details");
         } else if (txt.length() > 6800) {
-            errors.add("In 'What is their history of criminal or antisocial behaviour?', you have entered more than the maximum number of characters (6800)");
+            errors.add("In 'What is their history of criminal or antisocial behaviour?', "
+                + "you have entered more than the maximum number of characters (6800)");
         }
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()

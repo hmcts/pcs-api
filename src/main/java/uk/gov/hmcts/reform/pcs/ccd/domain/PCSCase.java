@@ -653,21 +653,24 @@ public class PCSCase {
 
     @CCD(
         label = "How have they been violent or aggressive?",
-        hint = "For example, include the crime reference number if you have called police to the property or reported an incident. You can enter up to 6,800 characters.",
+        hint = "For example, include the crime reference number if you have called police to the property or "
+            + "reported an incident. You can enter up to 6,800 characters.",
         typeOverride = TextArea
     )
     private String enforcementViolentDetails;
 
     @CCD(
         label = "What is their history of firearm possession?",
-        hint = "For example, include the crime reference number if you have called police to the property or reported an incident. You can enter up to 6,800 characters.",
+        hint = "For example, include the crime reference number if you have called police to the property or "
+            + "reported an incident. You can enter up to 6,800 characters.",
         typeOverride = TextArea
     )
     private String enforcementFirearmsDetails;
 
     @CCD(
         label = "What is their history of criminal or antisocial behaviour?",
-        hint = "For example, include the crime reference number if you have called police to the property or reported an incident. You can enter up to 6,800 characters.",
+        hint = "For example, include the crime reference number if you have called police to the property or "
+            + "reported an incident. You can enter up to 6,800 characters.",
         typeOverride = TextArea
     )
     private String enforcementCriminalDetails;
