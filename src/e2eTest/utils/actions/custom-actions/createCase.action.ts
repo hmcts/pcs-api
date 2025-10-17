@@ -478,15 +478,18 @@ export class CreateCaseAction implements IAction {
       circumstanceOption: string,
       claimantInput: string
     };
-    const nameClaimant = claimantsName.substring(claimantsName.length - 1) == 's' ? `${claimantsName}'` : `${claimantsName}'s`;
+    //commented out lines to be used when claimant org name is dynamic: Ticket is yet to be created.
+    //const nameClaimant = claimantsName.substring(claimantsName.length - 1) == 's' ? `${claimantsName}'` : `${claimantsName}'s`;
     const claimOption = claimData.circumstanceOption;
     await performAction('clickRadioButton', {
-      question: claimantCircumstances.claimantCircumstanceInfo.replace("Claimants", nameClaimant),
+     // question: claimantCircumstances.claimantCircumstanceInfo.replace("Claimants", nameClaimant),
+      question: claimantCircumstances.claimantCircumstanceInfo,
       option: claimOption
     }
     );
     if (claimOption == claimantCircumstances.yes) {
-      await performAction('inputText', claimantCircumstances.claimantCircumstanceInfoTextAreaLabel.replace("Claimants", nameClaimant), claimData.claimantInput);
+      //await performAction('inputText', claimantCircumstances.claimantCircumstanceInfoTextAreaLabel.replace("Claimants", nameClaimant), claimData.claimantInput);
+      await performAction('inputText', claimantCircumstances.claimantCircumstanceInfoTextAreaLabel, claimData.claimantInput);
     }
     await performAction('clickButton', claimantCircumstances.continue);
   }
