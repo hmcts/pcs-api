@@ -5,8 +5,4 @@ export const claimType =
     yes: 'Yes',
     no: 'No',
     continue: 'Continue',
-    selector:
-      {
-        caseNumber: 'p:has-text("Case number:")'
-      }
   }

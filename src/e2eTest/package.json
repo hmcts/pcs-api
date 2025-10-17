@@ -26,6 +26,7 @@
   "dependencies": {
     "@axe-core/playwright": "^4.10.2",
     "@hmcts/playwright-common": "^1.0.33",
+    "@types/pixelmatch": "^5.2.6",
     "oauth4webapi": "^3.5.1",
     "pixelmatch": "^7.1.0",
     "pngjs": "^7.0.0",

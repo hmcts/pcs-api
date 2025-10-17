@@ -31,10 +31,7 @@ export async function performValidation(validation: string, inputFieldName: vali
     ? [inputFieldName, inputData]
     : ['', inputFieldName];
   const validationInstance = ValidationRegistry.getValidation(validation);
-  const dataDescription = (typeof data === 'object' && data !== null && (data as any).locatorsToMask)
-    ? ' with masking'
-    : (data !== undefined ? ` with value '${data}'` : '');
-  await test.step(`Validated ${validation} - '${fieldName}'${dataDescription}`, async () => {
+  await test.step(`Validated ${validation} - '${typeof fieldName === 'object' ? readValuesFromInputObjects(fieldName) : fieldName}'${data !== undefined ? ` with value '${typeof data === 'object' ? readValuesFromInputObjects(data) : data}'` : ''}`, async () => {
     await validationInstance.validate(executor.page, validation, fieldName, data);
   });
 }

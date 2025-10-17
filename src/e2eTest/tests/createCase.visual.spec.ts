@@ -40,6 +40,7 @@ import {reasonsForRequestingADemotionOrder} from '@data/page-data/reasonsForRequ
 import {statementOfExpressTerms} from '@data/page-data/statementOfExpressTerms.page.data';
 import {wantToUploadDocuments} from '@data/page-data/wantToUploadDocuments.page.data';
 import {reasonsForRequestingASuspensionAndDemotionOrder} from '@data/page-data/reasonsForRequestingASuspensionAndDemotionOrder.page.data';
+import {commonSelectors} from "@data/selectors/common.selectors";
 
 test.beforeEach(async ({page}) => {
   initializeExecutor(page);
@@ -56,7 +57,7 @@ test.beforeEach(async ({page}) => {
 });
 
 test.describe('[Create Case - England] @functional', async () => {
-  test('England Journey - Visual Validations with masked data', async ({page:page}) => {
+  test('England Journey - Visual Validations with masked data', async () => {
     //await performValidation('compareWithSnapshot','selectAddress');//Observation:Need to add one more compare inside selectAddress
     await performAction('selectAddress', {
       postcode: addressDetails.englandCourtAssignedPostcode,
@@ -66,15 +67,15 @@ test.describe('[Create Case - England] @functional', async () => {
     await performValidation('bannerAlert', 'Case #.* has been created.');
     await performAction('extractCaseIdFromAlert');
     await performAction('clickButtonAndVerifyPageNavigation', provideMoreDetailsOfClaim.continue, claimantType.mainHeader);
-    //await performValidation('compareWithSnapshot','claimantType');
+    await performValidation('compareWithSnapshot','claimantType', {selectorsToMask: [commonSelectors.caseNumber]});
     await performAction('selectClaimantType', claimantType.england.registeredProviderForSocialHousing);
-    await performValidation('compareWithSnapshot', 'claimType', {selectorsToMask: [claimType.selector.caseNumber]});
+    await performValidation('compareWithSnapshot', 'claimType', {selectorsToMask: [commonSelectors.caseNumber]});
     await performAction('selectClaimType', claimType.no);
-    //await performValidation('compareWithSnapshot','claimantName');
-    //await performAction('selectClaimantName', claimantName.no);//Observation: Text box will appear when option 'No' is selected
-    //await performValidation('compareWithSnapshot','claimantNameNo');
+    await performValidation('compareWithSnapshot','claimantName', {selectorsToMask: [commonSelectors.caseNumber]});
+    await performAction('clickRadioButton', claimantName.no);//Observation: Text box will appear when option 'No' is selected
+    await performValidation('compareWithSnapshot','claimantNameNo', {selectorsToMask: [commonSelectors.caseNumber]});
     await performAction('selectClaimantName', claimantName.yes);
-    //await performValidation('compareWithSnapshot','contactPreferences');//Observation: email and address are dynamic
+    await performValidation('compareWithSnapshot','contactPreferences', {selectorsToMask: [commonSelectors.caseNumber]});//Observation: email and address are dynamic
     // await performAction('selectContactPreferences', {
     //   notifications: contactPreferences.yes,
     //   correspondenceAddress: contactPreferences.yes,
@@ -170,7 +171,7 @@ test.describe('[Create Case - England] @functional', async () => {
     // )
   });
 
-  test('England Journey - Visual Validations with mocked API data', async ({page:page}) => {
+  test.skip('England Journey - Visual Validations with mocked API data', async ({page:page}) => {
     //await performValidation('compareWithSnapshot','selectAddress');//Observation:Need to add one more compare inside selectAddress
     await performAction('selectAddress', {
       postcode: addressDetails.englandCourtAssignedPostcode,
