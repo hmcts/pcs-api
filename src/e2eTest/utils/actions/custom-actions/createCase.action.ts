@@ -44,6 +44,7 @@ import {completeYourClaim} from '@data/page-data/completeYourClaim.page.data';
 import {home} from '@data/page-data/home.page.data';
 import {search} from '@data/page-data/search.page.data';
 import {userIneligible} from '@data/page-data/userIneligible.page.data';
+import {reasonsForRequestingASuspensionAndDemotionOrder} from '@data/page-data/reasonsForRequestingASuspensionAndDemotionOrder.page.data';
 
 export let caseInfo: { id: string; fid: string; state: string };
 export let caseNumber: string;
@@ -82,10 +83,11 @@ export class CreateCaseAction implements IAction {
       ['selectClaimantCircumstances', () => this.selectClaimantCircumstances(fieldName)],
       ['provideDetailsOfRentArrears', () => this.provideDetailsOfRentArrears(fieldName)],
       ['selectAlternativesToPossession', () => this.selectAlternativesToPossession(fieldName as actionRecord)],
-      ['selectHousingAct', () => this.selectHousingAct(fieldName as actionRecord)],
+      ['selectHousingAct', () => this.selectHousingAct(fieldName)],
       ['selectStatementOfExpressTerms', () => this.selectStatementOfExpressTerms(fieldName)],
-      ['enterReasonForDemotionOrder', () => this.enterReasonForDemotionOrder(fieldName)],
       ['enterReasonForSuspensionOrder', () => this.enterReasonForSuspensionOrder(fieldName)],
+      ['enterReasonForDemotionOrder', () => this.enterReasonForDemotionOrder(fieldName)],
+      ['enterReasonForSuspensionAndDemotionOrder', () => this.enterReasonForSuspensionAndDemotionOrder(fieldName as actionRecord)],
       ['selectMoneyJudgment', () => this.selectMoneyJudgment(fieldName)],
       ['selectLanguageUsed', () => this.selectLanguageUsed(fieldName as actionRecord)],
       ['selectDefendantCircumstances', () => this.selectDefendantCircumstances(fieldName)],
@@ -212,7 +214,6 @@ export class CreateCaseAction implements IAction {
       await performAction('inputText', claimantName.whatIsCorrectClaimantName, claimantName.correctClaimantNameInput);
     }
     claimantsName = caseData == "No" ? claimantName.correctClaimantNameInput : await this.extractClaimantName(page, claimantName.yourClaimantNameRegisteredWithHMCTS);
-    await performAction('clickButtonAndVerifyPageNavigation', claimantName.continue, contactPreferences.mainHeader);
   }
 
   private async selectContactPreferences(preferences: actionData) {
@@ -533,9 +534,13 @@ export class CreateCaseAction implements IAction {
     await performAction('clickButton', alternativesToPossession.continue);
   }
 
-  private async selectHousingAct(housingAct: actionRecord) {
+  private async selectHousingAct(housingAct: actionData) {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
-    await performAction('clickRadioButton', {question: housingAct.question, option: housingAct.option});
+    if(Array.isArray(housingAct)) {
+      for (const act of housingAct) {
+        await performAction('clickRadioButton', {question: act.question, option: act.option});
+      }
+    }
     await performAction('clickButton', alternativesToPossession.continue);
   }
 
@@ -562,6 +567,14 @@ export class CreateCaseAction implements IAction {
     await performAction('inputText', reason, reasonsForRequestingASuspensionOrder.sampleTestReason);
     await performAction('clickButton', reasonsForRequestingASuspensionOrder.continue);
   }
+
+  private async enterReasonForSuspensionAndDemotionOrder(reason: actionRecord) {
+    await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
+    await performAction('inputText', reason.suspension, reasonsForRequestingASuspensionOrder.sampleTestReason);
+    await performAction('inputText', reason.demotion, reasonsForRequestingADemotionOrder.sampleTestReason);
+    await performAction('clickButton', reasonsForRequestingASuspensionAndDemotionOrder.continue);
+  }
+
   private async selectApplications(option: actionData) {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
     await performAction('clickRadioButton', option);
