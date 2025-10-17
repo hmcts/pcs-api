@@ -125,9 +125,7 @@ public class GroundsForPossessionWalesTest extends BasePageTest {
                         Set.of(),
                         Set.of(),
                         List.of(
-                                "Select at least one estate management ground when "
-                                        + "‘Estate management grounds (section 160)’ "
-                                        + "is selected."
+                                "Please select at least one ground in 'Estate management grounds (section 160)'."
                         )
                 ),
 
@@ -137,9 +135,7 @@ public class GroundsForPossessionWalesTest extends BasePageTest {
                         null,
                         Set.of(),
                         List.of(
-                                "Select at least one estate management ground when "
-                                        + "‘Estate management grounds (section 160)’ "
-                                        + "is selected."
+                                "Please select at least one ground in 'Estate management grounds (section 160)'."
                         )
                 ),
 
@@ -152,9 +148,7 @@ public class GroundsForPossessionWalesTest extends BasePageTest {
                         Set.of(),
                         Set.of(),
                         List.of(
-                                "Select at least one estate management ground when "
-                                        + "‘Estate management grounds (section 160)’ "
-                                        + "is selected."
+                                "Please select at least one ground in 'Estate management grounds (section 160)'."
                         )
                 )
         );
