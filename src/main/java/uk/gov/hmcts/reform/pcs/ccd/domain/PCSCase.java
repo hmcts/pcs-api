@@ -263,6 +263,10 @@ public class PCSCase {
     @CCD(searchable = false)
     private YesOrNo showClaimTypeNotEligibleWales;
 
+    @JsonUnwrapped(prefix = "wales")
+    @CCD
+    private WalesHousingAct walesHousingAct;
+
     @CCD(
         label = "How much is the rent?",
         typeOverride = FieldType.MoneyGBP,
