@@ -20,6 +20,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
+import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicence;
 import uk.gov.hmcts.reform.pcs.ccd.model.Defendant;
 import uk.gov.hmcts.reform.pcs.ccd.model.PartyDocumentDto;
@@ -60,6 +61,10 @@ public class PcsCaseEntity {
 
     @Enumerated(EnumType.STRING)
     private LegislativeCountry legislativeCountry;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "claimant_type")
+    private ClaimantType claimantType;
 
     private Integer caseManagementLocation;
 
