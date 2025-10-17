@@ -384,7 +384,8 @@ public class SecureOrFlexibleGroundsForPossessionReasons implements CcdPageConfi
                 ),
                 TextAreaValidationService.FieldValidation.of(
                     secureOrFlexibleGrounds.getTiedAccommodationGround(),
-                    SecureOrFlexibleDiscretionaryGroundsAlternativeAccomm.TIED_ACCOMMODATION_NEEDED_FOR_EMPLOYEE.getLabel(),
+                    SecureOrFlexibleDiscretionaryGroundsAlternativeAccomm
+                        .TIED_ACCOMMODATION_NEEDED_FOR_EMPLOYEE.getLabel(),
                     TextAreaValidationService.MEDIUM_TEXT_LIMIT
                 ),
                 TextAreaValidationService.FieldValidation.of(
@@ -394,7 +395,8 @@ public class SecureOrFlexibleGroundsForPossessionReasons implements CcdPageConfi
                 ),
                 TextAreaValidationService.FieldValidation.of(
                     secureOrFlexibleGrounds.getHousingAssocSpecialGround(),
-                    SecureOrFlexibleDiscretionaryGroundsAlternativeAccomm.HOUSING_ASSOCIATION_SPECIAL_CIRCUMSTANCES.getLabel(),
+                    SecureOrFlexibleDiscretionaryGroundsAlternativeAccomm
+                        .HOUSING_ASSOCIATION_SPECIAL_CIRCUMSTANCES.getLabel(),
                     TextAreaValidationService.MEDIUM_TEXT_LIMIT
                 ),
                 TextAreaValidationService.FieldValidation.of(
