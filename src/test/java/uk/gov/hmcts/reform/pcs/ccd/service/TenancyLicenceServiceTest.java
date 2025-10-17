@@ -12,7 +12,9 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.RentPaymentFrequency;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicence;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ThirdPartyPaymentSource;
+import uk.gov.hmcts.reform.pcs.ccd.domain.WalesHousingAct;
 import uk.gov.hmcts.reform.pcs.ccd.domain.WalesNoticeDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotApplicable;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -305,6 +307,79 @@ class TenancyLicenceServiceTest {
     }
 
     @Test
+    void shouldMapWalesHousingActDetailsWhenPresent() {
+        // Given
+        LocalDate appointmentDate = LocalDate.of(2024, 3, 15);
+        WalesHousingAct walesHousingAct = WalesHousingAct.builder()
+            .registered(YesNoNotApplicable.YES)
+            .registrationNumber("REG123456")
+            .licensed(YesNoNotApplicable.YES)
+            .licenceNumber("LIC789012")
+            .licensedAgentAppointed(YesNoNotApplicable.YES)
+            .agentFirstName("John")
+            .agentLastName("Smith")
+            .agentLicenceNumber("AGENT345678")
+            .agentAppointmentDate(appointmentDate)
+            .build();
+
+        when(pcsCase.getWalesHousingAct()).thenReturn(walesHousingAct);
+
+        // When
+        TenancyLicence result = tenancyLicenceService.buildTenancyLicence(pcsCase);
+
+        // Then
+        assertThat(result.getWalesRegistered()).isEqualTo(YesNoNotApplicable.YES);
+        assertThat(result.getWalesRegistrationNumber()).isEqualTo("REG123456");
+        assertThat(result.getWalesLicensed()).isEqualTo(YesNoNotApplicable.YES);
+        assertThat(result.getWalesLicenceNumber()).isEqualTo("LIC789012");
+        assertThat(result.getWalesLicensedAgentAppointed()).isEqualTo(YesNoNotApplicable.YES);
+        assertThat(result.getWalesAgentFirstName()).isEqualTo("John");
+        assertThat(result.getWalesAgentLastName()).isEqualTo("Smith");
+        assertThat(result.getWalesAgentLicenceNumber()).isEqualTo("AGENT345678");
+        assertThat(result.getWalesAgentAppointmentDate()).isEqualTo(appointmentDate);
+    }
+
+    @Test
+    void shouldHandleNullWalesHousingActDetails() {
+        // Given
+        when(pcsCase.getWalesHousingAct()).thenReturn(null);
+
+        // When
+        TenancyLicence result = tenancyLicenceService.buildTenancyLicence(pcsCase);
+
+        // Then
+        assertThat(result.getWalesRegistered()).isNull();
+        assertThat(result.getWalesRegistrationNumber()).isNull();
+        assertThat(result.getWalesLicensed()).isNull();
+        assertThat(result.getWalesLicenceNumber()).isNull();
+        assertThat(result.getWalesLicensedAgentAppointed()).isNull();
+        assertThat(result.getWalesAgentFirstName()).isNull();
+        assertThat(result.getWalesAgentLastName()).isNull();
+        assertThat(result.getWalesAgentLicenceNumber()).isNull();
+        assertThat(result.getWalesAgentAppointmentDate()).isNull();
+    }
+
+    @Test
+    void shouldHandleWalesHousingActDetailsWithNotApplicableValues() {
+        // Given
+        WalesHousingAct walesHousingAct = WalesHousingAct.builder()
+            .registered(YesNoNotApplicable.NOT_APPLICABLE)
+            .licensed(YesNoNotApplicable.NO)
+            .licensedAgentAppointed(YesNoNotApplicable.NOT_APPLICABLE)
+            .build();
+
+        when(pcsCase.getWalesHousingAct()).thenReturn(walesHousingAct);
+
+        // When
+        TenancyLicence result = tenancyLicenceService.buildTenancyLicence(pcsCase);
+
+        // Then
+        assertThat(result.getWalesRegistered()).isEqualTo(YesNoNotApplicable.NOT_APPLICABLE);
+        assertThat(result.getWalesLicensed()).isEqualTo(YesNoNotApplicable.NO);
+        assertThat(result.getWalesLicensedAgentAppointed()).isEqualTo(YesNoNotApplicable.NOT_APPLICABLE);
+    }
+
+    @Test
     void shouldMapWalesNoticeFieldsWhenPresent() {
         // Given
         String typeOfNoticeServed = "Some notice type";
@@ -322,5 +397,4 @@ class TenancyLicenceServiceTest {
         assertThat(result.getWalesNoticeServed()).isTrue();
         assertThat(result.getWalesTypeOfNoticeServed()).isEqualTo(typeOfNoticeServed);
     }
-
 }
