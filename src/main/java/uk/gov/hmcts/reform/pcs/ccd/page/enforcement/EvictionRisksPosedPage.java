@@ -7,7 +7,7 @@ import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.domain.RiskCategory;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.RiskCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 
 
@@ -25,8 +25,11 @@ public class EvictionRisksPosedPage implements CcdPageConfiguration {
             .pageLabel("The risks posed by everyone at the property")
             .showCondition("confirmLivingAtProperty=\"YES\"")
             .label("evictionRisksPosedPage-info", "---")
-            .label("evictionRisksPosedPage-hint", "Include any risks posed by the defendants and also anyone else living at the property")
-            .optional(PCSCase::getEnforcementRiskCategories);
+            .label("evictionRisksPosedPage-hint", """
+                Include any risks posed by the defendants and also anyone else 
+                living at the property
+                """)
+            .mandatory(PCSCase::getEnforcementRiskCategories);
     }
 
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
@@ -49,6 +52,12 @@ public class EvictionRisksPosedPage implements CcdPageConfiguration {
         }
         if (!data.getEnforcementRiskCategories().contains(RiskCategory.CRIMINAL_OR_ANTISOCIAL)) {
             data.setEnforcementCriminalDetails(null);
+        }
+        if (!data.getEnforcementRiskCategories().contains(RiskCategory.VERBAL_OR_WRITTEN_THREATS)) {
+            data.setEnforcementThreatsDetails(null);
+        }
+        if (!data.getEnforcementRiskCategories().contains(RiskCategory.PROTEST_GROUP_MEMBER)) {
+            data.setEnforcementProtestGroupMemberDetails(null);
         }
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()

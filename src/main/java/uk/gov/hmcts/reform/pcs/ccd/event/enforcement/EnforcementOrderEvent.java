@@ -21,6 +21,8 @@ import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.EvictionFirearmsPossessionDe
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.EvictionCriminalAntisocialDetailsPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.EvictionVulnerableAdultsChildrenPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.LivingInThePropertyPage;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.ProtestGroupPage;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.VerbalOrWrittenThreatsPage;
 
 import static uk.gov.hmcts.reform.pcs.ccd.domain.State.AWAITING_SUBMISSION_TO_HMCTS;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.enforceTheOrder;
@@ -49,7 +51,9 @@ public class EnforcementOrderEvent implements CCDConfig<PCSCase, State, UserRole
             .add(new EvictionViolentAggressiveDetailsPage())
             .add(new EvictionFirearmsPossessionDetailsPage())
             .add(new EvictionCriminalAntisocialDetailsPage())
-            .add(new EvictionVulnerableAdultsChildrenPage());
+            .add(new EvictionVulnerableAdultsChildrenPage())
+            .add(new VerbalOrWrittenThreatsPage())
+            .add(new ProtestGroupPage());
     }
 
     private SubmitResponse submit(EventPayload<PCSCase, State> eventPayload) {

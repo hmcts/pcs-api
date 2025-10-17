@@ -12,6 +12,7 @@ import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseworkerReadAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenAccess;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.RiskCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.model.NoRentArrearsReasonForGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
@@ -651,4 +652,24 @@ public class PCSCase {
         typeOverride = TextArea
     )
     private String enforcementCriminalDetails;
+
+    @CCD(
+            typeOverride = TextArea,
+            hint = """
+                    For example, explain who was threatened, what the defendants said,
+                    and how the threat was made (face-to-face, or by email or letter).
+                   If you can, include the name of the defendant who made the threat.
+                   """
+    )
+    private String enforcementThreatsDetails;
+
+    @CCD(
+            typeOverride = TextArea,
+            hint = """
+                    For example, include the name of the group and the type of protest.
+                    You can enter up to 6,800 characters
+                   """
+    )
+    private String enforcementProtestGroupMemberDetails;
+
 }
