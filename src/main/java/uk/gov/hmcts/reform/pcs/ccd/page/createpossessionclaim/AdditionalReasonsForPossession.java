@@ -41,18 +41,18 @@ public class AdditionalReasonsForPossession implements CcdPageConfiguration {
                                                                   CaseDetails<PCSCase, State> detailsBefore) {
         PCSCase caseData = details.getData();
         
+        List<String> validationErrors = new ArrayList<>();
+        
         AdditionalReasons additionalReasons = caseData.getAdditionalReasonsForPossession();
         if (additionalReasons != null) {
-            List<String> validationErrors = textAreaValidationService.validateSingleTextArea(
+            validationErrors.addAll(textAreaValidationService.validateSingleTextArea(
                 additionalReasons.getReasons(),
                 "Additional reasons for possession",
                 TextAreaValidationService.EXTRA_LONG_TEXT_LIMIT
-            );
-            
-            return textAreaValidationService.createValidationResponse(caseData, validationErrors);
+            ));
         }
         
-        return textAreaValidationService.createValidationResponse(caseData, new ArrayList<>());
+        return textAreaValidationService.createValidationResponse(caseData, validationErrors);
     }
 
 }

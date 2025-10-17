@@ -39,17 +39,17 @@ public class StatementOfExpressTerms implements CcdPageConfiguration {
                                                                   CaseDetails<PCSCase, State> detailsBefore) {
         PCSCase caseData = details.getData();
         
+        List<String> validationErrors = new ArrayList<>();
+        
         DemotionOfTenancy demotionOfTenancy = caseData.getDemotionOfTenancy();
         if (demotionOfTenancy != null) {
-            List<String> validationErrors = textAreaValidationService.validateSingleTextArea(
+            validationErrors.addAll(textAreaValidationService.validateSingleTextArea(
                 demotionOfTenancy.getStatementOfExpressTermsDetails(),
                 "Give details of the terms",
                 TextAreaValidationService.LONG_TEXT_LIMIT
-            );
-            
-            return textAreaValidationService.createValidationResponse(caseData, validationErrors);
+            ));
         }
         
-        return textAreaValidationService.createValidationResponse(caseData, new ArrayList<>());
+        return textAreaValidationService.createValidationResponse(caseData, validationErrors);
     }
 }

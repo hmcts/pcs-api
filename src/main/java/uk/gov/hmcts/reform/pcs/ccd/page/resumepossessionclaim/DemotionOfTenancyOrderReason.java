@@ -36,18 +36,18 @@ public class DemotionOfTenancyOrderReason implements CcdPageConfiguration {
                                                                   CaseDetails<PCSCase, State> detailsBefore) {
         PCSCase caseData = details.getData();
         
+        List<String> validationErrors = new ArrayList<>();
+        
         DemotionOfTenancy demotionOfTenancy = caseData.getDemotionOfTenancy();
         if (demotionOfTenancy != null) {
-            List<String> validationErrors = textAreaValidationService.validateSingleTextArea(
+            validationErrors.addAll(textAreaValidationService.validateSingleTextArea(
                 demotionOfTenancy.getDemotionOfTenancyReason(),
                 "Why are you requesting a demotion order?",
                 TextAreaValidationService.SHORT_TEXT_LIMIT
-            );
-            
-            return textAreaValidationService.createValidationResponse(caseData, validationErrors);
+            ));
         }
         
-        return textAreaValidationService.createValidationResponse(caseData, new ArrayList<>());
+        return textAreaValidationService.createValidationResponse(caseData, validationErrors);
     }
 }
 

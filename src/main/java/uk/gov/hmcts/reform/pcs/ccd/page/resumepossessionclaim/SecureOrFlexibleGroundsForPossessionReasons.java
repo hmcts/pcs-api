@@ -298,9 +298,11 @@ public class SecureOrFlexibleGroundsForPossessionReasons implements CcdPageConfi
         PCSCase caseData = details.getData();
         
         // Validate all text area fields for character limit - ultra simple approach
+        List<String> validationErrors = new ArrayList<>();
+        
         SecureOrFlexibleGroundsReasons secureOrFlexibleGrounds = caseData.getSecureOrFlexibleGroundsReasons();
         if (secureOrFlexibleGrounds != null) {
-            List<String> validationErrors = textAreaValidationService.validateMultipleTextAreas(
+            validationErrors.addAll(textAreaValidationService.validateMultipleTextAreas(
                 TextAreaValidationService.FieldValidation.of(
                     secureOrFlexibleGrounds.getBreachOfTenancyGround(),
                     "Breach of the tenancy (ground 1)",
@@ -401,12 +403,10 @@ public class SecureOrFlexibleGroundsForPossessionReasons implements CcdPageConfi
                     "Under occupying after succession (ground 15A)",
                     TextAreaValidationService.MEDIUM_TEXT_LIMIT
                 )
-            );
-            
-            return textAreaValidationService.createValidationResponse(caseData, validationErrors);
+            ));
         }
         
-        return textAreaValidationService.createValidationResponse(caseData, new ArrayList<>());
+        return textAreaValidationService.createValidationResponse(caseData, validationErrors);
     }
 }
 

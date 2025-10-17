@@ -311,9 +311,11 @@ public class NoRentArrearsGroundsForPossessionReason implements CcdPageConfigura
         PCSCase caseData = details.getData();
         
         // Validate all text area fields for character limit - ultra simple approach
+        List<String> validationErrors = new ArrayList<>();
+        
         NoRentArrearsReasonForGrounds noRentArrearsReason = caseData.getNoRentArrearsReasonForGrounds();
         if (noRentArrearsReason != null) {
-            List<String> validationErrors = textAreaValidationService.validateMultipleTextAreas(
+            validationErrors.addAll(textAreaValidationService.validateMultipleTextAreas(
                 TextAreaValidationService.FieldValidation.of(
                     noRentArrearsReason.getOwnerOccupierTextArea(),
                     "Owner occupier (ground 1)",
@@ -419,11 +421,9 @@ public class NoRentArrearsGroundsForPossessionReason implements CcdPageConfigura
                     "Tenancy obtained by false statement (ground 17)",
                     TextAreaValidationService.MEDIUM_TEXT_LIMIT
                 )
-            );
-            
-            return textAreaValidationService.createValidationResponse(caseData, validationErrors);
+            ));
         }
         
-        return textAreaValidationService.createValidationResponse(caseData, new ArrayList<>());
+        return textAreaValidationService.createValidationResponse(caseData, validationErrors);
     }
 }

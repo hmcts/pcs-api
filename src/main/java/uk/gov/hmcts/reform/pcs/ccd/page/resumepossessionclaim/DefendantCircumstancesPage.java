@@ -40,6 +40,8 @@ public class DefendantCircumstancesPage implements CcdPageConfiguration {
                                                                   CaseDetails<PCSCase, State> detailsBefore) {
         PCSCase caseData = details.getData();
         
+        List<String> validationErrors = new ArrayList<>();
+        
         DefendantCircumstances defendantCircumstances = caseData.getDefendantCircumstances();
         if (defendantCircumstances != null) {
             // Use fallback if defendantTermPossessive is not set
@@ -50,15 +52,13 @@ public class DefendantCircumstancesPage implements CcdPageConfiguration {
             
             String dynamicLabel = "Give details about the " + defendantTerm + " circumstances";
             
-            List<String> validationErrors = textAreaValidationService.validateSingleTextArea(
+            validationErrors.addAll(textAreaValidationService.validateSingleTextArea(
                 defendantCircumstances.getDefendantCircumstancesInfo(),
                 dynamicLabel,
                 TextAreaValidationService.LONG_TEXT_LIMIT
-            );
-            
-            return textAreaValidationService.createValidationResponse(caseData, validationErrors);
+            ));
         }
         
-        return textAreaValidationService.createValidationResponse(caseData, new ArrayList<>());
+        return textAreaValidationService.createValidationResponse(caseData, validationErrors);
     }
 }

@@ -36,17 +36,17 @@ public class SuspensionOfRightToBuyOrderReason implements CcdPageConfiguration {
                                                                   CaseDetails<PCSCase, State> detailsBefore) {
         PCSCase caseData = details.getData();
         
+        List<String> validationErrors = new ArrayList<>();
+        
         SuspensionOfRightToBuy suspensionOfRightToBuy = caseData.getSuspensionOfRightToBuy();
         if (suspensionOfRightToBuy != null) {
-            List<String> validationErrors = textAreaValidationService.validateSingleTextArea(
+            validationErrors.addAll(textAreaValidationService.validateSingleTextArea(
                 suspensionOfRightToBuy.getSuspensionOfRightToBuyReason(),
                 "Why are you requesting a suspension order?",
                 TextAreaValidationService.SHORT_TEXT_LIMIT
-            );
-            
-            return textAreaValidationService.createValidationResponse(caseData, validationErrors);
+            ));
         }
         
-        return textAreaValidationService.createValidationResponse(caseData, new ArrayList<>());
+        return textAreaValidationService.createValidationResponse(caseData, validationErrors);
     }
 }

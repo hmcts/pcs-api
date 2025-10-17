@@ -54,21 +54,21 @@ public class ClaimantCircumstancesPage implements CcdPageConfiguration {
                                                                   CaseDetails<PCSCase, State> detailsBefore) {
         PCSCase caseData = details.getData();
         
+        List<String> validationErrors = new ArrayList<>();
+        
         ClaimantCircumstances claimantCircumstances = caseData.getClaimantCircumstances();
         if (claimantCircumstances != null) {
             String dynamicLabel = "Give details about " 
                 + claimantCircumstances.getClaimantNamePossessiveForm() 
                 + "'s circumstances";
             
-            List<String> validationErrors = textAreaValidationService.validateSingleTextArea(
+            validationErrors.addAll(textAreaValidationService.validateSingleTextArea(
                 claimantCircumstances.getClaimantCircumstancesDetails(),
                 dynamicLabel,
                 TextAreaValidationService.LONG_TEXT_LIMIT
-            );
-            
-            return textAreaValidationService.createValidationResponse(caseData, validationErrors);
+            ));
         }
         
-        return textAreaValidationService.createValidationResponse(caseData, new ArrayList<>());
+        return textAreaValidationService.createValidationResponse(caseData, validationErrors);
     }
 }

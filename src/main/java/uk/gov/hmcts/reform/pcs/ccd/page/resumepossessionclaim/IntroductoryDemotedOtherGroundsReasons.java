@@ -81,10 +81,12 @@ public class IntroductoryDemotedOtherGroundsReasons implements CcdPageConfigurat
         PCSCase caseData = details.getData();
         
         // Validate all text area fields for character limit - ultra simple approach
+        List<String> validationErrors = new ArrayList<>();
+        
         IntroductoryDemotedOtherGroundReason introductoryDemotedOtherGroundReason = 
             caseData.getIntroductoryDemotedOtherGroundReason();
         if (introductoryDemotedOtherGroundReason != null) {
-            List<String> validationErrors = textAreaValidationService.validateMultipleTextAreas(
+            validationErrors.addAll(textAreaValidationService.validateMultipleTextAreas(
                 TextAreaValidationService.FieldValidation.of(
                     introductoryDemotedOtherGroundReason.getAntiSocialBehaviourGround(),
                     "Antisocial behaviour",
@@ -110,11 +112,9 @@ public class IntroductoryDemotedOtherGroundsReasons implements CcdPageConfigurat
                     "No grounds",
                     TextAreaValidationService.MEDIUM_TEXT_LIMIT
                 )
-            );
-            
-            return textAreaValidationService.createValidationResponse(caseData, validationErrors);
+            ));
         }
         
-        return textAreaValidationService.createValidationResponse(caseData, new ArrayList<>());
+        return textAreaValidationService.createValidationResponse(caseData, validationErrors);
     }
 }
