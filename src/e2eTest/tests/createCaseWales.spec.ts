@@ -4,6 +4,7 @@ import {addressDetails} from '@data/page-data/addressDetails.page.data';
 import {claimantType} from '@data/page-data/claimantType.page.data';
 import {claimType} from '@data/page-data/claimType.page.data';
 import {claimantName} from '@data/page-data/claimantName.page.data';
+import {claimantDetailsWales} from '@data/page-data/claimantDetailsWales.page.data';
 import {contactPreferences} from '@data/page-data/contactPreferences.page.data';
 import {defendantDetails} from '@data/page-data/defendantDetails.page.data';
 import {tenancyLicenceDetails} from '@data/page-data/tenancyLicenceDetails.page.data';
@@ -40,6 +41,7 @@ import {housingAct} from '@data/page-data/housingAct.page.data';
 import {reasonsForRequestingADemotionOrder} from '@data/page-data/reasonsForRequestingADemotionOrder.page.data';
 import {statementOfExpressTerms} from '@data/page-data/statementOfExpressTerms.page.data';
 import {wantToUploadDocuments} from '@data/page-data/wantToUploadDocuments.page.data';
+import {reasonsForRequestingASuspensionAndDemotionOrder} from '@data/page-data/reasonsForRequestingASuspensionAndDemotionOrder.page.data';
 
 test.beforeEach(async ({page}) => {
   initializeExecutor(page);
@@ -59,6 +61,7 @@ test.describe('[Create Case - Wales] @Master @nightly', async () => {
     await performAction('selectClaimantType', claimantType.wales.communityLandlord);
     await performAction('selectClaimType', claimType.no);
     await performAction('selectClaimantName', claimantName.no);
+    await performAction('clickButtonAndVerifyPageNavigation', claimantName.continue, claimantDetailsWales.mainHeader);
     await performAction('clickButton', 'Sign out');
     await performAction('reloginAndFindTheCase', user.claimantSolicitor);
     await performAction('clickButtonAndVerifyPageNavigation', resumeClaim.continue, resumeClaimOptions.mainHeader);
@@ -68,7 +71,11 @@ test.describe('[Create Case - Wales] @Master @nightly', async () => {
     await performValidation('radioButtonChecked', claimType.no, true);
     await performAction('verifyPageAndClickButton', claimType.continue, claimType.mainHeader);
     await performValidation('radioButtonChecked', claimantName.no, true);
-    await performAction('clickButtonAndVerifyPageNavigation', claimantName.continue, contactPreferences.mainHeader);
+    await performAction('clickButtonAndVerifyPageNavigation', claimantName.continue, claimantDetailsWales.mainHeader);
+    await performAction('selectClaimantDetails',
+        {question1: claimantDetailsWales.wereYouRegisteredUnderPart1OfTheHousingAct2014, option1: claimantDetailsWales.yes,
+         question2: claimantDetailsWales.wereYouLicensedUnderPart1OfTheHousingAct2014, option2: claimantDetailsWales.yes,
+         question3: claimantDetailsWales.haveYouAppointedALicenseAgent, option3: claimantDetailsWales.yes});
     await performAction('selectContactPreferences', {
       notifications: contactPreferences.no,
       correspondenceAddress: contactPreferences.no,
@@ -117,8 +124,9 @@ test.describe('[Create Case - Wales] @Master @nightly', async () => {
     await performAction('selectAlternativesToPossession', {question: alternativesToPossession.demotionOfTenancy
       , option: [alternativesToPossession.demotionOfTenancy]});
     await performValidation('mainHeader', housingAct.mainHeader);
-    await performAction('selectHousingAct', {question: housingAct.demotionOfTenancy.whichSection
-      , option: housingAct.demotionOfTenancy.section6AHousingAct1988});
+    await performAction('selectHousingAct', [{question: housingAct.demotionOfTenancy.whichSection
+      , option: housingAct.demotionOfTenancy.section6AHousingAct1988}]);
+    await performValidation('mainHeader', statementOfExpressTerms.mainHeader);
     await performAction('selectStatementOfExpressTerms', statementOfExpressTerms.no);
     await performValidation('mainHeader', reasonsForRequestingADemotionOrder.mainHeader);
     await performAction('enterReasonForDemotionOrder', reasonsForRequestingADemotionOrder.requestDemotionOrderQuestion);
@@ -154,6 +162,7 @@ test.describe('[Create Case - Wales] @Master @nightly', async () => {
     await performAction('selectClaimantType', claimantType.wales.communityLandlord);
     await performAction('selectClaimType', claimType.no);
     await performAction('selectClaimantName', claimantName.yes);
+    await performAction('clickButtonAndVerifyPageNavigation', claimantName.continue, claimantDetailsWales.mainHeader);
     await performAction('clickButton', 'Sign out');
     await performAction('reloginAndFindTheCase', user.claimantSolicitor);
     await performAction('clickButtonAndVerifyPageNavigation', resumeClaim.continue, resumeClaimOptions.mainHeader);
@@ -164,6 +173,11 @@ test.describe('[Create Case - Wales] @Master @nightly', async () => {
     await performAction('selectClaimType', claimType.no);
     await performValidation('radioButtonChecked', claimantName.no, false);
     await performAction('selectClaimantName', claimantName.yes);
+    await performAction('clickButtonAndVerifyPageNavigation', claimantName.continue, claimantDetailsWales.mainHeader);
+    await performAction('selectClaimantDetails',
+        {question1: claimantDetailsWales.wereYouRegisteredUnderPart1OfTheHousingAct2014, option1: claimantDetailsWales.no,
+         question2: claimantDetailsWales.wereYouLicensedUnderPart1OfTheHousingAct2014, option2: claimantDetailsWales.no,
+         question3: claimantDetailsWales.haveYouAppointedALicenseAgent, option3: claimantDetailsWales.no});
     await performAction('selectContactPreferences', {
       notifications: contactPreferences.yes,
       correspondenceAddress: contactPreferences.yes,
@@ -211,10 +225,11 @@ test.describe('[Create Case - Wales] @Master @nightly', async () => {
     await performAction('selectAlternativesToPossession', {question: alternativesToPossession.suspensionOrDemotion
       , option: [alternativesToPossession.suspensionOfRightToBuy]});
     await performValidation('mainHeader', housingAct.mainHeader);
-    await performAction('selectHousingAct', {question: housingAct.suspensionOfRightToBuy.whichSection
-      ,option: housingAct.suspensionOfRightToBuy.section121AHousingAct1985});
+    await performAction('selectHousingAct', [{question: housingAct.suspensionOfRightToBuy.whichSection
+      , option: housingAct.suspensionOfRightToBuy.section121AHousingAct1985}]);
     await performValidation('mainHeader', reasonsForRequestingASuspensionOrder.mainHeader);
-    await performAction('enterReasonForSuspensionOrder', reasonsForRequestingASuspensionOrder.question);
+    await performValidation('mainHeader', reasonsForRequestingASuspensionOrder.mainHeader);
+    await performAction('enterReasonForSuspensionOrder', reasonsForRequestingASuspensionOrder.requestSuspensionOrderQuestion);
     await performValidation('mainHeader', claimingCosts.mainHeader);
     await performAction('selectClaimingCosts', claimingCosts.no);
     await performValidation('mainHeader', additionalReasonsForPossession.mainHeader);
@@ -247,6 +262,11 @@ test.describe('[Create Case - Wales] @Master @nightly', async () => {
     await performAction('selectClaimantType', claimantType.wales.communityLandlord);
     await performAction('selectClaimType', claimType.no);
     await performAction('selectClaimantName', claimantName.no);
+    await performAction('clickButtonAndVerifyPageNavigation', claimantName.continue, claimantDetailsWales.mainHeader);
+    await performAction('selectClaimantDetails',
+        {question1: claimantDetailsWales.wereYouRegisteredUnderPart1OfTheHousingAct2014, option1: claimantDetailsWales.notApplicable,
+         question2: claimantDetailsWales.wereYouLicensedUnderPart1OfTheHousingAct2014, option2: claimantDetailsWales.notApplicable,
+         question3: claimantDetailsWales.haveYouAppointedALicenseAgent, option3: claimantDetailsWales.notApplicable});
     await performAction('selectContactPreferences', {
       notifications: contactPreferences.no,
       correspondenceAddress: contactPreferences.no,
@@ -309,6 +329,17 @@ test.describe('[Create Case - Wales] @Master @nightly', async () => {
     await performValidation('mainHeader', alternativesToPossession.mainHeader);
     await performAction('selectAlternativesToPossession', {question: alternativesToPossession.suspensionOrDemotion
       , option: [alternativesToPossession.suspensionOfRightToBuy, alternativesToPossession.demotionOfTenancy]});
+    await performValidation('mainHeader', housingAct.mainHeader);
+    await performAction('selectHousingAct', [{question: housingAct.suspensionOfRightToBuy.whichSection
+      , option: housingAct.suspensionOfRightToBuy.section6AHousingAct1988}
+      , {question: housingAct.demotionOfTenancy.whichSection
+        , option: housingAct.demotionOfTenancy.section82AHousingAct1985}]);
+    await performValidation('mainHeader', statementOfExpressTerms.mainHeader);
+    await performAction('selectStatementOfExpressTerms', statementOfExpressTerms.no);
+    await performValidation('mainHeader', reasonsForRequestingASuspensionAndDemotionOrder.mainHeader);
+    await performAction('enterReasonForSuspensionAndDemotionOrder'
+        , {suspension: reasonsForRequestingASuspensionAndDemotionOrder.requestSuspensionOrderQuestion
+          ,  demotion: reasonsForRequestingASuspensionAndDemotionOrder.requestDemotionOrderQuestion});
     await performValidation('mainHeader', claimingCosts.mainHeader);
     await performAction('selectClaimingCosts', claimingCosts.yes);
     await performValidation('mainHeader', additionalReasonsForPossession.mainHeader);
