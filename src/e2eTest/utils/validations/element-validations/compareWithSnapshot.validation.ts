@@ -8,10 +8,10 @@ import pixelmatch from 'pixelmatch';
 export class compareWithSnapshotValidation implements IValidation {
 
   async validate(
-      page: Page,
-      validation: string,
-      fieldName?: validationData | validationRecord,
-      data?: validationData | validationRecord
+    page: Page,
+    validation: string,
+    fieldName?: validationData | validationRecord,
+    data?: validationData | validationRecord
   ): Promise<void> {
 
     if (typeof fieldName !== 'string') {
@@ -21,13 +21,8 @@ export class compareWithSnapshotValidation implements IValidation {
 
     let locatorsToMask: Locator[] = [];
 
-    // 1. We check if 'data' is an object and if 'selectorsToMask' is a key 'in' it.
     if (typeof data === 'object' && data !== null && !Array.isArray(data) && 'selectorsToMask' in data) {
-
-      // 2. We then use 'as string[]' to tell TypeScript what's inside.
       const selectorStrings = data.selectorsToMask as string[];
-
-      // 3. Convert the strings into real Locators
       locatorsToMask = selectorStrings.map(selector => page.locator(selector));
     }
 
@@ -47,51 +42,65 @@ export class compareWithSnapshotValidation implements IValidation {
     });
 
     // --- Handle Baseline Creation/Updates ---
-    // --- THIS IS THE FIX ---
-    // 1. Get the update mode from the correct path.
+    // --- THIS IS THE UPDATED LOGIC ---
     const updateMode = (test.info() as any).config.updateSnapshots;
-
-    // 2. Check if the mode is 'all' OR 'changed'.
     const isUpdateMode = updateMode === 'all' || updateMode === 'changed';
-    // --- END OF FIX ---
 
-    if (isUpdateMode || !fs.existsSync(baselinePath)) {
+    if (isUpdateMode) {
+      // 1. UPDATE MODE: We are running with -u.
+      // Create or update the baseline and pass.
       fs.copyFileSync(actualPath, baselinePath);
       console.log(`✅ Baseline snapshot created/updated at: ${baselinePath}`);
       await test.info().attach('New/Updated Baseline', {
         path: baselinePath,
         contentType: 'image/png',
       });
-      return;
+      return; // <-- Exit successfully
     }
 
+    if (!fs.existsSync(baselinePath)) {
+      // 2. BASELINE MISSING: We are NOT in update mode.
+      // Attach the new image for review and throw an error.
+      await test.info().attach('Actual (New) Screenshot', {
+        path: actualPath,
+        contentType: 'image/png',
+      });
+
+      throw new Error(
+        `Baseline image not found for page "${pageName}" at: ${baselinePath}\n` +
+        `Run with the -u or --update-snapshots flag to create a new baseline.`
+      );
+    }
+    // --- END OF UPDATED LOGIC ---
+
+
+    // 3. COMPARE MODE: We are not in update mode and the baseline exists.
     // --- Perform Comparison ---
     const imgBaseline = PNG.sync.read(fs.readFileSync(baselinePath));
     const imgActual = PNG.sync.read(fs.readFileSync(actualPath));
 
     if (imgBaseline.width !== imgActual.width || imgBaseline.height !== imgActual.height) {
       throw new Error(
-          `Image size mismatch for page "${pageName}": baseline ${imgBaseline.width}x${imgBaseline.height}, actual ${imgActual.width}x${imgActual.height}`
+        `Image size mismatch for page "${pageName}": baseline ${imgBaseline.width}x${imgBaseline.height}, actual ${imgActual.width}x${imgActual.height}`
       );
     }
 
     const { width, height } = imgBaseline;
     const diff = new PNG({ width, height });
 
-    // --- Restored pixelmatch arguments ---
     const diffPixels = pixelmatch(
-        imgBaseline.data,
-        imgActual.data,
-        diff.data,
-        width,
-        height,
-        {
-          threshold: 0.1,
-          includeAA: true,
-          alpha: 0.7,
-          diffColor: [255, 0, 0],
-          diffColorAlt: [0, 255, 0],
-        }
+      imgBaseline.data,
+      imgActual.data,
+      diff.data,
+      width,
+      height,
+      {
+        threshold: 0.1,
+        includeAA: true,
+        alpha: 0.7,
+        diffColor: [255, 0, 0],
+        diffColorAlt: [0, 255, 0],
+      }
     );
 
     // --- Attach reports ---
@@ -115,10 +124,8 @@ export class compareWithSnapshotValidation implements IValidation {
     }
 
     expect(
-        diffPixels,
-        // --- THIS IS THE FIX ---
-        `Visual diff for page "${pageName}" exceeds threshold. ${diffPixels} pixels differ (max allowed: ${maxDiffPixels}).`
-        // --- END OF FIX ---
+      diffPixels,
+      `Visual diff for page "${pageName}" exceeds threshold. ${diffPixels} pixels differ (max allowed: ${maxDiffPixels}).`
     ).toBeLessThanOrEqual(maxDiffPixels);
   }
 }
