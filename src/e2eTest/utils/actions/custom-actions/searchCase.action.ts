@@ -6,19 +6,19 @@ import { caseList } from '@data/page-data/caseList.page.data';
 import { home } from '@data/page-data/home.page.data';
 import { waitForPageRedirectionTimeout } from 'playwright.config';
 
-export let firstFromTheListCaseNumber: string;
+let firstFromTheListCaseNumber: string;
 
 export let searchReturnFromFilter: boolean;
 
-export let testCaseNumber: string;
+export let enforcementTestCaseNumber: string;
 
 export class SearchCaseAction implements IAction {
   async execute(page: Page, action: string,fieldName: string | actionRecord, caseData: string): Promise<void> {
     const actionsMap = new Map<string, () => Promise<void>>([
       ['searchCaseFromCaseList', () => this.searchCaseFromCaseList(caseData)],
       ['filterCaseFromCaseList', () => this.filterCaseFromCaseList(page, fieldName)],
-      ['searchMyCaseFromFindCase', () => this.searchMyCaseFromFindCase(fieldName)],
-      ['selectFirstCaseFromTheFilter', () => this.selectFirstCaseFromTheFilter(page)],
+      ['searchMyCaseFromFindCase', () => this.searchMyCaseFromFindCase(page,fieldName as actionRecord)],
+      ['selectFirstCaseFromTheFilter', () => this.selectFirstCaseFromTheFilter(page,fieldName)],
       ['NoCasesFoundAfterSearch', () => this.NoCasesFoundAfterSearch(page)]
     ]);
     const actionToPerform = actionsMap.get(action);
@@ -42,22 +42,34 @@ export class SearchCaseAction implements IAction {
       await page.waitForTimeout(waitForPageRedirectionTimeout);
     }
   
-    private async searchMyCaseFromFindCase(caseNumber: actionData) {
+    private async searchMyCaseFromFindCase(page:Page,selectCriteriaCaseNumber: actionRecord) {
+     const searchCondition = selectCriteriaCaseNumber as {
+      caseNumber: string,
+      criteria: boolean,
+    };
+      if(searchCondition.criteria == true){
       await performAction('clickButton', home.findCaseTab);
       await performAction('select', caseList.jurisdictionLabel, caseList.possessionsJurisdiction);
       await performAction('select', caseList.caseTypeLabel, caseList.caseType.civilPossessions);
-      await performAction('inputText', caseList.caseNumberLabel, caseNumber);
+      await performAction('inputText', caseList.caseNumberLabel, searchCondition.caseNumber);
       await performAction('clickButton', caseList.apply);
-      await performAction('clickButton', caseNumber);
-      await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseNumber });
+      await performAction('clickButton', selectCriteriaCaseNumber.caseNumber);
+      //the below line will be moved to Utils in upcoming User story automation
+      await page.waitForURL(`${process.env.MANAGE_CASE_BASE_URL}/cases/case-details/${searchCondition.caseNumber.replaceAll('-', '')}#Summary`);
+      await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + searchCondition.caseNumber });
+      enforcementTestCaseNumber = searchCondition.caseNumber;
+      }
     }
   
-    private async selectFirstCaseFromTheFilter(page: Page) {
-      firstFromTheListCaseNumber = await page.locator('a[aria-label*="go to case with Case reference"]').first().innerText();
+    private async selectFirstCaseFromTheFilter(page: Page,criteria: actionData) {
+      if (criteria == false) {
+        firstFromTheListCaseNumber = await page.locator('a[aria-label*="go to case with Case reference"]').first().innerText();
       await performAction('clickButton', firstFromTheListCaseNumber);
       //the below line will be moved to Utils in upcoming User story automation
       await page.waitForURL(`${process.env.MANAGE_CASE_BASE_URL}/cases/case-details/${firstFromTheListCaseNumber.replaceAll('-', '')}#Summary`);
       await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + firstFromTheListCaseNumber });
+      enforcementTestCaseNumber = firstFromTheListCaseNumber;
+      }      
     }
   
     private async NoCasesFoundAfterSearch(page: Page): Promise<void> {

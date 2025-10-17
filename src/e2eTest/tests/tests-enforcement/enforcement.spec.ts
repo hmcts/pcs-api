@@ -6,9 +6,8 @@ import { yourApplication } from "@data/page-data/page-data-enforcement/yourAppli
 import { initializeEnforcementExecutor, performAction } from "@utils/controller-enforcement";
 import { caseNumber } from "@utils/actions/custom-actions/createCase.action";
 import { initializeExecutor } from "@utils/controller";
-import { firstFromTheListCaseNumber, searchReturnFromFilter } from "@utils/actions/custom-actions/searchCase.action";
+import { searchReturnFromFilter } from "@utils/actions/custom-actions/searchCase.action";
 
-let testCaseNumber: string;
 
 test.beforeEach(async ({ page }) => {
   initializeExecutor(page);
@@ -16,14 +15,10 @@ test.beforeEach(async ({ page }) => {
   await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
   await performAction('login', user.claimantSolicitor);
   await performAction('filterCaseFromCaseList', caseList.stateAwaitingSubmission);
-  await performAction('NoCasesFoundAfterSearch')
-  if (searchReturnFromFilter == false) {
-    await performAction("selectFirstCaseFromTheFilter");
-  } else {
-    await performAction('createNewCase');
-    await performAction('searchMyCaseFromFindCase', caseNumber);
-  }
-  testCaseNumber = searchReturnFromFilter == false ? firstFromTheListCaseNumber : caseNumber;
+  await performAction('NoCasesFoundAfterSearch')  
+  await performAction("selectFirstCaseFromTheFilter", searchReturnFromFilter);
+  await performAction('createNewCase',searchReturnFromFilter);
+  await performAction('searchMyCaseFromFindCase', { caseNumber: caseNumber, criteria: searchReturnFromFilter });
 });
 
 test.describe('[Enforcement - Warrant of Possession] @Master @nightly', async () => {
