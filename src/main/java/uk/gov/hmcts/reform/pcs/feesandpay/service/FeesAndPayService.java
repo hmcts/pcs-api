@@ -3,14 +3,22 @@ package uk.gov.hmcts.reform.pcs.feesandpay.service;
 import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.pcs.feesandpay.api.FeesRegisterApi;
+import uk.gov.hmcts.reform.pcs.feesandpay.api.PaymentApi;
 import uk.gov.hmcts.reform.pcs.feesandpay.config.FeesConfiguration;
 import uk.gov.hmcts.reform.pcs.feesandpay.config.FeesConfiguration.LookUpReferenceData;
+import uk.gov.hmcts.reform.pcs.feesandpay.dto.CasePaymentRequestDto;
+import uk.gov.hmcts.reform.pcs.feesandpay.dto.FeeDto;
 import uk.gov.hmcts.reform.pcs.feesandpay.entity.Fee;
 import uk.gov.hmcts.reform.pcs.feesandpay.exception.FeeNotFoundException;
+import uk.gov.hmcts.reform.pcs.feesandpay.mapper.PaymentRequestMapper;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeResponse;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.ServiceRequestBody;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.ServiceRequestResponse;
+import uk.gov.hmcts.reform.pcs.idam.IdamService;
 
 @Slf4j
 @Service
@@ -20,13 +28,16 @@ public class FeesAndPayService {
     private final AuthTokenGenerator authTokenGenerator;
     private final FeesConfiguration feesConfiguration;
     private final FeesRegisterApi feesRegisterApi;
+    private final IdamService idamService;
+    private final PaymentApi paymentApi;
+    private final PaymentRequestMapper paymentRequestMapper;
+
+    private static final String ACTION_PAYMENT = "payment";
+
+    @Value("${payment.callback-url}") private String callbackUrl;
 
     /**
      * Retrieves fee information from the fees register API.
-     *
-     * @param feeType The type of fee to look up (e.g., "caseIssueFee")
-     * @return Fee object containing code, description, version, and calculated amount
-     * @throws FeeNotFoundException if the fee type is not configured
      */
     public Fee getFee(String feeType) {
         log.info("Requesting fee of type: {}", feeType);
@@ -47,15 +58,42 @@ public class FeesAndPayService {
         }
     }
 
-    /**
-     * Makes a fee lookup request to the Fees Register API using configuration data.
-     * Retrieves the lookup reference data from the configuration based on the provided fee type,
-     * generates a service authorization token, and calls the Fees Register API with all required parameters.
-     *
-     * @param feeType The type of fee to look up (must match a key in the fees configuration)
-     * @return FeeResponse containing fee details from the Fees Register API
-     * @throws FeeNotFoundException if the fee type is not found in the configuration
-     */
+    public ServiceRequestResponse createServiceRequest(
+        String caseReference,
+        String ccdCaseNumber,
+        Fee fee,
+        int volume,
+        String responsibleParty
+    ) {
+        try {
+            FeeDto feeDto = paymentRequestMapper.toFeeDto(fee, volume);
+
+            CasePaymentRequestDto casePaymentRequest =
+                paymentRequestMapper.toCasePaymentRequest(ACTION_PAYMENT, responsibleParty);
+
+            ServiceRequestBody requestBody = paymentRequestMapper.toServiceRequestBody(
+                callbackUrl,
+                caseReference,
+                ccdCaseNumber,
+                new FeeDto[]{feeDto},
+                casePaymentRequest
+            );
+
+            return paymentApi.createServiceRequest(
+                idamService.getSystemUserAuthorisation(),
+                authTokenGenerator.generate(),
+                requestBody
+            );
+
+        } catch (Exception e) {
+            log.error("Exception occurred in createServiceRequest: {}", e.getMessage(), e);
+            if (e instanceof FeignException fe) {
+                log.error("Feign error details - Status: {}, Body: {}", fe.status(), fe.contentUTF8());
+            }
+            throw e;
+        }
+    }
+
     private FeeResponse makeFeeRequest(String feeType) {
         LookUpReferenceData feeFromReferenceData = feesConfiguration.getFees().get(feeType);
 
