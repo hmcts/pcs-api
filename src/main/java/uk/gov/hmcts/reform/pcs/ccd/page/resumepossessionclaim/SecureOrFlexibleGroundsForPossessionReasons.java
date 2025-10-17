@@ -19,11 +19,11 @@ public class SecureOrFlexibleGroundsForPossessionReasons implements CcdPageConfi
                             + " OR typeOfTenancyLicence=\"FLEXIBLE_TENANCY\""
                             + " AND (showBreachOfTenancyTextarea=\"Yes\" OR showReasonsForGroundsPage=\"Yes\")"
             )
+            .label("possessionReasons-lineSeparator","---")
             .complex(PCSCase::getSecureOrFlexibleGroundsReasons)
 
             // Discretionary grounds
             .label("possessionReasons-breachOfTenancyGround-label","""
-                ---
                 <h2 class="govuk-heading-l" tabindex="0">
                     Breach of the tenancy (ground 1)
                 </h2>

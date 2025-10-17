@@ -5,7 +5,7 @@ import uk.gov.hmcts.ccd.sdk.api.CCD;
 /**
  * Enum representing discretionary grounds for possession claims.
  */
-public enum DiscretionaryGround {
+public enum RentArrearsDiscretionaryGrounds {
 
     @CCD(label = "Suitable alternative accommodation (ground 9)")
     ALTERNATIVE_ACCOMMODATION_GROUND9,
