@@ -9,12 +9,20 @@ import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.domain.NoRentArrearsDiscretionaryGrounds;
+import uk.gov.hmcts.reform.pcs.ccd.domain.NoRentArrearsMandatoryGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.model.NoRentArrearsReasonForGrounds;
+import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @AllArgsConstructor
 @Component
 @Slf4j
 public class NoRentArrearsGroundsForPossessionReason implements CcdPageConfiguration {
+
+    private final TextAreaValidationService textAreaValidationService;
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
@@ -303,8 +311,121 @@ public class NoRentArrearsGroundsForPossessionReason implements CcdPageConfigura
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
                                                                   CaseDetails<PCSCase, State> detailsBefore) {
         PCSCase caseData = details.getData();
-        return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
-            .data(caseData)
-            .build();
+        
+        // Validate all text area fields for character limit - ultra simple approach
+        List<String> validationErrors = new ArrayList<>();
+        
+        NoRentArrearsReasonForGrounds noRentArrearsReason = caseData.getNoRentArrearsReasonForGrounds();
+        if (noRentArrearsReason != null) {
+            validationErrors.addAll(textAreaValidationService.validateMultipleTextAreas(
+                TextAreaValidationService.FieldValidation.of(
+                    noRentArrearsReason.getOwnerOccupierTextArea(),
+                    NoRentArrearsMandatoryGrounds.OWNER_OCCUPIER.getLabel(),
+                    TextAreaValidationService.MEDIUM_TEXT_LIMIT
+                ),
+                TextAreaValidationService.FieldValidation.of(
+                    noRentArrearsReason.getRepossessionByLenderTextArea(),
+                    NoRentArrearsMandatoryGrounds.REPOSSESSION_BY_LENDER.getLabel(),
+                    TextAreaValidationService.MEDIUM_TEXT_LIMIT
+                ),
+                TextAreaValidationService.FieldValidation.of(
+                    noRentArrearsReason.getHolidayLetTextArea(),
+                    NoRentArrearsMandatoryGrounds.HOLIDAY_LET.getLabel(),
+                    TextAreaValidationService.MEDIUM_TEXT_LIMIT
+                ),
+                TextAreaValidationService.FieldValidation.of(
+                    noRentArrearsReason.getStudentLetTextArea(),
+                    NoRentArrearsMandatoryGrounds.STUDENT_LET.getLabel(),
+                    TextAreaValidationService.MEDIUM_TEXT_LIMIT
+                ),
+                TextAreaValidationService.FieldValidation.of(
+                    noRentArrearsReason.getMinisterOfReligionTextArea(),
+                    NoRentArrearsMandatoryGrounds.MINISTER_OF_RELIGION.getLabel(),
+                    TextAreaValidationService.MEDIUM_TEXT_LIMIT
+                ),
+                TextAreaValidationService.FieldValidation.of(
+                    noRentArrearsReason.getRedevelopmentTextArea(),
+                    NoRentArrearsMandatoryGrounds.REDEVELOPMENT.getLabel(),
+                    TextAreaValidationService.MEDIUM_TEXT_LIMIT
+                ),
+                TextAreaValidationService.FieldValidation.of(
+                    noRentArrearsReason.getDeathOfTenantTextArea(),
+                    NoRentArrearsMandatoryGrounds.DEATH_OF_TENANT.getLabel(),
+                    TextAreaValidationService.MEDIUM_TEXT_LIMIT
+                ),
+                TextAreaValidationService.FieldValidation.of(
+                    noRentArrearsReason.getAntisocialBehaviourTextArea(),
+                    NoRentArrearsMandatoryGrounds.ANTISOCIAL_BEHAVIOUR.getLabel(),
+                    TextAreaValidationService.MEDIUM_TEXT_LIMIT
+                ),
+                TextAreaValidationService.FieldValidation.of(
+                    noRentArrearsReason.getNoRightToRentTextArea(),
+                    NoRentArrearsMandatoryGrounds.NO_RIGHT_TO_RENT.getLabel(),
+                    TextAreaValidationService.MEDIUM_TEXT_LIMIT
+                ),
+                TextAreaValidationService.FieldValidation.of(
+                    noRentArrearsReason.getSeriousRentArrearsTextArea(),
+                    NoRentArrearsMandatoryGrounds.SERIOUS_RENT_ARREARS.getLabel(),
+                    TextAreaValidationService.MEDIUM_TEXT_LIMIT
+                ),
+                TextAreaValidationService.FieldValidation.of(
+                    noRentArrearsReason.getSuitableAccomTextArea(),
+                    NoRentArrearsDiscretionaryGrounds.SUITABLE_ACCOM.getLabel(),
+                    TextAreaValidationService.MEDIUM_TEXT_LIMIT
+                ),
+                TextAreaValidationService.FieldValidation.of(
+                    noRentArrearsReason.getRentArrearsTextArea(),
+                    NoRentArrearsDiscretionaryGrounds.RENT_ARREARS.getLabel(),
+                    TextAreaValidationService.MEDIUM_TEXT_LIMIT
+                ),
+                TextAreaValidationService.FieldValidation.of(
+                    noRentArrearsReason.getRentPaymentDelayTextArea(),
+                    NoRentArrearsDiscretionaryGrounds.RENT_PAYMENT_DELAY.getLabel(),
+                    TextAreaValidationService.MEDIUM_TEXT_LIMIT
+                ),
+                TextAreaValidationService.FieldValidation.of(
+                    noRentArrearsReason.getBreachOfTenancyConditionsTextArea(),
+                    NoRentArrearsDiscretionaryGrounds.BREACH_OF_TENANCY_CONDITIONS.getLabel(),
+                    TextAreaValidationService.MEDIUM_TEXT_LIMIT
+                ),
+                TextAreaValidationService.FieldValidation.of(
+                    noRentArrearsReason.getPropertyDeteriorationTextArea(),
+                    NoRentArrearsDiscretionaryGrounds.PROPERTY_DETERIORATION.getLabel(),
+                    TextAreaValidationService.MEDIUM_TEXT_LIMIT
+                ),
+                TextAreaValidationService.FieldValidation.of(
+                    noRentArrearsReason.getNuisanceOrIllegalUseTextArea(),
+                    NoRentArrearsDiscretionaryGrounds.NUISANCE_OR_ILLEGAL_USE.getLabel(),
+                    TextAreaValidationService.MEDIUM_TEXT_LIMIT
+                ),
+                TextAreaValidationService.FieldValidation.of(
+                    noRentArrearsReason.getDomesticViolenceTextArea(),
+                    NoRentArrearsDiscretionaryGrounds.DOMESTIC_VIOLENCE.getLabel(),
+                    TextAreaValidationService.MEDIUM_TEXT_LIMIT
+                ),
+                TextAreaValidationService.FieldValidation.of(
+                    noRentArrearsReason.getOffenceDuringRiotTextArea(),
+                    NoRentArrearsDiscretionaryGrounds.OFFENCE_DURING_RIOT.getLabel(),
+                    TextAreaValidationService.MEDIUM_TEXT_LIMIT
+                ),
+                TextAreaValidationService.FieldValidation.of(
+                    noRentArrearsReason.getFurnitureDeteriorationTextArea(),
+                    NoRentArrearsDiscretionaryGrounds.FURNITURE_DETERIORATION.getLabel(),
+                    TextAreaValidationService.MEDIUM_TEXT_LIMIT
+                ),
+                TextAreaValidationService.FieldValidation.of(
+                    noRentArrearsReason.getLandlordEmployeeTextArea(),
+                    NoRentArrearsDiscretionaryGrounds.LANDLORD_EMPLOYEE.getLabel(),
+                    TextAreaValidationService.MEDIUM_TEXT_LIMIT
+                ),
+                TextAreaValidationService.FieldValidation.of(
+                    noRentArrearsReason.getFalseStatementTextArea(),
+                    NoRentArrearsDiscretionaryGrounds.FALSE_STATEMENT.getLabel(),
+                    TextAreaValidationService.MEDIUM_TEXT_LIMIT
+                )
+            ));
+        }
+        
+        return textAreaValidationService.createValidationResponse(caseData, validationErrors);
     }
 }

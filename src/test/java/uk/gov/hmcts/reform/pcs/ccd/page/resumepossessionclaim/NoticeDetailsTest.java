@@ -13,6 +13,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
 import uk.gov.hmcts.reform.pcs.ccd.service.NoticeDetailsService;
+import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -20,6 +21,10 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.anyList;
+import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.doAnswer;
 
 @ExtendWith(MockitoExtension.class)
 class NoticeDetailsTest extends BasePageTest {
@@ -27,9 +32,24 @@ class NoticeDetailsTest extends BasePageTest {
     @Mock
     private NoticeDetailsService noticeDetailsService;
 
+    @Mock
+    private TextAreaValidationService textAreaValidationService;
+
     @BeforeEach
     void setUp() {
-        setPageUnderTest(new NoticeDetails(noticeDetailsService));
+        // Configure TextAreaValidationService mocks
+        lenient().doReturn(new ArrayList<>()).when(textAreaValidationService)
+            .validateMultipleTextAreas(any(), any());
+        doAnswer(invocation -> {
+            Object caseData = invocation.getArgument(0);
+            List<String> errors = invocation.getArgument(1);
+            return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
+                .data((PCSCase) caseData)
+                .errors(errors.isEmpty() ? null : errors)
+                .build();
+        }).when(textAreaValidationService).createValidationResponse(any(), anyList());
+        
+        setPageUnderTest(new NoticeDetails(noticeDetailsService, textAreaValidationService));
     }
 
     @Nested
