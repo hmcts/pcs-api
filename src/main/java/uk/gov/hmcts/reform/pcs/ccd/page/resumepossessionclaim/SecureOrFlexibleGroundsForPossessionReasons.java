@@ -7,7 +7,11 @@ import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.SecureOrFlexibleDiscretionaryGrounds;
+import uk.gov.hmcts.reform.pcs.ccd.domain.SecureOrFlexibleDiscretionaryGroundsAlternativeAccomm;
 import uk.gov.hmcts.reform.pcs.ccd.domain.SecureOrFlexibleGroundsReasons;
+import uk.gov.hmcts.reform.pcs.ccd.domain.SecureOrFlexibleMandatoryGrounds;
+import uk.gov.hmcts.reform.pcs.ccd.domain.SecureOrFlexibleMandatoryGroundsAlternativeAccomm;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 
@@ -305,102 +309,102 @@ public class SecureOrFlexibleGroundsForPossessionReasons implements CcdPageConfi
             validationErrors.addAll(textAreaValidationService.validateMultipleTextAreas(
                 TextAreaValidationService.FieldValidation.of(
                     secureOrFlexibleGrounds.getBreachOfTenancyGround(),
-                    "Breach of the tenancy (ground 1)",
+                    SecureOrFlexibleDiscretionaryGrounds.RENT_ARREARS_OR_BREACH_OF_TENANCY.getLabel(),
                     TextAreaValidationService.MEDIUM_TEXT_LIMIT
                 ),
                 TextAreaValidationService.FieldValidation.of(
                     secureOrFlexibleGrounds.getNuisanceOrImmoralUseGround(),
-                    "Nuisance, annoyance, illegal or immoral use of the property (ground 2)",
+                    SecureOrFlexibleDiscretionaryGrounds.NUISANCE_OR_IMMORAL_USE.getLabel(),
                     TextAreaValidationService.MEDIUM_TEXT_LIMIT
                 ),
                 TextAreaValidationService.FieldValidation.of(
                     secureOrFlexibleGrounds.getDomesticViolenceGround(),
-                    "Domestic violence (ground 2A)",
+                    SecureOrFlexibleDiscretionaryGrounds.DOMESTIC_VIOLENCE.getLabel(),
                     TextAreaValidationService.MEDIUM_TEXT_LIMIT
                 ),
                 TextAreaValidationService.FieldValidation.of(
                     secureOrFlexibleGrounds.getRiotOffenceGround(),
-                    "Offence during a riot (ground 2ZA)",
+                    SecureOrFlexibleDiscretionaryGrounds.RIOT_OFFENCE.getLabel(),
                     TextAreaValidationService.MEDIUM_TEXT_LIMIT
                 ),
                 TextAreaValidationService.FieldValidation.of(
                     secureOrFlexibleGrounds.getPropertyDeteriorationGround(),
-                    "Deterioration in the condition of the property (ground 3)",
+                    SecureOrFlexibleDiscretionaryGrounds.PROPERTY_DETERIORATION.getLabel(),
                     TextAreaValidationService.MEDIUM_TEXT_LIMIT
                 ),
                 TextAreaValidationService.FieldValidation.of(
                     secureOrFlexibleGrounds.getFurnitureDeteriorationGround(),
-                    "Deterioration of furniture (ground 4)",
+                    SecureOrFlexibleDiscretionaryGrounds.FURNITURE_DETERIORATION.getLabel(),
                     TextAreaValidationService.MEDIUM_TEXT_LIMIT
                 ),
                 TextAreaValidationService.FieldValidation.of(
                     secureOrFlexibleGrounds.getTenancyByFalseStatementGround(),
-                    "Tenancy obtained by false statement (ground 5)",
+                    SecureOrFlexibleDiscretionaryGrounds.TENANCY_OBTAINED_BY_FALSE_STATEMENT.getLabel(),
                     TextAreaValidationService.MEDIUM_TEXT_LIMIT
                 ),
                 TextAreaValidationService.FieldValidation.of(
                     secureOrFlexibleGrounds.getPremiumMutualExchangeGround(),
-                    "Premium paid in connection with mutual exchange (ground 6)",
+                    SecureOrFlexibleDiscretionaryGrounds.PREMIUM_PAID_MUTUAL_EXCHANGE.getLabel(),
                     TextAreaValidationService.MEDIUM_TEXT_LIMIT
                 ),
                 TextAreaValidationService.FieldValidation.of(
                     secureOrFlexibleGrounds.getUnreasonableConductGround(),
-                    "Unreasonable conduct in tied accommodation (ground 7)",
+                    SecureOrFlexibleDiscretionaryGrounds.UNREASONABLE_CONDUCT_TIED_ACCOMMODATION.getLabel(),
                     TextAreaValidationService.MEDIUM_TEXT_LIMIT
                 ),
                 TextAreaValidationService.FieldValidation.of(
                     secureOrFlexibleGrounds.getRefusalToMoveBackGround(),
-                    "Refusal to move back to main home after works completed (ground 8)",
+                    SecureOrFlexibleDiscretionaryGrounds.REFUSAL_TO_MOVE_BACK.getLabel(),
                     TextAreaValidationService.MEDIUM_TEXT_LIMIT
                 ),
                 TextAreaValidationService.FieldValidation.of(
                     secureOrFlexibleGrounds.getAntiSocialGround(),
-                    "Antisocial behaviour",
+                    SecureOrFlexibleMandatoryGrounds.ANTI_SOCIAL.getLabel(),
                     TextAreaValidationService.MEDIUM_TEXT_LIMIT
                 ),
                 TextAreaValidationService.FieldValidation.of(
                     secureOrFlexibleGrounds.getOvercrowdingGround(),
-                    "Overcrowding (ground 9)",
+                    SecureOrFlexibleMandatoryGroundsAlternativeAccomm.OVERCROWDING.getLabel(),
                     TextAreaValidationService.MEDIUM_TEXT_LIMIT
                 ),
                 TextAreaValidationService.FieldValidation.of(
                     secureOrFlexibleGrounds.getLandlordWorksGround(),
-                    "Landlord's works (ground 10)",
+                    SecureOrFlexibleMandatoryGroundsAlternativeAccomm.LANDLORD_WORKS.getLabel(),
                     TextAreaValidationService.MEDIUM_TEXT_LIMIT
                 ),
                 TextAreaValidationService.FieldValidation.of(
                     secureOrFlexibleGrounds.getPropertySoldGround(),
-                    "Property sold for redevelopment (ground 10A)",
+                    SecureOrFlexibleMandatoryGroundsAlternativeAccomm.PROPERTY_SOLD.getLabel(),
                     TextAreaValidationService.MEDIUM_TEXT_LIMIT
                 ),
                 TextAreaValidationService.FieldValidation.of(
                     secureOrFlexibleGrounds.getCharitableLandlordGround(),
-                    "Charitable landlords (ground 11)",
+                    SecureOrFlexibleMandatoryGroundsAlternativeAccomm.CHARITABLE_LANDLORD.getLabel(),
                     TextAreaValidationService.MEDIUM_TEXT_LIMIT
                 ),
                 TextAreaValidationService.FieldValidation.of(
                     secureOrFlexibleGrounds.getTiedAccommodationGround(),
-                    "Tied accommodation needed for another employee (ground 12)",
+                    SecureOrFlexibleDiscretionaryGroundsAlternativeAccomm.TIED_ACCOMMODATION_NEEDED_FOR_EMPLOYEE.getLabel(),
                     TextAreaValidationService.MEDIUM_TEXT_LIMIT
                 ),
                 TextAreaValidationService.FieldValidation.of(
                     secureOrFlexibleGrounds.getAdaptedAccommodationGround(),
-                    "Adapted accommodation (ground 13)",
+                    SecureOrFlexibleDiscretionaryGroundsAlternativeAccomm.ADAPTED_ACCOMMODATION.getLabel(),
                     TextAreaValidationService.MEDIUM_TEXT_LIMIT
                 ),
                 TextAreaValidationService.FieldValidation.of(
                     secureOrFlexibleGrounds.getHousingAssocSpecialGround(),
-                    "Housing association special circumstances accommodation (ground 14)",
+                    SecureOrFlexibleDiscretionaryGroundsAlternativeAccomm.HOUSING_ASSOCIATION_SPECIAL_CIRCUMSTANCES.getLabel(),
                     TextAreaValidationService.MEDIUM_TEXT_LIMIT
                 ),
                 TextAreaValidationService.FieldValidation.of(
                     secureOrFlexibleGrounds.getSpecialNeedsAccommodationGround(),
-                    "Special needs accommodation (ground 15)",
+                    SecureOrFlexibleDiscretionaryGroundsAlternativeAccomm.SPECIAL_NEEDS_ACCOMMODATION.getLabel(),
                     TextAreaValidationService.MEDIUM_TEXT_LIMIT
                 ),
                 TextAreaValidationService.FieldValidation.of(
                     secureOrFlexibleGrounds.getUnderOccupancySuccessionGround(),
-                    "Under occupying after succession (ground 15A)",
+                    SecureOrFlexibleDiscretionaryGroundsAlternativeAccomm.UNDER_OCCUPYING_AFTER_SUCCESSION.getLabel(),
                     TextAreaValidationService.MEDIUM_TEXT_LIMIT
                 )
             ));
