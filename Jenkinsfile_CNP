@@ -48,6 +48,7 @@ withPipeline(type, product, component) {
     if (githubApi.getLabelsbyPattern(env.BRANCH_NAME, "pr-values:ccd").size() > 0) {
       enableHighLevelDataSetup()
     }
+    enableE2eTest()
   }
 
   onMaster() {
@@ -88,7 +89,7 @@ withPipeline(type, product, component) {
   afterAlways('functionalTest:preview') {
     archiveFunctionalTestReports()
     if (githubApi.getLabelsbyPattern(env.BRANCH_NAME, "pr:runE2eTests").size() > 0) {
-      e2eTest()
+
     }
   }
 
