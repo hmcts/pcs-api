@@ -40,6 +40,7 @@ import {housingAct} from '@data/page-data/housingAct.page.data';
 import {reasonsForRequestingADemotionOrder} from '@data/page-data/reasonsForRequestingADemotionOrder.page.data';
 import {statementOfExpressTerms} from '@data/page-data/statementOfExpressTerms.page.data';
 import {wantToUploadDocuments} from '@data/page-data/wantToUploadDocuments.page.data';
+import {reasonsForRequestingASuspensionAndDemotionOrder} from '@data/page-data/reasonsForRequestingASuspensionAndDemotionOrder.page.data';
 
 test.beforeEach(async ({page}) => {
   initializeExecutor(page);
@@ -117,8 +118,9 @@ test.describe('[Create Case - Wales] @Master @nightly', async () => {
     await performAction('selectAlternativesToPossession', {question: alternativesToPossession.demotionOfTenancy
       , option: [alternativesToPossession.demotionOfTenancy]});
     await performValidation('mainHeader', housingAct.mainHeader);
-    await performAction('selectHousingAct', {question: housingAct.demotionOfTenancy.whichSection
-      , option: housingAct.demotionOfTenancy.section6AHousingAct1988});
+    await performAction('selectHousingAct', [{question: housingAct.demotionOfTenancy.whichSection
+      , option: housingAct.demotionOfTenancy.section6AHousingAct1988}]);
+    await performValidation('mainHeader', statementOfExpressTerms.mainHeader);
     await performAction('selectStatementOfExpressTerms', statementOfExpressTerms.no);
     await performValidation('mainHeader', reasonsForRequestingADemotionOrder.mainHeader);
     await performAction('enterReasonForDemotionOrder', reasonsForRequestingADemotionOrder.requestDemotionOrderQuestion);
@@ -211,10 +213,11 @@ test.describe('[Create Case - Wales] @Master @nightly', async () => {
     await performAction('selectAlternativesToPossession', {question: alternativesToPossession.suspensionOrDemotion
       , option: [alternativesToPossession.suspensionOfRightToBuy]});
     await performValidation('mainHeader', housingAct.mainHeader);
-    await performAction('selectHousingAct', {question: housingAct.suspensionOfRightToBuy.whichSection
-      ,option: housingAct.suspensionOfRightToBuy.section121AHousingAct1985});
+    await performAction('selectHousingAct', [{question: housingAct.suspensionOfRightToBuy.whichSection
+      , option: housingAct.suspensionOfRightToBuy.section121AHousingAct1985}]);
     await performValidation('mainHeader', reasonsForRequestingASuspensionOrder.mainHeader);
-    await performAction('enterReasonForSuspensionOrder', reasonsForRequestingASuspensionOrder.question);
+    await performValidation('mainHeader', reasonsForRequestingASuspensionOrder.mainHeader);
+    await performAction('enterReasonForSuspensionOrder', reasonsForRequestingASuspensionOrder.requestSuspensionOrderQuestion);
     await performValidation('mainHeader', claimingCosts.mainHeader);
     await performAction('selectClaimingCosts', claimingCosts.no);
     await performValidation('mainHeader', additionalReasonsForPossession.mainHeader);
@@ -309,6 +312,17 @@ test.describe('[Create Case - Wales] @Master @nightly', async () => {
     await performValidation('mainHeader', alternativesToPossession.mainHeader);
     await performAction('selectAlternativesToPossession', {question: alternativesToPossession.suspensionOrDemotion
       , option: [alternativesToPossession.suspensionOfRightToBuy, alternativesToPossession.demotionOfTenancy]});
+    await performValidation('mainHeader', housingAct.mainHeader);
+    await performAction('selectHousingAct', [{question: housingAct.suspensionOfRightToBuy.whichSection
+      , option: housingAct.suspensionOfRightToBuy.section6AHousingAct1988}
+      , {question: housingAct.demotionOfTenancy.whichSection
+        , option: housingAct.demotionOfTenancy.section82AHousingAct1985}]);
+    await performValidation('mainHeader', statementOfExpressTerms.mainHeader);
+    await performAction('selectStatementOfExpressTerms', statementOfExpressTerms.no);
+    await performValidation('mainHeader', reasonsForRequestingASuspensionAndDemotionOrder.mainHeader);
+    await performAction('enterReasonForSuspensionAndDemotionOrder'
+        , {suspension: reasonsForRequestingASuspensionAndDemotionOrder.requestSuspensionOrderQuestion
+          ,  demotion: reasonsForRequestingASuspensionAndDemotionOrder.requestDemotionOrderQuestion});
     await performValidation('mainHeader', claimingCosts.mainHeader);
     await performAction('selectClaimingCosts', claimingCosts.yes);
     await performValidation('mainHeader', additionalReasonsForPossession.mainHeader);
