@@ -7,6 +7,7 @@ import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,7 +22,8 @@ public class EvictionViolentAggressiveDetailsPage implements CcdPageConfiguratio
             .pageLabel("Their violent or aggressive behaviour")
             .showCondition("enforcementRiskCategoriesCONTAINS\"VIOLENT_OR_AGGRESSIVE\"")
             .label("evictionViolentAggressiveDetails-line-separator", "---")
-            .mandatory(PCSCase::getEnforcementViolentDetails);
+            .mandatory(PCSCase::getEnforcementViolentDetails)
+            .label("evictionViolentAggressiveDetails-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
 
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,

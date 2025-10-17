@@ -7,6 +7,7 @@ import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,7 +22,8 @@ public class EvictionFirearmsPossessionDetailsPage implements CcdPageConfigurati
             .pageLabel("Their history of firearm possession")
             .showCondition("enforcementRiskCategoriesCONTAINS\"FIREARMS_POSSESSION\"")
             .label("evictionFirearmsPossessionDetails-line-separator", "---")
-            .mandatory(PCSCase::getEnforcementFirearmsDetails);
+            .mandatory(PCSCase::getEnforcementFirearmsDetails)
+            .label("evictionFirearmsPossessionDetails-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
 
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,

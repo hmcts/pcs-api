@@ -7,6 +7,7 @@ import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,7 +22,8 @@ public class EvictionCriminalAntisocialDetailsPage implements CcdPageConfigurati
             .pageLabel("Their history of criminal or antisocial behaviour")
             .showCondition("enforcementRiskCategoriesCONTAINS\"CRIMINAL_OR_ANTISOCIAL\"")
             .label("evictionCriminalAntisocialDetails-line-separator", "---")
-            .mandatory(PCSCase::getEnforcementCriminalDetails);
+            .mandatory(PCSCase::getEnforcementCriminalDetails)
+            .label("evictionCriminalAntisocialDetails-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
 
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
