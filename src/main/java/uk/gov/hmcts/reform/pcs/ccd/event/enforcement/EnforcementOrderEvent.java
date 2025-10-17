@@ -16,6 +16,9 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.EnforcementApplicationPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.EvictionDelayWarningPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.EvictionRisksPosedPage;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.EvictionViolentAggressiveDetailsPage;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.EvictionFirearmsPossessionDetailsPage;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.EvictionCriminalAntisocialDetailsPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.EvictionVulnerableAdultsChildrenPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.LivingInThePropertyPage;
 
@@ -43,6 +46,9 @@ public class EnforcementOrderEvent implements CCDConfig<PCSCase, State, UserRole
             .add(new LivingInThePropertyPage())
             .add(new EvictionDelayWarningPage())
             .add(new EvictionRisksPosedPage())
+            .add(new EvictionViolentAggressiveDetailsPage())
+            .add(new EvictionFirearmsPossessionDetailsPage())
+            .add(new EvictionCriminalAntisocialDetailsPage())
             .add(new EvictionVulnerableAdultsChildrenPage());
     }
 
