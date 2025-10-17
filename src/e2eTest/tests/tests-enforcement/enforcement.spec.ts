@@ -15,7 +15,8 @@ test.beforeEach(async ({ page }) => {
   await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
   await performAction('login', user.claimantSolicitor);
   await performAction('filterCaseFromCaseList', caseList.stateAwaitingSubmission);
-  await performAction('NoCasesFoundAfterSearch')  
+  await performAction('NoCasesFoundAfterSearch')
+  //Below three lines will be merged into a single action as part of improvement 
   await performAction("selectFirstCaseFromTheFilter", searchReturnFromFilter);
   await performAction('createNewCase',searchReturnFromFilter);
   await performAction('searchMyCaseFromFindCase', { caseNumber: caseNumber, criteria: searchReturnFromFilter });
@@ -23,7 +24,7 @@ test.beforeEach(async ({ page }) => {
 
 test.describe('[Enforcement - Warrant of Possession] @Master @nightly', async () => {
   test('Apply for a Warrant of Possession ', async () => {    
-    await performAction('select', caseSummary.nextStepLabel, caseSummary.selectEnforceTheOrderEvent);
+    await performAction('select', caseSummary.nextStepLabel, caseSummary.enforceTheOrderEvent);
     await performAction('clickButtonAndVerifyPageNavigation', caseSummary.go, yourApplication.mainHeader);
   });
 });
