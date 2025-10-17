@@ -264,6 +264,10 @@ public class PCSCase {
     @CCD(searchable = false)
     private YesOrNo showClaimTypeNotEligibleWales;
 
+    @JsonUnwrapped(prefix = "wales")
+    @CCD
+    private WalesHousingAct walesHousingAct;
+
     @CCD(
         label = "How much is the rent?",
         typeOverride = FieldType.MoneyGBP,
@@ -615,6 +619,10 @@ public class PCSCase {
         typeParameterOverride = "CompletionNextStep"
     )
     private CompletionNextStep completionNextStep;
+
+    @JsonUnwrapped
+    private SuspensionOfRightToBuyDemotionOfTenancy  suspensionOfRightToBuyDemotionOfTenancy;
+
 
     @CCD(
         searchable = false,
