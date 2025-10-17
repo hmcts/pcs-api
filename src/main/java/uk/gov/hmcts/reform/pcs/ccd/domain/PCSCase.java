@@ -622,4 +622,8 @@ public class PCSCase {
     @JsonUnwrapped
     private SuspensionOfRightToBuyDemotionOfTenancy  suspensionOfRightToBuyDemotionOfTenancy;
 
+
+    @JsonUnwrapped
+    @CCD
+    private OccupationContractDetails occupationContractDetails;
 }
