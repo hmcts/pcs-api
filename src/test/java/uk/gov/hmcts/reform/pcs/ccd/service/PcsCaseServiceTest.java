@@ -3,6 +3,9 @@ package uk.gov.hmcts.reform.pcs.ccd.service;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InOrder;
@@ -10,7 +13,10 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.modelmapper.ModelMapper;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
+import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
+import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
+import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
@@ -24,6 +30,7 @@ import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
@@ -32,6 +39,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.junit.jupiter.params.provider.Arguments.arguments;
 
 @ExtendWith(MockitoExtension.class)
 class PcsCaseServiceTest {
@@ -319,4 +327,112 @@ class PcsCaseServiceTest {
         when(modelMapper.map(addressUK, AddressEntity.class)).thenReturn(addressEntity);
         return addressEntity;
     }
+
+    @Test
+    void shouldPersistClaimantTypeWhenCreatingCase() {
+        // Given
+        PCSCase pcsCase = mock(PCSCase.class);
+        AddressUK propertyAddress = mock(AddressUK.class);
+        final AddressEntity propertyAddressEntity = stubAddressUKModelMapper(propertyAddress);
+        
+        DynamicStringList claimantTypeList = DynamicStringList.builder()
+            .value(DynamicStringListElement.builder()
+                .code(ClaimantType.PRIVATE_LANDLORD.name())
+                .label(ClaimantType.PRIVATE_LANDLORD.getLabel())
+                .build())
+            .build();
+
+        when(pcsCase.getPropertyAddress()).thenReturn(propertyAddress);
+        when(pcsCase.getClaimantType()).thenReturn(claimantTypeList);
+
+        // When
+        underTest.createCase(CASE_REFERENCE, pcsCase);
+
+        // Then
+        verify(pcsCaseRepository).save(pcsCaseEntityCaptor.capture());
+
+        PcsCaseEntity savedEntity = pcsCaseEntityCaptor.getValue();
+        assertThat(savedEntity.getClaimantType()).isEqualTo(ClaimantType.PRIVATE_LANDLORD);
+    }
+
+    @Test
+    void shouldSkipClaimantTypeWhenNull() {
+        // Given
+        PCSCase pcsCase = mock(PCSCase.class);
+        AddressUK propertyAddress = mock(AddressUK.class);
+        final AddressEntity propertyAddressEntity = stubAddressUKModelMapper(propertyAddress);
+
+        when(pcsCase.getPropertyAddress()).thenReturn(propertyAddress);
+        when(pcsCase.getClaimantType()).thenReturn(null);
+
+        // When
+        underTest.createCase(CASE_REFERENCE, pcsCase);
+
+        // Then
+        verify(pcsCaseRepository).save(pcsCaseEntityCaptor.capture());
+
+        PcsCaseEntity savedEntity = pcsCaseEntityCaptor.getValue();
+        assertThat(savedEntity.getClaimantType()).isNull();
+    }
+
+    @Test
+    void shouldSkipClaimantTypeWhenValueCodeIsNull() {
+        // Given
+        PCSCase pcsCase = mock(PCSCase.class);
+        AddressUK propertyAddress = mock(AddressUK.class);
+        final AddressEntity propertyAddressEntity = stubAddressUKModelMapper(propertyAddress);
+        
+        DynamicStringList claimantTypeList = mock(DynamicStringList.class);
+        when(claimantTypeList.getValueCode()).thenReturn(null);
+        when(pcsCase.getPropertyAddress()).thenReturn(propertyAddress);
+        when(pcsCase.getClaimantType()).thenReturn(claimantTypeList);
+
+        // When
+        underTest.createCase(CASE_REFERENCE, pcsCase);
+
+        // Then
+        verify(pcsCaseRepository).save(pcsCaseEntityCaptor.capture());
+
+        PcsCaseEntity savedEntity = pcsCaseEntityCaptor.getValue();
+        assertThat(savedEntity.getClaimantType()).isNull();
+    }
+
+    @ParameterizedTest
+    @MethodSource("claimantTypeScenarios")
+    void shouldPersistAllClaimantTypes(ClaimantType claimantType) {
+        // Given
+        PCSCase pcsCase = mock(PCSCase.class);
+        AddressUK propertyAddress = mock(AddressUK.class);
+        final AddressEntity propertyAddressEntity = stubAddressUKModelMapper(propertyAddress);
+        
+        DynamicStringList claimantTypeList = DynamicStringList.builder()
+            .value(DynamicStringListElement.builder()
+                .code(claimantType.name())
+                .label(claimantType.getLabel())
+                .build())
+            .build();
+
+        when(pcsCase.getPropertyAddress()).thenReturn(propertyAddress);
+        when(pcsCase.getClaimantType()).thenReturn(claimantTypeList);
+
+        // When
+        underTest.createCase(CASE_REFERENCE, pcsCase);
+
+        // Then
+        verify(pcsCaseRepository).save(pcsCaseEntityCaptor.capture());
+
+        PcsCaseEntity savedEntity = pcsCaseEntityCaptor.getValue();
+        assertThat(savedEntity.getClaimantType()).isEqualTo(claimantType);
+    }
+
+    private static Stream<Arguments> claimantTypeScenarios() {
+        return Stream.of(
+            arguments(ClaimantType.PRIVATE_LANDLORD),
+            arguments(ClaimantType.PROVIDER_OF_SOCIAL_HOUSING),
+            arguments(ClaimantType.COMMUNITY_LANDLORD),
+            arguments(ClaimantType.MORTGAGE_LENDER),
+            arguments(ClaimantType.OTHER)
+        );
+    }
+
 }
