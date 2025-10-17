@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.event;
 
+import com.github.kagkarlsson.scheduler.SchedulerClient;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -26,7 +27,7 @@ import uk.gov.hmcts.reform.pcs.ccd.page.builder.SavingPageBuilderFactory;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.AdditionalReasonsForPossession;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.ClaimantCircumstancesPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.EntitledToClaimRelief;
-import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.LanguageUsed;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.LanguageUsed;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.MoneyJudgment;
 import uk.gov.hmcts.reform.pcs.ccd.page.makeaclaim.StatementOfTruth;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.AlternativesToPossessionOptions;
@@ -42,6 +43,8 @@ import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ContactPreferences
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.DailyRentAmount;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.DefendantCircumstancesPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.DefendantsDetails;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.DemotionOfTenancyHousingActOptions;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.DemotionOfTenancyOrderReason;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.GeneralApplication;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.GroundForPossessionAdditionalGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.GroundForPossessionRentArrears;
@@ -61,11 +64,11 @@ import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.SecureOrFlexibleGr
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.SecureOrFlexibleGroundsForPossessionReasons;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.SelectClaimType;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.SelectClaimantType;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.StatementOfExpressTerms;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.SuspensionOfRightToBuyHousingActOptions;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.SuspensionOfRightToBuyOrderReason;
-import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.DemotionOfTenancyHousingActOptions;
-import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.StatementOfExpressTerms;
-import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.DemotionOfTenancyOrderReason;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.SuspensionToBuyDemotionOfTenancyActs;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.SuspensionToBuyDemotionOfTenancyOrderReasons;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.TenancyLicenceDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.UploadAdditionalDocumentsDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.WantToUploadDocuments;
@@ -75,10 +78,12 @@ import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.UnsubmittedCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
+import uk.gov.hmcts.reform.pcs.feesandpay.task.FeesAndPayTaskComponent;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationNameService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -107,6 +112,9 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
     private final ContactPreferences contactPreferences;
     private final DefendantsDetails defendantsDetails;
     private final OrganisationNameService organisationNameService;
+    private final SchedulerClient schedulerClient;
+
+    private static final String CASE_ISSUED_FEE_TYPE = "caseIssueFee";
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -150,14 +158,15 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             .add(new RentArrears())
             .add(new MoneyJudgment())
             .add(new ClaimantCircumstancesPage())
-            .add(new LanguageUsed())
             .add(new DefendantCircumstancesPage())
             .add(new AlternativesToPossessionOptions())
             .add(new SuspensionOfRightToBuyHousingActOptions())
             .add(new SuspensionOfRightToBuyOrderReason())
             .add(new DemotionOfTenancyHousingActOptions())
+            .add(new SuspensionToBuyDemotionOfTenancyActs())
             .add(new StatementOfExpressTerms())
             .add(new DemotionOfTenancyOrderReason())
+            .add(new SuspensionToBuyDemotionOfTenancyOrderReasons())
             .add(new ClaimingCosts())
             .add(new AdditionalReasonsForPossession())
             .add(new EntitledToClaimRelief())
@@ -165,6 +174,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             .add(new WantToUploadDocuments())
             .add(uploadAdditionalDocumentsDetails)
             .add(new GeneralApplication())
+            .add(new LanguageUsed())
             .add(new CompletingYourClaim())
             .add(new StatementOfTruth());
 
@@ -246,6 +256,15 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
         pcsCaseService.save(pcsCaseEntity);
 
         unsubmittedCaseDataService.deleteUnsubmittedCaseData(caseReference);
+
+        String taskId = UUID.randomUUID().toString();
+
+        schedulerClient.scheduleIfNotExists(
+            FeesAndPayTaskComponent.FEE_CASE_ISSUED_TASK_DESCRIPTOR
+                .instance(taskId)
+                .data(CASE_ISSUED_FEE_TYPE)
+                .scheduledTo(Instant.now())
+        );
 
         return SubmitResponse.builder().build();
     }

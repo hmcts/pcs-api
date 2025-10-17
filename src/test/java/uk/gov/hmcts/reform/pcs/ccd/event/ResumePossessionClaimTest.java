@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.event;
 
+import com.github.kagkarlsson.scheduler.SchedulerClient;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -86,6 +87,8 @@ class ResumePossessionClaimTest extends BaseEventTest {
     private UploadAdditionalDocumentsDetails uploadAdditionalDocumentsDetails;
     @Mock
     private OrganisationNameService organisationNameService;
+    @Mock
+    private SchedulerClient schedulerClient;
 
     @BeforeEach
     void setUp() {
@@ -102,7 +105,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
             savingPageBuilderFactory, resumeClaim,
             unsubmittedCaseDataService, noticeDetails,
             uploadAdditionalDocumentsDetails, tenancyLicenceDetails, contactPreferences,
-            defendantsDetails, organisationNameService
+            defendantsDetails, organisationNameService, schedulerClient
         );
 
         setEventUnderTest(underTest);
