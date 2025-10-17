@@ -34,6 +34,7 @@ import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.AlternativesToPoss
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.CheckingNotice;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ClaimTypeNotEligibleEngland;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ClaimTypeNotEligibleWales;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ClaimantDetailsWalesPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ClaimantInformation;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ClaimantTypeNotEligibleEngland;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ClaimantTypeNotEligibleWales;
@@ -43,6 +44,8 @@ import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ContactPreferences
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.DailyRentAmount;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.DefendantCircumstancesPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.DefendantsDetails;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.DemotionOfTenancyHousingActOptions;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.DemotionOfTenancyOrderReason;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.GeneralApplication;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.GroundForPossessionAdditionalGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.GroundForPossessionRentArrears;
@@ -62,11 +65,11 @@ import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.SecureOrFlexibleGr
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.SecureOrFlexibleGroundsForPossessionReasons;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.SelectClaimType;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.SelectClaimantType;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.StatementOfExpressTerms;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.SuspensionOfRightToBuyHousingActOptions;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.SuspensionOfRightToBuyOrderReason;
-import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.DemotionOfTenancyHousingActOptions;
-import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.StatementOfExpressTerms;
-import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.DemotionOfTenancyOrderReason;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.SuspensionToBuyDemotionOfTenancyActs;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.SuspensionToBuyDemotionOfTenancyOrderReasons;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.TenancyLicenceDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.UploadAdditionalDocumentsDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.WantToUploadDocuments;
@@ -108,6 +111,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
     private final TenancyLicenceDetails tenancyLicenceDetails;
     private final ContactPreferences contactPreferences;
     private final DefendantsDetails defendantsDetails;
+    private final ClaimantDetailsWalesPage claimantDetailsWales;
     private final SchedulerClient schedulerClient;
     private final DraftCaseDataService draftCaseDataService;
 
@@ -133,6 +137,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             .add(new ClaimTypeNotEligibleEngland())
             .add(new ClaimTypeNotEligibleWales())
             .add(new ClaimantInformation())
+            .add(claimantDetailsWales)
             .add(contactPreferences)
             .add(defendantsDetails)
             .add(tenancyLicenceDetails)
@@ -160,8 +165,10 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             .add(new SuspensionOfRightToBuyHousingActOptions())
             .add(new SuspensionOfRightToBuyOrderReason())
             .add(new DemotionOfTenancyHousingActOptions())
+            .add(new SuspensionToBuyDemotionOfTenancyActs())
             .add(new StatementOfExpressTerms())
             .add(new DemotionOfTenancyOrderReason())
+            .add(new SuspensionToBuyDemotionOfTenancyOrderReasons())
             .add(new ClaimingCosts())
             .add(new AdditionalReasonsForPossession())
             .add(new EntitledToClaimRelief())
