@@ -33,6 +33,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
+import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
@@ -90,6 +91,8 @@ class ResumePossessionClaimTest extends BaseEventTest {
     @Mock
     private DraftCaseDataService draftCaseDataService;
 
+    private final AddressFormatter addressFormatter = new AddressFormatter();
+
     @BeforeEach
     void setUp() {
         SavingPageBuilder savingPageBuilder = mock(SavingPageBuilder.class);
@@ -104,7 +107,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
             partyService, claimService,
             savingPageBuilderFactory, resumeClaim, noticeDetails,
             uploadAdditionalDocumentsDetails, tenancyLicenceDetails, contactPreferences,
-            defendantsDetails, claimantDetailsWalesPage, schedulerClient, draftCaseDataService
+            defendantsDetails, claimantDetailsWalesPage, schedulerClient, draftCaseDataService, addressFormatter
         );
 
         setEventUnderTest(underTest);

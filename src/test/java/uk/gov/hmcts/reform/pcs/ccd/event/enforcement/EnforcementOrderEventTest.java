@@ -2,28 +2,24 @@ package uk.gov.hmcts.reform.pcs.ccd.event.enforcement;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.event.BaseEventTest;
+import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatUtil.getFormattedAddress;
 
-@ExtendWith(MockitoExtension.class)
 class EnforcementOrderEventTest extends BaseEventTest {
 
-    private EnforcementOrderEvent underTest;
+    private final AddressFormatter addressFormatter = new AddressFormatter();
 
     @BeforeEach
     void setUp() {
-        underTest = new EnforcementOrderEvent();
-        setEventUnderTest(underTest);
+        setEventUnderTest(new EnforcementOrderEvent(addressFormatter));
     }
 
     @Test
@@ -45,7 +41,7 @@ class EnforcementOrderEventTest extends BaseEventTest {
 
         // Then
         assertThat(result).isNotNull();
-        assertThat(result.getFormattedPropertyAddress()).isEqualTo(getFormattedAddress(caseData));
+        assertThat(result.getFormattedPropertyAddress()).isEqualTo(addressFormatter.getFormattedAddress(caseData));
         assertThat(result.getDefendants()).hasSize(1);
         assertThat(result.getDefendant1().getFirstName()).isEqualTo(firstName);
         assertThat(result.getDefendant1().getLastName()).isEqualTo(lastName);

@@ -32,7 +32,7 @@ public class DraftCaseDataService {
             .map(this::parseCaseDataJson)
             .map(this::setUnsubmittedDataFlag);
 
-        optionalCaseData.ifPresent(x -> log.debug("Found unsubmitted case data for reference {}", caseReference));
+        optionalCaseData.ifPresent(x -> log.debug("Found draft case data for reference {}", caseReference));
 
         return optionalCaseData;
     }

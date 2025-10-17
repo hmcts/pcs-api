@@ -1,14 +1,13 @@
 package uk.gov.hmcts.reform.pcs.ccd.util;
 
-import lombok.AccessLevel;
-import lombok.NoArgsConstructor;
+import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
-public class AddressFormatUtil {
+@Component
+public class AddressFormatter {
 
-    public static String getFormattedAddress(PCSCase caseData) {
+    public String getFormattedAddress(PCSCase caseData) {
         AddressUK propertyAddress = caseData.getPropertyAddress();
         return String.format(
             "%s<br>%s<br>%s",

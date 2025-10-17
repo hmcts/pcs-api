@@ -15,22 +15,25 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.EnforcementApplicationPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.NameAndAddressForEvictionPage;
+import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 
 import static uk.gov.hmcts.reform.pcs.ccd.domain.State.AWAITING_SUBMISSION_TO_HMCTS;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.enforceTheOrder;
-import static uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatUtil.getFormattedAddress;
+
 
 @Slf4j
 @Component
 @AllArgsConstructor
 public class EnforcementOrderEvent implements CCDConfig<PCSCase, State, UserRole> {
 
+    private final AddressFormatter addressFormatter;
+
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
         Event.EventBuilder<PCSCase, UserRole, State> eventBuilder =
                 configBuilder
                         .decentralisedEvent(enforceTheOrder.name(), this::submit, this::start)
-                        .forStateTransition(AWAITING_SUBMISSION_TO_HMCTS, AWAITING_SUBMISSION_TO_HMCTS)
+                        .forState(AWAITING_SUBMISSION_TO_HMCTS)
                         .name("Enforce the order")
                         .grant(Permission.CRUD, UserRole.PCS_SOLICITOR);
         configurePages(eventBuilder);
@@ -45,7 +48,7 @@ public class EnforcementOrderEvent implements CCDConfig<PCSCase, State, UserRole
 
     private PCSCase start(EventPayload<PCSCase, State> eventPayload) {
         PCSCase caseData = eventPayload.caseData();
-        caseData.setFormattedPropertyAddress(getFormattedAddress(caseData));
+        caseData.setFormattedPropertyAddress(addressFormatter.getFormattedAddress(caseData));
         if (caseData.getDefendants() != null && !caseData.getDefendants().isEmpty()) {
             caseData.setDefendant1(caseData.getDefendants().getFirst().getValue());
         }
