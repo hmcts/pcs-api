@@ -567,7 +567,7 @@ public class PCSCase {
             + "make sure your claim is processed correctly"
     )
     private LanguageUsed languageUsed;
-  
+
     @JsonUnwrapped
     private DefendantCircumstances defendantCircumstances;
 
@@ -621,5 +621,8 @@ public class PCSCase {
 
     @JsonUnwrapped
     private SuspensionOfRightToBuyDemotionOfTenancy  suspensionOfRightToBuyDemotionOfTenancy;
+
+    @JsonUnwrapped(prefix = "wales")
+    private WalesNoticeDetails walesNoticeDetails;
 
 }

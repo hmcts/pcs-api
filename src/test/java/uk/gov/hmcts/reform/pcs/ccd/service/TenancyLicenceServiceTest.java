@@ -7,12 +7,13 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
-import uk.gov.hmcts.reform.pcs.ccd.domain.WalesHousingAct;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentPaymentFrequency;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicence;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ThirdPartyPaymentSource;
+import uk.gov.hmcts.reform.pcs.ccd.domain.WalesHousingAct;
+import uk.gov.hmcts.reform.pcs.ccd.domain.WalesNoticeDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotApplicable;
 
 import java.math.BigDecimal;
@@ -320,12 +321,12 @@ class TenancyLicenceServiceTest {
             .agentLicenceNumber("AGENT345678")
             .agentAppointmentDate(appointmentDate)
             .build();
-        
+
         when(pcsCase.getWalesHousingAct()).thenReturn(walesHousingAct);
-        
+
         // When
         TenancyLicence result = tenancyLicenceService.buildTenancyLicence(pcsCase);
-        
+
         // Then
         assertThat(result.getWalesRegistered()).isEqualTo(YesNoNotApplicable.YES);
         assertThat(result.getWalesRegistrationNumber()).isEqualTo("REG123456");
@@ -342,10 +343,10 @@ class TenancyLicenceServiceTest {
     void shouldHandleNullWalesHousingActDetails() {
         // Given
         when(pcsCase.getWalesHousingAct()).thenReturn(null);
-        
+
         // When
         TenancyLicence result = tenancyLicenceService.buildTenancyLicence(pcsCase);
-        
+
         // Then
         assertThat(result.getWalesRegistered()).isNull();
         assertThat(result.getWalesRegistrationNumber()).isNull();
@@ -366,16 +367,34 @@ class TenancyLicenceServiceTest {
             .licensed(YesNoNotApplicable.NO)
             .licensedAgentAppointed(YesNoNotApplicable.NOT_APPLICABLE)
             .build();
-        
+
         when(pcsCase.getWalesHousingAct()).thenReturn(walesHousingAct);
-        
+
         // When
         TenancyLicence result = tenancyLicenceService.buildTenancyLicence(pcsCase);
-        
+
         // Then
         assertThat(result.getWalesRegistered()).isEqualTo(YesNoNotApplicable.NOT_APPLICABLE);
         assertThat(result.getWalesLicensed()).isEqualTo(YesNoNotApplicable.NO);
         assertThat(result.getWalesLicensedAgentAppointed()).isEqualTo(YesNoNotApplicable.NOT_APPLICABLE);
     }
 
+    @Test
+    void shouldMapWalesNoticeFieldsWhenPresent() {
+        // Given
+        String typeOfNoticeServed = "Some notice type";
+
+        WalesNoticeDetails walesNoticeDetails = WalesNoticeDetails.builder()
+            .noticeServed(YesOrNo.YES)
+            .typeOfNoticeServed(typeOfNoticeServed)
+            .build();
+        when(pcsCase.getWalesNoticeDetails()).thenReturn(walesNoticeDetails);
+
+        // When
+        TenancyLicence result = tenancyLicenceService.buildTenancyLicence(pcsCase);
+
+        // Then
+        assertThat(result.getWalesNoticeServed()).isTrue();
+        assertThat(result.getWalesTypeOfNoticeServed()).isEqualTo(typeOfNoticeServed);
+    }
 }

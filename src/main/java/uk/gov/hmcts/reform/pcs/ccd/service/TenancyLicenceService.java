@@ -21,6 +21,11 @@ public class TenancyLicenceService {
                 .rentStatementDocuments(ListValueUtils.unwrapListItems(pcsCase.getRentStatementDocuments()))
                 .noticeDocuments(ListValueUtils.unwrapListItems(pcsCase.getNoticeDocuments()))
                 .noticeServed(YesOrNoToBoolean.convert(pcsCase.getNoticeServed()))
+                .walesNoticeServed(YesOrNoToBoolean.convert(pcsCase.getWalesNoticeDetails() != null
+                                                                ? pcsCase.getWalesNoticeDetails().getNoticeServed()
+                                                                : null))
+                .walesTypeOfNoticeServed(pcsCase.getWalesNoticeDetails() != null
+                                             ? pcsCase.getWalesNoticeDetails().getTypeOfNoticeServed() : null)
                 .rentAmount(penceToPounds(pcsCase.getCurrentRent()))
                 .rentPaymentFrequency(pcsCase.getRentFrequency())
                 .otherRentFrequency(pcsCase.getOtherRentFrequency())
