@@ -66,6 +66,7 @@ Playwright 1.30+ | TypeScript 4.9+
 ## 4. Available Actions and Validations
 
 ### Actions
+=======
 | Action                               | Example Usage                                                                                                                                                                                              |
 |--------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | inputText                            | `performAction('inputText', 'Email', 'test@example.com')`                                                                                                                                                  |
@@ -115,13 +116,17 @@ Playwright 1.30+ | TypeScript 4.9+
 | uploadAdditionalDocs                 | `performAction('uploadAdditionalDocs', {documents:[{ type: 'Tenancy Agreement', fileName: 'tenancyAgreement.pdf', description: 'Signed agreement' }]})`                                                    |
 | wantToUploadDocuments                | `performAction('wantToUploadDocuments', {question:'sample', option:'no'})`                                                                                                                                 |
 | completingYourClaim                  | `performAction('completingYourClaim', 'yes')`                                                                                                                                                              |
-| clickButtonAndVerifyPageNavigation   | `performAction('clickButtonAndVerifyPageNavigation', provideMoreDetailsOfClaim.continue, claimantType.mainHeader);`                                                                                        |                                                                                      
+| clickButtonAndVerifyPageNavigation   | `performAction('clickButtonAndVerifyPageNavigation', provideMoreDetailsOfClaim.continue, claimantType.mainHeader);`                                                                                        |
 | verifyPageAndClickButton             | `performAction('verifyPageAndClickButton', 'pageName', 'buttonName')`                                                                                                                                      |
-| selectAlternativesToPossession      | `performAction('selectAlternativesToPossession', {question: suspensionOrDemotion, option: [alternativesToPossession.suspensionOfRightToBuy]})`                                                              |
-| selectHousingAct                    | `performAction('selectHousingAct', {question: whichSection,option: housingAct.suspensionOfRightToBuy.section6AHousingAct1988})`                                                                             |
-| enterReasonForSuspensionOrder       | `performAction('enterReasonForSuspensionOrder', reasonsForRequestingASuspensionOrder.question)`                                                                                                             |
+| selectAlternativesToPossession       | `performAction('selectAlternativesToPossession', {question: suspensionOrDemotion, option: [alternativesToPossession.suspensionOfRightToBuy]})`                                                             |
+| selectHousingAct                     | `performAction('selectHousingAct', {question: whichSection,option: housingAct.suspensionOfRightToBuy.section6AHousingAct1988})`                                                                            |
+| enterReasonForSuspensionOrder        | `performAction('enterReasonForSuspensionOrder', reasonsForRequestingASuspensionOrder.question)`                                                                                                            |
 | selectClaimantCircumstances          | `performAction('selectClaimantCircumstances', {circumstanceOption: claimantCircumstances.no,claimantInput: claimantCircumstances.claimantCircumstanceInfoInputData})`                                      |
+| enterReasonForDemotionOrder          | `performAction('enterReasonForDemotionOrder',  reasonsForRequestingADemotionOrder.question)`                                                                                                               |
+| selectStatementOfExpressTerms        | `performAction('selectStatementOfExpressTerms', statementOfExpressTerms.yes)`                                                                                                                              |
 | selectLanguageUsed                   | `performAction('selectLanguageUsed', languageUsed.no)`                                                                                                                                                     |
+| selectClaimantDetails                | `performAction('selectClaimantDetails', claimantDetails)`                                                                                                                                                  |
+| enterReasonForSuspensionAndDemotionOrder | `performAction('enterReasonForSuspensionAndDemotionOrder', suspension)`                                                                                                                                |
 ### Validations
 | Validation                 | Example Usage                                                                                                                        |
 |----------------------------|--------------------------------------------------------------------------------------------------------------------------------------|

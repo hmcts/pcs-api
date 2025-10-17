@@ -325,7 +325,7 @@ dependencies {
   implementation group: 'uk.gov.service.notify', name: 'notifications-java-client', version: '5.2.1-RELEASE'
   implementation platform(group: 'com.azure.spring', name :'spring-cloud-azure-dependencies', version :'6.0.0')
   implementation "com.azure.spring:spring-cloud-azure-starter-servicebus-jms"
-  implementation group: 'org.modelmapper', name: 'modelmapper', version: '3.2.4'
+  implementation group: 'org.modelmapper', name: 'modelmapper', version: '3.2.5'
 
   implementation group: 'com.github.hmcts.java-logging', name: 'logging', version: '6.1.9'
   implementation group: 'com.github.hmcts', name: 'core-case-data-store-client', version: '5.2.0'
@@ -384,6 +384,8 @@ dependencies {
   testImplementation group: 'org.testcontainers', name: 'testcontainers', version: testcontainersVersion
   testImplementation group: 'org.testcontainers', name: 'junit-jupiter', version: testcontainersVersion
   testImplementation group: 'org.testcontainers', name: 'postgresql', version: testcontainersVersion
+
+  integrationTestImplementation group: 'org.springframework.cloud', name: 'spring-cloud-starter-contract-stub-runner', version: '4.1.4'
 
   // Allow fast reloading during dev; recompile a class to trigger fast reload + definition reimport.
   cftlibImplementation 'org.springframework.boot:spring-boot-devtools'
