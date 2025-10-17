@@ -55,3 +55,4 @@ applicationinsights-agent-*.jar
 /allure-results
 
 node_modules
+*.code-workspace
