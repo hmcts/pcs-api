@@ -20,6 +20,10 @@ public class PossessionGrounds {
     private Set<String> mandatoryGroundsAlternativeAccommodation;
     private Set<String> discretionaryGroundsAlternativeAccommodation;
 
+    private Set<String> walesDiscretionaryGrounds;
+    private Set<String> walesMandatoryGrounds;
+    private Set<String> walesEstateManagementGrounds;
+
     private SecureOrFlexibleReasonsForGrounds secureOrFlexibleReasonsForGrounds;
 
 }

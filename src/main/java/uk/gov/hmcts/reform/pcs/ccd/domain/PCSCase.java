@@ -622,4 +622,30 @@ public class PCSCase {
     @JsonUnwrapped
     private SuspensionOfRightToBuyDemotionOfTenancy  suspensionOfRightToBuyDemotionOfTenancy;
 
+
+    @CCD(
+        label = "Discretionary grounds",
+        hint = "Select all that apply",
+        typeOverride = FieldType.MultiSelectList,
+        typeParameterOverride = "SecureContractDiscretionaryGroundsWales"
+    )
+    private Set<SecureContractDiscretionaryGroundsWales> secureContractDiscretionaryGroundsWales;
+
+    @CCD(
+        label = "Mandatory grounds",
+        hint = "Select all that apply",
+        typeOverride = FieldType.MultiSelectList,
+        typeParameterOverride = "SecureContractMandatoryGroundsWales"
+    )
+    private Set<SecureContractMandatoryGroundsWales> secureContractMandatoryGroundsWales;
+
+    @CCD(
+        label = "Estate management grounds",
+        typeOverride = FieldType.MultiSelectList,
+        typeParameterOverride = "EstateManagementGroundsWales"
+    )
+    private Set<EstateManagementGroundsWales> estateManagementGroundsWales;
+
+    @CCD(searchable = false)
+    private YesOrNo showReasonsForGroundsPageWales;
 }
