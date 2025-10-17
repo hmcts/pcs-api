@@ -21,6 +21,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.page.builder.SavingPageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.page.builder.SavingPageBuilderFactory;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ClaimantDetailsWalesPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ContactPreferences;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.DefendantsDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.NoticeDetails;
@@ -115,7 +116,10 @@ class ResumePossessionClaimTest extends BaseEventTest {
     @Mock
     private DemotionOfTenancyOrderReason demotionOfTenancyOrderReason;
     @Mock
+    private ClaimantDetailsWalesPage claimantDetailsWalesPage;
+    @Mock
     private SchedulerClient schedulerClient;
+
 
     @BeforeEach
     void setUp() {
@@ -135,7 +139,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
             defendantsDetails, noRentArrearsGroundsForPossessionReason, additionalReasonsForPossession,
             secureOrFlexibleGroundsForPossessionReasons, mediationAndSettlement, claimantCircumstancesPage,
             introductoryDemotedOtherGroundsReasons, defendantCircumstancesPage, suspensionOfRightToBuyOrderReason,
-            statementOfExpressTerms, demotionOfTenancyOrderReason, schedulerClient
+            statementOfExpressTerms, demotionOfTenancyOrderReason, claimantDetailsWalesPage, schedulerClient
         );
 
         setEventUnderTest(underTest);

@@ -34,6 +34,7 @@ import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.AlternativesToPoss
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.CheckingNotice;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ClaimTypeNotEligibleEngland;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ClaimTypeNotEligibleWales;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ClaimantDetailsWalesPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ClaimantInformation;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ClaimantTypeNotEligibleEngland;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ClaimantTypeNotEligibleWales;
@@ -120,6 +121,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
     private final SuspensionOfRightToBuyOrderReason suspensionOfRightToBuyOrderReason;
     private final StatementOfExpressTerms statementOfExpressTerms;
     private final DemotionOfTenancyOrderReason demotionOfTenancyOrderReason;
+    private final ClaimantDetailsWalesPage claimantDetailsWales;
     private final SchedulerClient schedulerClient;
 
     private static final String CASE_ISSUED_FEE_TYPE = "caseIssueFee";
@@ -144,6 +146,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             .add(new ClaimTypeNotEligibleEngland())
             .add(new ClaimTypeNotEligibleWales())
             .add(new ClaimantInformation())
+            .add(claimantDetailsWales)
             .add(contactPreferences)
             .add(defendantsDetails)
             .add(tenancyLicenceDetails)
