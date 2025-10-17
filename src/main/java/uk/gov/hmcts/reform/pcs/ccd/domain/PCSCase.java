@@ -571,7 +571,7 @@ public class PCSCase {
             + "make sure your claim is processed correctly"
     )
     private LanguageUsed languageUsed;
-  
+
     @JsonUnwrapped
     private DefendantCircumstances defendantCircumstances;
 
@@ -640,7 +640,6 @@ public class PCSCase {
 
     @CCD(
         label = "Estate management grounds",
-        hint = "Select all that apply",
         typeOverride = FieldType.MultiSelectList,
         typeParameterOverride = "EstateManagementGroundWales"
     )
