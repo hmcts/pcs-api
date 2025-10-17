@@ -68,7 +68,7 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
             .label("nextStepsMarkdownLabel", null, "${nextStepsMarkdown}")
             .field("nextStepsMarkdown", NEVER_SHOW);
 
-        builder.tab("summary", "Property Details")
+        builder.tab("summary", "Summary")
             .showCondition(ShowConditions.stateNotEquals(AWAITING_FURTHER_CLAIM_DETAILS))
             .field(PCSCase::getPropertyAddress);
 
