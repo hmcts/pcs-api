@@ -28,6 +28,7 @@ import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ResumeClaim;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.TenancyLicenceDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.UploadAdditionalDocumentsDetails;
 import uk.gov.hmcts.reform.pcs.ccd.service.ClaimService;
+import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
@@ -83,6 +84,8 @@ class ResumePossessionClaimTest extends BaseEventTest {
     private UploadAdditionalDocumentsDetails uploadAdditionalDocumentsDetails;
     @Mock
     private SchedulerClient schedulerClient;
+    @Mock
+    private DraftCaseDataService draftCaseDataService;
 
     @BeforeEach
     void setUp() {
@@ -98,7 +101,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
             partyService, claimService,
             savingPageBuilderFactory, resumeClaim, noticeDetails,
             uploadAdditionalDocumentsDetails, tenancyLicenceDetails, contactPreferences,
-            defendantsDetails, schedulerClient
+            defendantsDetails, schedulerClient, draftCaseDataService
         );
 
         setEventUnderTest(underTest);
@@ -247,12 +250,12 @@ class ResumePossessionClaimTest extends BaseEventTest {
 
         // Then
         verify(partyService).createPartyEntity(
-            eq(USER_ID),
-            eq(claimantName),
-            eq(null),
-            eq(claimantContactEmail),
-            eq(propertyAddress),
-            eq(claimantContactPhoneNumber)
+            USER_ID,
+            claimantName,
+            null,
+            claimantContactEmail,
+            propertyAddress,
+            claimantContactPhoneNumber
         );
     }
 

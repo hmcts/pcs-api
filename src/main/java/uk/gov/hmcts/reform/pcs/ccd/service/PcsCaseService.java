@@ -8,6 +8,7 @@ import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.model.Defendant;
@@ -56,7 +57,6 @@ public class PcsCaseService {
                 pcsCase.getPreActionProtocolCompleted() != null
                         ? pcsCase.getPreActionProtocolCompleted().toBoolean()
                         : null);
-        pcsCaseEntity.setDefendants(mapFromDefendantDetails(pcsCase.getDefendants()));
         pcsCaseEntity.setTenancyLicence(tenancyLicenceService.buildTenancyLicence(pcsCase));
         pcsCaseEntity.setPartyDocuments(partyDocumentsService.buildPartyDocuments(pcsCase));
         // Set claimant type if available
@@ -90,25 +90,6 @@ public class PcsCaseService {
         pcsCaseRepository.save(pcsCaseEntity);
     }
 
-    public List<Defendant> mapFromDefendantDetails(List<ListValue<DefendantDetails>> defendants) {
-        if (defendants == null) {
-            return Collections.emptyList();
-        }
-        List<Defendant> result = new ArrayList<>();
-        for (ListValue<DefendantDetails> item : defendants) {
-            DefendantDetails details = item.getValue();
-            if (details != null) {
-                Defendant defendant = modelMapper.map(details, Defendant.class);
-                defendant.setId(item.getId());
-                if (details.getAddressSameAsPossession() == null) {
-                    defendant.setAddressSameAsPossession(false);
-                }
-                result.add(defendant);
-            }
-        }
-        return result;
-    }
-
     public List<ListValue<DefendantDetails>> mapToDefendantDetails(List<Defendant> defendants) {
         if (defendants == null) {
             return Collections.emptyList();
@@ -121,6 +102,29 @@ public class PcsCaseService {
             }
         }
         return result;
+    }
+
+    public void clearHiddenDefendantDetailsFields(List<ListValue<DefendantDetails>> defendantsList) {
+        if (defendantsList == null) {
+            return;
+        }
+
+        for (ListValue<DefendantDetails> listValue : defendantsList) {
+            DefendantDetails defendant = listValue.getValue();
+            if (defendant != null) {
+                if (VerticalYesNo.NO == defendant.getNameKnown()) {
+                    defendant.setFirstName(null);
+                    defendant.setLastName(null);
+                }
+                if (VerticalYesNo.NO == defendant.getAddressKnown()) {
+                    defendant.setCorrespondenceAddress(null);
+                    defendant.setAddressSameAsPossession(null);
+                }
+                if (VerticalYesNo.NO == defendant.getEmailKnown()) {
+                    defendant.setEmail(null);
+                }
+            }
+        }
     }
 
 }

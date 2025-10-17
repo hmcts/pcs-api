@@ -71,6 +71,7 @@ import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.TenancyLicenceDeta
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.UploadAdditionalDocumentsDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.WantToUploadDocuments;
 import uk.gov.hmcts.reform.pcs.ccd.service.ClaimService;
+import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
@@ -108,6 +109,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
     private final ContactPreferences contactPreferences;
     private final DefendantsDetails defendantsDetails;
     private final SchedulerClient schedulerClient;
+    private final DraftCaseDataService draftCaseDataService;
 
     private static final String CASE_ISSUED_FEE_TYPE = "caseIssueFee";
 
@@ -215,6 +217,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
                 pcsCase.getDefendant1().setCorrespondenceAddress(pcsCase.getPropertyAddress());
             }
             defendantsList.add(new ListValue<>(UUID.randomUUID().toString(), pcsCase.getDefendant1()));
+            pcsCaseService.clearHiddenDefendantDetailsFields(defendantsList);
             pcsCase.setDefendants(defendantsList);
         }
 
@@ -229,6 +232,8 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
         pcsCaseEntity.addClaim(claimEntity);
 
         pcsCaseService.save(pcsCaseEntity);
+
+        draftCaseDataService.deleteUnsubmittedCaseData(caseReference);
 
         String taskId = UUID.randomUUID().toString();
 

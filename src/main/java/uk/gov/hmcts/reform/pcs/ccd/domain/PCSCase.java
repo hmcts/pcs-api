@@ -70,6 +70,8 @@ public class PCSCase {
     @External
     private AddressUK propertyAddress;
 
+    private String formattedPropertyAddress;
+
     @CCD(searchable = false)
     private YesOrNo showCrossBorderPage;
 
@@ -564,7 +566,7 @@ public class PCSCase {
             + "make sure your claim is processed correctly"
     )
     private LanguageUsed languageUsed;
-  
+
     @JsonUnwrapped
     private DefendantCircumstances defendantCircumstances;
 

@@ -4,17 +4,22 @@ import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.ccd.sdk.api.HasLabel;
+import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.model.Defendant;
 import uk.gov.hmcts.reform.pcs.ccd.model.PossessionGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.model.SecureOrFlexibleReasonsForGrounds;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -56,7 +61,7 @@ public class PcsCaseMergeService {
 
         pcsCaseEntity.setTenancyLicence(tenancyLicenceService.buildTenancyLicence(pcsCase));
         pcsCaseEntity.setPossessionGrounds(buildPossessionGrounds(pcsCase));
-
+        pcsCaseEntity.setDefendants(mapFromDefendantDetails(pcsCase.getDefendants()));
     }
 
     private void setPcqIdForCurrentUser(UUID pcqId, PcsCaseEntity pcsCaseEntity) {
@@ -105,6 +110,25 @@ public class PcsCaseMergeService {
             .stream()
             .map(HasLabel::getLabel)
             .collect(Collectors.toSet());
+    }
+
+    public List<Defendant> mapFromDefendantDetails(List<ListValue<DefendantDetails>> defendants) {
+        if (defendants == null) {
+            return Collections.emptyList();
+        }
+        List<Defendant> result = new ArrayList<>();
+        for (ListValue<DefendantDetails> item : defendants) {
+            DefendantDetails details = item.getValue();
+            if (details != null) {
+                Defendant defendant = modelMapper.map(details, Defendant.class);
+                defendant.setId(item.getId());
+                if (details.getAddressSameAsPossession() == null) {
+                    defendant.setAddressSameAsPossession(false);
+                }
+                result.add(defendant);
+            }
+        }
+        return result;
     }
 
 }

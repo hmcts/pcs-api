@@ -7,26 +7,31 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.modelmapper.ModelMapper;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
+import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.model.Defendant;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
+import uk.gov.hmcts.reform.pcs.config.MapperConfig;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
+import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
-import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class PcsCaseMergeServiceTest {
@@ -42,6 +47,8 @@ class PcsCaseMergeServiceTest {
 
     @BeforeEach
     void setUp() {
+        MapperConfig config = new MapperConfig();
+        modelMapper = spy(config.modelMapper());
         underTest = new PcsCaseMergeService(securityContextService, modelMapper, tenancyLicenceService);
     }
 
@@ -59,7 +66,6 @@ class PcsCaseMergeServiceTest {
         // Then
         verify(pcsCaseEntity).setTenancyLicence(any());
         verify(pcsCaseEntity).setPossessionGrounds(any());
-        verifyNoMoreInteractions(pcsCaseEntity);
     }
 
     @Test
@@ -242,6 +248,43 @@ class PcsCaseMergeServiceTest {
 
         // Then
         verify(pcsCaseEntity).setClaimantType(ClaimantType.PRIVATE_LANDLORD);
+    }
+
+    @Test
+    void shouldMapFromDefendantDetailsToDefendantPojo() {
+        // Given
+        AddressUK correspondenceAddress = AddressUK.builder()
+            .addressLine1("125 Broadway")
+            .postCode("W5 8DG")
+            .build();
+        DefendantDetails details = DefendantDetails.builder()
+            .nameKnown(VerticalYesNo.YES)
+            .firstName("John")
+            .lastName("Doe")
+            .addressKnown(VerticalYesNo.YES)
+            .addressSameAsPossession(VerticalYesNo.YES)
+            .correspondenceAddress(correspondenceAddress)
+            .emailKnown(VerticalYesNo.NO)
+            .build();
+
+        ListValue<DefendantDetails> listValue = new ListValue<>("123", details);
+
+        // When
+        List<Defendant> result = underTest.mapFromDefendantDetails(List.of(listValue));
+
+        // Then
+        assertThat(result).hasSize(1);
+        Defendant mappedDefendant = result.getFirst();
+
+        assertThat(mappedDefendant.getId()).isEqualTo("123");
+        assertThat(mappedDefendant.getNameKnown()).isTrue();
+        assertThat(mappedDefendant.getFirstName()).isEqualTo("John");
+        assertThat(mappedDefendant.getLastName()).isEqualTo("Doe");
+        assertThat(mappedDefendant.getAddressKnown()).isTrue();
+        assertThat(mappedDefendant.getAddressSameAsPossession()).isTrue();
+        assertThat(mappedDefendant.getCorrespondenceAddress().getAddressLine1())
+            .isEqualTo(correspondenceAddress.getAddressLine1());
+        assertThat(mappedDefendant.getEmailKnown()).isFalse();
     }
 
     private AddressEntity stubAddressUKModelMapper(AddressUK addressUK) {

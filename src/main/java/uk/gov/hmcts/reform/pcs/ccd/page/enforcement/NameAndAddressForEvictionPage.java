@@ -34,7 +34,7 @@ public class NameAndAddressForEvictionPage implements CcdPageConfiguration {
                           </main>
                         </div>
                 """)
-            .readonly(PCSCase::getFormattedClaimantContactAddress, NEVER_SHOW)
+            .readonly(PCSCase::getFormattedPropertyAddress, NEVER_SHOW)
             .label(
                 "enforcementEvictionNameAndAddress-details-address-check",
                 """
@@ -46,7 +46,7 @@ public class NameAndAddressForEvictionPage implements CcdPageConfiguration {
                                 <h3 class="govuk-body">Address</h3>
                               </div>
                               <div class="govuk-grid-column-one-third">
-                                <p class="govuk-body">${formattedClaimantContactAddress}</p>
+                                <p class="govuk-body">${formattedPropertyAddress}</p>
                               </div>
                             </div>
                           </main>
