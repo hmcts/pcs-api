@@ -155,6 +155,7 @@ To open generated Allure report
 ```bash
 yarn test:openAllureReport
 ```
+
 Permanent IDAM Users:
 All permanent users needs to be added to ./data/permanent-users.data
 Temporary IDAM Users:
