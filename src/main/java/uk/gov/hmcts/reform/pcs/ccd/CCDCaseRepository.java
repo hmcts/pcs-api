@@ -1,6 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd;
 
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.DecentralisedCaseRepository;
@@ -25,8 +25,12 @@ import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
+import java.security.SecureRandom;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -35,7 +39,7 @@ import java.util.stream.Collectors;
  * Invoked by CCD to load PCS cases under the decentralised model.
  */
 @Component
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class CCDCaseRepository extends DecentralisedCaseRepository<PCSCase> {
 
     private final PcsCaseRepository pcsCaseRepository;
@@ -43,6 +47,7 @@ public class CCDCaseRepository extends DecentralisedCaseRepository<PCSCase> {
     private final ModelMapper modelMapper;
     private final PcsCaseService pcsCaseService;
     private final UnsubmittedCaseDataService unsubmittedCaseDataService;
+    private final SecureRandom random = new SecureRandom();
 
     /**
      * Invoked by CCD to load PCS cases by reference.
@@ -58,6 +63,14 @@ public class CCDCaseRepository extends DecentralisedCaseRepository<PCSCase> {
 
         setMarkdownFields(pcsCase);
 
+        //randomly make some dates in the past, for sake of showing conditional tab data.
+        if (random.nextBoolean()) {
+            pcsCase.setPossessionsOrderDate(LocalDate.now());
+        } else {
+            pcsCase.setPossessionsOrderDate(LocalDate.now().minusDays(1));
+        }
+
+        pcsCase.setPossessionOrderMarkdown(buildEnforcementMarkdown(pcsCase));
         return pcsCase;
     }
 
@@ -116,6 +129,42 @@ public class CCDCaseRepository extends DecentralisedCaseRepository<PCSCase> {
 
         pcsCase.setParties(mapAndWrapParties(pcsCaseEntity.getParties()));
     }
+
+    private String buildEnforcementMarkdown(PCSCase pcsCase) {
+
+        if (pcsCase.getPossessionsOrderDate().isBefore(LocalDate.now())) {
+            return
+                """
+                   <h2>Enforce the possession order</h2>
+                   <p>The deadline for the defendants to leave the property or\s
+                   make a repayment by
+                   """
+                    +
+                    pcsCase.getPossessionsOrderDate().format(
+                        DateTimeFormatter.ofPattern("d MMMM yyyy", Locale.UK))
+                    +
+                    """
+                    has now passed.</p>
+                    <p>You can now enforce the possession order
+                     (use a bailiff to evict them). </p>
+                    <p>To enforce the possession order, select\s
+                    'Enforce the order from the dropdown menu.</p>
+                   """;
+        } else {
+            return
+                """
+                   <h2>Enforce the possession order</h2>
+                   <p>The deadline for the defendants to leave the property or\s
+                   make a repayment by is
+                   """
+                    +
+                    pcsCase.getPossessionsOrderDate().format(
+                        DateTimeFormatter.ofPattern("d MMMM yyyy", Locale.UK));
+        }
+
+
+    }
+
 
     private void setMarkdownFields(PCSCase pcsCase) {
         pcsCase.setPageHeadingMarkdown("""
