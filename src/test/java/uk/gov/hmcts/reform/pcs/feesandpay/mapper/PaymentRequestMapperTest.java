@@ -4,13 +4,14 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.hmcts.reform.fees.client.model.FeeLookupResponseDto;
 import uk.gov.hmcts.reform.payments.client.models.CasePaymentRequestDto;
 import uk.gov.hmcts.reform.payments.client.models.FeeDto;
-import uk.gov.hmcts.reform.pcs.feesandpay.entity.Fee;
 
 import java.math.BigDecimal;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @ExtendWith(MockitoExtension.class)
 class PaymentRequestMapperTest {
@@ -19,36 +20,34 @@ class PaymentRequestMapperTest {
     private PaymentRequestMapper paymentRequestMapper;
 
     private static final String FEE_CODE = "FEE0412";
-    private static final String FEE_VERSION = "4";
+    private static final Integer FEE_VERSION = 4;
     private static final BigDecimal FEE_AMOUNT = new BigDecimal("404.00");
     private static final int VOLUME = 1;
     private static final String ACTION = "case-issue";
     private static final String RESPONSIBLE_PARTY = "Test Claimant";
 
     @Test
-    void shouldMapFeeEntityToFeeDto() {
-        Fee fee = Fee.builder()
-            .code(FEE_CODE)
-            .version(FEE_VERSION)
-            .calculatedAmount(FEE_AMOUNT)
-            .build();
+    void shouldMapFeeLookupResponseDtoToFeeDto() {
+        FeeLookupResponseDto fee = new FeeLookupResponseDto();
+        fee.setCode(FEE_CODE);
+        fee.setVersion(FEE_VERSION);
+        fee.setFeeAmount(FEE_AMOUNT);
 
         FeeDto result = paymentRequestMapper.toFeeDto(fee, VOLUME);
 
         assertThat(result).isNotNull();
         assertThat(result.getCode()).isEqualTo(FEE_CODE);
-        assertThat(result.getVersion()).isEqualTo(FEE_VERSION);
+        assertThat(result.getVersion()).isEqualTo(String.valueOf(FEE_VERSION));
         assertThat(result.getCalculatedAmount()).isEqualByComparingTo(FEE_AMOUNT);
         assertThat(result.getVolume()).isEqualTo(VOLUME);
     }
 
     @Test
-    void shouldMapFeeEntityToFeeDtoWithDifferentVolume() {
-        Fee fee = Fee.builder()
-            .code(FEE_CODE)
-            .version(FEE_VERSION)
-            .calculatedAmount(FEE_AMOUNT)
-            .build();
+    void shouldMapFeeLookupResponseDtoToFeeDtoWithDifferentVolume() {
+        FeeLookupResponseDto fee = new FeeLookupResponseDto();
+        fee.setCode(FEE_CODE);
+        fee.setVersion(FEE_VERSION);
+        fee.setFeeAmount(FEE_AMOUNT);
         int customVolume = 5;
 
         FeeDto result = paymentRequestMapper.toFeeDto(fee, customVolume);
@@ -58,12 +57,11 @@ class PaymentRequestMapperTest {
     }
 
     @Test
-    void shouldMapFeeEntityToFeeDtoWithZeroAmount() {
-        Fee fee = Fee.builder()
-            .code("FEE0000")
-            .version("1")
-            .calculatedAmount(BigDecimal.ZERO)
-            .build();
+    void shouldMapFeeLookupResponseDtoToFeeDtoWithZeroAmount() {
+        FeeLookupResponseDto fee = new FeeLookupResponseDto();
+        fee.setCode("FEE0000");
+        fee.setVersion(1);
+        fee.setFeeAmount(BigDecimal.ZERO);
 
         FeeDto result = paymentRequestMapper.toFeeDto(fee, VOLUME);
 
@@ -72,13 +70,12 @@ class PaymentRequestMapperTest {
     }
 
     @Test
-    void shouldMapFeeEntityToFeeDtoWithLargeAmount() {
+    void shouldMapFeeLookupResponseDtoToFeeDtoWithLargeAmount() {
         BigDecimal largeAmount = new BigDecimal("99999.99");
-        Fee fee = Fee.builder()
-            .code("FEE9999")
-            .version("10")
-            .calculatedAmount(largeAmount)
-            .build();
+        FeeLookupResponseDto fee = new FeeLookupResponseDto();
+        fee.setCode("FEE9999");
+        fee.setVersion(10);
+        fee.setFeeAmount(largeAmount);
 
         FeeDto result = paymentRequestMapper.toFeeDto(fee, VOLUME);
 
@@ -88,11 +85,10 @@ class PaymentRequestMapperTest {
 
     @Test
     void shouldNotIncludeOptionalFieldsInFeeDto() {
-        Fee fee = Fee.builder()
-            .code(FEE_CODE)
-            .version(FEE_VERSION)
-            .calculatedAmount(FEE_AMOUNT)
-            .build();
+        FeeLookupResponseDto fee = new FeeLookupResponseDto();
+        fee.setCode(FEE_CODE);
+        fee.setVersion(FEE_VERSION);
+        fee.setFeeAmount(FEE_AMOUNT);
 
         FeeDto result = paymentRequestMapper.toFeeDto(fee, VOLUME);
 
@@ -133,15 +129,33 @@ class PaymentRequestMapperTest {
     @Test
     void shouldPreserveDecimalPrecisionWhenMappingFee() {
         BigDecimal preciseAmount = new BigDecimal("404.567");
-        Fee fee = Fee.builder()
-            .code(FEE_CODE)
-            .version(FEE_VERSION)
-            .calculatedAmount(preciseAmount)
-            .build();
+        FeeLookupResponseDto fee = new FeeLookupResponseDto();
+        fee.setCode(FEE_CODE);
+        fee.setVersion(FEE_VERSION);
+        fee.setFeeAmount(preciseAmount);
 
         FeeDto result = paymentRequestMapper.toFeeDto(fee, VOLUME);
 
         assertThat(result.getCalculatedAmount()).isEqualByComparingTo(preciseAmount);
         assertThat(result.getCalculatedAmount().scale()).isEqualTo(preciseAmount.scale());
+    }
+
+    @Test
+    void shouldThrowIllegalArgumentExceptionWhenFeeIsNull() {
+        assertThatThrownBy(() -> paymentRequestMapper.toFeeDto(null, VOLUME))
+            .isInstanceOf(IllegalArgumentException.class)
+            .hasMessageContaining("fee must not be null");
+    }
+
+    @Test
+    void shouldConvertVersionToStringCorrectly() {
+        FeeLookupResponseDto fee = new FeeLookupResponseDto();
+        fee.setCode(FEE_CODE);
+        fee.setVersion(123);
+        fee.setFeeAmount(FEE_AMOUNT);
+
+        FeeDto result = paymentRequestMapper.toFeeDto(fee, VOLUME);
+
+        assertThat(result.getVersion()).isEqualTo("123");
     }
 }

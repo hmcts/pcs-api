@@ -14,8 +14,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
+import uk.gov.hmcts.reform.fees.client.model.FeeLookupResponseDto;
 import uk.gov.hmcts.reform.payments.response.PaymentServiceResponse;
-import uk.gov.hmcts.reform.pcs.feesandpay.entity.Fee;
 import uk.gov.hmcts.reform.pcs.feesandpay.exception.FeeNotFoundException;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeesAndPayTaskData;
 import uk.gov.hmcts.reform.pcs.feesandpay.service.FeesAndPayService;
@@ -56,15 +56,12 @@ class FeesAndPayTaskComponentTest {
     private final Duration feesAndPayBackoffDelay = Duration.ofMinutes(5);
 
     private static final String TASK_ID = "fee-task-123";
-    private static final String CASE_ISSUE_FEE_TYPE = "caseIssueFee";
+    private static final String CASE_ISSUE_FEE_TYPE = "caseIssued";
     private static final String HEARING_FEE_TYPE = "hearingFee";
     private static final String CASE_REFERENCE = "123456";
     private static final String CCD_CASE_NUMBER = "CCD123";
     private static final String RESPONSIBLE_PARTY = "Claimant";
 
-    /**
-     * Test-specific enum for fee codes used in unit tests.
-     */
     @Getter
     public enum TestFeeCode {
         RECOVERY_OF_LAND("FEE0412", "Recovery of Land - County Court"),
@@ -108,6 +105,15 @@ class FeesAndPayTaskComponentTest {
             .build();
     }
 
+    private FeeLookupResponseDto createFeeResponse(TestFeeCode feeCode, String version, BigDecimal amount) {
+        FeeLookupResponseDto fee = new FeeLookupResponseDto();
+        fee.setCode(feeCode.getCode());
+        fee.setDescription(feeCode.getDescription());
+        fee.setVersion(Integer.parseInt(version));
+        fee.setFeeAmount(amount);
+        return fee;
+    }
+
     @Nested
     @DisplayName("Component Initialization Tests")
     class ComponentInitializationTests {
@@ -138,12 +144,11 @@ class FeesAndPayTaskComponentTest {
         @DisplayName("Should retrieve case issue fee and create service request successfully")
         void shouldRetrieveCaseIssueFeeAndCreateServiceRequestSuccessfully() {
             FeesAndPayTaskData taskData = createTaskData(CASE_ISSUE_FEE_TYPE);
-            Fee expectedFee = Fee.builder()
-                .code(TestFeeCode.RECOVERY_OF_LAND.getCode())
-                .description(TestFeeCode.RECOVERY_OF_LAND.getDescription())
-                .version("4")
-                .calculatedAmount(new BigDecimal("404.00"))
-                .build();
+            FeeLookupResponseDto expectedFee = createFeeResponse(
+                TestFeeCode.RECOVERY_OF_LAND,
+                "4",
+                new BigDecimal("404.00")
+            );
 
             when(taskInstance.getData()).thenReturn(taskData);
             when(feesAndPayService.getFee(CASE_ISSUE_FEE_TYPE)).thenReturn(expectedFee);
@@ -170,12 +175,11 @@ class FeesAndPayTaskComponentTest {
         @DisplayName("Should retrieve hearing fee and create service request successfully")
         void shouldRetrieveHearingFeeSuccessfully() {
             FeesAndPayTaskData taskData = createTaskData(HEARING_FEE_TYPE);
-            Fee expectedFee = Fee.builder()
-                .code(TestFeeCode.HEARING_FEE.getCode())
-                .description(TestFeeCode.HEARING_FEE.getDescription())
-                .version("1")
-                .calculatedAmount(new BigDecimal("100.00"))
-                .build();
+            FeeLookupResponseDto expectedFee = createFeeResponse(
+                TestFeeCode.HEARING_FEE,
+                "1",
+                new BigDecimal("100.00")
+            );
 
             when(taskInstance.getData()).thenReturn(taskData);
             when(feesAndPayService.getFee(HEARING_FEE_TYPE)).thenReturn(expectedFee);
@@ -201,12 +205,11 @@ class FeesAndPayTaskComponentTest {
         @DisplayName("Should handle fee with zero amount")
         void shouldHandleFeeWithZeroAmount() {
             FeesAndPayTaskData taskData = createTaskData(CASE_ISSUE_FEE_TYPE);
-            Fee zeroFee = Fee.builder()
-                .code(TestFeeCode.WAIVED_FEE.getCode())
-                .description(TestFeeCode.WAIVED_FEE.getDescription())
-                .version("1")
-                .calculatedAmount(BigDecimal.ZERO)
-                .build();
+            FeeLookupResponseDto zeroFee = createFeeResponse(
+                TestFeeCode.WAIVED_FEE,
+                "1",
+                BigDecimal.ZERO
+            );
 
             when(taskInstance.getData()).thenReturn(taskData);
             when(feesAndPayService.getFee(CASE_ISSUE_FEE_TYPE)).thenReturn(zeroFee);
@@ -233,12 +236,11 @@ class FeesAndPayTaskComponentTest {
                 .responsibleParty(RESPONSIBLE_PARTY)
                 .build();
 
-            Fee expectedFee = Fee.builder()
-                .code(TestFeeCode.GENERIC_TEST_FEE.getCode())
-                .description(TestFeeCode.GENERIC_TEST_FEE.getDescription())
-                .version("1")
-                .calculatedAmount(new BigDecimal("100.00"))
-                .build();
+            FeeLookupResponseDto expectedFee = createFeeResponse(
+                TestFeeCode.GENERIC_TEST_FEE,
+                "1",
+                new BigDecimal("100.00")
+            );
 
             when(taskInstance.getData()).thenReturn(taskDataWithVolume);
             when(feesAndPayService.getFee(CASE_ISSUE_FEE_TYPE)).thenReturn(expectedFee);
@@ -287,12 +289,11 @@ class FeesAndPayTaskComponentTest {
         @DisplayName("Should throw exception when service request creation fails")
         void shouldThrowExceptionWhenServiceRequestCreationFails() {
             FeesAndPayTaskData taskData = createTaskData(CASE_ISSUE_FEE_TYPE);
-            Fee expectedFee = Fee.builder()
-                .code(TestFeeCode.GENERIC_TEST_FEE.getCode())
-                .description(TestFeeCode.GENERIC_TEST_FEE.getDescription())
-                .version("1")
-                .calculatedAmount(new BigDecimal("100.00"))
-                .build();
+            FeeLookupResponseDto expectedFee = createFeeResponse(
+                TestFeeCode.GENERIC_TEST_FEE,
+                "1",
+                new BigDecimal("100.00")
+            );
             RuntimeException serviceException = new RuntimeException("Service request failed");
 
             when(taskInstance.getData()).thenReturn(taskData);
@@ -329,12 +330,11 @@ class FeesAndPayTaskComponentTest {
                     .responsibleParty(party)
                     .build();
 
-                Fee fee = Fee.builder()
-                    .code(TestFeeCode.GENERIC_TEST_FEE.getCode())
-                    .description(TestFeeCode.GENERIC_TEST_FEE.getDescription())
-                    .version("1")
-                    .calculatedAmount(new BigDecimal("100.00"))
-                    .build();
+                FeeLookupResponseDto fee = createFeeResponse(
+                    TestFeeCode.GENERIC_TEST_FEE,
+                    "1",
+                    new BigDecimal("100.00")
+                );
 
                 when(taskInstance.getData()).thenReturn(taskData);
                 when(feesAndPayService.getFee(CASE_ISSUE_FEE_TYPE)).thenReturn(fee);

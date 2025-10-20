@@ -6,9 +6,9 @@ import au.com.dius.pact.consumer.junit5.PactConsumerTestExt;
 import au.com.dius.pact.consumer.junit5.PactTestFor;
 import au.com.dius.pact.core.model.V4Pact;
 import au.com.dius.pact.core.model.annotations.Pact;
+import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
 import org.springframework.boot.autoconfigure.http.HttpMessageConvertersAutoConfiguration;
 import org.springframework.cloud.openfeign.EnableFeignClients;
@@ -18,38 +18,39 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-import uk.gov.hmcts.reform.pcs.feesandpay.api.FeesRegisterApi;
-import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeResponse;
+import uk.gov.hmcts.reform.fees.client.FeesClient;
+import uk.gov.hmcts.reform.fees.client.model.FeeLookupResponseDto;
 
 import java.math.BigDecimal;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+@RequiredArgsConstructor
 @ImportAutoConfiguration({
     FeignAutoConfiguration.class,
     FeignClientsConfiguration.class,
     HttpMessageConvertersAutoConfiguration.class
 })
-@EnableFeignClients(clients = FeesRegisterApi.class)
-@TestPropertySource(properties = "fees-register.api.url=http://localhost:8484")
+@EnableFeignClients(basePackages = "uk.gov.hmcts.reform.fees.client")
+@TestPropertySource(properties = {
+    "fees.api.url=http://localhost:8484",
+    "fees.api.service=possession claim",
+    "fees.api.jurisdiction1=civil",
+    "fees.api.jurisdiction2=county court"
+})
 @ExtendWith({PactConsumerTestExt.class, SpringExtension.class})
 @PactTestFor(providerName = "feeRegister_lookUp", port = "8484")
 class FeeRegistrationLookupConsumerTest {
 
-    @Autowired
-    private FeesRegisterApi feesRegisterApi;
-
-    private static final String SERVICE_AUTH_TOKEN = "Bearer serviceToken";
+    private final FeesClient feesClient;
 
     private static final String POSSESSION_SERVICE = "possession claim";
     private static final String CIVIL_JURISDICTION = "civil";
     private static final String COUNTY_COURT = "county court";
     private static final String DEFAULT_CHANNEL = "default";
     private static final String ISSUE_EVENT = "issue";
-    private static final String ALL_APPLICANT_TYPE = "all";
-    private static final String AMOUNT_OR_VOLUME = "1";
-    private static final String POSSESSION_KEYWORD = "PossessionCC";
+    private static final BigDecimal AMOUNT = new BigDecimal("1");
 
     @Pact(provider = "feeRegister_lookUp", consumer = "pcs_api")
     public V4Pact createFeeLookupPact(PactDslWithProvider builder) {
@@ -61,21 +62,16 @@ class FeeRegistrationLookupConsumerTest {
             .decimalType("fee_amount", 404.00);
 
         return builder
-            .given("Fees exist for Probate")
+            .given("Fees exist for Possession claims")
             .uponReceiving("a request for Possession fees")
             .path("/fees-register/fees/lookup")
             .method("GET")
-            .headers(Map.of(
-                "ServiceAuthorization", SERVICE_AUTH_TOKEN
-            ))
-            .query("service=possession claim"
+            .query("service=" + POSSESSION_SERVICE
                        + "&jurisdiction1=" + CIVIL_JURISDICTION
                        + "&jurisdiction2=" + COUNTY_COURT
                        + "&channel=" + DEFAULT_CHANNEL
                        + "&event=" + ISSUE_EVENT
-                       + "&applicantType=" + ALL_APPLICANT_TYPE
-                       + "&amountOrVolume=" + AMOUNT_OR_VOLUME
-                       + "&keyword=" + POSSESSION_KEYWORD)
+                       + "&amount_or_volume=" + AMOUNT)
             .willRespondWith()
             .status(HttpStatus.OK.value())
             .headers(Map.of(HttpHeaders.CONTENT_TYPE, "application/json"))
@@ -86,21 +82,15 @@ class FeeRegistrationLookupConsumerTest {
     @Test
     @PactTestFor(pactMethod = "createFeeLookupPact")
     void shouldSuccessfullyLookupFee() {
-        FeeResponse response = feesRegisterApi.lookupFee(
-            SERVICE_AUTH_TOKEN,
-            POSSESSION_SERVICE,
-            CIVIL_JURISDICTION,
-            COUNTY_COURT,
+        FeeLookupResponseDto response = feesClient.lookupFee(
             DEFAULT_CHANNEL,
             ISSUE_EVENT,
-            ALL_APPLICANT_TYPE,
-            AMOUNT_OR_VOLUME,
-            POSSESSION_KEYWORD
+            AMOUNT
         );
 
         assertThat(response.getCode()).isEqualTo("FEE0412");
         assertThat(response.getDescription()).isEqualTo("Recovery of Land - County Court");
-        assertThat(response.getVersion()).isEqualTo("4");
+        assertThat(response.getVersion()).isEqualTo(4);
         assertThat(response.getFeeAmount()).isEqualByComparingTo(new BigDecimal("404.00"));
     }
 }

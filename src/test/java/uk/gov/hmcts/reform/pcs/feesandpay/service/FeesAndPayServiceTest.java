@@ -10,24 +10,21 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
+import uk.gov.hmcts.reform.fees.client.FeesClient;
+import uk.gov.hmcts.reform.fees.client.model.FeeLookupResponseDto;
 import uk.gov.hmcts.reform.payments.client.PaymentsClient;
 import uk.gov.hmcts.reform.payments.client.models.CasePaymentRequestDto;
 import uk.gov.hmcts.reform.payments.client.models.FeeDto;
 import uk.gov.hmcts.reform.payments.request.CreateServiceRequestDTO;
 import uk.gov.hmcts.reform.payments.response.PaymentServiceResponse;
-import uk.gov.hmcts.reform.pcs.feesandpay.api.FeesRegisterApi;
 import uk.gov.hmcts.reform.pcs.feesandpay.config.FeesConfiguration;
 import uk.gov.hmcts.reform.pcs.feesandpay.config.FeesConfiguration.LookUpReferenceData;
-import uk.gov.hmcts.reform.pcs.feesandpay.entity.Fee;
 import uk.gov.hmcts.reform.pcs.feesandpay.exception.FeeNotFoundException;
 import uk.gov.hmcts.reform.pcs.feesandpay.mapper.PaymentRequestMapper;
-import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeResponse;
 import uk.gov.hmcts.reform.pcs.idam.IdamService;
 
 import java.math.BigDecimal;
 import java.util.HashMap;
-import java.util.Map;
 
 import static feign.Request.HttpMethod.GET;
 import static feign.Request.HttpMethod.POST;
@@ -44,23 +41,16 @@ import static org.springframework.test.util.ReflectionTestUtils.setField;
 class FeesAndPayServiceTest {
 
     private interface Tokens {
-        String SERVICE = "Bearer test-token";
         String IDAM = "idam-token";
     }
 
     private interface FeeTypes {
-        String CASE_ISSUE = "caseIssueFee";
+        String CASE_ISSUE = "caseIssued";
     }
 
     private interface FeesRegister {
-        String SERVICE = "possession claim";
-        String JURISDICTION_1 = "civil";
-        String JURISDICTION_2 = "county court";
         String CHANNEL = "default";
         String EVENT = "issue";
-        String APPLICANT_TYPE = "all";
-        String AMOUNT_OR_VOLUME = "1";
-        String KEYWORD = "PossessionCC";
     }
 
     private interface Defaults {
@@ -72,7 +62,7 @@ class FeesAndPayServiceTest {
     private interface FeeSamples {
         String CODE = "FEE0412";
         String DESCRIPTION = "Recovery of Land - County Court";
-        String VERSION = "4";
+        Integer VERSION = 4;
         BigDecimal AMOUNT = new BigDecimal("404.00");
     }
 
@@ -89,11 +79,9 @@ class FeesAndPayServiceTest {
     }
 
     @Mock
-    private AuthTokenGenerator authTokenGenerator;
-    @Mock
     private FeesConfiguration feesConfiguration;
     @Mock
-    private FeesRegisterApi feesRegisterApi;
+    private FeesClient feesClient;
     @Mock
     private IdamService idamService;
     @Mock
@@ -105,26 +93,20 @@ class FeesAndPayServiceTest {
     private FeesAndPayService feesAndPayService;
 
     private LookUpReferenceData lookup;
-    private FeeResponse feeResponse;
+    private FeeLookupResponseDto feeResponse;
 
     @BeforeEach
     void setUp() {
         lookup = new LookUpReferenceData();
-        lookup.setService(FeesRegister.SERVICE);
-        lookup.setJurisdiction1(FeesRegister.JURISDICTION_1);
-        lookup.setJurisdiction2(FeesRegister.JURISDICTION_2);
         lookup.setChannel(FeesRegister.CHANNEL);
         lookup.setEvent(FeesRegister.EVENT);
-        lookup.setApplicantType(FeesRegister.APPLICANT_TYPE);
-        lookup.setAmountOrVolume(FeesRegister.AMOUNT_OR_VOLUME);
-        lookup.setKeyword(FeesRegister.KEYWORD);
+        lookup.setAmountOrVolume(FeeSamples.AMOUNT);
 
-        feeResponse = FeeResponse.builder()
-            .code(FeeSamples.CODE)
-            .description(FeeSamples.DESCRIPTION)
-            .version(FeeSamples.VERSION)
-            .feeAmount(FeeSamples.AMOUNT)
-            .build();
+        feeResponse = new FeeLookupResponseDto();
+        feeResponse.setCode(FeeSamples.CODE);
+        feeResponse.setDescription(FeeSamples.DESCRIPTION);
+        feeResponse.setVersion(FeeSamples.VERSION);
+        feeResponse.setFeeAmount(FeeSamples.AMOUNT);
 
         setField(feesAndPayService, "callbackUrl", Defaults.CALLBACK_URL);
         setField(feesAndPayService, "hmctsOrgId", Defaults.HMCTS_ORG_ID);
@@ -132,42 +114,31 @@ class FeesAndPayServiceTest {
 
     @Test
     void shouldSuccessfullyGetFee() {
-        Map<String, LookUpReferenceData> feesMap = new HashMap<>();
-        feesMap.put(FeeTypes.CASE_ISSUE, lookup);
-
-        when(feesConfiguration.getFees()).thenReturn(feesMap);
-        when(authTokenGenerator.generate()).thenReturn(Tokens.SERVICE);
-        when(feesRegisterApi.lookupFee(
-            anyString(), anyString(), anyString(), anyString(), anyString(),
-            anyString(), anyString(), anyString(), anyString()
+        when(feesConfiguration.getLookup(FeeTypes.CASE_ISSUE)).thenReturn(lookup);
+        when(feesClient.lookupFee(
+            FeesRegister.CHANNEL,
+            FeesRegister.EVENT,
+            FeeSamples.AMOUNT
         )).thenReturn(feeResponse);
 
-        Fee result = feesAndPayService.getFee(FeeTypes.CASE_ISSUE);
+        FeeLookupResponseDto result = feesAndPayService.getFee(FeeTypes.CASE_ISSUE);
 
         assertThat(result).isNotNull();
         assertThat(result.getCode()).isEqualTo(FeeSamples.CODE);
         assertThat(result.getDescription()).isEqualTo(FeeSamples.DESCRIPTION);
         assertThat(result.getVersion()).isEqualTo(FeeSamples.VERSION);
-        assertThat(result.getCalculatedAmount()).isEqualByComparingTo(FeeSamples.AMOUNT);
+        assertThat(result.getFeeAmount()).isEqualByComparingTo(FeeSamples.AMOUNT);
 
-        verify(authTokenGenerator).generate();
-        verify(feesRegisterApi).lookupFee(
-            Tokens.SERVICE,
-            FeesRegister.SERVICE,
-            FeesRegister.JURISDICTION_1,
-            FeesRegister.JURISDICTION_2,
+        verify(feesClient).lookupFee(
             FeesRegister.CHANNEL,
             FeesRegister.EVENT,
-            FeesRegister.APPLICANT_TYPE,
-            FeesRegister.AMOUNT_OR_VOLUME,
-            FeesRegister.KEYWORD
+            FeeSamples.AMOUNT
         );
     }
 
     @Test
     void shouldThrowFeeNotFoundExceptionWhenFeeTypeNotInConfiguration() {
-        Map<String, LookUpReferenceData> emptyFeesMap = new HashMap<>();
-        when(feesConfiguration.getFees()).thenReturn(emptyFeesMap);
+        when(feesConfiguration.getLookup(FeeTypes.CASE_ISSUE)).thenReturn(null);
 
         assertThatThrownBy(() -> feesAndPayService.getFee(FeeTypes.CASE_ISSUE))
             .isInstanceOf(FeeNotFoundException.class)
@@ -176,19 +147,16 @@ class FeesAndPayServiceTest {
 
     @Test
     void shouldThrowFeeNotFoundExceptionWhenFeignCallFails() {
-        Map<String, LookUpReferenceData> feesMap = new HashMap<>();
-        feesMap.put(FeeTypes.CASE_ISSUE, lookup);
-
-        when(feesConfiguration.getFees()).thenReturn(feesMap);
-        when(authTokenGenerator.generate()).thenReturn(Tokens.SERVICE);
+        when(feesConfiguration.getLookup(FeeTypes.CASE_ISSUE)).thenReturn(lookup);
 
         Request request = Request.create(
             GET, "/fees-register/fees/lookup", new HashMap<>(), null, new RequestTemplate()
         );
 
-        when(feesRegisterApi.lookupFee(
-            anyString(), anyString(), anyString(), anyString(), anyString(),
-            anyString(), anyString(), anyString(), anyString()
+        when(feesClient.lookupFee(
+            FeesRegister.CHANNEL,
+            FeesRegister.EVENT,
+            FeeSamples.AMOUNT
         )).thenThrow(new FeignException.NotFound("Fee not found", request, null, null));
 
         assertThatThrownBy(() -> feesAndPayService.getFee(FeeTypes.CASE_ISSUE))
@@ -199,19 +167,16 @@ class FeesAndPayServiceTest {
 
     @Test
     void shouldThrowFeeNotFoundExceptionWhenFeignReturnsServerError() {
-        Map<String, LookUpReferenceData> feesMap = new HashMap<>();
-        feesMap.put(FeeTypes.CASE_ISSUE, lookup);
-
-        when(feesConfiguration.getFees()).thenReturn(feesMap);
-        when(authTokenGenerator.generate()).thenReturn(Tokens.SERVICE);
+        when(feesConfiguration.getLookup(FeeTypes.CASE_ISSUE)).thenReturn(lookup);
 
         Request request = Request.create(
             GET, "/fees-register/fees/lookup", new HashMap<>(), null, new RequestTemplate()
         );
 
-        when(feesRegisterApi.lookupFee(
-            anyString(), anyString(), anyString(), anyString(), anyString(),
-            anyString(), anyString(), anyString(), anyString()
+        when(feesClient.lookupFee(
+            FeesRegister.CHANNEL,
+            FeesRegister.EVENT,
+            FeeSamples.AMOUNT
         )).thenThrow(new FeignException.InternalServerError(
             "Internal server error", request, null, null));
 
@@ -222,39 +187,35 @@ class FeesAndPayServiceTest {
     }
 
     @Test
-    void shouldMapFeeResponseToFeeCorrectly() {
-        Map<String, LookUpReferenceData> feesMap = new HashMap<>();
-        feesMap.put(FeeTypes.CASE_ISSUE, lookup);
+    void shouldMapFeeResponseCorrectly() {
+        FeeLookupResponseDto custom = new FeeLookupResponseDto();
+        custom.setCode("FEE9999");
+        custom.setDescription("Custom Fee");
+        custom.setVersion(1);
+        custom.setFeeAmount(new BigDecimal("100.50"));
 
-        FeeResponse custom = FeeResponse.builder()
-            .code("FEE9999")
-            .description("Custom Fee")
-            .version("1")
-            .feeAmount(new BigDecimal("100.50"))
-            .build();
-
-        when(feesConfiguration.getFees()).thenReturn(feesMap);
-        when(authTokenGenerator.generate()).thenReturn(Tokens.SERVICE);
-        when(feesRegisterApi.lookupFee(
-            anyString(), anyString(), anyString(), anyString(), anyString(),
-            anyString(), anyString(), anyString(), anyString()
+        when(feesConfiguration.getLookup(FeeTypes.CASE_ISSUE)).thenReturn(lookup);
+        when(feesClient.lookupFee(
+            FeesRegister.CHANNEL,
+            FeesRegister.EVENT,
+            FeeSamples.AMOUNT
         )).thenReturn(custom);
 
-        Fee result = feesAndPayService.getFee(FeeTypes.CASE_ISSUE);
+        FeeLookupResponseDto result = feesAndPayService.getFee(FeeTypes.CASE_ISSUE);
 
         assertThat(result.getCode()).isEqualTo(custom.getCode());
         assertThat(result.getDescription()).isEqualTo(custom.getDescription());
         assertThat(result.getVersion()).isEqualTo(custom.getVersion());
-        assertThat(result.getCalculatedAmount()).isEqualByComparingTo(custom.getFeeAmount());
+        assertThat(result.getFeeAmount()).isEqualByComparingTo(custom.getFeeAmount());
     }
 
     @Test
     void createServiceRequest_shouldCallApisAndReturnResponse() {
-        String caseReference = "CR";
-        String ccdCaseNumber = "CCD";
-        Fee fee = Fee.builder()
-            .code("X").description("desc").version("1")
-            .calculatedAmount(new BigDecimal("10.00")).build();
+        FeeLookupResponseDto fee = new FeeLookupResponseDto();
+        fee.setCode("X");
+        fee.setDescription("desc");
+        fee.setVersion(1);
+        fee.setFeeAmount(new BigDecimal("10.00"));
         int volume = 2;
         String responsibleParty = "RP";
 
@@ -272,6 +233,9 @@ class FeesAndPayServiceTest {
 
         ArgumentCaptor<CreateServiceRequestDTO> dtoCaptor = ArgumentCaptor.forClass(CreateServiceRequestDTO.class);
         when(paymentsClient.createServiceRequest(anyString(), dtoCaptor.capture())).thenReturn(response);
+
+        String caseReference = "CR";
+        String ccdCaseNumber = "CCD";
 
         PaymentServiceResponse result = feesAndPayService.createServiceRequest(
             caseReference, ccdCaseNumber, fee, volume, responsibleParty);
@@ -295,7 +259,8 @@ class FeesAndPayServiceTest {
 
     @Test
     void createServiceRequest_shouldPassIdamTokenToClient() {
-        Fee fee = Fee.builder().calculatedAmount(new BigDecimal("1.00")).build();
+        FeeLookupResponseDto fee = new FeeLookupResponseDto();
+        fee.setFeeAmount(new BigDecimal("1.00"));
         when(paymentRequestMapper.toFeeDto(fee, 1)).thenReturn(FeeDto.builder().build());
         when(paymentRequestMapper.toCasePaymentRequest(Action.PAYMENT.value(), "RP"))
             .thenReturn(CasePaymentRequestDto.builder().build());
@@ -314,7 +279,8 @@ class FeesAndPayServiceTest {
         setField(feesAndPayService, "callbackUrl", null);
         setField(feesAndPayService, "hmctsOrgId", Defaults.HMCTS_ORG_ID);
 
-        Fee fee = Fee.builder().calculatedAmount(new BigDecimal("1.00")).build();
+        FeeLookupResponseDto fee = new FeeLookupResponseDto();
+        fee.setFeeAmount(new BigDecimal("1.00"));
         FeeDto feeDto = FeeDto.builder().build();
         CasePaymentRequestDto casePaymentRequestDto = CasePaymentRequestDto.builder().build();
 
@@ -336,7 +302,8 @@ class FeesAndPayServiceTest {
 
     @Test
     void createServiceRequest_shouldPropagateDifferentResponsibleParty() {
-        Fee fee = Fee.builder().calculatedAmount(new BigDecimal("1.00")).build();
+        FeeLookupResponseDto fee = new FeeLookupResponseDto();
+        fee.setFeeAmount(new BigDecimal("1.00"));
         String party = "Defendant";
         FeeDto feeDto = FeeDto.builder().build();
         CasePaymentRequestDto casePaymentRequestDto = CasePaymentRequestDto.builder().build();
@@ -359,7 +326,8 @@ class FeesAndPayServiceTest {
     void createServiceRequest_shouldAllowEmptyHmctsOrgId() {
         setField(feesAndPayService, "hmctsOrgId", "");
 
-        Fee fee = Fee.builder().calculatedAmount(new BigDecimal("1.00")).build();
+        FeeLookupResponseDto fee = new FeeLookupResponseDto();
+        fee.setFeeAmount(new BigDecimal("1.00"));
         FeeDto feeDto = FeeDto.builder().build();
         CasePaymentRequestDto casePaymentRequestDto = CasePaymentRequestDto.builder().build();
 
@@ -379,9 +347,8 @@ class FeesAndPayServiceTest {
 
     @Test
     void createServiceRequest_shouldRethrowFeignExceptionAndLog() {
-        String caseReference = "CR";
-        String ccdCaseNumber = "CCD";
-        Fee fee = Fee.builder().calculatedAmount(new BigDecimal("1.00")).build();
+        FeeLookupResponseDto fee = new FeeLookupResponseDto();
+        fee.setFeeAmount(new BigDecimal("1.00"));
         int volume = 1;
         String responsibleParty = "RP";
 
@@ -398,6 +365,9 @@ class FeesAndPayServiceTest {
 
         when(paymentsClient.createServiceRequest(anyString(), any(CreateServiceRequestDTO.class))).thenThrow(ex);
 
+        String caseReference = "CR";
+        String ccdCaseNumber = "CCD";
+
         assertThatThrownBy(() -> feesAndPayService.createServiceRequest(
             caseReference, ccdCaseNumber, fee, volume, responsibleParty)).isSameAs(ex);
     }
@@ -406,7 +376,8 @@ class FeesAndPayServiceTest {
     void createServiceRequest_shouldRethrowGenericExceptions() {
         String caseReference = "CR";
         String ccdCaseNumber = "CCD";
-        Fee fee = Fee.builder().calculatedAmount(new BigDecimal("1.00")).build();
+        FeeLookupResponseDto fee = new FeeLookupResponseDto();
+        fee.setFeeAmount(new BigDecimal("1.00"));
         int volume = 1;
         String responsibleParty = "RP";
 
@@ -423,7 +394,8 @@ class FeesAndPayServiceTest {
         setField(feesAndPayService, "callbackUrl", Defaults.ALT_CALLBACK_URL);
         setField(feesAndPayService, "hmctsOrgId", Defaults.HMCTS_ORG_ID);
 
-        Fee fee = Fee.builder().calculatedAmount(new BigDecimal("1.00")).build();
+        FeeLookupResponseDto fee = new FeeLookupResponseDto();
+        fee.setFeeAmount(new BigDecimal("1.00"));
         int volume = 3;
         String responsibleParty = "Resp";
 
@@ -450,7 +422,8 @@ class FeesAndPayServiceTest {
     void createServiceRequest_shouldPassVolumeToMapper() {
         setField(feesAndPayService, "hmctsOrgId", Defaults.HMCTS_ORG_ID);
 
-        Fee fee = Fee.builder().calculatedAmount(new BigDecimal("11.00")).build();
+        FeeLookupResponseDto fee = new FeeLookupResponseDto();
+        fee.setFeeAmount(new BigDecimal("11.00"));
         int volume = 3;
 
         FeeDto feeDto = FeeDto.builder().calculatedAmount(new BigDecimal("33.00")).build();
