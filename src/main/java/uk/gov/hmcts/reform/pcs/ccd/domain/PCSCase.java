@@ -629,4 +629,8 @@ public class PCSCase {
         label = "Ways to pay"
     )
     private WaysToPay waysToPay;
+  
+    @JsonUnwrapped(prefix = "wales")
+    private WalesNoticeDetails walesNoticeDetails;
+
 }
