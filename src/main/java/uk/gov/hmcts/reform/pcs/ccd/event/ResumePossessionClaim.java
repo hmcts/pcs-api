@@ -107,6 +107,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
     private final SavingPageBuilderFactory savingPageBuilderFactory;
     private final ResumeClaim resumeClaim;
     private final UnsubmittedCaseDataService unsubmittedCaseDataService;
+    private final SelectClaimantType selectClaimantType;
     private final NoticeDetails noticeDetails;
     private final UploadAdditionalDocumentsDetails uploadAdditionalDocumentsDetails;
     private final TenancyLicenceDetails tenancyLicenceDetails;
@@ -130,7 +131,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
 
         savingPageBuilderFactory.create(eventBuilder)
             .add(resumeClaim)
-            .add(new SelectClaimantType())
+            .add(selectClaimantType)
             .add(new ClaimantTypeNotEligibleEngland())
             .add(new ClaimantTypeNotEligibleWales())
             .add(new SelectClaimType())
