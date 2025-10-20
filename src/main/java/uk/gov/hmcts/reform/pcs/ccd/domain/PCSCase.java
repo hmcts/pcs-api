@@ -12,6 +12,7 @@ import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseworkerReadAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenAccess;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.RiskCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.model.NoRentArrearsReasonForGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
@@ -69,6 +70,8 @@ public class PCSCase {
     )
     @External
     private AddressUK propertyAddress;
+
+    private String formattedPropertyAddress;
 
     @CCD(searchable = false)
     private YesOrNo showCrossBorderPage;
@@ -622,6 +625,9 @@ public class PCSCase {
 
     @JsonUnwrapped
     private SuspensionOfRightToBuyDemotionOfTenancy  suspensionOfRightToBuyDemotionOfTenancy;
+
+    @JsonUnwrapped
+    private EnforcementOrder enforcementOrder;
 
 
     @CCD(

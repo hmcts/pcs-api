@@ -14,6 +14,8 @@ import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.EnforcementApplicationPage;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.NameAndAddressForEvictionPage;
+import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.EvictionDelayWarningPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.EvictionRisksPosedPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.EvictionViolentAggressiveDetailsPage;
@@ -27,36 +29,56 @@ import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.VerbalOrWrittenThreatsPage;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.State.AWAITING_SUBMISSION_TO_HMCTS;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.enforceTheOrder;
 
+
 @Slf4j
 @Component
 @AllArgsConstructor
 public class EnforcementOrderEvent implements CCDConfig<PCSCase, State, UserRole> {
     // TODO: Business requirements to be agreed on for the conditions when this event can be triggereed
 
+    private final AddressFormatter addressFormatter;
+
     @Override
-    public void configureDecentralised(
-            DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
+    public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
         Event.EventBuilder<PCSCase, UserRole, State> eventBuilder =
                 configBuilder
-                        .decentralisedEvent(enforceTheOrder.name(), this::submit)
-                        .forStateTransition(AWAITING_SUBMISSION_TO_HMCTS, AWAITING_SUBMISSION_TO_HMCTS)
+                        .decentralisedEvent(enforceTheOrder.name(), this::submit, this::start)
+                        .forState(AWAITING_SUBMISSION_TO_HMCTS)
                         .name("Enforce the order")
                         .grant(Permission.CRUD, UserRole.PCS_SOLICITOR);
+        configurePages(eventBuilder);
+    }
+
+    private void configurePages(Event.EventBuilder<PCSCase, UserRole, State> eventBuilder) {
+        PageBuilder pageBuilder = new PageBuilder(eventBuilder);
+        pageBuilder
+                .add(new EnforcementApplicationPage())
+                .add(new NameAndAddressForEvictionPage());
 
         new PageBuilder(eventBuilder)
-            .add(new EnforcementApplicationPage())
-            .add(new LivingInThePropertyPage())
-            .add(new EvictionDelayWarningPage())
-            .add(new EvictionRisksPosedPage())
-            .add(new EvictionViolentAggressiveDetailsPage())
-            .add(new EvictionFirearmsPossessionDetailsPage())
-            .add(new EvictionCriminalAntisocialDetailsPage())
-            .add(new EvictionVulnerableAdultsChildrenPage())
-            .add(new VerbalOrWrittenThreatsPage())
-            .add(new ProtestGroupPage());
+                .add(new EnforcementApplicationPage())
+                .add(new LivingInThePropertyPage())
+                .add(new EvictionDelayWarningPage())
+                .add(new EvictionRisksPosedPage())
+                .add(new EvictionViolentAggressiveDetailsPage())
+                .add(new EvictionFirearmsPossessionDetailsPage())
+                .add(new EvictionCriminalAntisocialDetailsPage())
+                .add(new EvictionVulnerableAdultsChildrenPage())
+                .add(new VerbalOrWrittenThreatsPage())
+                .add(new ProtestGroupPage());
+    }
+
+    private PCSCase start(EventPayload<PCSCase, State> eventPayload) {
+        PCSCase caseData = eventPayload.caseData();
+        caseData.setFormattedPropertyAddress(addressFormatter.getFormattedAddress(caseData));
+        if (caseData.getDefendants() != null && !caseData.getDefendants().isEmpty()) {
+            caseData.setDefendant1(caseData.getDefendants().getFirst().getValue());
+        }
+        return caseData;
     }
 
     private SubmitResponse submit(EventPayload<PCSCase, State> eventPayload) {
         return SubmitResponse.builder().build();
     }
+
 }
