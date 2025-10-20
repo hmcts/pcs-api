@@ -625,6 +625,9 @@ public class PCSCase {
     @JsonUnwrapped
     private SuspensionOfRightToBuyDemotionOfTenancy  suspensionOfRightToBuyDemotionOfTenancy;
 
+    @JsonUnwrapped(prefix = "wales")
+    private WalesNoticeDetails walesNoticeDetails;
+
     @JsonUnwrapped
     private EnforcementOrder enforcementOrder;
 }
