@@ -10,7 +10,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import java.util.ArrayList;
 import java.util.List;
 
-public class PoliceOrSocialServicesProperty implements CcdPageConfiguration {
+public class PoliceOrSocialServicesPropertyPage implements CcdPageConfiguration {
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
@@ -34,15 +34,18 @@ public class PoliceOrSocialServicesProperty implements CcdPageConfiguration {
         if (txt == null || txt.isBlank()) {
             errors.add("Enter details");
         } else if (txt.length() > 6800) {
-            errors.add("""
-                In 'Why did the police or social services visit the property?',
-                you have entered more than the maximum number of characters (6800)
-                """);
+            errors.add(buildCharacterLimitError());
         }
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
                 .data(data)
                 .errors(errors.isEmpty() ? null : errors)
                 .build();
+    }
+
+    private static String buildCharacterLimitError() {
+
+        return "In 'Why did the police or social services visit the property?' " +
+            "you have entered more than the maximum number of characters (6800)";
     }
 }

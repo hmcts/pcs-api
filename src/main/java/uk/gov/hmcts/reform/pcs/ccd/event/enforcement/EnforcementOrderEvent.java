@@ -13,10 +13,10 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.AggressiveDogsOrOtherAnimals;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.AggressiveDogsOrOtherAnimalsPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.EnforcementApplicationPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.NameAndAddressForEvictionPage;
-import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.PoliceOrSocialServicesProperty;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.PoliceOrSocialServicesPropertyPage;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.EvictionDelayWarningPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.EvictionRisksPosedPage;
@@ -68,8 +68,8 @@ public class EnforcementOrderEvent implements CCDConfig<PCSCase, State, UserRole
             .add(new EvictionVulnerableAdultsChildrenPage())
             .add(new VerbalOrWrittenThreatsPage())
             .add(new ProtestGroupPage())
-            .add(new PoliceOrSocialServicesProperty())
-            .add(new AggressiveDogsOrOtherAnimals());
+            .add(new PoliceOrSocialServicesPropertyPage())
+            .add(new AggressiveDogsOrOtherAnimalsPage());
     }
 
     private PCSCase start(EventPayload<PCSCase, State> eventPayload) {
