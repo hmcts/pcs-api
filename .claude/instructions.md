@@ -1,0 +1,267 @@
+# Project Coding Standards
+
+## Enum Formatting
+- **Single-line enum values PREFERRED**: Always keep enum values on a single line when they fit within 120 characters - this is more readable than splitting unnecessarily
+- **Multi-line only when exceeds 120 chars**: Only split enum values across lines when the single-line version exceeds the 120 character limit
+- **Lombok for simple enums**: Use `@AllArgsConstructor` and `@Getter` annotations for enums with only a `label` field
+- **No manual constructors/getters**: Avoid explicit constructors and `getLabel()` methods when using Lombok
+- **Consistent within PR**: All enums in the same PR should follow the same pattern
+- **4-space indentation**: Always use 4 spaces for indentation (never 2 spaces)
+
+**Example - Single line (preferred):**
+```java
+@AllArgsConstructor
+@Getter
+public enum EstateManagementGroundWales implements HasLabel {
+    BUILDING_WORKS_A("Building works (ground A)"),
+    REDEVELOPMENT_B("Redevelopment schemes (ground B)"),
+    CHARITIES_C("Charities (ground C)");
+
+    private final String label;
+}
+```
+
+**Example - Multi-line (only when exceeds 120 chars):**
+```java
+@AllArgsConstructor
+@Getter
+public enum MandatoryGroundWales implements HasLabel {
+    SERIOUS_ARREARS_FIXED_TERM_S187(
+        "Contract-holder under a fixed term standard contract seriously in arrears with rent (section 187)");
+
+    private final String label;
+}
+```
+
+## Field Declarations
+- **No fully qualified types**: Use `Set<>` not `java.util.Set<>` (ensure proper imports)
+- **Single-line fields**: Put field name on the same line as the type declaration
+
+**Example:**
+```java
+// ✅ Good
+private Set<DiscretionaryGroundWales> discretionaryGroundsWales;
+
+// ❌ Bad
+private java.util.Set<DiscretionaryGroundWales>
+    discretionaryGroundsWales;
+```
+
+## Multi-Line Conditions
+- **Prefer single lines**: If a condition fits within 120 characters, keep it on one line
+- **Only split when necessary**: Break lines only when they exceed the line length limit
+- **Exception**: Method chaining (builders, streams, optionals) can span multiple lines for readability
+
+**Example:**
+```java
+// ✅ Good - fits in one line
+if (hasDiscretionary && discretionaryGrounds.contains(DiscretionaryGroundWales.ESTATE_MANAGEMENT_GROUNDS_SECTION_160)) {
+
+// ❌ Bad - unnecessarily split
+if (hasDiscretionary
+    && discretionaryGrounds.contains(
+    DiscretionaryGroundWales
+        .ESTATE_MANAGEMENT_GROUNDS_SECTION_160)) {
+```
+
+## Enum Comparisons
+- **Use direct enum comparison**: Use `==` for enum comparison, not `.name().equals()`
+- **No null checks needed**: When comparing enums with `==`, you typically don't need separate null checks
+
+**Example:**
+```java
+// ✅ Good
+if (legislativeCountry == LegislativeCountry.WALES) {
+
+// ❌ Bad
+if (legislativeCountry != null && legislativeCountry.name().equals("WALES")) {
+```
+
+## British English Spelling
+- **Licence vs License**: Use "Licence" (British) for nouns, not "License" (American)
+- **Consistency**: Apply British spelling throughout the codebase
+
+**Example:**
+- ✅ `OccupationContractLicenceDetailsOptionsWales`
+- ❌ `OccupationContractLicenseDetailsOptionsWales`
+
+## Logging
+- **Remove debug logging**: Don't commit temporary debug/info logging statements
+- **Production-ready only**: Only keep logging that provides value in production
+
+## Unused Code
+- **Remove unused imports**: Always clean up unused import statements
+- **Checkstyle compliance**: Ensure code passes checkstyle before committing
+
+## @CCD Annotations
+- **Only when UI needed**: Only use `@CCD` annotation on fields that need to appear in the UI or case summary
+- **Session persistence**: Fields persist between events without `@CCD` annotation
+- **Don't over-annotate**: If a field is set programmatically and never shown to users, don't add `@CCD`
+
+**Example:**
+```java
+// ❌ Bad - not needed for internal field
+@CCD(label = "Legislative Country")
+private LegislativeCountry legislativeCountry;
+
+// ✅ Good - field persists without annotation
+private LegislativeCountry legislativeCountry;
+```
+
+## Line Length
+- **120 character limit**: Keep lines under 120 characters
+- **Break long lines**: Split at logical points (operators, parameters)
+- **Maintain readability**: Prioritize readability over fitting everything on one line
+
+## Commit Messages
+- **Never include AI attribution**: Don't add "Generated with Claude Code" or "Co-Authored-By: Claude"
+- **JIRA prefix**: Start commit messages with JIRA ticket number (e.g., "HDPI-2367:")
+- **Descriptive bullets**: Use bullet points to describe changes clearly
+
+**Example:**
+```
+HDPI-2367: Address peer review feedback
+
+- Fix enum formatting in EstateManagementGroundWales to single lines
+- Remove java.util package prefix from Set fields in PCSCase
+- Fix multi-line conditions for better readability
+- Improve legislative country check to use enum comparison
+```
+
+## Database Commands
+
+### Connect to Local PostgreSQL Database
+The application uses a Docker PostgreSQL instance running on port 6432.
+
+**Basic connection:**
+```bash
+docker exec cftlib-shared-database-pg-1 psql -U postgres -d pcs
+```
+
+### Connect to Preview PostgreSQL Database
+The preview environment uses Azure PostgreSQL with PR-specific databases.
+
+**Connection setup:**
+```bash
+export PATH="/opt/homebrew/opt/libpq/bin:$PATH"
+export PGHOST=pcs-preview.postgres.database.azure.com
+export PGUSER=hmcts
+export PGPORT=5432
+export PGPASSWORD=2ZQA2CpBr3h86i5H
+export PGDATABASE=pr-XXX-data-store  # Replace XXX with PR number
+psql
+```
+
+**List all PR databases:**
+```bash
+export PATH="/opt/homebrew/opt/libpq/bin:$PATH"
+export PGHOST=pcs-preview.postgres.database.azure.com
+export PGUSER=hmcts
+export PGPORT=5432
+export PGDATABASE=postgres
+export PGPASSWORD=2ZQA2CpBr3h86i5H
+psql -c "\l"
+```
+
+**Database naming pattern:**
+- `pr-XXX-data-store` - CCD data store database for PR XXX
+- `pr-XXX-definition-store` - CCD definition store database for PR XXX
+- `pr-XXX-pcs` - PCS application database for PR XXX
+
+**Execute SQL query:**
+```bash
+docker exec cftlib-shared-database-pg-1 psql -U postgres -d pcs -c "SELECT * FROM table_name;"
+```
+
+**Check migration history:**
+```bash
+docker exec cftlib-shared-database-pg-1 psql -U postgres -d pcs -c "SELECT version, description, installed_on FROM flyway_schema_history ORDER BY installed_rank DESC LIMIT 10;"
+```
+
+**Describe a table:**
+```bash
+docker exec cftlib-shared-database-pg-1 psql -U postgres -d pcs -c "\d table_name"
+```
+
+**Insert test data manually:**
+```bash
+docker exec cftlib-shared-database-pg-1 psql -U postgres -d pcs -c "INSERT INTO table_name (column1, column2) VALUES ('value1', 'value2');"
+```
+
+### Common Database Tasks
+
+**Check if migrations have run:**
+```bash
+docker exec cftlib-shared-database-pg-1 psql -U postgres -d pcs -c "SELECT version, description FROM flyway_schema_history WHERE version = '032';"
+```
+
+**Count records in test data tables:**
+```bash
+docker exec cftlib-shared-database-pg-1 psql -U postgres -d pcs -c "SELECT COUNT(*) FROM postcode_court_mapping; SELECT COUNT(*) FROM eligibility_whitelisted_epim;"
+```
+
+## Database Migrations and Test Data
+
+### Flyway Migration Rules
+- **Versioned migrations**: Files named `V###__description.sql` in `src/main/resources/db/migration/`
+- **Sequential numbering**: V001, V002, V003, etc. (never skip numbers or duplicate versions)
+- **Version conflicts**: If two migration files have the same version number, increment the version of the script owned by the current branch
+- **Repeatable migrations**: Files named `R__description.sql` (run on every application start if changed)
+- **Modifying migrations**: You can modify migrations within the same branch/JIRA before merging to master
+- **After merge to master**: Once merged, create new migrations instead of modifying existing ones
+
+**Example - Version conflict resolution:**
+```
+# If both exist:
+V031__add_language_used_column.sql (from master)
+V031__add_claimant_type_column.sql (from your branch)
+
+# Rename your branch's file:
+V031__add_claimant_type_column.sql → V032__add_claimant_type_column.sql
+```
+
+### Test Data Rules
+- **Test data migrations**: Files named `V###.#__description.sql` in `src/main/resources/db/testdata/`
+- **NOT automatically run**: Test data files (V*.1, V*.2, etc.) are NOT executed by Flyway automatically
+- **Manual execution required**: You must manually execute test data SQL using Docker commands
+- **Location**: `src/main/resources/db/testdata/`
+
+**Common test data patterns:**
+```sql
+-- Always use explicit column names
+INSERT INTO postcode_court_mapping (postcode, epims_id, legislative_country, effective_from, effective_to, audit)
+VALUES ('CF116QX', 30100, 'Wales', '2025-08-29', NULL, '{"created_by": "admin", "change_reason": "initial insert"}');
+
+-- Use CURRENT_DATE and NOW() for dynamic dates
+INSERT INTO eligibility_whitelisted_epim (epims_id, eligible_from, audit)
+VALUES (30100, CURRENT_DATE, jsonb_build_object('generated, R1, V1', to_char(NOW(), 'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"')));
+```
+
+### Database Verification Steps
+Before committing database changes:
+1. **Check migration applied**: `SELECT version FROM flyway_schema_history WHERE version = 'XXX';`
+2. **Verify table structure**: `\d table_name` to confirm columns exist
+3. **Check test data loaded**: `SELECT COUNT(*) FROM table_name;`
+4. **Test application startup**: Ensure `./gradlew bootWithCCD` runs without errors
+
+**Note:**
+- Test data migrations (V*.1, V*.2) are NOT automatically run by Flyway
+- You need to manually execute test data SQL files when needed
+- Always verify column names match the actual schema (e.g., `epims_id` not `epimid`)
+
+## Pre-Commit Checklist
+Before committing code, verify:
+- [ ] All enum values on single lines (if they fit in 120 chars)
+- [ ] Lombok annotations used consistently for simple enums
+- [ ] No fully qualified package names in field declarations
+- [ ] Field names on same line as type
+- [ ] Multi-line conditions only when necessary (>120 chars)
+- [ ] Enum comparisons use `==` not `.name().equals()`
+- [ ] British English spelling (licence, not license)
+- [ ] No debug/temporary logging statements
+- [ ] No unused imports
+- [ ] @CCD only on fields that need UI visibility
+- [ ] All lines under 120 characters
+- [ ] Checkstyle passes
+- [ ] Build succeeds
+- [ ] Commit message has JIRA prefix, no AI attribution

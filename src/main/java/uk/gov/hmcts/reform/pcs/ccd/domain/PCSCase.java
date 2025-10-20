@@ -14,7 +14,6 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseworkerReadAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenAccess;
 import uk.gov.hmcts.reform.pcs.ccd.domain.model.NoRentArrearsReasonForGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.DiscretionaryGroundWales;
-import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationContractLicenceDetailsOptionsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.EstateManagementGroundWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.MandatoryGroundWales;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
@@ -622,13 +621,6 @@ public class PCSCase {
         typeParameterOverride = "CompletionNextStep"
     )
     private CompletionNextStep completionNextStep;
-
-    @CCD(
-        label = "What type of tenancy or licence is in place?",
-        typeOverride = FieldType.FixedRadioList,
-        typeParameterOverride = "OccupationContractLicenceDetailsOptionsWales"
-    )
-    private OccupationContractLicenceDetailsOptionsWales occupationContractLicenceDetailsOptionsWales;
 
     @CCD(
         label = "Discretionary grounds",
