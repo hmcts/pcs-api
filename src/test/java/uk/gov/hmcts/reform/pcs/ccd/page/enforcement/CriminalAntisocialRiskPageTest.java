@@ -106,8 +106,7 @@ class CriminalAntisocialRiskPageTest extends BasePageTest {
 
         // Then
         assertThat(response.getErrors()).containsExactly(
-            "In 'What is their history of criminal or antisocial behaviour?', you have entered more than the "
-                + "maximum number of characters (6800)"
+            CriminalAntisocialRiskPage.buildCharacterLimitError()
         );
     }
 
@@ -129,8 +128,7 @@ class CriminalAntisocialRiskPageTest extends BasePageTest {
 
         // Then
         assertThat(response.getErrors()).containsExactly(
-            "In 'What is their history of criminal or antisocial behaviour?', you have entered more than the "
-                + "maximum number of characters (6800)"
+            CriminalAntisocialRiskPage.buildCharacterLimitError()
         );
     }
 

@@ -105,8 +105,7 @@ class ViolentAggressiveRiskPageTest extends BasePageTest {
 
         // Then
         assertThat(response.getErrors()).containsExactly(
-            "In 'How have they been violent or aggressive?', you have entered more than the "
-                + "maximum number of characters (6800)"
+            ViolentAggressiveRiskPage.buildCharacterLimitError()
         );
     }
 
@@ -128,8 +127,7 @@ class ViolentAggressiveRiskPageTest extends BasePageTest {
 
         // Then
         assertThat(response.getErrors()).containsExactly(
-            "In 'How have they been violent or aggressive?', you have entered more than the "
-                + "maximum number of characters (6800)"
+            ViolentAggressiveRiskPage.buildCharacterLimitError()
         );
     }
 

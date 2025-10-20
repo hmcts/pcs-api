@@ -41,14 +41,18 @@ public class ViolentAggressiveRiskPage implements CcdPageConfiguration {
         if (txt == null || txt.isBlank()) {
             errors.add("Enter details");
         } else if (txt.length() > 6800) {
-            errors.add("In 'How have they been violent or aggressive?', you have entered more than the "
-                + "maximum number of characters (6800)");
+            errors.add(buildCharacterLimitError());
         }
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
             .data(data)
             .errors(errors.isEmpty() ? null : errors)
             .build();
+    }
+
+    public static String buildCharacterLimitError() {
+        return "In 'How have they been violent or aggressive?', you have entered more than the "
+            + "maximum number of characters (6800)";
     }
 }
 
