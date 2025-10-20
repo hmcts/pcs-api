@@ -19,7 +19,7 @@ public class EnforcementOrder {
     )
     private SelectEnforcementType selectEnforcementType;
 
-    @CCD
+    @JsonUnwrapped
     private NameAndAddressForEviction nameAndAddressForEviction;
 
     @CCD(
@@ -36,5 +36,8 @@ public class EnforcementOrder {
     private java.util.Set<RiskCategory> enforcementRiskCategories;
 
     @JsonUnwrapped
+    @CCD(
+            label = "Risk details"
+    )
     private EnforcementRiskDetails riskDetails;
 }
