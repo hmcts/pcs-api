@@ -7,6 +7,7 @@ import au.com.dius.pact.consumer.junit5.PactConsumerTestExt;
 import au.com.dius.pact.consumer.junit5.PactTestFor;
 import au.com.dius.pact.core.model.V4Pact;
 import au.com.dius.pact.core.model.annotations.Pact;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,10 +18,10 @@ import org.springframework.cloud.openfeign.FeignClientsConfiguration;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.test.context.DynamicPropertyRegistry;
-import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.test.util.ReflectionTestUtils;
+import uk.gov.hmcts.reform.fees.client.FeesApi;
 import uk.gov.hmcts.reform.fees.client.FeesClient;
 import uk.gov.hmcts.reform.fees.client.model.FeeLookupResponseDto;
 
@@ -59,9 +60,10 @@ class FeeRegistrationLookupConsumerTest {
         this.feesClient = feesClient;
     }
 
-    @DynamicPropertySource
-    static void properties(DynamicPropertyRegistry registry, MockServer mockServer) {
-        registry.add("fees.api.url", mockServer::getUrl);
+    @BeforeEach
+    void setUp(MockServer mockServer) {
+        FeesApi feesApi = (FeesApi) ReflectionTestUtils.getField(feesClient, "feesApi");
+        ReflectionTestUtils.setField(feesApi, "url", mockServer.getUrl());
     }
 
     @Pact(provider = "feeRegister_lookUp", consumer = "pcs_api")
@@ -93,7 +95,7 @@ class FeeRegistrationLookupConsumerTest {
 
     @Test
     @PactTestFor(pactMethod = "createFeeLookupPact")
-    void shouldSuccessfullyLookupFee() {
+    void shouldSuccessfullyLookupFee(MockServer mockServer) {
         FeeLookupResponseDto response = feesClient.lookupFee(
             DEFAULT_CHANNEL,
             ISSUE_EVENT,
