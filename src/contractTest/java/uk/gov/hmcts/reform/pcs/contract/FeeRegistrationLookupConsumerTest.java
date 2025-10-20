@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.contract;
 
+import au.com.dius.pact.consumer.MockServer;
 import au.com.dius.pact.consumer.dsl.PactDslJsonBody;
 import au.com.dius.pact.consumer.dsl.PactDslWithProvider;
 import au.com.dius.pact.consumer.junit5.PactConsumerTestExt;
@@ -11,11 +12,13 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
 import org.springframework.boot.autoconfigure.http.HttpMessageConvertersAutoConfiguration;
-import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.cloud.openfeign.FeignAutoConfiguration;
 import org.springframework.cloud.openfeign.FeignClientsConfiguration;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.gov.hmcts.reform.fees.client.FeesClient;
@@ -31,15 +34,15 @@ import static org.assertj.core.api.Assertions.assertThat;
     FeignClientsConfiguration.class,
     HttpMessageConvertersAutoConfiguration.class
 })
-@EnableFeignClients(basePackages = "uk.gov.hmcts.reform.fees.client")
+@ComponentScan(basePackages = "uk.gov.hmcts.reform.fees.client")
 @TestPropertySource(properties = {
-    "fees.api.url=http://localhost:8484",
+    "fees.api.url=http://localhost:8080",
     "fees.api.service=possession claim",
     "fees.api.jurisdiction1=civil",
     "fees.api.jurisdiction2=county court"
 })
 @ExtendWith({PactConsumerTestExt.class, SpringExtension.class})
-@PactTestFor(providerName = "feeRegister_lookUp", port = "8484")
+@PactTestFor(providerName = "feeRegister_lookUp")
 class FeeRegistrationLookupConsumerTest {
 
     private final FeesClient feesClient;
@@ -54,6 +57,11 @@ class FeeRegistrationLookupConsumerTest {
     @Autowired
     FeeRegistrationLookupConsumerTest(FeesClient feesClient) {
         this.feesClient = feesClient;
+    }
+
+    @DynamicPropertySource
+    static void properties(DynamicPropertyRegistry registry, MockServer mockServer) {
+        registry.add("fees.api.url", mockServer::getUrl);
     }
 
     @Pact(provider = "feeRegister_lookUp", consumer = "pcs_api")
