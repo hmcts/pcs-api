@@ -16,7 +16,7 @@ public class LivingInThePropertyPage implements CcdPageConfiguration {
             .pageLabel("Everyone living at the property")
             .label("livingInThePropertyPage-content", "---")
             .label(
-                "livingInThePropertyPage", """
+                "livingInThePropertyPage-information-text", """
                     <p>The bailiff needs to know if anyone at the property poses a risk.</p>
                     <p>For example if they:</p>
                       <ul>
@@ -31,7 +31,7 @@ public class LivingInThePropertyPage implements CcdPageConfiguration {
                     """
             )
             .complex(PCSCase::getEnforcementOrder)
-            .mandatory(EnforcementOrder::getConfirmLivingAtProperty)
+            .mandatory(EnforcementOrder::getAnyRiskToBailiff)
             .label("enforcementLivingInThePropertyPage-details-save-and-return", SAVE_AND_RETURN);
     }
 }

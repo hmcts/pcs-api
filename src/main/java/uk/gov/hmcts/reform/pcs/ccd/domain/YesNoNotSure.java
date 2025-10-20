@@ -7,7 +7,7 @@ import uk.gov.hmcts.ccd.sdk.api.HasLabel;
 
 @AllArgsConstructor
 @Getter
-public enum VerticalChoice implements HasLabel {
+public enum YesNoNotSure implements HasLabel {
 
     YES("Yes"),
     NO("No"),

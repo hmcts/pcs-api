@@ -47,7 +47,7 @@ public class EnforcementOrderEvent implements CCDConfig<PCSCase, State, UserRole
         PageBuilder pageBuilder = new PageBuilder(eventBuilder);
         pageBuilder
                 .add(new EnforcementApplicationPage())
-                .add(new NameAndAddressForEvictionPage())   
+                .add(new NameAndAddressForEvictionPage())
                 .add(new LivingInThePropertyPage())
                 .add(new EvictionDelayWarningPage())
                 .add(new EvictionRisksPosedPage())
