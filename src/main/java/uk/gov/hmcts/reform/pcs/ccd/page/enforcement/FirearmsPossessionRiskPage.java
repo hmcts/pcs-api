@@ -9,6 +9,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.EnforcementOrder;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.EnforcementRiskDetails;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,7 +25,8 @@ public class FirearmsPossessionRiskPage implements CcdPageConfiguration {
             .showCondition("enforcementRiskCategoriesCONTAINS\"FIREARMS_POSSESSION\"")
             .label("evictionFirearmsPossessionDetails-line-separator", "---")
             .complex(PCSCase::getEnforcementOrder)
-            .mandatory(EnforcementOrder::getEnforcementFirearmsDetails)
+            .complex(EnforcementOrder::getRiskDetails)
+            .mandatory(EnforcementRiskDetails::getEnforcementFirearmsDetails)
             .label("evictionFirearmsPossessionDetails-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
 
@@ -33,8 +35,8 @@ public class FirearmsPossessionRiskPage implements CcdPageConfiguration {
         PCSCase data = details.getData();
         List<String> errors = new ArrayList<>();
 
-        String txt = data.getEnforcementOrder() != null
-            ? data.getEnforcementOrder().getEnforcementFirearmsDetails()
+        String txt = data.getEnforcementOrder() != null && data.getEnforcementOrder().getRiskDetails() != null
+            ? data.getEnforcementOrder().getRiskDetails().getEnforcementFirearmsDetails()
             : null;
         if (txt == null || txt.isBlank()) {
             errors.add("Enter details");

@@ -31,7 +31,9 @@ class ViolentAggressiveRiskPageTest extends BasePageTest {
         PCSCase caseData = PCSCase.builder()
             .enforcementOrder(EnforcementOrder.builder()
                 .enforcementRiskCategories(Set.of(RiskCategory.VIOLENT_OR_AGGRESSIVE))
-                .enforcementViolentDetails(null)
+                .riskDetails(uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.EnforcementRiskDetails.builder()
+                    .enforcementViolentDetails(null)
+                    .build())
                 .build())
             .build();
 
@@ -48,7 +50,9 @@ class ViolentAggressiveRiskPageTest extends BasePageTest {
         PCSCase caseData = PCSCase.builder()
             .enforcementOrder(EnforcementOrder.builder()
                 .enforcementRiskCategories(Set.of(RiskCategory.VIOLENT_OR_AGGRESSIVE))
-                .enforcementViolentDetails("   ")
+                .riskDetails(uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.EnforcementRiskDetails.builder()
+                    .enforcementViolentDetails("   ")
+                    .build())
                 .build())
             .build();
 
@@ -65,7 +69,9 @@ class ViolentAggressiveRiskPageTest extends BasePageTest {
         PCSCase caseData = PCSCase.builder()
             .enforcementOrder(EnforcementOrder.builder()
                 .enforcementRiskCategories(Set.of(RiskCategory.VIOLENT_OR_AGGRESSIVE))
-                .enforcementViolentDetails("")
+                .riskDetails(uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.EnforcementRiskDetails.builder()
+                    .enforcementViolentDetails("")
+                    .build())
                 .build())
             .build();
 
@@ -83,7 +89,9 @@ class ViolentAggressiveRiskPageTest extends BasePageTest {
         PCSCase caseData = PCSCase.builder()
             .enforcementOrder(EnforcementOrder.builder()
                 .enforcementRiskCategories(Set.of(RiskCategory.VIOLENT_OR_AGGRESSIVE))
-                .enforcementViolentDetails(text)
+                .riskDetails(uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.EnforcementRiskDetails.builder()
+                    .enforcementViolentDetails(text)
+                    .build())
                 .build())
             .build();
 
@@ -92,7 +100,8 @@ class ViolentAggressiveRiskPageTest extends BasePageTest {
 
         // Then
         assertThat(response.getErrors()).isNull();
-        assertThat(response.getData().getEnforcementOrder().getEnforcementViolentDetails()).isEqualTo(text);
+        assertThat(response.getData().getEnforcementOrder()
+            .getRiskDetails().getEnforcementViolentDetails()).isEqualTo(text);
     }
 
     @Test
@@ -102,7 +111,9 @@ class ViolentAggressiveRiskPageTest extends BasePageTest {
         PCSCase caseData = PCSCase.builder()
             .enforcementOrder(EnforcementOrder.builder()
                 .enforcementRiskCategories(Set.of(RiskCategory.VIOLENT_OR_AGGRESSIVE))
-                .enforcementViolentDetails(text)
+                .riskDetails(uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.EnforcementRiskDetails.builder()
+                    .enforcementViolentDetails(text)
+                    .build())
                 .build())
             .build();
 
@@ -111,7 +122,8 @@ class ViolentAggressiveRiskPageTest extends BasePageTest {
 
         // Then
         assertThat(response.getErrors()).isNull();
-        assertThat(response.getData().getEnforcementOrder().getEnforcementViolentDetails()).isEqualTo(text);
+        assertThat(response.getData().getEnforcementOrder()
+            .getRiskDetails().getEnforcementViolentDetails()).isEqualTo(text);
     }
 
     @Test
@@ -121,7 +133,9 @@ class ViolentAggressiveRiskPageTest extends BasePageTest {
         PCSCase caseData = PCSCase.builder()
             .enforcementOrder(EnforcementOrder.builder()
                 .enforcementRiskCategories(Set.of(RiskCategory.VIOLENT_OR_AGGRESSIVE))
-                .enforcementViolentDetails(longText)
+                .riskDetails(uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.EnforcementRiskDetails.builder()
+                    .enforcementViolentDetails(longText)
+                    .build())
                 .build())
             .build();
 
@@ -142,7 +156,9 @@ class ViolentAggressiveRiskPageTest extends BasePageTest {
         PCSCase caseData = PCSCase.builder()
             .enforcementOrder(EnforcementOrder.builder()
                 .enforcementRiskCategories(Set.of(RiskCategory.VIOLENT_OR_AGGRESSIVE))
-                .enforcementViolentDetails(longText)
+                .riskDetails(uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.EnforcementRiskDetails.builder()
+                    .enforcementViolentDetails(longText)
+                    .build())
                 .build())
             .build();
 
@@ -163,9 +179,11 @@ class ViolentAggressiveRiskPageTest extends BasePageTest {
         PCSCase caseData = PCSCase.builder()
             .enforcementOrder(EnforcementOrder.builder()
                 .enforcementRiskCategories(Set.of(RiskCategory.VIOLENT_OR_AGGRESSIVE))
-                .enforcementViolentDetails(validText)
-                .enforcementFirearmsDetails("Some firearms text")
-                .enforcementCriminalDetails("Some criminal text")
+                .riskDetails(uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.EnforcementRiskDetails.builder()
+                    .enforcementViolentDetails(validText)
+                    .enforcementFirearmsDetails("Some firearms text")
+                    .enforcementCriminalDetails("Some criminal text")
+                    .build())
                 .build())
             .build();
 
@@ -174,11 +192,14 @@ class ViolentAggressiveRiskPageTest extends BasePageTest {
 
         // Then
         assertThat(response.getErrors()).isNull();
-        assertThat(response.getData().getEnforcementOrder().getEnforcementViolentDetails())
+        assertThat(response.getData().getEnforcementOrder()
+            .getRiskDetails().getEnforcementViolentDetails())
             .isEqualTo(validText);
-        assertThat(response.getData().getEnforcementOrder().getEnforcementFirearmsDetails())
+        assertThat(response.getData().getEnforcementOrder()
+            .getRiskDetails().getEnforcementFirearmsDetails())
             .isEqualTo("Some firearms text");
-        assertThat(response.getData().getEnforcementOrder().getEnforcementCriminalDetails())
+        assertThat(response.getData().getEnforcementOrder()
+            .getRiskDetails().getEnforcementCriminalDetails())
             .isEqualTo("Some criminal text");
     }
 

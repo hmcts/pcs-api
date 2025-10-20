@@ -8,6 +8,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.EnforcementOrder;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.EnforcementRiskDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RiskCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
@@ -81,8 +82,10 @@ class EvictionRisksPosedPageTest extends BasePageTest {
         PCSCase caseData = PCSCase.builder()
             .enforcementOrder(EnforcementOrder.builder()
                 .enforcementRiskCategories(Set.of(RiskCategory.FIREARMS_POSSESSION))
-                .enforcementViolentDetails("Previous violent text")
-                .enforcementFirearmsDetails("Firearms text")
+                .riskDetails(EnforcementRiskDetails.builder()
+                    .enforcementViolentDetails("Previous violent text")
+                    .enforcementFirearmsDetails("Firearms text")
+                    .build())
                 .build())
             .build();
 
@@ -90,8 +93,9 @@ class EvictionRisksPosedPageTest extends BasePageTest {
         AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
 
         // Then
-        assertThat(response.getData().getEnforcementOrder().getEnforcementViolentDetails()).isNull();
-        assertThat(response.getData().getEnforcementOrder().getEnforcementFirearmsDetails()).isEqualTo("Firearms text");
+        assertThat(response.getData().getEnforcementOrder().getRiskDetails().getEnforcementViolentDetails()).isNull();
+        assertThat(response.getData().getEnforcementOrder()
+            .getRiskDetails().getEnforcementFirearmsDetails()).isEqualTo("Firearms text");
     }
 
     @Test
@@ -100,8 +104,10 @@ class EvictionRisksPosedPageTest extends BasePageTest {
         PCSCase caseData = PCSCase.builder()
             .enforcementOrder(EnforcementOrder.builder()
                 .enforcementRiskCategories(Set.of(RiskCategory.VIOLENT_OR_AGGRESSIVE))
-                .enforcementViolentDetails("Violent text")
-                .enforcementFirearmsDetails("Previous firearms text")
+                .riskDetails(EnforcementRiskDetails.builder()
+                    .enforcementViolentDetails("Violent text")
+                    .enforcementFirearmsDetails("Previous firearms text")
+                    .build())
                 .build())
             .build();
 
@@ -109,8 +115,9 @@ class EvictionRisksPosedPageTest extends BasePageTest {
         AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
 
         // Then
-        assertThat(response.getData().getEnforcementOrder().getEnforcementViolentDetails()).isEqualTo("Violent text");
-        assertThat(response.getData().getEnforcementOrder().getEnforcementFirearmsDetails()).isNull();
+        assertThat(response.getData().getEnforcementOrder()
+            .getRiskDetails().getEnforcementViolentDetails()).isEqualTo("Violent text");
+        assertThat(response.getData().getEnforcementOrder().getRiskDetails().getEnforcementFirearmsDetails()).isNull();
     }
 
     @Test
@@ -119,8 +126,10 @@ class EvictionRisksPosedPageTest extends BasePageTest {
         PCSCase caseData = PCSCase.builder()
             .enforcementOrder(EnforcementOrder.builder()
                 .enforcementRiskCategories(Set.of(RiskCategory.VIOLENT_OR_AGGRESSIVE))
-                .enforcementViolentDetails("Violent text")
-                .enforcementCriminalDetails("Previous criminal text")
+                .riskDetails(EnforcementRiskDetails.builder()
+                    .enforcementViolentDetails("Violent text")
+                    .enforcementCriminalDetails("Previous criminal text")
+                    .build())
                 .build())
             .build();
 
@@ -128,8 +137,10 @@ class EvictionRisksPosedPageTest extends BasePageTest {
         AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
 
         // Then
-        assertThat(response.getData().getEnforcementOrder().getEnforcementViolentDetails()).isEqualTo("Violent text");
-        assertThat(response.getData().getEnforcementOrder().getEnforcementCriminalDetails()).isNull();
+        assertThat(response.getData().getEnforcementOrder()
+            .getRiskDetails().getEnforcementViolentDetails()).isEqualTo("Violent text");
+        assertThat(response.getData().getEnforcementOrder()
+            .getRiskDetails().getEnforcementCriminalDetails()).isNull();
     }
 
     @Test
@@ -141,9 +152,11 @@ class EvictionRisksPosedPageTest extends BasePageTest {
                     RiskCategory.FIREARMS_POSSESSION,
                     RiskCategory.CRIMINAL_OR_ANTISOCIAL
                 ))
-                .enforcementViolentDetails("Should be cleared")
-                .enforcementFirearmsDetails("Should be preserved")
-                .enforcementCriminalDetails("Should be preserved")
+                .riskDetails(EnforcementRiskDetails.builder()
+                    .enforcementViolentDetails("Should be cleared")
+                    .enforcementFirearmsDetails("Should be preserved")
+                    .enforcementCriminalDetails("Should be preserved")
+                    .build())
                 .build())
             .build();
 
@@ -151,10 +164,12 @@ class EvictionRisksPosedPageTest extends BasePageTest {
         AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
 
         // Then
-        assertThat(response.getData().getEnforcementOrder().getEnforcementViolentDetails()).isNull();
-        assertThat(response.getData().getEnforcementOrder().getEnforcementFirearmsDetails())
+        assertThat(response.getData().getEnforcementOrder().getRiskDetails().getEnforcementViolentDetails()).isNull();
+        assertThat(response.getData().getEnforcementOrder()
+            .getRiskDetails().getEnforcementFirearmsDetails())
             .isEqualTo("Should be preserved");
-        assertThat(response.getData().getEnforcementOrder().getEnforcementCriminalDetails())
+        assertThat(response.getData().getEnforcementOrder()
+            .getRiskDetails().getEnforcementCriminalDetails())
             .isEqualTo("Should be preserved");
     }
 

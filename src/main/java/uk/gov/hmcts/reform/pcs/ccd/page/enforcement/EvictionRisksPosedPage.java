@@ -41,13 +41,19 @@ public class EvictionRisksPosedPage implements CcdPageConfiguration {
 
         // Clear details if their categories were deselected
         if (!data.getEnforcementOrder().getEnforcementRiskCategories().contains(RiskCategory.VIOLENT_OR_AGGRESSIVE)) {
-            data.getEnforcementOrder().setEnforcementViolentDetails(null);
+            if (data.getEnforcementOrder().getRiskDetails() != null) {
+                data.getEnforcementOrder().getRiskDetails().setEnforcementViolentDetails(null);
+            }
         }
         if (!data.getEnforcementOrder().getEnforcementRiskCategories().contains(RiskCategory.FIREARMS_POSSESSION)) {
-            data.getEnforcementOrder().setEnforcementFirearmsDetails(null);
+            if (data.getEnforcementOrder().getRiskDetails() != null) {
+                data.getEnforcementOrder().getRiskDetails().setEnforcementFirearmsDetails(null);
+            }
         }
         if (!data.getEnforcementOrder().getEnforcementRiskCategories().contains(RiskCategory.CRIMINAL_OR_ANTISOCIAL)) {
-            data.getEnforcementOrder().setEnforcementCriminalDetails(null);
+            if (data.getEnforcementOrder().getRiskDetails() != null) {
+                data.getEnforcementOrder().getRiskDetails().setEnforcementCriminalDetails(null);
+            }
         }
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()

@@ -35,26 +35,7 @@ public class EnforcementOrder {
     private java.util.Set<RiskCategory> enforcementRiskCategories;
 
     @CCD(
-        label = "How have they been violent or aggressive?",
-        hint = "For example, include the crime reference number if you have called police to the property or "
-            + "reported an incident. You can enter up to 6,800 characters.",
-        typeOverride = uk.gov.hmcts.ccd.sdk.type.FieldType.TextArea
+        label = "Risk details"
     )
-    private String enforcementViolentDetails;
-
-    @CCD(
-        label = "What is their history of firearm possession?",
-        hint = "For example, include the crime reference number if you have called police to the property or "
-            + "reported an incident. You can enter up to 6,800 characters.",
-        typeOverride = uk.gov.hmcts.ccd.sdk.type.FieldType.TextArea
-    )
-    private String enforcementFirearmsDetails;
-
-    @CCD(
-        label = "What is their history of criminal or antisocial behaviour?",
-        hint = "For example, include the crime reference number if you have called police to the property or "
-            + "reported an incident. You can enter up to 6,800 characters.",
-        typeOverride = uk.gov.hmcts.ccd.sdk.type.FieldType.TextArea
-    )
-    private String enforcementCriminalDetails;
+    private EnforcementRiskDetails riskDetails;
 }

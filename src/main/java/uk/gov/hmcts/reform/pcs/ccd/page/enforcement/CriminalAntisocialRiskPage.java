@@ -9,6 +9,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.EnforcementOrder;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.EnforcementRiskDetails;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,7 +25,8 @@ public class CriminalAntisocialRiskPage implements CcdPageConfiguration {
             .showCondition("enforcementRiskCategoriesCONTAINS\"CRIMINAL_OR_ANTISOCIAL\"")
             .label("evictionCriminalAntisocialDetails-line-separator", "---")
             .complex(PCSCase::getEnforcementOrder)
-            .mandatory(EnforcementOrder::getEnforcementCriminalDetails)
+            .complex(EnforcementOrder::getRiskDetails)
+            .mandatory(EnforcementRiskDetails::getEnforcementCriminalDetails)
             .label("evictionCriminalAntisocialDetails-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
 
@@ -33,8 +35,8 @@ public class CriminalAntisocialRiskPage implements CcdPageConfiguration {
         PCSCase data = details.getData();
         List<String> errors = new ArrayList<>();
 
-        String txt = data.getEnforcementOrder() != null
-            ? data.getEnforcementOrder().getEnforcementCriminalDetails()
+        String txt = data.getEnforcementOrder() != null && data.getEnforcementOrder().getRiskDetails() != null
+            ? data.getEnforcementOrder().getRiskDetails().getEnforcementCriminalDetails()
             : null;
         if (txt == null || txt.isBlank()) {
             errors.add("Enter details");

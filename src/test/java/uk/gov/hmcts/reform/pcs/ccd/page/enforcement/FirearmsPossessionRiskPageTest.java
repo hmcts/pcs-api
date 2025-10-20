@@ -8,6 +8,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.EnforcementOrder;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.EnforcementRiskDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RiskCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
@@ -31,7 +32,9 @@ class FirearmsPossessionRiskPageTest extends BasePageTest {
         PCSCase caseData = PCSCase.builder()
             .enforcementOrder(EnforcementOrder.builder()
                 .enforcementRiskCategories(Set.of(RiskCategory.FIREARMS_POSSESSION))
-                .enforcementFirearmsDetails(null)
+                .riskDetails(EnforcementRiskDetails.builder()
+                    .enforcementFirearmsDetails(null)
+                    .build())
                 .build())
             .build();
 
@@ -48,7 +51,9 @@ class FirearmsPossessionRiskPageTest extends BasePageTest {
         PCSCase caseData = PCSCase.builder()
             .enforcementOrder(EnforcementOrder.builder()
                 .enforcementRiskCategories(Set.of(RiskCategory.FIREARMS_POSSESSION))
-                .enforcementFirearmsDetails("   ")
+                .riskDetails(EnforcementRiskDetails.builder()
+                    .enforcementFirearmsDetails("   ")
+                    .build())
                 .build())
             .build();
 
@@ -65,7 +70,9 @@ class FirearmsPossessionRiskPageTest extends BasePageTest {
         PCSCase caseData = PCSCase.builder()
             .enforcementOrder(EnforcementOrder.builder()
                 .enforcementRiskCategories(Set.of(RiskCategory.FIREARMS_POSSESSION))
-                .enforcementFirearmsDetails("")
+                .riskDetails(EnforcementRiskDetails.builder()
+                    .enforcementFirearmsDetails("")
+                    .build())
                 .build())
             .build();
 
@@ -83,7 +90,9 @@ class FirearmsPossessionRiskPageTest extends BasePageTest {
         PCSCase caseData = PCSCase.builder()
             .enforcementOrder(EnforcementOrder.builder()
                 .enforcementRiskCategories(Set.of(RiskCategory.FIREARMS_POSSESSION))
-                .enforcementFirearmsDetails(text)
+                .riskDetails(EnforcementRiskDetails.builder()
+                    .enforcementFirearmsDetails(text)
+                    .build())
                 .build())
             .build();
 
@@ -92,7 +101,8 @@ class FirearmsPossessionRiskPageTest extends BasePageTest {
 
         // Then
         assertThat(response.getErrors()).isNull();
-        assertThat(response.getData().getEnforcementOrder().getEnforcementFirearmsDetails()).isEqualTo(text);
+        assertThat(response.getData().getEnforcementOrder()
+            .getRiskDetails().getEnforcementFirearmsDetails()).isEqualTo(text);
     }
 
     @Test
@@ -102,7 +112,9 @@ class FirearmsPossessionRiskPageTest extends BasePageTest {
         PCSCase caseData = PCSCase.builder()
             .enforcementOrder(EnforcementOrder.builder()
                 .enforcementRiskCategories(Set.of(RiskCategory.FIREARMS_POSSESSION))
-                .enforcementFirearmsDetails(text)
+                .riskDetails(EnforcementRiskDetails.builder()
+                    .enforcementFirearmsDetails(text)
+                    .build())
                 .build())
             .build();
 
@@ -111,7 +123,8 @@ class FirearmsPossessionRiskPageTest extends BasePageTest {
 
         // Then
         assertThat(response.getErrors()).isNull();
-        assertThat(response.getData().getEnforcementOrder().getEnforcementFirearmsDetails()).isEqualTo(text);
+        assertThat(response.getData().getEnforcementOrder()
+            .getRiskDetails().getEnforcementFirearmsDetails()).isEqualTo(text);
     }
 
     @Test
@@ -121,7 +134,9 @@ class FirearmsPossessionRiskPageTest extends BasePageTest {
         PCSCase caseData = PCSCase.builder()
             .enforcementOrder(EnforcementOrder.builder()
                 .enforcementRiskCategories(Set.of(RiskCategory.FIREARMS_POSSESSION))
-                .enforcementFirearmsDetails(longText)
+                .riskDetails(EnforcementRiskDetails.builder()
+                    .enforcementFirearmsDetails(longText)
+                    .build())
                 .build())
             .build();
 
@@ -142,7 +157,9 @@ class FirearmsPossessionRiskPageTest extends BasePageTest {
         PCSCase caseData = PCSCase.builder()
             .enforcementOrder(EnforcementOrder.builder()
                 .enforcementRiskCategories(Set.of(RiskCategory.FIREARMS_POSSESSION))
-                .enforcementFirearmsDetails(longText)
+                .riskDetails(EnforcementRiskDetails.builder()
+                    .enforcementFirearmsDetails(longText)
+                    .build())
                 .build())
             .build();
 
@@ -163,9 +180,11 @@ class FirearmsPossessionRiskPageTest extends BasePageTest {
         PCSCase caseData = PCSCase.builder()
             .enforcementOrder(EnforcementOrder.builder()
                 .enforcementRiskCategories(Set.of(RiskCategory.FIREARMS_POSSESSION))
-                .enforcementFirearmsDetails(validText)
-                .enforcementViolentDetails("Some violent text")
-                .enforcementCriminalDetails("Some criminal text")
+                .riskDetails(EnforcementRiskDetails.builder()
+                    .enforcementFirearmsDetails(validText)
+                    .enforcementViolentDetails("Some violent text")
+                    .enforcementCriminalDetails("Some criminal text")
+                    .build())
                 .build())
             .build();
 
@@ -174,11 +193,14 @@ class FirearmsPossessionRiskPageTest extends BasePageTest {
 
         // Then
         assertThat(response.getErrors()).isNull();
-        assertThat(response.getData().getEnforcementOrder().getEnforcementFirearmsDetails())
+        assertThat(response.getData().getEnforcementOrder()
+            .getRiskDetails().getEnforcementFirearmsDetails())
             .isEqualTo(validText);
-        assertThat(response.getData().getEnforcementOrder().getEnforcementViolentDetails())
+        assertThat(response.getData().getEnforcementOrder()
+            .getRiskDetails().getEnforcementViolentDetails())
             .isEqualTo("Some violent text");
-        assertThat(response.getData().getEnforcementOrder().getEnforcementCriminalDetails())
+        assertThat(response.getData().getEnforcementOrder()
+            .getRiskDetails().getEnforcementCriminalDetails())
             .isEqualTo("Some criminal text");
     }
 
