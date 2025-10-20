@@ -40,7 +40,7 @@ public class FirearmsPossessionRiskPage implements CcdPageConfiguration {
             errors.add("Enter details");
         } else if (txt.length() > 6800) {
             errors.add("In 'What is their history of firearm possession?', you have entered more than the "
-                + "maximum number of characters (6800)");
+                + "maximum number of characters (6,800)");
         }
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()

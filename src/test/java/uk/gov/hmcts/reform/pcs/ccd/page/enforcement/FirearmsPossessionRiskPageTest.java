@@ -131,7 +131,7 @@ class FirearmsPossessionRiskPageTest extends BasePageTest {
         // Then
         assertThat(response.getErrors()).containsExactly(
             "In 'What is their history of firearm possession?', you have entered more than the "
-                + "maximum number of characters (6800)"
+                + "maximum number of characters (6,800)"
         );
     }
 
@@ -152,7 +152,7 @@ class FirearmsPossessionRiskPageTest extends BasePageTest {
         // Then
         assertThat(response.getErrors()).containsExactly(
             "In 'What is their history of firearm possession?', you have entered more than the "
-                + "maximum number of characters (6800)"
+                + "maximum number of characters (6,800)"
         );
     }
 
