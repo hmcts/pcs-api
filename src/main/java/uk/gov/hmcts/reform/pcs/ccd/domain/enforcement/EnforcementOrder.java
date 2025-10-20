@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.domain.enforcement;
 
+import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import lombok.Builder;
 import lombok.Data;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
@@ -33,6 +34,7 @@ public class EnforcementOrder {
     )
     private java.util.Set<RiskCategory> enforcementRiskCategories;
 
+    @JsonUnwrapped
     @CCD(
         label = "Risk details"
     )
