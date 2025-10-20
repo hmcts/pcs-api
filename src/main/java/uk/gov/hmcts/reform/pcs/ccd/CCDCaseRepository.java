@@ -3,7 +3,7 @@ package uk.gov.hmcts.reform.pcs.ccd;
 import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Component;
-import uk.gov.hmcts.ccd.sdk.DecentralisedCaseRepository;
+import uk.gov.hmcts.ccd.sdk.CaseView;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
@@ -36,7 +36,7 @@ import java.util.stream.Collectors;
  */
 @Component
 @AllArgsConstructor
-public class CCDCaseRepository extends DecentralisedCaseRepository<PCSCase> {
+public class CCDCaseRepository implements CaseView<PCSCase> {
 
     private final PcsCaseRepository pcsCaseRepository;
     private final SecurityContextService securityContextService;
@@ -75,13 +75,13 @@ public class CCDCaseRepository extends DecentralisedCaseRepository<PCSCase> {
             .propertyAddress(convertAddress(pcsCaseEntity.getPropertyAddress()))
             .legislativeCountry(pcsCaseEntity.getLegislativeCountry())
             .caseManagementLocation(pcsCaseEntity.getCaseManagementLocation())
-            .claimantType(pcsCaseEntity.getClaimantType() != null 
+            .claimantType(pcsCaseEntity.getClaimantType() != null
                 ? DynamicStringList.builder()
                     .value(DynamicStringListElement.builder()
                         .code(pcsCaseEntity.getClaimantType().name())
                         .label(pcsCaseEntity.getClaimantType().getLabel())
                         .build())
-                    .build() 
+                    .build()
                 : null)
             .preActionProtocolCompleted(pcsCaseEntity.getPreActionProtocolCompleted() != null
                 ? VerticalYesNo.from(pcsCaseEntity.getPreActionProtocolCompleted())
