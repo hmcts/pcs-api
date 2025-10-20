@@ -7,6 +7,7 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RiskCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
@@ -28,8 +29,10 @@ class EvictionViolentAggressiveDetailsPageTest extends BasePageTest {
     void shouldRequireText() {
         // Given
         PCSCase caseData = PCSCase.builder()
-            .enforcementRiskCategories(Set.of(RiskCategory.VIOLENT_OR_AGGRESSIVE))
-            .enforcementViolentDetails(null)
+            .enforcementOrder(EnforcementOrder.builder()
+                .enforcementRiskCategories(Set.of(RiskCategory.VIOLENT_OR_AGGRESSIVE))
+                .enforcementViolentDetails(null)
+                .build())
             .build();
 
         // When
@@ -43,8 +46,10 @@ class EvictionViolentAggressiveDetailsPageTest extends BasePageTest {
     void shouldRequireTextWhenBlank() {
         // Given
         PCSCase caseData = PCSCase.builder()
-            .enforcementRiskCategories(Set.of(RiskCategory.VIOLENT_OR_AGGRESSIVE))
-            .enforcementViolentDetails("   ")
+            .enforcementOrder(EnforcementOrder.builder()
+                .enforcementRiskCategories(Set.of(RiskCategory.VIOLENT_OR_AGGRESSIVE))
+                .enforcementViolentDetails("   ")
+                .build())
             .build();
 
         // When
@@ -58,8 +63,10 @@ class EvictionViolentAggressiveDetailsPageTest extends BasePageTest {
     void shouldRequireTextWhenEmpty() {
         // Given
         PCSCase caseData = PCSCase.builder()
-            .enforcementRiskCategories(Set.of(RiskCategory.VIOLENT_OR_AGGRESSIVE))
-            .enforcementViolentDetails("")
+            .enforcementOrder(EnforcementOrder.builder()
+                .enforcementRiskCategories(Set.of(RiskCategory.VIOLENT_OR_AGGRESSIVE))
+                .enforcementViolentDetails("")
+                .build())
             .build();
 
         // When
@@ -74,8 +81,10 @@ class EvictionViolentAggressiveDetailsPageTest extends BasePageTest {
     void shouldAcceptValidText(String text, String description) {
         // Given
         PCSCase caseData = PCSCase.builder()
-            .enforcementRiskCategories(Set.of(RiskCategory.VIOLENT_OR_AGGRESSIVE))
-            .enforcementViolentDetails(text)
+            .enforcementOrder(EnforcementOrder.builder()
+                .enforcementRiskCategories(Set.of(RiskCategory.VIOLENT_OR_AGGRESSIVE))
+                .enforcementViolentDetails(text)
+                .build())
             .build();
 
         // When
@@ -83,7 +92,7 @@ class EvictionViolentAggressiveDetailsPageTest extends BasePageTest {
 
         // Then
         assertThat(response.getErrors()).isNull();
-        assertThat(response.getData().getEnforcementViolentDetails()).isEqualTo(text);
+        assertThat(response.getData().getEnforcementOrder().getEnforcementViolentDetails()).isEqualTo(text);
     }
 
     @Test
@@ -91,8 +100,10 @@ class EvictionViolentAggressiveDetailsPageTest extends BasePageTest {
         // Given
         String text = "a".repeat(6800);
         PCSCase caseData = PCSCase.builder()
-            .enforcementRiskCategories(Set.of(RiskCategory.VIOLENT_OR_AGGRESSIVE))
-            .enforcementViolentDetails(text)
+            .enforcementOrder(EnforcementOrder.builder()
+                .enforcementRiskCategories(Set.of(RiskCategory.VIOLENT_OR_AGGRESSIVE))
+                .enforcementViolentDetails(text)
+                .build())
             .build();
 
         // When
@@ -100,7 +111,7 @@ class EvictionViolentAggressiveDetailsPageTest extends BasePageTest {
 
         // Then
         assertThat(response.getErrors()).isNull();
-        assertThat(response.getData().getEnforcementViolentDetails()).isEqualTo(text);
+        assertThat(response.getData().getEnforcementOrder().getEnforcementViolentDetails()).isEqualTo(text);
     }
 
     @Test
@@ -108,8 +119,10 @@ class EvictionViolentAggressiveDetailsPageTest extends BasePageTest {
         // Given
         String longText = "a".repeat(6801);
         PCSCase caseData = PCSCase.builder()
-            .enforcementRiskCategories(Set.of(RiskCategory.VIOLENT_OR_AGGRESSIVE))
-            .enforcementViolentDetails(longText)
+            .enforcementOrder(EnforcementOrder.builder()
+                .enforcementRiskCategories(Set.of(RiskCategory.VIOLENT_OR_AGGRESSIVE))
+                .enforcementViolentDetails(longText)
+                .build())
             .build();
 
         // When
@@ -127,8 +140,10 @@ class EvictionViolentAggressiveDetailsPageTest extends BasePageTest {
         // Given
         String longText = "a".repeat(7000);
         PCSCase caseData = PCSCase.builder()
-            .enforcementRiskCategories(Set.of(RiskCategory.VIOLENT_OR_AGGRESSIVE))
-            .enforcementViolentDetails(longText)
+            .enforcementOrder(EnforcementOrder.builder()
+                .enforcementRiskCategories(Set.of(RiskCategory.VIOLENT_OR_AGGRESSIVE))
+                .enforcementViolentDetails(longText)
+                .build())
             .build();
 
         // When
@@ -146,10 +161,12 @@ class EvictionViolentAggressiveDetailsPageTest extends BasePageTest {
         // Given
         String validText = "The defendant has been violent on multiple occasions";
         PCSCase caseData = PCSCase.builder()
-            .enforcementRiskCategories(Set.of(RiskCategory.VIOLENT_OR_AGGRESSIVE))
-            .enforcementViolentDetails(validText)
-            .enforcementFirearmsDetails("Some firearms text")
-            .enforcementCriminalDetails("Some criminal text")
+            .enforcementOrder(EnforcementOrder.builder()
+                .enforcementRiskCategories(Set.of(RiskCategory.VIOLENT_OR_AGGRESSIVE))
+                .enforcementViolentDetails(validText)
+                .enforcementFirearmsDetails("Some firearms text")
+                .enforcementCriminalDetails("Some criminal text")
+                .build())
             .build();
 
         // When
@@ -157,9 +174,12 @@ class EvictionViolentAggressiveDetailsPageTest extends BasePageTest {
 
         // Then
         assertThat(response.getErrors()).isNull();
-        assertThat(response.getData().getEnforcementViolentDetails()).isEqualTo(validText);
-        assertThat(response.getData().getEnforcementFirearmsDetails()).isEqualTo("Some firearms text");
-        assertThat(response.getData().getEnforcementCriminalDetails()).isEqualTo("Some criminal text");
+        assertThat(response.getData().getEnforcementOrder().getEnforcementViolentDetails())
+            .isEqualTo(validText);
+        assertThat(response.getData().getEnforcementOrder().getEnforcementFirearmsDetails())
+            .isEqualTo("Some firearms text");
+        assertThat(response.getData().getEnforcementOrder().getEnforcementCriminalDetails())
+            .isEqualTo("Some criminal text");
     }
 
     private static Stream<Arguments> validTextScenarios() {

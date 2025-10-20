@@ -8,6 +8,7 @@ import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.EnforcementOrder;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,7 +23,8 @@ public class EvictionFirearmsPossessionDetailsPage implements CcdPageConfigurati
             .pageLabel("Their history of firearm possession")
             .showCondition("enforcementRiskCategoriesCONTAINS\"FIREARMS_POSSESSION\"")
             .label("evictionFirearmsPossessionDetails-line-separator", "---")
-            .mandatory(PCSCase::getEnforcementFirearmsDetails)
+            .complex(PCSCase::getEnforcementOrder)
+            .mandatory(EnforcementOrder::getEnforcementFirearmsDetails)
             .label("evictionFirearmsPossessionDetails-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
 
@@ -31,7 +33,9 @@ public class EvictionFirearmsPossessionDetailsPage implements CcdPageConfigurati
         PCSCase data = details.getData();
         List<String> errors = new ArrayList<>();
 
-        String txt = data.getEnforcementFirearmsDetails();
+        String txt = data.getEnforcementOrder() != null
+            ? data.getEnforcementOrder().getEnforcementFirearmsDetails()
+            : null;
         if (txt == null || txt.isBlank()) {
             errors.add("Enter details");
         } else if (txt.length() > 6800) {

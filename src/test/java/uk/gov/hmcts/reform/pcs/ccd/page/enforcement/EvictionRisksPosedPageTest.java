@@ -7,6 +7,7 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RiskCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
@@ -28,7 +29,9 @@ class EvictionRisksPosedPageTest extends BasePageTest {
     void shouldRequireAtLeastOneSelection() {
         // Given
         PCSCase caseData = PCSCase.builder()
-            .enforcementRiskCategories(Set.of())
+            .enforcementOrder(EnforcementOrder.builder()
+                .enforcementRiskCategories(Set.of())
+                .build())
             .build();
 
         // When
@@ -42,7 +45,9 @@ class EvictionRisksPosedPageTest extends BasePageTest {
     void shouldRequireAtLeastOneSelectionWhenNull() {
         // Given
         PCSCase caseData = PCSCase.builder()
-            .enforcementRiskCategories(null)
+            .enforcementOrder(EnforcementOrder.builder()
+                .enforcementRiskCategories(null)
+                .build())
             .build();
 
         // When
@@ -57,7 +62,9 @@ class EvictionRisksPosedPageTest extends BasePageTest {
     void shouldAllowValidSelections(Set<RiskCategory> selectedRisks, String description) {
         // Given
         PCSCase caseData = PCSCase.builder()
-            .enforcementRiskCategories(selectedRisks)
+            .enforcementOrder(EnforcementOrder.builder()
+                .enforcementRiskCategories(selectedRisks)
+                .build())
             .build();
 
         // When
@@ -65,77 +72,90 @@ class EvictionRisksPosedPageTest extends BasePageTest {
 
         // Then
         assertThat(response.getErrors()).isNull();
-        assertThat(response.getData().getEnforcementRiskCategories()).isEqualTo(selectedRisks);
+        assertThat(response.getData().getEnforcementOrder().getEnforcementRiskCategories()).isEqualTo(selectedRisks);
     }
 
     @Test
     void shouldClearViolentDetailsWhenDeselected() {
         // Given
         PCSCase caseData = PCSCase.builder()
-            .enforcementRiskCategories(Set.of(RiskCategory.FIREARMS_POSSESSION))
-            .enforcementViolentDetails("Previous violent text")
-            .enforcementFirearmsDetails("Firearms text")
+            .enforcementOrder(EnforcementOrder.builder()
+                .enforcementRiskCategories(Set.of(RiskCategory.FIREARMS_POSSESSION))
+                .enforcementViolentDetails("Previous violent text")
+                .enforcementFirearmsDetails("Firearms text")
+                .build())
             .build();
 
         // When
         AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
 
         // Then
-        assertThat(response.getData().getEnforcementViolentDetails()).isNull();
-        assertThat(response.getData().getEnforcementFirearmsDetails()).isEqualTo("Firearms text");
+        assertThat(response.getData().getEnforcementOrder().getEnforcementViolentDetails()).isNull();
+        assertThat(response.getData().getEnforcementOrder().getEnforcementFirearmsDetails()).isEqualTo("Firearms text");
     }
 
     @Test
     void shouldClearFirearmsDetailsWhenDeselected() {
         // Given
         PCSCase caseData = PCSCase.builder()
-            .enforcementRiskCategories(Set.of(RiskCategory.VIOLENT_OR_AGGRESSIVE))
-            .enforcementViolentDetails("Violent text")
-            .enforcementFirearmsDetails("Previous firearms text")
+            .enforcementOrder(EnforcementOrder.builder()
+                .enforcementRiskCategories(Set.of(RiskCategory.VIOLENT_OR_AGGRESSIVE))
+                .enforcementViolentDetails("Violent text")
+                .enforcementFirearmsDetails("Previous firearms text")
+                .build())
             .build();
 
         // When
         AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
 
         // Then
-        assertThat(response.getData().getEnforcementViolentDetails()).isEqualTo("Violent text");
-        assertThat(response.getData().getEnforcementFirearmsDetails()).isNull();
+        assertThat(response.getData().getEnforcementOrder().getEnforcementViolentDetails()).isEqualTo("Violent text");
+        assertThat(response.getData().getEnforcementOrder().getEnforcementFirearmsDetails()).isNull();
     }
 
     @Test
     void shouldClearCriminalDetailsWhenDeselected() {
         // Given
         PCSCase caseData = PCSCase.builder()
-            .enforcementRiskCategories(Set.of(RiskCategory.VIOLENT_OR_AGGRESSIVE))
-            .enforcementViolentDetails("Violent text")
-            .enforcementCriminalDetails("Previous criminal text")
+            .enforcementOrder(EnforcementOrder.builder()
+                .enforcementRiskCategories(Set.of(RiskCategory.VIOLENT_OR_AGGRESSIVE))
+                .enforcementViolentDetails("Violent text")
+                .enforcementCriminalDetails("Previous criminal text")
+                .build())
             .build();
 
         // When
         AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
 
         // Then
-        assertThat(response.getData().getEnforcementViolentDetails()).isEqualTo("Violent text");
-        assertThat(response.getData().getEnforcementCriminalDetails()).isNull();
+        assertThat(response.getData().getEnforcementOrder().getEnforcementViolentDetails()).isEqualTo("Violent text");
+        assertThat(response.getData().getEnforcementOrder().getEnforcementCriminalDetails()).isNull();
     }
 
     @Test
     void shouldPreserveUnrelatedDetailsWhenOneCategoryDeselected() {
         // Given
         PCSCase caseData = PCSCase.builder()
-            .enforcementRiskCategories(Set.of(RiskCategory.FIREARMS_POSSESSION, RiskCategory.CRIMINAL_OR_ANTISOCIAL))
-            .enforcementViolentDetails("Should be cleared")
-            .enforcementFirearmsDetails("Should be preserved")
-            .enforcementCriminalDetails("Should be preserved")
+            .enforcementOrder(EnforcementOrder.builder()
+                .enforcementRiskCategories(Set.of(
+                    RiskCategory.FIREARMS_POSSESSION,
+                    RiskCategory.CRIMINAL_OR_ANTISOCIAL
+                ))
+                .enforcementViolentDetails("Should be cleared")
+                .enforcementFirearmsDetails("Should be preserved")
+                .enforcementCriminalDetails("Should be preserved")
+                .build())
             .build();
 
         // When
         AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
 
         // Then
-        assertThat(response.getData().getEnforcementViolentDetails()).isNull();
-        assertThat(response.getData().getEnforcementFirearmsDetails()).isEqualTo("Should be preserved");
-        assertThat(response.getData().getEnforcementCriminalDetails()).isEqualTo("Should be preserved");
+        assertThat(response.getData().getEnforcementOrder().getEnforcementViolentDetails()).isNull();
+        assertThat(response.getData().getEnforcementOrder().getEnforcementFirearmsDetails())
+            .isEqualTo("Should be preserved");
+        assertThat(response.getData().getEnforcementOrder().getEnforcementCriminalDetails())
+            .isEqualTo("Should be preserved");
     }
 
     private static Stream<Arguments> validSelectionScenarios() {
@@ -147,14 +167,26 @@ class EvictionRisksPosedPageTest extends BasePageTest {
             arguments(Set.of(RiskCategory.PROTEST_GROUP_MEMBER), "Single protest group selection"),
             arguments(Set.of(RiskCategory.AGENCY_VISITS), "Single agency visits selection"),
             arguments(Set.of(RiskCategory.AGGRESSIVE_ANIMALS), "Single aggressive animals selection"),
-            arguments(Set.of(RiskCategory.VIOLENT_OR_AGGRESSIVE, RiskCategory.FIREARMS_POSSESSION), 
-                "Two detail categories"),
-            arguments(Set.of(RiskCategory.VIOLENT_OR_AGGRESSIVE, RiskCategory.FIREARMS_POSSESSION, 
-                RiskCategory.CRIMINAL_OR_ANTISOCIAL), "All three detail categories"),
-            arguments(Set.of(RiskCategory.VERBAL_OR_WRITTEN_THREATS, RiskCategory.PROTEST_GROUP_MEMBER, 
-                RiskCategory.AGENCY_VISITS, RiskCategory.AGGRESSIVE_ANIMALS), "All non-detail categories"),
-            arguments(Set.of(RiskCategory.VIOLENT_OR_AGGRESSIVE, RiskCategory.VERBAL_OR_WRITTEN_THREATS, 
-                RiskCategory.PROTEST_GROUP_MEMBER), "Mixed detail and non-detail categories")
+            arguments(Set.of(
+                RiskCategory.VIOLENT_OR_AGGRESSIVE,
+                RiskCategory.FIREARMS_POSSESSION
+            ), "Two detail categories"),
+            arguments(Set.of(
+                RiskCategory.VIOLENT_OR_AGGRESSIVE,
+                RiskCategory.FIREARMS_POSSESSION,
+                RiskCategory.CRIMINAL_OR_ANTISOCIAL
+            ), "All three detail categories"),
+            arguments(Set.of(
+                RiskCategory.VERBAL_OR_WRITTEN_THREATS,
+                RiskCategory.PROTEST_GROUP_MEMBER,
+                RiskCategory.AGENCY_VISITS,
+                RiskCategory.AGGRESSIVE_ANIMALS
+            ), "All non-detail categories"),
+            arguments(Set.of(
+                RiskCategory.VIOLENT_OR_AGGRESSIVE,
+                RiskCategory.VERBAL_OR_WRITTEN_THREATS,
+                RiskCategory.PROTEST_GROUP_MEMBER
+            ), "Mixed detail and non-detail categories")
         );
     }
 }

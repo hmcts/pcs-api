@@ -9,7 +9,7 @@ import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RiskCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.EnforcementOrder;
 
 @AllArgsConstructor
 @Component
@@ -22,15 +22,17 @@ public class EvictionRisksPosedPage implements CcdPageConfiguration {
             .pageLabel("The risks posed by everyone at the property")
             .showCondition("confirmLivingAtProperty=\"YES\"")
             .label("evictionRisksPosedPage-line-separator", "---")
-
-            .mandatory(PCSCase::getEnforcementRiskCategories);
+            .complex(PCSCase::getEnforcementOrder)
+            .mandatory(EnforcementOrder::getEnforcementRiskCategories);
     }
 
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
                                                                   CaseDetails<PCSCase, State> before) {
         PCSCase data = details.getData();
 
-        if (data.getEnforcementRiskCategories() == null || data.getEnforcementRiskCategories().isEmpty()) {
+        if (data.getEnforcementOrder() == null
+            || data.getEnforcementOrder().getEnforcementRiskCategories() == null
+            || data.getEnforcementOrder().getEnforcementRiskCategories().isEmpty()) {
             return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
                 .data(data)
                 .errors(java.util.List.of("Select at least one option"))
@@ -38,14 +40,14 @@ public class EvictionRisksPosedPage implements CcdPageConfiguration {
         }
 
         // Clear details if their categories were deselected
-        if (!data.getEnforcementRiskCategories().contains(RiskCategory.VIOLENT_OR_AGGRESSIVE)) {
-            data.setEnforcementViolentDetails(null);
+        if (!data.getEnforcementOrder().getEnforcementRiskCategories().contains(RiskCategory.VIOLENT_OR_AGGRESSIVE)) {
+            data.getEnforcementOrder().setEnforcementViolentDetails(null);
         }
-        if (!data.getEnforcementRiskCategories().contains(RiskCategory.FIREARMS_POSSESSION)) {
-            data.setEnforcementFirearmsDetails(null);
+        if (!data.getEnforcementOrder().getEnforcementRiskCategories().contains(RiskCategory.FIREARMS_POSSESSION)) {
+            data.getEnforcementOrder().setEnforcementFirearmsDetails(null);
         }
-        if (!data.getEnforcementRiskCategories().contains(RiskCategory.CRIMINAL_OR_ANTISOCIAL)) {
-            data.setEnforcementCriminalDetails(null);
+        if (!data.getEnforcementOrder().getEnforcementRiskCategories().contains(RiskCategory.CRIMINAL_OR_ANTISOCIAL)) {
+            data.getEnforcementOrder().setEnforcementCriminalDetails(null);
         }
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()

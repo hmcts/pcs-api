@@ -8,6 +8,7 @@ import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.EnforcementOrder;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,7 +23,8 @@ public class EvictionViolentAggressiveDetailsPage implements CcdPageConfiguratio
             .pageLabel("Their violent or aggressive behaviour")
             .showCondition("enforcementRiskCategoriesCONTAINS\"VIOLENT_OR_AGGRESSIVE\"")
             .label("evictionViolentAggressiveDetails-line-separator", "---")
-            .mandatory(PCSCase::getEnforcementViolentDetails)
+            .complex(PCSCase::getEnforcementOrder)
+            .mandatory(EnforcementOrder::getEnforcementViolentDetails)
             .label("evictionViolentAggressiveDetails-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
 
@@ -31,7 +33,9 @@ public class EvictionViolentAggressiveDetailsPage implements CcdPageConfiguratio
         PCSCase data = details.getData();
         List<String> errors = new ArrayList<>();
 
-        String txt = data.getEnforcementViolentDetails();
+        String txt = data.getEnforcementOrder() != null
+            ? data.getEnforcementOrder().getEnforcementViolentDetails()
+            : null;
         if (txt == null || txt.isBlank()) {
             errors.add("Enter details");
         } else if (txt.length() > 6800) {
