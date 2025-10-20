@@ -72,5 +72,4 @@ public class EnforcementOrderEvent implements CCDConfig<PCSCase, State, UserRole
     private SubmitResponse submit(EventPayload<PCSCase, State> eventPayload) {
         return SubmitResponse.builder().build();
     }
-
 }
