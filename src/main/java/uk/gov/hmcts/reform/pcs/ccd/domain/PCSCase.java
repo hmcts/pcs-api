@@ -648,4 +648,11 @@ public class PCSCase {
 
     @CCD(searchable = false)
     private YesOrNo showReasonsForGroundsPageWales;
+
+    @CCD(
+        label = "What type of tenancy or licence is in place?",
+        typeOverride = FieldType.FixedRadioList,
+        typeParameterOverride = "OccupationLicenceTypeWales"
+    )
+    private OccupationLicenceTypeWales occupationLicenceTypeWales;
 }
