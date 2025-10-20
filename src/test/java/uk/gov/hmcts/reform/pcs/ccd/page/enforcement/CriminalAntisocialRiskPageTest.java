@@ -85,7 +85,7 @@ class CriminalAntisocialRiskPageTest extends BasePageTest {
 
     @ParameterizedTest
     @MethodSource("validTextScenarios")
-    void shouldAcceptValidText(String text, String description) {
+    void shouldAcceptValidText(String text) {
         // Given
         PCSCase caseData = PCSCase.builder()
             .enforcementOrder(EnforcementOrder.builder()
