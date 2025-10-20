@@ -14,10 +14,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
+import uk.gov.hmcts.reform.payments.response.PaymentServiceResponse;
 import uk.gov.hmcts.reform.pcs.feesandpay.entity.Fee;
 import uk.gov.hmcts.reform.pcs.feesandpay.exception.FeeNotFoundException;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeesAndPayTaskData;
-import uk.gov.hmcts.reform.pcs.feesandpay.model.ServiceRequestResponse;
 import uk.gov.hmcts.reform.pcs.feesandpay.service.FeesAndPayService;
 
 import java.math.BigDecimal;
@@ -51,7 +51,7 @@ class FeesAndPayTaskComponentTest {
     private Execution execution;
 
     @Mock
-    private ServiceRequestResponse serviceRequestResponse;
+    private PaymentServiceResponse paymentServiceResponse;
 
     private final Duration feesAndPayBackoffDelay = Duration.ofMinutes(5);
 
@@ -149,7 +149,7 @@ class FeesAndPayTaskComponentTest {
             when(feesAndPayService.getFee(CASE_ISSUE_FEE_TYPE)).thenReturn(expectedFee);
             when(feesAndPayService.createServiceRequest(
                 CASE_REFERENCE, CCD_CASE_NUMBER, expectedFee, 1, RESPONSIBLE_PARTY))
-                .thenReturn(serviceRequestResponse);
+                .thenReturn(paymentServiceResponse);
 
             CustomTask<FeesAndPayTaskData> task = feesAndPayTaskComponent.feesAndPayCaseIssuedTask();
 
@@ -180,7 +180,7 @@ class FeesAndPayTaskComponentTest {
             when(taskInstance.getData()).thenReturn(taskData);
             when(feesAndPayService.getFee(HEARING_FEE_TYPE)).thenReturn(expectedFee);
             when(feesAndPayService.createServiceRequest(any(), any(), any(), any(Integer.class), any()))
-                .thenReturn(serviceRequestResponse);
+                .thenReturn(paymentServiceResponse);
 
             CustomTask<FeesAndPayTaskData> task = feesAndPayTaskComponent.feesAndPayCaseIssuedTask();
 
@@ -211,7 +211,7 @@ class FeesAndPayTaskComponentTest {
             when(taskInstance.getData()).thenReturn(taskData);
             when(feesAndPayService.getFee(CASE_ISSUE_FEE_TYPE)).thenReturn(zeroFee);
             when(feesAndPayService.createServiceRequest(any(), any(), any(), any(Integer.class), any()))
-                .thenReturn(serviceRequestResponse);
+                .thenReturn(paymentServiceResponse);
 
             CustomTask<FeesAndPayTaskData> task = feesAndPayTaskComponent.feesAndPayCaseIssuedTask();
 
@@ -243,7 +243,7 @@ class FeesAndPayTaskComponentTest {
             when(taskInstance.getData()).thenReturn(taskDataWithVolume);
             when(feesAndPayService.getFee(CASE_ISSUE_FEE_TYPE)).thenReturn(expectedFee);
             when(feesAndPayService.createServiceRequest(any(), any(), any(), eq(5), any()))
-                .thenReturn(serviceRequestResponse);
+                .thenReturn(paymentServiceResponse);
 
             CustomTask<FeesAndPayTaskData> task = feesAndPayTaskComponent.feesAndPayCaseIssuedTask();
 
@@ -339,7 +339,7 @@ class FeesAndPayTaskComponentTest {
                 when(taskInstance.getData()).thenReturn(taskData);
                 when(feesAndPayService.getFee(CASE_ISSUE_FEE_TYPE)).thenReturn(fee);
                 when(feesAndPayService.createServiceRequest(any(), any(), any(), any(Integer.class), eq(party)))
-                    .thenReturn(serviceRequestResponse);
+                    .thenReturn(paymentServiceResponse);
 
                 CustomTask<FeesAndPayTaskData> task = feesAndPayTaskComponent.feesAndPayCaseIssuedTask();
 

@@ -11,7 +11,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.pcs.feesandpay.entity.Fee;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeesAndPayTaskData;
-import uk.gov.hmcts.reform.pcs.feesandpay.model.ServiceRequestResponse;
 import uk.gov.hmcts.reform.pcs.feesandpay.service.FeesAndPayService;
 
 import java.time.Duration;
@@ -63,7 +62,7 @@ public class FeesAndPayTaskComponent {
                     log.debug("Successfully retrieved fee: type={}, code={}, amount={}",
                                 taskData.getFeeType(), fee.getCode(), fee.getCalculatedAmount());
 
-                    ServiceRequestResponse serviceRequest = feesAndPayService.createServiceRequest(
+                    feesAndPayService.createServiceRequest(
                         taskData.getCaseReference(),
                         taskData.getCcdCaseNumber(),
                         fee,
