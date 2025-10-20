@@ -13,8 +13,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.entity.UnsubmittedCaseDataEntity;
-import uk.gov.hmcts.reform.pcs.ccd.repository.UnsubmittedCaseDataRepository;
+import uk.gov.hmcts.reform.pcs.ccd.entity.DraftCaseDataEntity;
+import uk.gov.hmcts.reform.pcs.ccd.repository.DraftCaseDataRepository;
 import uk.gov.hmcts.reform.pcs.exception.UnsubmittedDataException;
 
 import java.util.Optional;
@@ -26,34 +26,34 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class UnsubmittedCaseDataServiceTest {
+class DraftCaseDataServiceTest {
 
     private static final long CASE_REFERENCE = 1234L;
 
     @Mock
-    private UnsubmittedCaseDataRepository unsubmittedCaseDataRepository;
+    private DraftCaseDataRepository draftCaseDataRepository;
     @Mock
     private ObjectMapper objectMapper;
     @Captor
-    private ArgumentCaptor<UnsubmittedCaseDataEntity> unsubmittedCaseDataEntityCaptor;
+    private ArgumentCaptor<DraftCaseDataEntity> unsubmittedCaseDataEntityCaptor;
 
-    private UnsubmittedCaseDataService underTest;
+    private DraftCaseDataService underTest;
 
     @BeforeEach
     void setUp() {
-        underTest = new UnsubmittedCaseDataService(unsubmittedCaseDataRepository, objectMapper);
+        underTest = new DraftCaseDataService(draftCaseDataRepository, objectMapper);
     }
 
     @Test
     void shouldGetUnsubmittedCaseData() throws JsonProcessingException {
         // Given
         String unsubmittedCaseDataJson = "case data json";
-        UnsubmittedCaseDataEntity unsubmittedCaseDataEntity = mock(UnsubmittedCaseDataEntity.class);
+        DraftCaseDataEntity draftCaseDataEntity = mock(DraftCaseDataEntity.class);
         PCSCase expectedUnsubmittedCaseData = mock(PCSCase.class);
 
-        when(unsubmittedCaseDataRepository.findByCaseReference(CASE_REFERENCE))
-            .thenReturn(Optional.of(unsubmittedCaseDataEntity));
-        when(unsubmittedCaseDataEntity.getCaseData()).thenReturn(unsubmittedCaseDataJson);
+        when(draftCaseDataRepository.findByCaseReference(CASE_REFERENCE))
+            .thenReturn(Optional.of(draftCaseDataEntity));
+        when(draftCaseDataEntity.getCaseData()).thenReturn(unsubmittedCaseDataJson);
         when(objectMapper.readValue(unsubmittedCaseDataJson, PCSCase.class)).thenReturn(expectedUnsubmittedCaseData);
 
         // When
@@ -67,7 +67,7 @@ class UnsubmittedCaseDataServiceTest {
     @Test
     void shouldReturnEmptyWhenNoUnsubmittedCaseData() {
         // Given
-        when(unsubmittedCaseDataRepository.findByCaseReference(CASE_REFERENCE)).thenReturn(Optional.empty());
+        when(draftCaseDataRepository.findByCaseReference(CASE_REFERENCE)).thenReturn(Optional.empty());
 
         // When
         Optional<PCSCase> unsubmittedCaseData = underTest.getUnsubmittedCaseData(CASE_REFERENCE);
@@ -80,7 +80,7 @@ class UnsubmittedCaseDataServiceTest {
     @ValueSource(booleans = {true, false})
     void shouldReturnWhetherUnsubmittedCaseDataExists(boolean repositoryDataExists) {
         // Given
-        when(unsubmittedCaseDataRepository.existsByCaseReference(CASE_REFERENCE)).thenReturn(repositoryDataExists);
+        when(draftCaseDataRepository.existsByCaseReference(CASE_REFERENCE)).thenReturn(repositoryDataExists);
 
         // When
         boolean hasUnsubmittedCaseData = underTest.hasUnsubmittedCaseData(CASE_REFERENCE);
@@ -95,14 +95,14 @@ class UnsubmittedCaseDataServiceTest {
         String caseDataJson = "case data json";
         PCSCase caseData = mock(PCSCase.class);
         when(objectMapper.writeValueAsString(caseData)).thenReturn(caseDataJson);
-        when(unsubmittedCaseDataRepository.findByCaseReference(CASE_REFERENCE)).thenReturn(Optional.empty());
+        when(draftCaseDataRepository.findByCaseReference(CASE_REFERENCE)).thenReturn(Optional.empty());
 
         // When
         underTest.saveUnsubmittedCaseData(CASE_REFERENCE, caseData);
 
         // Then
-        verify(unsubmittedCaseDataRepository).save(unsubmittedCaseDataEntityCaptor.capture());
-        UnsubmittedCaseDataEntity savedEntity = unsubmittedCaseDataEntityCaptor.getValue();
+        verify(draftCaseDataRepository).save(unsubmittedCaseDataEntityCaptor.capture());
+        DraftCaseDataEntity savedEntity = unsubmittedCaseDataEntityCaptor.getValue();
 
         assertThat(savedEntity.getCaseReference()).isEqualTo(CASE_REFERENCE);
         assertThat(savedEntity.getCaseData()).isEqualTo(caseDataJson);
@@ -115,39 +115,30 @@ class UnsubmittedCaseDataServiceTest {
         PCSCase caseData = mock(PCSCase.class);
         when(objectMapper.writeValueAsString(caseData)).thenReturn(caseDataJson);
 
-        UnsubmittedCaseDataEntity unsubmittedCaseDataEntity = mock(UnsubmittedCaseDataEntity.class);
-        when(unsubmittedCaseDataRepository.findByCaseReference(CASE_REFERENCE))
-            .thenReturn(Optional.of(unsubmittedCaseDataEntity));
+        DraftCaseDataEntity draftCaseDataEntity = mock(DraftCaseDataEntity.class);
+        when(draftCaseDataRepository.findByCaseReference(CASE_REFERENCE))
+            .thenReturn(Optional.of(draftCaseDataEntity));
 
         // When
         underTest.saveUnsubmittedCaseData(CASE_REFERENCE, caseData);
 
         // Then
-        verify(unsubmittedCaseDataRepository).save(unsubmittedCaseDataEntityCaptor.capture());
-        UnsubmittedCaseDataEntity savedEntity = unsubmittedCaseDataEntityCaptor.getValue();
+        verify(draftCaseDataRepository).save(unsubmittedCaseDataEntityCaptor.capture());
+        DraftCaseDataEntity savedEntity = unsubmittedCaseDataEntityCaptor.getValue();
 
-        assertThat(savedEntity).isSameAs(unsubmittedCaseDataEntity);
-        verify(unsubmittedCaseDataEntity).setCaseData(caseDataJson);
-    }
-
-    @Test
-    void shouldDeleteUnsubmittedDataByCaseReference() {
-        // When
-        underTest.deleteUnsubmittedCaseData(CASE_REFERENCE);
-
-        // Then
-        verify(unsubmittedCaseDataRepository).deleteByCaseReference(CASE_REFERENCE);
+        assertThat(savedEntity).isSameAs(draftCaseDataEntity);
+        verify(draftCaseDataEntity).setCaseData(caseDataJson);
     }
 
     @Test
     void shouldThrowExceptionForJsonExceptionWhenReading() throws JsonProcessingException {
         // Given
         String unsubmittedCaseDataJson = "case data json";
-        UnsubmittedCaseDataEntity unsubmittedCaseDataEntity = mock(UnsubmittedCaseDataEntity.class);
+        DraftCaseDataEntity draftCaseDataEntity = mock(DraftCaseDataEntity.class);
 
-        when(unsubmittedCaseDataRepository.findByCaseReference(CASE_REFERENCE))
-            .thenReturn(Optional.of(unsubmittedCaseDataEntity));
-        when(unsubmittedCaseDataEntity.getCaseData()).thenReturn(unsubmittedCaseDataJson);
+        when(draftCaseDataRepository.findByCaseReference(CASE_REFERENCE))
+            .thenReturn(Optional.of(draftCaseDataEntity));
+        when(draftCaseDataEntity.getCaseData()).thenReturn(unsubmittedCaseDataJson);
 
         JsonProcessingException jsonProcessingException = mock(JsonProcessingException.class);
         when(objectMapper.readValue(unsubmittedCaseDataJson, PCSCase.class)).thenThrow(jsonProcessingException);
