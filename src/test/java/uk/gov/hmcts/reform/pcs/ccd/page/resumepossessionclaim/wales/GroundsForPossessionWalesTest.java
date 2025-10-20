@@ -12,7 +12,7 @@ import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.DiscretionaryGroundWales;
-import uk.gov.hmcts.reform.pcs.ccd.domain.wales.EstateManagementGroundWales;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.EstateManagementGroundsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.MandatoryGroundWales;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
 
@@ -31,7 +31,7 @@ public class GroundsForPossessionWalesTest extends BasePageTest {
     @MethodSource("groundsScenarios")
     void shouldValidateGroundsSelection(
             Set<DiscretionaryGroundWales> discretionaryGrounds,
-            Set<EstateManagementGroundWales> estateManagementGrounds,
+            Set<EstateManagementGroundsWales> estateManagementGrounds,
             Set<MandatoryGroundWales> mandatoryGrounds,
             List<String> expectedErrors) {
 
@@ -68,7 +68,7 @@ public class GroundsForPossessionWalesTest extends BasePageTest {
                 // Valid: Discretionary with estate parent + one sub-selection
                 arguments(
                         Set.of(ESTATE_MANAGEMENT_GROUNDS_SECTION_160),
-                        Set.of(EstateManagementGroundWales.BUILDING_WORKS_A),
+                        Set.of(EstateManagementGroundsWales.BUILDING_WORKS),
                         Set.of(),
                         List.of()
                 ),
@@ -80,8 +80,8 @@ public class GroundsForPossessionWalesTest extends BasePageTest {
                                 ESTATE_MANAGEMENT_GROUNDS_SECTION_160
                         ),
                         Set.of(
-                                EstateManagementGroundWales.REDEVELOPMENT_B,
-                                EstateManagementGroundWales.CHARITIES_C
+                                EstateManagementGroundsWales.REDEVELOPMENT_SCHEMES,
+                                EstateManagementGroundsWales.CHARITIES
                         ),
                         Set.of(),
                         List.of()

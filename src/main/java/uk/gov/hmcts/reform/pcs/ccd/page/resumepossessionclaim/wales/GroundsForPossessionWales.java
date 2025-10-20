@@ -24,7 +24,8 @@ public class GroundsForPossessionWales
         pageBuilder
             .page("groundsForPossessionWales", this::midEvent)
             .pageLabel("What are your grounds for possession?")
-            .showCondition("legislativeCountry=\"Wales\"")
+            .showCondition("legislativeCountry=\"Wales\" AND "
+                + "(occupationLicenceTypeWales=\"STANDARD_CONTRACT\" OR occupationLicenceTypeWales=\"OTHER\")")
             .label(
                 "groundsForPossessionWales-info",
                 """
