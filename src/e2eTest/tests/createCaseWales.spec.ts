@@ -60,7 +60,7 @@ test.describe('[Create Case - Wales] @Master @nightly', async () => {
     await performAction('clickButtonAndVerifyPageNavigation', provideMoreDetailsOfClaim.continue, claimantType.mainHeader);
     await performAction('selectClaimantType', claimantType.wales.communityLandlord);
     await performAction('selectClaimType', claimType.no);
-    await performAction('selectClaimantName', claimantName.yes);
+    await performAction('selectClaimantName', claimantName.no);
     await performAction('clickButtonAndVerifyPageNavigation', claimantName.continue, claimantDetailsWales.mainHeader);
     await performAction('clickButton', 'Sign out');
     await performAction('reloginAndFindTheCase', user.claimantSolicitor);
