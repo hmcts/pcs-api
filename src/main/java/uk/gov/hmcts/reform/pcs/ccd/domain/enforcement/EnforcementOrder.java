@@ -3,7 +3,6 @@ package uk.gov.hmcts.reform.pcs.ccd.domain.enforcement;
 import lombok.Builder;
 import lombok.Data;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
-import uk.gov.hmcts.reform.pcs.ccd.domain.RiskCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalChoice;
 
 /**
