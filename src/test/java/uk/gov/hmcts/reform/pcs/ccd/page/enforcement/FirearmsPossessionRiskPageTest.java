@@ -177,7 +177,7 @@ class FirearmsPossessionRiskPageTest extends BasePageTest {
 
     private static Stream<String> invalidTextScenarios() {
         return Stream.of(
-            (String) null,
+            null,
             "   ",
             ""
         );
