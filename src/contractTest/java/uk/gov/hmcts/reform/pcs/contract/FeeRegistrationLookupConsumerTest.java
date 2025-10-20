@@ -14,6 +14,7 @@ import feign.jackson.JacksonEncoder;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.springframework.cloud.openfeign.support.SpringMvcContract;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import uk.gov.hmcts.reform.fees.client.FeesApi;
@@ -42,6 +43,7 @@ class FeeRegistrationLookupConsumerTest {
         ObjectMapper objectMapper = new ObjectMapper();
 
         feesApi = Feign.builder()
+            .contract(new SpringMvcContract())
             .encoder(new JacksonEncoder(objectMapper))
             .decoder(new JacksonDecoder(objectMapper))
             .target(FeesApi.class, mockServer.getUrl());
