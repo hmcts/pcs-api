@@ -26,7 +26,7 @@ public class EvictionRisksPosedPage implements CcdPageConfiguration {
             .showCondition("confirmLivingAtProperty=\"YES\"")
             .label("evictionRisksPosedPage-info", "---")
             .label("evictionRisksPosedPage-hint", """
-                Include any risks posed by the defendants and also anyone else 
+                Include any risks posed by the defendants and also anyone else
                 living at the property
                 """)
             .mandatory(PCSCase::getEnforcementRiskCategories);
@@ -58,6 +58,12 @@ public class EvictionRisksPosedPage implements CcdPageConfiguration {
         }
         if (!data.getEnforcementRiskCategories().contains(RiskCategory.PROTEST_GROUP_MEMBER)) {
             data.setEnforcementProtestGroupMemberDetails(null);
+        }
+        if (!data.getEnforcementRiskCategories().contains(RiskCategory.AGENCY_VISITS)) {
+            data.setEnforcementPoliceOrSocialServicesDetails(null);
+        }
+        if (!data.getEnforcementRiskCategories().contains(RiskCategory.AGGRESSIVE_ANIMALS)) {
+            data.setEnforcementDogsOrOtherAnimalsDetails(null);
         }
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()

@@ -697,4 +697,23 @@ public class PCSCase {
     )
     private String enforcementProtestGroupMemberDetails;
 
+    @CCD(
+        typeOverride = TextArea,
+        hint = """
+                   If you can, include the number of visits and the crime reference number.
+                   You can enter up to 6,800 characters.
+                   """
+    )
+    private String enforcementPoliceOrSocialServicesDetails;
+
+    @CCD(
+        typeOverride = TextArea,
+        hint = """
+                    For example, include the type of animal (dogs, cats etc), the number of animals, and their
+                    behaviour.
+                    You can enter up to 6,800 characters.
+                   """
+    )
+    private String enforcementDogsOrOtherAnimalsDetails;
+
 }

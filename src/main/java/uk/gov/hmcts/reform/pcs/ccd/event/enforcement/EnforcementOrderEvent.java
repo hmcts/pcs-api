@@ -13,8 +13,10 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.AggressiveDogsOrOtherAnimals;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.EnforcementApplicationPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.NameAndAddressForEvictionPage;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.PoliceOrSocialServicesProperty;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.EvictionDelayWarningPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.EvictionRisksPosedPage;
@@ -41,31 +43,33 @@ public class EnforcementOrderEvent implements CCDConfig<PCSCase, State, UserRole
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
         Event.EventBuilder<PCSCase, UserRole, State> eventBuilder =
-                configBuilder
-                        .decentralisedEvent(enforceTheOrder.name(), this::submit, this::start)
-                        .forState(AWAITING_SUBMISSION_TO_HMCTS)
-                        .name("Enforce the order")
-                        .grant(Permission.CRUD, UserRole.PCS_SOLICITOR);
+            configBuilder
+                .decentralisedEvent(enforceTheOrder.name(), this::submit, this::start)
+                .forState(AWAITING_SUBMISSION_TO_HMCTS)
+                .name("Enforce the order")
+                .grant(Permission.CRUD, UserRole.PCS_SOLICITOR);
         configurePages(eventBuilder);
     }
 
     private void configurePages(Event.EventBuilder<PCSCase, UserRole, State> eventBuilder) {
         PageBuilder pageBuilder = new PageBuilder(eventBuilder);
         pageBuilder
-                .add(new EnforcementApplicationPage())
-                .add(new NameAndAddressForEvictionPage());
+            .add(new EnforcementApplicationPage())
+            .add(new NameAndAddressForEvictionPage());
 
         new PageBuilder(eventBuilder)
-                .add(new EnforcementApplicationPage())
-                .add(new LivingInThePropertyPage())
-                .add(new EvictionDelayWarningPage())
-                .add(new EvictionRisksPosedPage())
-                .add(new EvictionViolentAggressiveDetailsPage())
-                .add(new EvictionFirearmsPossessionDetailsPage())
-                .add(new EvictionCriminalAntisocialDetailsPage())
-                .add(new EvictionVulnerableAdultsChildrenPage())
-                .add(new VerbalOrWrittenThreatsPage())
-                .add(new ProtestGroupPage());
+            .add(new EnforcementApplicationPage())
+            .add(new LivingInThePropertyPage())
+            .add(new EvictionDelayWarningPage())
+            .add(new EvictionRisksPosedPage())
+            .add(new EvictionViolentAggressiveDetailsPage())
+            .add(new EvictionFirearmsPossessionDetailsPage())
+            .add(new EvictionCriminalAntisocialDetailsPage())
+            .add(new EvictionVulnerableAdultsChildrenPage())
+            .add(new VerbalOrWrittenThreatsPage())
+            .add(new ProtestGroupPage())
+            .add(new PoliceOrSocialServicesProperty())
+            .add(new AggressiveDogsOrOtherAnimals());
     }
 
     private PCSCase start(EventPayload<PCSCase, State> eventPayload) {
