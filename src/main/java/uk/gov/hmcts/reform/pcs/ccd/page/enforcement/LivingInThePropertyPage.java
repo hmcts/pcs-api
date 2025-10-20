@@ -3,6 +3,9 @@ package uk.gov.hmcts.reform.pcs.ccd.page.enforcement;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.EnforcementOrder;
+
+import static uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent.SAVE_AND_RETURN;
 
 public class LivingInThePropertyPage implements CcdPageConfiguration {
 
@@ -27,25 +30,8 @@ public class LivingInThePropertyPage implements CcdPageConfiguration {
                      </ul>
                     """
             )
-            .mandatory(PCSCase::getConfirmLivingAtProperty)
-            .label(
-                "livingInThePropertyPage-link", """
-                    <details class="govuk-details">
-                        <summary class="govuk-details__summary">
-                            <span class="govuk-details__summary-text">
-                                I want to save this application and return to it later
-                            </span>
-                        </summary>
-                        <div class="govuk-details__text">
-                            If you want to save your application and return to it later:
-                            <ol class="govuk-list govuk-list--number">
-                                <li>Choose 'Continue'</li>
-                                <li>On the next page choose 'Cancel'</li>
-                            </ol>
-                            This will save your progress and take you to your case list.
-                        </div>
-                    </details>"""
-            )
-            .done();
+            .complex(PCSCase::getEnforcementOrder)
+            .mandatory(EnforcementOrder::getConfirmLivingAtProperty)
+            .label("enforcementLivingInThePropertyPage-details-save-and-return", SAVE_AND_RETURN);
     }
 }
