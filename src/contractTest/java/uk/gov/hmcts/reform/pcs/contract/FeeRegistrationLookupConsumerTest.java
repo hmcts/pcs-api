@@ -26,7 +26,7 @@ import java.util.Map;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @ExtendWith(PactConsumerTestExt.class)
-@PactTestFor(providerName = "feeRegister_lookUp")
+@PactTestFor(providerName = "feeRegister_lookUp", port = "8484")
 class FeeRegistrationLookupConsumerTest {
 
     private FeesApi feesApi;
@@ -59,7 +59,7 @@ class FeeRegistrationLookupConsumerTest {
             .decimalType("fee_amount", 404.00);
 
         return builder
-            .given("Fees exist for Possession claims")
+            .given("Fees exist for Probate")
             .uponReceiving("a request for Possession fees")
             .path("/fees-register/fees/lookup")
             .method("GET")
