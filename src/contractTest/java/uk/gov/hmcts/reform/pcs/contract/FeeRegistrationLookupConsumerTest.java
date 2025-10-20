@@ -6,9 +6,9 @@ import au.com.dius.pact.consumer.junit5.PactConsumerTestExt;
 import au.com.dius.pact.consumer.junit5.PactTestFor;
 import au.com.dius.pact.core.model.V4Pact;
 import au.com.dius.pact.core.model.annotations.Pact;
-import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
 import org.springframework.boot.autoconfigure.http.HttpMessageConvertersAutoConfiguration;
 import org.springframework.cloud.openfeign.EnableFeignClients;
@@ -26,7 +26,6 @@ import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@RequiredArgsConstructor
 @ImportAutoConfiguration({
     FeignAutoConfiguration.class,
     FeignClientsConfiguration.class,
@@ -51,6 +50,11 @@ class FeeRegistrationLookupConsumerTest {
     private static final String DEFAULT_CHANNEL = "default";
     private static final String ISSUE_EVENT = "issue";
     private static final BigDecimal AMOUNT = new BigDecimal("1");
+
+    @Autowired
+    FeeRegistrationLookupConsumerTest(FeesClient feesClient) {
+        this.feesClient = feesClient;
+    }
 
     @Pact(provider = "feeRegister_lookUp", consumer = "pcs_api")
     public V4Pact createFeeLookupPact(PactDslWithProvider builder) {
