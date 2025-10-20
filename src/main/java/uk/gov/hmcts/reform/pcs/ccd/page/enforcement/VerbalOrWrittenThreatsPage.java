@@ -6,6 +6,8 @@ import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.EnforcementOrder;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.EnforcementRiskDetails;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,7 +24,9 @@ public class VerbalOrWrittenThreatsPage implements CcdPageConfiguration {
                 .label("verbalOrWrittenThreatsPage-label","""
                 <h3 tabindex="0"> What kind of verbal or written threats have they made?</h3>
                 """)
-                .mandatory(PCSCase::getEnforcementThreatsDetails);
+                .complex(PCSCase::getEnforcementOrder)
+                .complex(EnforcementOrder::getRiskDetails)
+                .mandatory(EnforcementRiskDetails::getEnforcementVerbalOrWrittenThreatsDetails);
     }
 
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
@@ -30,7 +34,7 @@ public class VerbalOrWrittenThreatsPage implements CcdPageConfiguration {
         PCSCase data = details.getData();
         List<String> errors = new ArrayList<>();
 
-        String txt = data.getEnforcementThreatsDetails();
+        String txt = data.getEnforcementOrder().getRiskDetails().getEnforcementVerbalOrWrittenThreatsDetails();
         if (txt == null || txt.isBlank()) {
             errors.add("Enter details");
         } else if (txt.length() > 6800) {

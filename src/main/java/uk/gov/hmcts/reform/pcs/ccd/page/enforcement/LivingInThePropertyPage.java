@@ -3,6 +3,9 @@ package uk.gov.hmcts.reform.pcs.ccd.page.enforcement;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.EnforcementOrder;
+
+import static uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent.SAVE_AND_RETURN;
 
 public class LivingInThePropertyPage implements CcdPageConfiguration {
 
@@ -17,16 +20,18 @@ public class LivingInThePropertyPage implements CcdPageConfiguration {
                     <p>The bailiff needs to know if anyone at the property poses a risk.</p>
                     <p>For example if they:</p>
                       <ul>
-                       <li>Are violent or aggressive</li>
-                       <li>Possess a firearm or other weapon</li>
-                       <li>Have a history of criminal or antisocial behaviour</li>
-                       <li>Have made verbal or written threats towards you</li>
-                       <li>Are a member of a group that protests evictions</li>
-                       <li>Have had visits from the police or social services</li>
-                       <li>Own an aggressive dog or other animal</li>
+                       <li>are violent or aggressive</li>
+                       <li>possess a firearm or other weapon</li>
+                       <li>have a history of criminal or antisocial behaviour</li>
+                       <li>have made verbal or written threats towards you</li>
+                       <li>are a member of a group that protests evictions</li>
+                       <li>have had visits from the police or social services</li>
+                       <li>own an aggressive dog or other animal</li>
                      </ul>
-                    """)
-            .mandatory(PCSCase::getConfirmLivingAtProperty)
-            .done();
+                    """
+            )
+            .complex(PCSCase::getEnforcementOrder)
+            .mandatory(EnforcementOrder::getConfirmLivingAtProperty)
+            .label("enforcementLivingInThePropertyPage-details-save-and-return", SAVE_AND_RETURN);
     }
 }

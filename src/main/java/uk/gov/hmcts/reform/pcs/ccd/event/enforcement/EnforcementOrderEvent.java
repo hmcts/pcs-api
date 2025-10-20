@@ -14,17 +14,15 @@ import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.EnforcementApplicationPage;
-import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.NameAndAddressForEvictionPage;
-import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.EvictionDelayWarningPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.EvictionRisksPosedPage;
-import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.EvictionViolentAggressiveDetailsPage;
-import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.EvictionFirearmsPossessionDetailsPage;
-import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.EvictionCriminalAntisocialDetailsPage;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.ViolentAggressiveRiskPage;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.FirearmsPossessionRiskPage;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.CriminalAntisocialRiskPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.EvictionVulnerableAdultsChildrenPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.LivingInThePropertyPage;
-import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.ProtestGroupPage;
-import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.VerbalOrWrittenThreatsPage;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.NameAndAddressForEvictionPage;
+import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 
 import static uk.gov.hmcts.reform.pcs.ccd.domain.State.AWAITING_SUBMISSION_TO_HMCTS;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.enforceTheOrder;
@@ -34,7 +32,6 @@ import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.enforceTheOrder;
 @Component
 @AllArgsConstructor
 public class EnforcementOrderEvent implements CCDConfig<PCSCase, State, UserRole> {
-    // TODO: Business requirements to be agreed on for the conditions when this event can be triggereed
 
     private final AddressFormatter addressFormatter;
 
@@ -53,19 +50,14 @@ public class EnforcementOrderEvent implements CCDConfig<PCSCase, State, UserRole
         PageBuilder pageBuilder = new PageBuilder(eventBuilder);
         pageBuilder
                 .add(new EnforcementApplicationPage())
-                .add(new NameAndAddressForEvictionPage());
-
-        new PageBuilder(eventBuilder)
-                .add(new EnforcementApplicationPage())
+                .add(new NameAndAddressForEvictionPage())
                 .add(new LivingInThePropertyPage())
                 .add(new EvictionDelayWarningPage())
                 .add(new EvictionRisksPosedPage())
-                .add(new EvictionViolentAggressiveDetailsPage())
-                .add(new EvictionFirearmsPossessionDetailsPage())
-                .add(new EvictionCriminalAntisocialDetailsPage())
-                .add(new EvictionVulnerableAdultsChildrenPage())
-                .add(new VerbalOrWrittenThreatsPage())
-                .add(new ProtestGroupPage());
+                .add(new ViolentAggressiveRiskPage())
+                .add(new FirearmsPossessionRiskPage())
+                .add(new CriminalAntisocialRiskPage())
+                .add(new EvictionVulnerableAdultsChildrenPage());
     }
 
     private PCSCase start(EventPayload<PCSCase, State> eventPayload) {

@@ -7,13 +7,10 @@ import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.RiskCategory;
+import uk.gov.hmcts.reform.pcs.ccd.domain.RiskCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.EnforcementOrder;
 
-
-/**
- * Full implementation will be done in another ticket - responses not captured at the moment.
- */
 @AllArgsConstructor
 @Component
 public class EvictionRisksPosedPage implements CcdPageConfiguration {
@@ -24,19 +21,18 @@ public class EvictionRisksPosedPage implements CcdPageConfiguration {
             .page("evictionRisksPosedPage", this::midEvent)
             .pageLabel("The risks posed by everyone at the property")
             .showCondition("confirmLivingAtProperty=\"YES\"")
-            .label("evictionRisksPosedPage-info", "---")
-            .label("evictionRisksPosedPage-hint", """
-                Include any risks posed by the defendants and also anyone else 
-                living at the property
-                """)
-            .mandatory(PCSCase::getEnforcementRiskCategories);
+            .label("evictionRisksPosedPage-line-separator", "---")
+            .complex(PCSCase::getEnforcementOrder)
+            .mandatory(EnforcementOrder::getEnforcementRiskCategories);
     }
 
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
                                                                   CaseDetails<PCSCase, State> before) {
         PCSCase data = details.getData();
 
-        if (data.getEnforcementRiskCategories() == null || data.getEnforcementRiskCategories().isEmpty()) {
+        if (data.getEnforcementOrder() == null
+            || data.getEnforcementOrder().getEnforcementRiskCategories() == null
+            || data.getEnforcementOrder().getEnforcementRiskCategories().isEmpty()) {
             return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
                 .data(data)
                 .errors(java.util.List.of("Select at least one option"))
@@ -44,20 +40,31 @@ public class EvictionRisksPosedPage implements CcdPageConfiguration {
         }
 
         // Clear details if their categories were deselected
-        if (!data.getEnforcementRiskCategories().contains(RiskCategory.VIOLENT_OR_AGGRESSIVE)) {
-            data.setEnforcementViolentDetails(null);
+        if (!data.getEnforcementOrder().getEnforcementRiskCategories().contains(RiskCategory.VIOLENT_OR_AGGRESSIVE)) {
+            if (data.getEnforcementOrder().getRiskDetails() != null) {
+                data.getEnforcementOrder().getRiskDetails().setEnforcementViolentDetails(null);
+            }
         }
-        if (!data.getEnforcementRiskCategories().contains(RiskCategory.FIREARMS_POSSESSION)) {
-            data.setEnforcementFirearmsDetails(null);
+        if (!data.getEnforcementOrder().getEnforcementRiskCategories().contains(RiskCategory.FIREARMS_POSSESSION)) {
+            if (data.getEnforcementOrder().getRiskDetails() != null) {
+                data.getEnforcementOrder().getRiskDetails().setEnforcementFirearmsDetails(null);
+            }
         }
-        if (!data.getEnforcementRiskCategories().contains(RiskCategory.CRIMINAL_OR_ANTISOCIAL)) {
-            data.setEnforcementCriminalDetails(null);
+        if (!data.getEnforcementOrder().getEnforcementRiskCategories().contains(RiskCategory.CRIMINAL_OR_ANTISOCIAL)) {
+            if (data.getEnforcementOrder().getRiskDetails() != null) {
+                data.getEnforcementOrder().getRiskDetails().setEnforcementCriminalDetails(null);
+            }
         }
-        if (!data.getEnforcementRiskCategories().contains(RiskCategory.VERBAL_OR_WRITTEN_THREATS)) {
-            data.setEnforcementThreatsDetails(null);
+        if (!data.getEnforcementOrder().getEnforcementRiskCategories()
+                .contains(RiskCategory.VERBAL_OR_WRITTEN_THREATS)) {
+            if (data.getEnforcementOrder().getRiskDetails() != null) {
+                data.getEnforcementOrder().getRiskDetails().setEnforcementVerbalOrWrittenThreatsDetails(null);
+            }
         }
-        if (!data.getEnforcementRiskCategories().contains(RiskCategory.PROTEST_GROUP_MEMBER)) {
-            data.setEnforcementProtestGroupMemberDetails(null);
+        if (!data.getEnforcementOrder().getEnforcementRiskCategories().contains(RiskCategory.PROTEST_GROUP_MEMBER)) {
+            if (data.getEnforcementOrder().getRiskDetails() != null) {
+                data.getEnforcementOrder().getRiskDetails().setEnforcementProtestGroupMemberDetails(null);
+            }
         }
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()

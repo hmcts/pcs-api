@@ -6,6 +6,8 @@ import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.EnforcementOrder;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.EnforcementRiskDetails;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,7 +25,9 @@ public class ProtestGroupPage implements CcdPageConfiguration {
                 <h3 class="govuk-heading-l" tabindex="0"> Which group are they a member of and how have they protested?
                 </h3>
                 """)
-                .mandatory(PCSCase::getEnforcementProtestGroupMemberDetails);
+                .complex(PCSCase::getEnforcementOrder)
+                .complex(EnforcementOrder::getRiskDetails)
+                .mandatory(EnforcementRiskDetails::getEnforcementProtestGroupMemberDetails);
     }
 
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
@@ -31,7 +35,7 @@ public class ProtestGroupPage implements CcdPageConfiguration {
         PCSCase data = details.getData();
         List<String> errors = new ArrayList<>();
 
-        String txt = data.getEnforcementProtestGroupMemberDetails();
+        String txt = data.getEnforcementOrder().getRiskDetails().getEnforcementProtestGroupMemberDetails();
         if (txt == null || txt.isBlank()) {
             errors.add("Enter details");
         } else if (txt.length() > 6800) {

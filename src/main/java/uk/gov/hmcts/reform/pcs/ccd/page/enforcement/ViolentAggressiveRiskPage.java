@@ -7,12 +7,15 @@ import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.EnforcementOrder;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.EnforcementRiskDetails;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Component
-public class EvictionViolentAggressiveDetailsPage implements CcdPageConfiguration {
+public class ViolentAggressiveRiskPage implements CcdPageConfiguration {
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
@@ -20,7 +23,11 @@ public class EvictionViolentAggressiveDetailsPage implements CcdPageConfiguratio
             .page("evictionViolentAggressiveDetails", this::midEvent)
             .pageLabel("Their violent or aggressive behaviour")
             .showCondition("enforcementRiskCategoriesCONTAINS\"VIOLENT_OR_AGGRESSIVE\"")
-            .optional(PCSCase::getEnforcementViolentDetails);
+            .label("evictionViolentAggressiveDetails-line-separator", "---")
+            .complex(PCSCase::getEnforcementOrder)
+            .complex(EnforcementOrder::getRiskDetails)
+            .mandatory(EnforcementRiskDetails::getEnforcementViolentDetails)
+            .label("evictionViolentAggressiveDetails-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
 
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
@@ -28,14 +35,14 @@ public class EvictionViolentAggressiveDetailsPage implements CcdPageConfiguratio
         PCSCase data = details.getData();
         List<String> errors = new ArrayList<>();
 
-        String txt = data.getEnforcementViolentDetails();
+        String txt = data.getEnforcementOrder() != null && data.getEnforcementOrder().getRiskDetails() != null
+            ? data.getEnforcementOrder().getRiskDetails().getEnforcementViolentDetails()
+            : null;
         if (txt == null || txt.isBlank()) {
             errors.add("Enter details");
         } else if (txt.length() > 6800) {
-            errors.add("""
-                In 'How have they been violent or aggressive?', 
-                you have entered more than the maximum number of characters (6800)
-                """);
+            errors.add("In 'How have they been violent or aggressive?', you have entered more than the "
+                + "maximum number of characters (6800)");
         }
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()

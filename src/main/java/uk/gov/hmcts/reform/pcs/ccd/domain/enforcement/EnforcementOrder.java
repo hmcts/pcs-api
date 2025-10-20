@@ -1,8 +1,11 @@
 package uk.gov.hmcts.reform.pcs.ccd.domain.enforcement;
 
+import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import lombok.Builder;
 import lombok.Data;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
+import uk.gov.hmcts.reform.pcs.ccd.domain.RiskCategory;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalChoice;
 
 /**
  * The main domain model representing an enforcement order.
@@ -19,4 +22,19 @@ public class EnforcementOrder {
     @CCD
     private NameAndAddressForEviction nameAndAddressForEviction;
 
+    @CCD(
+        label = "Does anyone living at the property pose a risk to the bailiff?"
+    )
+    private VerticalChoice confirmLivingAtProperty;
+
+    @CCD(
+        label = "What kind of risks do they pose to the bailiff?",
+        hint = "Include any risks posed by the defendants and also anyone else living at the property",
+        typeOverride = uk.gov.hmcts.ccd.sdk.type.FieldType.MultiSelectList,
+        typeParameterOverride = "RiskCategory"
+    )
+    private java.util.Set<RiskCategory> enforcementRiskCategories;
+
+    @JsonUnwrapped
+    private EnforcementRiskDetails riskDetails;
 }

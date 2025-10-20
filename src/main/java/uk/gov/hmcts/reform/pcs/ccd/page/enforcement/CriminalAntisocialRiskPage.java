@@ -7,12 +7,15 @@ import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.EnforcementOrder;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.EnforcementRiskDetails;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Component
-public class EvictionCriminalAntisocialDetailsPage implements CcdPageConfiguration {
+public class CriminalAntisocialRiskPage implements CcdPageConfiguration {
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
@@ -20,7 +23,11 @@ public class EvictionCriminalAntisocialDetailsPage implements CcdPageConfigurati
             .page("evictionCriminalAntisocialDetails", this::midEvent)
             .pageLabel("Their history of criminal or antisocial behaviour")
             .showCondition("enforcementRiskCategoriesCONTAINS\"CRIMINAL_OR_ANTISOCIAL\"")
-            .optional(PCSCase::getEnforcementCriminalDetails);
+            .label("evictionCriminalAntisocialDetails-line-separator", "---")
+            .complex(PCSCase::getEnforcementOrder)
+            .complex(EnforcementOrder::getRiskDetails)
+            .mandatory(EnforcementRiskDetails::getEnforcementCriminalDetails)
+            .label("evictionCriminalAntisocialDetails-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
 
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
@@ -28,14 +35,14 @@ public class EvictionCriminalAntisocialDetailsPage implements CcdPageConfigurati
         PCSCase data = details.getData();
         List<String> errors = new ArrayList<>();
 
-        String txt = data.getEnforcementCriminalDetails();
+        String txt = data.getEnforcementOrder() != null && data.getEnforcementOrder().getRiskDetails() != null
+            ? data.getEnforcementOrder().getRiskDetails().getEnforcementCriminalDetails()
+            : null;
         if (txt == null || txt.isBlank()) {
             errors.add("Enter details");
         } else if (txt.length() > 6800) {
-            errors.add("""
-                In 'What is their history of criminal or antisocial behaviour?', 
-                you have entered more than the maximum number of characters (6800)
-                """);
+            errors.add("In 'What is their history of criminal or antisocial behaviour?', "
+                + "you have entered more than the maximum number of characters (6800)");
         }
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
