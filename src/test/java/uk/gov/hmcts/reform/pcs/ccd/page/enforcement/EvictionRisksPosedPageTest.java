@@ -3,7 +3,6 @@ package uk.gov.hmcts.reform.pcs.ccd.page.enforcement;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
@@ -17,7 +16,6 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.params.provider.Arguments.arguments;
 
 class EvictionRisksPosedPageTest extends BasePageTest {
 
@@ -26,28 +24,13 @@ class EvictionRisksPosedPageTest extends BasePageTest {
         setPageUnderTest(new EvictionRisksPosedPage());
     }
 
-    @Test
-    void shouldRequireAtLeastOneSelection() {
+    @ParameterizedTest
+    @MethodSource("invalidSelectionScenarios")
+    void shouldRequireAtLeastOneSelectionInvalid(Set<RiskCategory> selected) {
         // Given
         PCSCase caseData = PCSCase.builder()
             .enforcementOrder(EnforcementOrder.builder()
-                .enforcementRiskCategories(Set.of())
-                .build())
-            .build();
-
-        // When
-        AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
-
-        // Then
-        assertThat(response.getErrors()).containsExactly("Select at least one option");
-    }
-
-    @Test
-    void shouldRequireAtLeastOneSelectionWhenNull() {
-        // Given
-        PCSCase caseData = PCSCase.builder()
-            .enforcementOrder(EnforcementOrder.builder()
-                .enforcementRiskCategories(null)
+                .enforcementRiskCategories(selected)
                 .build())
             .build();
 
@@ -60,7 +43,7 @@ class EvictionRisksPosedPageTest extends BasePageTest {
 
     @ParameterizedTest
     @MethodSource("validSelectionScenarios")
-    void shouldAllowValidSelections(Set<RiskCategory> selectedRisks, String description) {
+    void shouldAllowValidSelections(Set<RiskCategory> selectedRisks) {
         // Given
         PCSCase caseData = PCSCase.builder()
             .enforcementOrder(EnforcementOrder.builder()
@@ -173,35 +156,39 @@ class EvictionRisksPosedPageTest extends BasePageTest {
             .isEqualTo("Should be preserved");
     }
 
-    private static Stream<Arguments> validSelectionScenarios() {
+    private static Stream<Set<RiskCategory>> validSelectionScenarios() {
         return Stream.of(
-            arguments(Set.of(RiskCategory.VIOLENT_OR_AGGRESSIVE), "Single violent selection"),
-            arguments(Set.of(RiskCategory.FIREARMS_POSSESSION), "Single firearms selection"),
-            arguments(Set.of(RiskCategory.CRIMINAL_OR_ANTISOCIAL), "Single criminal selection"),
-            arguments(Set.of(RiskCategory.VERBAL_OR_WRITTEN_THREATS), "Single verbal threats selection"),
-            arguments(Set.of(RiskCategory.PROTEST_GROUP_MEMBER), "Single protest group selection"),
-            arguments(Set.of(RiskCategory.AGENCY_VISITS), "Single agency visits selection"),
-            arguments(Set.of(RiskCategory.AGGRESSIVE_ANIMALS), "Single aggressive animals selection"),
-            arguments(Set.of(
-                RiskCategory.VIOLENT_OR_AGGRESSIVE,
-                RiskCategory.FIREARMS_POSSESSION
-            ), "Two detail categories"),
-            arguments(Set.of(
+            Set.of(RiskCategory.VIOLENT_OR_AGGRESSIVE),
+            Set.of(RiskCategory.FIREARMS_POSSESSION),
+            Set.of(RiskCategory.CRIMINAL_OR_ANTISOCIAL),
+            Set.of(RiskCategory.VERBAL_OR_WRITTEN_THREATS),
+            Set.of(RiskCategory.PROTEST_GROUP_MEMBER),
+            Set.of(RiskCategory.AGENCY_VISITS),
+            Set.of(RiskCategory.AGGRESSIVE_ANIMALS),
+            Set.of(RiskCategory.VIOLENT_OR_AGGRESSIVE, RiskCategory.FIREARMS_POSSESSION),
+            Set.of(
                 RiskCategory.VIOLENT_OR_AGGRESSIVE,
                 RiskCategory.FIREARMS_POSSESSION,
                 RiskCategory.CRIMINAL_OR_ANTISOCIAL
-            ), "All three detail categories"),
-            arguments(Set.of(
+            ),
+            Set.of(
                 RiskCategory.VERBAL_OR_WRITTEN_THREATS,
                 RiskCategory.PROTEST_GROUP_MEMBER,
                 RiskCategory.AGENCY_VISITS,
                 RiskCategory.AGGRESSIVE_ANIMALS
-            ), "All non-detail categories"),
-            arguments(Set.of(
+            ),
+            Set.of(
                 RiskCategory.VIOLENT_OR_AGGRESSIVE,
                 RiskCategory.VERBAL_OR_WRITTEN_THREATS,
                 RiskCategory.PROTEST_GROUP_MEMBER
-            ), "Mixed detail and non-detail categories")
+            )
+        );
+    }
+
+    private static Stream<Set<RiskCategory>> invalidSelectionScenarios() {
+        return Stream.of(
+            Set.of(),
+            null
         );
     }
 }

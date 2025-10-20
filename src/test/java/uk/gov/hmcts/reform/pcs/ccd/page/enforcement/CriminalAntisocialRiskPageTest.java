@@ -3,7 +3,6 @@ package uk.gov.hmcts.reform.pcs.ccd.page.enforcement;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
@@ -17,7 +16,6 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.params.provider.Arguments.arguments;
 
 class CriminalAntisocialRiskPageTest extends BasePageTest {
 
@@ -26,52 +24,15 @@ class CriminalAntisocialRiskPageTest extends BasePageTest {
         setPageUnderTest(new CriminalAntisocialRiskPage());
     }
 
-    @Test
-    void shouldRequireText() {
+    @ParameterizedTest
+    @MethodSource("invalidTextScenarios")
+    void shouldRequireTextWhenInvalid(String invalidText) {
         // Given
         PCSCase caseData = PCSCase.builder()
             .enforcementOrder(EnforcementOrder.builder()
                 .enforcementRiskCategories(Set.of(RiskCategory.CRIMINAL_OR_ANTISOCIAL))
                 .riskDetails(EnforcementRiskDetails.builder()
-                    .enforcementCriminalDetails(null)
-                    .build())
-                .build())
-            .build();
-
-        // When
-        AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
-
-        // Then
-        assertThat(response.getErrors()).containsExactly("Enter details");
-    }
-
-    @Test
-    void shouldRequireTextWhenBlank() {
-        // Given
-        PCSCase caseData = PCSCase.builder()
-            .enforcementOrder(EnforcementOrder.builder()
-                .enforcementRiskCategories(Set.of(RiskCategory.CRIMINAL_OR_ANTISOCIAL))
-                .riskDetails(EnforcementRiskDetails.builder()
-                    .enforcementCriminalDetails("   ")
-                    .build())
-                .build())
-            .build();
-
-        // When
-        AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
-
-        // Then
-        assertThat(response.getErrors()).containsExactly("Enter details");
-    }
-
-    @Test
-    void shouldRequireTextWhenEmpty() {
-        // Given
-        PCSCase caseData = PCSCase.builder()
-            .enforcementOrder(EnforcementOrder.builder()
-                .enforcementRiskCategories(Set.of(RiskCategory.CRIMINAL_OR_ANTISOCIAL))
-                .riskDetails(EnforcementRiskDetails.builder()
-                    .enforcementCriminalDetails("")
+                    .enforcementCriminalDetails(invalidText)
                     .build())
                 .build())
             .build();
@@ -204,13 +165,21 @@ class CriminalAntisocialRiskPageTest extends BasePageTest {
             .isEqualTo("Some firearms text");
     }
 
-    private static Stream<Arguments> validTextScenarios() {
+    private static Stream<String> validTextScenarios() {
         return Stream.of(
-            arguments("Short text", "Short description"),
-            arguments("The defendant has a history of criminal and antisocial behaviour", "Medium description"),
-            arguments("A".repeat(1000), "Long description (1000 chars)"),
-            arguments("A".repeat(5000), "Very long description (5000 chars)"),
-            arguments("A".repeat(6799), "Just under limit (6799 chars)")
+            "Short text",
+            "The defendant has a history of criminal and antisocial behaviour",
+            "A".repeat(1000),
+            "A".repeat(5000),
+            "A".repeat(6799)
+        );
+    }
+
+    private static Stream<String> invalidTextScenarios() {
+        return Stream.of(
+            (String) null,
+            "   ",
+            ""
         );
     }
 }

@@ -3,7 +3,6 @@ package uk.gov.hmcts.reform.pcs.ccd.page.enforcement;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
@@ -16,7 +15,6 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.params.provider.Arguments.arguments;
 
 class ViolentAggressiveRiskPageTest extends BasePageTest {
 
@@ -25,52 +23,15 @@ class ViolentAggressiveRiskPageTest extends BasePageTest {
         setPageUnderTest(new ViolentAggressiveRiskPage());
     }
 
-    @Test
-    void shouldRequireText() {
+    @ParameterizedTest
+    @MethodSource("invalidTextScenarios")
+    void shouldRequireTextWhenInvalid(String invalidText) {
         // Given
         PCSCase caseData = PCSCase.builder()
             .enforcementOrder(EnforcementOrder.builder()
                 .enforcementRiskCategories(Set.of(RiskCategory.VIOLENT_OR_AGGRESSIVE))
                 .riskDetails(uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.EnforcementRiskDetails.builder()
-                    .enforcementViolentDetails(null)
-                    .build())
-                .build())
-            .build();
-
-        // When
-        AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
-
-        // Then
-        assertThat(response.getErrors()).containsExactly("Enter details");
-    }
-
-    @Test
-    void shouldRequireTextWhenBlank() {
-        // Given
-        PCSCase caseData = PCSCase.builder()
-            .enforcementOrder(EnforcementOrder.builder()
-                .enforcementRiskCategories(Set.of(RiskCategory.VIOLENT_OR_AGGRESSIVE))
-                .riskDetails(uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.EnforcementRiskDetails.builder()
-                    .enforcementViolentDetails("   ")
-                    .build())
-                .build())
-            .build();
-
-        // When
-        AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
-
-        // Then
-        assertThat(response.getErrors()).containsExactly("Enter details");
-    }
-
-    @Test
-    void shouldRequireTextWhenEmpty() {
-        // Given
-        PCSCase caseData = PCSCase.builder()
-            .enforcementOrder(EnforcementOrder.builder()
-                .enforcementRiskCategories(Set.of(RiskCategory.VIOLENT_OR_AGGRESSIVE))
-                .riskDetails(uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.EnforcementRiskDetails.builder()
-                    .enforcementViolentDetails("")
+                    .enforcementViolentDetails(invalidText)
                     .build())
                 .build())
             .build();
@@ -84,7 +45,7 @@ class ViolentAggressiveRiskPageTest extends BasePageTest {
 
     @ParameterizedTest
     @MethodSource("validTextScenarios")
-    void shouldAcceptValidText(String text, String description) {
+    void shouldAcceptValidText(String text) {
         // Given
         PCSCase caseData = PCSCase.builder()
             .enforcementOrder(EnforcementOrder.builder()
@@ -203,13 +164,21 @@ class ViolentAggressiveRiskPageTest extends BasePageTest {
             .isEqualTo("Some criminal text");
     }
 
-    private static Stream<Arguments> validTextScenarios() {
+    private static Stream<String> validTextScenarios() {
         return Stream.of(
-            arguments("Short text", "Short description"),
-            arguments("The defendant has been violent on multiple occasions", "Medium description"),
-            arguments("A".repeat(1000), "Long description (1000 chars)"),
-            arguments("A".repeat(5000), "Very long description (5000 chars)"),
-            arguments("A".repeat(6799), "Just under limit (6799 chars)")
+            "Short text",
+            "The defendant has been violent on multiple occasions",
+            "A".repeat(1000),
+            "A".repeat(5000),
+            "A".repeat(6799)
+        );
+    }
+
+    private static Stream<String> invalidTextScenarios() {
+        return Stream.of(
+            (String) null,
+            "   ",
+            ""
         );
     }
 }
