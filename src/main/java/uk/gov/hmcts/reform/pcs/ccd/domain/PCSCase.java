@@ -571,7 +571,6 @@ public class PCSCase {
     )
     private LanguageUsed languageUsed;
 
-
     @JsonUnwrapped
     private DefendantCircumstances defendantCircumstances;
 
