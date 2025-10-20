@@ -7,22 +7,16 @@ import au.com.dius.pact.consumer.junit5.PactConsumerTestExt;
 import au.com.dius.pact.consumer.junit5.PactTestFor;
 import au.com.dius.pact.core.model.V4Pact;
 import au.com.dius.pact.core.model.annotations.Pact;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import feign.Feign;
+import feign.jackson.JacksonDecoder;
+import feign.jackson.JacksonEncoder;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
-import org.springframework.boot.autoconfigure.http.HttpMessageConvertersAutoConfiguration;
-import org.springframework.cloud.openfeign.FeignAutoConfiguration;
-import org.springframework.cloud.openfeign.FeignClientsConfiguration;
-import org.springframework.context.annotation.ComponentScan;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
-import org.springframework.test.util.ReflectionTestUtils;
 import uk.gov.hmcts.reform.fees.client.FeesApi;
-import uk.gov.hmcts.reform.fees.client.FeesClient;
 import uk.gov.hmcts.reform.fees.client.model.FeeLookupResponseDto;
 
 import java.math.BigDecimal;
@@ -30,23 +24,11 @@ import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@ImportAutoConfiguration({
-    FeignAutoConfiguration.class,
-    FeignClientsConfiguration.class,
-    HttpMessageConvertersAutoConfiguration.class
-})
-@ComponentScan(basePackages = "uk.gov.hmcts.reform.fees.client")
-@TestPropertySource(properties = {
-    "fees.api.url=http://localhost:8080",
-    "fees.api.service=possession claim",
-    "fees.api.jurisdiction1=civil",
-    "fees.api.jurisdiction2=county court"
-})
-@ExtendWith({PactConsumerTestExt.class, SpringExtension.class})
+@ExtendWith(PactConsumerTestExt.class)
 @PactTestFor(providerName = "feeRegister_lookUp")
 class FeeRegistrationLookupConsumerTest {
 
-    private final FeesClient feesClient;
+    private FeesApi feesApi;
 
     private static final String POSSESSION_SERVICE = "possession claim";
     private static final String CIVIL_JURISDICTION = "civil";
@@ -55,15 +37,14 @@ class FeeRegistrationLookupConsumerTest {
     private static final String ISSUE_EVENT = "issue";
     private static final BigDecimal AMOUNT = new BigDecimal("1");
 
-    @Autowired
-    FeeRegistrationLookupConsumerTest(FeesClient feesClient) {
-        this.feesClient = feesClient;
-    }
-
     @BeforeEach
     void setUp(MockServer mockServer) {
-        FeesApi feesApi = (FeesApi) ReflectionTestUtils.getField(feesClient, "feesApi");
-        ReflectionTestUtils.setField(feesApi, "url", mockServer.getUrl());
+        ObjectMapper objectMapper = new ObjectMapper();
+
+        feesApi = Feign.builder()
+            .encoder(new JacksonEncoder(objectMapper))
+            .decoder(new JacksonDecoder(objectMapper))
+            .target(FeesApi.class, mockServer.getUrl());
     }
 
     @Pact(provider = "feeRegister_lookUp", consumer = "pcs_api")
@@ -80,12 +61,12 @@ class FeeRegistrationLookupConsumerTest {
             .uponReceiving("a request for Possession fees")
             .path("/fees-register/fees/lookup")
             .method("GET")
-            .query("service=" + POSSESSION_SERVICE
-                       + "&jurisdiction1=" + CIVIL_JURISDICTION
-                       + "&jurisdiction2=" + COUNTY_COURT
-                       + "&channel=" + DEFAULT_CHANNEL
-                       + "&event=" + ISSUE_EVENT
-                       + "&amount_or_volume=" + AMOUNT)
+            .matchQuery("service", POSSESSION_SERVICE)
+            .matchQuery("jurisdiction1", CIVIL_JURISDICTION)
+            .matchQuery("jurisdiction2", COUNTY_COURT)
+            .matchQuery("channel", DEFAULT_CHANNEL)
+            .matchQuery("event", ISSUE_EVENT)
+            .matchQuery("amount_or_volume", AMOUNT.toString())
             .willRespondWith()
             .status(HttpStatus.OK.value())
             .headers(Map.of(HttpHeaders.CONTENT_TYPE, "application/json"))
@@ -95,8 +76,11 @@ class FeeRegistrationLookupConsumerTest {
 
     @Test
     @PactTestFor(pactMethod = "createFeeLookupPact")
-    void shouldSuccessfullyLookupFee(MockServer mockServer) {
-        FeeLookupResponseDto response = feesClient.lookupFee(
+    void shouldSuccessfullyLookupFee() {
+        FeeLookupResponseDto response = feesApi.lookupFee(
+            POSSESSION_SERVICE,
+            CIVIL_JURISDICTION,
+            COUNTY_COURT,
             DEFAULT_CHANNEL,
             ISSUE_EVENT,
             AMOUNT
