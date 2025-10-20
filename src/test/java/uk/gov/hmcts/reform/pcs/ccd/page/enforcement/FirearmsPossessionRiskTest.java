@@ -17,11 +17,11 @@ import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class FirearmsPossessionRiskPageTest extends BasePageTest {
+class FirearmsPossessionRiskTest extends BasePageTest {
 
     @BeforeEach
     void setUp() {
-        setPageUnderTest(new FirearmsPossessionRiskPage());
+        setPageUnderTest(new FirearmsPossessionRisk());
     }
 
     @ParameterizedTest
@@ -106,7 +106,7 @@ class FirearmsPossessionRiskPageTest extends BasePageTest {
 
         // Then
         assertThat(response.getErrors()).containsExactly(
-            FirearmsPossessionRiskPage.buildCharacterLimitError()
+            FirearmsPossessionRisk.buildCharacterLimitError()
         );
     }
 
@@ -128,7 +128,7 @@ class FirearmsPossessionRiskPageTest extends BasePageTest {
 
         // Then
         assertThat(response.getErrors()).containsExactly(
-            FirearmsPossessionRiskPage.buildCharacterLimitError()
+            FirearmsPossessionRisk.buildCharacterLimitError()
         );
     }
 

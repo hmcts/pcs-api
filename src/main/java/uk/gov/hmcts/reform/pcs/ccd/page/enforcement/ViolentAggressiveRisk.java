@@ -15,19 +15,19 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Component
-public class FirearmsPossessionRiskPage implements CcdPageConfiguration {
+public class ViolentAggressiveRisk implements CcdPageConfiguration {
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
-            .page("evictionFirearmsPossessionDetails", this::midEvent)
-            .pageLabel("Their history of firearm possession")
-            .showCondition("enforcementRiskCategoriesCONTAINS\"FIREARMS_POSSESSION\"")
-            .label("evictionFirearmsPossessionDetails-line-separator", "---")
+            .page("evictionViolentAggressiveDetails", this::midEvent)
+            .pageLabel("Their violent or aggressive behaviour")
+            .showCondition("enforcementRiskCategoriesCONTAINS\"VIOLENT_OR_AGGRESSIVE\"")
+            .label("evictionViolentAggressiveDetails-line-separator", "---")
             .complex(PCSCase::getEnforcementOrder)
             .complex(EnforcementOrder::getRiskDetails)
-            .mandatory(EnforcementRiskDetails::getEnforcementFirearmsDetails)
-            .label("evictionFirearmsPossessionDetails-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
+            .mandatory(EnforcementRiskDetails::getEnforcementViolentDetails)
+            .label("evictionViolentAggressiveDetails-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
 
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
@@ -36,7 +36,7 @@ public class FirearmsPossessionRiskPage implements CcdPageConfiguration {
         List<String> errors = new ArrayList<>();
 
         String txt = data.getEnforcementOrder() != null && data.getEnforcementOrder().getRiskDetails() != null
-            ? data.getEnforcementOrder().getRiskDetails().getEnforcementFirearmsDetails()
+            ? data.getEnforcementOrder().getRiskDetails().getEnforcementViolentDetails()
             : null;
         if (txt == null || txt.isBlank()) {
             errors.add("Enter details");
@@ -51,7 +51,7 @@ public class FirearmsPossessionRiskPage implements CcdPageConfiguration {
     }
 
     public static String buildCharacterLimitError() {
-        return "In 'What is their history of firearm possession?', you have entered more than the "
+        return "In 'How have they been violent or aggressive?', you have entered more than the "
             + "maximum number of characters (6800)";
     }
 }

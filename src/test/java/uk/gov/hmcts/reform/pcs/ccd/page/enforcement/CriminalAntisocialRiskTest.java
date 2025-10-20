@@ -7,6 +7,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.EnforcementOrder;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.EnforcementRiskDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.RiskCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
@@ -16,11 +17,11 @@ import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class ViolentAggressiveRiskPageTest extends BasePageTest {
+class CriminalAntisocialRiskTest extends BasePageTest {
 
     @BeforeEach
     void setUp() {
-        setPageUnderTest(new ViolentAggressiveRiskPage());
+        setPageUnderTest(new CriminalAntisocialRisk());
     }
 
     @ParameterizedTest
@@ -29,9 +30,9 @@ class ViolentAggressiveRiskPageTest extends BasePageTest {
         // Given
         PCSCase caseData = PCSCase.builder()
             .enforcementOrder(EnforcementOrder.builder()
-                .enforcementRiskCategories(Set.of(RiskCategory.VIOLENT_OR_AGGRESSIVE))
-                .riskDetails(uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.EnforcementRiskDetails.builder()
-                    .enforcementViolentDetails(invalidText)
+                .enforcementRiskCategories(Set.of(RiskCategory.CRIMINAL_OR_ANTISOCIAL))
+                .riskDetails(EnforcementRiskDetails.builder()
+                    .enforcementCriminalDetails(invalidText)
                     .build())
                 .build())
             .build();
@@ -49,9 +50,9 @@ class ViolentAggressiveRiskPageTest extends BasePageTest {
         // Given
         PCSCase caseData = PCSCase.builder()
             .enforcementOrder(EnforcementOrder.builder()
-                .enforcementRiskCategories(Set.of(RiskCategory.VIOLENT_OR_AGGRESSIVE))
-                .riskDetails(uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.EnforcementRiskDetails.builder()
-                    .enforcementViolentDetails(text)
+                .enforcementRiskCategories(Set.of(RiskCategory.CRIMINAL_OR_ANTISOCIAL))
+                .riskDetails(EnforcementRiskDetails.builder()
+                    .enforcementCriminalDetails(text)
                     .build())
                 .build())
             .build();
@@ -62,7 +63,7 @@ class ViolentAggressiveRiskPageTest extends BasePageTest {
         // Then
         assertThat(response.getErrors()).isNull();
         assertThat(response.getData().getEnforcementOrder()
-            .getRiskDetails().getEnforcementViolentDetails()).isEqualTo(text);
+            .getRiskDetails().getEnforcementCriminalDetails()).isEqualTo(text);
     }
 
     @Test
@@ -71,9 +72,9 @@ class ViolentAggressiveRiskPageTest extends BasePageTest {
         String text = "a".repeat(6800);
         PCSCase caseData = PCSCase.builder()
             .enforcementOrder(EnforcementOrder.builder()
-                .enforcementRiskCategories(Set.of(RiskCategory.VIOLENT_OR_AGGRESSIVE))
-                .riskDetails(uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.EnforcementRiskDetails.builder()
-                    .enforcementViolentDetails(text)
+                .enforcementRiskCategories(Set.of(RiskCategory.CRIMINAL_OR_ANTISOCIAL))
+                .riskDetails(EnforcementRiskDetails.builder()
+                    .enforcementCriminalDetails(text)
                     .build())
                 .build())
             .build();
@@ -84,7 +85,7 @@ class ViolentAggressiveRiskPageTest extends BasePageTest {
         // Then
         assertThat(response.getErrors()).isNull();
         assertThat(response.getData().getEnforcementOrder()
-            .getRiskDetails().getEnforcementViolentDetails()).isEqualTo(text);
+            .getRiskDetails().getEnforcementCriminalDetails()).isEqualTo(text);
     }
 
     @Test
@@ -93,9 +94,9 @@ class ViolentAggressiveRiskPageTest extends BasePageTest {
         String longText = "a".repeat(6801);
         PCSCase caseData = PCSCase.builder()
             .enforcementOrder(EnforcementOrder.builder()
-                .enforcementRiskCategories(Set.of(RiskCategory.VIOLENT_OR_AGGRESSIVE))
-                .riskDetails(uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.EnforcementRiskDetails.builder()
-                    .enforcementViolentDetails(longText)
+                .enforcementRiskCategories(Set.of(RiskCategory.CRIMINAL_OR_ANTISOCIAL))
+                .riskDetails(EnforcementRiskDetails.builder()
+                    .enforcementCriminalDetails(longText)
                     .build())
                 .build())
             .build();
@@ -105,7 +106,7 @@ class ViolentAggressiveRiskPageTest extends BasePageTest {
 
         // Then
         assertThat(response.getErrors()).containsExactly(
-            ViolentAggressiveRiskPage.buildCharacterLimitError()
+            CriminalAntisocialRisk.buildCharacterLimitError()
         );
     }
 
@@ -115,9 +116,9 @@ class ViolentAggressiveRiskPageTest extends BasePageTest {
         String longText = "a".repeat(7000);
         PCSCase caseData = PCSCase.builder()
             .enforcementOrder(EnforcementOrder.builder()
-                .enforcementRiskCategories(Set.of(RiskCategory.VIOLENT_OR_AGGRESSIVE))
-                .riskDetails(uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.EnforcementRiskDetails.builder()
-                    .enforcementViolentDetails(longText)
+                .enforcementRiskCategories(Set.of(RiskCategory.CRIMINAL_OR_ANTISOCIAL))
+                .riskDetails(EnforcementRiskDetails.builder()
+                    .enforcementCriminalDetails(longText)
                     .build())
                 .build())
             .build();
@@ -127,21 +128,21 @@ class ViolentAggressiveRiskPageTest extends BasePageTest {
 
         // Then
         assertThat(response.getErrors()).containsExactly(
-            ViolentAggressiveRiskPage.buildCharacterLimitError()
+            CriminalAntisocialRisk.buildCharacterLimitError()
         );
     }
 
     @Test
     void shouldPreserveDataWhenValid() {
         // Given
-        String validText = "The defendant has been violent on multiple occasions";
+        String validText = "The defendant has a history of criminal and antisocial behaviour";
         PCSCase caseData = PCSCase.builder()
             .enforcementOrder(EnforcementOrder.builder()
-                .enforcementRiskCategories(Set.of(RiskCategory.VIOLENT_OR_AGGRESSIVE))
-                .riskDetails(uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.EnforcementRiskDetails.builder()
-                    .enforcementViolentDetails(validText)
+                .enforcementRiskCategories(Set.of(RiskCategory.CRIMINAL_OR_ANTISOCIAL))
+                .riskDetails(EnforcementRiskDetails.builder()
+                    .enforcementCriminalDetails(validText)
+                    .enforcementViolentDetails("Some violent text")
                     .enforcementFirearmsDetails("Some firearms text")
-                    .enforcementCriminalDetails("Some criminal text")
                     .build())
                 .build())
             .build();
@@ -152,20 +153,20 @@ class ViolentAggressiveRiskPageTest extends BasePageTest {
         // Then
         assertThat(response.getErrors()).isNull();
         assertThat(response.getData().getEnforcementOrder()
-            .getRiskDetails().getEnforcementViolentDetails())
+            .getRiskDetails().getEnforcementCriminalDetails())
             .isEqualTo(validText);
+        assertThat(response.getData().getEnforcementOrder()
+            .getRiskDetails().getEnforcementViolentDetails())
+            .isEqualTo("Some violent text");
         assertThat(response.getData().getEnforcementOrder()
             .getRiskDetails().getEnforcementFirearmsDetails())
             .isEqualTo("Some firearms text");
-        assertThat(response.getData().getEnforcementOrder()
-            .getRiskDetails().getEnforcementCriminalDetails())
-            .isEqualTo("Some criminal text");
     }
 
     private static Stream<String> validTextScenarios() {
         return Stream.of(
             "Short text",
-            "The defendant has been violent on multiple occasions",
+            "The defendant has a history of criminal and antisocial behaviour",
             "A".repeat(1000),
             "A".repeat(5000),
             "A".repeat(6799)

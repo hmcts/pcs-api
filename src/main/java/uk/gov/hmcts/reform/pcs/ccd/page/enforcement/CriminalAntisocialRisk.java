@@ -15,7 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Component
-public class CriminalAntisocialRiskPage implements CcdPageConfiguration {
+public class CriminalAntisocialRisk implements CcdPageConfiguration {
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
