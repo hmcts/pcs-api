@@ -18,11 +18,11 @@ import java.util.stream.Stream;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 
-class EvictionFirearmsPossessionDetailsPageTest extends BasePageTest {
+class CriminalAntisocialRiskPageTest extends BasePageTest {
 
     @BeforeEach
     void setUp() {
-        setPageUnderTest(new EvictionFirearmsPossessionDetailsPage());
+        setPageUnderTest(new CriminalAntisocialRiskPage());
     }
 
     @Test
@@ -30,8 +30,8 @@ class EvictionFirearmsPossessionDetailsPageTest extends BasePageTest {
         // Given
         PCSCase caseData = PCSCase.builder()
             .enforcementOrder(EnforcementOrder.builder()
-                .enforcementRiskCategories(Set.of(RiskCategory.FIREARMS_POSSESSION))
-                .enforcementFirearmsDetails(null)
+                .enforcementRiskCategories(Set.of(RiskCategory.CRIMINAL_OR_ANTISOCIAL))
+                .enforcementCriminalDetails(null)
                 .build())
             .build();
 
@@ -47,8 +47,8 @@ class EvictionFirearmsPossessionDetailsPageTest extends BasePageTest {
         // Given
         PCSCase caseData = PCSCase.builder()
             .enforcementOrder(EnforcementOrder.builder()
-                .enforcementRiskCategories(Set.of(RiskCategory.FIREARMS_POSSESSION))
-                .enforcementFirearmsDetails("   ")
+                .enforcementRiskCategories(Set.of(RiskCategory.CRIMINAL_OR_ANTISOCIAL))
+                .enforcementCriminalDetails("   ")
                 .build())
             .build();
 
@@ -64,8 +64,8 @@ class EvictionFirearmsPossessionDetailsPageTest extends BasePageTest {
         // Given
         PCSCase caseData = PCSCase.builder()
             .enforcementOrder(EnforcementOrder.builder()
-                .enforcementRiskCategories(Set.of(RiskCategory.FIREARMS_POSSESSION))
-                .enforcementFirearmsDetails("")
+                .enforcementRiskCategories(Set.of(RiskCategory.CRIMINAL_OR_ANTISOCIAL))
+                .enforcementCriminalDetails("")
                 .build())
             .build();
 
@@ -82,8 +82,8 @@ class EvictionFirearmsPossessionDetailsPageTest extends BasePageTest {
         // Given
         PCSCase caseData = PCSCase.builder()
             .enforcementOrder(EnforcementOrder.builder()
-                .enforcementRiskCategories(Set.of(RiskCategory.FIREARMS_POSSESSION))
-                .enforcementFirearmsDetails(text)
+                .enforcementRiskCategories(Set.of(RiskCategory.CRIMINAL_OR_ANTISOCIAL))
+                .enforcementCriminalDetails(text)
                 .build())
             .build();
 
@@ -92,7 +92,7 @@ class EvictionFirearmsPossessionDetailsPageTest extends BasePageTest {
 
         // Then
         assertThat(response.getErrors()).isNull();
-        assertThat(response.getData().getEnforcementOrder().getEnforcementFirearmsDetails()).isEqualTo(text);
+        assertThat(response.getData().getEnforcementOrder().getEnforcementCriminalDetails()).isEqualTo(text);
     }
 
     @Test
@@ -101,8 +101,8 @@ class EvictionFirearmsPossessionDetailsPageTest extends BasePageTest {
         String text = "a".repeat(6800);
         PCSCase caseData = PCSCase.builder()
             .enforcementOrder(EnforcementOrder.builder()
-                .enforcementRiskCategories(Set.of(RiskCategory.FIREARMS_POSSESSION))
-                .enforcementFirearmsDetails(text)
+                .enforcementRiskCategories(Set.of(RiskCategory.CRIMINAL_OR_ANTISOCIAL))
+                .enforcementCriminalDetails(text)
                 .build())
             .build();
 
@@ -111,7 +111,7 @@ class EvictionFirearmsPossessionDetailsPageTest extends BasePageTest {
 
         // Then
         assertThat(response.getErrors()).isNull();
-        assertThat(response.getData().getEnforcementOrder().getEnforcementFirearmsDetails()).isEqualTo(text);
+        assertThat(response.getData().getEnforcementOrder().getEnforcementCriminalDetails()).isEqualTo(text);
     }
 
     @Test
@@ -120,8 +120,8 @@ class EvictionFirearmsPossessionDetailsPageTest extends BasePageTest {
         String longText = "a".repeat(6801);
         PCSCase caseData = PCSCase.builder()
             .enforcementOrder(EnforcementOrder.builder()
-                .enforcementRiskCategories(Set.of(RiskCategory.FIREARMS_POSSESSION))
-                .enforcementFirearmsDetails(longText)
+                .enforcementRiskCategories(Set.of(RiskCategory.CRIMINAL_OR_ANTISOCIAL))
+                .enforcementCriminalDetails(longText)
                 .build())
             .build();
 
@@ -130,7 +130,7 @@ class EvictionFirearmsPossessionDetailsPageTest extends BasePageTest {
 
         // Then
         assertThat(response.getErrors()).containsExactly(
-            "In 'What is their history of firearm possession?', you have entered more than the "
+            "In 'What is their history of criminal or antisocial behaviour?', you have entered more than the "
                 + "maximum number of characters (6800)"
         );
     }
@@ -141,8 +141,8 @@ class EvictionFirearmsPossessionDetailsPageTest extends BasePageTest {
         String longText = "a".repeat(7000);
         PCSCase caseData = PCSCase.builder()
             .enforcementOrder(EnforcementOrder.builder()
-                .enforcementRiskCategories(Set.of(RiskCategory.FIREARMS_POSSESSION))
-                .enforcementFirearmsDetails(longText)
+                .enforcementRiskCategories(Set.of(RiskCategory.CRIMINAL_OR_ANTISOCIAL))
+                .enforcementCriminalDetails(longText)
                 .build())
             .build();
 
@@ -151,7 +151,7 @@ class EvictionFirearmsPossessionDetailsPageTest extends BasePageTest {
 
         // Then
         assertThat(response.getErrors()).containsExactly(
-            "In 'What is their history of firearm possession?', you have entered more than the "
+            "In 'What is their history of criminal or antisocial behaviour?', you have entered more than the "
                 + "maximum number of characters (6800)"
         );
     }
@@ -159,13 +159,13 @@ class EvictionFirearmsPossessionDetailsPageTest extends BasePageTest {
     @Test
     void shouldPreserveDataWhenValid() {
         // Given
-        String validText = "The defendant has a history of firearm possession";
+        String validText = "The defendant has a history of criminal and antisocial behaviour";
         PCSCase caseData = PCSCase.builder()
             .enforcementOrder(EnforcementOrder.builder()
-                .enforcementRiskCategories(Set.of(RiskCategory.FIREARMS_POSSESSION))
-                .enforcementFirearmsDetails(validText)
+                .enforcementRiskCategories(Set.of(RiskCategory.CRIMINAL_OR_ANTISOCIAL))
+                .enforcementCriminalDetails(validText)
                 .enforcementViolentDetails("Some violent text")
-                .enforcementCriminalDetails("Some criminal text")
+                .enforcementFirearmsDetails("Some firearms text")
                 .build())
             .build();
 
@@ -174,18 +174,18 @@ class EvictionFirearmsPossessionDetailsPageTest extends BasePageTest {
 
         // Then
         assertThat(response.getErrors()).isNull();
-        assertThat(response.getData().getEnforcementOrder().getEnforcementFirearmsDetails())
+        assertThat(response.getData().getEnforcementOrder().getEnforcementCriminalDetails())
             .isEqualTo(validText);
         assertThat(response.getData().getEnforcementOrder().getEnforcementViolentDetails())
             .isEqualTo("Some violent text");
-        assertThat(response.getData().getEnforcementOrder().getEnforcementCriminalDetails())
-            .isEqualTo("Some criminal text");
+        assertThat(response.getData().getEnforcementOrder().getEnforcementFirearmsDetails())
+            .isEqualTo("Some firearms text");
     }
 
     private static Stream<Arguments> validTextScenarios() {
         return Stream.of(
             arguments("Short text", "Short description"),
-            arguments("The defendant has a history of firearm possession", "Medium description"),
+            arguments("The defendant has a history of criminal and antisocial behaviour", "Medium description"),
             arguments("A".repeat(1000), "Long description (1000 chars)"),
             arguments("A".repeat(5000), "Very long description (5000 chars)"),
             arguments("A".repeat(6799), "Just under limit (6799 chars)")

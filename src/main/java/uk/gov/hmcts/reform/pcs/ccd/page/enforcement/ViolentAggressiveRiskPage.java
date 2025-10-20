@@ -14,7 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Component
-public class EvictionViolentAggressiveDetailsPage implements CcdPageConfiguration {
+public class ViolentAggressiveRiskPage implements CcdPageConfiguration {
 
     @Override
     public void addTo(PageBuilder pageBuilder) {

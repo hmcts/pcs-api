@@ -18,11 +18,11 @@ import java.util.stream.Stream;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 
-class EvictionViolentAggressiveDetailsPageTest extends BasePageTest {
+class ViolentAggressiveRiskPageTest extends BasePageTest {
 
     @BeforeEach
     void setUp() {
-        setPageUnderTest(new EvictionViolentAggressiveDetailsPage());
+        setPageUnderTest(new ViolentAggressiveRiskPage());
     }
 
     @Test
