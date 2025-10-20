@@ -54,6 +54,10 @@ public class FeesAndPayService {
             throw new FeeNotFoundException("Fee not found for feeType: " + feeTypeKey);
         }
 
+        log.info("Fee type '{}' found in configuration", feeTypeKey);
+        log.info("Looking up fee with channel: {}, event: {}, amount/volume: {}",
+            ref.getChannel(), ref.getEvent(), ref.getAmountOrVolume());
+
         try {
             return feesClient.lookupFee(
                 ref.getChannel(),
