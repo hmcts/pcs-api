@@ -62,6 +62,7 @@ test.describe('[Create Case - England] @Master @nightly', async () => {
     await performAction('selectClaimantType', claimantType.england.registeredProviderForSocialHousing);
     await performAction('selectClaimType', claimType.no);
     await performAction('selectClaimantName', claimantName.yes);
+    await performAction('clickButtonAndVerifyPageNavigation', claimantName.continue, contactPreferences.mainHeader);
     await performAction('selectContactPreferences', {
       notifications: contactPreferences.yes,
       correspondenceAddress: contactPreferences.yes,
@@ -101,7 +102,10 @@ test.describe('[Create Case - England] @Master @nightly', async () => {
     await performValidation('mainHeader', noticeOfYourIntention.mainHeader);
     await performValidation('text', {"text": noticeOfYourIntention.guidanceOnPosessionNoticePeriodsLink, "elementType": "paragraphLink"})
     await performValidation('text', {"text": noticeOfYourIntention.servedNoticeInteractiveText, "elementType": "inlineText"});
-    await performAction('selectNoticeOfYourIntention', noticeOfYourIntention.yes);
+    await performAction('selectNoticeOfYourIntention', {
+      question: noticeOfYourIntention.servedNoticeInteractiveText,
+      option: noticeOfYourIntention.yes
+    });
     await performValidation('mainHeader', noticeDetails.mainHeader);
     await performAction('selectNoticeDetails', {
       howDidYouServeNotice: noticeDetails.byFirstClassPost,
@@ -169,6 +173,7 @@ test.describe('[Create Case - England] @Master @nightly', async () => {
     await performAction('selectClaimantType', claimantType.england.registeredProviderForSocialHousing);
     await performAction('selectClaimType', claimType.no);
     await performAction('selectClaimantName', claimantName.yes);
+    await performAction('clickButtonAndVerifyPageNavigation', claimantName.continue, contactPreferences.mainHeader);
     await performAction('selectContactPreferences', {
       notifications: contactPreferences.yes,
       correspondenceAddress: contactPreferences.yes,
@@ -209,11 +214,10 @@ test.describe('[Create Case - England] @Master @nightly', async () => {
     await performValidation('mainHeader', noticeOfYourIntention.mainHeader);
     await performValidation('text', {"text": noticeOfYourIntention.guidanceOnPosessionNoticePeriodsLink, "elementType": "paragraphLink"})
     await performValidation('text', {"text": noticeOfYourIntention.servedNoticeInteractiveText, "elementType": "inlineText"});
-    await performAction('selectNoticeOfYourIntention', noticeOfYourIntention.yes);
-    await performValidation('mainHeader', noticeDetails.mainHeader);
-    await performAction('selectNoticeDetails', {
-      howDidYouServeNotice: noticeDetails.byDeliveringAtPermittedPlace,
-      day: '31', month: '01', year: '1962'});
+    await performAction('selectNoticeOfYourIntention', {
+      question: noticeOfYourIntention.servedNoticeInteractiveText,
+      option: noticeOfYourIntention.no
+    });
     // await performValidation('mainHeader', rentDetails.mainHeader);
     // await performAction('provideRentDetails', { rentFrequencyOption: 'weekly', rentAmount: '800' });
     // await performValidation('mainHeader', dailyRentAmount.mainHeader);
@@ -275,6 +279,7 @@ test.describe('[Create Case - England] @Master @nightly', async () => {
     await performAction('selectClaimantType', claimantType.england.registeredProviderForSocialHousing);
     await performAction('selectClaimType', claimType.no);
     await performAction('selectClaimantName', claimantName.yes);
+    await performAction('clickButtonAndVerifyPageNavigation', claimantName.continue, contactPreferences.mainHeader);
     await performAction('selectContactPreferences', {
       notifications: contactPreferences.yes,
       correspondenceAddress: contactPreferences.yes,
@@ -310,7 +315,10 @@ test.describe('[Create Case - England] @Master @nightly', async () => {
     await performValidation('mainHeader', noticeOfYourIntention.mainHeader);
     await performValidation('text', {"text": noticeOfYourIntention.guidanceOnPosessionNoticePeriodsLink, "elementType": "paragraphLink"})
     await performValidation('text', {"text": noticeOfYourIntention.servedNoticeInteractiveText, "elementType": "inlineText"});
-    await performAction('selectNoticeOfYourIntention', noticeOfYourIntention.yes);
+    await performAction('selectNoticeOfYourIntention', {
+      question: noticeOfYourIntention.servedNoticeInteractiveText,
+      option: noticeOfYourIntention.yes
+    });
     await performValidation('mainHeader', noticeDetails.mainHeader);
     await performAction('selectNoticeDetails', {
       howDidYouServeNotice: noticeDetails.byPersonallyHandling,
@@ -379,6 +387,7 @@ test.describe('[Create Case - England] @Master @nightly', async () => {
     await performAction('selectClaimantType', claimantType.england.registeredProviderForSocialHousing);
     await performAction('selectClaimType', claimType.no);
     await performAction('selectClaimantName', claimantName.yes);
+    await performAction('clickButtonAndVerifyPageNavigation', claimantName.continue, contactPreferences.mainHeader);
     await performAction('selectContactPreferences', {
       notifications: contactPreferences.yes,
       correspondenceAddress: contactPreferences.yes,
@@ -411,7 +420,10 @@ test.describe('[Create Case - England] @Master @nightly', async () => {
     await performValidation('mainHeader', noticeOfYourIntention.mainHeader);
     await performValidation('text', {"text": noticeOfYourIntention.guidanceOnPosessionNoticePeriodsLink, "elementType": "paragraphLink"})
     await performValidation('text', {"text": noticeOfYourIntention.servedNoticeInteractiveText, "elementType": "inlineText"});
-    await performAction('selectNoticeOfYourIntention', noticeOfYourIntention.yes);
+    await performAction('selectNoticeOfYourIntention', {
+      question: noticeOfYourIntention.servedNoticeInteractiveText,
+      option: noticeOfYourIntention.yes
+    });
     await performValidation('mainHeader', noticeDetails.mainHeader);
     await performAction('selectNoticeDetails', {
       howDidYouServeNotice: noticeDetails.byEmail,
