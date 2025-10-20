@@ -13,12 +13,12 @@ public class OccupationLicenceDetailsWales implements CcdPageConfiguration {
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
             .page("occupationLicenceDetailsWales")
-            .pageLabel("License Details (placeholder)")
+            .pageLabel("Licence Details (placeholder)")
             .showCondition("legislativeCountry=\"Wales\"")
             .label("occupationLicenceDetailsWales-info", """
                 ---
                 <section tabindex="0">
-                  <h2 class="govuk-heading-l">Licene Details</h2>
+                  <h2 class="govuk-heading-l">Licence Details</h2>
                 </section>
                 """)
             .mandatory(PCSCase::getOccupationLicenceTypeWales);
