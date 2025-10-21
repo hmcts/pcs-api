@@ -64,8 +64,8 @@ class EnforcementRiskValidationUtilsTest {
                 ),
                 Arguments.of(
                         RiskCategory.CRIMINAL_OR_ANTISOCIAL,
-                        "In 'What is their history of criminal or antisocial behaviour?', you have entered more than the "
-                                + "maximum number of characters (6800)"
+                        "In 'What is their history of criminal or antisocial behaviour?', you have entered more "
+                                + "than the maximum number of characters (6800)"
                 ),
                 Arguments.of(
                         RiskCategory.VERBAL_OR_WRITTEN_THREATS,
@@ -79,8 +79,8 @@ class EnforcementRiskValidationUtilsTest {
                 ),
                 Arguments.of(
                         RiskCategory.AGENCY_VISITS,
-                        "In 'What visits from police or social services have there been?', you have entered more than the "
-                                + "maximum number of characters (6800)"
+                        "In 'What visits from police or social services have there been?', you have entered more "
+                                + "than the maximum number of characters (6800)"
                 ),
                 Arguments.of(
                         RiskCategory.AGGRESSIVE_ANIMALS,
