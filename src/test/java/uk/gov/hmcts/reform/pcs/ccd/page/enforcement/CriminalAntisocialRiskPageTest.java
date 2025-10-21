@@ -8,7 +8,7 @@ import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.EnforcementRiskDetails;
-import uk.gov.hmcts.reform.pcs.ccd.domain.RiskCategory;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.RiskCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
 
@@ -106,8 +106,7 @@ class CriminalAntisocialRiskPageTest extends BasePageTest {
 
         // Then
         assertThat(response.getErrors()).containsExactly(
-            "In 'What is their history of criminal or antisocial behaviour?', you have entered more than the "
-                + "maximum number of characters (6800)"
+            CriminalAntisocialRiskPage.buildCharacterLimitError()
         );
     }
 
@@ -129,8 +128,7 @@ class CriminalAntisocialRiskPageTest extends BasePageTest {
 
         // Then
         assertThat(response.getErrors()).containsExactly(
-            "In 'What is their history of criminal or antisocial behaviour?', you have entered more than the "
-                + "maximum number of characters (6800)"
+            CriminalAntisocialRiskPage.buildCharacterLimitError()
         );
     }
 
@@ -177,7 +175,7 @@ class CriminalAntisocialRiskPageTest extends BasePageTest {
 
     private static Stream<String> invalidTextScenarios() {
         return Stream.of(
-            (String) null,
+            null,
             "   ",
             ""
         );
