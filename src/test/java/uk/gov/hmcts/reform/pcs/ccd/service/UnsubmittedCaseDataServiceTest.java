@@ -34,6 +34,8 @@ class UnsubmittedCaseDataServiceTest {
     private UnsubmittedCaseDataRepository unsubmittedCaseDataRepository;
     @Mock
     private ObjectMapper objectMapper;
+    @Mock
+    private DraftCaseJsonMerger draftCaseJsonMerger;
     @Captor
     private ArgumentCaptor<UnsubmittedCaseDataEntity> unsubmittedCaseDataEntityCaptor;
 
@@ -41,7 +43,7 @@ class UnsubmittedCaseDataServiceTest {
 
     @BeforeEach
     void setUp() {
-        underTest = new UnsubmittedCaseDataService(unsubmittedCaseDataRepository, objectMapper);
+        underTest = new UnsubmittedCaseDataService(unsubmittedCaseDataRepository, objectMapper, draftCaseJsonMerger);
     }
 
     @Test
@@ -98,7 +100,7 @@ class UnsubmittedCaseDataServiceTest {
         when(unsubmittedCaseDataRepository.findByCaseReference(CASE_REFERENCE)).thenReturn(Optional.empty());
 
         // When
-        underTest.saveUnsubmittedCaseData(CASE_REFERENCE, caseData);
+        underTest.patchUnsubmittedCaseData(CASE_REFERENCE, caseData);
 
         // Then
         verify(unsubmittedCaseDataRepository).save(unsubmittedCaseDataEntityCaptor.capture());
@@ -111,23 +113,30 @@ class UnsubmittedCaseDataServiceTest {
     @Test
     void shouldUpdateExistingUnsubmittedCaseData() throws JsonProcessingException {
         // Given
-        String caseDataJson = "case data json";
-        PCSCase caseData = mock(PCSCase.class);
-        when(objectMapper.writeValueAsString(caseData)).thenReturn(caseDataJson);
+        String existingCaseDataJson = "existing case data json";
+        String newCaseDataJson = "new case data json";
+        String mergedCaseDataJson = "merged case data JSON";
+
+        PCSCase newCaseData = mock(PCSCase.class);
+        when(objectMapper.writeValueAsString(newCaseData)).thenReturn(newCaseDataJson);
 
         UnsubmittedCaseDataEntity unsubmittedCaseDataEntity = mock(UnsubmittedCaseDataEntity.class);
+        when(unsubmittedCaseDataEntity.getCaseData()).thenReturn(existingCaseDataJson);
+
+        when(draftCaseJsonMerger.mergeJson(existingCaseDataJson, newCaseDataJson)).thenReturn(mergedCaseDataJson);
+
         when(unsubmittedCaseDataRepository.findByCaseReference(CASE_REFERENCE))
             .thenReturn(Optional.of(unsubmittedCaseDataEntity));
 
         // When
-        underTest.saveUnsubmittedCaseData(CASE_REFERENCE, caseData);
+        underTest.patchUnsubmittedCaseData(CASE_REFERENCE, newCaseData);
 
         // Then
         verify(unsubmittedCaseDataRepository).save(unsubmittedCaseDataEntityCaptor.capture());
         UnsubmittedCaseDataEntity savedEntity = unsubmittedCaseDataEntityCaptor.getValue();
 
         assertThat(savedEntity).isSameAs(unsubmittedCaseDataEntity);
-        verify(unsubmittedCaseDataEntity).setCaseData(caseDataJson);
+        verify(unsubmittedCaseDataEntity).setCaseData(mergedCaseDataJson);
     }
 
     @Test
@@ -171,7 +180,7 @@ class UnsubmittedCaseDataServiceTest {
         when(objectMapper.writeValueAsString(caseData)).thenThrow(jsonProcessingException);
 
         // When
-        Throwable throwable = catchThrowable(() -> underTest.saveUnsubmittedCaseData(CASE_REFERENCE, caseData));
+        Throwable throwable = catchThrowable(() -> underTest.patchUnsubmittedCaseData(CASE_REFERENCE, caseData));
 
         // Then
         assertThat(throwable)
