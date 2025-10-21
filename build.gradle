@@ -101,6 +101,7 @@ configurations {
 ccd {
   configDir = file('build/definitions')
   decentralised = true
+  runtimeIndexing = true // brings the custom ES indexer in as an implementation dependency
 }
 
 tasks.withType(JavaCompile).configureEach {
