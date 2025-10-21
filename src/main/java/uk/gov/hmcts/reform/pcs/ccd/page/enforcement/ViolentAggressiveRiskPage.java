@@ -28,6 +28,7 @@ public class ViolentAggressiveRiskPage implements CcdPageConfiguration {
             .complex(PCSCase::getEnforcementOrder)
             .complex(EnforcementOrder::getRiskDetails)
             .mandatory(EnforcementRiskDetails::getEnforcementViolentDetails)
+            .done()
             .label("evictionViolentAggressiveDetails-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
 

@@ -28,6 +28,7 @@ public class CriminalAntisocialRiskPage implements CcdPageConfiguration {
             .complex(PCSCase::getEnforcementOrder)
             .complex(EnforcementOrder::getRiskDetails)
             .mandatory(EnforcementRiskDetails::getEnforcementCriminalDetails)
+            .done()
             .label("evictionCriminalAntisocialDetails-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
 

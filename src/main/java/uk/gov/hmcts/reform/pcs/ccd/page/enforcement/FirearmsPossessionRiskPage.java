@@ -28,6 +28,7 @@ public class FirearmsPossessionRiskPage implements CcdPageConfiguration {
             .complex(PCSCase::getEnforcementOrder)
             .complex(EnforcementOrder::getRiskDetails)
             .mandatory(EnforcementRiskDetails::getEnforcementFirearmsDetails)
+            .done()
             .label("evictionFirearmsPossessionDetails-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
 
