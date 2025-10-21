@@ -5,6 +5,7 @@ export const claimantCircumstances = {
   yes: 'Yes',
   no: 'No',
   continue: 'Continue',
-  claimantCircumstanceInfoTextAreaLabel: 'Give details about Claimants circumstances',
+ // claimantCircumstanceInfoTextAreaLabel: 'Give details about Claimants circumstances',
+  claimantCircumstanceInfoTextAreaLabel: 'Give details about circumstances',
   claimantCircumstanceInfoInputData: 'Sample Claimant circumstances input data',
 };
