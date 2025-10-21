@@ -145,7 +145,8 @@ class ResumePossessionClaimTest extends BaseEventTest {
             defendantsDetails, noRentArrearsGroundsForPossessionReason, additionalReasonsForPossession,
             secureOrFlexibleGroundsForPossessionReasons, mediationAndSettlement, claimantCircumstancesPage,
             introductoryDemotedOtherGroundsReasons, defendantCircumstancesPage, suspensionOfRightToBuyOrderReason,
-            statementOfExpressTerms, demotionOfTenancyOrderReason, organisationNameService, claimantDetailsWalesPage, schedulerClient
+            statementOfExpressTerms, demotionOfTenancyOrderReason, organisationNameService,
+            claimantDetailsWalesPage, schedulerClient
         );
 
         setEventUnderTest(underTest);
