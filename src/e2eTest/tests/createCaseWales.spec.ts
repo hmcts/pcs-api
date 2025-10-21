@@ -89,14 +89,14 @@ test.describe('[Create Case - Wales] @Master @nightly', async () => {
       correspondenceAddressSame: defendantDetails.yes
     });
     //Following 85 86 line can be updated to securecontractLicenceDetails once HDPI-2365 is done
-    await performAction('selectTenancyOrLicenceDetails', {
-      tenancyOrLicenceType: tenancyLicenceDetails.assuredTenancy});
+    await performAction('check', 'Secure contract');
+    await performAction('clickButton', 'Continue');
     await performValidation('mainHeader', whatAreYourGroundsForPossessionWales.mainHeader);
     await performAction('selectYourPossessionGrounds', {
       discretionary: [whatAreYourGroundsForPossessionWales.discretionary.rentArrears],
       mandatory: [whatAreYourGroundsForPossessionWales.mandatory.failureToGiveupPossession]
     });
-    await performAction('clickButton', reasonsForPossession.continue);
+   /* await performAction('clickButton', reasonsForPossession.continue);
     // following code can be removed once wales journey routing is done HDPI-2365
     await performAction('selectGroundsForPossession', {groundsRadioInput: groundsForPossession.yes});
     await performAction('selectRentArrearsPossessionGround', {
@@ -158,7 +158,7 @@ test.describe('[Create Case - Wales] @Master @nightly', async () => {
       ['formLabelValue', propertyDetails.addressLine2Label, addressDetails.addressLine2],
       ['formLabelValue', propertyDetails.townOrCityLabel, addressDetails.townOrCity],
       ['formLabelValue', propertyDetails.postcodeZipcodeLabel, addressDetails.walesCourtAssignedPostcode],
-      ['formLabelValue', propertyDetails.countryLabel, addressDetails.country]);
+      ['formLabelValue', propertyDetails.countryLabel, addressDetails.country]);*/
   });
 
   // The sections commented out will be fixed as part of the User Story https://tools.hmcts.net/jira/browse/HDPI-2123
@@ -197,16 +197,15 @@ test.describe('[Create Case - Wales] @Master @nightly', async () => {
       email: defendantDetails.no,
     });
     //Following 186 to 188 needs update once routing is done for wales journey HDPI-2365
-    await performValidation('mainHeader', tenancyLicenceDetails.mainHeader);
-    await performAction('selectTenancyOrLicenceDetails', {
-      tenancyOrLicenceType: tenancyLicenceDetails.flexibleTenancy});
+    await performAction('check', 'Secure contract');
+    await performAction('clickButton', 'Continue');
     await performValidation('mainHeader', whatAreYourGroundsForPossessionWales.mainHeader);
     await performAction('selectYourPossessionGrounds', {
       discretionary: [whatAreYourGroundsForPossessionWales.discretionary.estateManagementGrounds],
       discretionaryEstateGrounds: [whatAreYourGroundsForPossessionWales.discretionary.buildingWorks],
       mandatory: [whatAreYourGroundsForPossessionWales.mandatory.breakClauseNotice],
     });
-    await performAction('clickButton', reasonsForPossession.continue);
+    /*await performAction('clickButton', reasonsForPossession.continue);
     // following code can be removed once wales journey routing is done HDPI-2365
     await performAction('selectYourPossessionGrounds', {
       discretionary: [whatAreYourGroundsForPossession.discretionary.rentArrearsOrBreachOfTenancy]
@@ -267,7 +266,7 @@ test.describe('[Create Case - Wales] @Master @nightly', async () => {
       ['formLabelValue', propertyDetails.addressLine2Label, addressDetails.addressLine2],
       ['formLabelValue', propertyDetails.townOrCityLabel, addressDetails.townOrCity],
       ['formLabelValue', propertyDetails.postcodeZipcodeLabel, addressDetails.walesCourtAssignedPostcode],
-      ['formLabelValue', propertyDetails.countryLabel, addressDetails.country]);
+      ['formLabelValue', propertyDetails.countryLabel, addressDetails.country]);*/
   });
 
   // The sections commented out will be fixed as part of the User Story https://tools.hmcts.net/jira/browse/HDPI-2123
@@ -295,15 +294,14 @@ test.describe('[Create Case - Wales] @Master @nightly', async () => {
       email: defendantDetails.yes,
       correspondenceAddressSame: defendantDetails.yes
     });
-    await performAction('selectTenancyOrLicenceDetails', {
-      tenancyOrLicenceType: tenancyLicenceDetails.secureTenancy
-    });
+    await performAction('check', 'Secure contract');
+    await performAction('clickButton', 'Continue');
     await performValidation('mainHeader', whatAreYourGroundsForPossessionWales.mainHeader);
     await performAction('selectYourPossessionGrounds', {
       discretionary: [whatAreYourGroundsForPossessionWales.discretionary.antiSocialBehaviour],
     });
-    await performAction('clickButton', reasonsForPossession.continue);
-    // following code can be removed once wales journey routing is done HDPI-2365
+    // Commenting below code as tickets are yet to be implemented for wales journey
+    /*await performAction('clickButton', reasonsForPossession.continue);
     await performAction('selectYourPossessionGrounds', {
       discretionary: [whatAreYourGroundsForPossession.discretionary.rentArrearsOrBreachOfTenancy, whatAreYourGroundsForPossession.discretionary.deteriorationOfFurniture],
       mandatory: [whatAreYourGroundsForPossession.mandatory.antiSocialBehaviour],
@@ -382,6 +380,6 @@ test.describe('[Create Case - Wales] @Master @nightly', async () => {
       ['formLabelValue', propertyDetails.addressLine2Label, addressDetails.addressLine2],
       ['formLabelValue', propertyDetails.townOrCityLabel, addressDetails.townOrCity],
       ['formLabelValue', propertyDetails.postcodeZipcodeLabel, addressDetails.walesCourtAssignedPostcode],
-      ['formLabelValue', propertyDetails.countryLabel, addressDetails.country]);
+      ['formLabelValue', propertyDetails.countryLabel, addressDetails.country]);*/
   });
 });

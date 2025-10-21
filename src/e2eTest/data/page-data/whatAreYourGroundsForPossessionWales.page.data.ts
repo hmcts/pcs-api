@@ -1,6 +1,6 @@
 export const whatAreYourGroundsForPossessionWales = {
   title: 'Create a case - HM Courts & Tribunals Service - GOV.UK',
-  mainHeader: 'What are your grounds for possession? (Wales)',
+  mainHeader: 'What are your grounds for possession?',
   mandatory:
     {
       failureToGiveupPossession: 'Failure to give up possession on date specified in contract-holder’s notice (section 170)',
