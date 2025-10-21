@@ -61,7 +61,7 @@ class CriminalAntisocialRiskPageTest extends BasePageTest {
         AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
 
         // Then
-        assertThat(response.getErrors()).isNull();
+        assertThat(response.getErrors()).isEmpty();
         assertThat(response.getData().getEnforcementOrder()
             .getRiskDetails().getEnforcementCriminalDetails()).isEqualTo(text);
     }
@@ -151,7 +151,7 @@ class CriminalAntisocialRiskPageTest extends BasePageTest {
         AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
 
         // Then
-        assertThat(response.getErrors()).isNull();
+        assertThat(response.getErrors()).isEmpty();
         assertThat(response.getData().getEnforcementOrder()
             .getRiskDetails().getEnforcementCriminalDetails())
             .isEqualTo(validText);

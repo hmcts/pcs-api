@@ -61,7 +61,7 @@ class FirearmsPossessionRiskPageTest extends BasePageTest {
         AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
 
         // Then
-        assertThat(response.getErrors()).isNull();
+        assertThat(response.getErrors()).isEmpty();
         assertThat(response.getData().getEnforcementOrder()
             .getRiskDetails().getEnforcementFirearmsDetails()).isEqualTo(text);
     }
@@ -151,7 +151,7 @@ class FirearmsPossessionRiskPageTest extends BasePageTest {
         AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
 
         // Then
-        assertThat(response.getErrors()).isNull();
+        assertThat(response.getErrors()).isEmpty();
         assertThat(response.getData().getEnforcementOrder()
             .getRiskDetails().getEnforcementFirearmsDetails())
             .isEqualTo(validText);

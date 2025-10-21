@@ -50,7 +50,7 @@ public class FirearmsPossessionRiskPage implements CcdPageConfiguration {
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
             .data(data)
-            .errors(errors.isEmpty() ? null : errors)
+            .errors(errors)
             .build();
     }
 

@@ -60,7 +60,7 @@ class ViolentAggressiveRiskPageTest extends BasePageTest {
         AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
 
         // Then
-        assertThat(response.getErrors()).isNull();
+        assertThat(response.getErrors()).isEmpty();
         assertThat(response.getData().getEnforcementOrder()
             .getRiskDetails().getEnforcementViolentDetails()).isEqualTo(text);
     }
@@ -150,7 +150,7 @@ class ViolentAggressiveRiskPageTest extends BasePageTest {
         AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
 
         // Then
-        assertThat(response.getErrors()).isNull();
+        assertThat(response.getErrors()).isEmpty();
         assertThat(response.getData().getEnforcementOrder()
             .getRiskDetails().getEnforcementViolentDetails())
             .isEqualTo(validText);
