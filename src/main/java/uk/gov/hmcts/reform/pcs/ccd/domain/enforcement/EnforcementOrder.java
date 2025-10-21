@@ -4,11 +4,13 @@ import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import lombok.Builder;
 import lombok.Data;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
+import uk.gov.hmcts.ccd.sdk.type.FieldType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
-
+import java.util.Set;
 /**
  * The main domain model representing an enforcement order.
  */
+
 @Builder
 @Data
 public class EnforcementOrder {
@@ -28,10 +30,10 @@ public class EnforcementOrder {
     @CCD(
         label = "What kind of risks do they pose to the bailiff?",
         hint = "Include any risks posed by the defendants and also anyone else living at the property",
-        typeOverride = uk.gov.hmcts.ccd.sdk.type.FieldType.MultiSelectList,
+        typeOverride = FieldType.MultiSelectList,
         typeParameterOverride = "RiskCategory"
     )
-    private java.util.Set<RiskCategory> enforcementRiskCategories;
+    private Set<RiskCategory> enforcementRiskCategories;
 
     @JsonUnwrapped
     @CCD(
