@@ -1,6 +1,5 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.enforcement;
 
-import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
@@ -15,7 +14,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.RiskCategory;
 import java.util.ArrayList;
 import java.util.List;
 
-@Component
 public class ViolentAggressiveRiskPage implements CcdPageConfiguration {
 
     @Override
