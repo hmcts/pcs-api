@@ -644,7 +644,6 @@ public class PCSCase {
     @JsonUnwrapped
     private SuspensionOfRightToBuyDemotionOfTenancy  suspensionOfRightToBuyDemotionOfTenancy;
 
-
     @CCD(
         label = "Discretionary grounds",
         hint = "Select all that apply",
@@ -684,4 +683,7 @@ public class PCSCase {
         typeParameterOverride = "OccupationLicenceTypeWales"
     )
     private OccupationLicenceTypeWales occupationLicenceTypeWales;
+
+    @JsonUnwrapped(prefix = "wales")
+    private WalesNoticeDetails walesNoticeDetails;
 }
