@@ -105,7 +105,7 @@ class ViolentAggressiveRiskPageTest extends BasePageTest {
 
         // Then
         assertThat(response.getErrors()).containsExactly(
-            ViolentAggressiveRiskPage.buildCharacterLimitError()
+            ViolentAggressiveRiskPage.characterLimitErrorMessage
         );
     }
 
@@ -127,7 +127,7 @@ class ViolentAggressiveRiskPageTest extends BasePageTest {
 
         // Then
         assertThat(response.getErrors()).containsExactly(
-            ViolentAggressiveRiskPage.buildCharacterLimitError()
+            ViolentAggressiveRiskPage.characterLimitErrorMessage
         );
     }
 

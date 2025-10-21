@@ -17,6 +17,9 @@ import java.util.List;
 @Component
 public class FirearmsPossessionRiskPage implements CcdPageConfiguration {
 
+    public static String characterLimitErrorMessage = "In 'What is their history of firearm possession?', "
+            + "you have entered more than the maximum number of characters (6800)";
+
     @Override
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
@@ -43,7 +46,7 @@ public class FirearmsPossessionRiskPage implements CcdPageConfiguration {
             errors.add("Enter details");
         } else if (txt.length() > 6800) {
             // TODO: Use standard character limit constant and TextAreaValidationService from PR #751
-            errors.add(buildCharacterLimitError());
+            errors.add(characterLimitErrorMessage);
         }
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
@@ -52,10 +55,6 @@ public class FirearmsPossessionRiskPage implements CcdPageConfiguration {
             .build();
     }
 
-    public static String buildCharacterLimitError() {
-        return "In 'What is their history of firearm possession?', you have entered more than the "
-            + "maximum number of characters (6800)";
-    }
 }
 
 

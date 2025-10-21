@@ -106,7 +106,7 @@ class FirearmsPossessionRiskPageTest extends BasePageTest {
 
         // Then
         assertThat(response.getErrors()).containsExactly(
-            FirearmsPossessionRiskPage.buildCharacterLimitError()
+            FirearmsPossessionRiskPage.characterLimitErrorMessage
         );
     }
 
@@ -128,7 +128,7 @@ class FirearmsPossessionRiskPageTest extends BasePageTest {
 
         // Then
         assertThat(response.getErrors()).containsExactly(
-            FirearmsPossessionRiskPage.buildCharacterLimitError()
+            FirearmsPossessionRiskPage.characterLimitErrorMessage
         );
     }
 
