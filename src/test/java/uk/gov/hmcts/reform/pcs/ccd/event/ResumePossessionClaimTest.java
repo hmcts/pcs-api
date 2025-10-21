@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.event;
 
+import com.github.kagkarlsson.scheduler.SchedulerClient;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -20,10 +21,12 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.page.builder.SavingPageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.page.builder.SavingPageBuilderFactory;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ClaimantDetailsWalesPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ContactPreferences;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.DefendantsDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.NoticeDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ResumeClaim;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.SelectClaimantType;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.TenancyLicenceDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.UploadAdditionalDocumentsDetails;
 import uk.gov.hmcts.reform.pcs.ccd.service.ClaimService;
@@ -32,6 +35,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.UnsubmittedCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
+import uk.gov.hmcts.reform.pcs.reference.service.OrganisationNameService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.util.List;
@@ -70,6 +74,8 @@ class ResumePossessionClaimTest extends BaseEventTest {
     @Mock
     private ResumeClaim resumeClaim;
     @Mock
+    private SelectClaimantType selectClaimantType;
+    @Mock
     private UnsubmittedCaseDataService unsubmittedCaseDataService;
     @Mock
     private ContactPreferences contactPreferences;
@@ -83,6 +89,13 @@ class ResumePossessionClaimTest extends BaseEventTest {
     private TenancyLicenceDetails tenancyLicenceDetails;
     @Mock
     private UploadAdditionalDocumentsDetails uploadAdditionalDocumentsDetails;
+    @Mock
+    private OrganisationNameService organisationNameService;
+    @Mock
+    private ClaimantDetailsWalesPage claimantDetailsWalesPage;
+    @Mock
+    private SchedulerClient schedulerClient;
+
 
     @BeforeEach
     void setUp() {
@@ -97,9 +110,9 @@ class ResumePossessionClaimTest extends BaseEventTest {
             pcsCaseService, securityContextService,
             partyService, claimService,
             savingPageBuilderFactory, resumeClaim,
-            unsubmittedCaseDataService, noticeDetails,
+            unsubmittedCaseDataService, selectClaimantType, noticeDetails,
             uploadAdditionalDocumentsDetails, tenancyLicenceDetails, contactPreferences,
-            defendantsDetails
+            defendantsDetails, organisationNameService, claimantDetailsWalesPage, schedulerClient
         );
 
         setEventUnderTest(underTest);
@@ -142,6 +155,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
         // Given
         String expectedUserEmail = "user@test.com";
         when(userDetails.getSub()).thenReturn(expectedUserEmail);
+        when(organisationNameService.getOrganisationNameForCurrentUser()).thenReturn(null);
 
         AddressUK propertyAddress = AddressUK.builder()
             .addressLine1("10 High Street")
@@ -161,7 +175,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
         PCSCase updatedCaseData = callStartHandler(caseData);
 
         // Then
-        assertThat(updatedCaseData.getClaimantName()).isEqualTo(expectedUserEmail);
+        assertThat(updatedCaseData.getOrganisationName()).isEqualTo(expectedUserEmail);
         assertThat(updatedCaseData.getClaimantContactEmail()).isEqualTo(expectedUserEmail);
         assertThat(updatedCaseData.getFormattedClaimantContactAddress())
             .isEqualTo("10 High Street<br>London<br>W1 2BC");

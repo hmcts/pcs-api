@@ -60,6 +60,8 @@ from the PCS AAT key vault:
 | IDAM_CLIENT_SECRET       | secret: pcs-api-idam-secret                                      |
 | PCS_IDAM_SYSTEM_USERNAME | secret: idam-system-user-name                                    |
 | PCS_IDAM_SYSTEM_PASSWORD | secret: idam-system-user-password                                |
+| PCS_PRD_ADMIN_USERNAME   | secret: pcs-prd-admin-username                                   |
+| PCS_PRD_ADMIN_PASSWORD   | secret: pcs-prd-admin-password                                   |
 
 
 Finally, run the service with the `bootWithCCD` task as above.
