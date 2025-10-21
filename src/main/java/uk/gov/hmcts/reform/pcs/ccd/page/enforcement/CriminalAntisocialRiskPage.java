@@ -38,9 +38,11 @@ public class CriminalAntisocialRiskPage implements CcdPageConfiguration {
         String txt = data.getEnforcementOrder() != null && data.getEnforcementOrder().getRiskDetails() != null
             ? data.getEnforcementOrder().getRiskDetails().getEnforcementCriminalDetails()
             : null;
+        // TODO: Refactor validation logic to use TextAreaValidationService from PR #751 when merged
         if (txt == null || txt.isBlank()) {
             errors.add("Enter details");
         } else if (txt.length() > 6800) {
+            // TODO: Use standard character limit constant and TextAreaValidationService from PR #751
             errors.add(buildCharacterLimitError());
         }
 
