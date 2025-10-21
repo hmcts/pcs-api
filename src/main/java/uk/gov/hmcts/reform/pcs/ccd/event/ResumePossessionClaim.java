@@ -82,6 +82,7 @@ import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 import uk.gov.hmcts.reform.pcs.feesandpay.task.FeesAndPayTaskComponent;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
+import uk.gov.hmcts.reform.pcs.reference.service.OrganisationNameService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.time.Instant;
@@ -113,6 +114,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
     private final TenancyLicenceDetails tenancyLicenceDetails;
     private final ContactPreferences contactPreferences;
     private final DefendantsDetails defendantsDetails;
+    private final OrganisationNameService organisationNameService;
     private final ClaimantDetailsWalesPage claimantDetailsWales;
     private final SchedulerClient schedulerClient;
 
@@ -187,9 +189,19 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
     private PCSCase start(EventPayload<PCSCase, State> eventPayload) {
         PCSCase caseData = eventPayload.caseData();
 
-        String userDetails = securityContextService.getCurrentUserDetails().getSub();
-        caseData.setClaimantName(userDetails);
-        caseData.setClaimantContactEmail(userDetails);
+        String userEmail = securityContextService.getCurrentUserDetails().getSub();
+
+        // Fetch organisation name from rd-professional API
+        String organisationName = organisationNameService.getOrganisationNameForCurrentUser();
+        if (organisationName != null) {
+            caseData.setOrganisationName(organisationName);
+        } else {
+            // Fallback to user details if organisation name cannot be retrieved
+            caseData.setOrganisationName(userEmail);
+            log.warn("Could not retrieve organisation name, using user details as fallback");
+        }
+
+        caseData.setClaimantContactEmail(userEmail);
 
         AddressUK propertyAddress = caseData.getPropertyAddress();
         if (propertyAddress == null) {

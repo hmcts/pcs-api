@@ -21,7 +21,7 @@ plugins {
   id 'org.flywaydb.flyway' version "$flywayVersion"
   id 'org.sonarqube' version '6.3.1.5724'
   id 'net.serenity-bdd.serenity-gradle-plugin' version "$serenityBddVersion"
-  id 'hmcts.ccd.sdk' version '6.1.0'
+  id 'hmcts.ccd.sdk' version '6.3.0'
   id 'com.github.hmcts.rse-cft-lib' version '0.19.1894'
   id 'io.freefair.lombok' version '8.14.2'
   id 'au.com.dius.pact' version '4.6.17'
@@ -101,6 +101,7 @@ configurations {
 ccd {
   configDir = file('build/definitions')
   decentralised = true
+  runtimeIndexing = true // brings the custom ES indexer in as an implementation dependency
 }
 
 tasks.withType(JavaCompile).configureEach {
@@ -343,7 +344,7 @@ dependencies {
   implementation group: 'commons-fileupload', name: 'commons-fileupload', version: '1.6.0'
   implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.19.0'
   implementation group: 'org.projectlombok', name: 'lombok', version: lombokVersion
-  implementation group: 'com.github.kagkarlsson', name: 'db-scheduler-spring-boot-starter', version: '16.1.0'
+  implementation group: 'com.github.kagkarlsson', name: 'db-scheduler-spring-boot-starter', version: '16.2.0'
   implementation group: 'org.apache.tomcat.embed', name: 'tomcat-embed-core', version: tomcatEmbedVersion
   implementation group: 'org.apache.tomcat.embed', name: 'tomcat-embed-websocket', version: tomcatEmbedVersion
   annotationProcessor group: 'org.projectlombok', name: 'lombok', version: lombokVersion
