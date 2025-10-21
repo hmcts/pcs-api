@@ -481,15 +481,19 @@ export class CreateCaseAction implements IAction {
       circumstanceOption: string,
       claimantInput: string
     };
-    const nameClaimant = claimantsName.substring(claimantsName.length - 1) == 's' ? `${claimantsName}'` : `${claimantsName}'s`;
+    //As discussed with pod1 team, part of HDPI-2011, Below steps will be enabled back when dynamic organisation name handled in new ticket on claimant circumstances page.
+    //const nameClaimant = claimantsName.substring(claimantsName.length - 1) == 's' ? `${claimantsName}'` : `${claimantsName}'s`;
     const claimOption = claimData.circumstanceOption;
-    await performAction('clickRadioButton', {
-      question: claimantCircumstances.claimantCircumstanceInfo.replace("Claimants", nameClaimant),
+    /*await performAction('clickRadioButton', {
+     // question: claimantCircumstances.claimantCircumstanceInfo.replace("Claimants", nameClaimant),
+      question: claimantCircumstances.claimantCircumstanceInfo,
       option: claimOption
     }
-    );
+    );*/
+    await performAction('clickRadioButton', claimData.circumstanceOption);
     if (claimOption == claimantCircumstances.yes) {
-      await performAction('inputText', claimantCircumstances.claimantCircumstanceInfoTextAreaLabel.replace("Claimants", nameClaimant), claimData.claimantInput);
+      //await performAction('inputText', claimantCircumstances.claimantCircumstanceInfoTextAreaLabel.replace("Claimants", nameClaimant), claimData.claimantInput);
+      await performAction('inputText', claimantCircumstances.claimantCircumstanceInfoTextAreaLabel, claimData.claimantInput);
     }
     await performAction('clickButton', claimantCircumstances.continue);
   }
