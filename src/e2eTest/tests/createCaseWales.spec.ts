@@ -53,7 +53,7 @@ test.beforeEach(async ({page}) => {
 });
 
 test.describe('[Create Case - Wales] @Master @nightly', async () => {
-  test('Wales - Assured tenancy with Rent arrears and no other possession grounds - Demoted tenancy', async () => {
+  test('Wales - Secure contract', async () => {
     await performAction('enterTestAddressManually');
     await performValidation('bannerAlert', 'Case #.* has been created.');
     await performAction('extractCaseIdFromAlert');
@@ -164,7 +164,7 @@ test.describe('[Create Case - Wales] @Master @nightly', async () => {
   });
 
   // The sections commented out will be fixed as part of the User Story https://tools.hmcts.net/jira/browse/HDPI-2123
-  test('Wales - Flexible tenancy with Rent arrears only', async () => {
+  test('Wales - Standard contract', async () => {
     await performAction('enterTestAddressManually');
     await performValidation('bannerAlert', 'Case #.* has been created.');
     await performAction('extractCaseIdFromAlert');
@@ -275,7 +275,7 @@ test.describe('[Create Case - Wales] @Master @nightly', async () => {
   });
 
   // The sections commented out will be fixed as part of the User Story https://tools.hmcts.net/jira/browse/HDPI-2123
-  test('Wales - Secure tenancy with Rent and other grounds', async () => {
+  test('Wales - Other', async () => {
     await performAction('enterTestAddressManually');
     await performValidation('bannerAlert', 'Case #.* has been created.');
     await performAction('extractCaseIdFromAlert');
@@ -303,7 +303,7 @@ test.describe('[Create Case - Wales] @Master @nightly', async () => {
     await performAction('clickButton', 'Continue');
     await performValidation('mainHeader', whatAreYourGroundsForPossessionWales.mainHeader);
     await performAction('selectYourPossessionGrounds', {
-      discretionary: [whatAreYourGroundsForPossessionWales.discretionary.antiSocialBehaviour],
+      discretionary: [whatAreYourGroundsForPossessionWales.discretionary.otherBreachOfContract],
     });
     // Commenting below code as tickets are yet to be implemented for wales journey
     /*await performAction('clickButton', reasonsForPossession.continue);
