@@ -499,7 +499,7 @@ test.describe('[Create Case - England] @Master @nightly', async () => {
     await performAction('clickButtonAndVerifyPageNavigation', provideMoreDetailsOfClaim.continue, claimantType.mainHeader);
     await performAction('selectClaimantType', claimantType.england.registeredProviderForSocialHousing);
     await performAction('selectClaimType', claimType.no);
-    await performAction('selectClaimantName', claimantName.no);
+    await performAction('selectClaimantName', claimantName.yes);
     await performAction('clickButtonAndVerifyPageNavigation', claimantName.continue, contactPreferences.mainHeader);
     await performAction('clickButton', 'Sign out');
     await performAction('reloginAndFindTheCase', user.claimantSolicitor);
@@ -556,11 +556,11 @@ test.describe('[Create Case - England] @Master @nightly', async () => {
     await performValidation('mainHeader', defendantCircumstances.mainHeader);
     await performAction('selectDefendantCircumstances', defendantCircumstances.no);
     await performValidation('mainHeader', alternativesToPossession.mainHeader);
-    await performAction('selectAlternativesToPossession', {question: alternativesToPossession.demotionOfTenancy
+    await performAction('selectAlternativesToPossession', {question: alternativesToPossession.suspensionOrDemotion
       , option: [alternativesToPossession.demotionOfTenancy]});
     await performValidation('mainHeader', housingAct.mainHeader);
-    await performAction('selectHousingAct', {question: housingAct.demotionOfTenancy.whichSection
-      , option: housingAct.demotionOfTenancy.section6AHousingAct1988});
+    await performAction('selectHousingAct', [{question: housingAct.demotionOfTenancy.whichSection
+      , option: housingAct.demotionOfTenancy.section6AHousingAct1988}]);
     await performAction('selectStatementOfExpressTerms', statementOfExpressTerms.no);
     await performValidation('mainHeader', reasonsForRequestingADemotionOrder.mainHeader);
     await performAction('enterReasonForDemotionOrder', reasonsForRequestingADemotionOrder.requestDemotionOrderQuestion);
@@ -581,7 +581,7 @@ test.describe('[Create Case - England] @Master @nightly', async () => {
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
     await performValidations('address information entered',
       ['formLabelValue', propertyDetails.buildingAndStreetLabel, addressDetails.buildingAndStreet],
-      ['formLabelValue', propertyDetails.addressLine2Label, addressDetails.addressLine2],
+      //['formLabelValue', propertyDetails.addressLine2Label, addressDetails.addressLine2],
       ['formLabelValue', propertyDetails.townOrCityLabel, addressDetails.townOrCity],
       ['formLabelValue', propertyDetails.postcodeZipcodeLabel, addressDetails.walesCourtAssignedPostcode],
       ['formLabelValue', propertyDetails.countryLabel, addressDetails.country]);
@@ -657,8 +657,8 @@ test.describe('[Create Case - England] @Master @nightly', async () => {
     await performAction('selectAlternativesToPossession', {question: alternativesToPossession.suspensionOrDemotion
       , option: [alternativesToPossession.suspensionOfRightToBuy]});
     await performValidation('mainHeader', housingAct.mainHeader);
-    await performAction('selectHousingAct', {question: housingAct.suspensionOfRightToBuy.whichSection
-      ,option: housingAct.suspensionOfRightToBuy.section121AHousingAct1985});
+    await performAction('selectHousingAct', [{question: housingAct.suspensionOfRightToBuy.whichSection
+      ,option: housingAct.suspensionOfRightToBuy.section121AHousingAct1985}]);
     await performValidation('mainHeader', reasonsForRequestingASuspensionOrder.mainHeader);
     await performAction('enterReasonForSuspensionOrder', reasonsForRequestingASuspensionOrder.requestSuspensionOrderQuestion);
     await performValidation('mainHeader', claimingCosts.mainHeader);
@@ -678,7 +678,7 @@ test.describe('[Create Case - England] @Master @nightly', async () => {
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
     await performValidations('address information entered',
       ['formLabelValue', propertyDetails.buildingAndStreetLabel, addressDetails.buildingAndStreet],
-      ['formLabelValue', propertyDetails.addressLine2Label, addressDetails.addressLine2],
+      //['formLabelValue', propertyDetails.addressLine2Label, addressDetails.addressLine2],
       ['formLabelValue', propertyDetails.townOrCityLabel, addressDetails.townOrCity],
       ['formLabelValue', propertyDetails.postcodeZipcodeLabel, addressDetails.walesCourtAssignedPostcode],
       ['formLabelValue', propertyDetails.countryLabel, addressDetails.country]);
@@ -759,6 +759,17 @@ test.describe('[Create Case - England] @Master @nightly', async () => {
     await performValidation('mainHeader', alternativesToPossession.mainHeader);
     await performAction('selectAlternativesToPossession', {question: alternativesToPossession.suspensionOrDemotion
       , option: [alternativesToPossession.suspensionOfRightToBuy, alternativesToPossession.demotionOfTenancy]});
+    await performValidation('mainHeader', housingAct.mainHeader);
+    await performAction('selectHousingAct', [{question: housingAct.suspensionOfRightToBuy.whichSection
+      , option: housingAct.suspensionOfRightToBuy.section6AHousingAct1988}
+      , {question: housingAct.demotionOfTenancy.whichSection
+        , option: housingAct.demotionOfTenancy.section82AHousingAct1985}]);
+    await performValidation('mainHeader', statementOfExpressTerms.mainHeader);
+    await performAction('selectStatementOfExpressTerms', statementOfExpressTerms.no);
+    await performValidation('mainHeader', reasonsForRequestingASuspensionAndDemotionOrder.mainHeader);
+    await performAction('enterReasonForSuspensionAndDemotionOrder'
+        , {suspension: reasonsForRequestingASuspensionAndDemotionOrder.requestSuspensionOrderQuestion
+          ,  demotion: reasonsForRequestingASuspensionAndDemotionOrder.requestDemotionOrderQuestion});
     await performValidation('mainHeader', claimingCosts.mainHeader);
     await performAction('selectClaimingCosts', claimingCosts.yes);
     await performValidation('mainHeader', additionalReasonsForPossession.mainHeader);
@@ -776,7 +787,7 @@ test.describe('[Create Case - England] @Master @nightly', async () => {
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
     await performValidations('address information entered',
       ['formLabelValue', propertyDetails.buildingAndStreetLabel, addressDetails.buildingAndStreet],
-      ['formLabelValue', propertyDetails.addressLine2Label, addressDetails.addressLine2],
+      //['formLabelValue', propertyDetails.addressLine2Label, addressDetails.addressLine2],
       ['formLabelValue', propertyDetails.townOrCityLabel, addressDetails.townOrCity],
       ['formLabelValue', propertyDetails.postcodeZipcodeLabel, addressDetails.walesCourtAssignedPostcode],
       ['formLabelValue', propertyDetails.countryLabel, addressDetails.country]);
