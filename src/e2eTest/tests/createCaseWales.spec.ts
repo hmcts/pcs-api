@@ -13,7 +13,6 @@ import {rentArrearsPossessionGrounds} from '@data/page-data/rentArrearsPossessio
 import {preActionProtocol} from '@data/page-data/preActionProtocol.page.data';
 import {mediationAndSettlement} from '@data/page-data/mediationAndSettlement.page.data';
 import {noticeOfYourIntention} from '@data/page-data/noticeOfYourIntention.page.data';
-import {noticeDetails} from '@data/page-data/noticeDetails.page.data';
 import {rentDetails} from '@data/page-data/rentDetails.page.data';
 import {provideMoreDetailsOfClaim} from '@data/page-data/provideMoreDetailsOfClaim.page.data';
 import {resumeClaim} from '@data/page-data/resumeClaim.page.data';
@@ -61,7 +60,7 @@ test.describe('[Create Case - Wales] @Master @nightly', async () => {
     await performAction('clickButtonAndVerifyPageNavigation', provideMoreDetailsOfClaim.continue, claimantType.mainHeader);
     await performAction('selectClaimantType', claimantType.wales.communityLandlord);
     await performAction('selectClaimType', claimType.no);
-    await performAction('selectClaimantName', claimantName.no);
+    await performAction('selectClaimantName', claimantName.yes);
     await performAction('clickButtonAndVerifyPageNavigation', claimantName.continue, claimantDetailsWales.mainHeader);
     await performAction('clickButton', 'Sign out');
     await performAction('reloginAndFindTheCase', user.claimantSolicitor);
@@ -109,7 +108,10 @@ test.describe('[Create Case - Wales] @Master @nightly', async () => {
       settlementWithDefendantsOption: mediationAndSettlement.no,
     });
     await performValidation('mainHeader', noticeOfYourIntention.mainHeader);
-    await performAction('selectNoticeOfYourIntention', noticeOfYourIntention.no);
+    await performAction('selectNoticeOfYourIntention', {
+      question: noticeOfYourIntention.servedNoticeInteractiveText,
+      option: noticeOfYourIntention.no
+    });
     await performValidation('mainHeader', rentDetails.mainHeader);
     await performAction('provideRentDetails', {rentAmount:'850', rentFrequencyOption:'Other', inputFrequency:rentDetails.rentFrequencyFortnightly,unpaidRentAmountPerDay:'50'});
     await performValidation('mainHeader', detailsOfRentArrears.mainHeader);
@@ -221,7 +223,10 @@ test.describe('[Create Case - Wales] @Master @nightly', async () => {
       settlementWithDefendantsOption: mediationAndSettlement.no,
     });
     await performValidation('mainHeader', noticeOfYourIntention.mainHeader);
-    await performAction('selectNoticeOfYourIntention', noticeOfYourIntention.no);
+    await performAction('selectNoticeOfYourIntention', {
+      question: noticeOfYourIntention.servedNoticeInteractiveText,
+      option: noticeOfYourIntention.no,
+    });
     // await performValidation('mainHeader', rentDetails.mainHeader);
     // await performAction('provideRentDetails', {rentFrequencyOption: 'Monthly', rentAmount: '1000'});
     // await performAction('selectDailyRentAmount', {
@@ -327,10 +332,15 @@ test.describe('[Create Case - Wales] @Master @nightly', async () => {
       settlementWithDefendantsOption: mediationAndSettlement.no,
     });
     await performValidation('mainHeader', noticeOfYourIntention.mainHeader);
-    await performAction('selectNoticeOfYourIntention', noticeOfYourIntention.yes);
-    await performAction('selectNoticeDetails', {
-      howDidYouServeNotice: noticeDetails.byOtherElectronicMethod,
-      day: '25', month: '02', year: '1970', hour: '22', minute: '45', second: '10', files: 'NoticeDetails.pdf'});
+    await performAction('selectNoticeOfYourIntention', {
+      question: noticeOfYourIntention.servedNoticeInteractiveText,
+      option: noticeOfYourIntention.yes,
+      typeOfNotice: noticeOfYourIntention.typeOfNoticeInput
+    });
+    //selectNoticeDetails has been commented out and will be modified as part of https://tools.hmcts.net/jira/browse/HDPI-2515 + https://tools.hmcts.net/jira/browse/HDPI-2516
+    // await performAction('selectNoticeDetails', {
+    //   howDidYouServeNotice: noticeDetails.byOtherElectronicMethod,
+    //   day: '25', month: '02', year: '1970', hour: '22', minute: '45', second: '10', files: 'NoticeDetails.pdf'});
     // await performAction('provideRentDetails', {rentFrequencyOption: 'Monthly', rentAmount: '1000'});
     // await performValidation('mainHeader', dailyRentAmount.mainHeader);
     // await performAction('selectDailyRentAmount', {
