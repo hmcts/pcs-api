@@ -5,7 +5,11 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.RiskCategory;
 /**
  * Utility class for generating consistent error messages across enforcement risk detail pages.
  */
-public class EnforcementRiskValidationUtils {
+public final class EnforcementRiskValidationUtils {
+
+    private EnforcementRiskValidationUtils() {
+        // Utility class - prevent instantiation
+    }
 
     private static final int CHARACTER_LIMIT = 6800;
     private static final String ERROR_MESSAGE_TEMPLATE = "In '%s', you have entered more than the "
