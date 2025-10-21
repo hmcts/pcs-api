@@ -66,27 +66,6 @@ class FirearmsPossessionRiskPageTest extends BasePageTest {
             .getRiskDetails().getEnforcementFirearmsDetails()).isEqualTo(text);
     }
 
-    @Test
-    void shouldAcceptExactly6800Characters() {
-        // Given
-        String text = "a".repeat(6800);
-        PCSCase caseData = PCSCase.builder()
-            .enforcementOrder(EnforcementOrder.builder()
-                .enforcementRiskCategories(Set.of(RiskCategory.FIREARMS_POSSESSION))
-                .riskDetails(EnforcementRiskDetails.builder()
-                    .enforcementFirearmsDetails(text)
-                    .build())
-                .build())
-            .build();
-
-        // When
-        AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
-
-        // Then
-        assertThat(response.getErrors()).isNull();
-        assertThat(response.getData().getEnforcementOrder()
-            .getRiskDetails().getEnforcementFirearmsDetails()).isEqualTo(text);
-    }
 
     @Test
     void shouldRejectTextOver6800Characters() {
@@ -110,27 +89,6 @@ class FirearmsPossessionRiskPageTest extends BasePageTest {
         );
     }
 
-    @Test
-    void shouldRejectSignificantlyOverLimit() {
-        // Given
-        String longText = "a".repeat(7000);
-        PCSCase caseData = PCSCase.builder()
-            .enforcementOrder(EnforcementOrder.builder()
-                .enforcementRiskCategories(Set.of(RiskCategory.FIREARMS_POSSESSION))
-                .riskDetails(EnforcementRiskDetails.builder()
-                    .enforcementFirearmsDetails(longText)
-                    .build())
-                .build())
-            .build();
-
-        // When
-        AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
-
-        // Then
-        assertThat(response.getErrors()).containsExactly(
-            EnforcementRiskValidationUtils.getCharacterLimitErrorMessage(RiskCategory.FIREARMS_POSSESSION)
-        );
-    }
 
     @Test
     void shouldPreserveDataWhenValid() {
@@ -165,11 +123,13 @@ class FirearmsPossessionRiskPageTest extends BasePageTest {
 
     private static Stream<String> validTextScenarios() {
         return Stream.of(
+            "A",
             "Short text",
             "The defendant has a history of firearm possession",
             "A".repeat(1000),
             "A".repeat(5000),
-            "A".repeat(6799)
+            "A".repeat(6799),
+            "A".repeat(6800)
         );
     }
 

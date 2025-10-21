@@ -65,27 +65,6 @@ class ViolentAggressiveRiskPageTest extends BasePageTest {
             .getRiskDetails().getEnforcementViolentDetails()).isEqualTo(text);
     }
 
-    @Test
-    void shouldAcceptExactly6800Characters() {
-        // Given
-        String text = "a".repeat(6800);
-        PCSCase caseData = PCSCase.builder()
-            .enforcementOrder(EnforcementOrder.builder()
-                .enforcementRiskCategories(Set.of(RiskCategory.VIOLENT_OR_AGGRESSIVE))
-                .riskDetails(uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.EnforcementRiskDetails.builder()
-                    .enforcementViolentDetails(text)
-                    .build())
-                .build())
-            .build();
-
-        // When
-        AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
-
-        // Then
-        assertThat(response.getErrors()).isNull();
-        assertThat(response.getData().getEnforcementOrder()
-            .getRiskDetails().getEnforcementViolentDetails()).isEqualTo(text);
-    }
 
     @Test
     void shouldRejectTextOver6800Characters() {
@@ -109,27 +88,6 @@ class ViolentAggressiveRiskPageTest extends BasePageTest {
         );
     }
 
-    @Test
-    void shouldRejectSignificantlyOverLimit() {
-        // Given
-        String longText = "a".repeat(7000);
-        PCSCase caseData = PCSCase.builder()
-            .enforcementOrder(EnforcementOrder.builder()
-                .enforcementRiskCategories(Set.of(RiskCategory.VIOLENT_OR_AGGRESSIVE))
-                .riskDetails(uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.EnforcementRiskDetails.builder()
-                    .enforcementViolentDetails(longText)
-                    .build())
-                .build())
-            .build();
-
-        // When
-        AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
-
-        // Then
-        assertThat(response.getErrors()).containsExactly(
-            EnforcementRiskValidationUtils.getCharacterLimitErrorMessage(RiskCategory.VIOLENT_OR_AGGRESSIVE)
-        );
-    }
 
     @Test
     void shouldPreserveDataWhenValid() {
@@ -164,11 +122,13 @@ class ViolentAggressiveRiskPageTest extends BasePageTest {
 
     private static Stream<String> validTextScenarios() {
         return Stream.of(
+            "A",
             "Short text",
             "The defendant has been violent on multiple occasions",
             "A".repeat(1000),
             "A".repeat(5000),
-            "A".repeat(6799)
+            "A".repeat(6799),
+            "A".repeat(6800)
         );
     }
 
