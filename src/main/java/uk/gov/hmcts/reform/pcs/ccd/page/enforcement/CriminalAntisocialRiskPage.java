@@ -1,6 +1,5 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.enforcement;
 
-import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
@@ -10,24 +9,25 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.EnforcementRiskDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.RiskCategory;
 
 import java.util.ArrayList;
 import java.util.List;
 
-@Component
 public class CriminalAntisocialRiskPage implements CcdPageConfiguration {
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
-            .page("evictionCriminalAntisocialDetails", this::midEvent)
+            .page("criminalAntisocialRisk", this::midEvent)
             .pageLabel("Their history of criminal or antisocial behaviour")
             .showCondition("enforcementRiskCategoriesCONTAINS\"CRIMINAL_OR_ANTISOCIAL\"")
-            .label("evictionCriminalAntisocialDetails-line-separator", "---")
+            .label("criminalAntisocialRisk-line-separator", "---")
             .complex(PCSCase::getEnforcementOrder)
             .complex(EnforcementOrder::getRiskDetails)
             .mandatory(EnforcementRiskDetails::getEnforcementCriminalDetails)
-            .label("evictionCriminalAntisocialDetails-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
+            .done()
+            .label("criminalAntisocialRisk-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
 
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
@@ -38,22 +38,21 @@ public class CriminalAntisocialRiskPage implements CcdPageConfiguration {
         String txt = data.getEnforcementOrder() != null && data.getEnforcementOrder().getRiskDetails() != null
             ? data.getEnforcementOrder().getRiskDetails().getEnforcementCriminalDetails()
             : null;
+        // TODO: Refactor validation logic to use TextAreaValidationService from PR #751 when merged
         if (txt == null || txt.isBlank()) {
             errors.add("Enter details");
-        } else if (txt.length() > 6800) {
-            errors.add(buildCharacterLimitError());
+        } else if (txt.length() > EnforcementRiskValidationUtils.getCharacterLimit()) {
+            // TODO: Use TextAreaValidationService from PR #751 when merged
+            errors.add(EnforcementRiskValidationUtils
+                    .getCharacterLimitErrorMessage(RiskCategory.CRIMINAL_OR_ANTISOCIAL));
         }
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
             .data(data)
-            .errors(errors.isEmpty() ? null : errors)
+            .errors(errors)
             .build();
     }
 
-    public static String buildCharacterLimitError() {
-        return "In 'What is their history of criminal or antisocial behaviour?', "
-            + "you have entered more than the maximum number of characters (6800)";
-    }
 }
 
 

@@ -5,10 +5,11 @@ import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.RiskCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.EnforcementRiskDetails;
+
+import java.util.List;
 
 public class EvictionRisksPosedPage implements CcdPageConfiguration {
 
@@ -45,28 +46,11 @@ public class EvictionRisksPosedPage implements CcdPageConfiguration {
                 .errors(java.util.List.of("Select at least one option"))
                 .build();
         }
-
-        // Clear details for deselected categories
-        if (!data.getEnforcementOrder().getEnforcementRiskCategories().contains(RiskCategory.VIOLENT_OR_AGGRESSIVE)) {
-            data.getEnforcementOrder().getRiskDetails().setEnforcementViolentDetails(null);
-        }
-        if (!data.getEnforcementOrder().getEnforcementRiskCategories().contains(RiskCategory.FIREARMS_POSSESSION)) {
-            data.getEnforcementOrder().getRiskDetails().setEnforcementFirearmsDetails(null);
-        }
-        if (!data.getEnforcementOrder().getEnforcementRiskCategories().contains(RiskCategory.CRIMINAL_OR_ANTISOCIAL)) {
-            data.getEnforcementOrder().getRiskDetails().setEnforcementCriminalDetails(null);
-        }
-        if (!data.getEnforcementOrder().getEnforcementRiskCategories()
-                .contains(RiskCategory.VERBAL_OR_WRITTEN_THREATS)) {
-            data.getEnforcementOrder().getRiskDetails().setEnforcementVerbalOrWrittenThreatsDetails(null);
-
-        }
-        if (!data.getEnforcementOrder().getEnforcementRiskCategories().contains(RiskCategory.PROTEST_GROUP_MEMBER)) {
-            data.getEnforcementOrder().getRiskDetails().setEnforcementProtestGroupMemberDetails(null);
-        }
+        
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
             .data(data)
+            .errors(List.of())
             .build();
     }
 }

@@ -61,32 +61,11 @@ class CriminalAntisocialRiskPageTest extends BasePageTest {
         AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
 
         // Then
-        assertThat(response.getErrors()).isNull();
+        assertThat(response.getErrors()).isEmpty();
         assertThat(response.getData().getEnforcementOrder()
             .getRiskDetails().getEnforcementCriminalDetails()).isEqualTo(text);
     }
 
-    @Test
-    void shouldAcceptExactly6800Characters() {
-        // Given
-        String text = "a".repeat(6800);
-        PCSCase caseData = PCSCase.builder()
-            .enforcementOrder(EnforcementOrder.builder()
-                .enforcementRiskCategories(Set.of(RiskCategory.CRIMINAL_OR_ANTISOCIAL))
-                .riskDetails(EnforcementRiskDetails.builder()
-                    .enforcementCriminalDetails(text)
-                    .build())
-                .build())
-            .build();
-
-        // When
-        AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
-
-        // Then
-        assertThat(response.getErrors()).isNull();
-        assertThat(response.getData().getEnforcementOrder()
-            .getRiskDetails().getEnforcementCriminalDetails()).isEqualTo(text);
-    }
 
     @Test
     void shouldRejectTextOver6800Characters() {
@@ -106,31 +85,10 @@ class CriminalAntisocialRiskPageTest extends BasePageTest {
 
         // Then
         assertThat(response.getErrors()).containsExactly(
-            CriminalAntisocialRiskPage.buildCharacterLimitError()
+            EnforcementRiskValidationUtils.getCharacterLimitErrorMessage(RiskCategory.CRIMINAL_OR_ANTISOCIAL)
         );
     }
 
-    @Test
-    void shouldRejectSignificantlyOverLimit() {
-        // Given
-        String longText = "a".repeat(7000);
-        PCSCase caseData = PCSCase.builder()
-            .enforcementOrder(EnforcementOrder.builder()
-                .enforcementRiskCategories(Set.of(RiskCategory.CRIMINAL_OR_ANTISOCIAL))
-                .riskDetails(EnforcementRiskDetails.builder()
-                    .enforcementCriminalDetails(longText)
-                    .build())
-                .build())
-            .build();
-
-        // When
-        AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
-
-        // Then
-        assertThat(response.getErrors()).containsExactly(
-            CriminalAntisocialRiskPage.buildCharacterLimitError()
-        );
-    }
 
     @Test
     void shouldPreserveDataWhenValid() {
@@ -151,7 +109,7 @@ class CriminalAntisocialRiskPageTest extends BasePageTest {
         AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
 
         // Then
-        assertThat(response.getErrors()).isNull();
+        assertThat(response.getErrors()).isEmpty();
         assertThat(response.getData().getEnforcementOrder()
             .getRiskDetails().getEnforcementCriminalDetails())
             .isEqualTo(validText);
@@ -165,11 +123,13 @@ class CriminalAntisocialRiskPageTest extends BasePageTest {
 
     private static Stream<String> validTextScenarios() {
         return Stream.of(
+            "A",
             "Short text",
             "The defendant has a history of criminal and antisocial behaviour",
             "A".repeat(1000),
             "A".repeat(5000),
-            "A".repeat(6799)
+            "A".repeat(6799),
+            "A".repeat(6800)
         );
     }
 
