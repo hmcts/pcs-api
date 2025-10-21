@@ -21,15 +21,15 @@ public class FirearmsPossessionRiskPage implements CcdPageConfiguration {
     @Override
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
-            .page("evictionFirearmsPossessionDetails", this::midEvent)
+            .page("firearmsPossessionRisk", this::midEvent)
             .pageLabel("Their history of firearm possession")
             .showCondition("enforcementRiskCategoriesCONTAINS\"FIREARMS_POSSESSION\"")
-            .label("evictionFirearmsPossessionDetails-line-separator", "---")
+            .label("firearmsPossessionRisk-line-separator", "---")
             .complex(PCSCase::getEnforcementOrder)
             .complex(EnforcementOrder::getRiskDetails)
             .mandatory(EnforcementRiskDetails::getEnforcementFirearmsDetails)
             .done()
-            .label("evictionFirearmsPossessionDetails-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
+            .label("firearmsPossessionRisk-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
 
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
