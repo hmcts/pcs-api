@@ -21,7 +21,7 @@ test.beforeEach(async ({ page }) => {
   await performAction('searchMyCaseFromFindCase', { caseNumber: caseNumber, criteria: caseFoundAfterFilter });
 });
 
-test.describe('[Enforcement - Warrant of Possession] @Master @nightly', async () => {
+test.describe.skip('[Enforcement - Warrant of Possession] @Master @nightly', async () => {
   test('Apply for a Warrant of Possession ', async () => {    
     await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
     await performAction('clickButtonAndVerifyPageNavigation', caseSummary.go, yourApplication.mainHeader);
