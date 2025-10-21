@@ -6,7 +6,6 @@ import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.RiskCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.EnforcementRiskDetails;
@@ -48,16 +47,6 @@ public class EvictionRisksPosedPage implements CcdPageConfiguration {
                 .build();
         }
         
-        // Clear details for deselected categories
-        if (!data.getEnforcementOrder().getEnforcementRiskCategories().contains(RiskCategory.VIOLENT_OR_AGGRESSIVE)) {
-            data.getEnforcementOrder().getRiskDetails().setEnforcementViolentDetails(null);
-        }
-        if (!data.getEnforcementOrder().getEnforcementRiskCategories().contains(RiskCategory.FIREARMS_POSSESSION)) {
-            data.getEnforcementOrder().getRiskDetails().setEnforcementFirearmsDetails(null);
-        }
-        if (!data.getEnforcementOrder().getEnforcementRiskCategories().contains(RiskCategory.CRIMINAL_OR_ANTISOCIAL)) {
-            data.getEnforcementOrder().getRiskDetails().setEnforcementCriminalDetails(null);
-        }
         
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
             .data(data)

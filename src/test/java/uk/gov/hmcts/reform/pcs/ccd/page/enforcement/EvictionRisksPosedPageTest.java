@@ -60,7 +60,7 @@ class EvictionRisksPosedPageTest extends BasePageTest {
     }
 
     @Test
-    void shouldClearViolentDetailsWhenDeselected() {
+    void shouldPreserveViolentDetailsWhenDeselected() {
         // Given
         PCSCase caseData = PCSCase.builder()
             .enforcementOrder(EnforcementOrder.builder()
@@ -76,13 +76,14 @@ class EvictionRisksPosedPageTest extends BasePageTest {
         AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
 
         // Then
-        assertThat(response.getData().getEnforcementOrder().getRiskDetails().getEnforcementViolentDetails()).isNull();
+        assertThat(response.getData().getEnforcementOrder().getRiskDetails().getEnforcementViolentDetails())
+            .isEqualTo("Previous violent text");
         assertThat(response.getData().getEnforcementOrder()
             .getRiskDetails().getEnforcementFirearmsDetails()).isEqualTo("Firearms text");
     }
 
     @Test
-    void shouldClearFirearmsDetailsWhenDeselected() {
+    void shouldPreserveFirearmsDetailsWhenDeselected() {
         // Given
         PCSCase caseData = PCSCase.builder()
             .enforcementOrder(EnforcementOrder.builder()
@@ -100,11 +101,12 @@ class EvictionRisksPosedPageTest extends BasePageTest {
         // Then
         assertThat(response.getData().getEnforcementOrder()
             .getRiskDetails().getEnforcementViolentDetails()).isEqualTo("Violent text");
-        assertThat(response.getData().getEnforcementOrder().getRiskDetails().getEnforcementFirearmsDetails()).isNull();
+        assertThat(response.getData().getEnforcementOrder().getRiskDetails().getEnforcementFirearmsDetails())
+            .isEqualTo("Previous firearms text");
     }
 
     @Test
-    void shouldClearCriminalDetailsWhenDeselected() {
+    void shouldPreserveCriminalDetailsWhenDeselected() {
         // Given
         PCSCase caseData = PCSCase.builder()
             .enforcementOrder(EnforcementOrder.builder()
@@ -123,11 +125,11 @@ class EvictionRisksPosedPageTest extends BasePageTest {
         assertThat(response.getData().getEnforcementOrder()
             .getRiskDetails().getEnforcementViolentDetails()).isEqualTo("Violent text");
         assertThat(response.getData().getEnforcementOrder()
-            .getRiskDetails().getEnforcementCriminalDetails()).isNull();
+            .getRiskDetails().getEnforcementCriminalDetails()).isEqualTo("Previous criminal text");
     }
 
     @Test
-    void shouldPreserveUnrelatedDetailsWhenOneCategoryDeselected() {
+    void shouldPreserveAllDetailsWhenCategoriesDeselected() {
         // Given
         PCSCase caseData = PCSCase.builder()
             .enforcementOrder(EnforcementOrder.builder()
@@ -136,7 +138,7 @@ class EvictionRisksPosedPageTest extends BasePageTest {
                     RiskCategory.CRIMINAL_OR_ANTISOCIAL
                 ))
                 .riskDetails(EnforcementRiskDetails.builder()
-                    .enforcementViolentDetails("Should be cleared")
+                    .enforcementViolentDetails("Should be preserved")
                     .enforcementFirearmsDetails("Should be preserved")
                     .enforcementCriminalDetails("Should be preserved")
                     .build())
@@ -147,7 +149,8 @@ class EvictionRisksPosedPageTest extends BasePageTest {
         AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
 
         // Then
-        assertThat(response.getData().getEnforcementOrder().getRiskDetails().getEnforcementViolentDetails()).isNull();
+        assertThat(response.getData().getEnforcementOrder().getRiskDetails().getEnforcementViolentDetails())
+            .isEqualTo("Should be preserved");
         assertThat(response.getData().getEnforcementOrder()
             .getRiskDetails().getEnforcementFirearmsDetails())
             .isEqualTo("Should be preserved");
