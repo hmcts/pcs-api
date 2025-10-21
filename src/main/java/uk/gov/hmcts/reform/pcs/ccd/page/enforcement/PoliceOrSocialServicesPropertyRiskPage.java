@@ -6,11 +6,15 @@ import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.EnforcementOrder;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.EnforcementRiskDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.RiskCategory;
+import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class PoliceOrSocialServicesPropertyPage implements CcdPageConfiguration {
+public class PoliceOrSocialServicesPropertyRiskPage implements CcdPageConfiguration {
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
@@ -19,10 +23,10 @@ public class PoliceOrSocialServicesPropertyPage implements CcdPageConfiguration 
                 .pageLabel("Their history of police or social services visits to the property")
                 .showCondition("enforcementRiskCategoriesCONTAINS\"AGENCY_VISITS\"")
                 .label("policeOrSocialServicesProperty-line-separator", "---")
-                .label("policeOrSocialServicesProperty-label","""
-                <h3 tabindex="0">Why did the police or social services visit the property?</h3>
-                """)
-                .mandatory(PCSCase::getEnforcementPoliceOrSocialServicesDetails);
+                .complex(PCSCase::getEnforcementOrder)
+                .complex(EnforcementOrder::getRiskDetails)
+                .mandatory(EnforcementRiskDetails::getEnforcementPoliceOrSocialServicesDetails).done()
+                .label("policeOrSocialServicesProperty-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
 
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
@@ -30,22 +34,21 @@ public class PoliceOrSocialServicesPropertyPage implements CcdPageConfiguration 
         PCSCase data = details.getData();
         List<String> errors = new ArrayList<>();
 
-        String txt = data.getEnforcementPoliceOrSocialServicesDetails();
+        String txt = data.getEnforcementOrder() != null && data.getEnforcementOrder().getRiskDetails() != null
+                ? data.getEnforcementOrder().getRiskDetails().getEnforcementPoliceOrSocialServicesDetails()
+                : null;
+        // TODO: Refactor validation logic to use TextAreaValidationService from PR #751 when merged
         if (txt == null || txt.isBlank()) {
             errors.add("Enter details");
-        } else if (txt.length() > 6800) {
-            errors.add(buildCharacterLimitError());
+        } else if (txt.length() > EnforcementRiskValidationUtils.getCharacterLimit()) {
+            // TODO: Use TextAreaValidationService from PR #751 when merged
+            errors.add(EnforcementRiskValidationUtils
+                    .getCharacterLimitErrorMessage(RiskCategory.AGENCY_VISITS));
         }
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
                 .data(data)
-                .errors(errors.isEmpty() ? null : errors)
+                .errors(errors)
                 .build();
-    }
-
-    private static String buildCharacterLimitError() {
-
-        return "In 'Why did the police or social services visit the property?' " +
-            "you have entered more than the maximum number of characters (6800)";
     }
 }

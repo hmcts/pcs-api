@@ -6,9 +6,6 @@ import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 
 
-/**
- * Full implementation will be done in another ticket - responses not captured at the moment.
- */
 @AllArgsConstructor
 @Component
 public class EvictionVulnerableAdultsChildrenPage implements CcdPageConfiguration {
@@ -18,7 +15,7 @@ public class EvictionVulnerableAdultsChildrenPage implements CcdPageConfiguratio
         pageBuilder
             .page("evictionVulnerableAdultsChildrenPage")
             .pageLabel("Vulnerable adults and children at the property (placeholder)")
-            .showCondition("confirmLivingAtProperty=\"NO\"")
+            .showCondition("anyRiskToBailiff=\"NO\"")
             .label("evictionVulnerableAdultsChildrenPage-line-separator", "---");
     }
 }

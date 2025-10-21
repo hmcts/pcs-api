@@ -6,9 +6,6 @@ import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 
 
-/**
- * Full implementation will be done in another ticket - responses not captured at the moment.
- */
 @AllArgsConstructor
 @Component
 public class EvictionDelayWarningPage implements CcdPageConfiguration {
@@ -16,12 +13,12 @@ public class EvictionDelayWarningPage implements CcdPageConfiguration {
     @Override
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
-            .page("evictionDelayWarning")
+            .page("evictionDelayWarningPage")
             .pageLabel("The eviction could be delayed if the bailiff identifies a risk on the day")
-            .showCondition("confirmLivingAtProperty=\"NOT_SURE\"")
-            .label("evictionDelayWarning-line-separator", "---")
+            .showCondition("anyRiskToBailiff=\"NOT_SURE\"")
+            .label("evictionDelayWarningPage-line-separator", "---")
             .label(
-                "evictionDelayText",
+                "evictionDelayWarningPage-text",
                 """
                       <div class="govuk-warning-text">
                       <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
@@ -31,7 +28,7 @@ public class EvictionDelayWarningPage implements CcdPageConfiguration {
                             eviction day
                         </strong>
                       </div>
-                      <p class="govuk-body"> For example, if the bailiffs arrive to carry out the eviction and they
+                      <p class=govuk-body>For example, if the bailiffs arrive to carry out the eviction and they
                       discover a dangerous dog on the premises.</p>""");
     }
 

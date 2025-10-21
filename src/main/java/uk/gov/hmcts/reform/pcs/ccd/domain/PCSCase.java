@@ -13,7 +13,6 @@ import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseworkerReadAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenAccess;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.EnforcementOrder;
-import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.RiskCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.model.NoRentArrearsReasonForGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
@@ -626,94 +625,9 @@ public class PCSCase {
     @JsonUnwrapped
     private SuspensionOfRightToBuyDemotionOfTenancy  suspensionOfRightToBuyDemotionOfTenancy;
 
+    @JsonUnwrapped(prefix = "wales")
+    private WalesNoticeDetails walesNoticeDetails;
+
     @JsonUnwrapped
     private EnforcementOrder enforcementOrder;
-
-
-    @CCD(
-        label = """
-        <ul>
-          <li>Are violent or aggressive</li>
-          <li>Possess a firearm or other weapon</li>
-          <li>Have a history of criminal or antisocial behaviour</li>
-          <li>Have made verbal or written threats towards you</li>
-          <li>Are a member of a group that protests evictions</li>
-          <li>Have had visits from the police or social services</li>
-          <li>Own an aggressive dog or other animal</li>
-        </ul>
-        """,
-        typeOverride = FieldType.Label
-    )
-    private String riskFactorsList;
-
-    @CCD(
-        label = "Does anyone living at the property pose a risk to the bailiff?"
-    )
-    private VerticalChoice confirmLivingAtProperty;
-
-    // --- Enforcement Risks (2243) ---
-    @CCD(
-        label = "What kind of risks do they pose to the bailiff?",
-        hint = "Include any risks posed by the defendants and also anyone else living at the property",
-        typeOverride = MultiSelectList,
-        typeParameterOverride = "RiskCategory"
-    )
-    private Set<RiskCategory> enforcementRiskCategories;
-
-    @CCD(
-        label = "How have they been violent or aggressive?",
-        typeOverride = TextArea
-    )
-    private String enforcementViolentDetails;
-
-    @CCD(
-        label = "What is their history of firearm possession?",
-        typeOverride = TextArea
-    )
-    private String enforcementFirearmsDetails;
-
-    @CCD(
-        label = "What is their history of criminal or antisocial behaviour?",
-        typeOverride = TextArea
-    )
-    private String enforcementCriminalDetails;
-
-    @CCD(
-            typeOverride = TextArea,
-            hint = """
-                    For example, explain who was threatened, what the defendants said,
-                    and how the threat was made (face-to-face, or by email or letter).
-                   If you can, include the name of the defendant who made the threat.
-                   """
-    )
-    private String enforcementThreatsDetails;
-
-    @CCD(
-            typeOverride = TextArea,
-            hint = """
-                    For example, include the name of the group and the type of protest.
-                    You can enter up to 6,800 characters
-                   """
-    )
-    private String enforcementProtestGroupMemberDetails;
-
-    @CCD(
-        typeOverride = TextArea,
-        hint = """
-                   If you can, include the number of visits and the crime reference number.
-                   You can enter up to 6,800 characters.
-                   """
-    )
-    private String enforcementPoliceOrSocialServicesDetails;
-
-    @CCD(
-        typeOverride = TextArea,
-        hint = """
-                    For example, include the type of animal (dogs, cats etc), the number of animals, and their
-                    behaviour.
-                    You can enter up to 6,800 characters.
-                   """
-    )
-    private String enforcementDogsOrOtherAnimalsDetails;
-
 }
