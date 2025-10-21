@@ -25,5 +25,7 @@ test.describe.skip('[Enforcement - Warrant of Possession] @Master @nightly', asy
   test('Apply for a Warrant of Possession ', async () => {    
     await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
     await performAction('clickButtonAndVerifyPageNavigation', caseSummary.go, yourApplication.mainHeader);
+    await performAction('clickRadioButton', yourApplication.warrantOfPossession);
+    await performAction('clickButtonAndVerifyPageNavigation', yourApplication.continue, 'The name and address for the eviction');
   });
 });
