@@ -350,6 +350,7 @@ dependencies {
 
   testImplementation group: 'io.rest-assured', name: 'rest-assured', version: '5.5.6'
   testImplementation group: 'com.github.hmcts', name: 'fortify-client', version: '1.4.10', classifier: 'all'
+  testImplementation group: 'org.instancio', name: 'instancio', version: '1.0.4'
 
   implementation(group: 'com.github.hmcts', name: 'befta-fw', version: '9.2.4') {
     exclude group: 'org.apache.commons', module: 'commons-compress'
@@ -436,6 +437,12 @@ project.tasks.named("processSmokeTestResources") {
 }
 
 tasks.named('test') {
+  doFirst {
+    jvmArgs += "-javaagent:${configurations.mockitoAgent.asPath}"
+  }
+}
+
+tasks.named('integration') {
   doFirst {
     jvmArgs += "-javaagent:${configurations.mockitoAgent.asPath}"
   }
