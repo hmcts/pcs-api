@@ -114,7 +114,8 @@ class ResumePossessionClaimTest extends BaseEventTest {
             savingPageBuilderFactory, resumeClaim,
             selectClaimantType, noticeDetails,
             uploadAdditionalDocumentsDetails, tenancyLicenceDetails, contactPreferences,
-            defendantsDetails, organisationNameService, claimantDetailsWalesPage, schedulerClient, draftCaseDataService, addressFormatter
+            defendantsDetails, organisationNameService, claimantDetailsWalesPage, schedulerClient,
+            draftCaseDataService, addressFormatter
         );
 
         setEventUnderTest(underTest);
