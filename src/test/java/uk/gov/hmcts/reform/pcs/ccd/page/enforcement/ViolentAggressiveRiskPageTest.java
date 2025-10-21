@@ -105,7 +105,7 @@ class ViolentAggressiveRiskPageTest extends BasePageTest {
 
         // Then
         assertThat(response.getErrors()).containsExactly(
-            ViolentAggressiveRiskPage.characterLimitErrorMessage
+            EnforcementRiskValidationUtils.getCharacterLimitErrorMessage(RiskCategory.VIOLENT_OR_AGGRESSIVE)
         );
     }
 
@@ -127,7 +127,7 @@ class ViolentAggressiveRiskPageTest extends BasePageTest {
 
         // Then
         assertThat(response.getErrors()).containsExactly(
-            ViolentAggressiveRiskPage.characterLimitErrorMessage
+            EnforcementRiskValidationUtils.getCharacterLimitErrorMessage(RiskCategory.VIOLENT_OR_AGGRESSIVE)
         );
     }
 

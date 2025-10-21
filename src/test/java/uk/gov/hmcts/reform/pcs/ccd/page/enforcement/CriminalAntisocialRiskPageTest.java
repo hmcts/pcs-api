@@ -106,7 +106,7 @@ class CriminalAntisocialRiskPageTest extends BasePageTest {
 
         // Then
         assertThat(response.getErrors()).containsExactly(
-            CriminalAntisocialRiskPage.characterLimitErrorMessage
+            EnforcementRiskValidationUtils.getCharacterLimitErrorMessage(RiskCategory.CRIMINAL_OR_ANTISOCIAL)
         );
     }
 
@@ -128,7 +128,7 @@ class CriminalAntisocialRiskPageTest extends BasePageTest {
 
         // Then
         assertThat(response.getErrors()).containsExactly(
-            CriminalAntisocialRiskPage.characterLimitErrorMessage
+            EnforcementRiskValidationUtils.getCharacterLimitErrorMessage(RiskCategory.CRIMINAL_OR_ANTISOCIAL)
         );
     }
 

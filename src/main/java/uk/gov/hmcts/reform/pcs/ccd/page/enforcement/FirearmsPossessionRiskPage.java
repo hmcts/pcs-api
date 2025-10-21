@@ -10,15 +10,13 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.EnforcementRiskDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.RiskCategory;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Component
 public class FirearmsPossessionRiskPage implements CcdPageConfiguration {
-
-    public static String characterLimitErrorMessage = "In 'What is their history of firearm possession?', "
-            + "you have entered more than the maximum number of characters (6800)";
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
@@ -44,9 +42,9 @@ public class FirearmsPossessionRiskPage implements CcdPageConfiguration {
         // TODO: Refactor validation logic to use TextAreaValidationService from PR #751 when merged
         if (txt == null || txt.isBlank()) {
             errors.add("Enter details");
-        } else if (txt.length() > 6800) {
-            // TODO: Use standard character limit constant and TextAreaValidationService from PR #751
-            errors.add(characterLimitErrorMessage);
+        } else if (txt.length() > EnforcementRiskValidationUtils.getCharacterLimit()) {
+            // TODO: Use TextAreaValidationService from PR #751 when merged
+            errors.add(EnforcementRiskValidationUtils.getCharacterLimitErrorMessage(RiskCategory.FIREARMS_POSSESSION));
         }
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
