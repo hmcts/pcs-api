@@ -43,6 +43,7 @@ import {wantToUploadDocuments} from '@data/page-data/wantToUploadDocuments.page.
 import {uploadAdditionalDocs} from '@data/page-data/uploadAdditionalDocs.page.data';
 import {dailyRentAmount} from '@data/page-data/dailyRentAmount.page.data';
 import {statementOfTruth} from '@data/page-data/statementOfTruth.page.data';
+
 import {reasonsForRequestingASuspensionAndDemotionOrder} from '@data/page-data/reasonsForRequestingASuspensionAndDemotionOrder.page.data';
 
 test.beforeEach(async ({page}) => {
@@ -503,7 +504,7 @@ test.describe('[Create Case - England] @Master @nightly', async () => {
     await performAction('selectClaimType', claimType.no);
     await performAction('selectClaimantName', claimantName.yes);
     await performAction('clickButtonAndVerifyPageNavigation', claimantName.continue, contactPreferences.mainHeader);
-    await performAction('clickButton', 'Sign out');
+    await performAction('clickButtonAndVerifyPageNavigation', 'Sign out','Sign in or create an account');
     await performAction('reloginAndFindTheCase', user.claimantSolicitor);
     await performAction('clickButtonAndVerifyPageNavigation', resumeClaim.continue, resumeClaimOptions.mainHeader);
     await performAction('selectResumeClaimOption', resumeClaimOptions.yes);
@@ -583,7 +584,6 @@ test.describe('[Create Case - England] @Master @nightly', async () => {
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
     await performValidations('address information entered',
       ['formLabelValue', propertyDetails.buildingAndStreetLabel, addressDetails.buildingAndStreet],
-      //Following line is commented as Address Line 2 is yet to be implemented in the application
       //['formLabelValue', propertyDetails.addressLine2Label, addressDetails.addressLine2],
       ['formLabelValue', propertyDetails.townOrCityLabel, addressDetails.townOrCity],
       ['formLabelValue', propertyDetails.postcodeZipcodeLabel, addressDetails.walesCourtAssignedPostcode],
@@ -601,6 +601,16 @@ test.describe('[Create Case - England] @Master @nightly', async () => {
     await performAction('clickButtonAndVerifyPageNavigation', provideMoreDetailsOfClaim.continue, claimantType.mainHeader);
     await performAction('selectClaimantType', claimantType.england.registeredProviderForSocialHousing);
     await performAction('selectClaimType', claimType.no);
+    await performAction('selectClaimantName', claimantName.yes);
+    await performAction('clickButton', 'Sign out');
+    await performAction('reloginAndFindTheCase', user.claimantSolicitor);
+    await performAction('clickButtonAndVerifyPageNavigation', resumeClaim.continue, resumeClaimOptions.mainHeader);
+    await performAction('selectResumeClaimOption', resumeClaimOptions.no);
+    await performValidation('radioButtonChecked', claimantType.england.registeredProviderForSocialHousing, false);
+    await performAction('selectClaimantType', claimantType.england.registeredProviderForSocialHousing);
+    await performValidation('radioButtonChecked', claimType.no, false);
+    await performAction('selectClaimType', claimType.no);
+    await performValidation('radioButtonChecked', claimantName.no, false);
     await performAction('selectClaimantName', claimantName.yes);
     await performAction('clickButtonAndVerifyPageNavigation', claimantName.continue, contactPreferences.mainHeader);
     await performAction('selectContactPreferences', {
@@ -671,7 +681,6 @@ test.describe('[Create Case - England] @Master @nightly', async () => {
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
     await performValidations('address information entered',
       ['formLabelValue', propertyDetails.buildingAndStreetLabel, addressDetails.buildingAndStreet],
-      //Following line is commented as Address Line 2 is yet to be implemented in the application
       //['formLabelValue', propertyDetails.addressLine2Label, addressDetails.addressLine2],
       ['formLabelValue', propertyDetails.townOrCityLabel, addressDetails.townOrCity],
       ['formLabelValue', propertyDetails.postcodeZipcodeLabel, addressDetails.walesCourtAssignedPostcode],
@@ -707,7 +716,7 @@ test.describe('[Create Case - England] @Master @nightly', async () => {
     });
     await performValidation('mainHeader', whatAreYourGroundsForPossession.mainHeader);
     await performAction('selectYourPossessionGrounds', {
-      discretionary: [whatAreYourGroundsForPossession.discretionary.rentArrearsOrBreachOfTenancy, whatAreYourGroundsForPossession.discretionary.deteriorationOfFurniture],
+      discretionary: [whatAreYourGroundsForPossession.discretionary.rentArrearsOrBreachOfTenancy, whatAreYourGroundsForPossession.discretionary.deteriorationOfFurniture15],
       mandatory: [whatAreYourGroundsForPossession.mandatory.antiSocialBehaviour],
       mandatoryAccommodation: [whatAreYourGroundsForPossession.mandatoryWithAccommodation.charitableLandlords, whatAreYourGroundsForPossession.mandatoryWithAccommodation.landlordsWorks],
       discretionaryAccommodation: [whatAreYourGroundsForPossession.discretionaryWithAccommodation.adapted, whatAreYourGroundsForPossession.discretionaryWithAccommodation.tied],
@@ -718,7 +727,7 @@ test.describe('[Create Case - England] @Master @nightly', async () => {
     });
     await performValidation('mainHeader', reasonsForPossession.mainHeader);
     await performAction('enterReasonForPossession'
-      , [whatAreYourGroundsForPossession.discretionary.deteriorationOfFurniture, whatAreYourGroundsForPossession.mandatory.antiSocialBehaviour,
+      , [whatAreYourGroundsForPossession.discretionary.deteriorationOfFurniture15, whatAreYourGroundsForPossession.mandatory.antiSocialBehaviour,
         whatAreYourGroundsForPossession.mandatoryWithAccommodation.charitableLandlords, whatAreYourGroundsForPossession.mandatoryWithAccommodation.landlordsWorks,
         whatAreYourGroundsForPossession.discretionaryWithAccommodation.adapted, whatAreYourGroundsForPossession.discretionaryWithAccommodation.tied,
         reasonsForPossession.breachOfTenancy
@@ -781,7 +790,6 @@ test.describe('[Create Case - England] @Master @nightly', async () => {
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
     await performValidations('address information entered',
       ['formLabelValue', propertyDetails.buildingAndStreetLabel, addressDetails.buildingAndStreet],
-      //Following line is commented as Address Line 2 is yet to be implemented in the application
       //['formLabelValue', propertyDetails.addressLine2Label, addressDetails.addressLine2],
       ['formLabelValue', propertyDetails.townOrCityLabel, addressDetails.townOrCity],
       ['formLabelValue', propertyDetails.postcodeZipcodeLabel, addressDetails.walesCourtAssignedPostcode],
