@@ -8,10 +8,10 @@ import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
-import uk.gov.hmcts.reform.pcs.ccd.domain.EstateManagementGroundsWales;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.EstateManagementGroundsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.domain.SecureContractDiscretionaryGroundsWales;
-import uk.gov.hmcts.reform.pcs.ccd.domain.SecureContractMandatoryGroundsWales;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractDiscretionaryGroundsWales;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractMandatoryGroundsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 
 public class SecureContractGroundsForPossessionWales implements CcdPageConfiguration {
@@ -41,8 +41,8 @@ public class SecureContractGroundsForPossessionWales implements CcdPageConfigura
 
                """)
                 .optional(PCSCase::getSecureContractDiscretionaryGroundsWales)
-                .optional(PCSCase::getEstateManagementGroundsWales,
-                        "secureContractDiscretionaryGroundsWalesCONTAINS\"ESTATE_MANAGEMENT_GROUNDS\"")
+                .optional(PCSCase::getSecureContractEstateManagementGroundsWales,
+                        "secureContractDiscretionaryGroundsWales CONTAINS \"ESTATE_MANAGEMENT_GROUNDS\"")
                 .optional(PCSCase::getSecureContractMandatoryGroundsWales);
     }
 
@@ -56,19 +56,28 @@ public class SecureContractGroundsForPossessionWales implements CcdPageConfigura
 
         Set<SecureContractMandatoryGroundsWales> mandatoryGrounds = caseData.getSecureContractMandatoryGroundsWales();
 
-        Set<EstateManagementGroundsWales> estateManagement = caseData.getEstateManagementGroundsWales();
+        Set<EstateManagementGroundsWales> estateManagement = caseData.getSecureContractEstateManagementGroundsWales();
 
-        if (discretionaryGrounds.contains(SecureContractDiscretionaryGroundsWales.ESTATE_MANAGEMENT_GROUNDS)
-                && estateManagement.isEmpty()) {
-            return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
-                    .errors(List.of("Please select at least one ground in 'Estate management grounds (section 160)'."))
-                    .build();
-        }
+        boolean hasDiscretionary = discretionaryGrounds != null && !discretionaryGrounds.isEmpty();
+        boolean hasMandatory = mandatoryGrounds != null && !mandatoryGrounds.isEmpty();
 
-        if (discretionaryGrounds.isEmpty() && mandatoryGrounds.isEmpty()) {
+        if (!hasDiscretionary && !hasMandatory) {
             return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
                     .errors(List.of("Please select at least one ground"))
                     .build();
+        }
+
+        if (hasDiscretionary 
+                && discretionaryGrounds.contains(SecureContractDiscretionaryGroundsWales.ESTATE_MANAGEMENT_GROUNDS)) {
+            boolean hasEstate = estateManagement != null && !estateManagement.isEmpty();
+            
+            if (!hasEstate) {
+                return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
+                        .errors(List.of(
+                                "Please select at least one ground in 'Estate management grounds (section 160)'."
+                        ))
+                        .build();
+            }
         }
 
         caseData.setShowReasonsForGroundsPageWales(YesOrNo.YES);

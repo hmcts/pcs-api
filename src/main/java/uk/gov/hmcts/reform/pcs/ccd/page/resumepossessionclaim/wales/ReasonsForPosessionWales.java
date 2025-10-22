@@ -15,7 +15,7 @@ public class ReasonsForPosessionWales implements CcdPageConfiguration {
         pageBuilder
                 .page("reasonsForPosessionWales")
                 .pageLabel("Reasons for possession (Wales - placeholder)")
-                .showCondition("showReasonsForGroundsPageWales=\"Yes\"")
+                .showCondition("legislativeCountry=\"Wales\"")
                 .readonly(PCSCase::getShowReasonsForGroundsPageWales, NEVER_SHOW);
     }
 }
