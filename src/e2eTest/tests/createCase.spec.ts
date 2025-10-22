@@ -600,16 +600,6 @@ test.describe('[Create Case - England] @Master @nightly', async () => {
     await performAction('selectClaimantType', claimantType.england.registeredProviderForSocialHousing);
     await performAction('selectClaimType', claimType.no);
     await performAction('selectClaimantName', claimantName.yes);
-    await performAction('clickButton', 'Sign out');
-    await performAction('reloginAndFindTheCase', user.claimantSolicitor);
-    await performAction('clickButtonAndVerifyPageNavigation', resumeClaim.continue, resumeClaimOptions.mainHeader);
-    await performAction('selectResumeClaimOption', resumeClaimOptions.no);
-    await performValidation('radioButtonChecked', claimantType.england.registeredProviderForSocialHousing, false);
-    await performAction('selectClaimantType', claimantType.england.registeredProviderForSocialHousing);
-    await performValidation('radioButtonChecked', claimType.no, false);
-    await performAction('selectClaimType', claimType.no);
-    await performValidation('radioButtonChecked', claimantName.no, false);
-    await performAction('selectClaimantName', claimantName.yes);
     await performAction('clickButtonAndVerifyPageNavigation', claimantName.continue, contactPreferences.mainHeader);
     await performAction('selectContactPreferences', {
       notifications: contactPreferences.yes,

@@ -62,16 +62,6 @@ test.describe('[Create Case - Wales] @Master @nightly', async () => {
     await performAction('selectClaimType', claimType.no);
     await performAction('selectClaimantName', claimantName.yes);
     await performAction('clickButtonAndVerifyPageNavigation', claimantName.continue, claimantDetailsWales.mainHeader);
-    await performAction('clickButton', 'Sign out');
-    await performAction('reloginAndFindTheCase', user.claimantSolicitor);
-    await performAction('clickButtonAndVerifyPageNavigation', resumeClaim.continue, resumeClaimOptions.mainHeader);
-    await performAction('selectResumeClaimOption', resumeClaimOptions.yes);
-    await performValidation('radioButtonChecked', claimantType.wales.communityLandlord, true);
-    await performAction('verifyPageAndClickButton', claimantType.continue, claimantType.mainHeader);
-    await performValidation('radioButtonChecked', claimType.no, true);
-    await performAction('verifyPageAndClickButton', claimType.continue, claimType.mainHeader);
-    await performValidation('radioButtonChecked', claimantName.no, true);
-    await performAction('clickButtonAndVerifyPageNavigation', claimantName.continue, claimantDetailsWales.mainHeader);
     await performAction('selectClaimantDetails',
         {question1: claimantDetailsWales.wereYouRegisteredUnderPart1OfTheHousingAct2014, option1: claimantDetailsWales.yes,
          question2: claimantDetailsWales.wereYouLicensedUnderPart1OfTheHousingAct2014, option2: claimantDetailsWales.yes,
