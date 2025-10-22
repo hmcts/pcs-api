@@ -344,8 +344,8 @@ export class CreateCaseAction implements IAction {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: ' + caseNumber});
     if (possessionGrounds.discretionary) {
       await performAction('check', possessionGrounds.discretionary);
-      if (Array.isArray(possessionGrounds.discretionary) &&
-        possessionGrounds.discretionary.includes(whatAreYourGroundsForPossessionWales.discretionary.estateManagementGrounds)) {
+      if((possessionGrounds.discretionary as Array<string>).includes(whatAreYourGroundsForPossessionWales.discretionary.estateManagementGrounds))
+      {
         await performAction('check', possessionGrounds.discretionaryEstateGrounds);
       }
     }
