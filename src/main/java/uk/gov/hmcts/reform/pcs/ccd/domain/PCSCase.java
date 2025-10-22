@@ -273,6 +273,10 @@ public class PCSCase {
     @CCD
     private WalesHousingAct walesHousingAct;
 
+    @JsonUnwrapped(prefix = "prohibitedConductWales")
+    @CCD
+    private ProhibitedConductWales prohibitedConductWales;
+
     @CCD(
         label = "How much is the rent?",
         typeOverride = FieldType.MoneyGBP,
