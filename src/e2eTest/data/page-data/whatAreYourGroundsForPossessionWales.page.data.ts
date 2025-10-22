@@ -4,9 +4,9 @@ export const whatAreYourGroundsForPossessionWales = {
   mandatory:
     {
       failureToGiveupPossession: 'Failure to give up possession on date specified in contract-holder’s notice (section 170)',
-      landlordNotice: 'Landlord’s notice in connection with end of fixed term given (section 186)',
-      breakClauseNotice: 'Failure to give up possession on date specified in contract-holder’s break clause notice (section 191)',
-      noticeGiven: 'Notice given under a landlord’s break clause (section 199)',
+      section186: 'Landlord’s notice in connection with end of fixed term given (section 186)',
+      section191: 'Failure to give up possession on date specified in contract-holder’s break clause notice (section 191)',
+      section199: 'Notice given under a landlord’s break clause (section 199)',
       section178: 'Landlord’s notice given in relation to periodic standard contract (section 178)',
       section181: 'Contract-holder under a periodic standard contract seriously in arrears with rent (section 181)',
       section187: 'Contract-holder under a fixed term standard contract seriously in arrears with rent (section 187)',
