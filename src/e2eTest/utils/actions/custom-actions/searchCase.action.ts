@@ -19,7 +19,7 @@ export class SearchCaseAction implements IAction {
       ['filterCaseFromCaseList', () => this.filterCaseFromCaseList(page, fieldName)],
       ['searchMyCaseFromFindCase', () => this.searchMyCaseFromFindCase(page, fieldName as actionRecord)],
       ['selectFirstCaseFromTheFilter', () => this.selectFirstCaseFromTheFilter(page, fieldName)],
-      ['NoCasesFoundAfterSearch', () => this.NoCasesFoundAfterSearch(page)]
+      ['noCasesFoundAfterSearch', () => this.noCasesFoundAfterSearch(page)]
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) throw new Error(`No action found for '${action}'`);
@@ -72,7 +72,7 @@ export class SearchCaseAction implements IAction {
     }
   }
 
-  private async NoCasesFoundAfterSearch(page: Page): Promise<void> {
+  private async noCasesFoundAfterSearch(page: Page): Promise<void> {
     const caseLocator = page.locator('div#search-result:has-text("No cases found. Try using different filters.")').first();
     caseNotFoundAfterFilter = await caseLocator.isVisible();
   }
