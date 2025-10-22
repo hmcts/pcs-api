@@ -3,10 +3,11 @@ import { caseList } from "@data/page-data/caseList.page.data";
 import { user } from "@data/user-data/permanent.user.data";
 import { caseSummary } from "@data/page-data/caseSummary.page.data";
 import { yourApplication } from "@data/page-data/page-data-enforcement/yourApplication.page.data";
-import { initializeEnforcementExecutor, performAction } from "@utils/controller-enforcement";
+import { initializeEnforcementExecutor, performAction, performValidation } from "@utils/controller-enforcement";
 import { caseNumber } from "@utils/actions/custom-actions/createCase.action";
 import { initializeExecutor } from "@utils/controller";
-import { caseFoundAfterFilter } from "@utils/actions/custom-actions/searchCase.action";
+import { caseNotFoundAfterFilter } from "@utils/actions/custom-actions/searchCase.action";
+import { nameAndAddressForEviction } from "@data/page-data/page-data-enforcement/nameAndAddressForEviction.page.data";
 
 test.beforeEach(async ({ page }) => {
   initializeExecutor(page);
@@ -16,16 +17,16 @@ test.beforeEach(async ({ page }) => {
   await performAction('filterCaseFromCaseList', caseList.stateAwaitingSubmission);
   await performAction('NoCasesFoundAfterSearch')
   //Below three lines will be merged into a single action as part of improvement 
-  await performAction("selectFirstCaseFromTheFilter", caseFoundAfterFilter);
-  await performAction('createNewCase',caseFoundAfterFilter);
-  await performAction('searchMyCaseFromFindCase', { caseNumber: caseNumber, criteria: caseFoundAfterFilter });
+  await performAction("selectFirstCaseFromTheFilter", caseNotFoundAfterFilter);
+  await performAction('createNewCase', caseNotFoundAfterFilter);
+  await performAction('searchMyCaseFromFindCase', { caseNumber: caseNumber, criteria: caseNotFoundAfterFilter });
 });
 
-test.describe.skip('[Enforcement - Warrant of Possession] @Master @nightly', async () => {
-  test('Apply for a Warrant of Possession ', async () => {    
+test.describe('[Enforcement - Warrant of Possession] @Master @nightly', async () => {
+  test('Apply for a Warrant of Possession ', async () => {
     await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
     await performAction('clickButtonAndVerifyPageNavigation', caseSummary.go, yourApplication.mainHeader);
-    await performAction('clickRadioButton', yourApplication.warrantOfPossession);
-    await performAction('clickButtonAndVerifyPageNavigation', yourApplication.continue, 'The name and address for the eviction');
+    await performAction('selectApplicationType', { question: yourApplication.typeOfApplicationQuestion, option: yourApplication.typeOfApplicationOptions.warrantOfPossession });
+    await performValidation('mainHeader', nameAndAddressForEviction.mainHeader);
   });
 });
