@@ -21,7 +21,7 @@ public final class EnforcementRiskValidationUtils {
      * @param riskCategory the risk category for which to generate the error message
      * @return formatted error message
      */
-    public static String getCharacterLimitErrorMessage(RiskCategory riskCategory) {
+    static String getCharacterLimitErrorMessage(RiskCategory riskCategory) {
         String fieldLabel = getFieldLabel(riskCategory);
         return String.format(ERROR_MESSAGE_TEMPLATE, fieldLabel, CHARACTER_LIMIT);
     }
@@ -44,7 +44,7 @@ public final class EnforcementRiskValidationUtils {
     /**
      * Gets the standard character limit for enforcement risk detail fields.
      */
-    public static int getCharacterLimit() {
+    static int getCharacterLimit() {
         return CHARACTER_LIMIT;
     }
 }
