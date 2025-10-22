@@ -294,13 +294,6 @@ export class CreateCaseAction implements IAction {
 
   private async selectTenancyOrLicenceDetails(tenancyData: actionRecord) {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
-    // const tenancyLicenceData = tenancyData as {
-    //   tenancyOrLicenceType: string;
-    //   day?: string;
-    //   month?: string;
-    //   year?: string;
-    //   files?: string[];
-    // };
     await performAction('clickRadioButton', tenancyData.tenancyOrLicenceType);
     if (tenancyData.tenancyOrLicenceType === tenancyLicenceDetails.other) {
       await performAction('inputText', tenancyLicenceDetails.giveDetailsOfTypeOfTenancyOrLicenceAgreement, tenancyLicenceDetails.detailsOfLicence);
@@ -359,10 +352,6 @@ export class CreateCaseAction implements IAction {
 
   private async selectMediationAndSettlement(mediationSettlement: actionRecord) {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
-    // const prefData = mediationSettlement as {
-    //   attemptedMediationWithDefendantsOption: string;
-    //   settlementWithDefendantsOption: string;
-    // };
     await performAction('clickRadioButton', {
       question: mediationAndSettlement.attemptedMediationWithDefendants,
       option: mediationSettlement.attemptedMediationWithDefendantsOption
@@ -430,10 +419,6 @@ export class CreateCaseAction implements IAction {
 
   private async selectClaimantCircumstances(claimantCircumstance: actionRecord) {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
-    // const claimData = claimantCircumstance as {
-    //   circumstanceOption: string,
-    //   claimantInput: string
-    // };
     //As discussed with pod1 team, part of HDPI-2011, Below steps will be enabled back when dynamic organisation name handled in new ticket on claimant circumstances page.
     //const nameClaimant = claimantsName.substring(claimantsName.length - 1) == 's' ? `${claimantsName}'` : `${claimantsName}'s`;
     const claimOption = claimantCircumstance.circumstanceOption;
@@ -453,12 +438,6 @@ export class CreateCaseAction implements IAction {
 
   private async provideDetailsOfRentArrears(rentArrears: actionRecord) {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
-    // const rentArrearsData = rentArrears as {
-    //   files?: string[],
-    //   rentArrearsAmountOnStatement: string,
-    //   rentPaidByOthersOption: string;
-    //   paymentOptions?: string[];
-    // };
     await performAction('uploadFile', rentArrears.files);
     await performAction('inputText', detailsOfRentArrears.totalRentArrearsLabel, rentArrears.rentArrearsAmountOnStatement);
     await performAction('clickRadioButton', {
