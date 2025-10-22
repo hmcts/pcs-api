@@ -199,13 +199,13 @@ test.describe('[Create Case - Wales] @Master @nightly', async () => {
       email: defendantDetails.no,
     });
     //Following 186 to 188 needs update once routing is done for wales journey HDPI-2365
-    await performAction('check', 'Secure contract');
+    await performAction('check', 'Standard contract');
     await performAction('clickButton', 'Continue');
     await performValidation('mainHeader', whatAreYourGroundsForPossessionWales.mainHeader);
     await performAction('selectYourPossessionGrounds', {
       discretionary: [whatAreYourGroundsForPossessionWales.discretionary.estateManagementGrounds],
       discretionaryEstateGrounds: [whatAreYourGroundsForPossessionWales.discretionary.buildingWorks],
-      mandatory: [whatAreYourGroundsForPossessionWales.mandatory.breakClauseNotice],
+      mandatory: [whatAreYourGroundsForPossessionWales.mandatory.section181],
     });
     /*await performAction('clickButton', reasonsForPossession.continue);
     // following code can be removed once wales journey routing is done HDPI-2365
@@ -304,6 +304,7 @@ test.describe('[Create Case - Wales] @Master @nightly', async () => {
     await performValidation('mainHeader', whatAreYourGroundsForPossessionWales.mainHeader);
     await performAction('selectYourPossessionGrounds', {
       discretionary: [whatAreYourGroundsForPossessionWales.discretionary.otherBreachOfContract],
+      mandatory: [whatAreYourGroundsForPossessionWales.mandatory.section187],
     });
     // Commenting below code as tickets are yet to be implemented for wales journey
     /*await performAction('clickButton', reasonsForPossession.continue);
