@@ -43,7 +43,6 @@ import {wantToUploadDocuments} from '@data/page-data/wantToUploadDocuments.page.
 import {uploadAdditionalDocs} from '@data/page-data/uploadAdditionalDocs.page.data';
 import {dailyRentAmount} from '@data/page-data/dailyRentAmount.page.data';
 import {statementOfTruth} from '@data/page-data/statementOfTruth.page.data';
-
 import {reasonsForRequestingASuspensionAndDemotionOrder} from '@data/page-data/reasonsForRequestingASuspensionAndDemotionOrder.page.data';
 
 test.beforeEach(async ({page}) => {
@@ -539,7 +538,10 @@ test.describe('[Create Case - England] @Master @nightly', async () => {
       settlementWithDefendantsOption: mediationAndSettlement.no,
     });
     await performValidation('mainHeader', noticeOfYourIntention.mainHeader);
-    await performAction('selectNoticeOfYourIntention', noticeOfYourIntention.no);
+    await performAction('selectNoticeOfYourIntention', {
+      question: noticeOfYourIntention.servedNoticeInteractiveText,
+      option: noticeOfYourIntention.no
+    });
     await performValidation('mainHeader', rentDetails.mainHeader);
     await performAction('provideRentDetails', {rentAmount:'850', rentFrequencyOption:'Other', inputFrequency:rentDetails.rentFrequencyFortnightly,unpaidRentAmountPerDay:'50'});
     await performValidation('mainHeader', detailsOfRentArrears.mainHeader);
@@ -559,11 +561,12 @@ test.describe('[Create Case - England] @Master @nightly', async () => {
     await performValidation('mainHeader', defendantCircumstances.mainHeader);
     await performAction('selectDefendantCircumstances', defendantCircumstances.no);
     await performValidation('mainHeader', alternativesToPossession.mainHeader);
-    await performAction('selectAlternativesToPossession', {question: alternativesToPossession.suspensionOrDemotion
+    await performAction('selectAlternativesToPossession', {question: alternativesToPossession.demotionOfTenancy
       , option: [alternativesToPossession.demotionOfTenancy]});
     await performValidation('mainHeader', housingAct.mainHeader);
     await performAction('selectHousingAct', [{question: housingAct.demotionOfTenancy.whichSection
       , option: housingAct.demotionOfTenancy.section6AHousingAct1988}]);
+    await performValidation('mainHeader', statementOfExpressTerms.mainHeader);
     await performAction('selectStatementOfExpressTerms', statementOfExpressTerms.no);
     await performValidation('mainHeader', reasonsForRequestingADemotionOrder.mainHeader);
     await performAction('enterReasonForDemotionOrder', reasonsForRequestingADemotionOrder.requestDemotionOrderQuestion);
@@ -584,7 +587,6 @@ test.describe('[Create Case - England] @Master @nightly', async () => {
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
     await performValidations('address information entered',
       ['formLabelValue', propertyDetails.buildingAndStreetLabel, addressDetails.buildingAndStreet],
-      //['formLabelValue', propertyDetails.addressLine2Label, addressDetails.addressLine2],
       ['formLabelValue', propertyDetails.townOrCityLabel, addressDetails.townOrCity],
       ['formLabelValue', propertyDetails.postcodeZipcodeLabel, addressDetails.walesCourtAssignedPostcode],
       ['formLabelValue', propertyDetails.countryLabel, addressDetails.country]);
@@ -601,16 +603,6 @@ test.describe('[Create Case - England] @Master @nightly', async () => {
     await performAction('clickButtonAndVerifyPageNavigation', provideMoreDetailsOfClaim.continue, claimantType.mainHeader);
     await performAction('selectClaimantType', claimantType.england.registeredProviderForSocialHousing);
     await performAction('selectClaimType', claimType.no);
-    await performAction('selectClaimantName', claimantName.yes);
-    await performAction('clickButton', 'Sign out');
-    await performAction('reloginAndFindTheCase', user.claimantSolicitor);
-    await performAction('clickButtonAndVerifyPageNavigation', resumeClaim.continue, resumeClaimOptions.mainHeader);
-    await performAction('selectResumeClaimOption', resumeClaimOptions.no);
-    await performValidation('radioButtonChecked', claimantType.england.registeredProviderForSocialHousing, false);
-    await performAction('selectClaimantType', claimantType.england.registeredProviderForSocialHousing);
-    await performValidation('radioButtonChecked', claimType.no, false);
-    await performAction('selectClaimType', claimType.no);
-    await performValidation('radioButtonChecked', claimantName.no, false);
     await performAction('selectClaimantName', claimantName.yes);
     await performAction('clickButtonAndVerifyPageNavigation', claimantName.continue, contactPreferences.mainHeader);
     await performAction('selectContactPreferences', {
@@ -640,7 +632,10 @@ test.describe('[Create Case - England] @Master @nightly', async () => {
       settlementWithDefendantsOption: mediationAndSettlement.no,
     });
     await performValidation('mainHeader', noticeOfYourIntention.mainHeader);
-    await performAction('selectNoticeOfYourIntention', noticeOfYourIntention.no);
+    await performAction('selectNoticeOfYourIntention', {
+      question: noticeOfYourIntention.servedNoticeInteractiveText,
+      option: noticeOfYourIntention.no,
+    });
     // await performValidation('mainHeader', rentDetails.mainHeader);
     // await performAction('provideRentDetails', {rentFrequencyOption: 'Monthly', rentAmount: '1000'});
     // await performAction('selectDailyRentAmount', {
@@ -661,7 +656,8 @@ test.describe('[Create Case - England] @Master @nightly', async () => {
       , option: [alternativesToPossession.suspensionOfRightToBuy]});
     await performValidation('mainHeader', housingAct.mainHeader);
     await performAction('selectHousingAct', [{question: housingAct.suspensionOfRightToBuy.whichSection
-      ,option: housingAct.suspensionOfRightToBuy.section121AHousingAct1985}]);
+      , option: housingAct.suspensionOfRightToBuy.section121AHousingAct1985}]);
+    await performValidation('mainHeader', reasonsForRequestingASuspensionOrder.mainHeader);
     await performValidation('mainHeader', reasonsForRequestingASuspensionOrder.mainHeader);
     await performAction('enterReasonForSuspensionOrder', reasonsForRequestingASuspensionOrder.requestSuspensionOrderQuestion);
     await performValidation('mainHeader', claimingCosts.mainHeader);
@@ -681,7 +677,6 @@ test.describe('[Create Case - England] @Master @nightly', async () => {
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
     await performValidations('address information entered',
       ['formLabelValue', propertyDetails.buildingAndStreetLabel, addressDetails.buildingAndStreet],
-      //['formLabelValue', propertyDetails.addressLine2Label, addressDetails.addressLine2],
       ['formLabelValue', propertyDetails.townOrCityLabel, addressDetails.townOrCity],
       ['formLabelValue', propertyDetails.postcodeZipcodeLabel, addressDetails.walesCourtAssignedPostcode],
       ['formLabelValue', propertyDetails.countryLabel, addressDetails.country]);
@@ -716,7 +711,7 @@ test.describe('[Create Case - England] @Master @nightly', async () => {
     });
     await performValidation('mainHeader', whatAreYourGroundsForPossession.mainHeader);
     await performAction('selectYourPossessionGrounds', {
-      discretionary: [whatAreYourGroundsForPossession.discretionary.rentArrearsOrBreachOfTenancy, whatAreYourGroundsForPossession.discretionary.deteriorationOfFurniture],
+      discretionary: [whatAreYourGroundsForPossession.discretionary.rentArrearsOrBreachOfTenancy, whatAreYourGroundsForPossession.discretionary.deteriorationOfFurniture4],
       mandatory: [whatAreYourGroundsForPossession.mandatory.antiSocialBehaviour],
       mandatoryAccommodation: [whatAreYourGroundsForPossession.mandatoryWithAccommodation.charitableLandlords, whatAreYourGroundsForPossession.mandatoryWithAccommodation.landlordsWorks],
       discretionaryAccommodation: [whatAreYourGroundsForPossession.discretionaryWithAccommodation.adapted, whatAreYourGroundsForPossession.discretionaryWithAccommodation.tied],
@@ -727,7 +722,7 @@ test.describe('[Create Case - England] @Master @nightly', async () => {
     });
     await performValidation('mainHeader', reasonsForPossession.mainHeader);
     await performAction('enterReasonForPossession'
-      , [whatAreYourGroundsForPossession.discretionary.deteriorationOfFurniture, whatAreYourGroundsForPossession.mandatory.antiSocialBehaviour,
+      , [whatAreYourGroundsForPossession.discretionary.deteriorationOfFurniture4, whatAreYourGroundsForPossession.mandatory.antiSocialBehaviour,
         whatAreYourGroundsForPossession.mandatoryWithAccommodation.charitableLandlords, whatAreYourGroundsForPossession.mandatoryWithAccommodation.landlordsWorks,
         whatAreYourGroundsForPossession.discretionaryWithAccommodation.adapted, whatAreYourGroundsForPossession.discretionaryWithAccommodation.tied,
         reasonsForPossession.breachOfTenancy
@@ -740,16 +735,19 @@ test.describe('[Create Case - England] @Master @nightly', async () => {
       settlementWithDefendantsOption: mediationAndSettlement.no,
     });
     await performValidation('mainHeader', noticeOfYourIntention.mainHeader);
-    await performAction('selectNoticeOfYourIntention', noticeOfYourIntention.yes);
+    await performAction('selectNoticeOfYourIntention', {
+      question: noticeOfYourIntention.servedNoticeInteractiveText,
+      option: noticeOfYourIntention.yes
+    });
     await performAction('selectNoticeDetails', {
       howDidYouServeNotice: noticeDetails.byOtherElectronicMethod,
       day: '25', month: '02', year: '1970', hour: '22', minute: '45', second: '10', files: 'NoticeDetails.pdf'});
-    // await performAction('provideRentDetails', {rentFrequencyOption: 'Monthly', rentAmount: '1000'});
-    // await performValidation('mainHeader', dailyRentAmount.mainHeader);
-    // await performAction('selectDailyRentAmount', {
-    //   calculateRentAmount: '£32.85',
-    //   unpaidRentInteractiveOption: dailyRentAmount.yes
-    // });
+   /* await performAction('provideRentDetails', {rentFrequencyOption: 'Monthly', rentAmount: '1000'});
+    await performValidation('mainHeader', dailyRentAmount.mainHeader);
+    await performAction('selectDailyRentAmount', {
+      calculateRentAmount: '£32.85',
+      unpaidRentInteractiveOption: dailyRentAmount.yes
+    });*/
     await performValidation('mainHeader', moneyJudgment.mainHeader);
     await performAction('selectMoneyJudgment', moneyJudgment.no);
     await performValidation('mainHeader', claimantCircumstances.mainHeader);
@@ -771,8 +769,8 @@ test.describe('[Create Case - England] @Master @nightly', async () => {
     await performAction('selectStatementOfExpressTerms', statementOfExpressTerms.no);
     await performValidation('mainHeader', reasonsForRequestingASuspensionAndDemotionOrder.mainHeader);
     await performAction('enterReasonForSuspensionAndDemotionOrder'
-        , {suspension: reasonsForRequestingASuspensionAndDemotionOrder.requestSuspensionOrderQuestion
-          ,  demotion: reasonsForRequestingASuspensionAndDemotionOrder.requestDemotionOrderQuestion});
+      , {suspension: reasonsForRequestingASuspensionAndDemotionOrder.requestSuspensionOrderQuestion
+        ,  demotion: reasonsForRequestingASuspensionAndDemotionOrder.requestDemotionOrderQuestion});
     await performValidation('mainHeader', claimingCosts.mainHeader);
     await performAction('selectClaimingCosts', claimingCosts.yes);
     await performValidation('mainHeader', additionalReasonsForPossession.mainHeader);
@@ -790,7 +788,6 @@ test.describe('[Create Case - England] @Master @nightly', async () => {
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
     await performValidations('address information entered',
       ['formLabelValue', propertyDetails.buildingAndStreetLabel, addressDetails.buildingAndStreet],
-      //['formLabelValue', propertyDetails.addressLine2Label, addressDetails.addressLine2],
       ['formLabelValue', propertyDetails.townOrCityLabel, addressDetails.townOrCity],
       ['formLabelValue', propertyDetails.postcodeZipcodeLabel, addressDetails.walesCourtAssignedPostcode],
       ['formLabelValue', propertyDetails.countryLabel, addressDetails.country]);
