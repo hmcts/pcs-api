@@ -15,7 +15,7 @@ test.beforeEach(async ({ page }) => {
   await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
   await performAction('login', user.claimantSolicitor);
   await performAction('filterCaseFromCaseList', caseList.stateAwaitingSubmission);
-  await performAction('NoCasesFoundAfterSearch')
+  await performAction('noCasesFoundAfterSearch')
   //Below three lines will be merged into a single action as part of improvement 
   await performAction("selectFirstCaseFromTheFilter", caseNotFoundAfterFilter);
   await performAction('createNewCase', caseNotFoundAfterFilter);
