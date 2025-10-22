@@ -8,7 +8,7 @@ import { waitForPageRedirectionTimeout } from 'playwright.config';
 
 let firstFromTheListCaseNumber: string;
 
-export let caseFoundAfterFilter: boolean;
+export let caseNotFoundAfterFilter: boolean;
 
 export let enforcementTestCaseNumber: string;
 
@@ -74,6 +74,6 @@ export class SearchCaseAction implements IAction {
 
   private async NoCasesFoundAfterSearch(page: Page): Promise<void> {
     const caseLocator = page.locator('div#search-result:has-text("No cases found. Try using different filters.")').first();
-    caseFoundAfterFilter = await caseLocator.isVisible();
+    caseNotFoundAfterFilter = await caseLocator.isVisible();
   }
 }
