@@ -1,35 +1,24 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim;
 
-import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
-import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
-import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.domain.NoRentArrearsDiscretionaryGrounds;
-import uk.gov.hmcts.reform.pcs.ccd.domain.NoRentArrearsMandatoryGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.model.NoRentArrearsReasonForGrounds;
-import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 
-import java.util.ArrayList;
-import java.util.List;
-
-@AllArgsConstructor
 @Component
 @Slf4j
 public class NoRentArrearsGroundsForPossessionReason implements CcdPageConfiguration {
 
-    private final TextAreaValidationService textAreaValidationService;
-
     @Override
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
-            .page("noRentArrearsGroundsForPossessionReason", this::midEvent)
+            .page("noRentArrearsGroundsForPossessionReason")
             .pageLabel("Reasons for possession")
-            .showCondition("groundsForPossession=\"No\" AND typeOfTenancyLicence=\"ASSURED_TENANCY\"")
+            .showCondition("groundsForPossession=\"No\" "
+                               + "AND typeOfTenancyLicence=\"ASSURED_TENANCY\""
+                               + " AND showNoRentArrearsGroundReasonPage=\"Yes\"")
             .label("noRentArrearsOptions-lineSeparator", "---")
             .complex(PCSCase::getNoRentArrearsReasonForGrounds)
             // Ground 1
@@ -149,19 +138,6 @@ public class NoRentArrearsGroundsForPossessionReason implements CcdPageConfigura
                 NoRentArrearsReasonForGrounds::getNoRightToRentTextArea,
                 "noRentArrearsMandatoryGroundsOptionsCONTAINS\"NO_RIGHT_TO_RENT\""
             )
-            // Ground 8
-            .label(
-                "noRentArrearsOptions-seriousRentArrears-label",
-                """
-                    <h2 class="govuk-heading-l">Serious rent arrears (ground 8)</h2>
-                    <h3 class="govuk-heading-m">Why are you making a claim for possession under this ground?</h3>
-                    """,
-                "noRentArrearsMandatoryGroundsOptionsCONTAINS\"SERIOUS_RENT_ARREARS\""
-            )
-            .mandatory(
-                NoRentArrearsReasonForGrounds::getSeriousRentArrearsTextArea,
-                "noRentArrearsMandatoryGroundsOptionsCONTAINS\"SERIOUS_RENT_ARREARS\""
-            )
             // Ground 9
             .label(
                 "noRentArrearsOptions-suitableAccom-label",
@@ -174,32 +150,6 @@ public class NoRentArrearsGroundsForPossessionReason implements CcdPageConfigura
             .mandatory(
                 NoRentArrearsReasonForGrounds::getSuitableAccomTextArea,
                 "noRentArrearsDiscretionaryGroundsOptionsCONTAINS\"SUITABLE_ACCOM\""
-            )
-            // Ground 10
-            .label(
-                "noRentArrearsOptions-rentArrears-label",
-                """
-                    <h2 class="govuk-heading-l">Rent arrears (ground 10)</h2>
-                    <h3 class="govuk-heading-m">Why are you making a claim for possession under this ground?</h3>
-                    """,
-                "noRentArrearsDiscretionaryGroundsOptionsCONTAINS\"RENT_ARREARS\""
-            )
-            .mandatory(
-                NoRentArrearsReasonForGrounds::getRentArrearsTextArea,
-                "noRentArrearsDiscretionaryGroundsOptionsCONTAINS\"RENT_ARREARS\""
-            )
-            // Ground 11
-            .label(
-                "noRentArrearsOptions-rentPaymentDelay-label",
-                """
-                    <h2 class="govuk-heading-l">Persistent delay in paying rent (ground 11)</h2>
-                    <h3 class="govuk-heading-m">Why are you making a claim for possession under this ground?</h3>
-                    """,
-                "noRentArrearsDiscretionaryGroundsOptionsCONTAINS\"RENT_PAYMENT_DELAY\""
-            )
-            .mandatory(
-                NoRentArrearsReasonForGrounds::getRentPaymentDelayTextArea,
-                "noRentArrearsDiscretionaryGroundsOptionsCONTAINS\"RENT_PAYMENT_DELAY\""
             )
             // Ground 12
             .label(
@@ -306,126 +256,5 @@ public class NoRentArrearsGroundsForPossessionReason implements CcdPageConfigura
                 NoRentArrearsReasonForGrounds::getFalseStatementTextArea,
                 "noRentArrearsDiscretionaryGroundsOptionsCONTAINS\"FALSE_STATEMENT\""
             );
-    }
-
-    private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
-                                                                  CaseDetails<PCSCase, State> detailsBefore) {
-        PCSCase caseData = details.getData();
-        
-        // Validate all text area fields for character limit - ultra simple approach
-        List<String> validationErrors = new ArrayList<>();
-        
-        NoRentArrearsReasonForGrounds noRentArrearsReason = caseData.getNoRentArrearsReasonForGrounds();
-        if (noRentArrearsReason != null) {
-            validationErrors.addAll(textAreaValidationService.validateMultipleTextAreas(
-                TextAreaValidationService.FieldValidation.of(
-                    noRentArrearsReason.getOwnerOccupierTextArea(),
-                    NoRentArrearsMandatoryGrounds.OWNER_OCCUPIER.getLabel(),
-                    TextAreaValidationService.MEDIUM_TEXT_LIMIT
-                ),
-                TextAreaValidationService.FieldValidation.of(
-                    noRentArrearsReason.getRepossessionByLenderTextArea(),
-                    NoRentArrearsMandatoryGrounds.REPOSSESSION_BY_LENDER.getLabel(),
-                    TextAreaValidationService.MEDIUM_TEXT_LIMIT
-                ),
-                TextAreaValidationService.FieldValidation.of(
-                    noRentArrearsReason.getHolidayLetTextArea(),
-                    NoRentArrearsMandatoryGrounds.HOLIDAY_LET.getLabel(),
-                    TextAreaValidationService.MEDIUM_TEXT_LIMIT
-                ),
-                TextAreaValidationService.FieldValidation.of(
-                    noRentArrearsReason.getStudentLetTextArea(),
-                    NoRentArrearsMandatoryGrounds.STUDENT_LET.getLabel(),
-                    TextAreaValidationService.MEDIUM_TEXT_LIMIT
-                ),
-                TextAreaValidationService.FieldValidation.of(
-                    noRentArrearsReason.getMinisterOfReligionTextArea(),
-                    NoRentArrearsMandatoryGrounds.MINISTER_OF_RELIGION.getLabel(),
-                    TextAreaValidationService.MEDIUM_TEXT_LIMIT
-                ),
-                TextAreaValidationService.FieldValidation.of(
-                    noRentArrearsReason.getRedevelopmentTextArea(),
-                    NoRentArrearsMandatoryGrounds.REDEVELOPMENT.getLabel(),
-                    TextAreaValidationService.MEDIUM_TEXT_LIMIT
-                ),
-                TextAreaValidationService.FieldValidation.of(
-                    noRentArrearsReason.getDeathOfTenantTextArea(),
-                    NoRentArrearsMandatoryGrounds.DEATH_OF_TENANT.getLabel(),
-                    TextAreaValidationService.MEDIUM_TEXT_LIMIT
-                ),
-                TextAreaValidationService.FieldValidation.of(
-                    noRentArrearsReason.getAntisocialBehaviourTextArea(),
-                    NoRentArrearsMandatoryGrounds.ANTISOCIAL_BEHAVIOUR.getLabel(),
-                    TextAreaValidationService.MEDIUM_TEXT_LIMIT
-                ),
-                TextAreaValidationService.FieldValidation.of(
-                    noRentArrearsReason.getNoRightToRentTextArea(),
-                    NoRentArrearsMandatoryGrounds.NO_RIGHT_TO_RENT.getLabel(),
-                    TextAreaValidationService.MEDIUM_TEXT_LIMIT
-                ),
-                TextAreaValidationService.FieldValidation.of(
-                    noRentArrearsReason.getSeriousRentArrearsTextArea(),
-                    NoRentArrearsMandatoryGrounds.SERIOUS_RENT_ARREARS.getLabel(),
-                    TextAreaValidationService.MEDIUM_TEXT_LIMIT
-                ),
-                TextAreaValidationService.FieldValidation.of(
-                    noRentArrearsReason.getSuitableAccomTextArea(),
-                    NoRentArrearsDiscretionaryGrounds.SUITABLE_ACCOM.getLabel(),
-                    TextAreaValidationService.MEDIUM_TEXT_LIMIT
-                ),
-                TextAreaValidationService.FieldValidation.of(
-                    noRentArrearsReason.getRentArrearsTextArea(),
-                    NoRentArrearsDiscretionaryGrounds.RENT_ARREARS.getLabel(),
-                    TextAreaValidationService.MEDIUM_TEXT_LIMIT
-                ),
-                TextAreaValidationService.FieldValidation.of(
-                    noRentArrearsReason.getRentPaymentDelayTextArea(),
-                    NoRentArrearsDiscretionaryGrounds.RENT_PAYMENT_DELAY.getLabel(),
-                    TextAreaValidationService.MEDIUM_TEXT_LIMIT
-                ),
-                TextAreaValidationService.FieldValidation.of(
-                    noRentArrearsReason.getBreachOfTenancyConditionsTextArea(),
-                    NoRentArrearsDiscretionaryGrounds.BREACH_OF_TENANCY_CONDITIONS.getLabel(),
-                    TextAreaValidationService.MEDIUM_TEXT_LIMIT
-                ),
-                TextAreaValidationService.FieldValidation.of(
-                    noRentArrearsReason.getPropertyDeteriorationTextArea(),
-                    NoRentArrearsDiscretionaryGrounds.PROPERTY_DETERIORATION.getLabel(),
-                    TextAreaValidationService.MEDIUM_TEXT_LIMIT
-                ),
-                TextAreaValidationService.FieldValidation.of(
-                    noRentArrearsReason.getNuisanceOrIllegalUseTextArea(),
-                    NoRentArrearsDiscretionaryGrounds.NUISANCE_OR_ILLEGAL_USE.getLabel(),
-                    TextAreaValidationService.MEDIUM_TEXT_LIMIT
-                ),
-                TextAreaValidationService.FieldValidation.of(
-                    noRentArrearsReason.getDomesticViolenceTextArea(),
-                    NoRentArrearsDiscretionaryGrounds.DOMESTIC_VIOLENCE.getLabel(),
-                    TextAreaValidationService.MEDIUM_TEXT_LIMIT
-                ),
-                TextAreaValidationService.FieldValidation.of(
-                    noRentArrearsReason.getOffenceDuringRiotTextArea(),
-                    NoRentArrearsDiscretionaryGrounds.OFFENCE_DURING_RIOT.getLabel(),
-                    TextAreaValidationService.MEDIUM_TEXT_LIMIT
-                ),
-                TextAreaValidationService.FieldValidation.of(
-                    noRentArrearsReason.getFurnitureDeteriorationTextArea(),
-                    NoRentArrearsDiscretionaryGrounds.FURNITURE_DETERIORATION.getLabel(),
-                    TextAreaValidationService.MEDIUM_TEXT_LIMIT
-                ),
-                TextAreaValidationService.FieldValidation.of(
-                    noRentArrearsReason.getLandlordEmployeeTextArea(),
-                    NoRentArrearsDiscretionaryGrounds.LANDLORD_EMPLOYEE.getLabel(),
-                    TextAreaValidationService.MEDIUM_TEXT_LIMIT
-                ),
-                TextAreaValidationService.FieldValidation.of(
-                    noRentArrearsReason.getFalseStatementTextArea(),
-                    NoRentArrearsDiscretionaryGrounds.FALSE_STATEMENT.getLabel(),
-                    TextAreaValidationService.MEDIUM_TEXT_LIMIT
-                )
-            ));
-        }
-        
-        return textAreaValidationService.createValidationResponse(caseData, validationErrors);
     }
 }
