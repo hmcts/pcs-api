@@ -95,8 +95,8 @@ test.describe('[Create Case - Wales] @Master @nightly', async () => {
       discretionary: [whatAreYourGroundsForPossessionWales.discretionary.rentArrears],
       mandatory: [whatAreYourGroundsForPossessionWales.mandatory.failureToGiveupPossession]
     });
-   /* await performAction('clickButton', reasonsForPossession.continue);
     // following code can be removed once wales journey routing is done HDPI-2365
+   /* await performAction('clickButton', reasonsForPossession.continue);
     await performAction('selectGroundsForPossession', {groundsRadioInput: groundsForPossession.yes});
     await performAction('selectRentArrearsPossessionGround', {
       rentArrears: [rentArrearsPossessionGrounds.rentArrears],
@@ -205,10 +205,10 @@ test.describe('[Create Case - Wales] @Master @nightly', async () => {
     await performAction('selectYourPossessionGrounds', {
       discretionary: [whatAreYourGroundsForPossessionWales.discretionary.estateManagementGrounds],
       discretionaryEstateGrounds: [whatAreYourGroundsForPossessionWales.discretionary.buildingWorks],
-      mandatory: [whatAreYourGroundsForPossessionWales.mandatory.breakClauseNotice],
+      mandatory: [whatAreYourGroundsForPossessionWales.mandatory.section191],
     });
-    /*await performAction('clickButton', reasonsForPossession.continue);
     // following code can be removed once wales journey routing is done HDPI-2365
+    /*await performAction('clickButton', reasonsForPossession.continue);
     await performAction('selectYourPossessionGrounds', {
       discretionary: [whatAreYourGroundsForPossession.discretionary.rentArrearsOrBreachOfTenancy]
     });
@@ -275,7 +275,7 @@ test.describe('[Create Case - Wales] @Master @nightly', async () => {
   });
 
   // The sections commented out will be fixed as part of the User Story https://tools.hmcts.net/jira/browse/HDPI-2123
-  test('Wales - Other', async () => {
+  test('Wales - Occupation contract Licence Details - Other', async () => {
     await performAction('enterTestAddressManually');
     await performValidation('bannerAlert', 'Case #.* has been created.');
     await performAction('extractCaseIdFromAlert');
