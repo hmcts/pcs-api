@@ -45,7 +45,7 @@ import {home} from '@data/page-data/home.page.data';
 import {search} from '@data/page-data/search.page.data';
 import {userIneligible} from '@data/page-data/userIneligible.page.data';
 import {whatAreYourGroundsForPossessionWales} from '@data/page-data/whatAreYourGroundsForPossessionWales.page.data';
-
+import {reasonsForRequestingASuspensionAndDemotionOrder} from '@data/page-data/reasonsForRequestingASuspensionAndDemotionOrder.page.data';
 
 export let caseInfo: { id: string; fid: string; state: string };
 export let caseNumber: string;
@@ -71,7 +71,7 @@ export class CreateCaseAction implements IAction {
       ['selectGroundsForPossession', () => this.selectGroundsForPossession(fieldName)],
       ['selectPreActionProtocol', () => this.selectPreActionProtocol(fieldName)],
       ['selectMediationAndSettlement', () => this.selectMediationAndSettlement(fieldName)],
-      ['selectNoticeOfYourIntention', () => this.selectNoticeOfYourIntention(fieldName)],
+      ['selectNoticeOfYourIntention', () => this.selectNoticeOfYourIntention(fieldName as actionRecord)],
       ['selectNoticeDetails', () => this.selectNoticeDetails(fieldName)],
       ['selectBorderPostcode', () => this.selectBorderPostcode(fieldName)],
       ['selectTenancyOrLicenceDetails', () => this.selectTenancyOrLicenceDetails(fieldName)],
@@ -84,10 +84,11 @@ export class CreateCaseAction implements IAction {
       ['selectClaimantCircumstances', () => this.selectClaimantCircumstances(fieldName)],
       ['provideDetailsOfRentArrears', () => this.provideDetailsOfRentArrears(fieldName)],
       ['selectAlternativesToPossession', () => this.selectAlternativesToPossession(fieldName as actionRecord)],
-      ['selectHousingAct', () => this.selectHousingAct(fieldName as actionRecord)],
+      ['selectHousingAct', () => this.selectHousingAct(fieldName)],
       ['selectStatementOfExpressTerms', () => this.selectStatementOfExpressTerms(fieldName)],
-      ['enterReasonForDemotionOrder', () => this.enterReasonForDemotionOrder(fieldName)],
       ['enterReasonForSuspensionOrder', () => this.enterReasonForSuspensionOrder(fieldName)],
+      ['enterReasonForDemotionOrder', () => this.enterReasonForDemotionOrder(fieldName)],
+      ['enterReasonForSuspensionAndDemotionOrder', () => this.enterReasonForSuspensionAndDemotionOrder(fieldName as actionRecord)],
       ['selectMoneyJudgment', () => this.selectMoneyJudgment(fieldName)],
       ['selectLanguageUsed', () => this.selectLanguageUsed(fieldName as actionRecord)],
       ['selectDefendantCircumstances', () => this.selectDefendantCircumstances(fieldName)],
@@ -196,9 +197,12 @@ export class CreateCaseAction implements IAction {
     await performAction('clickButton', preActionProtocol.continue);
   }
 
-  private async selectNoticeOfYourIntention(caseData: actionData) {
-    await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
+  private async selectNoticeOfYourIntention(caseData: actionRecord) {
+    await performValidation('text', {elementType: 'paragraph', text: 'Case number: ' + caseNumber});
     await performAction('clickRadioButton', caseData);
+    if ( caseData.option === noticeOfYourIntention.yes && caseData.typeOfNotice) {
+      await performAction('inputText', noticeOfYourIntention.typeOfNotice, noticeOfYourIntention.typeOfNoticeInput);
+    }
     await performAction('clickButton', noticeOfYourIntention.continue);
   }
 
@@ -214,7 +218,6 @@ export class CreateCaseAction implements IAction {
       await performAction('inputText', claimantName.whatIsCorrectClaimantName, claimantName.correctClaimantNameInput);
     }
     claimantsName = caseData == "No" ? claimantName.correctClaimantNameInput : await this.extractClaimantName(page, claimantName.yourClaimantNameRegisteredWithHMCTS);
-    await performAction('clickButtonAndVerifyPageNavigation', claimantName.continue, contactPreferences.mainHeader);
   }
 
   private async selectContactPreferences(preferences: actionData) {
@@ -478,15 +481,19 @@ export class CreateCaseAction implements IAction {
       circumstanceOption: string,
       claimantInput: string
     };
-    const nameClaimant = claimantsName.substring(claimantsName.length - 1) == 's' ? `${claimantsName}'` : `${claimantsName}'s`;
+    //As discussed with pod1 team, part of HDPI-2011, Below steps will be enabled back when dynamic organisation name handled in new ticket on claimant circumstances page.
+    //const nameClaimant = claimantsName.substring(claimantsName.length - 1) == 's' ? `${claimantsName}'` : `${claimantsName}'s`;
     const claimOption = claimData.circumstanceOption;
-    await performAction('clickRadioButton', {
-      question: claimantCircumstances.claimantCircumstanceInfo.replace("Claimants", nameClaimant),
+    /*await performAction('clickRadioButton', {
+     // question: claimantCircumstances.claimantCircumstanceInfo.replace("Claimants", nameClaimant),
+      question: claimantCircumstances.claimantCircumstanceInfo,
       option: claimOption
     }
-    );
+    );*/
+    await performAction('clickRadioButton', claimData.circumstanceOption);
     if (claimOption == claimantCircumstances.yes) {
-      await performAction('inputText', claimantCircumstances.claimantCircumstanceInfoTextAreaLabel.replace("Claimants", nameClaimant), claimData.claimantInput);
+      //await performAction('inputText', claimantCircumstances.claimantCircumstanceInfoTextAreaLabel.replace("Claimants", nameClaimant), claimData.claimantInput);
+      await performAction('inputText', claimantCircumstances.claimantCircumstanceInfoTextAreaLabel, claimData.claimantInput);
     }
     await performAction('clickButton', claimantCircumstances.continue);
   }
@@ -534,9 +541,13 @@ export class CreateCaseAction implements IAction {
     await performAction('clickButton', alternativesToPossession.continue);
   }
 
-  private async selectHousingAct(housingAct: actionRecord) {
+  private async selectHousingAct(housingAct: actionData) {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
-    await performAction('clickRadioButton', {question: housingAct.question, option: housingAct.option});
+    if(Array.isArray(housingAct)) {
+      for (const act of housingAct) {
+        await performAction('clickRadioButton', {question: act.question, option: act.option});
+      }
+    }
     await performAction('clickButton', alternativesToPossession.continue);
   }
 
@@ -563,6 +574,14 @@ export class CreateCaseAction implements IAction {
     await performAction('inputText', reason, reasonsForRequestingASuspensionOrder.sampleTestReason);
     await performAction('clickButton', reasonsForRequestingASuspensionOrder.continue);
   }
+
+  private async enterReasonForSuspensionAndDemotionOrder(reason: actionRecord) {
+    await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
+    await performAction('inputText', reason.suspension, reasonsForRequestingASuspensionOrder.sampleTestReason);
+    await performAction('inputText', reason.demotion, reasonsForRequestingADemotionOrder.sampleTestReason);
+    await performAction('clickButton', reasonsForRequestingASuspensionAndDemotionOrder.continue);
+  }
+
   private async selectApplications(option: actionData) {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
     await performAction('clickRadioButton', option);

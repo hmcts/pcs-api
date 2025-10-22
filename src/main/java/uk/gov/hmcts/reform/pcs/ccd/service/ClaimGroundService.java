@@ -14,6 +14,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimGroundEntity;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.Collections;
 
 import static feign.Util.isNotBlank;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.IntroductoryDemotedOrOtherNoGrounds.NO_GROUNDS;
@@ -23,6 +24,10 @@ public class ClaimGroundService {
 
     public List<ClaimGroundEntity> getGroundsWithReason(PCSCase pcsCase) {
         TenancyLicenceType tenancyLicenceType = pcsCase.getTypeOfTenancyLicence();
+
+        if (tenancyLicenceType == null) {
+            return Collections.emptyList();
+        }
 
         return switch (tenancyLicenceType) {
             case ASSURED_TENANCY -> getAssuredTenancyGroundsWithReason(pcsCase);
