@@ -304,7 +304,7 @@ test.describe('[Create Case - Wales] @Master @nightly', async () => {
     await performValidation('mainHeader', whatAreYourGroundsForPossessionWales.mainHeader);
     await performAction('selectYourPossessionGrounds', {
       discretionary: [whatAreYourGroundsForPossessionWales.discretionary.otherBreachOfContract],
-      mandatory: [whatAreYourGroundsForPossessionWales.mandatory.section187],
+      mandatory: [whatAreYourGroundsForPossessionWales.mandatory.section187]
     });
     // Commenting below code as tickets are yet to be implemented for wales journey
     /*await performAction('clickButton', reasonsForPossession.continue);
