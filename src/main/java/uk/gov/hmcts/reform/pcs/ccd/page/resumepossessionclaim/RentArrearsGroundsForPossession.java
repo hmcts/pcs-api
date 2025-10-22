@@ -5,10 +5,10 @@ import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
-import uk.gov.hmcts.reform.pcs.ccd.domain.DiscretionaryGround;
-import uk.gov.hmcts.reform.pcs.ccd.domain.MandatoryGround;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsDiscretionaryGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsGround;
+import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsMandatoryGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 
 import java.util.HashSet;
@@ -19,7 +19,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 /**
  * Page for selecting rent arrears grounds for possession.
  */
-public class GroundForPossessionRentArrears implements CcdPageConfiguration {
+public class RentArrearsGroundsForPossession implements CcdPageConfiguration {
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
@@ -65,13 +65,13 @@ public class GroundForPossessionRentArrears implements CcdPageConfiguration {
         Set<RentArrearsGround> rentArrearsGrounds = caseData.getRentArrearsGrounds();
 
         // Initialize sets if they don't exist
-        Set<MandatoryGround> mandatoryGrounds = caseData.getMandatoryGrounds();
+        Set<RentArrearsMandatoryGrounds> mandatoryGrounds = caseData.getRentArrearsMandatoryGrounds();
 
         if (mandatoryGrounds == null) {
             mandatoryGrounds = new HashSet<>();
         }
 
-        Set<DiscretionaryGround> discretionaryGrounds = caseData.getDiscretionaryGrounds();
+        Set<RentArrearsDiscretionaryGrounds> discretionaryGrounds = caseData.getRentArrearsDiscretionaryGrounds();
 
         if (discretionaryGrounds == null) {
             discretionaryGrounds = new HashSet<>();
@@ -83,15 +83,15 @@ public class GroundForPossessionRentArrears implements CcdPageConfiguration {
             for (RentArrearsGround rentArrearsGround : rentArrearsGrounds) {
                 switch (rentArrearsGround) {
                     case SERIOUS_RENT_ARREARS_GROUND8:
-                        mandatoryGrounds.add(MandatoryGround.SERIOUS_RENT_ARREARS_GROUND8);
+                        mandatoryGrounds.add(RentArrearsMandatoryGrounds.SERIOUS_RENT_ARREARS_GROUND8);
                         break;
                     case RENT_ARREARS_GROUND10:
                         // Ground 10 is discretionary
-                        discretionaryGrounds.add(DiscretionaryGround.RENT_ARREARS_GROUND10);
+                        discretionaryGrounds.add(RentArrearsDiscretionaryGrounds.RENT_ARREARS_GROUND10);
                         break;
                     case PERSISTENT_DELAY_GROUND11:
                         // Ground 11 is discretionary
-                        discretionaryGrounds.add(DiscretionaryGround.PERSISTENT_DELAY_GROUND11);
+                        discretionaryGrounds.add(RentArrearsDiscretionaryGrounds.PERSISTENT_DELAY_GROUND11);
                         break;
                 }
             }
@@ -101,8 +101,8 @@ public class GroundForPossessionRentArrears implements CcdPageConfiguration {
         // Update grounds only when the rent arrears options have changed as this will override them
         if (rentArrearsGrounds != null && !rentArrearsGrounds.equals(caseData.getCopyOfRentArrearsGrounds())
             || caseData.getOverrideResumedGrounds() == YesOrNo.YES) {
-            caseData.setMandatoryGrounds(mandatoryGrounds);
-            caseData.setDiscretionaryGrounds(discretionaryGrounds);
+            caseData.setRentArrearsMandatoryGrounds(mandatoryGrounds);
+            caseData.setRentArrearsDiscretionaryGrounds(discretionaryGrounds);
             caseData.setOverrideResumedGrounds(YesOrNo.NO);
         }
         caseData.setCopyOfRentArrearsGrounds(rentArrearsGrounds);
