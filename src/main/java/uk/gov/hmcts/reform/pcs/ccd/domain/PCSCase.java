@@ -52,6 +52,12 @@ public class PCSCase {
     private String claimantName;
 
     @CCD(
+        label = "Organisation Name"
+    )
+    @External
+    private String organisationName;
+
+    @CCD(
         searchable = false,
         access = {CitizenAccess.class}
     )
@@ -262,6 +268,10 @@ public class PCSCase {
 
     @CCD(searchable = false)
     private YesOrNo showClaimTypeNotEligibleWales;
+
+    @JsonUnwrapped(prefix = "wales")
+    @CCD
+    private WalesHousingAct walesHousingAct;
 
     @CCD(
         label = "How much is the rent?",
@@ -563,7 +573,7 @@ public class PCSCase {
             + "make sure your claim is processed correctly"
     )
     private LanguageUsed languageUsed;
-  
+
     @JsonUnwrapped
     private DefendantCircumstances defendantCircumstances;
 
@@ -614,4 +624,11 @@ public class PCSCase {
         typeParameterOverride = "CompletionNextStep"
     )
     private CompletionNextStep completionNextStep;
+
+    @JsonUnwrapped
+    private SuspensionOfRightToBuyDemotionOfTenancy  suspensionOfRightToBuyDemotionOfTenancy;
+
+    @JsonUnwrapped(prefix = "wales")
+    private WalesNoticeDetails walesNoticeDetails;
+
 }

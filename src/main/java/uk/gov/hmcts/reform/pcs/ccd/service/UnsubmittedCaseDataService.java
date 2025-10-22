@@ -5,12 +5,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.entity.UnsubmittedCaseDataEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.UnsubmittedCaseDataRepository;
 import uk.gov.hmcts.reform.pcs.exception.UnsubmittedDataException;
 
+import java.io.IOException;
 import java.util.Optional;
 
 @Service
@@ -19,11 +21,15 @@ public class UnsubmittedCaseDataService {
 
     private final UnsubmittedCaseDataRepository unsubmittedCaseDataRepository;
     private final ObjectMapper objectMapper;
+    private final DraftCaseJsonMerger draftCaseJsonMerger;
 
     public UnsubmittedCaseDataService(UnsubmittedCaseDataRepository unsubmittedCaseDataRepository,
-                                      @Qualifier("unsubmittedCaseDataObjectMapper") ObjectMapper objectMapper) {
+                                      @Qualifier("unsubmittedCaseDataObjectMapper") ObjectMapper objectMapper,
+                                      DraftCaseJsonMerger draftCaseJsonMerger) {
+
         this.unsubmittedCaseDataRepository = unsubmittedCaseDataRepository;
         this.objectMapper = objectMapper;
+        this.draftCaseJsonMerger = draftCaseJsonMerger;
     }
 
     public Optional<PCSCase> getUnsubmittedCaseData(long caseReference) {
@@ -41,25 +47,35 @@ public class UnsubmittedCaseDataService {
         return unsubmittedCaseDataRepository.existsByCaseReference(caseReference);
     }
 
-    public void saveUnsubmittedCaseData(long caseReference, PCSCase caseData) {
+    public void patchUnsubmittedCaseData(long caseReference, PCSCase caseDataPatch) {
 
-        String caseDataJson = writeCaseDataJson(caseData);
+        String patchCaseDataJson = writeCaseDataJson(caseDataPatch);
 
         UnsubmittedCaseDataEntity unsubmittedCaseDataEntity = unsubmittedCaseDataRepository.findByCaseReference(
                 caseReference)
             .map(existingDraft -> {
-                existingDraft.setCaseData(caseDataJson);
+                existingDraft.setCaseData(mergeCaseDataJson(existingDraft.getCaseData(), patchCaseDataJson));
                 return existingDraft;
             }).orElseGet(() -> {
                 UnsubmittedCaseDataEntity newDraft = new UnsubmittedCaseDataEntity();
                 newDraft.setCaseReference(caseReference);
-                newDraft.setCaseData(caseDataJson);
+                newDraft.setCaseData(patchCaseDataJson);
                 return newDraft;
             });
 
         unsubmittedCaseDataRepository.save(unsubmittedCaseDataEntity);
     }
 
+    private String mergeCaseDataJson(String baseCaseDataJson, String patchCaseDataJson) {
+        try {
+            return draftCaseJsonMerger.mergeJson(baseCaseDataJson, patchCaseDataJson);
+        } catch (IOException e) {
+            log.error("Unable to merge case data patch JSON", e);
+            throw new UnsubmittedDataException("Failed to update draft case data", e);
+        }
+    }
+
+    @Transactional
     public void deleteUnsubmittedCaseData(long caseReference) {
         unsubmittedCaseDataRepository.deleteByCaseReference(caseReference);
     }
