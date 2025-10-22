@@ -1,7 +1,5 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.enforcement;
 
-import org.springframework.stereotype.Component;
-import java.util.List;
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
@@ -11,7 +9,8 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.EnforcementRiskDetails;
 
-@Component
+import java.util.List;
+
 public class EvictionRisksPosedPage implements CcdPageConfiguration {
 
     @Override
@@ -28,19 +27,19 @@ public class EvictionRisksPosedPage implements CcdPageConfiguration {
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
                                                                   CaseDetails<PCSCase, State> before) {
         PCSCase data = details.getData();
-        
+
         // Initialize EnforcementOrder if null
         if (data.getEnforcementOrder() == null) {
             data.setEnforcementOrder(EnforcementOrder.builder().build());
         }
-        
+
         // Initialize risk details if null
         if (data.getEnforcementOrder().getRiskDetails() == null) {
             data.getEnforcementOrder().setRiskDetails(EnforcementRiskDetails.builder().build());
         }
-        
+
         // Validate that at least one category is selected
-        if (data.getEnforcementOrder().getEnforcementRiskCategories() == null 
+        if (data.getEnforcementOrder().getEnforcementRiskCategories() == null
             || data.getEnforcementOrder().getEnforcementRiskCategories().isEmpty()) {
             return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
                 .data(data)
@@ -48,7 +47,7 @@ public class EvictionRisksPosedPage implements CcdPageConfiguration {
                 .build();
         }
         
-        
+
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
             .data(data)
             .errors(List.of())
