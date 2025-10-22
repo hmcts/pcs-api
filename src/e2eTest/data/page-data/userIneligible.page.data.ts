@@ -4,5 +4,9 @@ export const userIneligible = {
   eventNotCreated: 'The event could not be created',
   unableToProceed: 'Unable to proceed because there are one or more callback Errors or Warnings',
   errors: 'Errors',
-  notEligibleForOnlineService: 'You\'re not eligible for this online service'
+  notEligibleForOnlineService: 'You\'re not eligible for this online service',
+  continue: 'Continue',
+  cancel: 'Cancel',
+  formN5Wales: 'Use form N5 Wales and the correct particulars of claim form.',
+  propertyPossessionsFullListLink: 'View the full list of property possessions forms (opens in a new tab).'
 }

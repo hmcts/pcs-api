@@ -1,10 +1,10 @@
 package uk.gov.hmcts.reform.pcs.ccd.service;
 
 import org.springframework.stereotype.Service;
-import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicence;
-import uk.gov.hmcts.reform.pcs.ccd.utils.ListValueUtils;
+import uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils;
+import uk.gov.hmcts.reform.pcs.ccd.util.YesOrNoToBoolean;
 
 import java.math.BigDecimal;
 
@@ -18,7 +18,14 @@ public class TenancyLicenceService {
                 .tenancyLicenceDate(pcsCase.getTenancyLicenceDate())
                 .detailsOfOtherTypeOfTenancyLicence(pcsCase.getDetailsOfOtherTypeOfTenancyLicence())
                 .supportingDocuments(ListValueUtils.unwrapListItems(pcsCase.getTenancyLicenceDocuments()))
-                .noticeServed(toBooleanOrNull(pcsCase.getNoticeServed()))
+                .rentStatementDocuments(ListValueUtils.unwrapListItems(pcsCase.getRentStatementDocuments()))
+                .noticeDocuments(ListValueUtils.unwrapListItems(pcsCase.getNoticeDocuments()))
+                .noticeServed(YesOrNoToBoolean.convert(pcsCase.getNoticeServed()))
+                .walesNoticeServed(YesOrNoToBoolean.convert(pcsCase.getWalesNoticeDetails() != null
+                                                                ? pcsCase.getWalesNoticeDetails().getNoticeServed()
+                                                                : null))
+                .walesTypeOfNoticeServed(pcsCase.getWalesNoticeDetails() != null
+                                             ? pcsCase.getWalesNoticeDetails().getTypeOfNoticeServed() : null)
                 .rentAmount(penceToPounds(pcsCase.getCurrentRent()))
                 .rentPaymentFrequency(pcsCase.getRentFrequency())
                 .otherRentFrequency(pcsCase.getOtherRentFrequency())
@@ -27,8 +34,8 @@ public class TenancyLicenceService {
                 .thirdPartyPaymentSources(pcsCase.getThirdPartyPaymentSources())
                 .thirdPartyPaymentSourceOther(pcsCase.getThirdPartyPaymentSourceOther())
                 // Add notice details fields
-                .noticeServiceMethod(pcsCase.getNoticeServiceMethod() != null 
-                                    ? pcsCase.getNoticeServiceMethod().name() 
+                .noticeServiceMethod(pcsCase.getNoticeServiceMethod() != null
+                                    ? pcsCase.getNoticeServiceMethod().name()
                                     : null)
                 .noticePostedDate(pcsCase.getNoticePostedDate())
                 .noticeDeliveredDate(pcsCase.getNoticeDeliveredDate())
@@ -39,12 +46,27 @@ public class TenancyLicenceService {
                 .noticeOtherElectronicDateTime(pcsCase.getNoticeOtherElectronicDateTime())
                 .noticeOtherDateTime(pcsCase.getNoticeOtherDateTime())
                 .noticeOtherExplanation(pcsCase.getNoticeOtherExplanation())
-                .arrearsJudgmentWanted(toBooleanOrNull(pcsCase.getArrearsJudgmentWanted()))
+                .arrearsJudgmentWanted(YesOrNoToBoolean.convert(pcsCase.getArrearsJudgmentWanted()))
+                // Add Wales Housing Act details
+                .walesRegistered(pcsCase.getWalesHousingAct() != null 
+                    ? pcsCase.getWalesHousingAct().getRegistered() : null)
+                .walesRegistrationNumber(pcsCase.getWalesHousingAct() != null 
+                    ? pcsCase.getWalesHousingAct().getRegistrationNumber() : null)
+                .walesLicensed(pcsCase.getWalesHousingAct() != null 
+                    ? pcsCase.getWalesHousingAct().getLicensed() : null)
+                .walesLicenceNumber(pcsCase.getWalesHousingAct() != null 
+                    ? pcsCase.getWalesHousingAct().getLicenceNumber() : null)
+                .walesLicensedAgentAppointed(pcsCase.getWalesHousingAct() != null 
+                    ? pcsCase.getWalesHousingAct().getLicensedAgentAppointed() : null)
+                .walesAgentFirstName(pcsCase.getWalesHousingAct() != null 
+                    ? pcsCase.getWalesHousingAct().getAgentFirstName() : null)
+                .walesAgentLastName(pcsCase.getWalesHousingAct() != null 
+                    ? pcsCase.getWalesHousingAct().getAgentLastName() : null)
+                .walesAgentLicenceNumber(pcsCase.getWalesHousingAct() != null 
+                    ? pcsCase.getWalesHousingAct().getAgentLicenceNumber() : null)
+                .walesAgentAppointmentDate(pcsCase.getWalesHousingAct() != null 
+                    ? pcsCase.getWalesHousingAct().getAgentAppointmentDate() : null)
                 .build();
-    }
-
-    private static Boolean toBooleanOrNull(YesOrNo yesOrNo) {
-        return yesOrNo != null ? yesOrNo.toBoolean() : null;
     }
 
     private BigDecimal getDailyRentAmount(PCSCase pcsCase) {

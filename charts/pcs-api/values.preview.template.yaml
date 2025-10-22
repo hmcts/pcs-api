@@ -20,6 +20,10 @@ java:
           alias: PCS_IDAM_SYSTEM_USERNAME
         - name: idam-system-user-password
           alias: PCS_IDAM_SYSTEM_PASSWORD
+        - name: pcs-prd-admin-username
+          alias: PCS_PRD_ADMIN_USERNAME
+        - name: pcs-prd-admin-password
+          alias: PCS_PRD_ADMIN_PASSWORD
   environment:
     PCS_DB_HOST: "{{ .Release.Name }}-postgresql"
     PCS_DB_USER_NAME: "{{ .Values.postgresql.auth.username}}"

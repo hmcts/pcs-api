@@ -1,8 +1,8 @@
-import { Page, test } from '@playwright/test';
-import { actionData, actionRecord, actionTuple } from './interfaces/action.interface';
-import { validationData, validationRecord, validationTuple } from './interfaces/validation.interface';
-import { ActionRegistry } from './registry/action.registry';
-import { ValidationRegistry } from './registry/validation.registry';
+import {Page, test} from '@playwright/test';
+import {actionData, actionRecord, actionTuple} from './interfaces/action.interface';
+import {validationData, validationRecord, validationTuple} from './interfaces/validation.interface';
+import {ActionRegistry} from './registry/action.registry';
+import {ValidationRegistry} from './registry/validation.registry';
 
 let testExecutor: { page: Page };
 
@@ -60,10 +60,19 @@ function readValuesFromInputObjects(obj: object): string {
   const keys = Object.keys(obj);
   const formattedPairs = keys.map(key => {
     const value = (obj as actionRecord)[key];
-    let valueStr: string;
-    if (typeof value === 'string') valueStr = `${value}`;
-    else valueStr = String(value);
-    return `${key}: ${valueStr}`;
+    let valueString: string;
+    if (Array.isArray(value)) {
+      valueString = `[${value.map(item =>
+        typeof item === 'object'
+          ? `{ ${readValuesFromInputObjects(item)} }`
+          : String(item)
+      ).join(', ')}]`;
+    } else if (typeof value === 'object' && value !== null) {
+      valueString = `{ ${readValuesFromInputObjects(value)} }`;
+    } else {
+      valueString = String(value);
+    }
+    return `${key}: ${valueString}`;
   });
   return `${formattedPairs.join(', ')}`;
 }

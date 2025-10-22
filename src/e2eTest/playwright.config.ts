@@ -3,16 +3,21 @@ import * as process from 'node:process';
 import { defineConfig, devices } from '@playwright/test';
 
 const DEFAULT_VIEWPORT = { width: 1920, height: 1080 };
+export const waitForPageRedirectionTimeout = 3000;
+export const actionRetries = 5;
 
-module.exports = defineConfig({
+export default defineConfig({
   testDir: 'tests/',
   /* Run tests in files in parallel */
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   /* Retry on CI only */
-  retries: process.env.CI ? 2 : 0,
-  timeout: 30 * 1000,
-  expect: { timeout: 60_000 },
+  retries: process.env.CI ? 3 : 0,
+  // Reduced workers from 4 → 2 due to server/login contention issues
+  workers: 2,
+  timeout: 150 * 1000,
+  expect: { timeout: 10 * 1000 },
+  use: { actionTimeout: 10 * 1000, navigationTimeout: 10 * 1000 },
   /* Report slow tests if they take longer than 5 mins */
   reportSlowTests: { max: 15, threshold: 5 * 60 * 1000 },
   globalSetup: require.resolve('./config/global-setup.config'),
@@ -41,7 +46,7 @@ module.exports = defineConfig({
         trace: 'on-first-retry',
         javaScriptEnabled: true,
         viewport: DEFAULT_VIEWPORT,
-        headless: process.env.CI? true : false,
+        headless: !!process.env.CI,
       },
     },
     ...(process.env.CI ? [
@@ -55,7 +60,7 @@ module.exports = defineConfig({
           trace: 'on-first-retry' as const,
           javaScriptEnabled: true,
           viewport: DEFAULT_VIEWPORT,
-          headless: process.env.CI? true : false,
+          headless: !!process.env.CI,
         }
       }
     ] : [])

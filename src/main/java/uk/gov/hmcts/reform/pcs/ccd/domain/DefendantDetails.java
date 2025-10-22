@@ -35,7 +35,7 @@ public class DefendantDetails {
 
     @CCD(label = "Do you know the defendant's correspondence address?",
         hint = "If their correspondence address is outside of the UK, you'll need to make a general application for "
-            + "permission to serve a claim outside the jurisdiction after you've submitted and paid for the claim."
+            + "permission to serve a claim outside the jurisdiction after you've submitted and paid for the claim"
     )
     private VerticalYesNo addressKnown;
 
