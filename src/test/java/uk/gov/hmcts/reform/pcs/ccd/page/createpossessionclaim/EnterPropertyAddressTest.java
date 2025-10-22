@@ -98,6 +98,7 @@ class EnterPropertyAddressTest extends BasePageTest {
 
         PCSCase caseData = PCSCase.builder()
             .propertyAddress(propertyAddress)
+            .legislativeCountry(SCOTLAND)
             .build();
 
         EligibilityResult eligibilityResult = EligibilityResult.builder()
@@ -114,6 +115,9 @@ class EnterPropertyAddressTest extends BasePageTest {
         assertThat(resultData.getShowCrossBorderPage()).isEqualTo(expectedShowCrossBorder);
 
         if (status == EligibilityStatus.NO_MATCH_FOUND) {
+            assertThat(resultData.getLegislativeCountry()).isNull();
+            assertThat(resultData.getShowCrossBorderPage()).isEqualTo(NO);
+            assertThat(resultData.getShowPropertyNotEligiblePage()).isEqualTo(NO);
             assertThat(resultData.getShowPostcodeNotAssignedToCourt()).isEqualTo(YES);
             assertThat(resultData.getPostcodeNotAssignedView()).isEqualTo("ALL_COUNTRIES");
         }
