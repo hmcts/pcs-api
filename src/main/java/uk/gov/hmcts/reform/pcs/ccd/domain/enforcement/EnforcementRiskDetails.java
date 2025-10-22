@@ -15,24 +15,30 @@ public class EnforcementRiskDetails {
 
     @CCD(
         label = "How have they been violent or aggressive?",
-        hint = "For example, include the crime reference number if you have called police to the property or "
-            + "reported an incident. You can enter up to 6,800 characters.",
+        hint = """
+            For example, include the crime reference number if you have called police to the property or 
+            reported an incident. You can enter up to 6,800 characters.
+            """,
         typeOverride = uk.gov.hmcts.ccd.sdk.type.FieldType.TextArea
     )
     private String enforcementViolentDetails;
 
     @CCD(
         label = "What is their history of firearm possession?",
-        hint = "For example, include the crime reference number if you have called police to the property or "
-            + "reported an incident. You can enter up to 6,800 characters.",
+        hint = """
+            For example, include the crime reference number if you have called police to the property or 
+            reported an incident. You can enter up to 6,800 characters.
+            """,
         typeOverride = uk.gov.hmcts.ccd.sdk.type.FieldType.TextArea
     )
     private String enforcementFirearmsDetails;
 
     @CCD(
         label = "What is their history of criminal or antisocial behaviour?",
-        hint = "For example, include the crime reference number if you have called police to the property or "
-            + "reported an incident. You can enter up to 6,800 characters.",
+        hint = """
+            For example, include the crime reference number if you have called police to the property or 
+            reported an incident. You can enter up to 6,800 characters.
+            """,
         typeOverride = uk.gov.hmcts.ccd.sdk.type.FieldType.TextArea
     )
     private String enforcementCriminalDetails;
@@ -40,8 +46,8 @@ public class EnforcementRiskDetails {
     @CCD(
             label = "What kind of verbal or written threats have they made?",
             hint = """
-                    For example, explain who was threatened, what the defendants said,
-                    and how the threat was made (face-to-face, or by email or letter).
+                    For example, explain who was threatened, what the defendants said, 
+                    and how the threat was made (face-to-face, or by email or letter). 
                    If you can, include the name of the defendant who made the threat.
                    """,
             typeOverride = uk.gov.hmcts.ccd.sdk.type.FieldType.TextArea
