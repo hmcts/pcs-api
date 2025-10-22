@@ -663,7 +663,6 @@ export class CreateCaseAction implements IAction {
   }
 
   private async reloginAndFindTheCase(userInfo: actionData) {
-    await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
     await performAction('login', userInfo);
     await performAction('clickButton', home.findCaseTab);
     await performAction('select', search.jurisdictionLabel, search.possessionsJurisdiction);
