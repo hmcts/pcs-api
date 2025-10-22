@@ -63,6 +63,27 @@ public class EnforcementRiskDetails {
             typeOverride = uk.gov.hmcts.ccd.sdk.type.FieldType.TextArea
     )
     private String enforcementProtestGroupMemberDetails;
+
+    @CCD(
+            label = "Why did the police or social services visit the property?",
+            hint = """
+                   If you can, include the number of visits and the crime reference number.
+                   You can enter up to 6,800 characters.
+                   """,
+            typeOverride = uk.gov.hmcts.ccd.sdk.type.FieldType.TextArea
+    )
+    private String enforcementPoliceOrSocialServicesDetails;
+
+    @CCD(
+            label = "What kind of animals do they have?",
+            hint = """
+                    For example, include the type of animal (dogs, cats etc), the number of animals, and their
+                    behaviour.
+                    You can enter up to 6,800 characters.
+                   """,
+            typeOverride = uk.gov.hmcts.ccd.sdk.type.FieldType.TextArea
+    )
+    private String enforcementDogsOrOtherAnimalsDetails;
 }
 
 
