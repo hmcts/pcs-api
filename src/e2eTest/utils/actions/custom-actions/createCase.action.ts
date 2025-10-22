@@ -342,21 +342,28 @@ export class CreateCaseAction implements IAction {
 
   private async selectYourPossessionGrounds(possessionGrounds: actionRecord) {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: ' + caseNumber});
-    if (possessionGrounds.discretionary) {
-      await performAction('check', possessionGrounds.discretionary);
-      if((possessionGrounds.discretionary as Array<string>).includes(whatAreYourGroundsForPossessionWales.discretionary.estateManagementGrounds))
-      {
-        await performAction('check', possessionGrounds.discretionaryEstateGrounds);
+    for (const key of Object.keys(possessionGrounds)) {
+      switch (key) {
+        case 'discretionary':
+          await performAction('check', possessionGrounds.discretionary);
+          if (
+            (possessionGrounds.discretionary as Array<string>).includes(
+              whatAreYourGroundsForPossessionWales.discretionary.estateManagementGrounds
+            )
+          ) {
+            await performAction('check', possessionGrounds.discretionaryEstateGrounds);
+          }
+          break;
+        case 'mandatory':
+          await performAction('check', possessionGrounds.mandatory);
+          break;
+        case 'mandatoryAccommodation':
+          await performAction('check', possessionGrounds.mandatoryAccommodation);
+          break;
+        case 'discretionaryAccommodation':
+          await performAction('check', possessionGrounds.discretionaryAccommodation);
+          break;
       }
-    }
-    if (possessionGrounds.mandatory) {
-      await performAction('check', possessionGrounds.mandatory);
-    }
-    if (possessionGrounds.mandatoryAccommodation) {
-      await performAction('check', possessionGrounds.mandatoryAccommodation);
-    }
-    if (possessionGrounds.discretionaryAccommodation) {
-      await performAction('check', possessionGrounds.discretionaryAccommodation);
     }
     await performAction('clickButton', whatAreYourGroundsForPossession.continue);
   }
