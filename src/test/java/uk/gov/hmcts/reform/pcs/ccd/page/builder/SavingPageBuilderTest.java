@@ -68,7 +68,7 @@ class SavingPageBuilderTest {
             .handle(caseDetails, caseDetailsBefore);
 
         // Then
-        verify(draftCaseDataService).saveUnsubmittedCaseData(CASE_REFERENCE, caseData);
+        verify(unsubmittedCaseDataService).patchUnsubmittedCaseData(CASE_REFERENCE, caseData);
         assertThat(response.getData()).isEqualTo(caseData);
     }
 
@@ -98,7 +98,7 @@ class SavingPageBuilderTest {
         // Then
         InOrder inOrder = Mockito.inOrder(pageMidEvent, draftCaseDataService);
         inOrder.verify(pageMidEvent).handle(caseDetails, caseDetailsBefore);
-        inOrder.verify(draftCaseDataService).saveUnsubmittedCaseData(CASE_REFERENCE, caseData);
+        inOrder.verify(unsubmittedCaseDataService).patchUnsubmittedCaseData(CASE_REFERENCE, caseData);
         assertThat(response).isEqualTo(pageMidEventResponse);
     }
 

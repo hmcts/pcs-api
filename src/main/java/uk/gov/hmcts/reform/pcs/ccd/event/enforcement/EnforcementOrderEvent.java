@@ -27,7 +27,6 @@ import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.State.AWAITING_SUBMISSION_TO_HMCTS;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.enforceTheOrder;
 
-
 @Slf4j
 @Component
 @AllArgsConstructor

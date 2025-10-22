@@ -59,7 +59,7 @@ public class SavingPageBuilder extends PageBuilder {
                 wrappedMidEventResponse = wrappedMidEvent.handle(details, detailsBefore);
             }
 
-            saveUnsubmittedData(details);
+            patchUnsubmittedData(details);
 
             return Optional.ofNullable(wrappedMidEventResponse)
                 .orElseGet(() -> AboutToStartOrSubmitResponse.<PCSCase, State>builder()
@@ -67,11 +67,11 @@ public class SavingPageBuilder extends PageBuilder {
                     .build());
         }
 
-        private void saveUnsubmittedData(CaseDetails<PCSCase, State> details) {
+        private void patchUnsubmittedData(CaseDetails<PCSCase, State> details) {
             long caseReference = details.getId();
             PCSCase caseData = details.getData();
 
-            draftCaseDataService.saveUnsubmittedCaseData(caseReference, caseData);
+            unsubmittedCaseDataService.patchUnsubmittedCaseData(caseReference, caseData);
         }
 
     }
