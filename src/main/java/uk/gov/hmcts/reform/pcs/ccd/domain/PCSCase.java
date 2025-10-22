@@ -53,12 +53,6 @@ public class PCSCase {
     private String claimantName;
 
     @CCD(
-        label = "Organisation Name"
-    )
-    @External
-    private String organisationName;
-
-    @CCD(
         searchable = false,
         access = {CitizenAccess.class}
     )
@@ -633,8 +627,4 @@ public class PCSCase {
 
     @JsonUnwrapped
     private EnforcementOrder enforcementOrder;
-    
-    @JsonUnwrapped(prefix = "wales")
-    private WalesNoticeDetails walesNoticeDetails;
-
 }

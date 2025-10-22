@@ -4,13 +4,10 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.jms.annotation.EnableJms;
-import org.springframework.scheduling.annotation.EnableScheduling;
 import uk.gov.hmcts.reform.idam.client.IdamApi;
 import uk.gov.hmcts.reform.pcs.feesandpay.api.FeesRegisterApi;
 import uk.gov.hmcts.reform.pcs.hearings.service.api.HmcHearingApi;
-import uk.gov.hmcts.reform.pcs.idam.api.IdamTokenApi;
 import uk.gov.hmcts.reform.pcs.location.service.api.LocationReferenceApi;
-import uk.gov.hmcts.reform.pcs.reference.api.RdProfessionalApi;
 
 @SpringBootApplication(
     scanBasePackages = {
@@ -24,13 +21,10 @@ import uk.gov.hmcts.reform.pcs.reference.api.RdProfessionalApi;
         HmcHearingApi.class,
         LocationReferenceApi.class,
         IdamApi.class,
-        IdamTokenApi.class,
-        RdProfessionalApi.class,
         FeesRegisterApi.class
     }
 )
 @EnableJms
-@EnableScheduling
 public class Application {
 
     public static void main(final String[] args) {

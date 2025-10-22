@@ -26,7 +26,6 @@ import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ContactPreferences
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.DefendantsDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.NoticeDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ResumeClaim;
-import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.SelectClaimantType;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.TenancyLicenceDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.UploadAdditionalDocumentsDetails;
 import uk.gov.hmcts.reform.pcs.ccd.service.ClaimService;
@@ -36,7 +35,6 @@ import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
-import uk.gov.hmcts.reform.pcs.reference.service.OrganisationNameService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.util.List;
@@ -75,10 +73,6 @@ class ResumePossessionClaimTest extends BaseEventTest {
     @Mock
     private ResumeClaim resumeClaim;
     @Mock
-    private SelectClaimantType selectClaimantType;
-    @Mock
-    private UnsubmittedCaseDataService unsubmittedCaseDataService;
-    @Mock
     private ContactPreferences contactPreferences;
     @Mock
     private DefendantsDetails defendantsDetails;
@@ -90,8 +84,6 @@ class ResumePossessionClaimTest extends BaseEventTest {
     private TenancyLicenceDetails tenancyLicenceDetails;
     @Mock
     private UploadAdditionalDocumentsDetails uploadAdditionalDocumentsDetails;
-    @Mock
-    private OrganisationNameService organisationNameService;
     @Mock
     private ClaimantDetailsWalesPage claimantDetailsWalesPage;
     @Mock
@@ -113,10 +105,9 @@ class ResumePossessionClaimTest extends BaseEventTest {
         ResumePossessionClaim underTest = new ResumePossessionClaim(
             pcsCaseService, securityContextService,
             partyService, claimService,
-            savingPageBuilderFactory, resumeClaim,
-            unsubmittedCaseDataService, selectClaimantType, noticeDetails,
+            savingPageBuilderFactory, resumeClaim, noticeDetails,
             uploadAdditionalDocumentsDetails, tenancyLicenceDetails, contactPreferences,
-            defendantsDetails, organisationNameService, claimantDetailsWalesPage, schedulerClient
+            defendantsDetails, claimantDetailsWalesPage, schedulerClient, draftCaseDataService, addressFormatter
         );
 
         setEventUnderTest(underTest);
@@ -159,7 +150,6 @@ class ResumePossessionClaimTest extends BaseEventTest {
         // Given
         String expectedUserEmail = "user@test.com";
         when(userDetails.getSub()).thenReturn(expectedUserEmail);
-        when(organisationNameService.getOrganisationNameForCurrentUser()).thenReturn(null);
 
         AddressUK propertyAddress = AddressUK.builder()
             .addressLine1("10 High Street")
@@ -179,7 +169,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
         PCSCase updatedCaseData = callStartHandler(caseData);
 
         // Then
-        assertThat(updatedCaseData.getOrganisationName()).isEqualTo(expectedUserEmail);
+        assertThat(updatedCaseData.getClaimantName()).isEqualTo(expectedUserEmail);
         assertThat(updatedCaseData.getClaimantContactEmail()).isEqualTo(expectedUserEmail);
         assertThat(updatedCaseData.getFormattedClaimantContactAddress())
             .isEqualTo("10 High Street<br>London<br>W1 2BC");

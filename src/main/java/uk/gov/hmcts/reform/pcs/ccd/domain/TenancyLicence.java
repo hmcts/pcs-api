@@ -9,8 +9,9 @@ import uk.gov.hmcts.ccd.sdk.type.Document;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
+
+import java.time.LocalDateTime;
 
 @Data
 @Builder
@@ -71,9 +72,5 @@ public class TenancyLicence {
     private String walesAgentLastName;
     private String walesAgentLicenceNumber;
     private LocalDate walesAgentAppointmentDate;
-
-    //Wales notice details
-    private Boolean walesNoticeServed;
-    private String walesTypeOfNoticeServed;
 
 }

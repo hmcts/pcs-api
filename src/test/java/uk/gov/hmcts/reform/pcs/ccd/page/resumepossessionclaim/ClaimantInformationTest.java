@@ -41,11 +41,11 @@ class ClaimantInformationTest extends BasePageTest {
     @DisplayName("Should append apostrophe to claimant names ending with 's' or 'S': {0}")
     void shouldAppendApostropheToClaimantNamesEndingWithS(@SuppressWarnings("unused") String testDescription,
                                                           String claimantName,
-                                                          String overriddenOrganisationName,
+                                                          String overriddenClaimantName,
                                                           String expectedDisplayedName) {
         // Given
         PCSCase caseData = PCSCase.builder().claimantName(claimantName)
-            .overriddenClaimantName(overriddenOrganisationName)
+            .overriddenClaimantName(overriddenClaimantName)
             .claimantCircumstances(ClaimantCircumstances.builder().build()).build();
 
         // When
@@ -61,11 +61,11 @@ class ClaimantInformationTest extends BasePageTest {
     @DisplayName("{0}")
     void shouldHandleDisplayedClaimantName(@SuppressWarnings("unused") String testDescription,
                                            String claimantName,
-                                           String overriddenOrganisationName,
+                                           String overriddenClaimantName,
                                            String expectedDisplayedClaimantName) {
         // Given
         PCSCase caseData = PCSCase.builder().claimantName(claimantName)
-            .overriddenClaimantName(overriddenOrganisationName)
+            .overriddenClaimantName(overriddenClaimantName)
             .claimantCircumstances(ClaimantCircumstances.builder().build()).build();
 
         // When

@@ -11,7 +11,6 @@ public class CheckingNotice implements CcdPageConfiguration {
         pageBuilder
                 .page("checkingNotice")
                 .pageLabel("Notice of your intention to begin possession proceedings")
-                .showCondition("legislativeCountry=\"England\"")
                 .label("checkingNotice-info",
                         """
                         ---
