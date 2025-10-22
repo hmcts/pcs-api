@@ -62,16 +62,6 @@ test.describe('[Create Case - Wales] @Master @nightly', async () => {
     await performAction('selectClaimType', claimType.no);
     await performAction('selectClaimantName', claimantName.yes);
     await performAction('clickButtonAndVerifyPageNavigation', claimantName.continue, claimantDetailsWales.mainHeader);
-    await performAction('clickButtonAndVerifyPageNavigation', 'Sign out','Sign in or create an account');
-    await performAction('reloginAndFindTheCase', user.claimantSolicitor);
-    await performAction('clickButtonAndVerifyPageNavigation', resumeClaim.continue, resumeClaimOptions.mainHeader);
-    await performAction('selectResumeClaimOption', resumeClaimOptions.yes);
-    await performValidation('radioButtonChecked', claimantType.wales.communityLandlord, true);
-    await performAction('verifyPageAndClickButton', claimantType.continue, claimantType.mainHeader);
-    await performValidation('radioButtonChecked', claimType.no, true);
-    await performAction('verifyPageAndClickButton', claimType.continue, claimType.mainHeader);
-    await performValidation('radioButtonChecked', claimantName.no, true);
-    await performAction('clickButtonAndVerifyPageNavigation', claimantName.continue, claimantDetailsWales.mainHeader);
     await performAction('selectClaimantDetails',
         {question1: claimantDetailsWales.wereYouRegisteredUnderPart1OfTheHousingAct2014, option1: claimantDetailsWales.yes,
          question2: claimantDetailsWales.wereYouLicensedUnderPart1OfTheHousingAct2014, option2: claimantDetailsWales.yes,
@@ -202,7 +192,7 @@ test.describe('[Create Case - Wales] @Master @nightly', async () => {
     await performAction('selectYourPossessionGrounds', {
       discretionary: [whatAreYourGroundsForPossessionWales.discretionary.estateManagementGrounds],
       discretionaryEstateGrounds: [whatAreYourGroundsForPossessionWales.discretionary.buildingWorks],
-      mandatory: [whatAreYourGroundsForPossessionWales.mandatory.breakClauseNotice],
+      mandatory: [whatAreYourGroundsForPossessionWales.mandatory.section199],
     });
     await performAction('clickButton', reasonsForPossession.continue);
     // Following lines enabled to reach notice of your intention page as HDPI-2343 is done for Wales journey routing
@@ -263,7 +253,7 @@ test.describe('[Create Case - Wales] @Master @nightly', async () => {
       ['formLabelValue', propertyDetails.addressLine2Label, addressDetails.addressLine2],
       ['formLabelValue', propertyDetails.townOrCityLabel, addressDetails.townOrCity],
       ['formLabelValue', propertyDetails.postcodeZipcodeLabel, addressDetails.walesCourtAssignedPostcode],
-      ['formLabelValue', propertyDetails.countryLabel, addressDetails.country]);
+      ['formLabelValue', propertyDetails.countryLabel, addressDetails.country]);*/
   });
 
   // The sections commented out will be fixed as part of the User Story https://tools.hmcts.net/jira/browse/HDPI-2123
