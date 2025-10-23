@@ -122,15 +122,11 @@ public class OccupationLicenceDetailsWalesPage implements CcdPageConfiguration {
             // Date cannot be current date
             if (contractStartDate.isEqual(currentDate)) {
                 errors.add(DATE_NOT_TODAY_ERROR_MESSAGE);
-            }
-            
-            // Date cannot be in the future
-            if (contractStartDate.isAfter(currentDate)) {
+            } else if (contractStartDate.isAfter(currentDate)) {
+                // Date cannot be in the future
                 errors.add(DATE_NOT_FUTURE_ERROR_MESSAGE);
-            }
-            
-            // Date must be in the past (not today or future)
-            if (!contractStartDate.isBefore(currentDate)) {
+            } else if (!contractStartDate.isBefore(currentDate)) {
+                // Date must be in the past (not today or future)
                 errors.add(DATE_IN_PAST_ERROR_MESSAGE);
             }
         }
