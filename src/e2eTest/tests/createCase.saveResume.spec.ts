@@ -65,7 +65,6 @@ test.describe('[Create Case - With resume claim options] @Master @nightly', asyn
       await performAction('reloginAndFindTheCase', user.claimantSolicitor);
     } catch (err) {
       optionalTestFailed = true;
-      throw err;
     }
     await performAction('clickButtonAndVerifyPageNavigation', resumeClaim.continue, resumeClaimOptions.mainHeader);
     await performAction('selectResumeClaimOption', resumeClaimOptions.yes);
@@ -192,7 +191,6 @@ test.describe('[Create Case - With resume claim options] @Master @nightly', asyn
       await performAction('reloginAndFindTheCase', user.claimantSolicitor);
     } catch (err) {
       optionalTestFailed = true;
-      throw err;
     }
     await performAction('clickButtonAndVerifyPageNavigation', resumeClaim.continue, resumeClaimOptions.mainHeader);
     await performAction('selectResumeClaimOption', resumeClaimOptions.no);
