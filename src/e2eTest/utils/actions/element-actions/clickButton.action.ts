@@ -43,7 +43,6 @@ export class ClickButtonAction implements IAction {
 
   private async clickButtonAndWaitForElement(page: Page, button: Locator, nextPageElement: string): Promise<void> {
       await this.clickButton(page, button);
-      await page.waitForLoadState('networkidle');
       //Adding sleep to slow down execution when the application behaves abnormally
       await page.locator(`h1:has-text("${nextPageElement}")`).waitFor({ state: 'visible' });
   }
