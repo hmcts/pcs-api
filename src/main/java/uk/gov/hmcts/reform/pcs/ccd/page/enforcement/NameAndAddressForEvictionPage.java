@@ -15,7 +15,7 @@ public class NameAndAddressForEvictionPage implements CcdPageConfiguration {
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
             .page("enforcementEvictionNameAndAddress")
-            .pageLabel("The name and address for the eviction")
+            .pageLabel("The name and address for the eviction (placeholder)")
             .readonly(PCSCase::getDefendant1, NEVER_SHOW)
             .label(
                 "enforcementEvictionNameAndAddress-details-defendants-check",
