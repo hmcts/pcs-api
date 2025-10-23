@@ -5,7 +5,7 @@ import uk.gov.hmcts.ccd.sdk.api.CCD;
 /**
  * Enum representing mandatory grounds for possession claims.
  */
-public enum MandatoryGround {
+public enum RentArrearsMandatoryGrounds {
 
     @CCD(label = "Owner occupier (ground 1)")
     OWNER_OCCUPIER_GROUND1,
