@@ -15,6 +15,7 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenAccess;
 import uk.gov.hmcts.reform.pcs.ccd.domain.model.NoRentArrearsReasonForGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceDetailsWales;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -665,10 +666,7 @@ public class PCSCase {
     @CCD(searchable = false)
     private YesOrNo showReasonsForGroundsPageWales;
 
-    @CCD(
-        label = "What type of tenancy or licence is in place?",
-        typeOverride = FieldType.FixedRadioList,
-        typeParameterOverride = "OccupationLicenceTypeWales"
-    )
-    private OccupationLicenceTypeWales occupationLicenceTypeWales;
+    @JsonUnwrapped
+    @CCD
+    private OccupationLicenceDetailsWales occupationLicenceDetailsWales;
 }
