@@ -25,7 +25,6 @@ import java.util.List;
 @Slf4j
 public class OccupationLicenceDetailsWalesPage implements CcdPageConfiguration {
 
-    private static final String YOU_CAN_ENTER_UP_TO_500_CHARACTERS = "You can enter up to 500 characters";
     private static final String SHOW_OTHER_DETAILS_CONDITION = "licenseType=\"OTHER\"";
     private static final String OCCUPATION_CONTRACT_DETAILS = "OccupationLicenceDetailsWales";
     private static final String OCCUPATION_CONTRACT_DETAILS_LABEL = "Occupation contract or licence details";
