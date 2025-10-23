@@ -66,6 +66,25 @@ public class TenancyLicenceService {
                     ? pcsCase.getWalesHousingAct().getAgentLicenceNumber() : null)
                 .walesAgentAppointmentDate(pcsCase.getWalesHousingAct() != null 
                     ? pcsCase.getWalesHousingAct().getAgentAppointmentDate() : null)
+                // Wales Occupation Contract/Licence details
+                .walesOccupationLicenceType(
+                    pcsCase.getOccupationLicenceDetailsWales() != null
+                        && pcsCase.getOccupationLicenceDetailsWales().getLicenseType() != null
+                        ? pcsCase.getOccupationLicenceDetailsWales().getLicenseType().getLabel()
+                        : null)
+                .walesOtherLicenseTypeDetails(
+                    pcsCase.getOccupationLicenceDetailsWales() != null
+                        ? pcsCase.getOccupationLicenceDetailsWales().getOtherLicenseTypeDetails()
+                        : null)
+                .walesLicenseStartDate(
+                    pcsCase.getOccupationLicenceDetailsWales() != null
+                        ? pcsCase.getOccupationLicenceDetailsWales().getLicenseStartDate()
+                        : null)
+                .walesLicenseDocuments(
+                    pcsCase.getOccupationLicenceDetailsWales() != null
+                        ? ListValueUtils.unwrapListItems(
+                            pcsCase.getOccupationLicenceDetailsWales().getLicenseDocuments())
+                        : null)
                 .build();
     }
 

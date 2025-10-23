@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.type.Document;
+import uk.gov.hmcts.ccd.sdk.type.ListValue;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -61,5 +62,5 @@ public class OccupationLicenceDetailsWales {
         label = "Add document",
         hint = "Upload a document to the system"
     )
-    private List<Document> licenseDocuments;
+    private List<ListValue<Document>> licenseDocuments;
 }

@@ -76,4 +76,10 @@ public class TenancyLicence {
     private Boolean walesNoticeServed;
     private String walesTypeOfNoticeServed;
 
+    // Wales Occupation Contract/Licence details
+    private String walesOccupationLicenceType;
+    private String walesOtherLicenseTypeDetails;
+    private LocalDate walesLicenseStartDate;
+    private List<Document> walesLicenseDocuments;
+
 }
