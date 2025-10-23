@@ -340,13 +340,13 @@ public class PCSCase {
 
     @CCD(
         searchable = false,
-        access = {CitizenAccess.class, CaseworkerAccess.class},
+        access = {CitizenAccess.class, CaseworkerReadAccess.class},
         label = "Do you need to add another defendant?"
     )
     private VerticalYesNo addAdditionalDefendant;
 
     @CCD(
-        access = {CitizenAccess.class, CaseworkerAccess.class},
+        access = {CitizenAccess.class, CaseworkerReadAccess.class},
         label = "Add defendant",
         hint = "Add a defendant to the case"
     )
@@ -449,6 +449,10 @@ public class PCSCase {
 
     @CCD(searchable = false)
     private String nextStepsMarkdown;
+
+    @CCD(searchable = false)
+    private String dobEventMarkdown;
+
 
     // --- Rent arrears (statement upload + totals + third party payments) ---
     @CCD(

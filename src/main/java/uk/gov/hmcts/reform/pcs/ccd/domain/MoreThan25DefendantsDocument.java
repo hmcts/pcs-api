@@ -6,7 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.type.Document;
-import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseworkerAccess;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseworkerReadAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenAccess;
 
 import static uk.gov.hmcts.ccd.sdk.type.FieldType.FixedList;
@@ -21,7 +21,7 @@ public class MoreThan25DefendantsDocument {
         label = "Type of document",
         typeOverride = FixedList,
         typeParameterOverride = "MoreThan25DefendantsDocumentType",
-        access = {CitizenAccess.class, CaseworkerAccess.class}
+        access = {CitizenAccess.class, CaseworkerReadAccess.class}
     )
     private MoreThan25DefendantsDocumentType documentCategory;
 
@@ -30,14 +30,14 @@ public class MoreThan25DefendantsDocument {
         hint = "Upload a document to the system",
         typeParameterOverride = "Document",
         regex = ".pdf, .docx",
-        access = {CitizenAccess.class, CaseworkerAccess.class}
+        access = {CitizenAccess.class, CaseworkerReadAccess.class}
     )
     private Document documentLink;
 
     @CCD(
         label = "Short description",
         typeOverride = TextArea,
-        access = {CitizenAccess.class, CaseworkerAccess.class}
+        access = {CitizenAccess.class, CaseworkerReadAccess.class}
     )
     private String shortDescription;
 }

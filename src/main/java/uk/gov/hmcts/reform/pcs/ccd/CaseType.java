@@ -11,6 +11,7 @@ import static java.lang.System.getenv;
 import static java.util.Optional.ofNullable;
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.State.AWAITING_FURTHER_CLAIM_DETAILS;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.State.AWAITING_SUBMISSION_TO_HMCTS;
 
 /**
  * Setup some common possessions case type configuration.
@@ -67,6 +68,12 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
             .showCondition(ShowConditions.stateEquals(AWAITING_FURTHER_CLAIM_DETAILS))
             .label("nextStepsMarkdownLabel", null, "${nextStepsMarkdown}")
             .field("nextStepsMarkdown", NEVER_SHOW);
+
+        builder.tab("proceedToDob", "DOB")
+            .showCondition(ShowConditions.stateEquals(AWAITING_SUBMISSION_TO_HMCTS))
+            .label("dobEventMarkdownLabel", null, "${dobEventMarkdown}")
+            .field("dobEventMarkdown", NEVER_SHOW);
+
 
         builder.tab("summary", "Summary")
             .showCondition(ShowConditions.stateNotEquals(AWAITING_FURTHER_CLAIM_DETAILS))

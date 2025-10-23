@@ -121,7 +121,7 @@ public class CCDCaseRepository extends DecentralisedCaseRepository<PCSCase> {
         pcsCase.setPageHeadingMarkdown("""
                 <p class="govuk-!-font-size-24
                 govuk-!-margin-top-0 govuk-!-margin-bottom-0">
-                Case number: ${[CASE_REFERENCE]}</p>""");
+                Case number: ${[CASE_REFERENCE]}${[STATE]}</p>""");
 
         if (pcsCase.getHasUnsubmittedCaseData() == YesOrNo.YES) {
             pcsCase.setNextStepsMarkdown("""
@@ -155,6 +155,17 @@ public class CCDCaseRepository extends DecentralisedCaseRepository<PCSCase> {
                                              </p>
                                              """.formatted(EventId.resumePossessionClaim));
         }
+
+        pcsCase.setDobEventMarkdown("""                                         
+                                             <a href="/cases/case-details/${[CASE_REFERENCE]}/trigger/%s"
+                                                role="button"
+                                                class="govuk-button govuk-link govuk-link--no-visited-state">
+                                               Continue To Date of Birth
+                                             </a>
+                                             <p class="govuk-body govuk-!-font-size-19">
+                                             <span><a class="govuk-link--no-visited-state" href="/cases">Cancel</a></span>
+                                             </p>
+                                             """.formatted(EventId.dobEvent));
     }
 
     private Optional<PartyEntity> findPartyForCurrentUser(PcsCaseEntity pcsCaseEntity) {

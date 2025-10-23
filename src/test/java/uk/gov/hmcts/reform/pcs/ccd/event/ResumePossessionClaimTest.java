@@ -14,6 +14,7 @@ import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantCircumstances;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
@@ -24,6 +25,7 @@ import uk.gov.hmcts.reform.pcs.ccd.page.builder.SavingPageBuilderFactory;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ClaimantDetailsWalesPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ContactPreferences;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.AdditionalDefendantsDetails;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.DefendantsDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.NoticeDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ResumeClaim;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.SelectClaimantType;
@@ -80,7 +82,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
     @Mock
     private ContactPreferences contactPreferences;
     @Mock
-    private AdditionalDefendantsDetails defendantsDetails;
+    private DefendantsDetails defendantsDetails;
     @Mock
     private NoticeDetails noticeDetails;
     @Mock(strictness = LENIENT)
@@ -112,7 +114,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
             savingPageBuilderFactory, resumeClaim,
             unsubmittedCaseDataService, selectClaimantType, noticeDetails,
             uploadAdditionalDocumentsDetails, tenancyLicenceDetails, contactPreferences,
-            defendantsDetails, organisationNameService, claimantDetailsWalesPage, schedulerClient
+            defendantsDetails, organisationNameService, claimantDetailsWalesPage, schedulerClient, defendantsDetails
         );
 
         setEventUnderTest(underTest);
