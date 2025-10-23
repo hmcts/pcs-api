@@ -46,7 +46,7 @@ test.beforeEach(async ({page}) => {
   await performAction('housingPossessionClaim');
 });
 let optionalTestFailed = false;
-test.describe('[Create Case - England] @Master @nightly', async () => {
+test.describe('[Create Case England Journey - including cases with and without saved resume claim options] @Master @nightly', async () => {
   test('England - Resume with saved options', async () => {
     await performAction('selectAddress', {
       postcode: addressDetails.englandCourtAssignedPostcode,
@@ -60,7 +60,7 @@ test.describe('[Create Case - England] @Master @nightly', async () => {
     await performAction('selectClaimantName', claimantName.yes);
     await performAction('clickButtonAndVerifyPageNavigation', claimantName.continue, contactPreferences.mainHeader);
     try {
-      await performAction('clickButton', 'Sign out');
+      await performAction('clickButton', home.signOutLabel);
       await performAction('reloginAndFindTheCase', user.claimantSolicitor);
     } catch (err) {
       optionalTestFailed = true;
@@ -187,7 +187,7 @@ test.describe('[Create Case - England] @Master @nightly', async () => {
     await performAction('selectClaimantName', claimantName.yes);
     await performAction('clickButtonAndVerifyPageNavigation', claimantName.continue, contactPreferences.mainHeader);
     try {
-      await performAction('clickButton', 'Sign out');
+      await performAction('clickButton', home.signOutLabel);
       await performAction('reloginAndFindTheCase', user.claimantSolicitor);
     } catch (err) {
       optionalTestFailed = true;
