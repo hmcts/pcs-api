@@ -1,3 +1,3 @@
--- Add prohibitedConduct JSONB column to claim table
+-- Add prohibited_conduct JSONB column to claim table
 ALTER TABLE public.claim
-ADD COLUMN prohibitedConduct JSONB;
+ADD COLUMN prohibited_conduct JSONB;
