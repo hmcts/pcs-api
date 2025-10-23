@@ -8,5 +8,5 @@ export const signInOrCreateAnAccount = {
   rejectAdditionalCookies: 'Reject additional cookies',
   acceptAnalyticsCookies: 'Accept analytics cookies',
   rejectAnalyticsCookies: 'Reject analytics cookies',
-  hideThisCookieMessage: 'Hide this cookie message',
+  hideThisCookieMessage: 'Hide this cookie message'
 }
