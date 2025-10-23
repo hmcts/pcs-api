@@ -13,7 +13,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
 
 import java.util.Set;
-import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -25,7 +24,7 @@ class FirearmsPossessionRiskPageTest extends BasePageTest {
     }
 
     @ParameterizedTest
-    @MethodSource("invalidTextScenarios")
+    @MethodSource("uk.gov.hmcts.reform.pcs.ccd.page.enforcement.RiskCategoryTestUtil#invalidTextScenarios")
     void shouldRequireTextWhenInvalid(String invalidText) {
         // Given
         PCSCase caseData = PCSCase.builder()
@@ -45,7 +44,7 @@ class FirearmsPossessionRiskPageTest extends BasePageTest {
     }
 
     @ParameterizedTest
-    @MethodSource("validTextScenarios")
+    @MethodSource("uk.gov.hmcts.reform.pcs.ccd.page.enforcement.RiskCategoryTestUtil#validTextScenarios")
     void shouldAcceptValidText(String text) {
         // Given
         PCSCase caseData = PCSCase.builder()
@@ -119,25 +118,5 @@ class FirearmsPossessionRiskPageTest extends BasePageTest {
         assertThat(response.getData().getEnforcementOrder()
             .getRiskDetails().getEnforcementCriminalDetails())
             .isEqualTo("Some criminal text");
-    }
-
-    private static Stream<String> validTextScenarios() {
-        return Stream.of(
-            "A",
-            "Short text",
-            "The defendant has a history of firearm possession",
-            "A".repeat(1000),
-            "A".repeat(5000),
-            "A".repeat(6799),
-            "A".repeat(6800)
-        );
-    }
-
-    private static Stream<String> invalidTextScenarios() {
-        return Stream.of(
-            null,
-            "   ",
-            ""
-        );
     }
 }
