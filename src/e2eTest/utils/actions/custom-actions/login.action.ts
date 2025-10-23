@@ -3,6 +3,7 @@ import { Page } from '@playwright/test';
 import { v4 as uuidv4 } from 'uuid';
 import { performAction } from '../../controller';
 import { IAction, actionData, actionRecord } from '../../interfaces/action.interface';
+import { home } from '@data/page-data/home.page.data';
 
 export class LoginAction implements IAction {
   async execute(page: Page, action: string, userType: string | actionRecord, roles?: actionData): Promise<void> {
@@ -23,7 +24,7 @@ export class LoginAction implements IAction {
     }
     await performAction('inputText', 'Email address', userEmail);
     await performAction('inputText', 'Password', userPassword);
-    await performAction('clickButton', 'Sign in');
+    await performAction('clickButtonAndWaitForElement', 'Sign in', home.mainHeader);
   }
 
   private async createUserAndLogin(userType: string, roles: string[]): Promise<void> {
