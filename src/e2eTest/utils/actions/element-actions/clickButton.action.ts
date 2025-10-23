@@ -20,6 +20,7 @@ export class ClickButtonAction implements IAction {
   }
 
   private async clickButton(page: Page, button: Locator): Promise<void> {
+    await button.waitFor({ state: 'visible' });
     await button.first().click();
     await page.waitForLoadState();
     await page.locator('.spinner-container').waitFor({state: 'detached'});
