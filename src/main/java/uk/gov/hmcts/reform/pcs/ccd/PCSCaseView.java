@@ -37,7 +37,7 @@ import java.util.stream.Collectors;
  */
 @Component
 @AllArgsConstructor
-public class CCDCaseRepository implements CaseView<PCSCase, State> {
+public class PCSCaseView implements CaseView<PCSCase, State> {
 
     private final PcsCaseRepository pcsCaseRepository;
     private final SecurityContextService securityContextService;

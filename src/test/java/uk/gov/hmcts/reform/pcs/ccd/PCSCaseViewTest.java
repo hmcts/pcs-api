@@ -40,7 +40,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class CCDCaseRepositoryTest {
+class PCSCaseViewTest {
 
     private static final long CASE_REFERENCE = 1234L;
     private static final State DEFAULT_STATE = State.CASE_ISSUED;
@@ -62,13 +62,13 @@ class CCDCaseRepositoryTest {
     @Mock
     private PcsCaseEntity pcsCaseEntity;
 
-    private CCDCaseRepository underTest;
+    private PCSCaseView underTest;
 
     @BeforeEach
     void setUp() {
         when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(pcsCaseEntity));
 
-        underTest = new CCDCaseRepository(pcsCaseRepository, securityContextService,
+        underTest = new PCSCaseView(pcsCaseRepository, securityContextService,
                 modelMapper, pcsCaseService, unsubmittedCaseDataService);
     }
 
