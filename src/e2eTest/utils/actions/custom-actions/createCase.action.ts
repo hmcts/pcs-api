@@ -671,12 +671,13 @@ export class CreateCaseAction implements IAction {
 
   private async reloginAndFindTheCase(userInfo: actionData) {
     await performAction('login', userInfo);
-    await performAction('clickButton', home.findCaseTab);
+    await performAction('navigateToUrl', `${process.env.MANAGE_CASE_BASE_URL}/cases/case-details/PCS/PCS-${process.env.CHANGE_ID}/${caseNumber.replaceAll('-', '')}#Next%20steps`);
+    /*await performAction('clickButton', home.findCaseTab);
     await performAction('select', search.jurisdictionLabel, search.possessionsJurisdiction);
     await performAction('select', search.caseTypeLabel, search.caseType.civilPossessions);
     await performAction('inputText', search.caseNumberLabel, caseNumber);
     await performAction('clickButton', search.apply);
-    await performAction('clickButton', caseNumber);
+    await performAction('clickButton', caseNumber);*/
   }
 
   private async createCaseAction(caseData: actionData): Promise<void> {
