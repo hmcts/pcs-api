@@ -172,14 +172,13 @@ export class CreateCaseAction implements IAction {
     return await loc.innerText();
   }
 
-
-  private async selectGroundsForPossession(caseData: actionRecord) {
+  private async selectGroundsForPossession(possessionGrounds: actionRecord) {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
-    await performAction('clickRadioButton', caseData.groundsRadioInput);
-    if (caseData.groundsRadioInput == groundsForPossession.yes) {
-      if (caseData.grounds) {
-        await performAction('check', caseData.grounds);
-        if ((caseData.grounds as Array<string>).includes(groundsForPossession.other)) {
+    await performAction('clickRadioButton', possessionGrounds.groundsRadioInput);
+    if (possessionGrounds.groundsRadioInput == groundsForPossession.yes) {
+      if (possessionGrounds.grounds) {
+        await performAction('check', possessionGrounds.grounds);
+        if ((possessionGrounds.grounds as Array<string>).includes(groundsForPossession.other)) {
           await performAction('inputText', groundsForPossession.enterGroundsForPossessionLabel, groundsForPossession.enterYourGroundsForPossessionInput);
         }
       }
