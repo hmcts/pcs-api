@@ -3,5 +3,5 @@ export const signInOrCreateAnAccount = {
   mainHeader: 'Sign in or create an account',
   emailAddressLabel: 'Email address',
   passwordLabel: 'Password',
-  signInLabel: 'Sign in'
+  signInButton: 'Sign in'
 }
