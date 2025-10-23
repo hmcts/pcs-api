@@ -143,7 +143,7 @@ public class PCSCase {
     @CCD(label = "Enter address details")
     private AddressUK overriddenClaimantContactAddress;
 
-    @CCD(label = "Do you want to provide a contact phone number? (Optional)")
+    @CCD(label = "Do you want to provide a contact phone number?")
     private VerticalYesNo claimantProvidePhoneNumber;
 
     @CCD(label = "Enter phone number", typeOverride = FieldType.PhoneUK)
