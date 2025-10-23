@@ -60,7 +60,7 @@ export class CreateCaseAction implements IAction {
       ['extractCaseIdFromAlert', () => this.extractCaseIdFromAlert(page)],
       ['selectClaimantType', () => this.selectClaimantType(fieldName)],
       ['reloginAndFindTheCase', () => this.reloginAndFindTheCase(fieldName)],
-      ['defendantDetails', () => this.defendantDetails(fieldName)],
+      ['addDefendantDetails', () => this.addDefendantDetails(fieldName as actionRecord)],
       ['selectJurisdictionCaseTypeEvent', () => this.selectJurisdictionCaseTypeEvent()],
       ['enterTestAddressManually', () => this.enterTestAddressManually()],
       ['selectClaimType', () => this.selectClaimType(fieldName)],
@@ -255,21 +255,15 @@ export class CreateCaseAction implements IAction {
     await performAction('clickButton', contactPreferences.continue);
   }
 
-  private async defendantDetails(defendantVal: actionData) {
+  private async addDefendantDetails(defendantData: actionRecord) {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
-    const defendantData = defendantVal as {
-      name: string;
-      correspondenceAddress: string;
-      email: string;
-      correspondenceAddressSame?: string
-    };
     await performAction('clickRadioButton', {
       question: defendantDetails.doYouKnowTheDefendantName,
       option: defendantData.name
     });
     if (defendantData.name === defendantDetails.yes) {
-      await performAction('inputText', defendantDetails.defendantFirstName, defendantDetails.firstNameInput);
-      await performAction('inputText', defendantDetails.defendantLastName, defendantDetails.lastNameInput);
+      await performAction('inputText', defendantDetails.defendantFirstName, defendantData.firstName);
+      await performAction('inputText', defendantDetails.defendantLastName, defendantData.lastName);
     }
     await performAction('clickRadioButton', {
       question: defendantDetails.defendantCorrespondenceAddress,
@@ -283,18 +277,31 @@ export class CreateCaseAction implements IAction {
       if (defendantData.correspondenceAddressSame === defendantDetails.no) {
         await performActions(
             'Find Address based on postcode',
-            ['inputText', addressDetails.enterUKPostcodeLabel, addressDetails.englandCourtAssignedPostcode],
+            ['inputText', addressDetails.enterUKPostcodeLabel, defendantData.address],
             ['clickButton', addressDetails.findAddressLabel],
             ['select', addressDetails.selectAddressLabel, addressDetails.addressIndex]
         );
       }
     }
     await performAction('clickRadioButton', {
-      question: defendantDetails.defendantEmailAddress,
-      option: defendantData.email
+      question: defendantDetails.additionalDefendants,
+      option: defendantData.addAdditionalDefendant
     });
-    if (defendantData.email === defendantDetails.yes) {
-      await performAction('inputText', defendantDetails.enterEmailAddress, defendantDetails.emailIdInput);
+    if (defendantData.addAdditionalDefendant === defendantDetails.yes) {
+      await performAction('clickButton', defendantDetails.addNew);
+      await performAction('addDefendantDetails', {
+        name: defendantData.name1,
+        correspondenceAddress: defendantData.correspondenceAddress1,
+        addAdditionalDefendants: defendantData.addAdditionalDefendants1,
+      });
+    }
+    if(defendantData.name2) {
+      await performAction('clickButton', defendantDetails.addNew);
+      await performAction('addDefendantDetails', {
+        name: defendantData.name2,
+        correspondenceAddress: defendantData.correspondenceAddress2,
+        addAdditionalDefendants: defendantData.addAdditionalDefendants2,
+      });
     }
     await performAction('clickButton', defendantDetails.continue);
   }
