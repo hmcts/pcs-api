@@ -7,7 +7,7 @@ import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.domain.WrappedQuestion;
+import uk.gov.hmcts.reform.pcs.ccd.domain.ProhibitedConductWalesWrappedQuestion;
 
 @Component
 public class ProhibitedConductWalesPage implements CcdPageConfiguration {
@@ -27,13 +27,13 @@ public class ProhibitedConductWalesPage implements CcdPageConfiguration {
                 </p>
                 <p class="govuk-body" tabindex="0">This is a 12-month probationary contract.</p>
                 """)
-            .mandatory(PCSCase::getClaimForProhibitedConductContract)
-            .complex(PCSCase::getProhibitedConductWales, "claimForProhibitedConductContract=\"YES\"")
-                .mandatory(WrappedQuestion::getAgreedTermsOfPeriodicContract)
-                .mandatory(WrappedQuestion::getDetailsOfTerms, 
-                    "prohibitedConductWales.agreedTermsOfPeriodicContract=\"YES\"")
+            .mandatory(PCSCase::getProhibitedConductWalesClaim)
+            .complex(PCSCase::getProhibitedConductWalesWrappedQuestion, "prohibitedConductWalesClaim=\"YES\"")
+                .mandatory(ProhibitedConductWalesWrappedQuestion::getAgreedTermsOfPeriodicContract)
+                .mandatory(ProhibitedConductWalesWrappedQuestion::getDetailsOfTerms, 
+                    "prohibitedConductWalesWrappedQuestion.agreedTermsOfPeriodicContract=\"YES\"")
             .done()
-            .mandatory(PCSCase::getWhyMakingClaim, "claimForProhibitedConductContract=\"YES\"");
+            .mandatory(PCSCase::getProhibitedConductWalesWhyMakingClaim, "prohibitedConductWalesClaim=\"YES\"");
     }
 
     public AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,

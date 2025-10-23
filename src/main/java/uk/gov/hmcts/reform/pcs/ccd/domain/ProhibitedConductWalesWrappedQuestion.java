@@ -11,7 +11,7 @@ import static uk.gov.hmcts.ccd.sdk.type.FieldType.TextArea;
 @Data
 @Builder
 @JsonNaming(PropertyNamingStrategies.UpperCamelCaseStrategy.class)
-public class WrappedQuestion {
+public class ProhibitedConductWalesWrappedQuestion {
 
     @CCD(
         label = "Have you and the contract holder agreed terms of the periodic standard contract "

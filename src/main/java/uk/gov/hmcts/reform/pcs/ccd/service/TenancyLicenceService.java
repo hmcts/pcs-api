@@ -67,15 +67,15 @@ public class TenancyLicenceService {
                 .walesAgentAppointmentDate(pcsCase.getWalesHousingAct() != null 
                     ? pcsCase.getWalesHousingAct().getAgentAppointmentDate() : null)
                 // Add Wales prohibited conduct details
-                .walesClaimForProhibitedConductContract(pcsCase.getClaimForProhibitedConductContract() != null
-                    ? pcsCase.getClaimForProhibitedConductContract().name() : null)
-                .walesAgreedTermsOfPeriodicContract(pcsCase.getProhibitedConductWales() != null
-                    ? pcsCase.getProhibitedConductWales().getAgreedTermsOfPeriodicContract() != null
-                        ? pcsCase.getProhibitedConductWales().getAgreedTermsOfPeriodicContract().name() : null
+                .walesClaimForProhibitedConductContract(pcsCase.getProhibitedConductWalesClaim() != null
+                    ? pcsCase.getProhibitedConductWalesClaim().name() : null)
+                .walesAgreedTermsOfPeriodicContract(pcsCase.getProhibitedConductWalesWrappedQuestion() != null
+                    ? pcsCase.getProhibitedConductWalesWrappedQuestion().getAgreedTermsOfPeriodicContract() != null
+                        ? pcsCase.getProhibitedConductWalesWrappedQuestion().getAgreedTermsOfPeriodicContract().name() : null
                     : null)
-                .walesDetailsOfTerms(pcsCase.getProhibitedConductWales() != null
-                    ? pcsCase.getProhibitedConductWales().getDetailsOfTerms() : null)
-                .walesWhyMakingClaim(pcsCase.getWhyMakingClaim())
+                .walesDetailsOfTerms(pcsCase.getProhibitedConductWalesWrappedQuestion() != null
+                    ? pcsCase.getProhibitedConductWalesWrappedQuestion().getDetailsOfTerms() : null)
+                .walesWhyMakingClaim(pcsCase.getProhibitedConductWalesWhyMakingClaim())
                 .build();
     }
 
