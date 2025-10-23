@@ -76,10 +76,4 @@ public class TenancyLicence {
     private Boolean walesNoticeServed;
     private String walesTypeOfNoticeServed;
 
-    //Wales prohibited conduct details
-    private String walesClaimForProhibitedConductContract;
-    private String walesAgreedTermsOfPeriodicContract;
-    private String walesDetailsOfTerms;
-    private String walesWhyMakingClaim;
-
 }
