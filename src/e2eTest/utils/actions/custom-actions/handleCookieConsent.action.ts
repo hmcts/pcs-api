@@ -1,6 +1,6 @@
 import {actionRecord, IAction} from '../../interfaces/action.interface';
+import {customTimeout} from '../../../playwright.config';
 import {Page} from '@playwright/test';
-import {customTimeout} from "../../../playwright.config";
 
 export class handleCookieConsentAction implements IAction {
   async execute(page: Page, action: string, actionText: actionRecord): Promise<void> {

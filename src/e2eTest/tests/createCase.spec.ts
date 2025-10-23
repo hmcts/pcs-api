@@ -45,12 +45,12 @@ import {signInOrCreateAnAccount} from '@data/page-data/signInOrCreateAnAccount.p
 test.beforeEach(async ({page}) => {
   initializeExecutor(page);
   await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
-  await performAction('handleCookieConsent',{
+  await performAction('handleCookieConsent', {
     accept:signInOrCreateAnAccount.acceptAdditionalCookies,
     hide:signInOrCreateAnAccount.hideThisCookieMessage
   });
   await performAction('login', user.claimantSolicitor);
-  await performAction('handleCookieConsent',{
+  await performAction('handleCookieConsent', {
     accept: signInOrCreateAnAccount.acceptAnalyticsCookies
   });
   await performAction('clickTab', home.createCaseTab);
