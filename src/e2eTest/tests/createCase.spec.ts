@@ -740,7 +740,7 @@ test.describe('[Create Case - England] @Master @nightly', async () => {
       option: noticeOfYourIntention.yes
     });
     await performAction('selectNoticeDetails', {
-      howDidYouServeNotice: noticeDetails.byOtherElectronicMethod,
+       howDidYouServeNotice: noticeDetails.byOtherElectronicMethod,
       day: '25', month: '02', year: '1970', hour: '22', minute: '45', second: '10', files: 'NoticeDetails.pdf'});
    /* await performAction('provideRentDetails', {rentFrequencyOption: 'Monthly', rentAmount: '1000'});
     await performValidation('mainHeader', dailyRentAmount.mainHeader);
