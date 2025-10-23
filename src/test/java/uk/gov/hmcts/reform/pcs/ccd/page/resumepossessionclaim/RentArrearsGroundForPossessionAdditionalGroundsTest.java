@@ -45,9 +45,9 @@ class RentArrearsGroundForPossessionAdditionalGroundsTest extends BasePageTest {
 
         // Then
         if (errorExpected) {
-           assertThat(response.getErrors()).containsExactly("Please select at least one ground");
+            assertThat(response.getErrors()).containsExactly("Please select at least one ground");
         } else {
-        assertThat(updatedCaseData.getShowRentArrearsGroundReasonPage()).isEqualTo(expectedShowFlag);
+            assertThat(updatedCaseData.getShowRentArrearsGroundReasonPage()).isEqualTo(expectedShowFlag);
         }
     }
 
