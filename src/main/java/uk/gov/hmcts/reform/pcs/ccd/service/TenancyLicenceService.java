@@ -66,6 +66,16 @@ public class TenancyLicenceService {
                     ? pcsCase.getWalesHousingAct().getAgentLicenceNumber() : null)
                 .walesAgentAppointmentDate(pcsCase.getWalesHousingAct() != null 
                     ? pcsCase.getWalesHousingAct().getAgentAppointmentDate() : null)
+                // Add Wales prohibited conduct details
+                .walesClaimForProhibitedConductContract(pcsCase.getClaimForProhibitedConductContract() != null
+                    ? pcsCase.getClaimForProhibitedConductContract().name() : null)
+                .walesAgreedTermsOfPeriodicContract(pcsCase.getProhibitedConductWales() != null
+                    ? pcsCase.getProhibitedConductWales().getAgreedTermsOfPeriodicContract() != null
+                        ? pcsCase.getProhibitedConductWales().getAgreedTermsOfPeriodicContract().name() : null
+                    : null)
+                .walesDetailsOfTerms(pcsCase.getProhibitedConductWales() != null
+                    ? pcsCase.getProhibitedConductWales().getDetailsOfTerms() : null)
+                .walesWhyMakingClaim(pcsCase.getWhyMakingClaim())
                 .build();
     }
 
