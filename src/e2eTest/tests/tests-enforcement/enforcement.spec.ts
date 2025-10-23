@@ -9,6 +9,7 @@ import { initializeExecutor } from "@utils/controller";
 import { caseNotFoundAfterFilter } from "@utils/actions/custom-actions/searchCase.action";
 import { nameAndAddressForEviction } from "@data/page-data/page-data-enforcement/nameAndAddressForEviction.page.data";
 import { everyoneLivingAtTheProperty } from "@data/page-data/page-data-enforcement/everyoneLivingAtTheProperty.page.data";
+import { riskPosedByEveryoneAtProperty } from "@data/page-data/page-data-enforcement/riskPosedByEveryoneAtProperty.page.data";
 
 test.beforeEach(async ({ page }) => {
   initializeExecutor(page);
@@ -16,7 +17,7 @@ test.beforeEach(async ({ page }) => {
   await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
   await performAction('login', user.claimantSolicitor);
   await performAction('filterCaseFromCaseList', caseList.stateAwaitingSubmission);
-  await performAction('NoCasesFoundAfterSearch')
+  await performAction('noCasesFoundAfterSearch')
   //Below three lines will be merged into a single action as part of improvement 
   await performAction("selectFirstCaseFromTheFilter", caseNotFoundAfterFilter);
   await performAction('createNewCase', caseNotFoundAfterFilter);
@@ -31,5 +32,7 @@ test.describe('[Enforcement - Warrant of Possession] @Master @nightly', async ()
     await performValidation('mainHeader', nameAndAddressForEviction.mainHeader);
     await performAction('selectNameAndAddressForEviction', { question: nameAndAddressForEviction.nameAndAddressPageForEvictionQuestion, option: nameAndAddressForEviction.yes });
     await performValidation('mainHeader', everyoneLivingAtTheProperty.mainHeader);
+    await performAction('selectPoseRiskToBailiff', { question: everyoneLivingAtTheProperty.riskToBailiffQuestion, option: everyoneLivingAtTheProperty.yes });
+    await performValidation('mainHeader', riskPosedByEveryoneAtProperty.mainHeader);
   });
 });
