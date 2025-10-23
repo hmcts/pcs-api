@@ -6,8 +6,8 @@ import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.domain.ProhibitedConductWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.domain.WrappedQuestion;
 
 @Component
 public class ProhibitedConductWalesPage implements CcdPageConfiguration {
@@ -27,15 +27,13 @@ public class ProhibitedConductWalesPage implements CcdPageConfiguration {
                 </p>
                 <p class="govuk-body" tabindex="0">This is a 12-month probationary contract.</p>
                 """)
-            .complex(PCSCase::getProhibitedConductWales)
-                .mandatory(ProhibitedConductWales::getClaimForProhibitedConductContract)
-                .mandatory(ProhibitedConductWales::getAgreedTermsOfPeriodicContract, 
-                    "prohibitedConductWalesClaimForProhibitedConductContract=\"YES\"")
-                .mandatory(ProhibitedConductWales::getDetailsOfTerms, 
-                    "prohibitedConductWalesAgreedTermsOfPeriodicContract=\"YES\"")
-                .mandatory(ProhibitedConductWales::getWhyMakingClaim, 
-                    "prohibitedConductWalesClaimForProhibitedConductContract=\"YES\"")
-            .done();
+            .mandatory(PCSCase::getClaimForProhibitedConductContract)
+            .complex(PCSCase::getProhibitedConductWales, "claimForProhibitedConductContract=\"YES\"")
+                .mandatory(WrappedQuestion::getAgreedTermsOfPeriodicContract)
+                .mandatory(WrappedQuestion::getDetailsOfTerms, 
+                    "prohibitedConductWales.agreedTermsOfPeriodicContract=\"YES\"")
+            .done()
+            .mandatory(PCSCase::getWhyMakingClaim, "claimForProhibitedConductContract=\"YES\"");
     }
 
     public AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,

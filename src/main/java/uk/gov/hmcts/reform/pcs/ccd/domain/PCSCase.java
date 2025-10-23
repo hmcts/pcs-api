@@ -278,9 +278,29 @@ public class PCSCase {
     @CCD
     private WalesHousingAct walesHousingAct;
 
-    @JsonUnwrapped(prefix = "prohibitedConductWales")
+    @CCD(label = "Are you also making a claim for an order imposing a prohibited conduct standard contract?")
+    private VerticalYesNo claimForProhibitedConductContract;
+
+    @CCD(label = "Have you and the contract holder agreed terms of the periodic standard contract " +
+        "in addition to those incorporated by statute?")
+    private VerticalYesNo agreedTermsOfPeriodicContract;
+
+    @CCD(
+        label = "Give details of the terms you've agreed",
+        hint = "You can enter up to 250 characters",
+        typeOverride = TextArea
+    )
+    private String detailsOfTerms;
+
+    @CCD(
+        label = "Why are you making this claim?",
+        hint = "You can enter up to 250 characters",
+        typeOverride = TextArea
+    )
+    private String whyMakingClaim;
+
     @CCD
-    private ProhibitedConductWales prohibitedConductWales;
+    private WrappedQuestion prohibitedConductWales;
 
     @CCD(
         label = "How much is the rent?",
