@@ -60,7 +60,7 @@ test.describe('[Create Case England Journey - including cases with and without s
     await performAction('selectClaimantName', claimantName.yes);
     await performAction('clickButtonAndVerifyPageNavigation', claimantName.continue, contactPreferences.mainHeader);
     try {
-      await performAction('clickButton', home.signOutLabel);
+      await performAction('clickButton', home.signOutButton);
       await performAction('reloginAndFindTheCase', user.claimantSolicitor);
     } catch (err) {
       optionalTestFailed = true;
@@ -68,11 +68,11 @@ test.describe('[Create Case England Journey - including cases with and without s
     }
     await performAction('clickButtonAndVerifyPageNavigation', resumeClaim.continue, resumeClaimOptions.mainHeader);
     await performAction('selectResumeClaimOption', resumeClaimOptions.yes);
-    await performValidation('radioButtonChecked', claimantType.wales.communityLandlord, true);
+    await performValidation('radioButtonChecked', claimantType.england.registeredProviderForSocialHousing, true);
     await performAction('verifyPageAndClickButton', claimantType.continue, claimantType.mainHeader);
     await performValidation('radioButtonChecked', claimType.no, true);
     await performAction('verifyPageAndClickButton', claimType.continue, claimType.mainHeader);
-    await performValidation('radioButtonChecked', claimantName.no, true);
+    await performValidation('radioButtonChecked', claimantName.yes, true);
     await performAction('clickButtonAndVerifyPageNavigation', claimantName.continue, contactPreferences.mainHeader);
     await performAction('selectContactPreferences', {
       notifications: contactPreferences.yes,
@@ -187,7 +187,7 @@ test.describe('[Create Case England Journey - including cases with and without s
     await performAction('selectClaimantName', claimantName.yes);
     await performAction('clickButtonAndVerifyPageNavigation', claimantName.continue, contactPreferences.mainHeader);
     try {
-      await performAction('clickButton', home.signOutLabel);
+      await performAction('clickButton', home.signOutButton);
       await performAction('reloginAndFindTheCase', user.claimantSolicitor);
     } catch (err) {
       optionalTestFailed = true;
@@ -195,14 +195,12 @@ test.describe('[Create Case England Journey - including cases with and without s
     }
     await performAction('clickButtonAndVerifyPageNavigation', resumeClaim.continue, resumeClaimOptions.mainHeader);
     await performAction('selectResumeClaimOption', resumeClaimOptions.no);
-    await performValidation('radioButtonChecked', claimantType.wales.communityLandlord, false);
-    await performAction('radioButtonChecked', claimantType.wales.communityLandlord);
-    await performAction('verifyPageAndClickButton', claimantType.continue, claimantType.mainHeader);
+    await performValidation('radioButtonChecked', claimantType.england.registeredProviderForSocialHousing, false);
+    await performAction('selectClaimantType', claimantType.england.registeredProviderForSocialHousing);
     await performValidation('radioButtonChecked', claimType.no, false);
-    await performAction('radioButtonChecked', claimType.no);
-    await performAction('verifyPageAndClickButton', claimType.continue, claimType.mainHeader);
-    await performValidation('radioButtonChecked', claimantName.no, false);
-    await performAction('radioButtonChecked', claimantName.no);
+    await performAction('selectClaimType', claimType.no);
+    await performValidation('radioButtonChecked', claimantName.yes, false);
+    await performAction('selectClaimantName', claimantName.yes);
     await performAction('clickButtonAndVerifyPageNavigation', claimantName.continue, contactPreferences.mainHeader);
     await performAction('selectContactPreferences', {
       notifications: contactPreferences.yes,

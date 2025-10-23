@@ -4,5 +4,5 @@ export const home =
     caseListTab: 'Case list',
     createCaseTab: 'Create case',
     findCaseTab: 'Find case',
-    signOutLabel: 'Sign out'
+    signOutButton: 'Sign out'
   }
