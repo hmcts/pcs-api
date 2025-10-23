@@ -201,9 +201,7 @@ test.describe('[Create Case - England] @Master @nightly', async () => {
       rentArrears: [rentArrearsPossessionGrounds.rentArrears],
       otherGrounds: rentArrearsPossessionGrounds.yes
     });
-    await performAction('selectYourPossessionGrounds',{
-      discretionary: [whatAreYourGroundsForPossession.discretionary.rentArrears],
-    });
+    await performAction('selectYourPossessionGrounds');
     await performValidation('mainHeader', preActionProtocol.mainHeader);
     await performAction('selectPreActionProtocol', preActionProtocol.yes);
     await performValidation('mainHeader', mediationAndSettlement.mainHeader);
