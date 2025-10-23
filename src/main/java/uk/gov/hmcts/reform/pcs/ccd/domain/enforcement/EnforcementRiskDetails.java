@@ -19,7 +19,7 @@ public class EnforcementRiskDetails {
     @CCD(
         label = "How have they been violent or aggressive?",
         hint = "For example, include the crime reference number if you have called police to the property or "
-            + "reported an incident. "+ EnforcementRiskValidationUtils.CHARACTER_LIMIT_MESSAGE,
+            + "reported an incident. " + EnforcementRiskValidationUtils.CHARACTER_LIMIT_MESSAGE,
         typeOverride = TextArea
     )
     private String enforcementViolentDetails;
@@ -27,7 +27,7 @@ public class EnforcementRiskDetails {
     @CCD(
         label = "What is their history of firearm possession?",
         hint = "For example, include the crime reference number if you have called police to the property or "
-            + "reported an incident. "+  EnforcementRiskValidationUtils.CHARACTER_LIMIT_MESSAGE,
+            + "reported an incident. " + EnforcementRiskValidationUtils.CHARACTER_LIMIT_MESSAGE,
         typeOverride = TextArea
     )
     private String enforcementFirearmsDetails;
@@ -35,7 +35,7 @@ public class EnforcementRiskDetails {
     @CCD(
         label = "What is their history of criminal or antisocial behaviour?",
         hint = "For example, include the crime reference number if you have called police to the property or "
-            + "reported an incident. "+ EnforcementRiskValidationUtils.CHARACTER_LIMIT_MESSAGE,
+            + "reported an incident. " + EnforcementRiskValidationUtils.CHARACTER_LIMIT_MESSAGE,
         typeOverride = TextArea
     )
     private String enforcementCriminalDetails;
