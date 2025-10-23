@@ -3,6 +3,7 @@ import { Page } from '@playwright/test';
 import { v4 as uuidv4 } from 'uuid';
 import { performAction } from '../../controller';
 import { IAction, actionData, actionRecord } from '../../interfaces/action.interface';
+import {home} from '@data/page-data/home.page.data';
 
 export class LoginAction implements IAction {
   async execute(page: Page, action: string, userType: string | actionRecord, roles?: actionData): Promise<void> {
