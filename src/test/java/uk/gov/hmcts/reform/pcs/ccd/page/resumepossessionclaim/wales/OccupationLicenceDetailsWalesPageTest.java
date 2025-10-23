@@ -22,7 +22,6 @@ import java.util.stream.Stream;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 import static org.mockito.Mockito.lenient;
-import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.pcs.config.ClockConfiguration.UK_ZONE_ID;
 
 @ExtendWith(MockitoExtension.class)
@@ -60,8 +59,8 @@ class OccupationLicenceDetailsWalesPageTest extends BasePageTest {
     void shouldReturnSuccessWhenNoStartDateProvided() {
         // Given
         OccupationLicenceDetailsWales occupationDetails = OccupationLicenceDetailsWales.builder()
-            .licenseType(OccupationLicenceTypeWales.SECURE_CONTRACT)
-            .licenseStartDate(null)
+            .licenceType(OccupationLicenceTypeWales.SECURE_CONTRACT)
+            .licenceStartDate(null)
             .build();
 
         PCSCase caseData = PCSCase.builder()
@@ -83,8 +82,8 @@ class OccupationLicenceDetailsWalesPageTest extends BasePageTest {
                                                  String expectedErrorMessage) {
         // Given
         OccupationLicenceDetailsWales occupationDetails = OccupationLicenceDetailsWales.builder()
-            .licenseType(OccupationLicenceTypeWales.SECURE_CONTRACT)
-            .licenseStartDate(startDate)
+            .licenceType(OccupationLicenceTypeWales.SECURE_CONTRACT)
+            .licenceStartDate(startDate)
             .build();
 
         PCSCase caseData = PCSCase.builder()
@@ -108,9 +107,9 @@ class OccupationLicenceDetailsWalesPageTest extends BasePageTest {
         // Given
         LocalDate pastDate = FIXED_CURRENT_DATE.minusDays(1);
         OccupationLicenceDetailsWales occupationDetails = OccupationLicenceDetailsWales.builder()
-            .licenseType(OccupationLicenceTypeWales.OTHER)
-            .otherLicenseTypeDetails("Some other type")
-            .licenseStartDate(pastDate)
+            .licenceType(OccupationLicenceTypeWales.OTHER)
+            .otherLicenceTypeDetails("Some other type")
+            .licenceStartDate(pastDate)
             .build();
 
         PCSCase caseData = PCSCase.builder()
@@ -130,8 +129,8 @@ class OccupationLicenceDetailsWalesPageTest extends BasePageTest {
         // Given
         LocalDate farPastDate = FIXED_CURRENT_DATE.minusYears(5);
         OccupationLicenceDetailsWales occupationDetails = OccupationLicenceDetailsWales.builder()
-            .licenseType(OccupationLicenceTypeWales.STANDARD_CONTRACT)
-            .licenseStartDate(farPastDate)
+            .licenceType(OccupationLicenceTypeWales.STANDARD_CONTRACT)
+            .licenceStartDate(farPastDate)
             .build();
 
         PCSCase caseData = PCSCase.builder()

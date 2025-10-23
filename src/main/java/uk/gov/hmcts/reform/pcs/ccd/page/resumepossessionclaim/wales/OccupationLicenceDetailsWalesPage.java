@@ -25,11 +25,9 @@ import java.util.List;
 @Slf4j
 public class OccupationLicenceDetailsWalesPage implements CcdPageConfiguration {
 
-    private static final String SHOW_OTHER_DETAILS_CONDITION = "licenseType=\"OTHER\"";
+    private static final String SHOW_OTHER_DETAILS_CONDITION = "licenceType=\"OTHER\"";
     private static final String OCCUPATION_CONTRACT_DETAILS = "OccupationLicenceDetailsWales";
     private static final String OCCUPATION_CONTRACT_DETAILS_LABEL = "Occupation contract or licence details";
-    private static final String DATE_IN_PAST_ERROR_MESSAGE = 
-        "Occupation contract or licence start date must be in the past";
     private static final String DATE_NOT_TODAY_ERROR_MESSAGE = 
         "Occupation contract or licence start date cannot be today";
     private static final String DATE_NOT_FUTURE_ERROR_MESSAGE = 
@@ -48,13 +46,13 @@ public class OccupationLicenceDetailsWalesPage implements CcdPageConfiguration {
                 ---
                 <h2 class="govuk-heading-m">Occupation contract or licence type</h2>
                 """)
-            .mandatory(OccupationLicenceDetailsWales::getLicenseType)
-            .mandatory(OccupationLicenceDetailsWales::getOtherLicenseTypeDetails, SHOW_OTHER_DETAILS_CONDITION)
+            .mandatory(OccupationLicenceDetailsWales::getLicenceType)
+            .mandatory(OccupationLicenceDetailsWales::getOtherLicenceTypeDetails, SHOW_OTHER_DETAILS_CONDITION)
             .label("OccupationLicenceDetailsWales-date-section", """
                ---
                <h2 class="govuk-heading-m">Occupation contract or licence start date</h2>
                """)
-            .optional(OccupationLicenceDetailsWales::getLicenseStartDate)
+            .optional(OccupationLicenceDetailsWales::getLicenceStartDate)
             .label(
                 "occupationLicenceDetailsWales-upload-section",
                 """
@@ -70,7 +68,7 @@ public class OccupationLicenceDetailsWalesPage implements CcdPageConfiguration {
                 </p>
                 """
             )
-            .optional(OccupationLicenceDetailsWales::getLicenseDocuments)
+            .optional(OccupationLicenceDetailsWales::getLicenceDocuments)
             .done();
 
     }
@@ -115,7 +113,7 @@ public class OccupationLicenceDetailsWalesPage implements CcdPageConfiguration {
         List<String> errors = new java.util.ArrayList<>();
 
         // Date field validation
-        LocalDate contractStartDate = details.getLicenseStartDate();
+        LocalDate contractStartDate = details.getLicenceStartDate();
         if (contractStartDate != null) {
             LocalDate currentDate = LocalDate.now(ukClock);
             
@@ -125,9 +123,6 @@ public class OccupationLicenceDetailsWalesPage implements CcdPageConfiguration {
             } else if (contractStartDate.isAfter(currentDate)) {
                 // Date cannot be in the future
                 errors.add(DATE_NOT_FUTURE_ERROR_MESSAGE);
-            } else if (!contractStartDate.isBefore(currentDate)) {
-                // Date must be in the past (not today or future)
-                errors.add(DATE_IN_PAST_ERROR_MESSAGE);
             }
         }
 
