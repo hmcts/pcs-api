@@ -21,12 +21,20 @@ public class ProhibitedConductWalesPage implements CcdPageConfiguration {
             .label("prohibitedConductWales-info", """
                  ---
                 <p class="govuk-body" tabindex="0">
-                    If a judge decides that possession is not reasonable at this time, they may instead decide to make an order imposing a prohibited conduct standard contract.  
+                    If a judge decides that possession is not reasonable at this time, 
+                    they may instead decide to make an order imposing a prohibited 
+                    conduct standard contract.
                 </p>
                 <p class="govuk-body" tabindex="0">This is a 12-month probationary contract.</p>
                 """)
             .complex(PCSCase::getProhibitedConductWales)
                 .mandatory(ProhibitedConductWales::getClaimForProhibitedConductContract)
+                .mandatory(ProhibitedConductWales::getAgreedTermsOfPeriodicContract, 
+                    "prohibitedConductWalesClaimForProhibitedConductContract=\"YES\"")
+                .mandatory(ProhibitedConductWales::getDetailsOfTerms, 
+                    "prohibitedConductWalesAgreedTermsOfPeriodicContract=\"YES\"")
+                .mandatory(ProhibitedConductWales::getWhyMakingClaim, 
+                    "prohibitedConductWalesClaimForProhibitedConductContract=\"YES\"")
             .done();
     }
 
@@ -39,3 +47,4 @@ public class ProhibitedConductWalesPage implements CcdPageConfiguration {
             .build();
     }
 }
+

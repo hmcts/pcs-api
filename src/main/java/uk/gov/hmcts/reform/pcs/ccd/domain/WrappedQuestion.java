@@ -2,7 +2,6 @@ package uk.gov.hmcts.reform.pcs.ccd.domain;
 
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
-import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import lombok.Builder;
 import lombok.Data;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
@@ -12,12 +11,7 @@ import static uk.gov.hmcts.ccd.sdk.type.FieldType.TextArea;
 @Data
 @Builder
 @JsonNaming(PropertyNamingStrategies.UpperCamelCaseStrategy.class)
-public class ProhibitedConductWales {
-
-    @CCD(
-        label = "Are you also making a claim for an order imposing a prohibited conduct standard contract?"
-    )
-    private VerticalYesNo claimForProhibitedConductContract;
+public class WrappedQuestion {
 
     @CCD(
         label = "Have you and the contract holder agreed terms of the periodic standard contract "
@@ -31,11 +25,4 @@ public class ProhibitedConductWales {
         typeOverride = TextArea
     )
     private String detailsOfTerms;
-
-    @CCD(
-        label = "Why are you making this claim?",
-        hint = "You can enter up to 250 characters",
-        typeOverride = TextArea
-    )
-    private String whyMakingClaim;
 }
