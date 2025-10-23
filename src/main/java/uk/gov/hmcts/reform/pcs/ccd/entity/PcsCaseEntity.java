@@ -94,6 +94,10 @@ public class PcsCaseEntity {
     @JdbcTypeCode(SqlTypes.JSON)
     private List<PartyDocumentDto> partyDocuments;
 
+    @Column(name = "citizen_documents")
+    @JdbcTypeCode(SqlTypes.JSON)
+    private List<PartyDocumentDto> citizenDocuments;
+
     public void addClaim(ClaimEntity claim) {
         claims.add(claim);
         claim.setPcsCase(this);
