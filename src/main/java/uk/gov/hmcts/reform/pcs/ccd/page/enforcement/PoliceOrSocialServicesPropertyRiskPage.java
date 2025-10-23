@@ -14,7 +14,7 @@ import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 import java.util.ArrayList;
 import java.util.List;
 
-public class PoliceOrSocialServicesPropertyRiskPage implements CcdPageConfiguration {
+public final class PoliceOrSocialServicesPropertyRiskPage implements CcdPageConfiguration {
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
