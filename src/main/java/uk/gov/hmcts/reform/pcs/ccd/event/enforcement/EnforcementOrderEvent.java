@@ -24,7 +24,6 @@ import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.State.AWAITING_SUBMISSION_TO_HMCTS;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.enforceTheOrder;
 
-
 @Slf4j
 @Component
 @AllArgsConstructor
@@ -36,11 +35,11 @@ public class EnforcementOrderEvent implements CCDConfig<PCSCase, State, UserRole
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
         Event.EventBuilder<PCSCase, UserRole, State> eventBuilder =
-                configBuilder
-                        .decentralisedEvent(enforceTheOrder.name(), this::submit, this::start)
-                        .forState(AWAITING_SUBMISSION_TO_HMCTS)
-                        .name("Enforce the order")
-                        .grant(Permission.CRUD, UserRole.PCS_SOLICITOR);
+            configBuilder
+                .decentralisedEvent(enforceTheOrder.name(), this::submit, this::start)
+                .forState(AWAITING_SUBMISSION_TO_HMCTS)
+                .name("Enforce the order")
+                .grant(Permission.CRUD, UserRole.PCS_SOLICITOR);
         configurePages(eventBuilder);
     }
 
@@ -65,8 +64,8 @@ public class EnforcementOrderEvent implements CCDConfig<PCSCase, State, UserRole
         return caseData;
     }
 
-    private SubmitResponse submit(EventPayload<PCSCase, State> eventPayload) {
-        return SubmitResponse.builder().build();
+    private SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {
+        return SubmitResponse.defaultResponse();
     }
 
 }
