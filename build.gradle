@@ -384,6 +384,7 @@ dependencies {
   testImplementation group: 'org.testcontainers', name: 'testcontainers', version: testcontainersVersion
   testImplementation group: 'org.testcontainers', name: 'junit-jupiter', version: testcontainersVersion
   testImplementation group: 'org.testcontainers', name: 'postgresql', version: testcontainersVersion
+  testImplementation group: 'org.instancio', name: 'instancio', version: '1.0.4'
 
   integrationTestImplementation group: 'org.springframework.cloud', name: 'spring-cloud-starter-contract-stub-runner', version: '4.1.4'
 
