@@ -45,3 +45,5 @@ java:
     enabled: true
     image:
       tag: "16.0.0"
+xui-webapp:
+  enabled: true
