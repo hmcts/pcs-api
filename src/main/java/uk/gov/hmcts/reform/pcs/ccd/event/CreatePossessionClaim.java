@@ -74,13 +74,13 @@ public class CreatePossessionClaim implements CCDConfig<PCSCase, State, UserRole
         return caseData;
     }
 
-    private SubmitResponse submit(EventPayload<PCSCase, State> eventPayload) {
+    private SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {
         long caseReference = eventPayload.caseReference();
         PCSCase caseData = eventPayload.caseData();
 
         pcsCaseService.createCase(caseReference, caseData.getPropertyAddress(), caseData.getLegislativeCountry());
 
-        return SubmitResponse.builder().build();
+        return SubmitResponse.defaultResponse();
     }
 
     private String formatAsCurrency(BigDecimal amount) {

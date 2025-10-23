@@ -37,7 +37,7 @@ public class EnforcementOrderEvent implements CCDConfig<PCSCase, State, UserRole
         new PageBuilder(eventBuilder).add(new EnforcementApplicationPage());
     }
 
-    private SubmitResponse submit(EventPayload<PCSCase, State> eventPayload) {
-        return SubmitResponse.builder().build();
+    private SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {
+        return SubmitResponse.defaultResponse();
     }
 }
