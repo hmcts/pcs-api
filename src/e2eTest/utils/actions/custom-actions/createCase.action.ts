@@ -547,11 +547,6 @@ export class CreateCaseAction implements IAction {
     await performAction('clickButton', completeYourClaim.continue);
   }
 
-  private async statementOfTruth(option: actionData) {
-    // await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
-    await performAction('clickRadioButton', option);
-    await performAction('clickButton', completeYourClaim.continue);
-  }
   private async selectJurisdictionCaseTypeEvent() {
     await performActions('Case option selection'
       , ['select', createCase.jurisdictionLabel, createCase.possessionsJurisdiction]
