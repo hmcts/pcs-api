@@ -21,6 +21,7 @@ public class UnderlesseeMortgageeEntitledToClaimRelief implements CcdPageConfigu
                    </p>
                    """)
             .complex(PCSCase::getUnderlesseeMortgagee)
-            .mandatory(UnderlesseeMortgagee::getHasUnderlesseeOrMortgagee);
+            .mandatory(UnderlesseeMortgagee::getHasUnderlesseeOrMortgagee)
+            .done();
     }
 }
