@@ -9,19 +9,19 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.service.UnsubmittedCaseDataService;
+import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 
 import java.util.Optional;
 
 public class SavingPageBuilder extends PageBuilder {
 
-    private final UnsubmittedCaseDataService unsubmittedCaseDataService;
+    private final DraftCaseDataService draftCaseDataService;
 
-    public SavingPageBuilder(UnsubmittedCaseDataService unsubmittedCaseDataService,
+    public SavingPageBuilder(DraftCaseDataService draftCaseDataService,
                              EventBuilder<PCSCase, UserRole, State> eventBuilder) {
 
         super(eventBuilder);
-        this.unsubmittedCaseDataService = unsubmittedCaseDataService;
+        this.draftCaseDataService = draftCaseDataService;
     }
 
     @Override
@@ -71,7 +71,7 @@ public class SavingPageBuilder extends PageBuilder {
             long caseReference = details.getId();
             PCSCase caseData = details.getData();
 
-            unsubmittedCaseDataService.patchUnsubmittedCaseData(caseReference, caseData);
+            draftCaseDataService.patchUnsubmittedCaseData(caseReference, caseData);
         }
 
     }

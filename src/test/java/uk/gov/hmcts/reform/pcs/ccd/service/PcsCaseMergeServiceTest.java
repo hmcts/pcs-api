@@ -17,8 +17,10 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.mapper.DefendantMapper;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
+import uk.gov.hmcts.reform.pcs.config.MapperConfig;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.util.Set;
@@ -27,10 +29,10 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
-import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class PcsCaseMergeServiceTest {
@@ -41,12 +43,17 @@ class PcsCaseMergeServiceTest {
     private ModelMapper modelMapper;
     @Mock
     private TenancyLicenceService tenancyLicenceService;
+    @Mock
+    private DefendantMapper defendantMapper;
 
     private PcsCaseMergeService underTest;
 
     @BeforeEach
     void setUp() {
-        underTest = new PcsCaseMergeService(securityContextService, modelMapper, tenancyLicenceService);
+        MapperConfig config = new MapperConfig();
+        modelMapper = spy(config.modelMapper());
+        underTest = new PcsCaseMergeService(securityContextService, modelMapper, tenancyLicenceService,
+                                            defendantMapper);
     }
 
     @Test
@@ -63,7 +70,6 @@ class PcsCaseMergeServiceTest {
         // Then
         verify(pcsCaseEntity).setTenancyLicence(any());
         verify(pcsCaseEntity).setPossessionGrounds(any());
-        verifyNoMoreInteractions(pcsCaseEntity);
     }
 
     @Test

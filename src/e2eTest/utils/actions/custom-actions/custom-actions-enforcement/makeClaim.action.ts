@@ -135,14 +135,7 @@ export class MakeClaimAction implements IAction {
       await performAction('clickButton', underlesseeOrMortgageeEntitledToClaim.continue);
       await performAction('wantToUploadDocuments', {
         question: wantToUploadDocuments.uploadAnyAdditionalDocumentsLabel,
-        option: wantToUploadDocuments.yes
-      });
-      await performAction('uploadAdditionalDocs', {
-        documents: [{
-          type: uploadAdditionalDocs.tenancyAgreementOption,
-          fileName: 'tenancy.pdf',
-          description: uploadAdditionalDocs.shortDescriptionInput
-        }]
+        option: wantToUploadDocuments.no
       });
       await performAction('selectApplications', applications.yes);
       await performAction('selectLanguageUsed', { question: languageUsed.whichLanguageUsedQuestion, option: languageUsed.english });

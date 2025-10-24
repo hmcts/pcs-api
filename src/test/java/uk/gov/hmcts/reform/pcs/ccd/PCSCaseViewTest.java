@@ -23,7 +23,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
-import uk.gov.hmcts.reform.pcs.ccd.service.UnsubmittedCaseDataService;
+import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
@@ -58,7 +58,7 @@ class PCSCaseViewTest {
     @Mock
     private PcsCaseService pcsCaseService;
     @Mock
-    private UnsubmittedCaseDataService unsubmittedCaseDataService;
+    private DraftCaseDataService draftCaseDataService;
     @Mock
     private PcsCaseEntity pcsCaseEntity;
 
@@ -69,7 +69,7 @@ class PCSCaseViewTest {
         when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(pcsCaseEntity));
 
         underTest = new PCSCaseView(pcsCaseRepository, securityContextService,
-                modelMapper, pcsCaseService, unsubmittedCaseDataService);
+                modelMapper, pcsCaseService, draftCaseDataService);
     }
 
     @Test
@@ -90,7 +90,7 @@ class PCSCaseViewTest {
     @MethodSource("unsubmittedDataFlagScenarios")
     void shouldSetFlagForUnsubmittedData(boolean hasUnsubmittedData, YesOrNo expectedCaseDataValue) {
         // Given
-        when(unsubmittedCaseDataService.hasUnsubmittedCaseData(CASE_REFERENCE)).thenReturn(hasUnsubmittedData);
+        when(draftCaseDataService.hasUnsubmittedCaseData(CASE_REFERENCE)).thenReturn(hasUnsubmittedData);
 
         // When
         PCSCase pcsCase = underTest.getCase(request(CASE_REFERENCE, State.AWAITING_FURTHER_CLAIM_DETAILS));
@@ -161,7 +161,7 @@ class PCSCaseViewTest {
     @Test
     void shouldMapPreActionProtocolCompletedWhenYes() {
         // Given
-        PcsCaseEntity pcsCaseEntity = mock(PcsCaseEntity.class);
+        pcsCaseEntity = mock(PcsCaseEntity.class);
         when(pcsCaseEntity.getPreActionProtocolCompleted()).thenReturn(true);
         when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(pcsCaseEntity));
 

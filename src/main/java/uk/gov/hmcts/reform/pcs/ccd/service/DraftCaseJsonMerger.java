@@ -11,7 +11,7 @@ public class DraftCaseJsonMerger {
 
     private final ObjectMapper objectMapper;
 
-    public DraftCaseJsonMerger(@Qualifier("unsubmittedCaseDataObjectMapper") ObjectMapper objectMapper) {
+    public DraftCaseJsonMerger(@Qualifier("draftCaseDataObjectMapper") ObjectMapper objectMapper) {
         this.objectMapper = objectMapper;
     }
 

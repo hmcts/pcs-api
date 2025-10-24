@@ -2,6 +2,8 @@ package uk.gov.hmcts.reform.pcs.ccd.page.enforcement;
 
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
+import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.EnforcementOrder;
 
 public class EnforcementApplicationPage implements CcdPageConfiguration {
 
@@ -10,7 +12,22 @@ public class EnforcementApplicationPage implements CcdPageConfiguration {
         pageBuilder
                 .page("enforcementApplicationPage")
                 .pageLabel("Your application")
-                .label(
-                        "enforcementApplicationPage-content", "---");
+                .label("enforcementApplicationPage-content", "---")
+                .complex(PCSCase::getEnforcementOrder)
+                .mandatory(EnforcementOrder::getSelectEnforcementType)
+                .label("enforcementApplicationPage-clarification",
+                    """
+                    <details class="govuk-details">
+                        <summary class="govuk-details__summary">
+                            <span class="govuk-details__summary-text">
+                                I do not know if I need a writ or a warrant
+                            </span>
+                        </summary>
+                        <div class="govuk-details__text">
+                            ...
+                        </div>
+                    </details>
+                    """);
     }
+
 }

@@ -12,7 +12,7 @@ import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
-import uk.gov.hmcts.reform.pcs.ccd.service.UnsubmittedCaseDataService;
+import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
@@ -36,11 +36,11 @@ import static uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry.WAL
 class SelectClaimantTypeTest extends BasePageTest {
 
     @Mock
-    private UnsubmittedCaseDataService unsubmittedCaseDataService;
+    private DraftCaseDataService draftCaseDataService;
 
     @BeforeEach
     void setUp() {
-        setPageUnderTest(new SelectClaimantType(unsubmittedCaseDataService));
+        setPageUnderTest(new SelectClaimantType(draftCaseDataService));
     }
 
     @ParameterizedTest
@@ -80,7 +80,7 @@ class SelectClaimantTypeTest extends BasePageTest {
         callMidEventHandler(caseData);
 
         // Then
-        verify(unsubmittedCaseDataService).deleteUnsubmittedCaseData(TEST_CASE_REFERENCE);
+        verify(draftCaseDataService).deleteUnsubmittedCaseData(TEST_CASE_REFERENCE);
         assertThat(caseData.getHasUnsubmittedCaseData()).isEqualTo(NO);
     }
 

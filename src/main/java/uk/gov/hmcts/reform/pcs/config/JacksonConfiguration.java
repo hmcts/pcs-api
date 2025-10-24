@@ -14,7 +14,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.domain.UnsubmittedCaseDataMixIn;
+import uk.gov.hmcts.reform.pcs.ccd.domain.DraftCaseDataMixIn;
 
 import static com.fasterxml.jackson.core.JsonGenerator.Feature.AUTO_CLOSE_JSON_CONTENT;
 import static com.fasterxml.jackson.databind.MapperFeature.ACCEPT_CASE_INSENSITIVE_ENUMS;
@@ -48,12 +48,12 @@ public class JacksonConfiguration {
     }
 
     @Bean
-    public ObjectMapper unsubmittedCaseDataObjectMapper() {
+    public ObjectMapper draftCaseDataObjectMapper() {
         ObjectMapper mapper = JsonMapper.builder()
             .disable(AUTO_CLOSE_JSON_CONTENT)
             .build();
 
-        mapper.addMixIn(PCSCase.class, UnsubmittedCaseDataMixIn.class);
+        mapper.addMixIn(PCSCase.class, DraftCaseDataMixIn.class);
         mapper.setSerializationInclusion(Include.NON_NULL);
 
         mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
