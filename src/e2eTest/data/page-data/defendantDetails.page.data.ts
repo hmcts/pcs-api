@@ -9,10 +9,9 @@ export const defendantDetails =
     lastNameInput: 'User',
     defendantCorrespondenceAddress: 'Do you know the defendant\'s correspondence address?',
     isCorrespondenceAddressSame: 'Is the defendant\'s correspondence address the same as the address of the property you\'re claiming possession of?',
-    defendantEmailAddress: 'Do you know the defendant\'s email address?',
-    enterEmailAddress: 'Enter email address',
-    emailIdInput:'test_user@gmail.com',
+    additionalDefendants: 'Do you need to add another defendant?',
     yes: 'Yes',
     no: 'No',
-    continue: 'Continue'
+    continue: 'Continue',
+    addNew: 'Add new'
   };
