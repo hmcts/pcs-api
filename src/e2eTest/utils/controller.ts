@@ -20,9 +20,14 @@ function getExecutor(): { page: Page } {
 export async function performAction(action: string, fieldName?: actionData | actionRecord, value?: actionData | actionRecord): Promise<void> {
   const executor = getExecutor();
   const actionInstance = ActionRegistry.getAction(action);
-  const displayValue = typeof fieldName === 'string' && fieldName.toLowerCase() === 'password' && typeof value === 'string'
-      ? '*'.repeat(value.length)
-      : value;
+  let displayValue = value;
+
+  if (typeof fieldName === 'string' && fieldName.toLowerCase() === 'password' && typeof value === 'string') {
+    displayValue = '*'.repeat(value.length);
+  } else if (typeof value === 'object' && value !== null && 'password' in value) {
+    displayValue = {...value, password: '*'.repeat(String(value.password).length)};
+  }
+
   await test.step(`${action}${fieldName !== undefined ? ` - ${typeof fieldName === 'object' ? readValuesFromInputObjects(fieldName) : fieldName}` : ''} ${displayValue !== undefined ? ` with value '${typeof displayValue === 'object' ? readValuesFromInputObjects(displayValue) : displayValue}'` : ''}`, async () => {
     await actionInstance.execute(executor.page, action, fieldName, value);
   });
