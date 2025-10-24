@@ -45,11 +45,19 @@ import {dailyRentAmount} from '@data/page-data/dailyRentAmount.page.data';
 import {statementOfTruth} from '@data/page-data/statementOfTruth.page.data';
 
 import {reasonsForRequestingASuspensionAndDemotionOrder} from '@data/page-data/reasonsForRequestingASuspensionAndDemotionOrder.page.data';
+import {signInOrCreateAnAccount} from '@data/page-data/signInOrCreateAnAccount.page.data';
 
 test.beforeEach(async ({page}) => {
   initializeExecutor(page);
   await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
+  await performAction('handleCookieConsent', {
+    accept: signInOrCreateAnAccount.acceptAdditionalCookiesButton,
+    hide: signInOrCreateAnAccount.hideThisCookieMessageButton
+  });
   await performAction('login', user.claimantSolicitor);
+  await performAction('handleCookieConsent', {
+    accept: signInOrCreateAnAccount.acceptAnalyticsCookiesButton
+  });
   await performAction('clickTab', home.createCaseTab);
   await performAction('selectJurisdictionCaseTypeEvent');
   await performAction('housingPossessionClaim');

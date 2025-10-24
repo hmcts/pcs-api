@@ -42,11 +42,19 @@ import {statementOfExpressTerms} from '@data/page-data/statementOfExpressTerms.p
 import {wantToUploadDocuments} from '@data/page-data/wantToUploadDocuments.page.data';
 import {whatAreYourGroundsForPossessionWales} from '@data/page-data/whatAreYourGroundsForPossessionWales.page.data';
 import {reasonsForRequestingASuspensionAndDemotionOrder} from '@data/page-data/reasonsForRequestingASuspensionAndDemotionOrder.page.data';
+import {signInOrCreateAnAccount} from '@data/page-data/signInOrCreateAnAccount.page.data';
 
 test.beforeEach(async ({page}) => {
   initializeExecutor(page);
   await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
+  await performAction('handleCookieConsent', {
+    accept: signInOrCreateAnAccount.acceptAdditionalCookiesButton,
+    hide: signInOrCreateAnAccount.hideThisCookieMessageButton
+  });
   await performAction('login', user.claimantSolicitor);
+  await performAction('handleCookieConsent', {
+    accept: signInOrCreateAnAccount.acceptAnalyticsCookiesButton
+  });
   await performAction('clickTab', home.createCaseTab);
   await performAction('selectJurisdictionCaseTypeEvent');
   await performAction('housingPossessionClaim');
