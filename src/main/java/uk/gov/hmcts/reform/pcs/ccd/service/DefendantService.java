@@ -4,6 +4,7 @@ import org.springframework.stereotype.Service;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.model.Defendant;
 
 import java.util.ArrayList;
@@ -22,8 +23,10 @@ public class DefendantService {
         Defendant defendant1 = buildDefendant(pcsCase.getDefendant1());
         defendants.add(defendant1);
 
-        List<Defendant> additionalDefendants = buildAdditionalDefendants(pcsCase.getAdditionalDefendants());
-        defendants.addAll(additionalDefendants);
+        if (pcsCase.getAddAnotherDefendant() == VerticalYesNo.YES) {
+            List<Defendant> additionalDefendants = buildAdditionalDefendants(pcsCase.getAdditionalDefendants());
+            defendants.addAll(additionalDefendants);
+        }
 
         return defendants;
     }

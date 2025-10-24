@@ -21,6 +21,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.junit.jupiter.params.ParameterizedTest.ARGUMENT_SET_NAME_PLACEHOLDER;
 import static org.junit.jupiter.params.provider.Arguments.argumentSet;
+import static org.mockito.Mock.Strictness.LENIENT;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils.wrapListItems;
@@ -28,7 +29,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils.wrapListItems;
 @ExtendWith(MockitoExtension.class)
 class DefendantServiceTest {
 
-    @Mock
+    @Mock(strictness = LENIENT)
     private PCSCase pcsCase;
 
     private DefendantService underTest;
@@ -57,6 +58,7 @@ class DefendantServiceTest {
     void shouldBuildListWithSingleDefendant(DefendantDetails defendant1Details, Defendant expectedDefendant) {
         // Given
         when(pcsCase.getDefendant1()).thenReturn(defendant1Details);
+        when(pcsCase.getAddAnotherDefendant()).thenReturn(VerticalYesNo.NO);
 
         // When
         List<Defendant> defendantList = underTest.buildDefendantsList(pcsCase);
@@ -96,12 +98,12 @@ class DefendantServiceTest {
 
         List<DefendantDetails> additionalDefendantsDetails = List.of(defendant2Details, defendant3Details);
         when(pcsCase.getAdditionalDefendants()).thenReturn(wrapListItems(additionalDefendantsDetails));
+        when(pcsCase.getAddAnotherDefendant()).thenReturn(VerticalYesNo.YES);
 
         // When
         List<Defendant> defendantList = underTest.buildDefendantsList(pcsCase);
 
         // Then
-
         Defendant expectedDefendant1 = Defendant.builder()
             .nameKnown(true)
             .firstName("defendant 1 first name")
@@ -125,7 +127,47 @@ class DefendantServiceTest {
             .build();
 
         assertThat(defendantList).containsExactly(expectedDefendant1, expectedDefendant2, expectedDefendant3);
+    }
 
+    @Test
+    void shouldIgnoreMultipleDefendantsIfAdditionalDefendantsNotIndicated() {
+        // Given
+        AddressUK defendant1Address = mock(AddressUK.class);
+
+        DefendantDetails defendant1Details = DefendantDetails.builder()
+            .nameKnown(VerticalYesNo.YES)
+            .firstName("defendant 1 first name")
+            .lastName(("defendant 1 last name"))
+            .addressKnown(VerticalYesNo.YES)
+            .addressSameAsPossession(VerticalYesNo.NO)
+            .correspondenceAddress(defendant1Address)
+            .build();
+
+        DefendantDetails defendant2Details = DefendantDetails.builder()
+            .nameKnown(VerticalYesNo.YES)
+            .firstName("defendant 2 first name")
+            .lastName(("defendant 2 last name"))
+            .addressKnown(VerticalYesNo.NO)
+            .build();
+
+        when(pcsCase.getDefendant1()).thenReturn(defendant1Details);
+        when(pcsCase.getAdditionalDefendants()).thenReturn(wrapListItems(List.of(defendant2Details)));
+        when(pcsCase.getAddAnotherDefendant()).thenReturn(VerticalYesNo.NO);
+
+        // When
+        List<Defendant> defendantList = underTest.buildDefendantsList(pcsCase);
+
+        // Then
+        Defendant expectedDefendant1 = Defendant.builder()
+            .nameKnown(true)
+            .firstName("defendant 1 first name")
+            .lastName("defendant 1 last name")
+            .addressKnown(true)
+            .addressSameAsPossession(false)
+            .correspondenceAddress(defendant1Address)
+            .build();
+
+        assertThat(defendantList).containsExactly(expectedDefendant1);
     }
 
     @Test
@@ -153,6 +195,7 @@ class DefendantServiceTest {
 
         when(pcsCase.getDefendant1()).thenReturn(defendantDetails);
         when(pcsCase.getAdditionalDefendants()).thenReturn(wrapListItems(List.of(additionalDefendantDetails)));
+        when(pcsCase.getAddAnotherDefendant()).thenReturn(VerticalYesNo.YES);
 
         // When
         List<Defendant> defendantList = underTest.buildDefendantsList(pcsCase);
