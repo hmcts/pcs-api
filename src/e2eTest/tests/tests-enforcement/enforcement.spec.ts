@@ -7,22 +7,30 @@ import { initializeEnforcementExecutor, performAction } from "@utils/controller-
 import { caseNumber } from "@utils/actions/custom-actions/createCase.action";
 import { initializeExecutor } from "@utils/controller";
 import { caseFoundAfterFilter } from "@utils/actions/custom-actions/searchCase.action";
+import {signInOrCreateAnAccount} from "@data/page-data/signInOrCreateAnAccount.page.data";
 
 test.beforeEach(async ({ page }) => {
   initializeExecutor(page);
   initializeEnforcementExecutor(page);
   await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
+  await performAction('handleCookieConsent', {
+    accept: signInOrCreateAnAccount.acceptAdditionalCookiesButton,
+    hide: signInOrCreateAnAccount.hideThisCookieMessageButton
+  });
   await performAction('login', user.claimantSolicitor);
+  await performAction('handleCookieConsent', {
+    accept: signInOrCreateAnAccount.acceptAnalyticsCookiesButton
+  });
   await performAction('filterCaseFromCaseList', caseList.stateAwaitingSubmission);
   await performAction('NoCasesFoundAfterSearch')
-  //Below three lines will be merged into a single action as part of improvement 
+  //Below three lines will be merged into a single action as part of improvement
   await performAction("selectFirstCaseFromTheFilter", caseFoundAfterFilter);
   await performAction('createNewCase',caseFoundAfterFilter);
   await performAction('searchMyCaseFromFindCase', { caseNumber: caseNumber, criteria: caseFoundAfterFilter });
 });
 
 test.describe.skip('[Enforcement - Warrant of Possession] @Master @nightly', async () => {
-  test('Apply for a Warrant of Possession ', async () => {    
+  test('Apply for a Warrant of Possession ', async () => {
     await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
     await performAction('clickButtonAndVerifyPageNavigation', caseSummary.go, yourApplication.mainHeader);
   });
