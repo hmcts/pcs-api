@@ -171,6 +171,35 @@ class DefendantServiceTest {
     }
 
     @Test
+    void shouldIgnoreNullAdditionalDefendantsEvenIfAdditionalIndicated() {
+        // Given
+        DefendantDetails defendant1Details = DefendantDetails.builder()
+            .nameKnown(VerticalYesNo.YES)
+            .firstName("defendant 1 first name")
+            .lastName(("defendant 1 last name"))
+            .addressKnown(VerticalYesNo.NO)
+            .build();
+
+        when(pcsCase.getDefendant1()).thenReturn(defendant1Details);
+
+        when(pcsCase.getAdditionalDefendants()).thenReturn(null);
+        when(pcsCase.getAddAnotherDefendant()).thenReturn(VerticalYesNo.YES);
+
+        // When
+        List<Defendant> defendantList = underTest.buildDefendantsList(pcsCase);
+
+        // Then
+        Defendant expectedDefendant1 = Defendant.builder()
+            .nameKnown(true)
+            .firstName("defendant 1 first name")
+            .lastName("defendant 1 last name")
+            .addressKnown(false)
+            .build();
+
+        assertThat(defendantList).containsExactly(expectedDefendant1);
+    }
+
+    @Test
     void shouldBlankFieldsIfNotKnownSelected() {
         // Given
         AddressUK correspondenceAddress = mock(AddressUK.class);
