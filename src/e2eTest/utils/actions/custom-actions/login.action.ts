@@ -24,7 +24,7 @@ export class LoginAction implements IAction {
     }
     await performAction('inputText', 'Email address', userEmail);
     await performAction('inputText', 'Password', userPassword);
-    await performAction('clickButton', 'Sign in');
+    await performAction('clickButtonAndWaitForElement', 'Sign in', home.mainHeader);
   }
 
   private async createUserAndLogin(userType: string, roles: string[]): Promise<void> {

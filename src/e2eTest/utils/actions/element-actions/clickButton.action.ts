@@ -12,7 +12,8 @@ export class ClickButtonAction implements IAction {
     const actionsMap = new Map<string, () => Promise<void>>([
       ['clickButton', () => this.clickButton(page, button)],
       ['clickButtonAndVerifyPageNavigation', () => this.clickButtonAndVerifyPageNavigation(page, button, actionParams)],
-      ['verifyPageAndClickButton', () => this.verifyPageAndClickButton(page, actionParams, button)]
+      ['verifyPageAndClickButton', () => this.verifyPageAndClickButton(page, actionParams, button)],
+      ['clickButtonAndWaitForElement', () => this.clickButtonAndWaitForElement(page, button, actionParams)]
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) throw new Error(`No action found for '${action}'`);
@@ -39,6 +40,12 @@ export class ClickButtonAction implements IAction {
     if (!nextPageElementIsVisible) {
       throw new Error(`Navigation to "${nextPageElement}" page/element failed after ${attempt} attempts`);
     }
+  }
+
+  private async clickButtonAndWaitForElement(page: Page, button: Locator, nextPageElement: string): Promise<void> {
+      await this.clickButton(page, button);
+      //Adding sleep to slow down execution when the application behaves abnormally
+      await page.locator(`h1:has-text("${nextPageElement}")`).waitFor({ state: 'visible' });
   }
 
   private async verifyPageAndClickButton(page: Page, currentPageHeader: string, button: Locator): Promise<void> {

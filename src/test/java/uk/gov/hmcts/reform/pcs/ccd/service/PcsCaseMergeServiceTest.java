@@ -9,12 +9,10 @@ import org.modelmapper.ModelMapper;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
-import uk.gov.hmcts.reform.pcs.ccd.domain.wales.DiscretionaryGroundWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.EstateManagementGroundsWales;
-import uk.gov.hmcts.reform.pcs.ccd.domain.wales.MandatoryGroundWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractDiscretionaryGroundsWales;
-import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractMandatoryGroundsWales;
+import uk.gov.hmcts.reform.pcs.ccd.domain.SecureContractDiscretionaryGroundsWales;
+import uk.gov.hmcts.reform.pcs.ccd.domain.SecureContractMandatoryGroundsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyEntity;
@@ -251,24 +249,21 @@ class PcsCaseMergeServiceTest {
     }
 
     @Test
-    void shouldMapWalesSecureContractPossessionGrounds() {
+    void shouldMapWalesSecureContractGroundsToPossessionGrounds() {
         PCSCase pcsCase = mock(PCSCase.class);
 
-        Set<SecureContractDiscretionaryGroundsWales> secureDiscretionaryGrounds = Set.of(
+        Set<SecureContractDiscretionaryGroundsWales> discretionaryGrounds = Set.of(
                 SecureContractDiscretionaryGroundsWales.RENT_ARREARS,
                 SecureContractDiscretionaryGroundsWales.ANTISOCIAL_BEHAVIOUR);
-        Set<SecureContractMandatoryGroundsWales> secureMandatoryGrounds = Set.of(
+        Set<SecureContractMandatoryGroundsWales> mandatoryGrounds = Set.of(
                 SecureContractMandatoryGroundsWales.FAILURE_TO_GIVE_UP_POSSESSION_SECTION_170);
-        Set<EstateManagementGroundsWales> secureEstateManagementGrounds = Set.of(
+        Set<EstateManagementGroundsWales> estateManagementGrounds = Set.of(
                 EstateManagementGroundsWales.BUILDING_WORKS,
                 EstateManagementGroundsWales.REDEVELOPMENT_SCHEMES);
 
-        when(pcsCase.getSecureContractDiscretionaryGroundsWales()).thenReturn(secureDiscretionaryGrounds);
-        when(pcsCase.getSecureContractMandatoryGroundsWales()).thenReturn(secureMandatoryGrounds);
-        when(pcsCase.getSecureContractEstateManagementGroundsWales()).thenReturn(secureEstateManagementGrounds);
-        when(pcsCase.getDiscretionaryGroundsWales()).thenReturn(null);
-        when(pcsCase.getMandatoryGroundsWales()).thenReturn(null);
-        when(pcsCase.getEstateManagementGroundsWales()).thenReturn(null);
+        when(pcsCase.getSecureContractDiscretionaryGroundsWales()).thenReturn(discretionaryGrounds);
+        when(pcsCase.getSecureContractMandatoryGroundsWales()).thenReturn(mandatoryGrounds);
+        when(pcsCase.getSecureContractEstateManagementGroundsWales()).thenReturn(estateManagementGrounds);
         when(pcsCase.getSecureOrFlexibleDiscretionaryGrounds()).thenReturn(null);
         when(pcsCase.getSecureOrFlexibleMandatoryGrounds()).thenReturn(null);
         when(pcsCase.getSecureOrFlexibleDiscretionaryGroundsAlt()).thenReturn(null);
@@ -291,47 +286,6 @@ class PcsCaseMergeServiceTest {
                 .contains(
                         EstateManagementGroundsWales.BUILDING_WORKS.getLabel(),
                         EstateManagementGroundsWales.REDEVELOPMENT_SCHEMES.getLabel());
-    }
-
-    @Test
-    void shouldMapWalesStandardContractPossessionGrounds() {
-        PCSCase pcsCase = mock(PCSCase.class);
-
-        Set<DiscretionaryGroundWales> standardDiscretionaryGrounds = Set.of(
-                DiscretionaryGroundWales.RENT_ARREARS_SECTION_157,
-                DiscretionaryGroundWales.ANTISOCIAL_BEHAVIOUR_SECTION_157);
-        Set<MandatoryGroundWales> standardMandatoryGrounds = Set.of(
-                MandatoryGroundWales.SERIOUS_ARREARS_FIXED_TERM_S187);
-        Set<EstateManagementGroundsWales> standardEstateManagementGrounds = Set.of(
-                EstateManagementGroundsWales.CHARITIES);
-
-        when(pcsCase.getDiscretionaryGroundsWales()).thenReturn(standardDiscretionaryGrounds);
-        when(pcsCase.getMandatoryGroundsWales()).thenReturn(standardMandatoryGrounds);
-        when(pcsCase.getEstateManagementGroundsWales()).thenReturn(standardEstateManagementGrounds);
-        when(pcsCase.getSecureContractDiscretionaryGroundsWales()).thenReturn(null);
-        when(pcsCase.getSecureContractMandatoryGroundsWales()).thenReturn(null);
-        when(pcsCase.getSecureContractEstateManagementGroundsWales()).thenReturn(null);
-        when(pcsCase.getSecureOrFlexibleDiscretionaryGrounds()).thenReturn(null);
-        when(pcsCase.getSecureOrFlexibleMandatoryGrounds()).thenReturn(null);
-        when(pcsCase.getSecureOrFlexibleDiscretionaryGroundsAlt()).thenReturn(null);
-        when(pcsCase.getSecureOrFlexibleMandatoryGroundsAlt()).thenReturn(null);
-        when(pcsCase.getSecureOrFlexibleGroundsReasons()).thenReturn(null);
-
-        PcsCaseEntity pcsCaseEntity = new PcsCaseEntity();
-
-        underTest.mergeCaseData(pcsCaseEntity, pcsCase);
-
-        assertThat(pcsCaseEntity.getPossessionGrounds()).isNotNull();
-        assertThat(pcsCaseEntity.getPossessionGrounds().getWalesDiscretionaryGrounds())
-                .contains(
-                        DiscretionaryGroundWales.RENT_ARREARS_SECTION_157.getLabel(),
-                        DiscretionaryGroundWales.ANTISOCIAL_BEHAVIOUR_SECTION_157.getLabel());
-        assertThat(pcsCaseEntity.getPossessionGrounds().getWalesMandatoryGrounds())
-                .contains(
-                        MandatoryGroundWales.SERIOUS_ARREARS_FIXED_TERM_S187.getLabel());
-        assertThat(pcsCaseEntity.getPossessionGrounds().getWalesEstateManagementGrounds())
-                .contains(
-                        EstateManagementGroundsWales.CHARITIES.getLabel());
     }
 
     private AddressEntity stubAddressUKModelMapper(AddressUK addressUK) {
