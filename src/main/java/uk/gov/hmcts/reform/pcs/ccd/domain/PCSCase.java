@@ -9,10 +9,16 @@ import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.FieldType;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
+import uk.gov.hmcts.ccd.sdk.type.OrganisationPolicy;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseworkerReadAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenAccess;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.model.NoRentArrearsReasonForGrounds;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.EstateManagementGroundsWales;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceTypeWales;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractDiscretionaryGroundsWales;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractMandatoryGroundsWales;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
@@ -671,4 +677,6 @@ public class PCSCase {
         typeParameterOverride = "OccupationLicenceTypeWales"
     )
     private OccupationLicenceTypeWales occupationLicenceTypeWales;
+
+    private OrganisationPolicy<UserRole> applicantOrgPolicy;
 }
