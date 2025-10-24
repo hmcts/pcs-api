@@ -25,4 +25,7 @@ public class EnforcementOrder {
     )
     private YesNoNotSure anyRiskToBailiff;
 
+    @CCD
+    private VulnerableAdultsChildren vulnerableAdultsChildren;
+
 }
