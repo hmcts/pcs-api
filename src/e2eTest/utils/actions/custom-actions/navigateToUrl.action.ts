@@ -1,12 +1,12 @@
 import { IAction } from '../../interfaces/action.interface';
 import {Page, test} from '@playwright/test';
-import {signInOrCreateAnAccount} from "@data/page-data/signInOrCreateAnAccount.page.data";
+import {signInOrCreateAnAccount} from '@data/page-data/signInOrCreateAnAccount.page.data';
 
 export class NavigateToUrl implements IAction {
   async execute(page: Page, action: string, url: string): Promise<void> {
     await test.step(`Navigate to Manage Case URL: ${url}`, async () => {
       await page.goto(url, { waitUntil: 'domcontentloaded' });
-      await page.locator('h1', { hasText: `${signInOrCreateAnAccount.mainHeader}` }).waitFor();
+      await page.locator(`h1:has-text("${signInOrCreateAnAccount.mainHeader}")`).waitFor({ state: 'visible' });
     });
   }
 }

@@ -287,7 +287,7 @@ test.describe('[Create Case - Resume and Find case] @Master @nightly', async () 
 test.afterAll(async () => {
   if (optionalTestFailed) {
     console.log('Optional spec failed — keeping Jenkins build green.');
-    process.on('exit', () => {
+    process.once('beforeExit', () => {
       process.exitCode = 0;
     });
   }
