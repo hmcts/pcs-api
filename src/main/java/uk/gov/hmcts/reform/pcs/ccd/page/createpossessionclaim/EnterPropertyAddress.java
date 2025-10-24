@@ -79,9 +79,11 @@ public class EnterPropertyAddress implements CcdPageConfiguration {
             }
             case NO_MATCH_FOUND -> {
                 log.debug("No court found for postcode: {}", postcode);
+                caseData.setShowCrossBorderPage(YesOrNo.NO);
+                caseData.setShowPropertyNotEligiblePage(YesOrNo.NO);
                 caseData.setShowPostcodeNotAssignedToCourt(YesOrNo.YES);
                 caseData.setPostcodeNotAssignedView("ALL_COUNTRIES");
-                caseData.setShowCrossBorderPage(YesOrNo.NO);
+                caseData.setLegislativeCountry(null);
             }
             case MULTIPLE_MATCHES_FOUND -> {
                 // TODO: HDPI-1838 will handle multiple matches
@@ -89,6 +91,7 @@ public class EnterPropertyAddress implements CcdPageConfiguration {
             }
             case ELIGIBLE -> {
                 caseData.setShowCrossBorderPage(YesOrNo.NO);
+                caseData.setShowPropertyNotEligiblePage(YesOrNo.NO);
                 caseData.setShowPostcodeNotAssignedToCourt(YesOrNo.NO);
                 caseData.setLegislativeCountry(eligibilityResult.getLegislativeCountry());
             }
