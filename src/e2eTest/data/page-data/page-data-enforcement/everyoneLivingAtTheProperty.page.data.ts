@@ -6,5 +6,4 @@ export const everyoneLivingAtTheProperty = {
   no: 'No',
   notSure:'I\'m not sure',
   continue: 'Continue',
-  submit: 'Submit',
 }
