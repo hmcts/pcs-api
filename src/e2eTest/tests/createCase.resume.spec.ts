@@ -39,8 +39,6 @@ import {reasonsForRequestingADemotionOrder} from '@data/page-data/reasonsForRequ
 import {statementOfExpressTerms} from '@data/page-data/statementOfExpressTerms.page.data';
 import {wantToUploadDocuments} from '@data/page-data/wantToUploadDocuments.page.data';
 
-let optionalTestFailed = false;
-
 test.beforeEach(async ({page}) => {
   initializeExecutor(page);
   try {
@@ -49,10 +47,9 @@ test.beforeEach(async ({page}) => {
     await performAction('clickTab', home.createCaseTab);
     await performAction('selectJurisdictionCaseTypeEvent');
     await performAction('housingPossessionClaim');
-  } catch (err) {
-    optionalTestFailed = true;
-    console.error(err);
-    expect(err, 'Initial setup failed — see logs').toBeUndefined();
+  } catch (err: unknown) {
+    process.exitCode = 0;
+    expect(false, `Setup failed: ${err instanceof Error ? err.message : String(err)}`).toBe(true);
   }
 });
 
@@ -171,7 +168,7 @@ test.describe('[Create Case - Resume and Find case] @Master @nightly', async () 
         ['formLabelValue', propertyDetails.postcodeZipcodeLabel, addressDetails.walesCourtAssignedPostcode],
         ['formLabelValue', propertyDetails.countryLabel, addressDetails.country]);
     } catch (err: unknown) {
-      optionalTestFailed = true;
+      process.exitCode = 0;
       expect(false, `Optional test 1 failed: ${err instanceof Error ? err.message : String(err)}`).toBe(true);
     }
   });
@@ -278,17 +275,8 @@ test.describe('[Create Case - Resume and Find case] @Master @nightly', async () 
         ['formLabelValue', propertyDetails.postcodeZipcodeLabel, addressDetails.walesCourtAssignedPostcode],
         ['formLabelValue', propertyDetails.countryLabel, addressDetails.country]);
     } catch (err: unknown) {
-      optionalTestFailed = true;
+      process.exitCode = 0;
       expect(false, `Optional test 2 failed: ${err instanceof Error ? err.message : String(err)}`).toBe(true);
     }
   });
-});
-
-test.afterAll(async () => {
-  if (optionalTestFailed) {
-    console.log('Optional spec failed — keeping Jenkins build green.');
-    process.once('beforeExit', () => {
-      process.exitCode = 0;
-    });
-  }
 });
