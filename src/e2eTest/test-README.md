@@ -127,6 +127,8 @@ Playwright 1.30+ | TypeScript 4.9+
 | selectNoticeOfYourIntention              | `performAction('selectNoticeOfYourIntention',{question: noticeOfYourIntention.servedNoticeInteractiveText, option: noticeOfYourIntention.yes, typeOfNotice: noticeOfYourIntention.typeOfNoticeInput})`     |
 | selectClaimantDetails                    | `performAction('selectClaimantDetails', claimantDetails)`                                                                                                                                                  |
 | enterReasonForSuspensionAndDemotionOrder | `performAction('enterReasonForSuspensionAndDemotionOrder', suspension)`                                                                                                                                    |
+| handleCookieConsent                      | `performAction('handleCookieConsent', accept: signInOrCreateAnAccount.acceptAnalyticsCookiesButton)`                                                                                                       |
+| getAccessToken                           | `performAction('getAccessToken')`                                                                                                                                                                          |
 ### Validations
 | Validation                 | Example Usage                                                                                                                        |
 |----------------------------|--------------------------------------------------------------------------------------------------------------------------------------|
