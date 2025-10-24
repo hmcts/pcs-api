@@ -7,7 +7,7 @@ import { initializeEnforcementExecutor, performAction } from "@utils/controller-
 import { caseNumber } from "@utils/actions/custom-actions/createCase.action";
 import { initializeExecutor } from "@utils/controller";
 import { caseFoundAfterFilter } from "@utils/actions/custom-actions/searchCase.action";
-import {signInOrCreateAnAccount} from "@data/page-data/signInOrCreateAnAccount.page.data";
+import { signInOrCreateAnAccount } from "@data/page-data/signInOrCreateAnAccount.page.data";
 
 test.beforeEach(async ({ page }) => {
   initializeExecutor(page);
