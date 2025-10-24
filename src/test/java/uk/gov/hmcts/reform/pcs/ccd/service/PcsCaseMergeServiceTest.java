@@ -12,6 +12,9 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.EstateManagementGroundsWales;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractDiscretionaryGroundsWales;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractMandatoryGroundsWales;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
@@ -21,15 +24,16 @@ import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.never;
 
 @ExtendWith(MockitoExtension.class)
 class PcsCaseMergeServiceTest {
@@ -267,6 +271,46 @@ class PcsCaseMergeServiceTest {
 
         // Then
         verify(pcsCaseEntity).setClaimantType(ClaimantType.PRIVATE_LANDLORD);
+    }
+
+    @Test
+    void shouldMapWalesPossessionGroundsToJsonb() {
+        PCSCase pcsCase = mock(PCSCase.class);
+
+        Set<SecureContractDiscretionaryGroundsWales> discretionaryGrounds = Set.of(
+                SecureContractDiscretionaryGroundsWales.RENT_ARREARS,
+                SecureContractDiscretionaryGroundsWales.ANTISOCIAL_BEHAVIOUR);
+        Set<SecureContractMandatoryGroundsWales> mandatoryGrounds = Set.of(
+                SecureContractMandatoryGroundsWales.FAILURE_TO_GIVE_UP_POSSESSION_SECTION_170);
+        Set<EstateManagementGroundsWales> estateManagementGrounds = Set.of(
+                EstateManagementGroundsWales.BUILDING_WORKS,
+                EstateManagementGroundsWales.REDEVELOPMENT_SCHEMES);
+
+        when(pcsCase.getSecureContractDiscretionaryGroundsWales()).thenReturn(discretionaryGrounds);
+        when(pcsCase.getSecureContractMandatoryGroundsWales()).thenReturn(mandatoryGrounds);
+        when(pcsCase.getEstateManagementGroundsWales()).thenReturn(estateManagementGrounds);
+        when(pcsCase.getSecureOrFlexibleDiscretionaryGrounds()).thenReturn(null);
+        when(pcsCase.getSecureOrFlexibleMandatoryGrounds()).thenReturn(null);
+        when(pcsCase.getSecureOrFlexibleDiscretionaryGroundsAlt()).thenReturn(null);
+        when(pcsCase.getSecureOrFlexibleMandatoryGroundsAlt()).thenReturn(null);
+        when(pcsCase.getSecureOrFlexibleGroundsReasons()).thenReturn(null);
+
+        PcsCaseEntity pcsCaseEntity = new PcsCaseEntity();
+
+        underTest.mergeCaseData(pcsCaseEntity, pcsCase);
+
+        assertThat(pcsCaseEntity.getPossessionGrounds()).isNotNull();
+        assertThat(pcsCaseEntity.getPossessionGrounds().getWalesDiscretionaryGrounds())
+                .contains(
+                        SecureContractDiscretionaryGroundsWales.RENT_ARREARS.getLabel(),
+                        SecureContractDiscretionaryGroundsWales.ANTISOCIAL_BEHAVIOUR.getLabel());
+        assertThat(pcsCaseEntity.getPossessionGrounds().getWalesMandatoryGrounds())
+                .contains(
+                        SecureContractMandatoryGroundsWales.FAILURE_TO_GIVE_UP_POSSESSION_SECTION_170.getLabel());
+        assertThat(pcsCaseEntity.getPossessionGrounds().getWalesEstateManagementGrounds())
+                .contains(
+                        EstateManagementGroundsWales.BUILDING_WORKS.getLabel(),
+                        EstateManagementGroundsWales.REDEVELOPMENT_SCHEMES.getLabel());
     }
 
     private AddressEntity stubAddressUKModelMapper(AddressUK addressUK) {
