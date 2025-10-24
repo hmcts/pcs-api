@@ -644,4 +644,7 @@ public class PCSCase {
     @JsonUnwrapped(prefix = "wales")
     private WalesNoticeDetails walesNoticeDetails;
 
+    @JsonUnwrapped
+    private UnderlesseeMortgagee underlesseeMortgagee;
+
 }
