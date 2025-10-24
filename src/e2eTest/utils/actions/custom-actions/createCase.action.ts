@@ -224,7 +224,7 @@ export class CreateCaseAction implements IAction {
     const prefData = preferences as {
       notifications: string;
       correspondenceAddress: string;
-      phoneNumber: string;
+      phoneNumber?: string;
     };
     await performAction('clickRadioButton', {
       question: contactPreferences.emailAddressForNotifications,
@@ -245,12 +245,14 @@ export class CreateCaseAction implements IAction {
           ['select', addressDetails.selectAddressLabel, addressDetails.addressIndex]
       );
     }
-    await performAction('clickRadioButton', {
-      question: contactPreferences.provideContactPhoneNumber,
-      option: prefData.phoneNumber
-    });
-    if (prefData.phoneNumber === contactPreferences.yes) {
-      await performAction('inputText', contactPreferences.enterPhoneNumberLabel, contactPreferences.phoneNumberInput);
+    if(prefData.phoneNumber) {
+      await performAction('clickRadioButton', {
+        question: contactPreferences.provideContactPhoneNumber,
+        option: prefData.phoneNumber
+      });
+      if (prefData.phoneNumber === contactPreferences.yes) {
+        await performAction('inputText', contactPreferences.enterPhoneNumberLabel, contactPreferences.phoneNumberInput);
+      }
     }
     await performAction('clickButton', contactPreferences.continue);
   }
