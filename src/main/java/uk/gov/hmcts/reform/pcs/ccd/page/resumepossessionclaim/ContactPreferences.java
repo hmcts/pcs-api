@@ -86,7 +86,7 @@ public class ContactPreferences implements CcdPageConfiguration {
                     You should provide a phone number so we can contact you if there are urgent updates.
                 </p>
                 """)
-            .mandatory(PCSCase::getClaimantProvidePhoneNumber)
+            .optional(PCSCase::getClaimantProvidePhoneNumber)
             .mandatory(PCSCase::getClaimantContactPhoneNumber, "claimantProvidePhoneNumber=\"YES\"")
             .label("contactPreferences-phoneNumber-separator", "---");
     }
