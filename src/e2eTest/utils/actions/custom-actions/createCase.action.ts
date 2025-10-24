@@ -346,17 +346,19 @@ export class CreateCaseAction implements IAction {
       discretionary?: string[];
       discretionaryAccommodation?: string[];
     };
-    if (grounds.discretionary) {
-      await performAction('check', grounds.discretionary);
-    }
-    if (grounds.mandatory) {
-      await performAction('check', grounds.mandatory);
-    }
-    if (grounds.mandatoryAccommodation) {
-      await performAction('check', grounds.mandatoryAccommodation);
-    }
-    if (grounds.discretionaryAccommodation) {
-      await performAction('check', grounds.discretionaryAccommodation);
+    if(possessionGrounds) {
+      if (grounds.discretionary) {
+        await performAction('check', grounds.discretionary);
+      }
+      if (grounds.mandatory) {
+        await performAction('check', grounds.mandatory);
+      }
+      if (grounds.mandatoryAccommodation) {
+        await performAction('check', grounds.mandatoryAccommodation);
+      }
+      if (grounds.discretionaryAccommodation) {
+        await performAction('check', grounds.discretionaryAccommodation);
+      }
     }
     await performAction('clickButton', whatAreYourGroundsForPossession.continue);
   }
