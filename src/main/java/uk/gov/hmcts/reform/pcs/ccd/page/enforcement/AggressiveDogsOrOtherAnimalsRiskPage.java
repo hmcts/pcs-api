@@ -6,28 +6,28 @@ import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.EnforcementRiskDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.RiskCategory;
+import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class ViolentAggressiveRiskPage implements CcdPageConfiguration {
+public final class AggressiveDogsOrOtherAnimalsRiskPage implements CcdPageConfiguration {
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
-            .page("violentAggressiveRisk", this::midEvent)
-            .pageLabel("Their violent or aggressive behaviour")
-            .showCondition("enforcementRiskCategoriesCONTAINS\"VIOLENT_OR_AGGRESSIVE\"")
-            .label("violentAggressiveRisk-line-separator", "---")
-            .complex(PCSCase::getEnforcementOrder)
-            .complex(EnforcementOrder::getRiskDetails)
-            .mandatory(EnforcementRiskDetails::getEnforcementViolentDetails)
-            .done()
-            .label("violentAggressiveRisk-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
+                .page("evictionAggressiveDogsOrOtherAnimalsDetails", this::midEvent)
+                .pageLabel("The animals at the property")
+                .showCondition("enforcementRiskCategoriesCONTAINS\"AGGRESSIVE_ANIMALS\"")
+                .label("aggressiveDogsOrOtherAnimals-line-separator", "---")
+                .complex(PCSCase::getEnforcementOrder)
+                .complex(EnforcementOrder::getRiskDetails)
+                    .mandatory(EnforcementRiskDetails::getEnforcementDogsOrOtherAnimalsDetails)
+                .done()
+                .label("aggressiveDogsOrOtherAnimals-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
 
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
@@ -35,20 +35,18 @@ public class ViolentAggressiveRiskPage implements CcdPageConfiguration {
         PCSCase data = details.getData();
         List<String> errors = new ArrayList<>();
 
-        String txt = data.getEnforcementOrder().getRiskDetails().getEnforcementViolentDetails();
+        System.out.println(data.getEnforcementOrder());
+        String txt = data.getEnforcementOrder().getRiskDetails().getEnforcementDogsOrOtherAnimalsDetails();
         // TODO: Refactor validation logic to use TextAreaValidationService from PR #751 when merged
         if (txt.length() > EnforcementRiskValidationUtils.getCharacterLimit()) {
             // TODO: Use TextAreaValidationService from PR #751 when merged
             errors.add(EnforcementRiskValidationUtils
-                    .getCharacterLimitErrorMessage(RiskCategory.VIOLENT_OR_AGGRESSIVE));
+                    .getCharacterLimitErrorMessage(RiskCategory.AGGRESSIVE_ANIMALS));
         }
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
-            .data(data)
-            .errors(errors)
-            .build();
+                .data(data)
+                .errors(errors)
+                .build();
     }
-
 }
-
-

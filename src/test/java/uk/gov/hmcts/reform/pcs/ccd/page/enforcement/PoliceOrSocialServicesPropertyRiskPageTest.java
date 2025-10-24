@@ -16,11 +16,11 @@ import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class ProtestorGroupRiskPageTest extends BasePageTest {
+class PoliceOrSocialServicesPropertyRiskPageTest extends BasePageTest {
 
     @BeforeEach
     void setUp() {
-        setPageUnderTest(new ProtestorGroupRiskPage());
+        setPageUnderTest(new PoliceOrSocialServicesPropertyRiskPage());
     }
 
     @ParameterizedTest
@@ -29,9 +29,9 @@ class ProtestorGroupRiskPageTest extends BasePageTest {
         // Given
         PCSCase caseData = PCSCase.builder()
                 .enforcementOrder(EnforcementOrder.builder()
-                        .enforcementRiskCategories(Set.of(RiskCategory.PROTEST_GROUP_MEMBER))
+                        .enforcementRiskCategories(Set.of(RiskCategory.AGENCY_VISITS))
                         .riskDetails(EnforcementRiskDetails.builder()
-                                .enforcementProtestGroupMemberDetails(text)
+                                .enforcementPoliceOrSocialServicesDetails(text)
                                 .build())
                         .build())
                 .build();
@@ -42,7 +42,7 @@ class ProtestorGroupRiskPageTest extends BasePageTest {
         // Then
         assertThat(response.getErrors()).isEmpty();
         assertThat(response.getData().getEnforcementOrder()
-                .getRiskDetails().getEnforcementProtestGroupMemberDetails()).isEqualTo(text);
+                .getRiskDetails().getEnforcementPoliceOrSocialServicesDetails()).isEqualTo(text);
     }
 
     @Test
@@ -51,9 +51,9 @@ class ProtestorGroupRiskPageTest extends BasePageTest {
         String longText = "a".repeat(6801);
         PCSCase caseData = PCSCase.builder()
                 .enforcementOrder(EnforcementOrder.builder()
-                        .enforcementRiskCategories(Set.of(RiskCategory.PROTEST_GROUP_MEMBER))
+                        .enforcementRiskCategories(Set.of(RiskCategory.AGENCY_VISITS))
                         .riskDetails(EnforcementRiskDetails.builder()
-                                .enforcementProtestGroupMemberDetails(longText)
+                                .enforcementPoliceOrSocialServicesDetails(longText)
                                 .build())
                         .build())
                 .build();
@@ -63,7 +63,8 @@ class ProtestorGroupRiskPageTest extends BasePageTest {
 
         // Then
         assertThat(response.getErrors()).containsExactly(
-                EnforcementRiskValidationUtils.getCharacterLimitErrorMessage(RiskCategory.PROTEST_GROUP_MEMBER)
+                EnforcementRiskValidationUtils.getCharacterLimitErrorMessage(RiskCategory.AGENCY_VISITS)
         );
     }
 }
+
