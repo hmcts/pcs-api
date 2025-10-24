@@ -29,8 +29,7 @@ public class DemotionOfTenancy {
     @CCD(
         label = "Give details of the terms",
         hint = "You can enter up to 950 characters",
-        typeOverride = TextArea,
-        max = 950
+        typeOverride = TextArea
     )
     private String statementOfExpressTermsDetails;
 
@@ -38,8 +37,7 @@ public class DemotionOfTenancy {
         label = "Why are you requesting a demotion order?",
         hint = "Give details of the defendants' conduct and any other reasons you think are relevant. "
             + "You can enter up to 250 characters",
-        typeOverride = TextArea,
-        max = 250
+        typeOverride = TextArea
     )
     private String demotionOfTenancyReason;
 

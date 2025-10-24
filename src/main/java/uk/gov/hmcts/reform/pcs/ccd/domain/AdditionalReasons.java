@@ -21,8 +21,7 @@ public class AdditionalReasons {
     @CCD(
         label = "Additional reasons for possession",
         hint = "You can enter up to 6400 characters",
-        typeOverride = TextArea,
-        max = 6400
+        typeOverride = TextArea
     )
     private String reasons;
 
