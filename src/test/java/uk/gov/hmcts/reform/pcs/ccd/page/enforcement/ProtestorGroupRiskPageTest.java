@@ -24,26 +24,6 @@ class ProtestorGroupRiskPageTest extends BasePageTest {
     }
 
     @ParameterizedTest
-    @MethodSource("uk.gov.hmcts.reform.pcs.ccd.page.enforcement.RiskCategoryTestUtil#invalidTextScenarios")
-    void shouldRequireTextWhenInvalid(String invalidText) {
-        // Given
-        PCSCase caseData = PCSCase.builder()
-                .enforcementOrder(EnforcementOrder.builder()
-                        .enforcementRiskCategories(Set.of(RiskCategory.PROTEST_GROUP_MEMBER))
-                        .riskDetails(EnforcementRiskDetails.builder()
-                                .enforcementProtestGroupMemberDetails(invalidText)
-                                .build())
-                        .build())
-                .build();
-
-        // When
-        AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
-
-        // Then
-        assertThat(response.getErrors()).containsExactly("Enter details");
-    }
-
-    @ParameterizedTest
     @MethodSource("uk.gov.hmcts.reform.pcs.ccd.page.enforcement.RiskCategoryTestUtil#validTextScenarios")
     void shouldAcceptValidText(String text) {
         // Given

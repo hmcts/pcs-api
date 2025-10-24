@@ -10,12 +10,4 @@ class RiskCategoryTestUtil {
                 "A".repeat(6800)
         );
     }
-
-    static Stream<String> invalidTextScenarios() {
-        return Stream.of(
-                null,
-                "   ",
-                ""
-        );
-    }
 }

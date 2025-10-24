@@ -25,7 +25,8 @@ public final class AggressiveDogsOrOtherAnimalsRiskPage implements CcdPageConfig
                 .label("aggressiveDogsOrOtherAnimals-line-separator", "---")
                 .complex(PCSCase::getEnforcementOrder)
                 .complex(EnforcementOrder::getRiskDetails)
-                .mandatory(EnforcementRiskDetails::getEnforcementDogsOrOtherAnimalsDetails).done()
+                    .mandatory(EnforcementRiskDetails::getEnforcementDogsOrOtherAnimalsDetails)
+                .done()
                 .label("aggressiveDogsOrOtherAnimals-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
 
@@ -34,13 +35,10 @@ public final class AggressiveDogsOrOtherAnimalsRiskPage implements CcdPageConfig
         PCSCase data = details.getData();
         List<String> errors = new ArrayList<>();
 
-        String txt = data.getEnforcementOrder() != null && data.getEnforcementOrder().getRiskDetails() != null
-                ? data.getEnforcementOrder().getRiskDetails().getEnforcementDogsOrOtherAnimalsDetails()
-                : null;
+        System.out.println(data.getEnforcementOrder());
+        String txt = data.getEnforcementOrder().getRiskDetails().getEnforcementDogsOrOtherAnimalsDetails();
         // TODO: Refactor validation logic to use TextAreaValidationService from PR #751 when merged
-        if (txt == null || txt.isBlank()) {
-            errors.add("Enter details");
-        } else if (txt.length() > EnforcementRiskValidationUtils.getCharacterLimit()) {
+        if (txt.length() > EnforcementRiskValidationUtils.getCharacterLimit()) {
             // TODO: Use TextAreaValidationService from PR #751 when merged
             errors.add(EnforcementRiskValidationUtils
                     .getCharacterLimitErrorMessage(RiskCategory.AGGRESSIVE_ANIMALS));
