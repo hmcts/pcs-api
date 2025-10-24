@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantCircumstances;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DemotionOfTenancy;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.ProhibitedConduct;
 import uk.gov.hmcts.reform.pcs.ccd.domain.SuspensionOfRightToBuy;
 import uk.gov.hmcts.reform.pcs.ccd.domain.SuspensionOfRightToBuyDemotionOfTenancy;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
@@ -32,6 +33,7 @@ public class ClaimService {
         DefendantCircumstances defendantCircumstances = pcsCase.getDefendantCircumstances();
         SuspensionOfRightToBuy suspensionOrder = resolveSuspensionOfRightToBuy(pcsCase);
         DemotionOfTenancy demotionOrder = resolveDemotionOfTenancy(pcsCase);
+        ProhibitedConduct prohibitedConduct = buildProhibitedConduct(pcsCase);
 
         ClaimEntity claimEntity = ClaimEntity.builder()
             .summary("Main Claim")
@@ -51,7 +53,7 @@ public class ClaimService {
             .additionalReasons(additionalReasons)
             .applicationWithClaim(YesOrNoToBoolean.convert(pcsCase.getApplicationWithClaim()))
             .languageUsed(pcsCase.getLanguageUsed())
-
+            .prohibitedConduct(prohibitedConduct)
             .build();
 
 
@@ -90,6 +92,26 @@ public class ClaimService {
                 .build();
         }
         return demotion;
+    }
+
+    private ProhibitedConduct buildProhibitedConduct(PCSCase pcsCase) {
+        // Only build prohibited conduct data if the user is claiming for prohibited conduct contract
+        if (pcsCase.getProhibitedConductWalesClaim() == null) {
+            return null;
+        }
+
+        return ProhibitedConduct.builder()
+            .claimForProhibitedConductContract(pcsCase.getProhibitedConductWalesClaim() != null
+                ? pcsCase.getProhibitedConductWalesClaim().name() : null)
+            .agreedTermsOfPeriodicContract(pcsCase.getProhibitedConductWalesWrappedQuestion() != null
+                ? pcsCase.getProhibitedConductWalesWrappedQuestion().getAgreedTermsOfPeriodicContract() != null
+                    ? pcsCase.getProhibitedConductWalesWrappedQuestion()
+                        .getAgreedTermsOfPeriodicContract().name() : null
+                : null)
+            .detailsOfTerms(pcsCase.getProhibitedConductWalesWrappedQuestion() != null
+                ? pcsCase.getProhibitedConductWalesWrappedQuestion().getDetailsOfTerms() : null)
+            .whyMakingClaim(pcsCase.getProhibitedConductWalesWhyMakingClaim())
+            .build();
     }
 
 

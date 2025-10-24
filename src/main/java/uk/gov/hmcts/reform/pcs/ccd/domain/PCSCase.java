@@ -276,6 +276,19 @@ public class PCSCase {
     @CCD
     private WalesHousingAct walesHousingAct;
 
+    @CCD(label = "Are you also making a claim for an order imposing a prohibited conduct standard contract?")
+    private VerticalYesNo prohibitedConductWalesClaim;
+
+    @CCD(
+        label = "Why are you making this claim?",
+        hint = "You can enter up to 250 characters",
+        typeOverride = TextArea
+    )
+    private String prohibitedConductWalesWhyMakingClaim;
+
+    @CCD
+    private ProhibitedConductWalesWrappedQuestion prohibitedConductWalesWrappedQuestion;
+
     @CCD(
         label = "How much is the rent?",
         typeOverride = FieldType.MoneyGBP,
