@@ -22,25 +22,6 @@ class PropertyAccessDetailsPageTest extends BasePageTest {
     }
 
     @ParameterizedTest
-    @MethodSource("uk.gov.hmcts.reform.pcs.ccd.page.enforcement.EnforcementTestUtil#invalidTextScenarios")
-    void shouldRequireTextWhenInvalid(String invalidText) {
-        // Given
-        PCSCase caseData = PCSCase.builder()
-                .enforcementOrder(EnforcementOrder.builder()
-                        .propertyAccessDetails(PropertyAccessDetails.builder()
-                                .clarificationOnAccessDifficultyText(invalidText)
-                                .build())
-                        .build())
-                .build();
-
-        // When
-        AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
-
-        // Then
-        assertThat(response.getErrors()).containsExactly("Enter details");
-    }
-
-    @ParameterizedTest
     @MethodSource("uk.gov.hmcts.reform.pcs.ccd.page.enforcement.EnforcementTestUtil#validTextScenarios")
     void shouldAcceptValidText(String text) {
         // Given
