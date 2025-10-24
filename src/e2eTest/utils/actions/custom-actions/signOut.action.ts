@@ -5,7 +5,6 @@ import {signInOrCreateAnAccount} from '@data/page-data/signInOrCreateAnAccount.p
 
 export class signOutAction implements IAction {
   async execute(page: Page, action: string): Promise<void> {
-    await performAction('clickButton', signInOrCreateAnAccount.signOutButton);
-    await page.locator(`h1:has-text("${signInOrCreateAnAccount.mainHeader}")`).waitFor({ state: 'visible' });
+    await performAction('clickButtonAndWaitForElement', signInOrCreateAnAccount.signOutButton, signInOrCreateAnAccount.mainHeader);
   }
 }
