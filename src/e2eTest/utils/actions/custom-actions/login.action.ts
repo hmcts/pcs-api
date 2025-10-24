@@ -4,6 +4,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { performAction } from '../../controller';
 import { IAction, actionData, actionRecord } from '../../interfaces/action.interface';
 import {home} from '@data/page-data/home.page.data';
+import {signInOrCreateAnAccount} from '@data/page-data/signInOrCreateAnAccount.page.data';
 
 export class LoginAction implements IAction {
   async execute(page: Page, action: string, userType: string | actionRecord, roles?: actionData): Promise<void> {
@@ -22,9 +23,9 @@ export class LoginAction implements IAction {
     if (!userEmail || !userPassword) {
       throw new Error('Login failed: missing credentials');
     }
-    await performAction('inputText', 'Email address', userEmail);
-    await performAction('inputText', 'Password', userPassword);
-    await performAction('clickButtonAndWaitForElement', 'Sign in', home.mainHeader);
+    await performAction('inputText', signInOrCreateAnAccount.emailAddressLabel, userEmail);
+    await performAction('inputText', signInOrCreateAnAccount.passwordLabel, userPassword);
+    await performAction('clickButtonAndWaitForElement', signInOrCreateAnAccount.signInButton, home.mainHeader);
   }
 
   private async createUserAndLogin(userType: string, roles: string[]): Promise<void> {
