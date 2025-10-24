@@ -681,5 +681,4 @@ public class PCSCase {
 
     @JsonUnwrapped
     private EnforcementOrder enforcementOrder;
-
 }
