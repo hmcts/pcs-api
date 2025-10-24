@@ -27,6 +27,7 @@ public class PcsCaseMergeService {
     private final SecurityContextService securityContextService;
     private final ModelMapper modelMapper;
     private final TenancyLicenceService tenancyLicenceService;
+    private final DefendantService defendantService;
 
     public void mergeCaseData(PcsCaseEntity pcsCaseEntity, PCSCase pcsCase) {
 
@@ -52,6 +53,10 @@ public class PcsCaseMergeService {
         if (pcsCase.getClaimantType() != null && pcsCase.getClaimantType().getValueCode() != null) {
             ClaimantType claimantType = ClaimantType.valueOf(pcsCase.getClaimantType().getValueCode());
             pcsCaseEntity.setClaimantType(claimantType);
+        }
+
+        if (pcsCase.getDefendant1() != null) {
+            pcsCaseEntity.setDefendants(defendantService.buildDefendantsList(pcsCase));
         }
 
         pcsCaseEntity.setTenancyLicence(tenancyLicenceService.buildTenancyLicence(pcsCase));

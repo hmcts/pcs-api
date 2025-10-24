@@ -22,7 +22,6 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
-import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.UnsubmittedCaseDataService;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
@@ -45,18 +44,12 @@ class PCSCaseViewTest {
     private static final long CASE_REFERENCE = 1234L;
     private static final State DEFAULT_STATE = State.CASE_ISSUED;
 
-    private static CaseViewRequest<State> request(long caseReference, State state) {
-        return new CaseViewRequest<>(caseReference, state);
-    }
-
     @Mock
     private PcsCaseRepository pcsCaseRepository;
     @Mock
     private SecurityContextService securityContextService;
     @Mock
     private ModelMapper modelMapper;
-    @Mock
-    private PcsCaseService pcsCaseService;
     @Mock
     private UnsubmittedCaseDataService unsubmittedCaseDataService;
     @Mock
@@ -69,7 +62,7 @@ class PCSCaseViewTest {
         when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(pcsCaseEntity));
 
         underTest = new PCSCaseView(pcsCaseRepository, securityContextService,
-                modelMapper, pcsCaseService, unsubmittedCaseDataService);
+                modelMapper, unsubmittedCaseDataService);
     }
 
     @Test
@@ -264,6 +257,11 @@ class PCSCaseViewTest {
         AddressUK addressUK = mock(AddressUK.class);
         when(modelMapper.map(addressEntity, AddressUK.class)).thenReturn(addressUK);
         return addressUK;
+    }
+
+    @SuppressWarnings("SameParameterValue")
+    private static CaseViewRequest<State> request(long caseReference, State state) {
+        return new CaseViewRequest<>(caseReference, state);
     }
 
 }

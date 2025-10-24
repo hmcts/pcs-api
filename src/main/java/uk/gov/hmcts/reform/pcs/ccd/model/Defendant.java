@@ -15,8 +15,6 @@ import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class Defendant {
 
-    private String id;
-
     private Boolean nameKnown;
 
     private String firstName;
@@ -29,7 +27,4 @@ public class Defendant {
 
     private AddressUK correspondenceAddress;
 
-    private Boolean emailKnown;
-
-    private String email;
 }
