@@ -128,6 +128,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
     private final DemotionOfTenancyOrderReason demotionOfTenancyOrderReason;
     private final OrganisationNameService organisationNameService;
     private final ClaimantDetailsWalesPage claimantDetailsWales;
+    private final ProhibitedConductWalesPage prohibitedConductWalesPage;
     private final SchedulerClient schedulerClient;
 
     private static final String CASE_ISSUED_FEE_TYPE = "caseIssueFee";
@@ -178,7 +179,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             .add(new MoneyJudgment())
             .add(claimantCircumstancesPage)
             .add(defendantCircumstancesPage)
-            .add(new ProhibitedConductWalesPage())
+            .add(prohibitedConductWalesPage)
             .add(new AlternativesToPossessionOptions())
             .add(new SuspensionOfRightToBuyHousingActOptions())
             .add(suspensionOfRightToBuyOrderReason)

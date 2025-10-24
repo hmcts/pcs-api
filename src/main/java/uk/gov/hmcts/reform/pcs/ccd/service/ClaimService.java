@@ -105,7 +105,8 @@ public class ClaimService {
                 ? pcsCase.getProhibitedConductWalesClaim().name() : null)
             .agreedTermsOfPeriodicContract(pcsCase.getProhibitedConductWalesWrappedQuestion() != null
                 ? pcsCase.getProhibitedConductWalesWrappedQuestion().getAgreedTermsOfPeriodicContract() != null
-                    ? pcsCase.getProhibitedConductWalesWrappedQuestion().getAgreedTermsOfPeriodicContract().name() : null
+                    ? pcsCase.getProhibitedConductWalesWrappedQuestion()
+                        .getAgreedTermsOfPeriodicContract().name() : null
                 : null)
             .detailsOfTerms(pcsCase.getProhibitedConductWalesWrappedQuestion() != null
                 ? pcsCase.getProhibitedConductWalesWrappedQuestion().getDetailsOfTerms() : null)
