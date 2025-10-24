@@ -246,7 +246,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
         return caseData;
     }
 
-    private SubmitResponse submit(EventPayload<PCSCase, State> eventPayload) {
+    private SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {
         long caseReference = eventPayload.caseReference();
         PCSCase pcsCase = eventPayload.caseData();
 
@@ -283,7 +283,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
                 .scheduledTo(Instant.now())
         );
 
-        return SubmitResponse.builder().build();
+        return SubmitResponse.defaultResponse();
     }
 
     private PartyEntity createClaimantPartyEntity(PCSCase pcsCase) {

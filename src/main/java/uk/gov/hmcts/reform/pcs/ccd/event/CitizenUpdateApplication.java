@@ -37,7 +37,7 @@ public class CitizenUpdateApplication implements CCDConfig<PCSCase, State, UserR
             .grant(Permission.R, UserRole.PCS_CASE_WORKER);
     }
 
-    private SubmitResponse submit(EventPayload<PCSCase, State> eventPayload) {
+    private SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {
         Long caseReference = eventPayload.caseReference();
         PCSCase pcsCase = eventPayload.caseData();
 
@@ -45,6 +45,6 @@ public class CitizenUpdateApplication implements CCDConfig<PCSCase, State, UserR
 
         pcsCaseService.patchCase(caseReference, pcsCase);
 
-        return SubmitResponse.builder().build();
+        return SubmitResponse.defaultResponse();
     }
 }
