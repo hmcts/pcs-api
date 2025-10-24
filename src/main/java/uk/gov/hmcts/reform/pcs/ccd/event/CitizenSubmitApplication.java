@@ -33,10 +33,10 @@ public class CitizenSubmitApplication implements CCDConfig<PCSCase, State, UserR
             .grant(Permission.R, UserRole.PCS_CASE_WORKER);
     }
 
-    private SubmitResponse submit(EventPayload<PCSCase, State> eventPayload) {
+    private SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {
         log.info("Citizen submitted case {}", eventPayload.caseReference());
 
-        return SubmitResponse.builder().build();
+        return SubmitResponse.defaultResponse();
     }
 
 }
