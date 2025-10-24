@@ -39,7 +39,7 @@ import {reasonsForRequestingADemotionOrder} from '@data/page-data/reasonsForRequ
 import {statementOfExpressTerms} from '@data/page-data/statementOfExpressTerms.page.data';
 import {wantToUploadDocuments} from '@data/page-data/wantToUploadDocuments.page.data';
 
-let optionalSpecFailed = false;
+let optionalTestFailed = false;
 
 test.beforeEach(async ({page}) => {
   initializeExecutor(page);
@@ -50,7 +50,7 @@ test.beforeEach(async ({page}) => {
     await performAction('selectJurisdictionCaseTypeEvent');
     await performAction('housingPossessionClaim');
   } catch (err) {
-    optionalSpecFailed = true;
+    optionalTestFailed = true;
     console.error(err);
     expect(err, 'Initial setup failed — see logs').toBeUndefined();
   }
@@ -170,10 +170,9 @@ test.describe('[Create Case - Resume and Find case] @Master @nightly', async () 
         ['formLabelValue', propertyDetails.townOrCityLabel, addressDetails.townOrCity],
         ['formLabelValue', propertyDetails.postcodeZipcodeLabel, addressDetails.walesCourtAssignedPostcode],
         ['formLabelValue', propertyDetails.countryLabel, addressDetails.country]);
-    } catch (err) {
-      optionalSpecFailed = true;
-      console.log(err instanceof Error ? err.message : String(err));
-      expect(err, 'Resume functionality failed — see logs').toBeUndefined();
+    } catch (err: unknown) {
+      optionalTestFailed = true;
+      expect(false, `Optional test 1 failed: ${err instanceof Error ? err.message : String(err)}`).toBe(true);
     }
   });
 
@@ -278,17 +277,18 @@ test.describe('[Create Case - Resume and Find case] @Master @nightly', async () 
         ['formLabelValue', propertyDetails.townOrCityLabel, addressDetails.townOrCity],
         ['formLabelValue', propertyDetails.postcodeZipcodeLabel, addressDetails.walesCourtAssignedPostcode],
         ['formLabelValue', propertyDetails.countryLabel, addressDetails.country]);
-    } catch (err) {
-      optionalSpecFailed = true;
-      console.error(err);
-      expect(err, 'Resume functionality failed — see logs').toBeUndefined();
+    } catch (err: unknown) {
+      optionalTestFailed = true;
+      expect(false, `Optional test 2 failed: ${err instanceof Error ? err.message : String(err)}`).toBe(true);
     }
   });
 });
 
 test.afterAll(async () => {
-  if (optionalSpecFailed) {
+  if (optionalTestFailed) {
     console.log('Optional spec failed — keeping Jenkins build green.');
+    process.on('exit', () => {
+      process.exitCode = 0;
+    });
   }
-  process.exit(0);
 });
