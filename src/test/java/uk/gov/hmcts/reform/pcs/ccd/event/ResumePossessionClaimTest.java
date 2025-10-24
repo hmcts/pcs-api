@@ -23,6 +23,7 @@ import uk.gov.hmcts.reform.pcs.ccd.page.builder.SavingPageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.page.builder.SavingPageBuilderFactory;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ClaimantDetailsWalesPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ContactPreferences;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.OccupationLicenceDetailsWalesPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.DefendantsDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.NoticeDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ResumeClaim;
@@ -94,6 +95,8 @@ class ResumePossessionClaimTest extends BaseEventTest {
     @Mock
     private ClaimantDetailsWalesPage claimantDetailsWalesPage;
     @Mock
+    private OccupationLicenceDetailsWalesPage occupationLicenceDetailsWalesPage;
+    @Mock
     private SchedulerClient schedulerClient;
 
 
@@ -112,7 +115,8 @@ class ResumePossessionClaimTest extends BaseEventTest {
             savingPageBuilderFactory, resumeClaim,
             unsubmittedCaseDataService, selectClaimantType, noticeDetails,
             uploadAdditionalDocumentsDetails, tenancyLicenceDetails, contactPreferences,
-            defendantsDetails, organisationNameService, claimantDetailsWalesPage, schedulerClient
+            defendantsDetails, organisationNameService, claimantDetailsWalesPage,
+            occupationLicenceDetailsWalesPage, schedulerClient
         );
 
         setEventUnderTest(underTest);

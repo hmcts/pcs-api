@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.ccd.domain;
+package uk.gov.hmcts.reform.pcs.ccd.domain.wales;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
