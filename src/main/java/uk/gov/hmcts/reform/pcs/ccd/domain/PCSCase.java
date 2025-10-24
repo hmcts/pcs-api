@@ -9,6 +9,7 @@ import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.FieldType;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
+import uk.gov.hmcts.ccd.sdk.type.Organisation;
 import uk.gov.hmcts.ccd.sdk.type.OrganisationPolicy;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseworkerReadAccess;
@@ -678,5 +679,9 @@ public class PCSCase {
     )
     private OccupationLicenceTypeWales occupationLicenceTypeWales;
 
-    private OrganisationPolicy<UserRole> applicantOrgPolicy;
+    @CCD(label = "My Organisation")
+    private Organisation organisation;
+
+    @CCD(label = "My Organisation Policy")
+    private OrganisationPolicy<UserRole> organisationPolicy;
 }
