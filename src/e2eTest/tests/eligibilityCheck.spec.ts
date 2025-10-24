@@ -10,14 +10,14 @@ import {claimantType} from '@data/page-data/claimantType.page.data';
 import {claimType} from '@data/page-data/claimType.page.data';
 import {user} from '@data/user-data/permanent.user.data';
 import {home} from '@data/page-data/home.page.data';
-import {signInOrCreateAnAccount} from "@data/page-data/signInOrCreateAnAccount.page.data";
+import {signInOrCreateAnAccount} from '@data/page-data/signInOrCreateAnAccount.page.data';
 
 test.beforeEach(async ({page}) => {
   initializeExecutor(page);
   await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
   await performAction('handleCookieConsent', {
-    accept:signInOrCreateAnAccount.acceptAdditionalCookiesButton,
-    hide:signInOrCreateAnAccount.hideThisCookieMessageButton
+    accept: signInOrCreateAnAccount.acceptAdditionalCookiesButton,
+    hide: signInOrCreateAnAccount.hideThisCookieMessageButton
   });
   await performAction('login', user.claimantSolicitor);
   await performAction('handleCookieConsent', {

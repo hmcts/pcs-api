@@ -41,14 +41,14 @@ import {reasonsForRequestingADemotionOrder} from '@data/page-data/reasonsForRequ
 import {statementOfExpressTerms} from '@data/page-data/statementOfExpressTerms.page.data';
 import {wantToUploadDocuments} from '@data/page-data/wantToUploadDocuments.page.data';
 import {reasonsForRequestingASuspensionAndDemotionOrder} from '@data/page-data/reasonsForRequestingASuspensionAndDemotionOrder.page.data';
-import {signInOrCreateAnAccount} from "@data/page-data/signInOrCreateAnAccount.page.data";
+import {signInOrCreateAnAccount} from '@data/page-data/signInOrCreateAnAccount.page.data';
 
 test.beforeEach(async ({page}) => {
   initializeExecutor(page);
   await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
   await performAction('handleCookieConsent', {
-    accept:signInOrCreateAnAccount.acceptAdditionalCookiesButton,
-    hide:signInOrCreateAnAccount.hideThisCookieMessageButton
+    accept: signInOrCreateAnAccount.acceptAdditionalCookiesButton,
+    hide: signInOrCreateAnAccount.hideThisCookieMessageButton
   });
   await performAction('login', user.claimantSolicitor);
   await performAction('handleCookieConsent', {

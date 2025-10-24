@@ -1,7 +1,7 @@
 import { IAction } from '../../interfaces/action.interface';
 import {Page} from '@playwright/test';
-import {accessTokenApiData} from "@data/api-data/accessToken.api.data";
-import {IdamUtils} from "@hmcts/playwright-common";
+import {accessTokenApiData} from '@data/api-data/accessToken.api.data';
+import {IdamUtils} from '@hmcts/playwright-common';
 
 export class getAccessTokenAction implements IAction {
   async execute(page: Page, action: string): Promise<void> {
