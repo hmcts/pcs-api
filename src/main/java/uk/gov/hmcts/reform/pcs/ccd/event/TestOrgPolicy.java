@@ -1,6 +1,5 @@
 package uk.gov.hmcts.reform.pcs.ccd.event;
 
-import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CCDConfig;
@@ -18,8 +17,9 @@ import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.testOrgPolicy;
 
 @Slf4j
 @Component
-@AllArgsConstructor
 public class TestOrgPolicy implements CCDConfig<PCSCase, State, UserRole> {
+
+    public static OrganisationPolicy<UserRole> organisationPolicy = null;
 
     private static final String DEFAULT_ROLE = "[CREATOR]";
 
@@ -32,7 +32,7 @@ public class TestOrgPolicy implements CCDConfig<PCSCase, State, UserRole> {
             .grant(Permission.CRUD, UserRole.PCS_SOLICITOR)
             .showSummary()
             .fields()
-            .page("AllocatedJudge")
+            .page("orgPolicy")
             .complex(PCSCase::getOrganisationPolicy)
                 .complex(OrganisationPolicy::getOrganisation)
                     .mandatory(Organisation::getOrganisationId)
@@ -44,6 +44,10 @@ public class TestOrgPolicy implements CCDConfig<PCSCase, State, UserRole> {
     }
 
     private SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {
+        PCSCase caseData = eventPayload.caseData();
+
+        organisationPolicy = caseData.getOrganisationPolicy();
+
         return SubmitResponse.defaultResponse();
     }
 

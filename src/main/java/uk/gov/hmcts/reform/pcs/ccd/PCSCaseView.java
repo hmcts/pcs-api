@@ -6,6 +6,7 @@ import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.CaseView;
 import uk.gov.hmcts.ccd.sdk.CaseViewRequest;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
+import uk.gov.hmcts.reform.pcs.ccd.event.TestOrgPolicy;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
@@ -59,6 +60,8 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
         pcsCase.setHasUnsubmittedCaseData(YesOrNo.from(hasUnsubmittedCaseData));
 
         setMarkdownFields(pcsCase);
+
+        pcsCase.setOrganisationPolicy(TestOrgPolicy.organisationPolicy);
 
         return pcsCase;
     }
