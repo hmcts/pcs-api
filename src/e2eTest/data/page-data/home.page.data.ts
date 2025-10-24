@@ -4,5 +4,6 @@ export const home =
     mainHeader: 'Case list',
     caseListTab: 'Case list',
     createCaseTab: 'Create case',
-    findCaseTab: 'Find case'
+    findCaseTab: 'Find case',
+    signOutButton: 'Sign out'
   }

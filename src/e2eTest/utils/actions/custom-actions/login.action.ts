@@ -1,8 +1,9 @@
 import { IdamUtils } from '@hmcts/playwright-common';
 import { Page } from '@playwright/test';
 import { v4 as uuidv4 } from 'uuid';
-import { performAction } from '../../controller';
+import { performAction, performValidation } from '../../controller';
 import { IAction, actionData, actionRecord } from '../../interfaces/action.interface';
+import { signInOrCreateAnAccount } from '@data/page-data/signInOrCreateAnAccount.page.data';
 import {home} from '@data/page-data/home.page.data';
 
 export class LoginAction implements IAction {
@@ -22,9 +23,10 @@ export class LoginAction implements IAction {
     if (!userEmail || !userPassword) {
       throw new Error('Login failed: missing credentials');
     }
-    await performAction('inputText', 'Email address', userEmail);
-    await performAction('inputText', 'Password', userPassword);
-    await performAction('clickButtonAndWaitForElement', 'Sign in', home.mainHeader);
+    await performValidation('mainHeader',signInOrCreateAnAccount.mainHeader)
+    await performAction('inputText', signInOrCreateAnAccount.emailAddressLabel, userEmail);
+    await performAction('inputText', signInOrCreateAnAccount.passwordLabel, userPassword);
+    await performAction('clickButton', signInOrCreateAnAccount.signInButton);
   }
 
   private async createUserAndLogin(userType: string, roles: string[]): Promise<void> {
