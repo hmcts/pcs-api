@@ -76,10 +76,19 @@ jobs:
         run: |
           echo "${{ steps.ccd-diff.outputs.content }}"
       - name: Add report
-        uses: thollander/actions-comment-pull-request@v3
-        with:
-          message: |
-            # CCD diff report
-            ${{ steps.ccd-diff.outputs.content }}
-          comment_includes: CCD diff report
+        env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          REPORT_CONTENT: ${{ steps.ccd-diff.outputs.content }}
+        run: |
+          REPORT="${REPORT_CONTENT//%0A/$'\n'}"
+          REPORT="${REPORT//%0D/$'\r'}"
+          REPORT="${REPORT//%25/%}"
+          BODY_FILE="$(mktemp)"
+          {
+            echo "# CCD diff report"
+            echo
+            printf '%s\n' "$REPORT"
+          } > "$BODY_FILE"
+          gh pr comment "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --body-file "$BODY_FILE"
