@@ -67,11 +67,7 @@ jobs:
         id: ccd-diff
         run: |
           REPORT="$(npx -q @hmcts/ccd-diff build/master build/branch)"
-          REPORT="${REPORT//'%'/'%25'}"
-          REPORT="${REPORT//$'\n'/'%0A'}"
-          REPORT="${REPORT//$'\r'/'%0D'}"
-          echo $REPORT
-          echo "::set-output name=content::$REPORT"
+          printf 'content<<EOF\n%s\nEOF\n' "$REPORT" >> "$GITHUB_OUTPUT"
       - name: Display
         run: |
           echo "${{ steps.ccd-diff.outputs.content }}"
@@ -80,15 +76,11 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
-          REPORT_CONTENT: ${{ steps.ccd-diff.outputs.content }}
         run: |
-          REPORT="${REPORT_CONTENT//%0A/$'\n'}"
-          REPORT="${REPORT//%0D/$'\r'}"
-          REPORT="${REPORT//%25/%}"
           BODY_FILE="$(mktemp)"
-          {
-            echo "# CCD diff report"
-            echo
-            printf '%s\n' "$REPORT"
-          } > "$BODY_FILE"
+          cat <<'__CCD_DIFF_EOF__' > "$BODY_FILE"
+# CCD diff report
+
+${{ steps.ccd-diff.outputs.content }}
+__CCD_DIFF_EOF__
           gh pr comment "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --body-file "$BODY_FILE"
