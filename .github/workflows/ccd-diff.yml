@@ -78,9 +78,8 @@ jobs:
           PR_NUMBER: ${{ github.event.pull_request.number }}
         run: |
           BODY_FILE="$(mktemp)"
-          cat <<'__CCD_DIFF_EOF__' > "$BODY_FILE"
-# CCD diff report
-
-${{ steps.ccd-diff.outputs.content }}
-__CCD_DIFF_EOF__
+          {
+            printf '# CCD diff report\n\n'
+            printf '%s\n' "${{ steps.ccd-diff.outputs.content }}"
+          } > "$BODY_FILE"
           gh pr comment "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --body-file "$BODY_FILE"
