@@ -1,13 +1,33 @@
-import {Page, test} from '@playwright/test';
-import {actionData, actionRecord, actionTuple} from './interfaces/action.interface';
-import {validationData, validationRecord, validationTuple} from './interfaces/validation.interface';
-import {ActionRegistry} from './registry/action.registry';
-import {ValidationRegistry} from './registry/validation.registry';
+import { Page, test } from '@playwright/test';
+import { actionData, actionRecord, actionTuple } from './interfaces/action.interface';
+import { validationData, validationRecord, validationTuple } from './interfaces/validation.interface';
+import { ActionRegistry } from './registry/action.registry';
+import { ValidationRegistry } from './registry/validation.registry';
+import { flowchartLogger } from '../generators/flowchartBuilder';
+import { textCaptureService } from '../generators/text-capture';
 
 let testExecutor: { page: Page };
 
+// ONE-LINE CONFIGURATION
+const ENABLE_FLOWCHART = true;
+const ENABLE_TEXT_CAPTURE = true;
+const INCLUDE_LOCATORS = true;
+
 export function initializeExecutor(page: Page): void {
   testExecutor = { page };
+
+  if (ENABLE_FLOWCHART) flowchartLogger.enable();
+  if (ENABLE_TEXT_CAPTURE) textCaptureService.enable();
+  if (INCLUDE_LOCATORS) textCaptureService.setIncludeLocators(true);
+}
+
+export function startNewTest(): void {
+  flowchartLogger.resetForNewTest();
+}
+
+// Add this function to close flowchart after ALL tests
+export function finalizeAllTests(): void {
+  flowchartLogger.closeFlowchart();
 }
 
 function getExecutor(): { page: Page } {
@@ -23,6 +43,18 @@ export async function performAction(action: string, fieldName?: actionData | act
   await test.step(`${action}${fieldName !== undefined ? ` - ${typeof fieldName === 'object' ? readValuesFromInputObjects(fieldName) : fieldName}` : ''} ${value !== undefined ? ` with value '${typeof value === 'object' ? readValuesFromInputObjects(value) : value}'` : ''}`, async () => {
     await actionInstance.execute(executor.page, action, fieldName, value);
   });
+
+  await executor.page.waitForTimeout(1000);
+
+  // ALWAYS log to flowchart after every action
+  await textCaptureService.capturePageText(executor.page);
+  await flowchartLogger.logNavigation(executor.page);
+}
+
+// Add this function to capture final page of each test
+export async function finalizeTest(): Promise<void> {
+  const executor = getExecutor();
+  await flowchartLogger.forceLogFinalPage(executor.page);
 }
 
 export async function performValidation(validation: string, inputFieldName: validationData | validationRecord, inputData?: validationData | validationRecord): Promise<void> {
