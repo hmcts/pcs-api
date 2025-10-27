@@ -259,7 +259,7 @@ export class CreateCaseAction implements IAction {
   private async addDefendantDetails(defendantData: actionRecord) {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
     await performAction('clickRadioButton', {
-      question: defendantDetails.doYouKnowTheDefendantName,
+      question: defendantData.doYouKnowTheDefendantName,
       option: defendantData.nameOption
     });
     if (defendantData.nameOption === defendantDetails.yes) {
@@ -267,12 +267,12 @@ export class CreateCaseAction implements IAction {
       await performAction('inputText', defendantDetails.defendantLastName, defendantData.lastName);
     }
     await performAction('clickRadioButton', {
-      question: defendantDetails.defendantCorrespondenceAddress,
+      question: defendantData.addressQuestion,
       option: defendantData.correspondenceAddressOption
     });
     if (defendantData.correspondenceAddressOption === defendantDetails.yes) {
       await performAction('clickRadioButton', {
-        question: defendantDetails.isCorrespondenceAddressSame,
+        question: defendantData.addressSameQuestion,
         option: defendantData.correspondenceAddressSameOption
       });
       if (defendantData.correspondenceAddressSameOption === defendantDetails.no) {
@@ -285,23 +285,23 @@ export class CreateCaseAction implements IAction {
       }
     }
     await performAction('clickRadioButton', {
-      question: defendantDetails.additionalDefendants,
-      option: defendantData.addAdditionalDefendantOption
+      question: defendantData.addDefendantQuestion,
+      option: defendantData.addAdditionalDefendantsOption
     });
-    if (defendantData.addAdditionalDefendantOption === defendantDetails.yes) {
+    if (defendantData.addAdditionalDefendantsOption === defendantDetails.yes) {
       await performAction('clickButton', defendantDetails.addNew);
       await performAction('addDefendantDetails', {
-        name: defendantData.name1Option,
-        correspondenceAddress: defendantData.correspondenceAddress1Option,
-        addAdditionalDefendants: defendantData.addAdditionalDefendants1Option,
+        name1Question: defendantData.name1Question, name1Option: defendantData.name1Option,
+        address1Question: defendantData.address1Question, correspondenceAddress1Option: defendantData.correspondenceAddress1Option,
+        addressSame1Question: defendantData.addressSame1Question, correspondenceAddressSame1Option: defendantData.correspondenceAddressSame1Option
       });
     }
     if(defendantData.name2Option) {
       await performAction('clickButton', defendantDetails.addNew);
-      await performAction('addDefendantDetails', {
-        name: defendantData.name2Option,
-        correspondenceAddress: defendantData.correspondenceAddress2Option,
-        addAdditionalDefendants: defendantData.addAdditionalDefendants2Option,
+      await performAction('addDefendantDetails',  {
+        name2Question: defendantData.name2Question, name2Option: defendantData.name2Option,
+        address2Question: defendantData.address2Question, correspondenceAddress2Option: defendantData.correspondenceAddress2Option,
+        addressSame2Question: defendantData.addressSame2Question, correspondenceAddressSame2Option: defendantData.correspondenceAddressSame2Option
       });
     }
     await performAction('clickButton', defendantDetails.continue);

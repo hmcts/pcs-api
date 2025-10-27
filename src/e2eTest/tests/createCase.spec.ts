@@ -73,15 +73,16 @@ test.describe('[Create Case - England] @Master @nightly', async () => {
       phoneNumber: contactPreferences.no
     });
     await performAction('addDefendantDetails', {
-      nameOption: defendantDetails.yes, firstName: defendantDetails.firstNameInput, lastName: defendantDetails.lastNameInput,
-      correspondenceAddressOption: defendantDetails.yes,
-      correspondenceAddressSameOption: defendantDetails.no, address: addressDetails.englandCourtAssignedPostcode,
-      addAdditionalDefendantsOption: defendantDetails.yes,
-      name1Option: defendantDetails.no,
-      correspondenceAddress1Option: defendantDetails.no,
-      name2Option: defendantDetails.no,
-      correspondenceAddress2Option: defendantDetails.no,
-      correspondenceAddressSame2Option: defendantDetails.no
+      nameQuestion: defendantDetails.doYouKnowTheDefendantName, nameOption: defendantDetails.yes, firstName: defendantDetails.firstNameInput, lastName: defendantDetails.lastNameInput,
+      addressQuestion: defendantDetails.defendantCorrespondenceAddress, correspondenceAddressOption: defendantDetails.yes,
+      addressSameQuestion: defendantDetails.isCorrespondenceAddressSame, correspondenceAddressSameOption: defendantDetails.no, address: addressDetails.englandCourtAssignedPostcode,
+      addDefendantQuestion: defendantDetails.additionalDefendants, addAdditionalDefendantsOption: defendantDetails.yes,
+      name1Question: defendantDetails.doYouKnowTheDefendantName, name1Option: defendantDetails.no,
+      address1Question: defendantDetails.defendantCorrespondenceAddress, correspondenceAddress1Option: defendantDetails.no,
+      addressSame1Question: defendantDetails.isCorrespondenceAddressSame, correspondenceAddressSame1Option: defendantDetails.yes,
+      name2Question: defendantDetails.doYouKnowTheDefendantName, name2Option: defendantDetails.no,
+      address2Question: defendantDetails.defendantCorrespondenceAddress, addCorrespondenceAddress2Option: defendantDetails.no,
+      addressSame2Question: defendantDetails.isCorrespondenceAddressSame, correspondenceAddressSame2Option: defendantDetails.no
     });
     await performValidation('mainHeader', tenancyLicenceDetails.mainHeader);
     await performAction('selectTenancyOrLicenceDetails', {
