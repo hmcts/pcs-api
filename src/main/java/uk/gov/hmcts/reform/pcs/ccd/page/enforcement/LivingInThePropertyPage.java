@@ -1,5 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.enforcement;
 
+import lombok.AllArgsConstructor;
+import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
@@ -7,6 +9,8 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.EnforcementOrder;
 
 import static uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent.SAVE_AND_RETURN;
 
+@AllArgsConstructor
+@Component
 public class LivingInThePropertyPage implements CcdPageConfiguration {
 
     @Override
@@ -32,6 +36,7 @@ public class LivingInThePropertyPage implements CcdPageConfiguration {
             )
             .complex(PCSCase::getEnforcementOrder)
             .mandatory(EnforcementOrder::getAnyRiskToBailiff)
+            .done()
             .label("enforcementLivingInThePropertyPage-details-save-and-return", SAVE_AND_RETURN);
     }
 }
