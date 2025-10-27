@@ -116,6 +116,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
     private final SchedulerClient schedulerClient;
 
     private static final String CASE_ISSUED_FEE_TYPE = "caseIssueFee";
+    private final DefendantsDetails defendantDetails;
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -139,7 +140,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             .add(new ClaimantInformation())
             .add(claimantDetailsWales)
             .add(contactPreferences)
-            .add(defendantsDetails)
+            .add(defendantDetails)
             .add(tenancyLicenceDetails)
             .add(new SecureOrFlexibleGroundsForPossession())
             .add(new RentArrearsOrBreachOfTenancyGround())
@@ -285,4 +286,5 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             pcsCase.getClaimantContactPhoneNumber()
         );
     }
+
 }
