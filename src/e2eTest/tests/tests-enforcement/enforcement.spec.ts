@@ -34,5 +34,6 @@ test.describe('[Enforcement - Warrant of Possession] @Master @nightly', async ()
     await performValidation('mainHeader', everyoneLivingAtTheProperty.mainHeader);
     await performAction('selectPoseRiskToBailiff', { question: everyoneLivingAtTheProperty.riskToBailiffQuestion, option: everyoneLivingAtTheProperty.yes });
     await performValidation('mainHeader', riskPosedByEveryoneAtProperty.mainHeader);
+    await performAction('selectRiskTypesPosedToBailiff', { riskTypes: [riskPosedByEveryoneAtProperty.violentOrAggressiveBehaviour, riskPosedByEveryoneAtProperty.historyOfFirearmPossession, riskPosedByEveryoneAtProperty.criminalOrAntisocialBehaviour] });
   });
 });

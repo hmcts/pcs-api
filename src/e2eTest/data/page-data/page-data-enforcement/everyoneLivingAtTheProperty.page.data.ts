@@ -5,5 +5,5 @@ export const everyoneLivingAtTheProperty = {
   yes: 'Yes',
   no: 'No',
   notSure:'I\'m not sure',
-  continue: 'Continue',
+  continue: 'Submit',
 }
