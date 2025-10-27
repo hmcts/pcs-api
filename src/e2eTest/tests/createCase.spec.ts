@@ -370,7 +370,12 @@ test.describe('[Create Case - England] @Master @nightly', async () => {
     await performValidation('mainHeader', additionalReasonsForPossession.mainHeader);
     await performAction('selectAdditionalReasonsForPossession', additionalReasonsForPossession.no);
     await performValidation('mainHeader', underlesseeOrMortgageeEntitledToClaim.mainHeader);
-    await performAction('clickButton', underlesseeOrMortgageeEntitledToClaim.continue);
+    await performAction('selectUnderlesseeOrMortgageeEntitledToClaim', underlesseeOrMortgageeEntitledToClaim.yes);
+    await performAction('selectUnderlesseeOrMortgageeDetails', {
+      nameOption: underlesseeOrMortgageeDetails.yes,
+      addressOption: underlesseeOrMortgageeDetails.no,
+      anotherUnderlesseeOrMortgageeOption: underlesseeOrMortgageeDetails.no
+    });
     await performAction('wantToUploadDocuments', {
       question: wantToUploadDocuments.uploadAnyAdditionalDocumentsLabel,
       option: wantToUploadDocuments.no
@@ -480,7 +485,12 @@ test.describe('[Create Case - England] @Master @nightly', async () => {
     await performValidation('mainHeader', additionalReasonsForPossession.mainHeader);
     await performAction('selectAdditionalReasonsForPossession', additionalReasonsForPossession.no);
     await performValidation('mainHeader', underlesseeOrMortgageeEntitledToClaim.mainHeader);
-    await performAction('clickButton', underlesseeOrMortgageeEntitledToClaim.continue);
+    await performAction('selectUnderlesseeOrMortgageeEntitledToClaim', underlesseeOrMortgageeEntitledToClaim.yes);
+    await performAction('selectUnderlesseeOrMortgageeDetails', {
+      nameOption: underlesseeOrMortgageeDetails.no,
+      addressOption: underlesseeOrMortgageeDetails.no,
+      anotherUnderlesseeOrMortgageeOption: underlesseeOrMortgageeDetails.yes
+    });
     await performAction('wantToUploadDocuments', {
       question: wantToUploadDocuments.uploadAnyAdditionalDocumentsLabel,
       option: wantToUploadDocuments.no
@@ -510,8 +520,7 @@ test.describe('[Create Case - England] @Master @nightly', async () => {
     await performAction('selectClaimType', claimType.no);
     await performAction('selectClaimantName', claimantName.yes);
     await performAction('clickButtonAndVerifyPageNavigation', claimantName.continue, contactPreferences.mainHeader);
-    await performAction('clickButtonAndWaitForElement', 'Sign out', 'Sign in or create an account');
-    await performAction('reloginAndFindTheCase', user.claimantSolicitor);
+    await performAction('clickButton', contactPreferences.cancel);
     await performAction('clickButtonAndVerifyPageNavigation', resumeClaim.continue, resumeClaimOptions.mainHeader);
     await performAction('selectResumeClaimOption', resumeClaimOptions.yes);
     await performValidation('radioButtonChecked', claimantType.england.registeredProviderForSocialHousing, true);
@@ -582,7 +591,12 @@ test.describe('[Create Case - England] @Master @nightly', async () => {
     await performValidation('mainHeader', additionalReasonsForPossession.mainHeader);
     await performAction('selectAdditionalReasonsForPossession', additionalReasonsForPossession.no);
     await performValidation('mainHeader', underlesseeOrMortgageeEntitledToClaim.mainHeader);
-    await performAction('clickButton', underlesseeOrMortgageeEntitledToClaim.continue);
+    await performAction('selectUnderlesseeOrMortgageeEntitledToClaim', underlesseeOrMortgageeEntitledToClaim.yes);
+    await performAction('selectUnderlesseeOrMortgageeDetails', {
+      nameOption: underlesseeOrMortgageeDetails.no,
+      addressOption: underlesseeOrMortgageeDetails.yes,
+      anotherUnderlesseeOrMortgageeOption: underlesseeOrMortgageeDetails.no
+    });
     await performAction('wantToUploadDocuments', {
       question: wantToUploadDocuments.uploadAnyAdditionalDocumentsLabel,
       option: wantToUploadDocuments.no
@@ -672,7 +686,12 @@ test.describe('[Create Case - England] @Master @nightly', async () => {
     await performValidation('mainHeader', additionalReasonsForPossession.mainHeader);
     await performAction('selectAdditionalReasonsForPossession', additionalReasonsForPossession.yes);
     await performValidation('mainHeader', underlesseeOrMortgageeEntitledToClaim.mainHeader);
-    await performAction('clickButton', underlesseeOrMortgageeEntitledToClaim.continue);
+    await performAction('selectUnderlesseeOrMortgageeEntitledToClaim', underlesseeOrMortgageeEntitledToClaim.yes);
+    await performAction('selectUnderlesseeOrMortgageeDetails', {
+      nameOption: underlesseeOrMortgageeDetails.yes,
+      addressOption: underlesseeOrMortgageeDetails.yes,
+      anotherUnderlesseeOrMortgageeOption: underlesseeOrMortgageeDetails.yes
+    });
     await performAction('wantToUploadDocuments', {
       question: wantToUploadDocuments.uploadAnyAdditionalDocumentsLabel,
       option: wantToUploadDocuments.no
@@ -783,7 +802,12 @@ test.describe('[Create Case - England] @Master @nightly', async () => {
     await performValidation('mainHeader', additionalReasonsForPossession.mainHeader);
     await performAction('selectAdditionalReasonsForPossession', additionalReasonsForPossession.no);
     await performValidation('mainHeader', underlesseeOrMortgageeEntitledToClaim.mainHeader);
-    await performAction('clickButton', underlesseeOrMortgageeEntitledToClaim.continue);
+    await performAction('selectUnderlesseeOrMortgageeEntitledToClaim', underlesseeOrMortgageeEntitledToClaim.yes);
+    await performAction('selectUnderlesseeOrMortgageeDetails', {
+      nameOption: underlesseeOrMortgageeDetails.yes,
+      addressOption: underlesseeOrMortgageeDetails.yes,
+      anotherUnderlesseeOrMortgageeOption: underlesseeOrMortgageeDetails.yes
+    });
     await performAction('wantToUploadDocuments', {
       question: wantToUploadDocuments.uploadAnyAdditionalDocumentsLabel,
       option: wantToUploadDocuments.no
