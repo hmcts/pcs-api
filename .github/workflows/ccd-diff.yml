@@ -34,9 +34,7 @@ jobs:
 
   report:
     permissions:
-      issues: write
       pull-requests: write
-      contents: write
     runs-on: ubuntu-latest
     needs: build
     steps:
