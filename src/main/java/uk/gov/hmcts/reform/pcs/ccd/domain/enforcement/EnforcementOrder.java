@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.domain.enforcement;
 
+import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import lombok.Builder;
 import lombok.Data;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
@@ -15,6 +16,9 @@ public class EnforcementOrder {
         label = "What do you want to apply for?"
     )
     private SelectEnforcementType selectEnforcementType;
+
+    @JsonUnwrapped
+    private AdditionalInformation additionalInformation;
 
     @CCD
     private NameAndAddressForEviction nameAndAddressForEviction;
