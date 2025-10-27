@@ -4,7 +4,6 @@ import {performAction} from '@utils/controller';
 import {home} from '@data/page-data/home.page.data';
 import {LONG_TIMEOUT} from '../../../playwright.config';
 
-
 export class signOutAction implements IAction {
   async execute(page: Page, action: string): Promise<void> {
     await performAction('clickButton', home.signOutButton);
