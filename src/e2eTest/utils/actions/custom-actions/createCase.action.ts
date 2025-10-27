@@ -260,22 +260,22 @@ export class CreateCaseAction implements IAction {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
     await performAction('clickRadioButton', {
       question: defendantDetails.doYouKnowTheDefendantName,
-      option: defendantData.name
+      option: defendantData.nameOption
     });
-    if (defendantData.name === defendantDetails.yes) {
+    if (defendantData.nameOption === defendantDetails.yes) {
       await performAction('inputText', defendantDetails.defendantFirstName, defendantData.firstName);
       await performAction('inputText', defendantDetails.defendantLastName, defendantData.lastName);
     }
     await performAction('clickRadioButton', {
       question: defendantDetails.defendantCorrespondenceAddress,
-      option: defendantData.correspondenceAddress
+      option: defendantData.correspondenceAddressOption
     });
-    if (defendantData.correspondenceAddress === defendantDetails.yes) {
+    if (defendantData.correspondenceAddressOption === defendantDetails.yes) {
       await performAction('clickRadioButton', {
         question: defendantDetails.isCorrespondenceAddressSame,
-        option: defendantData.correspondenceAddressSame
+        option: defendantData.correspondenceAddressSameOption
       });
-      if (defendantData.correspondenceAddressSame === defendantDetails.no) {
+      if (defendantData.correspondenceAddressSameOption === defendantDetails.no) {
         await performActions(
             'Find Address based on postcode',
             ['inputText', addressDetails.enterUKPostcodeLabel, defendantData.address],
@@ -286,22 +286,22 @@ export class CreateCaseAction implements IAction {
     }
     await performAction('clickRadioButton', {
       question: defendantDetails.additionalDefendants,
-      option: defendantData.addAdditionalDefendant
+      option: defendantData.addAdditionalDefendantOption
     });
-    if (defendantData.addAdditionalDefendant === defendantDetails.yes) {
+    if (defendantData.addAdditionalDefendantOption === defendantDetails.yes) {
       await performAction('clickButton', defendantDetails.addNew);
       await performAction('addDefendantDetails', {
-        name: defendantData.name1,
-        correspondenceAddress: defendantData.correspondenceAddress1,
-        addAdditionalDefendants: defendantData.addAdditionalDefendants1,
+        name: defendantData.name1Option,
+        correspondenceAddress: defendantData.correspondenceAddress1Option,
+        addAdditionalDefendants: defendantData.addAdditionalDefendants1Option,
       });
     }
-    if(defendantData.name2) {
+    if(defendantData.name2Option) {
       await performAction('clickButton', defendantDetails.addNew);
       await performAction('addDefendantDetails', {
-        name: defendantData.name2,
-        correspondenceAddress: defendantData.correspondenceAddress2,
-        addAdditionalDefendants: defendantData.addAdditionalDefendants2,
+        name: defendantData.name2Option,
+        correspondenceAddress: defendantData.correspondenceAddress2Option,
+        addAdditionalDefendants: defendantData.addAdditionalDefendants2Option,
       });
     }
     await performAction('clickButton', defendantDetails.continue);
