@@ -1,5 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.enforcement;
 
+import org.springframework.stereotype.Component;
+import java.util.List;
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
@@ -11,6 +13,9 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.EnforcementRiskDetails;
 
 import java.util.List;
 
+import static uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent.SAVE_AND_RETURN;
+
+@Component
 public class EvictionRisksPosedPage implements CcdPageConfiguration {
 
     @Override
@@ -21,7 +26,9 @@ public class EvictionRisksPosedPage implements CcdPageConfiguration {
             .showCondition("anyRiskToBailiff=\"YES\"")
             .label("evictionRisksPosedPage-line-separator", "---")
             .complex(PCSCase::getEnforcementOrder)
-            .mandatory(EnforcementOrder::getEnforcementRiskCategories);
+            .mandatory(EnforcementOrder::getEnforcementRiskCategories)
+            .done()
+            .label("evictionRisksPosedPage-details-save-and-return", SAVE_AND_RETURN);
     }
 
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
@@ -39,7 +46,7 @@ public class EvictionRisksPosedPage implements CcdPageConfiguration {
         }
 
         // Validate that at least one category is selected
-        if (data.getEnforcementOrder().getEnforcementRiskCategories() == null
+        if (data.getEnforcementOrder().getEnforcementRiskCategories() == null 
             || data.getEnforcementOrder().getEnforcementRiskCategories().isEmpty()) {
             return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
                 .data(data)
