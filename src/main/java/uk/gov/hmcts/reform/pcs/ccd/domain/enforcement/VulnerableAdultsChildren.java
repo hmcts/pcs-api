@@ -33,7 +33,7 @@ public class VulnerableAdultsChildren {
             label = VULNERABLE_REASON_LABEL,
             hint = VULNERABLE_REASON_HINT,
             typeOverride = FieldType.TextArea,
-            showCondition = "vulnerablePeopleYesNo=\"YES\""
+            showCondition = "vulnerablePeopleYesNo=\"YES\" AND (vulnerableCategory=\"VULNERABLE_ADULTS\" OR vulnerableCategory=\"VULNERABLE_CHILDREN\" OR vulnerableCategory=\"VULNERABLE_ADULTS_AND_CHILDREN\")"
     )
     private String vulnerableReasonText;
 }

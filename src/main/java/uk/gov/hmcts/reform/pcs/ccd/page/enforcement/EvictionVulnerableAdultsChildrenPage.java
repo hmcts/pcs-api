@@ -47,7 +47,7 @@ public class EvictionVulnerableAdultsChildrenPage implements CcdPageConfiguratio
             .mandatory(VulnerableAdultsChildren::getVulnerableCategory,
                     "vulnerablePeopleYesNo=\"YES\"")
             .mandatory(VulnerableAdultsChildren::getVulnerableReasonText,
-                    "vulnerablePeopleYesNo=\"YES\" AND vulnerableCategory != null")
+                    "vulnerablePeopleYesNo=\"YES\" AND (vulnerableCategory=\"VULNERABLE_ADULTS\" OR vulnerableCategory=\"VULNERABLE_CHILDREN\" OR vulnerableCategory=\"VULNERABLE_ADULTS_AND_CHILDREN\")")
             .done()
             .label("evictionVulnerableAdultsChildren-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
