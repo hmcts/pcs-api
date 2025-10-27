@@ -17,7 +17,7 @@ import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class BaseEventTest {
+public class BaseEventTest {
 
     protected static final long TEST_CASE_REFERENCE = 1234L;
 
