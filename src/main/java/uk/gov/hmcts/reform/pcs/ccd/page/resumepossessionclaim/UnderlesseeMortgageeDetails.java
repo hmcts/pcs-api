@@ -1,35 +1,88 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim;
 
+import lombok.AllArgsConstructor;
+import org.springframework.stereotype.Component;
+import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
+import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
+import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.UnderlesseeMortgagee;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.service.UnderlesseeMortgageeValidator;
 
+import java.util.ArrayList;
+import java.util.List;
+
+@Component
+@AllArgsConstructor
 public class UnderlesseeMortgageeDetails  implements CcdPageConfiguration {
+
+    private final UnderlesseeMortgageeValidator  underlesseeMortgageeValidator;
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
-            .page("underlesseeMortgageeDetails")
+            .page("underlesseeMortgageeDetails", this::midEvent)
             .pageLabel("Underlessee or mortgagee details")
             .showCondition("hasUnderlesseeOrMortgagee=\"YES\"")
             .complex(PCSCase::getUnderlesseeMortgagee)
-            .label("underlesseeMortgagee-name", """
-                ---
-                <h2 class="govuk-heading-m"> Underlessee or mortgagee name </h2>
-                """)
-            .mandatory(UnderlesseeMortgagee::getUnderlesseeOrMortgageeNameKnown)
-
-            .label("underlesseeMortgagee-address", """
-                ---
-                <h2 class="govuk-heading-m">Underlessee or mortgagee address </h2>
-                """)
+                .readonly(UnderlesseeMortgagee::getUnderlesseeOrMortgageeNameLabel)
+                .mandatory(UnderlesseeMortgagee::getUnderlesseeOrMortgageeNameKnown)
+                .mandatory(UnderlesseeMortgagee::getUnderlesseeOrMortgageeName,
+                       "underlesseeOrMortgageeNameKnown=\"YES\"")
             .mandatory(UnderlesseeMortgagee::getUnderlesseeOrMortgageeAddressKnown)
-
+                .readonly(UnderlesseeMortgagee::getUnderlesseeOrMortgageeAddressLabel)
+                    .complex(UnderlesseeMortgagee::getUnderlesseeOrMortgageeAddress,
+                     "underlesseeOrMortgageeAddressKnown=\"YES\"")
+                        .mandatory(AddressUK::getAddressLine1)
+                        .optional(AddressUK::getAddressLine2)
+                        .optional(AddressUK::getAddressLine3)
+                        .mandatory(AddressUK::getPostTown)
+                        .optional(AddressUK::getCounty)
+                        .optional(AddressUK::getCountry)
+                        .mandatoryWithLabel(AddressUK::getPostCode, "Postcode")
+                    .done()
+            .done()
             .label("underlesseeMortgagee-additional", """
                 ---
                 <h2 class="govuk-heading-m">Additional underlessee or mortgagee?</h2>
                 """)
-            .mandatory(UnderlesseeMortgagee::getAddAdditionalUnderlesseeOrMortgagee);
+            .mandatory(PCSCase::getAddAdditionalUnderlesseeOrMortgagee)
+            .mandatory(PCSCase::getAdditionalUnderlesseeMortgagee);
+    }
+
+    private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
+                                                                  CaseDetails<PCSCase, State> detailsBefore) {
+
+        PCSCase caseData = details.getData();
+
+        boolean additionalUnderlesseeMortgagee = caseData.getAddAdditionalUnderlesseeOrMortgagee() == VerticalYesNo.YES;
+
+        UnderlesseeMortgagee underlesseeMortgageeDetails = caseData.getUnderlesseeMortgagee();
+        List<String> validationErrors = new ArrayList<>(underlesseeMortgageeValidator
+                                                            .validateFirstUnderlesseeOrMortgagee(
+                                                                underlesseeMortgageeDetails,
+                                                                additionalUnderlesseeMortgagee
+                                                            ));
+
+        if (additionalUnderlesseeMortgagee) {
+            validationErrors
+                .addAll(underlesseeMortgageeValidator.validateAdditionalUnderlesseeOrMortgagee(
+                    caseData.getAdditionalUnderlesseeMortgagee()));
+        }
+
+        if (!validationErrors.isEmpty()) {
+            return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
+                .errors(validationErrors)
+                .build();
+        }
+
+        return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
+            .data(caseData)
+            .build();
+
     }
 }

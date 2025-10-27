@@ -683,4 +683,13 @@ public class PCSCase {
 
     @JsonUnwrapped
     private UnderlesseeMortgagee underlesseeMortgagee;
+
+    @CCD(label = "Do you need to add another underlessee or mortgagee?")
+    private VerticalYesNo addAdditionalUnderlesseeOrMortgagee;
+
+    @CCD(
+        label = "Add underlessee or mortgagee",
+        hint = "Add an underlessee or mortgagee to the case"
+    )
+    private List<ListValue<UnderlesseeMortgagee>> additionalUnderlesseeMortgagee;
 }
