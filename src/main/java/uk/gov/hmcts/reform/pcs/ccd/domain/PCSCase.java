@@ -12,9 +12,14 @@ import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseworkerReadAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenAccess;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.model.NoRentArrearsReasonForGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.EstateManagementGroundsWales;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceTypeWales;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractDiscretionaryGroundsWales;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractMandatoryGroundsWales;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -74,6 +79,8 @@ public class PCSCase {
     )
     @External
     private AddressUK propertyAddress;
+
+    private String formattedPropertyAddress;
 
     @CCD(searchable = false)
     private YesOrNo showCrossBorderPage;
@@ -637,5 +644,42 @@ public class PCSCase {
 
     @JsonUnwrapped(prefix = "wales")
     private WalesNoticeDetails walesNoticeDetails;
+
+
+    @CCD(
+        label = "Discretionary grounds",
+        hint = "Select all that apply",
+        typeOverride = FieldType.MultiSelectList,
+        typeParameterOverride = "SecureContractDiscretionaryGroundsWales"
+    )
+    private Set<SecureContractDiscretionaryGroundsWales> secureContractDiscretionaryGroundsWales;
+
+    @CCD(
+        label = "Mandatory grounds",
+        hint = "Select all that apply",
+        typeOverride = FieldType.MultiSelectList,
+        typeParameterOverride = "SecureContractMandatoryGroundsWales"
+    )
+    private Set<SecureContractMandatoryGroundsWales> secureContractMandatoryGroundsWales;
+
+    @CCD(
+        label = "Estate management grounds",
+        typeOverride = FieldType.MultiSelectList,
+        typeParameterOverride = "EstateManagementGroundsWales"
+    )
+    private Set<EstateManagementGroundsWales> estateManagementGroundsWales;
+
+    @CCD(searchable = false)
+    private YesOrNo showReasonsForGroundsPageWales;
+
+    @CCD(
+        label = "What type of tenancy or licence is in place?",
+        typeOverride = FieldType.FixedRadioList,
+        typeParameterOverride = "OccupationLicenceTypeWales"
+    )
+    private OccupationLicenceTypeWales occupationLicenceTypeWales;
+
+    @JsonUnwrapped
+    private EnforcementOrder enforcementOrder;
 
 }

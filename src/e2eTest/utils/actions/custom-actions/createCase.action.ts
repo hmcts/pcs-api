@@ -44,6 +44,7 @@ import {completeYourClaim} from '@data/page-data/completeYourClaim.page.data';
 import {home} from '@data/page-data/home.page.data';
 import {search} from '@data/page-data/search.page.data';
 import {userIneligible} from '@data/page-data/userIneligible.page.data';
+import {whatAreYourGroundsForPossessionWales} from '@data/page-data/whatAreYourGroundsForPossessionWales.page.data';
 import {reasonsForRequestingASuspensionAndDemotionOrder} from '@data/page-data/reasonsForRequestingASuspensionAndDemotionOrder.page.data';
 
 export let caseInfo: { id: string; fid: string; state: string };
@@ -312,19 +313,31 @@ export class CreateCaseAction implements IAction {
     }
     await performAction('clickButton', tenancyLicenceDetails.continue);
   }
+
   private async selectYourPossessionGrounds(possessionGrounds: actionRecord) {
-    await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
-    if (possessionGrounds.discretionary) {
-      await performAction('check', possessionGrounds.discretionary);
-    }
-    if (possessionGrounds.mandatory) {
-      await performAction('check', possessionGrounds.mandatory);
-    }
-    if (possessionGrounds.mandatoryAccommodation) {
-      await performAction('check', possessionGrounds.mandatoryAccommodation);
-    }
-    if (possessionGrounds.discretionaryAccommodation) {
-      await performAction('check', possessionGrounds.discretionaryAccommodation);
+    await performValidation('text', {elementType: 'paragraph', text: 'Case number: ' + caseNumber});
+    for (const key of Object.keys(possessionGrounds)) {
+      switch (key) {
+        case 'discretionary':
+          await performAction('check', possessionGrounds.discretionary);
+          if (
+            (possessionGrounds.discretionary as Array<string>).includes(
+              whatAreYourGroundsForPossessionWales.discretionary.estateManagementGrounds
+            )
+          ) {
+            await performAction('check', possessionGrounds.discretionaryEstateGrounds);
+          }
+          break;
+        case 'mandatory':
+          await performAction('check', possessionGrounds.mandatory);
+          break;
+        case 'mandatoryAccommodation':
+          await performAction('check', possessionGrounds.mandatoryAccommodation);
+          break;
+        case 'discretionaryAccommodation':
+          await performAction('check', possessionGrounds.discretionaryAccommodation);
+          break;
+      }
     }
     await performAction('clickButton', whatAreYourGroundsForPossession.continue);
   }
@@ -594,14 +607,14 @@ export class CreateCaseAction implements IAction {
   }
 
   private async reloginAndFindTheCase(userInfo: actionData) {
-    await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
     await performAction('login', userInfo);
-    await performAction('clickButton', home.findCaseTab);
+    await performAction('navigateToUrl', `${process.env.MANAGE_CASE_BASE_URL}/cases/case-details/PCS/PCS-${process.env.CHANGE_ID}/${caseNumber.replaceAll('-', '')}#Next%20steps`);
+    /*await performAction('clickButton', home.findCaseTab);
     await performAction('select', search.jurisdictionLabel, search.possessionsJurisdiction);
     await performAction('select', search.caseTypeLabel, search.caseType.civilPossessions);
     await performAction('inputText', search.caseNumberLabel, caseNumber);
     await performAction('clickButton', search.apply);
-    await performAction('clickButton', caseNumber);
+    await performAction('clickButton', caseNumber);*/
   }
 
   private async createCaseAction(caseData: actionData): Promise<void> {
