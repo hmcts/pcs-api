@@ -3,9 +3,9 @@ import * as process from 'node:process';
 import { defineConfig, devices } from '@playwright/test';
 
 const DEFAULT_VIEWPORT = {width: 1920, height: 1080};
-export const SHORT_TIMEOUT = 5000;   // 5 seconds
-export const MEDIUM_TIMEOUT = 30000; // 30 seconds
-export const LONG_TIMEOUT = 60000; // 60 seconds
+export const SHORT_TIMEOUT = 5000;
+export const MEDIUM_TIMEOUT = 10000;
+export const LONG_TIMEOUT = 30000;
 export const waitForPageRedirectionTimeout = SHORT_TIMEOUT;
 
 export const actionRetries = 5;
