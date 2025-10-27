@@ -503,7 +503,7 @@ test.describe('[Create Case - England] @Master @nightly', async () => {
     await performAction('selectClaimType', claimType.no);
     await performAction('selectClaimantName', claimantName.yes);
     await performAction('clickButtonAndVerifyPageNavigation', claimantName.continue, contactPreferences.mainHeader);
-    await performAction('clickButtonAndWaitForElement', contactPreferences.cancel, provideMoreDetailsOfClaim.mainHeader);
+    await performAction('clickButton', contactPreferences.cancel);
     //Commenting below lines as login and logout functionality is too flaky in the pipeline
     /*await performAction('clickButtonAndWaitForElement', 'Sign out', 'Sign in or create an account');
     await performAction('reloginAndFindTheCase', user.claimantSolicitor);*/

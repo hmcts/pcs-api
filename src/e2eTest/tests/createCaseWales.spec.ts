@@ -160,7 +160,7 @@ test.describe('[Create Case - Wales] @Master @nightly', async () => {
     await performAction('selectClaimType', claimType.no);
     await performAction('selectClaimantName', claimantName.yes);
     await performAction('clickButtonAndVerifyPageNavigation', claimantName.continue, claimantDetailsWales.mainHeader);
-    await performAction('clickButtonAndWaitForElement', claimantDetailsWales.cancel, provideMoreDetailsOfClaim.mainHeader);
+    await performAction('clickButton', claimantDetailsWales.cancel);
     //Commenting below lines as login and logout functionality is too flaky in the pipeline
     /*await performAction('clickButtonAndWaitForElement', 'Sign out', 'Sign in or create an account');
     await performAction('reloginAndFindTheCase', user.claimantSolicitor);*/
@@ -188,13 +188,13 @@ test.describe('[Create Case - Wales] @Master @nightly', async () => {
       email: defendantDetails.no,
     });
     //Following 186 to 188 needs update once routing is done for wales journey HDPI-2365
-    await performAction('check', 'Standard contract');
+    await performAction('check', 'Secure contract');
     await performAction('clickButton', 'Continue');
     await performValidation('mainHeader', whatAreYourGroundsForPossessionWales.mainHeader);
     await performAction('selectYourPossessionGrounds', {
       discretionary: [whatAreYourGroundsForPossessionWales.discretionary.estateManagementGrounds],
       discretionaryEstateGrounds: [whatAreYourGroundsForPossessionWales.discretionary.buildingWorks],
-      mandatory: [whatAreYourGroundsForPossessionWales.mandatory.section199],
+      mandatory: [whatAreYourGroundsForPossessionWales.mandatory.section191],
     });
     await performAction('clickButton', reasonsForPossession.continue);
     // Following lines enabled to reach notice of your intention page as HDPI-2343 is done for Wales journey routing
@@ -283,12 +283,11 @@ test.describe('[Create Case - Wales] @Master @nightly', async () => {
       email: defendantDetails.yes,
       correspondenceAddressSame: defendantDetails.yes
     });
-    await performAction('check', 'Other');
+    await performAction('check', 'Secure contract');
     await performAction('clickButton', 'Continue');
     await performValidation('mainHeader', whatAreYourGroundsForPossessionWales.mainHeader);
     await performAction('selectYourPossessionGrounds', {
       discretionary: [whatAreYourGroundsForPossessionWales.discretionary.otherBreachOfContract],
-      mandatory: [whatAreYourGroundsForPossessionWales.mandatory.section187]
     });
     await performAction('clickButton', reasonsForPossession.continue);
     // Following lines enabled to reach notice of your intention page as HDPI-2343 is done for Wales journey routing
