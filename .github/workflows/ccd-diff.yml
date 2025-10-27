@@ -13,7 +13,7 @@ jobs:
       - uses: actions/setup-java@v5
         with:
           distribution: corretto
-          java-version: 17
+          java-version: 21
       - uses: actions/checkout@v5
         with:
           path: build/branch
@@ -31,7 +31,7 @@ jobs:
       - uses: actions/setup-java@v5
         with:
           distribution: corretto
-          java-version: 17
+          java-version: 21
       - uses: actions/checkout@v5
         with:
           ref: master
