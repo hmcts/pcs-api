@@ -36,9 +36,9 @@ public class FirearmsPossessionRiskPage implements CcdPageConfiguration {
         List<String> errors = new ArrayList<>();
 
         String txt = data.getEnforcementOrder().getRiskDetails().getEnforcementFirearmsDetails();
-        // TODO: Refactor validation logic to use TextAreaValidationService from PR #751 when merged
+
+        // TODO: Use TextAreaValidationService from PR #751 when merged
         if (txt.length() > EnforcementRiskValidationUtils.getCharacterLimit()) {
-            // TODO: Use TextAreaValidationService from PR #751 when merged
             errors.add(EnforcementRiskValidationUtils.getCharacterLimitErrorMessage(RiskCategory.FIREARMS_POSSESSION));
         }
 

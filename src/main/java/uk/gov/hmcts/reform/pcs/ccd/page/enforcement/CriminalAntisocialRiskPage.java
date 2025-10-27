@@ -37,9 +37,8 @@ public class CriminalAntisocialRiskPage implements CcdPageConfiguration {
 
         String txt = data.getEnforcementOrder().getRiskDetails().getEnforcementCriminalDetails();
 
-        // TODO: Refactor validation logic to use TextAreaValidationService from PR #751 when merged
+        // TODO: Use TextAreaValidationService from PR #751 when merged
         if (txt.length() > EnforcementRiskValidationUtils.getCharacterLimit()) {
-            // TODO: Use TextAreaValidationService from PR #751 when merged
             errors.add(EnforcementRiskValidationUtils
                     .getCharacterLimitErrorMessage(RiskCategory.CRIMINAL_OR_ANTISOCIAL));
         }

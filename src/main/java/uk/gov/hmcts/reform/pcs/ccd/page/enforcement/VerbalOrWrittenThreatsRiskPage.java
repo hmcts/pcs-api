@@ -19,7 +19,7 @@ public class VerbalOrWrittenThreatsRiskPage implements CcdPageConfiguration {
     @Override
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
-                .page("verbalOrWrittenThreatsPage", this::midEvent)
+                .page("evictionVerbalOrWrittenThreatsDetails", this::midEvent)
                 .pageLabel("Their verbal or written threats")
                 .showCondition("enforcementRiskCategoriesCONTAINS\"VERBAL_OR_WRITTEN_THREATS\"")
                 .label("verbalOrWrittenThreatsPage-line-separator", "---")
@@ -36,9 +36,9 @@ public class VerbalOrWrittenThreatsRiskPage implements CcdPageConfiguration {
         List<String> errors = new ArrayList<>();
 
         String txt = data.getEnforcementOrder().getRiskDetails().getEnforcementVerbalOrWrittenThreatsDetails();
-        // TODO: Refactor validation logic to use TextAreaValidationService from PR #751 when merged
+
+        // TODO: Use TextAreaValidationService from PR #751 when merged
         if (txt.length() > EnforcementRiskValidationUtils.getCharacterLimit()) {
-            // TODO: Use TextAreaValidationService from PR #751 when merged
             errors.add(EnforcementRiskValidationUtils
                     .getCharacterLimitErrorMessage(RiskCategory.VERBAL_OR_WRITTEN_THREATS));
         }
