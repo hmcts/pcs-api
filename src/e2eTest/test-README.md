@@ -129,6 +129,8 @@ Playwright 1.30+ | TypeScript 4.9+
 | enterReasonForSuspensionAndDemotionOrder | `performAction('enterReasonForSuspensionAndDemotionOrder', suspension)`                                                                                                                                    |
 | handleCookieConsent                      | `performAction('handleCookieConsent', accept: signInOrCreateAnAccount.acceptAnalyticsCookiesButton)`                                                                                                       |
 | getAccessToken                           | `performAction('getAccessToken')`                                                                                                                                                                          |
+| signOut                                  | `performAction('signOut')`                                                                                                                                                                                 |
+| clickButtonAndWaitForElement             | `performAction('clickButtonAndWaitForElement', 'Sign out', home.mainHeader)`                                                                                                                               |
 ### Validations
 | Validation                 | Example Usage                                                                                                                        |
 |----------------------------|--------------------------------------------------------------------------------------------------------------------------------------|

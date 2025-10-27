@@ -13,6 +13,7 @@ import {CreateCaseWalesAction} from '@utils/actions/custom-actions/createCaseWal
 import {SearchCaseAction} from '@utils/actions/custom-actions/searchCase.action';
 import {handleCookieConsentAction} from '@utils/actions/custom-actions/handleCookieConsent.action';
 import {getAccessTokenAction} from '@utils/actions/custom-actions/getAccessToken.action';
+import {signOutAction} from '@utils/actions/custom-actions/signOut.action';
 
 export class ActionRegistry {
   private static actions: Map<string, IAction> = new Map([
@@ -29,6 +30,7 @@ export class ActionRegistry {
     ['navigateToUrl', new NavigateToUrlAction()],
     ['handleCookieConsent', new handleCookieConsentAction()],
     ['getAccessToken', new getAccessTokenAction()],
+    ['signOut', new signOutAction()],
     ['uploadFile', new UploadFileAction()],
     ['selectAddress', new CreateCaseAction()],
     ['extractCaseIdFromAlert', new CreateCaseAction()],

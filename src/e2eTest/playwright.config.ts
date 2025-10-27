@@ -2,12 +2,11 @@ import * as process from 'node:process';
 
 import { defineConfig, devices } from '@playwright/test';
 
-const DEFAULT_VIEWPORT = { width: 1920, height: 1080 };
-export const SHORT_TIMEOUT = 3000;   // 3 seconds
-export const MEDIUM_TIMEOUT = 30000; // 10 seconds
-
-export const waitForPageRedirectionTimeout = MEDIUM_TIMEOUT;
-export const waitForLoadStateTimeout = MEDIUM_TIMEOUT;
+const DEFAULT_VIEWPORT = {width: 1920, height: 1080};
+export const SHORT_TIMEOUT = 5000;   // 5 seconds
+export const MEDIUM_TIMEOUT = 30000; // 30 seconds
+export const LONG_TIMEOUT = 60000; // 60 seconds
+export const waitForPageRedirectionTimeout = SHORT_TIMEOUT;
 
 export const actionRetries = 5;
 
@@ -19,7 +18,7 @@ export default defineConfig({
   /* Retry on CI only */
   retries: process.env.CI ? 3 : 0,
   // Reduced workers from 4 → 2 due to server/login contention issues
-  workers: 1,
+  workers: 2,
   timeout: 200 * 1000,
   expect: { timeout: 30 * 1000 },
   use: { actionTimeout: 30 * 1000, navigationTimeout: 30 * 1000 },
@@ -29,15 +28,15 @@ export default defineConfig({
   globalTeardown: require.resolve('./config/global-teardown.config'),
   reporter: [
     ['list'],
-      [
-        'allure-playwright',
-        {
-          resultsDir: 'allure-results',
-          suiteTitle: false,
-          environmentInfo: {
-            os_version: process.version,
-          },
+    [
+      'allure-playwright',
+      {
+        resultsDir: 'allure-results',
+        suiteTitle: false,
+        environmentInfo: {
+          os_version: process.version,
         },
+      },
     ],
   ],
   projects: [

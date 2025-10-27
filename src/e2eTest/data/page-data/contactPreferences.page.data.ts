@@ -11,5 +11,6 @@ export const contactPreferences =
     phoneNumberInput: '07654567345',
     yes: 'Yes',
     no: 'No',
-    continue: 'Continue'
+    continue: 'Continue',
+    cancel: 'Cancel'
   }
