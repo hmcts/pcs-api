@@ -98,7 +98,7 @@ export class CreateCaseAction implements IAction {
       ['selectClaimingCosts', () => this.selectClaimingCosts(fieldName)],
       ['completingYourClaim', () => this.completingYourClaim(fieldName)],
       ['selectAdditionalReasonsForPossession', ()=> this.selectAdditionalReasonsForPossession(fieldName)],
-      ['selectUnderlesseeOrMortgageeEntitledToClaim', ()=> this.selectUnderlesseeOrMortgageeEntitledToClaim(fieldName)],
+      ['selectUnderlesseeOrMortgageeEntitledToClaim', ()=> this.selectUnderlesseeOrMortgageeEntitledToClaim(fieldName as actionRecord)],
       ['selectUnderlesseeOrMortgageeDetails', ()=> this.selectUnderlesseeOrMortgageeDetails(fieldName as actionRecord)],
       ['wantToUploadDocuments', () => this.wantToUploadDocuments(fieldName as actionRecord)],
       ['uploadAdditionalDocs', () => this.uploadAdditionalDocs(fieldName as actionRecord)]
@@ -673,28 +673,28 @@ export class CreateCaseAction implements IAction {
     await performAction('clickButton', additionalReasonsForPossession.continue);
   }
 
-  private async selectUnderlesseeOrMortgageeEntitledToClaim(option: actionData) {
+  private async selectUnderlesseeOrMortgageeEntitledToClaim(underlesseeOrMortgageeEntitledToClaim: actionRecord) {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
     await performAction('clickRadioButton', {
-      question: underlesseeOrMortgageeEntitledToClaim.entitledToClaimRelief,
-      option: option
+      question: underlesseeOrMortgageeEntitledToClaim.question,
+      option: underlesseeOrMortgageeEntitledToClaim.option
     });
     await performAction('clickButton', underlesseeOrMortgageeEntitledToClaim.continue);
   }
 
-  private async selectUnderlesseeOrMortgageeDetails(details: actionRecord) {
+  private async selectUnderlesseeOrMortgageeDetails(underlesseeOrMortgageeDetail: actionRecord) {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
     await performAction('clickRadioButton', {
-      question: underlesseeOrMortgageeDetails.doYouKnowTheName,
-      option: details.nameOption
+      question: underlesseeOrMortgageeDetail.nameQuestion,
+      option: underlesseeOrMortgageeDetail.nameOption
     });
     await performAction('clickRadioButton', {
-      question: underlesseeOrMortgageeDetails.doYouKnowTheAddress,
-      option: details.addressOption
+      question: underlesseeOrMortgageeDetail.addressQuestion,
+      option: underlesseeOrMortgageeDetail.addressOption
     });
     await performAction('clickRadioButton', {
-      question: underlesseeOrMortgageeDetails.addAnotherUnderlesseeOrMortgagee,
-      option: details.anotherUnderlesseeOrMortgageeOption
+      question: underlesseeOrMortgageeDetail.anotherUnderlesseeOrMortgageeQuestion,
+      option: underlesseeOrMortgageeDetail.anotherUnderlesseeOrMortgageeOption
     });
     await performAction('clickButton', underlesseeOrMortgageeDetails.continue);
   }
