@@ -45,6 +45,8 @@ import {home} from '@data/page-data/home.page.data';
 import {search} from '@data/page-data/search.page.data';
 import {userIneligible} from '@data/page-data/userIneligible.page.data';
 import {reasonsForRequestingASuspensionAndDemotionOrder} from '@data/page-data/reasonsForRequestingASuspensionAndDemotionOrder.page.data';
+import {underlesseeOrMortgageeEntitledToClaim} from '@data/page-data/underlesseeOrMortgageeEntitledToClaim.page.data';
+import {underlesseeOrMortgageeDetails} from '@data/page-data/underlesseeOrMortgageeDetails.page.data';
 
 export let caseInfo: { id: string; fid: string; state: string };
 export let caseNumber: string;
@@ -95,6 +97,8 @@ export class CreateCaseAction implements IAction {
       ['selectClaimingCosts', () => this.selectClaimingCosts(fieldName)],
       ['completingYourClaim', () => this.completingYourClaim(fieldName)],
       ['selectAdditionalReasonsForPossession', ()=> this.selectAdditionalReasonsForPossession(fieldName)],
+      ['selectUnderlesseeOrMortgageeEntitledToClaim', ()=> this.selectUnderlesseeOrMortgageeEntitledToClaim(fieldName)],
+      ['selectUnderlesseeOrMortgageeDetails', ()=> this.selectUnderlesseeOrMortgageeDetails(fieldName as actionRecord)],
       ['wantToUploadDocuments', () => this.wantToUploadDocuments(fieldName as actionRecord)],
       ['uploadAdditionalDocs', () => this.uploadAdditionalDocs(fieldName as actionRecord)]
     ]);
@@ -660,6 +664,32 @@ export class CreateCaseAction implements IAction {
       await performAction('inputText', additionalReasonsForPossession.additionalReasonsForPossessionLabel, additionalReasonsForPossession.additionalReasonsForPossessionSampleText);
     }
     await performAction('clickButton', additionalReasonsForPossession.continue);
+  }
+
+  private async selectUnderlesseeOrMortgageeEntitledToClaim(option: actionData) {
+    await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
+    await performAction('clickRadioButton', {
+      question: underlesseeOrMortgageeEntitledToClaim.entitledToClaimRelief,
+      option: option
+    });
+    await performAction('clickButton', underlesseeOrMortgageeEntitledToClaim.continue);
+  }
+
+  private async selectUnderlesseeOrMortgageeDetails(details: actionRecord) {
+    await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
+    await performAction('clickRadioButton', {
+      question: underlesseeOrMortgageeDetails.doYouKnowTheName,
+      option: details.nameOption
+    });
+    await performAction('clickRadioButton', {
+      question: underlesseeOrMortgageeDetails.doYouKnowTheAddress,
+      option: details.addressOption
+    });
+    await performAction('clickRadioButton', {
+      question: underlesseeOrMortgageeDetails.addAnotherUnderlesseeOrMortgagee,
+      option: details.anotherUnderlesseeOrMortgageeOption
+    });
+    await performAction('clickButton', underlesseeOrMortgageeDetails.continue);
   }
 
   private async reloginAndFindTheCase(userInfo: actionData) {

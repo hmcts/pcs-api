@@ -40,6 +40,7 @@ import {reasonsForRequestingADemotionOrder} from '@data/page-data/reasonsForRequ
 import {statementOfExpressTerms} from '@data/page-data/statementOfExpressTerms.page.data';
 import {wantToUploadDocuments} from '@data/page-data/wantToUploadDocuments.page.data';
 import {reasonsForRequestingASuspensionAndDemotionOrder} from '@data/page-data/reasonsForRequestingASuspensionAndDemotionOrder.page.data';
+import {underlesseeOrMortgageeDetails} from "@data/page-data/underlesseeOrMortgageeDetails.page.data";
 
 test.beforeEach(async ({page}) => {
   initializeExecutor(page);
@@ -137,7 +138,7 @@ test.describe('[Create Case - England] @Master @nightly', async () => {
     await performValidation('mainHeader', additionalReasonsForPossession.mainHeader);
     await performAction('selectAdditionalReasonsForPossession', additionalReasonsForPossession.yes);
     await performValidation('mainHeader', underlesseeOrMortgageeEntitledToClaim.mainHeader);
-    await performAction('clickButton', underlesseeOrMortgageeEntitledToClaim.continue);
+    await performAction('selectUnderlesseeOrMortgageeEntitledToClaim', underlesseeOrMortgageeEntitledToClaim.no);
     await performAction('wantToUploadDocuments', {
       question: wantToUploadDocuments.uploadAnyAdditionalDocumentsLabel,
       option: wantToUploadDocuments.yes
@@ -251,7 +252,12 @@ test.describe('[Create Case - England] @Master @nightly', async () => {
     await performValidation('mainHeader', additionalReasonsForPossession.mainHeader);
     await performAction('selectAdditionalReasonsForPossession', additionalReasonsForPossession.no);
     await performValidation('mainHeader', underlesseeOrMortgageeEntitledToClaim.mainHeader);
-    await performAction('clickButton', underlesseeOrMortgageeEntitledToClaim.continue);
+    await performAction('selectUnderlesseeOrMortgageeEntitledToClaim', underlesseeOrMortgageeEntitledToClaim.yes);
+    await performAction('selectUnderlesseeOrMortgageeDetails', {
+      nameOption: underlesseeOrMortgageeDetails.yes,
+      addressOption: underlesseeOrMortgageeDetails.yes,
+      anotherUnderlesseeOrMortgageeOption: underlesseeOrMortgageeDetails.yes
+    });
     await performAction('wantToUploadDocuments', {
       question: wantToUploadDocuments.uploadAnyAdditionalDocumentsLabel,
       option: wantToUploadDocuments.no
