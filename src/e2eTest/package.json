@@ -12,7 +12,7 @@
   },
   "devDependencies": {
     "@playwright/test": "^1.49.0",
-    "@types/node": "^22.15.31",
+    "@types/node": "^22.18.12",
     "allure-commandline": "^2.34.1",
     "allure-js-commons": "^3.3.0",
     "allure-playwright": "^3.3.0",
