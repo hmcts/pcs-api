@@ -4,9 +4,9 @@ export const signInOrCreateAnAccount = {
   emailAddressLabel: 'Email address',
   passwordLabel: 'Password',
   signInButton: 'Sign in',
-  acceptAdditionalCookies: 'Accept additional cookies',
-  rejectAdditionalCookies: 'Reject additional cookies',
-  acceptAnalyticsCookies: 'Accept analytics cookies',
-  rejectAnalyticsCookies: 'Reject analytics cookies',
-  hideThisCookieMessage: 'Hide this cookie message'
+  acceptAdditionalCookiesButton: 'Accept additional cookies',
+  rejectAdditionalCookiesButton: 'Reject additional cookies',
+  acceptAnalyticsCookiesButton: 'Accept analytics cookies',
+  rejectAnalyticsCookiesButton: 'Reject analytics cookies',
+  hideThisCookieMessageButton: 'Hide this cookie message'
 }
