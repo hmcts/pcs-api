@@ -59,15 +59,14 @@ public class SecureOrFlexibleGroundsForPossession implements CcdPageConfiguratio
                 .anyMatch(ground -> ground != RENT_ARREARS_OR_BREACH_OF_TENANCY
                 );
 
-        // Determine if Rent Details page should be shown (HDPI-2123)
-        // Only show rent details if Ground 1 is selected AND "Rent arrears" is chosen
+        // Control Rent Details page visibility based on Ground 1 selection
         if (!discretionaryGrounds.contains(RENT_ARREARS_OR_BREACH_OF_TENANCY)) {
-            // Ground 1 is NOT selected - clear rent arrears data and hide rent details
+            // Ground 1 not selected - clear rent arrears data and hide rent details page
             caseData.setRentArrearsOrBreachOfTenancy(Set.of());
             caseData.setShowRentDetailsPage(YesOrNo.NO);
         } else {
-            // Ground 1 IS selected - but we need to wait for RentArrearsOrBreachOfTenancyGround page
-            // to determine if "Rent arrears" is specifically selected. Set to No for now.
+            // Ground 1 selected - rent details visibility will be determined by next page
+            // based on whether user chooses "Rent arrears" or "Breach of tenancy"
             caseData.setShowRentDetailsPage(YesOrNo.NO);
         }
 
