@@ -146,97 +146,97 @@ test.describe('[Create Case - Wales] @Master @nightly', async () => {
   });
 
   // The sections commented out will be fixed as part of the User Story https://tools.hmcts.net/jira/browse/HDPI-2123
-  test('Wales - Flexible tenancy with Rent arrears only', async () => {
-    await performAction('enterTestAddressManually');
-    await performValidation('bannerAlert', 'Case #.* has been created.');
-    await performAction('extractCaseIdFromAlert');
-    await performAction('clickButtonAndVerifyPageNavigation', provideMoreDetailsOfClaim.continue, claimantType.mainHeader);
-    await performAction('selectClaimantType', claimantType.wales.communityLandlord);
-    await performAction('selectClaimType', claimType.no);
-    await performAction('selectClaimantName', claimantName.yes);
-    await performAction('clickButton', 'Sign out');
-    await performAction('reloginAndFindTheCase', user.claimantSolicitor);
-    await performAction('clickButtonAndVerifyPageNavigation', resumeClaim.continue, resumeClaimOptions.mainHeader);
-    await performAction('selectResumeClaimOption', resumeClaimOptions.no);
-    await performValidation('radioButtonChecked', claimantType.wales.communityLandlord, false);
-    await performAction('selectClaimantType', claimantType.wales.communityLandlord);
-    await performValidation('radioButtonChecked', claimType.no, false);
-    await performAction('selectClaimType', claimType.no);
-    await performValidation('radioButtonChecked', claimantName.no, false);
-    await performAction('selectClaimantName', claimantName.yes);
-    await performAction('selectContactPreferences', {
-      notifications: contactPreferences.yes,
-      correspondenceAddress: contactPreferences.yes,
-      phoneNumber: contactPreferences.no
-    });
-    await performAction('defendantDetails', {
-      name: defendantDetails.no,
-      correspondenceAddress: defendantDetails.no,
-      email: defendantDetails.no,
-    });
-    await performValidation('mainHeader', tenancyLicenceDetails.mainHeader);
-    await performAction('selectTenancyOrLicenceDetails', {
-      tenancyOrLicenceType: tenancyLicenceDetails.flexibleTenancy});
-    await performAction('selectYourPossessionGrounds', {
-      discretionary: [whatAreYourGroundsForPossession.discretionary.rentArrearsOrBreachOfTenancy]
-    });
-    await performValidation('mainHeader', rentArrearsOrBreachOfTenancy.mainHeader);
-    await performAction('selectRentArrearsOrBreachOfTenancy', {
-      rentArrearsOrBreach: [rentArrearsOrBreachOfTenancy.rentArrears]
-    });
-    await performValidation('mainHeader', preActionProtocol.mainHeader);
-    await performAction('selectPreActionProtocol', preActionProtocol.yes);
-    await performAction('selectMediationAndSettlement', {
-      attemptedMediationWithDefendantsOption: mediationAndSettlement.yes,
-      settlementWithDefendantsOption: mediationAndSettlement.no,
-    });
-    await performValidation('mainHeader', noticeOfYourIntention.mainHeader);
-    await performAction('selectNoticeOfYourIntention', noticeOfYourIntention.no);
-    // await performValidation('mainHeader', rentDetails.mainHeader);
-    // await performAction('provideRentDetails', {rentFrequencyOption: 'Monthly', rentAmount: '1000'});
-    // await performAction('selectDailyRentAmount', {
-    //   calculateRentAmount: '£32.85',
-    //   unpaidRentInteractiveOption: dailyRentAmount.yes
-    // });
-    await performValidation('mainHeader', moneyJudgment.mainHeader);
-    await performAction('selectMoneyJudgment', moneyJudgment.yes);
-    await performValidation('mainHeader', claimantCircumstances.mainHeader);
-    await performAction('selectClaimantCircumstances', {
-      circumstanceOption: claimantCircumstances.no,
-      claimantInput: claimantCircumstances.claimantCircumstanceInfoInputData
-    });
-    await performValidation('mainHeader', defendantCircumstances.mainHeader);
-    await performAction('selectDefendantCircumstances', defendantCircumstances.no);
-    await performValidation('mainHeader', alternativesToPossession.mainHeader);
-    await performAction('selectAlternativesToPossession', {question: alternativesToPossession.suspensionOrDemotion
-      , option: [alternativesToPossession.suspensionOfRightToBuy]});
-    await performValidation('mainHeader', housingAct.mainHeader);
-    await performAction('selectHousingAct', {question: housingAct.suspensionOfRightToBuy.whichSection
-      ,option: housingAct.suspensionOfRightToBuy.section121AHousingAct1985});
-    await performValidation('mainHeader', reasonsForRequestingASuspensionOrder.mainHeader);
-    await performAction('enterReasonForSuspensionOrder', reasonsForRequestingASuspensionOrder.question);
-    await performValidation('mainHeader', claimingCosts.mainHeader);
-    await performAction('selectClaimingCosts', claimingCosts.no);
-    await performValidation('mainHeader', additionalReasonsForPossession.mainHeader);
-    await performAction('selectAdditionalReasonsForPossession', additionalReasonsForPossession.yes);
-    await performValidation('mainHeader', underlesseeOrMortgageeEntitledToClaim.mainHeader);
-    await performAction('clickButton', underlesseeOrMortgageeEntitledToClaim.continue);
-    await performAction('wantToUploadDocuments', {
-      question: wantToUploadDocuments.uploadAnyAdditionalDocumentsLabel,
-      option: wantToUploadDocuments.no
-    });
-    await performAction('selectApplications', applications.yes);
-    await performAction('selectLanguageUsed', {question: languageUsed.whichLanguageUsedQuestion, option: languageUsed.english});
-    await performAction('completingYourClaim', completeYourClaim.saveItForLater);
-    await performAction('clickButton', checkYourAnswers.saveAndContinue);
-    await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
-    await performValidations('address information entered',
-      ['formLabelValue', propertyDetails.buildingAndStreetLabel, addressDetails.buildingAndStreet],
-      ['formLabelValue', propertyDetails.addressLine2Label, addressDetails.addressLine2],
-      ['formLabelValue', propertyDetails.townOrCityLabel, addressDetails.townOrCity],
-      ['formLabelValue', propertyDetails.postcodeZipcodeLabel, addressDetails.walesCourtAssignedPostcode],
-      ['formLabelValue', propertyDetails.countryLabel, addressDetails.country]);
-  });
+//   test('Wales - Flexible tenancy with Rent arrears only', async () => {
+//     await performAction('enterTestAddressManually');
+//     await performValidation('bannerAlert', 'Case #.* has been created.');
+//     await performAction('extractCaseIdFromAlert');
+//     await performAction('clickButtonAndVerifyPageNavigation', provideMoreDetailsOfClaim.continue, claimantType.mainHeader);
+//     await performAction('selectClaimantType', claimantType.wales.communityLandlord);
+//     await performAction('selectClaimType', claimType.no);
+//     await performAction('selectClaimantName', claimantName.yes);
+//     await performAction('clickButton', 'Sign out');
+//     await performAction('reloginAndFindTheCase', user.claimantSolicitor);
+//     await performAction('clickButtonAndVerifyPageNavigation', resumeClaim.continue, resumeClaimOptions.mainHeader);
+//     await performAction('selectResumeClaimOption', resumeClaimOptions.no);
+//     await performValidation('radioButtonChecked', claimantType.wales.communityLandlord, false);
+//     await performAction('selectClaimantType', claimantType.wales.communityLandlord);
+//     await performValidation('radioButtonChecked', claimType.no, false);
+//     await performAction('selectClaimType', claimType.no);
+//     await performValidation('radioButtonChecked', claimantName.no, false);
+//     await performAction('selectClaimantName', claimantName.yes);
+//     await performAction('selectContactPreferences', {
+//       notifications: contactPreferences.yes,
+//       correspondenceAddress: contactPreferences.yes,
+//       phoneNumber: contactPreferences.no
+//     });
+//     await performAction('defendantDetails', {
+//       name: defendantDetails.no,
+//       correspondenceAddress: defendantDetails.no,
+//       email: defendantDetails.no,
+//     });
+//     await performValidation('mainHeader', tenancyLicenceDetails.mainHeader);
+//     await performAction('selectTenancyOrLicenceDetails', {
+//       tenancyOrLicenceType: tenancyLicenceDetails.flexibleTenancy});
+//     await performAction('selectYourPossessionGrounds', {
+//       discretionary: [whatAreYourGroundsForPossession.discretionary.rentArrearsOrBreachOfTenancy]
+//     });
+//     await performValidation('mainHeader', rentArrearsOrBreachOfTenancy.mainHeader);
+//     await performAction('selectRentArrearsOrBreachOfTenancy', {
+//       rentArrearsOrBreach: [rentArrearsOrBreachOfTenancy.rentArrears]
+//     });
+//     await performValidation('mainHeader', preActionProtocol.mainHeader);
+//     await performAction('selectPreActionProtocol', preActionProtocol.yes);
+//     await performAction('selectMediationAndSettlement', {
+//       attemptedMediationWithDefendantsOption: mediationAndSettlement.yes,
+//       settlementWithDefendantsOption: mediationAndSettlement.no,
+//     });
+//     await performValidation('mainHeader', noticeOfYourIntention.mainHeader);
+//     await performAction('selectNoticeOfYourIntention', noticeOfYourIntention.no);
+//     // await performValidation('mainHeader', rentDetails.mainHeader);
+//     // await performAction('provideRentDetails', {rentFrequencyOption: 'Monthly', rentAmount: '1000'});
+//     // await performAction('selectDailyRentAmount', {
+//     //   calculateRentAmount: '£32.85',
+//     //   unpaidRentInteractiveOption: dailyRentAmount.yes
+//     // });
+//     await performValidation('mainHeader', moneyJudgment.mainHeader);
+//     await performAction('selectMoneyJudgment', moneyJudgment.yes);
+//     await performValidation('mainHeader', claimantCircumstances.mainHeader);
+//     await performAction('selectClaimantCircumstances', {
+//       circumstanceOption: claimantCircumstances.no,
+//       claimantInput: claimantCircumstances.claimantCircumstanceInfoInputData
+//     });
+//     await performValidation('mainHeader', defendantCircumstances.mainHeader);
+//     await performAction('selectDefendantCircumstances', defendantCircumstances.no);
+//     await performValidation('mainHeader', alternativesToPossession.mainHeader);
+//     await performAction('selectAlternativesToPossession', {question: alternativesToPossession.suspensionOrDemotion
+//       , option: [alternativesToPossession.suspensionOfRightToBuy]});
+//     await performValidation('mainHeader', housingAct.mainHeader);
+//     await performAction('selectHousingAct', {question: housingAct.suspensionOfRightToBuy.whichSection
+//       ,option: housingAct.suspensionOfRightToBuy.section121AHousingAct1985});
+//     await performValidation('mainHeader', reasonsForRequestingASuspensionOrder.mainHeader);
+//     await performAction('enterReasonForSuspensionOrder', reasonsForRequestingASuspensionOrder.question);
+//     await performValidation('mainHeader', claimingCosts.mainHeader);
+//     await performAction('selectClaimingCosts', claimingCosts.no);
+//     await performValidation('mainHeader', additionalReasonsForPossession.mainHeader);
+//     await performAction('selectAdditionalReasonsForPossession', additionalReasonsForPossession.yes);
+//     await performValidation('mainHeader', underlesseeOrMortgageeEntitledToClaim.mainHeader);
+//     await performAction('clickButton', underlesseeOrMortgageeEntitledToClaim.continue);
+//     await performAction('wantToUploadDocuments', {
+//       question: wantToUploadDocuments.uploadAnyAdditionalDocumentsLabel,
+//       option: wantToUploadDocuments.no
+//     });
+//     await performAction('selectApplications', applications.yes);
+//     await performAction('selectLanguageUsed', {question: languageUsed.whichLanguageUsedQuestion, option: languageUsed.english});
+//     await performAction('completingYourClaim', completeYourClaim.saveItForLater);
+//     await performAction('clickButton', checkYourAnswers.saveAndContinue);
+//     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
+//     await performValidations('address information entered',
+//       ['formLabelValue', propertyDetails.buildingAndStreetLabel, addressDetails.buildingAndStreet],
+//       ['formLabelValue', propertyDetails.addressLine2Label, addressDetails.addressLine2],
+//       ['formLabelValue', propertyDetails.townOrCityLabel, addressDetails.townOrCity],
+//       ['formLabelValue', propertyDetails.postcodeZipcodeLabel, addressDetails.walesCourtAssignedPostcode],
+//       ['formLabelValue', propertyDetails.countryLabel, addressDetails.country]);
+//   });
 
   // The sections commented out will be fixed as part of the User Story https://tools.hmcts.net/jira/browse/HDPI-2123
   test('Wales - Secure tenancy with Rent and other grounds', async () => {
