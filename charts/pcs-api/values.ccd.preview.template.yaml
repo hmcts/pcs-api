@@ -86,7 +86,6 @@ ccd:
               alias: DEFINITION_STORE_IDAM_KEY
   ccd-data-store-api:
     java:
-      image: 'hmctspublic.azurecr.io/ccd/data-store-api:pr-2496'
       imagePullPolicy: Always
       devmemoryRequests: '1524Mi'
       devmemoryLimits: '2048Mi'
@@ -180,9 +179,9 @@ xui-webapp:
     releaseNameOverride: ${SERVICE_NAME}-xui-webapp
     image: hmctspublic.azurecr.io/xui/webapp:latest
     ingressHost: xui-${SERVICE_FQDN}
-    devmemoryRequests: 500Mi
+    devmemoryRequests: 1Gi
     devcpuRequests: 500m
-    devmemoryLimits: 1Gi
+    devmemoryLimits: 1.5Gi
     devcpuLimits: 1
     environment:
       HEALTH_CCD_COMPONENT_API: http://${SERVICE_NAME}-ccd-api-gw/health
