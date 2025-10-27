@@ -164,7 +164,7 @@ test.describe('[Create Case - England] @Master @nightly', async () => {
     )
   });
 
-  test('England - Assured tenancy with Rent arrears and no other possession grounds', async () => {
+  test('England - Assured tenancy with Rent arrears and no other mandatory or discretionary possession grounds', async () => {
     await performAction('selectAddress', {
       postcode: addressDetails.englandCourtAssignedPostcode,
       addressIndex: addressDetails.addressIndex

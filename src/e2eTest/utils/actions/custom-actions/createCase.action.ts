@@ -346,7 +346,7 @@ export class CreateCaseAction implements IAction {
       discretionary?: string[];
       discretionaryAccommodation?: string[];
     };
-    if(possessionGrounds) {
+    if (possessionGrounds) {
       if (grounds.discretionary) {
         await performAction('check', grounds.discretionary);
       }
