@@ -55,6 +55,7 @@ import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.NoRentArrearsGroun
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.NoRentArrearsGroundsForPossessionReason;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.NoticeDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.PreActionProtocol;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ProhibitedConductWalesPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.RentArrears;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.RentArrearsGroundForPossessionAdditionalGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.RentArrearsGroundsForPossession;
@@ -118,8 +119,19 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
     private final TenancyLicenceDetails tenancyLicenceDetails;
     private final ContactPreferences contactPreferences;
     private final DefendantsDetails defendantsDetails;
+    private final NoRentArrearsGroundsForPossessionReason noRentArrearsGroundsForPossessionReason;
+    private final AdditionalReasonsForPossession additionalReasonsForPossession;
+    private final SecureOrFlexibleGroundsForPossessionReasons secureOrFlexibleGroundsForPossessionReasons;
+    private final MediationAndSettlement mediationAndSettlement;
+    private final ClaimantCircumstancesPage claimantCircumstancesPage;
+    private final IntroductoryDemotedOtherGroundsReasons introductoryDemotedOtherGroundsReasons;
+    private final DefendantCircumstancesPage defendantCircumstancesPage;
+    private final SuspensionOfRightToBuyOrderReason suspensionOfRightToBuyOrderReason;
+    private final StatementOfExpressTerms statementOfExpressTerms;
+    private final DemotionOfTenancyOrderReason demotionOfTenancyOrderReason;
     private final OrganisationNameService organisationNameService;
     private final ClaimantDetailsWalesPage claimantDetailsWales;
+    private final ProhibitedConductWalesPage prohibitedConductWalesPage;
     private final SchedulerClient schedulerClient;
 
     private static final String CASE_ISSUED_FEE_TYPE = "caseIssueFee";
@@ -153,17 +165,17 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             .add(new ReasonsForPosessionWales())
             .add(new SecureOrFlexibleGroundsForPossession())
             .add(new RentArrearsOrBreachOfTenancyGround())
-            .add(new SecureOrFlexibleGroundsForPossessionReasons())
+            .add(secureOrFlexibleGroundsForPossessionReasons)
             .add(new IntroductoryDemotedOrOtherGroundsForPossession())
-            .add(new IntroductoryDemotedOtherGroundsReasons())
+            .add(introductoryDemotedOtherGroundsReasons)
             .add(new GroundsForPossession())
             .add(new RentArrearsGroundsForPossession())
             .add(new RentArrearsGroundForPossessionAdditionalGrounds())
             .add(new RentArrearsGroundsForPossessionReasons())
             .add(new NoRentArrearsGroundsForPossessionOptions())
-            .add(new NoRentArrearsGroundsForPossessionReason())
+            .add(noRentArrearsGroundsForPossessionReason)
             .add(new PreActionProtocol())
-            .add(new MediationAndSettlement())
+            .add(mediationAndSettlement)
             .add(new CheckingNotice())
             .add(new WalesCheckingNotice())
             .add(noticeDetails)
@@ -171,18 +183,19 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             .add(new DailyRentAmount())
             .add(new RentArrears())
             .add(new MoneyJudgment())
-            .add(new ClaimantCircumstancesPage())
-            .add(new DefendantCircumstancesPage())
+            .add(claimantCircumstancesPage)
+            .add(defendantCircumstancesPage)
+            .add(prohibitedConductWalesPage)
             .add(new AlternativesToPossessionOptions())
             .add(new SuspensionOfRightToBuyHousingActOptions())
-            .add(new SuspensionOfRightToBuyOrderReason())
+            .add(suspensionOfRightToBuyOrderReason)
             .add(new DemotionOfTenancyHousingActOptions())
             .add(new SuspensionToBuyDemotionOfTenancyActs())
-            .add(new StatementOfExpressTerms())
-            .add(new DemotionOfTenancyOrderReason())
+            .add(statementOfExpressTerms)
+            .add(demotionOfTenancyOrderReason)
             .add(new SuspensionToBuyDemotionOfTenancyOrderReasons())
             .add(new ClaimingCosts())
-            .add(new AdditionalReasonsForPossession())
+            .add(additionalReasonsForPossession)
             .add(new EntitledToClaimRelief())
             //TO DO will be routed later on  correctly using tech debt ticket
             .add(new WantToUploadDocuments())
