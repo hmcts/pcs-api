@@ -26,7 +26,7 @@ class DraftCaseJsonMergerTest {
     @BeforeEach
     void setUp() {
         // Use the real object mapper, (without the Mixin), to ensure that it is also configured correctly
-        objectMapper = new JacksonConfiguration().unsubmittedCaseDataObjectMapper();
+        objectMapper = new JacksonConfiguration().draftCaseDataObjectMapper();
         objectMapper.addMixIn(PCSCase.class, null);
 
         underTest = new DraftCaseJsonMerger(objectMapper);

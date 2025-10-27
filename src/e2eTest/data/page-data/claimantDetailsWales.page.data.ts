@@ -29,5 +29,5 @@ export const claimantDetailsWales = {
   notApplicable: 'Not applicable',
   continue: 'Continue',
   previous: 'Previous',
-  cancel: 'Cancel',
+  cancel: 'Cancel'
 }
