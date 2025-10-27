@@ -39,14 +39,14 @@ public class EnforcementRiskDetails {
             label = "What kind of verbal or written threats have they made?",
             hint = "For example, explain who was threatened, what the defendants said, "
                     + "and how the threat was made (face-to-face, or by email or letter). "
-                    + "If you can, include the name of the defendant who made the threat.",
+                    + "If you can, include the name of the defendant who made the threat",
             typeOverride = uk.gov.hmcts.ccd.sdk.type.FieldType.TextArea
     )
     private String enforcementVerbalOrWrittenThreatsDetails;
 
     @CCD(
             label = "Which group are they a member of and how have they protested?",
-            hint = "For example, include the name of the group and the type of protest. "
+            hint = "For example, include the name of the group and the type of protest "
                     + "You can enter up to 6,800 characters",
             typeOverride = uk.gov.hmcts.ccd.sdk.type.FieldType.TextArea
     )
