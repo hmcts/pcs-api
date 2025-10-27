@@ -6,43 +6,31 @@ on:
       - master
 
 jobs:
-
-  buildBranch:
+  build:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        target: [branch, master]
     steps:
       - uses: actions/setup-java@v5
         with:
           distribution: corretto
           java-version: 21
-      - uses: actions/checkout@v5
-        with:
-          path: build/branch
-      - name: Build
-        run: ./gradlew generateCCDConfig
-        working-directory: build/branch
-      - uses: actions/upload-artifact@v4
-        with:
-          name: branch
-          path: build/branch/build/definitions/PCS
 
-  buildMaster:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/setup-java@v5
+      - name: Checkout ${{ matrix.target }}
+        uses: actions/checkout@v5
         with:
-          distribution: corretto
-          java-version: 21
-      - uses: actions/checkout@v5
-        with:
-          ref: master
-          path: build/master
-      - name: Build
+          ref: ${{ matrix.target == 'master' && 'master' || github.head_ref }}
+          path: build/${{ matrix.target }}
+
+      - name: Build CCD Config (${{ matrix.target }})
         run: ./gradlew generateCCDConfig
-        working-directory: build/master
+        working-directory: build/${{ matrix.target }}
+
       - uses: actions/upload-artifact@v4
         with:
-          name: master
-          path: build/master/build/definitions/PCS
+          name: ${{ matrix.target }}
+          path: build/${{ matrix.target }}/build/definitions/PCS
 
   report:
     permissions:
@@ -50,7 +38,7 @@ jobs:
       pull-requests: write
       contents: write
     runs-on: ubuntu-latest
-    needs: [buildBranch, buildMaster]
+    needs: build
     steps:
       - uses: actions/setup-node@v5
         with:
@@ -73,7 +61,6 @@ jobs:
           echo "${{ steps.ccd-diff.outputs.content }}"
       - name: Add report
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
         run: |
