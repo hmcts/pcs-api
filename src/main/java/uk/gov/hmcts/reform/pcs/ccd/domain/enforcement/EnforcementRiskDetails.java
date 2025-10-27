@@ -14,7 +14,7 @@ public class EnforcementRiskDetails {
     @CCD(
         label = "How have they been violent or aggressive?",
         hint = "For example, include the crime reference number if you have called police to the property or "
-            + "reported an incident. You can enter up to 6,800 characters.",
+            + "reported an incident. You can enter up to 6,800 characters",
         typeOverride = uk.gov.hmcts.ccd.sdk.type.FieldType.TextArea
     )
     private String enforcementViolentDetails;
@@ -22,7 +22,7 @@ public class EnforcementRiskDetails {
     @CCD(
         label = "What is their history of firearm possession?",
         hint = "For example, include the crime reference number if you have called police to the property or "
-            + "reported an incident. You can enter up to 6,800 characters.",
+            + "reported an incident. You can enter up to 6,800 characters",
         typeOverride = uk.gov.hmcts.ccd.sdk.type.FieldType.TextArea
     )
     private String enforcementFirearmsDetails;
@@ -30,7 +30,7 @@ public class EnforcementRiskDetails {
     @CCD(
         label = "What is their history of criminal or antisocial behaviour?",
         hint = "For example, include the crime reference number if you have called police to the property or "
-            + "reported an incident. You can enter up to 6,800 characters.",
+            + "reported an incident. You can enter up to 6,800 characters",
         typeOverride = uk.gov.hmcts.ccd.sdk.type.FieldType.TextArea
     )
     private String enforcementCriminalDetails;
