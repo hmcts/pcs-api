@@ -37,7 +37,7 @@ import {wantToUploadDocuments} from '@data/page-data/wantToUploadDocuments.page.
 import {resumeClaim} from "@data/page-data/resumeClaim.page.data";
 import {resumeClaimOptions} from "@data/page-data/resumeClaimOptions.page.data";
 
-// This test validates the resume functionality with and without saved options.
+// This test validates the resume & find case functionality with and without saved options.
 // It is not intended to reuse for any of the e2e scenarios, those should still be covered in others specs.
 // When a new page is added/flow changes, basic conditions in this test should be updated accordingly to continue the journey.
 // Due to frequent issues with relogin and “Find Case” (Elasticsearch), this test is made optional only for the pipeline to maintain a green build.
