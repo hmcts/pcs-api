@@ -36,6 +36,7 @@ import {alternativesToPossession} from '@data/page-data/alternativesToPossession
 import {wantToUploadDocuments} from '@data/page-data/wantToUploadDocuments.page.data';
 import {resumeClaim} from "@data/page-data/resumeClaim.page.data";
 import {resumeClaimOptions} from "@data/page-data/resumeClaimOptions.page.data";
+import {signInOrCreateAnAccount} from '@data/page-data/signInOrCreateAnAccount.page.data';
 
 // This test validates the resume & find case functionality with and without saved options.
 // It is not intended to reuse for any of the e2e scenarios, those should still be covered in others specs.
@@ -46,7 +47,14 @@ import {resumeClaimOptions} from "@data/page-data/resumeClaimOptions.page.data";
 test.beforeEach(async ({page}) => {
   initializeExecutor(page);
   await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
+  await performAction('handleCookieConsent', {
+    accept: signInOrCreateAnAccount.acceptAdditionalCookiesButton,
+    hide: signInOrCreateAnAccount.hideThisCookieMessageButton
+  });
   await performAction('login', user.claimantSolicitor);
+  await performAction('handleCookieConsent', {
+    accept: signInOrCreateAnAccount.acceptAnalyticsCookiesButton
+  });
   await performAction('clickTab', home.createCaseTab);
   await performAction('selectJurisdictionCaseTypeEvent');
   await performAction('housingPossessionClaim');

@@ -46,8 +46,7 @@ import {search} from '@data/page-data/search.page.data';
 import {userIneligible} from '@data/page-data/userIneligible.page.data';
 import {whatAreYourGroundsForPossessionWales} from '@data/page-data/whatAreYourGroundsForPossessionWales.page.data';
 import {reasonsForRequestingASuspensionAndDemotionOrder} from '@data/page-data/reasonsForRequestingASuspensionAndDemotionOrder.page.data';
-import {signInOrCreateAnAccount} from "@data/page-data/signInOrCreateAnAccount.page.data";
-import {user} from "@data/user-data/permanent.user.data";
+import {signInOrCreateAnAccount} from '@data/page-data/signInOrCreateAnAccount.page.data';
 
 export let caseInfo: { id: string; fid: string; state: string };
 export let caseNumber: string;

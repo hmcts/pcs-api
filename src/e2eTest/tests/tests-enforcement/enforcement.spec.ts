@@ -6,10 +6,9 @@ import { yourApplication } from "@data/page-data/page-data-enforcement/yourAppli
 import { initializeEnforcementExecutor, performAction, performValidation } from "@utils/controller-enforcement";
 import { caseNumber } from "@utils/actions/custom-actions/createCase.action";
 import { initializeExecutor } from "@utils/controller";
-import { caseFoundAfterFilter } from "@utils/actions/custom-actions/searchCase.action";
-import { signInOrCreateAnAccount } from "@data/page-data/signInOrCreateAnAccount.page.data";
 import { caseNotFoundAfterFilter } from "@utils/actions/custom-actions/searchCase.action";
 import { nameAndAddressForEviction } from "@data/page-data/page-data-enforcement/nameAndAddressForEviction.page.data";
+import {signInOrCreateAnAccount} from "@data/page-data/signInOrCreateAnAccount.page.data";
 
 test.beforeEach(async ({ page }) => {
   initializeExecutor(page);
@@ -25,7 +24,7 @@ test.beforeEach(async ({ page }) => {
   });
   await performAction('filterCaseFromCaseList', caseList.stateAwaitingSubmission);
   await performAction('noCasesFoundAfterSearch')
-  //Below three lines will be merged into a single action as part of improvement 
+  //Below three lines will be merged into a single action as part of improvement
   await performAction("selectFirstCaseFromTheFilter", caseNotFoundAfterFilter);
   await performAction('createNewCase', caseNotFoundAfterFilter);
   await performAction('searchMyCaseFromFindCase', { caseNumber: caseNumber, criteria: caseNotFoundAfterFilter });
