@@ -7,7 +7,7 @@ export const claimantDetailsWales = {
   wereYouLicensedUnderPart1OfTheHousingAct2014: 'Were you licensed under Part 1 of the Housing (Wales) Act 2014?',
   whatsYourLicenseNumber: 'What\'s your licence number?',
   sampleTestLicenseNumberInput: 'TEST-LIC-123',
-  haveYouAppointedALicenseAgentAgent: 'Have you appointed a licensed agent to be responsible for all the property' +
+  haveYouAppointedALicenseAgent: 'Have you appointed a licensed agent to be responsible for all the property' +
       ' management work in relation to the dwelling as permitted under Part 1 of the Housing (Wales) Act 2014?',
   detailsOfYourLicensedAgentLabel: 'Give details of your licensed agent',
   agentsFirstnameLabel: 'Agent\'s first name',
@@ -29,5 +29,5 @@ export const claimantDetailsWales = {
   notApplicable: 'Not applicable',
   continue: 'Continue',
   previous: 'Previous',
-  cancel: 'Cancel',
+  cancel: 'Cancel'
 }
