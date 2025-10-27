@@ -34,6 +34,7 @@ public class TenancyLicenceDetails implements CcdPageConfiguration {
         pageBuilder
             .page("tenancyLicenceDetails", this::midEvent)
             .pageLabel("Tenancy or licence details")
+            .showCondition("legislativeCountry=\"England\"")
             .label("tenancyLicenceDetails-info", """
                ---
                <h2 class="govuk-heading-m">Tenancy or licence type</h2>

@@ -64,6 +64,9 @@ import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.RentDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ResumeClaim;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.SecureOrFlexibleGroundsForPossession;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.SecureOrFlexibleGroundsForPossessionReasons;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.SecureContractGroundsForPossessionWales;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.ReasonsForPosessionWales;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.OccupationLicenceDetailsWales;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.SelectClaimType;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.SelectClaimantType;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.StatementOfExpressTerms;
@@ -155,6 +158,9 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             .add(contactPreferences)
             .add(defendantsDetails)
             .add(tenancyLicenceDetails)
+            .add(new OccupationLicenceDetailsWales())
+            .add(new SecureContractGroundsForPossessionWales())
+            .add(new ReasonsForPosessionWales())
             .add(new SecureOrFlexibleGroundsForPossession())
             .add(new RentArrearsOrBreachOfTenancyGround())
             .add(secureOrFlexibleGroundsForPossessionReasons)
