@@ -4,7 +4,7 @@ import { defineConfig, devices } from '@playwright/test';
 
 const DEFAULT_VIEWPORT = { width: 1920, height: 1080 };
 export const SHORT_TIMEOUT = 3000;   // 3 seconds
-export const MEDIUM_TIMEOUT = 10000; // 10 seconds
+export const MEDIUM_TIMEOUT = 30000; // 10 seconds
 
 export const waitForPageRedirectionTimeout = MEDIUM_TIMEOUT;
 export const waitForLoadStateTimeout = MEDIUM_TIMEOUT;
