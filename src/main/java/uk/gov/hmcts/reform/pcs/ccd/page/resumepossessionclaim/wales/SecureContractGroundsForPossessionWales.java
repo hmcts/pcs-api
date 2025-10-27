@@ -42,7 +42,7 @@ public class SecureContractGroundsForPossessionWales implements CcdPageConfigura
                """)
                 .optional(PCSCase::getSecureContractDiscretionaryGroundsWales)
                 .optional(PCSCase::getSecureContractEstateManagementGroundsWales,
-                        "secureContractDiscretionaryGroundsWales CONTAINS \"ESTATE_MANAGEMENT_GROUNDS\"")
+                        "secureContractDiscretionaryGroundsWalesCONTAINS\"ESTATE_MANAGEMENT_GROUNDS\"")
                 .optional(PCSCase::getSecureContractMandatoryGroundsWales);
     }
 
@@ -58,26 +58,17 @@ public class SecureContractGroundsForPossessionWales implements CcdPageConfigura
 
         Set<EstateManagementGroundsWales> estateManagement = caseData.getSecureContractEstateManagementGroundsWales();
 
-        boolean hasDiscretionary = discretionaryGrounds != null && !discretionaryGrounds.isEmpty();
-        boolean hasMandatory = mandatoryGrounds != null && !mandatoryGrounds.isEmpty();
-
-        if (!hasDiscretionary && !hasMandatory) {
+        if (discretionaryGrounds.contains(SecureContractDiscretionaryGroundsWales.ESTATE_MANAGEMENT_GROUNDS)
+                && estateManagement.isEmpty()) {
             return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
-                    .errors(List.of("Please select at least one ground"))
+                    .errors(List.of("Please select at least one ground in 'Estate management grounds (section 160)'."))
                     .build();
         }
 
-        if (hasDiscretionary 
-                && discretionaryGrounds.contains(SecureContractDiscretionaryGroundsWales.ESTATE_MANAGEMENT_GROUNDS)) {
-            boolean hasEstate = estateManagement != null && !estateManagement.isEmpty();
-            
-            if (!hasEstate) {
-                return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
-                        .errors(List.of(
-                                "Please select at least one ground in 'Estate management grounds (section 160)'."
-                        ))
-                        .build();
-            }
+        if (discretionaryGrounds.isEmpty() && mandatoryGrounds.isEmpty()) {
+            return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
+                    .errors(List.of("Please select at least one ground"))
+                    .build();
         }
 
         caseData.setShowReasonsForGroundsPageWales(YesOrNo.YES);

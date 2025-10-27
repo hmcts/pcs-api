@@ -27,7 +27,7 @@ public class SecureContractGroundsForPossessionWalesTest extends BasePageTest {
 
     @ParameterizedTest
     @MethodSource("groundScenarios")
-    void shouldValidateWalesGroundInputs(
+    void shouldValidateSecureContractWalesGroundInputs(
             Set<SecureContractDiscretionaryGroundsWales> discretionaryGrounds,
             Set<SecureContractMandatoryGroundsWales> mandatoryGrounds,
             Set<EstateManagementGroundsWales> estateGrounds,
