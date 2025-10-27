@@ -97,9 +97,9 @@ export class CreateCaseAction implements IAction {
       ['selectApplications', () => this.selectApplications(fieldName)],
       ['selectClaimingCosts', () => this.selectClaimingCosts(fieldName)],
       ['completingYourClaim', () => this.completingYourClaim(fieldName)],
-      ['selectAdditionalReasonsForPossession', ()=> this.selectAdditionalReasonsForPossession(fieldName)],
-      ['selectUnderlesseeOrMortgageeEntitledToClaim', ()=> this.selectUnderlesseeOrMortgageeEntitledToClaim(fieldName as actionRecord)],
-      ['selectUnderlesseeOrMortgageeDetails', ()=> this.selectUnderlesseeOrMortgageeDetails(fieldName as actionRecord)],
+      ['selectAdditionalReasonsForPossession', () => this.selectAdditionalReasonsForPossession(fieldName)],
+      ['selectUnderlesseeOrMortgageeEntitledToClaim', () => this.selectUnderlesseeOrMortgageeEntitledToClaim(fieldName as actionRecord)],
+      ['selectUnderlesseeOrMortgageeDetails', () => this.selectUnderlesseeOrMortgageeDetails(fieldName as actionRecord)],
       ['wantToUploadDocuments', () => this.wantToUploadDocuments(fieldName as actionRecord)],
       ['uploadAdditionalDocs', () => this.uploadAdditionalDocs(fieldName as actionRecord)]
     ]);
