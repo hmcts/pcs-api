@@ -11,6 +11,8 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.EnforcementRiskDetails;
 
+import static uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent.SAVE_AND_RETURN;
+
 @Component
 public class EvictionRisksPosedPage implements CcdPageConfiguration {
 
@@ -22,7 +24,9 @@ public class EvictionRisksPosedPage implements CcdPageConfiguration {
             .showCondition("anyRiskToBailiff=\"YES\"")
             .label("evictionRisksPosedPage-line-separator", "---")
             .complex(PCSCase::getEnforcementOrder)
-            .mandatory(EnforcementOrder::getEnforcementRiskCategories);
+            .mandatory(EnforcementOrder::getEnforcementRiskCategories)
+            .done()
+            .label("evictionRisksPosedPage-details-save-and-return", SAVE_AND_RETURN);
     }
 
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
