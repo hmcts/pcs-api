@@ -47,6 +47,26 @@ class IntroductoryDemotedOrOtherGroundsForPossessionTest extends BasePageTest {
         assertThat(updatedCaseData.getShowRentDetailsPage()).isEqualTo(expectedShowRentDetailsPage);
     }
 
+    @ParameterizedTest
+    @MethodSource("provideNoGroundsForPossessionScenarios")
+    void shouldSetCorrectShowRentDetailsPageFlagWhenNoGroundsForPossession(
+        TenancyLicenceType tenancyType,
+        YesOrNo expectedShowRentDetailsPage) {
+        // Given - AC05: No grounds for possession selected
+        PCSCase caseData = PCSCase.builder()
+            .typeOfTenancyLicence(tenancyType)
+            .hasIntroductoryDemotedOtherGroundsForPossession(VerticalYesNo.NO)
+            .introductoryDemotedOrOtherGrounds(null) // No grounds selected
+            .build();
+
+        // When
+        AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
+
+        // Then
+        PCSCase updatedCaseData = response.getData();
+        assertThat(updatedCaseData.getShowRentDetailsPage()).isEqualTo(expectedShowRentDetailsPage);
+    }
+
     private static Stream<Arguments> provideRentDetailsPageScenarios() {
         return Stream.of(
             // AC01 & AC02: Introductory Tenancy + Rent Arrears selected - Should show Rent Details
@@ -83,6 +103,31 @@ class IntroductoryDemotedOrOtherGroundsForPossessionTest extends BasePageTest {
             // Introductory Tenancy + No grounds selected - Should NOT show Rent Details
             arguments(TenancyLicenceType.INTRODUCTORY_TENANCY,
                       Set.of(),
+                      YesOrNo.NO),
+
+            // AC03 Additional Test Cases: Multiple grounds WITHOUT rent arrears - Should NOT show Rent Details
+            arguments(TenancyLicenceType.DEMOTED_TENANCY,
+                      Set.of(IntroductoryDemotedOrOtherGrounds.ANTI_SOCIAL,
+                             IntroductoryDemotedOrOtherGrounds.BREACH_OF_THE_TENANCY),
+                      YesOrNo.NO),
+            // AC03: Other Tenancy + Multiple grounds WITHOUT rent arrears - Should NOT show Rent Details
+            arguments(TenancyLicenceType.OTHER,
+                      Set.of(IntroductoryDemotedOrOtherGrounds.ABSOLUTE_GROUNDS,
+                             IntroductoryDemotedOrOtherGrounds.ANTI_SOCIAL),
+                      YesOrNo.NO)
+        );
+    }
+
+    private static Stream<Arguments> provideNoGroundsForPossessionScenarios() {
+        return Stream.of(
+            // AC05: Introductory Tenancy + No grounds for possession - Should NOT show Rent Details
+            arguments(TenancyLicenceType.INTRODUCTORY_TENANCY,
+                      YesOrNo.NO),
+            // AC05: Demoted Tenancy + No grounds for possession - Should NOT show Rent Details
+            arguments(TenancyLicenceType.DEMOTED_TENANCY,
+                      YesOrNo.NO),
+            // AC05: Other Tenancy + No grounds for possession - Should NOT show Rent Details
+            arguments(TenancyLicenceType.OTHER,
                       YesOrNo.NO)
         );
     }
