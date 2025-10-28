@@ -98,5 +98,119 @@ class EvictionVulnerableAdultsChildrenPageTest extends BasePageTest {
         // Then
         assertThat(response.getErrors()).isEmpty();
     }
+
+    @Test
+    void shouldNotReturnErrorWhenTextIsExactlyAtCharacterLimit() {
+        // Given
+        String textAtLimit = "a".repeat(VULNERABLE_REASON_TEXT_LIMIT);
+        VulnerableAdultsChildren vulnerableAdultsChildren = VulnerableAdultsChildren.builder()
+                .vulnerablePeopleYesNo(YesNoNotSure.YES)
+                .vulnerableCategory(VulnerableCategory.VULNERABLE_CHILDREN)
+                .vulnerableReasonText(textAtLimit)
+                .build();
+
+        EnforcementOrder enforcementOrder = EnforcementOrder.builder()
+                .vulnerableAdultsChildren(vulnerableAdultsChildren)
+                .build();
+
+        PCSCase caseData = PCSCase.builder()
+                .enforcementOrder(enforcementOrder)
+                .build();
+
+        // When
+        AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
+
+        // Then
+        assertThat(response.getErrors()).isEmpty();
+    }
+
+    @Test
+    void shouldNotReturnErrorWhenNullEnforcementOrder() {
+        // Given
+        PCSCase caseData = PCSCase.builder()
+                .enforcementOrder(null)
+                .build();
+
+        // When
+        AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
+
+        // Then
+        assertThat(response.getErrors()).isEmpty();
+    }
+
+    @Test
+    void shouldNotReturnErrorWhenNullVulnerableAdultsChildren() {
+        // Given
+        EnforcementOrder enforcementOrder = EnforcementOrder.builder()
+                .vulnerableAdultsChildren(null)
+                .build();
+
+        PCSCase caseData = PCSCase.builder()
+                .enforcementOrder(enforcementOrder)
+                .build();
+
+        // When
+        AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
+
+        // Then
+        assertThat(response.getErrors()).isEmpty();
+    }
+
+    @Test
+    void shouldNotReturnErrorWhenNotSureSelected() {
+        // Given
+        VulnerableAdultsChildren vulnerableAdultsChildren = VulnerableAdultsChildren.builder()
+                .vulnerablePeopleYesNo(YesNoNotSure.NOT_SURE)
+                .build();
+
+        EnforcementOrder enforcementOrder = EnforcementOrder.builder()
+                .vulnerableAdultsChildren(vulnerableAdultsChildren)
+                .build();
+
+        PCSCase caseData = PCSCase.builder()
+                .enforcementOrder(enforcementOrder)
+                .build();
+
+        // When
+        AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
+
+        // Then
+        assertThat(response.getErrors()).isEmpty();
+    }
+
+    @Test
+    void shouldReturnErrorForAllVulnerableCategoryTypes() {
+        // Given
+        VulnerableCategory[] categories = {
+                VulnerableCategory.VULNERABLE_ADULTS,
+                VulnerableCategory.VULNERABLE_CHILDREN,
+                VulnerableCategory.VULNERABLE_ADULTS_AND_CHILDREN
+        };
+
+        for (VulnerableCategory category : categories) {
+            String longText = "a".repeat(VULNERABLE_REASON_TEXT_LIMIT + 1);
+            VulnerableAdultsChildren vulnerableAdultsChildren = VulnerableAdultsChildren.builder()
+                    .vulnerablePeopleYesNo(YesNoNotSure.YES)
+                    .vulnerableCategory(category)
+                    .vulnerableReasonText(longText)
+                    .build();
+
+            EnforcementOrder enforcementOrder = EnforcementOrder.builder()
+                    .vulnerableAdultsChildren(vulnerableAdultsChildren)
+                    .build();
+
+            PCSCase caseData = PCSCase.builder()
+                    .enforcementOrder(enforcementOrder)
+                    .build();
+
+            // When
+            AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
+
+            // Then
+            assertThat(response.getErrors())
+                    .withFailMessage("Should return error for category: " + category)
+                    .isNotEmpty();
+        }
+    }
 }
 
