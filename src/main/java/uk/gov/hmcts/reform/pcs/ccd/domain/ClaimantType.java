@@ -15,7 +15,7 @@ public enum ClaimantType implements HasLabel {
 
     PRIVATE_LANDLORD("Private landlord", Set.of(ENGLAND, WALES)),
     PROVIDER_OF_SOCIAL_HOUSING("Registered provider of social housing", Set.of(ENGLAND)),
-    COMMUNITY_LANDLORD("Registered community landlord", Set.of(WALES)),
+    COMMUNITY_LANDLORD("Community landlord", Set.of(WALES)),
     MORTGAGE_LENDER("Mortgage lender", Set.of(ENGLAND, WALES)),
     OTHER("Other", Set.of(ENGLAND, WALES));
 
@@ -24,7 +24,7 @@ public enum ClaimantType implements HasLabel {
 
     ClaimantType(String label, Set<LegislativeCountry> legislativeCountries) {
         this.label = label;
-        this.legislativeCountries = requireNonNull(legislativeCountries, "legistive countries must not be null");
+        this.legislativeCountries = requireNonNull(legislativeCountries, "legislative countries must not be null");
     }
 
     public boolean isApplicableFor(LegislativeCountry legislativeCountry) {

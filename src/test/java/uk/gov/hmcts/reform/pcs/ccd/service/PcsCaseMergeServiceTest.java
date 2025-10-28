@@ -8,20 +8,32 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.modelmapper.ModelMapper;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.DiscretionaryGroundWales;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.EstateManagementGroundsWales;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.MandatoryGroundWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractDiscretionaryGroundsWales;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractMandatoryGroundsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.mapper.DefendantMapper;
+import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
+import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
+import uk.gov.hmcts.reform.pcs.config.MapperConfig;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
+import java.util.Set;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -33,12 +45,17 @@ class PcsCaseMergeServiceTest {
     private ModelMapper modelMapper;
     @Mock
     private TenancyLicenceService tenancyLicenceService;
+    @Mock
+    private DefendantMapper defendantMapper;
 
     private PcsCaseMergeService underTest;
 
     @BeforeEach
     void setUp() {
-        underTest = new PcsCaseMergeService(securityContextService, modelMapper, tenancyLicenceService);
+        MapperConfig config = new MapperConfig();
+        modelMapper = spy(config.modelMapper());
+        underTest = new PcsCaseMergeService(securityContextService, modelMapper, tenancyLicenceService,
+                                            defendantMapper);
     }
 
     @Test
@@ -55,7 +72,6 @@ class PcsCaseMergeServiceTest {
         // Then
         verify(pcsCaseEntity).setTenancyLicence(any());
         verify(pcsCaseEntity).setPossessionGrounds(any());
-        verifyNoMoreInteractions(pcsCaseEntity);
     }
 
     @Test
@@ -178,6 +194,152 @@ class PcsCaseMergeServiceTest {
 
         // Then
         verify(pcsCaseEntity).setPreActionProtocolCompleted(preActionProtocolCompleted.toBoolean());
+    }
+
+    @Test
+    void shouldMergeClaimantTypeWhenAvailable() {
+        // Given
+        PCSCase pcsCase = mock(PCSCase.class);
+        PcsCaseEntity pcsCaseEntity = mock(PcsCaseEntity.class);
+
+        DynamicStringList claimantTypeList = DynamicStringList.builder()
+            .value(DynamicStringListElement.builder()
+                .code(ClaimantType.COMMUNITY_LANDLORD.name())
+                .label(ClaimantType.COMMUNITY_LANDLORD.getLabel())
+                .build())
+            .build();
+
+        when(pcsCase.getClaimantType()).thenReturn(claimantTypeList);
+
+        // When
+        underTest.mergeCaseData(pcsCaseEntity, pcsCase);
+
+        // Then
+        verify(pcsCaseEntity).setClaimantType(ClaimantType.COMMUNITY_LANDLORD);
+    }
+
+    @Test
+    void shouldSkipClaimantTypeWhenNull() {
+        // Given
+        PCSCase pcsCase = mock(PCSCase.class);
+        PcsCaseEntity pcsCaseEntity = mock(PcsCaseEntity.class);
+
+        when(pcsCase.getClaimantType()).thenReturn(null);
+
+        // When
+        underTest.mergeCaseData(pcsCaseEntity, pcsCase);
+
+        // Then
+        verify(pcsCaseEntity, never()).setClaimantType(any());
+    }
+
+
+    @Test
+    void shouldMergeAllClaimantTypes() {
+        // Given
+        PCSCase pcsCase = mock(PCSCase.class);
+        PcsCaseEntity pcsCaseEntity = mock(PcsCaseEntity.class);
+
+        DynamicStringList claimantTypeList = DynamicStringList.builder()
+            .value(DynamicStringListElement.builder()
+                .code(ClaimantType.PRIVATE_LANDLORD.name())
+                .label(ClaimantType.PRIVATE_LANDLORD.getLabel())
+                .build())
+            .build();
+
+        when(pcsCase.getClaimantType()).thenReturn(claimantTypeList);
+
+        // When
+        underTest.mergeCaseData(pcsCaseEntity, pcsCase);
+
+        // Then
+        verify(pcsCaseEntity).setClaimantType(ClaimantType.PRIVATE_LANDLORD);
+    }
+
+    @Test
+    void shouldMapWalesStandardContractGroundsToPossessionGrounds() {
+        PCSCase pcsCase = mock(PCSCase.class);
+
+        Set<DiscretionaryGroundWales> discretionaryGrounds = Set.of(
+                DiscretionaryGroundWales.RENT_ARREARS_SECTION_157,
+                DiscretionaryGroundWales.ANTISOCIAL_BEHAVIOUR_SECTION_157);
+        Set<MandatoryGroundWales> mandatoryGrounds = Set.of(
+                MandatoryGroundWales.FAIL_TO_GIVE_UP_S170);
+        Set<EstateManagementGroundsWales> estateManagementGrounds = Set.of(
+                EstateManagementGroundsWales.BUILDING_WORKS,
+                EstateManagementGroundsWales.REDEVELOPMENT_SCHEMES);
+
+        when(pcsCase.getDiscretionaryGroundsWales()).thenReturn(discretionaryGrounds);
+        when(pcsCase.getMandatoryGroundsWales()).thenReturn(mandatoryGrounds);
+        when(pcsCase.getEstateManagementGroundsWales()).thenReturn(estateManagementGrounds);
+        when(pcsCase.getSecureContractDiscretionaryGroundsWales()).thenReturn(null);
+        when(pcsCase.getSecureContractMandatoryGroundsWales()).thenReturn(null);
+        when(pcsCase.getSecureContractEstateManagementGroundsWales()).thenReturn(null);
+        when(pcsCase.getSecureOrFlexibleDiscretionaryGrounds()).thenReturn(null);
+        when(pcsCase.getSecureOrFlexibleMandatoryGrounds()).thenReturn(null);
+        when(pcsCase.getSecureOrFlexibleDiscretionaryGroundsAlt()).thenReturn(null);
+        when(pcsCase.getSecureOrFlexibleMandatoryGroundsAlt()).thenReturn(null);
+        when(pcsCase.getSecureOrFlexibleGroundsReasons()).thenReturn(null);
+
+        PcsCaseEntity pcsCaseEntity = new PcsCaseEntity();
+
+        underTest.mergeCaseData(pcsCaseEntity, pcsCase);
+
+        assertThat(pcsCaseEntity.getPossessionGrounds()).isNotNull();
+        assertThat(pcsCaseEntity.getPossessionGrounds().getWalesDiscretionaryGrounds())
+                .contains(
+                        DiscretionaryGroundWales.RENT_ARREARS_SECTION_157.getLabel(),
+                        DiscretionaryGroundWales.ANTISOCIAL_BEHAVIOUR_SECTION_157.getLabel());
+        assertThat(pcsCaseEntity.getPossessionGrounds().getWalesMandatoryGrounds())
+                .contains(
+                        MandatoryGroundWales.FAIL_TO_GIVE_UP_S170.getLabel());
+        assertThat(pcsCaseEntity.getPossessionGrounds().getWalesEstateManagementGrounds())
+                .contains(
+                        EstateManagementGroundsWales.BUILDING_WORKS.getLabel(),
+                        EstateManagementGroundsWales.REDEVELOPMENT_SCHEMES.getLabel());
+    }
+
+    @Test
+    void shouldMapWalesSecureContractGroundsToPossessionGrounds() {
+        PCSCase pcsCase = mock(PCSCase.class);
+
+        Set<SecureContractDiscretionaryGroundsWales> discretionaryGrounds = Set.of(
+                SecureContractDiscretionaryGroundsWales.RENT_ARREARS,
+                SecureContractDiscretionaryGroundsWales.ANTISOCIAL_BEHAVIOUR);
+        Set<SecureContractMandatoryGroundsWales> mandatoryGrounds = Set.of(
+                SecureContractMandatoryGroundsWales.FAILURE_TO_GIVE_UP_POSSESSION_SECTION_170);
+        Set<EstateManagementGroundsWales> estateManagementGrounds = Set.of(
+                EstateManagementGroundsWales.BUILDING_WORKS,
+                EstateManagementGroundsWales.REDEVELOPMENT_SCHEMES);
+
+        when(pcsCase.getDiscretionaryGroundsWales()).thenReturn(null);
+        when(pcsCase.getMandatoryGroundsWales()).thenReturn(null);
+        when(pcsCase.getEstateManagementGroundsWales()).thenReturn(null);
+        when(pcsCase.getSecureContractDiscretionaryGroundsWales()).thenReturn(discretionaryGrounds);
+        when(pcsCase.getSecureContractMandatoryGroundsWales()).thenReturn(mandatoryGrounds);
+        when(pcsCase.getSecureContractEstateManagementGroundsWales()).thenReturn(estateManagementGrounds);
+        when(pcsCase.getSecureOrFlexibleDiscretionaryGrounds()).thenReturn(null);
+        when(pcsCase.getSecureOrFlexibleMandatoryGrounds()).thenReturn(null);
+        when(pcsCase.getSecureOrFlexibleDiscretionaryGroundsAlt()).thenReturn(null);
+        when(pcsCase.getSecureOrFlexibleMandatoryGroundsAlt()).thenReturn(null);
+        when(pcsCase.getSecureOrFlexibleGroundsReasons()).thenReturn(null);
+
+        PcsCaseEntity pcsCaseEntity = new PcsCaseEntity();
+
+        underTest.mergeCaseData(pcsCaseEntity, pcsCase);
+
+        assertThat(pcsCaseEntity.getPossessionGrounds()).isNotNull();
+        assertThat(pcsCaseEntity.getPossessionGrounds().getWalesSecureContractDiscretionaryGrounds())
+                .contains(
+                        SecureContractDiscretionaryGroundsWales.RENT_ARREARS.getLabel(),
+                        SecureContractDiscretionaryGroundsWales.ANTISOCIAL_BEHAVIOUR.getLabel());
+        assertThat(pcsCaseEntity.getPossessionGrounds().getWalesSecureContractMandatoryGrounds())
+                .contains(
+                        SecureContractMandatoryGroundsWales.FAILURE_TO_GIVE_UP_POSSESSION_SECTION_170.getLabel());
+        assertThat(pcsCaseEntity.getPossessionGrounds().getWalesSecureContractEstateManagementGrounds())
+                .contains(
+                        EstateManagementGroundsWales.BUILDING_WORKS.getLabel(),
+                        EstateManagementGroundsWales.REDEVELOPMENT_SCHEMES.getLabel());
     }
 
     private AddressEntity stubAddressUKModelMapper(AddressUK addressUK) {

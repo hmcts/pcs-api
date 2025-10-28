@@ -12,9 +12,20 @@ import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseworkerReadAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenAccess;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.model.NoRentArrearsReasonForGrounds;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.DiscretionaryGroundWales;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.EstateManagementGroundsWales;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.MandatoryGroundWales;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceTypeWales;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractDiscretionaryGroundsWales;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractMandatoryGroundsWales;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.EstateManagementGroundsWales;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceTypeWales;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractDiscretionaryGroundsWales;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractMandatoryGroundsWales;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -33,6 +44,12 @@ import static uk.gov.hmcts.ccd.sdk.type.FieldType.TextArea;
 @Data
 public class PCSCase {
 
+    @CCD(
+        searchable = false
+    )
+    @External
+    private String feeAmount;
+
     private YesOrNo hasUnsubmittedCaseData;
 
     @CCD(label = "Do you want to resume your claim using your saved answers?")
@@ -44,6 +61,12 @@ public class PCSCase {
     )
     @External
     private String claimantName;
+
+    @CCD(
+        label = "Organisation Name"
+    )
+    @External
+    private String organisationName;
 
     @CCD(
         searchable = false,
@@ -62,6 +85,8 @@ public class PCSCase {
     )
     @External
     private AddressUK propertyAddress;
+
+    private String formattedPropertyAddress;
 
     @CCD(searchable = false)
     private YesOrNo showCrossBorderPage;
@@ -183,18 +208,23 @@ public class PCSCase {
         label = "Mandatory grounds",
         hint = "Select all that apply",
         typeOverride = MultiSelectList,
-        typeParameterOverride = "MandatoryGround"
+        typeParameterOverride = "RentArrearsMandatoryGrounds"
     )
-    private Set<MandatoryGround> mandatoryGrounds;
+    private Set<RentArrearsMandatoryGrounds> rentArrearsMandatoryGrounds;
 
     // Additional grounds checkboxes - Discretionary
     @CCD(
         label = "Discretionary grounds",
         hint = "Select all that apply",
         typeOverride = MultiSelectList,
-        typeParameterOverride = "DiscretionaryGround"
+        typeParameterOverride = "RentArrearsDiscretionaryGrounds"
     )
-    private Set<DiscretionaryGround> discretionaryGrounds;
+    private Set<RentArrearsDiscretionaryGrounds> rentArrearsDiscretionaryGrounds;
+
+    @JsonUnwrapped
+    private RentArrearsGroundsReasons rentArrearsGroundsReasons;
+
+    private YesOrNo showRentArrearsGroundReasonPage;
 
     @CCD(
         label = "Have you attempted mediation with the defendants?"
@@ -256,6 +286,10 @@ public class PCSCase {
 
     @CCD(searchable = false)
     private YesOrNo showClaimTypeNotEligibleWales;
+
+    @JsonUnwrapped(prefix = "wales")
+    @CCD
+    private WalesHousingAct walesHousingAct;
 
     @CCD(
         label = "How much is the rent?",
@@ -550,11 +584,15 @@ public class PCSCase {
     @JsonUnwrapped
     private NoRentArrearsReasonForGrounds noRentArrearsReasonForGrounds;
 
+    private YesOrNo showNoRentArrearsGroundReasonPage;
+
     @CCD(
-        label = "Did you complete all or part of this claim in Welsh?",
-        hint = "The answer to this question will help make sure your claim is translated correctly"
+        label = "Which language did you use to complete this service?",
+        hint = "If someone else helped you to answer a question in this service, "
+            + "ask them if they answered any questions in Welsh. We’ll use this to "
+            + "make sure your claim is processed correctly"
     )
-    private VerticalYesNo welshUsed;
+    private LanguageUsed languageUsed;
 
     @JsonUnwrapped
     private DefendantCircumstances defendantCircumstances;
@@ -606,4 +644,69 @@ public class PCSCase {
         typeParameterOverride = "CompletionNextStep"
     )
     private CompletionNextStep completionNextStep;
+
+    @CCD(
+        label = "Discretionary grounds",
+        hint = "Select all that apply",
+        typeOverride = FieldType.MultiSelectList,
+        typeParameterOverride = "DiscretionaryGroundWales"
+    )
+    private Set<DiscretionaryGroundWales> discretionaryGroundsWales;
+
+    @CCD(
+        label = "Mandatory grounds",
+        hint = "Select all that apply",
+        typeOverride = FieldType.MultiSelectList,
+        typeParameterOverride = "MandatoryGroundWales"
+    )
+    private Set<MandatoryGroundWales> mandatoryGroundsWales;
+
+    @JsonUnwrapped
+    private SuspensionOfRightToBuyDemotionOfTenancy  suspensionOfRightToBuyDemotionOfTenancy;
+
+    @JsonUnwrapped(prefix = "wales")
+    private WalesNoticeDetails walesNoticeDetails;
+    @CCD(
+        label = "Discretionary grounds",
+        hint = "Select all that apply",
+        typeOverride = FieldType.MultiSelectList,
+        typeParameterOverride = "SecureContractDiscretionaryGroundsWales"
+    )
+    private Set<SecureContractDiscretionaryGroundsWales> secureContractDiscretionaryGroundsWales;
+
+    @CCD(
+        label = "Mandatory grounds",
+        hint = "Select all that apply",
+        typeOverride = FieldType.MultiSelectList,
+        typeParameterOverride = "SecureContractMandatoryGroundsWales"
+    )
+    private Set<SecureContractMandatoryGroundsWales> secureContractMandatoryGroundsWales;
+
+    @CCD(
+        label = "Estate management grounds",
+        typeOverride = FieldType.MultiSelectList,
+        typeParameterOverride = "EstateManagementGroundsWales"
+    )
+    private Set<EstateManagementGroundsWales> secureContractEstateManagementGroundsWales;
+
+    @CCD(
+        label = "Estate management grounds",
+        typeOverride = FieldType.MultiSelectList,
+        typeParameterOverride = "EstateManagementGroundsWales"
+    )
+    private Set<EstateManagementGroundsWales> estateManagementGroundsWales;
+
+    @CCD(searchable = false)
+    private YesOrNo showReasonsForGroundsPageWales;
+
+    @CCD(
+        label = "What type of tenancy or licence is in place?",
+        typeOverride = FieldType.FixedRadioList,
+        typeParameterOverride = "OccupationLicenceTypeWales"
+    )
+    private OccupationLicenceTypeWales occupationLicenceTypeWales;
+
+    @JsonUnwrapped
+    private EnforcementOrder enforcementOrder;
+
 }
