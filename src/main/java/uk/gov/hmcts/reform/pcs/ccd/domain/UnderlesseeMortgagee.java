@@ -15,9 +15,6 @@ import uk.gov.hmcts.ccd.sdk.type.FieldType;
 @AllArgsConstructor
 public class UnderlesseeMortgagee {
 
-    @CCD(label = "Is there an underlessee or mortgagee entitled to claim relief against forfeiture?")
-    private VerticalYesNo hasUnderlesseeOrMortgagee;
-
     @CCD(label = """
                     ---
                     <h2 class="govuk-heading-m"> Underlessee or mortgagee name </h2>
@@ -28,7 +25,8 @@ public class UnderlesseeMortgagee {
     private VerticalYesNo underlesseeOrMortgageeNameKnown;
 
     @CCD(label = "What is their name?",
-        hint = "Enter their first and last name, or the company or organisation name"
+        hint = "Enter their first and last name, or the company or organisation name",
+        showCondition = "underlesseeOrMortgageeNameKnown=\"YES\""
     )
     private String underlesseeOrMortgageeName;
 
@@ -41,7 +39,7 @@ public class UnderlesseeMortgagee {
     @CCD(label = "Do you know the underlessee or mortgagee's correspondence address?")
     private VerticalYesNo underlesseeOrMortgageeAddressKnown;
 
-    @CCD(label = "Enter address details")
+    @CCD(label = "Enter address details", showCondition = "underlesseeOrMortgageeAddressKnown=\"YES\"")
     private AddressUK underlesseeOrMortgageeAddress;
 
 }

@@ -3,7 +3,6 @@ package uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.domain.UnderlesseeMortgagee;
 
 public class UnderlesseeMortgageeEntitledToClaimRelief implements CcdPageConfiguration {
 
@@ -20,8 +19,6 @@ public class UnderlesseeMortgageeEntitledToClaimRelief implements CcdPageConfigu
                     to end it.
                    </p>
                    """)
-            .complex(PCSCase::getUnderlesseeMortgagee)
-            .mandatory(UnderlesseeMortgagee::getHasUnderlesseeOrMortgagee)
-            .done();
+            .mandatory(PCSCase::getHasUnderlesseeOrMortgagee);
     }
 }

@@ -681,7 +681,9 @@ public class PCSCase {
     )
     private OccupationLicenceTypeWales occupationLicenceTypeWales;
 
-    @JsonUnwrapped
+    @CCD(label = "Is there an underlessee or mortgagee entitled to claim relief against forfeiture?")
+    private VerticalYesNo hasUnderlesseeOrMortgagee;
+
     private UnderlesseeMortgagee underlesseeMortgagee;
 
     @CCD(label = "Do you need to add another underlessee or mortgagee?")

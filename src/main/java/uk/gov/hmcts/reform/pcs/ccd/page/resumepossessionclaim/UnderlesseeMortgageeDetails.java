@@ -31,12 +31,10 @@ public class UnderlesseeMortgageeDetails  implements CcdPageConfiguration {
             .complex(PCSCase::getUnderlesseeMortgagee)
                 .readonly(UnderlesseeMortgagee::getUnderlesseeOrMortgageeNameLabel)
                 .mandatory(UnderlesseeMortgagee::getUnderlesseeOrMortgageeNameKnown)
-                .mandatory(UnderlesseeMortgagee::getUnderlesseeOrMortgageeName,
-                       "underlesseeOrMortgageeNameKnown=\"YES\"")
-            .mandatory(UnderlesseeMortgagee::getUnderlesseeOrMortgageeAddressKnown)
+                .mandatory(UnderlesseeMortgagee::getUnderlesseeOrMortgageeName)
                 .readonly(UnderlesseeMortgagee::getUnderlesseeOrMortgageeAddressLabel)
-                    .complex(UnderlesseeMortgagee::getUnderlesseeOrMortgageeAddress,
-                     "underlesseeOrMortgageeAddressKnown=\"YES\"")
+                .mandatory(UnderlesseeMortgagee::getUnderlesseeOrMortgageeAddressKnown)
+                    .complex(UnderlesseeMortgagee::getUnderlesseeOrMortgageeAddress)
                         .mandatory(AddressUK::getAddressLine1)
                         .optional(AddressUK::getAddressLine2)
                         .optional(AddressUK::getAddressLine3)
@@ -51,7 +49,8 @@ public class UnderlesseeMortgageeDetails  implements CcdPageConfiguration {
                 <h2 class="govuk-heading-m">Additional underlessee or mortgagee?</h2>
                 """)
             .mandatory(PCSCase::getAddAdditionalUnderlesseeOrMortgagee)
-            .mandatory(PCSCase::getAdditionalUnderlesseeMortgagee);
+            .mandatory(PCSCase::getAdditionalUnderlesseeMortgagee,
+                       "addAdditionalUnderlesseeOrMortgagee=\"YES\"");
     }
 
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
@@ -62,8 +61,8 @@ public class UnderlesseeMortgageeDetails  implements CcdPageConfiguration {
         boolean additionalUnderlesseeMortgagee = caseData.getAddAdditionalUnderlesseeOrMortgagee() == VerticalYesNo.YES;
 
         UnderlesseeMortgagee underlesseeMortgageeDetails = caseData.getUnderlesseeMortgagee();
-        List<String> validationErrors = new ArrayList<>(underlesseeMortgageeValidator
-                                                            .validateFirstUnderlesseeOrMortgagee(
+        List<String> validationErrors =
+            new ArrayList<>(underlesseeMortgageeValidator.validateFirstUnderlesseeOrMortgagee(
                                                                 underlesseeMortgageeDetails,
                                                                 additionalUnderlesseeMortgagee
                                                             ));
