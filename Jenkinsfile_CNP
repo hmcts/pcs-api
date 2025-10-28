@@ -89,9 +89,6 @@ withPipeline(type, product, component) {
 
   afterAlways('functionalTest:preview') {
     archiveFunctionalTestReports()
-    if (githubApi.getLabelsbyPattern(env.BRANCH_NAME, "pr:runE2eTests").size() > 0) {
-
-    }
   }
 
   afterAlways('functionalTest:aat') {
