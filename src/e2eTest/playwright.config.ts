@@ -18,7 +18,7 @@ export default defineConfig({
   /* Retry on CI only */
   retries: process.env.CI ? 3 : 0,
   // Reduced workers from 4 → 2 due to server/login contention issues
-  workers: 6,
+  workers: 4,
   timeout: 200 * 1000,
   expect: { timeout: 30 * 1000 },
   use: { actionTimeout: 30 * 1000, navigationTimeout: 30 * 1000 },

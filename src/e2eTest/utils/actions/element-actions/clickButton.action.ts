@@ -21,10 +21,10 @@ export class ClickButtonAction implements IAction {
   }
 
   private async clickButton(page: Page, button: Locator): Promise<void> {
+    await page.waitForTimeout(1000);
     await button.first().click();
     await page.waitForLoadState();
     await page.locator('.spinner-container').waitFor({state: 'detached'});
-    await page.waitForTimeout(1000);
   }
 
   private async clickButtonAndVerifyPageNavigation(page: Page, button: Locator, nextPageElement: string): Promise<void> {
@@ -36,6 +36,7 @@ export class ClickButtonAction implements IAction {
       await this.clickButton(page, button);
       //Adding sleep to slow down execution when the application behaves abnormally
       await page.waitForTimeout(waitForPageRedirectionTimeout);
+      await page.reload({waitUntil: 'networkidle'});
       nextPageElementIsVisible = await pageElement.isVisible();
     } while (!nextPageElementIsVisible && attempt < actionRetries);
     if (!nextPageElementIsVisible) {
