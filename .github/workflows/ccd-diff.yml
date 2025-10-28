@@ -1,0 +1,70 @@
+name: Diff CCD definition
+
+on:
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        target: [branch, master]
+    steps:
+      - uses: actions/setup-java@v5
+        with:
+          distribution: corretto
+          java-version: 21
+
+      - name: Checkout ${{ matrix.target }}
+        uses: actions/checkout@v5
+        with:
+          ref: ${{ matrix.target == 'master' && 'master' || github.head_ref }}
+          path: build/${{ matrix.target }}
+
+      - name: Build CCD Config (${{ matrix.target }})
+        run: ./gradlew generateCCDConfig
+        working-directory: build/${{ matrix.target }}
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.target }}
+          path: build/${{ matrix.target }}/build/definitions/PCS
+
+  report:
+    permissions:
+      pull-requests: write
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 16
+      - uses: actions/download-artifact@v5
+        with:
+          name: branch
+          path: build/branch
+      - uses: actions/download-artifact@v5
+        with:
+          name: master
+          path: build/master
+      - name: Generate report
+        id: ccd-diff
+        run: |
+          REPORT="$(npx -q @hmcts/ccd-diff build/master build/branch)"
+          printf 'content<<EOF\n%s\nEOF\n' "$REPORT" >> "$GITHUB_OUTPUT"
+      - name: Display
+        run: |
+          echo "${{ steps.ccd-diff.outputs.content }}"
+      - name: Add report
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          BODY_FILE="$(mktemp)"
+          {
+            printf '# CCD diff report\n\n'
+            printf '%s\n' "${{ steps.ccd-diff.outputs.content }}"
+          } > "$BODY_FILE"
+          gh pr comment "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --body-file "$BODY_FILE"
