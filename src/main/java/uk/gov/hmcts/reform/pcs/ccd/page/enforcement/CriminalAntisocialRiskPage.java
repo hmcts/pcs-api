@@ -21,8 +21,7 @@ public class CriminalAntisocialRiskPage implements CcdPageConfiguration {
         pageBuilder
             .page("criminalAntisocialRisk", this::midEvent)
             .pageLabel("Their history of criminal or antisocial behaviour")
-            .showCondition("anyRiskToBailiff=\"YES\" "
-                + "AND enforcementRiskCategoriesCONTAINS\"CRIMINAL_OR_ANTISOCIAL\"")
+            .showCondition("anyRiskToBailiff=\"YES\" AND enforcementRiskCategoriesCONTAINS\"CRIMINAL_OR_ANTISOCIAL\"")
             .label("criminalAntisocialRisk-line-separator", "---")
             .complex(PCSCase::getEnforcementOrder)
             .complex(EnforcementOrder::getRiskDetails)
@@ -36,10 +35,14 @@ public class CriminalAntisocialRiskPage implements CcdPageConfiguration {
         PCSCase data = details.getData();
         List<String> errors = new ArrayList<>();
 
-        String txt = data.getEnforcementOrder().getRiskDetails().getEnforcementCriminalDetails();
-
-        // TODO: Use TextAreaValidationService from PR #751 when merged
-        if (txt.length() > EnforcementRiskValidationUtils.getCharacterLimit()) {
+        String txt = data.getEnforcementOrder() != null && data.getEnforcementOrder().getRiskDetails() != null
+            ? data.getEnforcementOrder().getRiskDetails().getEnforcementCriminalDetails()
+            : null;
+        // TODO: Refactor validation logic to use TextAreaValidationService from PR #751 when merged
+        if (txt == null || txt.isBlank()) {
+            errors.add("Enter details");
+        } else if (txt.length() > EnforcementRiskValidationUtils.getCharacterLimit()) {
+            // TODO: Use TextAreaValidationService from PR #751 when merged
             errors.add(EnforcementRiskValidationUtils
                     .getCharacterLimitErrorMessage(RiskCategory.CRIMINAL_OR_ANTISOCIAL));
         }

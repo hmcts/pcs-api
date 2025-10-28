@@ -21,8 +21,7 @@ public class ViolentAggressiveRiskPage implements CcdPageConfiguration {
         pageBuilder
             .page("violentAggressiveRisk", this::midEvent)
             .pageLabel("Their violent or aggressive behaviour")
-            .showCondition("anyRiskToBailiff=\"YES\" "
-                + "AND enforcementRiskCategoriesCONTAINS\"VIOLENT_OR_AGGRESSIVE\"")
+            .showCondition("anyRiskToBailiff=\"YES\" AND enforcementRiskCategoriesCONTAINS\"VIOLENT_OR_AGGRESSIVE\"")
             .label("violentAggressiveRisk-line-separator", "---")
             .complex(PCSCase::getEnforcementOrder)
             .complex(EnforcementOrder::getRiskDetails)
@@ -36,10 +35,14 @@ public class ViolentAggressiveRiskPage implements CcdPageConfiguration {
         PCSCase data = details.getData();
         List<String> errors = new ArrayList<>();
 
-        String txt = data.getEnforcementOrder().getRiskDetails().getEnforcementViolentDetails();
-
-        // TODO: Use TextAreaValidationService from PR #751 when merged
-        if (txt.length() > EnforcementRiskValidationUtils.getCharacterLimit()) {
+        String txt = data.getEnforcementOrder() != null && data.getEnforcementOrder().getRiskDetails() != null
+            ? data.getEnforcementOrder().getRiskDetails().getEnforcementViolentDetails()
+            : null;
+        // TODO: Refactor validation logic to use TextAreaValidationService from PR #751 when merged
+        if (txt == null || txt.isBlank()) {
+            errors.add("Enter details");
+        } else if (txt.length() > EnforcementRiskValidationUtils.getCharacterLimit()) {
+            // TODO: Use TextAreaValidationService from PR #751 when merged
             errors.add(EnforcementRiskValidationUtils
                     .getCharacterLimitErrorMessage(RiskCategory.VIOLENT_OR_AGGRESSIVE));
         }
