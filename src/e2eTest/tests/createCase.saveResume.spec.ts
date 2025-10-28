@@ -60,7 +60,7 @@ test.beforeEach(async ({page}) => {
   await performAction('housingPossessionClaim');
 });
 
-test.describe.skip('[Create Case - With resume claim options] @Master @nightly', async () => {
+test.describe('[Create Case - With resume claim options] @Master @nightly', async () => {
   test('England - Resume with saved options', async () => {
     await performAction('selectAddress', {
       postcode: addressDetails.englandCourtAssignedPostcode,
@@ -68,7 +68,7 @@ test.describe.skip('[Create Case - With resume claim options] @Master @nightly',
     });
     await performValidation('bannerAlert', 'Case #.* has been created.');
     await performAction('extractCaseIdFromAlert');
-    await performAction('clickButtonAndVerifyPageNavigation', provideMoreDetailsOfClaim.continue, claimantType.mainHeader);
+    await performAction('provideMoreDetailsOfClaim');
     await performAction('selectClaimantType', claimantType.england.registeredProviderForSocialHousing);
     await performAction('selectClaimType', claimType.no);
     await performAction('selectClaimantName', claimantName.yes);
@@ -201,7 +201,7 @@ test.describe.skip('[Create Case - With resume claim options] @Master @nightly',
     });
     await performValidation('bannerAlert', 'Case #.* has been created.');
     await performAction('extractCaseIdFromAlert');
-    await performAction('clickButtonAndVerifyPageNavigation', provideMoreDetailsOfClaim.continue, claimantType.mainHeader);
+    await performAction('provideMoreDetailsOfClaim');
     await performAction('selectClaimantType', claimantType.england.registeredProviderForSocialHousing);
     await performAction('selectClaimType', claimType.no);
     await performAction('selectClaimantName', claimantName.yes);

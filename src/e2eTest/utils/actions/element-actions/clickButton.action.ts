@@ -36,7 +36,6 @@ export class ClickButtonAction implements IAction {
       await this.clickButton(page, button);
       //Adding sleep to slow down execution when the application behaves abnormally
       await page.waitForTimeout(waitForPageRedirectionTimeout);
-      await page.reload({waitUntil: 'networkidle'});
       nextPageElementIsVisible = await pageElement.isVisible();
     } while (!nextPageElementIsVisible && attempt < actionRetries);
     if (!nextPageElementIsVisible) {

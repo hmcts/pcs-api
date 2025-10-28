@@ -47,6 +47,7 @@ import {userIneligible} from '@data/page-data/userIneligible.page.data';
 import {whatAreYourGroundsForPossessionWales} from '@data/page-data/whatAreYourGroundsForPossessionWales.page.data';
 import {reasonsForRequestingASuspensionAndDemotionOrder} from '@data/page-data/reasonsForRequestingASuspensionAndDemotionOrder.page.data';
 import {signInOrCreateAnAccount} from '@data/page-data/signInOrCreateAnAccount.page.data';
+import {provideMoreDetailsOfClaim} from "@data/page-data/provideMoreDetailsOfClaim.page.data";
 
 export let caseInfo: { id: string; fid: string; state: string };
 export let caseNumber: string;
@@ -58,6 +59,7 @@ export class CreateCaseAction implements IAction {
       ['createCase', () => this.createCaseAction(fieldName)],
       ['housingPossessionClaim', () => this.housingPossessionClaim()],
       ['selectAddress', () => this.selectAddress(fieldName)],
+      ['provideMoreDetailsOfClaim', () => this.provideMoreDetailsOfClaim(page)],
       ['selectResumeClaimOption', () => this.selectResumeClaimOption(fieldName)],
       ['extractCaseIdFromAlert', () => this.extractCaseIdFromAlert(page)],
       ['selectClaimantType', () => this.selectClaimantType(fieldName)],
@@ -659,6 +661,11 @@ export class CreateCaseAction implements IAction {
       , ['inputText', addressDetails.countryLabel, addressDetails.country]
     );
     await performAction('clickButton', addressDetails.submit);
+  }
+
+  private async provideMoreDetailsOfClaim(page: Page) {
+    await page.reload();
+    await performAction('clickButtonAndVerifyPageNavigation', provideMoreDetailsOfClaim.continue, claimantType.mainHeader);
   }
 
   private async selectAdditionalReasonsForPossession(reasons: actionData) {
