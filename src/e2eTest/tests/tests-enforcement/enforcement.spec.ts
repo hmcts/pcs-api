@@ -8,7 +8,7 @@ import { caseNumber } from "@utils/actions/custom-actions/createCase.action";
 import { initializeExecutor } from "@utils/controller";
 import { caseNotFoundAfterFilter } from "@utils/actions/custom-actions/searchCase.action";
 import { nameAndAddressForEviction } from "@data/page-data/page-data-enforcement/nameAndAddressForEviction.page.data";
-import {signInOrCreateAnAccount} from "@data/page-data/signInOrCreateAnAccount.page.data";
+import { signInOrCreateAnAccount } from "@data/page-data/signInOrCreateAnAccount.page.data";
 
 test.beforeEach(async ({ page }) => {
   initializeExecutor(page);

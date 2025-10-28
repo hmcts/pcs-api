@@ -1,6 +1,6 @@
 import {Page, test, Locator} from '@playwright/test';
 import {IAction, actionRecord} from '../../interfaces/action.interface';
-import { SHORT_TIMEOUT, waitForLoadStateTimeout } from '../../../playwright.config';
+import {MEDIUM_TIMEOUT, SHORT_TIMEOUT} from '../../../playwright.config';
 
 export class handleCookieConsentAction implements IAction {
   async execute(page: Page, action: string, actionText: actionRecord): Promise<void> {
@@ -36,7 +36,7 @@ export class handleCookieConsentAction implements IAction {
           await hideBtn.click({ timeout: SHORT_TIMEOUT });
           await successBanner.waitFor({ state: 'hidden', timeout: SHORT_TIMEOUT });
         }
-        await page.waitForLoadState('domcontentloaded', {timeout: waitForLoadStateTimeout});
+        await page.waitForLoadState('domcontentloaded', {timeout: MEDIUM_TIMEOUT});
       } catch (err) {
       }
     });
