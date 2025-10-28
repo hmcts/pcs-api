@@ -16,11 +16,11 @@ import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class AggressiveDogsOrOtherAnimalsRiskPageTest extends BasePageTest {
+class PoliceOrSocialServicesRiskPageTest extends BasePageTest {
 
     @BeforeEach
     void setUp() {
-        setPageUnderTest(new AggressiveDogsOrOtherAnimalsRiskPage());
+        setPageUnderTest(new PoliceOrSocialServicesRiskPage());
     }
 
     @ParameterizedTest
@@ -29,9 +29,9 @@ class AggressiveDogsOrOtherAnimalsRiskPageTest extends BasePageTest {
         // Given
         PCSCase caseData = PCSCase.builder()
                 .enforcementOrder(EnforcementOrder.builder()
-                        .enforcementRiskCategories(Set.of(RiskCategory.AGGRESSIVE_ANIMALS))
+                        .enforcementRiskCategories(Set.of(RiskCategory.AGENCY_VISITS))
                         .riskDetails(EnforcementRiskDetails.builder()
-                                .enforcementDogsOrOtherAnimalsDetails(text)
+                                .enforcementPoliceOrSocialServicesDetails(text)
                                 .build())
                         .build())
                 .build();
@@ -42,7 +42,7 @@ class AggressiveDogsOrOtherAnimalsRiskPageTest extends BasePageTest {
         // Then
         assertThat(response.getErrors()).isEmpty();
         assertThat(response.getData().getEnforcementOrder()
-                .getRiskDetails().getEnforcementDogsOrOtherAnimalsDetails()).isEqualTo(text);
+                .getRiskDetails().getEnforcementPoliceOrSocialServicesDetails()).isEqualTo(text);
     }
 
     @Test
@@ -51,9 +51,9 @@ class AggressiveDogsOrOtherAnimalsRiskPageTest extends BasePageTest {
         String longText = "a".repeat(6801);
         PCSCase caseData = PCSCase.builder()
                 .enforcementOrder(EnforcementOrder.builder()
-                        .enforcementRiskCategories(Set.of(RiskCategory.AGGRESSIVE_ANIMALS))
+                        .enforcementRiskCategories(Set.of(RiskCategory.AGENCY_VISITS))
                         .riskDetails(EnforcementRiskDetails.builder()
-                                .enforcementDogsOrOtherAnimalsDetails(longText)
+                                .enforcementPoliceOrSocialServicesDetails(longText)
                                 .build())
                         .build())
                 .build();
@@ -63,7 +63,7 @@ class AggressiveDogsOrOtherAnimalsRiskPageTest extends BasePageTest {
 
         // Then
         assertThat(response.getErrors()).containsExactly(
-                EnforcementRiskValidationUtils.getCharacterLimitErrorMessage(RiskCategory.AGGRESSIVE_ANIMALS)
+                EnforcementRiskValidationUtils.getCharacterLimitErrorMessage(RiskCategory.AGENCY_VISITS)
         );
     }
 }

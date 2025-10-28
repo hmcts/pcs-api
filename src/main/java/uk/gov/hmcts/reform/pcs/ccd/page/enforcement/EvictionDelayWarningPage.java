@@ -13,12 +13,12 @@ public class EvictionDelayWarningPage implements CcdPageConfiguration {
     @Override
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
-            .page("evictionDelayWarningPage")
+            .page("evictionDelayWarning")
             .pageLabel("The eviction could be delayed if the bailiff identifies a risk on the day")
             .showCondition("anyRiskToBailiff=\"NOT_SURE\"")
-            .label("evictionDelayWarningPage-line-separator", "---")
+            .label("evictionDelayWarning-line-separator", "---")
             .label(
-                "evictionDelayWarningPage-text",
+                "evictionDelayWarning-text",
                 """
                       <div class="govuk-warning-text">
                       <span class="govuk-warning-text__icon" aria-hidden="true">!</span>

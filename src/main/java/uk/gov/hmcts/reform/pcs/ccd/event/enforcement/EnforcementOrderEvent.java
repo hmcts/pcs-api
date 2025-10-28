@@ -13,14 +13,14 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.AggressiveDogsOrOtherAnimalsRiskPage;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.AggressiveAnimalsRiskPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.CheckYourAnswersPlaceHolder;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.EnforcementApplicationPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.NameAndAddressForEvictionPage;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.EvictionDelayWarningPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.EvictionRisksPosedPage;
-import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.PoliceOrSocialServicesPropertyRiskPage;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.PoliceOrSocialServicesRiskPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.ProtestorGroupRiskPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.VerbalOrWrittenThreatsRiskPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.ViolentAggressiveRiskPage;
@@ -64,8 +64,8 @@ public class EnforcementOrderEvent implements CCDConfig<PCSCase, State, UserRole
                 .add(new CriminalAntisocialRiskPage())
                 .add(new VerbalOrWrittenThreatsRiskPage())
                 .add(new ProtestorGroupRiskPage())
-                .add(new PoliceOrSocialServicesPropertyRiskPage())
-                .add(new AggressiveDogsOrOtherAnimalsRiskPage())
+                .add(new PoliceOrSocialServicesRiskPage())
+                .add(new AggressiveAnimalsRiskPage())
                 .add(new EvictionVulnerableAdultsChildrenPage())
                 .add(new CheckYourAnswersPlaceHolder());
     }

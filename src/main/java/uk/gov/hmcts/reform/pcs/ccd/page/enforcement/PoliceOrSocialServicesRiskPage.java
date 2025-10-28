@@ -14,20 +14,19 @@ import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 import java.util.ArrayList;
 import java.util.List;
 
-public final class AggressiveDogsOrOtherAnimalsRiskPage implements CcdPageConfiguration {
+public final class PoliceOrSocialServicesRiskPage implements CcdPageConfiguration {
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
-                .page("evictionAggressiveDogsOrOtherAnimalsDetails", this::midEvent)
-                .pageLabel("The animals at the property")
-                .showCondition("anyRiskToBailiff=\"YES\" AND enforcementRiskCategoriesCONTAINS\"AGGRESSIVE_ANIMALS\"")
-                .label("aggressiveDogsOrOtherAnimals-line-separator", "---")
+                .page("policeOrSocialServicesRisk", this::midEvent)
+                .pageLabel("Their history of police or social services visits to the property")
+                .showCondition("anyRiskToBailiff=\"YES\" AND enforcementRiskCategoriesCONTAINS\"AGENCY_VISITS\"")
+                .label("policeOrSocialServicesRisk-line-separator", "---")
                 .complex(PCSCase::getEnforcementOrder)
                 .complex(EnforcementOrder::getRiskDetails)
-                    .mandatory(EnforcementRiskDetails::getEnforcementDogsOrOtherAnimalsDetails)
-                .done()
-                .label("aggressiveDogsOrOtherAnimals-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
+                .mandatory(EnforcementRiskDetails::getEnforcementPoliceOrSocialServicesDetails).done()
+                .label("policeOrSocialServicesRisk-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
 
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
@@ -35,13 +34,13 @@ public final class AggressiveDogsOrOtherAnimalsRiskPage implements CcdPageConfig
         PCSCase data = details.getData();
         List<String> errors = new ArrayList<>();
 
-        System.out.println(data.getEnforcementOrder());
-        String txt = data.getEnforcementOrder().getRiskDetails().getEnforcementDogsOrOtherAnimalsDetails();
+        String txt = data.getEnforcementOrder().getRiskDetails().getEnforcementPoliceOrSocialServicesDetails();
+
         // TODO: Refactor validation logic to use TextAreaValidationService from PR #751 when merged
         if (txt.length() > EnforcementRiskValidationUtils.getCharacterLimit()) {
             // TODO: Use TextAreaValidationService from PR #751 when merged
             errors.add(EnforcementRiskValidationUtils
-                    .getCharacterLimitErrorMessage(RiskCategory.AGGRESSIVE_ANIMALS));
+                    .getCharacterLimitErrorMessage(RiskCategory.AGENCY_VISITS));
         }
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()

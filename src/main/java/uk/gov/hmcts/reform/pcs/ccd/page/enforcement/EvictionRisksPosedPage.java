@@ -11,8 +11,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.EnforcementRiskDetails;
 
-import java.util.List;
-
 import static uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent.SAVE_AND_RETURN;
 
 @Component
@@ -21,14 +19,14 @@ public class EvictionRisksPosedPage implements CcdPageConfiguration {
     @Override
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
-            .page("evictionRisksPosedPage", this::midEvent)
+            .page("evictionRisksPosed", this::midEvent)
             .pageLabel("The risks posed by everyone at the property")
             .showCondition("anyRiskToBailiff=\"YES\"")
-            .label("evictionRisksPosedPage-line-separator", "---")
+            .label("evictionRisksPosed-line-separator", "---")
             .complex(PCSCase::getEnforcementOrder)
             .mandatory(EnforcementOrder::getEnforcementRiskCategories)
             .done()
-            .label("evictionRisksPosedPage-details-save-and-return", SAVE_AND_RETURN);
+            .label("evictionRisksPosed-save-and-return", SAVE_AND_RETURN);
     }
 
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,

@@ -19,16 +19,16 @@ public class ProtestorGroupRiskPage implements CcdPageConfiguration {
     @Override
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
-                .page("protestGroupPage", this::midEvent)
+                .page("protestorGroupRisk", this::midEvent)
                 .pageLabel("Their membership of a group that protests evictions")
                 .showCondition("anyRiskToBailiff=\"YES\" "
                     + " AND enforcementRiskCategoriesCONTAINS\"PROTEST_GROUP_MEMBER\"")
-                .label("protestGroupPage-line-separator", "---")
+                .label("protestorGroupRisk-line-separator", "---")
                 .complex(PCSCase::getEnforcementOrder)
                 .complex(EnforcementOrder::getRiskDetails)
                 .mandatory(EnforcementRiskDetails::getEnforcementProtestGroupMemberDetails)
                 .done()
-                .label("protestGroupPage-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
+                .label("protestorGroupRisk-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
 
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,

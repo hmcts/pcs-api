@@ -16,11 +16,11 @@ public class LivingInThePropertyPage implements CcdPageConfiguration {
     @Override
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
-            .page("livingInThePropertyPage")
+            .page("livingInTheProperty")
             .pageLabel("Everyone living at the property")
-            .label("livingInThePropertyPage-content", "---")
+            .label("livingInTheProperty-content", "---")
             .label(
-                "livingInThePropertyPage-information-text", """
+                "livingInTheProperty-information-text", """
                     <p>The bailiff needs to know if anyone at the property poses a risk.</p>
                     <p>For example if they:</p>
                       <ul>
@@ -37,6 +37,6 @@ public class LivingInThePropertyPage implements CcdPageConfiguration {
             .complex(PCSCase::getEnforcementOrder)
             .mandatory(EnforcementOrder::getAnyRiskToBailiff)
             .done()
-            .label("enforcementLivingInThePropertyPage-details-save-and-return", SAVE_AND_RETURN);
+            .label("livingInTheProperty-details-save-and-return", SAVE_AND_RETURN);
     }
 }
