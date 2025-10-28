@@ -6,8 +6,6 @@ import { enforcementTestCaseNumber } from "../searchCase.action";
 import { nameAndAddressForEviction } from "@data/page-data/page-data-enforcement/nameAndAddressForEviction.page.data";
 import { riskPosedByEveryoneAtProperty } from "@data/page-data/page-data-enforcement/riskPosedByEveryoneAtProperty.page.data";
 import { everyoneLivingAtTheProperty } from "@data/page-data/page-data-enforcement/everyoneLivingAtTheProperty.page.data";
-import { vulnerableAdultsAndChildren } from "@data/page-data/page-data-enforcement/vulnerableAdultsAndChildren.page.data";
-import { evictionCouldBeDelayed } from "@data/page-data/page-data-enforcement/evictionCouldBeDelayed.page.data";
 import { violentOrAggressiveBehaviour } from "@data/page-data/page-data-enforcement/violentAndAggressiveBehaviour.page.data";
 import { historyOfFirearmPossession } from "@data/page-data/page-data-enforcement/historyOfFirearmPossession.page.data";
 import { criminalOrAntisocialBehaviour } from "@data/page-data/page-data-enforcement/criminalOrAntisocialBehaviour.page.data";
@@ -81,7 +79,6 @@ export class EnforcementAction implements IAction {
         throw new Error(`The page ${risk} is unknown`);
     }
   };
-
 
   private async provideDetailsViolentOrAggressiveBehaviour(violentAggressiveBehaviour: actionRecord) {
     await performValidation('mainHeader', violentOrAggressiveBehaviour.mainHeader);
