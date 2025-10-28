@@ -20,7 +20,7 @@ import java.util.List;
 @AllArgsConstructor
 public class UnderlesseeMortgageeDetailsPage implements CcdPageConfiguration {
 
-    private final UnderlesseeMortgageeValidator  underlesseeMortgageeValidator;
+    private final UnderlesseeMortgageeValidator underlesseeMortgageeValidator;
 
     @Override
     public void addTo(PageBuilder pageBuilder) {

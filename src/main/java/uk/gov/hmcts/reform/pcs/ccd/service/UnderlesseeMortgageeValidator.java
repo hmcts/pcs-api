@@ -16,24 +16,24 @@ public class UnderlesseeMortgageeValidator {
 
     private final AddressValidator addressValidator;
 
-    public List<String> validateFirstUnderlesseeOrMortgagee(UnderlesseeMortgageeDetails defendant1Details,
-                                                            boolean additionalDefendantsProvided) {
-        String sectionHint = additionalDefendantsProvided ? "Underlessee or mortgagee" : "";
-        return validateUnderlesseeOrMortgageeAddress(defendant1Details, sectionHint);
+    public List<String> validateFirstUnderlesseeOrMortgagee(UnderlesseeMortgageeDetails underlesseeMortgageeDetails,
+                                                            boolean additionalUnderlesseeProvided) {
+        String sectionHint = additionalUnderlesseeProvided ? "Underlessee or mortgagee" : "";
+        return validateUnderlesseeOrMortgageeAddress(underlesseeMortgageeDetails, sectionHint);
     }
 
     public List<String> validateAdditionalUnderlesseeOrMortgagee(
-        List<ListValue<UnderlesseeMortgageeDetails>> additionalDefendants) {
+        List<ListValue<UnderlesseeMortgageeDetails>> additionalUnderlesseeMortgagee) {
 
         List<String> validationErrors = new ArrayList<>();
 
-        for (int i = 0; i < additionalDefendants.size(); i++) {
-            UnderlesseeMortgageeDetails underlesseeMortgageeDetails = additionalDefendants.get(i).getValue();
+        for (int i = 0; i < additionalUnderlesseeMortgagee.size(); i++) {
+            UnderlesseeMortgageeDetails underlesseeMortgageeDetails = additionalUnderlesseeMortgagee.get(i).getValue();
             String sectionHint = "additional underlessee or mortgagee %d".formatted(i + 1);
-            List<String> defendantValidationErrors = validateUnderlesseeOrMortgageeAddress(underlesseeMortgageeDetails,
+            List<String> underlesseeMortgageeValidationErrors = validateUnderlesseeOrMortgageeAddress(underlesseeMortgageeDetails,
                                                                                            sectionHint);
 
-            validationErrors.addAll(defendantValidationErrors);
+            validationErrors.addAll(underlesseeMortgageeValidationErrors);
         }
 
         return validationErrors;

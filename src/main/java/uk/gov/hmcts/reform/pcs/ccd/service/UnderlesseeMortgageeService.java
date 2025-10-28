@@ -1,7 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.service;
 
 import lombok.AllArgsConstructor;
-import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
@@ -18,23 +17,22 @@ import java.util.Objects;
 @AllArgsConstructor
 public class UnderlesseeMortgageeService {
 
-    private ModelMapper modelMapper;
-
     public List<UnderlesseeMortgagee> buildUnderlesseeMortgageeList(PCSCase pcsCase) {
-        Objects.requireNonNull(pcsCase.getDefendant1(), "Underlessee or mortgagee must be provided");
+        Objects.requireNonNull(pcsCase.getUnderlesseeMortgageeDetails(),
+                               "Underlessee or mortgagee must be provided");
 
-        List<UnderlesseeMortgagee> defendants = new ArrayList<>();
+        List<UnderlesseeMortgagee> underlesseesMortgagees = new ArrayList<>();
 
-        UnderlesseeMortgagee defendant1 = buildUnderlesseeMortgagee(pcsCase.getUnderlesseeMortgageeDetails());
-        defendants.add(defendant1);
+        UnderlesseeMortgagee underlesseeMortgagee1 = buildUnderlesseeMortgagee(pcsCase.getUnderlesseeMortgageeDetails());
+        underlesseesMortgagees.add(underlesseeMortgagee1);
 
         if (pcsCase.getAddAdditionalUnderlesseeOrMortgagee() == VerticalYesNo.YES) {
-            List<UnderlesseeMortgagee> additionalDefendants
+            List<UnderlesseeMortgagee> additionalUnderlesseeMortgagee
                 = buildAdditionalUnderlesseeMortgagee(pcsCase.getAdditionalUnderlesseeMortgagee());
-            defendants.addAll(additionalDefendants);
+            underlesseesMortgagees.addAll(additionalUnderlesseeMortgagee);
         }
 
-        return defendants;
+        return underlesseesMortgagees;
     }
 
     private UnderlesseeMortgagee buildUnderlesseeMortgagee(UnderlesseeMortgageeDetails underlesseeMortgageeDetails) {
