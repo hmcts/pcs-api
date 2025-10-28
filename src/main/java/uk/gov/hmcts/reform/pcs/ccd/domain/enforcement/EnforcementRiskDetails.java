@@ -3,7 +3,6 @@ package uk.gov.hmcts.reform.pcs.ccd.domain.enforcement;
 import lombok.Builder;
 import lombok.Data;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
-import uk.gov.hmcts.ccd.sdk.api.ComplexType;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.EnforcementRiskValidationUtils;
 
 import static uk.gov.hmcts.ccd.sdk.type.FieldType.TextArea;
@@ -11,9 +10,8 @@ import static uk.gov.hmcts.ccd.sdk.type.FieldType.TextArea;
 /**
  * Encapsulates free-text details for selected enforcement risk categories.
  */
-@Data
 @Builder
-@ComplexType(generate = true)
+@Data
 public class EnforcementRiskDetails {
 
     @CCD(
@@ -66,7 +64,7 @@ public class EnforcementRiskDetails {
     private String enforcementPoliceOrSocialServicesDetails;
 
     @CCD(
-        label = "What kind of animals do they have?",
+        label = "What kind of animal do they have?",
         hint = "For example, include the type of animal (dogs, cats etc), the number of animals, and their behaviour. "
             + EnforcementRiskValidationUtils.CHARACTER_LIMIT_MESSAGE,
         typeOverride = TextArea
