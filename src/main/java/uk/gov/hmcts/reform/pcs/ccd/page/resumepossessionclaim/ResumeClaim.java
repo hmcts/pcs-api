@@ -11,7 +11,7 @@ import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.service.UnsubmittedCaseDataService;
+import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.exception.UnsubmittedDataException;
 
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
@@ -21,7 +21,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 @Service
 public class ResumeClaim implements CcdPageConfiguration {
 
-    private final UnsubmittedCaseDataService unsubmittedCaseDataService;
+    private final DraftCaseDataService draftCaseDataService;
     private final ModelMapper modelMapper;
 
     @Override
@@ -61,7 +61,7 @@ public class ResumeClaim implements CcdPageConfiguration {
         log.debug("Resuming claim - keep existing answers = " + caseData.getResumeClaimKeepAnswers());
 
         if (caseData.getResumeClaimKeepAnswers() == YesOrNo.YES) {
-            unsubmittedCaseDataService.getUnsubmittedCaseData(caseReference)
+            draftCaseDataService.getUnsubmittedCaseData(caseReference)
                 .ifPresentOrElse(
                     unsubmittedCaseData -> modelMapper.map(unsubmittedCaseData, caseData),
                     () -> {
