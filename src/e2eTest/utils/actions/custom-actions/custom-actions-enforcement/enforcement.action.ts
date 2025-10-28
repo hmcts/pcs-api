@@ -38,14 +38,5 @@ export class EnforcementAction implements IAction {
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + enforcementTestCaseNumber });
     await performAction('clickRadioButton', { question: riskToBailiff.question, option: riskToBailiff.option });
     await performAction('clickButton', everyoneLivingAtTheProperty.continue);
-    if (riskToBailiff.option == everyoneLivingAtTheProperty.no) {
-      await performValidation('mainHeader', vulnerableAdultsAndChildren.mainHeader);
-      await performAction('clickButton', vulnerableAdultsAndChildren.continue);
-    } else if (riskToBailiff.option == everyoneLivingAtTheProperty.notSure) {
-      await performValidation('mainHeader', evictionCouldBeDelayed.mainHeader);
-      await performAction('clickButton', evictionCouldBeDelayed.continue);
-      await performValidation('mainHeader', vulnerableAdultsAndChildren.mainHeader);
-      await performAction('clickButton', vulnerableAdultsAndChildren.continue);
-    }
   }
 }
