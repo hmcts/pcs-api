@@ -46,7 +46,6 @@ import {search} from '@data/page-data/search.page.data';
 import {userIneligible} from '@data/page-data/userIneligible.page.data';
 import {whatAreYourGroundsForPossessionWales} from '@data/page-data/whatAreYourGroundsForPossessionWales.page.data';
 import {reasonsForRequestingASuspensionAndDemotionOrder} from '@data/page-data/reasonsForRequestingASuspensionAndDemotionOrder.page.data';
-import {underlesseeOrMortgageeEntitledToClaim} from '@data/page-data/underlesseeOrMortgageeEntitledToClaim.page.data';
 import {underlesseeOrMortgageeDetails} from '@data/page-data/underlesseeOrMortgageeDetails.page.data';
 
 export let caseInfo: { id: string; fid: string; state: string };
@@ -679,7 +678,7 @@ export class CreateCaseAction implements IAction {
       question: underlesseeOrMortgageeEntitledToClaim.question,
       option: underlesseeOrMortgageeEntitledToClaim.option
     });
-    await performAction('clickButton', underlesseeOrMortgageeEntitledToClaim.continue);
+    await performAction('clickButton', underlesseeOrMortgageeDetails.continue);
   }
 
   private async selectUnderlesseeOrMortgageeDetails(underlesseeOrMortgageeDetail: actionRecord) {
