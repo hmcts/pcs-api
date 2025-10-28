@@ -21,10 +21,10 @@ public class TextAreaValidationService {
     public static final int MEDIUM_TEXT_LIMIT = 500;
     public static final int LONG_TEXT_LIMIT = 950;
     public static final int EXTRA_LONG_TEXT_LIMIT = 6400;
-    
+
     // Error message template for character limit validation
-    public static final String CHARACTER_LIMIT_ERROR_TEMPLATE = 
-        "In '%s', you have entered more than the maximum number of %d characters";
+    public static final String CHARACTER_LIMIT_ERROR_TEMPLATE =
+        "In '%s', you have entered more than the maximum number of characters (%d)";
 
     public void validateTextArea(String fieldValue, String fieldLabel, int maxCharacters, List<String> errors) {
         if (fieldValue != null && fieldValue.length() > maxCharacters) {
@@ -51,7 +51,7 @@ public class TextAreaValidationService {
                 .errors(validationErrors)
                 .build();
         }
-        
+
         return AboutToStartOrSubmitResponse.<T, S>builder()
             .data(caseData)
             .build();
@@ -59,20 +59,20 @@ public class TextAreaValidationService {
 
     public List<String> validateMultipleTextAreas(FieldValidation... fieldValidations) {
         List<String> errors = new ArrayList<>();
-        
+
         for (FieldValidation validation : fieldValidations) {
             validateTextArea(validation.fieldValue, validation.fieldLabel, validation.maxCharacters, errors);
         }
-        
+
         return errors;
     }
 
-    public <T> List<String> validateSingleField(T object, java.util.function.Function<T, String> fieldExtractor, 
+    public <T> List<String> validateSingleField(T object, java.util.function.Function<T, String> fieldExtractor,
                                                 String fieldLabel, int maxCharacters) {
         if (object == null) {
             return new ArrayList<>();
         }
-        
+
         String fieldValue = fieldExtractor.apply(object);
         return validateSingleTextArea(fieldValue, fieldLabel, maxCharacters);
     }
