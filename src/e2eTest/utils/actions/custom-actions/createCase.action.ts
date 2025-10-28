@@ -259,7 +259,7 @@ export class CreateCaseAction implements IAction {
   private async addDefendantDetails(defendantData: actionRecord) {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
     await performAction('clickRadioButton', {
-      question: defendantData.doYouKnowTheDefendantName,
+      question: defendantData.nameQuestion,
       option: defendantData.nameOption
     });
     if (defendantData.nameOption === defendantDetails.yes) {
