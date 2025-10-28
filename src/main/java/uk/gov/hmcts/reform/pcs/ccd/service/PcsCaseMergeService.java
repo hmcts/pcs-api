@@ -28,6 +28,7 @@ public class PcsCaseMergeService {
     private final ModelMapper modelMapper;
     private final TenancyLicenceService tenancyLicenceService;
     private final DefendantService defendantService;
+    private final UnderlesseeMortgageeService underlesseeMortgageService;
 
     public void mergeCaseData(PcsCaseEntity pcsCaseEntity, PCSCase pcsCase) {
 
@@ -57,6 +58,10 @@ public class PcsCaseMergeService {
 
         if (pcsCase.getDefendant1() != null) {
             pcsCaseEntity.setDefendants(defendantService.buildDefendantsList(pcsCase));
+        }
+
+        if (pcsCase.getUnderlesseeMortgageeDetails() != null) {
+            pcsCaseEntity.setUnderlesseesMortgagees(underlesseeMortgageService.buildUnderlesseeMortgageeList(pcsCase));
         }
 
         pcsCaseEntity.setTenancyLicence(tenancyLicenceService.buildTenancyLicence(pcsCase));

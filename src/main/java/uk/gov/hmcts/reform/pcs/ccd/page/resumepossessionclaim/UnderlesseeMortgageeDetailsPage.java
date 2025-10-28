@@ -9,7 +9,7 @@ import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.domain.UnderlesseeMortgagee;
+import uk.gov.hmcts.reform.pcs.ccd.domain.UnderlesseeMortgageeDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.service.UnderlesseeMortgageeValidator;
 
@@ -18,7 +18,7 @@ import java.util.List;
 
 @Component
 @AllArgsConstructor
-public class UnderlesseeMortgageeDetails  implements CcdPageConfiguration {
+public class UnderlesseeMortgageeDetailsPage implements CcdPageConfiguration {
 
     private final UnderlesseeMortgageeValidator  underlesseeMortgageeValidator;
 
@@ -28,13 +28,13 @@ public class UnderlesseeMortgageeDetails  implements CcdPageConfiguration {
             .page("underlesseeMortgageeDetails", this::midEvent)
             .pageLabel("Underlessee or mortgagee details")
             .showCondition("hasUnderlesseeOrMortgagee=\"YES\"")
-            .complex(PCSCase::getUnderlesseeMortgagee)
-                .readonly(UnderlesseeMortgagee::getUnderlesseeOrMortgageeNameLabel)
-                .mandatory(UnderlesseeMortgagee::getUnderlesseeOrMortgageeNameKnown)
-                .mandatory(UnderlesseeMortgagee::getUnderlesseeOrMortgageeName)
-                .readonly(UnderlesseeMortgagee::getUnderlesseeOrMortgageeAddressLabel)
-                .mandatory(UnderlesseeMortgagee::getUnderlesseeOrMortgageeAddressKnown)
-                    .complex(UnderlesseeMortgagee::getUnderlesseeOrMortgageeAddress)
+            .complex(PCSCase::getUnderlesseeMortgageeDetails)
+                .readonly(UnderlesseeMortgageeDetails::getUnderlesseeOrMortgageeNameLabel)
+                .mandatory(UnderlesseeMortgageeDetails::getUnderlesseeOrMortgageeNameKnown)
+                .mandatory(UnderlesseeMortgageeDetails::getUnderlesseeOrMortgageeName)
+                .readonly(UnderlesseeMortgageeDetails::getUnderlesseeOrMortgageeAddressLabel)
+                .mandatory(UnderlesseeMortgageeDetails::getUnderlesseeOrMortgageeAddressKnown)
+                    .complex(UnderlesseeMortgageeDetails::getUnderlesseeOrMortgageeAddress)
                         .mandatory(AddressUK::getAddressLine1)
                         .optional(AddressUK::getAddressLine2)
                         .optional(AddressUK::getAddressLine3)
@@ -60,7 +60,7 @@ public class UnderlesseeMortgageeDetails  implements CcdPageConfiguration {
 
         boolean additionalUnderlesseeMortgagee = caseData.getAddAdditionalUnderlesseeOrMortgagee() == VerticalYesNo.YES;
 
-        UnderlesseeMortgagee underlesseeMortgageeDetails = caseData.getUnderlesseeMortgagee();
+        UnderlesseeMortgageeDetails underlesseeMortgageeDetails = caseData.getUnderlesseeMortgageeDetails();
         List<String> validationErrors =
             new ArrayList<>(underlesseeMortgageeValidator.validateFirstUnderlesseeOrMortgagee(
                                                                 underlesseeMortgageeDetails,

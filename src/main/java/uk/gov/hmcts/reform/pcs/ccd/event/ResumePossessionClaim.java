@@ -68,7 +68,7 @@ import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.SuspensionOfRightT
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.SuspensionToBuyDemotionOfTenancyActs;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.SuspensionToBuyDemotionOfTenancyOrderReasons;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.TenancyLicenceDetails;
-import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.UnderlesseeMortgageeDetails;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.UnderlesseeMortgageeDetailsPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.UnderlesseeMortgageeEntitledToClaimRelief;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.UploadAdditionalDocumentsDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.WalesCheckingNotice;
@@ -121,7 +121,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
     private final SchedulerClient schedulerClient;
     private final DraftCaseDataService draftCaseDataService;
     private final AddressFormatter addressFormatter;
-    private final UnderlesseeMortgageeDetails  underlesseeMortgageeDetails;
+    private final UnderlesseeMortgageeDetailsPage underlesseeMortgageeDetailsPage;
 
     private static final String CASE_ISSUED_FEE_TYPE = "caseIssueFee";
 
@@ -186,7 +186,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             .add(new ClaimingCosts())
             .add(new AdditionalReasonsForPossession())
             .add(new UnderlesseeMortgageeEntitledToClaimRelief())
-            .add(underlesseeMortgageeDetails)
+            .add(underlesseeMortgageeDetailsPage)
             //TO DO will be routed later on  correctly using tech debt ticket
             .add(new WantToUploadDocuments())
             .add(uploadAdditionalDocumentsDetails)

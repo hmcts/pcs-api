@@ -717,7 +717,7 @@ public class PCSCase {
     @CCD(label = "Is there an underlessee or mortgagee entitled to claim relief against forfeiture?")
     private VerticalYesNo hasUnderlesseeOrMortgagee;
 
-    private UnderlesseeMortgagee underlesseeMortgagee;
+    private UnderlesseeMortgageeDetails underlesseeMortgageeDetails;
 
     @CCD(label = "Do you need to add another underlessee or mortgagee?")
     private VerticalYesNo addAdditionalUnderlesseeOrMortgagee;
@@ -726,5 +726,5 @@ public class PCSCase {
         label = "Add underlessee or mortgagee",
         hint = "Add an underlessee or mortgagee to the case"
     )
-    private List<ListValue<UnderlesseeMortgagee>> additionalUnderlesseeMortgagee;
+    private List<ListValue<UnderlesseeMortgageeDetails>> additionalUnderlesseeMortgagee;
 }

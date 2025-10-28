@@ -47,6 +47,8 @@ class PcsCaseMergeServiceTest {
     private TenancyLicenceService tenancyLicenceService;
     @Mock
     private DefendantService defendantService;
+    @Mock
+    private UnderlesseeMortgageeService underlesseeMortgageService;
 
     private PcsCaseMergeService underTest;
 
@@ -55,7 +57,8 @@ class PcsCaseMergeServiceTest {
         underTest = new PcsCaseMergeService(securityContextService,
                                             modelMapper,
                                             tenancyLicenceService,
-                                            defendantService);
+                                            defendantService,
+                                            underlesseeMortgageService);
     }
 
     @Test
