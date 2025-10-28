@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
@@ -87,6 +88,36 @@ public class GroundsForPossessionWales
                 .errors(errors)
                 .build();
         }
+
+        // Reset all routing flags
+        data.setShowReasonsForGroundsPageWales(YesOrNo.NO);
+        data.setShowPreActionProtocolPageWales(YesOrNo.NO);
+        data.setShowASBQuestionsPageWales(YesOrNo.NO);
+
+        boolean hasRentArrears = discretionaryGrounds != null
+                && discretionaryGrounds.contains(DiscretionaryGroundWales.RENT_ARREARS_SECTION_157);
+        boolean hasASB = discretionaryGrounds != null
+                && discretionaryGrounds.contains(DiscretionaryGroundWales.ANTISOCIAL_BEHAVIOUR_SECTION_157);
+        boolean hasOtherBreach = discretionaryGrounds != null
+                && discretionaryGrounds.contains(DiscretionaryGroundWales.OTHER_BREACH_SECTION_157);
+        boolean hasEstateManagement = discretionaryGrounds != null
+                && discretionaryGrounds.contains(DiscretionaryGroundWales.ESTATE_MANAGEMENT_GROUNDS_SECTION_160);
+        boolean hasMandatoryGrounds = hasMandatory;
+
+        // Determine if there are "other options" (anything that's not rent arrears or ASB)
+        boolean hasOtherOptions = hasOtherBreach || hasEstateManagement || hasMandatoryGrounds;
+
+        // Routing rules based on options selected
+        if (hasRentArrears && !hasASB && !hasOtherOptions) {
+            data.setShowPreActionProtocolPageWales(YesOrNo.YES);
+        } else if (hasASB && !hasRentArrears && !hasOtherOptions) {
+            data.setShowASBQuestionsPageWales(YesOrNo.YES);
+        } else if (hasRentArrears && hasASB && !hasOtherOptions) {
+            data.setShowASBQuestionsPageWales(YesOrNo.YES);
+        } else if (hasOtherOptions) {
+            data.setShowReasonsForGroundsPageWales(YesOrNo.YES);
+        }
+
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
             .data(data)
