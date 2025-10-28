@@ -34,7 +34,6 @@ export async function performAction(action: string, fieldName?: actionData | act
   const stepText = `${action}${displayFieldName !== undefined ? ` - ${typeof displayFieldName === 'object' ? readValuesFromInputObjects(displayFieldName) : displayFieldName}` : ''}${displayValue !== undefined ? ` with value '${typeof displayValue === 'object' ? readValuesFromInputObjects(displayValue) : displayValue}'` : ''}`;
   await test.step(stepText, async () => {
   await actionInstance.execute(executor.page, action, fieldName, value);
-  executor.page.waitForTimeout(800);
   });
 }
 

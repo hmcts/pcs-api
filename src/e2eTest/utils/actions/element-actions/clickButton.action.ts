@@ -24,6 +24,7 @@ export class ClickButtonAction implements IAction {
     await button.first().click();
     await page.waitForLoadState();
     await page.locator('.spinner-container').waitFor({state: 'detached'});
+    await page.waitForTimeout(1000);
   }
 
   private async clickButtonAndVerifyPageNavigation(page: Page, button: Locator, nextPageElement: string): Promise<void> {
