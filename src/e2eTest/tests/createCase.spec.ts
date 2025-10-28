@@ -205,6 +205,7 @@ test.describe('[Create Case - England] @Master @nightly', async () => {
       rentArrears: [rentArrearsPossessionGrounds.rentArrears],
       otherGrounds: rentArrearsPossessionGrounds.yes
     });
+    // Test for assured tenancy: select one possession ground, choose 'Yes' for additional ground, then continue without selecting others (HDPI-2038)
     await performAction('selectYourPossessionGrounds');
     await performValidation('mainHeader', preActionProtocol.mainHeader);
     await performAction('selectPreActionProtocol', preActionProtocol.yes);
