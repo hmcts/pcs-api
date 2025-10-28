@@ -127,6 +127,8 @@ Playwright 1.30+ | TypeScript 4.9+
 | selectNoticeOfYourIntention              | `performAction('selectNoticeOfYourIntention',{question: noticeOfYourIntention.servedNoticeInteractiveText, option: noticeOfYourIntention.yes, typeOfNotice: noticeOfYourIntention.typeOfNoticeInput})`     |
 | selectClaimantDetails                    | `performAction('selectClaimantDetails', claimantDetails)`                                                                                                                                                  |
 | enterReasonForSuspensionAndDemotionOrder | `performAction('enterReasonForSuspensionAndDemotionOrder', suspension)`                                                                                                                                    |
+| selectOccupationContractOrLicenceDetails | `performAction('selectOccupationContractOrLicenceDetails', {occupationContractType: occupationContractOrLicenceDetailsWales.other})`                                                                       |
+| clickButtonAndWaitForElement             | `performAction('clickButtonAndWaitForElement', 'Sign out')`                                                                                                                                                |
 ### Validations
 | Validation                 | Example Usage                                                                                                                        |
 |----------------------------|--------------------------------------------------------------------------------------------------------------------------------------|

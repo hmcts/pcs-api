@@ -42,6 +42,7 @@ import {statementOfExpressTerms} from '@data/page-data/statementOfExpressTerms.p
 import {wantToUploadDocuments} from '@data/page-data/wantToUploadDocuments.page.data';
 import {whatAreYourGroundsForPossessionWales} from '@data/page-data/whatAreYourGroundsForPossessionWales.page.data';
 import {reasonsForRequestingASuspensionAndDemotionOrder} from '@data/page-data/reasonsForRequestingASuspensionAndDemotionOrder.page.data';
+import {occupationContractOrLicenceDetailsWales} from '@data/page-data/occupationContractOrLicenceDetailsWales.page.data';
 
 test.beforeEach(async ({page}) => {
   initializeExecutor(page);
@@ -77,9 +78,12 @@ test.describe('[Create Case - Wales] @Master @nightly', async () => {
       email: defendantDetails.yes,
       correspondenceAddressSame: defendantDetails.yes
     });
-    //Following line can be updated to securecontractLicenceDetails once HDPI-2365 is done
-    await performAction('check', 'Secure contract');
-    await performAction('clickButton', 'Continue');
+    await performAction('selectOccupationContractOrLicenceDetails', {
+      occupationContractType: occupationContractOrLicenceDetailsWales.secureContract,
+      day: occupationContractOrLicenceDetailsWales.day,
+      month: occupationContractOrLicenceDetailsWales.month,
+      year: occupationContractOrLicenceDetailsWales.year,
+      files: 'occupationContract.pdf'});
     await performValidation('mainHeader', whatAreYourGroundsForPossessionWales.mainHeader);
     await performAction('selectYourPossessionGrounds', {
       discretionary: [whatAreYourGroundsForPossessionWales.discretionary.rentArrears],
@@ -187,14 +191,13 @@ test.describe('[Create Case - Wales] @Master @nightly', async () => {
       correspondenceAddress: defendantDetails.no,
       email: defendantDetails.no,
     });
-    //Following 186 to 188 needs update once routing is done for wales journey HDPI-2365
-    await performAction('check', 'Secure contract');
-    await performAction('clickButton', 'Continue');
+    await performAction('selectOccupationContractOrLicenceDetails', {
+      occupationContractType: occupationContractOrLicenceDetailsWales.standardContract});
     await performValidation('mainHeader', whatAreYourGroundsForPossessionWales.mainHeader);
     await performAction('selectYourPossessionGrounds', {
-      discretionary: [whatAreYourGroundsForPossessionWales.discretionary.estateManagementGrounds],
+      discretionary: [whatAreYourGroundsForPossessionWales.discretionary.antiSocialBehaviour,whatAreYourGroundsForPossessionWales.discretionary.estateManagementGrounds],
       discretionaryEstateGrounds: [whatAreYourGroundsForPossessionWales.discretionary.buildingWorks],
-      mandatory: [whatAreYourGroundsForPossessionWales.mandatory.section191],
+      mandatory: [whatAreYourGroundsForPossessionWales.mandatory.section187],
     });
     await performAction('clickButton', reasonsForPossession.continue);
     // Following lines enabled to reach notice of your intention page as HDPI-2343 is done for Wales journey routing
@@ -283,8 +286,8 @@ test.describe('[Create Case - Wales] @Master @nightly', async () => {
       email: defendantDetails.yes,
       correspondenceAddressSame: defendantDetails.yes
     });
-    await performAction('check', 'Secure contract');
-    await performAction('clickButton', 'Continue');
+    await performAction('selectOccupationContractOrLicenceDetails', {
+      occupationContractType: occupationContractOrLicenceDetailsWales.other});
     await performValidation('mainHeader', whatAreYourGroundsForPossessionWales.mainHeader);
     await performAction('selectYourPossessionGrounds', {
       discretionary: [whatAreYourGroundsForPossessionWales.discretionary.otherBreachOfContract],

@@ -526,12 +526,8 @@ test.describe('[Create Case - England] @Master @nightly', async () => {
       email: defendantDetails.yes,
       correspondenceAddressSame: defendantDetails.yes
     });
-    await performAction('selectOccupationContractOrLicenceDetails', {
-      occupationContractType: occupationContractOrLicenceDetailsWales.secureContract,
-      day: occupationContractOrLicenceDetailsWales.day,
-      month: occupationContractOrLicenceDetailsWales.month,
-      year: occupationContractOrLicenceDetailsWales.year,
-      files: 'occupationContract.pdf'});
+    await performAction('selectTenancyOrLicenceDetails', {
+      tenancyOrLicenceType: tenancyLicenceDetails.assuredTenancy});
     await performValidation('mainHeader', groundsForPossession.mainHeader);
     await performAction('selectGroundsForPossession', {groundsRadioInput: groundsForPossession.yes});
     await performAction('selectRentArrearsPossessionGround', {
@@ -622,8 +618,8 @@ test.describe('[Create Case - England] @Master @nightly', async () => {
       email: defendantDetails.no,
     });
     await performValidation('mainHeader', tenancyLicenceDetails.mainHeader);
-    await performAction('selectOccupationContractOrLicenceDetails', {
-      occupationContractType: occupationContractOrLicenceDetailsWales.secureContract});
+    await performAction('selectTenancyOrLicenceDetails', {
+      tenancyOrLicenceType: tenancyLicenceDetails.flexibleTenancy});
     await performAction('selectYourPossessionGrounds', {
       discretionary: [whatAreYourGroundsForPossession.discretionary.rentArrearsOrBreachOfTenancy]
     });
@@ -712,8 +708,8 @@ test.describe('[Create Case - England] @Master @nightly', async () => {
       email: defendantDetails.yes,
       correspondenceAddressSame: defendantDetails.yes
     });
-    await performAction('selectOccupationContractOrLicenceDetails', {
-      occupationContractType: occupationContractOrLicenceDetailsWales.secureContract});
+    await performAction('selectTenancyOrLicenceDetails', {
+      tenancyOrLicenceType: tenancyLicenceDetails.secureTenancy});
     await performValidation('mainHeader', whatAreYourGroundsForPossession.mainHeader);
     await performAction('selectYourPossessionGrounds', {
       discretionary: [whatAreYourGroundsForPossession.discretionary.rentArrearsOrBreachOfTenancy, whatAreYourGroundsForPossession.discretionary.deteriorationOfFurniture4],
