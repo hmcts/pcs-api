@@ -248,7 +248,7 @@ export class CreateCaseAction implements IAction {
   }
 
   private async addDefendantDetails(defendantData: actionRecord) {
-    await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
+    await performValidation('text', {elementType: 'paragraph', text: 'Case number: ' + caseNumber});
     await performAction('clickRadioButton', {
       question: defendantData.nameQuestion,
       option: defendantData.nameOption
@@ -268,10 +268,10 @@ export class CreateCaseAction implements IAction {
       });
       if (defendantData.correspondenceAddressSameOption === defendantDetails.no) {
         await performActions(
-            'Find Address based on postcode',
-            ['inputText', addressDetails.enterUKPostcodeLabel, defendantData.address],
-            ['clickButton', addressDetails.findAddressLabel],
-            ['select', addressDetails.selectAddressLabel, addressDetails.addressIndex]
+          'Find Address based on postcode',
+          ['inputText', addressDetails.enterUKPostcodeLabel, defendantData.address],
+          ['clickButton', addressDetails.findAddressLabel],
+          ['select', addressDetails.selectAddressLabel, addressDetails.addressIndex]
         );
       }
     }
@@ -295,7 +295,7 @@ export class CreateCaseAction implements IAction {
         option: defendantData.correspondenceAddress1Option
       });
     }
-    if(defendantData.name2Option) {
+    if (defendantData.name2Option) {
       await performAction('clickButton', defendantDetails.addNew);
       // await performAction('addDefendantDetails',  {
       //   name2Question: defendantData.name2Question, name2Option: defendantData.name2Option,
@@ -310,13 +310,16 @@ export class CreateCaseAction implements IAction {
         question: defendantData.address2Question,
         option: defendantData.correspondenceAddress2Option
       });
-      question: defendantDetails.defendantEmailAddress,
-      option: defendantVal.email
-    });
-    if (defendantVal.email === defendantDetails.yes) {
-      await performAction('inputText', defendantDetails.enterEmailAddress, defendantDetails.emailIdInput);
+
+      await performAction('clickRadioButton', {
+        question: defendantDetails.defendantEmailAddress,
+        option: defendantVal.email
+      });
+      if (defendantVal.email === defendantDetails.yes) {
+        await performAction('inputText', defendantDetails.enterEmailAddress, defendantDetails.emailIdInput);
+      }
+      await performAction('clickButton', defendantDetails.continue);
     }
-    await performAction('clickButton', defendantDetails.continue);
   }
 
   private async selectRentArrearsPossessionGround(rentArrearsPossession: actionRecord) {
