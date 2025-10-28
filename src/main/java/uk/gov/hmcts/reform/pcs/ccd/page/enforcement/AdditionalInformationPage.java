@@ -1,6 +1,5 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.enforcement;
 
-import org.apache.commons.lang3.StringUtils;
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
@@ -17,8 +16,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent.SAVE_AND_RETURN
 
 public class AdditionalInformationPage implements CcdPageConfiguration {
 
-    public static final String DETAILS_TOO_LONG_ERROR_MSG = "Please limit the details to 6800 characters or less.";
-    public static final String NO_DETAILS_ERROR_MSG = "Please provide details for the additional information.";
+    public static final String DETAILS_TOO_LONG_ERROR_MSG = "Please limit the details to 6,800 characters or less.";
     private static final String ADDITIONAL_INFORMATION_INFO = "additionalInformation-Info";
     private static final String SHOW_CONDITION = "additionalInformationSelect=\"YES\"";
 
@@ -48,17 +46,11 @@ public class AdditionalInformationPage implements CcdPageConfiguration {
         AdditionalInformation additionalInformation = data.getEnforcementOrder().getAdditionalInformation();
         if (additionalInformation.getAdditionalInformationSelect().toBoolean()) {
             String txt = data.getEnforcementOrder().getAdditionalInformation().getAdditionalInformationDetails();
-            if (StringUtils.isBlank(txt) || txt.trim().isEmpty() || txt.matches("\\s+")) {
-                errors.add(NO_DETAILS_ERROR_MSG);
-            } else {
-                // Refactor validation logic to use TextAreaValidationService from PR #751 when merged
-                if (txt.length() > 6800) {
-                    // Use TextAreaValidationService from PR #751 when merged
-                    errors.add(DETAILS_TOO_LONG_ERROR_MSG);
-                }
+            // Refactor validation logic to use TextAreaValidationService from PR #751 when merged
+            if (txt.length() > 6800) {
+                // Use TextAreaValidationService from PR #751 when merged
+                errors.add(DETAILS_TOO_LONG_ERROR_MSG);
             }
-        } else {
-            additionalInformation.setAdditionalInformationDetails(null);
         }
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
             .data(data)
