@@ -12,8 +12,9 @@ public final class EnforcementRiskValidationUtils {
     }
 
     private static final int CHARACTER_LIMIT = 6800;
+    private static final String CHARACTER_LIMIT_DISPLAY = "6,800";
     private static final String ERROR_MESSAGE_TEMPLATE = "In '%s', you have entered more than the "
-        + "maximum number of characters (%d)";
+            + "maximum number of characters (%s)";
     public static final String CHARACTER_LIMIT_MESSAGE = "You can enter up to 6,800 characters.";
 
     /**
@@ -24,7 +25,7 @@ public final class EnforcementRiskValidationUtils {
      */
     static String getCharacterLimitErrorMessage(RiskCategory riskCategory) {
         String fieldLabel = getFieldLabel(riskCategory);
-        return String.format(ERROR_MESSAGE_TEMPLATE, fieldLabel, CHARACTER_LIMIT);
+        return String.format(ERROR_MESSAGE_TEMPLATE, fieldLabel, CHARACTER_LIMIT_DISPLAY);
     }
 
     /**

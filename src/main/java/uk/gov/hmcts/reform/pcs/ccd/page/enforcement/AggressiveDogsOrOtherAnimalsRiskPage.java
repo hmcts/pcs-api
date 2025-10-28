@@ -21,7 +21,7 @@ public final class AggressiveDogsOrOtherAnimalsRiskPage implements CcdPageConfig
         pageBuilder
                 .page("evictionAggressiveDogsOrOtherAnimalsDetails", this::midEvent)
                 .pageLabel("The animals at the property")
-                .showCondition("enforcementRiskCategoriesCONTAINS\"AGGRESSIVE_ANIMALS\"")
+                .showCondition("anyRiskToBailiff=\"YES\" AND enforcementRiskCategoriesCONTAINS\"AGGRESSIVE_ANIMALS\"")
                 .label("aggressiveDogsOrOtherAnimals-line-separator", "---")
                 .complex(PCSCase::getEnforcementOrder)
                 .complex(EnforcementOrder::getRiskDetails)

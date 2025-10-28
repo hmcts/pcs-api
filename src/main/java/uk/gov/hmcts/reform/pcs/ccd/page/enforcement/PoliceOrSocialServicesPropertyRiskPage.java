@@ -21,7 +21,7 @@ public final class PoliceOrSocialServicesPropertyRiskPage implements CcdPageConf
         pageBuilder
                 .page("evictionPoliceOrSocialServicesPropertyDetails", this::midEvent)
                 .pageLabel("Their history of police or social services visits to the property")
-                .showCondition("enforcementRiskCategoriesCONTAINS\"AGENCY_VISITS\"")
+                .showCondition("anyRiskToBailiff=\"YES\" AND enforcementRiskCategoriesCONTAINS\"AGENCY_VISITS\"")
                 .label("policeOrSocialServicesProperty-line-separator", "---")
                 .complex(PCSCase::getEnforcementOrder)
                 .complex(EnforcementOrder::getRiskDetails)
