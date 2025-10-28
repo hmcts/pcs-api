@@ -14,7 +14,7 @@ public class UnderlesseeMortgageeEntitledToClaimRelief implements CcdPageConfigu
                 .pageLabel("Underlessee or mortgagee entitled to claim relief against forfeiture")
                 .label("underlesseeMortgageeEntitledToClaimRelief-info", """
                    ---
-                   <p class="govuk-body-m">
+                   <p class="govuk-body-m" tabindex="0">
                     You must tell us if there is an underlessee (a subtenant) or a mortgagee (a mortgage lender)
                     who has a legal right to ask the court to let a lease continue, even though the landlord has tried
                     to end it.
