@@ -79,10 +79,10 @@ test.describe('[Create Case - England] @Master @nightly', async () => {
       addDefendantQuestion: defendantDetails.additionalDefendants, addAdditionalDefendantsOption: defendantDetails.yes,
       name1Question: defendantDetails.doYouKnowTheDefendantName, name1Option: defendantDetails.no,
       address1Question: defendantDetails.defendantCorrespondenceAddress, correspondenceAddress1Option: defendantDetails.no,
-      addressSame1Question: defendantDetails.isCorrespondenceAddressSame, correspondenceAddressSame1Option: defendantDetails.yes,
+
       name2Question: defendantDetails.doYouKnowTheDefendantName, name2Option: defendantDetails.no,
       address2Question: defendantDetails.defendantCorrespondenceAddress, addCorrespondenceAddress2Option: defendantDetails.no,
-      addressSame2Question: defendantDetails.isCorrespondenceAddressSame, correspondenceAddressSame2Option: defendantDetails.no
+
     });
     await performValidation('mainHeader', tenancyLicenceDetails.mainHeader);
     await performAction('selectTenancyOrLicenceDetails', {
