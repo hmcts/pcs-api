@@ -4,10 +4,13 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import uk.gov.hmcts.ccd.sdk.api.HasLabel;
 
+
+/**
+ * Estate management grounds for Secure contracts in Wales.
+ */
 @AllArgsConstructor
 @Getter
 public enum EstateManagementGroundsWales implements HasLabel {
-
     BUILDING_WORKS("Building works (ground A)"),
     REDEVELOPMENT_SCHEMES("Redevelopment schemes (ground B)"),
     CHARITIES("Charities (ground C)"),
@@ -16,7 +19,7 @@ public enum EstateManagementGroundsWales implements HasLabel {
     SPECIAL_NEEDS_DWELLINGS("Groups of dwellings for people with special needs (ground F)"),
     RESERVE_SUCCESSORS("Reserve successors (ground G)"),
     JOINT_CONTRACT_HOLDERS("Joint contract-holders (ground H)"),
-    OTHER_ESTATE_MANAGEMENT_REASONS("Other estate management reasons (ground I)"),;
+    OTHER_ESTATE_MANAGEMENT_REASONS("Other estate management reasons (ground I)");
 
     private final String label;
 

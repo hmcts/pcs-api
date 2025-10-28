@@ -73,15 +73,17 @@ import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.UnderlesseeMortgag
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.UploadAdditionalDocumentsDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.WalesCheckingNotice;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.WantToUploadDocuments;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.GroundsForPossessionWales;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.OccupationLicenceDetailsWales;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.ReasonsForPosessionWales;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.SecureContractGroundsForPossessionWales;
 import uk.gov.hmcts.reform.pcs.ccd.service.ClaimService;
+import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
-import uk.gov.hmcts.reform.pcs.ccd.service.UnsubmittedCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
+import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 import uk.gov.hmcts.reform.pcs.feesandpay.task.FeesAndPayTaskComponent;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationNameService;
@@ -108,7 +110,6 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
     private final ClaimService claimService;
     private final SavingPageBuilderFactory savingPageBuilderFactory;
     private final ResumeClaim resumeClaim;
-    private final UnsubmittedCaseDataService unsubmittedCaseDataService;
     private final SelectClaimantType selectClaimantType;
     private final NoticeDetails noticeDetails;
     private final UploadAdditionalDocumentsDetails uploadAdditionalDocumentsDetails;
@@ -117,8 +118,10 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
     private final DefendantsDetails defendantsDetails;
     private final OrganisationNameService organisationNameService;
     private final ClaimantDetailsWalesPage claimantDetailsWales;
-    private final UnderlesseeMortgageeDetails  underlesseeMortgageeDetails;
     private final SchedulerClient schedulerClient;
+    private final DraftCaseDataService draftCaseDataService;
+    private final AddressFormatter addressFormatter;
+    private final UnderlesseeMortgageeDetails  underlesseeMortgageeDetails;
 
     private static final String CASE_ISSUED_FEE_TYPE = "caseIssueFee";
 
@@ -147,6 +150,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             .add(defendantsDetails)
             .add(tenancyLicenceDetails)
             .add(new OccupationLicenceDetailsWales())
+            .add(new GroundsForPossessionWales())
             .add(new SecureContractGroundsForPossessionWales())
             .add(new ReasonsForPosessionWales())
             .add(new SecureOrFlexibleGroundsForPossession())
@@ -230,14 +234,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             .listItems(listItems)
             .build();
         caseData.setClaimantType(claimantTypeList);
-
-        String formattedAddress = String.format(
-            "%s<br>%s<br>%s",
-            propertyAddress.getAddressLine1(),
-            propertyAddress.getPostTown(),
-            propertyAddress.getPostCode()
-        );
-        caseData.setFormattedClaimantContactAddress(formattedAddress);
+        caseData.setFormattedClaimantContactAddress(addressFormatter.getFormattedAddress(caseData));
 
         return caseData;
     }
@@ -258,7 +255,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
 
         pcsCaseService.save(pcsCaseEntity);
 
-        unsubmittedCaseDataService.deleteUnsubmittedCaseData(caseReference);
+        draftCaseDataService.deleteUnsubmittedCaseData(caseReference);
 
         String taskId = UUID.randomUUID().toString();
 

@@ -17,3 +17,4 @@ public enum OccupationLicenceTypeWales implements HasLabel {
 
     private final String label;
 }
+
