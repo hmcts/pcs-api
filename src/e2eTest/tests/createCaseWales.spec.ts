@@ -42,6 +42,7 @@ import {statementOfExpressTerms} from '@data/page-data/statementOfExpressTerms.p
 import {wantToUploadDocuments} from '@data/page-data/wantToUploadDocuments.page.data';
 import {whatAreYourGroundsForPossessionWales} from '@data/page-data/whatAreYourGroundsForPossessionWales.page.data';
 import {reasonsForRequestingASuspensionAndDemotionOrder} from '@data/page-data/reasonsForRequestingASuspensionAndDemotionOrder.page.data';
+import {antiSocialBehaviourWales} from '@data/page-data/antiSocialBehaviourWales.page.data';
 
 test.beforeEach(async ({page}) => {
   initializeExecutor(page);
@@ -53,7 +54,7 @@ test.beforeEach(async ({page}) => {
 });
 
 test.describe('[Create Case - Wales] @Master @nightly', async () => {
-  test('Wales - Secure contract', async () => {
+  test('Wales - Secure contract - Rent arrears only', async () => {
     await performAction('enterTestAddressManually');
     await performValidation('bannerAlert', 'Case #.* has been created.');
     await performAction('extractCaseIdFromAlert');
@@ -82,12 +83,105 @@ test.describe('[Create Case - Wales] @Master @nightly', async () => {
     await performAction('clickButton', 'Continue');
     await performValidation('mainHeader', whatAreYourGroundsForPossessionWales.mainHeader);
     await performAction('selectYourPossessionGrounds', {
-      discretionary: [whatAreYourGroundsForPossessionWales.discretionary.rentArrears],
+      discretionary: [whatAreYourGroundsForPossessionWales.discretionary.rentArrears]
+    });
+    // Following lines enabled to reach notice of your intention page as HDPI-2343 is done for Wales journey routing
+    await performAction('selectPreActionProtocol', preActionProtocol.yes);
+    await performAction('selectMediationAndSettlement', {
+      attemptedMediationWithDefendantsOption: mediationAndSettlement.yes,
+      settlementWithDefendantsOption: mediationAndSettlement.no,
+    });
+    await performValidation('mainHeader', noticeOfYourIntention.mainHeader);
+    await performAction('selectNoticeOfYourIntention', {
+      question: noticeOfYourIntention.servedNoticeInteractiveText,
+      option: noticeOfYourIntention.no
+    });
+    // following code can be removed once wales journey routing is done HDPI-2365
+    /* await performValidation('mainHeader', rentDetails.mainHeader);
+     await performAction('provideRentDetails', {rentAmount:'850', rentFrequencyOption:'Other', inputFrequency:rentDetails.rentFrequencyFortnightly,unpaidRentAmountPerDay:'50'});
+     await performValidation('mainHeader', detailsOfRentArrears.mainHeader);
+     await performAction('provideDetailsOfRentArrears', {
+       files: ['rentArrears.docx', 'rentArrears.pdf'],
+       rentArrearsAmountOnStatement: '1000',
+       rentPaidByOthersOption: detailsOfRentArrears.yes,
+       paymentOptions: [detailsOfRentArrears.universalCreditOption, detailsOfRentArrears.paymentOtherOption]
+     });
+     await performValidation('mainHeader', moneyJudgment.mainHeader);
+     await performAction('selectMoneyJudgment', moneyJudgment.yes);
+     await performValidation('mainHeader', claimantCircumstances.mainHeader);
+     await performAction('selectClaimantCircumstances', {
+       circumstanceOption: claimantCircumstances.yes,
+       claimantInput: claimantCircumstances.claimantCircumstanceInfoInputData
+     });
+     await performValidation('mainHeader', defendantCircumstances.mainHeader);
+     await performAction('selectDefendantCircumstances', defendantCircumstances.no);
+     await performValidation('mainHeader', alternativesToPossession.mainHeader);
+     await performAction('selectAlternativesToPossession', {question: alternativesToPossession.demotionOfTenancy
+       , option: [alternativesToPossession.demotionOfTenancy]});
+     await performValidation('mainHeader', housingAct.mainHeader);
+     await performAction('selectHousingAct', [{question: housingAct.demotionOfTenancy.whichSection
+       , option: housingAct.demotionOfTenancy.section6AHousingAct1988}]);
+     await performValidation('mainHeader', statementOfExpressTerms.mainHeader);
+     await performAction('selectStatementOfExpressTerms', statementOfExpressTerms.no);
+     await performValidation('mainHeader', reasonsForRequestingADemotionOrder.mainHeader);
+     await performAction('enterReasonForDemotionOrder', reasonsForRequestingADemotionOrder.requestDemotionOrderQuestion);
+     await performValidation('mainHeader', claimingCosts.mainHeader);
+     await performAction('selectClaimingCosts', claimingCosts.no);
+     await performValidation('mainHeader', additionalReasonsForPossession.mainHeader);
+     await performAction('selectAdditionalReasonsForPossession', additionalReasonsForPossession.no);
+     await performValidation('mainHeader', underlesseeOrMortgageeEntitledToClaim.mainHeader);
+     await performAction('clickButton', underlesseeOrMortgageeEntitledToClaim.continue);
+     await performAction('wantToUploadDocuments', {
+       question: wantToUploadDocuments.uploadAnyAdditionalDocumentsLabel,
+       option: wantToUploadDocuments.no
+     });
+     await performAction('selectApplications', applications.yes);
+     await performAction('selectLanguageUsed', {question: languageUsed.whichLanguageUsedQuestion, option: languageUsed.english});
+     await performAction('completingYourClaim', completeYourClaim.saveItForLater);
+     await performAction('clickButton', checkYourAnswers.saveAndContinue);
+     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
+     await performValidations('address information entered',
+       ['formLabelValue', propertyDetails.buildingAndStreetLabel, addressDetails.buildingAndStreet],
+       ['formLabelValue', propertyDetails.addressLine2Label, addressDetails.addressLine2],
+       ['formLabelValue', propertyDetails.townOrCityLabel, addressDetails.townOrCity],
+       ['formLabelValue', propertyDetails.postcodeZipcodeLabel, addressDetails.walesCourtAssignedPostcode],
+       ['formLabelValue', propertyDetails.countryLabel, addressDetails.country]);*/
+  });
+  test('Wales - Secure contract - Rent arrears + ASB + other options', async () => {
+    await performAction('enterTestAddressManually');
+    await performValidation('bannerAlert', 'Case #.* has been created.');
+    await performAction('extractCaseIdFromAlert');
+    await performAction('clickButtonAndVerifyPageNavigation', provideMoreDetailsOfClaim.continue, claimantType.mainHeader);
+    await performAction('selectClaimantType', claimantType.wales.communityLandlord);
+    await performAction('selectClaimType', claimType.no);
+    await performAction('selectClaimantName', claimantName.yes);
+    await performAction('clickButtonAndVerifyPageNavigation', claimantName.continue, claimantDetailsWales.mainHeader);
+    await performAction('selectClaimantDetails',
+      {question1: claimantDetailsWales.wereYouRegisteredUnderPart1OfTheHousingAct2014, option1: claimantDetailsWales.yes,
+        question2: claimantDetailsWales.wereYouLicensedUnderPart1OfTheHousingAct2014, option2: claimantDetailsWales.yes,
+        question3: claimantDetailsWales.haveYouAppointedALicenseAgent, option3: claimantDetailsWales.yes});
+    await performAction('selectContactPreferences', {
+      notifications: contactPreferences.no,
+      correspondenceAddress: contactPreferences.no,
+      phoneNumber: contactPreferences.yes
+    });
+    await performAction('defendantDetails', {
+      name: defendantDetails.yes,
+      correspondenceAddress: defendantDetails.yes,
+      email: defendantDetails.yes,
+      correspondenceAddressSame: defendantDetails.yes
+    });
+    //Following line can be updated to securecontractLicenceDetails once HDPI-2365 is done
+    await performAction('check', 'Secure contract');
+    await performAction('clickButton', 'Continue');
+    await performValidation('mainHeader', whatAreYourGroundsForPossessionWales.mainHeader);
+    await performAction('selectYourPossessionGrounds', {
+      discretionary: [whatAreYourGroundsForPossessionWales.discretionary.rentArrears,whatAreYourGroundsForPossessionWales.discretionary.antiSocialBehaviour,whatAreYourGroundsForPossessionWales.discretionary.estateManagementGrounds],
+      discretionaryEstateGrounds: [whatAreYourGroundsForPossessionWales.discretionary.buildingWorks],
       mandatory: [whatAreYourGroundsForPossessionWales.mandatory.failureToGiveupPossession]
     });
     await performAction('clickButton', reasonsForPossession.continue);
     // Following lines enabled to reach notice of your intention page as HDPI-2343 is done for Wales journey routing
-    await performAction('selectGroundsForPossession', {groundsRadioInput: groundsForPossession.yes});
     await performAction('selectPreActionProtocol', preActionProtocol.yes);
     await performAction('selectMediationAndSettlement', {
       attemptedMediationWithDefendantsOption: mediationAndSettlement.yes,
@@ -151,7 +245,7 @@ test.describe('[Create Case - Wales] @Master @nightly', async () => {
   });
 
   // The sections commented out will be fixed as part of the User Story https://tools.hmcts.net/jira/browse/HDPI-2123
-  test('Wales - Standard contract', async () => {
+  test('Wales - Rent arrears + ASB - Standard contract', async () => {
     await performAction('enterTestAddressManually');
     await performValidation('bannerAlert', 'Case #.* has been created.');
     await performAction('extractCaseIdFromAlert');
@@ -190,11 +284,10 @@ test.describe('[Create Case - Wales] @Master @nightly', async () => {
     await performAction('clickButton', 'Continue');
     await performValidation('mainHeader', whatAreYourGroundsForPossessionWales.mainHeader);
     await performAction('selectYourPossessionGrounds', {
-      discretionary: [whatAreYourGroundsForPossessionWales.discretionary.estateManagementGrounds],
-      discretionaryEstateGrounds: [whatAreYourGroundsForPossessionWales.discretionary.buildingWorks],
-      mandatory: [whatAreYourGroundsForPossessionWales.mandatory.section191],
+      discretionary: [whatAreYourGroundsForPossessionWales.discretionary.rentArrears, whatAreYourGroundsForPossessionWales.discretionary.antiSocialBehaviour],
     });
-    await performAction('clickButton', reasonsForPossession.continue);
+    await performAction('clickButton', antiSocialBehaviourWales.mainHeader);
+    await performAction('clickButton', antiSocialBehaviourWales.continue);
     // Following lines enabled to reach notice of your intention page as HDPI-2343 is done for Wales journey routing
     await performAction('selectGroundsForPossession', {groundsRadioInput: groundsForPossession.yes});
     await performValidation('mainHeader', preActionProtocol.mainHeader);
@@ -257,7 +350,7 @@ test.describe('[Create Case - Wales] @Master @nightly', async () => {
   });
 
   // The sections commented out will be fixed as part of the User Story https://tools.hmcts.net/jira/browse/HDPI-2123
-  test('Wales - Occupation contract Licence Details - Other', async () => {
+  test('Wales - No Rent arrears,  ASB + other options - Other', async () => {
     await performAction('enterTestAddressManually');
     await performValidation('bannerAlert', 'Case #.* has been created.');
     await performAction('extractCaseIdFromAlert');
@@ -285,7 +378,9 @@ test.describe('[Create Case - Wales] @Master @nightly', async () => {
     await performAction('clickButton', 'Continue');
     await performValidation('mainHeader', whatAreYourGroundsForPossessionWales.mainHeader);
     await performAction('selectYourPossessionGrounds', {
-      discretionary: [whatAreYourGroundsForPossessionWales.discretionary.otherBreachOfContract],
+      discretionary: [whatAreYourGroundsForPossessionWales.discretionary.antiSocialBehaviour,whatAreYourGroundsForPossessionWales.discretionary.estateManagementGrounds],
+      discretionaryEstateGrounds: [whatAreYourGroundsForPossessionWales.discretionary.buildingWorks],
+      mandatory: [whatAreYourGroundsForPossessionWales.mandatory.section191],
     });
     await performAction('clickButton', reasonsForPossession.continue);
     // Following lines enabled to reach notice of your intention page as HDPI-2343 is done for Wales journey routing
