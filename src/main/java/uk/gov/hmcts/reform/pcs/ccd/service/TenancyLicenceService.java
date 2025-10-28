@@ -69,8 +69,7 @@ public class TenancyLicenceService {
                 // Wales Occupation Contract/Licence details
                 .walesOccupationLicenceType(
                     pcsCase.getOccupationLicenceDetailsWales() != null
-                        && pcsCase.getOccupationLicenceDetailsWales().getLicenceType() != null
-                        ? pcsCase.getOccupationLicenceDetailsWales().getLicenceType().getLabel()
+                        ? pcsCase.getOccupationLicenceDetailsWales().getLicenceType()
                         : null)
                 .walesOtherLicenceTypeDetails(
                     pcsCase.getOccupationLicenceDetailsWales() != null

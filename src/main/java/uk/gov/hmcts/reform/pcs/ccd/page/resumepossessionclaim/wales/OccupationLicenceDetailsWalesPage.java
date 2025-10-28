@@ -1,7 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales;
 
 import lombok.AllArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
@@ -13,8 +12,8 @@ import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 
 import java.time.Clock;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
-
 
 /**
  * CCD page configuration for the Occupation contract or licence details screen.
@@ -22,7 +21,6 @@ import java.util.List;
  */
 @AllArgsConstructor
 @Component
-@Slf4j
 public class OccupationLicenceDetailsWalesPage implements CcdPageConfiguration {
 
     private static final String SHOW_OTHER_DETAILS_CONDITION = "licenceType=\"OTHER\"";
@@ -110,7 +108,7 @@ public class OccupationLicenceDetailsWalesPage implements CcdPageConfiguration {
      */
     private List<String> validateOccupationLicenceDetailsWales(
         OccupationLicenceDetailsWales details) {
-        List<String> errors = new java.util.ArrayList<>();
+        List<String> errors = new ArrayList<>();
 
         // Date field validation
         LocalDate contractStartDate = details.getLicenceStartDate();

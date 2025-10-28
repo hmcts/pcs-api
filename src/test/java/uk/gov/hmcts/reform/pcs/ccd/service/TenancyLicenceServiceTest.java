@@ -434,7 +434,7 @@ class TenancyLicenceServiceTest {
         TenancyLicence result = tenancyLicenceService.buildTenancyLicence(pcsCase);
 
         // Then - Wales fields populated
-        assertThat(result.getWalesOccupationLicenceType()).isEqualTo("Secure contract");
+        assertThat(result.getWalesOccupationLicenceType()).isEqualTo(OccupationLicenceTypeWales.SECURE_CONTRACT);
         assertThat(result.getWalesOtherLicenceTypeDetails()).isEqualTo("Custom contract details");
         assertThat(result.getWalesLicenceStartDate()).isEqualTo(licenseStartDate);
         assertThat(result.getWalesLicenceDocuments()).hasSize(2);
@@ -466,7 +466,7 @@ class TenancyLicenceServiceTest {
         TenancyLicence result = tenancyLicenceService.buildTenancyLicence(pcsCase);
 
         // Then
-        assertThat(result.getWalesOccupationLicenceType()).isEqualTo("Standard contract");
+        assertThat(result.getWalesOccupationLicenceType()).isEqualTo(OccupationLicenceTypeWales.STANDARD_CONTRACT);
         assertThat(result.getWalesLicenceStartDate()).isEqualTo(licenseStartDate);
         assertThat(result.getWalesOtherLicenceTypeDetails()).isNull();
         assertThat(result.getWalesLicenceDocuments()).isEmpty();
