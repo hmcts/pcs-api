@@ -1,5 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim;
 
+import lombok.AllArgsConstructor;
+import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
@@ -8,6 +10,7 @@ import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
@@ -16,7 +19,11 @@ import static uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType.PROVIDER_OF_SOCIAL
 import static uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry.ENGLAND;
 import static uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry.WALES;
 
+@Component
+@AllArgsConstructor
 public class SelectClaimantType implements CcdPageConfiguration {
+
+    private final DraftCaseDataService draftCaseDataService;
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
@@ -34,7 +41,14 @@ public class SelectClaimantType implements CcdPageConfiguration {
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
                                                                   CaseDetails<PCSCase, State> detailsBefore) {
 
+        long caseReference = details.getId();
         PCSCase caseData = details.getData();
+
+        if (caseData.getResumeClaimKeepAnswers() == YesOrNo.NO) {
+            draftCaseDataService.deleteUnsubmittedCaseData(caseReference);
+            caseData.setHasUnsubmittedCaseData(YesOrNo.NO); // To hide the ResumeClaim page if navigating backwards
+        }
+
         String selectedValue = caseData.getClaimantType().getValueCode();
 
         ClaimantType claimantType = ClaimantType.valueOf(selectedValue);

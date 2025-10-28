@@ -17,7 +17,7 @@ import uk.gov.hmcts.ccd.sdk.api.callback.MidEvent;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.service.UnsubmittedCaseDataService;
+import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -33,7 +33,7 @@ class SavingPageBuilderTest {
     private static final String TEST_PAGE_ID = "test-page";
 
     @Mock
-    private UnsubmittedCaseDataService unsubmittedCaseDataService;
+    private DraftCaseDataService draftCaseDataService;
     @Mock
     private EventBuilder<PCSCase, UserRole, State> eventBuilder;
     @Mock
@@ -46,7 +46,7 @@ class SavingPageBuilderTest {
     @BeforeEach
     void setUp() {
         when(eventBuilder.fields()).thenReturn(fieldCollectionBuilder);
-        underTest = new SavingPageBuilder(unsubmittedCaseDataService, eventBuilder);
+        underTest = new SavingPageBuilder(draftCaseDataService, eventBuilder);
     }
 
     @Test
@@ -68,7 +68,7 @@ class SavingPageBuilderTest {
             .handle(caseDetails, caseDetailsBefore);
 
         // Then
-        verify(unsubmittedCaseDataService).saveUnsubmittedCaseData(CASE_REFERENCE, caseData);
+        verify(draftCaseDataService).patchUnsubmittedCaseData(CASE_REFERENCE, caseData);
         assertThat(response.getData()).isEqualTo(caseData);
     }
 
@@ -96,9 +96,9 @@ class SavingPageBuilderTest {
             .handle(caseDetails, caseDetailsBefore);
 
         // Then
-        InOrder inOrder = Mockito.inOrder(pageMidEvent, unsubmittedCaseDataService);
+        InOrder inOrder = Mockito.inOrder(pageMidEvent, draftCaseDataService);
         inOrder.verify(pageMidEvent).handle(caseDetails, caseDetailsBefore);
-        inOrder.verify(unsubmittedCaseDataService).saveUnsubmittedCaseData(CASE_REFERENCE, caseData);
+        inOrder.verify(draftCaseDataService).patchUnsubmittedCaseData(CASE_REFERENCE, caseData);
         assertThat(response).isEqualTo(pageMidEventResponse);
     }
 

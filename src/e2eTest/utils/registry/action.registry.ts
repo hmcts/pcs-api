@@ -9,8 +9,8 @@ import {CreateCaseAction} from "@utils/actions/custom-actions/createCase.action"
 import {ClickButtonAction} from "../actions/element-actions/clickButton.action";
 import {ClickRadioButton} from "../actions/element-actions/clickRadioButton.action";
 import {UploadFileAction} from "@utils/actions/element-actions/uploadFile.action";
-import {searchCaseActions} from "@utils/actions/custom-actions/searchCase.action";
 import {CreateCaseWalesAction} from "@utils/actions/custom-actions/createCaseWales.action";
+import {SearchCaseAction} from '@utils/actions/custom-actions/searchCase.action';
 
 export class ActionRegistry {
   private static actions: Map<string, IAction> = new Map([
@@ -64,14 +64,16 @@ export class ActionRegistry {
     ['completingYourClaim', new CreateCaseAction()],
     ['selectAdditionalReasonsForPossession', new CreateCaseAction()],
     ['enterReasonForDemotionOrder', new CreateCaseAction()],
+    ['enterReasonForSuspensionAndDemotionOrder', new CreateCaseAction()],
     ['selectStatementOfExpressTerms', new CreateCaseAction()],
     ['selectAlternativesToPossession', new CreateCaseAction()],
     ['selectHousingAct', new CreateCaseAction()],
     ['enterReasonForSuspensionOrder', new CreateCaseAction()],
-    ['searchCaseFromCaseList', new searchCaseActions()],
+    ['searchCaseFromCaseList', new SearchCaseAction()],
     ['selectClaimingCosts', new CreateCaseAction()],
     ['wantToUploadDocuments', new CreateCaseAction()],
-    ['uploadAdditionalDocs', new CreateCaseAction()]
+    ['uploadAdditionalDocs', new CreateCaseAction()],
+    ['clickButtonAndWaitForElement', new ClickButtonAction()]
   ]);
 
   static getAction(actionName: string): IAction {

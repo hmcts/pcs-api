@@ -1,14 +1,17 @@
-import {IAction} from '../../interfaces/action.interface';
-import {ClickTabAction} from '../../actions/element-actions/clickTab.action';
-import {InputTextAction} from '../../actions/element-actions/inputText.action';
-import {CheckAction} from '../../actions/element-actions/check.action';
-import {SelectAction} from '../../actions/element-actions/select.action';
-import {LoginAction} from "../../actions/custom-actions/login.action";
+import {IAction} from '@utils/interfaces/action.interface';
+import {ClickTabAction} from '@utils/actions/element-actions/clickTab.action';
+import {InputTextAction} from '@utils/actions/element-actions/inputText.action';
+import {CheckAction} from '@utils/actions/element-actions/check.action';
+import {SelectAction} from '@utils/actions/element-actions/select.action';
 import {NavigateToUrl} from "@utils/actions/custom-actions/navigateToUrl.action";
 import {ClickButtonAction} from "@utils/actions/element-actions/clickButton.action";
 import {ClickRadioButton} from "@utils/actions/element-actions/clickRadioButton.action";
+import {MakeClaimAction} from '@utils/actions/custom-actions/custom-actions-enforcement/makeClaim.action';
+import {LoginAction} from '@utils/actions/custom-actions/login.action';
+import {SearchCaseAction} from '@utils/actions/custom-actions/searchCase.action';
+import {EnforcementAction} from '@utils/actions/custom-actions/custom-actions-enforcement/enforcement.action';
 
-export class ActionRegistry {
+export class ActionEnforcementRegistry {
   private static actions: Map<string, IAction> = new Map([
     ['clickButton', new ClickButtonAction()],
     ['clickButtonAndVerifyPageNavigation', new ClickButtonAction()],
@@ -17,10 +20,15 @@ export class ActionRegistry {
     ['inputText', new InputTextAction()],
     ['check', new CheckAction()],
     ['select', new SelectAction()],
-    ['createUserAndLogin', new LoginAction()],
     ['login', new LoginAction()],
     ['navigateToUrl', new NavigateToUrl()],
-    ['clickRadioButton', new ClickRadioButton()]
+    ['clickRadioButton', new ClickRadioButton()],
+    ['filterCaseFromCaseList', new SearchCaseAction()],
+    ['createNewCase', new MakeClaimAction()],
+    ['searchMyCaseFromFindCase', new SearchCaseAction()],
+    ['selectFirstCaseFromTheFilter', new SearchCaseAction()],
+    ['noCasesFoundAfterSearch', new SearchCaseAction()],
+    ['selectApplicationType', new EnforcementAction()],
   ]);
 
   static getAction(actionName: string): IAction {
