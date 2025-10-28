@@ -14,6 +14,7 @@ import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
@@ -21,8 +22,10 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.model.Defendant;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
-import uk.gov.hmcts.reform.pcs.ccd.service.UnsubmittedCaseDataService;
+import uk.gov.hmcts.reform.pcs.ccd.service.DefendantService;
+import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
@@ -51,7 +54,9 @@ class PCSCaseViewTest {
     @Mock
     private ModelMapper modelMapper;
     @Mock
-    private UnsubmittedCaseDataService unsubmittedCaseDataService;
+    private DraftCaseDataService draftCaseDataService;
+    @Mock
+    private DefendantService defendantService;
     @Mock
     private PcsCaseEntity pcsCaseEntity;
 
@@ -62,7 +67,7 @@ class PCSCaseViewTest {
         when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(pcsCaseEntity));
 
         underTest = new PCSCaseView(pcsCaseRepository, securityContextService,
-                modelMapper, unsubmittedCaseDataService);
+                modelMapper, draftCaseDataService, defendantService);
     }
 
     @Test
@@ -83,7 +88,7 @@ class PCSCaseViewTest {
     @MethodSource("unsubmittedDataFlagScenarios")
     void shouldSetFlagForUnsubmittedData(boolean hasUnsubmittedData, YesOrNo expectedCaseDataValue) {
         // Given
-        when(unsubmittedCaseDataService.hasUnsubmittedCaseData(CASE_REFERENCE)).thenReturn(hasUnsubmittedData);
+        when(draftCaseDataService.hasUnsubmittedCaseData(CASE_REFERENCE)).thenReturn(hasUnsubmittedData);
 
         // When
         PCSCase pcsCase = underTest.getCase(request(CASE_REFERENCE, State.AWAITING_FURTHER_CLAIM_DETAILS));
@@ -154,7 +159,7 @@ class PCSCaseViewTest {
     @Test
     void shouldMapPreActionProtocolCompletedWhenYes() {
         // Given
-        PcsCaseEntity pcsCaseEntity = mock(PcsCaseEntity.class);
+        pcsCaseEntity = mock(PcsCaseEntity.class);
         when(pcsCaseEntity.getPreActionProtocolCompleted()).thenReturn(true);
         when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(pcsCaseEntity));
 
@@ -241,6 +246,26 @@ class PCSCaseViewTest {
         assertThat(pcsCase.getClaimantType()).isNotNull();
         assertThat(pcsCase.getClaimantType().getValue().getCode()).isEqualTo(claimantType.name());
         assertThat(pcsCase.getClaimantType().getValue().getLabel()).isEqualTo(claimantType.getLabel());
+    }
+
+    @Test
+    void shouldMapDefendants() {
+        // Given
+        List<Defendant> defendantList = List.of(mock(Defendant.class), mock(Defendant.class));
+        DefendantDetails defendantDetails1 = mock(DefendantDetails.class);
+        DefendantDetails defendantDetails2 = mock(DefendantDetails.class);
+
+        when(pcsCaseEntity.getDefendants()).thenReturn(defendantList);
+        when(defendantService.mapToDefendantDetails(defendantList))
+            .thenReturn(List.of(defendantDetails1, defendantDetails2));
+
+        // When
+        PCSCase pcsCase = underTest.getCase(request(CASE_REFERENCE, DEFAULT_STATE));
+
+        // Then
+        assertThat(pcsCase.getAllDefendants())
+            .map(ListValue::getValue)
+            .containsExactly(defendantDetails1, defendantDetails2);
     }
 
     private static Stream<Arguments> claimantTypeMappingScenarios() {

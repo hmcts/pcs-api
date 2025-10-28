@@ -8,6 +8,7 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.modelmapper.ModelMapper;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
@@ -29,6 +30,8 @@ import static uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils.wrapListItems;
 @ExtendWith(MockitoExtension.class)
 class DefendantServiceTest {
 
+    @Mock
+    private ModelMapper modelMapper;
     @Mock(strictness = LENIENT)
     private PCSCase pcsCase;
 
@@ -36,7 +39,7 @@ class DefendantServiceTest {
 
     @BeforeEach
     void setUp() {
-        underTest = new DefendantService();
+        underTest = new DefendantService(modelMapper);
     }
 
     @Test
@@ -241,6 +244,35 @@ class DefendantServiceTest {
             .build();
 
         assertThat(defendantList).containsExactly(expectedDefendant1, expectedDefendant2);
+    }
+
+    @Test
+    void shouldMapFromNullDefendantListToEmptyDefendantDetailsList() {
+        // When
+        List<DefendantDetails> actualDefendantDetails = underTest.mapToDefendantDetails(null);
+
+        // Then
+        assertThat(actualDefendantDetails).isEmpty();
+    }
+
+    @Test
+    void shouldMapFromDefendantListToDefendantDetailsList() {
+        // Given
+        Defendant defendant1 = mock(Defendant.class);
+        Defendant defendant2 = mock(Defendant.class);
+
+        DefendantDetails defendantDetails1 = mock(DefendantDetails.class);
+        DefendantDetails defendantDetails2 = mock(DefendantDetails.class);
+
+        when(modelMapper.map(defendant1, DefendantDetails.class)).thenReturn(defendantDetails1);
+        when(modelMapper.map(defendant2, DefendantDetails.class)).thenReturn(defendantDetails2);
+
+        // When
+        List<DefendantDetails> actualDefendantDetails
+            = underTest.mapToDefendantDetails(List.of(defendant1, defendant2));
+
+        // Then
+        assertThat(actualDefendantDetails).containsExactly(defendantDetails1, defendantDetails2);
     }
 
     private static Stream<Arguments> singleDefendantScenarios() {

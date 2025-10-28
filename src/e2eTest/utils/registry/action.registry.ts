@@ -72,7 +72,8 @@ export class ActionRegistry {
     ['searchCaseFromCaseList', new SearchCaseAction()],
     ['selectClaimingCosts', new CreateCaseAction()],
     ['wantToUploadDocuments', new CreateCaseAction()],
-    ['uploadAdditionalDocs', new CreateCaseAction()]
+    ['uploadAdditionalDocs', new CreateCaseAction()],
+    ['clickButtonAndWaitForElement', new ClickButtonAction()]
   ]);
 
   static getAction(actionName: string): IAction {
