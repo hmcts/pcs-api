@@ -15,7 +15,7 @@ public class EvictionVulnerableAdultsChildrenPage implements CcdPageConfiguratio
         pageBuilder
             .page("evictionVulnerableAdultsChildrenPage")
             .pageLabel("Vulnerable adults and children at the property (placeholder)")
-            .showCondition("anyRiskToBailiff=\"NO\"")
+            .showCondition("anyRiskToBailiff=\"NO\" OR anyRiskToBailiff=\"NOT_SURE\"")
             .label("evictionVulnerableAdultsChildrenPage-line-separator", "---");
     }
 }
