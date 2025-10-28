@@ -32,7 +32,8 @@ public class OccupationLicenceDetailsWales {
     @CCD(
         typeOverride = TextArea,
         label = "Give details of the type of occupation contract or licence that's in place",
-        hint = "You can enter up to 500 characters"
+        hint = "You can enter up to 500 characters",
+        max = 500
     )
     private String otherLicenceTypeDetails;
 
