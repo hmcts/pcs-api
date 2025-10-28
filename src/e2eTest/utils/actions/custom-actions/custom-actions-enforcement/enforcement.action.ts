@@ -36,8 +36,9 @@ export class EnforcementAction implements IAction {
 
   private async selectNameAndAddressForEviction(nameAndAddress: actionRecord) {
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + enforcementTestCaseNumber });
-    //await performAction('clickRadioButton', { question: nameAndAddress.question, option: nameAndAddress.option });
-    await performAction('clickRadioButton', nameAndAddressForEviction.yes);
+    /* The below radio button will be referenced to its corresponding question when this name and address page is worked upon.
+    Currently it is a placeholder */
+    await performAction('clickRadioButton', nameAndAddress.option);
     await performAction('clickButton', nameAndAddressForEviction.continue);
   }
 
