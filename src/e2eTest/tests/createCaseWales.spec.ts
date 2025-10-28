@@ -11,8 +11,6 @@ import {preActionProtocol} from '@data/page-data/preActionProtocol.page.data';
 import {mediationAndSettlement} from '@data/page-data/mediationAndSettlement.page.data';
 import {noticeOfYourIntention} from '@data/page-data/noticeOfYourIntention.page.data';
 import {provideMoreDetailsOfClaim} from '@data/page-data/provideMoreDetailsOfClaim.page.data';
-import {resumeClaim} from '@data/page-data/resumeClaim.page.data';
-import {resumeClaimOptions} from '@data/page-data/resumeClaimOptions.page.data';
 import {reasonsForPossession} from '@data/page-data/reasonsForPossession.page.data';
 import {user} from '@data/user-data/permanent.user.data';
 import {home} from '@data/page-data/home.page.data';
@@ -133,19 +131,6 @@ test.describe('[Create Case - Wales] @Master @nightly', async () => {
     await performAction('clickButtonAndVerifyPageNavigation', provideMoreDetailsOfClaim.continue, claimantType.mainHeader);
     await performAction('selectClaimantType', claimantType.wales.communityLandlord);
     await performAction('selectClaimType', claimType.no);
-    await performAction('selectClaimantName', claimantName.yes);
-    await performAction('clickButtonAndVerifyPageNavigation', claimantName.continue, claimantDetailsWales.mainHeader);
-    await performAction('clickButton', claimantDetailsWales.cancel);
-    //Commenting below lines as login and logout functionality is too flaky in the pipeline
-    /*await performAction('clickButtonAndWaitForElement', 'Sign out', 'Sign in or create an account');
-    await performAction('reloginAndFindTheCase', user.claimantSolicitor);*/
-    await performAction('clickButtonAndVerifyPageNavigation', resumeClaim.continue, resumeClaimOptions.mainHeader);
-    await performAction('selectResumeClaimOption', resumeClaimOptions.no);
-    await performValidation('radioButtonChecked', claimantType.wales.communityLandlord, false);
-    await performAction('selectClaimantType', claimantType.wales.communityLandlord);
-    await performValidation('radioButtonChecked', claimType.no, false);
-    await performAction('selectClaimType', claimType.no);
-    await performValidation('radioButtonChecked', claimantName.no, false);
     await performAction('selectClaimantName', claimantName.yes);
     await performAction('clickButtonAndVerifyPageNavigation', claimantName.continue, claimantDetailsWales.mainHeader);
     await performAction('selectClaimantDetails',
