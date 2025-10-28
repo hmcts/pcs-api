@@ -21,7 +21,8 @@ public class FirearmsPossessionRiskPage implements CcdPageConfiguration {
         pageBuilder
             .page("firearmsPossessionRisk", this::midEvent)
             .pageLabel("Their history of firearm possession")
-            .showCondition("enforcementRiskCategoriesCONTAINS\"FIREARMS_POSSESSION\"")
+            .showCondition("anyRiskToBailiff=\"YES\" "
+                + "AND enforcementRiskCategoriesCONTAINS\"FIREARMS_POSSESSION\"")
             .label("firearmsPossessionRisk-line-separator", "---")
             .complex(PCSCase::getEnforcementOrder)
             .complex(EnforcementOrder::getRiskDetails)

@@ -21,7 +21,8 @@ public class ViolentAggressiveRiskPage implements CcdPageConfiguration {
         pageBuilder
             .page("violentAggressiveRisk", this::midEvent)
             .pageLabel("Their violent or aggressive behaviour")
-            .showCondition("enforcementRiskCategoriesCONTAINS\"VIOLENT_OR_AGGRESSIVE\"")
+            .showCondition("anyRiskToBailiff=\"YES\" "
+                + "AND enforcementRiskCategoriesCONTAINS\"VIOLENT_OR_AGGRESSIVE\"")
             .label("violentAggressiveRisk-line-separator", "---")
             .complex(PCSCase::getEnforcementOrder)
             .complex(EnforcementOrder::getRiskDetails)
