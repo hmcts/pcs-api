@@ -8,6 +8,8 @@ import { caseNumber } from "@utils/actions/custom-actions/createCase.action";
 import { initializeExecutor } from "@utils/controller";
 import { caseNotFoundAfterFilter } from "@utils/actions/custom-actions/searchCase.action";
 import { nameAndAddressForEviction } from "@data/page-data/page-data-enforcement/nameAndAddressForEviction.page.data";
+import { everyoneLivingAtTheProperty } from "@data/page-data/page-data-enforcement/everyoneLivingAtTheProperty.page.data";
+import { riskPosedByEveryoneAtProperty } from "@data/page-data/page-data-enforcement/riskPosedByEveryoneAtProperty.page.data";
 
 test.beforeEach(async ({ page }) => {
   initializeExecutor(page);
@@ -28,5 +30,10 @@ test.describe('[Enforcement - Warrant of Possession] @Master @nightly', async ()
     await performAction('clickButtonAndVerifyPageNavigation', caseSummary.go, yourApplication.mainHeader);
     await performAction('selectApplicationType', { question: yourApplication.typeOfApplicationQuestion, option: yourApplication.typeOfApplicationOptions.warrantOfPossession });
     await performValidation('mainHeader', nameAndAddressForEviction.mainHeader);
+    await performAction('selectNameAndAddressForEviction', { question: nameAndAddressForEviction.nameAndAddressPageForEvictionQuestion, option: nameAndAddressForEviction.yes });
+    await performValidation('mainHeader', everyoneLivingAtTheProperty.mainHeader);
+    await performAction('selectPoseRiskToBailiff', { question: everyoneLivingAtTheProperty.riskToBailiffQuestion, option: everyoneLivingAtTheProperty.yes });
+    await performValidation('mainHeader', riskPosedByEveryoneAtProperty.mainHeader);
+    await performAction('selectRiskTypesPosedToBailiff', { riskTypes: [riskPosedByEveryoneAtProperty.violentOrAggressiveBehaviour, riskPosedByEveryoneAtProperty.historyOfFirearmPossession, riskPosedByEveryoneAtProperty.criminalOrAntisocialBehaviour] });
   });
 });
