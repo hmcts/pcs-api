@@ -63,8 +63,6 @@ public class IntroductoryDemotedOrOtherGroundsForPossession implements CcdPageCo
             caseData.setShowIntroductoryDemotedOtherGroundReasonPage(YesOrNo.NO);
         }
 
-        // Determine if Rent Details page should be shown (AC01 - HDPI-1506)
-        // Show rent details if "Rent arrears" is selected
         boolean hasRentArrears = caseData.getIntroductoryDemotedOrOtherGrounds() != null
             && caseData.getIntroductoryDemotedOrOtherGrounds()
                 .contains(IntroductoryDemotedOrOtherGrounds.RENT_ARREARS);
