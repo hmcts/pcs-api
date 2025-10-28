@@ -41,6 +41,26 @@ class AdditionalInformationPageTest extends BasePageTest {
     }
 
     @Test
+    void shouldHandleNoSelection_WithPreviousData() {
+        // Given
+        AdditionalInformation additionalInformation = AdditionalInformation.builder()
+            .additionalInformationSelect(VerticalYesNo.NO)
+            .additionalInformationDetails("Previous additional information details")
+            .build();
+        EnforcementOrder enforcementOrder = EnforcementOrder.builder()
+            .additionalInformation(additionalInformation)
+            .build();
+        PCSCase caseData = PCSCase.builder().enforcementOrder(enforcementOrder).build();
+
+        // When
+        callMidEventHandler(caseData);
+
+        // Then
+        assertThat(caseData.getEnforcementOrder().getAdditionalInformation().getAdditionalInformationDetails())
+            .isNull();
+    }
+
+    @Test
     void shouldHandleYesSelection() {
         // Given
         String additionalInformationDetails = "Additional information details";

@@ -9,7 +9,7 @@ public class MoneyOwedPage implements CcdPageConfiguration {
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
                 .page("moneyOwedPage")
-                .pageLabel("Money Owed (place holder)")
+                .pageLabel("Money owed (place holder)")
                 .label("moneyOwedPage-content", "---");
     }
 

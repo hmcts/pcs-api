@@ -57,6 +57,8 @@ public class AdditionalInformationPage implements CcdPageConfiguration {
                     errors.add(DETAILS_TOO_LONG_ERROR_MSG);
                 }
             }
+        } else {
+            additionalInformation.setAdditionalInformationDetails(null);
         }
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
             .data(data)
