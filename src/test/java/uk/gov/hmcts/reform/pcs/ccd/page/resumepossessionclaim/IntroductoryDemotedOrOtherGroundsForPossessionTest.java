@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -28,7 +29,8 @@ class IntroductoryDemotedOrOtherGroundsForPossessionTest extends BasePageTest {
 
     @ParameterizedTest
     @MethodSource("provideRentDetailsPageScenarios")
-    void shouldSetCorrectShowRentDetailsPageFlagForIntroductoryDemotedOther(
+    @DisplayName("Should set rent details page flag based on grounds selection")
+    void shouldSetRentDetailsPageFlagForGroundsSelection(
         TenancyLicenceType tenancyType,
         Set<IntroductoryDemotedOrOtherGrounds> grounds,
         YesOrNo expectedShowRentDetailsPage) {
@@ -49,10 +51,11 @@ class IntroductoryDemotedOrOtherGroundsForPossessionTest extends BasePageTest {
 
     @ParameterizedTest
     @MethodSource("provideNoGroundsForPossessionScenarios")
-    void shouldSetCorrectShowRentDetailsPageFlagWhenNoGroundsForPossession(
+    @DisplayName("Should set rent details page flag when no grounds for possession")
+    void shouldSetRentDetailsPageFlagWhenNoGroundsSelected(
         TenancyLicenceType tenancyType,
         YesOrNo expectedShowRentDetailsPage) {
-        // Given - AC05: No grounds for possession selected
+        // Given
         PCSCase caseData = PCSCase.builder()
             .typeOfTenancyLicence(tenancyType)
             .hasIntroductoryDemotedOtherGroundsForPossession(VerticalYesNo.NO)
@@ -69,66 +72,70 @@ class IntroductoryDemotedOrOtherGroundsForPossessionTest extends BasePageTest {
 
     private static Stream<Arguments> provideRentDetailsPageScenarios() {
         return Stream.of(
-            // AC01 & AC02: Introductory Tenancy + Rent Arrears selected - Should show Rent Details
-            arguments(TenancyLicenceType.INTRODUCTORY_TENANCY,
-                      Set.of(IntroductoryDemotedOrOtherGrounds.RENT_ARREARS),
-                      YesOrNo.YES),
-            // AC01 & AC02: Demoted Tenancy + Rent Arrears selected - Should show Rent Details
-            arguments(TenancyLicenceType.DEMOTED_TENANCY,
-                      Set.of(IntroductoryDemotedOrOtherGrounds.RENT_ARREARS),
-                      YesOrNo.YES),
-            // AC01 & AC02: Other Tenancy + Rent Arrears selected - Should show Rent Details
-            arguments(TenancyLicenceType.OTHER,
-                      Set.of(IntroductoryDemotedOrOtherGrounds.RENT_ARREARS),
-                      YesOrNo.YES),
+            // Rent arrears selected → show rent details
+            arguments(TenancyLicenceType.INTRODUCTORY_TENANCY, rentArrearsOnly(), YesOrNo.YES),
+            arguments(TenancyLicenceType.DEMOTED_TENANCY, rentArrearsOnly(), YesOrNo.YES),
+            arguments(TenancyLicenceType.OTHER, rentArrearsOnly(), YesOrNo.YES),
 
-            // Introductory Tenancy + Other grounds (not rent arrears) - Should NOT show Rent Details
-            arguments(TenancyLicenceType.INTRODUCTORY_TENANCY,
-                      Set.of(IntroductoryDemotedOrOtherGrounds.ANTI_SOCIAL),
-                      YesOrNo.NO),
-            // Demoted Tenancy + Other grounds (not rent arrears) - Should NOT show Rent Details
-            arguments(TenancyLicenceType.DEMOTED_TENANCY,
-                      Set.of(IntroductoryDemotedOrOtherGrounds.BREACH_OF_THE_TENANCY),
-                      YesOrNo.NO),
-            // Other Tenancy + Other grounds (not rent arrears) - Should NOT show Rent Details
-            arguments(TenancyLicenceType.OTHER,
-                      Set.of(IntroductoryDemotedOrOtherGrounds.ABSOLUTE_GROUNDS),
-                      YesOrNo.NO),
+            // Other grounds (not rent arrears) → don't show rent details
+            arguments(TenancyLicenceType.INTRODUCTORY_TENANCY, antiSocialOnly(), YesOrNo.NO),
+            arguments(TenancyLicenceType.DEMOTED_TENANCY, breachOfTenancyOnly(), YesOrNo.NO),
+            arguments(TenancyLicenceType.OTHER, absoluteGroundsOnly(), YesOrNo.NO),
 
-            // Introductory Tenancy + Multiple grounds including Rent Arrears - Should show Rent Details
-            arguments(TenancyLicenceType.INTRODUCTORY_TENANCY,
-                      Set.of(IntroductoryDemotedOrOtherGrounds.RENT_ARREARS,
-                             IntroductoryDemotedOrOtherGrounds.ANTI_SOCIAL),
-                      YesOrNo.YES),
-            // Introductory Tenancy + No grounds selected - Should NOT show Rent Details
-            arguments(TenancyLicenceType.INTRODUCTORY_TENANCY,
-                      Set.of(),
-                      YesOrNo.NO),
+            // Multiple grounds including rent arrears → show rent details
+            arguments(TenancyLicenceType.INTRODUCTORY_TENANCY, rentArrearsWithAntiSocial(), YesOrNo.YES),
 
-            // AC03 Additional Test Cases: Multiple grounds WITHOUT rent arrears - Should NOT show Rent Details
-            arguments(TenancyLicenceType.DEMOTED_TENANCY,
-                      Set.of(IntroductoryDemotedOrOtherGrounds.ANTI_SOCIAL,
-                             IntroductoryDemotedOrOtherGrounds.BREACH_OF_THE_TENANCY),
-                      YesOrNo.NO),
-            // AC03: Other Tenancy + Multiple grounds WITHOUT rent arrears - Should NOT show Rent Details
-            arguments(TenancyLicenceType.OTHER,
-                      Set.of(IntroductoryDemotedOrOtherGrounds.ABSOLUTE_GROUNDS,
-                             IntroductoryDemotedOrOtherGrounds.ANTI_SOCIAL),
-                      YesOrNo.NO)
+            // No grounds selected → don't show rent details
+            arguments(TenancyLicenceType.INTRODUCTORY_TENANCY, noGrounds(), YesOrNo.NO),
+
+            // Multiple grounds without rent arrears → don't show rent details
+            arguments(TenancyLicenceType.DEMOTED_TENANCY, antiSocialWithBreach(), YesOrNo.NO),
+            arguments(TenancyLicenceType.OTHER, absoluteGroundsWithAntiSocial(), YesOrNo.NO)
         );
     }
 
     private static Stream<Arguments> provideNoGroundsForPossessionScenarios() {
         return Stream.of(
-            // AC05: Introductory Tenancy + No grounds for possession - Should NOT show Rent Details
-            arguments(TenancyLicenceType.INTRODUCTORY_TENANCY,
-                      YesOrNo.NO),
-            // AC05: Demoted Tenancy + No grounds for possession - Should NOT show Rent Details
-            arguments(TenancyLicenceType.DEMOTED_TENANCY,
-                      YesOrNo.NO),
-            // AC05: Other Tenancy + No grounds for possession - Should NOT show Rent Details
-            arguments(TenancyLicenceType.OTHER,
-                      YesOrNo.NO)
+            // No grounds for possession → don't show rent details
+            arguments(TenancyLicenceType.INTRODUCTORY_TENANCY, YesOrNo.NO),
+            arguments(TenancyLicenceType.DEMOTED_TENANCY, YesOrNo.NO),
+            arguments(TenancyLicenceType.OTHER, YesOrNo.NO)
         );
+    }
+
+    // Helper methods for common ground combinations
+    private static Set<IntroductoryDemotedOrOtherGrounds> rentArrearsOnly() {
+        return Set.of(IntroductoryDemotedOrOtherGrounds.RENT_ARREARS);
+    }
+
+    private static Set<IntroductoryDemotedOrOtherGrounds> antiSocialOnly() {
+        return Set.of(IntroductoryDemotedOrOtherGrounds.ANTI_SOCIAL);
+    }
+
+    private static Set<IntroductoryDemotedOrOtherGrounds> breachOfTenancyOnly() {
+        return Set.of(IntroductoryDemotedOrOtherGrounds.BREACH_OF_THE_TENANCY);
+    }
+
+    private static Set<IntroductoryDemotedOrOtherGrounds> absoluteGroundsOnly() {
+        return Set.of(IntroductoryDemotedOrOtherGrounds.ABSOLUTE_GROUNDS);
+    }
+
+    private static Set<IntroductoryDemotedOrOtherGrounds> rentArrearsWithAntiSocial() {
+        return Set.of(IntroductoryDemotedOrOtherGrounds.RENT_ARREARS,
+                      IntroductoryDemotedOrOtherGrounds.ANTI_SOCIAL);
+    }
+
+    private static Set<IntroductoryDemotedOrOtherGrounds> antiSocialWithBreach() {
+        return Set.of(IntroductoryDemotedOrOtherGrounds.ANTI_SOCIAL,
+                      IntroductoryDemotedOrOtherGrounds.BREACH_OF_THE_TENANCY);
+    }
+
+    private static Set<IntroductoryDemotedOrOtherGrounds> absoluteGroundsWithAntiSocial() {
+        return Set.of(IntroductoryDemotedOrOtherGrounds.ABSOLUTE_GROUNDS,
+                      IntroductoryDemotedOrOtherGrounds.ANTI_SOCIAL);
+    }
+
+    private static Set<IntroductoryDemotedOrOtherGrounds> noGrounds() {
+        return Set.of();
     }
 }
