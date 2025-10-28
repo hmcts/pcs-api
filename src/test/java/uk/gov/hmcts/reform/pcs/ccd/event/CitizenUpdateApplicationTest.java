@@ -6,9 +6,11 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
@@ -26,10 +28,15 @@ class CitizenUpdateApplicationTest extends BaseEventTest {
     void shouldUpdateCaseOnSubmit() {
         long caseReference = 1234L;
         PCSCase caseData = mock(PCSCase.class);
+        PcsCaseEntity pcsCaseEntity = mock(PcsCaseEntity.class);
+
+        when(pcsCaseService.loadCase(caseReference)).thenReturn(pcsCaseEntity);
 
         callSubmitHandler(caseData);
 
-        verify(pcsCaseService).patchCase(caseReference, caseData);
+        verify(pcsCaseService).loadCase(caseReference);
+        verify(pcsCaseService).mergeCaseData(pcsCaseEntity, caseData);
+        verify(pcsCaseService).save(pcsCaseEntity);
     }
 
 }

@@ -587,6 +587,15 @@ public class PCSCase {
     private YesOrNo showNoRentArrearsGroundReasonPage;
 
     @CCD(
+        label = "Citizen documents",
+        hint = "Documents uploaded by citizens",
+        typeOverride = FieldType.Collection,
+        typeParameterOverride = "AdditionalDocument",
+        access = {CitizenAccess.class, CaseworkerReadAccess.class}
+    )
+    private List<ListValue<AdditionalDocument>> citizenDocuments;
+
+    @CCD(
         label = "Which language did you use to complete this service?",
         hint = "If someone else helped you to answer a question in this service, "
             + "ask them if they answered any questions in Welsh. We’ll use this to "

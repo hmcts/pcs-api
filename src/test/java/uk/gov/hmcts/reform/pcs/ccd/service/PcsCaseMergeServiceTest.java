@@ -47,6 +47,8 @@ class PcsCaseMergeServiceTest {
     private TenancyLicenceService tenancyLicenceService;
     @Mock
     private DefendantMapper defendantMapper;
+    @Mock
+    private CitizenDocumentsService citizenDocumentsService;
 
     private PcsCaseMergeService underTest;
 
@@ -55,7 +57,7 @@ class PcsCaseMergeServiceTest {
         MapperConfig config = new MapperConfig();
         modelMapper = spy(config.modelMapper());
         underTest = new PcsCaseMergeService(securityContextService, modelMapper, tenancyLicenceService,
-                                            defendantMapper);
+                                            defendantMapper, citizenDocumentsService);
     }
 
     @Test
