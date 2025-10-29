@@ -102,13 +102,13 @@ public class ClaimService {
         return ProhibitedConduct.builder()
             .claimForProhibitedConductContract(pcsCase.getProhibitedConductWalesClaim() != null
                 ? pcsCase.getProhibitedConductWalesClaim().name() : null)
-            .agreedTermsOfPeriodicContract(pcsCase.getProhibitedConductWalesWrappedQuestion() != null
-                ? pcsCase.getProhibitedConductWalesWrappedQuestion().getAgreedTermsOfPeriodicContract() != null
-                    ? pcsCase.getProhibitedConductWalesWrappedQuestion()
+            .agreedTermsOfPeriodicContract(pcsCase.getWalesPeriodicContractTerms() != null
+                ? pcsCase.getWalesPeriodicContractTerms().getAgreedTermsOfPeriodicContract() != null
+                    ? pcsCase.getWalesPeriodicContractTerms()
                         .getAgreedTermsOfPeriodicContract().name() : null
                 : null)
-            .detailsOfTerms(pcsCase.getProhibitedConductWalesWrappedQuestion() != null
-                ? pcsCase.getProhibitedConductWalesWrappedQuestion().getDetailsOfTerms() : null)
+            .detailsOfTerms(pcsCase.getWalesPeriodicContractTerms() != null
+                ? pcsCase.getWalesPeriodicContractTerms().getDetailsOfTerms() : null)
             .whyMakingClaim(pcsCase.getProhibitedConductWalesWhyMakingClaim())
             .build();
     }

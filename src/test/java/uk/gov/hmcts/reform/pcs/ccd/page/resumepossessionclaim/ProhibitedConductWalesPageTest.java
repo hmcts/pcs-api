@@ -14,8 +14,9 @@ import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
-import uk.gov.hmcts.reform.pcs.ccd.domain.ProhibitedConductWalesWrappedQuestion;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.WalesPeriodicContractTerms;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.ProhibitedConductWales;
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 
 import java.util.ArrayList;
@@ -29,10 +30,10 @@ import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.lenient;
 
 @ExtendWith(MockitoExtension.class)
-@DisplayName("ProhibitedConductWalesPage Tests")
-class ProhibitedConductWalesPageTest extends BasePageTest {
+@DisplayName("ProhibitedConductWales Tests")
+class ProhibitedConductWalesTest extends BasePageTest {
 
-    private ProhibitedConductWalesPage pageUnderTest;
+    private ProhibitedConductWales pageUnderTest;
 
     @Mock
     private TextAreaValidationService textAreaValidationService;
@@ -49,7 +50,7 @@ class ProhibitedConductWalesPageTest extends BasePageTest {
                     .build();
             });
         
-        pageUnderTest = new ProhibitedConductWalesPage(textAreaValidationService);
+        pageUnderTest = new ProhibitedConductWales(textAreaValidationService);
         setPageUnderTest(pageUnderTest);
     }
 
@@ -57,7 +58,7 @@ class ProhibitedConductWalesPageTest extends BasePageTest {
     @DisplayName("Should create page configuration successfully")
     void shouldCreatePageConfigurationSuccessfully() {
         assertThat(pageUnderTest).isNotNull();
-        assertThat(pageUnderTest).isInstanceOf(ProhibitedConductWalesPage.class);
+        assertThat(pageUnderTest).isInstanceOf(ProhibitedConductWales.class);
     }
 
     @Test
@@ -67,7 +68,7 @@ class ProhibitedConductWalesPageTest extends BasePageTest {
         PCSCase caseData = PCSCase.builder()
             .prohibitedConductWalesClaim(null)
             .prohibitedConductWalesWhyMakingClaim(null)
-            .prohibitedConductWalesWrappedQuestion(null)
+            .walesPeriodicContractTerms(null)
             .build();
 
         // When
@@ -84,7 +85,7 @@ class ProhibitedConductWalesPageTest extends BasePageTest {
         PCSCase caseData = PCSCase.builder()
             .prohibitedConductWalesClaim(VerticalYesNo.NO)
             .prohibitedConductWalesWhyMakingClaim("")
-            .prohibitedConductWalesWrappedQuestion(ProhibitedConductWalesWrappedQuestion.builder().build())
+            .walesPeriodicContractTerms(WalesPeriodicContractTerms.builder().build())
             .build();
 
         // When
@@ -109,7 +110,7 @@ class ProhibitedConductWalesPageTest extends BasePageTest {
         PCSCase caseData = PCSCase.builder()
             .prohibitedConductWalesClaim(claimForProhibitedConductContract)
             .prohibitedConductWalesWhyMakingClaim(whyMakingClaim)
-            .prohibitedConductWalesWrappedQuestion(ProhibitedConductWalesWrappedQuestion.builder()
+            .walesPeriodicContractTerms(WalesPeriodicContractTerms.builder()
                 .agreedTermsOfPeriodicContract(agreedTermsOfPeriodicContract)
                 .detailsOfTerms(detailsOfTerms)
                 .build())
@@ -121,10 +122,10 @@ class ProhibitedConductWalesPageTest extends BasePageTest {
         // Then
         assertThat(caseData.getProhibitedConductWalesClaim()).isEqualTo(claimForProhibitedConductContract);
         assertThat(caseData.getProhibitedConductWalesWhyMakingClaim()).isEqualTo(whyMakingClaim);
-        assertThat(caseData.getProhibitedConductWalesWrappedQuestion()).isNotNull();
-        assertThat(caseData.getProhibitedConductWalesWrappedQuestion()
+        assertThat(caseData.getWalesPeriodicContractTerms()).isNotNull();
+        assertThat(caseData.getWalesPeriodicContractTerms()
             .getAgreedTermsOfPeriodicContract()).isEqualTo(agreedTermsOfPeriodicContract);
-        assertThat(caseData.getProhibitedConductWalesWrappedQuestion()
+        assertThat(caseData.getWalesPeriodicContractTerms()
             .getDetailsOfTerms()).isEqualTo(detailsOfTerms);
     }
 
@@ -138,7 +139,7 @@ class ProhibitedConductWalesPageTest extends BasePageTest {
         PCSCase caseData = PCSCase.builder()
             .prohibitedConductWalesClaim(VerticalYesNo.YES)
             .prohibitedConductWalesWhyMakingClaim(expectedWhyMakingClaim)
-            .prohibitedConductWalesWrappedQuestion(ProhibitedConductWalesWrappedQuestion.builder()
+            .walesPeriodicContractTerms(WalesPeriodicContractTerms.builder()
                 .agreedTermsOfPeriodicContract(VerticalYesNo.YES)
                 .detailsOfTerms(expectedDetailsOfTerms)
                 .build())
@@ -150,10 +151,10 @@ class ProhibitedConductWalesPageTest extends BasePageTest {
         // Then
         assertThat(caseData.getProhibitedConductWalesClaim()).isEqualTo(VerticalYesNo.YES);
         assertThat(caseData.getProhibitedConductWalesWhyMakingClaim()).isEqualTo(expectedWhyMakingClaim);
-        assertThat(caseData.getProhibitedConductWalesWrappedQuestion()).isNotNull();
-        assertThat(caseData.getProhibitedConductWalesWrappedQuestion()
+        assertThat(caseData.getWalesPeriodicContractTerms()).isNotNull();
+        assertThat(caseData.getWalesPeriodicContractTerms()
             .getAgreedTermsOfPeriodicContract()).isEqualTo(VerticalYesNo.YES);
-        assertThat(caseData.getProhibitedConductWalesWrappedQuestion()
+        assertThat(caseData.getWalesPeriodicContractTerms()
             .getDetailsOfTerms()).isEqualTo(expectedDetailsOfTerms);
     }
 
@@ -164,7 +165,7 @@ class ProhibitedConductWalesPageTest extends BasePageTest {
         PCSCase caseData = PCSCase.builder()
             .prohibitedConductWalesClaim(VerticalYesNo.YES)
             .prohibitedConductWalesWhyMakingClaim("Some reason")
-            .prohibitedConductWalesWrappedQuestion(ProhibitedConductWalesWrappedQuestion.builder()
+            .walesPeriodicContractTerms(WalesPeriodicContractTerms.builder()
                 .agreedTermsOfPeriodicContract(null)
                 .detailsOfTerms(null)
                 .build())
@@ -174,9 +175,9 @@ class ProhibitedConductWalesPageTest extends BasePageTest {
         callMidEventHandler(caseData);
 
         // Then
-        assertThat(caseData.getProhibitedConductWalesWrappedQuestion()).isNotNull();
-        assertThat(caseData.getProhibitedConductWalesWrappedQuestion().getAgreedTermsOfPeriodicContract()).isNull();
-        assertThat(caseData.getProhibitedConductWalesWrappedQuestion().getDetailsOfTerms()).isNull();
+        assertThat(caseData.getWalesPeriodicContractTerms()).isNotNull();
+        assertThat(caseData.getWalesPeriodicContractTerms().getAgreedTermsOfPeriodicContract()).isNull();
+        assertThat(caseData.getWalesPeriodicContractTerms().getDetailsOfTerms()).isNull();
     }
 
     private static Stream<Arguments> prohibitedConductContractScenarios() {
@@ -220,7 +221,7 @@ class ProhibitedConductWalesPageTest extends BasePageTest {
         PCSCase caseData = PCSCase.builder()
             .prohibitedConductWalesClaim(VerticalYesNo.YES)
             .prohibitedConductWalesWhyMakingClaim(longText)
-            .prohibitedConductWalesWrappedQuestion(ProhibitedConductWalesWrappedQuestion.builder()
+            .walesPeriodicContractTerms(WalesPeriodicContractTerms.builder()
                 .agreedTermsOfPeriodicContract(VerticalYesNo.YES)
                 .detailsOfTerms(longText)
                 .build())
@@ -261,7 +262,7 @@ class ProhibitedConductWalesPageTest extends BasePageTest {
         PCSCase caseData = PCSCase.builder()
             .prohibitedConductWalesClaim(VerticalYesNo.YES)
             .prohibitedConductWalesWhyMakingClaim(validText)
-            .prohibitedConductWalesWrappedQuestion(ProhibitedConductWalesWrappedQuestion.builder()
+            .walesPeriodicContractTerms(WalesPeriodicContractTerms.builder()
                 .agreedTermsOfPeriodicContract(VerticalYesNo.YES)
                 .detailsOfTerms(validText)
                 .build())
@@ -291,7 +292,7 @@ class ProhibitedConductWalesPageTest extends BasePageTest {
         PCSCase caseData = PCSCase.builder()
             .prohibitedConductWalesClaim(VerticalYesNo.YES)
             .prohibitedConductWalesWhyMakingClaim(longText)
-            .prohibitedConductWalesWrappedQuestion(ProhibitedConductWalesWrappedQuestion.builder()
+            .walesPeriodicContractTerms(WalesPeriodicContractTerms.builder()
                 .agreedTermsOfPeriodicContract(VerticalYesNo.NO)
                 .detailsOfTerms(longText) 
                 .build())
@@ -331,7 +332,7 @@ class ProhibitedConductWalesPageTest extends BasePageTest {
         PCSCase caseData = PCSCase.builder()
             .prohibitedConductWalesClaim(VerticalYesNo.YES)
             .prohibitedConductWalesWhyMakingClaim("Valid reason")
-            .prohibitedConductWalesWrappedQuestion(null)
+            .walesPeriodicContractTerms(null)
             .build();
 
         CaseDetails<PCSCase, State> caseDetails = CaseDetails.<PCSCase, State>builder()
