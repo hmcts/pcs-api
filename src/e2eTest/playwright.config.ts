@@ -16,7 +16,7 @@ export default defineConfig({
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   /* Retry on CI only */
-  retries: process.env.CI ? 3 : 0,
+  retries: process.env.CI ? 1 : 0,
   // Reduced workers from 4 → 2 due to server/login contention issues
   workers: 2,
   timeout: 300 * 1000,
