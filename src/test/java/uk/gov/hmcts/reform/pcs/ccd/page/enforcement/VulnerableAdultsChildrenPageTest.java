@@ -58,7 +58,8 @@ class VulnerableAdultsChildrenPageTest extends BasePageTest {
         if (expectsError) {
             assertThat(response.getErrors()).isNotEmpty();
             assertThat(response.getErrors().get(0))
-                    .contains("In 'How are they vulnerable?', you have entered more than the maximum number of characters")
+                    .contains("In 'How are they vulnerable?', you have entered more than the maximum number "
+                            + "of characters")
                     .contains("6,800");
         } else {
             assertThat(response.getErrors()).isEmpty();

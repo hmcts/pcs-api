@@ -50,7 +50,9 @@ public class VulnerableAdultsChildrenPage implements CcdPageConfiguration {
                     ShowConditions.fieldEquals("vulnerableAdultsChildren.vulnerablePeopleYesNo", YesNoNotSure.YES))
             .mandatory(VulnerableAdultsChildren::getVulnerableReasonText,
                     ShowConditions.fieldEquals("vulnerableAdultsChildren.vulnerablePeopleYesNo", YesNoNotSure.YES)
-                            + " AND (vulnerableAdultsChildren.vulnerableCategory=\"VULNERABLE_ADULTS\" OR vulnerableAdultsChildren.vulnerableCategory=\"VULNERABLE_CHILDREN\" OR vulnerableAdultsChildren.vulnerableCategory=\"VULNERABLE_ADULTS_AND_CHILDREN\")")
+                            + " AND (vulnerableAdultsChildren.vulnerableCategory=\"VULNERABLE_ADULTS\" "
+                            + "OR vulnerableAdultsChildren.vulnerableCategory=\"VULNERABLE_CHILDREN\" "
+                            + "OR vulnerableAdultsChildren.vulnerableCategory=\"VULNERABLE_ADULTS_AND_CHILDREN\")")
             .done()
             .label("vulnerableAdultsChildren-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }

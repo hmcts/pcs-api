@@ -5,8 +5,8 @@ import java.util.Locale;
 
 /**
  * Utility class for generating consistent error messages for character limit validation.
- * 
- * TODO(HDPI-2189): Replace usages with TextAreaValidationService once merged into master
+ *
+ * <p>TODO(HDPI-2189): Replace usages with TextAreaValidationService once merged into master
  */
 public final class EnforcementValidationUtil {
 
