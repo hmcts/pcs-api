@@ -343,11 +343,11 @@ export class CreateCaseAction implements IAction {
       for (let i = 0; i < numAdditionalDefendants; i++) {
         await performAction('clickButton', defendantDetails.addNew);
 
-        // Wait for the new additional defendant block to be visible
-        await performAction('clickButtonAndWaitForElement', {
-          button: defendantDetails.addNew,
-          elementSelector: '.additional-defendant-block'
-        });
+        // // Wait for the new additional defendant block to be visible
+        // await performAction('clickButtonAndWaitForElement', {
+        //   button: defendantDetails.addNew,
+        //   elementSelector: '.additional-defendant-block'
+        // });
 
         const index = i + 1; // first additional defendant is index 1
 
@@ -356,12 +356,17 @@ export class CreateCaseAction implements IAction {
           option: defendantDetails.no,
           index: index,
         });
-
         // await performAction('inputText', defendantDetails.defendantFirstName, `${defendantData.firstName}${i + 1}`);
         // await performAction('inputText', defendantDetails.defendantLastName, `${defendantData.lastName}${i + 1}`);
 
         await performAction('clickRadioButton', {
           question: defendantData.addressQuestion,
+          option: defendantDetails.no,
+          index: index,
+        });
+
+        await performAction('clickRadioButton', {
+          question: defendantData.nameQuestion,
           option: defendantDetails.no,
           index: index,
         });
