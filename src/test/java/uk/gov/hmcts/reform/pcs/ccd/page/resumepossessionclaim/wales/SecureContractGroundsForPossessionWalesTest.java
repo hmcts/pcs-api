@@ -11,6 +11,7 @@ import static org.junit.jupiter.params.provider.Arguments.arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.EstateManagementGroundsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractDiscretionaryGroundsWales;
@@ -105,6 +106,104 @@ public class SecureContractGroundsForPossessionWalesTest extends BasePageTest {
                         Set.of(SecureContractMandatoryGroundsWales.LANDLORD_NOTICE_SECTION_186),
                         Set.of(),
                         false, false, true
+                )
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("routingScenarios")
+    void shouldSetCorrectRoutingFlags(
+            Set<SecureContractDiscretionaryGroundsWales> discretionaryGrounds,
+            Set<EstateManagementGroundsWales> estateManagementGrounds,
+            Set<SecureContractMandatoryGroundsWales> mandatoryGrounds,
+            YesOrNo expectedShowPreActionProtocolPage,
+            YesOrNo expectedShowASBQuestionsPage,
+            YesOrNo expectedShowReasonsForGroundsPage) {
+
+        // Given
+        PCSCase caseData = PCSCase.builder()
+                .secureContractDiscretionaryGroundsWales(discretionaryGrounds)
+                .secureContractEstateManagementGroundsWales(estateManagementGrounds)
+                .secureContractMandatoryGroundsWales(mandatoryGrounds)
+                .build();
+
+        // When
+        AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
+
+        // Then
+        PCSCase updatedCaseData = response.getData();
+        assertThat(updatedCaseData.getShowPreActionProtocolPageWales()).isEqualTo(expectedShowPreActionProtocolPage);
+        assertThat(updatedCaseData.getShowASBQuestionsPageWales()).isEqualTo(expectedShowASBQuestionsPage);
+        assertThat(updatedCaseData.getShowReasonsForGroundsPageWales()).isEqualTo(expectedShowReasonsForGroundsPage);
+    }
+
+    private static Stream<Arguments> routingScenarios() {
+        return Stream.of(
+                // Only rent arrears - show pre-action protocol page
+                arguments(
+                        Set.of(SecureContractDiscretionaryGroundsWales.RENT_ARREARS),
+                        Set.of(),
+                        Set.of(),
+                        YesOrNo.YES,
+                        YesOrNo.NO,
+                        YesOrNo.NO
+                ),
+                // Only ASB - show ASB questions page
+                arguments(
+                        Set.of(SecureContractDiscretionaryGroundsWales.ANTISOCIAL_BEHAVIOUR),
+                        Set.of(),
+                        Set.of(),
+                        YesOrNo.NO,
+                        YesOrNo.YES,
+                        YesOrNo.NO
+                ),
+                // Rent arrears + ASB - show ASB questions page (ASB takes precedence)
+                arguments(
+                        Set.of(
+                                SecureContractDiscretionaryGroundsWales.RENT_ARREARS,
+                                SecureContractDiscretionaryGroundsWales.ANTISOCIAL_BEHAVIOUR
+                        ),
+                        Set.of(),
+                        Set.of(),
+                        YesOrNo.NO,
+                        YesOrNo.YES,
+                        YesOrNo.NO
+                ),
+                // Other breach present - show reasons for grounds page
+                arguments(
+                        Set.of(SecureContractDiscretionaryGroundsWales.OTHER_BREACH_OF_CONTRACT),
+                        Set.of(),
+                        Set.of(),
+                        YesOrNo.NO,
+                        YesOrNo.NO,
+                        YesOrNo.YES
+                ),
+                // Estate management grounds present - show reasons for grounds page
+                arguments(
+                        Set.of(SecureContractDiscretionaryGroundsWales.ESTATE_MANAGEMENT_GROUNDS),
+                        Set.of(EstateManagementGroundsWales.BUILDING_WORKS),
+                        Set.of(),
+                        YesOrNo.NO,
+                        YesOrNo.NO,
+                        YesOrNo.YES
+                ),
+                // Mandatory grounds present - show reasons for grounds page
+                arguments(
+                        Set.of(),
+                        Set.of(),
+                        Set.of(SecureContractMandatoryGroundsWales.LANDLORD_NOTICE_SECTION_186),
+                        YesOrNo.NO,
+                        YesOrNo.NO,
+                        YesOrNo.YES
+                ),
+                // Rent arrears + other option (mandatory) - show reasons for grounds page
+                arguments(
+                        Set.of(SecureContractDiscretionaryGroundsWales.RENT_ARREARS),
+                        Set.of(),
+                        Set.of(SecureContractMandatoryGroundsWales.FAILURE_TO_GIVE_UP_POSSESSION_SECTION_170),
+                        YesOrNo.NO,
+                        YesOrNo.NO,
+                        YesOrNo.YES
                 )
         );
     }
