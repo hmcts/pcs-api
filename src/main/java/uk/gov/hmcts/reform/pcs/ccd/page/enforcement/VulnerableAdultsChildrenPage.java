@@ -60,12 +60,10 @@ public class VulnerableAdultsChildrenPage implements CcdPageConfiguration {
         PCSCase data = details.getData();
         List<String> errors = new ArrayList<>();
 
-        String txt = data.getEnforcementOrder() != null && data.getEnforcementOrder().getVulnerableAdultsChildren() != null
-                ? data.getEnforcementOrder().getVulnerableAdultsChildren().getVulnerableReasonText()
-                : null;
+        String txt = data.getEnforcementOrder().getVulnerableAdultsChildren().getVulnerableReasonText();
 
         // TODO: Use TextAreaValidationService from PR #751 when merged
-        if (txt != null && txt.length() > VULNERABLE_REASON_TEXT_LIMIT) {
+        if (txt.length() > VULNERABLE_REASON_TEXT_LIMIT) {
             errors.add(EnforcementValidationUtil
                     .getCharacterLimitErrorMessage(VULNERABLE_REASON_LABEL,
                             VULNERABLE_REASON_TEXT_LIMIT));
