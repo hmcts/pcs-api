@@ -11,6 +11,7 @@ import {ClickRadioButton} from "../actions/element-actions/clickRadioButton.acti
 import {UploadFileAction} from "@utils/actions/element-actions/uploadFile.action";
 import {CreateCaseWalesAction} from "@utils/actions/custom-actions/createCaseWales.action";
 import {SearchCaseAction} from '@utils/actions/custom-actions/searchCase.action';
+import {signOutAction} from '@utils/actions/custom-actions/signOut.action';
 
 export class ActionRegistry {
   private static actions: Map<string, IAction> = new Map([
@@ -23,6 +24,7 @@ export class ActionRegistry {
     ['select', new SelectAction()],
     ['createUserAndLogin', new LoginAction()],
     ['login', new LoginAction()],
+    ['signOut', new signOutAction()],
     ['navigateToUrl', new NavigateToUrl()],
     ['clickRadioButton', new ClickRadioButton()],
     ['uploadFile', new UploadFileAction()],
@@ -72,7 +74,8 @@ export class ActionRegistry {
     ['searchCaseFromCaseList', new SearchCaseAction()],
     ['selectClaimingCosts', new CreateCaseAction()],
     ['wantToUploadDocuments', new CreateCaseAction()],
-    ['uploadAdditionalDocs', new CreateCaseAction()]
+    ['uploadAdditionalDocs', new CreateCaseAction()],
+    ['clickButtonAndWaitForElement', new ClickButtonAction()]
   ]);
 
   static getAction(actionName: string): IAction {
