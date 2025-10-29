@@ -22,6 +22,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractDiscretionaryGroun
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractMandatoryGroundsWales;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceDetailsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.EstateManagementGroundsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceTypeWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractDiscretionaryGroundsWales;
@@ -709,4 +710,34 @@ public class PCSCase {
     @JsonUnwrapped
     private EnforcementOrder enforcementOrder;
 
+
+    @CCD(
+        label = "Discretionary grounds",
+        hint = "Select all that apply",
+        typeOverride = FieldType.MultiSelectList,
+        typeParameterOverride = "SecureContractDiscretionaryGroundsWales"
+    )
+    private Set<SecureContractDiscretionaryGroundsWales> secureContractDiscretionaryGroundsWales;
+
+    @CCD(
+        label = "Mandatory grounds",
+        hint = "Select all that apply",
+        typeOverride = FieldType.MultiSelectList,
+        typeParameterOverride = "SecureContractMandatoryGroundsWales"
+    )
+    private Set<SecureContractMandatoryGroundsWales> secureContractMandatoryGroundsWales;
+
+    @CCD(
+        label = "Estate management grounds",
+        typeOverride = FieldType.MultiSelectList,
+        typeParameterOverride = "EstateManagementGroundsWales"
+    )
+    private Set<EstateManagementGroundsWales> estateManagementGroundsWales;
+
+    @CCD(searchable = false)
+    private YesOrNo showReasonsForGroundsPageWales;
+
+    @JsonUnwrapped
+    @CCD
+    private OccupationLicenceDetailsWales occupationLicenceDetailsWales;
 }

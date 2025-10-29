@@ -67,7 +67,7 @@ import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.SecureOrFlexibleGr
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.SecureOrFlexibleGroundsForPossessionReasons;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.SecureContractGroundsForPossessionWales;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.ReasonsForPosessionWales;
-import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.OccupationLicenceDetailsWales;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.OccupationLicenceDetailsWalesPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.SelectClaimType;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.SelectClaimantType;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.StatementOfExpressTerms;
@@ -122,6 +122,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
     private final DefendantsDetails defendantsDetails;
     private final OrganisationNameService organisationNameService;
     private final ClaimantDetailsWalesPage claimantDetailsWales;
+    private final OccupationLicenceDetailsWalesPage occupationLicenceDetailsWales;
     private final SchedulerClient schedulerClient;
     private final DraftCaseDataService draftCaseDataService;
     private final AddressFormatter addressFormatter;
@@ -152,7 +153,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             .add(contactPreferences)
             .add(defendantsDetails)
             .add(tenancyLicenceDetails)
-            .add(new OccupationLicenceDetailsWales())
+            .add(occupationLicenceDetailsWales)
             .add(new GroundsForPossessionWales())
             .add(new SecureContractGroundsForPossessionWales())
             .add(new ReasonsForPosessionWales())

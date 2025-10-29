@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import uk.gov.hmcts.ccd.sdk.type.Document;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceTypeWales;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -75,5 +76,11 @@ public class TenancyLicence {
     //Wales notice details
     private Boolean walesNoticeServed;
     private String walesTypeOfNoticeServed;
+
+    // Wales Occupation Contract/Licence details
+    private OccupationLicenceTypeWales walesOccupationLicenceType;
+    private String walesOtherLicenceTypeDetails;
+    private LocalDate walesLicenceStartDate;
+    private List<Document> walesLicenceDocuments;
 
 }
