@@ -58,3 +58,4 @@ export * from '@data/page-data/canNotUseOnlineService.page.data';
 export * from '@data/page-data/propertyIneligible.page.data';
 export * from '@data/page-data/userIneligible.page.data';
 export * from '@data/page-data/provideMoreDetailsOfClaim.page.data';
+export * from '@data/page-data/reasonsForRequestingASuspensionAndDemotionOrder.page.data';

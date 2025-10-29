@@ -6,10 +6,7 @@ import {performAction, performActions, performValidation} from '@utils/controlle
 import {createCase, addressDetails, housingPossessionClaim, defendantDetails, claimantName, contactPreferences, mediationAndSettlement, tenancyLicenceDetails, resumeClaimOptions, rentDetails, accessTokenApiData, caseApiData, dailyRentAmount, reasonsForPossession, detailsOfRentArrears,
         claimantType, claimType, groundsForPossession, preActionProtocol, noticeOfYourIntention, borderPostcode, rentArrearsPossessionGrounds, rentArrearsOrBreachOfTenancy, noticeDetails, moneyJudgment, whatAreYourGroundsForPossession, languageUsed, defendantCircumstances, applications, claimantCircumstances,
         claimingCosts, alternativesToPossession, reasonsForRequestingADemotionOrder, statementOfExpressTerms, reasonsForRequestingASuspensionOrder, uploadAdditionalDocs, additionalReasonsForPossession, completeYourClaim, home, search, userIneligible,
-        whatAreYourGroundsForPossessionWales} from "@data/page-data";
-import {
-  reasonsForRequestingASuspensionAndDemotionOrder
-} from "@data/page-data/reasonsForRequestingASuspensionAndDemotionOrder.page.data";
+        whatAreYourGroundsForPossessionWales, reasonsForRequestingASuspensionAndDemotionOrder} from "@data/page-data";
 
 export let caseInfo: { id: string; fid: string; state: string };
 export let caseNumber: string;
