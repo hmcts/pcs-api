@@ -38,7 +38,8 @@ export class handleCookieConsentAction implements IAction {
         }
         await page.waitForLoadState('domcontentloaded', {timeout: MEDIUM_TIMEOUT});
       } catch (err) {
-      }
+        console.warn(`Cookie consent not found or failed to dismiss: ${acceptButtonName}`, (err as Error).message);
+        }
     });
   }
 }

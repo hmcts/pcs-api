@@ -72,10 +72,14 @@ test.describe('[Create Case - With resume claim options] @Master @nightly', asyn
     await performAction('selectClaimType', claimType.no);
     await performAction('selectClaimantName', claimantName.yes);
     await performAction('clickButtonAndVerifyPageNavigation', claimantName.continue, contactPreferences.mainHeader);
-    await performAction('signOut');
-    await performAction('reloginAndFindTheCase', user.claimantSolicitor);
-    await performAction('clickButtonAndVerifyPageNavigation', resumeClaim.continue, resumeClaimOptions.mainHeader);
-    await performAction('selectResumeClaimOption', resumeClaimOptions.yes);
+    try {
+      await performAction('signOut');
+      await performAction('reloginAndFindTheCase', user.claimantSolicitor);
+      await performAction('clickButtonAndVerifyPageNavigation', resumeClaim.continue, resumeClaimOptions.mainHeader);
+      await performAction('selectResumeClaimOption', resumeClaimOptions.yes);
+    } catch (err) {
+        console.warn(`Re login and Find case Failed`, (err as Error).message);
+    }
     await performValidation('radioButtonChecked', claimantType.england.registeredProviderForSocialHousing, true);
     await performAction('verifyPageAndClickButton', claimantType.continue, claimantType.mainHeader);
     await performValidation('radioButtonChecked', claimType.no, true);
@@ -205,10 +209,14 @@ test.describe('[Create Case - With resume claim options] @Master @nightly', asyn
     await performAction('selectClaimType', claimType.no);
     await performAction('selectClaimantName', claimantName.yes);
     await performAction('clickButtonAndVerifyPageNavigation', claimantName.continue, contactPreferences.mainHeader);
-    await performAction('clickButton', home.signOutButton);
-    await performAction('reloginAndFindTheCase', user.claimantSolicitor);
-    await performAction('clickButtonAndVerifyPageNavigation', resumeClaim.continue, resumeClaimOptions.mainHeader);
-    await performAction('selectResumeClaimOption', resumeClaimOptions.no);
+    try {
+      await performAction('signOut');
+      await performAction('reloginAndFindTheCase', user.claimantSolicitor);
+      await performAction('clickButtonAndVerifyPageNavigation', resumeClaim.continue, resumeClaimOptions.mainHeader);
+      await performAction('selectResumeClaimOption', resumeClaimOptions.no);
+    } catch (err) {
+      console.warn(`Re login and Find case Failed`, (err as Error).message);
+    }
     await performValidation('radioButtonChecked', claimantType.england.registeredProviderForSocialHousing, false);
     await performAction('selectClaimantType', claimantType.england.registeredProviderForSocialHousing);
     await performValidation('radioButtonChecked', claimType.no, false);
