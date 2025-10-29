@@ -15,6 +15,7 @@ import {reasonsForPossession} from '@data/page-data/reasonsForPossession.page.da
 import {user} from '@data/user-data/permanent.user.data';
 import {home} from '@data/page-data/home.page.data';
 import {whatAreYourGroundsForPossessionWales} from '@data/page-data/whatAreYourGroundsForPossessionWales.page.data';
+import {occupationContractOrLicenceDetailsWales} from '@data/page-data/occupationContractOrLicenceDetailsWales.page.data';
 
 test.beforeEach(async ({page}) => {
   initializeExecutor(page);

@@ -13,7 +13,7 @@ export const actionRetries = 5;
 export default defineConfig({
   testDir: 'tests/',
   /* Run tests in files in parallel */
-  fullyParallel: true,
+  fullyParallel: false,
   forbidOnly: !!process.env.CI,
   /* Retry on CI only */
   retries: process.env.CI ? 3 : 0,
