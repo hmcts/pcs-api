@@ -1,6 +1,6 @@
 // Auto-generated from Figma file: MHSqNylYUQUmLbWCQeBHqq, based on page: "ExU - 02 Claim details - Existing case summary" (2738:113561) and other states
 
-export const caseNumber1234567891011213 = {
+export const provideMoreDetailsAboutYourClaim = {
   mainHeader: `Case number: 1234-5678-9101-1213`,
   cancelLabel: `Cancel`,
   continueLabel: `Continue`,
