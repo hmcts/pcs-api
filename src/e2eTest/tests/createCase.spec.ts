@@ -41,9 +41,7 @@ import {wantToUploadDocuments} from '@data/page-data/wantToUploadDocuments.page.
 import {uploadAdditionalDocs} from '@data/page-data/uploadAdditionalDocs.page.data';
 import {dailyRentAmount} from '@data/page-data/dailyRentAmount.page.data';
 import {statementOfTruth} from '@data/page-data/statementOfTruth.page.data';
-import {
-  reasonsForRequestingASuspensionAndDemotionOrder
-} from '@data/page-data/reasonsForRequestingASuspensionAndDemotionOrder.page.data';
+import {reasonsForRequestingASuspensionAndDemotionOrder} from '@data/page-data/reasonsForRequestingASuspensionAndDemotionOrder.page.data';
 
 test.beforeEach(async ({page}) => {
   initializeExecutor(page);
