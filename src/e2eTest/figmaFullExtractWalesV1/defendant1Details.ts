@@ -1,0 +1,40 @@
+// Auto-generated from Figma file: ez65eYH9Xwj2i5BLKt65nu, based on page: "Defendant details" (2001:18090) and other states
+
+export const defendant1Details = {
+  mainHeader: `Defendant 1 details`,
+  addressLine2OptionalLabel: `Address line 2 (Optional)`,
+  addressLine3OptionalLabel: `Address line 3 (Optional)`,
+  billyLabel: `Billy`,
+  buildingAndStreetLabel: `Building and Street`,
+  cancelLabel: `Cancel`,
+  caseNumber1234567891011213Label: `Case number: 1234-5678-9101-1213`,
+  continueLabel: `Continue`,
+  countryOptionalLabel: `Country (Optional)`,
+  countyOptionalLabel: `County (Optional)`,
+  cymraegToggle: `Cymraeg`,
+  defendantsCorrespondenceAddressLabel: `Defendant's correspondence address`,
+  defendantsFirstNameLabel: `Defendant’s first name`,
+  defendantsLastNameLabel: `Defendant’s last name`,
+  defendantsNameLabel: `Defendant’s name`,
+  doYouKnowTheDefendantsLabel: `Do you know the defendant’s name?`,
+  doYouKnowTheDefendantsLabel2: `Do you know the defendant’s correspondence address?`,
+  enterAUkPostcodeIfLabel: `Enter a UK postcode. If their correspondence address is outside 
+the UK, you’ll need to make a general application to the court 
+for permission to serve a claim outside the jurisdiction.`,
+  enterAddressDetailsLabel: `Enter address details`,
+  enterAddressManuallyLabel: `Enter address manually`,
+  findAddressLabel: `Find address`,
+  iCantEnterAUkLabel: `I can’t enter a UK postcode`,
+  isTheDefendantsCorrespondenceAddressLabel: `Is the defendant's correspondence address the same as the address of the property you're claiming possession of?`,
+  key5StoneyStreetLabel: `5 Stoney Street`,
+  lu29jbLabel: `LU2 9JB`,
+  lutonLabel: `Luton`,
+  makeAClaimCaption: `Make a claim`,
+  noOption: `No`,
+  postcodeLabel: `Postcode`,
+  previousLabel: `Previous`,
+  selectAnAddressLabel: `Select an address`,
+  townOrCityLabel: `Town or City`,
+  wrightLabel: `Wright`,
+  yesOption: `Yes`
+};

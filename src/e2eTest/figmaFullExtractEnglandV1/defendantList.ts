@@ -1,0 +1,43 @@
+// Auto-generated from Figma file: MHSqNylYUQUmLbWCQeBHqq, based on page: "Case list - defendant list - removed  " (2632:126046) and other states
+
+export const defendantList = {
+  mainHeader: `Defendant list`,
+  areThereMoreThan25Label: `Are there more than 25 defendants?`,
+  bartDavidsonLabel: `Bart Davidson`,
+  billyWrightLabel: `Billy Wright`,
+  blankLabel: `Blank`,
+  brianSpringfordLabel: `Brian Springford`,
+  cancelLabel: `Cancel`,
+  caseNumber1234567891011213Label: `Case number: 1234-5678-9101-1213`,
+  continueLabel: `Continue`,
+  davidLittlemanLabel: `David Littleman`,
+  defendant1024Label: `Defendant 10 - 24`,
+  defendant1Label: `Defendant 1`,
+  defendant25Label: `Defendant 25`,
+  defendant2Label: `Defendant 2`,
+  defendant3Label: `Defendant 3`,
+  defendant4Label: `Defendant 4`,
+  defendant5Label: `Defendant 5`,
+  defendant6Label: `Defendant 6`,
+  defendant7Label: `Defendant 7`,
+  defendant8Label: `Defendant 8`,
+  defendant9Label: `Defendant 9`,
+  defendantCorrespondenceAddressLabel: `Defendant correspondence address`,
+  defendantLabel: `Defendant`,
+  defendantNameLabel: `Defendant name`,
+  defendantsLabel: `Defendants`,
+  doYouNeedToAddLabel: `Do you need to add another defendant?`,
+  harveyFlexstoneLabel: `Harvey Flexstone`,
+  ifYouSelectYesYoullHintText: `If you select ‘Yes’, you’ll be able to upload a document with the additional defendants’ details next`,
+  jamesSmithLabel: `James Smith`,
+  key1024AddressesLabel: `10 - 24 addresses`,
+  key1024NamesLabel: `10 - 24 Names`,
+  key1234567891011213Label: `#1234-5678-9101-1213`,
+  key15GardenDriveLutonLu1Label: `15 Garden Drive, Luton, 
+LU1 1AB`,
+  makeAClaimCaption: `Make a claim`,
+  noOption: `No`,
+  previousLabel: `Previous`,
+  yesOption: `Yes`,
+  youCanAddAMaximumLabel: `You can add a maximum of 25 defendants.  If there are more than 25 defendants, you must upload a document containing their details.`
+};
