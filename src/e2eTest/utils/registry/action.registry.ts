@@ -12,7 +12,6 @@ import {UploadFileAction} from '@utils/actions/element-actions/uploadFile.action
 import {CreateCaseWalesAction} from '@utils/actions/custom-actions/createCaseWales.action';
 import {SearchCaseAction} from '@utils/actions/custom-actions/searchCase.action';
 import {handleCookieConsentAction} from '@utils/actions/custom-actions/handleCookieConsent.action';
-import {getAccessTokenAction} from '@utils/actions/custom-actions/getAccessToken.action';
 import {signOutAction} from '@utils/actions/custom-actions/signOut.action';
 
 export class ActionRegistry {
@@ -29,7 +28,6 @@ export class ActionRegistry {
     ['login', new LoginAction()],
     ['navigateToUrl', new NavigateToUrlAction()],
     ['handleCookieConsent', new handleCookieConsentAction()],
-    ['getAccessToken', new getAccessTokenAction()],
     ['signOut', new signOutAction()],
     ['uploadFile', new UploadFileAction()],
     ['selectAddress', new CreateCaseAction()],
