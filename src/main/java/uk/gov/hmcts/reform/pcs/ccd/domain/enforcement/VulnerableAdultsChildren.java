@@ -24,16 +24,14 @@ public class VulnerableAdultsChildren {
     private YesNoNotSure vulnerablePeopleYesNo;
 
     @CCD(
-            label = VULNERABLE_CATEGORY_LABEL,
-            showCondition = "vulnerablePeopleYesNo=\"YES\""
+            label = VULNERABLE_CATEGORY_LABEL
     )
     private VulnerableCategory vulnerableCategory;
 
     @CCD(
             label = VULNERABLE_REASON_LABEL,
             hint = VULNERABLE_REASON_HINT,
-            typeOverride = FieldType.TextArea,
-            showCondition = "vulnerablePeopleYesNo=\"YES\" AND (vulnerableCategory=\"VULNERABLE_ADULTS\" OR vulnerableCategory=\"VULNERABLE_CHILDREN\" OR vulnerableCategory=\"VULNERABLE_ADULTS_AND_CHILDREN\")"
+            typeOverride = FieldType.TextArea
     )
     private String vulnerableReasonText;
 }

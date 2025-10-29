@@ -4,10 +4,12 @@ import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
+import uk.gov.hmcts.reform.pcs.ccd.ShowConditions;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.VulnerableAdultsChildren;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
@@ -28,7 +30,7 @@ public class VulnerableAdultsChildrenPage implements CcdPageConfiguration {
             .page("vulnerableAdultsChildrenPage", this::midEvent)
             .pageLabel("Vulnerable adults and children at the property")
             .showCondition("anyRiskToBailiff=\"NO\" OR anyRiskToBailiff=\"NOT_SURE\"")
-            .label("evictionVulnerableAdultsChildrenPage-line-separator", "---")
+            .label("vulnerableAdultsChildrenPage-line-separator", "---")
             .label(
                 "vulnerableAdultsChildrenPage-information-text", """
                     <p>The bailiff needs to know if anyone at the property is vulnerable.</p>
@@ -45,9 +47,10 @@ public class VulnerableAdultsChildrenPage implements CcdPageConfiguration {
             .complex(EnforcementOrder::getVulnerableAdultsChildren)
             .mandatory(VulnerableAdultsChildren::getVulnerablePeopleYesNo)
             .mandatory(VulnerableAdultsChildren::getVulnerableCategory,
-                    "vulnerablePeopleYesNo=\"YES\"")
+                    ShowConditions.fieldEquals("vulnerableAdultsChildren.vulnerablePeopleYesNo", YesNoNotSure.YES))
             .mandatory(VulnerableAdultsChildren::getVulnerableReasonText,
-                    "vulnerablePeopleYesNo=\"YES\" AND (vulnerableCategory=\"VULNERABLE_ADULTS\" OR vulnerableCategory=\"VULNERABLE_CHILDREN\" OR vulnerableCategory=\"VULNERABLE_ADULTS_AND_CHILDREN\")")
+                    ShowConditions.fieldEquals("vulnerableAdultsChildren.vulnerablePeopleYesNo", YesNoNotSure.YES)
+                            + " AND (vulnerableAdultsChildren.vulnerableCategory=\"VULNERABLE_ADULTS\" OR vulnerableAdultsChildren.vulnerableCategory=\"VULNERABLE_CHILDREN\" OR vulnerableAdultsChildren.vulnerableCategory=\"VULNERABLE_ADULTS_AND_CHILDREN\")")
             .done()
             .label("vulnerableAdultsChildren-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
