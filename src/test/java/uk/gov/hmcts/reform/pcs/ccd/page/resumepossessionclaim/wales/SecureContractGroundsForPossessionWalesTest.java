@@ -27,7 +27,7 @@ public class SecureContractGroundsForPossessionWalesTest extends BasePageTest {
 
     @ParameterizedTest
     @MethodSource("groundScenarios")
-    void shouldValidateWalesGroundInputs(
+    void shouldValidateSecureContractWalesGroundInputs(
             Set<SecureContractDiscretionaryGroundsWales> discretionaryGrounds,
             Set<SecureContractMandatoryGroundsWales> mandatoryGrounds,
             Set<EstateManagementGroundsWales> estateGrounds,
@@ -39,7 +39,7 @@ public class SecureContractGroundsForPossessionWalesTest extends BasePageTest {
         PCSCase caseData = PCSCase.builder()
                 .secureContractDiscretionaryGroundsWales(discretionaryGrounds)
                 .secureContractMandatoryGroundsWales(mandatoryGrounds)
-                .estateManagementGroundsWales(estateGrounds)
+                .secureContractEstateManagementGroundsWales(estateGrounds)
                 .build();
 
         // When

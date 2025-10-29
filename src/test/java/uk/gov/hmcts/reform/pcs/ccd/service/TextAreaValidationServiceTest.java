@@ -282,7 +282,7 @@ class TextAreaValidationServiceTest {
             List<String> errors = List.of();
 
             // When
-            AboutToStartOrSubmitResponse<String, String> response = 
+            AboutToStartOrSubmitResponse<String, String> response =
                 textAreaValidationService.createValidationResponse(testData, errors);
 
             // Then
@@ -298,7 +298,7 @@ class TextAreaValidationServiceTest {
             List<String> errors = List.of("Error 1", "Error 2");
 
             // When
-            AboutToStartOrSubmitResponse<String, String> response = 
+            AboutToStartOrSubmitResponse<String, String> response =
                 textAreaValidationService.createValidationResponse(testData, errors);
 
             // Then
@@ -313,7 +313,7 @@ class TextAreaValidationServiceTest {
             String testData = "test data";
 
             // When
-            AboutToStartOrSubmitResponse<String, String> response = 
+            AboutToStartOrSubmitResponse<String, String> response =
                 textAreaValidationService.createValidationResponse(testData, null);
 
             // Then
@@ -354,7 +354,7 @@ class TextAreaValidationServiceTest {
         @DisplayName("Should have correct error message template")
         void shouldHaveCorrectErrorMessageTemplate() {
             assertThat(CHARACTER_LIMIT_ERROR_TEMPLATE).isEqualTo(
-                "In '%s', you have entered more than the maximum number of %d characters"
+                "In '%s', you have entered more than the maximum number of characters (%d)"
             );
         }
     }
@@ -440,7 +440,7 @@ class TextAreaValidationServiceTest {
             );
 
             // When
-            AboutToStartOrSubmitResponse<String, String> response = 
+            AboutToStartOrSubmitResponse<String, String> response =
                 textAreaValidationService.createValidationResponse(testData, validationErrors);
 
             // Then

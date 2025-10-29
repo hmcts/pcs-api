@@ -41,10 +41,11 @@ import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.SuspensionOfRightT
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.StatementOfExpressTerms;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.DemotionOfTenancyOrderReason;
 import uk.gov.hmcts.reform.pcs.ccd.service.ClaimService;
+import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
-import uk.gov.hmcts.reform.pcs.ccd.service.UnsubmittedCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
+import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationNameService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
@@ -87,8 +88,6 @@ class ResumePossessionClaimTest extends BaseEventTest {
     @Mock
     private SelectClaimantType selectClaimantType;
     @Mock
-    private UnsubmittedCaseDataService unsubmittedCaseDataService;
-    @Mock
     private ContactPreferences contactPreferences;
     @Mock
     private DefendantsDetails defendantsDetails;
@@ -128,7 +127,10 @@ class ResumePossessionClaimTest extends BaseEventTest {
     private ProhibitedConductWalesPage prohibitedConductWalesPage;
     @Mock
     private SchedulerClient schedulerClient;
+    @Mock
+    private DraftCaseDataService draftCaseDataService;
 
+    private final AddressFormatter addressFormatter = new AddressFormatter();
 
     @BeforeEach
     void setUp() {
@@ -143,13 +145,14 @@ class ResumePossessionClaimTest extends BaseEventTest {
             pcsCaseService, securityContextService,
             partyService, claimService,
             savingPageBuilderFactory, resumeClaim,
-            unsubmittedCaseDataService, selectClaimantType, noticeDetails,
+            selectClaimantType, noticeDetails,
             uploadAdditionalDocumentsDetails, tenancyLicenceDetails, contactPreferences,
             defendantsDetails, noRentArrearsGroundsForPossessionReason, additionalReasonsForPossession,
             secureOrFlexibleGroundsForPossessionReasons, mediationAndSettlement, claimantCircumstancesPage,
             introductoryDemotedOtherGroundsReasons, defendantCircumstancesPage, suspensionOfRightToBuyOrderReason,
             statementOfExpressTerms, demotionOfTenancyOrderReason, organisationNameService,
-            claimantDetailsWalesPage, prohibitedConductWalesPage, schedulerClient
+            claimantDetailsWalesPage, prohibitedConductWalesPage, schedulerClient,
+            draftCaseDataService, addressFormatter
         );
 
         setEventUnderTest(underTest);
@@ -299,12 +302,12 @@ class ResumePossessionClaimTest extends BaseEventTest {
 
         // Then
         verify(partyService).createPartyEntity(
-            eq(USER_ID),
-            eq(claimantName),
-            eq(null),
-            eq(claimantContactEmail),
-            eq(propertyAddress),
-            eq(claimantContactPhoneNumber)
+            USER_ID,
+            claimantName,
+            null,
+            claimantContactEmail,
+            propertyAddress,
+            claimantContactPhoneNumber
         );
     }
 
