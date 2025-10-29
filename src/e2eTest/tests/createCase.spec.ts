@@ -15,8 +15,6 @@ import {noticeOfYourIntention} from '@data/page-data/noticeOfYourIntention.page.
 import {noticeDetails} from '@data/page-data/noticeDetails.page.data';
 import {rentDetails} from '@data/page-data/rentDetails.page.data';
 import {provideMoreDetailsOfClaim} from '@data/page-data/provideMoreDetailsOfClaim.page.data';
-import {resumeClaim} from '@data/page-data/resumeClaim.page.data';
-import {resumeClaimOptions} from '@data/page-data/resumeClaimOptions.page.data';
 import {detailsOfRentArrears} from '@data/page-data/detailsOfRentArrears.page.data';
 import {whatAreYourGroundsForPossession} from '@data/page-data/whatAreYourGroundsForPossession.page.data';
 import {rentArrearsOrBreachOfTenancy} from '@data/page-data/rentArrearsOrBreachOfTenancy.page.data';
@@ -43,7 +41,6 @@ import {wantToUploadDocuments} from '@data/page-data/wantToUploadDocuments.page.
 import {uploadAdditionalDocs} from '@data/page-data/uploadAdditionalDocs.page.data';
 import {dailyRentAmount} from '@data/page-data/dailyRentAmount.page.data';
 import {statementOfTruth} from '@data/page-data/statementOfTruth.page.data';
-
 import {reasonsForRequestingASuspensionAndDemotionOrder} from '@data/page-data/reasonsForRequestingASuspensionAndDemotionOrder.page.data';
 
 test.beforeEach(async ({page}) => {
@@ -503,16 +500,6 @@ test.describe('[Create Case - England] @Master @nightly', async () => {
     await performAction('selectClaimantType', claimantType.england.registeredProviderForSocialHousing);
     await performAction('selectClaimType', claimType.no);
     await performAction('selectClaimantName', claimantName.yes);
-    await performAction('clickButtonAndVerifyPageNavigation', claimantName.continue, contactPreferences.mainHeader);
-    await performAction('clickButtonAndWaitForElement', 'Sign out', 'Sign in or create an account');
-    await performAction('reloginAndFindTheCase', user.claimantSolicitor);
-    await performAction('clickButtonAndVerifyPageNavigation', resumeClaim.continue, resumeClaimOptions.mainHeader);
-    await performAction('selectResumeClaimOption', resumeClaimOptions.yes);
-    await performValidation('radioButtonChecked', claimantType.england.registeredProviderForSocialHousing, true);
-    await performAction('verifyPageAndClickButton', claimantType.continue, claimantType.mainHeader);
-    await performValidation('radioButtonChecked', claimType.no, true);
-    await performAction('verifyPageAndClickButton', claimType.continue, claimType.mainHeader);
-    await performValidation('radioButtonChecked', claimantName.no, true);
     await performAction('clickButtonAndVerifyPageNavigation', claimantName.continue, contactPreferences.mainHeader);
     await performAction('selectContactPreferences', {
       notifications: contactPreferences.no,

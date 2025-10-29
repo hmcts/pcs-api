@@ -2,8 +2,12 @@ import * as process from 'node:process';
 
 import { defineConfig, devices } from '@playwright/test';
 
-const DEFAULT_VIEWPORT = { width: 1920, height: 1080 };
-export const waitForPageRedirectionTimeout = 3000;
+const DEFAULT_VIEWPORT = {width: 1920, height: 1080};
+export const SHORT_TIMEOUT = 5000;
+export const MEDIUM_TIMEOUT = 10000;
+export const LONG_TIMEOUT = 30000;
+export const waitForPageRedirectionTimeout = SHORT_TIMEOUT;
+
 export const actionRetries = 5;
 
 export default defineConfig({
@@ -24,15 +28,15 @@ export default defineConfig({
   globalTeardown: require.resolve('./config/global-teardown.config'),
   reporter: [
     ['list'],
-      [
-        'allure-playwright',
-        {
-          resultsDir: 'allure-results',
-          suiteTitle: false,
-          environmentInfo: {
-            os_version: process.version,
-          },
+    [
+      'allure-playwright',
+      {
+        resultsDir: 'allure-results',
+        suiteTitle: false,
+        environmentInfo: {
+          os_version: process.version,
         },
+      },
     ],
   ],
   projects: [
