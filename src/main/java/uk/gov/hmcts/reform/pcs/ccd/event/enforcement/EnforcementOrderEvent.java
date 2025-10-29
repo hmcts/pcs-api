@@ -14,13 +14,14 @@ import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.PropertyAccessDetailsPage;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.CheckYourAnswersPlaceHolder;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.EnforcementApplicationPage;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.NameAndAddressForEvictionPage;
+import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.EvictionDelayWarningPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.EvictionRisksPosedPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.EvictionVulnerableAdultsChildrenPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.LivingInThePropertyPage;
-import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.NameAndAddressForEvictionPage;
-import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 
 import static uk.gov.hmcts.reform.pcs.ccd.domain.State.AWAITING_SUBMISSION_TO_HMCTS;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.enforceTheOrder;
@@ -53,7 +54,8 @@ public class EnforcementOrderEvent implements CCDConfig<PCSCase, State, UserRole
                 .add(new EvictionDelayWarningPage())
                 .add(new EvictionRisksPosedPage())
                 .add(new EvictionVulnerableAdultsChildrenPage())
-                .add(new PropertyAccessDetailsPage());
+                .add(new PropertyAccessDetailsPage())
+                .add(new CheckYourAnswersPlaceHolder());
     }
 
     private PCSCase start(EventPayload<PCSCase, State> eventPayload) {
