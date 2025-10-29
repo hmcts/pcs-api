@@ -5,7 +5,6 @@ import {addressDetails} from '@data/page-data/addressDetails.page.data';
 import {canNotUseOnlineService} from '@data/page-data/canNotUseOnlineService.page.data';
 import {propertyIneligible} from '@data/page-data/propertyIneligible.page.data';
 import {userIneligible} from '@data/page-data/userIneligible.page.data';
-import {provideMoreDetailsOfClaim} from '@data/page-data/provideMoreDetailsOfClaim.page.data';
 import {claimantType} from '@data/page-data/claimantType.page.data';
 import {claimType} from '@data/page-data/claimType.page.data';
 import {user} from '@data/user-data/permanent.user.data';

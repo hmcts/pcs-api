@@ -15,7 +15,6 @@ import {noticeOfYourIntention} from '@data/page-data/noticeOfYourIntention.page.
 import {noticeDetails} from '@data/page-data/noticeDetails.page.data';
 import {rentDetails} from '@data/page-data/rentDetails.page.data';
 import {dailyRentAmount} from '@data/page-data/dailyRentAmount.page.data';
-import {provideMoreDetailsOfClaim} from '@data/page-data/provideMoreDetailsOfClaim.page.data';
 import {whatAreYourGroundsForPossession} from '@data/page-data/whatAreYourGroundsForPossession.page.data';
 import {moneyJudgment} from '@data/page-data/moneyJudgment.page.data';
 import {claimantCircumstances} from '@data/page-data/claimantCircumstances.page.data';
@@ -34,8 +33,8 @@ import {additionalReasonsForPossession} from '@data/page-data/additionalReasonsF
 import {underlesseeOrMortgageeEntitledToClaim} from '@data/page-data/underlesseeOrMortgageeEntitledToClaim.page.data';
 import {alternativesToPossession} from '@data/page-data/alternativesToPossession.page.data';
 import {wantToUploadDocuments} from '@data/page-data/wantToUploadDocuments.page.data';
-import {resumeClaim} from "@data/page-data/resumeClaim.page.data";
-import {resumeClaimOptions} from "@data/page-data/resumeClaimOptions.page.data";
+import {resumeClaim} from '@data/page-data/resumeClaim.page.data';
+import {resumeClaimOptions} from '@data/page-data/resumeClaimOptions.page.data';
 import {signInOrCreateAnAccount} from '@data/page-data/signInOrCreateAnAccount.page.data';
 
 // This test validates the resume & find case functionality with and without saved options.
