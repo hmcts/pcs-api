@@ -214,7 +214,7 @@ public class GroundsForPossessionWalesTest extends BasePageTest {
                         YesOrNo.YES,
                         YesOrNo.NO
                 ),
-                // Other breach present - show reasons for grounds page
+                // Only other breach - show reasons for grounds page
                 arguments(
                         Set.of(DiscretionaryGroundWales.OTHER_BREACH_SECTION_157),
                         Set.of(),
@@ -223,7 +223,44 @@ public class GroundsForPossessionWalesTest extends BasePageTest {
                         YesOrNo.NO,
                         YesOrNo.YES
                 ),
-                // Estate management grounds present - show reasons for grounds page
+                // Rent arrears + other breach - show reasons for grounds page
+                arguments(
+                        Set.of(
+                                DiscretionaryGroundWales.RENT_ARREARS_SECTION_157,
+                                DiscretionaryGroundWales.OTHER_BREACH_SECTION_157
+                        ),
+                        Set.of(),
+                        Set.of(),
+                        YesOrNo.NO,
+                        YesOrNo.NO,
+                        YesOrNo.YES
+                ),
+                // ASB + other breach - show reasons for grounds page
+                arguments(
+                        Set.of(
+                                DiscretionaryGroundWales.ANTISOCIAL_BEHAVIOUR_SECTION_157,
+                                DiscretionaryGroundWales.OTHER_BREACH_SECTION_157
+                        ),
+                        Set.of(),
+                        Set.of(),
+                        YesOrNo.NO,
+                        YesOrNo.NO,
+                        YesOrNo.YES
+                ),
+                // Rent arrears + ASB + other breach - show reasons for grounds page
+                arguments(
+                        Set.of(
+                                DiscretionaryGroundWales.RENT_ARREARS_SECTION_157,
+                                DiscretionaryGroundWales.ANTISOCIAL_BEHAVIOUR_SECTION_157,
+                                DiscretionaryGroundWales.OTHER_BREACH_SECTION_157
+                        ),
+                        Set.of(),
+                        Set.of(),
+                        YesOrNo.NO,
+                        YesOrNo.NO,
+                        YesOrNo.YES
+                ),
+                // Only estate management grounds - show reasons for grounds page
                 arguments(
                         Set.of(DiscretionaryGroundWales.ESTATE_MANAGEMENT_GROUNDS_SECTION_160),
                         Set.of(EstateManagementGroundsWales.BUILDING_WORKS),
@@ -232,7 +269,44 @@ public class GroundsForPossessionWalesTest extends BasePageTest {
                         YesOrNo.NO,
                         YesOrNo.YES
                 ),
-                // Mandatory grounds present - show reasons for grounds page
+                // Rent arrears + estate management - show reasons for grounds page
+                arguments(
+                        Set.of(
+                                DiscretionaryGroundWales.RENT_ARREARS_SECTION_157,
+                                DiscretionaryGroundWales.ESTATE_MANAGEMENT_GROUNDS_SECTION_160
+                        ),
+                        Set.of(EstateManagementGroundsWales.REDEVELOPMENT_SCHEMES),
+                        Set.of(),
+                        YesOrNo.NO,
+                        YesOrNo.NO,
+                        YesOrNo.YES
+                ),
+                // ASB + estate management - show reasons for grounds page
+                arguments(
+                        Set.of(
+                                DiscretionaryGroundWales.ANTISOCIAL_BEHAVIOUR_SECTION_157,
+                                DiscretionaryGroundWales.ESTATE_MANAGEMENT_GROUNDS_SECTION_160
+                        ),
+                        Set.of(EstateManagementGroundsWales.CHARITIES),
+                        Set.of(),
+                        YesOrNo.NO,
+                        YesOrNo.NO,
+                        YesOrNo.YES
+                ),
+                // Rent arrears + ASB + estate management - show reasons for grounds page
+                arguments(
+                        Set.of(
+                                DiscretionaryGroundWales.RENT_ARREARS_SECTION_157,
+                                DiscretionaryGroundWales.ANTISOCIAL_BEHAVIOUR_SECTION_157,
+                                DiscretionaryGroundWales.ESTATE_MANAGEMENT_GROUNDS_SECTION_160
+                        ),
+                        Set.of(EstateManagementGroundsWales.BUILDING_WORKS),
+                        Set.of(),
+                        YesOrNo.NO,
+                        YesOrNo.NO,
+                        YesOrNo.YES
+                ),
+                // Only mandatory grounds - show reasons for grounds page
                 arguments(
                         Set.of(),
                         Set.of(),
@@ -246,6 +320,45 @@ public class GroundsForPossessionWalesTest extends BasePageTest {
                         Set.of(DiscretionaryGroundWales.RENT_ARREARS_SECTION_157),
                         Set.of(),
                         Set.of(MandatoryGroundWales.FAIL_TO_GIVE_UP_S170),
+                        YesOrNo.NO,
+                        YesOrNo.NO,
+                        YesOrNo.YES
+                ),
+                // ASB + mandatory grounds - show reasons for grounds page
+                arguments(
+                        Set.of(DiscretionaryGroundWales.ANTISOCIAL_BEHAVIOUR_SECTION_157),
+                        Set.of(),
+                        Set.of(MandatoryGroundWales.LANDLORD_NOTICE_PERIODIC_S178),
+                        YesOrNo.NO,
+                        YesOrNo.NO,
+                        YesOrNo.YES
+                ),
+                // Rent arrears + ASB + mandatory grounds - show reasons for grounds page
+                arguments(
+                        Set.of(
+                                DiscretionaryGroundWales.RENT_ARREARS_SECTION_157,
+                                DiscretionaryGroundWales.ANTISOCIAL_BEHAVIOUR_SECTION_157
+                        ),
+                        Set.of(),
+                        Set.of(MandatoryGroundWales.SERIOUS_ARREARS_FIXED_TERM_S187),
+                        YesOrNo.NO,
+                        YesOrNo.NO,
+                        YesOrNo.YES
+                ),
+                // Other breach + mandatory grounds - show reasons for grounds page
+                arguments(
+                        Set.of(DiscretionaryGroundWales.OTHER_BREACH_SECTION_157),
+                        Set.of(),
+                        Set.of(MandatoryGroundWales.FAIL_TO_GIVE_UP_BREAK_NOTICE_S191),
+                        YesOrNo.NO,
+                        YesOrNo.NO,
+                        YesOrNo.YES
+                ),
+                // Estate management + mandatory grounds - show reasons for grounds page
+                arguments(
+                        Set.of(DiscretionaryGroundWales.ESTATE_MANAGEMENT_GROUNDS_SECTION_160),
+                        Set.of(EstateManagementGroundsWales.CHARITIES),
+                        Set.of(MandatoryGroundWales.LANDLORD_BREAK_CLAUSE_S199),
                         YesOrNo.NO,
                         YesOrNo.NO,
                         YesOrNo.YES
