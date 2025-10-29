@@ -23,7 +23,8 @@ public class DefendantsDOBPage implements CcdPageConfiguration {
         pageBuilder
             .page("defendantsDOB", this::midEvent)
             .pageLabel("Defendant DOB")
-            .label("defendantDOBLabel", "My Defendant DOB label");
+            .label("defendantDOBLabel", "My Defendant DOB label")
+            .mandatory(PCSCase::getDobDefendants);
     }
 
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,

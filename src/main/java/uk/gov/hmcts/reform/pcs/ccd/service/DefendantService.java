@@ -5,6 +5,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantsDOB;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.model.Defendant;
@@ -43,6 +44,16 @@ public class DefendantService {
 
         return defendantList.stream()
             .map(defendant -> modelMapper.map(defendant, DefendantDetails.class))
+            .toList();
+    }
+
+    public List<DefendantsDOB> mapToDefendantDOB(List<Defendant> defendantList) {
+        if (defendantList == null) {
+            return Collections.emptyList();
+        }
+
+        return defendantList.stream()
+            .map(defendant -> modelMapper.map(defendant, DefendantsDOB.class))
             .toList();
     }
 

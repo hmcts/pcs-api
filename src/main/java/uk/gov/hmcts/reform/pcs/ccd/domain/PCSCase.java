@@ -352,6 +352,8 @@ public class PCSCase {
 
     private List<ListValue<DefendantDetails>> allDefendants;
 
+    private List<ListValue<DefendantsDOB>> dobDefendants;
+
     // Notice Details fields
     @CCD(
         label = "How did you serve the notice?"
