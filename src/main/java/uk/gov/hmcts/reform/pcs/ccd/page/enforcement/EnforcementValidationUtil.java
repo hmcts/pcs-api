@@ -1,5 +1,8 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.enforcement;
 
+import java.text.NumberFormat;
+import java.util.Locale;
+
 /**
  * Utility class for generating consistent error messages for character limit validation.
  * 
@@ -11,10 +14,10 @@ public final class EnforcementValidationUtil {
     }
 
     private static final String ERROR_MESSAGE_TEMPLATE = "In '%s', you have entered more than the "
-            + "maximum number of characters (%d)";
+            + "maximum number of characters (%s)";
 
     static String getCharacterLimitErrorMessage(String label, int charLimit) {
-        return String.format(ERROR_MESSAGE_TEMPLATE, label, charLimit);
+        return String.format(ERROR_MESSAGE_TEMPLATE, label, NumberFormat.getInstance(Locale.UK).format(charLimit));
     }
 }
 
