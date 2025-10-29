@@ -16,9 +16,9 @@ public class UnderlesseeMortgageeValidator {
 
     private final AddressValidator addressValidator;
 
-    public List<String> validateFirstUnderlesseeOrMortgagee(UnderlesseeMortgageeDetails underlesseeMortgageeDetails,
-                                                            boolean additionalUnderlesseeProvided) {
-        String sectionHint = additionalUnderlesseeProvided ? "Underlessee or mortgagee" : "";
+    public List<String> validateUnderlesseeOrMortgagee1(UnderlesseeMortgageeDetails underlesseeMortgageeDetails,
+                                                        boolean additionalUnderlesseeProvided) {
+        String sectionHint = additionalUnderlesseeProvided ? "Underlessee or mortgagee 1" : "";
         return validateUnderlesseeOrMortgageeAddress(underlesseeMortgageeDetails, sectionHint);
     }
 
@@ -30,8 +30,8 @@ public class UnderlesseeMortgageeValidator {
         for (int i = 0; i < additionalUnderlesseeMortgagee.size(); i++) {
             UnderlesseeMortgageeDetails underlesseeMortgageeDetails = additionalUnderlesseeMortgagee.get(i).getValue();
             String sectionHint = "additional underlessee or mortgagee %d".formatted(i + 1);
-            List<String> underlesseeMortgageeValidationErrors = validateUnderlesseeOrMortgageeAddress(underlesseeMortgageeDetails,
-                                                                                           sectionHint);
+            List<String> underlesseeMortgageeValidationErrors = validateUnderlesseeOrMortgageeAddress(
+                underlesseeMortgageeDetails, sectionHint);
 
             validationErrors.addAll(underlesseeMortgageeValidationErrors);
         }

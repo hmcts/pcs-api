@@ -28,7 +28,7 @@ public class UnderlesseeMortgageeDetailsPage implements CcdPageConfiguration {
             .page("underlesseeMortgageeDetails", this::midEvent)
             .pageLabel("Underlessee or mortgagee details")
             .showCondition("hasUnderlesseeOrMortgagee=\"YES\"")
-            .complex(PCSCase::getUnderlesseeMortgageeDetails)
+            .complex(PCSCase::getUnderlesseeMortgagee1)
                 .readonly(UnderlesseeMortgageeDetails::getUnderlesseeOrMortgageeNameLabel)
                 .mandatory(UnderlesseeMortgageeDetails::getUnderlesseeOrMortgageeNameKnown)
                 .mandatory(UnderlesseeMortgageeDetails::getUnderlesseeOrMortgageeName)
@@ -60,10 +60,10 @@ public class UnderlesseeMortgageeDetailsPage implements CcdPageConfiguration {
 
         boolean additionalUnderlesseeMortgagee = caseData.getAddAdditionalUnderlesseeOrMortgagee() == VerticalYesNo.YES;
 
-        UnderlesseeMortgageeDetails underlesseeMortgageeDetails = caseData.getUnderlesseeMortgageeDetails();
+        UnderlesseeMortgageeDetails underlesseeMortgagee1 = caseData.getUnderlesseeMortgagee1();
         List<String> validationErrors =
-            new ArrayList<>(underlesseeMortgageeValidator.validateFirstUnderlesseeOrMortgagee(
-                                                                underlesseeMortgageeDetails,
+            new ArrayList<>(underlesseeMortgageeValidator.validateUnderlesseeOrMortgagee1(
+                                                                underlesseeMortgagee1,
                                                                 additionalUnderlesseeMortgagee
                                                             ));
 

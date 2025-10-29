@@ -60,7 +60,7 @@ public class PcsCaseMergeService {
             pcsCaseEntity.setDefendants(defendantService.buildDefendantsList(pcsCase));
         }
 
-        if (pcsCase.getUnderlesseeMortgageeDetails() != null) {
+        if (pcsCase.getUnderlesseeMortgagee1() != null) {
             pcsCaseEntity.setUnderlesseesMortgagees(underlesseeMortgageService.buildUnderlesseeMortgageeList(pcsCase));
         }
 

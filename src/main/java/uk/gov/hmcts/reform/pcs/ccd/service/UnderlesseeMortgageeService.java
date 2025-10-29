@@ -18,12 +18,12 @@ import java.util.Objects;
 public class UnderlesseeMortgageeService {
 
     public List<UnderlesseeMortgagee> buildUnderlesseeMortgageeList(PCSCase pcsCase) {
-        Objects.requireNonNull(pcsCase.getUnderlesseeMortgageeDetails(),
-                               "Underlessee or mortgagee must be provided");
+        Objects.requireNonNull(pcsCase.getUnderlesseeMortgagee1(),
+                               "First underlessee or mortgagee must be provided");
 
         List<UnderlesseeMortgagee> underlesseesMortgagees = new ArrayList<>();
 
-        UnderlesseeMortgagee underlesseeMortgagee1 = buildUnderlesseeMortgagee(pcsCase.getUnderlesseeMortgageeDetails());
+        UnderlesseeMortgagee underlesseeMortgagee1 = buildUnderlesseeMortgagee(pcsCase.getUnderlesseeMortgagee1());
         underlesseesMortgagees.add(underlesseeMortgagee1);
 
         if (pcsCase.getAddAdditionalUnderlesseeOrMortgagee() == VerticalYesNo.YES) {
@@ -35,20 +35,20 @@ public class UnderlesseeMortgageeService {
         return underlesseesMortgagees;
     }
 
-    private UnderlesseeMortgagee buildUnderlesseeMortgagee(UnderlesseeMortgageeDetails underlesseeMortgageeDetails) {
+    private UnderlesseeMortgagee buildUnderlesseeMortgagee(UnderlesseeMortgageeDetails underlesseeMortgagee1) {
         UnderlesseeMortgagee underlesseeMortgagee = new UnderlesseeMortgagee();
 
-        boolean nameKnown = underlesseeMortgageeDetails.getUnderlesseeOrMortgageeNameKnown().toBoolean();
+        boolean nameKnown = underlesseeMortgagee1.getUnderlesseeOrMortgageeNameKnown().toBoolean();
         underlesseeMortgagee.setUnderlesseeOrMortgageeNameKnown(nameKnown);
         if (nameKnown) {
-            underlesseeMortgagee.setUnderlesseeOrMortgageeName(underlesseeMortgageeDetails
+            underlesseeMortgagee.setUnderlesseeOrMortgageeName(underlesseeMortgagee1
                                                                    .getUnderlesseeOrMortgageeName());
         }
 
-        boolean addressKnown = underlesseeMortgageeDetails.getUnderlesseeOrMortgageeAddressKnown().toBoolean();
+        boolean addressKnown = underlesseeMortgagee1.getUnderlesseeOrMortgageeAddressKnown().toBoolean();
         underlesseeMortgagee.setUnderlesseeOrMortgageeAddressKnown(addressKnown);
         if (addressKnown) {
-            underlesseeMortgagee.setUnderlesseeOrMortgageeAddress(underlesseeMortgageeDetails
+            underlesseeMortgagee.setUnderlesseeOrMortgageeAddress(underlesseeMortgagee1
                                                                       .getUnderlesseeOrMortgageeAddress());
         }
 
