@@ -1,6 +1,5 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.enforcement;
 
-import org.springframework.stereotype.Component;
 import java.util.List;
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
@@ -13,7 +12,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.EnforcementRiskDetails;
 
 import static uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent.SAVE_AND_RETURN;
 
-@Component
 public class EvictionRisksPosedPage implements CcdPageConfiguration {
 
     @Override

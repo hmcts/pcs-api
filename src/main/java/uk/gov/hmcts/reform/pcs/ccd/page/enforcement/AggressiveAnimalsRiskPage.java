@@ -14,7 +14,7 @@ import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 import java.util.ArrayList;
 import java.util.List;
 
-public final class AggressiveAnimalsRiskPage implements CcdPageConfiguration {
+public class AggressiveAnimalsRiskPage implements CcdPageConfiguration {
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
