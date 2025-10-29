@@ -396,13 +396,15 @@ public class PCSCase {
     private String noticePersonName;
 
     @CCD(
-        label = "Explain how it was served by email. You can enter up to 250 characters",
+        label = "Explain how it was served by email",
+        hint = "You can enter up to 250 characters",
         typeOverride = TextArea
     )
     private String noticeEmailExplanation;
 
     @CCD(
-        label = "Explain what the other means were. You can enter up to 250 characters",
+        label = "Explain what the other means were",
+        hint = "You can enter up to 250 characters",
         typeOverride = TextArea
     )
     private String noticeOtherExplanation;
