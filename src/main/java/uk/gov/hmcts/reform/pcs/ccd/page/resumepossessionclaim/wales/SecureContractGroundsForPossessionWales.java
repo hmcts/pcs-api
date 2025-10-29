@@ -8,10 +8,10 @@ import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
-import uk.gov.hmcts.reform.pcs.ccd.domain.EstateManagementGroundsWales;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.EstateManagementGroundsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.domain.SecureContractDiscretionaryGroundsWales;
-import uk.gov.hmcts.reform.pcs.ccd.domain.SecureContractMandatoryGroundsWales;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractDiscretionaryGroundsWales;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractMandatoryGroundsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 
 public class SecureContractGroundsForPossessionWales implements CcdPageConfiguration {
@@ -22,7 +22,7 @@ public class SecureContractGroundsForPossessionWales implements CcdPageConfigura
                 .page("secureOrFlexibleGroundsForPossessionWales", this::midEvent)
                 .pageLabel("What are your grounds for possession?")
                 .showCondition(
-                    "licenceType=\"SECURE_CONTRACT\""
+                    "occupationLicenceTypeWales=\"SECURE_CONTRACT\""
                             + " AND legislativeCountry=\"Wales\""
                 )
                 .label("secureOrFlexibleGroundsForPossessionWales-info", """
@@ -41,7 +41,7 @@ public class SecureContractGroundsForPossessionWales implements CcdPageConfigura
 
                """)
                 .optional(PCSCase::getSecureContractDiscretionaryGroundsWales)
-                .optional(PCSCase::getEstateManagementGroundsWales,
+                .optional(PCSCase::getSecureContractEstateManagementGroundsWales,
                         "secureContractDiscretionaryGroundsWalesCONTAINS\"ESTATE_MANAGEMENT_GROUNDS\"")
                 .optional(PCSCase::getSecureContractMandatoryGroundsWales);
     }
@@ -56,7 +56,7 @@ public class SecureContractGroundsForPossessionWales implements CcdPageConfigura
 
         Set<SecureContractMandatoryGroundsWales> mandatoryGrounds = caseData.getSecureContractMandatoryGroundsWales();
 
-        Set<EstateManagementGroundsWales> estateManagement = caseData.getEstateManagementGroundsWales();
+        Set<EstateManagementGroundsWales> estateManagement = caseData.getSecureContractEstateManagementGroundsWales();
 
         if (discretionaryGrounds.contains(SecureContractDiscretionaryGroundsWales.ESTATE_MANAGEMENT_GROUNDS)
                 && estateManagement.isEmpty()) {
