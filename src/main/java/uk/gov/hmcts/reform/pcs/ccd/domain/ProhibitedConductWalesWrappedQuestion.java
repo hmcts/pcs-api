@@ -10,7 +10,6 @@ import static uk.gov.hmcts.ccd.sdk.type.FieldType.TextArea;
 
 @Data
 @Builder
-@JsonNaming(PropertyNamingStrategies.UpperCamelCaseStrategy.class)
 public class ProhibitedConductWalesWrappedQuestion {
 
     @CCD(
