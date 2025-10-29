@@ -10,9 +10,9 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.domain.UnderlesseeMortgagee;
 import uk.gov.hmcts.reform.pcs.ccd.domain.UnderlesseeMortgageeDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.model.UnderlesseeMortgagee;
 
 import java.util.List;
 import java.util.stream.Stream;
@@ -40,7 +40,7 @@ class UnderlesseeMortgageeServiceTest {
     @Test
     void shouldThrowExceptionForNullUnderlesseeMortgagee() {
         // Given
-        when(pcsCase.getUnderlesseeMortgagee1()).thenReturn(null);
+        when(pcsCase.getUnderlesseeOrMortgagee1()).thenReturn(null);
 
         // When
         Throwable throwable = catchThrowable(() -> underTest.buildUnderlesseeMortgageeList(pcsCase));
@@ -53,17 +53,17 @@ class UnderlesseeMortgageeServiceTest {
 
     @ParameterizedTest
     @MethodSource("singleUnderlesseeOrMortgageeScenarios")
-    void shouldBuildListWithSingleUnderlesseeOrMortgagee(UnderlesseeMortgageeDetails underlesseeMortgageeDetails,
-                                                         UnderlesseeMortgagee expectedUnderlesseeMortgagee) {
+    void shouldBuildListWithSingleUnderlesseeOrMortgagee(UnderlesseeMortgageeDetails underlesseeOrMortgagee1,
+                                                         UnderlesseeMortgagee expectedUnderlesseeOrMortgagee) {
         // Given
-        when(pcsCase.getUnderlesseeMortgagee1()).thenReturn(underlesseeMortgageeDetails);
+        when(pcsCase.getUnderlesseeOrMortgagee1()).thenReturn(underlesseeOrMortgagee1);
         when(pcsCase.getAddAdditionalUnderlesseeOrMortgagee()).thenReturn(VerticalYesNo.NO);
 
         // When
         List<UnderlesseeMortgagee> underlesseeMortgageeList = underTest.buildUnderlesseeMortgageeList(pcsCase);
 
         // Then
-        assertThat(underlesseeMortgageeList).containsExactly(expectedUnderlesseeMortgagee);
+        assertThat(underlesseeMortgageeList).containsExactly(expectedUnderlesseeOrMortgagee);
     }
 
     @Test
@@ -71,38 +71,39 @@ class UnderlesseeMortgageeServiceTest {
         // Given
         AddressUK correspondenceAddress = mock(AddressUK.class);
 
-        UnderlesseeMortgageeDetails mortgagee1 = builduUnderlesseeMortgageeDetails(
+        UnderlesseeMortgageeDetails mortgagee1 = buildUnderlesseeOrMortgageeDetails(
             VerticalYesNo.YES, "Mortgagee1 name", VerticalYesNo.YES,correspondenceAddress);
 
 
-        UnderlesseeMortgageeDetails underlessee1 = builduUnderlesseeMortgageeDetails(
+        UnderlesseeMortgageeDetails underlessee1 = buildUnderlesseeOrMortgageeDetails(
              VerticalYesNo.YES,"Underlessee1 name", VerticalYesNo.YES, correspondenceAddress);
 
 
-        UnderlesseeMortgageeDetails underlessee2 = builduUnderlesseeMortgageeDetails(
+        UnderlesseeMortgageeDetails underlessee2 = buildUnderlesseeOrMortgageeDetails(
              VerticalYesNo.YES,"Underlessee2 name", VerticalYesNo.NO, correspondenceAddress);
 
 
-        when(pcsCase.getUnderlesseeMortgagee1()).thenReturn(mortgagee1);
+        when(pcsCase.getUnderlesseeOrMortgagee1()).thenReturn(mortgagee1);
 
-        List<UnderlesseeMortgageeDetails> additionalUnderlesseeMortgagee = List.of(underlessee1, underlessee2);
-        when(pcsCase.getAdditionalUnderlesseeMortgagee()).thenReturn(wrapListItems(additionalUnderlesseeMortgagee));
+        List<UnderlesseeMortgageeDetails> additionalUnderlesseeOrMortgagee = List.of(underlessee1, underlessee2);
+        when(pcsCase.getAdditionalUnderlesseeOrMortgagee()).thenReturn(wrapListItems(additionalUnderlesseeOrMortgagee));
         when(pcsCase.getAddAdditionalUnderlesseeOrMortgagee()).thenReturn(VerticalYesNo.YES);
 
         // When
-        List<UnderlesseeMortgagee> defendantList = underTest.buildUnderlesseeMortgageeList(pcsCase);
+        List<UnderlesseeMortgagee> underlesseeMortgageeList = underTest.buildUnderlesseeMortgageeList(pcsCase);
 
         // Then
-        UnderlesseeMortgagee expectedMortgagee1 = buildExpectedUnderlesseeMortgagee(
+        UnderlesseeMortgagee expectedMortgagee1 = buildExpectedUnderlesseeOrMortgagee(
             true, "Mortgagee1 name",true, correspondenceAddress);
 
-        UnderlesseeMortgagee expectedUnderlessee1 =  buildExpectedUnderlesseeMortgagee(
+        UnderlesseeMortgagee expectedUnderlessee1 =  buildExpectedUnderlesseeOrMortgagee(
             true, "Underlessee1 name",true, correspondenceAddress);
 
-        UnderlesseeMortgagee expectedUnderlessee2 =  buildExpectedUnderlesseeMortgagee(
+        UnderlesseeMortgagee expectedUnderlessee2 =  buildExpectedUnderlesseeOrMortgagee(
             true, "Underlessee2 name",false, null);
 
-        assertThat(defendantList).containsExactly(expectedMortgagee1, expectedUnderlessee1, expectedUnderlessee2);
+        assertThat(underlesseeMortgageeList)
+            .containsExactly(expectedMortgagee1, expectedUnderlessee1, expectedUnderlessee2);
     }
 
     @Test
@@ -110,14 +111,14 @@ class UnderlesseeMortgageeServiceTest {
         // Given
         AddressUK address = mock(AddressUK.class);
 
-        UnderlesseeMortgageeDetails mortgagee1 = builduUnderlesseeMortgageeDetails(
+        UnderlesseeMortgageeDetails mortgagee1 = buildUnderlesseeOrMortgageeDetails(
              VerticalYesNo.YES,"Mortgagee1 name", VerticalYesNo.YES, address);
 
-        UnderlesseeMortgageeDetails underlessee1 = builduUnderlesseeMortgageeDetails(
+        UnderlesseeMortgageeDetails underlessee1 = buildUnderlesseeOrMortgageeDetails(
              VerticalYesNo.YES, "Underlessee1 name",VerticalYesNo.NO, null);
 
-        when(pcsCase.getUnderlesseeMortgagee1()).thenReturn(mortgagee1);
-        when(pcsCase.getAdditionalUnderlesseeMortgagee())
+        when(pcsCase.getUnderlesseeOrMortgagee1()).thenReturn(mortgagee1);
+        when(pcsCase.getAdditionalUnderlesseeOrMortgagee())
             .thenReturn(wrapListItems(List.of(underlessee1)));
         when(pcsCase.getAddAdditionalUnderlesseeOrMortgagee()).thenReturn(VerticalYesNo.NO);
 
@@ -125,7 +126,7 @@ class UnderlesseeMortgageeServiceTest {
         List<UnderlesseeMortgagee> result = underTest.buildUnderlesseeMortgageeList(pcsCase);
 
         // Then
-        UnderlesseeMortgagee expected = buildExpectedUnderlesseeMortgagee(
+        UnderlesseeMortgagee expected = buildExpectedUnderlesseeOrMortgagee(
             true, "Mortgagee1 name", true, address);
 
         assertThat(result).containsExactly(expected);
@@ -136,14 +137,14 @@ class UnderlesseeMortgageeServiceTest {
         // Given
         AddressUK address = mock(AddressUK.class);
 
-        UnderlesseeMortgageeDetails mortgagee1 = builduUnderlesseeMortgageeDetails(
+        UnderlesseeMortgageeDetails mortgagee1 = buildUnderlesseeOrMortgageeDetails(
             VerticalYesNo.NO,"ignored",  VerticalYesNo.NO, address);
 
-        UnderlesseeMortgageeDetails underlessee1 = builduUnderlesseeMortgageeDetails(
+        UnderlesseeMortgageeDetails underlessee1 = buildUnderlesseeOrMortgageeDetails(
              VerticalYesNo.NO,"ignored", VerticalYesNo.NO, address);
 
-        when(pcsCase.getUnderlesseeMortgagee1()).thenReturn(mortgagee1);
-        when(pcsCase.getAdditionalUnderlesseeMortgagee())
+        when(pcsCase.getUnderlesseeOrMortgagee1()).thenReturn(mortgagee1);
+        when(pcsCase.getAdditionalUnderlesseeOrMortgagee())
             .thenReturn(wrapListItems(List.of(underlessee1)));
         when(pcsCase.getAddAdditionalUnderlesseeOrMortgagee()).thenReturn(VerticalYesNo.YES);
 
@@ -151,9 +152,9 @@ class UnderlesseeMortgageeServiceTest {
         List<UnderlesseeMortgagee> result = underTest.buildUnderlesseeMortgageeList(pcsCase);
 
         // Then
-        UnderlesseeMortgagee expected1 = buildExpectedUnderlesseeMortgagee(
+        UnderlesseeMortgagee expected1 = buildExpectedUnderlesseeOrMortgagee(
             false, null, false, null);
-        UnderlesseeMortgagee expected2 = buildExpectedUnderlesseeMortgagee(
+        UnderlesseeMortgagee expected2 = buildExpectedUnderlesseeOrMortgagee(
             false, null, false, null);
 
         assertThat(result).containsExactly(expected1, expected2);
@@ -166,31 +167,31 @@ class UnderlesseeMortgageeServiceTest {
         return Stream.of(
             // Name and address not known
             Arguments.of(
-                builduUnderlesseeMortgageeDetails(VerticalYesNo.NO,null, VerticalYesNo.NO, null),
-                buildExpectedUnderlesseeMortgagee(false, null, false, null)
+                buildUnderlesseeOrMortgageeDetails(VerticalYesNo.NO, null, VerticalYesNo.NO, null),
+                buildExpectedUnderlesseeOrMortgagee(false, null, false, null)
             ),
 
             // Name known and address not known
             Arguments.of(
-                builduUnderlesseeMortgageeDetails(
+                buildUnderlesseeOrMortgageeDetails(
                      VerticalYesNo.YES,"expected name", VerticalYesNo.NO, null),
-                buildExpectedUnderlesseeMortgagee(
+                buildExpectedUnderlesseeOrMortgagee(
                     true, "expected name", false, null)
             ),
 
             // Name not known and address known
             Arguments.of(
-                builduUnderlesseeMortgageeDetails(
+                buildUnderlesseeOrMortgageeDetails(
                      VerticalYesNo.NO,null, VerticalYesNo.YES, correspondenceAddress),
-                buildExpectedUnderlesseeMortgagee(
+                buildExpectedUnderlesseeOrMortgagee(
                     false, null, true, correspondenceAddress)
             )
         );
     }
 
-    private static UnderlesseeMortgageeDetails builduUnderlesseeMortgageeDetails(VerticalYesNo nameKnown,String name,
-                                                                          VerticalYesNo addressKnown,
-                                                                          AddressUK address) {
+    private static UnderlesseeMortgageeDetails buildUnderlesseeOrMortgageeDetails(VerticalYesNo nameKnown, String name,
+                                                                                  VerticalYesNo addressKnown,
+                                                                                  AddressUK address) {
         return UnderlesseeMortgageeDetails.builder()
             .underlesseeOrMortgageeNameKnown(nameKnown)
             .underlesseeOrMortgageeName(name)
@@ -199,10 +200,10 @@ class UnderlesseeMortgageeServiceTest {
             .build();
     }
 
-    private static UnderlesseeMortgagee buildExpectedUnderlesseeMortgagee(boolean nameKnown,
-                                                                          String name,
-                                                                          boolean addressKnown,
-                                                                          AddressUK address) {
+    private static UnderlesseeMortgagee buildExpectedUnderlesseeOrMortgagee(boolean nameKnown,
+                                                                            String name,
+                                                                            boolean addressKnown,
+                                                                            AddressUK address) {
         return UnderlesseeMortgagee.builder()
             .underlesseeOrMortgageeNameKnown(nameKnown)
             .underlesseeOrMortgageeName(name)

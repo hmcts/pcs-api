@@ -4,7 +4,7 @@ import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 
-public class UnderlesseeMortgageeEntitledToClaimRelief implements CcdPageConfiguration {
+public class UnderlesseeOrMortgageeEntitledToClaimRelief implements CcdPageConfiguration {
 
     @Override
     public void addTo(PageBuilder pageBuilder) {

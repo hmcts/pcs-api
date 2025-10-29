@@ -25,14 +25,14 @@ import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils.wrapListItems;
 
 @ExtendWith(MockitoExtension.class)
-class UnderlesseeMortgageeDetailsTest extends BasePageTest {
+class UnderlesseeOrMortgageeDetailsPageTest extends BasePageTest {
 
     @Mock
     private UnderlesseeMortgageeValidator underlesseeMortgageeValidator;
 
     @BeforeEach
     void setUp() {
-        setPageUnderTest(new UnderlesseeMortgageeDetailsPage(underlesseeMortgageeValidator));
+        setPageUnderTest(new UnderlesseeOrMortgageeDetailsPage(underlesseeMortgageeValidator));
     }
 
     @Test
@@ -42,7 +42,7 @@ class UnderlesseeMortgageeDetailsTest extends BasePageTest {
         UnderlesseeMortgageeDetails underlesseeOrMortgagee = mock(UnderlesseeMortgageeDetails.class);
 
         PCSCase caseData = PCSCase.builder()
-            .underlesseeMortgagee1(underlesseeOrMortgagee)
+            .underlesseeOrMortgagee1(underlesseeOrMortgagee)
             .addAdditionalUnderlesseeOrMortgagee(VerticalYesNo.NO)
             .build();
 
@@ -62,26 +62,26 @@ class UnderlesseeMortgageeDetailsTest extends BasePageTest {
     void shouldValidateMultipleUnderlesseeOrMortgagee() {
 
         // Given
-        UnderlesseeMortgageeDetails underlesseeMortgagee = mock(UnderlesseeMortgageeDetails.class);
-        UnderlesseeMortgageeDetails additionalUnderlesseeMortgagee = mock(UnderlesseeMortgageeDetails.class);
-        UnderlesseeMortgageeDetails additionalUnderlesseeMortgagee2 = mock(UnderlesseeMortgageeDetails.class);
+        UnderlesseeMortgageeDetails underlesseeOrMortgagee = mock(UnderlesseeMortgageeDetails.class);
+        UnderlesseeMortgageeDetails additionalUnderlessee = mock(UnderlesseeMortgageeDetails.class);
+        UnderlesseeMortgageeDetails additionalMortgagee = mock(UnderlesseeMortgageeDetails.class);
 
         List<ListValue<UnderlesseeMortgageeDetails>> additionalUnderlesseeMortgageeList = wrapListItems(List.of(
-            additionalUnderlesseeMortgagee,
-            additionalUnderlesseeMortgagee2
+            additionalUnderlessee,
+            additionalMortgagee
         ));
 
         PCSCase caseData = PCSCase.builder()
-            .underlesseeMortgagee1(underlesseeMortgagee)
+            .underlesseeOrMortgagee1(underlesseeOrMortgagee)
             .addAdditionalUnderlesseeOrMortgagee(VerticalYesNo.YES)
-            .additionalUnderlesseeMortgagee(additionalUnderlesseeMortgageeList)
+            .additionalUnderlesseeOrMortgagee(additionalUnderlesseeMortgageeList)
             .build();
 
         String errorMessage1 = "some error 1";
         String errorMessage2 = "some error 2";
         String errorMessage3 = "some error 3";
 
-        when(underlesseeMortgageeValidator.validateUnderlesseeOrMortgagee1(underlesseeMortgagee, true))
+        when(underlesseeMortgageeValidator.validateUnderlesseeOrMortgagee1(underlesseeOrMortgagee, true))
             .thenReturn(List.of(errorMessage1));
 
         when(underlesseeMortgageeValidator.validateAdditionalUnderlesseeOrMortgagee(additionalUnderlesseeMortgageeList))

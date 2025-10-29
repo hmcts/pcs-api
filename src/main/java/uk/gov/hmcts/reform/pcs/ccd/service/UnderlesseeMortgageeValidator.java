@@ -17,21 +17,21 @@ public class UnderlesseeMortgageeValidator {
     private final AddressValidator addressValidator;
 
     public List<String> validateUnderlesseeOrMortgagee1(UnderlesseeMortgageeDetails underlesseeMortgageeDetails,
-                                                        boolean additionalUnderlesseeProvided) {
-        String sectionHint = additionalUnderlesseeProvided ? "Underlessee or mortgagee 1" : "";
+                                                        boolean additionalUnderlesseeOrMortgageeProvided) {
+        String sectionHint = additionalUnderlesseeOrMortgageeProvided ? "Underlessee or mortgagee 1" : "";
         return validateUnderlesseeOrMortgageeAddress(underlesseeMortgageeDetails, sectionHint);
     }
 
     public List<String> validateAdditionalUnderlesseeOrMortgagee(
-        List<ListValue<UnderlesseeMortgageeDetails>> additionalUnderlesseeMortgagee) {
+        List<ListValue<UnderlesseeMortgageeDetails>> additionalUnderlesseeOrMortgagee) {
 
         List<String> validationErrors = new ArrayList<>();
 
-        for (int i = 0; i < additionalUnderlesseeMortgagee.size(); i++) {
-            UnderlesseeMortgageeDetails underlesseeMortgageeDetails = additionalUnderlesseeMortgagee.get(i).getValue();
+        for (int i = 0; i < additionalUnderlesseeOrMortgagee.size(); i++) {
+            UnderlesseeMortgageeDetails underlesseeOrMortgagee = additionalUnderlesseeOrMortgagee.get(i).getValue();
             String sectionHint = "additional underlessee or mortgagee %d".formatted(i + 1);
             List<String> underlesseeMortgageeValidationErrors = validateUnderlesseeOrMortgageeAddress(
-                underlesseeMortgageeDetails, sectionHint);
+                underlesseeOrMortgagee, sectionHint);
 
             validationErrors.addAll(underlesseeMortgageeValidationErrors);
         }
@@ -39,11 +39,11 @@ public class UnderlesseeMortgageeValidator {
         return validationErrors;
     }
 
-    private List<String> validateUnderlesseeOrMortgageeAddress(UnderlesseeMortgageeDetails underlesseeMortgageeDetails,
+    private List<String> validateUnderlesseeOrMortgageeAddress(UnderlesseeMortgageeDetails underlesseeOrMortgagee,
                                                                String sectionHint) {
-        if (underlesseeMortgageeDetails.getUnderlesseeOrMortgageeAddressKnown() == VerticalYesNo.YES) {
+        if (underlesseeOrMortgagee.getUnderlesseeOrMortgageeAddressKnown() == VerticalYesNo.YES) {
             return addressValidator.validateAddressFields(
-                underlesseeMortgageeDetails.getUnderlesseeOrMortgageeAddress(),
+                underlesseeOrMortgagee.getUnderlesseeOrMortgageeAddress(),
                 sectionHint);
         }
         return Collections.emptyList();

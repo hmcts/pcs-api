@@ -18,7 +18,7 @@ import java.util.List;
 
 @Component
 @AllArgsConstructor
-public class UnderlesseeMortgageeDetailsPage implements CcdPageConfiguration {
+public class UnderlesseeOrMortgageeDetailsPage implements CcdPageConfiguration {
 
     private final UnderlesseeMortgageeValidator underlesseeMortgageeValidator;
 
@@ -28,7 +28,7 @@ public class UnderlesseeMortgageeDetailsPage implements CcdPageConfiguration {
             .page("underlesseeMortgageeDetails", this::midEvent)
             .pageLabel("Underlessee or mortgagee details")
             .showCondition("hasUnderlesseeOrMortgagee=\"YES\"")
-            .complex(PCSCase::getUnderlesseeMortgagee1)
+            .complex(PCSCase::getUnderlesseeOrMortgagee1)
                 .readonly(UnderlesseeMortgageeDetails::getUnderlesseeOrMortgageeNameLabel)
                 .mandatory(UnderlesseeMortgageeDetails::getUnderlesseeOrMortgageeNameKnown)
                 .mandatory(UnderlesseeMortgageeDetails::getUnderlesseeOrMortgageeName)
@@ -44,12 +44,12 @@ public class UnderlesseeMortgageeDetailsPage implements CcdPageConfiguration {
                         .mandatoryWithLabel(AddressUK::getPostCode, "Postcode")
                     .done()
             .done()
-            .label("underlesseeMortgagee-additional", """
+            .label("underlesseeMortgagee-add-additional", """
                 ---
                 <h2 class="govuk-heading-m">Additional underlessee or mortgagee?</h2>
                 """)
             .mandatory(PCSCase::getAddAdditionalUnderlesseeOrMortgagee)
-            .mandatory(PCSCase::getAdditionalUnderlesseeMortgagee,
+            .mandatory(PCSCase::getAdditionalUnderlesseeOrMortgagee,
                        "addAdditionalUnderlesseeOrMortgagee=\"YES\"");
     }
 
@@ -60,7 +60,7 @@ public class UnderlesseeMortgageeDetailsPage implements CcdPageConfiguration {
 
         boolean additionalUnderlesseeMortgagee = caseData.getAddAdditionalUnderlesseeOrMortgagee() == VerticalYesNo.YES;
 
-        UnderlesseeMortgageeDetails underlesseeMortgagee1 = caseData.getUnderlesseeMortgagee1();
+        UnderlesseeMortgageeDetails underlesseeMortgagee1 = caseData.getUnderlesseeOrMortgagee1();
         List<String> validationErrors =
             new ArrayList<>(underlesseeMortgageeValidator.validateUnderlesseeOrMortgagee1(
                                                                 underlesseeMortgagee1,
@@ -70,7 +70,7 @@ public class UnderlesseeMortgageeDetailsPage implements CcdPageConfiguration {
         if (additionalUnderlesseeMortgagee) {
             validationErrors
                 .addAll(underlesseeMortgageeValidator.validateAdditionalUnderlesseeOrMortgagee(
-                    caseData.getAdditionalUnderlesseeMortgagee()));
+                    caseData.getAdditionalUnderlesseeOrMortgagee()));
         }
 
         if (!validationErrors.isEmpty()) {

@@ -4,9 +4,9 @@ import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.domain.UnderlesseeMortgagee;
 import uk.gov.hmcts.reform.pcs.ccd.domain.UnderlesseeMortgageeDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.model.UnderlesseeMortgagee;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -18,50 +18,50 @@ import java.util.Objects;
 public class UnderlesseeMortgageeService {
 
     public List<UnderlesseeMortgagee> buildUnderlesseeMortgageeList(PCSCase pcsCase) {
-        Objects.requireNonNull(pcsCase.getUnderlesseeMortgagee1(),
+        Objects.requireNonNull(pcsCase.getUnderlesseeOrMortgagee1(),
                                "First underlessee or mortgagee must be provided");
 
-        List<UnderlesseeMortgagee> underlesseesMortgagees = new ArrayList<>();
+        List<UnderlesseeMortgagee> underlesseesOrMortgagees = new ArrayList<>();
 
-        UnderlesseeMortgagee underlesseeMortgagee1 = buildUnderlesseeMortgagee(pcsCase.getUnderlesseeMortgagee1());
-        underlesseesMortgagees.add(underlesseeMortgagee1);
+        UnderlesseeMortgagee underlesseeOrMortgagee1 = buildUnderlesseeMortgagee(pcsCase.getUnderlesseeOrMortgagee1());
+        underlesseesOrMortgagees.add(underlesseeOrMortgagee1);
 
         if (pcsCase.getAddAdditionalUnderlesseeOrMortgagee() == VerticalYesNo.YES) {
             List<UnderlesseeMortgagee> additionalUnderlesseeMortgagee
-                = buildAdditionalUnderlesseeMortgagee(pcsCase.getAdditionalUnderlesseeMortgagee());
-            underlesseesMortgagees.addAll(additionalUnderlesseeMortgagee);
+                = buildAdditionalUnderlesseeMortgagee(pcsCase.getAdditionalUnderlesseeOrMortgagee());
+            underlesseesOrMortgagees.addAll(additionalUnderlesseeMortgagee);
         }
 
-        return underlesseesMortgagees;
+        return underlesseesOrMortgagees;
     }
 
-    private UnderlesseeMortgagee buildUnderlesseeMortgagee(UnderlesseeMortgageeDetails underlesseeMortgagee1) {
-        UnderlesseeMortgagee underlesseeMortgagee = new UnderlesseeMortgagee();
+    private UnderlesseeMortgagee buildUnderlesseeMortgagee(UnderlesseeMortgageeDetails underlesseeOrMortgagee1) {
+        UnderlesseeMortgagee underlesseeOrMortgagee = new UnderlesseeMortgagee();
 
-        boolean nameKnown = underlesseeMortgagee1.getUnderlesseeOrMortgageeNameKnown().toBoolean();
-        underlesseeMortgagee.setUnderlesseeOrMortgageeNameKnown(nameKnown);
+        boolean nameKnown = underlesseeOrMortgagee1.getUnderlesseeOrMortgageeNameKnown().toBoolean();
+        underlesseeOrMortgagee.setUnderlesseeOrMortgageeNameKnown(nameKnown);
         if (nameKnown) {
-            underlesseeMortgagee.setUnderlesseeOrMortgageeName(underlesseeMortgagee1
+            underlesseeOrMortgagee.setUnderlesseeOrMortgageeName(underlesseeOrMortgagee1
                                                                    .getUnderlesseeOrMortgageeName());
         }
 
-        boolean addressKnown = underlesseeMortgagee1.getUnderlesseeOrMortgageeAddressKnown().toBoolean();
-        underlesseeMortgagee.setUnderlesseeOrMortgageeAddressKnown(addressKnown);
+        boolean addressKnown = underlesseeOrMortgagee1.getUnderlesseeOrMortgageeAddressKnown().toBoolean();
+        underlesseeOrMortgagee.setUnderlesseeOrMortgageeAddressKnown(addressKnown);
         if (addressKnown) {
-            underlesseeMortgagee.setUnderlesseeOrMortgageeAddress(underlesseeMortgagee1
+            underlesseeOrMortgagee.setUnderlesseeOrMortgageeAddress(underlesseeOrMortgagee1
                                                                       .getUnderlesseeOrMortgageeAddress());
         }
 
-        return underlesseeMortgagee;
+        return underlesseeOrMortgagee;
     }
 
     private List<UnderlesseeMortgagee> buildAdditionalUnderlesseeMortgagee(
-        List<ListValue<UnderlesseeMortgageeDetails>> additionalUnderlesseeMortgageeDetails) {
-        if (additionalUnderlesseeMortgageeDetails == null) {
+        List<ListValue<UnderlesseeMortgageeDetails>> additionalUnderlesseeOrMortgageeDetails) {
+        if (additionalUnderlesseeOrMortgageeDetails == null) {
             return Collections.emptyList();
         }
 
-        return additionalUnderlesseeMortgageeDetails.stream()
+        return additionalUnderlesseeOrMortgageeDetails.stream()
             .map(ListValue::getValue)
             .map(this::buildUnderlesseeMortgagee)
             .toList();

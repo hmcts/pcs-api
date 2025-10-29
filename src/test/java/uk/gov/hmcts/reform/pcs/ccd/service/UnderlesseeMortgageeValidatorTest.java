@@ -31,36 +31,38 @@ class UnderlesseeMortgageeValidatorTest {
     }
 
     @Test
-    void shouldValidateDefendant1AddressWithNoSectionHintWhenSingleDefendant() {
+    void shouldValidateUnderlesseeOrMortgagee1AddressWithNoSectionHintWhenSingle() {
         // Given
         AddressUK correspondenceAddress = mock(AddressUK.class);
-        UnderlesseeMortgageeDetails underlesseeMortgagee1 = buildUnderlesseeMortgageeDetails(correspondenceAddress);
+        UnderlesseeMortgageeDetails underlesseeOrMortgagee1 = buildUnderlesseeMortgageeDetails(correspondenceAddress);
 
         List<String> expectedValidationErrors = List.of("some error 1", "some error 2");
         when(addressValidator.validateAddressFields(correspondenceAddress, ""))
             .thenReturn(expectedValidationErrors);
 
         // When
-        List<String> actualValidationErrors = underTest.validateUnderlesseeOrMortgagee1(underlesseeMortgagee1,
-                                                                                        false);
+        List<String> actualValidationErrors = underTest.validateUnderlesseeOrMortgagee1(
+            underlesseeOrMortgagee1,
+            false);
 
         // Then
         assertThat(actualValidationErrors).isEqualTo(expectedValidationErrors);
     }
 
     @Test
-    void shouldValidateUnderlesseeMortgagee1AddressWithSectionHintWhenMultiple() {
+    void shouldValidateUnderlesseeOrMortgagee1AddressWithSectionHintWhenMultiple() {
         // Given
         AddressUK correspondenceAddress = mock(AddressUK.class);
-        UnderlesseeMortgageeDetails underlesseeMortgagee1 = buildUnderlesseeMortgageeDetails(correspondenceAddress);
+        UnderlesseeMortgageeDetails underlesseeOrMortgagee1 = buildUnderlesseeMortgageeDetails(correspondenceAddress);
 
         List<String> expectedValidationErrors = List.of("some error 1", "some error 2");
         when(addressValidator.validateAddressFields(correspondenceAddress, "Underlessee or mortgagee 1"))
             .thenReturn(expectedValidationErrors);
 
         // When
-        List<String> actualValidationErrors = underTest.validateUnderlesseeOrMortgagee1(underlesseeMortgagee1,
-                                                                                        true);
+        List<String> actualValidationErrors = underTest.validateUnderlesseeOrMortgagee1(
+            underlesseeOrMortgagee1,
+            true);
 
         // Then
         assertThat(actualValidationErrors).isEqualTo(expectedValidationErrors);
@@ -76,7 +78,7 @@ class UnderlesseeMortgageeValidatorTest {
         AddressUK additionalMortgageeAddress = mock(AddressUK.class);
         UnderlesseeMortgageeDetails additionalMortgagee = buildUnderlesseeMortgageeDetails(additionalMortgageeAddress);
 
-        List<ListValue<UnderlesseeMortgageeDetails>> additionalUnderlesseeMortgagee = wrapListItems(List.of(
+        List<ListValue<UnderlesseeMortgageeDetails>> additionalUnderlesseeOrMortgagee = wrapListItems(List.of(
             additionalUnderlessee,
             additionalMortgagee
         ));
@@ -95,7 +97,7 @@ class UnderlesseeMortgageeValidatorTest {
 
         // When
         List<String> actualValidationErrors =
-            underTest.validateAdditionalUnderlesseeOrMortgagee(additionalUnderlesseeMortgagee);
+            underTest.validateAdditionalUnderlesseeOrMortgagee(additionalUnderlesseeOrMortgagee);
 
         // Then
         assertThat(actualValidationErrors).containsExactly(errorMessage1, errorMessage2, errorMessage3);
