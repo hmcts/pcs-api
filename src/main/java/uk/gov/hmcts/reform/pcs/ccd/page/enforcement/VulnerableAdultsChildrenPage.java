@@ -20,12 +20,12 @@ import static uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.VulnerableAdultsChi
 
 @AllArgsConstructor
 @Component
-public class EvictionVulnerableAdultsChildrenPage implements CcdPageConfiguration {
+public class VulnerableAdultsChildrenPage implements CcdPageConfiguration {
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
-            .page("evictionVulnerableAdultsChildrenPage", this::midEvent)
+            .page("vulnerableAdultsChildrenPage", this::midEvent)
             .pageLabel("Vulnerable adults and children at the property")
             .showCondition("anyRiskToBailiff=\"NO\" OR anyRiskToBailiff=\"NOT_SURE\"")
             .label("evictionVulnerableAdultsChildrenPage-line-separator", "---")
@@ -49,7 +49,7 @@ public class EvictionVulnerableAdultsChildrenPage implements CcdPageConfiguratio
             .mandatory(VulnerableAdultsChildren::getVulnerableReasonText,
                     "vulnerablePeopleYesNo=\"YES\" AND (vulnerableCategory=\"VULNERABLE_ADULTS\" OR vulnerableCategory=\"VULNERABLE_CHILDREN\" OR vulnerableCategory=\"VULNERABLE_ADULTS_AND_CHILDREN\")")
             .done()
-            .label("evictionVulnerableAdultsChildren-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
+            .label("vulnerableAdultsChildren-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
 
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,

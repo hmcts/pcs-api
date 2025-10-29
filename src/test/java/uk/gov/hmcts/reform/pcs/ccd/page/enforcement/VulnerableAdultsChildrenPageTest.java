@@ -14,13 +14,13 @@ import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
 import static org.assertj.core.api.Assertions.assertThat;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.VulnerableAdultsChildren.VULNERABLE_REASON_TEXT_LIMIT;
 
-class EvictionVulnerableAdultsChildrenPageTest extends BasePageTest {
+class VulnerableAdultsChildrenPageTest extends BasePageTest {
 
-    private EvictionVulnerableAdultsChildrenPage page;
+    private VulnerableAdultsChildrenPage page;
 
     @BeforeEach
     void setUp() {
-        page = new EvictionVulnerableAdultsChildrenPage();
+        page = new VulnerableAdultsChildrenPage();
         setPageUnderTest(page);
     }
 
