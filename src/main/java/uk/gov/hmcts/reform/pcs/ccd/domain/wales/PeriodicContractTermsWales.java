@@ -9,7 +9,7 @@ import static uk.gov.hmcts.ccd.sdk.type.FieldType.TextArea;
 
 @Data
 @Builder
-public class WalesPeriodicContractTerms {
+public class PeriodicContractTermsWales {
 
     @CCD(
         label = "Have you and the contract holder agreed terms of the periodic standard contract "

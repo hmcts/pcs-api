@@ -20,7 +20,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.wales.MandatoryGroundWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceTypeWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractDiscretionaryGroundsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractMandatoryGroundsWales;
-import uk.gov.hmcts.reform.pcs.ccd.domain.wales.WalesPeriodicContractTerms;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.PeriodicContractTermsWales;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
@@ -297,7 +297,7 @@ public class PCSCase {
     private String prohibitedConductWalesWhyMakingClaim;
 
     @CCD
-    private WalesPeriodicContractTerms walesPeriodicContractTerms;
+    private PeriodicContractTermsWales periodicContractTermsWales;
 
     @CCD(
         label = "How much is the rent?",

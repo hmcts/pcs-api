@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.ccd.domain;
+package uk.gov.hmcts.reform.pcs.ccd.domain.wales;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class ProhibitedConduct {
+public class ProhibitedConductWales {
 
     private String claimForProhibitedConductContract;
     private String agreedTermsOfPeriodicContract;
@@ -19,3 +19,4 @@ public class ProhibitedConduct {
     private String whyMakingClaim;
 
 }
+
