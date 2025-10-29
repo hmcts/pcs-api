@@ -22,8 +22,8 @@ public class SecureContractGroundsForPossessionWales implements CcdPageConfigura
                 .page("secureOrFlexibleGroundsForPossessionWales", this::midEvent)
                 .pageLabel("What are your grounds for possession?")
                 .showCondition(
-                    "occupationLicenceTypeWales=\"SECURE_CONTRACT\""
-                            + " AND legislativeCountry=\"Wales\""
+                        "occupationLicenceTypeWales=\"SECURE_CONTRACT\""
+                        + " AND legislativeCountry=\"Wales\""
                 )
                 .label("secureOrFlexibleGroundsForPossessionWales-info", """
                ---
@@ -84,7 +84,7 @@ public class SecureContractGroundsForPossessionWales implements CcdPageConfigura
                 && discretionaryGrounds.contains(SecureContractDiscretionaryGroundsWales.OTHER_BREACH_OF_CONTRACT);
         boolean hasEstateManagement = discretionaryGrounds != null
                 && discretionaryGrounds.contains(SecureContractDiscretionaryGroundsWales.ESTATE_MANAGEMENT_GROUNDS);
-        boolean hasMandatoryGrounds = mandatoryGrounds != null && !mandatoryGrounds.isEmpty();;
+        boolean hasMandatoryGrounds = mandatoryGrounds != null && !mandatoryGrounds.isEmpty();
 
         // Determine if there are "other options" (anything that's not rent arrears or ASB)
         boolean hasOtherOptions = hasOtherBreach || hasEstateManagement || hasMandatoryGrounds;
