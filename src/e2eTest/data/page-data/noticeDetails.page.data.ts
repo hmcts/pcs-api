@@ -8,7 +8,7 @@ export const noticeDetails = {
   nameOfPersonDocumentWasLeftLabel: 'Name of person the document was left with (Optional)',
   byPersonallyHandlingExplanationInput: 'Test Handle',
   byEmail: 'By email',
-  explainHowServedByEmailLabel:'Explain how it was served by email. You can enter up to 250 characters (Optional)',
+  explainHowServedByEmailLabel:'Explain how it was served by email (Optional)',
   byEmailExplanationInput: 'Test Email',
   byOtherElectronicMethod: 'By other electronic method',
   other: 'Other',

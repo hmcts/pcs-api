@@ -17,6 +17,12 @@ import {home} from '@data/page-data/home.page.data';
 import {whatAreYourGroundsForPossessionWales} from '@data/page-data/whatAreYourGroundsForPossessionWales.page.data';
 import {prohibitedConductStandardContractWales} from '@data/page-data/prohibitedConductStandardContractWales.page.data';
 import {dailyRentAmount} from '@data/page-data/dailyRentAmount.page.data';
+import {rentDetails} from '@data/page-data/rentDetails.page.data';
+import {detailsOfRentArrears} from '@data/page-data/detailsOfRentArrears.page.data';
+import {moneyJudgment} from '@data/page-data/moneyJudgment.page.data';
+import {claimantCircumstances} from '@data/page-data/claimantCircumstances.page.data';
+import {defendantCircumstances} from '@data/page-data/defendantCircumstances.page.data';
+import {alternativesToPossession} from '@data/page-data/alternativesToPossession.page.data';
 
 test.beforeEach(async ({page}) => {
   initializeExecutor(page);
