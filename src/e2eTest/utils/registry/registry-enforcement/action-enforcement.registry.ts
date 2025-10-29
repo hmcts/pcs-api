@@ -35,6 +35,8 @@ export class ActionEnforcementRegistry {
     ['provideDetailsViolentOrAggressiveBehaviour', new EnforcementAction()],
     ['provideDetailsHistoryOfFireArmPossession', new EnforcementAction()],
     ['provideDetailsHistoryOfCriminalAntisocialBehavior', new EnforcementAction()],
+    ['provideDetailsVerbalOrWrittenThreats', new EnforcementAction()],
+    ['provideDetailsWhichGroup', new EnforcementAction()],
   ]);
 
   static getAction(actionName: string): IAction {

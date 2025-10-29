@@ -9,6 +9,8 @@ import { everyoneLivingAtTheProperty } from "@data/page-data/page-data-enforceme
 import { violentOrAggressiveBehaviour } from "@data/page-data/page-data-enforcement/violentAndAggressiveBehaviour.page.data";
 import { historyOfFirearmPossession } from "@data/page-data/page-data-enforcement/historyOfFirearmPossession.page.data";
 import { criminalOrAntisocialBehaviour } from "@data/page-data/page-data-enforcement/criminalOrAntisocialBehaviour.page.data";
+import { verbalOrWrittenThreats } from "@data/page-data/page-data-enforcement/verbalOrWrittenThreats.page.data";
+import { groupProtestsEviction } from "@data/page-data/page-data-enforcement/memberOfGroupProtestsEviction.page.data";
 
 export class EnforcementAction implements IAction {
   async execute(page: Page, action: string, fieldName: string | actionRecord, data?: actionData): Promise<void> {
@@ -20,6 +22,8 @@ export class EnforcementAction implements IAction {
       ['provideDetailsViolentOrAggressiveBehaviour', () => this.provideDetailsViolentOrAggressiveBehaviour(fieldName as actionRecord)],
       ['provideDetailsHistoryOfFireArmPossession', () => this.provideDetailsHistoryOfFireArmPossession(fieldName as actionRecord)],
       ['provideDetailsHistoryOfCriminalAntisocialBehavior', () => this.provideDetailsHistoryOfCriminalAntisocialBehavior(fieldName as actionRecord)],
+      ['provideDetailsVerbalOrWrittenThreats', () => this.provideDetailsVerbalOrWrittenThreats(fieldName as actionRecord)],
+      ['provideDetailsWhichGroup', () => this.provideDetailsWhichGroup(fieldName as actionRecord)],
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) throw new Error(`No action found for '${action}'`);
@@ -75,6 +79,14 @@ export class EnforcementAction implements IAction {
         await performAction('provideDetailsHistoryOfCriminalAntisocialBehavior', { label: criminalOrAntisocialBehaviour.whatIsTheirHistoryOfCriminalAntisocialBehaviour, input: criminalOrAntisocialBehaviour.whatIsTheirHistoryOfCriminalAntisocialBehaviourInput });
         await performAction('clickButton', criminalOrAntisocialBehaviour.continue);
         break;
+      case riskPosedByEveryoneAtProperty.verbalOrWrittenThreats:
+        await performAction('provideDetailsVerbalOrWrittenThreats', { label: verbalOrWrittenThreats.verbalOrWrittenThreatsMade, input: verbalOrWrittenThreats.verbalOrWrittenThreatsMadeInput });
+        await performAction('clickButton', verbalOrWrittenThreats.continue);
+        break;
+      case riskPosedByEveryoneAtProperty.protestGroup:
+        await performAction('provideDetailsWhichGroup', { label: groupProtestsEviction.whichGroupMember, input: groupProtestsEviction.whichGroupMemberInput });
+        await performAction('clickButton', groupProtestsEviction.continue);
+        break;
       default:
         throw new Error(`The page ${risk} is unknown`);
     }
@@ -96,5 +108,17 @@ export class EnforcementAction implements IAction {
     await performValidation('mainHeader', criminalOrAntisocialBehaviour.mainHeader);
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + enforcementTestCaseNumber });
     await performAction('inputText', criminalAntisocialBehaviour.label, criminalAntisocialBehaviour.input);
+  }
+
+  private async provideDetailsVerbalOrWrittenThreats(verbalWritten: actionRecord) {
+    await performValidation('mainHeader', verbalOrWrittenThreats.mainHeader);
+    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + enforcementTestCaseNumber });
+    await performAction('inputText', verbalWritten.label, verbalWritten.input);
+  }
+
+  private async provideDetailsWhichGroup(protestGroup: actionRecord) {
+    await performValidation('mainHeader', verbalOrWrittenThreats.mainHeader);
+    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + enforcementTestCaseNumber });
+    await performAction('inputText', protestGroup.label, protestGroup.input);
   }
 }
