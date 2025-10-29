@@ -1,5 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.service;
 
+import lombok.AllArgsConstructor;
+import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantDetails;
@@ -13,7 +15,10 @@ import java.util.List;
 import java.util.Objects;
 
 @Service
+@AllArgsConstructor
 public class DefendantService {
+
+    private ModelMapper modelMapper;
 
     public List<Defendant> buildDefendantsList(PCSCase pcsCase) {
         Objects.requireNonNull(pcsCase.getDefendant1(), "Defendant 1 must be provided");
@@ -29,6 +34,16 @@ public class DefendantService {
         }
 
         return defendants;
+    }
+
+    public List<DefendantDetails> mapToDefendantDetails(List<Defendant> defendantList) {
+        if (defendantList == null) {
+            return Collections.emptyList();
+        }
+
+        return defendantList.stream()
+            .map(defendant -> modelMapper.map(defendant, DefendantDetails.class))
+            .toList();
     }
 
     private Defendant buildDefendant(DefendantDetails defendantDetails) {
