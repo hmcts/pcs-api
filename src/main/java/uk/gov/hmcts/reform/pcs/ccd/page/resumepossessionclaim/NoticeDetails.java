@@ -130,7 +130,7 @@ public class NoticeDetails implements CcdPageConfiguration {
             ),
             TextAreaValidationService.FieldValidation.of(
                 caseData.getNoticeOtherExplanation(),
-                "Explain what the other means were. You can enter up to 250 characters",
+                "Explain what the other means were",
                 TextAreaValidationService.SHORT_TEXT_LIMIT
             )
         ));

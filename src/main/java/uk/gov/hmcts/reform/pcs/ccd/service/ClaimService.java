@@ -95,7 +95,6 @@ public class ClaimService {
     }
 
     private ProhibitedConduct buildProhibitedConduct(PCSCase pcsCase) {
-        // Only build prohibited conduct data if the user is claiming for prohibited conduct contract
         if (pcsCase.getProhibitedConductWalesClaim() == null) {
             return null;
         }

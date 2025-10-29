@@ -309,7 +309,7 @@ public class SecureOrFlexibleGroundsForPossessionReasons implements CcdPageConfi
             validationErrors.addAll(textAreaValidationService.validateMultipleTextAreas(
                 TextAreaValidationService.FieldValidation.of(
                     secureOrFlexibleGrounds.getBreachOfTenancyGround(),
-                    SecureOrFlexibleDiscretionaryGrounds.RENT_ARREARS_OR_BREACH_OF_TENANCY.getLabel(),
+                    "Breach of the tenancy (ground 1)",
                     TextAreaValidationService.MEDIUM_TEXT_LIMIT
                 ),
                 TextAreaValidationService.FieldValidation.of(

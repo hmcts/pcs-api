@@ -39,7 +39,6 @@ class ProhibitedConductWalesPageTest extends BasePageTest {
 
     @BeforeEach
     void setUp() {
-        // Mock the textAreaValidationService to return empty validation response
         lenient().when(textAreaValidationService.createValidationResponse(any(), any()))
             .thenAnswer(invocation -> {
                 PCSCase caseData = invocation.getArgument(0);
@@ -57,8 +56,6 @@ class ProhibitedConductWalesPageTest extends BasePageTest {
     @Test
     @DisplayName("Should create page configuration successfully")
     void shouldCreatePageConfigurationSuccessfully() {
-        // When & Then - Just verify the page configuration is created without errors
-        // Since there's no complex mid event handler, we just test that the page can be instantiated
         assertThat(pageUnderTest).isNotNull();
         assertThat(pageUnderTest).isInstanceOf(ProhibitedConductWalesPage.class);
     }
@@ -233,7 +230,6 @@ class ProhibitedConductWalesPageTest extends BasePageTest {
             .data(caseData)
             .build();
 
-        // Mock the validation service to add errors to the list
         doAnswer(invocation -> {
             List<String> errors = invocation.getArgument(3);
             errors.add("In '" + invocation.getArgument(1) + "', you have entered more than the maximum number of "
@@ -296,8 +292,8 @@ class ProhibitedConductWalesPageTest extends BasePageTest {
             .prohibitedConductWalesClaim(VerticalYesNo.YES)
             .prohibitedConductWalesWhyMakingClaim(longText)
             .prohibitedConductWalesWrappedQuestion(ProhibitedConductWalesWrappedQuestion.builder()
-                .agreedTermsOfPeriodicContract(VerticalYesNo.NO) // User disagrees on terms
-                .detailsOfTerms(longText) // This should NOT be validated
+                .agreedTermsOfPeriodicContract(VerticalYesNo.NO)
+                .detailsOfTerms(longText) 
                 .build())
             .build();
 
@@ -305,7 +301,6 @@ class ProhibitedConductWalesPageTest extends BasePageTest {
             .data(caseData)
             .build();
 
-        // Mock the validation service to add errors to the list
         doAnswer(invocation -> {
             List<String> errors = invocation.getArgument(3);
             errors.add("In '" + invocation.getArgument(1) + "', you have entered more than the maximum number of "
@@ -342,9 +337,7 @@ class ProhibitedConductWalesPageTest extends BasePageTest {
         CaseDetails<PCSCase, State> caseDetails = CaseDetails.<PCSCase, State>builder()
             .data(caseData)
             .build();
-
-        // Don't mock validateTextArea to add errors - let it validate normally
-
+        
         // When
         AboutToStartOrSubmitResponse<PCSCase, State> response = pageUnderTest.midEvent(caseDetails, caseDetails);
 
