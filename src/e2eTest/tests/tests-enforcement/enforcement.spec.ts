@@ -37,6 +37,8 @@ test.describe('[Enforcement - Warrant of Possession] @Master @nightly', async ()
     await performAction('selectPoseRiskToBailiff', { question: everyoneLivingAtTheProperty.riskToBailiffQuestion, option: everyoneLivingAtTheProperty.yes });
     await performValidation('mainHeader', riskPosedByEveryoneAtProperty.mainHeader);
     await performAction('selectRiskTypesPosedToBailiff', { riskTypes: [riskPosedByEveryoneAtProperty.violentOrAggressiveBehaviour, riskPosedByEveryoneAtProperty.historyOfFirearmPossession, riskPosedByEveryoneAtProperty.criminalOrAntisocialBehaviour] });
+    await performValidation('mainHeader', vulnerableAdultsAndChildren.mainHeader);
+    await performAction('clickButton', vulnerableAdultsAndChildren.continue);
   });
 
   test('Apply for a Warrant of Possession - risk to Bailiff [No]', async () => {
@@ -49,7 +51,6 @@ test.describe('[Enforcement - Warrant of Possession] @Master @nightly', async ()
     await performAction('selectPoseRiskToBailiff', { question: everyoneLivingAtTheProperty.riskToBailiffQuestion, option: everyoneLivingAtTheProperty.no });
     await performValidation('mainHeader', vulnerableAdultsAndChildren.mainHeader);
     await performAction('clickButton', vulnerableAdultsAndChildren.continue);
-    await performAction('selectRiskTypesPosedToBailiff', { riskTypes: [riskPosedByEveryoneAtProperty.historyOfFirearmPossession, riskPosedByEveryoneAtProperty.criminalOrAntisocialBehaviour] });
   });
 
   test('Apply for a Warrant of Possession - risk to Bailiff [Not sure]', async () => {
@@ -64,6 +65,5 @@ test.describe('[Enforcement - Warrant of Possession] @Master @nightly', async ()
     await performAction('clickButton', evictionCouldBeDelayed.continue);
     await performValidation('mainHeader', vulnerableAdultsAndChildren.mainHeader);
     await performAction('clickButton', vulnerableAdultsAndChildren.continue);
-    await performAction('selectRiskTypesPosedToBailiff', { riskTypes: riskPosedByEveryoneAtProperty.violentOrAggressiveBehaviour });
   });
 });

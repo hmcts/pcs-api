@@ -48,15 +48,13 @@ export class EnforcementAction implements IAction {
 
   private async selectRiskTypesPosedToBailiff(riskCategory: actionRecord) {
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + enforcementTestCaseNumber });
+    await performAction('check', riskCategory.riskTypes);
+    await performAction('clickButton', riskPosedByEveryoneAtProperty.continue);
     if (Array.isArray(riskCategory.riskTypes)) {
-      await performAction('check', riskCategory.riskTypes);
-      await performAction('clickButton', riskPosedByEveryoneAtProperty.continue);
       for await (const category of riskCategory.riskTypes) {
         await this.provideRiskCategoryDetails(category);
       }
     } else {
-      await performAction('check', riskCategory.riskTypes);
-      await performAction('clickButton', riskPosedByEveryoneAtProperty.continue);
       await this.provideRiskCategoryDetails(riskCategory.riskTypes as string);
     }
   }
@@ -76,7 +74,7 @@ export class EnforcementAction implements IAction {
         await performAction('clickButton', criminalOrAntisocialBehaviour.continue);
         break;
       default:
-        throw new Error(`The page ${risk} is unknown`);
+        throw new Error(`The risk type ${risk} is unknown`);
     }
   };
 
