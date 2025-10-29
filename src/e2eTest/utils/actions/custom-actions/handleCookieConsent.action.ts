@@ -28,8 +28,8 @@ export class handleCookieConsentAction implements IAction {
         return;
       }
       try {
-        await consentBanner.waitFor({ state: 'attached', timeout: 5000 });
-        await acceptBtn.click({ timeout: 5000 });
+        await consentBanner.waitFor({ state: 'attached', timeout: SHORT_TIMEOUT });
+        await acceptBtn.click({ timeout: SHORT_TIMEOUT });
         await consentBanner.waitFor({ state: 'hidden', timeout: SHORT_TIMEOUT });
         if (successBanner && hideBtn) {
           await successBanner.waitFor({ state: 'visible', timeout: SHORT_TIMEOUT });

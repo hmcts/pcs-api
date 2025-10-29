@@ -131,6 +131,7 @@ Playwright 1.30+ | TypeScript 4.9+
 | getAccessToken                           | `performAction('getAccessToken')`                                                                                                                                                                          |
 | signOut                                  | `performAction('signOut')`                                                                                                                                                                                 |
 | clickButtonAndWaitForElement             | `performAction('clickButtonAndWaitForElement', 'Sign out', home.mainHeader)`                                                                                                                               |
+| provideMoreDetailsOfClaim                | `performAction('provideMoreDetailsOfClaim')`                                                                                                                                                               |
 ### Validations
 | Validation                 | Example Usage                                                                                                                        |
 |----------------------------|--------------------------------------------------------------------------------------------------------------------------------------|
