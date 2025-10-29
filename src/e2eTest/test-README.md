@@ -66,7 +66,6 @@ Playwright 1.30+ | TypeScript 4.9+
 ## 4. Available Actions and Validations
 
 ### Actions
-=======
 | Action                                      | Example Usage                                                                                                                                                                                              |
 |---------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | inputText                                   | `performAction('inputText', 'Email', 'test@example.com')`                                                                                                                                                  |
@@ -129,6 +128,8 @@ Playwright 1.30+ | TypeScript 4.9+
 | enterReasonForSuspensionAndDemotionOrder    | `performAction('enterReasonForSuspensionAndDemotionOrder', suspension)`                                                                                                                                    |
 | selectUnderlesseeOrMortgageeEntitledToClaim | `performAction('selectUnderlesseeOrMortgageeEntitledToClaim','Yes')`                                                                                                                                       |
 | selectUnderlesseeOrMortgageeDetails         | `performAction('selectUnderlesseeOrMortgageeDetails', { nameOption: 'Yes', addressOption: 'Yes', anotherUnderlesseeOrMortgageeOption: 'Yes'})`                                                             |
+| signOut                                     | `performAction('signOut')`                                                                                                                                                                                 |
+| clickButtonAndWaitForElement                | `performAction('clickButtonAndWaitForElement', 'Sign out', home.mainHeader)`                                                                                                                               |
 ### Validations
 | Validation                 | Example Usage                                                                                                                        |
 |----------------------------|--------------------------------------------------------------------------------------------------------------------------------------|
