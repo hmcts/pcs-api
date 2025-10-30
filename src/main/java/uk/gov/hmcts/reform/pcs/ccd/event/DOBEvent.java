@@ -12,8 +12,10 @@ import uk.gov.hmcts.ccd.sdk.api.Permission;
 import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
+import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantsDOBConcept;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.DefendantsDOBConceptPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.DefendantsDOBPage;
 
 import static uk.gov.hmcts.reform.pcs.ccd.domain.State.AWAITING_SUBMISSION_TO_HMCTS;
@@ -26,7 +28,11 @@ import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.dobEvent;
 @AllArgsConstructor
 public class DOBEvent implements CCDConfig<PCSCase, State, UserRole> {
 
+    //Attempt 1 - String interpolation and read only fields
     private final DefendantsDOBPage defendantsDOBPage;
+    //Attempt 2 - Prepopulated ui.
+    private final DefendantsDOBConceptPage defendantsDOBConceptsPage;
+
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -37,7 +43,9 @@ public class DOBEvent implements CCDConfig<PCSCase, State, UserRole> {
                 .name("Date of birth event")
                 .grant(Permission.CRUD, UserRole.PCS_SOLICITOR);
 
-                new PageBuilder(eventBuilder).add(defendantsDOBPage);
+        new PageBuilder(eventBuilder)
+//            .add(defendantsDOBPage)
+            .add(defendantsDOBConceptsPage);
     }
 
     private PCSCase start(EventPayload<PCSCase, State> eventPayload) {
@@ -46,6 +54,7 @@ public class DOBEvent implements CCDConfig<PCSCase, State, UserRole> {
     }
 
     private SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {
+        PCSCase pcsCase = eventPayload.caseData();
         return SubmitResponse.defaultResponse();
     }
 }

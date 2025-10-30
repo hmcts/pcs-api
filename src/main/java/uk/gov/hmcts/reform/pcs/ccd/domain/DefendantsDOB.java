@@ -19,7 +19,7 @@ public class DefendantsDOB {
 
     @CCD(label = """
                 ---
-                ${firstName}""", typeOverride = FieldType.Label)
+                ${DefendantsDOB.firstName}""", typeOverride = FieldType.Label)
     private String firstNameLabel;
 
     private String firstName;

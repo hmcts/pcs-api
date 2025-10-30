@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantsDOB;
+import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantsDOBConcept;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.model.Defendant;
@@ -35,6 +36,30 @@ public class DefendantService {
         }
 
         return defendants;
+    }
+
+    public DefendantsDOBConcept mapToDefendantDOBConcept(List<Defendant> defendantList) {
+        DefendantsDOBConcept defendantsDOBConcept = new DefendantsDOBConcept();
+
+        if (defendantList == null) {
+            return defendantsDOBConcept;
+        }
+
+        defendantsDOBConcept.setFirstName1(safeFirstName(0, defendantList));
+        defendantsDOBConcept.setFirstName2(safeFirstName(1, defendantList));
+        defendantsDOBConcept.setFirstName3(safeFirstName(2, defendantList));
+        defendantsDOBConcept.setFirstName4(safeFirstName(3, defendantList));
+        defendantsDOBConcept.setFirstName5(safeFirstName(4, defendantList));
+
+        return defendantsDOBConcept;
+    }
+
+    private String safeFirstName(int i, List<Defendant> defendantList) {
+        if (i > defendantList.size() - 1) {
+            return "999";
+        } else {
+            return Objects.requireNonNullElse(defendantList.get(i).getFirstName(), "999");
+        }
     }
 
     public List<DefendantDetails> mapToDefendantDetails(List<Defendant> defendantList) {
