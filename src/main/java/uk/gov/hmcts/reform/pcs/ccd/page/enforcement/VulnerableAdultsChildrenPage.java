@@ -20,8 +20,6 @@ import java.util.List;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.VulnerableAdultsChildren.VULNERABLE_REASON_LABEL;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.VulnerableAdultsChildren.VULNERABLE_REASON_TEXT_LIMIT;
 
-@AllArgsConstructor
-@Component
 public class VulnerableAdultsChildrenPage implements CcdPageConfiguration {
 
     @Override
