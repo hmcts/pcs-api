@@ -54,13 +54,12 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p ccd-report
-          npx -q @hmcts/ccd-diff build/master build/branch > ccd-report/ccd-diff-report.md
-          npx -q marked -i ccd-report/ccd-diff-report.md -o ccd-report/ccd-diff-report.html
+          npx -q @hmcts/ccd-diff build/master build/branch > ccd-report/ccd-diff-report.html
           SUMMARY_FILE="ccd-report/ccd-comment-summary.md"
           MAX_CHARS=65000
-          MARKDOWN_FILE="ccd-report/ccd-diff-report.md"
-          TOTAL_CHARS=$(wc -c < "$MARKDOWN_FILE")
-          head -c $MAX_CHARS "$MARKDOWN_FILE" > "$SUMMARY_FILE"
+          REPORT_FILE="ccd-report/ccd-diff-report.html"
+          TOTAL_CHARS=$(wc -c < "$REPORT_FILE")
+          head -c $MAX_CHARS "$REPORT_FILE" > "$SUMMARY_FILE"
           if [ "$TOTAL_CHARS" -gt "$MAX_CHARS" ]; then
             printf '\n\n…(truncated)…\n' >> "$SUMMARY_FILE"
           else
@@ -68,17 +67,14 @@ jobs:
           fi
           {
             echo "report-dir=ccd-report"
-            echo "markdown-path=ccd-report/ccd-diff-report.md"
-            echo "html-path=ccd-report/ccd-diff-report.html"
+            echo "report-path=$REPORT_FILE"
             echo "summary-path=$SUMMARY_FILE"
           } >> "$GITHUB_OUTPUT"
       - name: Upload HTML report
         uses: actions/upload-artifact@v4
         with:
           name: ccd-diff-report-${{ github.run_id }}
-          path: |
-            ${{ steps.ccd-diff.outputs.markdown-path }}
-            ${{ steps.ccd-diff.outputs.html-path }}
+          path: ${{ steps.ccd-diff.outputs.report-path }}
       - name: Add report
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
