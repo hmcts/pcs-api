@@ -9,7 +9,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.model.UnderlesseeMortgagee;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
@@ -58,7 +57,7 @@ public class UnderlesseeMortgageeService {
     private List<UnderlesseeMortgagee> buildAdditionalUnderlesseeMortgagee(
         List<ListValue<UnderlesseeMortgageeDetails>> additionalUnderlesseeOrMortgageeDetails) {
         if (additionalUnderlesseeOrMortgageeDetails == null) {
-            return Collections.emptyList();
+            return new ArrayList<>();
         }
 
         return additionalUnderlesseeOrMortgageeDetails.stream()

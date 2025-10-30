@@ -7,7 +7,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.UnderlesseeMortgageeDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 @Service
@@ -46,7 +45,7 @@ public class UnderlesseeMortgageeValidator {
                 underlesseeOrMortgagee.getUnderlesseeOrMortgageeAddress(),
                 sectionHint);
         }
-        return Collections.emptyList();
+        return new ArrayList<>();
     }
 
 }
