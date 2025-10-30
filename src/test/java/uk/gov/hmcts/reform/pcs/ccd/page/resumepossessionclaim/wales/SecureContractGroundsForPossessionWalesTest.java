@@ -116,7 +116,6 @@ public class SecureContractGroundsForPossessionWalesTest extends BasePageTest {
             Set<SecureContractDiscretionaryGroundsWales> discretionaryGrounds,
             Set<EstateManagementGroundsWales> estateManagementGrounds,
             Set<SecureContractMandatoryGroundsWales> mandatoryGrounds,
-            YesOrNo expectedShowPreActionProtocolPage,
             YesOrNo expectedShowASBQuestionsPage,
             YesOrNo expectedShowReasonsForGroundsPage) {
 
@@ -132,19 +131,17 @@ public class SecureContractGroundsForPossessionWalesTest extends BasePageTest {
 
         // Then
         PCSCase updatedCaseData = response.getData();
-        assertThat(updatedCaseData.getShowPreActionProtocolPageWales()).isEqualTo(expectedShowPreActionProtocolPage);
         assertThat(updatedCaseData.getShowASBQuestionsPageWales()).isEqualTo(expectedShowASBQuestionsPage);
         assertThat(updatedCaseData.getShowReasonsForGroundsPageWales()).isEqualTo(expectedShowReasonsForGroundsPage);
     }
 
     private static Stream<Arguments> routingScenarios() {
         return Stream.of(
-                // Only rent arrears - show pre-action protocol page
+                // Only rent arrears - go to pre-action protocol page
                 arguments(
                         Set.of(SecureContractDiscretionaryGroundsWales.RENT_ARREARS),
                         Set.of(),
                         Set.of(),
-                        YesOrNo.YES,
                         YesOrNo.NO,
                         YesOrNo.NO
                 ),
@@ -153,7 +150,6 @@ public class SecureContractGroundsForPossessionWalesTest extends BasePageTest {
                         Set.of(SecureContractDiscretionaryGroundsWales.ANTISOCIAL_BEHAVIOUR),
                         Set.of(),
                         Set.of(),
-                        YesOrNo.NO,
                         YesOrNo.YES,
                         YesOrNo.NO
                 ),
@@ -165,7 +161,6 @@ public class SecureContractGroundsForPossessionWalesTest extends BasePageTest {
                         ),
                         Set.of(),
                         Set.of(),
-                        YesOrNo.NO,
                         YesOrNo.YES,
                         YesOrNo.NO
                 ),
@@ -174,7 +169,6 @@ public class SecureContractGroundsForPossessionWalesTest extends BasePageTest {
                         Set.of(SecureContractDiscretionaryGroundsWales.OTHER_BREACH_OF_CONTRACT),
                         Set.of(),
                         Set.of(),
-                        YesOrNo.NO,
                         YesOrNo.NO,
                         YesOrNo.YES
                 ),
@@ -187,7 +181,6 @@ public class SecureContractGroundsForPossessionWalesTest extends BasePageTest {
                         Set.of(),
                         Set.of(),
                         YesOrNo.NO,
-                        YesOrNo.NO,
                         YesOrNo.YES
                 ),
                 // ASB + other breach - show reasons for grounds page
@@ -198,7 +191,6 @@ public class SecureContractGroundsForPossessionWalesTest extends BasePageTest {
                         ),
                         Set.of(),
                         Set.of(),
-                        YesOrNo.NO,
                         YesOrNo.NO,
                         YesOrNo.YES
                 ),
@@ -212,7 +204,6 @@ public class SecureContractGroundsForPossessionWalesTest extends BasePageTest {
                         Set.of(),
                         Set.of(),
                         YesOrNo.NO,
-                        YesOrNo.NO,
                         YesOrNo.YES
                 ),
                 // Only estate management grounds - show reasons for grounds page
@@ -220,7 +211,6 @@ public class SecureContractGroundsForPossessionWalesTest extends BasePageTest {
                         Set.of(SecureContractDiscretionaryGroundsWales.ESTATE_MANAGEMENT_GROUNDS),
                         Set.of(EstateManagementGroundsWales.BUILDING_WORKS),
                         Set.of(),
-                        YesOrNo.NO,
                         YesOrNo.NO,
                         YesOrNo.YES
                 ),
@@ -233,7 +223,6 @@ public class SecureContractGroundsForPossessionWalesTest extends BasePageTest {
                         Set.of(EstateManagementGroundsWales.REDEVELOPMENT_SCHEMES),
                         Set.of(),
                         YesOrNo.NO,
-                        YesOrNo.NO,
                         YesOrNo.YES
                 ),
                 // ASB + estate management - show reasons for grounds page
@@ -244,7 +233,6 @@ public class SecureContractGroundsForPossessionWalesTest extends BasePageTest {
                         ),
                         Set.of(EstateManagementGroundsWales.CHARITIES),
                         Set.of(),
-                        YesOrNo.NO,
                         YesOrNo.NO,
                         YesOrNo.YES
                 ),
@@ -258,7 +246,6 @@ public class SecureContractGroundsForPossessionWalesTest extends BasePageTest {
                         Set.of(EstateManagementGroundsWales.BUILDING_WORKS),
                         Set.of(),
                         YesOrNo.NO,
-                        YesOrNo.NO,
                         YesOrNo.YES
                 ),
                 // Only mandatory grounds - show reasons for grounds page
@@ -266,7 +253,6 @@ public class SecureContractGroundsForPossessionWalesTest extends BasePageTest {
                         Set.of(),
                         Set.of(),
                         Set.of(SecureContractMandatoryGroundsWales.LANDLORD_NOTICE_SECTION_186),
-                        YesOrNo.NO,
                         YesOrNo.NO,
                         YesOrNo.YES
                 ),
@@ -276,7 +262,6 @@ public class SecureContractGroundsForPossessionWalesTest extends BasePageTest {
                         Set.of(),
                         Set.of(SecureContractMandatoryGroundsWales.FAILURE_TO_GIVE_UP_POSSESSION_SECTION_170),
                         YesOrNo.NO,
-                        YesOrNo.NO,
                         YesOrNo.YES
                 ),
                 // ASB + mandatory grounds - show reasons for grounds page
@@ -284,7 +269,6 @@ public class SecureContractGroundsForPossessionWalesTest extends BasePageTest {
                         Set.of(SecureContractDiscretionaryGroundsWales.ANTISOCIAL_BEHAVIOUR),
                         Set.of(),
                         Set.of(SecureContractMandatoryGroundsWales.LANDLORD_NOTICE_SECTION_199),
-                        YesOrNo.NO,
                         YesOrNo.NO,
                         YesOrNo.YES
                 ),
@@ -297,7 +281,6 @@ public class SecureContractGroundsForPossessionWalesTest extends BasePageTest {
                         Set.of(),
                         Set.of(SecureContractMandatoryGroundsWales.FAILURE_TO_GIVE_UP_POSSESSION_SECTION_191),
                         YesOrNo.NO,
-                        YesOrNo.NO,
                         YesOrNo.YES
                 ),
                 // Other breach + mandatory grounds - show reasons for grounds page
@@ -306,7 +289,6 @@ public class SecureContractGroundsForPossessionWalesTest extends BasePageTest {
                         Set.of(),
                         Set.of(SecureContractMandatoryGroundsWales.LANDLORD_NOTICE_SECTION_186),
                         YesOrNo.NO,
-                        YesOrNo.NO,
                         YesOrNo.YES
                 ),
                 // Estate management + mandatory grounds - show reasons for grounds page
@@ -314,7 +296,6 @@ public class SecureContractGroundsForPossessionWalesTest extends BasePageTest {
                         Set.of(SecureContractDiscretionaryGroundsWales.ESTATE_MANAGEMENT_GROUNDS),
                         Set.of(EstateManagementGroundsWales.CHARITIES),
                         Set.of(SecureContractMandatoryGroundsWales.LANDLORD_NOTICE_SECTION_199),
-                        YesOrNo.NO,
                         YesOrNo.NO,
                         YesOrNo.YES
                 )

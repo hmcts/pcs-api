@@ -89,33 +89,29 @@ public class GroundsForPossessionWales
                 .build();
         }
 
-        // Reset all routing flags
-        data.setShowReasonsForGroundsPageWales(YesOrNo.NO);
-        data.setShowPreActionProtocolPageWales(YesOrNo.NO);
-        data.setShowASBQuestionsPageWales(YesOrNo.NO);
-
-        boolean hasRentArrears = discretionaryGrounds != null
+        boolean hasRentArrears = hasDiscretionary 
                 && discretionaryGrounds.contains(DiscretionaryGroundWales.RENT_ARREARS_SECTION_157);
-        boolean hasASB = discretionaryGrounds != null
+        boolean hasASB = hasDiscretionary 
                 && discretionaryGrounds.contains(DiscretionaryGroundWales.ANTISOCIAL_BEHAVIOUR_SECTION_157);
-        boolean hasOtherBreach = discretionaryGrounds != null
+        boolean hasOtherBreach = hasDiscretionary 
                 && discretionaryGrounds.contains(DiscretionaryGroundWales.OTHER_BREACH_SECTION_157);
-        boolean hasEstateManagement = discretionaryGrounds != null
-                && discretionaryGrounds.contains(DiscretionaryGroundWales.ESTATE_MANAGEMENT_GROUNDS_SECTION_160);
-        boolean hasMandatoryGrounds = hasMandatory;
+        boolean hasEstateManagement = hasDiscretionary
+                && discretionaryGrounds.contains(DiscretionaryGroundWales.ESTATE_MANAGEMENT_GROUNDS_SECTION_160);;
 
         // Determine if there are "other options" (anything that's not rent arrears or ASB)
-        boolean hasOtherOptions = hasOtherBreach || hasEstateManagement || hasMandatoryGrounds;
+        boolean hasOtherOptions = hasOtherBreach || hasEstateManagement || hasMandatory;
 
         // Routing rules based on options selected
         if (hasRentArrears && !hasASB && !hasOtherOptions) {
-            data.setShowPreActionProtocolPageWales(YesOrNo.YES);
-        } else if (hasASB && !hasRentArrears && !hasOtherOptions) {
+            data.setShowASBQuestionsPageWales(YesOrNo.NO);
+            data.setShowReasonsForGroundsPageWales(YesOrNo.NO);
+        } else if (hasASB && !hasOtherOptions) {
             data.setShowASBQuestionsPageWales(YesOrNo.YES);
-        } else if (hasRentArrears && hasASB && !hasOtherOptions) {
-            data.setShowASBQuestionsPageWales(YesOrNo.YES);
+            data.setShowReasonsForGroundsPageWales(YesOrNo.NO);
         } else if (hasOtherOptions) {
+            data.setShowASBQuestionsPageWales(YesOrNo.NO);
             data.setShowReasonsForGroundsPageWales(YesOrNo.YES);
+            
         }
 
 

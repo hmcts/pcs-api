@@ -71,33 +71,34 @@ public class SecureContractGroundsForPossessionWales implements CcdPageConfigura
                     .build();
         }
 
-        // Reset all routing flags
-        caseData.setShowReasonsForGroundsPageWales(YesOrNo.NO);
-        caseData.setShowPreActionProtocolPageWales(YesOrNo.NO);
-        caseData.setShowASBQuestionsPageWales(YesOrNo.NO);
 
-        boolean hasRentArrears = discretionaryGrounds != null
+        boolean hasDiscretionary = discretionaryGrounds != null && !discretionaryGrounds.isEmpty();
+        boolean hasMandatory = mandatoryGrounds != null && !mandatoryGrounds.isEmpty();
+
+        boolean hasRentArrears = hasDiscretionary
                 && discretionaryGrounds.contains(SecureContractDiscretionaryGroundsWales.RENT_ARREARS);
         boolean hasASB = discretionaryGrounds != null
                 && discretionaryGrounds.contains(SecureContractDiscretionaryGroundsWales.ANTISOCIAL_BEHAVIOUR);
-        boolean hasOtherBreach = discretionaryGrounds != null
+        boolean hasOtherBreach = hasDiscretionary
                 && discretionaryGrounds.contains(SecureContractDiscretionaryGroundsWales.OTHER_BREACH_OF_CONTRACT);
-        boolean hasEstateManagement = discretionaryGrounds != null
+        boolean hasEstateManagement = hasDiscretionary
                 && discretionaryGrounds.contains(SecureContractDiscretionaryGroundsWales.ESTATE_MANAGEMENT_GROUNDS);
         boolean hasMandatoryGrounds = mandatoryGrounds != null && !mandatoryGrounds.isEmpty();
 
         // Determine if there are "other options" (anything that's not rent arrears or ASB)
-        boolean hasOtherOptions = hasOtherBreach || hasEstateManagement || hasMandatoryGrounds;
+        boolean hasOtherOptions = hasOtherBreach || hasEstateManagement || hasMandatory;
 
         // Routing rules based on options selected
         if (hasRentArrears && !hasASB && !hasOtherOptions) {
-            caseData.setShowPreActionProtocolPageWales(YesOrNo.YES);
-        } else if (hasASB && !hasRentArrears && !hasOtherOptions) {
+            caseData.setShowASBQuestionsPageWales(YesOrNo.NO);
+            caseData.setShowReasonsForGroundsPageWales(YesOrNo.NO);
+        } else if (hasASB && !hasOtherOptions) {
             caseData.setShowASBQuestionsPageWales(YesOrNo.YES);
-        } else if (hasRentArrears && hasASB && !hasOtherOptions) {
-            caseData.setShowASBQuestionsPageWales(YesOrNo.YES);
+            caseData.setShowReasonsForGroundsPageWales(YesOrNo.NO);
         } else if (hasOtherOptions) {
+            caseData.setShowASBQuestionsPageWales(YesOrNo.NO);
             caseData.setShowReasonsForGroundsPageWales(YesOrNo.YES);
+            
         }
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
