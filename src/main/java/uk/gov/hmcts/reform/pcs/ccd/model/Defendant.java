@@ -27,4 +27,6 @@ public class Defendant {
 
     private AddressUK correspondenceAddress;
 
+    private Boolean additionalDefendantsAdded; // Only used for auditing
+
 }
