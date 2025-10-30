@@ -1,15 +1,15 @@
-package uk.gov.hmcts.reform.pcs.ccd.domain;
-
+package uk.gov.hmcts.reform.pcs.ccd.domain.wales;
 
 import lombok.Builder;
 import lombok.Data;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 
 import static uk.gov.hmcts.ccd.sdk.type.FieldType.TextArea;
 
 @Data
 @Builder
-public class ProhibitedConductWalesWrappedQuestion {
+public class PeriodicContractTermsWales {
 
     @CCD(
         label = "Have you and the contract holder agreed terms of the periodic standard contract "
@@ -24,3 +24,4 @@ public class ProhibitedConductWalesWrappedQuestion {
     )
     private String detailsOfTerms;
 }
+

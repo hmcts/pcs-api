@@ -22,7 +22,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.page.builder.SavingPageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.page.builder.SavingPageBuilderFactory;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ClaimantDetailsWalesPage;
-import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ProhibitedConductWalesPage;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.ProhibitedConductWales;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ContactPreferences;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.DefendantsDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.NoticeDetails;
@@ -124,7 +124,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
     @Mock
     private ClaimantDetailsWalesPage claimantDetailsWalesPage;
     @Mock
-    private ProhibitedConductWalesPage prohibitedConductWalesPage;
+    private ProhibitedConductWales prohibitedConductWalesPage;
     @Mock
     private SchedulerClient schedulerClient;
     @Mock

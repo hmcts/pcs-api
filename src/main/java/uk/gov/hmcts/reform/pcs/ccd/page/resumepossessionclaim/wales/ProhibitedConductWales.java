@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim;
+package uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales;
 
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -9,14 +9,15 @@ import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
-import uk.gov.hmcts.reform.pcs.ccd.domain.ProhibitedConductWalesWrappedQuestion;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.PeriodicContractTermsWales;
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Component
 @AllArgsConstructor
-public class ProhibitedConductWalesPage implements CcdPageConfiguration {
+public class ProhibitedConductWales implements CcdPageConfiguration {
 
     private final TextAreaValidationService textAreaValidationService;
 
@@ -36,10 +37,10 @@ public class ProhibitedConductWalesPage implements CcdPageConfiguration {
                 <p class="govuk-body" tabindex="0">This is a 12-month probationary contract.</p>
                 """)
             .mandatory(PCSCase::getProhibitedConductWalesClaim)
-            .complex(PCSCase::getProhibitedConductWalesWrappedQuestion, "prohibitedConductWalesClaim=\"YES\"")
-                .mandatory(ProhibitedConductWalesWrappedQuestion::getAgreedTermsOfPeriodicContract)
-                .mandatory(ProhibitedConductWalesWrappedQuestion::getDetailsOfTerms, 
-                    "prohibitedConductWalesWrappedQuestion.agreedTermsOfPeriodicContract=\"YES\"")
+            .complex(PCSCase::getPeriodicContractTermsWales, "prohibitedConductWalesClaim=\"YES\"")
+                .mandatory(PeriodicContractTermsWales::getAgreedTermsOfPeriodicContract)
+                .mandatory(PeriodicContractTermsWales::getDetailsOfTerms, 
+                    "periodicContractTermsWales.agreedTermsOfPeriodicContract=\"YES\"")
             .done()
             .mandatory(PCSCase::getProhibitedConductWalesWhyMakingClaim, "prohibitedConductWalesClaim=\"YES\"");
     }
@@ -48,10 +49,10 @@ public class ProhibitedConductWalesPage implements CcdPageConfiguration {
                                                                   CaseDetails<PCSCase, State> detailsBefore) {
         PCSCase caseData = details.getData();
 
-        List<String> validationErrors = new java.util.ArrayList<>();
+        List<String> validationErrors = new ArrayList<>();
 
-        ProhibitedConductWalesWrappedQuestion prohibitedConductWalesWrappedQuestion =
-            caseData.getProhibitedConductWalesWrappedQuestion();
+        PeriodicContractTermsWales periodicContractTermsWales =
+            caseData.getPeriodicContractTermsWales();
 
         if (caseData.getProhibitedConductWalesClaim() == VerticalYesNo.YES) {
             textAreaValidationService.validateTextArea(
@@ -63,10 +64,10 @@ public class ProhibitedConductWalesPage implements CcdPageConfiguration {
         }
 
         if (caseData.getProhibitedConductWalesClaim() == VerticalYesNo.YES
-            && prohibitedConductWalesWrappedQuestion != null
-            && prohibitedConductWalesWrappedQuestion.getAgreedTermsOfPeriodicContract() == VerticalYesNo.YES) {
+            && periodicContractTermsWales != null
+            && periodicContractTermsWales.getAgreedTermsOfPeriodicContract() == VerticalYesNo.YES) {
             textAreaValidationService.validateTextArea(
-                prohibitedConductWalesWrappedQuestion.getDetailsOfTerms(),
+                periodicContractTermsWales.getDetailsOfTerms(),
                 "Give details of the terms you've agreed",
                 TextAreaValidationService.SHORT_TEXT_LIMIT,
                 validationErrors
