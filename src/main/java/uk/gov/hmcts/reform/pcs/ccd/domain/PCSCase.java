@@ -17,13 +17,12 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.model.NoRentArrearsReasonForGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.DiscretionaryGroundWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.EstateManagementGroundsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.MandatoryGroundWales;
-import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceTypeWales;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceDetailsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractDiscretionaryGroundsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractMandatoryGroundsWales;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.EstateManagementGroundsWales;
-import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceTypeWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractDiscretionaryGroundsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractMandatoryGroundsWales;
 
@@ -699,12 +698,9 @@ public class PCSCase {
     @CCD(searchable = false)
     private YesOrNo showReasonsForGroundsPageWales;
 
-    @CCD(
-        label = "What type of tenancy or licence is in place?",
-        typeOverride = FieldType.FixedRadioList,
-        typeParameterOverride = "OccupationLicenceTypeWales"
-    )
-    private OccupationLicenceTypeWales occupationLicenceTypeWales;
+    @JsonUnwrapped
+    @CCD
+    private OccupationLicenceDetailsWales occupationLicenceDetailsWales;
 
     @JsonUnwrapped
     private EnforcementOrder enforcementOrder;
