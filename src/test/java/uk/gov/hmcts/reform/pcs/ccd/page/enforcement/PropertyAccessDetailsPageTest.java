@@ -2,8 +2,6 @@ package uk.gov.hmcts.reform.pcs.ccd.page.enforcement;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.MethodSource;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
@@ -16,19 +14,20 @@ import static uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.PropertyAccessDetai
 
 class PropertyAccessDetailsPageTest extends BasePageTest {
 
+    private static final String SHORTEST_VALID_TEXT = "A";
+
     @BeforeEach
     void setUp() {
         setPageUnderTest(new PropertyAccessDetailsPage());
     }
 
-    @ParameterizedTest
-    @MethodSource("uk.gov.hmcts.reform.pcs.ccd.page.enforcement.EnforcementTestUtil#validTextScenarios")
-    void shouldAcceptValidText(String text) {
+    @Test
+    void shouldAcceptValidShortestAllowedText() {
         // Given
         PCSCase caseData = PCSCase.builder()
                 .enforcementOrder(EnforcementOrder.builder()
                         .propertyAccessDetails(PropertyAccessDetails.builder()
-                                .clarificationOnAccessDifficultyText(text)
+                                .clarificationOnAccessDifficultyText(SHORTEST_VALID_TEXT)
                                 .build())
                         .build())
                 .build();
@@ -39,7 +38,30 @@ class PropertyAccessDetailsPageTest extends BasePageTest {
         // Then
         assertThat(response.getErrors()).isEmpty();
         assertThat(response.getData().getEnforcementOrder()
-                .getPropertyAccessDetails().getClarificationOnAccessDifficultyText()).isEqualTo(text);
+                .getPropertyAccessDetails().getClarificationOnAccessDifficultyText())
+                .isEqualTo(SHORTEST_VALID_TEXT);
+    }
+
+    @Test
+    void shouldAcceptValidLongestAllowedText() {
+        // Given
+        PCSCase caseData = PCSCase.builder()
+                .enforcementOrder(EnforcementOrder.builder()
+                        .propertyAccessDetails(PropertyAccessDetails.builder()
+                                .clarificationOnAccessDifficultyText(
+                                        SHORTEST_VALID_TEXT.repeat(CLARIFICATION_PROPERTY_ACCESS_TEXT_LIMIT))
+                                .build())
+                        .build())
+                .build();
+
+        // When
+        AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
+
+        // Then
+        assertThat(response.getErrors()).isEmpty();
+        assertThat(response.getData().getEnforcementOrder()
+                .getPropertyAccessDetails().getClarificationOnAccessDifficultyText()).isEqualTo(
+                        SHORTEST_VALID_TEXT.repeat(CLARIFICATION_PROPERTY_ACCESS_TEXT_LIMIT));
     }
 
     @Test
