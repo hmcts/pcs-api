@@ -21,16 +21,16 @@ public class PropertyAccessDetailsPage implements CcdPageConfiguration {
     @Override
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
-                .page("propertyAccessDetailsPage", this::midEvent)
+                .page("propertyAccessDetails", this::midEvent)
                 .pageLabel("Access to the property")
-                .label("propertyAccessDetailsPage-line-separator", "---")
+                .label("propertyAccessDetails-line-separator", "---")
                 .complex(PCSCase::getEnforcementOrder)
                 .complex(EnforcementOrder::getPropertyAccessDetails)
                 .mandatory(PropertyAccessDetails::getPropertyAccessYesNo)
                 .mandatory(PropertyAccessDetails::getClarificationOnAccessDifficultyText,
                         "propertyAccessYesNo=\"YES\"")
                 .done()
-                .label("violentAggressiveRisk-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
+                .label("propertyAccessDetails-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
 
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
