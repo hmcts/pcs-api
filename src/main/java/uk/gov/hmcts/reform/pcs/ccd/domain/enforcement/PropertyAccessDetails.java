@@ -3,12 +3,10 @@ package uk.gov.hmcts.reform.pcs.ccd.domain.enforcement;
 import lombok.Builder;
 import lombok.Data;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
-import uk.gov.hmcts.ccd.sdk.api.ComplexType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 
 @Data
 @Builder
-@ComplexType(generate = true)
 public class PropertyAccessDetails {
 
     public static final String PROPERTY_ACCESS_YES_NO_LABEL = "Is it difficult to access the property?";
