@@ -27,12 +27,11 @@ public class VulnerableAdultsChildrenPage implements CcdPageConfiguration {
     @Override
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
-            .page("vulnerableAdultsChildrenPage", this::midEvent)
+            .page("vulnerableAdultsChildren", this::midEvent)
             .pageLabel("Vulnerable adults and children at the property")
-            .showCondition("anyRiskToBailiff=\"NO\" OR anyRiskToBailiff=\"NOT_SURE\"")
-            .label("vulnerableAdultsChildrenPage-line-separator", "---")
+            .label("vulnerableAdultsChildren-line-separator", "---")
             .label(
-                "vulnerableAdultsChildrenPage-information-text", """
+                "vulnerableAdultsChildren-information-text", """
                     <p>The bailiff needs to know if anyone at the property is vulnerable.</p>
                     <p>Someone is vulnerable if they have:</p>
                     <ul>
