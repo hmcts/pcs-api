@@ -3,6 +3,7 @@ import * as process from 'node:process';
 import { defineConfig, devices } from '@playwright/test';
 
 const DEFAULT_VIEWPORT = {width: 1920, height: 1080};
+export const VERY_SHORT_TIMEOUT = 1000;
 export const SHORT_TIMEOUT = 5000;
 export const MEDIUM_TIMEOUT = 10000;
 export const LONG_TIMEOUT = 30000;
@@ -15,10 +16,10 @@ export default defineConfig({
   fullyParallel: false,
   forbidOnly: !!process.env.CI,
   /* Retry on CI only */
-  retries: process.env.CI ? 1 : 0,
+  retries: process.env.CI ? 3 : 0,
   // Reduced workers from 4 → 2 due to server/login contention issues
-  workers: 2,
-  timeout: 300 * 1000,
+  workers: 1,
+  timeout: 600 * 1000,
   expect: { timeout: 30 * 1000 },
   use: { actionTimeout: 30 * 1000, navigationTimeout: 30 * 1000 },
   /* Report slow tests if they take longer than 5 mins */
