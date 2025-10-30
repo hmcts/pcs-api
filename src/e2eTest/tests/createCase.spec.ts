@@ -330,16 +330,112 @@ test.describe('[Create Case - England] @Master @nightly', async () => {
       explanationLabel: noticeDetails.nameOfPersonDocumentWasLeftLabel,
       explanation: noticeDetails.byPersonallyHandlingExplanationInput,
       day: '31', month: '01', year: '1962', hour: '10', minute: '55', second: '30'});
-    // await performValidation('mainHeader', rentDetails.mainHeader);
-    // await performAction('provideRentDetails', {rentFrequencyOption:'weekly', rentAmount:'800'});
-    // await performValidation('mainHeader', dailyRentAmount.mainHeader);
-    // await performAction('selectDailyRentAmount', {
-    //   calculateRentAmount: '£114.29',
-    //   unpaidRentInteractiveOption: dailyRentAmount.no,
-    //   unpaidRentAmountPerDay: '20'
-    // });
+    await performValidation('mainHeader', rentDetails.mainHeader);
+    await performAction('provideRentDetails', {rentFrequencyOption:'weekly', rentAmount:'800'});
+    await performValidation('mainHeader', dailyRentAmount.mainHeader);
+    await performAction('selectDailyRentAmount', {
+      calculateRentAmount: '£114.29',
+      unpaidRentInteractiveOption: dailyRentAmount.no,
+      unpaidRentAmountPerDay: '20'
+    });
     await performValidation('mainHeader', moneyJudgment.mainHeader);
     await performAction('selectMoneyJudgment', moneyJudgment.yes);
+    await performValidation('mainHeader', claimantCircumstances.mainHeader);
+    await performAction('selectClaimantCircumstances', {
+      circumstanceOption: claimantCircumstances.yes,
+      claimantInput: claimantCircumstances.claimantCircumstanceInfoInputData
+    });
+    await performValidation('mainHeader', defendantCircumstances.mainHeader);
+    await performAction('selectDefendantCircumstances', defendantCircumstances.no);
+    await performValidation('mainHeader', alternativesToPossession.mainHeader);
+    await performAction('selectAlternativesToPossession', {question: alternativesToPossession.suspensionOrDemotion
+      , option: [alternativesToPossession.demotionOfTenancy]});
+    await performValidation('mainHeader', housingAct.mainHeader);
+    await performAction('selectHousingAct', [{question: housingAct.demotionOfTenancy.whichSection
+      , option: housingAct.demotionOfTenancy.section82AHousingAct1985}]);
+    await performAction('selectStatementOfExpressTerms', statementOfExpressTerms.yes);
+    await performValidation('mainHeader', reasonsForRequestingADemotionOrder.mainHeader);
+    await performAction('enterReasonForDemotionOrder', reasonsForRequestingADemotionOrder.requestDemotionOrderQuestion);
+    await performValidation('mainHeader', claimingCosts.mainHeader);
+    await performAction('selectClaimingCosts', claimingCosts.yes);
+    await performValidation('mainHeader', additionalReasonsForPossession.mainHeader);
+    await performAction('selectAdditionalReasonsForPossession', additionalReasonsForPossession.no);
+    await performValidation('mainHeader', underlesseeOrMortgageeEntitledToClaim.mainHeader);
+    await performAction('clickButton', underlesseeOrMortgageeEntitledToClaim.continue);
+    await performAction('wantToUploadDocuments', {
+      question: wantToUploadDocuments.uploadAnyAdditionalDocumentsLabel,
+      option: wantToUploadDocuments.no
+    });
+    await performAction('selectApplications', applications.no);
+    await performAction('selectLanguageUsed', {question: languageUsed.whichLanguageUsedQuestion, option: languageUsed.englishAndWelsh});
+    await performAction('completingYourClaim', completeYourClaim.saveItForLater);
+    await performAction('clickButton', checkYourAnswers.saveAndContinue);
+    await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
+    await performValidations(
+      'address info not null',
+      ['formLabelValue', propertyDetails.buildingAndStreetLabel],
+      ['formLabelValue', propertyDetails.townOrCityLabel],
+      ['formLabelValue', propertyDetails.postcodeZipcodeLabel],
+      ['formLabelValue', propertyDetails.countryLabel]
+    )
+  });
+
+  test('England - Introductory tenancy with grounds for possession - excludes rent arrears', async () => {
+    await performAction('selectAddress', {
+      postcode: addressDetails.englandCourtAssignedPostcode,
+      addressIndex: addressDetails.addressIndex
+    });
+    await performValidation('bannerAlert', 'Case #.* has been created.');
+    await performAction('extractCaseIdFromAlert');
+    await performAction('clickButtonAndVerifyPageNavigation', provideMoreDetailsOfClaim.continue, claimantType.mainHeader);
+    await performAction('selectClaimantType', claimantType.england.registeredProviderForSocialHousing);
+    await performAction('selectClaimType', claimType.no);
+    await performAction('selectClaimantName', claimantName.yes);
+    await performAction('clickButtonAndVerifyPageNavigation', claimantName.continue, contactPreferences.mainHeader);
+    await performAction('selectContactPreferences', {
+      notifications: contactPreferences.yes,
+      correspondenceAddress: contactPreferences.yes,
+      phoneNumber: contactPreferences.no
+    });
+    await performAction('defendantDetails', {
+      name: defendantDetails.yes,
+      correspondenceAddress: defendantDetails.yes,
+      email: defendantDetails.yes,
+      correspondenceAddressSame: defendantDetails.no
+    });
+    await performValidation('mainHeader', tenancyLicenceDetails.mainHeader);
+    await performAction('selectTenancyOrLicenceDetails', {
+      tenancyOrLicenceType: tenancyLicenceDetails.other,
+      day: tenancyLicenceDetails.day,
+      month: tenancyLicenceDetails.month,
+      year: tenancyLicenceDetails.year,
+      files: ['tenancyLicence.docx', 'tenancyLicence.png']
+    });
+    await performValidation('mainHeader', groundsForPossession.mainHeader);
+    await performAction('selectGroundsForPossession', {groundsRadioInput: groundsForPossession.yes,
+      grounds: [groundsForPossession.antiSocialBehaviour, groundsForPossession.breachOfTheTenancy]});
+    await performAction('enterReasonForPossession'
+      , [groundsForPossession.antiSocialBehaviour, groundsForPossession.breachOfTheTenancy]);
+    await performValidation('mainHeader', preActionProtocol.mainHeader);
+    await performAction('selectPreActionProtocol', preActionProtocol.yes);
+    await performValidation('mainHeader', mediationAndSettlement.mainHeader);
+    await performAction('selectMediationAndSettlement', {
+      attemptedMediationWithDefendantsOption: mediationAndSettlement.yes,
+      settlementWithDefendantsOption: mediationAndSettlement.no,
+    });
+    await performValidation('mainHeader', noticeOfYourIntention.mainHeader);
+    await performValidation('text', {"text": noticeOfYourIntention.guidanceOnPosessionNoticePeriodsLink, "elementType": "paragraphLink"})
+    await performValidation('text', {"text": noticeOfYourIntention.servedNoticeInteractiveText, "elementType": "inlineText"});
+    await performAction('selectNoticeOfYourIntention', {
+      question: noticeOfYourIntention.servedNoticeInteractiveText,
+      option: noticeOfYourIntention.yes
+    });
+    await performValidation('mainHeader', noticeDetails.mainHeader);
+    await performAction('selectNoticeDetails', {
+      howDidYouServeNotice: noticeDetails.byPersonallyHandling,
+      explanationLabel: noticeDetails.nameOfPersonDocumentWasLeftLabel,
+      explanation: noticeDetails.byPersonallyHandlingExplanationInput,
+      day: '31', month: '01', year: '1962', hour: '10', minute: '55', second: '30'});
     await performValidation('mainHeader', claimantCircumstances.mainHeader);
     await performAction('selectClaimantCircumstances', {
       circumstanceOption: claimantCircumstances.yes,
@@ -435,16 +531,6 @@ test.describe('[Create Case - England] @Master @nightly', async () => {
       explanationLabel: noticeDetails.explainHowServedByEmailLabel,
       explanation: noticeDetails.byEmailExplanationInput,
       day: '29', month: '02', year: '2000', hour: '16', minute: '01', second: '56'});
-    // await performValidation('mainHeader', rentDetails.mainHeader);
-    // await performAction('provideRentDetails', {rentFrequencyOption:'weekly', rentAmount:'800'});
-    // await performValidation('mainHeader', dailyRentAmount.mainHeader);
-    // await performAction('selectDailyRentAmount', {
-    //   calculateRentAmount: '£114.29',
-    //   unpaidRentInteractiveOption: dailyRentAmount.no,
-    //   unpaidRentAmountPerDay: '20'
-    // });
-    await performValidation('mainHeader', moneyJudgment.mainHeader);
-    await performAction('selectMoneyJudgment', moneyJudgment.yes);
     await performValidation('mainHeader', claimantCircumstances.mainHeader);
     await performAction('selectClaimantCircumstances', {
       circumstanceOption: claimantCircumstances.yes,
@@ -489,6 +575,7 @@ test.describe('[Create Case - England] @Master @nightly', async () => {
       ['formLabelValue', propertyDetails.countryLabel]
     )
   });
+
   test('England - Assured tenancy with Rent arrears and no other possession grounds - Demoted tenancy', async () => {
     await performAction('selectAddress', {
       postcode: addressDetails.englandCourtAssignedPostcode,
