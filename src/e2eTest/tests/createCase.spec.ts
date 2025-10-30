@@ -166,7 +166,6 @@ test.describe('[Create Case - England] @Master @nightly', async () => {
     )
   });
 
-  // The sections commented out will be fixed as part of the User Story https://tools.hmcts.net/jira/browse/HDPI-2123
   test('England - Assured tenancy with No Rent arrears', async () => {
     await performAction('selectAddress', {
       postcode: addressDetails.englandCourtAssignedPostcode,
@@ -223,14 +222,6 @@ test.describe('[Create Case - England] @Master @nightly', async () => {
       question: noticeOfYourIntention.servedNoticeInteractiveText,
       option: noticeOfYourIntention.no
     });
-    // await performValidation('mainHeader', rentDetails.mainHeader);
-    // await performAction('provideRentDetails', { rentFrequencyOption: 'weekly', rentAmount: '800' });
-    // await performValidation('mainHeader', dailyRentAmount.mainHeader);
-    // await performAction('selectDailyRentAmount', {
-    //   calculateRentAmount: '£114.29',
-    //   unpaidRentInteractiveOption: dailyRentAmount.no,
-    //   unpaidRentAmountPerDay: '20'
-    // });
     await performValidation('mainHeader', moneyJudgment.mainHeader);
     await performAction('selectMoneyJudgment', moneyJudgment.yes);
     await performValidation('mainHeader', claimantCircumstances.mainHeader);
@@ -581,7 +572,6 @@ test.describe('[Create Case - England] @Master @nightly', async () => {
       ['formLabelValue', propertyDetails.countryLabel, addressDetails.country]);
   });
 
-  // The sections commented out will be fixed as part of the User Story https://tools.hmcts.net/jira/browse/HDPI-2123
   test('England - Flexible tenancy with Rent arrears only', async () => {
     await performAction('selectAddress', {
       postcode: addressDetails.englandCourtAssignedPostcode,
@@ -625,12 +615,12 @@ test.describe('[Create Case - England] @Master @nightly', async () => {
       question: noticeOfYourIntention.servedNoticeInteractiveText,
       option: noticeOfYourIntention.no,
     });
-    // await performValidation('mainHeader', rentDetails.mainHeader);
-    // await performAction('provideRentDetails', {rentFrequencyOption: 'Monthly', rentAmount: '1000'});
-    // await performAction('selectDailyRentAmount', {
-    //   calculateRentAmount: '£32.85',
-    //   unpaidRentInteractiveOption: dailyRentAmount.yes
-    // });
+    await performValidation('mainHeader', rentDetails.mainHeader);
+    await performAction('provideRentDetails', {rentFrequencyOption: 'Monthly', rentAmount: '1000'});
+    await performAction('selectDailyRentAmount', {
+      calculateRentAmount: '£32.85',
+      unpaidRentInteractiveOption: dailyRentAmount.yes
+    });
     await performValidation('mainHeader', moneyJudgment.mainHeader);
     await performAction('selectMoneyJudgment', moneyJudgment.yes);
     await performValidation('mainHeader', claimantCircumstances.mainHeader);
@@ -671,7 +661,6 @@ test.describe('[Create Case - England] @Master @nightly', async () => {
       ['formLabelValue', propertyDetails.countryLabel, addressDetails.country]);
   });
 
-  // The sections commented out will be fixed as part of the User Story https://tools.hmcts.net/jira/browse/HDPI-2123
   test('England - Secure tenancy with Rent and other grounds', async () => {
     await performAction('selectAddress', {
       postcode: addressDetails.englandCourtAssignedPostcode,
@@ -731,12 +720,12 @@ test.describe('[Create Case - England] @Master @nightly', async () => {
     await performAction('selectNoticeDetails', {
        howDidYouServeNotice: noticeDetails.byOtherElectronicMethod,
       day: '25', month: '02', year: '1970', hour: '22', minute: '45', second: '10', files: 'NoticeDetails.pdf'});
-   /* await performAction('provideRentDetails', {rentFrequencyOption: 'Monthly', rentAmount: '1000'});
+    await performAction('provideRentDetails', {rentFrequencyOption: 'Monthly', rentAmount: '1000'});
     await performValidation('mainHeader', dailyRentAmount.mainHeader);
     await performAction('selectDailyRentAmount', {
       calculateRentAmount: '£32.85',
       unpaidRentInteractiveOption: dailyRentAmount.yes
-    });*/
+    });
     await performValidation('mainHeader', moneyJudgment.mainHeader);
     await performAction('selectMoneyJudgment', moneyJudgment.no);
     await performValidation('mainHeader', claimantCircumstances.mainHeader);
