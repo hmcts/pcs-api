@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.PropertyAccessDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
@@ -27,6 +28,7 @@ class PropertyAccessDetailsPageTest extends BasePageTest {
         PCSCase caseData = PCSCase.builder()
                 .enforcementOrder(EnforcementOrder.builder()
                         .propertyAccessDetails(PropertyAccessDetails.builder()
+                                .propertyAccessYesNo(VerticalYesNo.YES)
                                 .clarificationOnAccessDifficultyText(SHORTEST_VALID_TEXT)
                                 .build())
                         .build())
@@ -48,6 +50,7 @@ class PropertyAccessDetailsPageTest extends BasePageTest {
         PCSCase caseData = PCSCase.builder()
                 .enforcementOrder(EnforcementOrder.builder()
                         .propertyAccessDetails(PropertyAccessDetails.builder()
+                                .propertyAccessYesNo(VerticalYesNo.YES)
                                 .clarificationOnAccessDifficultyText(
                                         SHORTEST_VALID_TEXT.repeat(CLARIFICATION_PROPERTY_ACCESS_TEXT_LIMIT))
                                 .build())
@@ -71,6 +74,7 @@ class PropertyAccessDetailsPageTest extends BasePageTest {
         PCSCase caseData = PCSCase.builder()
                 .enforcementOrder(EnforcementOrder.builder()
                         .propertyAccessDetails(PropertyAccessDetails.builder()
+                                .propertyAccessYesNo(VerticalYesNo.YES)
                                 .clarificationOnAccessDifficultyText(longText)
                                 .build())
                         .build())

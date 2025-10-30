@@ -6,6 +6,7 @@ import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.PropertyAccessDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
@@ -39,12 +40,14 @@ public class PropertyAccessDetailsPage implements CcdPageConfiguration {
         List<String> errors = new ArrayList<>();
 
         String txt = data.getEnforcementOrder().getPropertyAccessDetails().getClarificationOnAccessDifficultyText();
-
-        // TODO: Use TextAreaValidationService from PR #751 when merged
-        if (txt.length() > CLARIFICATION_PROPERTY_ACCESS_TEXT_LIMIT) {
-            errors.add(EnforcementValidationUtil
-                    .getCharacterLimitErrorMessage(CLARIFICATION_PROPERTY_ACCESS_LABEL,
-                            CLARIFICATION_PROPERTY_ACCESS_TEXT_LIMIT));
+        if (data.getEnforcementOrder().getPropertyAccessDetails().getPropertyAccessYesNo()
+                .equals(VerticalYesNo.YES)) {
+            // TODO: Use TextAreaValidationService from PR #751 when merged
+            if (txt.length() > CLARIFICATION_PROPERTY_ACCESS_TEXT_LIMIT) {
+                errors.add(EnforcementValidationUtil
+                        .getCharacterLimitErrorMessage(CLARIFICATION_PROPERTY_ACCESS_LABEL,
+                                CLARIFICATION_PROPERTY_ACCESS_TEXT_LIMIT));
+            }
         }
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
