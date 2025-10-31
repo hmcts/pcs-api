@@ -81,7 +81,7 @@ test.describe('[Enforcement - Warrant of Possession] @Master @nightly', async ()
       option: nameAndAddressForEviction.yes
     });
     await performValidation('mainHeader', everyoneLivingAtTheProperty.mainHeader);
-    await performAction('selectPoseRiskToBailiff', {
+    await performAction('selectEveryoneLivingAtTheProperty', {
       question: everyoneLivingAtTheProperty.riskToBailiffQuestion,
       option: everyoneLivingAtTheProperty.no
     });
@@ -102,7 +102,7 @@ test.describe('[Enforcement - Warrant of Possession] @Master @nightly', async ()
       option: nameAndAddressForEviction.yes
     });
     await performValidation('mainHeader', everyoneLivingAtTheProperty.mainHeader);
-    await performAction('selectPoseRiskToBailiff', {
+    await performAction('selectEveryoneLivingAtTheProperty', {
       question: everyoneLivingAtTheProperty.riskToBailiffQuestion,
       option: everyoneLivingAtTheProperty.notSure
     });
