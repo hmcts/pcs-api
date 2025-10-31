@@ -1,5 +1,3 @@
-import { verbalOrWrittenThreats } from "./verbalOrWrittenThreats.page.data";
-
 export const riskPosedByEveryoneAtProperty = {
   title: 'Create a case - HM Courts & Tribunals Service - GOV.UK',
   mainHeader: 'The risks posed by everyone at the property',
