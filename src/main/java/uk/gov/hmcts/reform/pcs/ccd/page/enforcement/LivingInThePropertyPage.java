@@ -33,6 +33,6 @@ public class LivingInThePropertyPage implements CcdPageConfiguration {
             .complex(PCSCase::getEnforcementOrder)
             .mandatory(EnforcementOrder::getAnyRiskToBailiff)
             .done()
-            .label("livingInTheProperty-details-save-and-return", SAVE_AND_RETURN);
+            .label("livingInTheProperty-save-and-return", SAVE_AND_RETURN);
     }
 }
