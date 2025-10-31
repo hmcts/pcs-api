@@ -1,6 +1,6 @@
 // Auto-generated from Figma file: MHSqNylYUQUmLbWCQeBHqq, based on page: "✅ CUI IDAM Common Component - Sign in" (1:17652) and other states
 
-export const signInOrCreateAn = {
+export const signInOrCreateAnAccount = {
   mainHeader: `Sign in or create an account`,
   alphaLabel: `Alpha`,
   cancelLabel: `Cancel`,
