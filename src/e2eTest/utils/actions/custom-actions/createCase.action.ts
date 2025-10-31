@@ -298,29 +298,23 @@ export class CreateCaseAction implements IAction {
       elementType: 'paragraph',
       text: 'Case number: ' + caseNumber
     });
-
-    // --- Primary defendant (always handled first)
     await performAction('clickRadioButton', {
       question: defendantData.nameQuestion,
       option: defendantData.nameOption,
     });
-
     if (defendantData.nameOption === defendantDetails.yes) {
       await performAction('inputText', defendantDetails.defendantFirstName, defendantData.firstName);
       await performAction('inputText', defendantDetails.defendantLastName, defendantData.lastName);
     }
-
     await performAction('clickRadioButton', {
       question: defendantData.addressQuestion,
       option: defendantData.correspondenceAddressOption,
     });
-
     if (defendantData.correspondenceAddressOption === defendantDetails.yes) {
       await performAction('clickRadioButton', {
         question: defendantData.addressSameQuestion,
         option: defendantData.correspondenceAddressSameOption,
       });
-
       if (defendantData.correspondenceAddressSameOption === defendantDetails.no) {
         await performActions(
           'Find Address based on postcode',
@@ -330,7 +324,6 @@ export class CreateCaseAction implements IAction {
         );
       }
     }
-
     // --- Additional defendants
     const numAdditionalDefendants = Number(defendantData.numberOfDefendants) || 0;
 
@@ -342,13 +335,6 @@ export class CreateCaseAction implements IAction {
 
       for (let i = 0; i < numAdditionalDefendants; i++) {
         await performAction('clickButton', defendantDetails.addNew);
-
-        // // Wait for the new additional defendant block to be visible
-        // await performAction('clickButtonAndWaitForElement', {
-        //   button: defendantDetails.addNew,
-        //   elementSelector: '.additional-defendant-block'
-        // });
-
         const index = i + 1; // first additional defendant is index 1
 
         await performAction('clickRadioButton', {
@@ -358,34 +344,18 @@ export class CreateCaseAction implements IAction {
         });
         // await performAction('inputText', defendantDetails.defendantFirstName, `${defendantData.firstName}${i + 1}`);
         // await performAction('inputText', defendantDetails.defendantLastName, `${defendantData.lastName}${i + 1}`);
-
         await performAction('clickRadioButton', {
           question: defendantData.addressQuestion,
           option: defendantDetails.no,
           index: index,
         });
-
         await performAction('clickRadioButton', {
           question: defendantData.nameQuestion,
           option: defendantDetails.no,
           index: index,
         });
-
-        // await performAction('clickRadioButton', {
-        //   question: defendantData.addressSameQuestion,
-        //   option: defendantDetails.yes,
-        //   index: index,
-        // });
-
-        await performActions(
-          'Find Address based on postcode',
-          ['inputText', addressDetails.enterUKPostcodeLabel, defendantData.address],
-          ['clickButton', addressDetails.findAddressLabel],
-          ['select', addressDetails.selectAddressLabel, addressDetails.addressIndex]
-        );
       }
     }
-
     await performAction('clickButton', defendantDetails.continue);
   }
 
