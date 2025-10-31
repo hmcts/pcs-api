@@ -721,12 +721,12 @@
   dependencies:
     undici-types "~7.14.0"
 
-"@types/node@^22.15.31":
-  version "22.18.13"
-  resolved "https://registry.yarnpkg.com/@types/node/-/node-22.18.13.tgz#a037c4f474b860be660e05dbe92a9ef945472e28"
-  integrity sha512-Bo45YKIjnmFtv6I1TuC8AaHBbqXtIo+Om5fE4QiU1Tj8QR/qt+8O3BAtOimG5IFmwaWiPmB3Mv3jtYzBA4Us2A==
+"@types/node@^24.0.0":
+  version "24.9.2"
+  resolved "https://registry.yarnpkg.com/@types/node/-/node-24.9.2.tgz#90ded2422dbfcafcf72080f28975adc21366148d"
+  integrity sha512-uWN8YqxXxqFMX2RqGOrumsKeti4LlmIMIyV0lgut4jx7KQBcBiW6vkDtIBvHnHIquwNfJhk8v2OtmO8zXWHfPA==
   dependencies:
-    undici-types "~6.21.0"
+    undici-types "~7.16.0"
 
 "@types/pg-pool@2.0.6":
   version "2.0.6"
@@ -905,14 +905,7 @@ allure-commandline@^2.34.1:
   resolved "https://registry.yarnpkg.com/allure-commandline/-/allure-commandline-2.34.1.tgz#cdc1361c0b1f85d917b72f80d7131fd7dbfddd11"
   integrity sha512-l42csZ2bz7FdtJI1t5zA3IXtOZ0YJaP/+JMRC9gt6aBHRVUIu+6r+3F7KRyshQ79osLz9/MHlGqAjBPRqH0QFw==
 
-allure-js-commons@3.4.1:
-  version "3.4.1"
-  resolved "https://registry.yarnpkg.com/allure-js-commons/-/allure-js-commons-3.4.1.tgz#2aaed0424c5385154a1aad1fefe779307856138f"
-  integrity sha512-Lzs91+8fTPUucnLwQULuuLyEJWQCBCxsZl5tX6lMPFZcAVXgwu/Dti0XfzhH9R1Hw8e43k20XAlmyh/ZDqqpYA==
-  dependencies:
-    md5 "^2.3.0"
-
-allure-js-commons@^3.3.0:
+allure-js-commons@3.4.2, allure-js-commons@^3.3.0:
   version "3.4.2"
   resolved "https://registry.yarnpkg.com/allure-js-commons/-/allure-js-commons-3.4.2.tgz#91059468f1d3d0962f4484a6fa801f3262295bb6"
   integrity sha512-bWzqduvU/LzSTI4wJKzWbHWe64xluF30pDxFfSP+jlloQx9F1Vytdqrit5oAgNj+czzdA+Nocv3Dh6d4COCTvA==
@@ -920,11 +913,11 @@ allure-js-commons@^3.3.0:
     md5 "^2.3.0"
 
 allure-playwright@^3.3.0:
-  version "3.4.1"
-  resolved "https://registry.yarnpkg.com/allure-playwright/-/allure-playwright-3.4.1.tgz#75447a341badd196917c53b17f984f4f4d612ce1"
-  integrity sha512-vSc+7iBmilejRbSiv0dakl+/EONHFUs3yDmEOydKmF0+aOMczRyMYOBvU42Ob51PrZozi11ExiQj9SCMH0c4bQ==
+  version "3.4.2"
+  resolved "https://registry.yarnpkg.com/allure-playwright/-/allure-playwright-3.4.2.tgz#921b38b221dfd26b2aa1cefd613050f54b37be35"
+  integrity sha512-M2addk0XCD5mJW9GyuJ37lddxhQw9oqff+Z3hN8D4u73pJqKYOEkL4JwYbc9CPRq0l1OrakmMoJ+CtVF4ifaTg==
   dependencies:
-    allure-js-commons "3.4.1"
+    allure-js-commons "3.4.2"
 
 ansi-colors@^4.1.1:
   version "4.1.3"
@@ -986,9 +979,9 @@ axe-html-reporter@^2.2.11:
     mustache "^4.0.1"
 
 axios@^1.11.0:
-  version "1.13.0"
-  resolved "https://registry.yarnpkg.com/axios/-/axios-1.13.0.tgz#ead6f495f41f9c8869dcf7b0f24f5a4ab89707f0"
-  integrity sha512-zt40Pz4zcRXra9CVV31KeyofwiNvAbJ5B6YPz9pMJ+yOSLikvPT4Yi5LjfgjRa9CawVYBaD1JQzIVcIvBejKeA==
+  version "1.13.1"
+  resolved "https://registry.yarnpkg.com/axios/-/axios-1.13.1.tgz#45b62dc8fe04e0e92274e08b98e910ba3d7963a7"
+  integrity sha512-hU4EGxxt+j7TQijx1oYdAjw4xuIp1wRQSsbMFwSthCWeBQur1eF+qJ5iQ5sN3Tw8YRzQNKb8jszgBdMDVqwJcw==
   dependencies:
     follow-redirects "^1.15.6"
     form-data "^4.0.4"
@@ -2368,9 +2361,9 @@ shimmer@^1.2.1:
   integrity sha512-sQTKC1Re/rM6XyFM6fIAGHRPVGvyXfgzIDvzoq608vM+jeyVD0Tu1E6Np0Kc2zAIFWIj963V2800iF/9LPieQw==
 
 simple-git@^3.27.0:
-  version "3.28.0"
-  resolved "https://registry.yarnpkg.com/simple-git/-/simple-git-3.28.0.tgz#c6345b2e387880f8450788a1e388573366ae48ac"
-  integrity sha512-Rs/vQRwsn1ILH1oBUy8NucJlXmnnLeLCfcvbSehkPzbv3wwoFWIdtfd6Ndo6ZPhlPsCZ60CPI4rxurnwAa+a2w==
+  version "3.29.0"
+  resolved "https://registry.yarnpkg.com/simple-git/-/simple-git-3.29.0.tgz#839cd6ab4f2f3ed77d18809908a1a5bce5deb01e"
+  integrity sha512-PEBgFYc8plTys6/XuxinxAJ+6CbXVh+xxsBTOEXw/uYBd3sYlGGoyB12nX5rRPGsFrdnnZWb81qluSl7a83HtA==
   dependencies:
     "@kwsites/file-exists" "^1.1.1"
     "@kwsites/promise-deferred" "^1.1.1"
@@ -2572,15 +2565,15 @@ ua-parser-js@^1.0.2:
   resolved "https://registry.yarnpkg.com/ua-parser-js/-/ua-parser-js-1.0.41.tgz#bd04dc9ec830fcf9e4fad35cf22dcedd2e3b4e9c"
   integrity sha512-LbBDqdIC5s8iROCUjMbW1f5dJQTEFB1+KO9ogbvlb3nm9n4YHa5p4KTvFPWvh2Hs8gZMBuiB1/8+pdfe/tDPug==
 
-undici-types@~6.21.0:
-  version "6.21.0"
-  resolved "https://registry.yarnpkg.com/undici-types/-/undici-types-6.21.0.tgz#691d00af3909be93a7faa13be61b3a5b50ef12cb"
-  integrity sha512-iwDZqg0QAGrg9Rav5H4n0M64c3mkR59cJ6wQp+7C4nI0gsmExaedaYLNO44eT4AtBBwjbTiGPMlt2Md0T9H9JQ==
-
 undici-types@~7.14.0:
   version "7.14.0"
   resolved "https://registry.yarnpkg.com/undici-types/-/undici-types-7.14.0.tgz#4c037b32ca4d7d62fae042174604341588bc0840"
   integrity sha512-QQiYxHuyZ9gQUIrmPo3IA+hUl4KYk8uSA7cHrcKd/l3p1OTpZcM0Tbp9x7FAtXdAYhlasd60ncPpgu6ihG6TOA==
+
+undici-types@~7.16.0:
+  version "7.16.0"
+  resolved "https://registry.yarnpkg.com/undici-types/-/undici-types-7.16.0.tgz#ffccdff36aea4884cbfce9a750a0580224f58a46"
+  integrity sha512-Zz+aZWSj8LE6zoxD+xrjh4VfkIG8Ya6LvYkZqtUQGJPZjYl53ypCaUwWqo7eI0x66KBGeRo+mlBEkMSeSZ38Nw==
 
 uri-js@^4.2.2:
   version "4.4.1"
