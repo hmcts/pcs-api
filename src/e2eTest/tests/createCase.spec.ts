@@ -191,11 +191,7 @@ test.describe('[Create Case - England] @Master @nightly', async () => {
     });
     await performValidation('mainHeader', tenancyLicenceDetails.mainHeader);
     await performAction('selectTenancyOrLicenceDetails', {
-      tenancyOrLicenceType: tenancyLicenceDetails.assuredTenancy,
-      day: tenancyLicenceDetails.day,
-      month: tenancyLicenceDetails.month,
-      year: tenancyLicenceDetails.year,
-      files: ['tenancyLicence.docx', 'tenancyLicence.png']
+      tenancyOrLicenceType: tenancyLicenceDetails.assuredTenancy
     });
     await performValidation('mainHeader', groundsForPossession.mainHeader);
     await performAction('selectGroundsForPossession', {groundsRadioInput: groundsForPossession.no});
@@ -397,12 +393,7 @@ test.describe('[Create Case - England] @Master @nightly', async () => {
     });
     await performValidation('mainHeader', tenancyLicenceDetails.mainHeader);
     await performAction('selectTenancyOrLicenceDetails', {
-      tenancyOrLicenceType: tenancyLicenceDetails.demotedTenancy,
-      day: tenancyLicenceDetails.day,
-      month: tenancyLicenceDetails.month,
-      year: tenancyLicenceDetails.year,
-      files: ['tenancyLicence.docx', 'tenancyLicence.png']
-    });
+      tenancyOrLicenceType: tenancyLicenceDetails.demotedTenancy});
     await performValidation('mainHeader', groundsForPossession.mainHeader);
     await performAction('selectGroundsForPossession', {groundsRadioInput: groundsForPossession.no});
     await performAction('enterReasonForPossession', [groundsForPossession.noGrounds]);
@@ -796,12 +787,7 @@ test.describe('[Create Case - England] @Master @nightly', async () => {
     });
     await performValidation('mainHeader', tenancyLicenceDetails.mainHeader);
     await performAction('selectTenancyOrLicenceDetails', {
-      tenancyOrLicenceType: tenancyLicenceDetails.assuredTenancy,
-      day: tenancyLicenceDetails.day,
-      month: tenancyLicenceDetails.month,
-      year: tenancyLicenceDetails.year,
-      files: ['tenancyLicence.docx', 'tenancyLicence.png']
-    });
+      tenancyOrLicenceType: tenancyLicenceDetails.assuredTenancy });
     await performValidation('mainHeader', groundsForPossession.mainHeader);
     await performAction('selectGroundsForPossession', {groundsRadioInput: groundsForPossession.no});
     await performValidation('mainHeader', whatAreYourGroundsForPossession.mainHeader);
