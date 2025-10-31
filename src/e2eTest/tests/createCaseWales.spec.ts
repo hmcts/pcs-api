@@ -243,16 +243,14 @@ test.describe('[Create Case - Wales] @Master @nightly', async () => {
       email: defendantDetails.no,
     });
     //Following 186 to 188 needs update once routing is done for wales journey HDPI-2365
-    await performAction('check', 'Secure contract');
+    await performAction('check', 'Standard contract');
     await performAction('clickButton', 'Continue');
     await performValidation('mainHeader', whatAreYourGroundsForPossessionWales.mainHeader);
     await performAction('selectYourPossessionGrounds', {
       discretionary: [whatAreYourGroundsForPossessionWales.discretionary.rentArrears, whatAreYourGroundsForPossessionWales.discretionary.antiSocialBehaviour],
     });
-    await performAction('clickButton', antiSocialBehaviourWales.mainHeader);
+    await performValidation('mainHeader', antiSocialBehaviourWales.mainHeader);
     await performAction('clickButton', antiSocialBehaviourWales.continue);
-    // Following lines enabled to reach notice of your intention page as HDPI-2343 is done for Wales journey routing
-    await performAction('selectGroundsForPossession', {groundsRadioInput: groundsForPossession.yes});
     await performValidation('mainHeader', preActionProtocol.mainHeader);
     await performAction('selectPreActionProtocol', preActionProtocol.yes);
     await performAction('selectMediationAndSettlement', {
@@ -337,7 +335,7 @@ test.describe('[Create Case - Wales] @Master @nightly', async () => {
       email: defendantDetails.yes,
       correspondenceAddressSame: defendantDetails.yes
     });
-    await performAction('check', 'Secure contract');
+    await performAction('check', 'Other');
     await performAction('clickButton', 'Continue');
     await performValidation('mainHeader', whatAreYourGroundsForPossessionWales.mainHeader);
     await performAction('selectYourPossessionGrounds', {
@@ -346,8 +344,6 @@ test.describe('[Create Case - Wales] @Master @nightly', async () => {
       mandatory: [whatAreYourGroundsForPossessionWales.mandatory.section191],
     });
     await performAction('clickButton', reasonsForPossession.continue);
-    // Following lines enabled to reach notice of your intention page as HDPI-2343 is done for Wales journey routing
-    await performAction('selectGroundsForPossession', {groundsRadioInput: groundsForPossession.yes});
     await performValidation('mainHeader', preActionProtocol.mainHeader);
     await performAction('selectPreActionProtocol', preActionProtocol.yes);
     await performValidation('mainHeader', mediationAndSettlement.mainHeader);

@@ -1,5 +1,5 @@
 export const antiSocialBehaviourWales = {
   title: 'Create a case - HM Courts & Tribunals Service - GOV.UK',
-  mainHeader: 'Antisocial behaviour and illegal or prohibited conduct',
+  mainHeader: 'ASB questions (Wales - placeholder)',
   continue: 'Continue'
 }
