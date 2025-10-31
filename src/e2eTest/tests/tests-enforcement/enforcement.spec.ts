@@ -54,23 +54,23 @@ test.describe('[Enforcement - Warrant of Possession] @Master @nightly', async ()
       riskTypes: [riskPosedByEveryoneAtProperty.violentOrAggressiveBehaviour, riskPosedByEveryoneAtProperty.historyOfFirearmPossession,
         riskPosedByEveryoneAtProperty.criminalOrAntisocialBehaviour, riskPosedByEveryoneAtProperty.verbalOrWrittenThreats,
         riskPosedByEveryoneAtProperty.protestGroup]});
-    await performValidation('provideDetailsViolentOrAggressiveBehaviour', {
+    await performAction('provideDetailsViolentOrAggressiveBehaviour', {
       label: violentOrAggressiveBehaviour.howHaveTheyBeenViolentAndAggressive,
       input: violentOrAggressiveBehaviour.howHaveTheyBeenViolentAndAggressiveInput
     });
-    await performValidation('provideDetailsFireArmPossession', {
+    await performAction('provideDetailsFireArmPossession', {
       label: firearmPossession.whatIsTheirHistoryOfFirearmPossession,
       input: firearmPossession.whatIsTheirHistoryOfFirearmPossessionInput
     });
-    await performValidation('provideDetailsCriminalAntisocialBehavior', {
+    await performAction('provideDetailsCriminalOrAntisocialBehavior', {
       label: criminalOrAntisocialBehaviour.whatIsTheirHistoryOfCriminalAntisocialBehaviour,
       input: criminalOrAntisocialBehaviour.whatIsTheirHistoryOfCriminalAntisocialBehaviourInput
     });
-    await performValidation('provideDetailsVerbalOrWrittenThreats', {
+    await performAction('provideDetailsVerbalOrWrittenThreats', {
       label: verbalOrWrittenThreats.verbalOrWrittenThreatsMade,
       input: verbalOrWrittenThreats.verbalOrWrittenThreatsMadeInput
     });
-    await performValidation('provideDetailsGroupProtestsEviction', {
+    await performAction('provideDetailsGroupProtestsEviction', {
       label: groupProtestsEviction.whichGroupMember,
       input: groupProtestsEviction.whichGroupMemberInput
     });

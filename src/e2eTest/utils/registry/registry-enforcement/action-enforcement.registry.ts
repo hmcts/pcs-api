@@ -34,7 +34,7 @@ export class ActionEnforcementRegistry {
     ['selectRiskPosedByEveryoneAtProperty', new EnforcementAction()],
     ['provideDetailsViolentOrAggressiveBehaviour', new EnforcementAction()],
     ['provideDetailsFireArmPossession', new EnforcementAction()],
-    ['provideDetailsCriminalAntisocialBehavior', new EnforcementAction()],
+    ['provideDetailsCriminalOrAntisocialBehavior', new EnforcementAction()],
     ['provideDetailsVerbalOrWrittenThreats', new EnforcementAction()],
     ['provideDetailsGroupProtestsEviction', new EnforcementAction()],
   ]);
