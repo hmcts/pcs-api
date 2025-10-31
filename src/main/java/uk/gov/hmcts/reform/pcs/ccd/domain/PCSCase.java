@@ -670,6 +670,7 @@ public class PCSCase {
 
     @JsonUnwrapped(prefix = "wales")
     private WalesNoticeDetails walesNoticeDetails;
+
     @CCD(
         label = "Discretionary grounds",
         hint = "Select all that apply",
@@ -713,4 +714,17 @@ public class PCSCase {
     @JsonUnwrapped
     private EnforcementOrder enforcementOrder;
 
+    @CCD(label = "Is there an underlessee or mortgagee entitled to claim relief against forfeiture?")
+    private VerticalYesNo hasUnderlesseeOrMortgagee;
+
+    private UnderlesseeMortgageeDetails underlesseeOrMortgagee1;
+
+    @CCD(label = "Do you need to add another underlessee or mortgagee?")
+    private VerticalYesNo addAdditionalUnderlesseeOrMortgagee;
+
+    @CCD(
+        label = "Add underlessee or mortgagee",
+        hint = "Add an underlessee or mortgagee to the case"
+    )
+    private List<ListValue<UnderlesseeMortgageeDetails>> additionalUnderlesseeOrMortgagee;
 }
