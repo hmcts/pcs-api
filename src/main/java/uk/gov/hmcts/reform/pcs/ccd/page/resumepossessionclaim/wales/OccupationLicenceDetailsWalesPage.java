@@ -63,7 +63,7 @@ public class OccupationLicenceDetailsWalesPage implements CcdPageConfiguration {
                 <p class="govuk-hint govuk-!-font-size-16 govuk-!-margin-top-1">
                 You can either upload this now or closer to the hearing date.
                 Any documents you upload now will be included in the pack of
-                documents a judge will receive before the hearing (the bundle).
+                documents a judge will receive before the hearing (the bundle)
                 </p>
                 """
             )
