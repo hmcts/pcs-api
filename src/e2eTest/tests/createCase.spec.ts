@@ -72,11 +72,28 @@ test.describe('[Create Case - England] @Master @nightly', async () => {
       correspondenceAddress: contactPreferences.yes,
       phoneNumber: contactPreferences.no
     });
-    await performAction('defendantDetails', {
-      name: defendantDetails.yes,
-      correspondenceAddress: defendantDetails.yes,
-      email: defendantDetails.yes,
-      correspondenceAddressSame: defendantDetails.no
+    // await performAction('addDefendantDetails', {
+    //   nameQuestion: defendantDetails.doYouKnowTheDefendantName, nameOption: defendantDetails.yes, firstName: defendantDetails.firstNameInput, lastName: defendantDetails.lastNameInput,
+    //   addressQuestion: defendantDetails.defendantCorrespondenceAddress, correspondenceAddressOption: defendantDetails.yes,
+    //   addressSameQuestion: defendantDetails.isCorrespondenceAddressSame, correspondenceAddressSameOption: defendantDetails.no, address: addressDetails.englandCourtAssignedPostcode,
+    //   addDefendantQuestion: defendantDetails.additionalDefendants, addAdditionalDefendantsOption: defendantDetails.yes,
+    //   name1Question: defendantDetails.doYouKnowTheDefendantName, name1Option: defendantDetails.no,
+    //   address1Question: defendantDetails.defendantCorrespondenceAddress, correspondenceAddress1Option: defendantDetails.no
+    // });
+
+    await performAction('addDefendantDetails', {
+      nameQuestion: defendantDetails.doYouKnowTheDefendantName,
+      nameOption: defendantDetails.yes,
+      firstName: defendantDetails.firstNameInput,
+      lastName: defendantDetails.lastNameInput,
+      addressQuestion: defendantDetails.defendantCorrespondenceAddress,
+      correspondenceAddressOption: defendantDetails.yes,
+      addressSameQuestion: defendantDetails.isCorrespondenceAddressSame,
+      correspondenceAddressSameOption: defendantDetails.no,
+      address: addressDetails.englandCourtAssignedPostcode,
+      addDefendantQuestion: defendantDetails.additionalDefendants,
+      addAdditionalDefendantsOption: defendantDetails.yes,
+      numberOfDefendants: 2
     });
     await performValidation('mainHeader', tenancyLicenceDetails.mainHeader);
     await performAction('selectTenancyOrLicenceDetails', {
