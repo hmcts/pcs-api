@@ -19,7 +19,7 @@ export class EnforcementAction implements IAction {
       ['selectRiskPosedByEveryoneAtProperty', () => this.selectRiskPosedByEveryoneAtProperty(fieldName as actionRecord)],
       ['provideDetailsViolentOrAggressiveBehaviour', () => this.provideDetailsViolentOrAggressiveBehaviour(fieldName as actionRecord)],
       ['provideDetailsFireArmPossession', () => this.provideDetailsFireArmPossession(fieldName as actionRecord)],
-      ['provideDetailsCriminalAntisocialBehavior', () => this.provideDetailsCriminalAntisocialBehavior(fieldName as actionRecord)],
+      ['provideDetailsCriminalOrAntisocialBehavior', () => this.provideDetailsCriminalOrAntisocialBehavior(fieldName as actionRecord)],
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) throw new Error(`No action found for '${action}'`);
@@ -66,7 +66,7 @@ export class EnforcementAction implements IAction {
     await performAction('clickButton', firearmPossession.continue);
   }
 
-  private async provideDetailsCriminalAntisocialBehavior(criminalAntisocialBehaviour: actionRecord) {
+  private async provideDetailsCriminalOrAntisocialBehavior(criminalAntisocialBehaviour: actionRecord) {
     await performValidation('mainHeader', criminalOrAntisocialBehaviour.mainHeader);
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: ' + enforcementTestCaseNumber});
     await performAction('inputText', criminalAntisocialBehaviour.label, criminalAntisocialBehaviour.input);
