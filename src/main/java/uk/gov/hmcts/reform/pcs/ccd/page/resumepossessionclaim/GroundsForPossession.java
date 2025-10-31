@@ -32,7 +32,8 @@ public class GroundsForPossession implements CcdPageConfiguration {
                     + "AND typeOfTenancyLicence!=\"FLEXIBLE_TENANCY\" "
                     + "AND typeOfTenancyLicence!=\"INTRODUCTORY_TENANCY\" "
                     + "AND typeOfTenancyLicence!=\"DEMOTED_TENANCY\" "
-                    + "AND typeOfTenancyLicence!=\"OTHER\"")
+                    + "AND typeOfTenancyLicence!=\"OTHER\""
+                    + " AND legislativeCountry=\"England\"")
             .label("groundsForPossession-lineSeparator", "---")
             .mandatory(PCSCase::getGroundsForPossession);
     }

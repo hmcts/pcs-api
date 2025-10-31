@@ -705,4 +705,10 @@ public class PCSCase {
     @JsonUnwrapped
     private EnforcementOrder enforcementOrder;
 
+    @CCD(searchable = false)
+    private YesOrNo showPreActionProtocolPageWales;
+
+    @CCD(searchable = false)
+    private YesOrNo showASBQuestionsPageWales;
+
 }

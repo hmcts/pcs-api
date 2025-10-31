@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
@@ -87,6 +88,32 @@ public class GroundsForPossessionWales
                 .errors(errors)
                 .build();
         }
+
+        boolean hasRentArrears = hasDiscretionary 
+                && discretionaryGrounds.contains(DiscretionaryGroundWales.RENT_ARREARS_SECTION_157);
+        boolean hasASB = hasDiscretionary 
+                && discretionaryGrounds.contains(DiscretionaryGroundWales.ANTISOCIAL_BEHAVIOUR_SECTION_157);
+        boolean hasOtherBreach = hasDiscretionary 
+                && discretionaryGrounds.contains(DiscretionaryGroundWales.OTHER_BREACH_SECTION_157);
+        boolean hasEstateManagement = hasDiscretionary
+                && discretionaryGrounds.contains(DiscretionaryGroundWales.ESTATE_MANAGEMENT_GROUNDS_SECTION_160);;
+
+        // Determine if there are "other options" (anything that's not rent arrears or ASB)
+        boolean hasOtherOptions = hasOtherBreach || hasEstateManagement || hasMandatory;
+
+        // Routing rules based on options selected
+        if (hasRentArrears && !hasASB && !hasOtherOptions) {
+            data.setShowASBQuestionsPageWales(YesOrNo.NO);
+            data.setShowReasonsForGroundsPageWales(YesOrNo.NO);
+        } else if (hasASB && !hasOtherOptions) {
+            data.setShowASBQuestionsPageWales(YesOrNo.YES);
+            data.setShowReasonsForGroundsPageWales(YesOrNo.NO);
+        } else if (hasOtherOptions) {
+            data.setShowASBQuestionsPageWales(YesOrNo.NO);
+            data.setShowReasonsForGroundsPageWales(YesOrNo.YES);
+            
+        }
+
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
             .data(data)

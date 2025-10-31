@@ -16,6 +16,7 @@ public class RentArrearsGroundsForPossessionReasons implements CcdPageConfigurat
                                + " AND typeOfTenancyLicence=\"ASSURED_TENANCY\""
                                + " AND showRentArrearsGroundReasonPage=\"Yes\""
                                + " AND hasOtherAdditionalGrounds=\"Yes\""
+                               + " AND legislativeCountry=\"England\""
             )
             .label("rentArrearsGrounds-lineSeparator","---")
             .complex(PCSCase::getRentArrearsGroundsReasons)
