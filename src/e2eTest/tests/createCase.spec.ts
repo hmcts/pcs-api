@@ -188,8 +188,7 @@ test.describe('[Create Case - England] @Master @nightly', async () => {
     await performAction('clickButtonAndVerifyPageNavigation', claimantName.continue, contactPreferences.mainHeader);
     await performAction('selectContactPreferences', {
       notifications: contactPreferences.yes,
-      correspondenceAddress: contactPreferences.yes,
-      phoneNumber: contactPreferences.no
+      correspondenceAddress: contactPreferences.yes
     });
     await performAction('defendantDetails', {
       name: defendantDetails.yes,
