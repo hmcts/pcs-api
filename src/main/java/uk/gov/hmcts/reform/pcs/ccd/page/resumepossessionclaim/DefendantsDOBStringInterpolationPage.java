@@ -13,7 +13,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.AddressValidator;
 
 @AllArgsConstructor
 @Component
-public class DefendantsDOBPage implements CcdPageConfiguration {
+public class DefendantsDOBStringInterpolationPage implements CcdPageConfiguration {
 
     private final AddressValidator addressValidator;
 
@@ -33,26 +33,7 @@ public class DefendantsDOBPage implements CcdPageConfiguration {
         PCSCase caseData = details.getData();
         DefendantDetails defendantDetails = caseData.getDefendant1();
 
-//        if (defendantDetails.getAddressSameAsPossession() == VerticalYesNo.NO
-//            && defendantDetails.getAddressKnown() == VerticalYesNo.YES) {
-//
-//            AddressUK correspondenceAddress = defendantDetails.getCorrespondenceAddress();
-//            List<String> validationErrors = addressValidator.validateAddressFields(correspondenceAddress);
-//            if (!validationErrors.isEmpty()) {
-//                return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
-//                    .errors(validationErrors)
-//                    .build();
-//            }
-//        }
-//
-//        // TODO: Update this once multiple defendant support is implemented.
-//        //  Set the text dynamically for one/multiple defendants.
-//        caseData.getDefendantCircumstances().setDefendantTermPossessive("defendants'");
-//
-//        return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
-//            .data(caseData)
-//            .build();
-            return null;
+        return AboutToStartOrSubmitResponse.<PCSCase, State>builder().build();
     }
 
 }
