@@ -13,7 +13,7 @@ export const waitForPageRedirectionTimeout = SHORT_TIMEOUT;
 export default defineConfig({
   testDir: 'tests/',
   /* Run tests in files in parallel */
-  fullyParallel: false,
+  fullyParallel: true,
   forbidOnly: !!process.env.CI,
   /* Retry on CI only */
   retries: process.env.CI ? 3 : 0,
