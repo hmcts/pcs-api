@@ -33,8 +33,8 @@ public class DefendantCircumstances {
 
     @CCD(
         label = "Give details about the ${defendantTermPossessive} circumstances",
-        typeOverride = TextArea,
-        max = 950
+        hint = "You can enter up to 950 characters",
+        typeOverride = TextArea
     )
     private String defendantCircumstancesInfo;
 

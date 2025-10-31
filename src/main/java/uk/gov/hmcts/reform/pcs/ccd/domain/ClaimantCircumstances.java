@@ -18,7 +18,6 @@ public class ClaimantCircumstances {
     private VerticalYesNo claimantCircumstancesSelect;
 
     @CCD(
-        max = 950,
         typeOverride = TextArea
     )
     private String claimantCircumstancesDetails;

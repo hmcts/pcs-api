@@ -388,8 +388,9 @@ class NoticeDetailsServiceTest {
             List<String> errors = noticeDetailsService.validateNoticeDetails(caseData);
 
             // Then
-            assertThat(errors).isNotEmpty();
-            assertThat(errors).contains("The explanation must be 250 characters or fewer");
+            // Note: Text area length validation is now handled by TextAreaValidationService at page level
+            // The NoticeDetailsService only validates date/time fields
+            assertThat(errors).isEmpty();
         }
 
         @Test
@@ -455,8 +456,9 @@ class NoticeDetailsServiceTest {
             List<String> errors = noticeDetailsService.validateNoticeDetails(caseData);
 
             // Then
-            assertThat(errors).isNotEmpty();
-            assertThat(errors).contains("The explanation must be 250 characters or fewer");
+            // Note: Text area length validation is now handled by TextAreaValidationService at page level
+            // The NoticeDetailsService only validates date/time fields
+            assertThat(errors).isEmpty();
         }
 
         @Test

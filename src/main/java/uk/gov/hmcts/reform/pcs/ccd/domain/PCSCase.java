@@ -230,7 +230,6 @@ public class PCSCase {
     @CCD(
         label = "Give details about the attempted mediation and what the outcome was",
         hint = "You can enter up to 250 characters",
-        max = 250,
         typeOverride = TextArea
     )
     private String mediationAttemptedDetails;
@@ -243,7 +242,6 @@ public class PCSCase {
     @CCD(
         label = "Explain what steps you've taken to reach a settlement",
         hint = "You can enter up to 250 characters",
-        max = 250,
         typeOverride = TextArea
     )
     private String settlementAttemptedDetails;
@@ -395,14 +393,14 @@ public class PCSCase {
 
     @CCD(
         label = "Explain how it was served by email",
-        max = 250,
+        hint = "You can enter up to 250 characters",
         typeOverride = TextArea
     )
     private String noticeEmailExplanation;
 
     @CCD(
-        label = "Explain what the other means were. You can enter up to 250 characters",
-        max = 250,
+        label = "Explain what the other means were",
+        hint = "You can enter up to 250 characters",
         typeOverride = TextArea
     )
     private String noticeOtherExplanation;
@@ -424,6 +422,7 @@ public class PCSCase {
 
     @CCD(
         label = "Give details of the type of tenancy or licence agreement that's in place",
+        hint = "You can enter up to 500 characters",
         typeOverride = TextArea
     )
     private String detailsOfOtherTypeOfTenancyLicence;
