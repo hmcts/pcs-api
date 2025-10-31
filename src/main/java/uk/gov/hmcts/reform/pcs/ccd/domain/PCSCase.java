@@ -12,13 +12,16 @@ import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseworkerReadAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenAccess;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.model.NoRentArrearsReasonForGrounds;
-import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
-import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.DiscretionaryGroundWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.EstateManagementGroundsWales;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.MandatoryGroundWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceTypeWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractDiscretionaryGroundsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractMandatoryGroundsWales;
+import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
+import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -78,6 +81,8 @@ public class PCSCase {
     )
     @External
     private AddressUK propertyAddress;
+
+    private String formattedPropertyAddress;
 
     @CCD(searchable = false)
     private YesOrNo showCrossBorderPage;
@@ -147,10 +152,10 @@ public class PCSCase {
     @CCD(label = "Enter address details")
     private AddressUK overriddenClaimantContactAddress;
 
-    @CCD(label = "Do you want to provide a contact phone number? (Optional)")
+    @CCD(label = "Do you want to provide a contact phone number?")
     private VerticalYesNo claimantProvidePhoneNumber;
 
-    @CCD(label = "Enter phone number", typeOverride = FieldType.PhoneUK)
+    @CCD(label = "Enter phone number", regex = "^\\s*0\\d{10}\\s*$")
     private String claimantContactPhoneNumber;
 
     @CCD(
@@ -636,13 +641,27 @@ public class PCSCase {
     )
     private CompletionNextStep completionNextStep;
 
+    @CCD(
+        label = "Discretionary grounds",
+        hint = "Select all that apply",
+        typeOverride = FieldType.MultiSelectList,
+        typeParameterOverride = "DiscretionaryGroundWales"
+    )
+    private Set<DiscretionaryGroundWales> discretionaryGroundsWales;
+
+    @CCD(
+        label = "Mandatory grounds",
+        hint = "Select all that apply",
+        typeOverride = FieldType.MultiSelectList,
+        typeParameterOverride = "MandatoryGroundWales"
+    )
+    private Set<MandatoryGroundWales> mandatoryGroundsWales;
+
     @JsonUnwrapped
     private SuspensionOfRightToBuyDemotionOfTenancy  suspensionOfRightToBuyDemotionOfTenancy;
 
     @JsonUnwrapped(prefix = "wales")
     private WalesNoticeDetails walesNoticeDetails;
-
-
     @CCD(
         label = "Discretionary grounds",
         hint = "Select all that apply",
@@ -664,6 +683,13 @@ public class PCSCase {
         typeOverride = FieldType.MultiSelectList,
         typeParameterOverride = "EstateManagementGroundsWales"
     )
+    private Set<EstateManagementGroundsWales> secureContractEstateManagementGroundsWales;
+
+    @CCD(
+        label = "Estate management grounds",
+        typeOverride = FieldType.MultiSelectList,
+        typeParameterOverride = "EstateManagementGroundsWales"
+    )
     private Set<EstateManagementGroundsWales> estateManagementGroundsWales;
 
     @CCD(searchable = false)
@@ -675,4 +701,8 @@ public class PCSCase {
         typeParameterOverride = "OccupationLicenceTypeWales"
     )
     private OccupationLicenceTypeWales occupationLicenceTypeWales;
+
+    @JsonUnwrapped
+    private EnforcementOrder enforcementOrder;
+
 }
