@@ -1,0 +1,9 @@
+// Auto-generated from Figma file: MHSqNylYUQUmLbWCQeBHqq, based on page: "List: Bulleted" (I8548:1679;3329:70380;355:6978;18323:11786;18252:10543) and other states
+
+export const apples = {
+  mainHeader: `apples`,
+  blackberriesLabel: `blackberries`,
+  pearsLabel: `pears`,
+  plumsLabel: `plums`,
+  strawberriesLabel: `strawberries`
+};
