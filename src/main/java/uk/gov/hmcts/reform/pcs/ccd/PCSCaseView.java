@@ -3,7 +3,8 @@ package uk.gov.hmcts.reform.pcs.ccd;
 import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Component;
-import uk.gov.hmcts.ccd.sdk.DecentralisedCaseRepository;
+import uk.gov.hmcts.ccd.sdk.CaseView;
+import uk.gov.hmcts.ccd.sdk.CaseViewRequest;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
@@ -19,7 +20,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
-import uk.gov.hmcts.reform.pcs.ccd.service.UnsubmittedCaseDataService;
+import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
@@ -36,21 +37,22 @@ import java.util.stream.Collectors;
  */
 @Component
 @AllArgsConstructor
-public class CCDCaseRepository extends DecentralisedCaseRepository<PCSCase> {
+public class PCSCaseView implements CaseView<PCSCase, State> {
 
     private final PcsCaseRepository pcsCaseRepository;
     private final SecurityContextService securityContextService;
     private final ModelMapper modelMapper;
     private final PcsCaseService pcsCaseService;
-    private final UnsubmittedCaseDataService unsubmittedCaseDataService;
+    private final DraftCaseDataService draftCaseDataService;
 
     /**
      * Invoked by CCD to load PCS cases by reference.
-     * @param caseReference The CCD case reference to load
-     * @param state the current case state
+     * @param request encapsulates the CCD case reference and state
      */
     @Override
-    public PCSCase getCase(long caseReference, String state) {
+    public PCSCase getCase(CaseViewRequest<State> request) {
+        long caseReference = request.caseRef();
+        State state = request.state();
         PCSCase pcsCase = getSubmittedCase(caseReference);
 
         boolean hasUnsubmittedCaseData = caseHasUnsubmittedData(caseReference, state);
@@ -61,9 +63,9 @@ public class CCDCaseRepository extends DecentralisedCaseRepository<PCSCase> {
         return pcsCase;
     }
 
-    private boolean caseHasUnsubmittedData(long caseReference, String state) {
-        if (State.AWAITING_FURTHER_CLAIM_DETAILS.name().equals(state)) {
-            return unsubmittedCaseDataService.hasUnsubmittedCaseData(caseReference);
+    private boolean caseHasUnsubmittedData(long caseReference, State state) {
+        if (State.AWAITING_FURTHER_CLAIM_DETAILS == state) {
+            return draftCaseDataService.hasUnsubmittedCaseData(caseReference);
         } else {
             return false;
         }
@@ -75,13 +77,13 @@ public class CCDCaseRepository extends DecentralisedCaseRepository<PCSCase> {
             .propertyAddress(convertAddress(pcsCaseEntity.getPropertyAddress()))
             .legislativeCountry(pcsCaseEntity.getLegislativeCountry())
             .caseManagementLocation(pcsCaseEntity.getCaseManagementLocation())
-            .claimantType(pcsCaseEntity.getClaimantType() != null 
+            .claimantType(pcsCaseEntity.getClaimantType() != null
                 ? DynamicStringList.builder()
                     .value(DynamicStringListElement.builder()
                         .code(pcsCaseEntity.getClaimantType().name())
                         .label(pcsCaseEntity.getClaimantType().getLabel())
                         .build())
-                    .build() 
+                    .build()
                 : null)
             .preActionProtocolCompleted(pcsCaseEntity.getPreActionProtocolCompleted() != null
                 ? VerticalYesNo.from(pcsCaseEntity.getPreActionProtocolCompleted())
