@@ -14,11 +14,11 @@ public class NameAndAddressForEvictionPage implements CcdPageConfiguration {
     @Override
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
-            .page("enforcementEvictionNameAndAddress")
+            .page("nameAndAddressForEviction")
             .pageLabel("The name and address for the eviction (placeholder)")
             .readonly(PCSCase::getDefendant1, NEVER_SHOW)
             .label(
-                "enforcementEvictionNameAndAddress-details-defendants-check",
+                "nameAndAddressForEviction-defendants-check",
                 """
                     <hr />
                     <h2 class="govuk-heading-m">Check the name and address for the eviction</h2>
@@ -37,7 +37,7 @@ public class NameAndAddressForEvictionPage implements CcdPageConfiguration {
                 """)
             .readonly(PCSCase::getFormattedPropertyAddress, NEVER_SHOW)
             .label(
-                "enforcementEvictionNameAndAddress-details-address-check",
+                "nameAndAddressForEviction-address-check",
                 """
                     <hr />
                     <div class="govuk-width-container">
@@ -54,7 +54,7 @@ public class NameAndAddressForEvictionPage implements CcdPageConfiguration {
                         </div>
                 """)
             .label(
-                "enforcementNameAndAddressPage-details-confirmation",
+                "nameAndAddressForEviction-confirmation",
                 """
                 ---
                 <h2 class="govuk-heading-m">Is this the correct name and address for the eviction?</h2>
@@ -62,7 +62,7 @@ public class NameAndAddressForEvictionPage implements CcdPageConfiguration {
             .complex(PCSCase::getEnforcementOrder)
             .complex(EnforcementOrder::getNameAndAddressForEviction)
             .mandatory(NameAndAddressForEviction::getCorrectNameAndAddress)
-            .label("enforcementNameAndAddressPage-details-save-and-return", SAVE_AND_RETURN);
+            .label("nameAndAddressForEviction-save-and-return", SAVE_AND_RETURN);
 
     }
 

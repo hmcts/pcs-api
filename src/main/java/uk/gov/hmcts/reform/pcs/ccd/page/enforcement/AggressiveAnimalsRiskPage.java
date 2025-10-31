@@ -14,34 +14,32 @@ import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ProtestorGroupRiskPage implements CcdPageConfiguration {
+public class AggressiveAnimalsRiskPage implements CcdPageConfiguration {
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
-                .page("protestorGroupRisk", this::midEvent)
-                .pageLabel("Their membership of a group that protests evictions")
-                .showCondition("anyRiskToBailiff=\"YES\" "
-                    + " AND enforcementRiskCategoriesCONTAINS\"PROTEST_GROUP_MEMBER\"")
-                .label("protestorGroupRisk-line-separator", "---")
+                .page("aggressiveAnimalsRisk", this::midEvent)
+                .pageLabel("The animals at the property")
+                .showCondition("anyRiskToBailiff=\"YES\" AND enforcementRiskCategoriesCONTAINS\"AGGRESSIVE_ANIMALS\"")
+                .label("aggressiveAnimalsRisk-line-separator", "---")
                 .complex(PCSCase::getEnforcementOrder)
                 .complex(EnforcementOrder::getRiskDetails)
-                .mandatory(EnforcementRiskDetails::getEnforcementProtestGroupMemberDetails)
+                    .mandatory(EnforcementRiskDetails::getEnforcementDogsOrOtherAnimalsDetails)
                 .done()
-                .label("protestorGroupRisk-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
+                .label("aggressiveAnimalsRisk-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
 
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
                                                                   CaseDetails<PCSCase, State> before) {
         PCSCase data = details.getData();
         List<String> errors = new ArrayList<>();
-
-        String txt = data.getEnforcementOrder().getRiskDetails().getEnforcementProtestGroupMemberDetails();
-
-        // TODO: Use TextAreaValidationService from PR #751 when merged
+        String txt = data.getEnforcementOrder().getRiskDetails().getEnforcementDogsOrOtherAnimalsDetails();
+        // TODO: Refactor validation logic to use TextAreaValidationService from PR #751 when merged
         if (txt.length() > EnforcementRiskValidationUtils.getCharacterLimit()) {
+            // TODO: Use TextAreaValidationService from PR #751 when merged
             errors.add(EnforcementRiskValidationUtils
-                    .getCharacterLimitErrorMessage(RiskCategory.PROTEST_GROUP_MEMBER));
+                    .getCharacterLimitErrorMessage(RiskCategory.AGGRESSIVE_ANIMALS));
         }
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()

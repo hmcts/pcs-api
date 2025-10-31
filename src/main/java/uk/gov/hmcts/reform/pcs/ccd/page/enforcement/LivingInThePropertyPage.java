@@ -1,7 +1,5 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.enforcement;
 
-import lombok.AllArgsConstructor;
-import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
@@ -9,18 +7,16 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.EnforcementOrder;
 
 import static uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent.SAVE_AND_RETURN;
 
-@AllArgsConstructor
-@Component
 public class LivingInThePropertyPage implements CcdPageConfiguration {
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
-            .page("livingInThePropertyPage")
+            .page("livingInTheProperty")
             .pageLabel("Everyone living at the property")
-            .label("livingInThePropertyPage-content", "---")
+            .label("livingInTheProperty-content", "---")
             .label(
-                "livingInThePropertyPage-information-text", """
+                "livingInTheProperty-information-text", """
                     <p>The bailiff needs to know if anyone at the property poses a risk.</p>
                     <p>For example if they:</p>
                       <ul>
@@ -37,6 +33,6 @@ public class LivingInThePropertyPage implements CcdPageConfiguration {
             .complex(PCSCase::getEnforcementOrder)
             .mandatory(EnforcementOrder::getAnyRiskToBailiff)
             .done()
-            .label("enforcementLivingInThePropertyPage-details-save-and-return", SAVE_AND_RETURN);
+            .label("livingInTheProperty-save-and-return", SAVE_AND_RETURN);
     }
 }
