@@ -12,11 +12,10 @@ import uk.gov.hmcts.ccd.sdk.api.Permission;
 import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
-import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantsDOBConcept;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.DefendantsDOBConceptPage;
-import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.DefendantsDOBPage;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.DefendantsDOBMultiLabelPage;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.DefendantsDOBStringInterpolationPage;
 
 import static uk.gov.hmcts.reform.pcs.ccd.domain.State.AWAITING_SUBMISSION_TO_HMCTS;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.State.CASE_ISSUED;
@@ -29,9 +28,9 @@ import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.dobEvent;
 public class DOBEvent implements CCDConfig<PCSCase, State, UserRole> {
 
     //Attempt 1 - String interpolation and read only fields
-    private final DefendantsDOBPage defendantsDOBPage;
+    private final DefendantsDOBStringInterpolationPage defendantsDOBStringInterpolationPage;
     //Attempt 2 - Prepopulated ui.
-    private final DefendantsDOBConceptPage defendantsDOBConceptsPage;
+    private final DefendantsDOBMultiLabelPage defendantsDOBConceptsPage;
 
 
     @Override
@@ -40,11 +39,11 @@ public class DOBEvent implements CCDConfig<PCSCase, State, UserRole> {
             configBuilder
                 .decentralisedEvent(dobEvent.name(), this::submit, this::start)
                 .forStateTransition(AWAITING_SUBMISSION_TO_HMCTS, CASE_ISSUED)
-                .name("Date of birth event")
+                .name("Enforce the order")
                 .grant(Permission.CRUD, UserRole.PCS_SOLICITOR);
 
         new PageBuilder(eventBuilder)
-//            .add(defendantsDOBPage)
+            .add(defendantsDOBStringInterpolationPage)
             .add(defendantsDOBConceptsPage);
     }
 

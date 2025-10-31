@@ -105,7 +105,7 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
                 ? YesOrNo.from(pcsCaseEntity.getTenancyLicence().getNoticeServed()) : null)
             .allDefendants(wrapListItems(defendantService.mapToDefendantDetails(pcsCaseEntity.getDefendants())))
             .dobDefendants(wrapListItems(defendantService.mapToDefendantDOB(pcsCaseEntity.getDefendants())))
-            .defendantsDOBConcept(defendantService.mapToDefendantDOBConcept(pcsCaseEntity.getDefendants()))
+            .defendantsDOBMultiLabel(defendantService.mapToDefendantDOBConcept(pcsCaseEntity.getDefendants()))
             .build();
 
         setDerivedProperties(pcsCase, pcsCaseEntity);
@@ -127,7 +127,7 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
         pcsCase.setPageHeadingMarkdown("""
                 <p class="govuk-!-font-size-24
                 govuk-!-margin-top-0 govuk-!-margin-bottom-0">
-                </p>""");
+                Case number: ${[CASE_REFERENCE]}</p>""");
 
         if (pcsCase.getHasUnsubmittedCaseData() == YesOrNo.YES) {
             pcsCase.setNextStepsMarkdown("""

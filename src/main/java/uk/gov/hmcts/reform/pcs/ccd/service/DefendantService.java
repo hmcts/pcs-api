@@ -5,8 +5,8 @@ import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantDetails;
-import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantsDOB;
-import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantsDOBConcept;
+import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantsDOBStringInterpolation;
+import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantsDOBMultiLabel;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.model.Defendant;
@@ -38,20 +38,20 @@ public class DefendantService {
         return defendants;
     }
 
-    public DefendantsDOBConcept mapToDefendantDOBConcept(List<Defendant> defendantList) {
-        DefendantsDOBConcept defendantsDOBConcept = new DefendantsDOBConcept();
+    public DefendantsDOBMultiLabel mapToDefendantDOBConcept(List<Defendant> defendantList) {
+        DefendantsDOBMultiLabel defendantsDOBMultiLabel = new DefendantsDOBMultiLabel();
 
         if (defendantList == null) {
-            return defendantsDOBConcept;
+            return defendantsDOBMultiLabel;
         }
 
-        defendantsDOBConcept.setFirstName1(safeFirstName(0, defendantList));
-        defendantsDOBConcept.setFirstName2(safeFirstName(1, defendantList));
-        defendantsDOBConcept.setFirstName3(safeFirstName(2, defendantList));
-        defendantsDOBConcept.setFirstName4(safeFirstName(3, defendantList));
-        defendantsDOBConcept.setFirstName5(safeFirstName(4, defendantList));
+        defendantsDOBMultiLabel.setFirstName1(safeFirstName(0, defendantList));
+        defendantsDOBMultiLabel.setFirstName2(safeFirstName(1, defendantList));
+        defendantsDOBMultiLabel.setFirstName3(safeFirstName(2, defendantList));
+        defendantsDOBMultiLabel.setFirstName4(safeFirstName(3, defendantList));
+        defendantsDOBMultiLabel.setFirstName5(safeFirstName(4, defendantList));
 
-        return defendantsDOBConcept;
+        return defendantsDOBMultiLabel;
     }
 
     private String safeFirstName(int i, List<Defendant> defendantList) {
@@ -72,13 +72,13 @@ public class DefendantService {
             .toList();
     }
 
-    public List<DefendantsDOB> mapToDefendantDOB(List<Defendant> defendantList) {
+    public List<DefendantsDOBStringInterpolation> mapToDefendantDOB(List<Defendant> defendantList) {
         if (defendantList == null) {
             return Collections.emptyList();
         }
 
         return defendantList.stream()
-            .map(defendant -> modelMapper.map(defendant, DefendantsDOB.class))
+            .map(defendant -> modelMapper.map(defendant, DefendantsDOBStringInterpolation.class))
             .toList();
     }
 

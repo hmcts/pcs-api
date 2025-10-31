@@ -352,9 +352,9 @@ public class PCSCase {
 
     private List<ListValue<DefendantDetails>> allDefendants;
 
-    private List<ListValue<DefendantsDOB>> dobDefendants;
+    private List<ListValue<DefendantsDOBStringInterpolation>> dobDefendants;
 
-    private DefendantsDOBConcept defendantsDOBConcept;
+    private DefendantsDOBMultiLabel defendantsDOBMultiLabel;
 
     // Notice Details fields
     @CCD(
