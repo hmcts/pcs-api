@@ -203,7 +203,7 @@ test.describe('[Create Case - England] @Master @nightly', async () => {
     await performAction('selectGroundsForPossession', {groundsRadioInput: groundsForPossession.no});
     await performValidation('mainHeader', whatAreYourGroundsForPossession.mainHeader);
     await performAction('selectYourPossessionGrounds', {
-      mandatory : [whatAreYourGroundsForPossession.mandatory.holidayLet,whatAreYourGroundsForPossession.mandatory.ownerOccupier],
+      mandatory : [whatAreYourGroundsForPossession.mandatory.holidayLet, whatAreYourGroundsForPossession.mandatory.ownerOccupier],
       discretionary :[whatAreYourGroundsForPossession.discretionary.domesticViolence14A, whatAreYourGroundsForPossession.discretionary.deteriorationOfFurniture15]
     });
     await performValidation('mainHeader', reasonsForPossession.mainHeader);
@@ -224,16 +224,6 @@ test.describe('[Create Case - England] @Master @nightly', async () => {
       question: noticeOfYourIntention.servedNoticeInteractiveText,
       option: noticeOfYourIntention.no
     });
-    // await performValidation('mainHeader', rentDetails.mainHeader);
-    // await performAction('provideRentDetails', { rentFrequencyOption: 'weekly', rentAmount: '800' });
-    // await performValidation('mainHeader', dailyRentAmount.mainHeader);
-    // await performAction('selectDailyRentAmount', {
-    //   calculateRentAmount: '£114.29',
-    //   unpaidRentInteractiveOption: dailyRentAmount.no,
-    //   unpaidRentAmountPerDay: '20'
-    // });
-    await performValidation('mainHeader', moneyJudgment.mainHeader);
-    await performAction('selectMoneyJudgment', moneyJudgment.yes);
     await performValidation('mainHeader', claimantCircumstances.mainHeader);
     await performAction('selectClaimantCircumstances', {
       circumstanceOption: claimantCircumstances.no,
@@ -712,12 +702,12 @@ test.describe('[Create Case - England] @Master @nightly', async () => {
       question: noticeOfYourIntention.servedNoticeInteractiveText,
       option: noticeOfYourIntention.no,
     });
-    // await performValidation('mainHeader', rentDetails.mainHeader);
-    // await performAction('provideRentDetails', {rentFrequencyOption: 'Monthly', rentAmount: '1000'});
-    // await performAction('selectDailyRentAmount', {
-    //   calculateRentAmount: '£32.85',
-    //   unpaidRentInteractiveOption: dailyRentAmount.yes
-    // });
+    await performValidation('mainHeader', rentDetails.mainHeader);
+    await performAction('provideRentDetails', {rentFrequencyOption: 'Monthly', rentAmount: '1000'});
+    await performAction('selectDailyRentAmount', {
+      calculateRentAmount: '£32.85',
+      unpaidRentInteractiveOption: dailyRentAmount.yes
+    });
     await performValidation('mainHeader', moneyJudgment.mainHeader);
     await performAction('selectMoneyJudgment', moneyJudgment.yes);
     await performValidation('mainHeader', claimantCircumstances.mainHeader);
@@ -818,12 +808,12 @@ test.describe('[Create Case - England] @Master @nightly', async () => {
     await performAction('selectNoticeDetails', {
        howDidYouServeNotice: noticeDetails.byOtherElectronicMethod,
       day: '25', month: '02', year: '1970', hour: '22', minute: '45', second: '10', files: 'NoticeDetails.pdf'});
-   /* await performAction('provideRentDetails', {rentFrequencyOption: 'Monthly', rentAmount: '1000'});
+    await performAction('provideRentDetails', {rentFrequencyOption: 'Monthly', rentAmount: '1000'});
     await performValidation('mainHeader', dailyRentAmount.mainHeader);
     await performAction('selectDailyRentAmount', {
       calculateRentAmount: '£32.85',
       unpaidRentInteractiveOption: dailyRentAmount.yes
-    });*/
+    });
     await performValidation('mainHeader', moneyJudgment.mainHeader);
     await performAction('selectMoneyJudgment', moneyJudgment.no);
     await performValidation('mainHeader', claimantCircumstances.mainHeader);
