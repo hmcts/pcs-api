@@ -19,8 +19,11 @@ export class VisibilityValidation implements IValidation {
     await expect(element).toBeVisible();
   }
 
-  private async elementNotToBeVisible(element: Locator): Promise<void> {
-    await expect(element).not.toBeVisible();
+  private async elementNotToBeVisible(element: Locator | Locator[]): Promise<void> {
+    const elements = Array.isArray(element) ? element : [element];
+    for (const el of elements) {
+      await expect(el).not.toBeVisible();
+    }
   }
 
   private async waitUntilElementDisappears(element: Locator): Promise<void> {
