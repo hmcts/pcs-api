@@ -42,7 +42,8 @@ public class EnforcementRiskDetails {
         label = "What kind of verbal or written threats have they made?",
         hint = "For example, explain who was threatened, what the defendants said, "
             + "and how the threat was made (face-to-face, or by email or letter). "
-            + "If you can, include the name of the defendant who made the threat.",
+            + "If you can, include the name of the defendant who made the threat. "
+            + EnforcementRiskValidationUtils.CHARACTER_LIMIT_MESSAGE,
         typeOverride = TextArea
     )
     private String enforcementVerbalOrWrittenThreatsDetails;
