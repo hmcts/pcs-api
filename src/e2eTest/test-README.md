@@ -129,6 +129,7 @@ Playwright 1.30+ | TypeScript 4.9+
 | enterReasonForSuspensionAndDemotionOrder | `performAction('enterReasonForSuspensionAndDemotionOrder', suspension)`                                                                                                                                    |
 | signOut                                  | `performAction('signOut')`                                                                                                                                                                                 |
 | clickButtonAndWaitForElement             | `performAction('clickButtonAndWaitForElement', 'Sign out', home.mainHeader)`                                                                                                                               |
+| selectOccupationContractOrLicenceDetails | `performAction('selectOccupationContractOrLicenceDetails', {occupationContractType: occupationContractOrLicenceDetailsWales.other})`                                                                       |
 ### Validations
 | Validation                 | Example Usage                                                                                                                        |
 |----------------------------|--------------------------------------------------------------------------------------------------------------------------------------|
