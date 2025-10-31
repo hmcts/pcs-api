@@ -366,7 +366,7 @@ test.describe('[Create Case - England] @Master @nightly', async () => {
     )
   });
 
-  // The sections commented out will be fixed as part of the User Story https://tools.hmcts.net/jira/browse/HDPI-2123
+  // The sections commented out will be fixed as part of the User Story https://tools.hmcts.net/jira/browse/HDPI-2620
   test('England - Demoted tenancy with no grounds for possession', async () => {
     await performAction('selectAddress', {
       postcode: addressDetails.englandCourtAssignedPostcode,
@@ -424,8 +424,7 @@ test.describe('[Create Case - England] @Master @nightly', async () => {
     //   unpaidRentInteractiveOption: dailyRentAmount.no,
     //   unpaidRentAmountPerDay: '20'
     // });
-    await performValidation('mainHeader', moneyJudgment.mainHeader);
-    await performAction('selectMoneyJudgment', moneyJudgment.yes);
+
     await performValidation('mainHeader', claimantCircumstances.mainHeader);
     await performAction('selectClaimantCircumstances', {
       circumstanceOption: claimantCircumstances.yes,
