@@ -1,16 +1,29 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim;
 
+import lombok.AllArgsConstructor;
+import org.springframework.stereotype.Component;
+import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
+import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsGroundsReasons;
+import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 
+import java.util.ArrayList;
+import java.util.List;
+
+@AllArgsConstructor
+@Component
 public class RentArrearsGroundsForPossessionReasons implements CcdPageConfiguration {
+
+    private final TextAreaValidationService textAreaValidationService;
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
-            .page("rentArrearsGroundsForPossessionReasons")
+            .page("rentArrearsGroundsForPossessionReasons", this::midEvent)
             .pageLabel("Reasons for possession")
             .showCondition("groundsForPossession=\"Yes\""
                                + " AND typeOfTenancyLicence=\"ASSURED_TENANCY\""
@@ -220,5 +233,113 @@ public class RentArrearsGroundsForPossessionReasons implements CcdPageConfigurat
             .mandatory(RentArrearsGroundsReasons::getTenancyByFalseStatementReason,
                 "rentArrearsDiscretionaryGroundsCONTAINS\"FALSE_STATEMENT_GROUND17\"")
             .done();
+    }
+
+    private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
+                                                                  CaseDetails<PCSCase, State> detailsBefore) {
+        PCSCase caseData = details.getData();
+        
+        // Validate all text area fields for character limit
+        List<String> validationErrors = new ArrayList<>();
+        
+        RentArrearsGroundsReasons rentArrearsGroundsReasons = caseData.getRentArrearsGroundsReasons();
+        if (rentArrearsGroundsReasons != null) {
+            validationErrors.addAll(textAreaValidationService.validateMultipleTextAreas(
+                // Mandatory grounds
+                TextAreaValidationService.FieldValidation.of(
+                    rentArrearsGroundsReasons.getOwnerOccupierReason(),
+                    "Owner occupier (ground 1)",
+                    TextAreaValidationService.MEDIUM_TEXT_LIMIT
+                ),
+                TextAreaValidationService.FieldValidation.of(
+                    rentArrearsGroundsReasons.getRepossessionByLenderReason(),
+                    "Repossession by the landlord's mortgage lender (ground 2)",
+                    TextAreaValidationService.MEDIUM_TEXT_LIMIT
+                ),
+                TextAreaValidationService.FieldValidation.of(
+                    rentArrearsGroundsReasons.getHolidayLetReason(),
+                    "Holiday let (ground 3)",
+                    TextAreaValidationService.MEDIUM_TEXT_LIMIT
+                ),
+                TextAreaValidationService.FieldValidation.of(
+                    rentArrearsGroundsReasons.getStudentLetReason(),
+                    "Student let (ground 4)",
+                    TextAreaValidationService.MEDIUM_TEXT_LIMIT
+                ),
+                TextAreaValidationService.FieldValidation.of(
+                    rentArrearsGroundsReasons.getMinisterOfReligionReason(),
+                    "Property required for minister of religion (ground 5)",
+                    TextAreaValidationService.MEDIUM_TEXT_LIMIT
+                ),
+                TextAreaValidationService.FieldValidation.of(
+                    rentArrearsGroundsReasons.getRedevelopmentReason(),
+                    "Property required for redevelopment (ground 6)",
+                    TextAreaValidationService.MEDIUM_TEXT_LIMIT
+                ),
+                TextAreaValidationService.FieldValidation.of(
+                    rentArrearsGroundsReasons.getDeathOfTenantReason(),
+                    "Death of the tenant (ground 7)",
+                    TextAreaValidationService.MEDIUM_TEXT_LIMIT
+                ),
+                TextAreaValidationService.FieldValidation.of(
+                    rentArrearsGroundsReasons.getAntisocialBehaviourReason(),
+                    "Antisocial behaviour (ground 7A)",
+                    TextAreaValidationService.MEDIUM_TEXT_LIMIT
+                ),
+                TextAreaValidationService.FieldValidation.of(
+                    rentArrearsGroundsReasons.getNoRightToRentReason(),
+                    "Tenant does not have a right to rent (ground 7B)",
+                    TextAreaValidationService.MEDIUM_TEXT_LIMIT
+                ),
+                // Discretionary grounds
+                TextAreaValidationService.FieldValidation.of(
+                    rentArrearsGroundsReasons.getSuitableAltAccommodationReason(),
+                    "Suitable alternative accommodation (ground 9)",
+                    TextAreaValidationService.MEDIUM_TEXT_LIMIT
+                ),
+                TextAreaValidationService.FieldValidation.of(
+                    rentArrearsGroundsReasons.getBreachOfTenancyConditionsReason(),
+                    "Breach of tenancy conditions (ground 12)",
+                    TextAreaValidationService.MEDIUM_TEXT_LIMIT
+                ),
+                TextAreaValidationService.FieldValidation.of(
+                    rentArrearsGroundsReasons.getPropertyDeteriorationReason(),
+                    "Deterioration in the condition of the property (ground 13)",
+                    TextAreaValidationService.MEDIUM_TEXT_LIMIT
+                ),
+                TextAreaValidationService.FieldValidation.of(
+                    rentArrearsGroundsReasons.getNuisanceAnnoyanceReason(),
+                    "Nuisance, annoyance, illegal or immoral use of the property (ground 14)",
+                    TextAreaValidationService.MEDIUM_TEXT_LIMIT
+                ),
+                TextAreaValidationService.FieldValidation.of(
+                    rentArrearsGroundsReasons.getDomesticViolenceReason(),
+                    "Domestic violence (ground 14A)",
+                    TextAreaValidationService.MEDIUM_TEXT_LIMIT
+                ),
+                TextAreaValidationService.FieldValidation.of(
+                    rentArrearsGroundsReasons.getOffenceDuringRiotReason(),
+                    "Offence during a riot (ground 14ZA)",
+                    TextAreaValidationService.MEDIUM_TEXT_LIMIT
+                ),
+                TextAreaValidationService.FieldValidation.of(
+                    rentArrearsGroundsReasons.getFurnitureDeteriorationReason(),
+                    "Deterioration of furniture (ground 15)",
+                    TextAreaValidationService.MEDIUM_TEXT_LIMIT
+                ),
+                TextAreaValidationService.FieldValidation.of(
+                    rentArrearsGroundsReasons.getEmployeeOfLandlordReason(),
+                    "Employee of the landlord (ground 16)",
+                    TextAreaValidationService.MEDIUM_TEXT_LIMIT
+                ),
+                TextAreaValidationService.FieldValidation.of(
+                    rentArrearsGroundsReasons.getTenancyByFalseStatementReason(),
+                    "Tenancy obtained by false statement (ground 17)",
+                    TextAreaValidationService.MEDIUM_TEXT_LIMIT
+                )
+            ));
+        }
+        
+        return textAreaValidationService.createValidationResponse(caseData, validationErrors);
     }
 }

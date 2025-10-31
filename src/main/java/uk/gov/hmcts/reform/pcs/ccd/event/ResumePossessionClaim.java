@@ -126,10 +126,13 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
     private final MediationAndSettlement mediationAndSettlement;
     private final ClaimantCircumstancesPage claimantCircumstancesPage;
     private final IntroductoryDemotedOtherGroundsReasons introductoryDemotedOtherGroundsReasons;
+    private final IntroductoryDemotedOrOtherGroundsForPossession introductoryDemotedOrOtherGroundsForPossession;
     private final DefendantCircumstancesPage defendantCircumstancesPage;
     private final SuspensionOfRightToBuyOrderReason suspensionOfRightToBuyOrderReason;
     private final StatementOfExpressTerms statementOfExpressTerms;
     private final DemotionOfTenancyOrderReason demotionOfTenancyOrderReason;
+    private final RentArrearsGroundsForPossessionReasons rentArrearsGroundsForPossessionReasons;
+    private final SuspensionToBuyDemotionOfTenancyOrderReasons suspensionToBuyDemotionOfTenancyOrderReasons;
     private final OrganisationNameService organisationNameService;
     private final ClaimantDetailsWalesPage claimantDetailsWales;
     private final SchedulerClient schedulerClient;
@@ -169,12 +172,12 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             .add(new SecureOrFlexibleGroundsForPossession())
             .add(new RentArrearsOrBreachOfTenancyGround())
             .add(secureOrFlexibleGroundsForPossessionReasons)
-            .add(new IntroductoryDemotedOrOtherGroundsForPossession())
+            .add(introductoryDemotedOrOtherGroundsForPossession)
             .add(introductoryDemotedOtherGroundsReasons)
             .add(new GroundsForPossession())
             .add(new RentArrearsGroundsForPossession())
             .add(new RentArrearsGroundForPossessionAdditionalGrounds())
-            .add(new RentArrearsGroundsForPossessionReasons())
+            .add(rentArrearsGroundsForPossessionReasons)
             .add(new NoRentArrearsGroundsForPossessionOptions())
             .add(noRentArrearsGroundsForPossessionReason)
             .add(new PreActionProtocol())
@@ -195,7 +198,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             .add(new SuspensionToBuyDemotionOfTenancyActs())
             .add(statementOfExpressTerms)
             .add(demotionOfTenancyOrderReason)
-            .add(new SuspensionToBuyDemotionOfTenancyOrderReasons())
+            .add(suspensionToBuyDemotionOfTenancyOrderReasons)
             .add(new ClaimingCosts())
             .add(additionalReasonsForPossession)
             .add(new EntitledToClaimRelief())
