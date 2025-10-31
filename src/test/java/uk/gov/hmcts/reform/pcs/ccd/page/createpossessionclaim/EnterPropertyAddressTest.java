@@ -98,6 +98,7 @@ class EnterPropertyAddressTest extends BasePageTest {
 
         PCSCase caseData = PCSCase.builder()
             .propertyAddress(propertyAddress)
+            .legislativeCountry(SCOTLAND)
             .build();
 
         EligibilityResult eligibilityResult = EligibilityResult.builder()
@@ -114,6 +115,9 @@ class EnterPropertyAddressTest extends BasePageTest {
         assertThat(resultData.getShowCrossBorderPage()).isEqualTo(expectedShowCrossBorder);
 
         if (status == EligibilityStatus.NO_MATCH_FOUND) {
+            assertThat(resultData.getLegislativeCountry()).isNull();
+            assertThat(resultData.getShowCrossBorderPage()).isEqualTo(NO);
+            assertThat(resultData.getShowPropertyNotEligiblePage()).isEqualTo(NO);
             assertThat(resultData.getShowPostcodeNotAssignedToCourt()).isEqualTo(YES);
             assertThat(resultData.getPostcodeNotAssignedView()).isEqualTo("ALL_COUNTRIES");
         }
@@ -154,6 +158,28 @@ class EnterPropertyAddressTest extends BasePageTest {
             .hasMessageContaining("Expected at least 2 legislative countries")
             .hasMessageContaining(expectedMessageFragment)
             .hasMessageContaining(postcode);
+    }
+
+    @Test
+    void shouldNotShowPropertyNotEligibleOrCrossBorderPagesOnEligible() {
+        // Given
+        AddressUK propertyAddress = AddressUK.builder().postCode("M1 1AA").build();
+        PCSCase caseData = PCSCase.builder().propertyAddress(propertyAddress).build();
+
+        var result = EligibilityResult.builder()
+            .status(EligibilityStatus.ELIGIBLE)
+            .legislativeCountry(ENGLAND)
+            .build();
+
+        when(eligibilityService.checkEligibility("M1 1AA", null)).thenReturn(result);
+
+        // When
+        AboutToStartOrSubmitResponse<PCSCase, State> resp = callMidEventHandler(caseData);
+
+        // Then
+        PCSCase data = resp.getData();
+        assertThat(data.getShowCrossBorderPage()).isEqualTo(YesOrNo.NO);
+        assertThat(data.getShowPropertyNotEligiblePage()).isEqualTo(YesOrNo.NO);
     }
 
     @Test
