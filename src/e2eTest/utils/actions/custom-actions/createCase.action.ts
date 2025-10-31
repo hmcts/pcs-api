@@ -620,7 +620,7 @@ export class CreateCaseAction implements IAction {
     await performAction('clickButton', home.findCaseTab);
     await performAction('select', search.jurisdictionLabel, search.possessionsJurisdiction);
     await performAction('select', search.caseTypeLabel, search.caseType.civilPossessions);
-    //await performAction('inputText', search.caseNumberLabel, caseNumber);
+    await performAction('inputText', search.caseNumberLabel, caseNumber);
     await performAction('clickButton', search.apply);
     await performAction('clickButton', caseNumber);
   }
