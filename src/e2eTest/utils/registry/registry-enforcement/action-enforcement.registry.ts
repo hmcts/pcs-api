@@ -30,11 +30,11 @@ export class ActionEnforcementRegistry {
     ['noCasesFoundAfterSearch', new SearchCaseAction()],
     ['selectApplicationType', new EnforcementAction()],
     ['selectNameAndAddressForEviction', new EnforcementAction()],
-    ['selectPoseRiskToBailiff', new EnforcementAction()],
-    ['selectRiskTypesPosedToBailiff', new EnforcementAction()],
+    ['selectEveryoneLivingAtTheProperty', new EnforcementAction()],
+    ['selectRiskPosedByEveryoneAtProperty', new EnforcementAction()],
     ['provideDetailsViolentOrAggressiveBehaviour', new EnforcementAction()],
-    ['provideDetailsHistoryOfFireArmPossession', new EnforcementAction()],
-    ['provideDetailsHistoryOfCriminalAntisocialBehavior', new EnforcementAction()],
+    ['provideDetailsFireArmPossession', new EnforcementAction()],
+    ['provideDetailsCriminalAntisocialBehavior', new EnforcementAction()],
   ]);
 
   static getAction(actionName: string): IAction {
