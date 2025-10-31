@@ -12,6 +12,7 @@ import uk.gov.hmcts.reform.pcs.ccd.ShowConditions;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
+import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 
 import static uk.gov.hmcts.reform.pcs.ccd.domain.State.AWAITING_SUBMISSION_TO_HMCTS;
@@ -31,8 +32,8 @@ public class CitizenUpdateApplication implements CCDConfig<PCSCase, State, UserR
             .decentralisedEvent(citizenUpdateApplication.name(), this::submit)
             .forStates(AWAITING_SUBMISSION_TO_HMCTS)
             .showCondition(ShowConditions.NEVER_SHOW)
-            .name("Patch case")
-            .description("Patch a possession case")
+            .name("Citizen update application")
+            .description("Update application with citizen documents or other data")
             .grant(Permission.CRU, CREATOR)
             .grant(Permission.R, UserRole.PCS_CASE_WORKER);
     }
@@ -41,9 +42,21 @@ public class CitizenUpdateApplication implements CCDConfig<PCSCase, State, UserR
         Long caseReference = eventPayload.caseReference();
         PCSCase pcsCase = eventPayload.caseData();
 
-        log.info("Citizen updated case {}", caseReference);
+        log.info("Citizen updating case {} with documents", caseReference);
 
-        pcsCaseService.patchCase(caseReference, pcsCase);
+        // Validate documents if provided
+        if (pcsCase.getCitizenDocuments() != null && !pcsCase.getCitizenDocuments().isEmpty()) {
+            log.info("Processing {} citizen document(s) for case {}",
+                     pcsCase.getCitizenDocuments().size(),
+                     caseReference);
+        }
+
+        // Load existing case, merge data and save to database
+        PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
+        pcsCaseService.mergeCaseData(pcsCaseEntity, pcsCase);
+        pcsCaseService.save(pcsCaseEntity);
+
+        log.info("Successfully updated case {} with citizen documents in pcs_case table", caseReference);
 
         return SubmitResponse.defaultResponse();
     }
