@@ -42,7 +42,6 @@ import {signInOrCreateAnAccount} from '@data/page-data/signInOrCreateAnAccount.p
 // When a new page is added/flow changes, basic conditions in this test should be updated accordingly to continue the journey.
 // Due to frequent issues with relogin and “Find Case” (Elasticsearch), this test is made optional only for the pipeline to maintain a green build.
 // However, it must be executed locally, and evidence of the passed results should be provided during PR review in case its failing in pipeline.
-let optionalTestFailed = false;
 
 test.beforeEach(async ({page}) => {
   initializeExecutor(page);
@@ -60,7 +59,7 @@ test.beforeEach(async ({page}) => {
   await performAction('housingPossessionClaim');
 });
 
-test.describe('[Create Case - With resume claim options] @resume @Master @nightly', async () => {
+test.describe('[Create Case - With resume claim options] @Master @nightly', async () => {
   test('England - Resume with saved options', async () => {
     await performAction('selectAddress', {
       postcode: addressDetails.englandCourtAssignedPostcode,
@@ -73,15 +72,10 @@ test.describe('[Create Case - With resume claim options] @resume @Master @nightl
     await performAction('selectClaimType', claimType.no);
     await performAction('selectClaimantName', claimantName.yes);
     await performAction('clickButtonAndVerifyPageNavigation', claimantName.continue, contactPreferences.mainHeader);
-    try {
-      await performAction('signOut');
-      await performAction('reloginAndFindTheCase', user.claimantSolicitor);
-      await performAction('clickButtonAndVerifyPageNavigation', resumeClaim.continue, resumeClaimOptions.mainHeader);
-      await performAction('selectResumeClaimOption', resumeClaimOptions.yes);
-    } catch (err) {
-        console.warn(`Re login and Find case Failed`, (err as Error).message);
-        optionalTestFailed = true;
-    }
+    await performAction('signOut');
+    await performAction('reloginAndFindTheCase', user.claimantSolicitor);
+    await performAction('clickButtonAndVerifyPageNavigation', resumeClaim.continue, resumeClaimOptions.mainHeader);
+    await performAction('selectResumeClaimOption', resumeClaimOptions.yes);
     await performValidation('radioButtonChecked', claimantType.england.registeredProviderForSocialHousing, true);
     await performAction('verifyPageAndClickButton', claimantType.continue, claimantType.mainHeader);
     await performValidation('radioButtonChecked', claimType.no, true);
@@ -211,15 +205,10 @@ test.describe('[Create Case - With resume claim options] @resume @Master @nightl
     await performAction('selectClaimType', claimType.no);
     await performAction('selectClaimantName', claimantName.yes);
     await performAction('clickButtonAndVerifyPageNavigation', claimantName.continue, contactPreferences.mainHeader);
-    try {
-      await performAction('signOut');
-      await performAction('reloginAndFindTheCase', user.claimantSolicitor);
-      await performAction('clickButtonAndVerifyPageNavigation', resumeClaim.continue, resumeClaimOptions.mainHeader);
-      await performAction('selectResumeClaimOption', resumeClaimOptions.no);
-    } catch (err) {
-      console.warn(`Re login and Find case Failed`, (err as Error).message);
-      optionalTestFailed = true;
-    }
+    await performAction('signOut');
+    await performAction('reloginAndFindTheCase', user.claimantSolicitor);
+    await performAction('clickButtonAndVerifyPageNavigation', resumeClaim.continue, resumeClaimOptions.mainHeader);
+    await performAction('selectResumeClaimOption', resumeClaimOptions.no);
     await performValidation('radioButtonChecked', claimantType.england.registeredProviderForSocialHousing, false);
     await performAction('selectClaimantType', claimantType.england.registeredProviderForSocialHousing);
     await performValidation('radioButtonChecked', claimType.no, false);
@@ -337,13 +326,5 @@ test.describe('[Create Case - With resume claim options] @resume @Master @nightl
       ['formLabelValue', propertyDetails.countryLabel],
     )
   });
-});
-
-test.afterAll(() => {
-  if (optionalTestFailed) {
-    process.on('exit', () => {
-      process.exitCode = 0;
-    });
-  }
 });
 
