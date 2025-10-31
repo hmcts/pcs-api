@@ -1,10 +1,6 @@
 import {test} from '@playwright/test';
 import {caseApiData} from '@data/api-data/case.api.data';
-import {
-  initializeExecutor,
-  performAction,
-  performValidation
-} from '@utils/controller';
+import {initializeExecutor, performAction, performValidation} from '@utils/controller';
 import {caseInfo} from '@utils/actions/custom-actions/createCase.action';
 import {user} from '@data/user-data/permanent.user.data';
 
