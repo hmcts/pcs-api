@@ -38,10 +38,18 @@ public class RentDetails implements CcdPageConfiguration {
             CaseDetails<PCSCase, State> detailsBefore) {
         PCSCase caseData = details.getData();
 
+        System.out.println("RentDetails midEvent - Case ID: " + details.getId()
+                + ", Rent Frequency: " + caseData.getRentFrequency()
+                + ", Current Rent: " + caseData.getCurrentRent());
+
         if (caseData.getRentFrequency() != RentPaymentFrequency.OTHER) {
             BigDecimal rentAmountInPence = new BigDecimal(caseData.getCurrentRent());
             BigDecimal dailyAmountInPence = calculateDailyRent(rentAmountInPence, caseData.getRentFrequency());
             String dailyAmountString = dailyAmountInPence.toPlainString();
+
+            System.out.println("RentDetails midEvent - Calculated daily amount: " + dailyAmountString
+                    + " pence (from " + caseData.getCurrentRent()
+                    + " at frequency " + caseData.getRentFrequency() + ")");
 
             // Set pence value for calculations/integrations
             caseData.setCalculatedDailyRentChargeAmount(dailyAmountString);
