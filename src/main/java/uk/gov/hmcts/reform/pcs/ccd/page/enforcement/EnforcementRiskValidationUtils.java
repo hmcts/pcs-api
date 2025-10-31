@@ -23,23 +23,8 @@ public final class EnforcementRiskValidationUtils {
      * @return formatted error message
      */
     static String getCharacterLimitErrorMessage(RiskCategory riskCategory) {
-        String fieldLabel = getFieldLabel(riskCategory);
-        return String.format(ERROR_MESSAGE_TEMPLATE, fieldLabel, CHARACTER_LIMIT_DISPLAY);
-    }
-
-    /**
-     * Gets the field label for the specified risk category.
-     */
-    private static String getFieldLabel(RiskCategory riskCategory) {
-        return switch (riskCategory) {
-            case VIOLENT_OR_AGGRESSIVE -> "How have they been violent or aggressive?";
-            case FIREARMS_POSSESSION -> "What is their history of firearm possession?";
-            case CRIMINAL_OR_ANTISOCIAL -> "What is their history of criminal or antisocial behaviour?";
-            case VERBAL_OR_WRITTEN_THREATS -> "What verbal or written threats have they made?";
-            case PROTEST_GROUP_MEMBER -> "What group do they belong to that protests evictions?";
-            case AGENCY_VISITS -> "What visits from police or social services have there been?";
-            case AGGRESSIVE_ANIMALS -> "What aggressive dogs or other animals do they have?";
-        };
+        String fieldText = riskCategory.getText();
+        return String.format(ERROR_MESSAGE_TEMPLATE, fieldText, CHARACTER_LIMIT_DISPLAY);
     }
 
     /**

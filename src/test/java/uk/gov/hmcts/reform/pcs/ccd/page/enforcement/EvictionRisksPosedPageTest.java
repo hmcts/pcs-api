@@ -89,6 +89,8 @@ class EvictionRisksPosedPageTest extends BasePageTest {
                 .enforcementViolentDetails("All violent details")
                 .enforcementFirearmsDetails("All firearms details")
                 .enforcementCriminalDetails("All criminal details")
+                .enforcementVerbalOrWrittenThreatsDetails("All verbal details")
+                .enforcementProtestGroupMemberDetails("All protestor details")
                 .build());
 
         // When
@@ -102,6 +104,11 @@ class EvictionRisksPosedPageTest extends BasePageTest {
             .isEqualTo("All firearms details");
         assertThat(response.getData().getEnforcementOrder().getRiskDetails().getEnforcementCriminalDetails())
             .isEqualTo("All criminal details");
+        assertThat(response.getData().getEnforcementOrder().getRiskDetails()
+                .getEnforcementVerbalOrWrittenThreatsDetails())
+                .isEqualTo("All verbal details");
+        assertThat(response.getData().getEnforcementOrder().getRiskDetails().getEnforcementProtestGroupMemberDetails())
+                .isEqualTo("All protestor details");
     }
 
     @Test
