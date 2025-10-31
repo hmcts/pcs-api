@@ -168,7 +168,6 @@ test.describe('[Create Case - England] @Master @nightly', async () => {
     )
   });
 
-  // The sections commented out will be fixed as part of the User Story https://tools.hmcts.net/jira/browse/HDPI-2123
   test('England - Assured tenancy with No Rent arrears', async () => {
     await performAction('selectAddress', {
       postcode: addressDetails.englandCourtAssignedPostcode,
@@ -263,7 +262,6 @@ test.describe('[Create Case - England] @Master @nightly', async () => {
     )
   });
 
-  // The sections commented out will be fixed as part of the User Story https://tools.hmcts.net/jira/browse/HDPI-2123
   test('England - Other tenancy with grounds for possession - Demoted tenancy', async () => {
     await performAction('selectAddress', {
       postcode: addressDetails.englandCourtAssignedPostcode,
@@ -467,7 +465,6 @@ test.describe('[Create Case - England] @Master @nightly', async () => {
     )
   });
 
-  // The sections commented out will be fixed as part of the User Story https://tools.hmcts.net/jira/browse/HDPI-2123
   test('England - Demoted tenancy with no grounds for possession', async () => {
     await performAction('selectAddress', {
       postcode: addressDetails.englandCourtAssignedPostcode,
@@ -658,7 +655,6 @@ test.describe('[Create Case - England] @Master @nightly', async () => {
       ['formLabelValue', propertyDetails.countryLabel, addressDetails.country]);
   });
 
-  // The sections commented out will be fixed as part of the User Story https://tools.hmcts.net/jira/browse/HDPI-2123
   test('England - Flexible tenancy with Rent arrears only', async () => {
     await performAction('selectAddress', {
       postcode: addressDetails.englandCourtAssignedPostcode,
@@ -748,7 +744,6 @@ test.describe('[Create Case - England] @Master @nightly', async () => {
       ['formLabelValue', propertyDetails.countryLabel, addressDetails.country]);
   });
 
-  // The sections commented out will be fixed as part of the User Story https://tools.hmcts.net/jira/browse/HDPI-2123
   test('England - Secure tenancy with Rent and other grounds', async () => {
     await performAction('selectAddress', {
       postcode: addressDetails.englandCourtAssignedPostcode,
