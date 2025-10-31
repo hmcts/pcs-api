@@ -45,7 +45,9 @@ import {home} from '@data/page-data/home.page.data';
 import {search} from '@data/page-data/search.page.data';
 import {userIneligible} from '@data/page-data/userIneligible.page.data';
 import {whatAreYourGroundsForPossessionWales} from '@data/page-data/whatAreYourGroundsForPossessionWales.page.data';
-import {reasonsForRequestingASuspensionAndDemotionOrder} from '@data/page-data/reasonsForRequestingASuspensionAndDemotionOrder.page.data';
+import {
+  reasonsForRequestingASuspensionAndDemotionOrder
+} from '@data/page-data/reasonsForRequestingASuspensionAndDemotionOrder.page.data';
 
 export let caseInfo: { id: string; fid: string; state: string };
 export let caseNumber: string;
@@ -218,6 +220,11 @@ export class CreateCaseAction implements IAction {
 
   private async selectContactPreferences(preferences: actionRecord) {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
+    const prefData = preferences as {
+      notifications: string;
+      correspondenceAddress: string;
+      phoneNumber?: string;
+    };
     await performAction('clickRadioButton', {
       question: contactPreferences.emailAddressForNotifications,
       option: preferences.notifications
@@ -237,12 +244,14 @@ export class CreateCaseAction implements IAction {
         ['select', addressDetails.selectAddressLabel, addressDetails.addressIndex]
       );
     }
-    await performAction('clickRadioButton', {
-      question: contactPreferences.provideContactPhoneNumber,
-      option: preferences.phoneNumber
-    });
-    if (preferences.phoneNumber === contactPreferences.yes) {
-      await performAction('inputText', contactPreferences.enterPhoneNumberLabel, contactPreferences.phoneNumberInput);
+    if(prefData.phoneNumber) {
+      await performAction('clickRadioButton', {
+        question: contactPreferences.provideContactPhoneNumber,
+        option: prefData.phoneNumber
+      });
+      if (prefData.phoneNumber === contactPreferences.yes) {
+        await performAction('inputText', contactPreferences.enterPhoneNumberLabel, contactPreferences.phoneNumberInput);
+      }
     }
     await performAction('clickButton', contactPreferences.continue);
   }
