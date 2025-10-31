@@ -3,20 +3,48 @@ package uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import uk.gov.hmcts.reform.pcs.ccd.domain.model.NoRentArrearsReasonForGrounds;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.domain.model.NoRentArrearsReasonForGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
+import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.anyList;
+import static org.mockito.Mockito.lenient;
 
+@ExtendWith(MockitoExtension.class)
 @DisplayName("NoRentArrearsGroundsForPossessionReason Tests")
 class NoRentArrearsGroundsForPossessionReasonTest extends BasePageTest {
+
+    @Mock
+    private TextAreaValidationService textAreaValidationService;
 
     private NoRentArrearsGroundsForPossessionReason pageUnderTest;
 
     @BeforeEach
     void setUp() {
-        pageUnderTest = new NoRentArrearsGroundsForPossessionReason();
+        // Configure TextAreaValidationService mocks
+        lenient().doReturn(new ArrayList<>()).when(textAreaValidationService)
+            .validateMultipleTextAreas(any(), any());
+        lenient().doAnswer(invocation -> {
+            Object caseData = invocation.getArgument(0);
+            List<String> errors = invocation.getArgument(1);
+            return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
+                .data((PCSCase) caseData)
+                .errors(errors.isEmpty() ? null : errors)
+                .build();
+        }).when(textAreaValidationService).createValidationResponse(any(), anyList());
+        
+        pageUnderTest = new NoRentArrearsGroundsForPossessionReason(textAreaValidationService);
         setPageUnderTest(pageUnderTest);
     }
 
