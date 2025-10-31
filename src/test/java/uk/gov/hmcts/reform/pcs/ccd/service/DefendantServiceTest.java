@@ -114,6 +114,7 @@ class DefendantServiceTest {
             .addressKnown(true)
             .addressSameAsPossession(false)
             .correspondenceAddress(defendant1Address)
+            .additionalDefendantsAdded(true)
             .build();
 
         Defendant expectedDefendant2 = Defendant.builder()
@@ -168,6 +169,7 @@ class DefendantServiceTest {
             .addressKnown(true)
             .addressSameAsPossession(false)
             .correspondenceAddress(defendant1Address)
+            .additionalDefendantsAdded(false)
             .build();
 
         assertThat(defendantList).containsExactly(expectedDefendant1);
@@ -197,6 +199,7 @@ class DefendantServiceTest {
             .firstName("defendant 1 first name")
             .lastName("defendant 1 last name")
             .addressKnown(false)
+            .additionalDefendantsAdded(true)
             .build();
 
         assertThat(defendantList).containsExactly(expectedDefendant1);
@@ -236,6 +239,7 @@ class DefendantServiceTest {
         Defendant expectedDefendant1 = Defendant.builder()
             .nameKnown(false)
             .addressKnown(false)
+            .additionalDefendantsAdded(true)
             .build();
 
         Defendant expectedDefendant2 = Defendant.builder()
@@ -292,6 +296,7 @@ class DefendantServiceTest {
                 Defendant.builder()
                     .nameKnown(false)
                     .addressKnown(false)
+                    .additionalDefendantsAdded(false)
                     .build()
             ),
 
@@ -312,6 +317,7 @@ class DefendantServiceTest {
                     .firstName("expected first name")
                     .lastName("expected last name")
                     .addressKnown(false)
+                    .additionalDefendantsAdded(false)
                     .build()
             ),
 
@@ -330,6 +336,7 @@ class DefendantServiceTest {
                     .nameKnown(false)
                     .addressKnown(true)
                     .addressSameAsPossession(true)
+                    .additionalDefendantsAdded(false)
                     .build()
             ),
 
@@ -354,6 +361,7 @@ class DefendantServiceTest {
                     .addressKnown(true)
                     .addressSameAsPossession(false)
                     .correspondenceAddress(correspondenceAddress)
+                    .additionalDefendantsAdded(false)
                     .build()
             )
         );

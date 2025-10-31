@@ -27,6 +27,7 @@ public class DefendantService {
 
         Defendant defendant1 = buildDefendant(pcsCase.getDefendant1());
         defendants.add(defendant1);
+        defendant1.setAdditionalDefendantsAdded(pcsCase.getAddAnotherDefendant().toBoolean());
 
         if (pcsCase.getAddAnotherDefendant() == VerticalYesNo.YES) {
             List<Defendant> additionalDefendants = buildAdditionalDefendants(pcsCase.getAdditionalDefendants());
