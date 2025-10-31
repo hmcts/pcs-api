@@ -1,6 +1,5 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim;
 
-import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
@@ -13,7 +12,7 @@ public class DailyRentAmount implements CcdPageConfiguration {
                 .page("dailyRentAmount")
                 .pageLabel("Daily rent amount")
                 .showCondition("groundsForPossession=\"Yes\" AND rentFrequency!=\"OTHER\"")
-                .readonly(PCSCase::getFormattedCalculatedDailyRentChargeAmount, NEVER_SHOW)
+                .readonly(PCSCase::getFormattedCalculatedDailyRentChargeAmount)
                 .label("dailyRentAmount-content",
                         """
                                 ---

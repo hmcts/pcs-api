@@ -2,6 +2,8 @@ package uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim;
 
 import java.math.BigDecimal;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
@@ -16,6 +18,8 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
  * Allows claimants to enter rent amount and payment frequency details.
  */
 public class RentDetails implements CcdPageConfiguration {
+
+    private static final Logger logger = LoggerFactory.getLogger(RentDetails.class);
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
@@ -38,10 +42,20 @@ public class RentDetails implements CcdPageConfiguration {
             CaseDetails<PCSCase, State> detailsBefore) {
         PCSCase caseData = details.getData();
 
+        logger.info("RentDetails midEvent - Case ID: {}, Rent Frequency: {}, Current Rent: {}", 
+                details.getId(), 
+                caseData.getRentFrequency(), 
+                caseData.getCurrentRent());
+
         if (caseData.getRentFrequency() != RentPaymentFrequency.OTHER) {
             BigDecimal rentAmountInPence = new BigDecimal(caseData.getCurrentRent());
             BigDecimal dailyAmountInPence = calculateDailyRent(rentAmountInPence, caseData.getRentFrequency());
             String dailyAmountString = dailyAmountInPence.toPlainString();
+
+            logger.info("RentDetails midEvent - Calculated daily amount: {} pence (from {} at frequency {})", 
+                    dailyAmountString, 
+                    caseData.getCurrentRent(), 
+                    caseData.getRentFrequency());
 
             // Set pence value for calculations/integrations
             caseData.setCalculatedDailyRentChargeAmount(dailyAmountString);
