@@ -31,7 +31,6 @@ import { rentDetails } from "@data/page-data/rentDetails.page.data";
 import { statementOfTruth } from "@data/page-data/statementOfTruth.page.data";
 import { tenancyLicenceDetails } from "@data/page-data/tenancyLicenceDetails.page.data";
 import { underlesseeOrMortgageeEntitledToClaim } from "@data/page-data/underlesseeOrMortgageeEntitledToClaim.page.data";
-import { uploadAdditionalDocs } from "@data/page-data/uploadAdditionalDocs.page.data";
 import { wantToUploadDocuments } from "@data/page-data/wantToUploadDocuments.page.data";
 import { whatAreYourGroundsForPossession } from "@data/page-data/whatAreYourGroundsForPossession.page.data";
 
@@ -92,6 +91,9 @@ export class MakeClaimAction implements IAction {
         mandatory: [whatAreYourGroundsForPossession.mandatory.holidayLet, whatAreYourGroundsForPossession.mandatory.ownerOccupier],
         discretionary: [whatAreYourGroundsForPossession.discretionary.domesticViolence14A, whatAreYourGroundsForPossession.discretionary.rentArrears],
       });
+      await performAction('enterReasonForPossession',
+      [whatAreYourGroundsForPossession.mandatory.holidayLet,whatAreYourGroundsForPossession.mandatory.ownerOccupier,
+        whatAreYourGroundsForPossession.discretionary.domesticViolence14A]);
       await performValidation('mainHeader', preActionProtocol.mainHeader);
       await performAction('selectPreActionProtocol', preActionProtocol.yes);
       await performValidation('mainHeader', mediationAndSettlement.mainHeader);
