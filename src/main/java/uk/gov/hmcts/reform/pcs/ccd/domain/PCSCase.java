@@ -493,7 +493,7 @@ public class PCSCase {
     @CCD(
             label = "Enter your grounds for possession",
             hint = "You'll be able to explain your reasons for claiming possession"
-                    + " under these grounds on the next screen",
+                    + " under these grounds on the next screen. You can enter up to 250 characters",
             typeOverride = TextArea
     )
     private String otherGroundDescription;
