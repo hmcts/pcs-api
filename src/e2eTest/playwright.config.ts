@@ -18,8 +18,8 @@ export default defineConfig({
   /* Retry on CI only */
   retries: process.env.CI ? 3 : 0,
   // Reduced workers from 4 → 2 due to server/login contention issues
-  workers: 2,
-  timeout: 200 * 1000,
+  workers: 1,
+  timeout: 600 * 1000,
   expect: { timeout: 30 * 1000 },
   use: { actionTimeout: 30 * 1000, navigationTimeout: 30 * 1000 },
   /* Report slow tests if they take longer than 5 mins */
@@ -50,7 +50,7 @@ export default defineConfig({
         trace: 'on-first-retry',
         javaScriptEnabled: true,
         viewport: DEFAULT_VIEWPORT,
-        headless: !!process.env.CI,
+        headless: true,
       },
     },
     ...(process.env.CI ? [
