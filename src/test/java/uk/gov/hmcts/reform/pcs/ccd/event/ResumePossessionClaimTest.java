@@ -33,6 +33,9 @@ import uk.gov.hmcts.reform.pcs.ccd.service.ClaimService;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.NoRentArrearsGroundsForPossessionOptions;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.RentArrearsGroundForPossessionAdditionalGrounds;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.RentArrearsGroundsForPossession;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
@@ -96,6 +99,12 @@ class ResumePossessionClaimTest extends BaseEventTest {
     private SchedulerClient schedulerClient;
     @Mock
     private DraftCaseDataService draftCaseDataService;
+    @Mock
+    private RentArrearsGroundsForPossession rentArrearsGroundsForPossession;
+    @Mock
+    private RentArrearsGroundForPossessionAdditionalGrounds rentArrearsGroundForPossessionAdditionalGrounds;
+    @Mock
+    private NoRentArrearsGroundsForPossessionOptions noRentArrearsGroundsForPossessionOptions;
 
     private final AddressFormatter addressFormatter = new AddressFormatter();
 
@@ -115,7 +124,10 @@ class ResumePossessionClaimTest extends BaseEventTest {
             selectClaimantType, noticeDetails,
             uploadAdditionalDocumentsDetails, tenancyLicenceDetails, contactPreferences,
             defendantsDetails, organisationNameService, claimantDetailsWalesPage, schedulerClient,
-            draftCaseDataService, addressFormatter
+            draftCaseDataService, addressFormatter, 
+            rentArrearsGroundsForPossession,
+            rentArrearsGroundForPossessionAdditionalGrounds,
+            noRentArrearsGroundsForPossessionOptions
         );
 
         setEventUnderTest(underTest);

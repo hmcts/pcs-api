@@ -2,28 +2,56 @@ package uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsDiscretionaryGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsGround;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsMandatoryGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
+import uk.gov.hmcts.reform.pcs.ccd.service.RentDetailsRoutingService;
 
 import java.util.Set;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.ccd.sdk.type.YesOrNo.YES;
 
+@ExtendWith(MockitoExtension.class)
 class RentArrearsGroundsForPossessionTest extends BasePageTest {
+
+    @Mock
+    private RentDetailsRoutingService rentDetailsRoutingService;
 
     @BeforeEach
     void setUp() {
-        setPageUnderTest(new RentArrearsGroundsForPossession());
+        setPageUnderTest(new RentArrearsGroundsForPossession(rentDetailsRoutingService));
+        // Default mock behavior: return YES when rent arrears grounds are present
+        when(rentDetailsRoutingService.computeShowRentDetails(any(PCSCase.class)))
+            .thenAnswer(invocation -> {
+                PCSCase caseData = invocation.getArgument(0);
+                Set<RentArrearsMandatoryGrounds> mandatory = caseData.getRentArrearsMandatoryGrounds();
+                Set<RentArrearsDiscretionaryGrounds> discretionary = caseData.getRentArrearsDiscretionaryGrounds();
+                boolean hasRentGrounds = (mandatory != null && mandatory.contains(
+                    uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsMandatoryGrounds.SERIOUS_RENT_ARREARS_GROUND8))
+                    || (discretionary != null && (
+                        discretionary.contains(
+                            uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsDiscretionaryGrounds.RENT_ARREARS_GROUND10)
+                        || discretionary.contains(
+                            uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsDiscretionaryGrounds
+                                .PERSISTENT_DELAY_GROUND11)
+                    ));
+                return YesOrNo.from(hasRentGrounds);
+            });
     }
 
     @Test

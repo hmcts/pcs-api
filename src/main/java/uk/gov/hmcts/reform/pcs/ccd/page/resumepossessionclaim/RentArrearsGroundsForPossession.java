@@ -1,5 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim;
 
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
@@ -10,6 +12,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsDiscretionaryGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsGround;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsMandatoryGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.service.RentDetailsRoutingService;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -19,7 +22,11 @@ import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 /**
  * Page for selecting rent arrears grounds for possession.
  */
+@Component
+@RequiredArgsConstructor
 public class RentArrearsGroundsForPossession implements CcdPageConfiguration {
+
+    private final RentDetailsRoutingService rentDetailsRoutingService;
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
@@ -106,6 +113,10 @@ public class RentArrearsGroundsForPossession implements CcdPageConfiguration {
             caseData.setOverrideResumedGrounds(YesOrNo.NO);
         }
         caseData.setCopyOfRentArrearsGrounds(rentArrearsGrounds);
+
+        // Determine if Rent Details page should be shown using routing service
+        YesOrNo showRentDetails = rentDetailsRoutingService.computeShowRentDetails(caseData);
+        caseData.setShowRentDetailsPage(showRentDetails);
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
             .data(caseData)

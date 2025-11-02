@@ -79,7 +79,6 @@ import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.TenancyLicenceDeta
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.UploadAdditionalDocumentsDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.WalesCheckingNotice;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.WantToUploadDocuments;
-import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.GroundsForPossessionWales;
 import uk.gov.hmcts.reform.pcs.ccd.service.ClaimService;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PartyService;
@@ -125,6 +124,9 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
     private final SchedulerClient schedulerClient;
     private final DraftCaseDataService draftCaseDataService;
     private final AddressFormatter addressFormatter;
+    private final RentArrearsGroundsForPossession rentArrearsGroundsForPossession;
+    private final RentArrearsGroundForPossessionAdditionalGrounds rentArrearsGroundForPossessionAdditionalGrounds;
+    private final NoRentArrearsGroundsForPossessionOptions noRentArrearsGroundsForPossessionOptions;
 
     private static final String CASE_ISSUED_FEE_TYPE = "caseIssueFee";
 
@@ -162,10 +164,10 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             .add(new IntroductoryDemotedOrOtherGroundsForPossession())
             .add(new IntroductoryDemotedOtherGroundsReasons())
             .add(new GroundsForPossession())
-            .add(new RentArrearsGroundsForPossession())
-            .add(new RentArrearsGroundForPossessionAdditionalGrounds())
+            .add(rentArrearsGroundsForPossession)
+            .add(rentArrearsGroundForPossessionAdditionalGrounds)
             .add(new RentArrearsGroundsForPossessionReasons())
-            .add(new NoRentArrearsGroundsForPossessionOptions())
+            .add(noRentArrearsGroundsForPossessionOptions)
             .add(new NoRentArrearsGroundsForPossessionReason())
             .add(new PreActionProtocol())
             .add(new MediationAndSettlement())

@@ -1,9 +1,13 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.NoRentArrearsDiscretionaryGrounds;
@@ -11,17 +15,69 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.NoRentArrearsMandatoryGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
+import uk.gov.hmcts.reform.pcs.ccd.service.RentDetailsRoutingService;
 
 import java.util.Set;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.lenient;
 
+@ExtendWith(MockitoExtension.class)
 class NoRentArrearsGroundsForPossessionOptionsTest extends BasePageTest {
+
+    @Mock
+    private RentDetailsRoutingService rentDetailsRoutingService;
 
     @BeforeEach
     void setUp() {
-        setPageUnderTest(new NoRentArrearsGroundsForPossessionOptions());
+        setPageUnderTest(new NoRentArrearsGroundsForPossessionOptions(rentDetailsRoutingService));
+        // Default mock behavior: return YES when rent arrears grounds (8, 10, 11) are present
+        // Use lenient() because some test cases return validation errors before calling the service
+        lenient().when(rentDetailsRoutingService.computeShowRentDetails(any(PCSCase.class)))
+            .thenAnswer(invocation -> {
+                PCSCase caseData = invocation.getArgument(0);
+                Set<NoRentArrearsMandatoryGrounds> mandatory =
+                    caseData.getNoRentArrearsMandatoryGroundsOptions();
+                Set<NoRentArrearsDiscretionaryGrounds> discretionary =
+                    caseData.getNoRentArrearsDiscretionaryGroundsOptions();
+                boolean hasRentGrounds = (mandatory != null && mandatory.contains(
+                    NoRentArrearsMandatoryGrounds.SERIOUS_RENT_ARREARS))
+                    || (discretionary != null && (
+                        discretionary.contains(NoRentArrearsDiscretionaryGrounds.RENT_ARREARS)
+                        || discretionary.contains(NoRentArrearsDiscretionaryGrounds.RENT_PAYMENT_DELAY)
+                    ));
+                return YesOrNo.from(hasRentGrounds);
+            });
+    }
+
+    @Test
+    void shouldPreserveSelectedMandatoryAndDiscretionaryGrounds() {
+        // Given: Mandatory and Discretionary are set
+        Set<NoRentArrearsMandatoryGrounds> expectedMandatory = Set.of(
+            NoRentArrearsMandatoryGrounds.ANTISOCIAL_BEHAVIOUR,
+            NoRentArrearsMandatoryGrounds.DEATH_OF_TENANT,
+            NoRentArrearsMandatoryGrounds.SERIOUS_RENT_ARREARS);
+        Set<NoRentArrearsDiscretionaryGrounds> expectedDiscretionary = Set.of(
+            NoRentArrearsDiscretionaryGrounds.DOMESTIC_VIOLENCE,
+            NoRentArrearsDiscretionaryGrounds.LANDLORD_EMPLOYEE,
+            NoRentArrearsDiscretionaryGrounds.FALSE_STATEMENT);
+
+        PCSCase caseData = PCSCase.builder()
+            .noRentArrearsDiscretionaryGroundsOptions(expectedDiscretionary)
+            .noRentArrearsMandatoryGroundsOptions(expectedMandatory)
+            .build();
+
+        // When: Mid event is executed
+        AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
+
+        // Then: Mandatory and Discretionary enum should exist in each set
+        PCSCase updated = response.getData();
+        assertThat(updated.getNoRentArrearsMandatoryGroundsOptions())
+            .containsExactlyInAnyOrderElementsOf(expectedMandatory);
+        assertThat(updated.getNoRentArrearsDiscretionaryGroundsOptions())
+            .containsExactlyInAnyOrderElementsOf(expectedDiscretionary);
     }
 
     @ParameterizedTest
