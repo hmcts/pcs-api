@@ -12,10 +12,15 @@ import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
+import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 import uk.gov.hmcts.reform.pcs.postcodecourt.exception.EligibilityCheckException;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.EligibilityResult;
+import uk.gov.hmcts.reform.pcs.postcodecourt.model.EligibilityStatus;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.postcodecourt.service.EligibilityService;
+
+import java.util.List;
 
 /**
  * CCD page configuration for cross-border postcode selection.
@@ -72,6 +77,9 @@ public class CrossBorderPostcodeSelection implements CcdPageConfiguration {
 
         PCSCase caseData = details.getData();
         String postcode = getPostcode(caseData);
+
+        // Refresh cross-border countries based on current postcode to ensure they're up-to-date
+        refreshCrossBorderCountries(caseData, postcode);
 
         String countryCode = getSelectedCountryCode(caseData);
         LegislativeCountry selectedCountry = LegislativeCountry.valueOf(countryCode);
@@ -141,6 +149,46 @@ public class CrossBorderPostcodeSelection implements CcdPageConfiguration {
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
             .data(caseData)
             .build();
+    }
+
+    /**
+     * Refreshes the cross-border countries based on the current postcode.
+     * This ensures that if the user navigated back and changed the postcode,
+     * the cross-border countries displayed are correct.
+     */
+    private void refreshCrossBorderCountries(PCSCase caseData, String postcode) {
+        EligibilityResult eligibilityResult = eligibilityService.checkEligibility(postcode, null);
+        
+        if (eligibilityResult.getStatus() == EligibilityStatus.LEGISLATIVE_COUNTRY_REQUIRED
+            && eligibilityResult.getLegislativeCountries() != null
+            && eligibilityResult.getLegislativeCountries().size() >= 2) {
+            
+            List<LegislativeCountry> legislativeCountries = eligibilityResult.getLegislativeCountries();
+            
+            List<DynamicStringListElement> crossBorderCountries =
+                createCrossBorderCountriesList(legislativeCountries);
+            DynamicStringList crossBorderCountriesList = DynamicStringList.builder()
+                .listItems(crossBorderCountries)
+                .build();
+
+            caseData.setCrossBorderCountriesList(crossBorderCountriesList);
+            // Update individual cross border countries to match the current postcode
+            caseData.setCrossBorderCountry1(crossBorderCountries.get(0).getLabel());
+            caseData.setCrossBorderCountry2(crossBorderCountries.get(1).getLabel());
+            
+            log.debug("Refreshed cross-border countries for postcode {}: {} and {}",
+                postcode, crossBorderCountries.get(0).getLabel(), crossBorderCountries.get(1).getLabel());
+        }
+    }
+
+    private List<DynamicStringListElement> createCrossBorderCountriesList(
+        List<LegislativeCountry> legislativeCountries) {
+        return legislativeCountries.stream()
+            .map(value -> DynamicStringListElement.builder()
+                .code(value.name())
+                .label(value.getLabel())
+                .build())
+            .toList();
     }
 
 }
