@@ -31,6 +31,8 @@ export class ActionEnforcementRegistry {
     ['selectFirstCaseFromTheFilter', new SearchCaseAction()],
     ['noCasesFoundAfterSearch', new SearchCaseAction()],
     ['selectApplicationType', new EnforcementAction()],
+    ['selectNameAndAddressForEviction', new EnforcementAction()],
+    ['selectPoseRiskToBailiff', new EnforcementAction()],
   ]);
 
   static getAction(actionName: string): IAction {

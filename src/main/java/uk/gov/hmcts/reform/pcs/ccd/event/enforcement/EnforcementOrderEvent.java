@@ -15,7 +15,14 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.AdditionalInformationPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.MoneyOwedPage;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.CheckYourAnswersPlaceHolder;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.EnforcementApplicationPage;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.NameAndAddressForEvictionPage;
+import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.EvictionDelayWarningPage;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.EvictionRisksPosedPage;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.EvictionVulnerableAdultsChildrenPage;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.LivingInThePropertyPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.NameAndAddressForEvictionPage;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 
@@ -46,8 +53,13 @@ public class EnforcementOrderEvent implements CCDConfig<PCSCase, State, UserRole
         pageBuilder
                 .add(new EnforcementApplicationPage())
                 .add(new NameAndAddressForEvictionPage())
+                .add(new LivingInThePropertyPage())
+                .add(new EvictionDelayWarningPage())
+                .add(new EvictionRisksPosedPage())
+                .add(new EvictionVulnerableAdultsChildrenPage())
                 .add(new AdditionalInformationPage())
                 .add(new MoneyOwedPage());
+                .add(new CheckYourAnswersPlaceHolder());
     }
 
     private PCSCase start(EventPayload<PCSCase, State> eventPayload) {
