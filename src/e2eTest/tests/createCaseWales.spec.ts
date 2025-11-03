@@ -53,10 +53,11 @@ test.describe('[Create Case - Wales] @Master @nightly', async () => {
     });
     //Following line can be updated to securecontractLicenceDetails once HDPI-2365 is done
     await performAction('selectOccupationContractOrLicenceDetails', {
+      OccupationContractQuestion:occupationContractOrLicenceDetailsWales.occupationContractOrLicenceType,
       occupationContractType: occupationContractOrLicenceDetailsWales.secureContract,
-      day: occupationContractOrLicenceDetailsWales.day,
-      month: occupationContractOrLicenceDetailsWales.month,
-      year: occupationContractOrLicenceDetailsWales.year,
+      day: occupationContractOrLicenceDetailsWales.dayInput,
+      month: occupationContractOrLicenceDetailsWales.monthInput,
+      year: occupationContractOrLicenceDetailsWales.yearInput,
       files: 'occupationContract.pdf'});
     await performValidation('mainHeader', whatAreYourGroundsForPossessionWales.mainHeader);
     await performAction('selectYourPossessionGrounds', {
@@ -153,10 +154,11 @@ test.describe('[Create Case - Wales] @Master @nightly', async () => {
       email: defendantDetails.no,
     });
     await performAction('selectOccupationContractOrLicenceDetails', {
+      OccupationContractQuestion:occupationContractOrLicenceDetailsWales.occupationContractOrLicenceType,
       occupationContractType: occupationContractOrLicenceDetailsWales.standardContract,
-      day: occupationContractOrLicenceDetailsWales.day,
-      month: occupationContractOrLicenceDetailsWales.month,
-      year: occupationContractOrLicenceDetailsWales.year
+      day: occupationContractOrLicenceDetailsWales.dayInput,
+      month: occupationContractOrLicenceDetailsWales.monthInput,
+      year: occupationContractOrLicenceDetailsWales.yearInput
     });
     await performValidation('mainHeader', whatAreYourGroundsForPossessionWales.mainHeader);
     await performAction('selectYourPossessionGrounds', {
@@ -252,6 +254,7 @@ test.describe('[Create Case - Wales] @Master @nightly', async () => {
       correspondenceAddressSame: defendantDetails.yes
     });
     await performAction('selectOccupationContractOrLicenceDetails', {
+      OccupationContractQuestion:occupationContractOrLicenceDetailsWales.occupationContractOrLicenceType,
       occupationContractType: occupationContractOrLicenceDetailsWales.other,
       files: 'occupationContract.pdf'
     });

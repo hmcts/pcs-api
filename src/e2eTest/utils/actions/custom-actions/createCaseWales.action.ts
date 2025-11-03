@@ -41,16 +41,19 @@ export class CreateCaseWalesAction extends CreateCaseAction implements IAction {
 
   private async selectOccupationContractOrLicenceDetails(occupationContractData: actionRecord) {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: ' + caseNumber});
-    await performAction('clickRadioButton', {question: occupationContractOrLicenceDetailsWales.occupationContractOrLicenceType, option: occupationContractData.occupationContractType});
+    await performAction('clickRadioButton', {
+      question: occupationContractData.occupationContractOrLicenceType,
+      option: occupationContractData.occupationContractType
+    });
     if (occupationContractData.occupationContractType === occupationContractOrLicenceDetailsWales.other) {
-      await performAction('inputText', occupationContractOrLicenceDetailsWales.giveDetailsOfTypeOfOccupationContractAgreement, occupationContractOrLicenceDetailsWales.detailsOfLicence);
+      await performAction('inputText', occupationContractOrLicenceDetailsWales.giveDetailsOfTypeOfOccupationContractAgreement, occupationContractOrLicenceDetailsWales.detailsOfLicenceInput);
     }
     if (occupationContractData.day && occupationContractData.month && occupationContractData.year) {
       await performActions(
         'Enter Date',
-        ['inputText', occupationContractOrLicenceDetailsWales.dayLabel, occupationContractOrLicenceDetailsWales.day],
-        ['inputText', occupationContractOrLicenceDetailsWales.monthLabel, occupationContractOrLicenceDetailsWales.month],
-        ['inputText', occupationContractOrLicenceDetailsWales.yearLabel, occupationContractOrLicenceDetailsWales.year]);
+        ['inputText', occupationContractOrLicenceDetailsWales.dayLabel, occupationContractData.day],
+        ['inputText', occupationContractOrLicenceDetailsWales.monthLabel, occupationContractData.month],
+        ['inputText', occupationContractOrLicenceDetailsWales.yearLabel, occupationContractData.year]);
     }
     if (occupationContractData.files) {
       await performAction('uploadFile', occupationContractData.files);
