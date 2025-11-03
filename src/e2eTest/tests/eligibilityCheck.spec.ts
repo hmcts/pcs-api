@@ -5,16 +5,23 @@ import {addressDetails} from '@data/page-data/addressDetails.page.data';
 import {canNotUseOnlineService} from '@data/page-data/canNotUseOnlineService.page.data';
 import {propertyIneligible} from '@data/page-data/propertyIneligible.page.data';
 import {userIneligible} from '@data/page-data/userIneligible.page.data';
-import {provideMoreDetailsOfClaim} from '@data/page-data/provideMoreDetailsOfClaim.page.data';
 import {claimantType} from '@data/page-data/claimantType.page.data';
 import {claimType} from '@data/page-data/claimType.page.data';
 import {user} from '@data/user-data/permanent.user.data';
 import {home} from '@data/page-data/home.page.data';
+import {signInOrCreateAnAccount} from '@data/page-data/signInOrCreateAnAccount.page.data';
 
 test.beforeEach(async ({page}) => {
   initializeExecutor(page);
   await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
+  await performAction('handleCookieConsent', {
+    accept: signInOrCreateAnAccount.acceptAdditionalCookiesButton,
+    hide: signInOrCreateAnAccount.hideThisCookieMessageButton
+  });
   await performAction('login', user.claimantSolicitor);
+  await performAction('handleCookieConsent', {
+    accept: signInOrCreateAnAccount.acceptAnalyticsCookiesButton
+  });
   await performAction('clickTab', home.createCaseTab);
   await performAction('selectJurisdictionCaseTypeEvent');
   await performAction('housingPossessionClaim');
@@ -106,7 +113,7 @@ test.describe('[Eligibility Check - Create Case] @Master @nightly', async () => 
       addressIndex: addressDetails.addressIndex
     });
     await performAction('extractCaseIdFromAlert');
-    await performAction('clickButtonAndVerifyPageNavigation', provideMoreDetailsOfClaim.continue, claimantType.mainHeader);
+    await performAction('provideMoreDetailsOfClaim');
     await performAction('selectClaimantType', claimantType.mortgageLender);
     await performAction('clickButton', userIneligible.continue);
     await performValidation('errorMessage', {
@@ -124,7 +131,7 @@ test.describe('[Eligibility Check - Create Case] @Master @nightly', async () => 
       addressIndex: addressDetails.addressIndex
     });
     await performAction('extractCaseIdFromAlert');
-    await performAction('clickButtonAndVerifyPageNavigation', provideMoreDetailsOfClaim.continue, claimantType.mainHeader);
+    await performAction('provideMoreDetailsOfClaim');
     await performAction('selectClaimantType', claimantType.privateLandlord);
     await performValidation('text', {"text": userIneligible.formN5Wales, "elementType": "paragraph"})
     await performValidation('text', {"text": userIneligible.propertyPossessionsFullListLink, "elementType": "paragraph"})
@@ -144,7 +151,7 @@ test.describe('[Eligibility Check - Create Case] @Master @nightly', async () => 
       addressIndex: addressDetails.addressIndex
     });
     await performAction('extractCaseIdFromAlert');
-    await performAction('clickButtonAndVerifyPageNavigation', provideMoreDetailsOfClaim.continue, claimantType.mainHeader);
+    await performAction('provideMoreDetailsOfClaim');
     await performAction('selectClaimantType', claimantType.wales.communityLandlord);
     await performAction('selectClaimType', claimType.yes);
     await performValidation('text', {"text": userIneligible.formN5Wales, "elementType": "paragraph"})
@@ -165,7 +172,7 @@ test.describe('[Eligibility Check - Create Case] @Master @nightly', async () => 
       addressIndex: addressDetails.addressIndex
     });
     await performAction('extractCaseIdFromAlert');
-    await performAction('clickButtonAndVerifyPageNavigation', provideMoreDetailsOfClaim.continue, claimantType.mainHeader);
+    await performAction('provideMoreDetailsOfClaim');
     await performAction('selectClaimantType', claimantType.england.registeredProviderForSocialHousing);
     await performAction('selectClaimType', claimType.yes);
     await performAction('clickButton', userIneligible.continue);

@@ -48,8 +48,20 @@ export async function performAction(action: string, fieldName?: actionData | act
   }
 
   const actionInstance = ActionRegistry.getAction(action);
-  await test.step(`${action}${fieldName !== undefined ? ` - ${typeof fieldName === 'object' ? readValuesFromInputObjects(fieldName) : fieldName}` : ''} ${value !== undefined ? ` with value '${typeof value === 'object' ? readValuesFromInputObjects(value) : value}'` : ''}`, async () => {
-    await actionInstance.execute(executor.page, action, fieldName, value);
+  let displayFieldName = fieldName;
+  let displayValue = value ?? fieldName;
+
+  if (typeof fieldName === 'string' && fieldName.toLowerCase() === 'password' && typeof value === 'string') {
+    displayValue = '*'.repeat(value.length);
+  } else if (typeof fieldName === 'object' && fieldName !== null && 'password' in fieldName) {
+    const obj = fieldName as Record<string, any>;
+    displayValue = { ...obj, password: '*'.repeat(String(obj.password).length) };
+    displayFieldName = displayValue;
+  }
+
+  const stepText = `${action}${displayFieldName !== undefined ? ` - ${typeof displayFieldName === 'object' ? readValuesFromInputObjects(displayFieldName) : displayFieldName}` : ''}${displayValue !== undefined ? ` with value '${typeof displayValue === 'object' ? readValuesFromInputObjects(displayValue) : displayValue}'` : ''}`;
+  await test.step(stepText, async () => {
+  await actionInstance.execute(executor.page, action, fieldName, value);
   });
 }
 
