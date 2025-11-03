@@ -153,7 +153,11 @@ test.describe('[Create Case - Wales] @Master @nightly', async () => {
       email: defendantDetails.no,
     });
     await performAction('selectOccupationContractOrLicenceDetails', {
-      occupationContractType: occupationContractOrLicenceDetailsWales.standardContract});
+      occupationContractType: occupationContractOrLicenceDetailsWales.standardContract,
+      day: occupationContractOrLicenceDetailsWales.day,
+      month: occupationContractOrLicenceDetailsWales.month,
+      year: occupationContractOrLicenceDetailsWales.year
+    });
     await performValidation('mainHeader', whatAreYourGroundsForPossessionWales.mainHeader);
     await performAction('selectYourPossessionGrounds', {
       discretionary: [whatAreYourGroundsForPossessionWales.discretionary.estateManagementGrounds],
@@ -248,7 +252,9 @@ test.describe('[Create Case - Wales] @Master @nightly', async () => {
       correspondenceAddressSame: defendantDetails.yes
     });
     await performAction('selectOccupationContractOrLicenceDetails', {
-      occupationContractType: occupationContractOrLicenceDetailsWales.other});
+      occupationContractType: occupationContractOrLicenceDetailsWales.other,
+      files: 'occupationContract.pdf'
+    });
     await performValidation('mainHeader', whatAreYourGroundsForPossessionWales.mainHeader);
     await performAction('selectYourPossessionGrounds', {
       discretionary: [whatAreYourGroundsForPossessionWales.discretionary.otherBreachOfContract],
