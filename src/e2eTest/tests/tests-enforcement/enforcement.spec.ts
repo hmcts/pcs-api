@@ -20,7 +20,7 @@ import { groupProtestsEviction } from "@data/page-data/page-data-enforcement/gro
 import { policeOrSocialServiceVisit } from "@data/page-data/page-data-enforcement/policeOrSocialServiceVisit.page.data";
 import { animalsAtTheProperty } from "@data/page-data/page-data-enforcement/animalsAtTheProperty";
 
-test.beforeEach(async ({ page }) => {
+test.beforeEach(async ({page}) => {
   initializeExecutor(page);
   initializeEnforcementExecutor(page);
   await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
@@ -30,7 +30,7 @@ test.beforeEach(async ({ page }) => {
   //Below three lines will be merged into a single action as part of improvement
   await performAction("selectFirstCaseFromTheFilter", caseNotFoundAfterFilter);
   await performAction('createNewCase', caseNotFoundAfterFilter);
-  await performAction('searchMyCaseFromFindCase', { caseNumber: caseNumber, criteria: caseNotFoundAfterFilter });
+  await performAction('searchMyCaseFromFindCase', {caseNumber: caseNumber, criteria: caseNotFoundAfterFilter});
 });
 
 test.describe('[Enforcement - Warrant of Possession] @Master @nightly', async () => {
