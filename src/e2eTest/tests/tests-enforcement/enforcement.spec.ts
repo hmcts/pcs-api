@@ -3,14 +3,7 @@ import { initializeEnforcementExecutor, performAction, performValidation } from 
 import {caseNumber, caseNotFoundAfterFilter} from "@utils/actions/custom-actions";
 import { initializeExecutor } from "@utils/controller";
 import {caseList, user, caseSummary, signInOrCreateAnAccount } from "@data/page-data";
-import {nameAndAddressForEviction, yourApplication } from "@data/page-data/page-data-enforcement";
-import { caseNotFoundAfterFilter } from "@utils/actions/custom-actions/searchCase.action";
-import { nameAndAddressForEviction } from "@data/page-data/page-data-enforcement/nameAndAddressForEviction.page.data";
-import { everyoneLivingAtTheProperty } from "@data/page-data/page-data-enforcement/everyoneLivingAtTheProperty.page.data";
-import { riskPosedByEveryoneAtProperty } from "@data/page-data/page-data-enforcement/riskPosedByEveryoneAtProperty.page.data";
-import { vulnerableAdultsAndChildren } from "@data/page-data/page-data-enforcement/vulnerableAdultsAndChildren.page.data";
-import { evictionCouldBeDelayed } from "@data/page-data/page-data-enforcement/evictionCouldBeDelayed.page.data";
-import { signInOrCreateAnAccount } from "@data/page-data/signInOrCreateAnAccount.page.data";
+import {nameAndAddressForEviction, yourApplication, evictionCouldBeDelayed, vulnerableAdultsAndChildren, riskPosedByEveryoneAtProperty, everyoneLivingAtTheProperty  } from "@data/page-data/page-data-enforcement";
 
 test.beforeEach(async ({ page }) => {
   initializeExecutor(page);
