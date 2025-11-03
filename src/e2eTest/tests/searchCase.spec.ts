@@ -1,13 +1,25 @@
 import {test} from '@playwright/test';
-import {caseApiData} from '@data/api-data/case.api.data';
-import {initializeExecutor, performAction, performValidation} from '@utils/controller';
+import {
+  initializeExecutor,
+  performAction,
+  performValidation
+} from '@utils/controller';
 import {caseInfo} from '@utils/actions/custom-actions/createCase.action';
 import {user} from '@data/user-data/permanent.user.data';
+import {signInOrCreateAnAccount} from '@data/page-data/signInOrCreateAnAccount.page.data';
+import {caseApiData} from '@data/api-data/case.api.data';
 
 test.beforeEach(async ({page}) => {
-    initializeExecutor(page);
-    await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
-    await performAction('login', user.claimantSolicitor);
+  initializeExecutor(page);
+  await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
+  await performAction('handleCookieConsent', {
+    accept: signInOrCreateAnAccount.acceptAdditionalCookiesButton,
+    hide: signInOrCreateAnAccount.hideThisCookieMessageButton
+  });
+  await performAction('login', user.claimantSolicitor);
+  await performAction('handleCookieConsent', {
+    accept: signInOrCreateAnAccount.acceptAnalyticsCookiesButton
+  });
   await performAction('createCase', {data: caseApiData.createCasePayload});
 });
 
