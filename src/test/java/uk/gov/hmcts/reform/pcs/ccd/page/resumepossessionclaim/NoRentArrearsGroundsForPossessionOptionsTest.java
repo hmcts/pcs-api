@@ -22,7 +22,7 @@ import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class NoRentArrearsGroundsForPossessionOptionsTest extends BasePageTest {
@@ -33,23 +33,6 @@ class NoRentArrearsGroundsForPossessionOptionsTest extends BasePageTest {
     @BeforeEach
     void setUp() {
         setPageUnderTest(new NoRentArrearsGroundsForPossessionOptions(rentDetailsRoutingService));
-        // Default mock behavior: return YES when rent arrears grounds (8, 10, 11) are present
-        // Use lenient() because some test cases return validation errors before calling the service
-        lenient().when(rentDetailsRoutingService.computeShowRentDetails(any(PCSCase.class)))
-            .thenAnswer(invocation -> {
-                PCSCase caseData = invocation.getArgument(0);
-                Set<NoRentArrearsMandatoryGrounds> mandatory =
-                    caseData.getNoRentArrearsMandatoryGroundsOptions();
-                Set<NoRentArrearsDiscretionaryGrounds> discretionary =
-                    caseData.getNoRentArrearsDiscretionaryGroundsOptions();
-                boolean hasRentGrounds = (mandatory != null && mandatory.contains(
-                    NoRentArrearsMandatoryGrounds.SERIOUS_RENT_ARREARS))
-                    || (discretionary != null && (
-                        discretionary.contains(NoRentArrearsDiscretionaryGrounds.RENT_ARREARS)
-                        || discretionary.contains(NoRentArrearsDiscretionaryGrounds.RENT_PAYMENT_DELAY)
-                    ));
-                return YesOrNo.from(hasRentGrounds);
-            });
     }
 
     @Test
@@ -112,6 +95,12 @@ class NoRentArrearsGroundsForPossessionOptionsTest extends BasePageTest {
             .noRentArrearsMandatoryGroundsOptions(mandatoryGrounds)
             .noRentArrearsDiscretionaryGroundsOptions(discretionaryGrounds)
             .build();
+
+        // Explicitly stub the routing decision (do not rely on case data)
+        if (!(mandatoryGrounds.isEmpty() && discretionaryGrounds.isEmpty())) {
+            when(rentDetailsRoutingService.computeShowRentDetails(any(PCSCase.class)))
+                .thenReturn(expectedShowRentDetailsPage);
+        }
 
         // When
         AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
