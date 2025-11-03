@@ -155,6 +155,7 @@ public class CrossBorderPostcodeSelection implements CcdPageConfiguration {
      * Refreshes the cross-border countries based on the current postcode.
      * This ensures that if the user navigated back and changed the postcode,
      * the cross-border countries displayed are correct.
+     * Preserves the existing selection if one exists.
      */
     private void refreshCrossBorderCountries(PCSCase caseData, String postcode) {
         EligibilityResult eligibilityResult = eligibilityService.checkEligibility(postcode, null);
@@ -167,8 +168,17 @@ public class CrossBorderPostcodeSelection implements CcdPageConfiguration {
             
             List<DynamicStringListElement> crossBorderCountries =
                 createCrossBorderCountriesList(legislativeCountries);
+            
+            // Preserve existing selection if it exists
+            DynamicStringList existingList = caseData.getCrossBorderCountriesList();
+            DynamicStringListElement preservedValue = null;
+            if (existingList != null && existingList.getValue() != null) {
+                preservedValue = existingList.getValue();
+            }
+            
             DynamicStringList crossBorderCountriesList = DynamicStringList.builder()
                 .listItems(crossBorderCountries)
+                .value(preservedValue) // Preserve existing selection
                 .build();
 
             caseData.setCrossBorderCountriesList(crossBorderCountriesList);

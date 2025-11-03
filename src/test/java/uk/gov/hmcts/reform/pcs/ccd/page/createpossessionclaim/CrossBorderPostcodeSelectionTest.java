@@ -22,10 +22,12 @@ import uk.gov.hmcts.reform.pcs.postcodecourt.model.EligibilityStatus;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.postcodecourt.service.EligibilityService;
 
+import java.util.List;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -57,6 +59,13 @@ class CrossBorderPostcodeSelectionTest extends BasePageTest {
             .crossBorderCountriesList(createCountryListWithSelectedValue(expectedLegislativeCountry))
             .build();
 
+        // Mock the refresh call (checkEligibility with null country)
+        EligibilityResult refreshResult = EligibilityResult.builder()
+            .status(EligibilityStatus.LEGISLATIVE_COUNTRY_REQUIRED)
+            .legislativeCountries(List.of(LegislativeCountry.ENGLAND, LegislativeCountry.WALES))
+            .build();
+        lenient().when(eligibilityService.checkEligibility(postCode, null)).thenReturn(refreshResult);
+
         EligibilityResult eligibilityResult = EligibilityResult.builder()
             .status(eligibilityStatus)
             .legislativeCountry(expectedLegislativeCountry)
@@ -83,6 +92,13 @@ class CrossBorderPostcodeSelectionTest extends BasePageTest {
             .propertyAddress(AddressUK.builder().postCode(postcode).build())
             .crossBorderCountriesList(createCountryListWithSelectedValue(selectedCountry))
             .build();
+
+        // Mock the refresh call (checkEligibility with null country)
+        EligibilityResult refreshResult = EligibilityResult.builder()
+            .status(EligibilityStatus.LEGISLATIVE_COUNTRY_REQUIRED)
+            .legislativeCountries(List.of(LegislativeCountry.ENGLAND, LegislativeCountry.WALES))
+            .build();
+        lenient().when(eligibilityService.checkEligibility(postcode, null)).thenReturn(refreshResult);
 
         EligibilityResult eligibilityResult = EligibilityResult.builder()
             .status(status)
@@ -157,6 +173,13 @@ class CrossBorderPostcodeSelectionTest extends BasePageTest {
             selectedCountry
         );
 
+        // Mock the refresh call (checkEligibility with null country)
+        EligibilityResult refreshResult = EligibilityResult.builder()
+            .status(EligibilityStatus.LEGISLATIVE_COUNTRY_REQUIRED)
+            .legislativeCountries(List.of(LegislativeCountry.ENGLAND, LegislativeCountry.WALES))
+            .build();
+        lenient().when(eligibilityService.checkEligibility(SOME_POSTCODE, null)).thenReturn(refreshResult);
+
         var result = EligibilityResult.builder()
             .status(EligibilityStatus.ELIGIBLE)
             .build();
@@ -183,6 +206,13 @@ class CrossBorderPostcodeSelectionTest extends BasePageTest {
         var caseData = buildCrossBorderCaseWithFlags(
             selectedCountry
         );
+
+        // Mock the refresh call (checkEligibility with null country)
+        EligibilityResult refreshResult = EligibilityResult.builder()
+            .status(EligibilityStatus.LEGISLATIVE_COUNTRY_REQUIRED)
+            .legislativeCountries(List.of(LegislativeCountry.ENGLAND, LegislativeCountry.WALES))
+            .build();
+        lenient().when(eligibilityService.checkEligibility(SOME_POSTCODE, null)).thenReturn(refreshResult);
 
         var result = EligibilityResult.builder()
             .status(EligibilityStatus.NOT_ELIGIBLE)
