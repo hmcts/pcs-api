@@ -88,8 +88,7 @@ class NoRentArrearsGroundsForPossessionOptionsTest extends BasePageTest {
     @MethodSource("provideRentDetailsPageScenarios")
     void shouldSetCorrectShowRentDetailsPageFlagForAssuredTenancy(
         Set<NoRentArrearsMandatoryGrounds> mandatoryGrounds,
-        Set<NoRentArrearsDiscretionaryGrounds> discretionaryGrounds,
-        YesOrNo expectedShowRentDetailsPage) {
+        Set<NoRentArrearsDiscretionaryGrounds> discretionaryGrounds, YesOrNo expectedShowRentDetailsPage) {
         // Given
         PCSCase caseData = PCSCase.builder()
             .noRentArrearsMandatoryGroundsOptions(mandatoryGrounds)
@@ -138,23 +137,23 @@ class NoRentArrearsGroundsForPossessionOptionsTest extends BasePageTest {
         return Stream.of(
             // Ground 8 (SERIOUS_RENT_ARREARS) - Should show Rent Details
             Arguments.of(Set.of(NoRentArrearsMandatoryGrounds.SERIOUS_RENT_ARREARS), Set.of(), YesOrNo.YES),
-            
-            // Ground 10 (RENT_ARREARS) - Should show Rent Details  
+
+            // Ground 10 (RENT_ARREARS) - Should show Rent Details
             Arguments.of(Set.of(), Set.of(NoRentArrearsDiscretionaryGrounds.RENT_ARREARS), YesOrNo.YES),
-            
+
             // Ground 11 (RENT_PAYMENT_DELAY) - Should show Rent Details
             Arguments.of(Set.of(), Set.of(NoRentArrearsDiscretionaryGrounds.RENT_PAYMENT_DELAY), YesOrNo.YES),
-            
+
             // Ground 9 (SUITABLE_ACCOM) - Should NOT show Rent Details
             Arguments.of(Set.of(), Set.of(NoRentArrearsDiscretionaryGrounds.SUITABLE_ACCOM), YesOrNo.NO),
-            
+
             // Other grounds - Should NOT show Rent Details
             Arguments.of(Set.of(NoRentArrearsMandatoryGrounds.ANTISOCIAL_BEHAVIOUR), Set.of(), YesOrNo.NO),
-            
+
             // Multiple grounds including rent-related - Should show Rent Details
-            Arguments.of(Set.of(NoRentArrearsMandatoryGrounds.SERIOUS_RENT_ARREARS), 
+            Arguments.of(Set.of(NoRentArrearsMandatoryGrounds.SERIOUS_RENT_ARREARS),
                          Set.of(NoRentArrearsDiscretionaryGrounds.NUISANCE_OR_ILLEGAL_USE), YesOrNo.YES),
-            
+
             // No grounds selected - Should NOT show Rent Details
             Arguments.of(Set.of(), Set.of(), YesOrNo.NO)
         );
