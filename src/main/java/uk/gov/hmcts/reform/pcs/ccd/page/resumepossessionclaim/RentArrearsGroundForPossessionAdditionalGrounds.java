@@ -68,7 +68,7 @@ public class RentArrearsGroundForPossessionAdditionalGrounds implements CcdPageC
         caseData.setShowRentArrearsGroundReasonPage(YesOrNo.from(shouldShowReasonsPage));
 
         // This handles the case when user unchecks rent arrears grounds
-        YesOrNo showRentDetails = rentDetailsRoutingService.computeShowRentDetails(caseData);
+        YesOrNo showRentDetails = rentDetailsRoutingService.shouldShowRentDetails(caseData);
         caseData.setShowRentDetailsPage(showRentDetails);
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()

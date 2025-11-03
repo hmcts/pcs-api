@@ -71,7 +71,7 @@ public class NoRentArrearsGroundsForPossessionOptions implements CcdPageConfigur
         boolean shouldShowReasonsPage = hasOtherDiscretionaryGrounds || hasOtherMandatoryGrounds;
         caseData.setShowNoRentArrearsGroundReasonPage(YesOrNo.from(shouldShowReasonsPage));
 
-        YesOrNo showRentDetails = rentDetailsRoutingService.computeShowRentDetails(caseData);
+        YesOrNo showRentDetails = rentDetailsRoutingService.shouldShowRentDetails(caseData);
         caseData.setShowRentDetailsPage(showRentDetails);
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()

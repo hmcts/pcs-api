@@ -97,7 +97,7 @@ class NoRentArrearsGroundsForPossessionOptionsTest extends BasePageTest {
 
         // Explicitly stub the routing decision (do not rely on case data)
         if (!(mandatoryGrounds.isEmpty() && discretionaryGrounds.isEmpty())) {
-            when(rentDetailsRoutingService.computeShowRentDetails(any(PCSCase.class)))
+            when(rentDetailsRoutingService.shouldShowRentDetails(any(PCSCase.class)))
                 .thenReturn(expectedShowRentDetailsPage);
         }
 

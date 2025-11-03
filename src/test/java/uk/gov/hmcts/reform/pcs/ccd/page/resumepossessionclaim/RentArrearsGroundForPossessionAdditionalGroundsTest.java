@@ -34,7 +34,7 @@ class RentArrearsGroundForPossessionAdditionalGroundsTest extends BasePageTest {
     void setUp() {
         setPageUnderTest(new RentArrearsGroundForPossessionAdditionalGrounds(rentDetailsRoutingService));
         // Default mock behavior: return YES when rent arrears grounds are present
-        when(rentDetailsRoutingService.computeShowRentDetails(any(PCSCase.class)))
+        when(rentDetailsRoutingService.shouldShowRentDetails(any(PCSCase.class)))
             .thenAnswer(invocation -> {
                 PCSCase caseData = invocation.getArgument(0);
                 Set<RentArrearsMandatoryGrounds> mandatory = caseData.getRentArrearsMandatoryGrounds();
