@@ -20,6 +20,7 @@ import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.EvictionDelayWarningPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.EvictionRisksPosedPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.VulnerableAdultsChildrenPage;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.PropertyAccessDetailsPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.LivingInThePropertyPage;
 
 import static uk.gov.hmcts.reform.pcs.ccd.domain.State.AWAITING_SUBMISSION_TO_HMCTS;
@@ -53,6 +54,7 @@ public class EnforcementOrderEvent implements CCDConfig<PCSCase, State, UserRole
                 .add(new EvictionDelayWarningPage())
                 .add(new EvictionRisksPosedPage())
                 .add(new VulnerableAdultsChildrenPage())
+                .add(new PropertyAccessDetailsPage())
                 .add(new CheckYourAnswersPlaceHolder());
     }
 
