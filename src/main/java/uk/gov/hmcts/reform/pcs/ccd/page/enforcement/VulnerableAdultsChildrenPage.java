@@ -29,7 +29,7 @@ public class VulnerableAdultsChildrenPage implements CcdPageConfiguration {
             .label(
                 "vulnerableAdultsChildren-information-text", """
                     <p class="govuk-body govuk-!-font-weight-bold">The bailiff needs to know if anyone at the property is vulnerable.</p>
-                    <p>Someone is vulnerable if they have:</p>
+                    <p class="govuk-body govuk-!-margin-bottom-0">Someone is vulnerable if they have:</p>
                     <ul>
                         <li>a history of drug or alcohol abuse</li>
                         <li>a mental health condition</li>
