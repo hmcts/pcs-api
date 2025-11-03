@@ -2,7 +2,9 @@ import { IdamUtils } from '@hmcts/playwright-common';
 import { accessTokenApiData } from '@data/api-data/accessToken.api.data';
 
 async function globalSetupConfig(): Promise<void> {
-  await getAccessToken();
+  //Access Token is not required as e2e Tests are using permanent users now, however token generation might be required
+  //once we start using APIs to create case.
+  //await getAccessToken();
 }
 
 export const getAccessToken = async (): Promise<void> => {
