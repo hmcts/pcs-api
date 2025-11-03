@@ -247,52 +247,6 @@ export class CreateCaseAction implements IAction {
     await performAction('clickButton', contactPreferences.continue);
   }
 
-  // private async addDefendantDetails(defendantData: actionRecord) {
-  //   await performValidation('text', {elementType: 'paragraph', text: 'Case number: ' + caseNumber});
-  //   await performAction('clickRadioButton', {
-  //     question: defendantData.nameQuestion,
-  //     option: defendantData.nameOption
-  //   });
-  //   if (defendantData.nameOption === defendantDetails.yes) {
-  //     await performAction('inputText', defendantDetails.defendantFirstName, defendantData.firstName);
-  //     await performAction('inputText', defendantDetails.defendantLastName, defendantData.lastName);
-  //   }
-  //   await performAction('clickRadioButton', {
-  //     question: defendantData.addressQuestion,
-  //     option: defendantData.correspondenceAddressOption
-  //   });
-  //   if (defendantData.correspondenceAddressOption === defendantDetails.yes) {
-  //     await performAction('clickRadioButton', {
-  //       question: defendantData.addressSameQuestion,
-  //       option: defendantData.correspondenceAddressSameOption
-  //     });
-  //     if (defendantData.correspondenceAddressSameOption === defendantDetails.no) {
-  //       await performActions(
-  //         'Find Address based on postcode',
-  //         ['inputText', addressDetails.enterUKPostcodeLabel, defendantData.address],
-  //         ['clickButton', addressDetails.findAddressLabel],
-  //         ['select', addressDetails.selectAddressLabel, addressDetails.addressIndex]
-  //       );
-  //     }
-  //   }
-  //   await performAction('clickRadioButton', {
-  //     question: defendantData.addDefendantQuestion,
-  //     option: defendantData.addAdditionalDefendantsOption
-  //   });
-  //   if (defendantData.addAdditionalDefendantsOption === defendantDetails.yes) {
-  //     await performAction('clickButton', defendantDetails.addNew);
-  //     await performAction('clickRadioButton', {
-  //       question: defendantData.name1Question,
-  //       option: defendantData.name1Option
-  //     });
-  //     await performAction('clickRadioButton', {
-  //       question: defendantData.address1Question,
-  //       option: defendantData.correspondenceAddress1Option
-  //     });
-  //   }
-  //     await performAction('clickButton', defendantDetails.continue);
-  // }
-
   private async addDefendantDetails(defendantData: actionRecord) {
     await performValidation('text', {
       elementType: 'paragraph',
@@ -331,11 +285,6 @@ export class CreateCaseAction implements IAction {
       option: defendantData.addAdditionalDefendantsOption
     });
     if (defendantData.addAdditionalDefendantsOption === defendantDetails.yes && numAdditionalDefendants > 0) {
-      await performAction('clickRadioButton', {
-        question: defendantData.addDefendantQuestion,
-        option: defendantDetails.yes,
-      });
-
       for (let i = 0; i < numAdditionalDefendants; i++) {
         await performAction('clickButton', defendantDetails.addNew);
         const index = i + 1; // first additional defendant is index 1
