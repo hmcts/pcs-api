@@ -18,6 +18,7 @@ public class EnforcementOrder {
     private SelectEnforcementType selectEnforcementType;
 
     @JsonUnwrapped
+    @CCD
     private AdditionalInformation additionalInformation;
 
     @CCD
