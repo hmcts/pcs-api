@@ -17,8 +17,10 @@ import { firearmPossession } from "@data/page-data/page-data-enforcement/firearm
 import { criminalOrAntisocialBehaviour } from "@data/page-data/page-data-enforcement/criminalOrAntisocialBehaviour.page.data";
 import { verbalOrWrittenThreats } from "@data/page-data/page-data-enforcement/verbalOrWrittenThreats.page.data";
 import { groupProtestsEviction } from "@data/page-data/page-data-enforcement/groupProtestsEviction.page.data";
+import { policeOrSocialServiceVisit } from "@data/page-data/page-data-enforcement/policeOrSocialServiceVisit.page.data";
+import { animalsAtTheProperty } from "@data/page-data/page-data-enforcement/animalsAtTheProperty";
 
-test.beforeEach(async ({page}) => {
+test.beforeEach(async ({ page }) => {
   initializeExecutor(page);
   initializeEnforcementExecutor(page);
   await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
@@ -28,7 +30,7 @@ test.beforeEach(async ({page}) => {
   //Below three lines will be merged into a single action as part of improvement
   await performAction("selectFirstCaseFromTheFilter", caseNotFoundAfterFilter);
   await performAction('createNewCase', caseNotFoundAfterFilter);
-  await performAction('searchMyCaseFromFindCase', {caseNumber: caseNumber, criteria: caseNotFoundAfterFilter});
+  await performAction('searchMyCaseFromFindCase', { caseNumber: caseNumber, criteria: caseNotFoundAfterFilter });
 });
 
 test.describe('[Enforcement - Warrant of Possession] @Master @nightly', async () => {
@@ -52,8 +54,9 @@ test.describe('[Enforcement - Warrant of Possession] @Master @nightly', async ()
     await performValidation('mainHeader', riskPosedByEveryoneAtProperty.mainHeader);
     await performAction('selectRiskPosedByEveryoneAtProperty', {
       riskTypes: [riskPosedByEveryoneAtProperty.violentOrAggressiveBehaviour, riskPosedByEveryoneAtProperty.historyOfFirearmPossession,
-        riskPosedByEveryoneAtProperty.criminalOrAntisocialBehaviour, riskPosedByEveryoneAtProperty.verbalOrWrittenThreats,
-        riskPosedByEveryoneAtProperty.protestGroup]});
+      riskPosedByEveryoneAtProperty.criminalOrAntisocialBehaviour, riskPosedByEveryoneAtProperty.verbalOrWrittenThreats,
+      riskPosedByEveryoneAtProperty.protestGroup, riskPosedByEveryoneAtProperty.policeOrSocialService, riskPosedByEveryoneAtProperty.aggressiveAnimals]
+    });
     await performAction('provideDetailsViolentOrAggressiveBehaviour', {
       label: violentOrAggressiveBehaviour.howHaveTheyBeenViolentAndAggressive,
       input: violentOrAggressiveBehaviour.howHaveTheyBeenViolentAndAggressiveInput
@@ -73,6 +76,14 @@ test.describe('[Enforcement - Warrant of Possession] @Master @nightly', async ()
     await performAction('provideDetailsGroupProtestsEviction', {
       label: groupProtestsEviction.whichGroupMember,
       input: groupProtestsEviction.whichGroupMemberInput
+    });
+    await performAction('provideDetailsPoliceOrSocialServiceVisits', {
+      label: policeOrSocialServiceVisit.whyDidThePoliceOrSSVisitTheProperty,
+      input: policeOrSocialServiceVisit.whyDidThePoliceOrSSVisitThePropertyInput
+    });
+    await performAction('provideDetailsAnimalsAtTheProperty', {
+      label: animalsAtTheProperty.whatKindOfAnimalDoTheyHave,
+      input: animalsAtTheProperty.whatKindOfAnimalDoTheyHaveInput
     });
     await performValidation('mainHeader', vulnerableAdultsAndChildren.mainHeader);
     await performAction('clickButton', vulnerableAdultsAndChildren.continue);
