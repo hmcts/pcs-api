@@ -204,13 +204,13 @@ class UnderlesseeMortgageeServiceTest {
                                                                             String name,
                                                                             boolean addressKnown,
                                                                             AddressUK address,
-                                                                            Boolean addAdditionalUnderlesseeOrMortgagee) {
+                                                                            Boolean addAdditionalUnderlesseeMortgagee) {
         return UnderlesseeMortgagee.builder()
             .underlesseeOrMortgageeNameKnown(nameKnown)
             .underlesseeOrMortgageeName(name)
             .underlesseeOrMortgageeAddressKnown(addressKnown)
             .underlesseeOrMortgageeAddress(address)
-            .addAdditionalUnderlesseeOrMortgagee(addAdditionalUnderlesseeOrMortgagee)
+            .addAdditionalUnderlesseeOrMortgagee(addAdditionalUnderlesseeMortgagee)
             .build();
     }
 

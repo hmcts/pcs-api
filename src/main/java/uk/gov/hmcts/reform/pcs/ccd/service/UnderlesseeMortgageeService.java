@@ -24,8 +24,12 @@ public class UnderlesseeMortgageeService {
 
         UnderlesseeMortgagee underlesseeOrMortgagee1 = buildUnderlesseeMortgagee(pcsCase.getUnderlesseeOrMortgagee1());
         underlesseesOrMortgagees.add(underlesseeOrMortgagee1);
-        underlesseeOrMortgagee1.setAddAdditionalUnderlesseeOrMortgagee(pcsCase.getAddAdditionalUnderlesseeOrMortgagee()
-                                                                           .toBoolean());
+
+        if (pcsCase.getAddAdditionalUnderlesseeOrMortgagee() != null) {
+            underlesseeOrMortgagee1.setAddAdditionalUnderlesseeOrMortgagee(
+                pcsCase.getAddAdditionalUnderlesseeOrMortgagee().toBoolean()
+            );
+        }
 
         if (pcsCase.getAddAdditionalUnderlesseeOrMortgagee() == VerticalYesNo.YES) {
             List<UnderlesseeMortgagee> additionalUnderlesseeMortgagee
@@ -39,14 +43,18 @@ public class UnderlesseeMortgageeService {
     private UnderlesseeMortgagee buildUnderlesseeMortgagee(UnderlesseeMortgageeDetails underlesseeOrMortgagee1) {
         UnderlesseeMortgagee underlesseeOrMortgagee = new UnderlesseeMortgagee();
 
-        boolean nameKnown = underlesseeOrMortgagee1.getUnderlesseeOrMortgageeNameKnown().toBoolean();
+        boolean nameKnown = underlesseeOrMortgagee1.getUnderlesseeOrMortgageeNameKnown() != null
+            && underlesseeOrMortgagee1.getUnderlesseeOrMortgageeNameKnown().toBoolean();
+
         underlesseeOrMortgagee.setUnderlesseeOrMortgageeNameKnown(nameKnown);
         if (nameKnown) {
             underlesseeOrMortgagee.setUnderlesseeOrMortgageeName(underlesseeOrMortgagee1
                                                                    .getUnderlesseeOrMortgageeName());
         }
 
-        boolean addressKnown = underlesseeOrMortgagee1.getUnderlesseeOrMortgageeAddressKnown().toBoolean();
+        boolean addressKnown = underlesseeOrMortgagee1.getUnderlesseeOrMortgageeAddressKnown() != null
+            && underlesseeOrMortgagee1.getUnderlesseeOrMortgageeAddressKnown().toBoolean();
+
         underlesseeOrMortgagee.setUnderlesseeOrMortgageeAddressKnown(addressKnown);
         if (addressKnown) {
             underlesseeOrMortgagee.setUnderlesseeOrMortgageeAddress(underlesseeOrMortgagee1
