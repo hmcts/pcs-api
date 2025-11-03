@@ -217,6 +217,23 @@ public class PCSCase {
     )
     private Set<RentArrearsDiscretionaryGrounds> rentArrearsDiscretionaryGrounds;
 
+    // Assured tenancy - additional-only inputs (exclude 8/10/11 on UI)
+    @CCD(
+        label = "Mandatory grounds",
+        hint = "Select all that apply",
+        typeOverride = MultiSelectList,
+        typeParameterOverride = "AssuredAdditionalMandatoryGrounds"
+    )
+    private Set<AssuredAdditionalMandatoryGrounds> assuredAdditionalMandatoryGrounds;
+
+    @CCD(
+        label = "Discretionary grounds",
+        hint = "Select all that apply",
+        typeOverride = MultiSelectList,
+        typeParameterOverride = "AssuredAdditionalDiscretionaryGrounds"
+    )
+    private Set<AssuredAdditionalDiscretionaryGrounds> assuredAdditionalDiscretionaryGrounds;
+
     @JsonUnwrapped
     private RentArrearsGroundsReasons rentArrearsGroundsReasons;
 
@@ -559,7 +576,7 @@ public class PCSCase {
     @CCD(
         label = "Do you want the court to make a judgment for the outstanding arrears?"
     )
-    private YesOrNo arrearsJudgmentWanted;
+    private VerticalYesNo arrearsJudgmentWanted;
 
     @CCD(
         label = "Mandatory grounds",
