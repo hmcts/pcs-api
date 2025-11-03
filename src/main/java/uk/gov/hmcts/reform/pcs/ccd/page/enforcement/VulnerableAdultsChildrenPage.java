@@ -60,13 +60,16 @@ public class VulnerableAdultsChildrenPage implements CcdPageConfiguration {
         PCSCase data = details.getData();
         List<String> errors = new ArrayList<>();
 
-        String txt = data.getEnforcementOrder().getVulnerableAdultsChildren().getVulnerableReasonText();
-
-        // TODO: Use TextAreaValidationService from PR #751 when merged
-        if (txt.length() > VULNERABLE_REASON_TEXT_LIMIT) {
-            errors.add(EnforcementValidationUtil
-                    .getCharacterLimitErrorMessage(VULNERABLE_REASON_LABEL,
-                            VULNERABLE_REASON_TEXT_LIMIT));
+        VulnerableAdultsChildren vulnerableAdultsChildren = data.getEnforcementOrder().getVulnerableAdultsChildren();
+        // Only validate when user selected YES
+        if (vulnerableAdultsChildren.getVulnerablePeopleYesNo() == YesNoNotSure.YES) {
+            String txt = vulnerableAdultsChildren.getVulnerableReasonText();
+            // TODO: Use TextAreaValidationService from PR #751 when merged
+            if (txt.length() > VULNERABLE_REASON_TEXT_LIMIT) {
+                errors.add(EnforcementValidationUtil
+                        .getCharacterLimitErrorMessage(VULNERABLE_REASON_LABEL,
+                                VULNERABLE_REASON_TEXT_LIMIT));
+            }
         }
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
