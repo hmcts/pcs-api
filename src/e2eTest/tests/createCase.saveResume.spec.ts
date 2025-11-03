@@ -5,7 +5,7 @@ import {addressDetails, claimantType, claimType, claimantName, contactPreference
         dailyRentAmount, provideMoreDetailsOfClaim, whatAreYourGroundsForPossession, moneyJudgment, claimantCircumstances, applications, user,
         checkYourAnswers, propertyDetails, languageUsed, defendantCircumstances, claimingCosts, uploadAdditionalDocs, statementOfTruth, home,
         additionalReasonsForPossession, underlesseeOrMortgageeEntitledToClaim, alternativesToPossession,
-        wantToUploadDocuments, resumeClaim, resumeClaimOptions } from '@data/page-data/';
+        wantToUploadDocuments, resumeClaim, resumeClaimOptions, signInOrCreateAnAccount } from '@data/page-data/';
 
 // This test validates the resume & find case functionality with and without saved options.1
 // It is not intended to reuse for any of the e2e scenarios, those should still be covered in others specs.

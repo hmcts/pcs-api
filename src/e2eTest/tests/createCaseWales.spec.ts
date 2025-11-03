@@ -6,7 +6,7 @@ import {claimType, claimantType, claimantName, claimantDetailsWales, contactPref
         reasonsForPossession, moneyJudgment, claimantCircumstances, applications, completeYourClaim, user, reasonsForRequestingASuspensionOrder,
         checkYourAnswers, propertyDetails, languageUsed, defendantCircumstances, claimingCosts, home, additionalReasonsForPossession, underlesseeOrMortgageeEntitledToClaim,
         alternativesToPossession, housingAct, reasonsForRequestingADemotionOrder, statementOfExpressTerms, wantToUploadDocuments, whatAreYourGroundsForPossessionWales,
-        addressDetails, reasonsForRequestingASuspensionAndDemotionOrder} from '@data/page-data';
+        addressDetails, reasonsForRequestingASuspensionAndDemotionOrder, signInOrCreateAnAccount} from '@data/page-data';
 
 test.beforeEach(async ({page}) => {
   initializeExecutor(page);
