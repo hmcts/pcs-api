@@ -28,7 +28,7 @@ public class VulnerableAdultsChildrenPage implements CcdPageConfiguration {
             .label("vulnerableAdultsChildren-line-separator", "---")
             .label(
                 "vulnerableAdultsChildren-information-text", """
-                    <p>The bailiff needs to know if anyone at the property is vulnerable.</p>
+                    <p class="govuk-body govuk-!-font-weight-bold">The bailiff needs to know if anyone at the property is vulnerable.</p>
                     <p>Someone is vulnerable if they have:</p>
                     <ul>
                         <li>a history of drug or alcohol abuse</li>
