@@ -121,6 +121,7 @@ test.describe('[Create Case - Wales] @Master @nightly', async () => {
        ['formLabelValue', propertyDetails.postcodeZipcodeLabel, addressDetails.walesCourtAssignedPostcode],
        ['formLabelValue', propertyDetails.countryLabel, addressDetails.country]);*/
   });
+
   test('Wales - Secure contract - Rent arrears + ASB + other options', async () => {
     await performAction('enterTestAddressManually');
     await performValidation('bannerAlert', 'Case #.* has been created.');
@@ -219,7 +220,7 @@ test.describe('[Create Case - Wales] @Master @nightly', async () => {
   });
 
   // The sections commented out will be fixed as part of the User Story https://tools.hmcts.net/jira/browse/HDPI-2123
-  test('Wales - Rent arrears + ASB - Standard contract', async () => {
+  test('Wales - Standard contract - Rent arrears + ASB', async () => {
     await performAction('enterTestAddressManually');
     await performValidation('bannerAlert', 'Case #.* has been created.');
     await performAction('extractCaseIdFromAlert');
@@ -311,7 +312,7 @@ test.describe('[Create Case - Wales] @Master @nightly', async () => {
   });
 
   // The sections commented out will be fixed as part of the User Story https://tools.hmcts.net/jira/browse/HDPI-2123
-  test('Wales - No Rent arrears,  ASB + other options - Other', async () => {
+  test('Wales - Other - No Rent arrears,  ASB + other options', async () => {
     await performAction('enterTestAddressManually');
     await performValidation('bannerAlert', 'Case #.* has been created.');
     await performAction('extractCaseIdFromAlert');
