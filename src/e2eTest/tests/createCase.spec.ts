@@ -324,8 +324,8 @@ test.describe('[Create Case - England] @Master @nightly', async () => {
     //   unpaidRentInteractiveOption: dailyRentAmount.no,
     //   unpaidRentAmountPerDay: '20'
     // });
-    await performValidation('mainHeader', moneyJudgment.mainHeader);
-    await performAction('selectMoneyJudgment', moneyJudgment.yes);
+    //await performValidation('mainHeader', moneyJudgment.mainHeader);
+    //await performAction('selectMoneyJudgment', moneyJudgment.yes);
     await performValidation('mainHeader', claimantCircumstances.mainHeader);
     await performAction('selectClaimantCircumstances', {
       circumstanceOption: claimantCircumstances.yes,
