@@ -120,20 +120,6 @@ public class NoticeDetails implements CcdPageConfiguration {
         PCSCase caseData = details.getData();
 
         List<String> validationErrors = noticeDetailsService.validateNoticeDetails(caseData);
-        
-        // Add textarea validation
-        validationErrors.addAll(textAreaValidationService.validateMultipleTextAreas(
-            TextAreaValidationService.FieldValidation.of(
-                caseData.getNoticeEmailExplanation(),
-                PCSCase.NOTICE_EMAIL_EXPLANATION_LABEL,
-                TextAreaValidationService.SHORT_TEXT_LIMIT
-            ),
-            TextAreaValidationService.FieldValidation.of(
-                caseData.getNoticeOtherExplanation(),
-                PCSCase.NOTICE_OTHER_EXPLANATION_LABEL,
-                TextAreaValidationService.SHORT_TEXT_LIMIT
-            )
-        ));
 
         return textAreaValidationService.createValidationResponse(caseData, validationErrors);
     }

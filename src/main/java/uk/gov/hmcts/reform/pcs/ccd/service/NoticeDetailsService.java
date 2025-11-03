@@ -19,6 +19,8 @@ import java.util.List;
 @AllArgsConstructor
 public class NoticeDetailsService {
     
+    private final TextAreaValidationService textAreaValidationService;
+    
     // Error message constants
     private static final String INVALID_DATETIME_ERROR = "Enter a valid date and time in the format DD MM YYYY HH MM";
     private static final String FUTURE_DATETIME_ERROR = "The date and time cannot be today or in the future";
@@ -64,6 +66,20 @@ public class NoticeDetailsService {
                 validateOther(caseData, errors);
                 break;
         }
+
+        // Validate textarea fields for character limits
+        errors.addAll(textAreaValidationService.validateMultipleTextAreas(
+            TextAreaValidationService.FieldValidation.of(
+                caseData.getNoticeEmailExplanation(),
+                PCSCase.NOTICE_EMAIL_EXPLANATION_LABEL,
+                TextAreaValidationService.SHORT_TEXT_LIMIT
+            ),
+            TextAreaValidationService.FieldValidation.of(
+                caseData.getNoticeOtherExplanation(),
+                PCSCase.NOTICE_OTHER_EXPLANATION_LABEL,
+                TextAreaValidationService.SHORT_TEXT_LIMIT
+            )
+        ));
 
         return errors;
     }
