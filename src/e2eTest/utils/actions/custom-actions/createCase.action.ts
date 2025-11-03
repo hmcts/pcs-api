@@ -326,7 +326,10 @@ export class CreateCaseAction implements IAction {
     }
     // --- Additional defendants
     const numAdditionalDefendants = Number(defendantData.numberOfDefendants) || 0;
-
+    await performAction('clickRadioButton', {
+      question: defendantData.addDefendantQuestion,
+      option: defendantData.addAdditionalDefendantsOption
+    });
     if (defendantData.addAdditionalDefendantsOption === defendantDetails.yes && numAdditionalDefendants > 0) {
       await performAction('clickRadioButton', {
         question: defendantData.addDefendantQuestion,
