@@ -21,4 +21,6 @@ public class UnderlesseeMortgagee {
     private Boolean underlesseeOrMortgageeAddressKnown;
 
     private AddressUK underlesseeOrMortgageeAddress;
+
+    private Boolean addAdditionalUnderlesseeOrMortgagee;
 }

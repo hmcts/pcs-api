@@ -24,6 +24,8 @@ public class UnderlesseeMortgageeService {
 
         UnderlesseeMortgagee underlesseeOrMortgagee1 = buildUnderlesseeMortgagee(pcsCase.getUnderlesseeOrMortgagee1());
         underlesseesOrMortgagees.add(underlesseeOrMortgagee1);
+        underlesseeOrMortgagee1.setAddAdditionalUnderlesseeOrMortgagee(pcsCase.getAddAdditionalUnderlesseeOrMortgagee()
+                                                                           .toBoolean());
 
         if (pcsCase.getAddAdditionalUnderlesseeOrMortgagee() == VerticalYesNo.YES) {
             List<UnderlesseeMortgagee> additionalUnderlesseeMortgagee

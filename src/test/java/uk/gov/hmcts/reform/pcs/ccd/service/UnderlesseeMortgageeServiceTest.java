@@ -94,13 +94,13 @@ class UnderlesseeMortgageeServiceTest {
 
         // Then
         UnderlesseeMortgagee expectedMortgagee1 = buildExpectedUnderlesseeOrMortgagee(
-            true, "Mortgagee1 name",true, correspondenceAddress);
+            true, "Mortgagee1 name",true, correspondenceAddress,true);
 
         UnderlesseeMortgagee expectedUnderlessee1 =  buildExpectedUnderlesseeOrMortgagee(
-            true, "Underlessee1 name",true, correspondenceAddress);
+            true, "Underlessee1 name",true, correspondenceAddress,null);
 
         UnderlesseeMortgagee expectedUnderlessee2 =  buildExpectedUnderlesseeOrMortgagee(
-            true, "Underlessee2 name",false, null);
+            true, "Underlessee2 name",false, null,null);
 
         assertThat(underlesseeMortgageeList)
             .containsExactly(expectedMortgagee1, expectedUnderlessee1, expectedUnderlessee2);
@@ -127,7 +127,7 @@ class UnderlesseeMortgageeServiceTest {
 
         // Then
         UnderlesseeMortgagee expected = buildExpectedUnderlesseeOrMortgagee(
-            true, "Mortgagee1 name", true, address);
+            true, "Mortgagee1 name", true, address,false);
 
         assertThat(result).containsExactly(expected);
     }
@@ -153,9 +153,9 @@ class UnderlesseeMortgageeServiceTest {
 
         // Then
         UnderlesseeMortgagee expected1 = buildExpectedUnderlesseeOrMortgagee(
-            false, null, false, null);
+            false, null, false, null,true);
         UnderlesseeMortgagee expected2 = buildExpectedUnderlesseeOrMortgagee(
-            false, null, false, null);
+            false, null, false, null,null);
 
         assertThat(result).containsExactly(expected1, expected2);
     }
@@ -168,7 +168,7 @@ class UnderlesseeMortgageeServiceTest {
             // Name and address not known
             Arguments.of(
                 buildUnderlesseeOrMortgageeDetails(VerticalYesNo.NO, null, VerticalYesNo.NO, null),
-                buildExpectedUnderlesseeOrMortgagee(false, null, false, null)
+                buildExpectedUnderlesseeOrMortgagee(false, null, false, null,false)
             ),
 
             // Name known and address not known
@@ -176,7 +176,7 @@ class UnderlesseeMortgageeServiceTest {
                 buildUnderlesseeOrMortgageeDetails(
                      VerticalYesNo.YES,"expected name", VerticalYesNo.NO, null),
                 buildExpectedUnderlesseeOrMortgagee(
-                    true, "expected name", false, null)
+                    true, "expected name", false, null,false)
             ),
 
             // Name not known and address known
@@ -184,7 +184,7 @@ class UnderlesseeMortgageeServiceTest {
                 buildUnderlesseeOrMortgageeDetails(
                      VerticalYesNo.NO,null, VerticalYesNo.YES, correspondenceAddress),
                 buildExpectedUnderlesseeOrMortgagee(
-                    false, null, true, correspondenceAddress)
+                    false, null, true, correspondenceAddress,false)
             )
         );
     }
@@ -203,12 +203,14 @@ class UnderlesseeMortgageeServiceTest {
     private static UnderlesseeMortgagee buildExpectedUnderlesseeOrMortgagee(boolean nameKnown,
                                                                             String name,
                                                                             boolean addressKnown,
-                                                                            AddressUK address) {
+                                                                            AddressUK address,
+                                                                            Boolean addAdditionalUnderlesseeOrMortgagee) {
         return UnderlesseeMortgagee.builder()
             .underlesseeOrMortgageeNameKnown(nameKnown)
             .underlesseeOrMortgageeName(name)
             .underlesseeOrMortgageeAddressKnown(addressKnown)
             .underlesseeOrMortgageeAddress(address)
+            .addAdditionalUnderlesseeOrMortgagee(addAdditionalUnderlesseeOrMortgagee)
             .build();
     }
 

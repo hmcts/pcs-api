@@ -29,12 +29,14 @@ public class UnderlesseeOrMortgageeDetailsPage implements CcdPageConfiguration {
             .pageLabel("Underlessee or mortgagee details")
             .showCondition("hasUnderlesseeOrMortgagee=\"YES\"")
             .complex(PCSCase::getUnderlesseeOrMortgagee1)
-                .readonly(UnderlesseeMortgageeDetails::getUnderlesseeOrMortgageeNameLabel)
+                .readonlyNoSummary(UnderlesseeMortgageeDetails::getUnderlesseeOrMortgageeNameLabel)
                 .mandatory(UnderlesseeMortgageeDetails::getUnderlesseeOrMortgageeNameKnown)
-                .mandatory(UnderlesseeMortgageeDetails::getUnderlesseeOrMortgageeName)
-                .readonly(UnderlesseeMortgageeDetails::getUnderlesseeOrMortgageeAddressLabel)
+                .mandatory(UnderlesseeMortgageeDetails::getUnderlesseeOrMortgageeName,
+                           "underlesseeOrMortgageeNameKnown=\"YES\"")
+                .readonlyNoSummary(UnderlesseeMortgageeDetails::getUnderlesseeOrMortgageeAddressLabel)
                 .mandatory(UnderlesseeMortgageeDetails::getUnderlesseeOrMortgageeAddressKnown)
-                    .complex(UnderlesseeMortgageeDetails::getUnderlesseeOrMortgageeAddress)
+                    .complex(UnderlesseeMortgageeDetails::getUnderlesseeOrMortgageeAddress,
+                             "underlesseeOrMortgageeAddressKnown=\"YES\"")
                         .mandatory(AddressUK::getAddressLine1)
                         .optional(AddressUK::getAddressLine2)
                         .optional(AddressUK::getAddressLine3)
