@@ -1,14 +1,9 @@
 import { test } from "@playwright/test";
-import { caseList } from "@data/page-data/caseList.page.data";
-import { user } from "@data/user-data/permanent.user.data";
-import { caseSummary } from "@data/page-data/caseSummary.page.data";
-import { yourApplication } from "@data/page-data/page-data-enforcement/yourApplication.page.data";
 import { initializeEnforcementExecutor, performAction, performValidation } from "@utils/controller-enforcement";
-import { caseNumber } from "@utils/actions/custom-actions/createCase.action";
+import {caseNumber, caseNotFoundAfterFilter} from "@utils/actions/custom-actions";
 import { initializeExecutor } from "@utils/controller";
-import { caseNotFoundAfterFilter } from "@utils/actions/custom-actions/searchCase.action";
-import { nameAndAddressForEviction } from "@data/page-data/page-data-enforcement/nameAndAddressForEviction.page.data";
-import { signInOrCreateAnAccount } from "@data/page-data/signInOrCreateAnAccount.page.data";
+import {caseList, user, caseSummary, signInOrCreateAnAccount } from "@data/page-data";
+import {nameAndAddressForEviction, yourApplication } from "@data/page-data/page-data-enforcement";
 
 test.beforeEach(async ({ page }) => {
   initializeExecutor(page);
