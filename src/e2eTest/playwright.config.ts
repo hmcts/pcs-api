@@ -3,12 +3,12 @@ import * as process from 'node:process';
 import { defineConfig, devices } from '@playwright/test';
 
 const DEFAULT_VIEWPORT = {width: 1920, height: 1080};
+export const VERY_SHORT_TIMEOUT = 1000;
 export const SHORT_TIMEOUT = 5000;
 export const MEDIUM_TIMEOUT = 10000;
 export const LONG_TIMEOUT = 30000;
-export const waitForPageRedirectionTimeout = SHORT_TIMEOUT;
-
 export const actionRetries = 5;
+export const waitForPageRedirectionTimeout = SHORT_TIMEOUT;
 
 export default defineConfig({
   testDir: 'tests/',

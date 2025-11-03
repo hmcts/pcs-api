@@ -15,7 +15,6 @@ import {noticeOfYourIntention} from '@data/page-data/noticeOfYourIntention.page.
 import {noticeDetails} from '@data/page-data/noticeDetails.page.data';
 import {rentDetails} from '@data/page-data/rentDetails.page.data';
 import {dailyRentAmount} from '@data/page-data/dailyRentAmount.page.data';
-import {provideMoreDetailsOfClaim} from '@data/page-data/provideMoreDetailsOfClaim.page.data';
 import {whatAreYourGroundsForPossession} from '@data/page-data/whatAreYourGroundsForPossession.page.data';
 import {moneyJudgment} from '@data/page-data/moneyJudgment.page.data';
 import {claimantCircumstances} from '@data/page-data/claimantCircumstances.page.data';
@@ -34,8 +33,9 @@ import {additionalReasonsForPossession} from '@data/page-data/additionalReasonsF
 import {underlesseeOrMortgageeEntitledToClaim} from '@data/page-data/underlesseeOrMortgageeEntitledToClaim.page.data';
 import {alternativesToPossession} from '@data/page-data/alternativesToPossession.page.data';
 import {wantToUploadDocuments} from '@data/page-data/wantToUploadDocuments.page.data';
-import {resumeClaim} from "@data/page-data/resumeClaim.page.data";
-import {resumeClaimOptions} from "@data/page-data/resumeClaimOptions.page.data";
+import {resumeClaim} from '@data/page-data/resumeClaim.page.data';
+import {resumeClaimOptions} from '@data/page-data/resumeClaimOptions.page.data';
+import {signInOrCreateAnAccount} from '@data/page-data/signInOrCreateAnAccount.page.data';
 
 // This test validates the resume & find case functionality with and without saved options.
 // It is not intended to reuse for any of the e2e scenarios, those should still be covered in others specs.
@@ -46,13 +46,20 @@ import {resumeClaimOptions} from "@data/page-data/resumeClaimOptions.page.data";
 test.beforeEach(async ({page}) => {
   initializeExecutor(page);
   await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
+  await performAction('handleCookieConsent', {
+    accept: signInOrCreateAnAccount.acceptAdditionalCookiesButton,
+    hide: signInOrCreateAnAccount.hideThisCookieMessageButton
+  });
   await performAction('login', user.claimantSolicitor);
+  await performAction('handleCookieConsent', {
+    accept: signInOrCreateAnAccount.acceptAnalyticsCookiesButton
+  });
   await performAction('clickTab', home.createCaseTab);
   await performAction('selectJurisdictionCaseTypeEvent');
   await performAction('housingPossessionClaim');
 });
 
-test.describe.skip('[Create Case - With resume claim options] @Master @nightly', async () => {
+test.describe('[Create Case - With resume claim options] @Master @nightly', async () => {
   test('England - Resume with saved options', async () => {
     await performAction('selectAddress', {
       postcode: addressDetails.englandCourtAssignedPostcode,
@@ -60,7 +67,7 @@ test.describe.skip('[Create Case - With resume claim options] @Master @nightly',
     });
     await performValidation('bannerAlert', 'Case #.* has been created.');
     await performAction('extractCaseIdFromAlert');
-    await performAction('clickButtonAndVerifyPageNavigation', provideMoreDetailsOfClaim.continue, claimantType.mainHeader);
+    await performAction('provideMoreDetailsOfClaim');
     await performAction('selectClaimantType', claimantType.england.registeredProviderForSocialHousing);
     await performAction('selectClaimType', claimType.no);
     await performAction('selectClaimantName', claimantName.yes);
@@ -193,12 +200,12 @@ test.describe.skip('[Create Case - With resume claim options] @Master @nightly',
     });
     await performValidation('bannerAlert', 'Case #.* has been created.');
     await performAction('extractCaseIdFromAlert');
-    await performAction('clickButtonAndVerifyPageNavigation', provideMoreDetailsOfClaim.continue, claimantType.mainHeader);
+    await performAction('provideMoreDetailsOfClaim');
     await performAction('selectClaimantType', claimantType.england.registeredProviderForSocialHousing);
     await performAction('selectClaimType', claimType.no);
     await performAction('selectClaimantName', claimantName.yes);
     await performAction('clickButtonAndVerifyPageNavigation', claimantName.continue, contactPreferences.mainHeader);
-    await performAction('clickButton', home.signOutButton);
+    await performAction('signOut');
     await performAction('reloginAndFindTheCase', user.claimantSolicitor);
     await performAction('clickButtonAndVerifyPageNavigation', resumeClaim.continue, resumeClaimOptions.mainHeader);
     await performAction('selectResumeClaimOption', resumeClaimOptions.no);
@@ -320,5 +327,4 @@ test.describe.skip('[Create Case - With resume claim options] @Master @nightly',
     )
   });
 });
-
 
