@@ -13,6 +13,6 @@ export const occupationContractOrLicenceDetailsWales = {
   monthInput: '04',
   yearInput: '2021',
   continue: 'Continue',
-  giveDetailsOfTypeOfOccupationContractAgreement: 'Give details about what type of occupation contract or licence is in place',
+  giveDetailsOfTypeOfOccupationContractAgreementLabel: 'Give details about what type of occupation contract or licence is in place',
   detailsOfLicenceInput: 'This is the details of Licence or Tenancy agreement.',
 }

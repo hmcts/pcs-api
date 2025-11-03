@@ -46,7 +46,7 @@ export class CreateCaseWalesAction extends CreateCaseAction implements IAction {
       option: occupationContractData.occupationContractType
     });
     if (occupationContractData.occupationContractType === occupationContractOrLicenceDetailsWales.other) {
-      await performAction('inputText', occupationContractOrLicenceDetailsWales.giveDetailsOfTypeOfOccupationContractAgreement, occupationContractOrLicenceDetailsWales.detailsOfLicenceInput);
+      await performAction('inputText', occupationContractOrLicenceDetailsWales.giveDetailsOfTypeOfOccupationContractAgreementLabel, occupationContractOrLicenceDetailsWales.detailsOfLicenceInput);
     }
     if (occupationContractData.day && occupationContractData.month && occupationContractData.year) {
       await performActions(

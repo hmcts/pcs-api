@@ -51,7 +51,6 @@ test.describe('[Create Case - Wales] @Master @nightly', async () => {
       email: defendantDetails.yes,
       correspondenceAddressSame: defendantDetails.yes
     });
-    //Following line can be updated to securecontractLicenceDetails once HDPI-2365 is done
     await performAction('selectOccupationContractOrLicenceDetails', {
       occupationContractQuestion: occupationContractOrLicenceDetailsWales.occupationContractOrLicenceType,
       occupationContractType: occupationContractOrLicenceDetailsWales.secureContract,
