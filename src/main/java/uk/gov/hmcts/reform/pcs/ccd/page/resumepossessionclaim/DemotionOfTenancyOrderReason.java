@@ -42,7 +42,7 @@ public class DemotionOfTenancyOrderReason implements CcdPageConfiguration {
         if (demotionOfTenancy != null) {
             validationErrors.addAll(textAreaValidationService.validateSingleTextArea(
                 demotionOfTenancy.getDemotionOfTenancyReason(),
-                "Why are you requesting a demotion order?",
+                DemotionOfTenancy.DEMOTION_OF_TENANCY_REASON_LABEL,
                 TextAreaValidationService.SHORT_TEXT_LIMIT
             ));
         }

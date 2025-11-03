@@ -45,7 +45,7 @@ public class StatementOfExpressTerms implements CcdPageConfiguration {
         if (demotionOfTenancy != null) {
             validationErrors.addAll(textAreaValidationService.validateSingleTextArea(
                 demotionOfTenancy.getStatementOfExpressTermsDetails(),
-                "Give details of the terms",
+                DemotionOfTenancy.STATEMENT_OF_EXPRESS_TERMS_DETAILS_LABEL,
                 TextAreaValidationService.LONG_TEXT_LIMIT
             ));
         }
