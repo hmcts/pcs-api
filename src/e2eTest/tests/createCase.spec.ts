@@ -394,7 +394,7 @@ test.describe('[Create Case - England] @Master @nightly', async () => {
     });
     await performValidation('mainHeader', tenancyLicenceDetails.mainHeader);
     await performAction('selectTenancyOrLicenceDetails', {
-      tenancyOrLicenceType: tenancyLicenceDetails.other,
+      tenancyOrLicenceType: tenancyLicenceDetails.introductoryTenancy,
       day: tenancyLicenceDetails.day,
       month: tenancyLicenceDetails.month,
       year: tenancyLicenceDetails.year,
