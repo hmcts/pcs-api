@@ -10,10 +10,10 @@ import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
@@ -57,6 +57,9 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
 
         boolean hasUnsubmittedCaseData = caseHasUnsubmittedData(caseReference, state);
         pcsCase.setHasUnsubmittedCaseData(YesOrNo.from(hasUnsubmittedCaseData));
+
+        PcsCaseEntity pcsCaseEntity = loadCaseData(caseReference);
+        mapTenancyLicenceData(pcsCase, pcsCaseEntity);
 
         setMarkdownFields(pcsCase);
 
@@ -115,6 +118,7 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
             .orElse(false);
 
         pcsCase.setUserPcqIdSet(YesOrNo.from(pcqIdSet));
+
 
         pcsCase.setParties(mapAndWrapParties(pcsCaseEntity.getParties()));
     }
@@ -193,4 +197,20 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
     private static String poundsToPence(BigDecimal pounds) {
         return pounds.movePointRight(2).toPlainString();
     }
+
+    private void mapTenancyLicenceData(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {
+        uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicence entityTenancyLicence = pcsCaseEntity.getTenancyLicence();
+        if (entityTenancyLicence == null) {
+            return;
+        }
+
+        // Map documents from entity to CCD ListValue format
+        var supportingDocuments = entityTenancyLicence.getSupportingDocuments();
+        if (supportingDocuments != null && !supportingDocuments.isEmpty()) {
+            pcsCase.setTenancyLicenceDocuments(
+                ListValueUtils.wrapListItems(supportingDocuments));
+        }
+
+    }
+
 }
