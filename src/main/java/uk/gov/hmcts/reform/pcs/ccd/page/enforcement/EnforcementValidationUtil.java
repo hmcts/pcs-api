@@ -8,6 +8,7 @@ import java.util.Locale;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class EnforcementValidationUtil {
+    // Temporary validation class until HDPI-2189 is merged in to master which will provide generic validation
 
     private static final String ERROR_MESSAGE_TEMPLATE = "In '%s', you have entered more than the "
             + "maximum number of characters (%s)";

@@ -11,7 +11,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.PropertyAccessDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.PropertyAccessDetails.CLARIFICATION_PROPERTY_ACCESS_TEXT_LIMIT;
 
 class PropertyAccessDetailsPageTest extends BasePageTest {
 
@@ -28,7 +27,7 @@ class PropertyAccessDetailsPageTest extends BasePageTest {
         PCSCase caseData = PCSCase.builder()
                 .enforcementOrder(EnforcementOrder.builder()
                         .propertyAccessDetails(PropertyAccessDetails.builder()
-                                .propertyAccessYesNo(VerticalYesNo.YES)
+                                .isDifficultToAccessProperty(VerticalYesNo.YES)
                                 .clarificationOnAccessDifficultyText(SHORTEST_VALID_TEXT)
                                 .build())
                         .build())
@@ -50,9 +49,9 @@ class PropertyAccessDetailsPageTest extends BasePageTest {
         PCSCase caseData = PCSCase.builder()
                 .enforcementOrder(EnforcementOrder.builder()
                         .propertyAccessDetails(PropertyAccessDetails.builder()
-                                .propertyAccessYesNo(VerticalYesNo.YES)
+                                .isDifficultToAccessProperty(VerticalYesNo.YES)
                                 .clarificationOnAccessDifficultyText(
-                                        SHORTEST_VALID_TEXT.repeat(CLARIFICATION_PROPERTY_ACCESS_TEXT_LIMIT))
+                                        SHORTEST_VALID_TEXT.repeat(6800))
                                 .build())
                         .build())
                 .build();
@@ -64,7 +63,7 @@ class PropertyAccessDetailsPageTest extends BasePageTest {
         assertThat(response.getErrors()).isEmpty();
         assertThat(response.getData().getEnforcementOrder()
                 .getPropertyAccessDetails().getClarificationOnAccessDifficultyText()).isEqualTo(
-                        SHORTEST_VALID_TEXT.repeat(CLARIFICATION_PROPERTY_ACCESS_TEXT_LIMIT));
+                        SHORTEST_VALID_TEXT.repeat(6800));
     }
 
     @Test
@@ -74,7 +73,7 @@ class PropertyAccessDetailsPageTest extends BasePageTest {
         PCSCase caseData = PCSCase.builder()
                 .enforcementOrder(EnforcementOrder.builder()
                         .propertyAccessDetails(PropertyAccessDetails.builder()
-                                .propertyAccessYesNo(VerticalYesNo.YES)
+                                .isDifficultToAccessProperty(VerticalYesNo.YES)
                                 .clarificationOnAccessDifficultyText(longText)
                                 .build())
                         .build())
@@ -86,8 +85,8 @@ class PropertyAccessDetailsPageTest extends BasePageTest {
         // Then
         assertThat(response.getErrors()).containsExactly(
                 EnforcementValidationUtil.getCharacterLimitErrorMessage(
-                        PropertyAccessDetails.CLARIFICATION_PROPERTY_ACCESS_LABEL,
-                        CLARIFICATION_PROPERTY_ACCESS_TEXT_LIMIT)
+                        "Explain why it's difficult to access the property.",
+                        6800)
         );
     }
 }

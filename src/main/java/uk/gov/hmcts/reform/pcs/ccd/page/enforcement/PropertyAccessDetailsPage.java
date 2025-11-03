@@ -14,10 +14,11 @@ import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 import java.util.ArrayList;
 import java.util.List;
 
-import static uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.PropertyAccessDetails.CLARIFICATION_PROPERTY_ACCESS_LABEL;
-import static uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.PropertyAccessDetails.CLARIFICATION_PROPERTY_ACCESS_TEXT_LIMIT;
-
 public class PropertyAccessDetailsPage implements CcdPageConfiguration {
+
+    private static final String CLARIFICATION_PROPERTY_ACCESS_LABEL =
+            "Explain why it's difficult to access the property.";
+    private static final int CLARIFICATION_PROPERTY_ACCESS_TEXT_LIMIT = 6800;
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
@@ -27,9 +28,9 @@ public class PropertyAccessDetailsPage implements CcdPageConfiguration {
                 .label("propertyAccessDetails-line-separator", "---")
                 .complex(PCSCase::getEnforcementOrder)
                 .complex(EnforcementOrder::getPropertyAccessDetails)
-                .mandatory(PropertyAccessDetails::getPropertyAccessYesNo)
+                .mandatory(PropertyAccessDetails::getIsDifficultToAccessProperty)
                 .mandatory(PropertyAccessDetails::getClarificationOnAccessDifficultyText,
-                        "propertyAccessYesNo=\"YES\"")
+                        "isDifficultToAccessProperty=\"YES\"")
                 .done()
                 .label("propertyAccessDetails-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
@@ -40,9 +41,9 @@ public class PropertyAccessDetailsPage implements CcdPageConfiguration {
         List<String> errors = new ArrayList<>();
 
         String txt = data.getEnforcementOrder().getPropertyAccessDetails().getClarificationOnAccessDifficultyText();
-        if (data.getEnforcementOrder().getPropertyAccessDetails().getPropertyAccessYesNo()
+        if (data.getEnforcementOrder().getPropertyAccessDetails().getIsDifficultToAccessProperty()
                 .equals(VerticalYesNo.YES)) {
-            // TODO: Use TextAreaValidationService from PR #751 when merged
+            // Use TextAreaValidationService from PR #751 when merged
             if (txt.length() > CLARIFICATION_PROPERTY_ACCESS_TEXT_LIMIT) {
                 errors.add(EnforcementValidationUtil
                         .getCharacterLimitErrorMessage(CLARIFICATION_PROPERTY_ACCESS_LABEL,
