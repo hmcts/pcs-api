@@ -1,19 +1,16 @@
 package uk.gov.hmcts.reform.pcs.ccd.service;
 
-import lombok.AllArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Function;
 
 /**
  * Service for validating text area fields with character limits.
  */
-@Slf4j
 @Service
-@AllArgsConstructor
 public class TextAreaValidationService {
 
     // Common character limits used across the application
@@ -45,15 +42,9 @@ public class TextAreaValidationService {
 
     public <T, S> AboutToStartOrSubmitResponse<T, S> createValidationResponse(
             T caseData, List<String> validationErrors) {
-        if (validationErrors != null && !validationErrors.isEmpty()) {
-            return AboutToStartOrSubmitResponse.<T, S>builder()
-                .data(caseData)
-                .errors(validationErrors)
-                .build();
-        }
-
         return AboutToStartOrSubmitResponse.<T, S>builder()
             .data(caseData)
+            .errors((validationErrors != null && !validationErrors.isEmpty()) ? validationErrors : null)
             .build();
     }
 
@@ -67,7 +58,7 @@ public class TextAreaValidationService {
         return errors;
     }
 
-    public <T> List<String> validateSingleField(T object, java.util.function.Function<T, String> fieldExtractor,
+    public <T> List<String> validateSingleField(T object, Function<T, String> fieldExtractor,
                                                 String fieldLabel, int maxCharacters) {
         if (object == null) {
             return new ArrayList<>();

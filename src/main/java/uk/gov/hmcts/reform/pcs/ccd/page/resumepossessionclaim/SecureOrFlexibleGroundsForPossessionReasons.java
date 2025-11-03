@@ -26,6 +26,8 @@ public class SecureOrFlexibleGroundsForPossessionReasons implements CcdPageConfi
 
     private final TextAreaValidationService textAreaValidationService;
 
+    private static final String BREACH_OF_TENANCY_GROUND_LABEL = "Breach of the tenancy (ground 1)";
+
     @Override
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
@@ -309,7 +311,7 @@ public class SecureOrFlexibleGroundsForPossessionReasons implements CcdPageConfi
             validationErrors.addAll(textAreaValidationService.validateMultipleTextAreas(
                 TextAreaValidationService.FieldValidation.of(
                     secureOrFlexibleGrounds.getBreachOfTenancyGround(),
-                    "Breach of the tenancy (ground 1)",
+                    BREACH_OF_TENANCY_GROUND_LABEL,
                     TextAreaValidationService.MEDIUM_TEXT_LIMIT
                 ),
                 TextAreaValidationService.FieldValidation.of(

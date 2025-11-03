@@ -125,12 +125,12 @@ public class NoticeDetails implements CcdPageConfiguration {
         validationErrors.addAll(textAreaValidationService.validateMultipleTextAreas(
             TextAreaValidationService.FieldValidation.of(
                 caseData.getNoticeEmailExplanation(),
-                "Explain how it was served by email",
+                PCSCase.NOTICE_EMAIL_EXPLANATION_LABEL,
                 TextAreaValidationService.SHORT_TEXT_LIMIT
             ),
             TextAreaValidationService.FieldValidation.of(
                 caseData.getNoticeOtherExplanation(),
-                "Explain what the other means were",
+                PCSCase.NOTICE_OTHER_EXPLANATION_LABEL,
                 TextAreaValidationService.SHORT_TEXT_LIMIT
             )
         ));

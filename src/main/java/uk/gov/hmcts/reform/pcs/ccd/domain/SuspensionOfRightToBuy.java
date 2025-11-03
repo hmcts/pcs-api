@@ -15,13 +15,15 @@ import static uk.gov.hmcts.ccd.sdk.type.FieldType.TextArea;
 @AllArgsConstructor
 public class SuspensionOfRightToBuy {
 
+    public static final String SUSPENSION_OF_RIGHT_TO_BUY_REASON_LABEL = "Why are you requesting a suspension order?";
+
     @CCD(
         label = "Which section of the Housing Act is the suspension of right to buy claim made under?"
     )
     private SuspensionOfRightToBuyHousingAct suspensionOfRightToBuyHousingActs;
 
     @CCD(
-        label = "Why are you requesting a suspension order?",
+        label = SUSPENSION_OF_RIGHT_TO_BUY_REASON_LABEL,
         hint = "Give details of the defendants' conduct and any other reasons you think are relevant. You can enter "
             + "up to 250 characters",
         typeOverride = TextArea
