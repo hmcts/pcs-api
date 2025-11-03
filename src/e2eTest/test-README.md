@@ -127,8 +127,10 @@ Playwright 1.30+ | TypeScript 4.9+
 | selectNoticeOfYourIntention              | `performAction('selectNoticeOfYourIntention',{question: noticeOfYourIntention.servedNoticeInteractiveText, option: noticeOfYourIntention.yes, typeOfNotice: noticeOfYourIntention.typeOfNoticeInput})`     |
 | selectClaimantDetails                    | `performAction('selectClaimantDetails', claimantDetails)`                                                                                                                                                  |
 | enterReasonForSuspensionAndDemotionOrder | `performAction('enterReasonForSuspensionAndDemotionOrder', suspension)`                                                                                                                                    |
+| handleCookieConsent                      | `performAction('handleCookieConsent', accept: signInOrCreateAnAccount.acceptAnalyticsCookiesButton)`                                                                                                       |
 | signOut                                  | `performAction('signOut')`                                                                                                                                                                                 |
 | clickButtonAndWaitForElement             | `performAction('clickButtonAndWaitForElement', 'Sign out', home.mainHeader)`                                                                                                                               |
+| provideMoreDetailsOfClaim                | `performAction('provideMoreDetailsOfClaim')`                                                                                                                                                               |
 ### Validations
 | Validation                 | Example Usage                                                                                                                        |
 |----------------------------|--------------------------------------------------------------------------------------------------------------------------------------|
