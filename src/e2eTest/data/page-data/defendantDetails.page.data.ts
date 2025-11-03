@@ -7,6 +7,8 @@ export const defendantDetails =
     firstNameInput: 'Test',
     defendantLastName: 'Defendant\'s last name',
     lastNameInput: 'User',
+    firstName1Input: 'O\'Connor',
+    lastName1Input: 'Smith-Jones',
     defendantCorrespondenceAddress: 'Do you know the defendant\'s correspondence address?',
     isCorrespondenceAddressSame: 'Is the defendant\'s correspondence address the same as the address of the property you\'re claiming possession of?',
     additionalDefendants: 'Do you need to add another defendant?',

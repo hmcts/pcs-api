@@ -89,7 +89,11 @@ test.describe('[Create Case - England] @Master @nightly', async () => {
     await performAction('addDefendantDetails', {
       nameQuestion: defendantDetails.doYouKnowTheDefendantName, nameOption: defendantDetails.yes, firstName: defendantDetails.firstNameInput, lastName: defendantDetails.lastNameInput,
       addressQuestion: defendantDetails.defendantCorrespondenceAddress, correspondenceAddressOption: defendantDetails.yes, addressSameQuestion: defendantDetails.isCorrespondenceAddressSame, correspondenceAddressSameOption: defendantDetails.no, address: addressDetails.englandCourtAssignedPostcode,
-      addDefendantQuestion: defendantDetails.additionalDefendants, addAdditionalDefendantsOption: defendantDetails.yes, numberOfDefendants: 2
+      addDefendantQuestion: defendantDetails.additionalDefendants, addAdditionalDefendantsOption: defendantDetails.yes, numberOfDefendants: 2,
+      name1Question: defendantDetails.doYouKnowTheDefendantName, name1Option: defendantDetails.no,
+      address1Question: defendantDetails.defendantCorrespondenceAddress, correspondenceAddress1Option: defendantDetails.no,
+      name2Question: defendantDetails.doYouKnowTheDefendantName, name2Option: defendantDetails.no,
+      address2Question: defendantDetails.defendantCorrespondenceAddress, correspondenceAddress2Option: defendantDetails.no
     });
     await performValidation('mainHeader', tenancyLicenceDetails.mainHeader);
     await performAction('selectTenancyOrLicenceDetails', {
@@ -201,7 +205,11 @@ test.describe('[Create Case - England] @Master @nightly', async () => {
     await performAction('addDefendantDetails', {
       nameQuestion: defendantDetails.doYouKnowTheDefendantName, nameOption: defendantDetails.yes, firstName: defendantDetails.firstNameInput, lastName: defendantDetails.lastNameInput,
       addressQuestion: defendantDetails.defendantCorrespondenceAddress, correspondenceAddressOption: defendantDetails.yes, addressSameQuestion: defendantDetails.isCorrespondenceAddressSame, correspondenceAddressSameOption: defendantDetails.no, address: addressDetails.walesCourtAssignedPostcode,
-      addDefendantQuestion: defendantDetails.additionalDefendants, addAdditionalDefendantsOption: defendantDetails.no
+      addDefendantQuestion: defendantDetails.additionalDefendants, addAdditionalDefendantsOption: defendantDetails.yes, numberOfDefendants: 2,
+      name1Question: defendantDetails.doYouKnowTheDefendantName, name1Option: defendantDetails.yes, firstName1: defendantDetails.firstName1Input, lastName1: defendantDetails.lastName1Input,
+      address1Question: defendantDetails.defendantCorrespondenceAddress, correspondenceAddress1Option: defendantDetails.no,
+      name2Question: defendantDetails.doYouKnowTheDefendantName, name2Option: defendantDetails.no,
+      address2Question: defendantDetails.defendantCorrespondenceAddress, correspondenceAddress2Option: defendantDetails.no
     });
     await performValidation('mainHeader', tenancyLicenceDetails.mainHeader);
     await performAction('selectTenancyOrLicenceDetails', {
