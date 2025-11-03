@@ -17,7 +17,6 @@ import static uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent.SAVE_AND_RETURN
 public class AdditionalInformationPage implements CcdPageConfiguration {
 
     public static final String DETAILS_TOO_LONG_ERROR_MSG = "Please limit the details to 6,800 characters or less.";
-    private static final String ADDITIONAL_INFORMATION_INFO = "additionalInformation-Info";
     private static final String SHOW_CONDITION = "additionalInformationSelect=\"YES\"";
 
     @Override
@@ -25,15 +24,14 @@ public class AdditionalInformationPage implements CcdPageConfiguration {
         pageBuilder
             .page("additionalInformationPage", this::midEvent)
             .pageLabel("Anything else that could help with the eviction ")
+            .label("additionalInformationPage-separator", "---")
             .complex(PCSCase::getEnforcementOrder)
-            .label(
-                ADDITIONAL_INFORMATION_INFO, """
-                    ---
-                    <h2>Do you want to tell us anything else that could help with the eviction?</h2>
-                    """)
             .complex(EnforcementOrder::getAdditionalInformation)
-                .mandatory(AdditionalInformation::getAdditionalInformationSelect)
-                    .mandatory(AdditionalInformation::getAdditionalInformationDetails, SHOW_CONDITION)
+            .mandatoryWithLabel(
+                AdditionalInformation::getAdditionalInformationSelect,
+                "Do you want to tell us anything else that could help with the eviction?"
+            )
+            .mandatory(AdditionalInformation::getAdditionalInformationDetails, SHOW_CONDITION)
             .done()
             .label("additionalInformationPage-details-save-and-return", SAVE_AND_RETURN);
 
