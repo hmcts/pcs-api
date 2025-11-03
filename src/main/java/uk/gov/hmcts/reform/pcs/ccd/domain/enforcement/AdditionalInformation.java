@@ -15,7 +15,7 @@ public class AdditionalInformation {
     private VerticalYesNo additionalInformationSelect;
 
     @CCD(
-        label = "Tell us anything else that could help with the eviction.",
+        label = "Tell us anything else that could help with the eviction",
         hint = "You can enter up to 6,800 characters",
         max = 6800,
         typeOverride = TextArea
