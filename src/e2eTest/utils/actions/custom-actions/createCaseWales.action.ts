@@ -42,7 +42,7 @@ export class CreateCaseWalesAction extends CreateCaseAction implements IAction {
   private async selectOccupationContractOrLicenceDetails(occupationContractData: actionRecord) {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: ' + caseNumber});
     await performAction('clickRadioButton', {
-      question: occupationContractData.occupationContractOrLicenceType,
+      question: occupationContractData.occupationContractQuestion,
       option: occupationContractData.occupationContractType
     });
     if (occupationContractData.occupationContractType === occupationContractOrLicenceDetailsWales.other) {
