@@ -9,6 +9,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.EnforcementOrder;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.PeriodicContractTermsWalesTest;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.VulnerableAdultsChildren;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 
@@ -41,18 +42,45 @@ public class VulnerableAdultsChildrenPage implements CcdPageConfiguration {
                     </ul>
                     """
             )
+            .label("branch2506-pattern-separator", "---")
+            .label(
+                "branch2506-pattern-header", """
+                    <h2 class="govuk-heading-m">EXACT BRANCH 2506 PATTERN (ProhibitedConductWales Structure)</h2>
+                    """
+            )
             .complex(PCSCase::getEnforcementOrder)
-            .complex(EnforcementOrder::getVulnerableAdultsChildren)
-            .mandatory(VulnerableAdultsChildren::getVulnerablePeopleYesNo)
-            .mandatory(VulnerableAdultsChildren::getVulnerableCategory,
-                    ShowConditions.fieldEquals("vulnerableAdultsChildren.vulnerablePeopleYesNo", YesNoNotSure.YES))
-            .mandatory(VulnerableAdultsChildren::getVulnerableReasonText,
-                    ShowConditions.fieldEquals("vulnerableAdultsChildren.vulnerablePeopleYesNo", YesNoNotSure.YES)
-                            + " AND (vulnerableAdultsChildren.vulnerableCategory=\"VULNERABLE_ADULTS\" "
-                            + "OR vulnerableAdultsChildren.vulnerableCategory=\"VULNERABLE_CHILDREN\" "
-                            + "OR vulnerableAdultsChildren.vulnerableCategory=\"VULNERABLE_ADULTS_AND_CHILDREN\")")
+                .mandatory(EnforcementOrder::getTestProhibitedConductClaim)
+                .complex(EnforcementOrder::getPeriodicContractTermsWalesTest, 
+                         "testProhibitedConductClaim=\"YES\"")
+                    .mandatory(PeriodicContractTermsWalesTest::getAgreedTermsOfPeriodicContract)
+                    .mandatory(
+                        PeriodicContractTermsWalesTest::getDetailsOfTerms, 
+                        "periodicContractTermsWalesTest.agreedTermsOfPeriodicContract=\"VULNERABLE_ADULTS\" "
+                        + "OR periodicContractTermsWalesTest.agreedTermsOfPeriodicContract=\"VULNERABLE_CHILDREN\" "
+                        + " OR periodicContractTermsWalesTest.agreedTermsOfPeriodicContract=\"VULNERABLE_ADULTS_AND_CHILDREN\""
+                    )
+                .done()
             .done()
-            .label("vulnerableAdultsChildren-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
+            .label("vulnerableAdultsChildren-saveAndReturn", CommonPageContent.SAVE_AND_RETURN)
+
+
+            .label("jsonUnwrapped-pattern-separator", "---")
+            .label(
+                "jsonUnwrapped-pattern-header", """
+                    <h2 class="govuk-heading-m">JSON UNWRAPPED PATTERN (VulnerableAdultsChildren with @JsonUnwrapped)</h2>
+                    """
+            )
+            .complex(PCSCase::getEnforcementOrder)
+                .mandatory(EnforcementOrder::getVulnerablePeopleYesNo)
+                .complex(EnforcementOrder::getVulnerableAdultsChildren, "vulnerablePeopleYesNo=\"YES\"")
+                    .mandatory(VulnerableAdultsChildren::getVulnerableCategory, "vulnerablePeopleYesNo=\"YES\"")
+                    .mandatory(
+                        VulnerableAdultsChildren::getVulnerableReasonText
+                    )
+                .done()
+            .done()
+            .label("vulnerableAdultsChildren-saveAndReturn3", CommonPageContent.SAVE_AND_RETURN);
+            
     }
 
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
@@ -62,7 +90,7 @@ public class VulnerableAdultsChildrenPage implements CcdPageConfiguration {
 
         VulnerableAdultsChildren vulnerableAdultsChildren = data.getEnforcementOrder().getVulnerableAdultsChildren();
         // Only validate when user selected YES
-        if (vulnerableAdultsChildren.getVulnerablePeopleYesNo() == YesNoNotSure.YES) {
+        if (data.getEnforcementOrder().getVulnerablePeopleYesNo() == YesNoNotSure.YES) {
             String txt = vulnerableAdultsChildren.getVulnerableReasonText();
             // TODO: Use TextAreaValidationService from PR #751 when merged
             if (txt.length() > VULNERABLE_REASON_TEXT_LIMIT) {

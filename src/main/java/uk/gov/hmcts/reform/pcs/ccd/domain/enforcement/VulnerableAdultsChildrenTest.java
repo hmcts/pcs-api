@@ -5,23 +5,34 @@ import lombok.Data;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.api.ComplexType;
 import uk.gov.hmcts.ccd.sdk.type.FieldType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 
 @Data
 @Builder
-// @ComplexType(generate = true)
-public class VulnerableAdultsChildren {
+@ComplexType(generate = true)
+public class VulnerableAdultsChildrenTest {
 
-    public static final String VULNERABLE_PEOPLE_YES_NO_LABEL = "Is anyone living at the property vulnerable?";
+    public static final String VULNERABLE_PEOPLE_YES_NO_LABEL = "Is anyone living at the property vulnerable? (Test)";
     public static final String VULNERABLE_CATEGORY_LABEL =
-            "Confirm if the vulnerable people in the property are adults, children, or both adults and children";
-    public static final String VULNERABLE_REASON_LABEL = "How are they vulnerable?";
+            "Confirm if the vulnerable people in the property are adults, children, or both adults and children (Test)";
+    public static final String VULNERABLE_REASON_LABEL = "How are they vulnerable? (Test)";
     public static final String VULNERABLE_REASON_HINT = "You can enter up to 6,800 characters";
     public static final int VULNERABLE_REASON_TEXT_LIMIT = 6800;
+
+    @CCD(
+            label = VULNERABLE_PEOPLE_YES_NO_LABEL
+    )
+    private VerticalYesNo vulnerablePeopleYesNo;
 
     @CCD(
             label = VULNERABLE_CATEGORY_LABEL
     )
     private VulnerableCategory vulnerableCategory;
+
+    @CCD(
+            label = "Test VerticalYesNo field (temporary for indentation test)"
+    )
+    private VerticalYesNo testVerticalYesNoField;
 
     @CCD(
             label = VULNERABLE_REASON_LABEL,
@@ -30,3 +41,4 @@ public class VulnerableAdultsChildren {
     )
     private String vulnerableReasonText;
 }
+
