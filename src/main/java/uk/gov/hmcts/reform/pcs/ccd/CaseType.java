@@ -81,6 +81,7 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
             .field(PCSCase::getPageHeadingMarkdown);
 
         builder.tab("serviceRequest", "Service Request")
+            .showCondition(ShowConditions.stateNotEquals(AWAITING_FURTHER_CLAIM_DETAILS))
             .field("waysToPay");
     }
 }
