@@ -10,6 +10,7 @@ import uk.gov.hmcts.reform.payments.client.models.FeeDto;
 
 import java.math.BigDecimal;
 
+import static java.math.BigDecimal.ZERO;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -61,12 +62,12 @@ class PaymentRequestMapperTest {
         FeeLookupResponseDto fee = new FeeLookupResponseDto();
         fee.setCode("FEE0000");
         fee.setVersion(1);
-        fee.setFeeAmount(BigDecimal.ZERO);
+        fee.setFeeAmount(ZERO);
 
         FeeDto result = paymentRequestMapper.toFeeDto(fee, VOLUME);
 
         assertThat(result).isNotNull();
-        assertThat(result.getCalculatedAmount()).isEqualByComparingTo(BigDecimal.ZERO);
+        assertThat(result.getCalculatedAmount()).isEqualByComparingTo(ZERO);
     }
 
     @Test

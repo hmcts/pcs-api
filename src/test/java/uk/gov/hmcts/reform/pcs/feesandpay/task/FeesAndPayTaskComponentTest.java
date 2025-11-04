@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.pcs.feesandpay.task;
 
 import com.github.kagkarlsson.scheduler.task.CompletionHandler;
+import com.github.kagkarlsson.scheduler.task.CompletionHandler.OnCompleteRemove;
 import com.github.kagkarlsson.scheduler.task.Execution;
 import com.github.kagkarlsson.scheduler.task.ExecutionContext;
 import com.github.kagkarlsson.scheduler.task.TaskInstance;
@@ -31,6 +32,12 @@ import static org.mockito.Mockito.anyString;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.reform.pcs.feesandpay.task.FeesAndPayTaskComponent.FEE_CASE_ISSUED_TASK_DESCRIPTOR;
+import static uk.gov.hmcts.reform.pcs.feesandpay.task.FeesAndPayTaskComponentTest.TestFeeCode.APPEAL_FEE;
+import static uk.gov.hmcts.reform.pcs.feesandpay.task.FeesAndPayTaskComponentTest.TestFeeCode.COPY_FEE;
+import static uk.gov.hmcts.reform.pcs.feesandpay.task.FeesAndPayTaskComponentTest.TestFeeCode.GENERIC_TEST_FEE;
+import static uk.gov.hmcts.reform.pcs.feesandpay.task.FeesAndPayTaskComponentTest.TestFeeCode.HEARING_FEE;
+import static uk.gov.hmcts.reform.pcs.feesandpay.task.FeesAndPayTaskComponentTest.TestFeeCode.SPECIAL_CHAR_FEE;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
@@ -116,9 +123,9 @@ class FeesAndPayTaskComponentTest {
         @Test
         @DisplayName("Should create task descriptor with correct name and type")
         void shouldCreateTaskDescriptorWithCorrectNameAndType() {
-            assertThat(FeesAndPayTaskComponent.FEE_CASE_ISSUED_TASK_DESCRIPTOR.getTaskName())
+            assertThat(FEE_CASE_ISSUED_TASK_DESCRIPTOR.getTaskName())
                 .isEqualTo("fees-and-pay-task");
-            assertThat(FeesAndPayTaskComponent.FEE_CASE_ISSUED_TASK_DESCRIPTOR.getDataClass())
+            assertThat(FEE_CASE_ISSUED_TASK_DESCRIPTOR.getDataClass())
                 .isEqualTo(FeesAndPayTaskData.class);
         }
 
@@ -161,7 +168,7 @@ class FeesAndPayTaskComponentTest {
                 data.getVolume(),
                 data.getResponsibleParty()
             );
-            assertThat(result).isInstanceOf(CompletionHandler.OnCompleteRemove.class);
+            assertThat(result).isInstanceOf(OnCompleteRemove.class);
         }
 
         @Test
@@ -171,8 +178,8 @@ class FeesAndPayTaskComponentTest {
             when(taskInstance.getData()).thenReturn(data);
 
             FeeLookupResponseDto fee = buildFee(
-                TestFeeCode.HEARING_FEE.getCode(),
-                TestFeeCode.HEARING_FEE.getDescription(),
+                HEARING_FEE.getCode(),
+                HEARING_FEE.getDescription(),
                 1,
                 new BigDecimal("100.00")
             );
@@ -191,7 +198,7 @@ class FeesAndPayTaskComponentTest {
                 data.getVolume(),
                 data.getResponsibleParty()
             );
-            assertThat(result).isInstanceOf(CompletionHandler.OnCompleteRemove.class);
+            assertThat(result).isInstanceOf(OnCompleteRemove.class);
         }
 
         @Test
@@ -221,7 +228,7 @@ class FeesAndPayTaskComponentTest {
                 data.getVolume(),
                 data.getResponsibleParty()
             );
-            assertThat(result).isInstanceOf(CompletionHandler.OnCompleteRemove.class);
+            assertThat(result).isInstanceOf(OnCompleteRemove.class);
         }
     }
 
@@ -320,10 +327,10 @@ class FeesAndPayTaskComponentTest {
         void shouldHandleDifferentFeeTypes() {
             String[] feeTypes = {"caseIssueFee", "hearingFee", "appealFee", "copyFee"};
             TestFeeCode[] feeCodes = {
-                TestFeeCode.GENERIC_TEST_FEE,
-                TestFeeCode.HEARING_FEE,
-                TestFeeCode.APPEAL_FEE,
-                TestFeeCode.COPY_FEE
+                GENERIC_TEST_FEE,
+                HEARING_FEE,
+                APPEAL_FEE,
+                COPY_FEE
             };
 
             for (int i = 0; i < feeTypes.length; i++) {
@@ -351,7 +358,7 @@ class FeesAndPayTaskComponentTest {
                     data.getVolume(),
                     data.getResponsibleParty()
                 );
-                assertThat(result).isInstanceOf(CompletionHandler.OnCompleteRemove.class);
+                assertThat(result).isInstanceOf(OnCompleteRemove.class);
             }
         }
 
@@ -400,8 +407,8 @@ class FeesAndPayTaskComponentTest {
             when(taskInstance.getData()).thenReturn(data);
 
             FeeLookupResponseDto fee = buildFee(
-                TestFeeCode.SPECIAL_CHAR_FEE.getCode(),
-                TestFeeCode.SPECIAL_CHAR_FEE.getDescription(),
+                SPECIAL_CHAR_FEE.getCode(),
+                SPECIAL_CHAR_FEE.getDescription(),
                 2,
                 new BigDecimal("200.00")
             );
@@ -420,7 +427,7 @@ class FeesAndPayTaskComponentTest {
                 data.getVolume(),
                 data.getResponsibleParty()
             );
-            assertThat(result).isInstanceOf(CompletionHandler.OnCompleteRemove.class);
+            assertThat(result).isInstanceOf(OnCompleteRemove.class);
         }
     }
 
@@ -506,7 +513,7 @@ class FeesAndPayTaskComponentTest {
                 data.getVolume(),
                 data.getResponsibleParty()
             );
-            assertThat(result).isInstanceOf(CompletionHandler.OnCompleteRemove.class);
+            assertThat(result).isInstanceOf(OnCompleteRemove.class);
         }
 
         @Test
@@ -534,9 +541,9 @@ class FeesAndPayTaskComponentTest {
         void shouldHandleFlowWithMultipleDifferentFeeTypesSequentially() {
             String[] feeTypes = {CASE_ISSUE_FEE_TYPE, HEARING_FEE_TYPE, "appealFee"};
             TestFeeCode[] feeCodes = {
-                TestFeeCode.GENERIC_TEST_FEE,
-                TestFeeCode.HEARING_FEE,
-                TestFeeCode.APPEAL_FEE
+                GENERIC_TEST_FEE,
+                HEARING_FEE,
+                APPEAL_FEE
             };
 
             for (int i = 0; i < feeTypes.length; i++) {
@@ -564,7 +571,7 @@ class FeesAndPayTaskComponentTest {
                     data.getVolume(),
                     data.getResponsibleParty()
                 );
-                assertThat(result).isInstanceOf(CompletionHandler.OnCompleteRemove.class);
+                assertThat(result).isInstanceOf(OnCompleteRemove.class);
             }
         }
     }
@@ -580,7 +587,7 @@ class FeesAndPayTaskComponentTest {
             when(taskInstance.getData()).thenReturn(data);
 
             FeeLookupResponseDto fee = buildFee(
-                TestFeeCode.GENERIC_TEST_FEE.getCode(),
+                GENERIC_TEST_FEE.getCode(),
                 null,
                 1,
                 new BigDecimal("100.00")
@@ -600,7 +607,7 @@ class FeesAndPayTaskComponentTest {
                 data.getVolume(),
                 data.getResponsibleParty()
             );
-            assertThat(result).isInstanceOf(CompletionHandler.OnCompleteRemove.class);
+            assertThat(result).isInstanceOf(OnCompleteRemove.class);
         }
 
         @Test
@@ -610,8 +617,8 @@ class FeesAndPayTaskComponentTest {
             when(taskInstance.getData()).thenReturn(data);
 
             FeeLookupResponseDto fee = buildFee(
-                TestFeeCode.GENERIC_TEST_FEE.getCode(),
-                TestFeeCode.GENERIC_TEST_FEE.getDescription(),
+                GENERIC_TEST_FEE.getCode(),
+                GENERIC_TEST_FEE.getDescription(),
                 null,
                 new BigDecimal("100.00")
             );
@@ -630,7 +637,7 @@ class FeesAndPayTaskComponentTest {
                 data.getVolume(),
                 data.getResponsibleParty()
             );
-            assertThat(result).isInstanceOf(CompletionHandler.OnCompleteRemove.class);
+            assertThat(result).isInstanceOf(OnCompleteRemove.class);
         }
 
         @Test
@@ -641,7 +648,7 @@ class FeesAndPayTaskComponentTest {
             when(taskInstance.getData()).thenReturn(data);
 
             FeeLookupResponseDto fee = buildFee(
-                TestFeeCode.GENERIC_TEST_FEE.getCode(),
+                GENERIC_TEST_FEE.getCode(),
                 longDescription,
                 1,
                 new BigDecimal("100.00")
@@ -661,7 +668,7 @@ class FeesAndPayTaskComponentTest {
                 data.getVolume(),
                 data.getResponsibleParty()
             );
-            assertThat(result).isInstanceOf(CompletionHandler.OnCompleteRemove.class);
+            assertThat(result).isInstanceOf(OnCompleteRemove.class);
         }
 
         @Test
@@ -671,8 +678,8 @@ class FeesAndPayTaskComponentTest {
             when(taskInstance.getData()).thenReturn(data);
 
             FeeLookupResponseDto fee = buildFee(
-                TestFeeCode.GENERIC_TEST_FEE.getCode(),
-                TestFeeCode.GENERIC_TEST_FEE.getDescription(),
+                GENERIC_TEST_FEE.getCode(),
+                GENERIC_TEST_FEE.getDescription(),
                 1,
                 new BigDecimal("123.456789")
             );
@@ -691,7 +698,7 @@ class FeesAndPayTaskComponentTest {
                 data.getVolume(),
                 data.getResponsibleParty()
             );
-            assertThat(result).isInstanceOf(CompletionHandler.OnCompleteRemove.class);
+            assertThat(result).isInstanceOf(OnCompleteRemove.class);
         }
     }
 }

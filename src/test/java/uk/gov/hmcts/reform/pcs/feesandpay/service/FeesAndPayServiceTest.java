@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.pcs.feesandpay.service;
 
-import feign.FeignException;
+import feign.FeignException.InternalServerError;
+import feign.FeignException.NotFound;
 import feign.Request;
 import feign.RequestTemplate;
 import org.junit.jupiter.api.BeforeEach;
@@ -27,8 +28,8 @@ import uk.gov.hmcts.reform.pcs.idam.IdamService;
 import java.math.BigDecimal;
 import java.util.HashMap;
 
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
@@ -133,12 +134,12 @@ class FeesAndPayServiceTest {
         );
 
         when(feesClient.lookupFee(anyString(), anyString(), any(BigDecimal.class), anyString()))
-            .thenThrow(new FeignException.NotFound("Fee not found", request, null, null));
+            .thenThrow(new NotFound("Fee not found", request, null, null));
 
         assertThatThrownBy(() -> feesAndPayService.getFee(FEE_TYPE))
             .isInstanceOf(FeeNotFoundException.class)
             .hasMessageContaining("Unable to retrieve fee: " + FEE_TYPE)
-            .hasCauseInstanceOf(FeignException.NotFound.class);
+            .hasCauseInstanceOf(NotFound.class);
     }
 
     @Test
@@ -154,13 +155,13 @@ class FeesAndPayServiceTest {
         );
 
         when(feesClient.lookupFee(anyString(), anyString(), any(BigDecimal.class), anyString()))
-            .thenThrow(new FeignException.InternalServerError(
+            .thenThrow(new InternalServerError(
                 "Internal server error", request, null, null));
 
         assertThatThrownBy(() -> feesAndPayService.getFee(FEE_TYPE))
             .isInstanceOf(FeeNotFoundException.class)
             .hasMessageContaining("Unable to retrieve fee: " + FEE_TYPE)
-            .hasCauseInstanceOf(FeignException.InternalServerError.class);
+            .hasCauseInstanceOf(InternalServerError.class);
     }
 
     @Test

@@ -20,6 +20,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.reform.fees.client.model.FeeLookupResponseDto.builder;
 
 @ExtendWith(MockitoExtension.class)
 class CreatePossessionClaimTest extends BaseEventTest {
@@ -65,7 +66,7 @@ class CreatePossessionClaimTest extends BaseEventTest {
     void shouldSetFeeAmountOnStart() {
         PCSCase caseData = PCSCase.builder().build();
         when(feesAndPayService.getFee("caseIssueFee")).thenReturn(
-            uk.gov.hmcts.reform.fees.client.model.FeeLookupResponseDto.builder()
+            builder()
                 .feeAmount(new BigDecimal("404.00"))
                 .build()
         );
@@ -80,7 +81,7 @@ class CreatePossessionClaimTest extends BaseEventTest {
     void shouldHandleFeeWithDecimalPlaces() {
         PCSCase caseData = PCSCase.builder().build();
         when(feesAndPayService.getFee("caseIssueFee")).thenReturn(
-            uk.gov.hmcts.reform.fees.client.model.FeeLookupResponseDto.builder()
+            builder()
                 .feeAmount(new BigDecimal("123.45"))
                 .build()
         );
@@ -95,7 +96,7 @@ class CreatePossessionClaimTest extends BaseEventTest {
     void shouldHandleZeroFeeAmount() {
         PCSCase caseData = PCSCase.builder().build();
         when(feesAndPayService.getFee("caseIssueFee")).thenReturn(
-            uk.gov.hmcts.reform.fees.client.model.FeeLookupResponseDto.builder()
+            builder()
                 .feeAmount(BigDecimal.ZERO)
                 .build()
         );
@@ -110,7 +111,7 @@ class CreatePossessionClaimTest extends BaseEventTest {
     void shouldHandleNullFeeAmount() {
         PCSCase caseData = PCSCase.builder().build();
         when(feesAndPayService.getFee("caseIssueFee")).thenReturn(
-            uk.gov.hmcts.reform.fees.client.model.FeeLookupResponseDto.builder()
+            builder()
                 .feeAmount(null)
                 .build()
         );
