@@ -25,10 +25,12 @@ import static org.junit.jupiter.params.provider.Arguments.arguments;
 class NoticeDetailsServiceTest {
 
     private NoticeDetailsService noticeDetailsService;
+    private TextAreaValidationService textAreaValidationService;
 
     @BeforeEach
     void setUp() {
-        noticeDetailsService = new NoticeDetailsService();
+        textAreaValidationService = new TextAreaValidationService();
+        noticeDetailsService = new NoticeDetailsService(textAreaValidationService);
     }
 
     @Nested
@@ -388,8 +390,9 @@ class NoticeDetailsServiceTest {
             List<String> errors = noticeDetailsService.validateNoticeDetails(caseData);
 
             // Then
+            // Text area length validation is now handled by TextAreaValidationService in NoticeDetailsService
             assertThat(errors).isNotEmpty();
-            assertThat(errors).contains("The explanation must be 250 characters or fewer");
+            assertThat(errors).anyMatch(error -> error.contains("more than the maximum number of characters"));
         }
 
         @Test
@@ -455,8 +458,9 @@ class NoticeDetailsServiceTest {
             List<String> errors = noticeDetailsService.validateNoticeDetails(caseData);
 
             // Then
+            // Text area length validation is now handled by TextAreaValidationService in NoticeDetailsService
             assertThat(errors).isNotEmpty();
-            assertThat(errors).contains("The explanation must be 250 characters or fewer");
+            assertThat(errors).anyMatch(error -> error.contains("more than the maximum number of characters"));
         }
 
         @Test
