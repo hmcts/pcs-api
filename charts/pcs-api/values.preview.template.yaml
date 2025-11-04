@@ -37,6 +37,18 @@ java:
     IDAM_API_URL: https://idam-api.aat.platform.hmcts.net
     IDAM_S2S_AUTH_URL: http://rpe-service-auth-provider-aat.service.core-compute-aat.internal
     CCD_SDK_DECENTRALISED: "true"
+    SPRING_APPLICATION_JSON: >
+      {
+        "ccd": {
+          "decentralised": {
+            "case-type-service-urls": {
+              "FT_Decentralisation": "http://ccd-test-stubs-service-aat.service.core-compute-aat.internal/",
+              "PCS": "http://pcs-api-aat.service.core-compute-aat.internal/"
+            }
+          }
+        }
+      }
+
   secrets:
     PCS_DB_PASSWORD:
       secretRef: "{{ .Values.global.postgresSecret }}"

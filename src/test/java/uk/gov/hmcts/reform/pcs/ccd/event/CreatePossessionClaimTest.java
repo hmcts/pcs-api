@@ -17,6 +17,7 @@ import uk.gov.hmcts.reform.pcs.feesandpay.service.FeesAndPayService;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
 import java.math.BigDecimal;
+import java.net.URI;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
@@ -36,6 +37,8 @@ class CreatePossessionClaimTest extends BaseEventTest {
     private CrossBorderPostcodeSelection crossBorderPostcodeSelection;
     @Mock
     private PropertyNotEligible propertyNotEligible;
+    @Mock(strictness = Mock.Strictness.LENIENT)
+    private PersistenceStrategyResolver persistenceStrategyResolver;
 
     @BeforeEach
     void setUp() {
@@ -44,8 +47,11 @@ class CreatePossessionClaimTest extends BaseEventTest {
             feesAndPayService,
             enterPropertyAddress,
             crossBorderPostcodeSelection,
-            propertyNotEligible
+            propertyNotEligible,
+            persistenceStrategyResolver
         );
+
+        when(persistenceStrategyResolver.getTestUrl()).thenReturn(mock(URI.class));
 
         setEventUnderTest(underTest);
     }
