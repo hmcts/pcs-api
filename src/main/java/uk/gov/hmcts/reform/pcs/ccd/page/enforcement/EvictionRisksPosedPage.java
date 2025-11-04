@@ -42,14 +42,13 @@ public class EvictionRisksPosedPage implements CcdPageConfiguration {
         }
 
         // Validate that at least one category is selected
-        if (data.getEnforcementOrder().getEnforcementRiskCategories() == null 
+        if (data.getEnforcementOrder().getEnforcementRiskCategories() == null
             || data.getEnforcementOrder().getEnforcementRiskCategories().isEmpty()) {
             return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
                 .data(data)
                 .errors(java.util.List.of("Select at least one option"))
                 .build();
         }
-
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
             .data(data)
