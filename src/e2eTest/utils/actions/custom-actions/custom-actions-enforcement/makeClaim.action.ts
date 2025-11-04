@@ -75,7 +75,7 @@ export class MakeClaimAction implements IAction {
       await performAction('selectGroundsForPossession', {groundsRadioInput: groundsForPossession.no});
       await performAction('enterReasonForPossession', [groundsForPossession.noGrounds]);
       await performValidation('mainHeader', preActionProtocol.mainHeader);
-      await performAction('selectPreActionProtocol', preActionProtocol.yes);
+      await performAction('selectPreActionProtocol', preActionProtocol.no);
       await performValidation('mainHeader', mediationAndSettlement.mainHeader);
       await performAction('selectMediationAndSettlement', {
         attemptedMediationWithDefendantsOption: mediationAndSettlement.no,
