@@ -34,19 +34,16 @@ class RentArrearsGroundForPossessionAdditionalGroundsTest extends BasePageTest {
     void setUp() {
         setPageUnderTest(new RentArrearsGroundForPossessionAdditionalGrounds(rentDetailsRoutingService));
         // Default mock behavior: return YES when rent arrears grounds are present
-        when(rentDetailsRoutingService.computeShowRentDetails(any(PCSCase.class)))
+        when(rentDetailsRoutingService.shouldShowRentDetails(any(PCSCase.class)))
             .thenAnswer(invocation -> {
                 PCSCase caseData = invocation.getArgument(0);
                 Set<RentArrearsMandatoryGrounds> mandatory = caseData.getRentArrearsMandatoryGrounds();
                 Set<RentArrearsDiscretionaryGrounds> discretionary = caseData.getRentArrearsDiscretionaryGrounds();
-                boolean hasRentGrounds = (mandatory != null && mandatory.contains(
-                    uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsMandatoryGrounds.SERIOUS_RENT_ARREARS_GROUND8))
+                boolean hasRentGrounds = (mandatory != null
+                    && mandatory.contains(RentArrearsMandatoryGrounds.SERIOUS_RENT_ARREARS_GROUND8))
                     || (discretionary != null && (
-                        discretionary.contains(
-                            uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsDiscretionaryGrounds.RENT_ARREARS_GROUND10)
-                        || discretionary.contains(
-                            uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsDiscretionaryGrounds
-                                .PERSISTENT_DELAY_GROUND11)
+                        discretionary.contains(RentArrearsDiscretionaryGrounds.RENT_ARREARS_GROUND10)
+                        || discretionary.contains(RentArrearsDiscretionaryGrounds.PERSISTENT_DELAY_GROUND11)
                     ));
                 return YesOrNo.from(hasRentGrounds);
             });

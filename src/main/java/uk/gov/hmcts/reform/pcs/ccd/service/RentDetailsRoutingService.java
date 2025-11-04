@@ -33,16 +33,20 @@ public class RentDetailsRoutingService {
      * @return YesOrNo.YES if rent details should be shown, YesOrNo.NO otherwise
      * @throws IllegalStateException if no routing policy is found for the tenancy type
      */
-    public YesOrNo computeShowRentDetails(PCSCase caseData) {
+    public YesOrNo shouldShowRentDetails(PCSCase caseData) {
         TenancyLicenceType tenancyType = caseData.getTypeOfTenancyLicence();
+        RentDetailsRoutingPolicy policy = getPolicyOrThrow(tenancyType);
+        return policy.shouldShowRentDetails(caseData);
+    }
+
+    private RentDetailsRoutingPolicy getPolicyOrThrow(TenancyLicenceType tenancyType) {
         RentDetailsRoutingPolicy policy = policyMap.get(tenancyType);
         if (policy == null) {
             throw new IllegalStateException(
                 "No routing policy found for tenancy type: " + tenancyType
                     + ". A policy implementation must be provided for all supported tenancy types.");
         }
-
-        return policy.shouldShowRentDetails(caseData);
+        return policy;
     }
 
     private Map<TenancyLicenceType, RentDetailsRoutingPolicy> buildPolicyMap(

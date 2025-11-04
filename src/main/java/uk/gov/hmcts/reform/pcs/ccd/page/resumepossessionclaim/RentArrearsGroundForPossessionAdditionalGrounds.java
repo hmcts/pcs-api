@@ -48,7 +48,7 @@ public class RentArrearsGroundForPossessionAdditionalGrounds implements CcdPageC
             // Keep canonical sets present in the event for showCondition references
             .readonly(PCSCase::getRentArrearsMandatoryGrounds, NEVER_SHOW)
             .readonly(PCSCase::getRentArrearsDiscretionaryGrounds, NEVER_SHOW)
-            .mandatory(PCSCase::getAssuredAdditionalMandatoryGrounds).showCondition()
+            .mandatory(PCSCase::getAssuredAdditionalMandatoryGrounds)
             .mandatory(PCSCase::getAssuredAdditionalDiscretionaryGrounds)
             .done();
     }
@@ -123,8 +123,8 @@ public class RentArrearsGroundForPossessionAdditionalGrounds implements CcdPageC
             YesOrNo.from(hasOtherDiscretionaryGrounds || hasOtherMandatoryGrounds)
         );
 
-        // Recompute routing
-        YesOrNo showRentDetails = rentDetailsRoutingService.computeShowRentDetails(caseData);
+        // This handles the case when user unchecks rent arrears grounds
+        YesOrNo showRentDetails = rentDetailsRoutingService.shouldShowRentDetails(caseData);
         caseData.setShowRentDetailsPage(showRentDetails);
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
