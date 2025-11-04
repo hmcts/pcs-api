@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -116,6 +117,7 @@ class CrossBorderPostcodeSelectionTest extends BasePageTest {
         assertThat(resultData).isNotNull();
 
         if (status == EligibilityStatus.NO_MATCH_FOUND) {
+            assertThat(resultData.getShowPropertyNotEligiblePage()).isEqualTo(YesOrNo.NO);
             assertThat(resultData.getShowPostcodeNotAssignedToCourt()).isEqualTo(YesOrNo.YES);
             assertThat(resultData.getLegislativeCountry()).isEqualTo(selectedCountry);
 
@@ -162,16 +164,12 @@ class CrossBorderPostcodeSelectionTest extends BasePageTest {
             .build();
     }
 
-    @ParameterizedTest
-    @MethodSource("eligibleCountries")
-    @DisplayName("ELIGIBLE keeps normal flow and cross-border page visible")
-    void shouldContinueToClaimantInfoPageWhenCrossBorderPropertyIsEligible(
-        LegislativeCountry selectedCountry) {
+    @Test
+    @DisplayName("Should not show Property Not Eligible page if property is eligible")
+    void shouldNotShowNotEligibleOrNotAssignedPagesIfPropertyIsEligible() {
 
         // Given: page visible (from MakeAClaim), PNE hidden
-        var caseData = buildCrossBorderCaseWithFlags(
-            selectedCountry
-        );
+        var caseData = buildCrossBorderCaseWithFlags(LegislativeCountry.WALES);
 
         // Mock the refresh call (checkEligibility with null country)
         EligibilityResult refreshResult = EligibilityResult.builder()
@@ -184,7 +182,7 @@ class CrossBorderPostcodeSelectionTest extends BasePageTest {
             .status(EligibilityStatus.ELIGIBLE)
             .build();
 
-        when(eligibilityService.checkEligibility(SOME_POSTCODE, selectedCountry))
+        when(eligibilityService.checkEligibility(SOME_POSTCODE, LegislativeCountry.WALES))
             .thenReturn(result);
 
         // When
@@ -193,7 +191,7 @@ class CrossBorderPostcodeSelectionTest extends BasePageTest {
         // Then
         var data = resp.getData();
         assertThat(data.getShowPropertyNotEligiblePage()).isEqualTo(YesOrNo.NO);
-        assertThat(data.getShowCrossBorderPage()).isEqualTo(YesOrNo.YES);
+        assertThat(data.getShowPostcodeNotAssignedToCourt()).isEqualTo(YesOrNo.NO);
     }
 
     @ParameterizedTest
@@ -252,7 +250,6 @@ class CrossBorderPostcodeSelectionTest extends BasePageTest {
             .propertyAddress(AddressUK.builder().postCode(CrossBorderPostcodeSelectionTest.SOME_POSTCODE).build())
             .crossBorderCountriesList(dynamicStringList)
             .showCrossBorderPage(YesOrNo.YES)
-            .showPropertyNotEligiblePage(YesOrNo.NO)
             .build();
     }
 
