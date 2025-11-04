@@ -63,7 +63,7 @@ public class IntroductoryDemotedOrOtherGroundsForPossession implements CcdPageCo
             caseData.setShowIntroductoryDemotedOtherGroundReasonPage(YesOrNo.NO);
         }
 
-        boolean hasRentArrears = caseData.getIntroductoryDemotedOrOtherGrounds() != null
+        boolean hasRentArrears = caseData.getHasIntroductoryDemotedOtherGroundsForPossession() == VerticalYesNo.YES
             && caseData.getIntroductoryDemotedOrOtherGrounds()
                 .contains(IntroductoryDemotedOrOtherGrounds.RENT_ARREARS);
         caseData.setShowRentDetailsPage(YesOrNo.from(hasRentArrears));
