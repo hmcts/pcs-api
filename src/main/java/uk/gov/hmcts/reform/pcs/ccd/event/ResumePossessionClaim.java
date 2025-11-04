@@ -127,6 +127,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
     private final RentArrearsGroundsForPossession rentArrearsGroundsForPossession;
     private final RentArrearsGroundForPossessionAdditionalGrounds rentArrearsGroundForPossessionAdditionalGrounds;
     private final NoRentArrearsGroundsForPossessionOptions noRentArrearsGroundsForPossessionOptions;
+    private final IntroductoryDemotedOrOtherGroundsForPossession introductoryDemotedOrOtherGroundsForPossession;
 
     private static final String CASE_ISSUED_FEE_TYPE = "caseIssueFee";
 
@@ -161,7 +162,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             .add(new SecureOrFlexibleGroundsForPossession())
             .add(new RentArrearsOrBreachOfTenancyGround())
             .add(new SecureOrFlexibleGroundsForPossessionReasons())
-            .add(new IntroductoryDemotedOrOtherGroundsForPossession())
+            .add(introductoryDemotedOrOtherGroundsForPossession)
             .add(new IntroductoryDemotedOtherGroundsReasons())
             .add(new GroundsForPossession())
             .add(rentArrearsGroundsForPossession)

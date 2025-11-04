@@ -14,8 +14,6 @@ import uk.gov.hmcts.reform.pcs.ccd.mapper.DefendantMapper;
 import uk.gov.hmcts.reform.pcs.ccd.model.PossessionGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.model.SecureOrFlexibleReasonsForGrounds;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
-import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
-import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType;
 
 import java.util.Collections;
 import java.util.Optional;
@@ -91,26 +89,9 @@ public class PcsCaseMergeService {
             .map(grounds -> modelMapper.map(grounds, SecureOrFlexibleReasonsForGrounds.class))
             .orElse(SecureOrFlexibleReasonsForGrounds.builder().build());
 
-        // Default to Secure/Flexible mappings (labels)
-        Set<String> mandatoryGrounds = mapToLabels(pcsCase.getSecureOrFlexibleMandatoryGrounds());
-        Set<String> discretionaryGrounds = mapToLabels(pcsCase.getSecureOrFlexibleDiscretionaryGrounds());
-
-        // If this is an Assured Tenancy, mirror the Assured selections into possessionGrounds
-        if (pcsCase.getTypeOfTenancyLicence() == TenancyLicenceType.ASSURED_TENANCY) {
-            if (pcsCase.getGroundsForPossession() == YesOrNo.YES) {
-                // Rent arrears path (canonical sets already built during pages)
-                mandatoryGrounds = mapToEnumNames(pcsCase.getRentArrearsMandatoryGrounds());
-                discretionaryGrounds = mapToEnumNames(pcsCase.getRentArrearsDiscretionaryGrounds());
-            } else if (pcsCase.getGroundsForPossession() == YesOrNo.NO) {
-                // No-rent-arrears path
-                mandatoryGrounds = mapToEnumNames(pcsCase.getNoRentArrearsMandatoryGroundsOptions());
-                discretionaryGrounds = mapToEnumNames(pcsCase.getNoRentArrearsDiscretionaryGroundsOptions());
-            }
-        }
-
         return PossessionGrounds.builder()
-            .mandatoryGrounds(mandatoryGrounds)
-            .discretionaryGrounds(discretionaryGrounds)
+            .discretionaryGrounds(mapToLabels(pcsCase.getSecureOrFlexibleDiscretionaryGrounds()))
+            .mandatoryGrounds(mapToLabels(pcsCase.getSecureOrFlexibleMandatoryGrounds()))
             .discretionaryGroundsAlternativeAccommodation(mapToLabels(
                 pcsCase.getSecureOrFlexibleDiscretionaryGroundsAlt())
             )
@@ -131,14 +112,6 @@ public class PcsCaseMergeService {
             .orElse(Collections.emptySet())
             .stream()
             .map(HasLabel::getLabel)
-            .collect(Collectors.toSet());
-    }
-
-    private <E extends Enum<E>> Set<String> mapToEnumNames(Set<E> items) {
-        return Optional.ofNullable(items)
-            .orElse(Collections.emptySet())
-            .stream()
-            .map(Enum::name)
             .collect(Collectors.toSet());
     }
 

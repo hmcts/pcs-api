@@ -1,11 +1,9 @@
-package uk.gov.hmcts.reform.pcs.ccd.service;
+package uk.gov.hmcts.reform.pcs.ccd.service.routing;
 
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType;
-import uk.gov.hmcts.reform.pcs.ccd.service.routing.RentDetailsRoutingPolicy;
 
 import java.util.EnumMap;
 import java.util.List;
@@ -17,7 +15,6 @@ import java.util.Map;
  * Delegates to appropriate policy implementation based on tenancy type.
  */
 @Service
-@Slf4j
 public class RentDetailsRoutingService {
 
     private final Map<TenancyLicenceType, RentDetailsRoutingPolicy> policyMap;

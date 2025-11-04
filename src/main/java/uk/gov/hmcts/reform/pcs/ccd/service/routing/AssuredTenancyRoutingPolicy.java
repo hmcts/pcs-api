@@ -1,6 +1,5 @@
 package uk.gov.hmcts.reform.pcs.ccd.service.routing;
 
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.NoRentArrearsDiscretionaryGrounds;
@@ -26,7 +25,6 @@ import static uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType.ASSURED_TENA
  * Shows Rent Details page when grounds 8, 10, or 11 are selected.
  */
 @Component
-@Slf4j
 public class AssuredTenancyRoutingPolicy implements RentDetailsRoutingPolicy {
 
     @Override

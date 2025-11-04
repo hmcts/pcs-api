@@ -1,6 +1,5 @@
 package uk.gov.hmcts.reform.pcs.ccd.service.routing;
 
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
@@ -21,7 +20,6 @@ import static uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType.SECURE_TENAN
  * AND user chooses "Rent arrears" option.
  */
 @Component
-@Slf4j
 public class SecureFlexibleRoutingPolicy implements RentDetailsRoutingPolicy {
 
     @Override

@@ -217,7 +217,6 @@ public class PCSCase {
     )
     private Set<RentArrearsDiscretionaryGrounds> rentArrearsDiscretionaryGrounds;
 
-    // Assured tenancy - additional-only inputs (exclude 8/10/11 on UI)
     @CCD(
         label = "Mandatory grounds",
         hint = "Select all that apply",

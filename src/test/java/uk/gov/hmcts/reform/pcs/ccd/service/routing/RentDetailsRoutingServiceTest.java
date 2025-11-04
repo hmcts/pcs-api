@@ -1,13 +1,10 @@
-package uk.gov.hmcts.reform.pcs.ccd.service;
+package uk.gov.hmcts.reform.pcs.ccd.service.routing;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType;
-import uk.gov.hmcts.reform.pcs.ccd.service.routing.AssuredTenancyRoutingPolicy;
-import uk.gov.hmcts.reform.pcs.ccd.service.routing.RentDetailsRoutingPolicy;
-import uk.gov.hmcts.reform.pcs.ccd.service.routing.SecureFlexibleRoutingPolicy;
 
 import java.util.Arrays;
 import java.util.List;
