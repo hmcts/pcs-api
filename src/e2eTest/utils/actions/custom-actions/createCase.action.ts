@@ -414,9 +414,12 @@ export class CreateCaseAction implements IAction {
               [
                 'inputText',
                 `#additionalDefendants_${i}_correspondenceAddress_correspondenceAddress_postcodeInput`,
-                defendantData.address
+                defendantData[`address${index}`] || defendantData.address
               ],
-              ['clickButton', addressDetails.findAddressLabel],
+              [
+                'clickButton',
+                `#additionalDefendants_${i}_correspondenceAddress_correspondenceAddress button:has-text("Find address")`
+              ],
               ['select', addressDetails.selectAddressLabel, addressDetails.addressIndex]
             );
           }

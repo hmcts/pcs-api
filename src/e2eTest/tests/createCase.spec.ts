@@ -92,7 +92,7 @@ test.describe('[Create Case - England] @Master @nightly', async () => {
       name1Option: defendantDetails.no,
       correspondenceAddress1Option: defendantDetails.no,
       name2Option: defendantDetails.no,
-      correspondenceAddress2Option: defendantDetails.no
+      correspondenceAddress2Option: defendantDetails.yes, address2: addressDetails.walesCourtAssignedPostcode
     });
     await performValidation('mainHeader', tenancyLicenceDetails.mainHeader);
     await performAction('selectTenancyOrLicenceDetails', {
