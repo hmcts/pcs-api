@@ -57,9 +57,9 @@ public class VulnerableAdultsChildrenPage implements CcdPageConfiguration {
                     .mandatory(VulnerableAdultsChildren::getVulnerableCategory)
                     .mandatory(
                         VulnerableAdultsChildren::getVulnerableReasonText,
-                            "vulnerableCategory=\"VULNERABLE_ADULTS\" "
-                            + "OR vulnerableCategory=\"VULNERABLE_CHILDREN\" "
-                            + " OR vulnerableCategory=\"VULNERABLE_ADULTS_AND_CHILDREN\""
+                            "vulnerableAdultsChildren.vulnerableCategory=\"VULNERABLE_ADULTS\" "
+                            + "OR vulnerableAdultsChildren.vulnerableCategory=\"VULNERABLE_CHILDREN\" "
+                            + " OR vulnerableAdultsChildren.vulnerableCategory=\"VULNERABLE_ADULTS_AND_CHILDREN\""
                     )
                 .done()
             .done()
