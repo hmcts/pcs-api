@@ -7,7 +7,7 @@ import {addressDetails, claimantType, claimType, claimantName, contactPreference
         additionalReasonsForPossession, underlesseeOrMortgageeEntitledToClaim, alternativesToPossession,
         wantToUploadDocuments, resumeClaim, resumeClaimOptions, signInOrCreateAnAccount } from '@data/page-data/';
 
-// This test validates the resume & find case functionality with and without saved options.1
+// This test validates the resume & find case functionality with and without saved options.
 // It is not intended to reuse for any of the e2e scenarios, those should still be covered in others specs.
 // When a new page is added/flow changes, basic conditions in this test should be updated accordingly to continue the journey.
 // Due to frequent issues with relogin and “Find Case” (Elasticsearch), this test is made optional only for the pipeline to maintain a green build.
