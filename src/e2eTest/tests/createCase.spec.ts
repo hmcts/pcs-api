@@ -85,15 +85,14 @@ test.describe('[Create Case - England] @Master @nightly', async () => {
     //   name1Question: defendantDetails.doYouKnowTheDefendantName, name1Option: defendantDetails.no,
     //   address1Question: defendantDetails.defendantCorrespondenceAddress, correspondenceAddress1Option: defendantDetails.no
     // });
-
     await performAction('addDefendantDetails', {
-      nameQuestion: defendantDetails.doYouKnowTheDefendantName, nameOption: defendantDetails.yes, firstName: defendantDetails.firstNameInput, lastName: defendantDetails.lastNameInput,
-      addressQuestion: defendantDetails.defendantCorrespondenceAddress, correspondenceAddressOption: defendantDetails.yes, addressSameQuestion: defendantDetails.isCorrespondenceAddressSame, correspondenceAddressSameOption: defendantDetails.no, address: addressDetails.englandCourtAssignedPostcode,
-      addDefendantQuestion: defendantDetails.additionalDefendants, addAdditionalDefendantsOption: defendantDetails.yes, numberOfDefendants: 2,
-      name1Question: defendantDetails.doYouKnowTheDefendantName, name1Option: defendantDetails.no,
-      address1Question: defendantDetails.defendantCorrespondenceAddress, correspondenceAddress1Option: defendantDetails.no,
-      name2Question: defendantDetails.doYouKnowTheDefendantName, name2Option: defendantDetails.no,
-      address2Question: defendantDetails.defendantCorrespondenceAddress, correspondenceAddress2Option: defendantDetails.no
+      nameOption: defendantDetails.yes, firstName: defendantDetails.firstNameInput, lastName: defendantDetails.lastNameInput,
+      correspondenceAddressOption: defendantDetails.yes, correspondenceAddressSameOption: defendantDetails.no, address: addressDetails.englandCourtAssignedPostcode,
+      addAdditionalDefendantsOption: defendantDetails.yes, numberOfDefendants: 2,
+      name1Option: defendantDetails.no,
+      correspondenceAddress1Option: defendantDetails.no,
+      name2Option: defendantDetails.no,
+      correspondenceAddress2Option: defendantDetails.no
     });
     await performValidation('mainHeader', tenancyLicenceDetails.mainHeader);
     await performAction('selectTenancyOrLicenceDetails', {

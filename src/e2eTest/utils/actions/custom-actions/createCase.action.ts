@@ -328,7 +328,7 @@ export class CreateCaseAction implements IAction {
 
     // --- Main defendant
     await performAction('clickRadioButton', {
-      question: defendantData.nameQuestion,
+      question: defendantDetails.doYouKnowTheDefendantName,
       option: defendantData.nameOption,
     });
 
@@ -338,13 +338,13 @@ export class CreateCaseAction implements IAction {
     }
 
     await performAction('clickRadioButton', {
-      question: defendantData.addressQuestion,
+      question: defendantDetails.defendantCorrespondenceAddress,
       option: defendantData.correspondenceAddressOption,
     });
 
     if (defendantData.correspondenceAddressOption === defendantDetails.yes) {
       await performAction('clickRadioButton', {
-        question: defendantData.addressSameQuestion,
+        question: defendantDetails.isCorrespondenceAddressSame,
         option: defendantData.correspondenceAddressSameOption,
       });
 
@@ -362,7 +362,7 @@ export class CreateCaseAction implements IAction {
     const numAdditionalDefendants = Number(defendantData.numberOfDefendants) || 0;
 
     await performAction('clickRadioButton', {
-      question: defendantData.addDefendantQuestion,
+      question: defendantDetails.additionalDefendants,
       option: defendantData.addAdditionalDefendantsOption,
     });
 
@@ -372,7 +372,7 @@ export class CreateCaseAction implements IAction {
         const index = i + 1;
 
         // --- Dynamic name question
-        const nameQuestion = defendantData[`name${index}Question`] || defendantData.nameQuestion;
+        const nameQuestion = defendantDetails.doYouKnowTheDefendantName;
         const nameOption = defendantData[`name${index}Option`] || defendantDetails.no;
 
         await performAction('clickRadioButton', {
@@ -391,7 +391,7 @@ export class CreateCaseAction implements IAction {
           );
         }
         // --- Dynamic address question
-        const addressQuestion = defendantData[`address${index}Question`] || defendantData.addressQuestion;
+        const addressQuestion = defendantDetails.defendantCorrespondenceAddress;
         const correspondenceAddressOption =
           defendantData[`correspondenceAddress${index}Option`] || defendantDetails.no;
 
@@ -403,7 +403,7 @@ export class CreateCaseAction implements IAction {
 
         if (correspondenceAddressOption === defendantDetails.yes) {
           await performAction('clickRadioButton', {
-            question: defendantData.addressSameQuestion,
+            question: defendantDetails.isCorrespondenceAddressSame,
             option: defendantData.correspondenceAddressSameOption,
             index,
           });
