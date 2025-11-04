@@ -47,13 +47,13 @@ public class VulnerableAdultsChildrenPage implements CcdPageConfiguration {
                     .mandatory(VulnerableAdultsChildren::getVulnerableCategory)
                     .mandatory(
                         VulnerableAdultsChildren::getVulnerableReasonText,
-                            "vulnerableAdultsChildren.vulnerableCategory=\"VULNERABLE_ADULTS\" "
+                        "vulnerableAdultsChildren.vulnerableCategory=\"VULNERABLE_ADULTS\" "
                             + "OR vulnerableAdultsChildren.vulnerableCategory=\"VULNERABLE_CHILDREN\" "
-                            + " OR vulnerableAdultsChildren.vulnerableCategory=\"VULNERABLE_ADULTS_AND_CHILDREN\""
+                            + "OR vulnerableAdultsChildren.vulnerableCategory=\"VULNERABLE_ADULTS_AND_CHILDREN\""
                     )
                 .done()
             .done()
-            .label("vulnerableAdultsChildren-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);            
+            .label("vulnerableAdultsChildren-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
 
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
@@ -61,12 +61,11 @@ public class VulnerableAdultsChildrenPage implements CcdPageConfiguration {
         PCSCase data = details.getData();
         List<String> errors = new ArrayList<>();
 
-        VulnerableAdultsChildren vulnerableAdultsChildren = data.getEnforcementOrder().getVulnerableAdultsChildren();
         // Only validate when user selected YES
         if (data.getEnforcementOrder().getVulnerablePeopleYesNo() == YesNoNotSure.YES) {
-            String txt = vulnerableAdultsChildren.getVulnerableReasonText();
-            // TODO: Use TextAreaValidationService from PR #751 when merged
+            String txt = data.getEnforcementOrder().getVulnerableAdultsChildren().getVulnerableReasonText();
             if (txt.length() > VULNERABLE_REASON_TEXT_LIMIT) {
+                // TODO: Use TextAreaValidationService from PR #751 when merged
                 errors.add(EnforcementValidationUtil
                         .getCharacterLimitErrorMessage(VULNERABLE_REASON_LABEL,
                                 VULNERABLE_REASON_TEXT_LIMIT));

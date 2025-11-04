@@ -38,12 +38,12 @@ class VulnerableAdultsChildrenPageTest extends BasePageTest {
             boolean expectsError) {
         // Given
         VulnerableAdultsChildren vulnerableAdultsChildren = VulnerableAdultsChildren.builder()
-                .vulnerablePeopleYesNo(vulnerablePeopleYesNo)
                 .vulnerableCategory(vulnerableCategory)
                 .vulnerableReasonText(vulnerableReasonText)
                 .build();
 
         EnforcementOrder enforcementOrder = EnforcementOrder.builder()
+                .vulnerablePeopleYesNo(vulnerablePeopleYesNo)
                 .vulnerableAdultsChildren(vulnerableAdultsChildren)
                 .build();
 
@@ -112,12 +112,12 @@ class VulnerableAdultsChildrenPageTest extends BasePageTest {
             String vulnerableReasonText) {
         // Given
         VulnerableAdultsChildren vulnerableAdultsChildren = VulnerableAdultsChildren.builder()
-                .vulnerablePeopleYesNo(vulnerablePeopleYesNo)
                 .vulnerableCategory(vulnerableCategory)
                 .vulnerableReasonText(vulnerableReasonText)
                 .build();
 
         EnforcementOrder enforcementOrder = EnforcementOrder.builder()
+                .vulnerablePeopleYesNo(vulnerablePeopleYesNo)
                 .vulnerableAdultsChildren(vulnerableAdultsChildren)
                 .build();
 
@@ -134,7 +134,7 @@ class VulnerableAdultsChildrenPageTest extends BasePageTest {
                 .getVulnerableAdultsChildren().getVulnerableReasonText())
                 .isEqualTo(vulnerableReasonText);
         assertThat(response.getData().getEnforcementOrder()
-                .getVulnerableAdultsChildren().getVulnerablePeopleYesNo())
+                .getVulnerablePeopleYesNo())
                 .isEqualTo(vulnerablePeopleYesNo);
         assertThat(response.getData().getEnforcementOrder()
                 .getVulnerableAdultsChildren().getVulnerableCategory())
