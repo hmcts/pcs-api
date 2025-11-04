@@ -8,6 +8,7 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.NoRentArrearsDiscretionaryGrounds;
@@ -61,6 +62,38 @@ class NoRentArrearsGroundsForPossessionOptionsTest extends BasePageTest {
             .containsExactlyInAnyOrderElementsOf(expectedMandatory);
         assertThat(updated.getNoRentArrearsDiscretionaryGroundsOptions())
             .containsExactlyInAnyOrderElementsOf(expectedDiscretionary);
+    }
+
+    @Test
+    void shouldMapSelectedGroundsToEnums() {
+        // Given: Mandatory and Discretionary are set
+        CaseDetails<PCSCase, State> caseDetails = new CaseDetails<>();
+        Set<NoRentArrearsMandatoryGrounds> expectedMandatory = Set.of(
+            NoRentArrearsMandatoryGrounds.ANTISOCIAL_BEHAVIOUR,
+            NoRentArrearsMandatoryGrounds.DEATH_OF_TENANT,
+            NoRentArrearsMandatoryGrounds.SERIOUS_RENT_ARREARS);
+        Set<NoRentArrearsDiscretionaryGrounds> expectedDiscretionary = Set.of(
+            NoRentArrearsDiscretionaryGrounds.DOMESTIC_VIOLENCE,
+            NoRentArrearsDiscretionaryGrounds.LANDLORD_EMPLOYEE,
+            NoRentArrearsDiscretionaryGrounds.FALSE_STATEMENT);
+        PCSCase caseData = PCSCase.builder()
+            .noRentArrearsDiscretionaryGroundsOptions(expectedDiscretionary)
+            .noRentArrearsMandatoryGroundsOptions(expectedMandatory)
+            .build();
+
+        caseDetails.setData(caseData);
+
+        // When: Mid event is executed
+        callMidEventHandler(caseData);
+
+        // Then: Mandatory and Discretionary enum should exist in each set
+        Set<NoRentArrearsMandatoryGrounds> selectedMandatory =
+            caseDetails.getData().getNoRentArrearsMandatoryGroundsOptions();
+        Set<NoRentArrearsDiscretionaryGrounds> selectedDiscretionary =
+            caseDetails.getData().getNoRentArrearsDiscretionaryGroundsOptions();
+
+        assertThat(selectedMandatory).containsExactlyInAnyOrderElementsOf(expectedMandatory);
+        assertThat(selectedDiscretionary).containsExactlyInAnyOrderElementsOf(expectedDiscretionary);
     }
 
     @ParameterizedTest
