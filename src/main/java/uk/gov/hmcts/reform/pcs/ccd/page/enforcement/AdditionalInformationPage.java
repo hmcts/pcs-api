@@ -12,11 +12,11 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.EnforcementOrder;
 import java.util.ArrayList;
 import java.util.List;
 
+import static uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.AdditionalInformation.ADDITIONAL_INFORMATION_DETAILS_LABEL;
 import static uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent.SAVE_AND_RETURN;
 
 public class AdditionalInformationPage implements CcdPageConfiguration {
 
-    public static final String DETAILS_TOO_LONG_ERROR_MSG = "Please limit the details to 6,800 characters or less.";
     private static final String SHOW_CONDITION = "additionalInformationSelect=\"YES\"";
 
     @Override
@@ -47,7 +47,8 @@ public class AdditionalInformationPage implements CcdPageConfiguration {
             // Refactor validation logic to use TextAreaValidationService from PR #751 when merged
             if (txt.length() > 6800) {
                 // Use TextAreaValidationService from PR #751 when merged
-                errors.add(DETAILS_TOO_LONG_ERROR_MSG);
+                errors.add(EnforcementValidationUtil
+                               .getCharacterLimitErrorMessage(ADDITIONAL_INFORMATION_DETAILS_LABEL, 6800));
             }
         }
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()

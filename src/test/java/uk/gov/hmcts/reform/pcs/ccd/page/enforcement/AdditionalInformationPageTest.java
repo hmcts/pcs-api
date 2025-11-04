@@ -11,7 +11,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static uk.gov.hmcts.reform.pcs.ccd.page.enforcement.AdditionalInformationPage.DETAILS_TOO_LONG_ERROR_MSG;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.AdditionalInformation.ADDITIONAL_INFORMATION_DETAILS_LABEL;
 
 class AdditionalInformationPageTest extends BasePageTest {
 
@@ -77,7 +77,7 @@ class AdditionalInformationPageTest extends BasePageTest {
         AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
 
         // Then
-        assertThat(response.getErrors()).contains(DETAILS_TOO_LONG_ERROR_MSG);
+        assertThat(response.getErrors().getFirst()).contains(ADDITIONAL_INFORMATION_DETAILS_LABEL);
     }
 
 }

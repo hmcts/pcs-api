@@ -11,11 +11,14 @@ import static uk.gov.hmcts.ccd.sdk.type.FieldType.TextArea;
 @Data
 public class AdditionalInformation {
 
+    public static final String ADDITIONAL_INFORMATION_DETAILS_LABEL
+        = "Tell us anything else that could help with the eviction";
+
     @CCD
     private VerticalYesNo additionalInformationSelect;
 
     @CCD(
-        label = "Tell us anything else that could help with the eviction",
+        label = ADDITIONAL_INFORMATION_DETAILS_LABEL,
         hint = "You can enter up to 6,800 characters",
         typeOverride = TextArea
     )
