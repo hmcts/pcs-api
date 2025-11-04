@@ -332,6 +332,13 @@ dependencies {
   implementation group: 'com.github.hmcts', name: 'core-case-data-store-client', version: '5.2.0'
   implementation group: 'com.github.hmcts', name: 'idam-java-client', version: '3.0.4'
   implementation group: 'com.github.hmcts', name: 'doc-assembly-client', version: '2.2.0'
+  implementation(group: 'com.github.hmcts', name: 'fees-java-client', version: '0.1.0-Alpha') {
+    exclude group: 'uk.gov.hmcts.reform', module: 'java-logging'
+  }
+  implementation (group: 'com.github.hmcts', name: 'payments-java-client', version: '1.6.7') {
+    exclude group: 'uk.gov.hmcts.reform', module: 'service-auth-provider-client'
+    exclude group: 'uk.gov.hmcts.reform', module: 'java-logging'
+  }
 
   implementation group: 'org.apache.logging.log4j', name: 'log4j-api', version: log4JVersion
   implementation group: 'org.apache.logging.log4j', name: 'log4j-to-slf4j', version: log4JVersion

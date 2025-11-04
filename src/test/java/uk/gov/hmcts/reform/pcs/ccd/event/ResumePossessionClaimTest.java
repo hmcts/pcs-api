@@ -255,8 +255,8 @@ class ResumePossessionClaimTest extends BaseEventTest {
             .claimantContactEmail(claimantContactEmail)
             .claimantContactPhoneNumber(claimantContactPhoneNumber)
             .claimantCircumstances(ClaimantCircumstances.builder()
-                                       .claimantCircumstancesDetails(claimantCircumstances)
-                                       .build())
+                                        .claimantCircumstancesDetails(claimantCircumstances)
+                                        .build())
             .claimingCostsWanted(VerticalYesNo.YES)
             .build();
 
