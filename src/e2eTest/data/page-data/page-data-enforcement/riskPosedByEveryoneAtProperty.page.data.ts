@@ -4,5 +4,7 @@ export const riskPosedByEveryoneAtProperty = {
   violentOrAggressiveBehaviour: 'Violent or aggressive behaviour',
   historyOfFirearmPossession: 'History of firearm possession',
   criminalOrAntisocialBehaviour: 'Criminal or antisocial behaviour',
+  verbalOrWrittenThreats: 'Verbal or written threats',
+  protestGroup: 'Member of a group that protests evictions',
   continue: 'Continue',
 }
