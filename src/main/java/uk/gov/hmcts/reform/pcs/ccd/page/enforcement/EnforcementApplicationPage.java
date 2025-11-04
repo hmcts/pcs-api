@@ -10,12 +10,12 @@ public class EnforcementApplicationPage implements CcdPageConfiguration {
     @Override
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
-                .page("enforcementApplicationPage")
+                .page("enforcementApplication")
                 .pageLabel("Your application")
-                .label("enforcementApplicationPage-content", "---")
+                .label("enforcementApplication-content", "---")
                 .complex(PCSCase::getEnforcementOrder)
                 .mandatory(EnforcementOrder::getSelectEnforcementType)
-                .label("enforcementApplicationPage-clarification",
+                .label("enforcementApplication-clarification",
                     """
                     <details class="govuk-details">
                         <summary class="govuk-details__summary">
