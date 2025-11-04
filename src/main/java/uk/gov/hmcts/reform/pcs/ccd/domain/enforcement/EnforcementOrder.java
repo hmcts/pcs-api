@@ -35,13 +35,5 @@ public class EnforcementOrder {
     
     @CCD
     private VulnerableAdultsChildren vulnerableAdultsChildren;
-
-    @CCD(
-        label = "Test: Are you also making a claim? (Branch 2506 pattern test)"
-    )
-    private YesNoNotSure testProhibitedConductClaim;
-
-    @CCD
-    private PeriodicContractTermsWalesTest periodicContractTermsWalesTest;
-
+    
 }

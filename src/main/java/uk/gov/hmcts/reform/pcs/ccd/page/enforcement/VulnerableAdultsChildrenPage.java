@@ -2,14 +2,12 @@ package uk.gov.hmcts.reform.pcs.ccd.page.enforcement;
 
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
-import uk.gov.hmcts.reform.pcs.ccd.ShowConditions;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.EnforcementOrder;
-import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.PeriodicContractTermsWalesTest;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.VulnerableAdultsChildren;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 
@@ -42,14 +40,6 @@ public class VulnerableAdultsChildrenPage implements CcdPageConfiguration {
                     </ul>
                     """
             )
-
-
-            .label("jsonUnwrapped-pattern-separator", "---")
-            .label(
-                "jsonUnwrapped-pattern-header", """
-                    <h2 class="govuk-heading-m">MINE</h2>
-                    """
-            )
             .complex(PCSCase::getEnforcementOrder)
                 .mandatory(EnforcementOrder::getVulnerablePeopleYesNo)
                 .complex(EnforcementOrder::getVulnerableAdultsChildren, 
@@ -63,30 +53,7 @@ public class VulnerableAdultsChildrenPage implements CcdPageConfiguration {
                     )
                 .done()
             .done()
-            .label("vulnerableAdultsChildren-saveAndReturn3", CommonPageContent.SAVE_AND_RETURN)
-
-            
-            .label("branch2506-pattern-separator", "---")
-            .label(
-                "branch2506-pattern-header", """
-                    <h2 class="govuk-heading-m">ELVY'S</h2>
-                    """
-            )
-            .complex(PCSCase::getEnforcementOrder)
-                .mandatory(EnforcementOrder::getTestProhibitedConductClaim)
-                .complex(EnforcementOrder::getPeriodicContractTermsWalesTest, 
-                         "testProhibitedConductClaim=\"YES\"")
-                    .mandatory(PeriodicContractTermsWalesTest::getAgreedTermsOfPeriodicContract)
-                    .mandatory(
-                        PeriodicContractTermsWalesTest::getDetailsOfTerms, 
-                        "periodicContractTermsWalesTest.agreedTermsOfPeriodicContract=\"VULNERABLE_ADULTS\" "
-                        + "OR periodicContractTermsWalesTest.agreedTermsOfPeriodicContract=\"VULNERABLE_CHILDREN\" "
-                        + " OR periodicContractTermsWalesTest.agreedTermsOfPeriodicContract=\"VULNERABLE_ADULTS_AND_CHILDREN\""
-                    )
-                .done()
-            .done()
-            .label("vulnerableAdultsChildren-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
-            
+            .label("vulnerableAdultsChildren-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);            
     }
 
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
