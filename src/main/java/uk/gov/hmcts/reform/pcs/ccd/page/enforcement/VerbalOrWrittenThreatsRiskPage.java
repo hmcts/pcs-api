@@ -38,7 +38,7 @@ public class VerbalOrWrittenThreatsRiskPage implements CcdPageConfiguration {
 
         String txt = data.getEnforcementOrder().getRiskDetails().getEnforcementVerbalOrWrittenThreatsDetails();
 
-        // TODO: Use TextAreaValidationService from PR #751 when merged
+        // Use TextAreaValidationService from PR #751 when merged
         if (txt.length() > EnforcementRiskValidationUtils.getCharacterLimit()) {
             errors.add(EnforcementRiskValidationUtils
                     .getCharacterLimitErrorMessage(RiskCategory.VERBAL_OR_WRITTEN_THREATS));

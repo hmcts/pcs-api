@@ -44,7 +44,6 @@ class ViolentAggressiveRiskPageTest extends BasePageTest {
             .getRiskDetails().getEnforcementViolentDetails()).isEqualTo(text);
     }
 
-
     @Test
     void shouldRejectTextOver6800Characters() {
         // Given
@@ -66,7 +65,6 @@ class ViolentAggressiveRiskPageTest extends BasePageTest {
             EnforcementRiskValidationUtils.getCharacterLimitErrorMessage(RiskCategory.VIOLENT_OR_AGGRESSIVE)
         );
     }
-
 
     @Test
     void shouldPreserveDataWhenValid() {

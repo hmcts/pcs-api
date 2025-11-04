@@ -35,9 +35,8 @@ public class AggressiveAnimalsRiskPage implements CcdPageConfiguration {
         PCSCase data = details.getData();
         List<String> errors = new ArrayList<>();
         String txt = data.getEnforcementOrder().getRiskDetails().getEnforcementDogsOrOtherAnimalsDetails();
-        // TODO: Refactor validation logic to use TextAreaValidationService from PR #751 when merged
+        // Refactor validation logic to use TextAreaValidationService from PR #751 when merged
         if (txt.length() > EnforcementRiskValidationUtils.getCharacterLimit()) {
-            // TODO: Use TextAreaValidationService from PR #751 when merged
             errors.add(EnforcementRiskValidationUtils
                     .getCharacterLimitErrorMessage(RiskCategory.AGGRESSIVE_ANIMALS));
         }
