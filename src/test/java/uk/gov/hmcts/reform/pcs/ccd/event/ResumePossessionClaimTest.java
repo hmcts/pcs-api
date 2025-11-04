@@ -33,6 +33,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.ClaimService;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.IntroductoryDemotedOrOtherGroundsForPossession;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.NoRentArrearsGroundsForPossessionOptions;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.RentArrearsGroundForPossessionAdditionalGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.RentArrearsGroundsForPossession;
@@ -105,6 +106,8 @@ class ResumePossessionClaimTest extends BaseEventTest {
     private RentArrearsGroundForPossessionAdditionalGrounds rentArrearsGroundForPossessionAdditionalGrounds;
     @Mock
     private NoRentArrearsGroundsForPossessionOptions noRentArrearsGroundsForPossessionOptions;
+    @Mock
+    private IntroductoryDemotedOrOtherGroundsForPossession introductoryDemotedOrOtherGroundsForPossession;
 
     private final AddressFormatter addressFormatter = new AddressFormatter();
 
@@ -127,7 +130,8 @@ class ResumePossessionClaimTest extends BaseEventTest {
             draftCaseDataService, addressFormatter, 
             rentArrearsGroundsForPossession,
             rentArrearsGroundForPossessionAdditionalGrounds,
-            noRentArrearsGroundsForPossessionOptions
+            noRentArrearsGroundsForPossessionOptions,
+            introductoryDemotedOrOtherGroundsForPossession
         );
 
         setEventUnderTest(underTest);
