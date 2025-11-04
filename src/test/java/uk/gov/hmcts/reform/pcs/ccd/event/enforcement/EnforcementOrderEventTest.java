@@ -29,7 +29,7 @@ class EnforcementOrderEventTest extends BaseEventTest {
         String lastName = "Testing";
         DefendantDetails defendantDetails = DefendantDetails.builder().firstName(firstName).lastName(lastName).build();
         PCSCase caseData = PCSCase.builder()
-                .defendants(List.of(ListValue.<DefendantDetails>builder().value(defendantDetails).build()))
+            .allDefendants(List.of(ListValue.<DefendantDetails>builder().value(defendantDetails).build()))
             .propertyAddress(AddressUK.builder()
                                  .addressLine1("123 Baker Street")
                                  .addressLine2("Marylebone")
@@ -42,7 +42,7 @@ class EnforcementOrderEventTest extends BaseEventTest {
         // Then
         assertThat(result).isNotNull();
         assertThat(result.getFormattedPropertyAddress()).isEqualTo(addressFormatter.getFormattedAddress(caseData));
-        assertThat(result.getDefendants()).hasSize(1);
+        assertThat(result.getAllDefendants()).hasSize(1);
         assertThat(result.getDefendant1().getFirstName()).isEqualTo(firstName);
         assertThat(result.getDefendant1().getLastName()).isEqualTo(lastName);
     }
