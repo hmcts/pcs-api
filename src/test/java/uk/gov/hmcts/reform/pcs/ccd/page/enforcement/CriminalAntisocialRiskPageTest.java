@@ -68,7 +68,6 @@ class CriminalAntisocialRiskPageTest extends BasePageTest {
         );
     }
 
-
     @Test
     void shouldPreserveDataWhenValid() {
         // Given
