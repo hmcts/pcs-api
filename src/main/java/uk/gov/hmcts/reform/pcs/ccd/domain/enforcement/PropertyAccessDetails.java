@@ -20,8 +20,8 @@ public class PropertyAccessDetails {
     private VerticalYesNo isDifficultToAccessProperty;
 
     @CCD(
-            label = "Explain why it's difficult to access the property.",
-            hint = "You can enter up to 6,800 characters.",
+            label = "Explain why it's difficult to access the property",
+            hint = "You can enter up to 6,800 characters",
             typeOverride = TextArea
     )
     private String clarificationOnAccessDifficultyText;

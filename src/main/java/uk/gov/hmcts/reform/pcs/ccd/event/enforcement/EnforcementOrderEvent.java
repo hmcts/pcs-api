@@ -13,6 +13,7 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.AdditionalInformationPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.PropertyAccessDetailsPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.CheckYourAnswersPlaceHolder;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.EnforcementApplicationPage;
@@ -30,7 +31,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.enforceTheOrder;
 @Component
 @AllArgsConstructor
 public class EnforcementOrderEvent implements CCDConfig<PCSCase, State, UserRole> {
-    // TODO: Business requirements to be agreed on for the conditions when this event can be triggereed
+    // Business requirements to be agreed on for the conditions when this event can be triggereed
 
     private final AddressFormatter addressFormatter;
 
@@ -55,6 +56,7 @@ public class EnforcementOrderEvent implements CCDConfig<PCSCase, State, UserRole
                 .add(new EvictionRisksPosedPage())
                 .add(new EvictionVulnerableAdultsChildrenPage())
                 .add(new PropertyAccessDetailsPage())
+                .add(new AdditionalInformationPage())
                 .add(new CheckYourAnswersPlaceHolder());
     }
 

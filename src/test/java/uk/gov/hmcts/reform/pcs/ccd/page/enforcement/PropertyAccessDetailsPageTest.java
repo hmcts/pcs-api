@@ -85,7 +85,7 @@ class PropertyAccessDetailsPageTest extends BasePageTest {
         // Then
         assertThat(response.getErrors()).containsExactly(
                 EnforcementValidationUtil.getCharacterLimitErrorMessage(
-                        "Explain why it's difficult to access the property.",
+                        "Explain why it's difficult to access the property",
                         6800)
         );
     }

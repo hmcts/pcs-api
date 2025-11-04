@@ -17,7 +17,7 @@ import java.util.List;
 public class PropertyAccessDetailsPage implements CcdPageConfiguration {
 
     private static final String CLARIFICATION_PROPERTY_ACCESS_LABEL =
-            "Explain why it's difficult to access the property.";
+            "Explain why it's difficult to access the property";
     private static final int CLARIFICATION_PROPERTY_ACCESS_TEXT_LIMIT = 6800;
 
     @Override
@@ -40,15 +40,12 @@ public class PropertyAccessDetailsPage implements CcdPageConfiguration {
         PCSCase data = details.getData();
         List<String> errors = new ArrayList<>();
 
+        // Use TextAreaValidationService from PR #751 when merged
         String txt = data.getEnforcementOrder().getPropertyAccessDetails().getClarificationOnAccessDifficultyText();
         if (data.getEnforcementOrder().getPropertyAccessDetails().getIsDifficultToAccessProperty()
-                .equals(VerticalYesNo.YES)) {
-            // Use TextAreaValidationService from PR #751 when merged
-            if (txt.length() > CLARIFICATION_PROPERTY_ACCESS_TEXT_LIMIT) {
-                errors.add(EnforcementValidationUtil
-                        .getCharacterLimitErrorMessage(CLARIFICATION_PROPERTY_ACCESS_LABEL,
-                                CLARIFICATION_PROPERTY_ACCESS_TEXT_LIMIT));
-            }
+            .equals(VerticalYesNo.YES) && (txt.length() > CLARIFICATION_PROPERTY_ACCESS_TEXT_LIMIT)) {
+            errors.add(EnforcementValidationUtil.getCharacterLimitErrorMessage(CLARIFICATION_PROPERTY_ACCESS_LABEL,
+                CLARIFICATION_PROPERTY_ACCESS_TEXT_LIMIT));
         }
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
