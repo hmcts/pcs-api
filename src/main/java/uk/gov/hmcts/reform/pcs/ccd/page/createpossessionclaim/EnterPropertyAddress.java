@@ -76,6 +76,8 @@ public class EnterPropertyAddress implements CcdPageConfiguration {
                 caseData.setShowCrossBorderPage(YesOrNo.NO);
                 caseData.setShowPropertyNotEligiblePage(YesOrNo.YES);
                 caseData.setLegislativeCountry(eligibilityResult.getLegislativeCountry());
+                // Clear cross-border labels when not cross-border
+                clearCrossBorderLabels(caseData);
             }
             case NO_MATCH_FOUND -> {
                 log.debug("No court found for postcode: {}", postcode);
@@ -84,6 +86,8 @@ public class EnterPropertyAddress implements CcdPageConfiguration {
                 caseData.setShowPostcodeNotAssignedToCourt(YesOrNo.YES);
                 caseData.setPostcodeNotAssignedView("ALL_COUNTRIES");
                 caseData.setLegislativeCountry(null);
+                // Clear cross-border labels when not cross-border
+                clearCrossBorderLabels(caseData);
             }
             case MULTIPLE_MATCHES_FOUND -> {
                 // TODO: HDPI-1838 will handle multiple matches
@@ -94,6 +98,8 @@ public class EnterPropertyAddress implements CcdPageConfiguration {
                 caseData.setShowPropertyNotEligiblePage(YesOrNo.NO);
                 caseData.setShowPostcodeNotAssignedToCourt(YesOrNo.NO);
                 caseData.setLegislativeCountry(eligibilityResult.getLegislativeCountry());
+                // Clear cross-border labels when not cross-border
+                clearCrossBorderLabels(caseData);
             }
         }
 
@@ -118,14 +124,36 @@ public class EnterPropertyAddress implements CcdPageConfiguration {
 
         List<DynamicStringListElement> crossBorderCountries =
             createCrossBorderCountriesList(legislativeCountries);
+        
+        // Clear any existing selection when postcode changes (user needs to select again)
+        // This ensures that if the user changed the postcode, they must select the country again
         DynamicStringList crossBorderCountriesList = DynamicStringList.builder()
             .listItems(crossBorderCountries)
+            .value(null) // Clear selection when postcode changes
             .build();
 
         caseData.setCrossBorderCountriesList(crossBorderCountriesList);
-        // Set individual cross border countries
-        caseData.setCrossBorderCountry1(crossBorderCountries.get(0).getLabel());
-        caseData.setCrossBorderCountry2(crossBorderCountries.get(1).getLabel());
+        // Always update individual cross border country labels to match current postcode
+        // This is critical when user navigates back and changes the postcode
+        String label1 = crossBorderCountries.get(0).getLabel();
+        String label2 = crossBorderCountries.get(1).getLabel();
+        caseData.setCrossBorderCountry1(label1);
+        caseData.setCrossBorderCountry2(label2);
+        
+        log.debug("Set up cross-border data for postcode {}: {} and {}",
+            caseData.getPropertyAddress().getPostCode(),
+            label1,
+            label2);
+    }
+
+    /**
+     * Clears cross-border labels when the postcode is no longer cross-border.
+     * This ensures stale labels don't persist when postcode changes from cross-border to non-cross-border.
+     */
+    private void clearCrossBorderLabels(PCSCase caseData) {
+        caseData.setCrossBorderCountry1(null);
+        caseData.setCrossBorderCountry2(null);
+        caseData.setCrossBorderCountriesList(null);
     }
 
     private List<DynamicStringListElement> createCrossBorderCountriesList(

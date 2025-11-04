@@ -89,6 +89,12 @@ class CrossBorderPostcodeSelectionTest extends BasePageTest {
         EligibilityStatus status) {
 
         // Given
+        // For SCOTLAND test case, we need to include SCOTLAND in the refresh result
+        // For other cases, use ENGLAND and WALES
+        List<LegislativeCountry> refreshCountries = selectedCountry == LegislativeCountry.SCOTLAND
+            ? List.of(LegislativeCountry.ENGLAND, LegislativeCountry.SCOTLAND)
+            : List.of(LegislativeCountry.ENGLAND, LegislativeCountry.WALES);
+        
         PCSCase caseData = PCSCase.builder()
             .propertyAddress(AddressUK.builder().postCode(postcode).build())
             .crossBorderCountriesList(createCountryListWithSelectedValue(selectedCountry))
@@ -97,7 +103,7 @@ class CrossBorderPostcodeSelectionTest extends BasePageTest {
         // Mock the refresh call (checkEligibility with null country)
         EligibilityResult refreshResult = EligibilityResult.builder()
             .status(EligibilityStatus.LEGISLATIVE_COUNTRY_REQUIRED)
-            .legislativeCountries(List.of(LegislativeCountry.ENGLAND, LegislativeCountry.WALES))
+            .legislativeCountries(refreshCountries)
             .build();
         lenient().when(eligibilityService.checkEligibility(postcode, null)).thenReturn(refreshResult);
 
