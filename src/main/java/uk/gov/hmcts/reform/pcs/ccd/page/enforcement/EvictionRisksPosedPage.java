@@ -50,7 +50,6 @@ public class EvictionRisksPosedPage implements CcdPageConfiguration {
                 .build();
         }
 
-
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
             .data(data)
             .errors(List.of())
