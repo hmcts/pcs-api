@@ -279,7 +279,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             .ccdCaseNumber(String.valueOf(caseReference))
             .caseReference(String.valueOf(pcsCaseEntity.getCaseReference()))
             .volume(CASE_ISSUED_FEE_VOLUME)
-            .responsibleParty(pcsCase.getClaimantName())
+            .responsibleParty(pcsCase.getOrganisationName())
             .build();
 
         schedulerClient.scheduleIfNotExists(
