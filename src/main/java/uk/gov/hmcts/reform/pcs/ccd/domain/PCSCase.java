@@ -152,10 +152,10 @@ public class PCSCase {
     @CCD(label = "Enter address details")
     private AddressUK overriddenClaimantContactAddress;
 
-    @CCD(label = "Do you want to provide a contact phone number? (Optional)")
+    @CCD(label = "Do you want to provide a contact phone number?")
     private VerticalYesNo claimantProvidePhoneNumber;
 
-    @CCD(label = "Enter phone number", typeOverride = FieldType.PhoneUK)
+    @CCD(label = "Enter phone number", regex = "^\\s*0\\d{10}\\s*$")
     private String claimantContactPhoneNumber;
 
     @CCD(
@@ -662,6 +662,7 @@ public class PCSCase {
 
     @JsonUnwrapped(prefix = "wales")
     private WalesNoticeDetails walesNoticeDetails;
+
     @CCD(
         label = "Discretionary grounds",
         hint = "Select all that apply",
@@ -701,6 +702,9 @@ public class PCSCase {
         typeParameterOverride = "OccupationLicenceTypeWales"
     )
     private OccupationLicenceTypeWales occupationLicenceTypeWales;
+
+    @JsonUnwrapped
+    private UnderlesseeMortgagee underlesseeMortgagee;
 
     @JsonUnwrapped
     private EnforcementOrder enforcementOrder;
