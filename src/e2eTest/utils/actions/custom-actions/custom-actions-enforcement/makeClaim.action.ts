@@ -72,23 +72,8 @@ export class MakeClaimAction implements IAction {
         tenancyOrLicenceType: tenancyLicenceDetails.introductoryTenancy
       });
       await performValidation('mainHeader', groundsForPossession.mainHeader);
-<<<<<<< HEAD
-      await performAction('selectGroundsForPossession', { groundsRadioInput: groundsForPossession.yes });
-      await performAction('selectRentArrearsPossessionGround', {
-        rentArrears: [rentArrearsPossessionGrounds.rentArrears, rentArrearsPossessionGrounds.seriousRentArrears, rentArrearsPossessionGrounds.persistentDelayInPayingRent],
-        otherGrounds: rentArrearsPossessionGrounds.yes
-      });
-      await performAction('selectYourPossessionGrounds', {
-        mandatory: [whatAreYourGroundsForPossession.mandatory.holidayLet, whatAreYourGroundsForPossession.mandatory.ownerOccupier],
-        discretionary: [whatAreYourGroundsForPossession.discretionary.domesticViolence14A, whatAreYourGroundsForPossession.discretionary.rentArrears],
-      });
-      await performAction('enterReasonForPossession',
-      [whatAreYourGroundsForPossession.mandatory.holidayLet,whatAreYourGroundsForPossession.mandatory.ownerOccupier,
-        whatAreYourGroundsForPossession.discretionary.domesticViolence14A]);
-=======
       await performAction('selectGroundsForPossession', {groundsRadioInput: groundsForPossession.no});
       await performAction('enterReasonForPossession', [groundsForPossession.noGrounds]);
->>>>>>> origin/HDPI-2295-Automation
       await performValidation('mainHeader', preActionProtocol.mainHeader);
       await performAction('selectPreActionProtocol', preActionProtocol.yes);
       await performValidation('mainHeader', mediationAndSettlement.mainHeader);
