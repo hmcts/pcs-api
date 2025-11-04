@@ -27,7 +27,7 @@ jobs:
         run: ./gradlew generateCCDConfig
         working-directory: build/${{ matrix.target }}
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v5
         with:
           name: ${{ matrix.target }}
           path: build/${{ matrix.target }}/build/definitions/PCS
@@ -38,33 +38,54 @@ jobs:
     runs-on: ubuntu-latest
     needs: build
     steps:
-      - uses: actions/setup-node@v5
+      - uses: actions/setup-node@v6
         with:
-          node-version: 16
-      - uses: actions/download-artifact@v5
+          node-version: 24
+      - uses: actions/download-artifact@v6
         with:
           name: branch
           path: build/branch
-      - uses: actions/download-artifact@v5
+      - uses: actions/download-artifact@v6
         with:
           name: master
           path: build/master
       - name: Generate report
         id: ccd-diff
         run: |
-          REPORT="$(npx -q @hmcts/ccd-diff build/master build/branch)"
-          printf 'content<<EOF\n%s\nEOF\n' "$REPORT" >> "$GITHUB_OUTPUT"
-      - name: Display
-        run: |
-          echo "${{ steps.ccd-diff.outputs.content }}"
+          set -euo pipefail
+          mkdir -p ccd-report
+          npx -q @hmcts/ccd-diff build/master build/branch > ccd-report/ccd-diff-report.html
+          SUMMARY_FILE="ccd-report/ccd-comment-summary.md"
+          MAX_CHARS=65000
+          REPORT_FILE="ccd-report/ccd-diff-report.html"
+          TOTAL_CHARS=$(wc -c < "$REPORT_FILE")
+          head -c $MAX_CHARS "$REPORT_FILE" > "$SUMMARY_FILE"
+          if [ "$TOTAL_CHARS" -gt "$MAX_CHARS" ]; then
+            printf '\n\n…(truncated)…\n' >> "$SUMMARY_FILE"
+          else
+            printf '\n' >> "$SUMMARY_FILE"
+          fi
+          {
+            echo "report-dir=ccd-report"
+            echo "report-path=$REPORT_FILE"
+            echo "summary-path=$SUMMARY_FILE"
+          } >> "$GITHUB_OUTPUT"
+      - name: Upload HTML report
+        uses: actions/upload-artifact@v5
+        with:
+          name: ccd-diff-report-${{ github.run_id }}
+          path: ${{ steps.ccd-diff.outputs.report-path }}
       - name: Add report
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
+          SUMMARY_PATH: ${{ steps.ccd-diff.outputs.summary-path }}
+          RUN_URL: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}?check_suite_focus=true
         run: |
           BODY_FILE="$(mktemp)"
           {
-            printf '# CCD diff report\n\n'
-            printf '%s\n' "${{ steps.ccd-diff.outputs.content }}"
+            printf '# CCD diff summary\n\n'
+            printf '👉 Full report: %s\n\n' "$RUN_URL"
+            cat "$SUMMARY_PATH"
           } > "$BODY_FILE"
           gh pr comment "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --body-file "$BODY_FILE"
