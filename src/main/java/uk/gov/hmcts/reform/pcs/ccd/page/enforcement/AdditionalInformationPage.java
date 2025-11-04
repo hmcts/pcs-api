@@ -9,7 +9,7 @@ public class AdditionalInformationPage implements CcdPageConfiguration {
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
                 .page("additionalInformation")
-                .pageLabel("Additional information (place holder)")
+                .pageLabel("Anything else that could help with the eviction (placeholder)")
                 .label("additionalInformation-content", "---");
     }
 }
