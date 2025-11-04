@@ -42,10 +42,34 @@ public class VulnerableAdultsChildrenPage implements CcdPageConfiguration {
                     </ul>
                     """
             )
+
+
+            .label("jsonUnwrapped-pattern-separator", "---")
+            .label(
+                "jsonUnwrapped-pattern-header", """
+                    <h2 class="govuk-heading-m">MINE</h2>
+                    """
+            )
+            .complex(PCSCase::getEnforcementOrder)
+                .mandatory(EnforcementOrder::getVulnerablePeopleYesNo)
+                .complex(EnforcementOrder::getVulnerableAdultsChildren, 
+                        "vulnerablePeopleYesNo=\"YES\"")
+                    .mandatory(VulnerableAdultsChildren::getVulnerableCategory)
+                    .mandatory(
+                        VulnerableAdultsChildren::getVulnerableReasonText,
+                            "vulnerableCategory=\"VULNERABLE_ADULTS\" "
+                            + "OR vulnerableCategory=\"VULNERABLE_CHILDREN\" "
+                            + " OR vulnerableCategory=\"VULNERABLE_ADULTS_AND_CHILDREN\""
+                    )
+                .done()
+            .done()
+            .label("vulnerableAdultsChildren-saveAndReturn3", CommonPageContent.SAVE_AND_RETURN)
+
+            
             .label("branch2506-pattern-separator", "---")
             .label(
                 "branch2506-pattern-header", """
-                    <h2 class="govuk-heading-m">EXACT BRANCH 2506 PATTERN (ProhibitedConductWales Structure)</h2>
+                    <h2 class="govuk-heading-m">ELVY'S</h2>
                     """
             )
             .complex(PCSCase::getEnforcementOrder)
@@ -61,25 +85,7 @@ public class VulnerableAdultsChildrenPage implements CcdPageConfiguration {
                     )
                 .done()
             .done()
-            .label("vulnerableAdultsChildren-saveAndReturn", CommonPageContent.SAVE_AND_RETURN)
-
-
-            .label("jsonUnwrapped-pattern-separator", "---")
-            .label(
-                "jsonUnwrapped-pattern-header", """
-                    <h2 class="govuk-heading-m">JSON UNWRAPPED PATTERN (VulnerableAdultsChildren with @JsonUnwrapped)</h2>
-                    """
-            )
-            .complex(PCSCase::getEnforcementOrder)
-                .mandatory(EnforcementOrder::getVulnerablePeopleYesNo)
-                .complex(EnforcementOrder::getVulnerableAdultsChildren, "vulnerablePeopleYesNo=\"YES\"")
-                    .mandatory(VulnerableAdultsChildren::getVulnerableCategory, "vulnerablePeopleYesNo=\"YES\"")
-                    .mandatory(
-                        VulnerableAdultsChildren::getVulnerableReasonText
-                    )
-                .done()
-            .done()
-            .label("vulnerableAdultsChildren-saveAndReturn3", CommonPageContent.SAVE_AND_RETURN);
+            .label("vulnerableAdultsChildren-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
             
     }
 

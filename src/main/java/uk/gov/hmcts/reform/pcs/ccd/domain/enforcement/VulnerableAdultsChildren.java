@@ -3,8 +3,8 @@ package uk.gov.hmcts.reform.pcs.ccd.domain.enforcement;
 import lombok.Builder;
 import lombok.Data;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
-import uk.gov.hmcts.ccd.sdk.api.ComplexType;
-import uk.gov.hmcts.ccd.sdk.type.FieldType;
+// import uk.gov.hmcts.ccd.sdk.api.ComplexType;
+import static uk.gov.hmcts.ccd.sdk.type.FieldType.TextArea;
 
 @Data
 @Builder
@@ -26,7 +26,7 @@ public class VulnerableAdultsChildren {
     @CCD(
             label = VULNERABLE_REASON_LABEL,
             hint = VULNERABLE_REASON_HINT,
-            typeOverride = FieldType.TextArea
+            typeOverride = TextArea
     )
     private String vulnerableReasonText;
 }
