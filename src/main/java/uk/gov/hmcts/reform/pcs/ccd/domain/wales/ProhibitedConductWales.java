@@ -13,8 +13,8 @@ import lombok.NoArgsConstructor;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class ProhibitedConductWales {
 
-    private String claimForProhibitedConductContract;
-    private String agreedTermsOfPeriodicContract;
+    private Boolean claimForProhibitedConductContract;
+    private Boolean agreedTermsOfPeriodicContract;
     private String detailsOfTerms;
     private String whyMakingClaim;
 
