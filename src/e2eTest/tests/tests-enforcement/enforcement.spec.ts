@@ -93,7 +93,14 @@ test.describe('[Enforcement - Warrant of Possession] @Master @nightly', async ()
       label: animalsAtTheProperty.whatKindOfAnimalDoTheyHave,
       input: animalsAtTheProperty.whatKindOfAnimalDoTheyHaveInput
     });
-    await performValidation('mainHeader', vulnerableAdultsAndChildren.mainHeader);
+    await performValidation('mainHeader', vulnerableAdultsAndChildren.mainHeader);    
+    await performAction('selectVulnerablePeopleInTheProperty',{
+      question: vulnerableAdultsAndChildren.IsAnyOneLivingAtThePropertyQuestion,
+      option: vulnerableAdultsAndChildren.yes,
+      confirm: vulnerableAdultsAndChildren.confirmVulnerablePeople,
+      label: vulnerableAdultsAndChildren.howAreTheyVulnerable,
+      input: vulnerableAdultsAndChildren.howAreTheyVulnerableInput
+    })
     await performAction('clickButton', vulnerableAdultsAndChildren.continue);
   });
 
