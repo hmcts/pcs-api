@@ -149,10 +149,9 @@ test.describe('[Create Case - Wales] @Master @nightly', async () => {
       correspondenceAddress: contactPreferences.yes,
       phoneNumber: contactPreferences.no
     });
-    await performAction('defendantDetails', {
-      name: defendantDetails.no,
-      correspondenceAddress: defendantDetails.no,
-      email: defendantDetails.no,
+    await performAction('addDefendantDetails', {
+      nameQuestion: defendantDetails.doYouKnowTheDefendantName, nameOption: defendantDetails.no,
+      addressQuestion: defendantDetails.defendantCorrespondenceAddress, correspondenceAddressOption: defendantDetails.no
     });
     //Following 186 to 188 needs update once routing is done for wales journey HDPI-2365
     await performAction('check', 'Secure contract');
@@ -244,11 +243,10 @@ test.describe('[Create Case - Wales] @Master @nightly', async () => {
       correspondenceAddress: contactPreferences.no,
       phoneNumber: contactPreferences.yes
     });
-    await performAction('defendantDetails', {
-      name: defendantDetails.yes,
-      correspondenceAddress: defendantDetails.yes,
-      email: defendantDetails.yes,
-      correspondenceAddressSame: defendantDetails.yes
+    await performAction('addDefendantDetails', {
+      nameQuestion: defendantDetails.doYouKnowTheDefendantName, nameOption: defendantDetails.yes, firstName: defendantDetails.firstNameInput, lastName: defendantDetails.lastNameInput,
+      addressQuestion: defendantDetails.defendantCorrespondenceAddress, correspondenceAddressOption: defendantDetails.yes, addressSameQuestion: defendantDetails.isCorrespondenceAddressSame, correspondenceAddressSameOption: defendantDetails.yes,
+      addDefendantQuestion: defendantDetails.additionalDefendants, addAdditionalDefendantsOption: defendantDetails.no
     });
     await performAction('check', 'Secure contract');
     await performAction('clickButton', 'Continue');
