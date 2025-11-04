@@ -42,78 +42,47 @@ export class MakeClaimAction implements IAction {
         phoneNumber: contactPreferences.no
       });
       await performAction('defendantDetails', {
-        name: defendantDetails.yes,
-        correspondenceAddress: defendantDetails.yes,
-        email: defendantDetails.yes,
-        correspondenceAddressSame: defendantDetails.no
+        name: defendantDetails.no,
+        correspondenceAddress: defendantDetails.no,
+        email: defendantDetails.no,
       });
       await performValidation('mainHeader', tenancyLicenceDetails.mainHeader);
       await performAction('selectTenancyOrLicenceDetails', {
-        tenancyOrLicenceType: tenancyLicenceDetails.assuredTenancy,
-        day: tenancyLicenceDetails.day,
-        month: tenancyLicenceDetails.month,
-        year: tenancyLicenceDetails.year,
-        files: ['tenancyLicence.docx', 'tenancyLicence.png']
+        tenancyOrLicenceType: tenancyLicenceDetails.introductoryTenancy
       });
       await performValidation('mainHeader', groundsForPossession.mainHeader);
-      await performAction('selectGroundsForPossession', { groundsRadioInput: groundsForPossession.yes });
-      await performAction('selectRentArrearsPossessionGround', {
-        rentArrears: [rentArrearsPossessionGrounds.rentArrears, rentArrearsPossessionGrounds.seriousRentArrears, rentArrearsPossessionGrounds.persistentDelayInPayingRent],
-        otherGrounds: rentArrearsPossessionGrounds.yes
-      });
-      await performAction('selectYourPossessionGrounds', {
-        mandatory: [whatAreYourGroundsForPossession.mandatory.holidayLet, whatAreYourGroundsForPossession.mandatory.ownerOccupier],
-        discretionary: [whatAreYourGroundsForPossession.discretionary.domesticViolence14A, whatAreYourGroundsForPossession.discretionary.rentArrears],
-      });
-      await performAction('enterReasonForPossession',
-      [whatAreYourGroundsForPossession.mandatory.holidayLet,whatAreYourGroundsForPossession.mandatory.ownerOccupier,
-        whatAreYourGroundsForPossession.discretionary.domesticViolence14A]);
+      await performAction('selectGroundsForPossession', {groundsRadioInput: groundsForPossession.no});
+      await performAction('enterReasonForPossession', [groundsForPossession.noGrounds]);
       await performValidation('mainHeader', preActionProtocol.mainHeader);
-      await performAction('selectPreActionProtocol', preActionProtocol.yes);
+      await performAction('selectPreActionProtocol', preActionProtocol.no);
       await performValidation('mainHeader', mediationAndSettlement.mainHeader);
       await performAction('selectMediationAndSettlement', {
-        attemptedMediationWithDefendantsOption: mediationAndSettlement.yes,
+        attemptedMediationWithDefendantsOption: mediationAndSettlement.no,
         settlementWithDefendantsOption: mediationAndSettlement.no,
       });
       await performValidation('mainHeader', noticeOfYourIntention.mainHeader);
-      await performValidation('text', { "text": noticeOfYourIntention.guidanceOnPosessionNoticePeriodsLink, "elementType": "paragraphLink" })
-      await performValidation('text', { "text": noticeOfYourIntention.servedNoticeInteractiveText, "elementType": "inlineText" });
-      await performAction('selectNoticeOfYourIntention', noticeOfYourIntention.yes);
-      await performValidation('mainHeader', noticeDetails.mainHeader);
-      await performAction('selectNoticeDetails', {
-        howDidYouServeNotice: noticeDetails.byFirstClassPost,
-        day: '16', month: '07', year: '1985', files: 'NoticeDetails.pdf'
-      });
-      await performValidation('mainHeader', rentDetails.mainHeader);
-      await performAction('provideRentDetails', { rentFrequencyOption: 'weekly', rentAmount: '800' });
-      await performValidation('mainHeader', dailyRentAmount.mainHeader);
-      await performAction('selectDailyRentAmount', {
-        calculateRentAmount: '£114.29',
-        unpaidRentInteractiveOption: dailyRentAmount.no,
-        unpaidRentAmountPerDay: '20'
-      });
+      await performAction('selectNoticeOfYourIntention', noticeOfYourIntention.no);
       await performValidation('mainHeader', moneyJudgment.mainHeader);
       await performAction('selectMoneyJudgment', moneyJudgment.yes);
       await performValidation('mainHeader', claimantCircumstances.mainHeader);
       await performAction('selectClaimantCircumstances', {
-        circumstanceOption: claimantCircumstances.yes,
-        claimantInput: claimantCircumstances.claimantCircumstanceInfoInputData
+        circumstanceOption: claimantCircumstances.no
       });
       await performValidation('mainHeader', defendantCircumstances.mainHeader);
-      await performAction('selectDefendantCircumstances', defendantCircumstances.yes);
+      await performAction('selectDefendantCircumstances', defendantCircumstances.no);
       await performValidation('mainHeader', alternativesToPossession.mainHeader);
       await performAction('selectAlternativesToPossession');
       await performValidation('mainHeader', claimingCosts.mainHeader);
-      await performAction('selectClaimingCosts', claimingCosts.yes);
+      await performAction('selectClaimingCosts', claimingCosts.no);
       await performValidation('mainHeader', additionalReasonsForPossession.mainHeader);
-      await performAction('selectAdditionalReasonsForPossession', additionalReasonsForPossession.yes);
+      await performAction('selectAdditionalReasonsForPossession', additionalReasonsForPossession.no);
       await performValidation('mainHeader', underlesseeOrMortgageeEntitledToClaim.mainHeader);
       await performAction('clickButton', underlesseeOrMortgageeEntitledToClaim.continue);
       await performAction('wantToUploadDocuments', {
         question: wantToUploadDocuments.uploadAnyAdditionalDocumentsLabel,
         option: wantToUploadDocuments.no
       });
-      await performAction('selectApplications', applications.yes);
+      await performAction('selectApplications', applications.no);
       await performAction('selectLanguageUsed', { question: languageUsed.whichLanguageUsedQuestion, option: languageUsed.english });
       await performAction('completingYourClaim', completeYourClaim.submitAndClaimNow);
       await performAction('clickButton', statementOfTruth.continue);
