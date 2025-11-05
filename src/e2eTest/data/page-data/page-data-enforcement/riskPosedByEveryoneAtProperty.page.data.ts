@@ -6,5 +6,7 @@ export const riskPosedByEveryoneAtProperty = {
   criminalOrAntisocialBehaviour: "Criminal or antisocial behaviour",
   verbalOrWrittenThreats: "Verbal or written threats",
   protestGroup: "Member of a group that protests evictions",
+  policeOrSocialService: "Police or social services visits to the property",
+  aggressiveAnimals: "Aggressive dogs or other animals",
   continue: "Continue",
 };

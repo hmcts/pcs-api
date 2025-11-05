@@ -17,6 +17,8 @@ import { firearmPossession } from "@data/page-data/page-data-enforcement/firearm
 import { criminalOrAntisocialBehaviour } from "@data/page-data/page-data-enforcement/criminalOrAntisocialBehaviour.page.data";
 import { verbalOrWrittenThreats } from "@data/page-data/page-data-enforcement/verbalOrWrittenThreats.page.data";
 import { groupProtestsEviction } from "@data/page-data/page-data-enforcement/groupProtestsEviction.page.data";
+import { policeOrSocialServiceVisit } from "@data/page-data/page-data-enforcement/policeOrSocialServiceVisit.page.data";
+import { animalsAtTheProperty } from "@data/page-data/page-data-enforcement/animalsAtTheProperty";
 import { signInOrCreateAnAccount } from "@data/page-data/signInOrCreateAnAccount.page.data";
 
 test.beforeEach(async ({ page }) => {
@@ -65,6 +67,8 @@ test.describe("[Enforcement - Warrant of Possession] @Master @nightly", async ()
         riskPosedByEveryoneAtProperty.criminalOrAntisocialBehaviour,
         riskPosedByEveryoneAtProperty.verbalOrWrittenThreats,
         riskPosedByEveryoneAtProperty.protestGroup,
+        riskPosedByEveryoneAtProperty.policeOrSocialService,
+        riskPosedByEveryoneAtProperty.aggressiveAnimals,
       ],
     });
     await performAction("provideDetailsViolentOrAggressiveBehaviour", {
@@ -86,6 +90,14 @@ test.describe("[Enforcement - Warrant of Possession] @Master @nightly", async ()
     await performAction("provideDetailsGroupProtestsEviction", {
       label: groupProtestsEviction.whichGroupMember,
       input: groupProtestsEviction.whichGroupMemberInput,
+    });
+    await performAction("provideDetailsPoliceOrSocialServiceVisits", {
+      label: policeOrSocialServiceVisit.whyDidThePoliceOrSSVisitTheProperty,
+      input: policeOrSocialServiceVisit.whyDidThePoliceOrSSVisitThePropertyInput,
+    });
+    await performAction("provideDetailsAnimalsAtTheProperty", {
+      label: animalsAtTheProperty.whatKindOfAnimalDoTheyHave,
+      input: animalsAtTheProperty.whatKindOfAnimalDoTheyHaveInput,
     });
     await performValidation("mainHeader", vulnerableAdultsAndChildren.mainHeader);
     await performAction("clickButton", vulnerableAdultsAndChildren.continue);
