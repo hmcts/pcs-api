@@ -41,7 +41,7 @@ export class ActionEnforcementRegistry {
     ['provideDetailsGroupProtestsEviction', new EnforcementAction()],
     ['provideDetailsPoliceOrSocialServiceVisits', new EnforcementAction()],
     ['provideDetailsAnimalsAtTheProperty', new EnforcementAction()],
-    ['selectVulnerablePeopleInTheProperty', new EnforcementAction()],
+    ['provideDetailsAnythingElseHelpWithEviction', new EnforcementAction()],
   ]);
 
   static getAction(actionName: string): IAction {

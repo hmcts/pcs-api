@@ -12,8 +12,7 @@ import { criminalOrAntisocialBehaviour } from "@data/page-data/page-data-enforce
 import { verbalOrWrittenThreats } from "@data/page-data/page-data-enforcement/verbalOrWrittenThreats.page.data";
 import { groupProtestsEviction } from "@data/page-data/page-data-enforcement/groupProtestsEviction.page.data";
 import { policeOrSocialServiceVisit } from "@data/page-data/page-data-enforcement/policeOrSocialServiceVisit.page.data";
-import { animalsAtTheProperty } from "@data/page-data/page-data-enforcement/animalsAtTheProperty";
-import { vulnerableAdultsAndChildren } from "@data/page-data/page-data-enforcement/vulnerableAdultsAndChildren.page.data";
+import { animalsAtTheProperty } from "@data/page-data/page-data-enforcement/animalsAtTheProperty.page.data";
 import { anythingElseHelpWithEviction } from "@data/page-data/page-data-enforcement/anythingElseThatCouldHelpWithEviction.page.data";
 
 export class EnforcementAction implements IAction {
@@ -30,7 +29,6 @@ export class EnforcementAction implements IAction {
       ['provideDetailsGroupProtestsEviction', () => this.provideDetailsGroupProtestsEviction(fieldName as actionRecord)],
       ['provideDetailsPoliceOrSocialServiceVisits', () => this.provideDetailsPoliceOrSocialServiceVisits(fieldName as actionRecord)],
       ['provideDetailsAnimalsAtTheProperty', () => this.provideDetailsAnimalsAtTheProperty(fieldName as actionRecord)],
-      ['selectVulnerablePeopleInTheProperty', () => this.selectVulnerablePeopleInTheProperty(fieldName as actionRecord)],
       ['provideDetailsAnythingElseHelpWithEviction', () => this.provideDetailsAnythingElseHelpWithEviction(fieldName as actionRecord)],
     ]);
     const actionToPerform = actionsMap.get(action);
@@ -113,23 +111,13 @@ export class EnforcementAction implements IAction {
     await performAction('clickButton', animalsAtTheProperty.continue);
   }
 
-  private async selectVulnerablePeopleInTheProperty(vulnerablePeople: actionRecord) {
-    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + enforcementTestCaseNumber });
-    await performAction('clickRadioButton', { question: vulnerablePeople.question, option: vulnerablePeople.option });
-    if (vulnerablePeople.option === vulnerableAdultsAndChildren.yes) {
-      await performAction('clickRadioButton', { question: vulnerablePeople.confirm, option: vulnerablePeople.peopleOption });
-      await performAction('inputText', vulnerablePeople.label, vulnerablePeople.input);
-    }
-    await performAction('clickButton', vulnerableAdultsAndChildren.continue);
-  }
-
   private async provideDetailsAnythingElseHelpWithEviction(anythingElse: actionRecord) {
-    await performValidation('mainHeader', animalsAtTheProperty.mainHeader);
+    await performValidation('mainHeader', anythingElseHelpWithEviction.mainHeader);
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + enforcementTestCaseNumber });
     await performAction('clickRadioButton', { question: anythingElse.question, option: anythingElse.option });
     if (anythingElse.option === anythingElseHelpWithEviction.yes) {
       await performAction('inputText', anythingElse.label, anythingElse.input);
     }    
-    await performAction('clickButton', animalsAtTheProperty.continue);
+    await performAction('clickButton', anythingElseHelpWithEviction.continue);
   }
 }
