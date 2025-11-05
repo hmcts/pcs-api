@@ -115,8 +115,7 @@ public class PCSCase {
     private String crossBorderCountry2;
 
     @CCD(
-        searchable = false,
-        typeOverride = FieldType.Label
+        searchable = false
     )
     @External
     private String crossBorderInfoLabel;
