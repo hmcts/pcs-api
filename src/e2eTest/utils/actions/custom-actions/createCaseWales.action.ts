@@ -10,7 +10,7 @@ export class CreateCaseWalesAction extends CreateCaseAction implements IAction {
   async execute(page: Page, action: string, fieldName: actionData | actionRecord, data?: actionData): Promise<void> {
     const actionsMap = new Map<string, () => Promise<void>>([
       ['selectClaimantDetails', () => this.selectClaimantDetails(fieldName as actionRecord)],
-      ['selectProhibitedConductStandardContract', () => this.selectProhibitedConductStandardContract(fieldName as actionRecord)]
+      ['selectProhibitedConductStandardContract', () => this.selectProhibitedConductStandardContract(fieldName as actionRecord)],
       ['selectOccupationContractOrLicenceDetails', () => this.selectOccupationContractOrLicenceDetails(fieldName as actionRecord)]
     ]);
     const actionToPerform = actionsMap.get(action);
@@ -40,7 +40,7 @@ export class CreateCaseWalesAction extends CreateCaseAction implements IAction {
     }
     await performAction('clickButton', claimantDetailsWales.continue);
   }
-    
+
   private async selectOccupationContractOrLicenceDetails(occupationContractData: actionRecord) {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: ' + caseNumber});
     await performAction('clickRadioButton', {
@@ -62,7 +62,7 @@ export class CreateCaseWalesAction extends CreateCaseAction implements IAction {
     }
     await performAction('clickButton', occupationContractOrLicenceDetailsWales.continue);
   }
-  
+
   private async selectProhibitedConductStandardContract(prohibitedConduct: actionRecord) {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: ' + caseNumber});
     await performAction('clickRadioButton', {question: prohibitedConduct.question1, option: prohibitedConduct.option1});
