@@ -36,7 +36,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.enforceTheOrder;
 @Component
 @AllArgsConstructor
 public class EnforcementOrderEvent implements CCDConfig<PCSCase, State, UserRole> {
-    // TODO: Business requirements to be agreed on for the conditions when this event can be triggereed
+    // Business requirements to be agreed on for the conditions when this event can be triggereed
 
     private final AddressFormatter addressFormatter;
 
