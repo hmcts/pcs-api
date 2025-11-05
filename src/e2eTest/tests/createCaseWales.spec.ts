@@ -52,9 +52,9 @@ test.describe('[Create Case - Wales] @Master @nightly', async () => {
       phoneNumber: contactPreferences.yes
     });
     await performAction('addDefendantDetails', {
-      nameQuestion: defendantDetails.doYouKnowTheDefendantName, nameOption: defendantDetails.yes, firstName: defendantDetails.firstNameInput, lastName: defendantDetails.lastNameInput,
-      addressQuestion: defendantDetails.defendantCorrespondenceAddress, correspondenceAddressOption: defendantDetails.yes, addressSameQuestion: defendantDetails.isCorrespondenceAddressSame, correspondenceAddressSameOption: defendantDetails.yes,
-      addDefendantQuestion: defendantDetails.additionalDefendants, addAdditionalDefendantsOption: defendantDetails.no
+      nameOption: defendantDetails.yes, firstName: defendantDetails.firstNameInput, lastName: defendantDetails.lastNameInput,
+      correspondenceAddressOption: defendantDetails.yes, correspondenceAddressSameOption: defendantDetails.yes,
+      addAdditionalDefendantsOption: defendantDetails.no
     });
     //Following line can be updated to securecontractLicenceDetails once HDPI-2365 is done
     await performAction('check', 'Secure contract');
@@ -149,9 +149,9 @@ test.describe('[Create Case - Wales] @Master @nightly', async () => {
       phoneNumber: contactPreferences.no
     });
     await performAction('addDefendantDetails', {
-      nameQuestion: defendantDetails.doYouKnowTheDefendantName, nameOption: defendantDetails.no,
-      addressQuestion: defendantDetails.defendantCorrespondenceAddress, correspondenceAddressOption: defendantDetails.no,
-      addDefendantQuestion: defendantDetails.additionalDefendants, addAdditionalDefendantsOption: defendantDetails.no
+      nameOption: defendantDetails.no,
+      correspondenceAddressOption: defendantDetails.no,
+      addAdditionalDefendantsOption: defendantDetails.no
     });
     //Following 186 to 188 needs update once routing is done for wales journey HDPI-2365
     await performAction('check', 'Secure contract');
@@ -244,9 +244,9 @@ test.describe('[Create Case - Wales] @Master @nightly', async () => {
       phoneNumber: contactPreferences.yes
     });
     await performAction('addDefendantDetails', {
-      nameQuestion: defendantDetails.doYouKnowTheDefendantName, nameOption: defendantDetails.yes, firstName: defendantDetails.firstNameInput, lastName: defendantDetails.lastNameInput,
-      addressQuestion: defendantDetails.defendantCorrespondenceAddress, correspondenceAddressOption: defendantDetails.yes, addressSameQuestion: defendantDetails.isCorrespondenceAddressSame, correspondenceAddressSameOption: defendantDetails.yes,
-      addDefendantQuestion: defendantDetails.additionalDefendants, addAdditionalDefendantsOption: defendantDetails.no
+      nameOption: defendantDetails.yes, firstName: defendantDetails.firstNameInput, lastName: defendantDetails.lastNameInput,
+      correspondenceAddressOption: defendantDetails.yes, correspondenceAddressSameOption: defendantDetails.yes,
+      addAdditionalDefendantsOption: defendantDetails.no
     });
     await performAction('check', 'Secure contract');
     await performAction('clickButton', 'Continue');

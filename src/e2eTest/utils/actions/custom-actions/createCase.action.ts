@@ -400,30 +400,6 @@ export class CreateCaseAction implements IAction {
           option: correspondenceAddressOption,
           index,
         });
-
-        if (correspondenceAddressOption === defendantDetails.yes) {
-          await performAction('clickRadioButton', {
-            question: defendantDetails.isCorrespondenceAddressSame,
-            option: defendantData.correspondenceAddressSameOption,
-            index,
-          });
-
-          if (defendantData.correspondenceAddressSameOption === defendantDetails.no) {
-            await performActions(
-              `Find Address based on postcode for defendant ${index}`,
-              [
-                'inputText',
-                `#additionalDefendants_${i}_correspondenceAddress_correspondenceAddress_postcodeInput`,
-                defendantData[`address${index}`] || defendantData.address
-              ],
-              [
-                'clickButton',
-                `#additionalDefendants_${i}_correspondenceAddress_correspondenceAddress button:has-text("Find address")`
-              ],
-              ['select', addressDetails.selectAddressLabel, addressDetails.addressIndex]
-            );
-          }
-        }
       }
     }
     await performAction('clickButton', defendantDetails.continue);
