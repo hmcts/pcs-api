@@ -16,6 +16,7 @@ import {home} from '@data/page-data/home.page.data';
 import {whatAreYourGroundsForPossessionWales} from '@data/page-data/whatAreYourGroundsForPossessionWales.page.data';
 import {reasonsForRequestingASuspensionAndDemotionOrder} from '@data/page-data/reasonsForRequestingASuspensionAndDemotionOrder.page.data';
 import {antiSocialBehaviourWales} from '@data/page-data/antiSocialBehaviourWales.page.data';
+import {occupationContractOrLicenceDetailsWales} from '@data/page-data/occupationContractOrLicenceDetailsWales.page.data';
 import {signInOrCreateAnAccount} from '@data/page-data/signInOrCreateAnAccount.page.data';
 
 test.beforeEach(async ({page}) => {
@@ -59,9 +60,14 @@ test.describe('[Create Case - Wales] @Master @nightly', async () => {
       email: defendantDetails.yes,
       correspondenceAddressSame: defendantDetails.yes
     });
-    //Following line can be updated to securecontractLicenceDetails once HDPI-2365 is done
-    await performAction('check', 'Secure contract');
-    await performAction('clickButton', 'Continue');
+    await performAction('selectOccupationContractOrLicenceDetails', {
+      occupationContractQuestion: occupationContractOrLicenceDetailsWales.occupationContractOrLicenceType,
+      occupationContractType: occupationContractOrLicenceDetailsWales.secureContract,
+      day: occupationContractOrLicenceDetailsWales.dayInput,
+      month: occupationContractOrLicenceDetailsWales.monthInput,
+      year: occupationContractOrLicenceDetailsWales.yearInput,
+      files: 'occupationContract.pdf'
+    });
     await performValidation('mainHeader', whatAreYourGroundsForPossessionWales.mainHeader);
     await performAction('selectYourPossessionGrounds', {
       discretionary: [whatAreYourGroundsForPossessionWales.discretionary.rentArrears]
@@ -153,9 +159,10 @@ test.describe('[Create Case - Wales] @Master @nightly', async () => {
       email: defendantDetails.yes,
       correspondenceAddressSame: defendantDetails.yes
     });
-    //Following line can be updated to securecontractLicenceDetails once HDPI-2365 is done
-    await performAction('check', 'Secure contract');
-    await performAction('clickButton', 'Continue');
+     await performAction('selectOccupationContractOrLicenceDetails', {
+      occupationContractQuestion: occupationContractOrLicenceDetailsWales.occupationContractOrLicenceType,
+      occupationContractType: occupationContractOrLicenceDetailsWales.standardContract
+    });
     await performValidation('mainHeader', whatAreYourGroundsForPossessionWales.mainHeader);
     await performAction('selectYourPossessionGrounds', {
       discretionary: [whatAreYourGroundsForPossessionWales.discretionary.rentArrears,whatAreYourGroundsForPossessionWales.discretionary.antiSocialBehaviour,whatAreYourGroundsForPossessionWales.discretionary.estateManagementGrounds],
@@ -250,12 +257,18 @@ test.describe('[Create Case - Wales] @Master @nightly', async () => {
       correspondenceAddress: defendantDetails.no,
       email: defendantDetails.no,
     });
-    //Following 186 to 188 needs update once routing is done for wales journey HDPI-2365
-    await performAction('check', 'Standard contract');
-    await performAction('clickButton', 'Continue');
+    await performAction('selectOccupationContractOrLicenceDetails', {
+      occupationContractQuestion: occupationContractOrLicenceDetailsWales.occupationContractOrLicenceType,
+      occupationContractType: occupationContractOrLicenceDetailsWales.standardContract,
+      day: occupationContractOrLicenceDetailsWales.dayInput,
+      month: occupationContractOrLicenceDetailsWales.monthInput,
+      year: occupationContractOrLicenceDetailsWales.yearInput
+    });
     await performValidation('mainHeader', whatAreYourGroundsForPossessionWales.mainHeader);
     await performAction('selectYourPossessionGrounds', {
-      discretionary: [whatAreYourGroundsForPossessionWales.discretionary.rentArrears, whatAreYourGroundsForPossessionWales.discretionary.antiSocialBehaviour],
+      discretionary: [whatAreYourGroundsForPossessionWales.discretionary.estateManagementGrounds],
+      discretionaryEstateGrounds: [whatAreYourGroundsForPossessionWales.discretionary.buildingWorks],
+      mandatory: [whatAreYourGroundsForPossessionWales.mandatory.section187],
     });
     await performValidation('mainHeader', antiSocialBehaviourWales.mainHeader);
     await performAction('clickButton', antiSocialBehaviourWales.continue);
@@ -343,8 +356,11 @@ test.describe('[Create Case - Wales] @Master @nightly', async () => {
       email: defendantDetails.yes,
       correspondenceAddressSame: defendantDetails.yes
     });
-    await performAction('check', 'Other');
-    await performAction('clickButton', 'Continue');
+    await performAction('selectOccupationContractOrLicenceDetails', {
+      occupationContractQuestion: occupationContractOrLicenceDetailsWales.occupationContractOrLicenceType,
+      occupationContractType: occupationContractOrLicenceDetailsWales.other,
+      files: 'occupationContract.pdf'
+    });
     await performValidation('mainHeader', whatAreYourGroundsForPossessionWales.mainHeader);
     await performAction('selectYourPossessionGrounds', {
       discretionary: [whatAreYourGroundsForPossessionWales.discretionary.antiSocialBehaviour,whatAreYourGroundsForPossessionWales.discretionary.estateManagementGrounds],

@@ -7,6 +7,7 @@ import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsOrBreachOfTenancy;
+import uk.gov.hmcts.reform.pcs.ccd.domain.SecureOrFlexibleDiscretionaryGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 
 public class RentArrearsOrBreachOfTenancyGround implements CcdPageConfiguration {
@@ -15,7 +16,7 @@ public class RentArrearsOrBreachOfTenancyGround implements CcdPageConfiguration 
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
             .page("rentArrearsOrBreachOfTenancyGround", this::midEvent)
-            .pageLabel("Rent arrears or breach of the tenancy (ground 1)")
+            .pageLabel(SecureOrFlexibleDiscretionaryGrounds.RENT_ARREARS_OR_BREACH_OF_TENANCY.getLabel())
             .showCondition("typeOfTenancyLicence=\"SECURE_TENANCY\" OR typeOfTenancyLicence=\"FLEXIBLE_TENANCY\""
                                + " AND secureOrFlexibleDiscretionaryGroundsCONTAINS"
                                + "\"RENT_ARREARS_OR_BREACH_OF_TENANCY\""
