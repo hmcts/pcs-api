@@ -87,49 +87,6 @@ class IntroductoryDemotedOrOtherGroundsForPossessionTest extends BasePageTest {
         assertThat(updatedCaseData.getShowRentDetailsPage()).isEqualTo(expectedShowRentDetailsPage);
     }
 
-    @ParameterizedTest
-    @MethodSource("provideRentDetailsPageScenarios")
-    @DisplayName("Should set rent details page flag based on grounds selection")
-    void shouldSetRentDetailsPageFlagForGroundsSelection(
-        TenancyLicenceType tenancyType,
-        Set<IntroductoryDemotedOrOtherGrounds> grounds,
-        YesOrNo expectedShowRentDetailsPage) {
-        // Given
-        PCSCase caseData = PCSCase.builder()
-            .typeOfTenancyLicence(tenancyType)
-            .hasIntroductoryDemotedOtherGroundsForPossession(VerticalYesNo.YES)
-            .introductoryDemotedOrOtherGrounds(grounds)
-            .build();
-
-        // When
-        AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
-
-        // Then
-        PCSCase updatedCaseData = response.getData();
-        assertThat(updatedCaseData.getShowRentDetailsPage()).isEqualTo(expectedShowRentDetailsPage);
-    }
-
-    @ParameterizedTest
-    @MethodSource("provideNoGroundsForPossessionScenarios")
-    @DisplayName("Should set rent details page flag when no grounds for possession")
-    void shouldSetRentDetailsPageFlagWhenNoGroundsSelected(
-        TenancyLicenceType tenancyType,
-        YesOrNo expectedShowRentDetailsPage) {
-        // Given
-        PCSCase caseData = PCSCase.builder()
-            .typeOfTenancyLicence(tenancyType)
-            .hasIntroductoryDemotedOtherGroundsForPossession(VerticalYesNo.NO)
-            .introductoryDemotedOrOtherGrounds(null) // No grounds selected
-            .build();
-
-        // When
-        AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
-
-        // Then
-        PCSCase updatedCaseData = response.getData();
-        assertThat(updatedCaseData.getShowRentDetailsPage()).isEqualTo(expectedShowRentDetailsPage);
-    }
-
     @Test
     void shouldNotShowReasonsPageIfRentArrearsGround() {
         // Given
