@@ -37,9 +37,8 @@ public class CrossBorderPostcodeSelection implements CcdPageConfiguration {
             .readonly(PCSCase::getShowCrossBorderPage, NEVER_SHOW)
             .readonly(PCSCase::getCrossBorderCountry1, NEVER_SHOW)
             .readonly(PCSCase::getCrossBorderCountry2, NEVER_SHOW)
-            .readonly(PCSCase::getCrossBorderInfoLabel, NEVER_SHOW)
             .readonly(PCSCase::getCrossBorderQuestionLabel, NEVER_SHOW)
-            .label("crossBorderPostcodeSelection-info", "${crossBorderInfoLabel}")
+            .readonly(PCSCase::getCrossBorderInfoLabel)
             .mandatory(PCSCase::getCrossBorderCountriesList,
                 null,
                 null,
