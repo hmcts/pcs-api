@@ -21,4 +21,6 @@ public class LabelHolder {
                 """, typeOverride = FieldType.Label)
     private String label;
 
+    @CCD(label = "replace 2", typeOverride = FieldType.Label)
+    private String label2;
 }
