@@ -27,16 +27,16 @@ public class DefendantsDOBMultiLabelPage implements CcdPageConfiguration {
                 ---
                 <h2>Do you know the defendant' dates of birth?</h2>""")
             .complex(PCSCase::getDefendantsDOBMultiLabel)
-            .readonly(DefendantsDOBMultiLabel::getFirstName1, "defendantsDOBConcept.firstName1!=\"999\"")
-            .optional(DefendantsDOBMultiLabel::getDob1, "defendantsDOBConcept.firstName1!=\"999\"")
-            .readonly(DefendantsDOBMultiLabel::getFirstName2, "defendantsDOBConcept.firstName2!=\"999\"")
-            .optional(DefendantsDOBMultiLabel::getDob2, "defendantsDOBConcept.firstName2!=\"999\"")
-            .readonly(DefendantsDOBMultiLabel::getFirstName3, "defendantsDOBConcept.firstName3!=\"999\"")
-            .optional(DefendantsDOBMultiLabel::getDob3, "defendantsDOBConcept.firstName3!=\"999\"")
-            .readonly(DefendantsDOBMultiLabel::getFirstName4, "defendantsDOBConcept.firstName4!=\"999\"")
-            .optional(DefendantsDOBMultiLabel::getDob4, "defendantsDOBConcept.firstName4!=\"999\"")
-            .readonly(DefendantsDOBMultiLabel::getFirstName5, "defendantsDOBConcept.firstName5!=\"999\"")
-            .optional(DefendantsDOBMultiLabel::getDob5, "defendantsDOBConcept.firstName5!=\"999\"")
+            .readonly(DefendantsDOBMultiLabel::getFirstName1, "defendantsDOBMultiLabel.firstName1!=\"999\"")
+            .optional(DefendantsDOBMultiLabel::getDob1, "defendantsDOBMultiLabel.firstName1!=\"999\"")
+            .readonly(DefendantsDOBMultiLabel::getFirstName2, "defendantsDOBMultiLabel.firstName2!=\"999\"")
+            .optional(DefendantsDOBMultiLabel::getDob2, "defendantsDOBMultiLabel.firstName2!=\"999\"")
+            .readonly(DefendantsDOBMultiLabel::getFirstName3, "defendantsDOBMultiLabel.firstName3!=\"999\"")
+            .optional(DefendantsDOBMultiLabel::getDob3, "defendantsDOBMultiLabel.firstName3!=\"999\"")
+            .readonly(DefendantsDOBMultiLabel::getFirstName4, "defendantsDOBMultiLabel.firstName4!=\"999\"")
+            .optional(DefendantsDOBMultiLabel::getDob4, "defendantsDOBMultiLabel.firstName4!=\"999\"")
+            .readonly(DefendantsDOBMultiLabel::getFirstName5, "defendantsDOBMultiLabel.firstName5!=\"999\"")
+            .optional(DefendantsDOBMultiLabel::getDob5, "defendantsDOBMultiLabel.firstName5!=\"999\"")
             .done();
     }
 
