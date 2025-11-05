@@ -1,13 +1,9 @@
 import {test} from '@playwright/test';
-import {
-  initializeExecutor,
-  performAction,
-  performValidation
-} from '@utils/controller';
-import {caseInfo} from '@utils/actions/custom-actions/createCase.action';
-import {user} from '@data/user-data/permanent.user.data';
-import {signInOrCreateAnAccount} from '@data/page-data/signInOrCreateAnAccount.page.data';
-import {caseApiData} from '@data/api-data/case.api.data';
+import { initializeExecutor, performAction, performValidation } from '@utils/controller';
+import {caseInfo} from '@utils/actions/custom-actions';
+import {user} from '@data/user-data';
+import {signInOrCreateAnAccount} from '@data/page-data';
+import {caseApiData} from '@data/api-data';
 
 test.beforeEach(async ({page}) => {
   initializeExecutor(page);
