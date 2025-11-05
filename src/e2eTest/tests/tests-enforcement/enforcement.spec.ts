@@ -1,23 +1,11 @@
 import { test } from "@playwright/test";
-import { caseList } from "@data/page-data/caseList.page.data";
-import { user } from "@data/user-data/permanent.user.data";
-import { caseSummary } from "@data/page-data/caseSummary.page.data";
-import { yourApplication } from "@data/page-data/page-data-enforcement/yourApplication.page.data";
 import { initializeEnforcementExecutor, performAction, performValidation } from "@utils/controller-enforcement";
-import { caseNumber } from "@utils/actions/custom-actions/createCase.action";
+import { caseNumber, caseNotFoundAfterFilter } from "@utils/actions/custom-actions";
 import { initializeExecutor } from "@utils/controller";
-import { caseNotFoundAfterFilter } from "@utils/actions/custom-actions/searchCase.action";
-import { nameAndAddressForEviction } from "@data/page-data/page-data-enforcement/nameAndAddressForEviction.page.data";
-import { everyoneLivingAtTheProperty } from "@data/page-data/page-data-enforcement/everyoneLivingAtTheProperty.page.data";
-import { riskPosedByEveryoneAtProperty } from "@data/page-data/page-data-enforcement/riskPosedByEveryoneAtProperty.page.data";
-import { vulnerableAdultsAndChildren } from "@data/page-data/page-data-enforcement/vulnerableAdultsAndChildren.page.data";
-import { evictionCouldBeDelayed } from "@data/page-data/page-data-enforcement/evictionCouldBeDelayed.page.data";
-import { violentOrAggressiveBehaviour } from "@data/page-data/page-data-enforcement/violentOrAggressiveBehaviour.page.data";
-import { firearmPossession } from "@data/page-data/page-data-enforcement/firearmPossession.page.data";
-import { criminalOrAntisocialBehaviour } from "@data/page-data/page-data-enforcement/criminalOrAntisocialBehaviour.page.data";
-import { verbalOrWrittenThreats } from "@data/page-data/page-data-enforcement/verbalOrWrittenThreats.page.data";
-import { groupProtestsEviction } from "@data/page-data/page-data-enforcement/groupProtestsEviction.page.data";
-import { signInOrCreateAnAccount } from "@data/page-data/signInOrCreateAnAccount.page.data";
+import { caseList, user, caseSummary, signInOrCreateAnAccount } from "@data/page-data";
+import { nameAndAddressForEviction, violentOrAggressiveBehaviour, firearmPossession, yourApplication, animalsAtTheProperty,
+         criminalOrAntisocialBehaviour, evictionCouldBeDelayed, vulnerableAdultsAndChildren, policeOrSocialServiceVisit,
+         riskPosedByEveryoneAtProperty, everyoneLivingAtTheProperty, verbalOrWrittenThreats, groupProtestsEviction } from "@data/page-data/page-data-enforcement";
 
 test.beforeEach(async ({page}) => {
   initializeExecutor(page);
@@ -60,8 +48,9 @@ test.describe('[Enforcement - Warrant of Possession] @Master @nightly', async ()
     await performValidation('mainHeader', riskPosedByEveryoneAtProperty.mainHeader);
     await performAction('selectRiskPosedByEveryoneAtProperty', {
       riskTypes: [riskPosedByEveryoneAtProperty.violentOrAggressiveBehaviour, riskPosedByEveryoneAtProperty.historyOfFirearmPossession,
-        riskPosedByEveryoneAtProperty.criminalOrAntisocialBehaviour, riskPosedByEveryoneAtProperty.verbalOrWrittenThreats,
-        riskPosedByEveryoneAtProperty.protestGroup]});
+      riskPosedByEveryoneAtProperty.criminalOrAntisocialBehaviour, riskPosedByEveryoneAtProperty.verbalOrWrittenThreats,
+      riskPosedByEveryoneAtProperty.protestGroup, riskPosedByEveryoneAtProperty.policeOrSocialService, riskPosedByEveryoneAtProperty.aggressiveAnimals]
+    });
     await performAction('provideDetailsViolentOrAggressiveBehaviour', {
       label: violentOrAggressiveBehaviour.howHaveTheyBeenViolentAndAggressive,
       input: violentOrAggressiveBehaviour.howHaveTheyBeenViolentAndAggressiveInput
@@ -81,6 +70,14 @@ test.describe('[Enforcement - Warrant of Possession] @Master @nightly', async ()
     await performAction('provideDetailsGroupProtestsEviction', {
       label: groupProtestsEviction.whichGroupMember,
       input: groupProtestsEviction.whichGroupMemberInput
+    });
+    await performAction('provideDetailsPoliceOrSocialServiceVisits', {
+      label: policeOrSocialServiceVisit.whyDidThePoliceOrSSVisitTheProperty,
+      input: policeOrSocialServiceVisit.whyDidThePoliceOrSSVisitThePropertyInput
+    });
+    await performAction('provideDetailsAnimalsAtTheProperty', {
+      label: animalsAtTheProperty.whatKindOfAnimalDoTheyHave,
+      input: animalsAtTheProperty.whatKindOfAnimalDoTheyHaveInput
     });
     await performValidation('mainHeader', vulnerableAdultsAndChildren.mainHeader);
     await performAction('clickButton', vulnerableAdultsAndChildren.continue);
