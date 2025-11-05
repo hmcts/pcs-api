@@ -24,10 +24,10 @@ public enum RiskCategory implements HasLabel {
             "Which group are they a member of and how have they protested?"),
 
     AGENCY_VISITS("Police or social services visits to the property",
-            "What visits from police or social services have there been?"),
+            "Why did the police or social services visit the property?"),
 
     AGGRESSIVE_ANIMALS("Aggressive dogs or other animals",
-            "What aggressive dogs or other animals do they have?");
+            "What kind of animal do they have?");
 
     private final String label;
     private final String text;
