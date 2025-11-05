@@ -49,7 +49,7 @@ public class RentDetails implements CcdPageConfiguration {
             // Set formatted value for display
             caseData.setFormattedCalculatedDailyRentChargeAmount(formatCurrency(dailyAmountString));
 
-            caseData.setRentLabelHolder(LabelHolder.builder().label(formatCurrency(dailyAmountString)).build());
+//            caseData.setRentLabelHolder(LabelHolder.builder().label(formatCurrency(dailyAmountString)).build());
         }
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
