@@ -138,7 +138,6 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
     private final AddressFormatter addressFormatter;
 
     private static final String CASE_ISSUED_FEE_TYPE = "caseIssueFee";
-    private static final Integer CASE_ISSUED_FEE_VOLUME = 1;
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -288,7 +287,6 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             .feeType(CASE_ISSUED_FEE_TYPE)
             .ccdCaseNumber(String.valueOf(caseReference))
             .caseReference(String.valueOf(caseReference))
-            .volume(CASE_ISSUED_FEE_VOLUME)
             .responsibleParty(pcsCase.getOrganisationName())
             .build();
 
