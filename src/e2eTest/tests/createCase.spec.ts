@@ -199,11 +199,10 @@ test.describe('[Create Case - England] @Master @nightly', async () => {
       correspondenceAddress: contactPreferences.yes,
       phoneNumber: contactPreferences.no
     });
-    await performAction('defendantDetails', {
-      name: defendantDetails.yes,
-      correspondenceAddress: defendantDetails.yes,
-      email: defendantDetails.yes,
-      correspondenceAddressSame: defendantDetails.no
+    await performAction('addDefendantDetails', {
+      nameOption: defendantDetails.yes, firstName: defendantDetails.firstNameInput, lastName: defendantDetails.lastNameInput,
+      correspondenceAddressOption: defendantDetails.yes, correspondenceAddressSameOption: defendantDetails.no, address: addressDetails.walesCourtAssignedPostcode,
+      addAdditionalDefendantsOption: defendantDetails.no
     });
     await performValidation('mainHeader', tenancyLicenceDetails.mainHeader);
     await performAction('selectTenancyOrLicenceDetails', {
@@ -255,7 +254,10 @@ test.describe('[Create Case - England] @Master @nightly', async () => {
       claimantInput: claimantCircumstances.claimantCircumstanceInfoInputData
     });
     await performValidation('mainHeader', defendantCircumstances.mainHeader);
-    await performAction('selectDefendantCircumstances', defendantCircumstances.yes);
+    await performAction('selectDefendantCircumstances', {
+      defendantCircumstance: defendantCircumstances.yes,
+      additionalDefendants: false
+    });
     await performValidation('mainHeader', alternativesToPossession.mainHeader);
     await performAction('selectAlternativesToPossession');
     await performValidation('mainHeader', claimingCosts.mainHeader);
@@ -349,7 +351,10 @@ test.describe('[Create Case - England] @Master @nightly', async () => {
       claimantInput: claimantCircumstances.claimantCircumstanceInfoInputData
     });
     await performValidation('mainHeader', defendantCircumstances.mainHeader);
-    await performAction('selectDefendantCircumstances', defendantCircumstances.no);
+    await performAction('selectDefendantCircumstances', {
+      defendantCircumstance: defendantCircumstances.no,
+      additionalDefendants: false
+    });
     await performValidation('mainHeader', alternativesToPossession.mainHeader);
     await performAction('selectAlternativesToPossession', {question: alternativesToPossession.suspensionOrDemotion
       , option: [alternativesToPossession.suspensionOfRightToBuy]});
@@ -461,7 +466,10 @@ test.describe('[Create Case - England] @Master @nightly', async () => {
       claimantInput: claimantCircumstances.claimantCircumstanceInfoInputData
     });
     await performValidation('mainHeader', defendantCircumstances.mainHeader);
-    await performAction('selectDefendantCircumstances', defendantCircumstances.no);
+    await performAction('selectDefendantCircumstances', {
+      defendantCircumstance: defendantCircumstances.no,
+      additionalDefendants: false
+    });
     await performValidation('mainHeader', alternativesToPossession.mainHeader);
     await performAction('selectAlternativesToPossession', {question: alternativesToPossession.suspensionOrDemotion
       , option: [alternativesToPossession.demotionOfTenancy]});
@@ -519,11 +527,10 @@ test.describe('[Create Case - England] @Master @nightly', async () => {
       correspondenceAddress: contactPreferences.yes,
       phoneNumber: contactPreferences.no
     });
-    await performAction('defendantDetails', {
-      name: defendantDetails.yes,
-      correspondenceAddress: defendantDetails.yes,
-      email: defendantDetails.yes,
-      correspondenceAddressSame: defendantDetails.no
+    await performAction('addDefendantDetails', {
+      nameOption: defendantDetails.yes, firstName: defendantDetails.firstNameInput, lastName: defendantDetails.lastNameInput,
+      correspondenceAddressOption: defendantDetails.yes, correspondenceAddressSameOption: defendantDetails.no, address: addressDetails.walesCourtAssignedPostcode,
+      addAdditionalDefendantsOption: defendantDetails.no
     });
     await performValidation('mainHeader', tenancyLicenceDetails.mainHeader);
     await performAction('selectTenancyOrLicenceDetails', {
@@ -564,7 +571,10 @@ test.describe('[Create Case - England] @Master @nightly', async () => {
       claimantInput: claimantCircumstances.claimantCircumstanceInfoInputData
     });
     await performValidation('mainHeader', defendantCircumstances.mainHeader);
-    await performAction('selectDefendantCircumstances', defendantCircumstances.no);
+    await performAction('selectDefendantCircumstances', {
+      defendantCircumstance: defendantCircumstances.no,
+      additionalDefendants: false
+    });
     await performValidation('mainHeader', alternativesToPossession.mainHeader);
     await performAction('selectAlternativesToPossession', {question: alternativesToPossession.suspensionOrDemotion
       , option: [alternativesToPossession.demotionOfTenancy]});
@@ -653,7 +663,10 @@ test.describe('[Create Case - England] @Master @nightly', async () => {
       claimantInput: claimantCircumstances.claimantCircumstanceInfoInputData
     });
     await performValidation('mainHeader', defendantCircumstances.mainHeader);
-    await performAction('selectDefendantCircumstances', defendantCircumstances.no);
+    await performAction('selectDefendantCircumstances', {
+      defendantCircumstance: defendantCircumstances.no,
+      additionalDefendants: false
+    });
     await performValidation('mainHeader', alternativesToPossession.mainHeader);
     await performAction('selectAlternativesToPossession', {question: alternativesToPossession.suspensionOrDemotion
       , option: [alternativesToPossession.suspensionOfRightToBuy, alternativesToPossession.demotionOfTenancy]});
@@ -756,7 +769,10 @@ test.describe('[Create Case - England] @Master @nightly', async () => {
       claimantInput: claimantCircumstances.claimantCircumstanceInfoInputData
     });
     await performValidation('mainHeader', defendantCircumstances.mainHeader);
-    await performAction('selectDefendantCircumstances', defendantCircumstances.no);
+    await performAction('selectDefendantCircumstances', {
+      defendantCircumstance: defendantCircumstances.no,
+      additionalDefendants: false
+    });
     await performValidation('mainHeader', alternativesToPossession.mainHeader);
     await performAction('selectAlternativesToPossession', {question: alternativesToPossession.demotionOfTenancy
       , option: [alternativesToPossession.demotionOfTenancy]});
@@ -853,8 +869,11 @@ test.describe('[Create Case - England] @Master @nightly', async () => {
       claimantInput: claimantCircumstances.claimantCircumstanceInfoInputData
     });
     await performValidation('mainHeader', defendantCircumstances.mainHeader);
-    await performAction('selectDefendantCircumstances', defendantCircumstances.no);
-    await performValidation('mainHeader', alternativesToPossession.mainHeader);
+
+    await performAction('selectDefendantCircumstances', {
+      defendantCircumstance: defendantCircumstances.no,
+      additionalDefendants: false
+    });    await performValidation('mainHeader', alternativesToPossession.mainHeader);
     await performAction('selectAlternativesToPossession', {question: alternativesToPossession.suspensionOrDemotion
       , option: [alternativesToPossession.suspensionOfRightToBuy]});
     await performValidation('mainHeader', housingAct.mainHeader);
@@ -1028,11 +1047,10 @@ test.describe('[Create Case - England] @Master @nightly', async () => {
       correspondenceAddress: contactPreferences.yes,
       phoneNumber: contactPreferences.no
     });
-    await performAction('defendantDetails', {
-      name: defendantDetails.yes,
-      correspondenceAddress: defendantDetails.yes,
-      email: defendantDetails.yes,
-      correspondenceAddressSame: defendantDetails.no
+    await performAction('addDefendantDetails', {
+      nameOption: defendantDetails.yes, firstName: defendantDetails.firstNameInput, lastName: defendantDetails.lastNameInput,
+      correspondenceAddressOption: defendantDetails.yes, correspondenceAddressSameOption: defendantDetails.no, address: addressDetails.walesCourtAssignedPostcode,
+      addAdditionalDefendantsOption: defendantDetails.no
     });
     await performValidation('mainHeader', tenancyLicenceDetails.mainHeader);
     await performAction('selectTenancyOrLicenceDetails', {
@@ -1081,7 +1099,10 @@ test.describe('[Create Case - England] @Master @nightly', async () => {
       claimantInput: claimantCircumstances.claimantCircumstanceInfoInputData
     });
     await performValidation('mainHeader', defendantCircumstances.mainHeader);
-    await performAction('selectDefendantCircumstances', defendantCircumstances.no);
+    await performAction('selectDefendantCircumstances', {
+      defendantCircumstance: defendantCircumstances.no,
+      additionalDefendants: false
+    });
     await performValidation('mainHeader', alternativesToPossession.mainHeader);
     await performAction('selectAlternativesToPossession', {question: alternativesToPossession.suspensionOrDemotion
       , option: [alternativesToPossession.suspensionOfRightToBuy]});
@@ -1133,10 +1154,10 @@ test.describe('[Create Case - England] @Master @nightly', async () => {
       correspondenceAddress: contactPreferences.yes,
       phoneNumber: contactPreferences.no
     });
-    await performAction('defendantDetails', {
-      name: defendantDetails.no,
-      correspondenceAddress: defendantDetails.no,
-      email: defendantDetails.no,
+    await performAction('addDefendantDetails', {
+      nameOption: defendantDetails.no,
+      correspondenceAddressOption: defendantDetails.no,
+      addAdditionalDefendantsOption: defendantDetails.no
     });
     await performValidation('mainHeader', tenancyLicenceDetails.mainHeader);
     await performAction('selectTenancyOrLicenceDetails', {
@@ -1170,7 +1191,10 @@ test.describe('[Create Case - England] @Master @nightly', async () => {
       claimantInput: claimantCircumstances.claimantCircumstanceInfoInputData
     });
     await performValidation('mainHeader', defendantCircumstances.mainHeader);
-    await performAction('selectDefendantCircumstances', defendantCircumstances.no);
+    await performAction('selectDefendantCircumstances', {
+      defendantCircumstance: defendantCircumstances.no,
+      additionalDefendants: false
+    });
     await performValidation('mainHeader', alternativesToPossession.mainHeader);
     await performAction('selectAlternativesToPossession', {question: alternativesToPossession.suspensionOrDemotion
       , option: [alternativesToPossession.suspensionOfRightToBuy]});
