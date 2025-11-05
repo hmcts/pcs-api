@@ -26,6 +26,8 @@ public class SecureOrFlexibleGroundsForPossessionReasons implements CcdPageConfi
 
     private final TextAreaValidationService textAreaValidationService;
 
+    private static final String BREACH_OF_TENANCY_GROUND_LABEL = "Breach of the tenancy (ground 1)";
+
     @Override
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
@@ -301,118 +303,152 @@ public class SecureOrFlexibleGroundsForPossessionReasons implements CcdPageConfi
                                                                   CaseDetails<PCSCase, State> detailsBefore) {
         PCSCase caseData = details.getData();
         
-        // Validate all text area fields for character limit - ultra simple approach
         List<String> validationErrors = new ArrayList<>();
         
         SecureOrFlexibleGroundsReasons secureOrFlexibleGrounds = caseData.getSecureOrFlexibleGroundsReasons();
         if (secureOrFlexibleGrounds != null) {
-            validationErrors.addAll(textAreaValidationService.validateMultipleTextAreas(
-                TextAreaValidationService.FieldValidation.of(
-                    secureOrFlexibleGrounds.getBreachOfTenancyGround(),
-                    "Breach of the tenancy (ground 1)",
-                    TextAreaValidationService.MEDIUM_TEXT_LIMIT
-                ),
-                TextAreaValidationService.FieldValidation.of(
-                    secureOrFlexibleGrounds.getNuisanceOrImmoralUseGround(),
-                    SecureOrFlexibleDiscretionaryGrounds.NUISANCE_OR_IMMORAL_USE.getLabel(),
-                    TextAreaValidationService.MEDIUM_TEXT_LIMIT
-                ),
-                TextAreaValidationService.FieldValidation.of(
-                    secureOrFlexibleGrounds.getDomesticViolenceGround(),
-                    SecureOrFlexibleDiscretionaryGrounds.DOMESTIC_VIOLENCE.getLabel(),
-                    TextAreaValidationService.MEDIUM_TEXT_LIMIT
-                ),
-                TextAreaValidationService.FieldValidation.of(
-                    secureOrFlexibleGrounds.getRiotOffenceGround(),
-                    SecureOrFlexibleDiscretionaryGrounds.RIOT_OFFENCE.getLabel(),
-                    TextAreaValidationService.MEDIUM_TEXT_LIMIT
-                ),
-                TextAreaValidationService.FieldValidation.of(
-                    secureOrFlexibleGrounds.getPropertyDeteriorationGround(),
-                    SecureOrFlexibleDiscretionaryGrounds.PROPERTY_DETERIORATION.getLabel(),
-                    TextAreaValidationService.MEDIUM_TEXT_LIMIT
-                ),
-                TextAreaValidationService.FieldValidation.of(
-                    secureOrFlexibleGrounds.getFurnitureDeteriorationGround(),
-                    SecureOrFlexibleDiscretionaryGrounds.FURNITURE_DETERIORATION.getLabel(),
-                    TextAreaValidationService.MEDIUM_TEXT_LIMIT
-                ),
-                TextAreaValidationService.FieldValidation.of(
-                    secureOrFlexibleGrounds.getTenancyByFalseStatementGround(),
-                    SecureOrFlexibleDiscretionaryGrounds.TENANCY_OBTAINED_BY_FALSE_STATEMENT.getLabel(),
-                    TextAreaValidationService.MEDIUM_TEXT_LIMIT
-                ),
-                TextAreaValidationService.FieldValidation.of(
-                    secureOrFlexibleGrounds.getPremiumMutualExchangeGround(),
-                    SecureOrFlexibleDiscretionaryGrounds.PREMIUM_PAID_MUTUAL_EXCHANGE.getLabel(),
-                    TextAreaValidationService.MEDIUM_TEXT_LIMIT
-                ),
-                TextAreaValidationService.FieldValidation.of(
-                    secureOrFlexibleGrounds.getUnreasonableConductGround(),
-                    SecureOrFlexibleDiscretionaryGrounds.UNREASONABLE_CONDUCT_TIED_ACCOMMODATION.getLabel(),
-                    TextAreaValidationService.MEDIUM_TEXT_LIMIT
-                ),
-                TextAreaValidationService.FieldValidation.of(
-                    secureOrFlexibleGrounds.getRefusalToMoveBackGround(),
-                    SecureOrFlexibleDiscretionaryGrounds.REFUSAL_TO_MOVE_BACK.getLabel(),
-                    TextAreaValidationService.MEDIUM_TEXT_LIMIT
-                ),
-                TextAreaValidationService.FieldValidation.of(
-                    secureOrFlexibleGrounds.getAntiSocialGround(),
-                    SecureOrFlexibleMandatoryGrounds.ANTI_SOCIAL.getLabel(),
-                    TextAreaValidationService.MEDIUM_TEXT_LIMIT
-                ),
-                TextAreaValidationService.FieldValidation.of(
-                    secureOrFlexibleGrounds.getOvercrowdingGround(),
-                    SecureOrFlexibleMandatoryGroundsAlternativeAccomm.OVERCROWDING.getLabel(),
-                    TextAreaValidationService.MEDIUM_TEXT_LIMIT
-                ),
-                TextAreaValidationService.FieldValidation.of(
-                    secureOrFlexibleGrounds.getLandlordWorksGround(),
-                    SecureOrFlexibleMandatoryGroundsAlternativeAccomm.LANDLORD_WORKS.getLabel(),
-                    TextAreaValidationService.MEDIUM_TEXT_LIMIT
-                ),
-                TextAreaValidationService.FieldValidation.of(
-                    secureOrFlexibleGrounds.getPropertySoldGround(),
-                    SecureOrFlexibleMandatoryGroundsAlternativeAccomm.PROPERTY_SOLD.getLabel(),
-                    TextAreaValidationService.MEDIUM_TEXT_LIMIT
-                ),
-                TextAreaValidationService.FieldValidation.of(
-                    secureOrFlexibleGrounds.getCharitableLandlordGround(),
-                    SecureOrFlexibleMandatoryGroundsAlternativeAccomm.CHARITABLE_LANDLORD.getLabel(),
-                    TextAreaValidationService.MEDIUM_TEXT_LIMIT
-                ),
-                TextAreaValidationService.FieldValidation.of(
-                    secureOrFlexibleGrounds.getTiedAccommodationGround(),
-                    SecureOrFlexibleDiscretionaryGroundsAlternativeAccomm
-                        .TIED_ACCOMMODATION_NEEDED_FOR_EMPLOYEE.getLabel(),
-                    TextAreaValidationService.MEDIUM_TEXT_LIMIT
-                ),
-                TextAreaValidationService.FieldValidation.of(
-                    secureOrFlexibleGrounds.getAdaptedAccommodationGround(),
-                    SecureOrFlexibleDiscretionaryGroundsAlternativeAccomm.ADAPTED_ACCOMMODATION.getLabel(),
-                    TextAreaValidationService.MEDIUM_TEXT_LIMIT
-                ),
-                TextAreaValidationService.FieldValidation.of(
-                    secureOrFlexibleGrounds.getHousingAssocSpecialGround(),
-                    SecureOrFlexibleDiscretionaryGroundsAlternativeAccomm
-                        .HOUSING_ASSOCIATION_SPECIAL_CIRCUMSTANCES.getLabel(),
-                    TextAreaValidationService.MEDIUM_TEXT_LIMIT
-                ),
-                TextAreaValidationService.FieldValidation.of(
-                    secureOrFlexibleGrounds.getSpecialNeedsAccommodationGround(),
-                    SecureOrFlexibleDiscretionaryGroundsAlternativeAccomm.SPECIAL_NEEDS_ACCOMMODATION.getLabel(),
-                    TextAreaValidationService.MEDIUM_TEXT_LIMIT
-                ),
-                TextAreaValidationService.FieldValidation.of(
-                    secureOrFlexibleGrounds.getUnderOccupancySuccessionGround(),
-                    SecureOrFlexibleDiscretionaryGroundsAlternativeAccomm.UNDER_OCCUPYING_AFTER_SUCCESSION.getLabel(),
-                    TextAreaValidationService.MEDIUM_TEXT_LIMIT
-                )
-            ));
+            validationErrors.addAll(validateSecureOrFlexibleGrounds(secureOrFlexibleGrounds));
         }
         
         return textAreaValidationService.createValidationResponse(caseData, validationErrors);
+    }
+
+    private List<String> validateSecureOrFlexibleGrounds(SecureOrFlexibleGroundsReasons grounds) {
+        List<TextAreaValidationService.FieldValidation> allValidations = new ArrayList<>();
+        allValidations.addAll(List.of(buildDiscretionaryGroundValidations(grounds)));
+        allValidations.addAll(List.of(buildMandatoryGroundValidations(grounds)));
+        allValidations.addAll(List.of(buildMandatoryGroundsAlternativeAccommValidations(grounds)));
+        allValidations.addAll(List.of(buildDiscretionaryGroundsAlternativeAccommValidations(grounds)));
+        
+        return textAreaValidationService.validateMultipleTextAreas(
+            allValidations.toArray(new TextAreaValidationService.FieldValidation[0])
+        );
+    }
+
+    private TextAreaValidationService.FieldValidation[] buildDiscretionaryGroundValidations(
+            SecureOrFlexibleGroundsReasons grounds) {
+        return new TextAreaValidationService.FieldValidation[] {
+            TextAreaValidationService.FieldValidation.of(
+                grounds.getBreachOfTenancyGround(),
+                BREACH_OF_TENANCY_GROUND_LABEL,
+                TextAreaValidationService.MEDIUM_TEXT_LIMIT
+            ),
+            TextAreaValidationService.FieldValidation.of(
+                grounds.getNuisanceOrImmoralUseGround(),
+                SecureOrFlexibleDiscretionaryGrounds.NUISANCE_OR_IMMORAL_USE.getLabel(),
+                TextAreaValidationService.MEDIUM_TEXT_LIMIT
+            ),
+            TextAreaValidationService.FieldValidation.of(
+                grounds.getDomesticViolenceGround(),
+                SecureOrFlexibleDiscretionaryGrounds.DOMESTIC_VIOLENCE.getLabel(),
+                TextAreaValidationService.MEDIUM_TEXT_LIMIT
+            ),
+            TextAreaValidationService.FieldValidation.of(
+                grounds.getRiotOffenceGround(),
+                SecureOrFlexibleDiscretionaryGrounds.RIOT_OFFENCE.getLabel(),
+                TextAreaValidationService.MEDIUM_TEXT_LIMIT
+            ),
+            TextAreaValidationService.FieldValidation.of(
+                grounds.getPropertyDeteriorationGround(),
+                SecureOrFlexibleDiscretionaryGrounds.PROPERTY_DETERIORATION.getLabel(),
+                TextAreaValidationService.MEDIUM_TEXT_LIMIT
+            ),
+            TextAreaValidationService.FieldValidation.of(
+                grounds.getFurnitureDeteriorationGround(),
+                SecureOrFlexibleDiscretionaryGrounds.FURNITURE_DETERIORATION.getLabel(),
+                TextAreaValidationService.MEDIUM_TEXT_LIMIT
+            ),
+            TextAreaValidationService.FieldValidation.of(
+                grounds.getTenancyByFalseStatementGround(),
+                SecureOrFlexibleDiscretionaryGrounds.TENANCY_OBTAINED_BY_FALSE_STATEMENT.getLabel(),
+                TextAreaValidationService.MEDIUM_TEXT_LIMIT
+            ),
+            TextAreaValidationService.FieldValidation.of(
+                grounds.getPremiumMutualExchangeGround(),
+                SecureOrFlexibleDiscretionaryGrounds.PREMIUM_PAID_MUTUAL_EXCHANGE.getLabel(),
+                TextAreaValidationService.MEDIUM_TEXT_LIMIT
+            ),
+            TextAreaValidationService.FieldValidation.of(
+                grounds.getUnreasonableConductGround(),
+                SecureOrFlexibleDiscretionaryGrounds.UNREASONABLE_CONDUCT_TIED_ACCOMMODATION.getLabel(),
+                TextAreaValidationService.MEDIUM_TEXT_LIMIT
+            ),
+            TextAreaValidationService.FieldValidation.of(
+                grounds.getRefusalToMoveBackGround(),
+                SecureOrFlexibleDiscretionaryGrounds.REFUSAL_TO_MOVE_BACK.getLabel(),
+                TextAreaValidationService.MEDIUM_TEXT_LIMIT
+            )
+        };
+    }
+
+    private TextAreaValidationService.FieldValidation[] buildMandatoryGroundValidations(
+            SecureOrFlexibleGroundsReasons grounds) {
+        return new TextAreaValidationService.FieldValidation[] {
+            TextAreaValidationService.FieldValidation.of(
+                grounds.getAntiSocialGround(),
+                SecureOrFlexibleMandatoryGrounds.ANTI_SOCIAL.getLabel(),
+                TextAreaValidationService.MEDIUM_TEXT_LIMIT
+            )
+        };
+    }
+
+    private TextAreaValidationService.FieldValidation[] buildMandatoryGroundsAlternativeAccommValidations(
+            SecureOrFlexibleGroundsReasons grounds) {
+        return new TextAreaValidationService.FieldValidation[] {
+            TextAreaValidationService.FieldValidation.of(
+                grounds.getOvercrowdingGround(),
+                SecureOrFlexibleMandatoryGroundsAlternativeAccomm.OVERCROWDING.getLabel(),
+                TextAreaValidationService.MEDIUM_TEXT_LIMIT
+            ),
+            TextAreaValidationService.FieldValidation.of(
+                grounds.getLandlordWorksGround(),
+                SecureOrFlexibleMandatoryGroundsAlternativeAccomm.LANDLORD_WORKS.getLabel(),
+                TextAreaValidationService.MEDIUM_TEXT_LIMIT
+            ),
+            TextAreaValidationService.FieldValidation.of(
+                grounds.getPropertySoldGround(),
+                SecureOrFlexibleMandatoryGroundsAlternativeAccomm.PROPERTY_SOLD.getLabel(),
+                TextAreaValidationService.MEDIUM_TEXT_LIMIT
+            ),
+            TextAreaValidationService.FieldValidation.of(
+                grounds.getCharitableLandlordGround(),
+                SecureOrFlexibleMandatoryGroundsAlternativeAccomm.CHARITABLE_LANDLORD.getLabel(),
+                TextAreaValidationService.MEDIUM_TEXT_LIMIT
+            )
+        };
+    }
+
+    private TextAreaValidationService.FieldValidation[] buildDiscretionaryGroundsAlternativeAccommValidations(
+            SecureOrFlexibleGroundsReasons grounds) {
+        return new TextAreaValidationService.FieldValidation[] {
+            TextAreaValidationService.FieldValidation.of(
+                grounds.getTiedAccommodationGround(),
+                SecureOrFlexibleDiscretionaryGroundsAlternativeAccomm
+                    .TIED_ACCOMMODATION_NEEDED_FOR_EMPLOYEE.getLabel(),
+                TextAreaValidationService.MEDIUM_TEXT_LIMIT
+            ),
+            TextAreaValidationService.FieldValidation.of(
+                grounds.getAdaptedAccommodationGround(),
+                SecureOrFlexibleDiscretionaryGroundsAlternativeAccomm.ADAPTED_ACCOMMODATION.getLabel(),
+                TextAreaValidationService.MEDIUM_TEXT_LIMIT
+            ),
+            TextAreaValidationService.FieldValidation.of(
+                grounds.getHousingAssocSpecialGround(),
+                SecureOrFlexibleDiscretionaryGroundsAlternativeAccomm
+                    .HOUSING_ASSOCIATION_SPECIAL_CIRCUMSTANCES.getLabel(),
+                TextAreaValidationService.MEDIUM_TEXT_LIMIT
+            ),
+            TextAreaValidationService.FieldValidation.of(
+                grounds.getSpecialNeedsAccommodationGround(),
+                SecureOrFlexibleDiscretionaryGroundsAlternativeAccomm.SPECIAL_NEEDS_ACCOMMODATION.getLabel(),
+                TextAreaValidationService.MEDIUM_TEXT_LIMIT
+            ),
+            TextAreaValidationService.FieldValidation.of(
+                grounds.getUnderOccupancySuccessionGround(),
+                SecureOrFlexibleDiscretionaryGroundsAlternativeAccomm.UNDER_OCCUPYING_AFTER_SUCCESSION.getLabel(),
+                TextAreaValidationService.MEDIUM_TEXT_LIMIT
+            )
+        };
     }
 }
 

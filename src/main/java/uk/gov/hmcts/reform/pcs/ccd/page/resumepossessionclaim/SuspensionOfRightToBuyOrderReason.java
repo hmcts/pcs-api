@@ -42,7 +42,7 @@ public class SuspensionOfRightToBuyOrderReason implements CcdPageConfiguration {
         if (suspensionOfRightToBuy != null) {
             validationErrors.addAll(textAreaValidationService.validateSingleTextArea(
                 suspensionOfRightToBuy.getSuspensionOfRightToBuyReason(),
-                "Why are you requesting a suspension order?",
+                SuspensionOfRightToBuy.SUSPENSION_OF_RIGHT_TO_BUY_REASON_LABEL,
                 TextAreaValidationService.SHORT_TEXT_LIMIT
             ));
         }

@@ -76,7 +76,7 @@ public class TenancyLicenceDetails implements CcdPageConfiguration {
         // Validate details of other type of tenancy licence character limit
         List<String> validationErrors = textAreaValidationService.validateSingleTextArea(
             caseData.getDetailsOfOtherTypeOfTenancyLicence(),
-            "Give details of the type of tenancy or licence agreement that's in place",
+            PCSCase.DETAILS_OF_OTHER_TYPE_OF_TENANCY_LICENCE_LABEL,
             TextAreaValidationService.MEDIUM_TEXT_LIMIT
         );
         

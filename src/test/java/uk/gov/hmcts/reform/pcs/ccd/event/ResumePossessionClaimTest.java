@@ -30,11 +30,12 @@ import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ResumeClaim;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.SelectClaimantType;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.TenancyLicenceDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.UploadAdditionalDocumentsDetails;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.OccupationLicenceDetailsWalesPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.NoRentArrearsGroundsForPossessionReason;
-import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.AdditionalReasonsForPossession;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.AdditionalReasonsForPossession;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.SecureOrFlexibleGroundsForPossessionReasons;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.MediationAndSettlement;
-import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.ClaimantCircumstancesPage;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ClaimantCircumstancesPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.IntroductoryDemotedOtherGroundsReasons;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.DefendantCircumstancesPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.SuspensionOfRightToBuyOrderReason;
@@ -129,6 +130,8 @@ class ResumePossessionClaimTest extends BaseEventTest {
     private SchedulerClient schedulerClient;
     @Mock
     private DraftCaseDataService draftCaseDataService;
+    @Mock
+    private OccupationLicenceDetailsWalesPage occupationLicenceDetailsWalesPage;
 
     private final AddressFormatter addressFormatter = new AddressFormatter();
 
@@ -152,7 +155,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
             introductoryDemotedOtherGroundsReasons, defendantCircumstancesPage, suspensionOfRightToBuyOrderReason,
             statementOfExpressTerms, demotionOfTenancyOrderReason, organisationNameService,
             claimantDetailsWalesPage, prohibitedConductWalesPage, schedulerClient,
-            draftCaseDataService, addressFormatter
+            draftCaseDataService, occupationLicenceDetailsWalesPage, addressFormatter
         );
 
         setEventUnderTest(underTest);

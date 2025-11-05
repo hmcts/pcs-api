@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -51,48 +52,142 @@ class NoRentArrearsGroundsForPossessionReasonTest extends BasePageTest {
     @Test
     @DisplayName("Should create page configuration successfully")
     void shouldCreatePageConfigurationSuccessfully() {
-        // Given
-        PCSCase caseData = PCSCase.builder()
-            .noRentArrearsReasonForGrounds(NoRentArrearsReasonForGrounds.builder()
-                .ownerOccupierTextArea("Owner occupier reason")
-                .repossessionByLenderTextArea("Repossession reason")
-                .holidayLetTextArea("Holiday let reason")
-                .studentLetTextArea("Student let reason")
-                .ministerOfReligionTextArea("Minister reason")
-                .redevelopmentTextArea("Redevelopment reason")
-                .build())
-            .build();
-
-        // When & Then - Just verify the page configuration is created without errors
-        // Since there's no mid event handler, we just test that the page can be instantiated
+        // Given & When & Then - Just verify the page configuration is created without errors
         assertThat(pageUnderTest).isNotNull();
         assertThat(pageUnderTest).isInstanceOf(NoRentArrearsGroundsForPossessionReason.class);
     }
 
-    @Test
-    @DisplayName("Should handle null no rent arrears reasons gracefully")
-    void shouldHandleNullNoRentArrearsReasonsGracefully() {
-        // Given
-        PCSCase caseData = PCSCase.builder()
-            .noRentArrearsReasonForGrounds(null)
-            .build();
+    @Nested
+    @DisplayName("Validation Integration Tests")
+    class ValidationIntegrationTests {
 
-        // When & Then - Just verify the page configuration is created without errors
-        assertThat(pageUnderTest).isNotNull();
-        assertThat(pageUnderTest).isInstanceOf(NoRentArrearsGroundsForPossessionReason.class);
-    }
+        @Test
+        @DisplayName("Should validate all text area fields when no rent arrears reasons are provided")
+        void shouldValidateAllTextAreaFieldsWhenNoRentArrearsReasonsAreProvided() {
+            // Given
+            PCSCase caseData = PCSCase.builder()
+                .noRentArrearsReasonForGrounds(NoRentArrearsReasonForGrounds.builder()
+                    .ownerOccupierTextArea("Owner occupier reason")
+                    .repossessionByLenderTextArea("Repossession reason")
+                    .holidayLetTextArea("Holiday let reason")
+                    .studentLetTextArea("Student let reason")
+                    .ministerOfReligionTextArea("Minister reason")
+                    .redevelopmentTextArea("Redevelopment reason")
+                    .deathOfTenantTextArea("Death of tenant reason")
+                    .antisocialBehaviourTextArea("Antisocial behaviour reason")
+                    .noRightToRentTextArea("No right to rent reason")
+                    .suitableAccomTextArea("Suitable accommodation reason")
+                    .breachOfTenancyConditionsTextArea("Breach of tenancy reason")
+                    .propertyDeteriorationTextArea("Property deterioration reason")
+                    .nuisanceOrIllegalUseTextArea("Nuisance reason")
+                    .domesticViolenceTextArea("Domestic violence reason")
+                    .offenceDuringRiotTextArea("Offence during riot reason")
+                    .furnitureDeteriorationTextArea("Furniture deterioration reason")
+                    .landlordEmployeeTextArea("Landlord employee reason")
+                    .falseStatementTextArea("False statement reason")
+                    .build())
+                .build();
 
-    @Test
-    @DisplayName("Should handle empty no rent arrears reasons gracefully")
-    void shouldHandleEmptyNoRentArrearsReasonsGracefully() {
-        // Given
-        PCSCase caseData = PCSCase.builder()
-            .noRentArrearsReasonForGrounds(NoRentArrearsReasonForGrounds.builder().build())
-            .build();
+            // When
+            AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
 
-        // When & Then - Just verify the page configuration is created without errors
-        assertThat(pageUnderTest).isNotNull();
-        assertThat(pageUnderTest).isInstanceOf(NoRentArrearsGroundsForPossessionReason.class);
+            // Then
+            assertThat(response.getData()).isEqualTo(caseData);
+            assertThat(response.getErrors()).isNullOrEmpty();
+        }
+
+        @Test
+        @DisplayName("Should handle null no rent arrears reasons gracefully")
+        void shouldHandleNullNoRentArrearsReasonsGracefully() {
+            // Given
+            PCSCase caseData = PCSCase.builder()
+                .noRentArrearsReasonForGrounds(null)
+                .build();
+
+            // When
+            AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
+
+            // Then
+            assertThat(response.getData()).isEqualTo(caseData);
+            assertThat(response.getErrors()).isNullOrEmpty();
+        }
+
+        @Test
+        @DisplayName("Should handle empty no rent arrears reasons gracefully")
+        void shouldHandleEmptyNoRentArrearsReasonsGracefully() {
+            // Given
+            PCSCase caseData = PCSCase.builder()
+                .noRentArrearsReasonForGrounds(NoRentArrearsReasonForGrounds.builder().build())
+                .build();
+
+            // When
+            AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
+
+            // Then
+            assertThat(response.getData()).isEqualTo(caseData);
+            assertThat(response.getErrors()).isNullOrEmpty();
+        }
+
+        @Test
+        @DisplayName("Should handle partial no rent arrears reasons gracefully")
+        void shouldHandlePartialNoRentArrearsReasonsGracefully() {
+            // Given
+            PCSCase caseData = PCSCase.builder()
+                .noRentArrearsReasonForGrounds(NoRentArrearsReasonForGrounds.builder()
+                    .ownerOccupierTextArea("Only owner occupier reason")
+                    .repossessionByLenderTextArea("Only repossession reason")
+                    .build())
+                .build();
+
+            // When
+            AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
+
+            // Then
+            assertThat(response.getData()).isEqualTo(caseData);
+            assertThat(response.getErrors()).isNullOrEmpty();
+        }
+
+        @Test
+        @DisplayName("Should handle mandatory grounds only")
+        void shouldHandleMandatoryGroundsOnly() {
+            // Given
+            PCSCase caseData = PCSCase.builder()
+                .noRentArrearsReasonForGrounds(NoRentArrearsReasonForGrounds.builder()
+                    .ownerOccupierTextArea("Owner occupier")
+                    .holidayLetTextArea("Holiday let")
+                    .deathOfTenantTextArea("Death of tenant")
+                    .antisocialBehaviourTextArea("Antisocial behaviour")
+                    .build())
+                .build();
+
+            // When
+            AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
+
+            // Then
+            assertThat(response.getData()).isEqualTo(caseData);
+            assertThat(response.getErrors()).isNullOrEmpty();
+        }
+
+        @Test
+        @DisplayName("Should handle discretionary grounds only")
+        void shouldHandleDiscretionaryGroundsOnly() {
+            // Given
+            PCSCase caseData = PCSCase.builder()
+                .noRentArrearsReasonForGrounds(NoRentArrearsReasonForGrounds.builder()
+                    .suitableAccomTextArea("Suitable accommodation")
+                    .breachOfTenancyConditionsTextArea("Breach of tenancy")
+                    .propertyDeteriorationTextArea("Property deterioration")
+                    .nuisanceOrIllegalUseTextArea("Nuisance")
+                    .build())
+                .build();
+
+            // When
+            AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
+
+            // Then
+            assertThat(response.getData()).isEqualTo(caseData);
+            assertThat(response.getErrors()).isNullOrEmpty();
+        }
     }
 }
 

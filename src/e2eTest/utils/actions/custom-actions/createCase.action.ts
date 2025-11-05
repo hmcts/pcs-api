@@ -45,9 +45,9 @@ import {home} from '@data/page-data/home.page.data';
 import {search} from '@data/page-data/search.page.data';
 import {userIneligible} from '@data/page-data/userIneligible.page.data';
 import {whatAreYourGroundsForPossessionWales} from '@data/page-data/whatAreYourGroundsForPossessionWales.page.data';
-import {
-  reasonsForRequestingASuspensionAndDemotionOrder
-} from '@data/page-data/reasonsForRequestingASuspensionAndDemotionOrder.page.data';
+import {reasonsForRequestingASuspensionAndDemotionOrder} from '@data/page-data/reasonsForRequestingASuspensionAndDemotionOrder.page.data';
+import {underlesseeOrMortgageeDetails} from '@data/page-data/underlesseeOrMortgageeDetails.page.data';
+import {provideMoreDetailsOfClaim} from '@data/page-data/provideMoreDetailsOfClaim.page.data';
 
 export let caseInfo: { id: string; fid: string; state: string };
 export let caseNumber: string;
@@ -59,6 +59,7 @@ export class CreateCaseAction implements IAction {
       ['createCase', () => this.createCaseAction(fieldName)],
       ['housingPossessionClaim', () => this.housingPossessionClaim()],
       ['selectAddress', () => this.selectAddress(fieldName)],
+      ['provideMoreDetailsOfClaim', () => this.provideMoreDetailsOfClaim(page)],
       ['selectResumeClaimOption', () => this.selectResumeClaimOption(fieldName)],
       ['extractCaseIdFromAlert', () => this.extractCaseIdFromAlert(page)],
       ['selectClaimantType', () => this.selectClaimantType(fieldName)],
@@ -97,7 +98,9 @@ export class CreateCaseAction implements IAction {
       ['selectApplications', () => this.selectApplications(fieldName)],
       ['selectClaimingCosts', () => this.selectClaimingCosts(fieldName)],
       ['completingYourClaim', () => this.completingYourClaim(fieldName)],
-      ['selectAdditionalReasonsForPossession', ()=> this.selectAdditionalReasonsForPossession(fieldName)],
+      ['selectAdditionalReasonsForPossession', () => this.selectAdditionalReasonsForPossession(fieldName)],
+      ['selectUnderlesseeOrMortgageeEntitledToClaim', () => this.selectUnderlesseeOrMortgageeEntitledToClaim(fieldName as actionRecord)],
+      ['selectUnderlesseeOrMortgageeDetails', () => this.selectUnderlesseeOrMortgageeDetails(fieldName as actionRecord)],
       ['wantToUploadDocuments', () => this.wantToUploadDocuments(fieldName as actionRecord)],
       ['uploadAdditionalDocs', () => this.uploadAdditionalDocs(fieldName as actionRecord)]
     ]);
@@ -325,6 +328,10 @@ export class CreateCaseAction implements IAction {
 
   private async selectYourPossessionGrounds(possessionGrounds: actionRecord) {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: ' + caseNumber});
+    if (!possessionGrounds) {
+      await performAction('clickButton', whatAreYourGroundsForPossession.continue);
+      return;
+    }
     for (const key of Object.keys(possessionGrounds)) {
       switch (key) {
         case 'discretionary':
@@ -606,6 +613,12 @@ export class CreateCaseAction implements IAction {
     await performAction('clickButton', addressDetails.submit);
   }
 
+  private async provideMoreDetailsOfClaim(page: Page) {
+    // Reloading to reset session/UI state before performing next step
+    await page.reload();
+    await performAction('clickButtonAndVerifyPageNavigation', provideMoreDetailsOfClaim.continue, claimantType.mainHeader);
+  }
+
   private async selectAdditionalReasonsForPossession(reasons: actionData) {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
     await performAction('clickRadioButton', reasons);
@@ -615,7 +628,34 @@ export class CreateCaseAction implements IAction {
     await performAction('clickButton', additionalReasonsForPossession.continue);
   }
 
+  private async selectUnderlesseeOrMortgageeEntitledToClaim(underlesseeOrMortgageeEntitledToClaim: actionRecord) {
+    await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
+    await performAction('clickRadioButton', {
+      question: underlesseeOrMortgageeEntitledToClaim.question,
+      option: underlesseeOrMortgageeEntitledToClaim.option
+    });
+    await performAction('clickButton', underlesseeOrMortgageeDetails.continue);
+  }
+
+  private async selectUnderlesseeOrMortgageeDetails(underlesseeOrMortgageeDetail: actionRecord) {
+    await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
+    await performAction('clickRadioButton', {
+      question: underlesseeOrMortgageeDetail.nameQuestion,
+      option: underlesseeOrMortgageeDetail.nameOption
+    });
+    await performAction('clickRadioButton', {
+      question: underlesseeOrMortgageeDetail.addressQuestion,
+      option: underlesseeOrMortgageeDetail.addressOption
+    });
+    await performAction('clickRadioButton', {
+      question: underlesseeOrMortgageeDetail.anotherUnderlesseeOrMortgageeQuestion,
+      option: underlesseeOrMortgageeDetail.anotherUnderlesseeOrMortgageeOption
+    });
+    await performAction('clickButton', underlesseeOrMortgageeDetails.continue);
+  }
+
   private async reloginAndFindTheCase(userInfo: actionData) {
+    await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
     await performAction('login', userInfo);
     await performAction('clickButton', home.findCaseTab);
     await performAction('select', search.jurisdictionLabel, search.possessionsJurisdiction);
