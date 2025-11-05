@@ -14,21 +14,19 @@ import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ProtestorGroupRiskPage implements CcdPageConfiguration {
+public class PoliceOrSocialServicesRiskPage implements CcdPageConfiguration {
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
-                .page("protestorGroupRisk", this::midEvent)
-                .pageLabel("Their membership of a group that protests evictions")
-                .showCondition("anyRiskToBailiff=\"YES\" "
-                    + " AND enforcementRiskCategoriesCONTAINS\"PROTEST_GROUP_MEMBER\"")
-                .label("protestorGroupRisk-line-separator", "---")
+                .page("policeOrSocialServicesRisk", this::midEvent)
+                .pageLabel("Their history of police or social services visits to the property")
+                .showCondition("anyRiskToBailiff=\"YES\" AND enforcementRiskCategoriesCONTAINS\"AGENCY_VISITS\"")
+                .label("policeOrSocialServicesRisk-line-separator", "---")
                 .complex(PCSCase::getEnforcementOrder)
                 .complex(EnforcementOrder::getRiskDetails)
-                .mandatory(EnforcementRiskDetails::getEnforcementProtestGroupMemberDetails)
-                .done()
-                .label("protestorGroupRisk-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
+                .mandatory(EnforcementRiskDetails::getEnforcementPoliceOrSocialServicesDetails).done()
+                .label("policeOrSocialServicesRisk-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
 
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
@@ -36,12 +34,12 @@ public class ProtestorGroupRiskPage implements CcdPageConfiguration {
         PCSCase data = details.getData();
         List<String> errors = new ArrayList<>();
 
-        String txt = data.getEnforcementOrder().getRiskDetails().getEnforcementProtestGroupMemberDetails();
+        String txt = data.getEnforcementOrder().getRiskDetails().getEnforcementPoliceOrSocialServicesDetails();
 
-        // Use TextAreaValidationService from PR #751 when merged
+        // Refactor validation logic to use TextAreaValidationService from PR #751 when merged
         if (txt.length() > EnforcementRiskValidationUtils.getCharacterLimit()) {
             errors.add(EnforcementRiskValidationUtils
-                    .getCharacterLimitErrorMessage(RiskCategory.PROTEST_GROUP_MEMBER));
+                    .getCharacterLimitErrorMessage(RiskCategory.AGENCY_VISITS));
         }
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
