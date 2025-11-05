@@ -2,10 +2,10 @@ import { test } from "@playwright/test";
 import { initializeEnforcementExecutor, performAction, performValidation } from "@utils/controller-enforcement";
 import { caseNumber, caseNotFoundAfterFilter } from "@utils/actions/custom-actions";
 import { initializeExecutor } from "@utils/controller";
-import {caseList, user, caseSummary, signInOrCreateAnAccount } from "@data/page-data";
-import {nameAndAddressForEviction, violentOrAggressiveBehaviour, firearmPossession, yourApplication,
+import { caseList, user, caseSummary, signInOrCreateAnAccount } from "@data/page-data";
+import { nameAndAddressForEviction, violentOrAggressiveBehaviour, firearmPossession, yourApplication,
          criminalOrAntisocialBehaviour, evictionCouldBeDelayed, vulnerableAdultsAndChildren,
-         riskPosedByEveryoneAtProperty, everyoneLivingAtTheProperty } from "@data/page-data/page-data-enforcement";
+         riskPosedByEveryoneAtProperty, everyoneLivingAtTheProperty, verbalOrWrittenThreats, groupProtestsEviction } from "@data/page-data/page-data-enforcement";
 
 test.beforeEach(async ({page}) => {
   initializeExecutor(page);
