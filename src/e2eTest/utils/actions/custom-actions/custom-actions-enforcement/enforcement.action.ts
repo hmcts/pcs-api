@@ -14,6 +14,7 @@ import { groupProtestsEviction } from "@data/page-data/page-data-enforcement/gro
 import { policeOrSocialServiceVisit } from "@data/page-data/page-data-enforcement/policeOrSocialServiceVisit.page.data";
 import { animalsAtTheProperty } from "@data/page-data/page-data-enforcement/animalsAtTheProperty";
 import { vulnerableAdultsAndChildren } from "@data/page-data/page-data-enforcement/vulnerableAdultsAndChildren.page.data";
+import { anythingElseHelpWithEviction } from "@data/page-data/page-data-enforcement/anythingElseThatCouldHelpWithEviction.page.data";
 
 export class EnforcementAction implements IAction {
   async execute(page: Page, action: string, fieldName: string | actionRecord, data?: actionData): Promise<void> {
@@ -30,6 +31,7 @@ export class EnforcementAction implements IAction {
       ['provideDetailsPoliceOrSocialServiceVisits', () => this.provideDetailsPoliceOrSocialServiceVisits(fieldName as actionRecord)],
       ['provideDetailsAnimalsAtTheProperty', () => this.provideDetailsAnimalsAtTheProperty(fieldName as actionRecord)],
       ['selectVulnerablePeopleInTheProperty', () => this.selectVulnerablePeopleInTheProperty(fieldName as actionRecord)],
+      ['provideDetailsAnythingElseHelpWithEviction', () => this.provideDetailsAnythingElseHelpWithEviction(fieldName as actionRecord)],
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) throw new Error(`No action found for '${action}'`);
@@ -119,5 +121,15 @@ export class EnforcementAction implements IAction {
       await performAction('inputText', vulnerablePeople.label, vulnerablePeople.input);
     }
     await performAction('clickButton', vulnerableAdultsAndChildren.continue);
+  }
+
+  private async provideDetailsAnythingElseHelpWithEviction(anythingElse: actionRecord) {
+    await performValidation('mainHeader', animalsAtTheProperty.mainHeader);
+    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + enforcementTestCaseNumber });
+    await performAction('clickRadioButton', { question: anythingElse.question, option: anythingElse.option });
+    if (anythingElse.option === anythingElseHelpWithEviction.yes) {
+      await performAction('inputText', anythingElse.label, anythingElse.input);
+    }    
+    await performAction('clickButton', animalsAtTheProperty.continue);
   }
 }

@@ -20,8 +20,9 @@ import { verbalOrWrittenThreats } from "@data/page-data/page-data-enforcement/ve
 import { groupProtestsEviction } from "@data/page-data/page-data-enforcement/groupProtestsEviction.page.data";
 import { policeOrSocialServiceVisit } from "@data/page-data/page-data-enforcement/policeOrSocialServiceVisit.page.data";
 import { animalsAtTheProperty } from "@data/page-data/page-data-enforcement/animalsAtTheProperty";
+import { anythingElseHelpWithEviction } from "@data/page-data/page-data-enforcement/anythingElseThatCouldHelpWithEviction.page.data";
 
-test.beforeEach(async ({page}) => {
+test.beforeEach(async ({ page }) => {
   initializeExecutor(page);
   initializeEnforcementExecutor(page);
   await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
@@ -38,7 +39,7 @@ test.beforeEach(async ({page}) => {
   //Below three lines will be merged into a single action as part of improvement
   await performAction("selectFirstCaseFromTheFilter", caseNotFoundAfterFilter);
   await performAction('createNewCase', caseNotFoundAfterFilter);
-  await performAction('searchMyCaseFromFindCase', {caseNumber: caseNumber, criteria: caseNotFoundAfterFilter});
+  await performAction('searchMyCaseFromFindCase', { caseNumber: caseNumber, criteria: caseNotFoundAfterFilter });
 });
 
 test.describe('[Enforcement - Warrant of Possession] @Master @nightly', async () => {
@@ -93,15 +94,20 @@ test.describe('[Enforcement - Warrant of Possession] @Master @nightly', async ()
       label: animalsAtTheProperty.whatKindOfAnimalDoTheyHave,
       input: animalsAtTheProperty.whatKindOfAnimalDoTheyHaveInput
     });
-    await performValidation('mainHeader', vulnerableAdultsAndChildren.mainHeader);    
-    await performAction('selectVulnerablePeopleInTheProperty',{
+    await performValidation('mainHeader', vulnerableAdultsAndChildren.mainHeader);
+    await performAction('selectVulnerablePeopleInTheProperty', {
       question: vulnerableAdultsAndChildren.IsAnyOneLivingAtThePropertyQuestion,
       option: vulnerableAdultsAndChildren.yes,
       confirm: vulnerableAdultsAndChildren.confirmVulnerablePeople,
       label: vulnerableAdultsAndChildren.howAreTheyVulnerable,
       input: vulnerableAdultsAndChildren.howAreTheyVulnerableInput
     })
-    await performAction('clickButton', vulnerableAdultsAndChildren.continue);
+    await performAction('provideDetailsAnythingElseHelpWithEviction', {
+      question: anythingElseHelpWithEviction.anythingElseQuestion,
+      option: anythingElseHelpWithEviction.yes,
+      label: anythingElseHelpWithEviction.tellUsAnythingElse,
+      input: anythingElseHelpWithEviction.tellUsAnythingElseInput
+    })
   });
 
   test('Apply for a Warrant of Possession - risk to Bailiff [No]', async () => {
