@@ -9,6 +9,8 @@ import { everyoneLivingAtTheProperty } from "@data/page-data/page-data-enforceme
 import { violentOrAggressiveBehaviour } from "@data/page-data/page-data-enforcement/violentOrAggressiveBehaviour.page.data";
 import { firearmPossession } from "@data/page-data/page-data-enforcement/firearmPossession.page.data";
 import { criminalOrAntisocialBehaviour } from "@data/page-data/page-data-enforcement/criminalOrAntisocialBehaviour.page.data";
+import { verbalOrWrittenThreats } from "@data/page-data/page-data-enforcement/verbalOrWrittenThreats.page.data";
+import { groupProtestsEviction } from "@data/page-data/page-data-enforcement/groupProtestsEviction.page.data";
 
 export class EnforcementAction implements IAction {
   async execute(page: Page, action: string, fieldName: string | actionRecord, data?: actionData): Promise<void> {
@@ -20,6 +22,8 @@ export class EnforcementAction implements IAction {
       ['provideDetailsViolentOrAggressiveBehaviour', () => this.provideDetailsViolentOrAggressiveBehaviour(fieldName as actionRecord)],
       ['provideDetailsFireArmPossession', () => this.provideDetailsFireArmPossession(fieldName as actionRecord)],
       ['provideDetailsCriminalOrAntisocialBehavior', () => this.provideDetailsCriminalOrAntisocialBehavior(fieldName as actionRecord)],
+      ['provideDetailsVerbalOrWrittenThreats', () => this.provideDetailsVerbalOrWrittenThreats(fieldName as actionRecord)],
+      ['provideDetailsGroupProtestsEviction', () => this.provideDetailsGroupProtestsEviction(fieldName as actionRecord)],
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) throw new Error(`No action found for '${action}'`);
@@ -41,35 +45,49 @@ export class EnforcementAction implements IAction {
   }
 
   private async selectEveryoneLivingAtTheProperty(riskToBailiff: actionRecord) {
-    await performValidation('text', {elementType: 'paragraph', text: 'Case number: ' + enforcementTestCaseNumber});
-    await performAction('clickRadioButton', {question: riskToBailiff.question, option: riskToBailiff.option});
+    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + enforcementTestCaseNumber });
+    await performAction('clickRadioButton', { question: riskToBailiff.question, option: riskToBailiff.option });
     await performAction('clickButton', everyoneLivingAtTheProperty.continue);
   }
 
   private async selectRiskPosedByEveryoneAtProperty(riskCategory: actionRecord) {
-    await performValidation('text', {elementType: 'paragraph', text: 'Case number: ' + enforcementTestCaseNumber});
+    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + enforcementTestCaseNumber });
     await performAction('check', riskCategory.riskTypes);
     await performAction('clickButton', riskPosedByEveryoneAtProperty.continue);
   }
 
   private async provideDetailsViolentOrAggressiveBehaviour(violentAggressiveBehaviour: actionRecord) {
     await performValidation('mainHeader', violentOrAggressiveBehaviour.mainHeader);
-    await performValidation('text', {elementType: 'paragraph', text: 'Case number: ' + enforcementTestCaseNumber});
+    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + enforcementTestCaseNumber });
     await performAction('inputText', violentAggressiveBehaviour.label, violentAggressiveBehaviour.input);
     await performAction('clickButton', violentOrAggressiveBehaviour.continue);
   }
 
   private async provideDetailsFireArmPossession(firearm: actionRecord) {
     await performValidation('mainHeader', firearmPossession.mainHeader);
-    await performValidation('text', {elementType: 'paragraph', text: 'Case number: ' + enforcementTestCaseNumber});
+    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + enforcementTestCaseNumber });
     await performAction('inputText', firearm.label, firearm.input);
     await performAction('clickButton', firearmPossession.continue);
   }
 
   private async provideDetailsCriminalOrAntisocialBehavior(criminalAntisocialBehaviour: actionRecord) {
     await performValidation('mainHeader', criminalOrAntisocialBehaviour.mainHeader);
-    await performValidation('text', {elementType: 'paragraph', text: 'Case number: ' + enforcementTestCaseNumber});
+    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + enforcementTestCaseNumber });
     await performAction('inputText', criminalAntisocialBehaviour.label, criminalAntisocialBehaviour.input);
     await performAction('clickButton', criminalOrAntisocialBehaviour.continue);
+  }
+
+  private async provideDetailsVerbalOrWrittenThreats(verbalWritten: actionRecord) {
+    await performValidation('mainHeader', verbalOrWrittenThreats.mainHeader);
+    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + enforcementTestCaseNumber });
+    await performAction('inputText', verbalWritten.label, verbalWritten.input);
+    await performAction('clickButton', verbalOrWrittenThreats.continue);
+  }
+
+  private async provideDetailsGroupProtestsEviction(protestGroup: actionRecord) {
+    await performValidation('mainHeader', groupProtestsEviction.mainHeader);
+    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + enforcementTestCaseNumber });
+    await performAction('inputText', protestGroup.label, protestGroup.input);
+    await performAction('clickButton', groupProtestsEviction.continue);
   }
 }

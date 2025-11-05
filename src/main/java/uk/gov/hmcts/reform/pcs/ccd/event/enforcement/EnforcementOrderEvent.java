@@ -19,6 +19,8 @@ import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.NameAndAddressForEvictionPag
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.EvictionDelayWarningPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.EvictionRisksPosedPage;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.ProtestorGroupRiskPage;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.VerbalOrWrittenThreatsRiskPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.ViolentAggressiveRiskPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.FirearmsPossessionRiskPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.CriminalAntisocialRiskPage;
@@ -58,6 +60,8 @@ public class EnforcementOrderEvent implements CCDConfig<PCSCase, State, UserRole
                 .add(new ViolentAggressiveRiskPage())
                 .add(new FirearmsPossessionRiskPage())
                 .add(new CriminalAntisocialRiskPage())
+                .add(new VerbalOrWrittenThreatsRiskPage())
+                .add(new ProtestorGroupRiskPage())
                 .add(new EvictionVulnerableAdultsChildrenPage())
                 .add(new CheckYourAnswersPlaceHolder());
     }
