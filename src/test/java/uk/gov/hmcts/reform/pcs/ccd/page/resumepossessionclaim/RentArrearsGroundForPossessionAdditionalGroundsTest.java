@@ -21,8 +21,6 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class RentArrearsGroundForPossessionAdditionalGroundsTest extends BasePageTest {
@@ -33,20 +31,6 @@ class RentArrearsGroundForPossessionAdditionalGroundsTest extends BasePageTest {
     @BeforeEach
     void setUp() {
         setPageUnderTest(new RentArrearsGroundForPossessionAdditionalGrounds(rentDetailsRoutingService));
-        // Default mock behavior: return YES when rent arrears grounds are present
-        when(rentDetailsRoutingService.shouldShowRentDetails(any(PCSCase.class)))
-            .thenAnswer(invocation -> {
-                PCSCase caseData = invocation.getArgument(0);
-                Set<RentArrearsMandatoryGrounds> mandatory = caseData.getRentArrearsMandatoryGrounds();
-                Set<RentArrearsDiscretionaryGrounds> discretionary = caseData.getRentArrearsDiscretionaryGrounds();
-                boolean hasRentGrounds = (mandatory != null
-                    && mandatory.contains(RentArrearsMandatoryGrounds.SERIOUS_RENT_ARREARS_GROUND8))
-                    || (discretionary != null && (
-                        discretionary.contains(RentArrearsDiscretionaryGrounds.RENT_ARREARS_GROUND10)
-                        || discretionary.contains(RentArrearsDiscretionaryGrounds.PERSISTENT_DELAY_GROUND11)
-                    ));
-                return YesOrNo.from(hasRentGrounds);
-            });
     }
 
     @ParameterizedTest
