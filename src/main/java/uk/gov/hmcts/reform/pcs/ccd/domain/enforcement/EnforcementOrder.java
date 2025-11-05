@@ -21,7 +21,12 @@ public class EnforcementOrder {
     private SelectEnforcementType selectEnforcementType;
 
     @JsonUnwrapped
+    @CCD
+    private AdditionalInformation additionalInformation;
+
+    @JsonUnwrapped
     private NameAndAddressForEviction nameAndAddressForEviction;
+
     @CCD(
         label = "Does anyone living at the property pose a risk to the bailiff?"
     )
