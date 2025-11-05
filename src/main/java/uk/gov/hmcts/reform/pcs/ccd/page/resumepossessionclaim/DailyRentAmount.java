@@ -16,7 +16,7 @@ public class DailyRentAmount implements CcdPageConfiguration {
                 .pageLabel("Daily rent amount")
                 .readonly(PCSCase::getFormattedCalculatedDailyRentChargeAmount, NEVER_SHOW)
             .readonlyWithLabel(PCSCase::getFormattedCalculatedDailyRentChargeAmountLabel,
-                               "Here 3 -> ${formattedCalculatedDailyRentChargeAmount}")
+                               "<b>Here 3</b> -> ${formattedCalculatedDailyRentChargeAmount}")
                 .complex(PCSCase::getRentLabelHolder)
                     .readonly(LabelHolder::getLabel)
                 .done()
