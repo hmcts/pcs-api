@@ -30,7 +30,7 @@ test.beforeEach(async ({page}) => {
 });
 
 test.describe.skip('[Create Case - With resume claim options] @Master @nightly', async () => {
-  test('England - Resume with saved options', async () => {
+  test('England - Resume with saved options - Assured Tentency - Rent arrears + other grounds when user selects no to rent arrears question', async () => {
     await performAction('selectAddress', {
       postcode: addressDetails.englandCourtAssignedPostcode,
       addressIndex: addressDetails.addressIndex
@@ -72,11 +72,7 @@ test.describe.skip('[Create Case - With resume claim options] @Master @nightly',
       files: ['tenancyLicence.docx', 'tenancyLicence.png']
     });
     await performValidation('mainHeader', groundsForPossession.mainHeader);
-    await performAction('selectGroundsForPossession', {groundsRadioInput: groundsForPossession.yes});
-    await performAction('selectRentArrearsPossessionGround', {
-      rentArrears: [rentArrearsPossessionGrounds.rentArrears, rentArrearsPossessionGrounds.seriousRentArrears, rentArrearsPossessionGrounds.persistentDelayInPayingRent],
-      otherGrounds: rentArrearsPossessionGrounds.yes
-    });
+    await performAction('selectGroundsForPossession', {groundsRadioInput: groundsForPossession.no});
     await performAction('selectYourPossessionGrounds', {
       mandatory: [whatAreYourGroundsForPossession.mandatory.holidayLet, whatAreYourGroundsForPossession.mandatory.ownerOccupier],
       discretionary: [whatAreYourGroundsForPossession.discretionary.domesticViolence14A, whatAreYourGroundsForPossession.discretionary.rentArrears],
@@ -102,12 +98,7 @@ test.describe.skip('[Create Case - With resume claim options] @Master @nightly',
     });
     await performAction('selectNoticeOfYourIntention', {
       question: noticeOfYourIntention.servedNoticeInteractiveText,
-      option: noticeOfYourIntention.yes
-    });
-    await performValidation('mainHeader', noticeDetails.mainHeader);
-    await performAction('selectNoticeDetails', {
-      howDidYouServeNotice: noticeDetails.byFirstClassPost,
-      day: '16', month: '07', year: '1985', files: 'NoticeDetails.pdf'
+      option: noticeOfYourIntention.no
     });
     await performValidation('mainHeader', rentDetails.mainHeader);
     await performAction('provideRentDetails', {rentFrequencyOption: 'weekly', rentAmount: '800'});
@@ -136,14 +127,7 @@ test.describe.skip('[Create Case - With resume claim options] @Master @nightly',
     await performAction('clickButton', underlesseeOrMortgageeEntitledToClaim.continue);
     await performAction('wantToUploadDocuments', {
       question: wantToUploadDocuments.uploadAnyAdditionalDocumentsLabel,
-      option: wantToUploadDocuments.yes
-    });
-    await performAction('uploadAdditionalDocs', {
-      documents: [{
-        type: uploadAdditionalDocs.tenancyAgreementOption,
-        fileName: 'tenancy.pdf',
-        description: uploadAdditionalDocs.shortDescriptionInput
-      }]
+      option: wantToUploadDocuments.no
     });
     await performAction('selectApplications', applications.yes);
     await performAction('selectLanguageUsed', {
@@ -163,7 +147,7 @@ test.describe.skip('[Create Case - With resume claim options] @Master @nightly',
     )
   });
 
-  test('England - Resume without saved options', async () => {
+  test('England - Resume without saved options - Secure Tentency - No Rent Arrears', async () => {
     await performAction('selectAddress', {
       postcode: addressDetails.englandCourtAssignedPostcode,
       addressIndex: addressDetails.addressIndex
@@ -199,25 +183,20 @@ test.describe.skip('[Create Case - With resume claim options] @Master @nightly',
     });
     await performValidation('mainHeader', tenancyLicenceDetails.mainHeader);
     await performAction('selectTenancyOrLicenceDetails', {
-      tenancyOrLicenceType: tenancyLicenceDetails.assuredTenancy,
-      day: tenancyLicenceDetails.day,
-      month: tenancyLicenceDetails.month,
-      year: tenancyLicenceDetails.year,
-      files: ['tenancyLicence.docx', 'tenancyLicence.png']
-    });
-    await performValidation('mainHeader', groundsForPossession.mainHeader);
-    await performAction('selectGroundsForPossession', {groundsRadioInput: groundsForPossession.yes});
-    await performAction('selectRentArrearsPossessionGround', {
-      rentArrears: [rentArrearsPossessionGrounds.rentArrears, rentArrearsPossessionGrounds.seriousRentArrears, rentArrearsPossessionGrounds.persistentDelayInPayingRent],
-      otherGrounds: rentArrearsPossessionGrounds.yes
-    });
+      tenancyOrLicenceType: tenancyLicenceDetails.secureTenancy});
+    await performValidation('mainHeader', whatAreYourGroundsForPossession.mainHeader);
     await performAction('selectYourPossessionGrounds', {
-      mandatory: [whatAreYourGroundsForPossession.mandatory.holidayLet, whatAreYourGroundsForPossession.mandatory.ownerOccupier],
-      discretionary: [whatAreYourGroundsForPossession.discretionary.domesticViolence14A, whatAreYourGroundsForPossession.discretionary.rentArrears],
+      discretionary: [whatAreYourGroundsForPossession.discretionary.deteriorationOfFurniture4],
+      mandatory: [whatAreYourGroundsForPossession.mandatory.antiSocialBehaviour],
+      mandatoryAccommodation: [whatAreYourGroundsForPossession.mandatoryWithAccommodation.charitableLandlords, whatAreYourGroundsForPossession.mandatoryWithAccommodation.landlordsWorks],
+      discretionaryAccommodation: [whatAreYourGroundsForPossession.discretionaryWithAccommodation.adapted, whatAreYourGroundsForPossession.discretionaryWithAccommodation.tied],
     });
-    await performAction('enterReasonForPossession',
-      [whatAreYourGroundsForPossession.mandatory.holidayLet, whatAreYourGroundsForPossession.mandatory.ownerOccupier,
-        whatAreYourGroundsForPossession.discretionary.domesticViolence14A])
+    await performValidation('mainHeader', reasonsForPossession.mainHeader);
+    await performAction('enterReasonForPossession'
+      , [whatAreYourGroundsForPossession.discretionary.deteriorationOfFurniture4, whatAreYourGroundsForPossession.mandatory.antiSocialBehaviour,
+        whatAreYourGroundsForPossession.mandatoryWithAccommodation.charitableLandlords, whatAreYourGroundsForPossession.mandatoryWithAccommodation.landlordsWorks,
+        whatAreYourGroundsForPossession.discretionaryWithAccommodation.adapted, whatAreYourGroundsForPossession.discretionaryWithAccommodation.tied
+      ]);
     await performValidation('mainHeader', preActionProtocol.mainHeader);
     await performAction('selectPreActionProtocol', preActionProtocol.yes);
     await performValidation('mainHeader', mediationAndSettlement.mainHeader);
@@ -243,16 +222,6 @@ test.describe.skip('[Create Case - With resume claim options] @Master @nightly',
       howDidYouServeNotice: noticeDetails.byFirstClassPost,
       day: '16', month: '07', year: '1985', files: 'NoticeDetails.pdf'
     });
-    await performValidation('mainHeader', rentDetails.mainHeader);
-    await performAction('provideRentDetails', {rentFrequencyOption: 'weekly', rentAmount: '800'});
-    await performValidation('mainHeader', dailyRentAmount.mainHeader);
-    await performAction('selectDailyRentAmount', {
-      calculateRentAmount: '£114.29',
-      unpaidRentInteractiveOption: dailyRentAmount.no,
-      unpaidRentAmountPerDay: '20'
-    });
-    await performValidation('mainHeader', moneyJudgment.mainHeader);
-    await performAction('selectMoneyJudgment', moneyJudgment.yes);
     await performValidation('mainHeader', claimantCircumstances.mainHeader);
     await performAction('selectClaimantCircumstances', {
       circumstanceOption: claimantCircumstances.yes,
@@ -270,14 +239,7 @@ test.describe.skip('[Create Case - With resume claim options] @Master @nightly',
     await performAction('clickButton', underlesseeOrMortgageeEntitledToClaim.continue);
     await performAction('wantToUploadDocuments', {
       question: wantToUploadDocuments.uploadAnyAdditionalDocumentsLabel,
-      option: wantToUploadDocuments.yes
-    });
-    await performAction('uploadAdditionalDocs', {
-      documents: [{
-        type: uploadAdditionalDocs.tenancyAgreementOption,
-        fileName: 'tenancy.pdf',
-        description: uploadAdditionalDocs.shortDescriptionInput
-      }]
+      option: wantToUploadDocuments.no
     });
     await performAction('selectApplications', applications.yes);
     await performAction('selectLanguageUsed', {
