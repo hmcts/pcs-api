@@ -11,7 +11,6 @@ import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsDiscretionaryGrounds;
-import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsGround;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsMandatoryGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
@@ -20,7 +19,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.routing.RentDetailsRoutingService;
 import java.util.Set;
 import java.util.stream.Stream;
 
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 @ExtendWith(MockitoExtension.class)
 class RentArrearsGroundForPossessionAdditionalGroundsTest extends BasePageTest {
@@ -35,48 +34,70 @@ class RentArrearsGroundForPossessionAdditionalGroundsTest extends BasePageTest {
 
     @ParameterizedTest
     @MethodSource("provideNoRentArrearsScenarios")
-    void shouldSetCorrectShowFlagForReasonPage(
-        Set<RentArrearsGround> rentArrearsGrounds,
+    void shouldSetShowFlagForReasonPageOrThrowMidEventError(
         Set<RentArrearsMandatoryGrounds> mandatoryGrounds,
         Set<RentArrearsDiscretionaryGrounds> discretionaryGrounds,
-        YesOrNo expectedShowFlag) {
+        YesOrNo expectedShowFlag,
+        boolean errorExpected) {
 
         // Given
         PCSCase caseData = PCSCase.builder()
-            .rentArrearsGrounds(rentArrearsGrounds)
             .rentArrearsMandatoryGrounds(mandatoryGrounds)
             .rentArrearsDiscretionaryGrounds(discretionaryGrounds)
             .build();
 
         // When
         AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
-
         PCSCase updatedCaseData = response.getData();
 
-        assertThat(updatedCaseData.getShowRentArrearsGroundReasonPage()).isEqualTo(expectedShowFlag);
+        // Then
+        if (errorExpected) {
+            assertThat(response.getErrors()).containsExactly("Please select at least one ground");
+        } else {
+            assertThat(updatedCaseData.getShowRentArrearsGroundReasonPage()).isEqualTo(expectedShowFlag);
+        }
     }
 
     private static Stream<Arguments> provideNoRentArrearsScenarios() {
         return Stream.of(
-            Arguments.of(Set.of(RentArrearsGround.RENT_ARREARS_GROUND10,
-                                RentArrearsGround.PERSISTENT_DELAY_GROUND11),
-                         Set.of(),
-                         Set.of(),
-                         YesOrNo.NO),
-            Arguments.of(Set.of(RentArrearsGround.RENT_ARREARS_GROUND10,
-                                RentArrearsGround.SERIOUS_RENT_ARREARS_GROUND8,
-                                RentArrearsGround.PERSISTENT_DELAY_GROUND11),
-                         Set.of(),
-                         Set.of(),
-                         YesOrNo.NO),
-            Arguments.of(Set.of(),
-                         Set.of(RentArrearsMandatoryGrounds.REDEVELOPMENT_GROUND6),
-                         Set.of(),
-                         YesOrNo.YES),
+            //No grounds provided
             Arguments.of(Set.of(),
                          Set.of(),
-                         Set.of(RentArrearsDiscretionaryGrounds.BREACH_TENANCY_GROUND12),
-                         YesOrNo.YES)
+                         YesOrNo.NO,
+                         true),
+
+            // Mandatory Rent arrears ground + Other ground
+            Arguments.of(Set.of(RentArrearsMandatoryGrounds.SERIOUS_RENT_ARREARS_GROUND8,
+                                RentArrearsMandatoryGrounds.REDEVELOPMENT_GROUND6),
+                         Set.of(),
+                         YesOrNo.YES,
+                         false),
+
+            // Only Mandatory Rent arrears ground
+            Arguments.of(Set.of(RentArrearsMandatoryGrounds.SERIOUS_RENT_ARREARS_GROUND8),
+                         Set.of(),
+                         YesOrNo.NO,
+                         false),
+
+            // Discretionary Rent arrears ground + Other ground
+            Arguments.of(Set.of(),
+                         Set.of(RentArrearsDiscretionaryGrounds.RENT_ARREARS_GROUND10,
+                                RentArrearsDiscretionaryGrounds.BREACH_TENANCY_GROUND12),
+                         YesOrNo.YES,
+                         false),
+
+            // Only Discretionary Rent arrears ground
+            Arguments.of(Set.of(),
+                         Set.of(RentArrearsDiscretionaryGrounds.PERSISTENT_DELAY_GROUND11),
+                         YesOrNo.NO,
+                         false),
+
+            // Only Mandatory & Discretionary Rent arrears grounds
+            Arguments.of(Set.of(RentArrearsMandatoryGrounds.SERIOUS_RENT_ARREARS_GROUND8),
+                         Set.of(RentArrearsDiscretionaryGrounds.PERSISTENT_DELAY_GROUND11),
+                         YesOrNo.NO,
+                         false)
         );
     }
+
 }

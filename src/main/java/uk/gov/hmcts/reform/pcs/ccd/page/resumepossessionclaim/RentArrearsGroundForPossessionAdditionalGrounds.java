@@ -17,6 +17,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.service.routing.RentDetailsRoutingService;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
@@ -113,6 +114,13 @@ public class RentArrearsGroundForPossessionAdditionalGrounds implements CcdPageC
         } else {
             caseData.setRentArrearsMandatoryGrounds(mergedMandatory);
             caseData.setRentArrearsDiscretionaryGrounds(mergedDiscretionary);
+        }
+
+        // Validate that at least one ground is selected
+        if (effectiveMandatory.isEmpty() && effectiveDiscretionary.isEmpty()) {
+            return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
+                .errors(List.of("Please select at least one ground"))
+                .build();
         }
 
         boolean hasOtherMandatoryGrounds = effectiveMandatory.stream()

@@ -1,24 +1,19 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.enforcement;
 
-import lombok.AllArgsConstructor;
-import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 
-
-@AllArgsConstructor
-@Component
 public class EvictionDelayWarningPage implements CcdPageConfiguration {
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
-            .page("evictionDelayWarningPage")
+            .page("evictionDelayWarning")
             .pageLabel("The eviction could be delayed if the bailiff identifies a risk on the day")
             .showCondition("anyRiskToBailiff=\"NOT_SURE\"")
-            .label("evictionDelayWarningPage-line-separator", "---")
+            .label("evictionDelayWarning-line-separator", "---")
             .label(
-                "evictionDelayWarningPage-text",
+                "evictionDelayWarning-text",
                 """
                       <div class="govuk-warning-text">
                       <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
@@ -28,7 +23,7 @@ public class EvictionDelayWarningPage implements CcdPageConfiguration {
                             eviction day
                         </strong>
                       </div>
-                      <p class=\"govuk-body\">For example, if the bailiffs arrive to carry out the eviction and they
+                      <p class="govuk-body">For example, if the bailiffs arrive to carry out the eviction and they
                       discover a dangerous dog on the premises.</p>""");
     }
 
