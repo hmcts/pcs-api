@@ -115,6 +115,18 @@ public class PCSCase {
     private String crossBorderCountry2;
 
     @CCD(
+        searchable = false
+    )
+    @External
+    private String crossBorderInfoLabel;
+
+    @CCD(
+        searchable = false
+    )
+    @External
+    private String crossBorderQuestionLabel;
+
+    @CCD(
         searchable = false,
         access = {CitizenAccess.class}
     )

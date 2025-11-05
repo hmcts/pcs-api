@@ -76,6 +76,7 @@ public class EnterPropertyAddress implements CcdPageConfiguration {
                 caseData.setShowCrossBorderPage(YesOrNo.NO);
                 caseData.setShowPropertyNotEligiblePage(YesOrNo.YES);
                 caseData.setLegislativeCountry(eligibilityResult.getLegislativeCountry());
+                clearCrossBorderLabels(caseData);
             }
             case NO_MATCH_FOUND -> {
                 log.debug("No court found for postcode: {}", postcode);
@@ -84,6 +85,7 @@ public class EnterPropertyAddress implements CcdPageConfiguration {
                 caseData.setShowPostcodeNotAssignedToCourt(YesOrNo.YES);
                 caseData.setPostcodeNotAssignedView("ALL_COUNTRIES");
                 caseData.setLegislativeCountry(null);
+                clearCrossBorderLabels(caseData);
             }
             case MULTIPLE_MATCHES_FOUND -> {
                 // TODO: HDPI-1838 will handle multiple matches
@@ -94,6 +96,7 @@ public class EnterPropertyAddress implements CcdPageConfiguration {
                 caseData.setShowPropertyNotEligiblePage(YesOrNo.NO);
                 caseData.setShowPostcodeNotAssignedToCourt(YesOrNo.NO);
                 caseData.setLegislativeCountry(eligibilityResult.getLegislativeCountry());
+                clearCrossBorderLabels(caseData);
             }
         }
 
@@ -124,8 +127,67 @@ public class EnterPropertyAddress implements CcdPageConfiguration {
 
         caseData.setCrossBorderCountriesList(crossBorderCountriesList);
         // Set individual cross border countries
-        caseData.setCrossBorderCountry1(crossBorderCountries.get(0).getLabel());
-        caseData.setCrossBorderCountry2(crossBorderCountries.get(1).getLabel());
+        String country1Label = crossBorderCountries.get(0).getLabel();
+        String country2Label = crossBorderCountries.get(1).getLabel();
+        caseData.setCrossBorderCountry1(country1Label);
+        caseData.setCrossBorderCountry2(country2Label);
+        
+        // Build the label texts dynamically in midEvent so they're correct when the page is rendered
+        // The label template interpolation happens when the page is shown, before CrossBorderPostcodeSelection
+        // midEvent runs, so we must build these labels here
+        String infoLabel = buildCrossBorderInfoLabel(country1Label, country2Label);
+        String questionLabel = buildCrossBorderQuestionLabel(country1Label, country2Label);
+        
+        caseData.setCrossBorderInfoLabel(infoLabel);
+        caseData.setCrossBorderQuestionLabel(questionLabel);
+        
+        log.debug("Set up cross-border data for postcode {}: {} and {}",
+            caseData.getPropertyAddress().getPostCode(),
+            country1Label,
+            country2Label);
+    }
+
+    private String buildCrossBorderInfoLabel(String country1, String country2) {
+        return """
+            ---
+            <section tabindex="0">
+            <p class="govuk-body">
+            Your postcode includes properties in %s and %s. We need to know
+            which country your property is in, as the law is different in each country.
+            </p>
+
+            <p class="govuk-body">
+            If you're not sure which country your property is in, try searching for your
+            address on the land and property register.
+            </p>
+
+            <div class="govuk-warning-text" role="alert" aria-labelledby="warning-message">
+              <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+              <strong class="govuk-warning-text__text">
+                <span class="govuk-warning-text__assistive">Warning</span>
+                <span id="warning-message">
+                  Your case could be delayed or rejected if you select the wrong country.
+                </span>
+              </strong>
+            </div>
+            </section>
+            """.formatted(country1, country2);
+    }
+
+    private String buildCrossBorderQuestionLabel(String country1, String country2) {
+        return "Is the property located in %s or %s?".formatted(country1, country2);
+    }
+
+    /**
+     * Clears cross-border labels when the postcode is no longer cross-border.
+     * This ensures stale labels don't persist when postcode changes from cross-border to non-cross-border.
+     */
+    private void clearCrossBorderLabels(PCSCase caseData) {
+        caseData.setCrossBorderCountry1(null);
+        caseData.setCrossBorderCountry2(null);
+        caseData.setCrossBorderInfoLabel(null);
+        caseData.setCrossBorderQuestionLabel(null);
+        caseData.setCrossBorderCountriesList(null);
     }
 
     private List<DynamicStringListElement> createCrossBorderCountriesList(

@@ -37,34 +37,13 @@ public class CrossBorderPostcodeSelection implements CcdPageConfiguration {
             .readonly(PCSCase::getShowCrossBorderPage, NEVER_SHOW)
             .readonly(PCSCase::getCrossBorderCountry1, NEVER_SHOW)
             .readonly(PCSCase::getCrossBorderCountry2, NEVER_SHOW)
-            .label("crossBorderPostcodeSelection-info", """
-                ---
-                <section tabindex="0">
-                <p class="govuk-body">
-                Your postcode includes properties in ${crossBorderCountry1} and ${crossBorderCountry2}. We need to know
-                which country your property is in, as the law is different in each country.
-                </p>
-
-                <p class="govuk-body">
-                If you're not sure which country your property is in, try searching for your
-                address on the land and property register.
-                </p>
-
-                <div class="govuk-warning-text" role="alert" aria-labelledby="warning-message">
-                  <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
-                  <strong class="govuk-warning-text__text">
-                    <span class="govuk-warning-text__assistive">Warning</span>
-                    <span id="warning-message">
-                      Your case could be delayed or rejected if you select the wrong country.
-                    </span>
-                  </strong>
-                </div>
-                </section>
-                """)
+            .readonly(PCSCase::getCrossBorderInfoLabel, NEVER_SHOW)
+            .readonly(PCSCase::getCrossBorderQuestionLabel, NEVER_SHOW)
+            .label("crossBorderPostcodeSelection-info", "${crossBorderInfoLabel}")
             .mandatory(PCSCase::getCrossBorderCountriesList,
                 null,
                 null,
-                "Is the property located in ${crossBorderCountry1} or ${crossBorderCountry2}?");
+                "${crossBorderQuestionLabel}");
     }
 
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
