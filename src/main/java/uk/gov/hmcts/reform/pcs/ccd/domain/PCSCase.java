@@ -587,6 +587,8 @@ public class PCSCase {
 
     private YesOrNo showNoRentArrearsGroundReasonPage;
 
+    private YesOrNo showRentDetailsPage;
+
     @CCD(
         label = "Which language did you use to complete this service?",
         hint = "If someone else helped you to answer a question in this service, "
