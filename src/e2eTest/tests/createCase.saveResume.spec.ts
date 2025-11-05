@@ -4,7 +4,7 @@ import {addressDetails, claimantType, claimType, claimantName, contactPreference
         rentArrearsPossessionGrounds, preActionProtocol, mediationAndSettlement, noticeOfYourIntention, noticeDetails, rentDetails, completeYourClaim,
         dailyRentAmount, provideMoreDetailsOfClaim, whatAreYourGroundsForPossession, moneyJudgment, claimantCircumstances, applications, user,
         checkYourAnswers, propertyDetails, languageUsed, defendantCircumstances, claimingCosts, uploadAdditionalDocs, statementOfTruth, home,
-        additionalReasonsForPossession, underlesseeOrMortgageeEntitledToClaim, alternativesToPossession,
+        additionalReasonsForPossession, underlesseeOrMortgageeEntitledToClaim, alternativesToPossession, reasonsForPossession,
         wantToUploadDocuments, resumeClaim, resumeClaimOptions, signInOrCreateAnAccount } from '@data/page-data/';
 
 // This test validates the resume & find case functionality with and without saved options.

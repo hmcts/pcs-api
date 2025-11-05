@@ -3,7 +3,7 @@ import { initializeEnforcementExecutor, performAction, performValidation } from 
 import { caseNumber, caseNotFoundAfterFilter } from "@utils/actions/custom-actions";
 import { initializeExecutor } from "@utils/controller";
 import { caseList, user, caseSummary, signInOrCreateAnAccount } from "@data/page-data";
-import { nameAndAddressForEviction, violentOrAggressiveBehaviour, firearmPossession, yourApplication, animalsAtThePropertyPageData,
+import { nameAndAddressForEviction, violentOrAggressiveBehaviour, firearmPossession, yourApplication, animalsAtTheProperty,
          criminalOrAntisocialBehaviour, evictionCouldBeDelayed, vulnerableAdultsAndChildren, policeOrSocialServiceVisit,
          riskPosedByEveryoneAtProperty, everyoneLivingAtTheProperty, verbalOrWrittenThreats, groupProtestsEviction } from "@data/page-data/page-data-enforcement";
 
@@ -76,8 +76,8 @@ test.describe('[Enforcement - Warrant of Possession] @Master @nightly', async ()
       input: policeOrSocialServiceVisit.whyDidThePoliceOrSSVisitThePropertyInput
     });
     await performAction('provideDetailsAnimalsAtTheProperty', {
-      label: animalsAtThePropertyPageData.whatKindOfAnimalDoTheyHave,
-      input: animalsAtThePropertyPageData.whatKindOfAnimalDoTheyHaveInput
+      label: animalsAtTheProperty.whatKindOfAnimalDoTheyHave,
+      input: animalsAtTheProperty.whatKindOfAnimalDoTheyHaveInput
     });
     await performValidation('mainHeader', vulnerableAdultsAndChildren.mainHeader);
     await performAction('clickButton', vulnerableAdultsAndChildren.continue);

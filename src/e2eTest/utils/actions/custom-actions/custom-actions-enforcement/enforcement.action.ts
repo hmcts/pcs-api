@@ -3,7 +3,7 @@ import { performAction, performValidation } from "@utils/controller-enforcement"
 import { IAction, actionData, actionRecord } from "@utils/interfaces/action.interface";
 import { yourApplication, nameAndAddressForEviction, everyoneLivingAtTheProperty, evictionCouldBeDelayed, vulnerableAdultsAndChildren,
          violentOrAggressiveBehaviour, firearmPossession, criminalOrAntisocialBehaviour, riskPosedByEveryoneAtProperty,
-         verbalOrWrittenThreats, groupProtestsEviction } from "@data/page-data/page-data-enforcement";
+         verbalOrWrittenThreats, groupProtestsEviction, policeOrSocialServiceVisit, animalsAtTheProperty } from "@data/page-data/page-data-enforcement";
 import { enforcementTestCaseNumber } from "../searchCase.action";
 
 export class EnforcementAction implements IAction {
