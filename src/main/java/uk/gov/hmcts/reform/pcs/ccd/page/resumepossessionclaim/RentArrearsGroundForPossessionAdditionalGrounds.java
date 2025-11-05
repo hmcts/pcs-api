@@ -10,6 +10,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsDiscretionaryGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsMandatoryGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 
+import java.util.List;
 import java.util.Set;
 
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
@@ -35,8 +36,8 @@ public class RentArrearsGroundForPossessionAdditionalGrounds implements CcdPageC
                 claim under. You should select these grounds here and any extra grounds you'd like to add to
                 your claim, if you need to.</p>
             """)
-            .mandatory(PCSCase::getRentArrearsMandatoryGrounds)
-            .mandatory(PCSCase::getRentArrearsDiscretionaryGrounds)
+            .optional(PCSCase::getRentArrearsMandatoryGrounds)
+            .optional(PCSCase::getRentArrearsDiscretionaryGrounds)
             .done();
     }
 
@@ -46,6 +47,12 @@ public class RentArrearsGroundForPossessionAdditionalGrounds implements CcdPageC
         PCSCase caseData = details.getData();
         Set<RentArrearsMandatoryGrounds> mandatoryGrounds = caseData.getRentArrearsMandatoryGrounds();
         Set<RentArrearsDiscretionaryGrounds> discretionaryGrounds = caseData.getRentArrearsDiscretionaryGrounds();
+
+        if (mandatoryGrounds.isEmpty() && discretionaryGrounds.isEmpty()) {
+            return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
+                .errors(List.of("Please select at least one ground"))
+                .build();
+        }
 
         boolean hasOtherMandatoryGrounds = mandatoryGrounds
             .stream()
