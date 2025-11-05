@@ -16,6 +16,8 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsMandatoryGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.service.routing.RentDetailsRoutingService;
 
+import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
@@ -58,54 +60,54 @@ public class RentArrearsGroundForPossessionAdditionalGrounds implements CcdPageC
 
         PCSCase caseData = details.getData();
 
-        // Rebuild canonical sets from first-page selection
-        Set<RentArrearsMandatoryGrounds> mergedMandatory = new java.util.HashSet<>();
-        Set<RentArrearsDiscretionaryGrounds> mergedDiscretionary = new java.util.HashSet<>();
-        Set<RentArrearsGround> firstPage = caseData.getRentArrearsGrounds();
-        if (firstPage != null) {
-            if (firstPage.contains(RentArrearsGround.SERIOUS_RENT_ARREARS_GROUND8)) {
+        // Rebuild canonical sets from rent arrears grounds selection
+        Set<RentArrearsMandatoryGrounds> mergedMandatory = new HashSet<>();
+        Set<RentArrearsDiscretionaryGrounds> mergedDiscretionary = new HashSet<>();
+        Set<RentArrearsGround> rentArrearsGrounds = caseData.getRentArrearsGrounds();
+        if (rentArrearsGrounds != null) {
+            if (rentArrearsGrounds.contains(RentArrearsGround.SERIOUS_RENT_ARREARS_GROUND8)) {
                 mergedMandatory.add(RentArrearsMandatoryGrounds.SERIOUS_RENT_ARREARS_GROUND8);
             }
-            if (firstPage.contains(RentArrearsGround.RENT_ARREARS_GROUND10)) {
+            if (rentArrearsGrounds.contains(RentArrearsGround.RENT_ARREARS_GROUND10)) {
                 mergedDiscretionary.add(RentArrearsDiscretionaryGrounds.RENT_ARREARS_GROUND10);
             }
-            if (firstPage.contains(RentArrearsGround.PERSISTENT_DELAY_GROUND11)) {
+            if (rentArrearsGrounds.contains(RentArrearsGround.PERSISTENT_DELAY_GROUND11)) {
                 mergedDiscretionary.add(RentArrearsDiscretionaryGrounds.PERSISTENT_DELAY_GROUND11);
             }
         }
 
         // Union additional-only selections (mapped to canonical enums)
         Set<AssuredAdditionalMandatoryGrounds> addMandatory =
-            java.util.Objects.requireNonNullElse(
+            Objects.requireNonNullElse(
                 caseData.getAssuredAdditionalMandatoryGrounds(),
-                java.util.Set.of()
+                Set.of()
             );
         for (AssuredAdditionalMandatoryGrounds add : addMandatory) {
             mergedMandatory.add(RentArrearsMandatoryGrounds.valueOf(add.name()));
         }
 
         Set<AssuredAdditionalDiscretionaryGrounds> addDiscretionary =
-            java.util.Objects.requireNonNullElse(
+            Objects.requireNonNullElse(
                 caseData.getAssuredAdditionalDiscretionaryGrounds(),
-                java.util.Set.of()
+                Set.of()
             );
         for (AssuredAdditionalDiscretionaryGrounds add : addDiscretionary) {
             mergedDiscretionary.add(RentArrearsDiscretionaryGrounds.valueOf(add.name()));
         }
 
-        // Backward compatibility: if no first-page or additional-only input present, use existing canonical sets
-        boolean noFirstPage = firstPage == null || firstPage.isEmpty();
+        // Backward compatibility: if no rent arrears grounds or additional-only input present, use existing canonical sets
+        boolean noRentArrearsGrounds = rentArrearsGrounds == null || rentArrearsGrounds.isEmpty();
         boolean noAdditional = addMandatory.isEmpty() && addDiscretionary.isEmpty();
 
         Set<RentArrearsMandatoryGrounds> effectiveMandatory = mergedMandatory;
         Set<RentArrearsDiscretionaryGrounds> effectiveDiscretionary = mergedDiscretionary;
 
-        if (noFirstPage && noAdditional) {
-            effectiveMandatory = java.util.Objects.requireNonNullElse(
-                caseData.getRentArrearsMandatoryGrounds(), new java.util.HashSet<>()
+        if (noRentArrearsGrounds && noAdditional) {
+            effectiveMandatory = Objects.requireNonNullElse(
+                caseData.getRentArrearsMandatoryGrounds(), new HashSet<>()
             );
-            effectiveDiscretionary = java.util.Objects.requireNonNullElse(
-                caseData.getRentArrearsDiscretionaryGrounds(), new java.util.HashSet<>()
+            effectiveDiscretionary = Objects.requireNonNullElse(
+                caseData.getRentArrearsDiscretionaryGrounds(), new HashSet<>()
             );
         } else {
             caseData.setRentArrearsMandatoryGrounds(mergedMandatory);
