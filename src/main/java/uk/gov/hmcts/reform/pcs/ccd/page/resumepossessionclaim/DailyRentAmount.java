@@ -1,12 +1,11 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim;
 
-import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
-
-import uk.gov.hmcts.reform.pcs.ccd.ShowConditions;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.LabelHolder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+
+import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 
 public class DailyRentAmount implements CcdPageConfiguration {
 
