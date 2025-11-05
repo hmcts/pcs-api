@@ -19,16 +19,16 @@ public class VerbalOrWrittenThreatsRiskPage implements CcdPageConfiguration {
     @Override
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
-                .page("evictionVerbalOrWrittenThreatsDetails", this::midEvent)
+                .page("verbalOrWrittenThreatsRisk", this::midEvent)
                 .pageLabel("Their verbal or written threats")
                 .showCondition("anyRiskToBailiff=\"YES\" "
                     + " AND enforcementRiskCategoriesCONTAINS\"VERBAL_OR_WRITTEN_THREATS\"")
-                .label("verbalOrWrittenThreatsPage-line-separator", "---")
+                .label("verbalOrWrittenThreatsRisk-line-separator", "---")
                 .complex(PCSCase::getEnforcementOrder)
                 .complex(EnforcementOrder::getRiskDetails)
                 .mandatory(EnforcementRiskDetails::getEnforcementVerbalOrWrittenThreatsDetails)
                 .done()
-                .label("verbalOrWrittenThreatsPage-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
+                .label("verbalOrWrittenThreatsRisk-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
 
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
@@ -38,7 +38,7 @@ public class VerbalOrWrittenThreatsRiskPage implements CcdPageConfiguration {
 
         String txt = data.getEnforcementOrder().getRiskDetails().getEnforcementVerbalOrWrittenThreatsDetails();
 
-        // TODO: Use TextAreaValidationService from PR #751 when merged
+        // Use TextAreaValidationService from PR #751 when merged
         if (txt.length() > EnforcementRiskValidationUtils.getCharacterLimit()) {
             errors.add(EnforcementRiskValidationUtils
                     .getCharacterLimitErrorMessage(RiskCategory.VERBAL_OR_WRITTEN_THREATS));
