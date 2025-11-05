@@ -1,40 +1,11 @@
 import {test} from '@playwright/test';
 import {initializeExecutor, performAction, performValidation, performValidations} from '@utils/controller';
-import {addressDetails} from '@data/page-data/addressDetails.page.data';
-import {claimantType} from '@data/page-data/claimantType.page.data';
-import {claimType} from '@data/page-data/claimType.page.data';
-import {claimantName} from '@data/page-data/claimantName.page.data';
-import {contactPreferences} from '@data/page-data/contactPreferences.page.data';
-import {defendantDetails} from '@data/page-data/defendantDetails.page.data';
-import {tenancyLicenceDetails} from '@data/page-data/tenancyLicenceDetails.page.data';
-import {groundsForPossession} from '@data/page-data/groundsForPossession.page.data';
-import {preActionProtocol} from '@data/page-data/preActionProtocol.page.data';
-import {mediationAndSettlement} from '@data/page-data/mediationAndSettlement.page.data';
-import {noticeOfYourIntention} from '@data/page-data/noticeOfYourIntention.page.data';
-import {noticeDetails} from '@data/page-data/noticeDetails.page.data';
-import {rentDetails} from '@data/page-data/rentDetails.page.data';
-import {dailyRentAmount} from '@data/page-data/dailyRentAmount.page.data';
-import {whatAreYourGroundsForPossession} from '@data/page-data/whatAreYourGroundsForPossession.page.data';
-import {moneyJudgment} from '@data/page-data/moneyJudgment.page.data';
-import {claimantCircumstances} from '@data/page-data/claimantCircumstances.page.data';
-import {applications} from '@data/page-data/applications.page.data';
-import {completeYourClaim} from '@data/page-data/completeYourClaim.page.data';
-import {user} from '@data/user-data/permanent.user.data';
-import {checkYourAnswers} from '@data/page-data/checkYourAnswers.page.data';
-import {propertyDetails} from '@data/page-data/propertyDetails.page.data';
-import {languageUsed} from '@data/page-data/languageUsed.page.data';
-import {defendantCircumstances} from '@data/page-data/defendantCircumstances.page.data';
-import {claimingCosts} from '@data/page-data/claimingCosts.page.data';
-import {statementOfTruth} from '@data/page-data/statementOfTruth.page.data';
-import {home} from '@data/page-data/home.page.data';
-import {additionalReasonsForPossession} from '@data/page-data/additionalReasonsForPossession.page.data';
-import {underlesseeOrMortgageeEntitledToClaim} from '@data/page-data/underlesseeOrMortgageeEntitledToClaim.page.data';
-import {alternativesToPossession} from '@data/page-data/alternativesToPossession.page.data';
-import {wantToUploadDocuments} from '@data/page-data/wantToUploadDocuments.page.data';
-import {reasonsForPossession} from "@data/page-data/reasonsForPossession.page.data";
-import {resumeClaim} from '@data/page-data/resumeClaim.page.data';
-import {resumeClaimOptions} from '@data/page-data/resumeClaimOptions.page.data';
-import {signInOrCreateAnAccount} from '@data/page-data/signInOrCreateAnAccount.page.data';
+import {addressDetails, claimantType, claimType, claimantName, contactPreferences, defendantDetails, tenancyLicenceDetails, groundsForPossession,
+        rentArrearsPossessionGrounds, preActionProtocol, mediationAndSettlement, noticeOfYourIntention, noticeDetails, rentDetails, completeYourClaim,
+        dailyRentAmount, provideMoreDetailsOfClaim, whatAreYourGroundsForPossession, moneyJudgment, claimantCircumstances, applications, user,
+        checkYourAnswers, propertyDetails, languageUsed, defendantCircumstances, claimingCosts, uploadAdditionalDocs, statementOfTruth, home,
+        additionalReasonsForPossession, underlesseeOrMortgageeEntitledToClaim, alternativesToPossession, reasonsForPossession,
+        wantToUploadDocuments, resumeClaim, resumeClaimOptions, signInOrCreateAnAccount } from '@data/page-data/';
 
 // This test validates the resume & find case functionality with and without saved options.
 // It is not intended to reuse for any of the e2e scenarios, those should still be covered in others specs.

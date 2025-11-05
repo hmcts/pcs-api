@@ -1,21 +1,12 @@
 import {test} from '@playwright/test';
-import {initializeExecutor, performAction, performValidation} from '@utils/controller';
-import {claimantType} from '@data/page-data/claimantType.page.data';
-import {claimType} from '@data/page-data/claimType.page.data';
-import {claimantName} from '@data/page-data/claimantName.page.data';
-import {claimantDetailsWales} from '@data/page-data/claimantDetailsWales.page.data';
-import {contactPreferences} from '@data/page-data/contactPreferences.page.data';
-import {defendantDetails} from '@data/page-data/defendantDetails.page.data';
-import {groundsForPossession} from '@data/page-data/groundsForPossession.page.data';
-import {preActionProtocol} from '@data/page-data/preActionProtocol.page.data';
-import {mediationAndSettlement} from '@data/page-data/mediationAndSettlement.page.data';
-import {noticeOfYourIntention} from '@data/page-data/noticeOfYourIntention.page.data';
-import {reasonsForPossession} from '@data/page-data/reasonsForPossession.page.data';
-import {user} from '@data/user-data/permanent.user.data';
-import {home} from '@data/page-data/home.page.data';
-import {whatAreYourGroundsForPossessionWales} from '@data/page-data/whatAreYourGroundsForPossessionWales.page.data';
-import {occupationContractOrLicenceDetailsWales} from '@data/page-data/occupationContractOrLicenceDetailsWales.page.data';
-import {signInOrCreateAnAccount} from '@data/page-data/signInOrCreateAnAccount.page.data';
+import {initializeExecutor, performAction, performValidation, performValidations} from '@utils/controller';
+import {claimType, claimantType, claimantName, claimantDetailsWales, contactPreferences, defendantDetails, tenancyLicenceDetails,
+        groundsForPossession, rentArrearsPossessionGrounds, preActionProtocol, mediationAndSettlement, noticeOfYourIntention, rentDetails,
+        provideMoreDetailsOfClaim, resumeClaim, resumeClaimOptions, detailsOfRentArrears, whatAreYourGroundsForPossession, rentArrearsOrBreachOfTenancy,
+        reasonsForPossession, moneyJudgment, claimantCircumstances, applications, completeYourClaim, user, reasonsForRequestingASuspensionOrder,
+        checkYourAnswers, propertyDetails, languageUsed, defendantCircumstances, claimingCosts, home, additionalReasonsForPossession, underlesseeOrMortgageeEntitledToClaim,
+        alternativesToPossession, housingAct, reasonsForRequestingADemotionOrder, statementOfExpressTerms, wantToUploadDocuments, whatAreYourGroundsForPossessionWales,
+        addressDetails, reasonsForRequestingASuspensionAndDemotionOrder, signInOrCreateAnAccount, occupationContractOrLicenceDetailsWales} from '@data/page-data';
 
 test.beforeEach(async ({page}) => {
   initializeExecutor(page);
