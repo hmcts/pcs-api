@@ -63,7 +63,7 @@ export class MakeClaimAction implements IAction {
       await performValidation('mainHeader', noticeOfYourIntention.mainHeader);
       await performAction('selectNoticeOfYourIntention', noticeOfYourIntention.no);
       await performValidation('mainHeader', moneyJudgment.mainHeader);
-      await performAction('selectMoneyJudgment', moneyJudgment.yes);
+      await performAction('selectMoneyJudgment', moneyJudgment.no);
       await performValidation('mainHeader', claimantCircumstances.mainHeader);
       await performAction('selectClaimantCircumstances', {
         circumstanceOption: claimantCircumstances.no

@@ -47,9 +47,9 @@ test.describe('[Enforcement - Warrant of Possession] @Master @nightly', async ()
     });
     await performValidation('mainHeader', riskPosedByEveryoneAtProperty.mainHeader);
     await performAction('selectRiskPosedByEveryoneAtProperty', {
-      riskTypes: [riskPosedByEveryoneAtProperty.violentOrAggressiveBehaviour,
-        riskPosedByEveryoneAtProperty.historyOfFirearmPossession,
-        riskPosedByEveryoneAtProperty.criminalOrAntisocialBehaviour]});
+      riskTypes: [riskPosedByEveryoneAtProperty.violentOrAggressiveBehaviour, riskPosedByEveryoneAtProperty.historyOfFirearmPossession,
+        riskPosedByEveryoneAtProperty.criminalOrAntisocialBehaviour, riskPosedByEveryoneAtProperty.verbalOrWrittenThreats,
+        riskPosedByEveryoneAtProperty.protestGroup]});
     await performAction('provideDetailsViolentOrAggressiveBehaviour', {
       label: violentOrAggressiveBehaviour.howHaveTheyBeenViolentAndAggressive,
       input: violentOrAggressiveBehaviour.howHaveTheyBeenViolentAndAggressiveInput
@@ -61,6 +61,14 @@ test.describe('[Enforcement - Warrant of Possession] @Master @nightly', async ()
     await performAction('provideDetailsCriminalOrAntisocialBehavior', {
       label: criminalOrAntisocialBehaviour.whatIsTheirHistoryOfCriminalAntisocialBehaviour,
       input: criminalOrAntisocialBehaviour.whatIsTheirHistoryOfCriminalAntisocialBehaviourInput
+    });
+    await performAction('provideDetailsVerbalOrWrittenThreats', {
+      label: verbalOrWrittenThreats.verbalOrWrittenThreatsMade,
+      input: verbalOrWrittenThreats.verbalOrWrittenThreatsMadeInput
+    });
+    await performAction('provideDetailsGroupProtestsEviction', {
+      label: groupProtestsEviction.whichGroupMember,
+      input: groupProtestsEviction.whichGroupMemberInput
     });
     await performValidation('mainHeader', vulnerableAdultsAndChildren.mainHeader);
     await performAction('clickButton', vulnerableAdultsAndChildren.continue);

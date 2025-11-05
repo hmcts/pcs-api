@@ -4,6 +4,7 @@ import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.EnforcementOrder;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.NameAndAddressForEviction;
 
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 import static uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent.SAVE_AND_RETURN;
@@ -59,7 +60,8 @@ public class NameAndAddressForEvictionPage implements CcdPageConfiguration {
                 <h2 class="govuk-heading-m">Is this the correct name and address for the eviction?</h2>
                 """)
             .complex(PCSCase::getEnforcementOrder)
-            .mandatory(EnforcementOrder::getNameAndAddressForEviction)
+            .complex(EnforcementOrder::getNameAndAddressForEviction)
+            .mandatory(NameAndAddressForEviction::getCorrectNameAndAddress)
             .label("nameAndAddressForEviction-save-and-return", SAVE_AND_RETURN);
 
     }
