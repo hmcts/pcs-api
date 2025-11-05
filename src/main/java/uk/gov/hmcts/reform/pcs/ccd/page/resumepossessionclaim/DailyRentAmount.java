@@ -3,6 +3,7 @@ package uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim;
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
+import uk.gov.hmcts.reform.pcs.ccd.domain.LabelHolder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 
 public class DailyRentAmount implements CcdPageConfiguration {
@@ -12,9 +13,12 @@ public class DailyRentAmount implements CcdPageConfiguration {
         pageBuilder
                 .page("dailyRentAmount")
                 .pageLabel("Daily rent amount")
-                .showCondition("groundsForPossession=\"Yes\" AND rentFrequency!=\"OTHER\""
-                                + " OR showRentDetailsPage=\"Yes\"")
+//                .showCondition("groundsForPossession=\"Yes\" AND rentFrequency!=\"OTHER\""
+//                                + " OR showRentDetailsPage=\"Yes\"")
                 .readonly(PCSCase::getFormattedCalculatedDailyRentChargeAmount, NEVER_SHOW)
+                .complex(PCSCase::getRentLabelHolder)
+                    .readonly(LabelHolder::getLabel)
+                .done()
                 .label("dailyRentAmount-content",
                         """
                                 ---
@@ -24,6 +28,9 @@ public class DailyRentAmount implements CcdPageConfiguration {
                                         rent should be charged at is:
                                         <span class="govuk-body govuk-!-font-weight-bold">
                                             ${formattedCalculatedDailyRentChargeAmount}
+                                        </span>
+                                        <span class="govuk-body govuk-!-font-weight-bold">
+                                            ${rentLabelHolder.label}
                                         </span>
                                     </p>
                                 </section>

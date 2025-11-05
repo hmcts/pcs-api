@@ -148,10 +148,13 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
                 .name("Make a claim")
                 .showCondition(ShowConditions.NEVER_SHOW)
                 .grant(Permission.CRUD, UserRole.PCS_SOLICITOR)
+                .endButtonLabel("This is a custom button label")
                 .showSummary();
 
         savingPageBuilderFactory.create(eventBuilder)
             .add(resumeClaim)
+            .add(new RentDetails())
+            .add(new DailyRentAmount())
             .add(selectClaimantType)
             .add(new ClaimantTypeNotEligibleEngland())
             .add(new ClaimantTypeNotEligibleWales())
@@ -183,8 +186,6 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             .add(new CheckingNotice())
             .add(new WalesCheckingNotice())
             .add(noticeDetails)
-            .add(new RentDetails())
-            .add(new DailyRentAmount())
             .add(new RentArrears())
             .add(new MoneyJudgment())
             .add(claimantCircumstancesPage)

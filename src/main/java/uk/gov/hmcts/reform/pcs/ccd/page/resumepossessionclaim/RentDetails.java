@@ -7,6 +7,7 @@ import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
+import uk.gov.hmcts.reform.pcs.ccd.domain.LabelHolder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentPaymentFrequency;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
@@ -22,7 +23,7 @@ public class RentDetails implements CcdPageConfiguration {
         pageBuilder
                 .page("rentDetails", this::midEvent)
                 .pageLabel("Rent details")
-                .showCondition("groundsForPossession=\"Yes\" OR showRentDetailsPage=\"Yes\"")
+//                .showCondition("groundsForPossession=\"Yes\" OR showRentDetailsPage=\"Yes\"")
                 .label("rentDetails-content",
                         """
                         ---
@@ -48,6 +49,8 @@ public class RentDetails implements CcdPageConfiguration {
 
             // Set formatted value for display
             caseData.setFormattedCalculatedDailyRentChargeAmount(formatCurrency(dailyAmountString));
+
+            caseData.setRentLabelHolder(LabelHolder.builder().label(formatCurrency(dailyAmountString)).build());
         }
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
