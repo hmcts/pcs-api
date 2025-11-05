@@ -14,11 +14,18 @@ import uk.gov.hmcts.ccd.sdk.type.FieldType;
 public class LabelHolder {
 
     @CCD(label = """
-                ---
-                <h2>Defendant's name</h2>
-                Based on your previous answers, the amount per day that unpaid rent should be charged at is:
-                <span class="govuk-body govuk-!-font-weight-bold">${formattedCalculatedDailyRentChargeAmount}</span>
-                """, typeOverride = FieldType.Label)
+        ---
+        Label 1:
+        <section tabindex="0">
+            <p class="govuk-body">
+                Based on your previous answers, the amount per day that unpaid
+                rent should be charged at is:
+                <span class="govuk-body govuk-!-font-weight-bold">
+                    ${formattedCalculatedDailyRentChargeAmount}
+                </span>
+            </p>
+        </section>
+        """, typeOverride = FieldType.Label)
     private String label;
 
     @CCD(label = "replace 2", typeOverride = FieldType.Label)

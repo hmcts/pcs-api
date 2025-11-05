@@ -336,7 +336,19 @@ public class PCSCase {
     @CCD
     private String formattedCalculatedDailyRentChargeAmount;
 
-    @CCD(label = "Here2 -> ${formattedCalculatedDailyRentChargeAmount}")
+    @CCD(label = """
+        ---
+        Label 3:
+        <section tabindex="0">
+            <p class="govuk-body">
+                Based on your previous answers, the amount per day that unpaid
+                rent should be charged at is:
+                <span class="govuk-body govuk-!-font-weight-bold">
+                    ${formattedCalculatedDailyRentChargeAmount}
+                </span>
+            </p>
+        </section>
+        """, typeOverride = FieldType.Label)
     private String formattedCalculatedDailyRentChargeAmountLabel;
 
     @CCD
