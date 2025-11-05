@@ -8,6 +8,8 @@ import uk.gov.hmcts.reform.payments.client.models.FeeDto;
 @Component
 public class PaymentRequestMapper {
 
+    private static final String ACTION_PAYMENT = "payment";
+
     /**
      * Maps a Fees API response into a Payments API FeeDto, adding the requested volume.
      *
@@ -31,13 +33,12 @@ public class PaymentRequestMapper {
     /**
      * Builds a CasePaymentRequestDto with the provided parameters.
      *
-     * @param action the action to perform (e.g., "payment")
      * @param responsibleParty the responsible party
      * @return a CasePaymentRequestDto instance
      */
-    public CasePaymentRequestDto toCasePaymentRequest(String action, String responsibleParty) {
+    public CasePaymentRequestDto toCasePaymentRequest(String responsibleParty) {
         return CasePaymentRequestDto.builder()
-            .action(action)
+            .action(ACTION_PAYMENT)
             .responsibleParty(responsibleParty)
             .build();
     }

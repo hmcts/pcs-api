@@ -281,21 +281,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
 
         draftCaseDataService.deleteUnsubmittedCaseData(caseReference);
 
-        String taskId = UUID.randomUUID().toString();
-
-        FeesAndPayTaskData feesAndPayTaskData = FeesAndPayTaskData.builder()
-            .feeType(CASE_ISSUED_FEE_TYPE)
-            .ccdCaseNumber(String.valueOf(caseReference))
-            .caseReference(String.valueOf(caseReference))
-            .responsibleParty(pcsCase.getOrganisationName())
-            .build();
-
-        schedulerClient.scheduleIfNotExists(
-            FEE_CASE_ISSUED_TASK_DESCRIPTOR
-                .instance(taskId)
-                .data(feesAndPayTaskData)
-                .scheduledTo(Instant.now())
-        );
+        scheduleCaseIssuedFeeTask(caseReference, pcsCase.getOrganisationName());
 
         return SubmitResponse.defaultResponse();
     }
@@ -320,6 +306,24 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             contactEmail,
             contactAddress,
             pcsCase.getClaimantContactPhoneNumber()
+        );
+    }
+
+    private void scheduleCaseIssuedFeeTask(long caseReference, String responsibleParty) {
+        String taskId = UUID.randomUUID().toString();
+
+        FeesAndPayTaskData taskData = FeesAndPayTaskData.builder()
+            .feeType(CASE_ISSUED_FEE_TYPE)
+            .ccdCaseNumber(String.valueOf(caseReference))
+            .caseReference(String.valueOf(caseReference))
+            .responsibleParty(responsibleParty)
+            .build();
+
+        schedulerClient.scheduleIfNotExists(
+            FEE_CASE_ISSUED_TASK_DESCRIPTOR
+                .instance(taskId)
+                .data(taskData)
+                .scheduledTo(Instant.now())
         );
     }
 }

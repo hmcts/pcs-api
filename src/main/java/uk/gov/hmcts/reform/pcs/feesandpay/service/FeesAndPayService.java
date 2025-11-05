@@ -29,8 +29,6 @@ public class FeesAndPayService {
     private final PaymentRequestMapper paymentRequestMapper;
     private final IdamService idamService;
 
-    private static final String ACTION_PAYMENT = "payment";
-
     @Value("${payments.api.callback-url}")
     private String callbackUrl;
 
@@ -93,7 +91,7 @@ public class FeesAndPayService {
         FeeDto feeDto = paymentRequestMapper.toFeeDto(fee, volume);
 
         CasePaymentRequestDto casePaymentRequest =
-            paymentRequestMapper.toCasePaymentRequest(ACTION_PAYMENT, responsibleParty);
+            paymentRequestMapper.toCasePaymentRequest(responsibleParty);
 
         CreateServiceRequestDTO requestDto = CreateServiceRequestDTO.builder()
             .callBackUrl(callbackUrl)

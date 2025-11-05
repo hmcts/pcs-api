@@ -189,7 +189,7 @@ class FeesAndPayServiceTest {
             .build();
 
         when(paymentRequestMapper.toFeeDto(feeLookupResponseDto, volume)).thenReturn(mappedFee);
-        when(paymentRequestMapper.toCasePaymentRequest("payment", responsibleParty))
+        when(paymentRequestMapper.toCasePaymentRequest(responsibleParty))
             .thenReturn(casePaymentRequestDto);
         when(idamService.getSystemUserAuthorisation()).thenReturn(systemToken);
         when(paymentsClient.createServiceRequest(eq(systemToken), any(CreateServiceRequestDTO.class)))
