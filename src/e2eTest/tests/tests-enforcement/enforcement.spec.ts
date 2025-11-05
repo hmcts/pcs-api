@@ -15,6 +15,8 @@ import { evictionCouldBeDelayed } from "@data/page-data/page-data-enforcement/ev
 import { violentOrAggressiveBehaviour } from "@data/page-data/page-data-enforcement/violentOrAggressiveBehaviour.page.data";
 import { firearmPossession } from "@data/page-data/page-data-enforcement/firearmPossession.page.data";
 import { criminalOrAntisocialBehaviour } from "@data/page-data/page-data-enforcement/criminalOrAntisocialBehaviour.page.data";
+import { verbalOrWrittenThreats } from "@data/page-data/page-data-enforcement/verbalOrWrittenThreats.page.data";
+import { groupProtestsEviction } from "@data/page-data/page-data-enforcement/groupProtestsEviction.page.data";
 import { signInOrCreateAnAccount } from "@data/page-data/signInOrCreateAnAccount.page.data";
 
 test.beforeEach(async ({page}) => {
@@ -57,9 +59,9 @@ test.describe('[Enforcement - Warrant of Possession] @Master @nightly', async ()
     });
     await performValidation('mainHeader', riskPosedByEveryoneAtProperty.mainHeader);
     await performAction('selectRiskPosedByEveryoneAtProperty', {
-      riskTypes: [riskPosedByEveryoneAtProperty.violentOrAggressiveBehaviour,
-        riskPosedByEveryoneAtProperty.historyOfFirearmPossession,
-        riskPosedByEveryoneAtProperty.criminalOrAntisocialBehaviour]});
+      riskTypes: [riskPosedByEveryoneAtProperty.violentOrAggressiveBehaviour, riskPosedByEveryoneAtProperty.historyOfFirearmPossession,
+        riskPosedByEveryoneAtProperty.criminalOrAntisocialBehaviour, riskPosedByEveryoneAtProperty.verbalOrWrittenThreats,
+        riskPosedByEveryoneAtProperty.protestGroup]});
     await performAction('provideDetailsViolentOrAggressiveBehaviour', {
       label: violentOrAggressiveBehaviour.howHaveTheyBeenViolentAndAggressive,
       input: violentOrAggressiveBehaviour.howHaveTheyBeenViolentAndAggressiveInput
@@ -71,6 +73,14 @@ test.describe('[Enforcement - Warrant of Possession] @Master @nightly', async ()
     await performAction('provideDetailsCriminalOrAntisocialBehavior', {
       label: criminalOrAntisocialBehaviour.whatIsTheirHistoryOfCriminalAntisocialBehaviour,
       input: criminalOrAntisocialBehaviour.whatIsTheirHistoryOfCriminalAntisocialBehaviourInput
+    });
+    await performAction('provideDetailsVerbalOrWrittenThreats', {
+      label: verbalOrWrittenThreats.verbalOrWrittenThreatsMade,
+      input: verbalOrWrittenThreats.verbalOrWrittenThreatsMadeInput
+    });
+    await performAction('provideDetailsGroupProtestsEviction', {
+      label: groupProtestsEviction.whichGroupMember,
+      input: groupProtestsEviction.whichGroupMemberInput
     });
     await performValidation('mainHeader', vulnerableAdultsAndChildren.mainHeader);
     await performAction('clickButton', vulnerableAdultsAndChildren.continue);
