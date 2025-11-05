@@ -22,10 +22,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractDiscretionaryGroun
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractMandatoryGroundsWales;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
-import uk.gov.hmcts.reform.pcs.ccd.domain.wales.EstateManagementGroundsWales;
-import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceTypeWales;
-import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractDiscretionaryGroundsWales;
-import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractMandatoryGroundsWales;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -43,6 +39,12 @@ import static uk.gov.hmcts.ccd.sdk.type.FieldType.TextArea;
 @Builder
 @Data
 public class PCSCase {
+
+    // Field label constants - shared between domain annotations and validation
+    public static final String NOTICE_EMAIL_EXPLANATION_LABEL = "Explain how it was served by email";
+    public static final String NOTICE_OTHER_EXPLANATION_LABEL = "Explain what the other means were";
+    public static final String DETAILS_OF_OTHER_TYPE_OF_TENANCY_LICENCE_LABEL = 
+        "Give details of the type of tenancy or licence agreement that's in place";
 
     @CCD(
         searchable = false
@@ -156,10 +158,10 @@ public class PCSCase {
     @CCD(label = "Enter address details")
     private AddressUK overriddenClaimantContactAddress;
 
-    @CCD(label = "Do you want to provide a contact phone number? (Optional)")
+    @CCD(label = "Do you want to provide a contact phone number?")
     private VerticalYesNo claimantProvidePhoneNumber;
 
-    @CCD(label = "Enter phone number", typeOverride = FieldType.PhoneUK)
+    @CCD(label = "Enter phone number", regex = "^\\s*0\\d{10}\\s*$")
     private String claimantContactPhoneNumber;
 
     @CCD(
@@ -234,7 +236,6 @@ public class PCSCase {
     @CCD(
         label = "Give details about the attempted mediation and what the outcome was",
         hint = "You can enter up to 250 characters",
-        max = 250,
         typeOverride = TextArea
     )
     private String mediationAttemptedDetails;
@@ -247,7 +248,6 @@ public class PCSCase {
     @CCD(
         label = "Explain what steps you've taken to reach a settlement",
         hint = "You can enter up to 250 characters",
-        max = 250,
         typeOverride = TextArea
     )
     private String settlementAttemptedDetails;
@@ -398,15 +398,15 @@ public class PCSCase {
     private String noticePersonName;
 
     @CCD(
-        label = "Explain how it was served by email",
-        max = 250,
+        label = NOTICE_EMAIL_EXPLANATION_LABEL,
+        hint = "You can enter up to 250 characters",
         typeOverride = TextArea
     )
     private String noticeEmailExplanation;
 
     @CCD(
-        label = "Explain what the other means were. You can enter up to 250 characters",
-        max = 250,
+        label = NOTICE_OTHER_EXPLANATION_LABEL,
+        hint = "You can enter up to 250 characters",
         typeOverride = TextArea
     )
     private String noticeOtherExplanation;
@@ -427,7 +427,8 @@ public class PCSCase {
     private TenancyLicenceType typeOfTenancyLicence;
 
     @CCD(
-        label = "Give details of the type of tenancy or licence agreement that's in place",
+        label = DETAILS_OF_OTHER_TYPE_OF_TENANCY_LICENCE_LABEL,
+        hint = "You can enter up to 500 characters",
         typeOverride = TextArea
     )
     private String detailsOfOtherTypeOfTenancyLicence;
@@ -675,6 +676,7 @@ public class PCSCase {
 
     @JsonUnwrapped(prefix = "wales")
     private WalesNoticeDetails walesNoticeDetails;
+
     @CCD(
         label = "Discretionary grounds",
         hint = "Select all that apply",
@@ -714,6 +716,9 @@ public class PCSCase {
         typeParameterOverride = "OccupationLicenceTypeWales"
     )
     private OccupationLicenceTypeWales occupationLicenceTypeWales;
+
+    @JsonUnwrapped
+    private UnderlesseeMortgagee underlesseeMortgagee;
 
     @JsonUnwrapped
     private EnforcementOrder enforcementOrder;

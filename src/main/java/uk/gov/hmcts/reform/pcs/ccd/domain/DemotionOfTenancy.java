@@ -15,6 +15,9 @@ import static uk.gov.hmcts.ccd.sdk.type.FieldType.TextArea;
 @AllArgsConstructor
 public class DemotionOfTenancy {
 
+    public static final String DEMOTION_OF_TENANCY_REASON_LABEL = "Why are you requesting a demotion order?";
+    public static final String STATEMENT_OF_EXPRESS_TERMS_DETAILS_LABEL = "Give details of the terms";
+
     @CCD(
         label = "Which section of the Housing Act is the claim for demotion of tenancy made under?"
     )
@@ -27,19 +30,17 @@ public class DemotionOfTenancy {
     private VerticalYesNo statementOfExpressTermsServed;
 
     @CCD(
-        label = "Give details of the terms",
+        label = STATEMENT_OF_EXPRESS_TERMS_DETAILS_LABEL,
         hint = "You can enter up to 950 characters",
-        typeOverride = TextArea,
-        max = 950
+        typeOverride = TextArea
     )
     private String statementOfExpressTermsDetails;
 
     @CCD(
-        label = "Why are you requesting a demotion order?",
+        label = DEMOTION_OF_TENANCY_REASON_LABEL,
         hint = "Give details of the defendants' conduct and any other reasons you think are relevant. "
             + "You can enter up to 250 characters",
-        typeOverride = TextArea,
-        max = 250
+        typeOverride = TextArea
     )
     private String demotionOfTenancyReason;
 
