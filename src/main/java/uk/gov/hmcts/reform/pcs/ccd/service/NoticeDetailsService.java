@@ -19,11 +19,12 @@ import java.util.List;
 @AllArgsConstructor
 public class NoticeDetailsService {
     
+    private final TextAreaValidationService textAreaValidationService;
+    
     // Error message constants
     private static final String INVALID_DATETIME_ERROR = "Enter a valid date and time in the format DD MM YYYY HH MM";
     private static final String FUTURE_DATETIME_ERROR = "The date and time cannot be today or in the future";
     private static final String FUTURE_DATE_ERROR = "The date cannot be today or in the future";
-    private static final String EXPLANATION_TOO_LONG_ERROR = "The explanation must be 250 characters or fewer";
     private static final String NOTICE_SERVICE_METHOD_REQUIRED = "You must select how you served the notice";
 
     /**
@@ -66,6 +67,20 @@ public class NoticeDetailsService {
                 break;
         }
 
+        // Validate textarea fields for character limits
+        errors.addAll(textAreaValidationService.validateMultipleTextAreas(
+            TextAreaValidationService.FieldValidation.of(
+                caseData.getNoticeEmailExplanation(),
+                PCSCase.NOTICE_EMAIL_EXPLANATION_LABEL,
+                TextAreaValidationService.SHORT_TEXT_LIMIT
+            ),
+            TextAreaValidationService.FieldValidation.of(
+                caseData.getNoticeOtherExplanation(),
+                PCSCase.NOTICE_OTHER_EXPLANATION_LABEL,
+                TextAreaValidationService.SHORT_TEXT_LIMIT
+            )
+        ));
+
         return errors;
     }
 
@@ -91,22 +106,11 @@ public class NoticeDetailsService {
         }
     }
 
-    /**
-     * Validates an explanation field with length validation.
-     */
-    private void validateExplanationField(String explanation, List<String> errors) {
-        if (explanation != null && explanation.length() > 250) {
-            errors.add(EXPLANATION_TOO_LONG_ERROR);
-        }
-    }
-
     private void validateEmail(PCSCase caseData, List<String> errors) {
-        validateExplanationField(caseData.getNoticeEmailExplanation(), errors);
         validateDateTimeField(caseData.getNoticeEmailSentDateTime(), errors);
     }
 
     private void validateOther(PCSCase caseData, List<String> errors) {
-        validateExplanationField(caseData.getNoticeOtherExplanation(), errors);
         validateDateTimeField(caseData.getNoticeOtherDateTime(), errors);
     }
 
