@@ -6,12 +6,12 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import uk.gov.hmcts.ccd.sdk.type.Document;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceTypeWales;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.List;
-
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 @Builder
@@ -61,5 +61,26 @@ public class TenancyLicence {
     private List<ThirdPartyPaymentSource> thirdPartyPaymentSources;
 
     private String thirdPartyPaymentSourceOther;
+
+    // Wales Housing Act details
+    private YesNoNotApplicable walesRegistered;
+    private String walesRegistrationNumber;
+    private YesNoNotApplicable walesLicensed;
+    private String walesLicenceNumber;
+    private YesNoNotApplicable walesLicensedAgentAppointed;
+    private String walesAgentFirstName;
+    private String walesAgentLastName;
+    private String walesAgentLicenceNumber;
+    private LocalDate walesAgentAppointmentDate;
+
+    //Wales notice details
+    private Boolean walesNoticeServed;
+    private String walesTypeOfNoticeServed;
+
+    // Wales Occupation Contract/Licence details
+    private OccupationLicenceTypeWales occupationLicenceTypeWales;
+    private String walesOtherLicenceTypeDetails;
+    private LocalDate walesLicenceStartDate;
+    private List<Document> walesLicenceDocuments;
 
 }

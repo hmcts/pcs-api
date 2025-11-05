@@ -6,7 +6,6 @@ public enum EventId {
     citizenSubmitApplication,
     citizenUpdateApplication,
     createPossessionClaim,
-    processClaimPayment,
     resumePossessionClaim,
-
+    enforceTheOrder
 }

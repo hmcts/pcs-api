@@ -10,6 +10,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServiceMethod;
 import uk.gov.hmcts.reform.pcs.ccd.service.NoticeDetailsService;
+import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 
 import java.util.List;
 
@@ -22,6 +23,7 @@ import java.util.List;
 public class NoticeDetails implements CcdPageConfiguration {
 
     private final NoticeDetailsService noticeDetailsService;
+    private final TextAreaValidationService textAreaValidationService;
 
     private static final String NOTICE_SERVICE_METHOD_CONDITION = "noticeServiceMethod=\"";
 
@@ -108,7 +110,7 @@ public class NoticeDetails implements CcdPageConfiguration {
                 certificate of service? (Optional)</h2>
                 <p class="govuk-hint">You can either upload this now or closer to the hearing date.
                 Any documents you upload now will be included in the pack of documents a judge will
-                receive before the hearing (the bundle).</p>
+                receive before the hearing (the bundle)</p>
                 """)
               .optional(PCSCase::getNoticeDocuments);
     }
@@ -119,15 +121,6 @@ public class NoticeDetails implements CcdPageConfiguration {
 
         List<String> validationErrors = noticeDetailsService.validateNoticeDetails(caseData);
 
-        if (!validationErrors.isEmpty()) {
-            return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
-                .data(caseData)
-                .errors(validationErrors)
-                .build();
-        }
-
-        return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
-            .data(caseData)
-            .build();
+        return textAreaValidationService.createValidationResponse(caseData, validationErrors);
     }
 }

@@ -7,6 +7,7 @@ import uk.gov.hmcts.ccd.sdk.api.CCDConfig;
 import uk.gov.hmcts.ccd.sdk.api.DecentralisedConfigBuilder;
 import uk.gov.hmcts.ccd.sdk.api.EventPayload;
 import uk.gov.hmcts.ccd.sdk.api.Permission;
+import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.ShowConditions;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
@@ -36,12 +37,14 @@ public class CitizenUpdateApplication implements CCDConfig<PCSCase, State, UserR
             .grant(Permission.R, UserRole.PCS_CASE_WORKER);
     }
 
-    private void submit(EventPayload<PCSCase, State> eventPayload) {
+    private SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {
         Long caseReference = eventPayload.caseReference();
         PCSCase pcsCase = eventPayload.caseData();
 
         log.info("Citizen updated case {}", caseReference);
 
         pcsCaseService.patchCase(caseReference, pcsCase);
+
+        return SubmitResponse.defaultResponse();
     }
 }

@@ -12,6 +12,11 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.RentPaymentFrequency;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicence;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ThirdPartyPaymentSource;
+import uk.gov.hmcts.reform.pcs.ccd.domain.WalesHousingAct;
+import uk.gov.hmcts.reform.pcs.ccd.domain.WalesNoticeDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotApplicable;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceDetailsWales;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceTypeWales;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -303,4 +308,216 @@ class TenancyLicenceServiceTest {
         assertThat(result.getNoticeDocuments()).isEmpty();
     }
 
+    @Test
+    void shouldMapWalesHousingActDetailsWhenPresent() {
+        // Given
+        LocalDate appointmentDate = LocalDate.of(2024, 3, 15);
+        WalesHousingAct walesHousingAct = WalesHousingAct.builder()
+            .registered(YesNoNotApplicable.YES)
+            .registrationNumber("REG123456")
+            .licensed(YesNoNotApplicable.YES)
+            .licenceNumber("LIC789012")
+            .licensedAgentAppointed(YesNoNotApplicable.YES)
+            .agentFirstName("John")
+            .agentLastName("Smith")
+            .agentLicenceNumber("AGENT345678")
+            .agentAppointmentDate(appointmentDate)
+            .build();
+
+        when(pcsCase.getWalesHousingAct()).thenReturn(walesHousingAct);
+
+        // When
+        TenancyLicence result = tenancyLicenceService.buildTenancyLicence(pcsCase);
+
+        // Then
+        assertThat(result.getWalesRegistered()).isEqualTo(YesNoNotApplicable.YES);
+        assertThat(result.getWalesRegistrationNumber()).isEqualTo("REG123456");
+        assertThat(result.getWalesLicensed()).isEqualTo(YesNoNotApplicable.YES);
+        assertThat(result.getWalesLicenceNumber()).isEqualTo("LIC789012");
+        assertThat(result.getWalesLicensedAgentAppointed()).isEqualTo(YesNoNotApplicable.YES);
+        assertThat(result.getWalesAgentFirstName()).isEqualTo("John");
+        assertThat(result.getWalesAgentLastName()).isEqualTo("Smith");
+        assertThat(result.getWalesAgentLicenceNumber()).isEqualTo("AGENT345678");
+        assertThat(result.getWalesAgentAppointmentDate()).isEqualTo(appointmentDate);
+    }
+
+    @Test
+    void shouldHandleNullWalesHousingActDetails() {
+        // Given
+        when(pcsCase.getWalesHousingAct()).thenReturn(null);
+
+        // When
+        TenancyLicence result = tenancyLicenceService.buildTenancyLicence(pcsCase);
+
+        // Then
+        assertThat(result.getWalesRegistered()).isNull();
+        assertThat(result.getWalesRegistrationNumber()).isNull();
+        assertThat(result.getWalesLicensed()).isNull();
+        assertThat(result.getWalesLicenceNumber()).isNull();
+        assertThat(result.getWalesLicensedAgentAppointed()).isNull();
+        assertThat(result.getWalesAgentFirstName()).isNull();
+        assertThat(result.getWalesAgentLastName()).isNull();
+        assertThat(result.getWalesAgentLicenceNumber()).isNull();
+        assertThat(result.getWalesAgentAppointmentDate()).isNull();
+    }
+
+    @Test
+    void shouldHandleWalesHousingActDetailsWithNotApplicableValues() {
+        // Given
+        WalesHousingAct walesHousingAct = WalesHousingAct.builder()
+            .registered(YesNoNotApplicable.NOT_APPLICABLE)
+            .licensed(YesNoNotApplicable.NO)
+            .licensedAgentAppointed(YesNoNotApplicable.NOT_APPLICABLE)
+            .build();
+
+        when(pcsCase.getWalesHousingAct()).thenReturn(walesHousingAct);
+
+        // When
+        TenancyLicence result = tenancyLicenceService.buildTenancyLicence(pcsCase);
+
+        // Then
+        assertThat(result.getWalesRegistered()).isEqualTo(YesNoNotApplicable.NOT_APPLICABLE);
+        assertThat(result.getWalesLicensed()).isEqualTo(YesNoNotApplicable.NO);
+        assertThat(result.getWalesLicensedAgentAppointed()).isEqualTo(YesNoNotApplicable.NOT_APPLICABLE);
+    }
+
+    @Test
+    void shouldMapWalesNoticeFieldsWhenPresent() {
+        // Given
+        String typeOfNoticeServed = "Some notice type";
+
+        WalesNoticeDetails walesNoticeDetails = WalesNoticeDetails.builder()
+            .noticeServed(YesOrNo.YES)
+            .typeOfNoticeServed(typeOfNoticeServed)
+            .build();
+        when(pcsCase.getWalesNoticeDetails()).thenReturn(walesNoticeDetails);
+
+        // When
+        TenancyLicence result = tenancyLicenceService.buildTenancyLicence(pcsCase);
+
+        // Then
+        assertThat(result.getWalesNoticeServed()).isTrue();
+        assertThat(result.getWalesTypeOfNoticeServed()).isEqualTo(typeOfNoticeServed);
+    }
+
+    @Test
+    void shouldMapWalesOccupationContractDetailsToTenancyLicence() {
+        // Given - Wales case with occupation contract details
+        LocalDate licenseStartDate = LocalDate.of(2024, 1, 15);
+        List<ListValue<Document>> walesDocuments = Arrays.asList(
+            ListValue.<Document>builder().id("1")
+                .value(Document.builder()
+                    .filename("occupation_contract.pdf")
+                    .url("http://doc.com/occupation_contract.pdf")
+                    .build())
+                .build(),
+            ListValue.<Document>builder().id("2")
+                .value(Document.builder()
+                    .filename("additional_doc.pdf")
+                    .url("http://doc.com/additional_doc.pdf")
+                    .build())
+                .build()
+        );
+
+        OccupationLicenceDetailsWales walesDetails = OccupationLicenceDetailsWales.builder()
+            .occupationLicenceTypeWales(OccupationLicenceTypeWales.SECURE_CONTRACT)
+            .otherLicenceTypeDetails("Custom contract details")
+            .licenceStartDate(licenseStartDate)
+            .licenceDocuments(walesDocuments)
+            .build();
+
+        PCSCase pcsCase = PCSCase.builder()
+            .occupationLicenceDetailsWales(walesDetails)
+            .build();
+
+        // When
+        TenancyLicence result = tenancyLicenceService.buildTenancyLicence(pcsCase);
+
+        // Then - Wales fields populated
+        assertThat(result.getOccupationLicenceTypeWales()).isEqualTo(OccupationLicenceTypeWales.SECURE_CONTRACT);
+        assertThat(result.getWalesOtherLicenceTypeDetails()).isEqualTo("Custom contract details");
+        assertThat(result.getWalesLicenceStartDate()).isEqualTo(licenseStartDate);
+        assertThat(result.getWalesLicenceDocuments()).hasSize(2);
+        assertThat(result.getWalesLicenceDocuments().get(0).getFilename()).isEqualTo("occupation_contract.pdf");
+        assertThat(result.getWalesLicenceDocuments().get(1).getFilename()).isEqualTo("additional_doc.pdf");
+
+        // England fields should be null or empty
+        assertThat(result.getTenancyLicenceType()).isNull();
+        assertThat(result.getTenancyLicenceDate()).isNull();
+        assertThat(result.getSupportingDocuments()).isEmpty();
+    }
+
+    @Test
+    void shouldMapWalesOccupationContractDetailsWithStandardContract() {
+        // Given - Wales case with standard contract
+        LocalDate licenseStartDate = LocalDate.of(2023, 6, 1);
+
+        OccupationLicenceDetailsWales walesDetails = OccupationLicenceDetailsWales.builder()
+            .occupationLicenceTypeWales(OccupationLicenceTypeWales.STANDARD_CONTRACT)
+            .licenceStartDate(licenseStartDate)
+            .licenceDocuments(null)
+            .build();
+
+        PCSCase pcsCase = PCSCase.builder()
+            .occupationLicenceDetailsWales(walesDetails)
+            .build();
+
+        // When
+        TenancyLicence result = tenancyLicenceService.buildTenancyLicence(pcsCase);
+
+        // Then
+        assertThat(result.getOccupationLicenceTypeWales()).isEqualTo(OccupationLicenceTypeWales.STANDARD_CONTRACT);
+        assertThat(result.getWalesLicenceStartDate()).isEqualTo(licenseStartDate);
+        assertThat(result.getWalesOtherLicenceTypeDetails()).isNull();
+        assertThat(result.getWalesLicenceDocuments()).isEmpty();
+    }
+
+    @Test
+    void shouldHandleNullOccupationLicenceDetailsWales() {
+        // Given - Case with no Wales occupation contract details
+        PCSCase pcsCase = PCSCase.builder()
+            .occupationLicenceDetailsWales(null)
+            .build();
+
+        // When
+        TenancyLicence result = tenancyLicenceService.buildTenancyLicence(pcsCase);
+
+        // Then - Wales fields should be null
+        assertThat(result.getOccupationLicenceTypeWales()).isNull();
+        assertThat(result.getWalesOtherLicenceTypeDetails()).isNull();
+        assertThat(result.getWalesLicenceStartDate()).isNull();
+        assertThat(result.getWalesLicenceDocuments()).isNull();
+    }
+
+    @Test
+    void shouldMapEnglandTenancyDetailsWithoutWalesData() {
+        // Given - England case (no Wales data)
+        LocalDate tenancyDate = LocalDate.of(2024, 2, 20);
+        List<ListValue<Document>> englandDocs = List.of(
+            ListValue.<Document>builder().id("1")
+                .value(Document.builder()
+                    .filename("tenancy_agreement.pdf")
+                    .url("http://doc.com/tenancy_agreement.pdf")
+                    .build())
+                .build()
+        );
+
+        when(pcsCase.getTypeOfTenancyLicence()).thenReturn(TenancyLicenceType.ASSURED_TENANCY);
+        when(pcsCase.getTenancyLicenceDate()).thenReturn(tenancyDate);
+        when(pcsCase.getTenancyLicenceDocuments()).thenReturn(englandDocs);
+        when(pcsCase.getOccupationLicenceDetailsWales()).thenReturn(null);
+
+        // When
+        TenancyLicence result = tenancyLicenceService.buildTenancyLicence(pcsCase);
+
+        // Then - England fields populated
+        assertThat(result.getTenancyLicenceType()).isEqualTo("Assured tenancy");
+        assertThat(result.getTenancyLicenceDate()).isEqualTo(tenancyDate);
+        assertThat(result.getSupportingDocuments()).hasSize(1);
+
+        // Wales occupation contract fields should be null
+        assertThat(result.getOccupationLicenceTypeWales()).isNull();
+        assertThat(result.getWalesLicenceStartDate()).isNull();
+        assertThat(result.getWalesLicenceDocuments()).isNull();
+    }
 }

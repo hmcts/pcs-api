@@ -1,8 +1,8 @@
-import { Page, test } from '@playwright/test';
-import { actionData, actionRecord, actionTuple } from './interfaces/action.interface';
-import { validationData, validationRecord, validationTuple } from './interfaces/validation.interface';
-import { ActionRegistry } from './registry/action.registry';
-import { ValidationRegistry } from './registry/validation.registry';
+import {Page, test} from '@playwright/test';
+import {actionData, actionRecord, actionTuple} from './interfaces/action.interface';
+import {validationData, validationRecord, validationTuple} from './interfaces/validation.interface';
+import {ActionRegistry} from './registry/action.registry';
+import {ValidationRegistry} from './registry/validation.registry';
 
 let testExecutor: { page: Page };
 
@@ -20,8 +20,20 @@ function getExecutor(): { page: Page } {
 export async function performAction(action: string, fieldName?: actionData | actionRecord, value?: actionData | actionRecord): Promise<void> {
   const executor = getExecutor();
   const actionInstance = ActionRegistry.getAction(action);
-  await test.step(`${action}${fieldName !== undefined ? ` - ${typeof fieldName === 'object' ? readValuesFromInputObjects(fieldName) : fieldName}` : ''} ${value !== undefined ? ` with value '${typeof value === 'object' ? readValuesFromInputObjects(value) : value}'` : ''}`, async () => {
-    await actionInstance.execute(executor.page, action, fieldName, value);
+  let displayFieldName = fieldName;
+  let displayValue = value ?? fieldName;
+
+  if (typeof fieldName === 'string' && fieldName.toLowerCase() === 'password' && typeof value === 'string') {
+    displayValue = '*'.repeat(value.length);
+  } else if (typeof fieldName === 'object' && fieldName !== null && 'password' in fieldName) {
+    const obj = fieldName as Record<string, any>;
+    displayValue = { ...obj, password: '*'.repeat(String(obj.password).length) };
+    displayFieldName = displayValue;
+  }
+
+  const stepText = `${action}${displayFieldName !== undefined ? ` - ${typeof displayFieldName === 'object' ? readValuesFromInputObjects(displayFieldName) : displayFieldName}` : ''}${displayValue !== undefined ? ` with value '${typeof displayValue === 'object' ? readValuesFromInputObjects(displayValue) : displayValue}'` : ''}`;
+  await test.step(stepText, async () => {
+  await actionInstance.execute(executor.page, action, fieldName, value);
   });
 }
 
@@ -60,10 +72,19 @@ function readValuesFromInputObjects(obj: object): string {
   const keys = Object.keys(obj);
   const formattedPairs = keys.map(key => {
     const value = (obj as actionRecord)[key];
-    let valueStr: string;
-    if (typeof value === 'string') valueStr = `${value}`;
-    else valueStr = String(value);
-    return `${key}: ${valueStr}`;
+    let valueString: string;
+    if (Array.isArray(value)) {
+      valueString = `[${value.map(item =>
+        typeof item === 'object'
+          ? `{ ${readValuesFromInputObjects(item)} }`
+          : String(item)
+      ).join(', ')}]`;
+    } else if (typeof value === 'object' && value !== null) {
+      valueString = `{ ${readValuesFromInputObjects(value)} }`;
+    } else {
+      valueString = String(value);
+    }
+    return `${key}: ${valueString}`;
   });
   return `${formattedPairs.join(', ')}`;
 }
