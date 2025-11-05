@@ -106,6 +106,8 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
 
         setDerivedProperties(pcsCase, pcsCaseEntity);
 
+        pcsCase.setFormattedCalculatedDailyRentChargeAmount("replace-me");
+
         return pcsCase;
     }
 

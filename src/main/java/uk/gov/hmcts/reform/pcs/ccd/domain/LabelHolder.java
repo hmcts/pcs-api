@@ -12,7 +12,7 @@ import uk.gov.hmcts.ccd.sdk.api.CCD;
 @AllArgsConstructor
 public class LabelHolder {
 
-    @CCD()
+    @CCD(label = "Here -> ${formattedCalculatedDailyRentChargeAmount}")
     private String label;
 
 }
