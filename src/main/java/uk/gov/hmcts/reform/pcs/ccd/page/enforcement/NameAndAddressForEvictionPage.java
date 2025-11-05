@@ -4,6 +4,7 @@ import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.EnforcementOrder;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.NameAndAddressForEviction;
 
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 import static uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent.SAVE_AND_RETURN;
@@ -13,11 +14,11 @@ public class NameAndAddressForEvictionPage implements CcdPageConfiguration {
     @Override
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
-            .page("nameAndAddressForEvictionPage")
+            .page("nameAndAddressForEviction")
             .pageLabel("The name and address for the eviction (placeholder)")
             .readonly(PCSCase::getDefendant1, NEVER_SHOW)
             .label(
-                "enforcementEvictionNameAndAddress-details-defendants-check",
+                "nameAndAddressForEviction-defendants-check",
                 """
                     <hr />
                     <h2 class="govuk-heading-m">Check the name and address for the eviction</h2>
@@ -36,7 +37,7 @@ public class NameAndAddressForEvictionPage implements CcdPageConfiguration {
                 """)
             .readonly(PCSCase::getFormattedPropertyAddress, NEVER_SHOW)
             .label(
-                "enforcementEvictionNameAndAddress-details-address-check",
+                "nameAndAddressForEviction-address-check",
                 """
                     <hr />
                     <div class="govuk-width-container">
@@ -53,14 +54,15 @@ public class NameAndAddressForEvictionPage implements CcdPageConfiguration {
                         </div>
                 """)
             .label(
-                "enforcementNameAndAddressPage-details-confirmation",
+                "nameAndAddressForEviction-confirmation",
                 """
                 ---
                 <h2 class="govuk-heading-m">Is this the correct name and address for the eviction?</h2>
                 """)
             .complex(PCSCase::getEnforcementOrder)
-            .mandatory(EnforcementOrder::getNameAndAddressForEviction)
-            .label("enforcementNameAndAddressPage-details-save-and-return", SAVE_AND_RETURN);
+            .complex(EnforcementOrder::getNameAndAddressForEviction)
+            .mandatory(NameAndAddressForEviction::getCorrectNameAndAddress)
+            .label("nameAndAddressForEviction-save-and-return", SAVE_AND_RETURN);
 
     }
 
