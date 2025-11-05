@@ -65,3 +65,5 @@ export * from '@data/page-data/reasonsForRequestingASuspensionAndDemotionOrder.p
 export * from '@data/page-data/signInOrCreateAnAccount.page.data';
 export * from "@data/page-data/caseList.page.data";
 export * from "@data/page-data/caseSummary.page.data";
+export * from "@data/page-data/occupationContractOrLicenceDetailsWales.page.data";
+
