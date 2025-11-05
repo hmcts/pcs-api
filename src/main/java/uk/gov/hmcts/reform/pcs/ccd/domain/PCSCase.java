@@ -336,6 +336,9 @@ public class PCSCase {
     @CCD
     private String formattedCalculatedDailyRentChargeAmount;
 
+    @CCD(label = "Here2 -> ${formattedCalculatedDailyRentChargeAmount}")
+    private String formattedCalculatedDailyRentChargeAmountLabel;
+
     @CCD
     private LabelHolder rentLabelHolder;
 

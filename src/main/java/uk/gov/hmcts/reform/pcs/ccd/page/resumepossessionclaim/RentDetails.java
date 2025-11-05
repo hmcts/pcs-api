@@ -1,16 +1,16 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim;
 
-import java.math.BigDecimal;
-
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
-import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
-import uk.gov.hmcts.reform.pcs.ccd.domain.LabelHolder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentPaymentFrequency;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+
+import java.math.BigDecimal;
+
+import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 
 /**
  * Page configuration for the Rent Details section.
@@ -49,7 +49,6 @@ public class RentDetails implements CcdPageConfiguration {
             // Set formatted value for display
             caseData.setFormattedCalculatedDailyRentChargeAmount(formatCurrency(dailyAmountString));
 
-//            caseData.setRentLabelHolder(LabelHolder.builder().label(formatCurrency(dailyAmountString)).build());
         }
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
