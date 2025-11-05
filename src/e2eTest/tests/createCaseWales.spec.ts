@@ -14,6 +14,7 @@ import {reasonsForPossession} from '@data/page-data/reasonsForPossession.page.da
 import {user} from '@data/user-data/permanent.user.data';
 import {home} from '@data/page-data/home.page.data';
 import {whatAreYourGroundsForPossessionWales} from '@data/page-data/whatAreYourGroundsForPossessionWales.page.data';
+import {occupationContractOrLicenceDetailsWales} from '@data/page-data/occupationContractOrLicenceDetailsWales.page.data';
 import {signInOrCreateAnAccount} from '@data/page-data/signInOrCreateAnAccount.page.data';
 
 test.beforeEach(async ({page}) => {
@@ -57,9 +58,14 @@ test.describe('[Create Case - Wales] @Master @nightly', async () => {
       email: defendantDetails.yes,
       correspondenceAddressSame: defendantDetails.yes
     });
-    //Following line can be updated to securecontractLicenceDetails once HDPI-2365 is done
-    await performAction('check', 'Secure contract');
-    await performAction('clickButton', 'Continue');
+    await performAction('selectOccupationContractOrLicenceDetails', {
+      occupationContractQuestion: occupationContractOrLicenceDetailsWales.occupationContractOrLicenceType,
+      occupationContractType: occupationContractOrLicenceDetailsWales.secureContract,
+      day: occupationContractOrLicenceDetailsWales.dayInput,
+      month: occupationContractOrLicenceDetailsWales.monthInput,
+      year: occupationContractOrLicenceDetailsWales.yearInput,
+      files: 'occupationContract.pdf'
+    });
     await performValidation('mainHeader', whatAreYourGroundsForPossessionWales.mainHeader);
     await performAction('selectYourPossessionGrounds', {
       discretionary: [whatAreYourGroundsForPossessionWales.discretionary.rentArrears],
@@ -154,14 +160,18 @@ test.describe('[Create Case - Wales] @Master @nightly', async () => {
       correspondenceAddress: defendantDetails.no,
       email: defendantDetails.no,
     });
-    //Following 186 to 188 needs update once routing is done for wales journey HDPI-2365
-    await performAction('check', 'Secure contract');
-    await performAction('clickButton', 'Continue');
+    await performAction('selectOccupationContractOrLicenceDetails', {
+      occupationContractQuestion: occupationContractOrLicenceDetailsWales.occupationContractOrLicenceType,
+      occupationContractType: occupationContractOrLicenceDetailsWales.standardContract,
+      day: occupationContractOrLicenceDetailsWales.dayInput,
+      month: occupationContractOrLicenceDetailsWales.monthInput,
+      year: occupationContractOrLicenceDetailsWales.yearInput
+    });
     await performValidation('mainHeader', whatAreYourGroundsForPossessionWales.mainHeader);
     await performAction('selectYourPossessionGrounds', {
       discretionary: [whatAreYourGroundsForPossessionWales.discretionary.estateManagementGrounds],
       discretionaryEstateGrounds: [whatAreYourGroundsForPossessionWales.discretionary.buildingWorks],
-      mandatory: [whatAreYourGroundsForPossessionWales.mandatory.section191],
+      mandatory: [whatAreYourGroundsForPossessionWales.mandatory.section187],
     });
     await performAction('clickButton', reasonsForPossession.continue);
     // Following lines enabled to reach notice of your intention page as HDPI-2343 is done for Wales journey routing
@@ -250,8 +260,11 @@ test.describe('[Create Case - Wales] @Master @nightly', async () => {
       email: defendantDetails.yes,
       correspondenceAddressSame: defendantDetails.yes
     });
-    await performAction('check', 'Secure contract');
-    await performAction('clickButton', 'Continue');
+    await performAction('selectOccupationContractOrLicenceDetails', {
+      occupationContractQuestion: occupationContractOrLicenceDetailsWales.occupationContractOrLicenceType,
+      occupationContractType: occupationContractOrLicenceDetailsWales.other,
+      files: 'occupationContract.pdf'
+    });
     await performValidation('mainHeader', whatAreYourGroundsForPossessionWales.mainHeader);
     await performAction('selectYourPossessionGrounds', {
       discretionary: [whatAreYourGroundsForPossessionWales.discretionary.otherBreachOfContract],
