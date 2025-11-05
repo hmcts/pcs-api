@@ -618,26 +618,18 @@ export class CreateCaseAction implements IAction {
     await performAction('clickButton', languageUsed.continue);
   }
 
-  // private async selectDefendantCircumstances(defendantDetails: actionData) {
-  //   await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
-  //   await performAction('clickRadioButton', defendantDetails);
-  //   if(defendantDetails == defendantCircumstances.yes){
-  //     await performAction('inputText', defendantCircumstances.defendantCircumstancesLabel, defendantCircumstances.defendantCircumstancesSampleData);
-  //   }
-  //   await performAction('clickButton', defendantCircumstances.continue);
-  // }
-
   private async selectDefendantCircumstances(
     defendantDetails: actionRecord
   ) {
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseNumber });
     await performAction('clickRadioButton', defendantDetails.defendantCircumstance);
 
-    if (defendantDetails.defendantCircumstance == defendantCircumstances.yes && defendantDetails.additionalDefendants == true){
-      await performAction('inputText', defendantCircumstances.defendantCircumstancesPluralLabel, defendantCircumstances.defendantCircumstancesSampleData);
-    }
-    if (defendantDetails.defendantCircumstance == defendantCircumstances.yes && defendantDetails.additionalDefendants == false){
-      await performAction('inputText', defendantCircumstances.defendantCircumstancesSingularLabel, defendantCircumstances.defendantCircumstancesSampleData);
+    if (defendantDetails.defendantCircumstance == defendantCircumstances.yes) {
+      if (defendantDetails.additionalDefendants == true) {
+        await performAction('inputText', defendantCircumstances.defendantCircumstancesPluralLabel, defendantCircumstances.defendantCircumstancesSampleData);
+      } else {
+        await performAction('inputText', defendantCircumstances.defendantCircumstancesSingularLabel, defendantCircumstances.defendantCircumstancesSampleData);
+      }
     }
     await performAction('clickButton', defendantCircumstances.continue);
   }
