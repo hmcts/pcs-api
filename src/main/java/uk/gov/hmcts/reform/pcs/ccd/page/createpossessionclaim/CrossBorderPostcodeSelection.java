@@ -40,8 +40,8 @@ public class CrossBorderPostcodeSelection implements CcdPageConfiguration {
             .pageLabel("Border postcode")
             .showCondition("showCrossBorderPage=\"Yes\"")
             .readonly(PCSCase::getShowCrossBorderPage, NEVER_SHOW)
-            .readonly(PCSCase::getCrossBorderCountry1, NEVER_SHOW, true)
-            .readonly(PCSCase::getCrossBorderCountry2, NEVER_SHOW, true)
+            .readonly(PCSCase::getCrossBorderCountry1, NEVER_SHOW)
+            .readonly(PCSCase::getCrossBorderCountry2, NEVER_SHOW)
             .label("crossBorderPostcodeSelection-info", """
                 ---
                 <section tabindex="0">
@@ -78,12 +78,16 @@ public class CrossBorderPostcodeSelection implements CcdPageConfiguration {
         PCSCase caseData = details.getData();
         String postcode = getPostcode(caseData);
 
-        // Always refresh cross-border countries based on current postcode to ensure labels are up-to-date
-        // This is critical when user navigates back and changes the postcode
+        // CRITICAL: Always refresh cross-border countries based on current postcode FIRST
+        // This must happen before any other logic to ensure the label template ${crossBorderCountry1} 
+        // and ${crossBorderCountry2} are evaluated with the correct values for the current postcode.
+        // This is especially important when user navigates back from CrossBorderPostcodeSelection,
+        // changes the postcode in EnterPropertyAddress, and then navigates forward again.
         refreshCrossBorderCountries(caseData, postcode);
 
         // Check if a country has been selected, if not return early (user hasn't made selection yet)
         // This allows the page to display with updated labels while waiting for user selection
+        // The labels will be correct because we refreshed them above
         if (caseData.getCrossBorderCountriesList() == null 
             || caseData.getCrossBorderCountriesList().getValue() == null) {
             return response(caseData);
@@ -168,8 +172,17 @@ public class CrossBorderPostcodeSelection implements CcdPageConfiguration {
      * Always updates the country labels (crossBorderCountry1 and crossBorderCountry2) to match
      * the current postcode, even if the status is not LEGISLATIVE_COUNTRY_REQUIRED.
      * Preserves the existing selection if it exists and is still valid.
+     * 
+     * This method is called at the start of midEvent to ensure the label template
+     * ${crossBorderCountry1} and ${crossBorderCountry2} are evaluated with the correct
+     * values for the current postcode.
      */
     private void refreshCrossBorderCountries(PCSCase caseData, String postcode) {
+        if (postcode == null || postcode.isBlank()) {
+            log.warn("Cannot refresh cross-border countries: postcode is null or blank");
+            return;
+        }
+
         EligibilityResult eligibilityResult = eligibilityService.checkEligibility(postcode, null);
         
         if (eligibilityResult.getStatus() == EligibilityStatus.LEGISLATIVE_COUNTRY_REQUIRED
@@ -180,6 +193,16 @@ public class CrossBorderPostcodeSelection implements CcdPageConfiguration {
             
             List<DynamicStringListElement> crossBorderCountries =
                 createCrossBorderCountriesList(legislativeCountries);
+            
+            // CRITICAL: Update the labels FIRST before preserving selection
+            // This ensures the label template is always evaluated with the correct values
+            String label1 = crossBorderCountries.get(0).getLabel();
+            String label2 = crossBorderCountries.get(1).getLabel();
+            caseData.setCrossBorderCountry1(label1);
+            caseData.setCrossBorderCountry2(label2);
+            
+            log.debug("Updated cross-border country labels for postcode {}: {} and {}",
+                postcode, label1, label2);
             
             // Preserve existing selection if it exists and is still valid (i.e., the selected country
             // is still in the new list of countries for this postcode)
@@ -192,6 +215,10 @@ public class CrossBorderPostcodeSelection implements CcdPageConfiguration {
                     .anyMatch(element -> element.getCode().equals(existingCountryCode));
                 if (isStillValid) {
                     preservedValue = existingList.getValue();
+                    log.debug("Preserved existing selection: {}", existingCountryCode);
+                } else {
+                    log.debug("Clearing selection {} as it's no longer valid for postcode {}", 
+                        existingCountryCode, postcode);
                 }
             }
             
@@ -201,17 +228,17 @@ public class CrossBorderPostcodeSelection implements CcdPageConfiguration {
                 .build();
 
             caseData.setCrossBorderCountriesList(crossBorderCountriesList);
-            // Always update the individual cross border country labels to match the current postcode
-            caseData.setCrossBorderCountry1(crossBorderCountries.get(0).getLabel());
-            caseData.setCrossBorderCountry2(crossBorderCountries.get(1).getLabel());
             
             log.debug("Refreshed cross-border countries for postcode {}: {} and {}",
-                postcode, crossBorderCountries.get(0).getLabel(), crossBorderCountries.get(1).getLabel());
+                postcode, label1, label2);
         } else {
             // If not LEGISLATIVE_COUNTRY_REQUIRED, clear the cross-border data
             // This ensures stale data doesn't persist when postcode changes to non-cross-border
+            log.debug("Clearing cross-border labels as postcode {} is not cross-border (status: {})",
+                postcode, eligibilityResult.getStatus());
             caseData.setCrossBorderCountry1(null);
             caseData.setCrossBorderCountry2(null);
+            caseData.setCrossBorderCountriesList(null);
         }
     }
 
