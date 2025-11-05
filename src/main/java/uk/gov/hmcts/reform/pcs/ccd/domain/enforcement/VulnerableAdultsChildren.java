@@ -9,21 +9,14 @@ import static uk.gov.hmcts.ccd.sdk.type.FieldType.TextArea;
 @Builder
 public class VulnerableAdultsChildren {
 
-    public static final String VULNERABLE_PEOPLE_YES_NO_LABEL = "Is anyone living at the property vulnerable?";
-    public static final String VULNERABLE_CATEGORY_LABEL =
-            "Confirm if the vulnerable people in the property are adults, children, or both adults and children";
-    public static final String VULNERABLE_REASON_LABEL = "How are they vulnerable?";
-    public static final String VULNERABLE_REASON_HINT = "You can enter up to 6,800 characters";
-    public static final int VULNERABLE_REASON_TEXT_LIMIT = 6800;
-
     @CCD(
-            label = VULNERABLE_CATEGORY_LABEL
+            label = "Confirm if the vulnerable people in the property are adults, children, or both adults and children"
     )
     private VulnerableCategory vulnerableCategory;
 
     @CCD(
-            label = VULNERABLE_REASON_LABEL,
-            hint = VULNERABLE_REASON_HINT,
+            label = "How are they vulnerable?",
+            hint = "You can enter up to 6,800 characters",
             typeOverride = TextArea
     )
     private String vulnerableReasonText;

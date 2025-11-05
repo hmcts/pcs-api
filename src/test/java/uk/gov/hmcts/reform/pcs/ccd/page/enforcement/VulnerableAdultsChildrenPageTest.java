@@ -17,7 +17,6 @@ import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
-import static uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.VulnerableAdultsChildren.VULNERABLE_REASON_TEXT_LIMIT;
 
 class VulnerableAdultsChildrenPageTest extends BasePageTest {
 
@@ -67,38 +66,39 @@ class VulnerableAdultsChildrenPageTest extends BasePageTest {
     }
 
     private static Stream<Arguments> characterLimitScenarios() {
+        int limit = EnforcementRiskValidationUtils.getCharacterLimit();
         return Stream.of(
                 // Exceeds limit - all categories
                 arguments(
                         YesNoNotSure.YES,
                         VulnerableCategory.VULNERABLE_ADULTS,
-                        "a".repeat(VULNERABLE_REASON_TEXT_LIMIT + 1),
+                        "a".repeat(limit + 1),
                         true
                 ),
                 arguments(
                         YesNoNotSure.YES,
                         VulnerableCategory.VULNERABLE_CHILDREN,
-                        "a".repeat(VULNERABLE_REASON_TEXT_LIMIT + 1),
+                        "a".repeat(limit + 1),
                         true
                 ),
                 arguments(
                         YesNoNotSure.YES,
                         VulnerableCategory.VULNERABLE_ADULTS_AND_CHILDREN,
-                        "a".repeat(VULNERABLE_REASON_TEXT_LIMIT + 1),
+                        "a".repeat(limit + 1),
                         true
                 ),
                 // Within limit
                 arguments(
                         YesNoNotSure.YES,
                         VulnerableCategory.VULNERABLE_ADULTS,
-                        "a".repeat(VULNERABLE_REASON_TEXT_LIMIT),
+                        "a".repeat(limit),
                         false
                 ),
                 // Exactly at limit
                 arguments(
                         YesNoNotSure.YES,
                         VulnerableCategory.VULNERABLE_CHILDREN,
-                        "a".repeat(VULNERABLE_REASON_TEXT_LIMIT),
+                        "a".repeat(limit),
                         false
                 )
         );
@@ -177,7 +177,7 @@ class VulnerableAdultsChildrenPageTest extends BasePageTest {
                 arguments(
                         YesNoNotSure.YES,
                         VulnerableCategory.VULNERABLE_ADULTS,
-                        "a".repeat(VULNERABLE_REASON_TEXT_LIMIT)
+                        "a".repeat(EnforcementRiskValidationUtils.getCharacterLimit())
                 )
         );
     }

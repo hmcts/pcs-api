@@ -1,6 +1,5 @@
 package uk.gov.hmcts.reform.pcs.ccd.domain.enforcement;
 
-import static uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.VulnerableAdultsChildren.VULNERABLE_PEOPLE_YES_NO_LABEL;
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import lombok.Builder;
 import lombok.Data;
@@ -43,7 +42,7 @@ public class EnforcementOrder {
     private EnforcementRiskDetails riskDetails;
 
     @CCD(
-            label = VULNERABLE_PEOPLE_YES_NO_LABEL
+        label = "Is anyone living at the property vulnerable?"
     )
     private YesNoNotSure vulnerablePeopleYesNo;
     

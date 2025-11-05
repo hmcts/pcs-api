@@ -14,9 +14,6 @@ import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 import java.util.ArrayList;
 import java.util.List;
 
-import static uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.VulnerableAdultsChildren.VULNERABLE_REASON_LABEL;
-import static uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.VulnerableAdultsChildren.VULNERABLE_REASON_TEXT_LIMIT;
-
 public class VulnerableAdultsChildrenPage implements CcdPageConfiguration {
 
     @Override
@@ -64,11 +61,11 @@ public class VulnerableAdultsChildrenPage implements CcdPageConfiguration {
         // Only validate when user selected YES
         if (data.getEnforcementOrder().getVulnerablePeopleYesNo() == YesNoNotSure.YES) {
             String txt = data.getEnforcementOrder().getVulnerableAdultsChildren().getVulnerableReasonText();
-            if (txt.length() > VULNERABLE_REASON_TEXT_LIMIT) {
+            int limit = EnforcementRiskValidationUtils.getCharacterLimit();
+            if (txt.length() > limit) {
                 // TODO: Use TextAreaValidationService from PR #751 when merged
                 errors.add(EnforcementValidationUtil
-                        .getCharacterLimitErrorMessage(VULNERABLE_REASON_LABEL,
-                                VULNERABLE_REASON_TEXT_LIMIT));
+                        .getCharacterLimitErrorMessage("How are they vulnerable?", limit));
             }
         }
 
