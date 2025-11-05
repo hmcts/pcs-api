@@ -1,6 +1,8 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim;
 
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
+
+import uk.gov.hmcts.reform.pcs.ccd.ShowConditions;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.LabelHolder;
@@ -18,7 +20,7 @@ public class DailyRentAmount implements CcdPageConfiguration {
                     .readonly(LabelHolder::getLabel)
                 .done()
                 .label("dailyRentAmount-content",
-                        """
+                       """
                                 ---
                                 <section tabindex="0">
                                     <p class="govuk-body">
@@ -32,7 +34,8 @@ public class DailyRentAmount implements CcdPageConfiguration {
                                         </span>
                                     </p>
                                 </section>
-                                """)
+                                """, "formattedCalculatedDailyRentChargeAmount=\"*\""
+                )
                 .mandatory(PCSCase::getRentPerDayCorrect)
                 .mandatory(PCSCase::getAmendedDailyRentChargeAmount, "rentPerDayCorrect=\"NO\"");
     }
