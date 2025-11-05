@@ -95,7 +95,8 @@ public class RentArrearsGroundForPossessionAdditionalGrounds implements CcdPageC
             mergedDiscretionary.add(RentArrearsDiscretionaryGrounds.valueOf(add.name()));
         }
 
-        // Backward compatibility: if no rent arrears grounds or additional-only input present, use existing canonical sets
+        // Backward compatibility: if no rent arrears grounds or additional-only input present,
+        // use existing canonical sets
         boolean noRentArrearsGrounds = rentArrearsGrounds == null || rentArrearsGrounds.isEmpty();
         boolean noAdditional = addMandatory.isEmpty() && addDiscretionary.isEmpty();
 
