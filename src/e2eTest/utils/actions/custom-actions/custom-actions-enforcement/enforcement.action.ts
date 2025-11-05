@@ -18,6 +18,8 @@ export class EnforcementAction implements IAction {
       ['provideDetailsCriminalOrAntisocialBehavior', () => this.provideDetailsCriminalOrAntisocialBehavior(fieldName as actionRecord)],
       ['provideDetailsVerbalOrWrittenThreats', () => this.provideDetailsVerbalOrWrittenThreats(fieldName as actionRecord)],
       ['provideDetailsGroupProtestsEviction', () => this.provideDetailsGroupProtestsEviction(fieldName as actionRecord)],
+      ['provideDetailsPoliceOrSocialServiceVisits', () => this.provideDetailsPoliceOrSocialServiceVisits(fieldName as actionRecord)],
+      ['provideDetailsAnimalsAtTheProperty', () => this.provideDetailsAnimalsAtTheProperty(fieldName as actionRecord)],
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) throw new Error(`No action found for '${action}'`);
@@ -83,5 +85,19 @@ export class EnforcementAction implements IAction {
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + enforcementTestCaseNumber });
     await performAction('inputText', protestGroup.label, protestGroup.input);
     await performAction('clickButton', groupProtestsEviction.continue);
+  }
+
+   private async provideDetailsPoliceOrSocialServiceVisits(policeOrSSVisit: actionRecord) {
+    await performValidation('mainHeader', policeOrSocialServiceVisit.mainHeader);
+    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + enforcementTestCaseNumber });
+    await performAction('inputText', policeOrSSVisit.label, policeOrSSVisit.input);
+    await performAction('clickButton', policeOrSocialServiceVisit.continue);
+  }
+
+   private async provideDetailsAnimalsAtTheProperty(theAnimalsAtTheProperty: actionRecord) {
+    await performValidation('mainHeader', animalsAtTheProperty.mainHeader);
+    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + enforcementTestCaseNumber });
+    await performAction('inputText', theAnimalsAtTheProperty.label, theAnimalsAtTheProperty.input);
+    await performAction('clickButton', animalsAtTheProperty.continue);
   }
 }

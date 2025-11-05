@@ -48,8 +48,9 @@ test.describe('[Enforcement - Warrant of Possession] @Master @nightly', async ()
     await performValidation('mainHeader', riskPosedByEveryoneAtProperty.mainHeader);
     await performAction('selectRiskPosedByEveryoneAtProperty', {
       riskTypes: [riskPosedByEveryoneAtProperty.violentOrAggressiveBehaviour, riskPosedByEveryoneAtProperty.historyOfFirearmPossession,
-        riskPosedByEveryoneAtProperty.criminalOrAntisocialBehaviour, riskPosedByEveryoneAtProperty.verbalOrWrittenThreats,
-        riskPosedByEveryoneAtProperty.protestGroup]});
+      riskPosedByEveryoneAtProperty.criminalOrAntisocialBehaviour, riskPosedByEveryoneAtProperty.verbalOrWrittenThreats,
+      riskPosedByEveryoneAtProperty.protestGroup, riskPosedByEveryoneAtProperty.policeOrSocialService, riskPosedByEveryoneAtProperty.aggressiveAnimals]
+    });
     await performAction('provideDetailsViolentOrAggressiveBehaviour', {
       label: violentOrAggressiveBehaviour.howHaveTheyBeenViolentAndAggressive,
       input: violentOrAggressiveBehaviour.howHaveTheyBeenViolentAndAggressiveInput
@@ -69,6 +70,14 @@ test.describe('[Enforcement - Warrant of Possession] @Master @nightly', async ()
     await performAction('provideDetailsGroupProtestsEviction', {
       label: groupProtestsEviction.whichGroupMember,
       input: groupProtestsEviction.whichGroupMemberInput
+    });
+    await performAction('provideDetailsPoliceOrSocialServiceVisits', {
+      label: policeOrSocialServiceVisit.whyDidThePoliceOrSSVisitTheProperty,
+      input: policeOrSocialServiceVisit.whyDidThePoliceOrSSVisitThePropertyInput
+    });
+    await performAction('provideDetailsAnimalsAtTheProperty', {
+      label: animalsAtTheProperty.whatKindOfAnimalDoTheyHave,
+      input: animalsAtTheProperty.whatKindOfAnimalDoTheyHaveInput
     });
     await performValidation('mainHeader', vulnerableAdultsAndChildren.mainHeader);
     await performAction('clickButton', vulnerableAdultsAndChildren.continue);

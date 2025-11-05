@@ -287,6 +287,10 @@ export class CreateCaseAction implements IAction {
 
   private async selectYourPossessionGrounds(possessionGrounds: actionRecord) {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: ' + caseNumber});
+    if (!possessionGrounds) {
+      await performAction('clickButton', whatAreYourGroundsForPossession.continue);
+      return;
+    }
     for (const key of Object.keys(possessionGrounds)) {
       switch (key) {
         case 'discretionary':
