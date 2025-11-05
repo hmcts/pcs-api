@@ -14,8 +14,12 @@ import java.time.LocalDate;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+/**
+ * This was an attempt as using the type Label (which is read only) within our complex type. However, this field
+ * isn't serializable so errors.
+ */
 public class
-DefendantsDOBComplexLabel {
+    DefendantsDOBComplexLabel {
 
     private Label firstNameLabel;
 
