@@ -10,6 +10,7 @@ import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType;
+import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 
 import java.time.Clock;
 import java.time.LocalDate;
@@ -20,9 +21,12 @@ import java.util.Set;
 public class TenancyLicenceDetails implements CcdPageConfiguration {
 
     private final Clock ukClock;
+    private final TextAreaValidationService textAreaValidationService;
 
-    public TenancyLicenceDetails(@Qualifier("ukClock") Clock ukClock) {
+    public TenancyLicenceDetails(@Qualifier("ukClock") Clock ukClock, 
+                                TextAreaValidationService textAreaValidationService) {
         this.ukClock = ukClock;
+        this.textAreaValidationService = textAreaValidationService;
     }
 
     @Override
@@ -62,10 +66,22 @@ public class TenancyLicenceDetails implements CcdPageConfiguration {
         LocalDate tenancyLicenceDate = details.getData().getTenancyLicenceDate();
         LocalDate currentDate = LocalDate.now(ukClock);
 
+        // Validate tenancy licence date
         if (tenancyLicenceDate != null && !tenancyLicenceDate.isBefore(currentDate)) {
             return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
             .errors(List.of("Date the tenancy or licence began must be in the past"))
             .build();
+        }
+
+        // Validate details of other type of tenancy licence character limit
+        List<String> validationErrors = textAreaValidationService.validateSingleTextArea(
+            caseData.getDetailsOfOtherTypeOfTenancyLicence(),
+            PCSCase.DETAILS_OF_OTHER_TYPE_OF_TENANCY_LICENCE_LABEL,
+            TextAreaValidationService.MEDIUM_TEXT_LIMIT
+        );
+        
+        if (!validationErrors.isEmpty()) {
+            return textAreaValidationService.createValidationResponse(caseData, validationErrors);
         }
 
         if (caseData.getTypeOfTenancyLicence() != TenancyLicenceType.SECURE_TENANCY
