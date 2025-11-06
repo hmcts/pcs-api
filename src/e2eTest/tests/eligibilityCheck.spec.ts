@@ -1,15 +1,7 @@
 import {test} from '@playwright/test';
 import {initializeExecutor, performAction, performValidation} from '@utils/controller';
-import {borderPostcode} from '@data/page-data/borderPostcode.page.data';
-import {addressDetails} from '@data/page-data/addressDetails.page.data';
-import {canNotUseOnlineService} from '@data/page-data/canNotUseOnlineService.page.data';
-import {propertyIneligible} from '@data/page-data/propertyIneligible.page.data';
-import {userIneligible} from '@data/page-data/userIneligible.page.data';
-import {claimantType} from '@data/page-data/claimantType.page.data';
-import {claimType} from '@data/page-data/claimType.page.data';
-import {user} from '@data/user-data/permanent.user.data';
-import {home} from '@data/page-data/home.page.data';
-import {signInOrCreateAnAccount} from '@data/page-data/signInOrCreateAnAccount.page.data';
+import {borderPostcode, addressDetails, canNotUseOnlineService, propertyIneligible, userIneligible, provideMoreDetailsOfClaim,
+        claimantType, claimType, user, home, signInOrCreateAnAccount } from '@data/page-data';
 
 test.beforeEach(async ({page}) => {
   initializeExecutor(page);
