@@ -78,7 +78,10 @@ public class DefendantService {
         }
 
         return defendantList.stream()
-            .map(defendant -> modelMapper.map(defendant, DefendantsDOBStringInterpolation.class))
+            .map(defendant -> new DefendantsDOBStringInterpolation(
+                "Do you know " + defendant.getFirstName() + " "
+                    + defendant.getLastName() + "'s date of birth?", null)
+            )
             .toList();
     }
 

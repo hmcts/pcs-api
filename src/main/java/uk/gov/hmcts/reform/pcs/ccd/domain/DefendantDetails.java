@@ -8,8 +8,6 @@ import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.FieldType;
 
-import java.time.LocalDate;
-
 @Builder
 @Data
 @NoArgsConstructor

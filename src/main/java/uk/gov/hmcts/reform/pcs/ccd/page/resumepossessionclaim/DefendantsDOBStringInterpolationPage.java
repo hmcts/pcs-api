@@ -7,6 +7,7 @@ import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantsDOBStringInterpolation;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.service.AddressValidator;
@@ -24,7 +25,12 @@ public class DefendantsDOBStringInterpolationPage implements CcdPageConfiguratio
             .page("defendantsDOB", this::midEvent)
             .pageLabel("Defendant DOB")
             .label("defendantDOBLabel", "My Defendant DOB label")
-            .mandatory(PCSCase::getDobDefendants);
+        .list(PCSCase::getDobDefendants)
+
+            .readonly(DefendantsDOBStringInterpolation::getDefendantName)
+            .mandatory(DefendantsDOBStringInterpolation::getDob)
+            .done()
+            .done();
     }
 
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,

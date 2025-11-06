@@ -4,9 +4,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import uk.gov.hmcts.ccd.sdk.api.CCD;
-import uk.gov.hmcts.ccd.sdk.api.Label;
-import uk.gov.hmcts.ccd.sdk.type.FieldType;
 
 import java.time.LocalDate;
 
@@ -16,13 +13,7 @@ import java.time.LocalDate;
 @AllArgsConstructor
 public class DefendantsDOBStringInterpolation {
 
-
-    @CCD(label = """
-                ---
-                ${DefendantsDOB.firstName}""", typeOverride = FieldType.Label)
-    private String firstNameLabel;
-
-    private String firstName;
+    private String defendantName;
 
     private LocalDate dob;
 }
