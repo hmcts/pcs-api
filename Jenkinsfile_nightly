@@ -14,16 +14,6 @@ properties([
       defaultValue: '',
       description: 'PR number (REQUIRED if environment is preview, leave blank otherwise).'
     ),
-    booleanParam(
-      name: 'CHROME_TESTS',
-      defaultValue: false,
-      description: 'Tick the checkbox to run E2E tests in Chrome.'
-    ),
-    booleanParam(
-      name: 'FIREFOX_TESTS',
-      defaultValue: false,
-      description: 'Tick the checkbox to run E2E tests in Firefox.'
-    ),
   ])
 ])
 
@@ -58,11 +48,12 @@ withNightlyPipeline(type, product, component) {
   loadVaultSecrets(secrets)
   handleEnvironmentSetting()
   enableFortifyScan()
+
+  //Skipping e2e tests as the decentralisation is not currently supported in aat
+  //enableE2eTest()
+  
   afterAlways('fortify-scan') {
     steps.archiveArtifacts allowEmptyArchive: true, artifacts: '**/Fortify Scan/**/*'
-    //Skipping e2e tests as the decentralisation is not currently supported in aat
-    //runE2eTests()
-    //publishE2EReport()
   }
 }
 
@@ -79,36 +70,4 @@ def handleEnvironmentSetting() {
   env.MANAGE_CASE_BASE_URL = (params.ENVIRONMENT == 'preview')
     ? "https://xui-pcs-api-pr-${params.PR_NUMBER}.preview.platform.hmcts.net"
     : "https://manage-case.${params.ENVIRONMENT}.platform.hmcts.net/"
-}
-
-def runE2eTests() {
-  if (params.CHROME_TESTS) {
-    runE2ETestForBrowser('Chrome')
-  }
-  if (params.FIREFOX_TESTS) {
-    runE2ETestForBrowser('Firefox')
-  }
-}
-
-def runE2ETestForBrowser(String browser) {
-  stage("Full E2E Test - ${browser}") {
-    try {
-      sh "./gradlew runE2e${browser}Tests"
-    } catch (Error) {
-      unstable(message: "${STAGE_NAME} is unstable: " + Error.toString())
-    }
-  }
-}
-
-def publishE2EReport() {
-  stage("Publish E2E Test Report") {
-    publishHTML([
-      allowMissing: true,
-      alwaysLinkToLastBuild: true,
-      keepAll: true,
-      reportDir: "src/e2eTest/allure-report",
-      reportFiles: 'index.html',
-      reportName: "Full EXUI E2E Test Report"
-    ])
-  }
 }
