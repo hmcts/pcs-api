@@ -51,9 +51,6 @@ public class DailyRentAmount implements CcdPageConfiguration {
                                         <span class="govuk-body govuk-!-font-weight-bold">
                                             ${formattedCalculatedDailyRentChargeAmount}
                                         </span>
-                                        <span class="govuk-body govuk-!-font-weight-bold">
-                                            ${rentLabelHolder.label}
-                                        </span>
                                     </p>
                                 </section>
                                 """, "formattedCalculatedDailyRentChargeAmount=\"*\""
