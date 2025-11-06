@@ -329,16 +329,6 @@ export class CreateCaseAction implements IAction {
             option: correspondenceAddressSameOption,
             index,
           });
-          if (correspondenceAddressSameOption === defendantDetails.no) {
-            await performActions(
-              'Enter Address Manually'
-              , ['inputText', { text: addressDetails.buildingAndStreetLabel, index }, addressDetails.buildingAndStreet]
-              , ['inputText', {text: addressDetails.buildingAndStreetLabel, index: index}, addressDetails.buildingAndStreet]
-              , ['inputText', {text: addressDetails.townOrCityLabel,index: index}, addressDetails.townOrCity]
-              , ['inputText', {text:addressDetails.countyLabel,index: index}, addressDetails.englandCounty]
-              , ['inputText', {text:addressDetails.postcodeLabel,index:index}, addressDetails.englandCourtAssignedPostcode]
-            );
-          }
         }
       }
     }
