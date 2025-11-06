@@ -61,7 +61,7 @@ class FeeRegistrationLookupConsumerTest {
             .decimalType("fee_amount", 404.00);
 
         return builder
-            .given("Fees exist for Possessions")
+            .given("Fees exist for Probate")
             .uponReceiving("a request for Possession fees")
             .path("/fees-register/fees/lookup")
             .method("GET")
