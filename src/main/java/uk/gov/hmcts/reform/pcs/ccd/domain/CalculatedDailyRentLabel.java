@@ -11,7 +11,7 @@ import uk.gov.hmcts.ccd.sdk.type.FieldType;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class LabelHolder {
+public class CalculatedDailyRentLabel {
 
     @CCD(label = """
         ---

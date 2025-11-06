@@ -355,7 +355,7 @@ public class PCSCase {
     private String label4;
 
     @CCD
-    private LabelHolder rentLabelHolder;
+    private CalculatedDailyRentLabel rentLabelHolder;
 
     @CCD(searchable = false)
     private YesOrNo showPostcodeNotAssignedToCourt;
