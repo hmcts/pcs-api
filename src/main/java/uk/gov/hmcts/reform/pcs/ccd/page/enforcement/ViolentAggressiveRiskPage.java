@@ -38,11 +38,10 @@ public class ViolentAggressiveRiskPage implements CcdPageConfiguration {
         String txt = data.getEnforcementOrder() != null && data.getEnforcementOrder().getRiskDetails() != null
             ? data.getEnforcementOrder().getRiskDetails().getEnforcementViolentDetails()
             : null;
-        // TODO: Refactor validation logic to use TextAreaValidationService from PR #751 when merged
+        // Refactor validation logic to use TextAreaValidationService from PR #751 when merged
         if (txt == null || txt.isBlank()) {
             errors.add("Enter details");
         } else if (txt.length() > EnforcementRiskValidationUtils.getCharacterLimit()) {
-            // TODO: Use TextAreaValidationService from PR #751 when merged
             errors.add(EnforcementRiskValidationUtils
                     .getCharacterLimitErrorMessage(RiskCategory.VIOLENT_OR_AGGRESSIVE));
         }
