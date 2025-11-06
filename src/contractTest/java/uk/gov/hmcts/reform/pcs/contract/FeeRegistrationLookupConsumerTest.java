@@ -19,7 +19,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.gov.hmcts.reform.fees.client.FeesApi;
-import uk.gov.hmcts.reform.fees.client.FeesClient;
 import uk.gov.hmcts.reform.fees.client.model.FeeLookupResponseDto;
 
 import java.math.BigDecimal;
@@ -66,16 +65,13 @@ class FeeRegistrationLookupConsumerTest {
             .uponReceiving("a request for Possession fees")
             .path("/fees-register/fees/lookup")
             .method("GET")
-            .headers(Map.of(
-                "ServiceAuthorization", SERVICE_AUTH_TOKEN
-            ))
             .query("service=possession claim"
                        + "&jurisdiction1=" + CIVIL_JURISDICTION
                        + "&jurisdiction2=" + COUNTY_COURT
                        + "&channel=" + DEFAULT_CHANNEL
                        + "&event=" + ISSUE_EVENT
-                       + "&applicantType=" + ALL_APPLICANT_TYPE
-                       + "&amountOrVolume=" + AMOUNT_OR_VOLUME
+                       + "&applicant_type=" + ALL_APPLICANT_TYPE
+                       + "&amount_or_volume=" + AMOUNT_OR_VOLUME
                        + "&keyword=" + POSSESSION_KEYWORD)
             .willRespondWith()
             .status(HttpStatus.OK.value())
@@ -94,7 +90,7 @@ class FeeRegistrationLookupConsumerTest {
             DEFAULT_CHANNEL,
             ISSUE_EVENT,
             ALL_APPLICANT_TYPE,
-            null,
+            AMOUNT_OR_VOLUME,
             POSSESSION_KEYWORD
         );
 
