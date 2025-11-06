@@ -2,11 +2,11 @@ import {test} from '@playwright/test';
 import {initializeExecutor, performAction, performValidation, performValidations} from '@utils/controller';
 import {claimType, claimantType, claimantName, claimantDetailsWales, contactPreferences, defendantDetails, tenancyLicenceDetails,
         groundsForPossession, rentArrearsPossessionGrounds, preActionProtocol, mediationAndSettlement, noticeOfYourIntention, rentDetails,
-        provideMoreDetailsOfClaim, resumeClaim, resumeClaimOptions, detailsOfRentArrears, whatAreYourGroundsForPossession, rentArrearsOrBreachOfTenancy,
-        reasonsForPossession, moneyJudgment, claimantCircumstances, applications, completeYourClaim, user, reasonsForRequestingASuspensionOrder,
-        checkYourAnswers, propertyDetails, languageUsed, defendantCircumstances, claimingCosts, home, additionalReasonsForPossession, underlesseeOrMortgageeEntitledToClaim,
-        alternativesToPossession, housingAct, reasonsForRequestingADemotionOrder, statementOfExpressTerms, wantToUploadDocuments, whatAreYourGroundsForPossessionWales,
-        addressDetails, reasonsForRequestingASuspensionAndDemotionOrder, signInOrCreateAnAccount, occupationContractOrLicenceDetailsWales, prohibitedConductStandardContractWales, dailyRentAmount} from '@data/page-data';
+        provideMoreDetailsOfClaim, resumeClaim, resumeClaimOptions, detailsOfRentArrears, whatAreYourGroundsForPossession,
+        rentArrearsOrBreachOfTenancy, reasonsForPossession, moneyJudgment, claimantCircumstances, applications, completeYourClaim, user,
+        checkYourAnswers, propertyDetails, languageUsed, defendantCircumstances, claimingCosts, home, additionalReasonsForPossession,
+        underlesseeOrMortgageeEntitledToClaim, wantToUploadDocuments, whatAreYourGroundsForPossessionWales, addressDetails,
+        signInOrCreateAnAccount, occupationContractOrLicenceDetailsWales, prohibitedConductStandardContractWales, dailyRentAmount} from '@data/page-data';
 
 test.beforeEach(async ({page}) => {
   initializeExecutor(page);
@@ -110,23 +110,9 @@ test.describe('[Create Case - Wales] @Master @nightly', async () => {
       label2: prohibitedConductStandardContractWales.giveDetailsOfTermsLabel,
       input2: prohibitedConductStandardContractWales.giveDetailsOfTermsSampleData
     });
-    await performValidation('mainHeader', alternativesToPossession.mainHeader);
-    // The following sections are commented out pending development of the Wales journey.
-    /*await performAction('selectAlternativesToPossession', {
-      question: alternativesToPossession.demotionOfTenancy
-      , option: [alternativesToPossession.demotionOfTenancy]
-    });
-    await performValidation('mainHeader', housingAct.mainHeader);
-    await performAction('selectHousingAct', [{
-      question: housingAct.demotionOfTenancy.whichSection
-      , option: housingAct.demotionOfTenancy.section6AHousingAct1988
-    }]);
-    await performValidation('mainHeader', statementOfExpressTerms.mainHeader);
-    await performAction('selectStatementOfExpressTerms', statementOfExpressTerms.no);
-    await performValidation('mainHeader', reasonsForRequestingADemotionOrder.mainHeader);
-    await performAction('enterReasonForDemotionOrder', reasonsForRequestingADemotionOrder.requestDemotionOrderQuestion);
     await performValidation('mainHeader', claimingCosts.mainHeader);
-    await performAction('selectClaimingCosts', claimingCosts.no);
+    // The following sections are commented out pending development of the Wales journey.
+    /*await performAction('selectClaimingCosts', claimingCosts.no);
     await performValidation('mainHeader', additionalReasonsForPossession.mainHeader);
     await performAction('selectAdditionalReasonsForPossession', additionalReasonsForPossession.no);
     await performValidation('mainHeader', underlesseeOrMortgageeEntitledToClaim.mainHeader);
@@ -222,18 +208,9 @@ test.describe('[Create Case - Wales] @Master @nightly', async () => {
       label1: prohibitedConductStandardContractWales.whyAreYouMakingThisClaimLabel, input1: prohibitedConductStandardContractWales.whyAreYouMakingThisClaimSampleData,
       question2: prohibitedConductStandardContractWales.haveYouAndContractHolderAgreedQuestion, option2: prohibitedConductStandardContractWales.no,
     });
-    await performValidation('mainHeader', alternativesToPossession.mainHeader);
-    // The following sections are commented out pending development of the Wales journey.
-   /*await performAction('selectAlternativesToPossession', {question: alternativesToPossession.suspensionOrDemotion
-      , option: [alternativesToPossession.suspensionOfRightToBuy]});
-    await performValidation('mainHeader', housingAct.mainHeader);
-    await performAction('selectHousingAct', [{question: housingAct.suspensionOfRightToBuy.whichSection
-      , option: housingAct.suspensionOfRightToBuy.section121AHousingAct1985}]);
-    await performValidation('mainHeader', reasonsForRequestingASuspensionOrder.mainHeader);
-    await performValidation('mainHeader', reasonsForRequestingASuspensionOrder.mainHeader);
-    await performAction('enterReasonForSuspensionOrder', reasonsForRequestingASuspensionOrder.requestSuspensionOrderQuestion);
     await performValidation('mainHeader', claimingCosts.mainHeader);
-    await performAction('selectClaimingCosts', claimingCosts.no);
+    // The following sections are commented out pending development of the Wales journey.
+    /*await performAction('selectClaimingCosts', claimingCosts.no);
     await performValidation('mainHeader', additionalReasonsForPossession.mainHeader);
     await performAction('selectAdditionalReasonsForPossession', additionalReasonsForPossession.yes);
     await performValidation('mainHeader', underlesseeOrMortgageeEntitledToClaim.mainHeader);
@@ -327,23 +304,9 @@ test.describe('[Create Case - Wales] @Master @nightly', async () => {
     await performAction('selectProhibitedConductStandardContract', {
       question1: prohibitedConductStandardContractWales.areYouAlsoMakingAClaimQuestion, option1: prohibitedConductStandardContractWales.no,
     });
-    await performValidation('mainHeader', alternativesToPossession.mainHeader);
-    // The following sections are commented out pending development of the Wales journey.
-    /*await performAction('selectAlternativesToPossession', {question: alternativesToPossession.suspensionOrDemotion
-      , option: [alternativesToPossession.suspensionOfRightToBuy, alternativesToPossession.demotionOfTenancy]});
-    await performValidation('mainHeader', housingAct.mainHeader);
-    await performAction('selectHousingAct', [{question: housingAct.suspensionOfRightToBuy.whichSection
-      , option: housingAct.suspensionOfRightToBuy.section6AHousingAct1988}
-      , {question: housingAct.demotionOfTenancy.whichSection
-        , option: housingAct.demotionOfTenancy.section82AHousingAct1985}]);
-    await performValidation('mainHeader', statementOfExpressTerms.mainHeader);
-    await performAction('selectStatementOfExpressTerms', statementOfExpressTerms.no);
-    await performValidation('mainHeader', reasonsForRequestingASuspensionAndDemotionOrder.mainHeader);
-    await performAction('enterReasonForSuspensionAndDemotionOrder'
-        , {suspension: reasonsForRequestingASuspensionAndDemotionOrder.requestSuspensionOrderQuestion
-          ,  demotion: reasonsForRequestingASuspensionAndDemotionOrder.requestDemotionOrderQuestion});
     await performValidation('mainHeader', claimingCosts.mainHeader);
-    await performAction('selectClaimingCosts', claimingCosts.yes);
+    // The following sections are commented out pending development of the Wales journey.
+    /*await performAction('selectClaimingCosts', claimingCosts.yes);
     await performValidation('mainHeader', additionalReasonsForPossession.mainHeader);
     await performAction('selectAdditionalReasonsForPossession', additionalReasonsForPossession.no);
     await performValidation('mainHeader', underlesseeOrMortgageeEntitledToClaim.mainHeader);
