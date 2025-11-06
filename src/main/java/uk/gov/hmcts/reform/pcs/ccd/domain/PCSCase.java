@@ -349,7 +349,10 @@ public class PCSCase {
             </p>
         </section>
         """, typeOverride = FieldType.Label)
-    private String formattedCalculatedDailyRentChargeAmountLabel;
+    private String label3;
+
+    @CCD(label = "", typeOverride = FieldType.Label)
+    private String label4;
 
     @CCD
     private LabelHolder rentLabelHolder;

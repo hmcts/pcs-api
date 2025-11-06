@@ -26,8 +26,8 @@ public class LabelHolder {
             </p>
         </section>
         """, typeOverride = FieldType.Label)
-    private String label;
+    private String label1;
 
-    @CCD(label = "replace 2", typeOverride = FieldType.Label)
+    @CCD(label = "", typeOverride = FieldType.Label)
     private String label2;
 }
