@@ -330,10 +330,6 @@ export class CreateCaseAction implements IAction {
             index,
           });
           if (correspondenceAddressSameOption === defendantDetails.no) {
-            // await performAction('inputText', {text: addressDetails.enterUKPostcodeLabel, index: index-1} , defendantData.address2|| defendantData.address);
-            // await performAction( 'clickButton', addressDetails.findAddressLabel, index);
-            // await performAction( 'select', addressDetails.selectAddressLabel, addressDetails.addressIndex);
-
             await performActions(
               'Enter Address Manually'
               , ['inputText', { text: addressDetails.buildingAndStreetLabel, index }, addressDetails.buildingAndStreet]

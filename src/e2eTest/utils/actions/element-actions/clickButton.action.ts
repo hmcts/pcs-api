@@ -28,14 +28,6 @@ export class ClickButtonAction implements IAction {
     await page.locator('.spinner-container').waitFor({state: 'detached'});
   }
 
-  // private async clickButton(page: Page, button: Locator, index?: string): Promise<void> {
-  //   const i = Number(index) || 0;
-  //   await page.waitForTimeout(VERY_SHORT_TIMEOUT);
-  //   await button.nth(i).click();
-  //   await page.waitForLoadState();
-  //   await page.locator('.spinner-container').waitFor({state: 'detached'});
-  // }
-
   private async clickButtonAndVerifyPageNavigation(page: Page, button: Locator, nextPageElement: string): Promise<void> {
     const pageElement = page.locator(`h1:has-text("${nextPageElement}")`);
     let attempt = 0;

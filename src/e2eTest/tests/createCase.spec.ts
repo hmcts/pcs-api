@@ -869,11 +869,11 @@ test.describe('[Create Case - England] @Master @nightly', async () => {
       claimantInput: claimantCircumstances.claimantCircumstanceInfoInputData
     });
     await performValidation('mainHeader', defendantCircumstances.mainHeader);
-
     await performAction('selectDefendantCircumstances', {
       defendantCircumstance: defendantCircumstances.no,
       additionalDefendants: false
-    });    await performValidation('mainHeader', alternativesToPossession.mainHeader);
+    });
+    await performValidation('mainHeader', alternativesToPossession.mainHeader);
     await performAction('selectAlternativesToPossession', {question: alternativesToPossession.suspensionOrDemotion
       , option: [alternativesToPossession.suspensionOfRightToBuy]});
     await performValidation('mainHeader', housingAct.mainHeader);
