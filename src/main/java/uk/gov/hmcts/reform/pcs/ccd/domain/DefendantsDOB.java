@@ -12,7 +12,7 @@ import java.time.LocalDate;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class DefendantsDOBStringInterpolation {
+public class DefendantsDOB {
 
     private YesOrNo doYouKnowDefendant;
 

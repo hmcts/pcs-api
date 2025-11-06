@@ -5,7 +5,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantDetails;
-import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantsDOBStringInterpolation;
+import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantsDOB;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantsDOBMultiLabel;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
@@ -72,13 +72,13 @@ public class DefendantService {
             .toList();
     }
 
-    public List<DefendantsDOBStringInterpolation> mapToDefendantDOB(List<Defendant> defendantList) {
+    public List<DefendantsDOB> mapToDefendantDOB(List<Defendant> defendantList) {
         if (defendantList == null) {
             return Collections.emptyList();
         }
 
         return defendantList.stream()
-            .map(defendant -> new DefendantsDOBStringInterpolation(null,
+            .map(defendant -> new DefendantsDOB(null,
                 "Do you know " + defendant.getFirstName() + " "
                     + defendant.getLastName() + "'s date of birth?", null)
             )

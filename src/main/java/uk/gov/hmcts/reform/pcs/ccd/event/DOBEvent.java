@@ -15,7 +15,7 @@ import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.DefendantsDOBMultiLabelPage;
-import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.DefendantsDOBStringInterpolationPage;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.DefendantsDOBPage;
 
 import static uk.gov.hmcts.reform.pcs.ccd.domain.State.AWAITING_SUBMISSION_TO_HMCTS;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.State.CASE_ISSUED;
@@ -28,10 +28,9 @@ import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.dobEvent;
 public class DOBEvent implements CCDConfig<PCSCase, State, UserRole> {
 
     //Attempt 1 - String interpolation and read only fields
-    private final DefendantsDOBStringInterpolationPage defendantsDOBStringInterpolationPage;
+    private final DefendantsDOBPage defendantsDOBPage;
     //Attempt 2 - Prepopulated ui.
     private final DefendantsDOBMultiLabelPage defendantsDOBConceptsPage;
-
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -43,7 +42,7 @@ public class DOBEvent implements CCDConfig<PCSCase, State, UserRole> {
                 .grant(Permission.CRUD, UserRole.PCS_SOLICITOR);
 
         new PageBuilder(eventBuilder)
-            .add(defendantsDOBStringInterpolationPage)
+            .add(defendantsDOBPage)
             .add(defendantsDOBConceptsPage);
     }
 

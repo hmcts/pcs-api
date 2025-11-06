@@ -6,18 +6,13 @@ import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
-import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantDetails;
-import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantsDOBStringInterpolation;
+import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantsDOB;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.service.AddressValidator;
 
 @AllArgsConstructor
 @Component
-public class DefendantsDOBStringInterpolationPage implements CcdPageConfiguration {
-
-    private final AddressValidator addressValidator;
-
+public class DefendantsDOBPage implements CcdPageConfiguration {
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
@@ -26,9 +21,9 @@ public class DefendantsDOBStringInterpolationPage implements CcdPageConfiguratio
             .pageLabel("Defendant DOB")
             .label("defendantDOBLabel", "My Defendant DOB label")
         .list(PCSCase::getDobDefendants)
-            .readonly(DefendantsDOBStringInterpolation::getDefendantName)
-            .mandatory(DefendantsDOBStringInterpolation::getDoYouKnowDefendant)
-            .mandatory(DefendantsDOBStringInterpolation::getDob,
+            .readonly(DefendantsDOB::getDefendantName)
+            .mandatory(DefendantsDOB::getDoYouKnowDefendant)
+            .mandatory(DefendantsDOB::getDob,
                 "dobDefendants.doYouKnowDefendant=\"Yes\"")
             .done()
             .done();
@@ -36,10 +31,7 @@ public class DefendantsDOBStringInterpolationPage implements CcdPageConfiguratio
 
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
                                                                     CaseDetails<PCSCase, State> detailsBefore) {
-
         PCSCase caseData = details.getData();
-        DefendantDetails defendantDetails = caseData.getDefendant1();
-
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder().build();
     }
 

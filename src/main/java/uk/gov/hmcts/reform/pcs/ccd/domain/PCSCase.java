@@ -356,7 +356,7 @@ public class PCSCase {
 
     private List<ListValue<DefendantDetails>> allDefendants;
 
-    private List<ListValue<DefendantsDOBStringInterpolation>> dobDefendants;
+    private List<ListValue<DefendantsDOB>> dobDefendants;
 
     private DefendantsDOBMultiLabel defendantsDOBMultiLabel;
 
