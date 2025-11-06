@@ -45,6 +45,7 @@ public class PCSCase {
     public static final String NOTICE_OTHER_EXPLANATION_LABEL = "Explain what the other means were";
     public static final String DETAILS_OF_OTHER_TYPE_OF_TENANCY_LICENCE_LABEL = 
         "Give details of the type of tenancy or licence agreement that's in place";
+    public static final String OTHER_GROUND_DESCRIPTION_LABEL = "Enter your grounds for possession";
 
     @CCD(
         searchable = false
@@ -497,9 +498,9 @@ public class PCSCase {
     private Set<IntroductoryDemotedOrOtherGrounds> introductoryDemotedOrOtherGrounds;
 
     @CCD(
-            label = "Enter your grounds for possession",
+            label = OTHER_GROUND_DESCRIPTION_LABEL,
             hint = "You'll be able to explain your reasons for claiming possession"
-                    + " under these grounds on the next screen",
+                    + " under these grounds on the next screen. You can enter up to 500 characters",
             typeOverride = TextArea
     )
     private String otherGroundDescription;

@@ -7,6 +7,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
@@ -16,19 +17,40 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
+import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.anyInt;
+import static org.mockito.Mockito.lenient;
 
 @ExtendWith(MockitoExtension.class)
 class IntroductoryDemotedOrOtherGroundsForPossessionTest extends BasePageTest {
 
+    @Mock
+    private TextAreaValidationService textAreaValidationService;
+
     @BeforeEach
     void setUp() {
-        setPageUnderTest(new IntroductoryDemotedOrOtherGroundsForPossession());
+        // Configure TextAreaValidationService mocks
+        lenient().doReturn(new ArrayList<>()).when(textAreaValidationService)
+            .validateSingleTextArea(any(), any(), anyInt());
+        lenient().doAnswer(invocation -> {
+            Object caseData = invocation.getArgument(0);
+            List<String> errors = invocation.getArgument(1);
+            return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
+                .data((PCSCase) caseData)
+                .errors(errors.isEmpty() ? null : errors)
+                .build();
+        }).when(textAreaValidationService).createValidationResponse(any(), any());
+
+        setPageUnderTest(new IntroductoryDemotedOrOtherGroundsForPossession(textAreaValidationService));
     }
 
     @ParameterizedTest
