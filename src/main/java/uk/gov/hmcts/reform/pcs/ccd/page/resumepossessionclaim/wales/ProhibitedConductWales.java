@@ -54,15 +54,6 @@ public class ProhibitedConductWales implements CcdPageConfiguration {
         PeriodicContractTermsWales periodicContractTermsWales =
             caseData.getPeriodicContractTermsWales();
 
-        if (caseData.getProhibitedConductWalesClaim() == VerticalYesNo.YES) {
-            textAreaValidationService.validateTextArea(
-                caseData.getProhibitedConductWalesWhyMakingClaim(),
-                "Why are you making this claim?",
-                TextAreaValidationService.SHORT_TEXT_LIMIT,
-                validationErrors
-            );
-        }
-
         if (caseData.getProhibitedConductWalesClaim() == VerticalYesNo.YES
             && periodicContractTermsWales != null
             && periodicContractTermsWales.getAgreedTermsOfPeriodicContract() == VerticalYesNo.YES) {
@@ -73,6 +64,16 @@ public class ProhibitedConductWales implements CcdPageConfiguration {
                 validationErrors
             );
         }
+
+        if (caseData.getProhibitedConductWalesClaim() == VerticalYesNo.YES) {
+            textAreaValidationService.validateTextArea(
+                caseData.getProhibitedConductWalesWhyMakingClaim(),
+                "Why are you making this claim?",
+                TextAreaValidationService.SHORT_TEXT_LIMIT,
+                validationErrors
+            );
+        }
+
         return textAreaValidationService.createValidationResponse(caseData, validationErrors);
     }
 }
