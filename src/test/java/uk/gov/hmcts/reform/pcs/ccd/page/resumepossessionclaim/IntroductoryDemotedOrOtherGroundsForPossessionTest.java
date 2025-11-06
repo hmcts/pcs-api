@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -273,5 +274,64 @@ class IntroductoryDemotedOrOtherGroundsForPossessionTest extends BasePageTest {
                 IntroductoryDemotedOrOtherGrounds.ANTI_SOCIAL,
                 IntroductoryDemotedOrOtherGrounds.BREACH_OF_THE_TENANCY,
                 IntroductoryDemotedOrOtherGrounds.OTHER);
+    }
+
+    @Nested
+    @DisplayName("Validation Integration Tests")
+    class ValidationIntegrationTests {
+
+        @Test
+        @DisplayName("Should validate otherGroundDescription when provided")
+        void shouldValidateOtherGroundDescriptionWhenProvided() {
+            // Given
+            PCSCase caseData = PCSCase.builder()
+                .otherGroundDescription("Valid ground description")
+                .build();
+
+            // When
+            AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
+
+            // Then
+            assertThat(response.getData()).isEqualTo(caseData);
+            assertThat(response.getErrors()).isNullOrEmpty();
+        }
+
+        @Test
+        @DisplayName("Should handle null otherGroundDescription gracefully")
+        void shouldHandleNullOtherGroundDescriptionGracefully() {
+            // Given
+            PCSCase caseData = PCSCase.builder()
+                .otherGroundDescription(null)
+                .build();
+
+            // When
+            AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
+
+            // Then
+            assertThat(response.getData()).isEqualTo(caseData);
+            assertThat(response.getErrors()).isNullOrEmpty();
+        }
+
+        @Test
+        @DisplayName("Should return validation errors when otherGroundDescription exceeds limit")
+        void shouldReturnValidationErrorsWhenOtherGroundDescriptionExceedsLimit() {
+            // Given
+            String longText = "a".repeat(501); // Exceeds MEDIUM_TEXT_LIMIT (500)
+            List<String> validationErrors = List.of("Error message");
+            
+            lenient().doReturn(validationErrors).when(textAreaValidationService)
+                .validateSingleTextArea(any(), any(), anyInt());
+            
+            PCSCase caseData = PCSCase.builder()
+                .otherGroundDescription(longText)
+                .build();
+
+            // When
+            AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
+
+            // Then
+            assertThat(response.getErrors()).isNotNull();
+            assertThat(response.getErrors()).isNotEmpty();
+        }
     }
 }
