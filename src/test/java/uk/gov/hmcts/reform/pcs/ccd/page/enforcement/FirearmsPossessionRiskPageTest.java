@@ -45,7 +45,6 @@ class FirearmsPossessionRiskPageTest extends BasePageTest {
             .getRiskDetails().getEnforcementFirearmsDetails()).isEqualTo(text);
     }
 
-
     @Test
     void shouldRejectTextOver6800Characters() {
         // Given

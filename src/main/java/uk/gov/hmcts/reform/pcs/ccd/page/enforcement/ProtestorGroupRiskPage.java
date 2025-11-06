@@ -38,7 +38,7 @@ public class ProtestorGroupRiskPage implements CcdPageConfiguration {
 
         String txt = data.getEnforcementOrder().getRiskDetails().getEnforcementProtestGroupMemberDetails();
 
-        // TODO: Use TextAreaValidationService from PR #751 when merged
+        // Use TextAreaValidationService from PR #751 when merged
         if (txt.length() > EnforcementRiskValidationUtils.getCharacterLimit()) {
             errors.add(EnforcementRiskValidationUtils
                     .getCharacterLimitErrorMessage(RiskCategory.PROTEST_GROUP_MEMBER));

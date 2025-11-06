@@ -1,19 +1,10 @@
 import { Page } from "@playwright/test";
 import { performAction, performValidation } from "@utils/controller-enforcement";
 import { IAction, actionData, actionRecord } from "@utils/interfaces/action.interface";
-import { yourApplication } from "@data/page-data/page-data-enforcement/yourApplication.page.data";
+import { yourApplication, nameAndAddressForEviction, everyoneLivingAtTheProperty, evictionCouldBeDelayed, vulnerableAdultsAndChildren,
+         violentOrAggressiveBehaviour, firearmPossession, criminalOrAntisocialBehaviour, riskPosedByEveryoneAtProperty,
+         verbalOrWrittenThreats, groupProtestsEviction, policeOrSocialServiceVisit, animalsAtTheProperty } from "@data/page-data/page-data-enforcement";
 import { enforcementTestCaseNumber } from "../searchCase.action";
-import { nameAndAddressForEviction } from "@data/page-data/page-data-enforcement/nameAndAddressForEviction.page.data";
-import { riskPosedByEveryoneAtProperty } from "@data/page-data/page-data-enforcement/riskPosedByEveryoneAtProperty.page.data";
-import { everyoneLivingAtTheProperty } from "@data/page-data/page-data-enforcement/everyoneLivingAtTheProperty.page.data";
-import { violentOrAggressiveBehaviour } from "@data/page-data/page-data-enforcement/violentOrAggressiveBehaviour.page.data";
-import { firearmPossession } from "@data/page-data/page-data-enforcement/firearmPossession.page.data";
-import { criminalOrAntisocialBehaviour } from "@data/page-data/page-data-enforcement/criminalOrAntisocialBehaviour.page.data";
-import { verbalOrWrittenThreats } from "@data/page-data/page-data-enforcement/verbalOrWrittenThreats.page.data";
-import { groupProtestsEviction } from "@data/page-data/page-data-enforcement/groupProtestsEviction.page.data";
-import { policeOrSocialServiceVisit } from "@data/page-data/page-data-enforcement/policeOrSocialServiceVisit.page.data";
-import { animalsAtTheProperty } from "@data/page-data/page-data-enforcement/animalsAtTheProperty";
-import { vulnerableAdultsAndChildren } from "@data/page-data/page-data-enforcement/vulnerableAdultsAndChildren.page.data";
 
 export class EnforcementAction implements IAction {
   async execute(page: Page, action: string, fieldName: string | actionRecord, data?: actionData): Promise<void> {
@@ -37,15 +28,15 @@ export class EnforcementAction implements IAction {
   }
 
   private async selectApplicationType(applicationType: actionRecord) {
-    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + enforcementTestCaseNumber });
-    await performAction('clickRadioButton', { question: applicationType.question, option: applicationType.option });
+    await performValidation('text', {elementType: 'paragraph', text: 'Case number: ' + enforcementTestCaseNumber});
+    await performAction('clickRadioButton', {question: applicationType.question, option: applicationType.option});
     await performAction('clickButton', yourApplication.continue);
   }
 
   private async selectNameAndAddressForEviction(nameAndAddress: actionRecord) {
-    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + enforcementTestCaseNumber });
+    await performValidation('text', {elementType: 'paragraph', text: 'Case number: ' + enforcementTestCaseNumber});
     /* The below radio button will be referenced to its corresponding question when this name and address page is worked upon.
-    Currently it is a placeholder */
+    Currently,it is a placeholder */
     await performAction('clickRadioButton', nameAndAddress.option);
     await performAction('clickButton', nameAndAddressForEviction.continue);
   }
