@@ -151,6 +151,7 @@ test.describe('[Create Case - England] @Master @nightly', async () => {
       question: wantToUploadDocuments.uploadAnyAdditionalDocumentsLabel,
       option: wantToUploadDocuments.yes
     });
+
     await performAction('uploadAdditionalDocs', {
       documents: [{
         type: uploadAdditionalDocs.tenancyAgreementOption,
