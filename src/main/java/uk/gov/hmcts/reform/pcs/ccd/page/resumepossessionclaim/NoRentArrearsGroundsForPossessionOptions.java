@@ -33,6 +33,7 @@ public class NoRentArrearsGroundsForPossessionOptions implements CcdPageConfigur
                              + " AND legislativeCountry=\"England\""
             )
             .readonly(PCSCase::getShowNoRentArrearsGroundReasonPage, NEVER_SHOW)
+            .readonly(PCSCase::getShowRentDetailsPage, NEVER_SHOW)
             .label(
                 "NoRentArrearsGroundsForPossessionOptions-information", """
                     ---
@@ -68,6 +69,13 @@ public class NoRentArrearsGroundsForPossessionOptions implements CcdPageConfigur
 
         boolean shouldShowReasonsPage = hasOtherDiscretionaryGrounds || hasOtherMandatoryGrounds;
         caseData.setShowNoRentArrearsGroundReasonPage(YesOrNo.from(shouldShowReasonsPage));
+
+        // Determine if Rent Details page should be shown (HDPI-2123)
+        // Show rent details if ground 8, 10, or 11 is selected
+        boolean hasRentRelatedGrounds = mandatoryGrounds.contains(NoRentArrearsMandatoryGrounds.SERIOUS_RENT_ARREARS)
+            || discretionaryGrounds.contains(NoRentArrearsDiscretionaryGrounds.RENT_ARREARS)
+            || discretionaryGrounds.contains(NoRentArrearsDiscretionaryGrounds.RENT_PAYMENT_DELAY);
+        caseData.setShowRentDetailsPage(YesOrNo.from(hasRentRelatedGrounds));
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
             .data(caseData)
