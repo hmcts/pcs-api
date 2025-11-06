@@ -3,11 +3,13 @@ import { initializeEnforcementExecutor, performAction, performValidation } from 
 import { caseNumber, caseNotFoundAfterFilter } from "@utils/actions/custom-actions";
 import { initializeExecutor } from "@utils/controller";
 import { caseList, user, caseSummary, signInOrCreateAnAccount } from "@data/page-data";
-import { nameAndAddressForEviction, violentOrAggressiveBehaviour, firearmPossession, yourApplication, animalsAtTheProperty,
-         criminalOrAntisocialBehaviour, evictionCouldBeDelayed, vulnerableAdultsAndChildren, policeOrSocialServiceVisit,
-         riskPosedByEveryoneAtProperty, everyoneLivingAtTheProperty, verbalOrWrittenThreats, groupProtestsEviction } from "@data/page-data/page-data-enforcement";
+import {
+  nameAndAddressForEviction, violentOrAggressiveBehaviour, firearmPossession, yourApplication, animalsAtTheProperty,
+  criminalOrAntisocialBehaviour, evictionCouldBeDelayed, vulnerableAdultsAndChildren, policeOrSocialServiceVisit,
+  riskPosedByEveryoneAtProperty, everyoneLivingAtTheProperty, verbalOrWrittenThreats, groupProtestsEviction
+} from "@data/page-data/page-data-enforcement";
 
-test.beforeEach(async ({page}) => {
+test.beforeEach(async ({ page }) => {
   initializeExecutor(page);
   initializeEnforcementExecutor(page);
   await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
@@ -24,7 +26,7 @@ test.beforeEach(async ({page}) => {
   //Below three lines will be merged into a single action as part of improvement
   await performAction("selectFirstCaseFromTheFilter", caseNotFoundAfterFilter);
   await performAction('createNewCase', caseNotFoundAfterFilter);
-  await performAction('searchMyCaseFromFindCase', {caseNumber: caseNumber, criteria: caseNotFoundAfterFilter});
+  await performAction('searchMyCaseFromFindCase', { caseNumber: caseNumber, criteria: caseNotFoundAfterFilter });
 });
 
 test.describe('[Enforcement - Warrant of Possession] @Master @nightly', async () => {
@@ -79,15 +81,15 @@ test.describe('[Enforcement - Warrant of Possession] @Master @nightly', async ()
       label: animalsAtTheProperty.whatKindOfAnimalDoTheyHave,
       input: animalsAtTheProperty.whatKindOfAnimalDoTheyHaveInput
     });
-    await performValidation('mainHeader', vulnerableAdultsAndChildren.mainHeader);    
-    await performAction('selectVulnerablePeopleInTheProperty',{
+    await performValidation('mainHeader', vulnerableAdultsAndChildren.mainHeader);
+    await performAction('selectVulnerablePeopleInTheProperty', {
       question: vulnerableAdultsAndChildren.IsAnyOneLivingAtThePropertyQuestion,
       option: vulnerableAdultsAndChildren.yes,
       confirm: vulnerableAdultsAndChildren.confirmVulnerablePeople,
+      peopleOption: vulnerableAdultsAndChildren.vulnerableAdults,
       label: vulnerableAdultsAndChildren.howAreTheyVulnerable,
       input: vulnerableAdultsAndChildren.howAreTheyVulnerableInput
-    })
-    await performAction('clickButton', vulnerableAdultsAndChildren.continue);
+    });
   });
 
   test('Apply for a Warrant of Possession - risk to Bailiff [No]', async () => {
@@ -108,7 +110,14 @@ test.describe('[Enforcement - Warrant of Possession] @Master @nightly', async ()
       option: everyoneLivingAtTheProperty.no
     });
     await performValidation('mainHeader', vulnerableAdultsAndChildren.mainHeader);
-    await performAction('clickButton', vulnerableAdultsAndChildren.continue);
+    await performAction('selectVulnerablePeopleInTheProperty', {
+      question: vulnerableAdultsAndChildren.IsAnyOneLivingAtThePropertyQuestion,
+      option: vulnerableAdultsAndChildren.yes,
+      confirm: vulnerableAdultsAndChildren.confirmVulnerablePeople,
+      peopleOption: vulnerableAdultsAndChildren.vulnerableChildren,
+      label: vulnerableAdultsAndChildren.howAreTheyVulnerable,
+      input: vulnerableAdultsAndChildren.howAreTheyVulnerableInput
+    });
   });
 
   test('Apply for a Warrant of Possession - risk to Bailiff [Not sure]', async () => {
@@ -131,6 +140,13 @@ test.describe('[Enforcement - Warrant of Possession] @Master @nightly', async ()
     await performValidation('mainHeader', evictionCouldBeDelayed.mainHeader);
     await performAction('clickButton', evictionCouldBeDelayed.continue);
     await performValidation('mainHeader', vulnerableAdultsAndChildren.mainHeader);
-    await performAction('clickButton', vulnerableAdultsAndChildren.continue);
+    await performAction('selectVulnerablePeopleInTheProperty', {
+      question: vulnerableAdultsAndChildren.IsAnyOneLivingAtThePropertyQuestion,
+      option: vulnerableAdultsAndChildren.yes,
+      confirm: vulnerableAdultsAndChildren.confirmVulnerablePeople,
+      peopleOption: vulnerableAdultsAndChildren.vulnerableAdultsAndChildren,
+      label: vulnerableAdultsAndChildren.howAreTheyVulnerable,
+      input: vulnerableAdultsAndChildren.howAreTheyVulnerableInput
+    });
   });
 });

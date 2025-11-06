@@ -1,9 +1,11 @@
 import { Page } from "@playwright/test";
 import { performAction, performValidation } from "@utils/controller-enforcement";
 import { IAction, actionData, actionRecord } from "@utils/interfaces/action.interface";
-import { yourApplication, nameAndAddressForEviction, everyoneLivingAtTheProperty, evictionCouldBeDelayed, vulnerableAdultsAndChildren,
-         violentOrAggressiveBehaviour, firearmPossession, criminalOrAntisocialBehaviour, riskPosedByEveryoneAtProperty,
-         verbalOrWrittenThreats, groupProtestsEviction, policeOrSocialServiceVisit, animalsAtTheProperty } from "@data/page-data/page-data-enforcement";
+import {
+  yourApplication, nameAndAddressForEviction, everyoneLivingAtTheProperty, vulnerableAdultsAndChildren,
+  violentOrAggressiveBehaviour, firearmPossession, criminalOrAntisocialBehaviour, riskPosedByEveryoneAtProperty,
+  verbalOrWrittenThreats, groupProtestsEviction, policeOrSocialServiceVisit, animalsAtTheProperty
+} from "@data/page-data/page-data-enforcement";
 import { enforcementTestCaseNumber } from "../searchCase.action";
 
 export class EnforcementAction implements IAction {
@@ -28,13 +30,13 @@ export class EnforcementAction implements IAction {
   }
 
   private async selectApplicationType(applicationType: actionRecord) {
-    await performValidation('text', {elementType: 'paragraph', text: 'Case number: ' + enforcementTestCaseNumber});
-    await performAction('clickRadioButton', {question: applicationType.question, option: applicationType.option});
+    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + enforcementTestCaseNumber });
+    await performAction('clickRadioButton', { question: applicationType.question, option: applicationType.option });
     await performAction('clickButton', yourApplication.continue);
   }
 
   private async selectNameAndAddressForEviction(nameAndAddress: actionRecord) {
-    await performValidation('text', {elementType: 'paragraph', text: 'Case number: ' + enforcementTestCaseNumber});
+    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + enforcementTestCaseNumber });
     /* The below radio button will be referenced to its corresponding question when this name and address page is worked upon.
     Currently,it is a placeholder */
     await performAction('clickRadioButton', nameAndAddress.option);
@@ -108,7 +110,7 @@ export class EnforcementAction implements IAction {
     if (vulnerablePeople.option === vulnerableAdultsAndChildren.yes) {
       await performAction('clickRadioButton', { question: vulnerablePeople.confirm, option: vulnerablePeople.peopleOption });
       await performAction('inputText', vulnerablePeople.label, vulnerablePeople.input);
-    }
+    };
     await performAction('clickButton', vulnerableAdultsAndChildren.continue);
   }
 }
