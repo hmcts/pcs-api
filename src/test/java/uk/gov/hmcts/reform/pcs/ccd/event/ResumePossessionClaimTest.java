@@ -29,6 +29,7 @@ import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ResumeClaim;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.SelectClaimantType;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.TenancyLicenceDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.UploadAdditionalDocumentsDetails;
+<<<<<<< HEAD
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.NoRentArrearsGroundsForPossessionReason;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.AdditionalReasonsForPossession;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.SecureOrFlexibleGroundsForPossessionReasons;
@@ -36,12 +37,24 @@ import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.MediationAndSettle
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.ClaimantCircumstancesPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.IntroductoryDemotedOtherGroundsReasons;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.IntroductoryDemotedOrOtherGroundsForPossession;
+=======
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.OccupationLicenceDetailsWalesPage;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.NoRentArrearsGroundsForPossessionReason;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.AdditionalReasonsForPossession;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.SecureOrFlexibleGroundsForPossessionReasons;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.MediationAndSettlement;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ClaimantCircumstancesPage;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.IntroductoryDemotedOtherGroundsReasons;
+>>>>>>> master
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.DefendantCircumstancesPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.SuspensionOfRightToBuyOrderReason;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.StatementOfExpressTerms;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.DemotionOfTenancyOrderReason;
+<<<<<<< HEAD
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.RentArrearsGroundsForPossessionReasons;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.SuspensionToBuyDemotionOfTenancyOrderReasons;
+=======
+>>>>>>> master
 import uk.gov.hmcts.reform.pcs.ccd.service.ClaimService;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PartyService;
@@ -114,8 +127,11 @@ class ResumePossessionClaimTest extends BaseEventTest {
     @Mock
     private IntroductoryDemotedOtherGroundsReasons introductoryDemotedOtherGroundsReasons;
     @Mock
+<<<<<<< HEAD
     private IntroductoryDemotedOrOtherGroundsForPossession introductoryDemotedOrOtherGroundsForPossession;
     @Mock
+=======
+>>>>>>> master
     private DefendantCircumstancesPage defendantCircumstancesPage;
     @Mock
     private SuspensionOfRightToBuyOrderReason suspensionOfRightToBuyOrderReason;
@@ -124,10 +140,13 @@ class ResumePossessionClaimTest extends BaseEventTest {
     @Mock
     private DemotionOfTenancyOrderReason demotionOfTenancyOrderReason;
     @Mock
+<<<<<<< HEAD
     private RentArrearsGroundsForPossessionReasons rentArrearsGroundsForPossessionReasons;
     @Mock
     private SuspensionToBuyDemotionOfTenancyOrderReasons suspensionToBuyDemotionOfTenancyOrderReasons;
     @Mock
+=======
+>>>>>>> master
     private OrganisationNameService organisationNameService;
     @Mock
     private ClaimantDetailsWalesPage claimantDetailsWalesPage;
@@ -135,6 +154,8 @@ class ResumePossessionClaimTest extends BaseEventTest {
     private SchedulerClient schedulerClient;
     @Mock
     private DraftCaseDataService draftCaseDataService;
+    @Mock
+    private OccupationLicenceDetailsWalesPage occupationLicenceDetailsWalesPage;
 
     private final AddressFormatter addressFormatter = new AddressFormatter();
 
@@ -155,12 +176,19 @@ class ResumePossessionClaimTest extends BaseEventTest {
             uploadAdditionalDocumentsDetails, tenancyLicenceDetails, contactPreferences,
             defendantsDetails, noRentArrearsGroundsForPossessionReason, additionalReasonsForPossession,
             secureOrFlexibleGroundsForPossessionReasons, mediationAndSettlement, claimantCircumstancesPage,
+<<<<<<< HEAD
             introductoryDemotedOtherGroundsReasons, introductoryDemotedOrOtherGroundsForPossession,
             defendantCircumstancesPage, suspensionOfRightToBuyOrderReason,
             statementOfExpressTerms, demotionOfTenancyOrderReason, rentArrearsGroundsForPossessionReasons,
             suspensionToBuyDemotionOfTenancyOrderReasons, organisationNameService,
             claimantDetailsWalesPage, schedulerClient,
             draftCaseDataService, addressFormatter
+=======
+            introductoryDemotedOtherGroundsReasons, defendantCircumstancesPage, suspensionOfRightToBuyOrderReason,
+            statementOfExpressTerms, demotionOfTenancyOrderReason, organisationNameService,
+            claimantDetailsWalesPage, schedulerClient,
+            draftCaseDataService, occupationLicenceDetailsWalesPage, addressFormatter
+>>>>>>> master
         );
 
         setEventUnderTest(underTest);

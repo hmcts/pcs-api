@@ -13,6 +13,10 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
+<<<<<<< HEAD
+=======
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ClaimantCircumstancesPage;
+>>>>>>> master
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 
 import java.util.ArrayList;

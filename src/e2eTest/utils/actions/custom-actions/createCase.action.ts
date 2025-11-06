@@ -3,51 +3,10 @@ import {ServiceAuthUtils} from '@hmcts/playwright-common';
 import {actionData, actionRecord, IAction} from '../../interfaces/action.interface';
 import {Page} from '@playwright/test';
 import {performAction, performActions, performValidation} from '@utils/controller';
-import {createCase} from '@data/page-data/createCase.page.data';
-import {addressDetails} from '@data/page-data/addressDetails.page.data';
-import {housingPossessionClaim} from '@data/page-data/housingPossessionClaim.page.data';
-import {defendantDetails} from '@data/page-data/defendantDetails.page.data';
-import {claimantName} from '@data/page-data/claimantName.page.data';
-import {contactPreferences} from '@data/page-data/contactPreferences.page.data';
-import {mediationAndSettlement} from '@data/page-data/mediationAndSettlement.page.data';
-import {tenancyLicenceDetails} from '@data/page-data/tenancyLicenceDetails.page.data';
-import {resumeClaimOptions} from '@data/page-data/resumeClaimOptions.page.data';
-import {rentDetails} from '@data/page-data/rentDetails.page.data';
-import {accessTokenApiData} from '@data/api-data/accessToken.api.data';
-import {caseApiData} from '@data/api-data/case.api.data';
-import {dailyRentAmount} from '@data/page-data/dailyRentAmount.page.data';
-import {reasonsForPossession} from '@data/page-data/reasonsForPossession.page.data';
-import {detailsOfRentArrears} from '@data/page-data/detailsOfRentArrears.page.data';
-import {claimantType} from '@data/page-data/claimantType.page.data';
-import {claimType} from '@data/page-data/claimType.page.data';
-import {groundsForPossession} from '@data/page-data/groundsForPossession.page.data';
-import {preActionProtocol} from '@data/page-data/preActionProtocol.page.data';
-import {noticeOfYourIntention} from '@data/page-data/noticeOfYourIntention.page.data';
-import {borderPostcode} from '@data/page-data/borderPostcode.page.data';
-import {rentArrearsPossessionGrounds} from '@data/page-data/rentArrearsPossessionGrounds.page.data';
-import {rentArrearsOrBreachOfTenancy} from '@data/page-data/rentArrearsOrBreachOfTenancy.page.data';
-import {noticeDetails} from '@data/page-data/noticeDetails.page.data';
-import {moneyJudgment} from '@data/page-data/moneyJudgment.page.data';
-import {whatAreYourGroundsForPossession} from '@data/page-data/whatAreYourGroundsForPossession.page.data';
-import {languageUsed} from '@data/page-data/languageUsed.page.data';
-import {defendantCircumstances} from '@data/page-data/defendantCircumstances.page.data';
-import {applications} from '@data/page-data/applications.page.data';
-import {claimantCircumstances} from '@data/page-data/claimantCircumstances.page.data';
-import {claimingCosts} from '@data/page-data/claimingCosts.page.data';
-import {alternativesToPossession} from '@data/page-data/alternativesToPossession.page.data';
-import {reasonsForRequestingADemotionOrder} from '@data/page-data/reasonsForRequestingADemotionOrder.page.data';
-import {statementOfExpressTerms} from '@data/page-data/statementOfExpressTerms.page.data';
-import {reasonsForRequestingASuspensionOrder} from '@data/page-data/reasonsForRequestingASuspensionOrder.page.data';
-import {uploadAdditionalDocs} from '@data/page-data/uploadAdditionalDocs.page.data';
-import {additionalReasonsForPossession} from '@data/page-data/additionalReasonsForPossession.page.data';
-import {completeYourClaim} from '@data/page-data/completeYourClaim.page.data';
-import {home} from '@data/page-data/home.page.data';
-import {search} from '@data/page-data/search.page.data';
-import {userIneligible} from '@data/page-data/userIneligible.page.data';
-import {whatAreYourGroundsForPossessionWales} from '@data/page-data/whatAreYourGroundsForPossessionWales.page.data';
-import {
-  reasonsForRequestingASuspensionAndDemotionOrder
-} from '@data/page-data/reasonsForRequestingASuspensionAndDemotionOrder.page.data';
+import {createCase, addressDetails, housingPossessionClaim, defendantDetails, claimantName, contactPreferences, mediationAndSettlement, tenancyLicenceDetails, resumeClaimOptions, rentDetails, accessTokenApiData, caseApiData, dailyRentAmount, reasonsForPossession, detailsOfRentArrears,
+        claimantType, claimType, groundsForPossession, preActionProtocol, noticeOfYourIntention, borderPostcode, rentArrearsPossessionGrounds, rentArrearsOrBreachOfTenancy, noticeDetails, moneyJudgment, whatAreYourGroundsForPossession, languageUsed, defendantCircumstances, applications, claimantCircumstances,
+        claimingCosts, alternativesToPossession, reasonsForRequestingADemotionOrder, statementOfExpressTerms, reasonsForRequestingASuspensionOrder, uploadAdditionalDocs, additionalReasonsForPossession, completeYourClaim, home, search, userIneligible,
+        whatAreYourGroundsForPossessionWales, underlesseeOrMortgageeDetails, reasonsForRequestingASuspensionAndDemotionOrder, provideMoreDetailsOfClaim} from "@data/page-data";
 
 export let caseInfo: { id: string; fid: string; state: string };
 export let caseNumber: string;
@@ -59,6 +18,7 @@ export class CreateCaseAction implements IAction {
       ['createCase', () => this.createCaseAction(fieldName)],
       ['housingPossessionClaim', () => this.housingPossessionClaim()],
       ['selectAddress', () => this.selectAddress(fieldName)],
+      ['provideMoreDetailsOfClaim', () => this.provideMoreDetailsOfClaim(page)],
       ['selectResumeClaimOption', () => this.selectResumeClaimOption(fieldName)],
       ['extractCaseIdFromAlert', () => this.extractCaseIdFromAlert(page)],
       ['selectClaimantType', () => this.selectClaimantType(fieldName)],
@@ -97,7 +57,9 @@ export class CreateCaseAction implements IAction {
       ['selectApplications', () => this.selectApplications(fieldName)],
       ['selectClaimingCosts', () => this.selectClaimingCosts(fieldName)],
       ['completingYourClaim', () => this.completingYourClaim(fieldName)],
-      ['selectAdditionalReasonsForPossession', ()=> this.selectAdditionalReasonsForPossession(fieldName)],
+      ['selectAdditionalReasonsForPossession', () => this.selectAdditionalReasonsForPossession(fieldName)],
+      ['selectUnderlesseeOrMortgageeEntitledToClaim', () => this.selectUnderlesseeOrMortgageeEntitledToClaim(fieldName as actionRecord)],
+      ['selectUnderlesseeOrMortgageeDetails', () => this.selectUnderlesseeOrMortgageeDetails(fieldName as actionRecord)],
       ['wantToUploadDocuments', () => this.wantToUploadDocuments(fieldName as actionRecord)],
       ['uploadAdditionalDocs', () => this.uploadAdditionalDocs(fieldName as actionRecord)]
     ]);
@@ -325,6 +287,10 @@ export class CreateCaseAction implements IAction {
 
   private async selectYourPossessionGrounds(possessionGrounds: actionRecord) {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: ' + caseNumber});
+    if (!possessionGrounds) {
+      await performAction('clickButton', whatAreYourGroundsForPossession.continue);
+      return;
+    }
     for (const key of Object.keys(possessionGrounds)) {
       switch (key) {
         case 'discretionary':
@@ -606,6 +572,12 @@ export class CreateCaseAction implements IAction {
     await performAction('clickButton', addressDetails.submit);
   }
 
+  private async provideMoreDetailsOfClaim(page: Page) {
+    // Reloading to reset session/UI state before performing next step
+    await page.reload();
+    await performAction('clickButtonAndVerifyPageNavigation', provideMoreDetailsOfClaim.continue, claimantType.mainHeader);
+  }
+
   private async selectAdditionalReasonsForPossession(reasons: actionData) {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
     await performAction('clickRadioButton', reasons);
@@ -615,7 +587,34 @@ export class CreateCaseAction implements IAction {
     await performAction('clickButton', additionalReasonsForPossession.continue);
   }
 
+  private async selectUnderlesseeOrMortgageeEntitledToClaim(underlesseeOrMortgageeEntitledToClaim: actionRecord) {
+    await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
+    await performAction('clickRadioButton', {
+      question: underlesseeOrMortgageeEntitledToClaim.question,
+      option: underlesseeOrMortgageeEntitledToClaim.option
+    });
+    await performAction('clickButton', underlesseeOrMortgageeDetails.continue);
+  }
+
+  private async selectUnderlesseeOrMortgageeDetails(underlesseeOrMortgageeDetail: actionRecord) {
+    await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
+    await performAction('clickRadioButton', {
+      question: underlesseeOrMortgageeDetail.nameQuestion,
+      option: underlesseeOrMortgageeDetail.nameOption
+    });
+    await performAction('clickRadioButton', {
+      question: underlesseeOrMortgageeDetail.addressQuestion,
+      option: underlesseeOrMortgageeDetail.addressOption
+    });
+    await performAction('clickRadioButton', {
+      question: underlesseeOrMortgageeDetail.anotherUnderlesseeOrMortgageeQuestion,
+      option: underlesseeOrMortgageeDetail.anotherUnderlesseeOrMortgageeOption
+    });
+    await performAction('clickButton', underlesseeOrMortgageeDetails.continue);
+  }
+
   private async reloginAndFindTheCase(userInfo: actionData) {
+    await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
     await performAction('login', userInfo);
     await performAction('clickButton', home.findCaseTab);
     await performAction('select', search.jurisdictionLabel, search.possessionsJurisdiction);

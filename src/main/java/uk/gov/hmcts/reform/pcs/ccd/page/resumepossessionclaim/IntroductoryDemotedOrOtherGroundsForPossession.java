@@ -85,7 +85,18 @@ public class IntroductoryDemotedOrOtherGroundsForPossession implements CcdPageCo
             caseData.setShowIntroductoryDemotedOtherGroundReasonPage(YesOrNo.NO);
         }
 
-        return textAreaValidationService.createValidationResponse(caseData, validationErrors);
+        boolean hasRentArrears = caseData.getHasIntroductoryDemotedOtherGroundsForPossession() == VerticalYesNo.YES
+            && caseData.getIntroductoryDemotedOrOtherGrounds()
+                .contains(IntroductoryDemotedOrOtherGrounds.RENT_ARREARS);
+        caseData.setShowRentDetailsPage(YesOrNo.from(hasRentArrears));
+
+        if (!validationErrors.isEmpty()) {
+            return textAreaValidationService.createValidationResponse(caseData, validationErrors);
+        }
+
+        return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
+            .data(caseData)
+            .build();
     }
 
 }
