@@ -78,7 +78,7 @@ public class DefendantService {
         }
 
         return defendantList.stream()
-            .map(defendant -> new DefendantsDOBStringInterpolation(
+            .map(defendant -> new DefendantsDOBStringInterpolation(null,
                 "Do you know " + defendant.getFirstName() + " "
                     + defendant.getLastName() + "'s date of birth?", null)
             )

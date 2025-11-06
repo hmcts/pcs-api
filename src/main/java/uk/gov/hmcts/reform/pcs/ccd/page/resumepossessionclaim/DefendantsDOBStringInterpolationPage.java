@@ -26,9 +26,10 @@ public class DefendantsDOBStringInterpolationPage implements CcdPageConfiguratio
             .pageLabel("Defendant DOB")
             .label("defendantDOBLabel", "My Defendant DOB label")
         .list(PCSCase::getDobDefendants)
-
             .readonly(DefendantsDOBStringInterpolation::getDefendantName)
-            .mandatory(DefendantsDOBStringInterpolation::getDob)
+            .mandatory(DefendantsDOBStringInterpolation::getDoYouKnowDefendant)
+            .mandatory(DefendantsDOBStringInterpolation::getDob,
+                "dobDefendants.doYouKnowDefendant=\"Yes\"")
             .done()
             .done();
     }
