@@ -58,6 +58,9 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
         boolean hasUnsubmittedCaseData = caseHasUnsubmittedData(caseReference, state);
         pcsCase.setHasUnsubmittedCaseData(YesOrNo.from(hasUnsubmittedCaseData));
 
+        PcsCaseEntity pcsCaseEntity = loadCaseData(caseReference);
+        mapTenancyLicenceData(pcsCase, pcsCaseEntity);
+
         setMarkdownFields(pcsCase);
 
         return pcsCase;
@@ -192,5 +195,29 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
 
     private static String poundsToPence(BigDecimal pounds) {
         return pounds.movePointRight(2).toPlainString();
+    }
+
+    private void mapTenancyLicenceData(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {
+        uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicence entityTenancyLicence = pcsCaseEntity.getTenancyLicence();
+        if (entityTenancyLicence == null) {
+            return;
+        }
+
+        // Map documents from entity to CCD ListValue format
+        var supportingDocuments = entityTenancyLicence.getSupportingDocuments();
+        if (supportingDocuments != null && !supportingDocuments.isEmpty()) {
+            pcsCase.setTenancyLicenceDocuments(
+                ListValueUtils.wrapListItems(supportingDocuments));
+        }
+
+        var noticeDocuments = entityTenancyLicence.getNoticeDocuments();
+        if (noticeDocuments != null && !noticeDocuments.isEmpty()) {
+            pcsCase.setNoticeDocuments(ListValueUtils.wrapListItems(noticeDocuments));
+        }
+
+        var rentStatementDocuments = entityTenancyLicence.getRentStatementDocuments();
+        if (rentStatementDocuments != null && !rentStatementDocuments.isEmpty()) {
+            pcsCase.setRentStatementDocuments(ListValueUtils.wrapListItems(rentStatementDocuments));
+        }
     }
 }
