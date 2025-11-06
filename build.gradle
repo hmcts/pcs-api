@@ -486,6 +486,10 @@ tasks.register('highLevelDataSetup', JavaExec) {
   jvmArgs = ['--add-opens=java.base/java.lang.reflect=ALL-UNNAMED']
 }
 
+tasks.register('e2eTest'){
+  dependsOn('runE2eChromeTests')
+}
+
 // Ensure we cover Cftlib dev & test with our CI checks
 check.dependsOn cftlibTest
 
