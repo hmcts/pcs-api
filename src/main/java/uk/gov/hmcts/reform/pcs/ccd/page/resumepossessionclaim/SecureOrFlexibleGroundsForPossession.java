@@ -60,8 +60,10 @@ public class SecureOrFlexibleGroundsForPossession implements CcdPageConfiguratio
                 );
 
         // Control Rent Details page visibility based on Ground 1 selection
+        // Always reset visibility to NO here; the next page will enable it if needed
+        caseData.setShowRentDetailsPage(YesOrNo.NO);
         if (!discretionaryGrounds.contains(RENT_ARREARS_OR_BREACH_OF_TENANCY)) {
-            // Ground 1 not selected - clear rent arrears data and hide rent details page
+            // Ground 1 not selected - clear rent arrears data
             caseData.setRentArrearsOrBreachOfTenancy(Set.of());
             caseData.setShowRentDetailsPage(YesOrNo.NO);
         } else {
