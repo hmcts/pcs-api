@@ -150,7 +150,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
                 .grant(Permission.CRUD, UserRole.PCS_SOLICITOR)
                 .showSummary();
 
-        savingPageBuilderFactory.create(eventBuilder)
+        savingPageBuilderFactory.create(eventBuilder, resumePossessionClaim)
             .add(resumeClaim)
             .add(selectClaimantType)
             .add(new ClaimantTypeNotEligibleEngland())
@@ -279,7 +279,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
 
         pcsCaseService.save(pcsCaseEntity);
 
-        draftCaseDataService.deleteUnsubmittedCaseData(caseReference);
+        draftCaseDataService.deleteUnsubmittedCaseData(caseReference, resumePossessionClaim);
 
         String taskId = UUID.randomUUID().toString();
 

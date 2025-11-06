@@ -21,9 +21,10 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
-import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
+import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
@@ -44,6 +45,7 @@ class PCSCaseViewTest {
 
     private static final long CASE_REFERENCE = 1234L;
     private static final State DEFAULT_STATE = State.CASE_ISSUED;
+    private final EventId eventId = EventId.resumePossessionClaim;
 
     private static CaseViewRequest<State> request(long caseReference, State state) {
         return new CaseViewRequest<>(caseReference, state);
@@ -90,7 +92,7 @@ class PCSCaseViewTest {
     @MethodSource("unsubmittedDataFlagScenarios")
     void shouldSetFlagForUnsubmittedData(boolean hasUnsubmittedData, YesOrNo expectedCaseDataValue) {
         // Given
-        when(draftCaseDataService.hasUnsubmittedCaseData(CASE_REFERENCE)).thenReturn(hasUnsubmittedData);
+        when(draftCaseDataService.hasUnsubmittedCaseData(CASE_REFERENCE, eventId)).thenReturn(hasUnsubmittedData);
 
         // When
         PCSCase pcsCase = underTest.getCase(request(CASE_REFERENCE, State.AWAITING_FURTHER_CLAIM_DETAILS));
