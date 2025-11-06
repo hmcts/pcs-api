@@ -48,7 +48,10 @@ withNightlyPipeline(type, product, component) {
   loadVaultSecrets(secrets)
   handleEnvironmentSetting()
   enableFortifyScan()
-  enableE2eTest()
+
+  //Skipping e2e tests as the decentralisation is not currently supported in aat
+  //enableE2eTest()
+  
   afterAlways('fortify-scan') {
     steps.archiveArtifacts allowEmptyArchive: true, artifacts: '**/Fortify Scan/**/*'
   }
