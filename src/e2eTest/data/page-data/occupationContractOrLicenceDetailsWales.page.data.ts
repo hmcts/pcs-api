@@ -1,0 +1,18 @@
+export const occupationContractOrLicenceDetailsWales = {
+  title: 'Create a case - HM Courts & Tribunals Service - GOV.UK',
+  mainHeader: 'Occupation contract or licence details',
+  occupationContractOrLicenceType: 'What type of occupation contract or licence is in place?',
+  secureContract: 'Secure contract',
+  standardContract: 'Standard contract',
+  other: 'Other',
+  occupationContractOrLicenceStartDate: 'What date did the occupation contract or licence begin?',
+  dayLabel: 'Day',
+  monthLabel: 'Month',
+  yearLabel: 'Year',
+  dayInput: '16',
+  monthInput: '04',
+  yearInput: '2021',
+  continue: 'Continue',
+  giveDetailsOfTypeOfOccupationContractAgreementLabel: 'Give details about what type of occupation contract or licence is in place',
+  detailsOfLicenceInput: 'This is the details of Licence or Tenancy agreement.',
+}
