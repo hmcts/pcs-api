@@ -67,6 +67,8 @@ export class ActionRegistry {
     ['selectApplications', new CreateCaseAction()],
     ['completingYourClaim', new CreateCaseAction()],
     ['selectAdditionalReasonsForPossession', new CreateCaseAction()],
+    ['selectUnderlesseeOrMortgageeEntitledToClaim', new CreateCaseAction()],
+    ['selectUnderlesseeOrMortgageeDetails', new CreateCaseAction()],
     ['enterReasonForDemotionOrder', new CreateCaseAction()],
     ['enterReasonForSuspensionAndDemotionOrder', new CreateCaseAction()],
     ['selectStatementOfExpressTerms', new CreateCaseAction()],
@@ -78,6 +80,7 @@ export class ActionRegistry {
     ['wantToUploadDocuments', new CreateCaseAction()],
     ['uploadAdditionalDocs', new CreateCaseAction()],
     ['clickButtonAndWaitForElement', new ClickButtonAction()],
+    ['selectOccupationContractOrLicenceDetails', new CreateCaseWalesAction()],
     ['provideMoreDetailsOfClaim', new CreateCaseAction()]
   ]);
 

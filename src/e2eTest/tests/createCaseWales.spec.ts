@@ -1,20 +1,12 @@
 import {test} from '@playwright/test';
-import {initializeExecutor, performAction, performValidation} from '@utils/controller';
-import {claimantType} from '@data/page-data/claimantType.page.data';
-import {claimType} from '@data/page-data/claimType.page.data';
-import {claimantName} from '@data/page-data/claimantName.page.data';
-import {claimantDetailsWales} from '@data/page-data/claimantDetailsWales.page.data';
-import {contactPreferences} from '@data/page-data/contactPreferences.page.data';
-import {defendantDetails} from '@data/page-data/defendantDetails.page.data';
-import {groundsForPossession} from '@data/page-data/groundsForPossession.page.data';
-import {preActionProtocol} from '@data/page-data/preActionProtocol.page.data';
-import {mediationAndSettlement} from '@data/page-data/mediationAndSettlement.page.data';
-import {noticeOfYourIntention} from '@data/page-data/noticeOfYourIntention.page.data';
-import {reasonsForPossession} from '@data/page-data/reasonsForPossession.page.data';
-import {user} from '@data/user-data/permanent.user.data';
-import {home} from '@data/page-data/home.page.data';
-import {whatAreYourGroundsForPossessionWales} from '@data/page-data/whatAreYourGroundsForPossessionWales.page.data';
-import {signInOrCreateAnAccount} from '@data/page-data/signInOrCreateAnAccount.page.data';
+import {initializeExecutor, performAction, performValidation, performValidations} from '@utils/controller';
+import {claimType, claimantType, claimantName, claimantDetailsWales, contactPreferences, defendantDetails, tenancyLicenceDetails,
+        groundsForPossession, rentArrearsPossessionGrounds, preActionProtocol, mediationAndSettlement, noticeOfYourIntention, rentDetails,
+        provideMoreDetailsOfClaim, resumeClaim, resumeClaimOptions, detailsOfRentArrears, whatAreYourGroundsForPossession, rentArrearsOrBreachOfTenancy,
+        reasonsForPossession, moneyJudgment, claimantCircumstances, applications, completeYourClaim, user, reasonsForRequestingASuspensionOrder,
+        checkYourAnswers, propertyDetails, languageUsed, defendantCircumstances, claimingCosts, home, additionalReasonsForPossession, underlesseeOrMortgageeEntitledToClaim,
+        alternativesToPossession, housingAct, reasonsForRequestingADemotionOrder, statementOfExpressTerms, wantToUploadDocuments, whatAreYourGroundsForPossessionWales,
+        addressDetails, reasonsForRequestingASuspensionAndDemotionOrder, signInOrCreateAnAccount, occupationContractOrLicenceDetailsWales} from '@data/page-data';
 
 test.beforeEach(async ({page}) => {
   initializeExecutor(page);
@@ -57,9 +49,14 @@ test.describe('[Create Case - Wales] @Master @nightly', async () => {
       email: defendantDetails.yes,
       correspondenceAddressSame: defendantDetails.yes
     });
-    //Following line can be updated to securecontractLicenceDetails once HDPI-2365 is done
-    await performAction('check', 'Secure contract');
-    await performAction('clickButton', 'Continue');
+    await performAction('selectOccupationContractOrLicenceDetails', {
+      occupationContractQuestion: occupationContractOrLicenceDetailsWales.occupationContractOrLicenceType,
+      occupationContractType: occupationContractOrLicenceDetailsWales.secureContract,
+      day: occupationContractOrLicenceDetailsWales.dayInput,
+      month: occupationContractOrLicenceDetailsWales.monthInput,
+      year: occupationContractOrLicenceDetailsWales.yearInput,
+      files: 'occupationContract.pdf'
+    });
     await performValidation('mainHeader', whatAreYourGroundsForPossessionWales.mainHeader);
     await performAction('selectYourPossessionGrounds', {
       discretionary: [whatAreYourGroundsForPossessionWales.discretionary.rentArrears],
@@ -154,14 +151,18 @@ test.describe('[Create Case - Wales] @Master @nightly', async () => {
       correspondenceAddress: defendantDetails.no,
       email: defendantDetails.no,
     });
-    //Following 186 to 188 needs update once routing is done for wales journey HDPI-2365
-    await performAction('check', 'Secure contract');
-    await performAction('clickButton', 'Continue');
+    await performAction('selectOccupationContractOrLicenceDetails', {
+      occupationContractQuestion: occupationContractOrLicenceDetailsWales.occupationContractOrLicenceType,
+      occupationContractType: occupationContractOrLicenceDetailsWales.standardContract,
+      day: occupationContractOrLicenceDetailsWales.dayInput,
+      month: occupationContractOrLicenceDetailsWales.monthInput,
+      year: occupationContractOrLicenceDetailsWales.yearInput
+    });
     await performValidation('mainHeader', whatAreYourGroundsForPossessionWales.mainHeader);
     await performAction('selectYourPossessionGrounds', {
       discretionary: [whatAreYourGroundsForPossessionWales.discretionary.estateManagementGrounds],
       discretionaryEstateGrounds: [whatAreYourGroundsForPossessionWales.discretionary.buildingWorks],
-      mandatory: [whatAreYourGroundsForPossessionWales.mandatory.section191],
+      mandatory: [whatAreYourGroundsForPossessionWales.mandatory.section187],
     });
     await performAction('clickButton', reasonsForPossession.continue);
     // Following lines enabled to reach notice of your intention page as HDPI-2343 is done for Wales journey routing
@@ -250,8 +251,11 @@ test.describe('[Create Case - Wales] @Master @nightly', async () => {
       email: defendantDetails.yes,
       correspondenceAddressSame: defendantDetails.yes
     });
-    await performAction('check', 'Secure contract');
-    await performAction('clickButton', 'Continue');
+    await performAction('selectOccupationContractOrLicenceDetails', {
+      occupationContractQuestion: occupationContractOrLicenceDetailsWales.occupationContractOrLicenceType,
+      occupationContractType: occupationContractOrLicenceDetailsWales.other,
+      files: 'occupationContract.pdf'
+    });
     await performValidation('mainHeader', whatAreYourGroundsForPossessionWales.mainHeader);
     await performAction('selectYourPossessionGrounds', {
       discretionary: [whatAreYourGroundsForPossessionWales.discretionary.otherBreachOfContract],
