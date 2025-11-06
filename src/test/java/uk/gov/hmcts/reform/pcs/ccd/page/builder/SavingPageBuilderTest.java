@@ -15,14 +15,21 @@ import uk.gov.hmcts.ccd.sdk.api.FieldCollection.FieldCollectionBuilder;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.ccd.sdk.api.callback.MidEvent;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
+import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
+import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -45,7 +52,7 @@ class SavingPageBuilderTest {
 
     @BeforeEach
     void setUp() {
-        when(eventBuilder.fields()).thenReturn(fieldCollectionBuilder);
+        lenient().when(eventBuilder.fields()).thenReturn(fieldCollectionBuilder);
         underTest = new SavingPageBuilder(draftCaseDataService, eventBuilder);
     }
 
@@ -100,6 +107,94 @@ class SavingPageBuilderTest {
         inOrder.verify(pageMidEvent).handle(caseDetails, caseDetailsBefore);
         inOrder.verify(draftCaseDataService).patchUnsubmittedCaseData(CASE_REFERENCE, caseData);
         assertThat(response).isEqualTo(pageMidEventResponse);
+    }
+
+    @Test
+    void shouldAddSaveAndReturnLabelAfterPageConfiguration() {
+        // Given
+        String pageId = "testPage";
+        CcdPageConfiguration pageConfiguration = mock(CcdPageConfiguration.class);
+        
+        when(fieldCollectionBuilder.page(eq(pageId), any())).thenReturn(fieldCollectionBuilder);
+        when(fieldCollectionBuilder.label(anyString(), anyString())).thenReturn(fieldCollectionBuilder);
+        
+        doAnswer(invocation -> {
+            PageBuilder pb = invocation.getArgument(0);
+            pb.page(pageId);
+            return null;
+        }).when(pageConfiguration).addTo(any());
+
+        // When
+        underTest.add(pageConfiguration);
+
+        // Then
+        verify(fieldCollectionBuilder).page(eq(pageId), any());
+        verify(fieldCollectionBuilder).label(eq(pageId + "-saveAndReturn"), eq(CommonPageContent.SAVE_AND_RETURN));
+    }
+
+    @Test
+    void shouldAddSaveAndReturnLabelWithCorrectId() {
+        // Given
+        String pageId = "noticeDetails";
+        CcdPageConfiguration pageConfiguration = mock(CcdPageConfiguration.class);
+        
+        when(fieldCollectionBuilder.page(eq(pageId), any())).thenReturn(fieldCollectionBuilder);
+        when(fieldCollectionBuilder.label(anyString(), anyString())).thenReturn(fieldCollectionBuilder);
+        
+        doAnswer(invocation -> {
+            PageBuilder pb = invocation.getArgument(0);
+            pb.page(pageId);
+            return null;
+        }).when(pageConfiguration).addTo(any());
+
+        // When
+        underTest.add(pageConfiguration);
+
+        // Then
+        verify(fieldCollectionBuilder).label(eq("noticeDetails-saveAndReturn"), eq(CommonPageContent.SAVE_AND_RETURN));
+    }
+
+    @Test
+    void shouldNotAddSaveAndReturnLabelWhenNoPageIsCreated() {
+        // Given
+        CcdPageConfiguration pageConfiguration = mock(CcdPageConfiguration.class);
+        
+        doAnswer(invocation -> {
+            // Page configuration doesn't create a page
+            return null;
+        }).when(pageConfiguration).addTo(any());
+
+        // When
+        underTest.add(pageConfiguration);
+
+        // Then
+        verify(fieldCollectionBuilder, never()).label(anyString(), eq(CommonPageContent.SAVE_AND_RETURN));
+    }
+
+    @Test
+    void shouldTrackLastPageWhenMultiplePagesCreated() {
+        // Given
+        String firstPageId = "firstPage";
+        String secondPageId = "secondPage";
+        CcdPageConfiguration pageConfiguration = mock(CcdPageConfiguration.class);
+        
+        when(fieldCollectionBuilder.page(anyString(), any())).thenReturn(fieldCollectionBuilder);
+        when(fieldCollectionBuilder.label(anyString(), anyString())).thenReturn(fieldCollectionBuilder);
+        
+        doAnswer(invocation -> {
+            PageBuilder pb = invocation.getArgument(0);
+            pb.page(firstPageId);
+            pb.page(secondPageId);
+            return null;
+        }).when(pageConfiguration).addTo(any());
+
+        // When
+        underTest.add(pageConfiguration);
+
+        // Then - should only add label for the last page
+        verify(fieldCollectionBuilder).label(
+            eq(secondPageId + "-saveAndReturn"), eq(CommonPageContent.SAVE_AND_RETURN));
+        verify(fieldCollectionBuilder, never()).label(eq(firstPageId + "-saveAndReturn"), anyString());
     }
 
     private MidEvent<PCSCase, State> getMidEventHandler() {
