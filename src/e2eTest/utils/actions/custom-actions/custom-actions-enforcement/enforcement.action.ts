@@ -5,6 +5,7 @@ import { yourApplication, nameAndAddressForEviction, everyoneLivingAtTheProperty
          violentOrAggressiveBehaviour, firearmPossession, criminalOrAntisocialBehaviour, riskPosedByEveryoneAtProperty,
          verbalOrWrittenThreats, groupProtestsEviction, policeOrSocialServiceVisit, animalsAtTheProperty } from "@data/page-data/page-data-enforcement";
 import { enforcementTestCaseNumber } from "../searchCase.action";
+import {accessToTheProperty} from "@data/page-data/page-data-enforcement/accessToTheProperty";
 
 export class EnforcementAction implements IAction {
   async execute(page: Page, action: string, fieldName: string | actionRecord, data?: actionData): Promise<void> {
@@ -20,6 +21,7 @@ export class EnforcementAction implements IAction {
       ['provideDetailsGroupProtestsEviction', () => this.provideDetailsGroupProtestsEviction(fieldName as actionRecord)],
       ['provideDetailsPoliceOrSocialServiceVisits', () => this.provideDetailsPoliceOrSocialServiceVisits(fieldName as actionRecord)],
       ['provideDetailsAnimalsAtTheProperty', () => this.provideDetailsAnimalsAtTheProperty(fieldName as actionRecord)],
+      ['accessToProperty', () => this.accessToProperty(fieldName as actionRecord)],
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) throw new Error(`No action found for '${action}'`);
@@ -100,4 +102,13 @@ export class EnforcementAction implements IAction {
     await performAction('inputText', theAnimalsAtTheProperty.label, theAnimalsAtTheProperty.input);
     await performAction('clickButton', animalsAtTheProperty.continue);
   }
+  private async accessToProperty(accessToProperty: actionRecord) {
+    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + enforcementTestCaseNumber });
+    await performAction('clickRadioButton', { question: accessToProperty.question, option: accessToProperty.option });
+    if (accessToProperty.option === accessToTheProperty.yes) {
+      await performAction('inputText', accessToProperty.label, accessToProperty.input);
+    }
+    await performAction('clickButton', accessToTheProperty.continue);
+  }
+
 }
