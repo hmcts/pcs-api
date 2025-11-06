@@ -1,4 +1,4 @@
-export const claimantType = {
+export const selectClaimantType = {
   makeAClaimCaption: `Make a claim`,
   mainHeader: `Claimant type`,
   caseNumberParagraph: `Case number:`,
