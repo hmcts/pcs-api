@@ -36,6 +36,7 @@ security:
     - "/swagger-ui.html"
     - "/swagger-ui/**"
     - "/v3/api-docs/**"
+    - "/case/document/downloadDocument/**"
 
 spring:
   config:
@@ -138,6 +139,12 @@ doc_assembly:
   url: ${DOC_ASSEMBLY_URL:http://localhost:8080}
   s2s-authorised:
     services: pcs_api,ccd_data,ccd_gw,ccd_case_document_am_api,ccd_definition,ccd_admin,ccd_ps,ccd
+
+document-management:
+  url: ${DOCUMENT_MANAGEMENT_URL:http://dm-store-aat.service.core-compute-aat.internal}
+
+case_document_am:
+  url: ${CASE_DOCUMENT_AM_URL:http://ccd-case-document-am-api-aat.service.core-compute-aat.internal}
 
 rd-professional:
   api-url: ${RD_PROFESSIONAL_API_URL:http://rd-professional-api-aat.service.core-compute-aat.internal}
