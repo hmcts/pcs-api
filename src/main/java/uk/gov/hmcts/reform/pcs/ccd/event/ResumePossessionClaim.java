@@ -134,7 +134,6 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
     private final AddressFormatter addressFormatter;
 
     private static final String CASE_ISSUED_FEE_TYPE = "caseIssueFee";
-    private final DefendantsDetails defendantDetails;
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -158,7 +157,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             .add(new ClaimantInformation())
             .add(claimantDetailsWales)
             .add(contactPreferences)
-            .add(defendantDetails)
+            .add(defendantsDetails)
             .add(tenancyLicenceDetails)
             .add(occupationLicenceDetailsWalesPage)
             .add(new GroundsForPossessionWales())
