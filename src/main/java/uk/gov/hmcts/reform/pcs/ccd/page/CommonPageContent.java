@@ -17,8 +17,7 @@ public class CommonPageContent {
                 If you want to save your application and return to it later:
                 <ol class="govuk-list govuk-list--number govuk-!-margin-left-2">
                     <li>Choose 'Continue'.</li>
-                    <li>Continue to the next page.</li>
-                    <li>Choose 'Cancel'</li>
+                    <li>On the next page choose 'Cancel'.</li>
                 </ol>
                 <p class="govuk-!-margin-top-2">
                     This will save your progress and take you to your case list.

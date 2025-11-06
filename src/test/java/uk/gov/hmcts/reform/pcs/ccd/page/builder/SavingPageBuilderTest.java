@@ -197,6 +197,36 @@ class SavingPageBuilderTest {
         verify(fieldCollectionBuilder, never()).label(eq(firstPageId + "-saveAndReturn"), anyString());
     }
 
+    @Test
+    void shouldNotAddSaveAndReturnLabelForExcludedPages() {
+        // Given
+        String[] excludedPageIds = {
+            "claimantTypeNotEligibleEngland",
+            "claimantTypeNotEligibleWales",
+            "claimTypeNotEligibleEngland",
+            "claimTypeNotEligibleWales"
+        };
+
+        for (String pageId : excludedPageIds) {
+            CcdPageConfiguration pageConfiguration = mock(CcdPageConfiguration.class);
+            
+            when(fieldCollectionBuilder.page(eq(pageId), any())).thenReturn(fieldCollectionBuilder);
+            
+            doAnswer(invocation -> {
+                PageBuilder pb = invocation.getArgument(0);
+                pb.page(pageId);
+                return null;
+            }).when(pageConfiguration).addTo(any());
+
+            // When
+            underTest.add(pageConfiguration);
+
+            // Then
+            verify(fieldCollectionBuilder, never()).label(
+                eq(pageId + "-saveAndReturn"), eq(CommonPageContent.SAVE_AND_RETURN));
+        }
+    }
+
     private MidEvent<PCSCase, State> getMidEventHandler() {
         verify(fieldCollectionBuilder).page(eq(TEST_PAGE_ID), midEventCaptor.capture());
         return midEventCaptor.getValue();

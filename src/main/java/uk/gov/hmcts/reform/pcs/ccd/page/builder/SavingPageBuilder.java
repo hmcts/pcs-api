@@ -13,8 +13,16 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 
 import java.util.Optional;
+import java.util.Set;
 
 public class SavingPageBuilder extends PageBuilder {
+
+    private static final Set<String> EXCLUDED_PAGE_IDS = Set.of(
+        "claimantTypeNotEligibleEngland",
+        "claimantTypeNotEligibleWales",
+        "claimTypeNotEligibleEngland",
+        "claimTypeNotEligibleWales"
+    );
 
     private final DraftCaseDataService draftCaseDataService;
     
@@ -66,10 +74,14 @@ public class SavingPageBuilder extends PageBuilder {
     }
 
     private void addSaveAndReturnLabelIfPageTracked() {
-        if (lastPageBuilder != null && lastPageId != null) {
+        if (lastPageBuilder != null && lastPageId != null && !isPageExcluded(lastPageId)) {
             SaveAndReturnFieldCollectionBuilderWrapper.addSaveAndReturnLabel(lastPageBuilder, lastPageId);
             clearPageTracking();
         }
+    }
+
+    private boolean isPageExcluded(String pageId) {
+        return EXCLUDED_PAGE_IDS.contains(pageId);
     }
 
     private class SavingMidEventDecorator {
