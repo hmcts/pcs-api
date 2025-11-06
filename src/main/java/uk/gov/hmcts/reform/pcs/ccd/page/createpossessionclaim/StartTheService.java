@@ -40,6 +40,7 @@ public class StartTheService implements CcdPageConfiguration {
                        + "Any documents you upload now will be included in the pack of documents "
                        + "that a judge will receive before the hearing (the bundle)</li>"
                        + "</ul>"
+                       +"<h2 class=\"govuk-heading-m\">Completing your claim</h2>"
                        + "<p class=\"govuk-body\">Once you've finished answering the questions, you can either:</p>"
                        + "<ul >"
                        + "<li class=\"govuk-list govuk-!-font-size-19\">sign, submit and pay for your claim "
