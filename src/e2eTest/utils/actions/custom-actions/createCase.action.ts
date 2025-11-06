@@ -321,6 +321,27 @@ export class CreateCaseAction implements IAction {
           option: correspondenceAddressOption,
           index,
         });
+        if (correspondenceAddressOption === defendantDetails.yes) {
+          await performAction('clickRadioButton', {
+            question: defendantDetails.isCorrespondenceAddressSame,
+            option: defendantData.correspondenceAddressSameOption,
+            index,
+          });
+          if (defendantData.correspondenceAddressSameOption === defendantDetails.no) {
+            // await performAction('inputText', {text: addressDetails.enterUKPostcodeLabel, index: index-1} , defendantData.address2|| defendantData.address);
+            // await performAction( 'clickButton', addressDetails.findAddressLabel, index);
+            // await performAction( 'select', addressDetails.selectAddressLabel, addressDetails.addressIndex);
+
+            await performActions(
+              'Enter Address Manually'
+              , ['clickButton', addressDetails.cantEnterUKPostcodeLabel]
+              , ['inputText', {text: addressDetails.buildingAndStreetLabel, index: index-1}, addressDetails.buildingAndStreet]
+              , ['inputText', {text: addressDetails.townOrCityLabel,index: index-1}, addressDetails.townOrCity]
+              , ['inputText', {text:addressDetails.countyLabel,index: index-1}, addressDetails.englandCounty]
+              , ['inputText', {text:addressDetails.postcodeLabel,index:index-1}, addressDetails.englandCourtAssignedPostcode]
+            );
+          }
+        }
       }
     }
     await performAction('clickButton', defendantDetails.continue);

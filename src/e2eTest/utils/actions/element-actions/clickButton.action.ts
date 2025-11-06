@@ -4,11 +4,12 @@ import {actionRetries, VERY_SHORT_TIMEOUT, waitForPageRedirectionTimeout} from '
 
 export class ClickButtonAction implements IAction {
   async execute(page: Page, action: string, buttonText: string , actionParams: string): Promise<void> {
+    const i = Number(actionParams) || 0;
     const button = page.locator(`button:text-is("${buttonText}"),
                                   [value="${buttonText}"],
                                   :has-text("${buttonText}") + button,
                                   :has-text("${buttonText}") ~ button,
-                                  a >> text=${buttonText}`);
+                                  a >> text=${buttonText}`).nth(i);
     const actionsMap = new Map<string, () => Promise<void>>([
       ['clickButton', () => this.clickButton(page, button)],
       ['clickButtonAndVerifyPageNavigation', () => this.clickButtonAndVerifyPageNavigation(page, button, actionParams)],
@@ -22,10 +23,18 @@ export class ClickButtonAction implements IAction {
 
   private async clickButton(page: Page, button: Locator): Promise<void> {
     await page.waitForTimeout(VERY_SHORT_TIMEOUT);
-    await button.first().click();
+    await button.click();
     await page.waitForLoadState();
     await page.locator('.spinner-container').waitFor({state: 'detached'});
   }
+
+  // private async clickButton(page: Page, button: Locator, index?: string): Promise<void> {
+  //   const i = Number(index) || 0;
+  //   await page.waitForTimeout(VERY_SHORT_TIMEOUT);
+  //   await button.nth(i).click();
+  //   await page.waitForLoadState();
+  //   await page.locator('.spinner-container').waitFor({state: 'detached'});
+  // }
 
   private async clickButtonAndVerifyPageNavigation(page: Page, button: Locator, nextPageElement: string): Promise<void> {
     const pageElement = page.locator(`h1:has-text("${nextPageElement}")`);
