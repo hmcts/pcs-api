@@ -40,4 +40,12 @@ public class EnforcementOrder {
         label = "Risk details"
     )
     private EnforcementRiskDetails riskDetails;
+
+    @CCD(
+        label = "Is anyone living at the property vulnerable?"
+    )
+    private YesNoNotSure vulnerablePeopleYesNo;
+    
+    @CCD(label = "Vulnerable adults and children details")
+    private VulnerableAdultsChildren vulnerableAdultsChildren;
 }

@@ -47,7 +47,9 @@ export class ActionEnforcementRegistry {
   static getAction(actionName: string): IAction {
     const action = this.actions.get(actionName);
     if (!action) {
-      throw new Error(`Action '${actionName}' is not registered. Available actions: ${Array.from(this.actions.keys()).join(', ')}`);
+      throw new Error(
+        `Action '${actionName}' is not registered. Available actions: ${Array.from(this.actions.keys()).join(", ")}`
+      );
     }
     return action;
   }
