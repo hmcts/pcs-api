@@ -2,7 +2,7 @@ import {actionData, actionRecord, IAction} from '../../interfaces/action.interfa
 import {Page} from '@playwright/test';
 import {performAction, performActions, performValidation} from '@utils/controller';
 import {claimantDetailsWales} from '@data/page-data/claimantDetailsWales.page.data';
-import {caseNumber, CreateCaseAction} from "@utils/actions/custom-actions/createCase.action";
+import {addressInfo, caseNumber, CreateCaseAction} from "@utils/actions/custom-actions/createCase.action";
 import {occupationContractOrLicenceDetailsWales} from '@data/page-data/occupationContractOrLicenceDetailsWales.page.data';
 
 export class CreateCaseWalesAction extends CreateCaseAction implements IAction {
@@ -18,6 +18,7 @@ export class CreateCaseWalesAction extends CreateCaseAction implements IAction {
 
   private async selectClaimantDetails(claimant: actionRecord) {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: ' + caseNumber});
+    await performValidation('text', {elementType: 'paragraph', text: 'Property address: '+addressInfo.buildingStreet+', '+addressInfo.townCity+', '+addressInfo.engOrWalPostcode});
     await performAction('clickRadioButton', {question: claimant.question1, option: claimant.option1});
     if (claimant.option1 == claimantDetailsWales.yes) {
       await performAction('inputText', claimantDetailsWales.whatsYourRegistrationNumber, claimantDetailsWales.sampleTestRegistrationNumberInput);
@@ -41,6 +42,7 @@ export class CreateCaseWalesAction extends CreateCaseAction implements IAction {
 
   private async selectOccupationContractOrLicenceDetails(occupationContractData: actionRecord) {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: ' + caseNumber});
+    await performValidation('text', {elementType: 'paragraph', text: 'Property address: '+addressInfo.buildingStreet+', '+addressInfo.townCity+', '+addressInfo.engOrWalPostcode});
     await performAction('clickRadioButton', {
       question: occupationContractData.occupationContractQuestion,
       option: occupationContractData.occupationContractType
