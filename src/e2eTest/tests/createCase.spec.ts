@@ -176,7 +176,12 @@ test.describe('[Create Case - England] @Master @nightly', async () => {
       rentArrears: [rentArrearsPossessionGrounds.rentArrears],
       otherGrounds: rentArrearsPossessionGrounds.yes
     });
-    await performAction('selectYourPossessionGrounds',whatAreYourGroundsForPossession.mandatory.holidayLet);
+    await performValidation('mainHeader', whatAreYourGroundsForPossession.mainHeader);
+    await performAction('selectYourPossessionGrounds', {
+      mandatory: [whatAreYourGroundsForPossession.mandatory.holidayLet]
+    });
+    await performAction('enterReasonForPossession',
+      [whatAreYourGroundsForPossession.mandatory.holidayLet]);
     await performValidation('mainHeader', preActionProtocol.mainHeader);
     await performAction('selectPreActionProtocol', preActionProtocol.yes);
     await performValidation('mainHeader', mediationAndSettlement.mainHeader);
