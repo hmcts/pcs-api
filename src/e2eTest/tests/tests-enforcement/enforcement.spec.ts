@@ -85,8 +85,8 @@ test.describe('[Enforcement - Warrant of Possession] @Master @nightly', async ()
     await performAction('accessToProperty', {
       question: accessToTheProperty.accessToThePropertyQuestion,
       option: accessToTheProperty.yesRadioOption,
-      label: accessToTheProperty.whyItsDifficultToAccessToThePropertyLabel,
-      input: accessToTheProperty.whyItsDifficultToAccessToThePropertyInput
+      label: accessToTheProperty.whyItsDifficultToAccessToThePropertyTextLabel,
+      input: accessToTheProperty.whyItsDifficultToAccessToThePropertyTextInput
     });
   });
 
@@ -141,8 +141,8 @@ test.describe('[Enforcement - Warrant of Possession] @Master @nightly', async ()
     await performAction('accessToProperty', {
       question: accessToTheProperty.accessToThePropertyQuestion,
       option: accessToTheProperty.yesRadioOption,
-      label: accessToTheProperty.whyItsDifficultToAccessToThePropertyLabel,
-      input: accessToTheProperty.whyItsDifficultToAccessToThePropertyInput
+      label: accessToTheProperty.whyItsDifficultToAccessToThePropertyTextLabel,
+      input: accessToTheProperty.whyItsDifficultToAccessToThePropertyTextInput
     });
   });
 });
