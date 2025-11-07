@@ -34,5 +34,5 @@ export const addressDetails = {
   englandWalesNoCourtCrossBorderPostcode: 'SY4 5NN',
   englandScotlandNoCourtCrossBorderPostcode: 'TD12 4AS',
   englandWalesCrossBorderPostcode: 'SY13 2LH',
-  submit: 'Submit'
+  continueButton: 'Continue'
 };

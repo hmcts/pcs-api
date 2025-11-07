@@ -2,11 +2,11 @@ import { Page } from "@playwright/test";
 import { initializeExecutor } from "@utils/controller";
 import { performAction, performValidation } from "@utils/controller";
 import { actionData, actionRecord, IAction } from "@utils/interfaces/action.interface";
-import { home, addressDetails, additionalReasonsForPossession, alternativesToPossession, applications, checkYourAnswers, claimantCircumstances, claimantName,
-         claimantType, claimingCosts, claimType, completeYourClaim, contactPreferences, dailyRentAmount, defendantCircumstances, defendantDetails,
-         groundsForPossession, languageUsed, mediationAndSettlement, moneyJudgment, noticeDetails, noticeOfYourIntention, preActionProtocol,
-         provideMoreDetailsOfClaim, rentArrearsPossessionGrounds, rentDetails, statementOfTruth, tenancyLicenceDetails, underlesseeOrMortgageeEntitledToClaim,
-         wantToUploadDocuments, whatAreYourGroundsForPossession} from "@data/page-data";
+import { home, addressDetails, addressCheckYourAnswers, additionalReasonsForPossession, alternativesToPossession, applications, checkYourAnswers, claimantCircumstances, claimantName,
+         claimantType, claimingCosts, claimType, completeYourClaim, contactPreferences, defendantCircumstances, defendantDetails,
+         groundsForPossession, languageUsed, mediationAndSettlement, moneyJudgment, noticeOfYourIntention, preActionProtocol,
+         provideMoreDetailsOfClaim, statementOfTruth, tenancyLicenceDetails, underlesseeOrMortgageeEntitledToClaim,
+         wantToUploadDocuments} from "@data/page-data";
 
 export class MakeClaimAction implements IAction {
   async execute(page: Page, action: string, fieldName?: actionData | actionRecord, value?: actionData | actionRecord): Promise<void> {
@@ -29,6 +29,8 @@ export class MakeClaimAction implements IAction {
         postcode: addressDetails.englandCourtAssignedPostcode,
         addressIndex: addressDetails.addressIndex
       });
+      await performValidation('mainHeader', addressCheckYourAnswers.mainHeader)
+      await performAction('addressCheckYourAnswers');
       await performValidation('bannerAlert', 'Case #.* has been created.');
       await performAction('extractCaseIdFromAlert');
       await performAction('clickButtonAndVerifyPageNavigation', provideMoreDetailsOfClaim.continue, claimantType.mainHeader);

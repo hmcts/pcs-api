@@ -1,12 +1,11 @@
 import {test} from '@playwright/test';
-import {initializeExecutor, performAction, performValidation, performValidations} from '@utils/controller';
-import {claimType, claimantType, claimantName, claimantDetailsWales, contactPreferences, defendantDetails, tenancyLicenceDetails,
-        groundsForPossession, rentArrearsPossessionGrounds, preActionProtocol, mediationAndSettlement, noticeOfYourIntention, rentDetails,
-        provideMoreDetailsOfClaim, resumeClaim, resumeClaimOptions, detailsOfRentArrears, whatAreYourGroundsForPossession,
-        rentArrearsOrBreachOfTenancy, reasonsForPossession, moneyJudgment, claimantCircumstances, applications, completeYourClaim, user,
-        checkYourAnswers, propertyDetails, languageUsed, defendantCircumstances, claimingCosts, home, additionalReasonsForPossession,
-        underlesseeOrMortgageeEntitledToClaim, wantToUploadDocuments, whatAreYourGroundsForPossessionWales, addressDetails,
-        signInOrCreateAnAccount, occupationContractOrLicenceDetailsWales, prohibitedConductStandardContractWales, dailyRentAmount} from '@data/page-data';
+import {initializeExecutor, performAction, performValidation} from '@utils/controller';
+import {claimType, claimantType, claimantName, claimantDetailsWales, contactPreferences, defendantDetails,
+        groundsForPossession, preActionProtocol, mediationAndSettlement, noticeOfYourIntention, rentDetails,
+        detailsOfRentArrears, reasonsForPossession, moneyJudgment, claimantCircumstances, user, defendantCircumstances,
+        claimingCosts, home, whatAreYourGroundsForPossessionWales, signInOrCreateAnAccount,
+        occupationContractOrLicenceDetailsWales, prohibitedConductStandardContractWales, dailyRentAmount
+        , addressCheckYourAnswers} from '@data/page-data';
 
 test.beforeEach(async ({page}) => {
   initializeExecutor(page);
@@ -27,6 +26,8 @@ test.beforeEach(async ({page}) => {
 test.describe('[Create Case - Wales] @Master @nightly', async () => {
   test('Wales - Secure contract', async () => {
     await performAction('enterTestAddressManually');
+    await performValidation('mainHeader', addressCheckYourAnswers.mainHeader)
+    await performAction('addressCheckYourAnswers');
     await performValidation('bannerAlert', 'Case #.* has been created.');
     await performAction('extractCaseIdFromAlert');
     await performAction('provideMoreDetailsOfClaim');
@@ -139,6 +140,8 @@ test.describe('[Create Case - Wales] @Master @nightly', async () => {
 
   test('Wales - Standard contract', async () => {
     await performAction('enterTestAddressManually');
+    await performValidation('mainHeader', addressCheckYourAnswers.mainHeader)
+    await performAction('addressCheckYourAnswers');
     await performValidation('bannerAlert', 'Case #.* has been created.');
     await performAction('extractCaseIdFromAlert');
     await performAction('provideMoreDetailsOfClaim');
@@ -234,6 +237,8 @@ test.describe('[Create Case - Wales] @Master @nightly', async () => {
 
   test('Wales - Occupation contract Licence Details - Other', async () => {
     await performAction('enterTestAddressManually');
+    await performValidation('mainHeader', addressCheckYourAnswers.mainHeader)
+    await performAction('addressCheckYourAnswers');
     await performValidation('bannerAlert', 'Case #.* has been created.');
     await performAction('extractCaseIdFromAlert');
     await performAction('provideMoreDetailsOfClaim');

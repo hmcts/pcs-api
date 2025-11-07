@@ -1,11 +1,11 @@
 import {test} from '@playwright/test';
 import {initializeExecutor, performAction, performValidation, performValidations} from '@utils/controller';
 import {addressDetails, claimantType, claimType, claimantName, contactPreferences, defendantDetails, tenancyLicenceDetails, groundsForPossession,
-        rentArrearsPossessionGrounds, preActionProtocol, mediationAndSettlement, noticeOfYourIntention, noticeDetails, rentDetails, completeYourClaim,
-        dailyRentAmount, provideMoreDetailsOfClaim, whatAreYourGroundsForPossession, moneyJudgment, claimantCircumstances, applications, user,
-        checkYourAnswers, propertyDetails, languageUsed, defendantCircumstances, claimingCosts, uploadAdditionalDocs, statementOfTruth, home,
+        preActionProtocol, mediationAndSettlement, noticeOfYourIntention, noticeDetails, rentDetails, completeYourClaim,
+        dailyRentAmount, whatAreYourGroundsForPossession, moneyJudgment, claimantCircumstances, applications, user,
+        checkYourAnswers, propertyDetails, languageUsed, defendantCircumstances, claimingCosts, statementOfTruth, home,
         additionalReasonsForPossession, underlesseeOrMortgageeEntitledToClaim, alternativesToPossession, reasonsForPossession,
-        wantToUploadDocuments, resumeClaim, resumeClaimOptions, signInOrCreateAnAccount } from '@data/page-data/';
+        wantToUploadDocuments, resumeClaim, resumeClaimOptions, signInOrCreateAnAccount, addressCheckYourAnswers } from '@data/page-data/';
 
 // This test validates the resume & find case functionality with and without saved options.
 // It is not intended to reuse for any of the e2e scenarios, those should still be covered in others specs.
@@ -29,12 +29,14 @@ test.beforeEach(async ({page}) => {
   await performAction('housingPossessionClaim');
 });
 
-test.describe.skip('[Create Case - With resume claim options] @Master @nightly', async () => {
+test.describe('[Create Case - With resume claim options] @Master @nightly', async () => {
   test('England - Resume with saved options - Assured Tentency - Rent arrears + other grounds when user selects no to rent arrears question', async () => {
     await performAction('selectAddress', {
       postcode: addressDetails.englandCourtAssignedPostcode,
       addressIndex: addressDetails.addressIndex
     });
+    await performValidation('mainHeader', addressCheckYourAnswers.mainHeader)
+    await performAction('addressCheckYourAnswers');
     await performValidation('bannerAlert', 'Case #.* has been created.');
     await performAction('extractCaseIdFromAlert');
     await performAction('provideMoreDetailsOfClaim');
@@ -152,6 +154,8 @@ test.describe.skip('[Create Case - With resume claim options] @Master @nightly',
       postcode: addressDetails.englandCourtAssignedPostcode,
       addressIndex: addressDetails.addressIndex
     });
+    await performValidation('mainHeader', addressCheckYourAnswers.mainHeader)
+    await performAction('addressCheckYourAnswers');
     await performValidation('bannerAlert', 'Case #.* has been created.');
     await performAction('extractCaseIdFromAlert');
     await performAction('provideMoreDetailsOfClaim');
