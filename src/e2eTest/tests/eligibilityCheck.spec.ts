@@ -54,7 +54,7 @@ test.describe('[Eligibility Check - Create Case] @Master @nightly', async () => 
       "text": borderPostcode.englandScotlandInlineContent,
       "elementType": "inlineText"
     });
-    await performValidation('text', {"text": borderPostcode.submit, "elementType": "button"})
+    await performValidation('text', {"text": borderPostcode.continueButton, "elementType": "button"})
     await performValidation('text', {"text": borderPostcode.cancel, "elementType": "button"})
   });
 

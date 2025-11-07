@@ -173,7 +173,7 @@ export class CreateCaseAction implements IAction {
 
   private async selectBorderPostcode(option: actionData) {
     await performAction('clickRadioButton', option);
-    await performAction('clickButton', borderPostcode.submit);
+    await performAction('clickButton', borderPostcode.continueButton);
   }
 
   private async selectClaimantName(page: Page, caseData: actionData) {
