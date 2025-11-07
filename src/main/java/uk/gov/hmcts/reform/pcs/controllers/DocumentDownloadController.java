@@ -14,6 +14,8 @@ import org.springframework.web.bind.annotation.RestController;
 import uk.gov.hmcts.reform.pcs.document.model.DownloadedDocumentResponse;
 import uk.gov.hmcts.reform.pcs.document.service.DocumentDownloadService;
 
+import jakarta.annotation.PostConstruct;
+
 @Slf4j
 @RestController
 @RequestMapping("/case/document")
@@ -22,12 +24,27 @@ public class DocumentDownloadController {
 
     private final DocumentDownloadService documentDownloadService;
 
+    @PostConstruct
+    public void init() {
+        log.info("=== DocumentDownloadController initialized ===");
+        log.info("Endpoint available at: /case/document/downloadDocument/{documentId}");
+    }
+
+
+    @GetMapping("/test")
+    public ResponseEntity<String> testEndpoint() {
+        log.info("=== Test endpoint called ===");
+        return ResponseEntity.ok("DocumentDownloadController is working!");
+    }
+
     @GetMapping("/downloadDocument/{documentId}")
     public ResponseEntity<Resource> downloadDocumentById(
         @RequestHeader(HttpHeaders.AUTHORIZATION) String authorisation,
         @PathVariable String documentId
     ) {
+        log.info("=== DocumentDownloadController.downloadDocumentById called ===");
         log.info("Download request for document: {}", documentId);
+        log.info("Authorization header present: {}", authorisation != null);
 
         DownloadedDocumentResponse documentResponse = documentDownloadService.downloadDocument(
             authorisation,
@@ -38,6 +55,7 @@ public class DocumentDownloadController {
         headers.setContentType(MediaType.valueOf(documentResponse.mimeType()));
         headers.set("original-file-name", documentResponse.fileName());
 
+        log.info("Document download successful: {}", documentId);
         return ResponseEntity.ok()
             .headers(headers)
             .body(documentResponse.file());

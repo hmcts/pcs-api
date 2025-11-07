@@ -270,6 +270,7 @@ sonarqube {
       "**/uk/gov/hmcts/reform/pcs/ccd/entity/**/*.java," +
       "**/uk/gov/hmcts/reform/pcs/ccd/PCSCaseView.java," +
       "**/uk/gov/hmcts/reform/pcs/config/DocumentManagementConfig.java," +
+      "**/uk/gov/hmcts/reform/pcs/config/EndpointLogger.java," +
       "**/uk/gov/hmcts/reform/pcs/document/model/DownloadedDocumentResponse.java," +
       "**/uk/gov/hmcts/reform/pcs/controllers/DocumentDownloadController.java," +
       "**/uk/gov/hmcts/reform/pcs/document/service/DocumentDownloadService.java," +
