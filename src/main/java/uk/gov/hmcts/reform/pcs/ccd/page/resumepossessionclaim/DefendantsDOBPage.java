@@ -19,7 +19,8 @@ public class DefendantsDOBPage implements CcdPageConfiguration {
         pageBuilder
             .page("defendantsDOB", this::midEvent)
             .pageLabel("Defendant DOB")
-            .label("defendantDOBLabel", "My Defendant DOB label")
+            .label("defendantDOBLabel-lineSeparator", "---")
+            .label("defendantDOBLabel", "<h2> Do you know the defendants' dates of birth? </h2>")
         .list(PCSCase::getDobDefendants)
             .readonly(DefendantsDOB::getDefendantName)
             .mandatory(DefendantsDOB::getDoYouKnowDefendant)
