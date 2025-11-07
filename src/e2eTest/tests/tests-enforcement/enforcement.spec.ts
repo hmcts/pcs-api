@@ -50,13 +50,13 @@ test.describe("[Enforcement - Warrant of Possession] @Master @nightly", async ()
     await performValidation("mainHeader", riskPosedByEveryoneAtProperty.mainHeader);
     await performAction("selectRiskPosedByEveryoneAtProperty", {
       riskTypes: [
-        riskPosedByEveryoneAtProperty.violentOrAggressiveBehaviourCheckBox,
-        riskPosedByEveryoneAtProperty.historyOfFirearmPossessionCheckBox,
-        riskPosedByEveryoneAtProperty.criminalOrAntisocialBehaviourCheckBox,
-        riskPosedByEveryoneAtProperty.verbalOrWrittenThreatsCheckBox,
-        riskPosedByEveryoneAtProperty.protestGroupCheckBox,
-        riskPosedByEveryoneAtProperty.policeOrSocialServiceCheckBox,
-        riskPosedByEveryoneAtProperty.aggressiveAnimalsCheckBox,
+        riskPosedByEveryoneAtProperty.violentOrAggressiveBehaviourCheckbox,
+        riskPosedByEveryoneAtProperty.historyOfFirearmPossessionCheckbox,
+        riskPosedByEveryoneAtProperty.criminalOrAntisocialBehaviourCheckbox,
+        riskPosedByEveryoneAtProperty.verbalOrWrittenThreatsCheckbox,
+        riskPosedByEveryoneAtProperty.protestGroupCheckbox,
+        riskPosedByEveryoneAtProperty.policeOrSocialServiceCheckbox,
+        riskPosedByEveryoneAtProperty.aggressiveAnimalsCheckbox,
       ],
     });
     await performAction("provideDetailsViolentOrAggressiveBehaviour", {
