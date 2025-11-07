@@ -1,23 +1,23 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.AssuredAdditionalDiscretionaryGrounds;
+import uk.gov.hmcts.reform.pcs.ccd.domain.AssuredAdditionalMandatoryGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsDiscretionaryGrounds;
+import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsGround;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsMandatoryGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
 import uk.gov.hmcts.reform.pcs.ccd.service.routing.RentDetailsRoutingService;
 
 import java.util.Set;
-import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -32,72 +32,58 @@ class RentArrearsGroundForPossessionAdditionalGroundsTest extends BasePageTest {
         setPageUnderTest(new RentArrearsGroundForPossessionAdditionalGrounds(rentDetailsRoutingService));
     }
 
-    @ParameterizedTest
-    @MethodSource("provideNoRentArrearsScenarios")
-    void shouldSetShowFlagForReasonPageOrThrowMidEventError(
-        Set<RentArrearsMandatoryGrounds> mandatoryGrounds,
-        Set<RentArrearsDiscretionaryGrounds> discretionaryGrounds,
-        YesOrNo expectedShowFlag,
-        boolean errorExpected) {
-
-        // Given
+    @Test
+    void shouldErrorWhenRentArrearsSelectedAndNoAdditionalSelected() {
+        // Given: user selected rent arrears (e.g., ground 8) on previous page, but nothing on this page
         PCSCase caseData = PCSCase.builder()
-            .rentArrearsMandatoryGrounds(mandatoryGrounds)
-            .rentArrearsDiscretionaryGrounds(discretionaryGrounds)
+            .rentArrearsGrounds(Set.of(RentArrearsGround.SERIOUS_RENT_ARREARS_GROUND8))
             .build();
 
         // When
         AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
-        PCSCase updatedCaseData = response.getData();
 
         // Then
-        if (errorExpected) {
-            assertThat(response.getErrors()).containsExactly("Please select at least one ground");
-        } else {
-            assertThat(updatedCaseData.getShowRentArrearsGroundReasonPage()).isEqualTo(expectedShowFlag);
-        }
+        assertThat(response.getErrors()).containsExactly("Please select at least one ground");
     }
 
-    private static Stream<Arguments> provideNoRentArrearsScenarios() {
-        return Stream.of(
-            //No grounds provided
-            Arguments.of(Set.of(),
-                         Set.of(),
-                         YesOrNo.NO,
-                         true),
+    @Test
+    void shouldPassAndSetShowReasonsWhenAdditionalMandatorySelected() {
+        // Given: rent arrears selected earlier; user chooses an additional mandatory ground here
+        PCSCase caseData = PCSCase.builder()
+            .rentArrearsGrounds(Set.of(RentArrearsGround.SERIOUS_RENT_ARREARS_GROUND8))
+            .assuredAdditionalMandatoryGrounds(Set.of(AssuredAdditionalMandatoryGrounds.OWNER_OCCUPIER_GROUND1))
+            .build();
 
-            // Mandatory Rent arrears ground + Other ground
-            Arguments.of(Set.of(RentArrearsMandatoryGrounds.SERIOUS_RENT_ARREARS_GROUND8,
-                                RentArrearsMandatoryGrounds.REDEVELOPMENT_GROUND6),
-                         Set.of(),
-                         YesOrNo.YES,
-                         false),
+        // When
+        AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
 
-            // Only Mandatory Rent arrears ground
-            Arguments.of(Set.of(RentArrearsMandatoryGrounds.SERIOUS_RENT_ARREARS_GROUND8),
-                         Set.of(),
-                         YesOrNo.NO,
-                         false),
+        // Then: reasons page should be shown (has ground beyond 8)
+        assertThat(response.getErrors()).isNullOrEmpty();
+        assertThat(response.getData().getShowRentArrearsGroundReasonPage()).isEqualTo(YesOrNo.YES);
+        // And canonical sets include both 8 and 1 mapped into mandatory
+        assertThat(response.getData().getRentArrearsMandatoryGrounds())
+            .contains(RentArrearsMandatoryGrounds.SERIOUS_RENT_ARREARS_GROUND8);
+    }
 
-            // Discretionary Rent arrears ground + Other ground
-            Arguments.of(Set.of(),
-                         Set.of(RentArrearsDiscretionaryGrounds.RENT_ARREARS_GROUND10,
-                                RentArrearsDiscretionaryGrounds.BREACH_TENANCY_GROUND12),
-                         YesOrNo.YES,
-                         false),
+    @Test
+    void shouldPassAndSetShowReasonsWhenAdditionalDiscretionarySelected() {
+        // Given: rent arrears selected earlier; user chooses an additional discretionary ground here
+        PCSCase caseData = PCSCase.builder()
+            .rentArrearsGrounds(Set.of(RentArrearsGround.RENT_ARREARS_GROUND10))
+            .assuredAdditionalDiscretionaryGrounds(
+                Set.of(AssuredAdditionalDiscretionaryGrounds.BREACH_TENANCY_GROUND12)
+            )
+            .build();
 
-            // Only Discretionary Rent arrears ground
-            Arguments.of(Set.of(),
-                         Set.of(RentArrearsDiscretionaryGrounds.PERSISTENT_DELAY_GROUND11),
-                         YesOrNo.NO,
-                         false),
+        // When
+        AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
 
-            // Only Mandatory & Discretionary Rent arrears grounds
-            Arguments.of(Set.of(RentArrearsMandatoryGrounds.SERIOUS_RENT_ARREARS_GROUND8),
-                         Set.of(RentArrearsDiscretionaryGrounds.PERSISTENT_DELAY_GROUND11),
-                         YesOrNo.NO,
-                         false)
-        );
+        // Then: reasons page should be shown (has ground beyond 10/11)
+        assertThat(response.getErrors()).isNullOrEmpty();
+        assertThat(response.getData().getShowRentArrearsGroundReasonPage()).isEqualTo(YesOrNo.YES);
+        // And canonical discretionary includes mapped values
+        assertThat(response.getData().getRentArrearsDiscretionaryGrounds())
+            .contains(RentArrearsDiscretionaryGrounds.RENT_ARREARS_GROUND10);
     }
 
 }
