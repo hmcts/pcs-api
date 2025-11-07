@@ -1,5 +1,3 @@
-import {underlesseeOrMortgageeDetails} from "@data/page-data/underlesseeOrMortgageeDetails.page.data";
-
 export * from '@data/page-data/createCase.page.data';
 export * from '@data/page-data/addressDetails.page.data';
 export * from '@data/page-data/housingPossessionClaim.page.data';
@@ -66,4 +64,5 @@ export * from '@data/page-data/signInOrCreateAnAccount.page.data';
 export * from "@data/page-data/caseList.page.data";
 export * from "@data/page-data/caseSummary.page.data";
 export * from "@data/page-data/occupationContractOrLicenceDetailsWales.page.data";
+export * from "@data/page-data/prohibitedConductStandardContractWales.page.data";
 
