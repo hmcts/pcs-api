@@ -2,24 +2,31 @@ package uk.gov.hmcts.reform.pcs.ccd.event.enforcement;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.event.BaseEventTest;
+import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+@ExtendWith(MockitoExtension.class)
 class EnforcementOrderEventTest extends BaseEventTest {
 
     private final AddressFormatter addressFormatter = new AddressFormatter();
+    @Mock
+    private DraftCaseDataService draftCaseDataService;
 
     @BeforeEach
     void setUp() {
-        setEventUnderTest(new EnforcementOrderEvent(addressFormatter));
+        setEventUnderTest(new EnforcementOrderEvent(addressFormatter, draftCaseDataService));
     }
 
     @Test
