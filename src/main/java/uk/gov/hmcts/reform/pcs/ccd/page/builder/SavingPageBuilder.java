@@ -18,6 +18,7 @@ import java.util.Set;
 public class SavingPageBuilder extends PageBuilder {
 
     private static final Set<String> EXCLUDED_PAGE_IDS = Set.of(
+        "resumeClaim",
         "claimantTypeNotEligibleEngland",
         "claimantTypeNotEligibleWales",
         "claimTypeNotEligibleEngland",
