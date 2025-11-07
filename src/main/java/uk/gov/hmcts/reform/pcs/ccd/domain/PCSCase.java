@@ -356,7 +356,12 @@ public class PCSCase {
 
     private List<ListValue<DefendantDetails>> allDefendants;
 
+    @CCD(
+        label = "Defendant date of birth",
+        hint = "You may not add new defendants at this time")
     private List<ListValue<DefendantsDOB>> dobDefendants;
+
+    private VerticalYesNo isDefendantsDOBKnown;
 
     private DefendantsDOBMultiLabel defendantsDOBMultiLabel;
 

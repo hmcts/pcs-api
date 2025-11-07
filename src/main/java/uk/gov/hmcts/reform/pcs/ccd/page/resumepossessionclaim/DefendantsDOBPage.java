@@ -18,14 +18,13 @@ public class DefendantsDOBPage implements CcdPageConfiguration {
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
             .page("defendantsDOB", this::midEvent)
-            .pageLabel("Defendant DOB")
+            .pageLabel("The defendants' dates of birth")
             .label("defendantDOBLabel-lineSeparator", "---")
             .label("defendantDOBLabel", "<h2> Do you know the defendants' dates of birth? </h2>")
-        .list(PCSCase::getDobDefendants)
+            .mandatory(PCSCase::getIsDefendantsDOBKnown)
+        .list(PCSCase::getDobDefendants, "isDefendantsDOBKnown=\"YES\"")
             .readonly(DefendantsDOB::getDefendantName)
-            .mandatory(DefendantsDOB::getDoYouKnowDefendant)
-            .mandatory(DefendantsDOB::getDob,
-                "dobDefendants.doYouKnowDefendant=\"Yes\"")
+            .optional(DefendantsDOB::getDob)
             .done()
             .done();
     }

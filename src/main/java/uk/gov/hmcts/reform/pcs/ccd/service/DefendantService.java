@@ -79,7 +79,7 @@ public class DefendantService {
 
         return defendantList.stream()
             .map(defendant -> new DefendantsDOB(null,
-                "Do you know " + defendant.getFirstName() + " "
+                "What is " + defendant.getFirstName() + " "
                     + defendant.getLastName() + "'s date of birth?", null)
             )
             .toList();
