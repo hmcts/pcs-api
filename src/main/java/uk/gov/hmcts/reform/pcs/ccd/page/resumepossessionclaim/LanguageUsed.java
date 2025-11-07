@@ -4,6 +4,8 @@ import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 
+import static uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent.SAVE_AND_RETURN;
+
 /**
  * CCD page configuration for the Language used screen.
  * Allows users to indicate whether any part of their application was completed in Welsh.
@@ -16,6 +18,7 @@ public class LanguageUsed implements CcdPageConfiguration {
             .page("languageUsed")
             .pageLabel("Language used")
             .label("languageUsed-separator", "---")
-            .mandatory(PCSCase::getLanguageUsed);
+            .mandatory(PCSCase::getLanguageUsed)
+            .label("languageUsed-save-and-return", SAVE_AND_RETURN);
     }
 }

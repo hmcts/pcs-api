@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Set;
 
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
+import static uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent.SAVE_AND_RETURN;
 
 /**
  * Page for selecting additional grounds for possession.
@@ -38,7 +39,7 @@ public class RentArrearsGroundForPossessionAdditionalGrounds implements CcdPageC
             """)
             .optional(PCSCase::getRentArrearsMandatoryGrounds)
             .optional(PCSCase::getRentArrearsDiscretionaryGrounds)
-            .done();
+            .label("groundForPossessionAdditionalGrounds-save-and-return", SAVE_AND_RETURN);
     }
 
     public AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,

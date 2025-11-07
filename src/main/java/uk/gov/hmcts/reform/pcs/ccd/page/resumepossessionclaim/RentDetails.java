@@ -11,6 +11,8 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentPaymentFrequency;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 
+import static uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent.SAVE_AND_RETURN;
+
 /**
  * Page configuration for the Rent Details section.
  * Allows claimants to enter rent amount and payment frequency details.
@@ -31,7 +33,8 @@ public class RentDetails implements CcdPageConfiguration {
                 .mandatory(PCSCase::getRentFrequency)
                 .mandatory(PCSCase::getOtherRentFrequency, "rentFrequency=\"OTHER\"")
                 .mandatory(PCSCase::getDailyRentChargeAmount, "rentFrequency=\"OTHER\"")
-                .readonly(PCSCase::getCalculatedDailyRentChargeAmount, NEVER_SHOW);
+                .readonly(PCSCase::getCalculatedDailyRentChargeAmount, NEVER_SHOW)
+                .label("rentDetails-save-and-return", SAVE_AND_RETURN);
     }
 
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,

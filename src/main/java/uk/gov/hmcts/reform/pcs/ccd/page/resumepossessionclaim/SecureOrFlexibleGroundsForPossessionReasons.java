@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
+import static uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent.SAVE_AND_RETURN;
 
 @AllArgsConstructor
 @Component
@@ -295,7 +296,8 @@ public class SecureOrFlexibleGroundsForPossessionReasons implements CcdPageConfi
                            + "\"UNDER_OCCUPYING_AFTER_SUCCESSION\"")
             .done()
                 .readonly(PCSCase::getShowBreachOfTenancyTextarea,NEVER_SHOW)
-                .readonly(PCSCase::getShowReasonsForGroundsPage,NEVER_SHOW);
+                .readonly(PCSCase::getShowReasonsForGroundsPage,NEVER_SHOW)
+            .label("secureOrFlexibleGroundsForPossessionReasons-save-and-return", SAVE_AND_RETURN);
 
     }
 

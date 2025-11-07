@@ -5,6 +5,8 @@ import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 
+import static uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent.SAVE_AND_RETURN;
+
 @Component
 public class UploadAdditionalDocumentsDetails implements CcdPageConfiguration {
 
@@ -31,7 +33,8 @@ public class UploadAdditionalDocumentsDetails implements CcdPageConfiguration {
                    """
             )
 
-            .mandatory(PCSCase::getAdditionalDocuments);
+            .mandatory(PCSCase::getAdditionalDocuments)
+            .label("uploadAdditionalDocuments-save-and-return", SAVE_AND_RETURN);
     }
 
 }

@@ -5,6 +5,8 @@ import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.SuspensionOfRightToBuyDemotionOfTenancy;
 
+import static uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent.SAVE_AND_RETURN;
+
 public class SuspensionToBuyDemotionOfTenancyActs implements CcdPageConfiguration {
 
     @Override
@@ -26,7 +28,8 @@ public class SuspensionToBuyDemotionOfTenancyActs implements CcdPageConfiguratio
             .complex(PCSCase::getSuspensionOfRightToBuyDemotionOfTenancy)
                 .mandatory(SuspensionOfRightToBuyDemotionOfTenancy::getSuspensionOfRightToBuyActs)
                 .mandatory(SuspensionOfRightToBuyDemotionOfTenancy::getDemotionOfTenancyActs)
-            .done();
+            .done()
+            .label("suspensionToBuyDemotionOfTenancyActs-save-and-return", SAVE_AND_RETURN);
     }
 
 }

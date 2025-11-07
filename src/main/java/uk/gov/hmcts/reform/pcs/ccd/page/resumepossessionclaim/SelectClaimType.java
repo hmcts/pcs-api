@@ -13,6 +13,7 @@ import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo.YES;
 import static uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry.ENGLAND;
 import static uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry.WALES;
+import static uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent.SAVE_AND_RETURN;
 
 public class SelectClaimType implements CcdPageConfiguration {
 
@@ -29,7 +30,8 @@ public class SelectClaimType implements CcdPageConfiguration {
                             target="_blank"
                             class="govuk-link">read the guidance on removing squatters (opens in a new tab)</a>.
                         """)
-            .mandatory(PCSCase::getClaimAgainstTrespassers);
+            .mandatory(PCSCase::getClaimAgainstTrespassers)
+            .label("selectClaimType-save-and-return", SAVE_AND_RETURN);
     }
 
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,

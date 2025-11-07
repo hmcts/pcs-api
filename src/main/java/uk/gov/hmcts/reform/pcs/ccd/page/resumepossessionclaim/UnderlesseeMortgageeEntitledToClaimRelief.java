@@ -5,6 +5,8 @@ import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.UnderlesseeMortgagee;
 
+import static uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent.SAVE_AND_RETURN;
+
 public class UnderlesseeMortgageeEntitledToClaimRelief implements CcdPageConfiguration {
 
     @Override
@@ -22,6 +24,7 @@ public class UnderlesseeMortgageeEntitledToClaimRelief implements CcdPageConfigu
                    """)
             .complex(PCSCase::getUnderlesseeMortgagee)
             .mandatory(UnderlesseeMortgagee::getHasUnderlesseeOrMortgagee)
-            .done();
+            .done()
+            .label("underlesseeMortgageeEntitledToClaimRelief-save-and-return", SAVE_AND_RETURN);
     }
 }

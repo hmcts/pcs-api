@@ -15,6 +15,8 @@ import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 import java.util.ArrayList;
 import java.util.List;
 
+import static uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent.SAVE_AND_RETURN;
+
 @Component
 @AllArgsConstructor
 public class ProhibitedConductWales implements CcdPageConfiguration {
@@ -42,7 +44,8 @@ public class ProhibitedConductWales implements CcdPageConfiguration {
                 .mandatory(PeriodicContractTermsWales::getDetailsOfTerms, 
                     "periodicContractTermsWales.agreedTermsOfPeriodicContract=\"YES\"")
             .done()
-            .mandatory(PCSCase::getProhibitedConductWalesWhyMakingClaim, "prohibitedConductWalesClaim=\"YES\"");
+            .mandatory(PCSCase::getProhibitedConductWalesWhyMakingClaim, "prohibitedConductWalesClaim=\"YES\"")
+            .label("prohibitedConductWales-save-and-return", SAVE_AND_RETURN);
     }
 
     public AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,

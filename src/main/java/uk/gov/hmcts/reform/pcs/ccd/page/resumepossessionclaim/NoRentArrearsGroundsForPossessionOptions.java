@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.Set;
 
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
+import static uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent.SAVE_AND_RETURN;
 
 
 @AllArgsConstructor
@@ -41,7 +42,8 @@ public class NoRentArrearsGroundsForPossessionOptions implements CcdPageConfigur
                     if you need to.</p>"""
             )
             .optional(PCSCase::getNoRentArrearsMandatoryGroundsOptions)
-            .optional(PCSCase::getNoRentArrearsDiscretionaryGroundsOptions);
+            .optional(PCSCase::getNoRentArrearsDiscretionaryGroundsOptions)
+            .label("noRentArrearsGroundsForPossessionOptions-save-and-return", SAVE_AND_RETURN);
     }
 
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,

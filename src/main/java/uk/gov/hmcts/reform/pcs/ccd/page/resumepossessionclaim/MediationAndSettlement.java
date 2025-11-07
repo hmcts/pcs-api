@@ -12,6 +12,8 @@ import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 
 import java.util.List;
 
+import static uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent.SAVE_AND_RETURN;
+
 /**
  * Page configuration for the Mediation and Settlement section.
  * Allows claimants to indicate whether they're willing to try mediation or settlement
@@ -51,7 +53,8 @@ public class MediationAndSettlement implements CcdPageConfiguration {
                         </section>
                         """)
                 .mandatory(PCSCase::getSettlementAttempted)
-                .mandatory(PCSCase::getSettlementAttemptedDetails, "settlementAttempted=\"YES\"");
+                .mandatory(PCSCase::getSettlementAttemptedDetails, "settlementAttempted=\"YES\"")
+                .label("mediationAndSettlement-save-and-return", SAVE_AND_RETURN);
     }
 
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,

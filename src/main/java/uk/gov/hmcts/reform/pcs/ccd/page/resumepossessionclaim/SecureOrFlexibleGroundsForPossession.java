@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Set;
 
 import static uk.gov.hmcts.reform.pcs.ccd.domain.SecureOrFlexibleDiscretionaryGrounds.RENT_ARREARS_OR_BREACH_OF_TENANCY;
+import static uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent.SAVE_AND_RETURN;
 
 public class SecureOrFlexibleGroundsForPossession implements CcdPageConfiguration {
 
@@ -36,7 +37,8 @@ public class SecureOrFlexibleGroundsForPossession implements CcdPageConfiguratio
             .optional(PCSCase::getSecureOrFlexibleDiscretionaryGrounds)
             .optional(PCSCase::getSecureOrFlexibleMandatoryGrounds)
             .optional(PCSCase::getSecureOrFlexibleMandatoryGroundsAlt)
-            .optional(PCSCase::getSecureOrFlexibleDiscretionaryGroundsAlt);
+            .optional(PCSCase::getSecureOrFlexibleDiscretionaryGroundsAlt)
+            .label("secureOrFlexibleGroundsForPossession-save-and-return", SAVE_AND_RETURN);
     }
 
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,

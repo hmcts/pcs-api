@@ -14,6 +14,8 @@ import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 
 import java.util.List;
 
+import static uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent.SAVE_AND_RETURN;
+
 /**
  * CCD page configuration for Notice Details.
  * Allows users to specify how they served notice to the defendant.
@@ -112,7 +114,8 @@ public class NoticeDetails implements CcdPageConfiguration {
                 Any documents you upload now will be included in the pack of documents a judge will
                 receive before the hearing (the bundle)</p>
                 """)
-              .optional(PCSCase::getNoticeDocuments);
+              .optional(PCSCase::getNoticeDocuments)
+              .label("noticeDetails-save-and-return", SAVE_AND_RETURN);
     }
 
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,

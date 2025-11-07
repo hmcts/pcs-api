@@ -4,6 +4,8 @@ import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 
+import static uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent.SAVE_AND_RETURN;
+
 public class CheckingNotice implements CcdPageConfiguration {
 
     @Override
@@ -35,6 +37,7 @@ public class CheckingNotice implements CcdPageConfiguration {
                         </div>
                         </section>
                         """)
-                .mandatory(PCSCase::getNoticeServed);
+                .mandatory(PCSCase::getNoticeServed)
+                .label("checkingNotice-save-and-return", SAVE_AND_RETURN);
     }
 }

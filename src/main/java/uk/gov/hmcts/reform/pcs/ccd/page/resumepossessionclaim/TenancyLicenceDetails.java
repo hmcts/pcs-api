@@ -17,6 +17,8 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Set;
 
+import static uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent.SAVE_AND_RETURN;
+
 @Component
 public class TenancyLicenceDetails implements CcdPageConfiguration {
 
@@ -57,7 +59,8 @@ public class TenancyLicenceDetails implements CcdPageConfiguration {
                 </p>
                """)
             .optional(PCSCase::getTenancyLicenceDocuments)
-            .label("lineSeparator", "---");
+            .label("lineSeparator", "---")
+            .label("tenancyLicenceDetails-save-and-return", SAVE_AND_RETURN);
     }
 
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,

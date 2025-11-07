@@ -4,6 +4,8 @@ import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 
+import static uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent.SAVE_AND_RETURN;
+
 public class CompletingYourClaim implements CcdPageConfiguration {
 
     @Override
@@ -33,6 +35,7 @@ public class CompletingYourClaim implements CcdPageConfiguration {
                 </ul>
                 """
             )
-            .mandatory(PCSCase::getCompletionNextStep);
+            .mandatory(PCSCase::getCompletionNextStep)
+            .label("completingYourClaim-save-and-return", SAVE_AND_RETURN);
     }
 }

@@ -10,6 +10,8 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsOrBreachOfTenancy;
 import uk.gov.hmcts.reform.pcs.ccd.domain.SecureOrFlexibleDiscretionaryGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 
+import static uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent.SAVE_AND_RETURN;
+
 public class RentArrearsOrBreachOfTenancyGround implements CcdPageConfiguration {
 
     @Override
@@ -21,7 +23,8 @@ public class RentArrearsOrBreachOfTenancyGround implements CcdPageConfiguration 
                                + " AND secureOrFlexibleDiscretionaryGroundsCONTAINS"
                                + "\"RENT_ARREARS_OR_BREACH_OF_TENANCY\"")
             .label("rentArrearsOrBreachOfTenancyGround-lineSeparator", "---")
-            .mandatory(PCSCase::getRentArrearsOrBreachOfTenancy);
+            .mandatory(PCSCase::getRentArrearsOrBreachOfTenancy)
+            .label("rentArrearsOrBreachOfTenancyGround-save-and-return", SAVE_AND_RETURN);
     }
 
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,

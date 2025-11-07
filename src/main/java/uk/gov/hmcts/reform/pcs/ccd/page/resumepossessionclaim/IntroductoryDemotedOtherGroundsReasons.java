@@ -14,6 +14,8 @@ import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 import java.util.ArrayList;
 import java.util.List;
 
+import static uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent.SAVE_AND_RETURN;
+
 @AllArgsConstructor
 @Component
 public class IntroductoryDemotedOtherGroundsReasons implements CcdPageConfiguration {
@@ -72,7 +74,8 @@ public class IntroductoryDemotedOtherGroundsReasons implements CcdPageConfigurat
                 ""","hasIntroductoryDemotedOtherGroundsForPossession=\"NO\"")
             .mandatory(IntroductoryDemotedOtherGroundReason::getNoGrounds,
                        "hasIntroductoryDemotedOtherGroundsForPossession=\"NO\"")
-            .done();
+            .done()
+            .label("introductoryDemotedOtherGroundsReasons-save-and-return", SAVE_AND_RETURN);
 
     }
 

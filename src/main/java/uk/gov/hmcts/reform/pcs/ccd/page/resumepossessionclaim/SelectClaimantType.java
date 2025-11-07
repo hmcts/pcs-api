@@ -18,6 +18,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType.COMMUNITY_LANDLORD
 import static uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType.PROVIDER_OF_SOCIAL_HOUSING;
 import static uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry.ENGLAND;
 import static uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry.WALES;
+import static uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent.SAVE_AND_RETURN;
 
 @Component
 @AllArgsConstructor
@@ -35,7 +36,8 @@ public class SelectClaimantType implements CcdPageConfiguration {
                         A claimant is the person or organisation who is making the possession claim.
                         """)
             .readonly(PCSCase::getLegislativeCountry, NEVER_SHOW, true)
-            .mandatory(PCSCase::getClaimantType);
+            .mandatory(PCSCase::getClaimantType)
+            .label("selectClaimantType-save-and-return", SAVE_AND_RETURN);
     }
 
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,

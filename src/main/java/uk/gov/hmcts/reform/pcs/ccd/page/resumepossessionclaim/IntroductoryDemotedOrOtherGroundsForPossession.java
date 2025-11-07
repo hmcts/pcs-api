@@ -11,6 +11,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
+import static uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent.SAVE_AND_RETURN;
 
 public class IntroductoryDemotedOrOtherGroundsForPossession implements CcdPageConfiguration {
 
@@ -43,7 +44,8 @@ public class IntroductoryDemotedOrOtherGroundsForPossession implements CcdPageCo
                     "hasIntroductoryDemotedOtherGroundsForPossession=\"YES\"")
             .mandatory(PCSCase::getOtherGroundDescription,
                        "introductoryDemotedOrOtherGroundsCONTAINS\"OTHER\""
-                        + "AND hasIntroductoryDemotedOtherGroundsForPossession=\"YES\"");
+                        + "AND hasIntroductoryDemotedOtherGroundsForPossession=\"YES\"")
+            .label("introductoryDemotedOrOtherGroundsForPossession-save-and-return", SAVE_AND_RETURN);
     }
 
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,

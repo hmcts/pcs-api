@@ -4,6 +4,8 @@ import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 
+import static uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent.SAVE_AND_RETURN;
+
 public class GeneralApplication implements CcdPageConfiguration {
 
     @Override
@@ -44,6 +46,7 @@ public class GeneralApplication implements CcdPageConfiguration {
                   </section>
 
                   """)
-                .mandatory(PCSCase::getApplicationWithClaim);
+                .mandatory(PCSCase::getApplicationWithClaim)
+                .label("generalApplication-save-and-return", SAVE_AND_RETURN);
     }
 }

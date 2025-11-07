@@ -5,6 +5,8 @@ import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.SuspensionOfRightToBuy;
 
+import static uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent.SAVE_AND_RETURN;
+
 public class SuspensionOfRightToBuyHousingActOptions implements CcdPageConfiguration {
 
     @Override
@@ -25,6 +27,7 @@ public class SuspensionOfRightToBuyHousingActOptions implements CcdPageConfigura
                 """)
                 .complex(PCSCase::getSuspensionOfRightToBuy)
                 .mandatory(SuspensionOfRightToBuy::getSuspensionOfRightToBuyHousingActs)
-                .done();
+                .done()
+            .label("suspensionOfRightToBuyHousingActOptions-save-and-return", SAVE_AND_RETURN);
     }
 }

@@ -9,6 +9,8 @@ import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 
+import static uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent.SAVE_AND_RETURN;
+
 @Slf4j
 public class ClaimantInformation implements CcdPageConfiguration {
 
@@ -30,7 +32,8 @@ public class ClaimantInformation implements CcdPageConfiguration {
                     null,
                     "What is the correct claimant name?",
                     UPDATED_CLAIMANT_NAME_HINT,
-                    false);
+                    false)
+            .label("claimantInformation-save-and-return", SAVE_AND_RETURN);
 
     }
 

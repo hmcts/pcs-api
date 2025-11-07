@@ -3,6 +3,8 @@ package uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales;
 import java.util.List;
 import java.util.Set;
 
+import static uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent.SAVE_AND_RETURN;
+
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
@@ -42,7 +44,8 @@ public class SecureContractGroundsForPossessionWales implements CcdPageConfigura
                 .optional(PCSCase::getSecureContractDiscretionaryGroundsWales)
                 .optional(PCSCase::getSecureContractEstateManagementGroundsWales,
                         "secureContractDiscretionaryGroundsWalesCONTAINS\"ESTATE_MANAGEMENT_GROUNDS\"")
-                .optional(PCSCase::getSecureContractMandatoryGroundsWales);
+                .optional(PCSCase::getSecureContractMandatoryGroundsWales)
+                .label("secureOrFlexibleGroundsForPossessionWales-save-and-return", SAVE_AND_RETURN);
     }
 
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,

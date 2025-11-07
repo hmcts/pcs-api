@@ -17,6 +17,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.SuspensionOfRightToBuyDemotionOfTenanc
 import java.util.Set;
 
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
+import static uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent.SAVE_AND_RETURN;
 
 @AllArgsConstructor
 @Component
@@ -62,7 +63,8 @@ public class AlternativesToPossessionOptions implements CcdPageConfiguration {
                       place by the demotion order.
                     </p>
                     """)
-            .optional(PCSCase::getAlternativesToPossession);
+            .optional(PCSCase::getAlternativesToPossession)
+            .label("alternativesToPossession-save-and-return", SAVE_AND_RETURN);
     }
 
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,

@@ -14,6 +14,8 @@ import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 import java.util.ArrayList;
 import java.util.List;
 
+import static uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent.SAVE_AND_RETURN;
+
 @AllArgsConstructor
 @Component
 public class StatementOfExpressTerms implements CcdPageConfiguration {
@@ -32,7 +34,8 @@ public class StatementOfExpressTerms implements CcdPageConfiguration {
                 .mandatory(DemotionOfTenancy::getStatementOfExpressTermsServed)
                 .mandatory(DemotionOfTenancy::getStatementOfExpressTermsDetails,
                            "statementOfExpressTermsServed=\"YES\"")
-                .done();
+                .done()
+            .label("statementOfExpressTerms-save-and-return", SAVE_AND_RETURN);
     }
 
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,

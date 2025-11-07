@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
+import static uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent.SAVE_AND_RETURN;
 
 @AllArgsConstructor
 @Component
@@ -47,7 +48,8 @@ public class ClaimantCircumstancesPage implements CcdPageConfiguration {
                            GIVE_DETAILS_ABOUT_THE_CLAIMANT_NAME_CIRCUMSTANCES,
                            YOU_CAN_ENTER_UP_TO_950_CHARACTERS,
                            false
-                ).done();
+                ).done()
+            .label("claimantCircumstances-save-and-return", SAVE_AND_RETURN);
     }
 
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,

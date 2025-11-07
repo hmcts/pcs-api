@@ -14,6 +14,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+import static uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent.SAVE_AND_RETURN;
+
 @Component
 @Slf4j
 public class GroundsForPossessionWales
@@ -48,7 +50,8 @@ public class GroundsForPossessionWales
                 "discretionaryGroundsWales CONTAINS "
                     + "\"ESTATE_MANAGEMENT_GROUNDS_SECTION_160\""
             )
-            .optional(PCSCase::getMandatoryGroundsWales);
+            .optional(PCSCase::getMandatoryGroundsWales)
+            .label("groundsForPossessionWales-save-and-return", SAVE_AND_RETURN);
     }
 
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(

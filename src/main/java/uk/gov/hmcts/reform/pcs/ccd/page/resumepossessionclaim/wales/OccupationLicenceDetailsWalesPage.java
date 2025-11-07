@@ -5,6 +5,8 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
+import static uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent.SAVE_AND_RETURN;
+
 import org.springframework.stereotype.Component;
 
 import lombok.AllArgsConstructor;
@@ -68,7 +70,8 @@ public class OccupationLicenceDetailsWalesPage implements CcdPageConfiguration {
                 """
             )
             .optional(OccupationLicenceDetailsWales::getLicenceDocuments)
-            .done();
+            .done()
+            .label("OccupationLicenceDetailsWales-save-and-return", SAVE_AND_RETURN);
 
     }
 

@@ -15,6 +15,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 import static uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotApplicable.YES;
+import static uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent.SAVE_AND_RETURN;
 
 @Component
 public class ClaimantDetailsWalesPage implements CcdPageConfiguration {
@@ -52,7 +53,8 @@ public class ClaimantDetailsWalesPage implements CcdPageConfiguration {
                     "walesLicensedAgentAppointed=\"YES\"")
                 .mandatory(WalesHousingAct::getAgentAppointmentDate,
                     "walesLicensedAgentAppointed=\"YES\"")
-            .done();
+            .done()
+            .label("claimantDetailsWales-save-and-return", SAVE_AND_RETURN);
     }
 
     public AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,

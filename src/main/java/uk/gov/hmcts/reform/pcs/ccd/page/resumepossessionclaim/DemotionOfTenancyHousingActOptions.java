@@ -5,6 +5,8 @@ import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DemotionOfTenancy;
 
+import static uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent.SAVE_AND_RETURN;
+
 public class DemotionOfTenancyHousingActOptions implements CcdPageConfiguration {
 
     @Override
@@ -22,6 +24,7 @@ public class DemotionOfTenancyHousingActOptions implements CcdPageConfiguration 
                 """)
                 .complex(PCSCase::getDemotionOfTenancy)
                 .mandatory(DemotionOfTenancy::getDemotionOfTenancyHousingActs)
-                .done();
+                .done()
+            .label("demotionOfTenancyHousingActOptions-save-and-return", SAVE_AND_RETURN);
     }
 }

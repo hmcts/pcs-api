@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo.YES;
+import static uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent.SAVE_AND_RETURN;
 
 @AllArgsConstructor
 @Component
@@ -34,7 +35,8 @@ public class AdditionalReasonsForPossession implements CcdPageConfiguration {
                 .mandatory(
                     AdditionalReasons::getReasons,
                     ShowConditions.fieldEquals("additionalReasonsForPossession.hasReasons", YES))
-            .done();
+            .done()
+            .label("additionalReasonsForPossession-save-and-return", SAVE_AND_RETURN);
     }
 
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,

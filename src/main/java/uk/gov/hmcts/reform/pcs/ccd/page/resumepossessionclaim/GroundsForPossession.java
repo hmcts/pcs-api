@@ -14,6 +14,8 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 
 import java.util.Set;
 
+import static uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent.SAVE_AND_RETURN;
+
 
 /**
  * Full implementation will be done in another ticket - responses not captured at the moment.
@@ -34,7 +36,8 @@ public class GroundsForPossession implements CcdPageConfiguration {
                     + "AND typeOfTenancyLicence!=\"DEMOTED_TENANCY\" "
                     + "AND typeOfTenancyLicence!=\"OTHER\"")
             .label("groundsForPossession-lineSeparator", "---")
-            .mandatory(PCSCase::getGroundsForPossession);
+            .mandatory(PCSCase::getGroundsForPossession)
+            .label("groundsForPossession-save-and-return", SAVE_AND_RETURN);
     }
 
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,

@@ -14,6 +14,8 @@ import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 import java.util.ArrayList;
 import java.util.List;
 
+import static uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent.SAVE_AND_RETURN;
+
 @AllArgsConstructor
 @Component
 public class DemotionOfTenancyOrderReason implements CcdPageConfiguration {
@@ -29,7 +31,8 @@ public class DemotionOfTenancyOrderReason implements CcdPageConfiguration {
             .label("demotionOfTenancyOrderReason-info", "---")
                 .complex(PCSCase::getDemotionOfTenancy)
                 .mandatory(DemotionOfTenancy::getDemotionOfTenancyReason)
-                .done();
+                .done()
+            .label("demotionOfTenancyOrderReason-save-and-return", SAVE_AND_RETURN);
     }
 
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
