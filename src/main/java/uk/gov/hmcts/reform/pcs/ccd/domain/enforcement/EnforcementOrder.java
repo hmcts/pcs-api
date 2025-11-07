@@ -46,6 +46,5 @@ public class EnforcementOrder {
     )
     private YesNoNotSure vulnerablePeopleYesNo;
     
-    @CCD(label = "Vulnerable adults and children details")
     private VulnerableAdultsChildren vulnerableAdultsChildren;
 }
