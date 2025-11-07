@@ -138,6 +138,10 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
     private final DraftCaseDataService draftCaseDataService;
     private final OccupationLicenceDetailsWalesPage occupationLicenceDetailsWalesPage;
     private final AddressFormatter addressFormatter;
+    private final RentArrearsGroundsForPossession rentArrearsGroundsForPossession;
+    private final RentArrearsGroundForPossessionAdditionalGrounds rentArrearsGroundForPossessionAdditionalGrounds;
+    private final NoRentArrearsGroundsForPossessionOptions noRentArrearsGroundsForPossessionOptions;
+    private final IntroductoryDemotedOrOtherGroundsForPossession introductoryDemotedOrOtherGroundsForPossession;
 
     private static final String CASE_ISSUED_FEE_TYPE = "caseIssueFee";
 
@@ -172,13 +176,13 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             .add(new SecureOrFlexibleGroundsForPossession())
             .add(new RentArrearsOrBreachOfTenancyGround())
             .add(secureOrFlexibleGroundsForPossessionReasons)
-            .add(new IntroductoryDemotedOrOtherGroundsForPossession())
+            .add(introductoryDemotedOrOtherGroundsForPossession)
             .add(introductoryDemotedOtherGroundsReasons)
             .add(new GroundsForPossession())
-            .add(new RentArrearsGroundsForPossession())
-            .add(new RentArrearsGroundForPossessionAdditionalGrounds())
+            .add(rentArrearsGroundsForPossession)
+            .add(rentArrearsGroundForPossessionAdditionalGrounds)
             .add(new RentArrearsGroundsForPossessionReasons())
-            .add(new NoRentArrearsGroundsForPossessionOptions())
+            .add(noRentArrearsGroundsForPossessionOptions)
             .add(noRentArrearsGroundsForPossessionReason)
             .add(new PreActionProtocol())
             .add(mediationAndSettlement)
