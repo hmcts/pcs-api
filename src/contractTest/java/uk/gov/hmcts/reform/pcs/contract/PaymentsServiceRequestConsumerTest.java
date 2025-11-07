@@ -55,6 +55,7 @@ public class PaymentsServiceRequestConsumerTest {
     private static final String RESPONSIBLE_PARTY = "Claimant";
 
     private static final CasePaymentRequestDto casePaymentRequest = new CasePaymentRequestDto(ACTION,RESPONSIBLE_PARTY);
+    //Building FeeDto to populate fields otherwise will return Null.
     private static final FeeDto[] fees = new FeeDto[]{
         FeeDto.builder()
             .calculatedAmount(new BigDecimal("404.00"))
@@ -79,7 +80,7 @@ public class PaymentsServiceRequestConsumerTest {
 
     @Pact(provider = "payment_accounts", consumer = "pcs_api")
     public V4Pact createServiceRequestPact(PactBuilder builder) {
-
+//Building Request body for Pact test:
         PactDslJsonBody requestBody = (PactDslJsonBody) new PactDslJsonBody()
             .stringValue("call_back_url", "http://callback.url")
             .stringValue("case_reference", "CASE123")
@@ -131,17 +132,17 @@ public class PaymentsServiceRequestConsumerTest {
     @Test
     @PactTestFor(pactMethod = "createServiceRequestPact")
     void shouldReturnServiceRequestReference() {
-
+//Initialising CreateServiceRequestDTO to fulfill type expectations for createServiceRequest method.
         CreateServiceRequestDTO createServiceRequestDTO = new CreateServiceRequestDTO(CALL_BACK_URL,casePaymentRequest,
                                                                                       CASE_REFERENCE,CCD_CASE_NUMBER,
                                                                                       fees,HMCTS_ORG_ID);
 
-        PaymentServiceResponse requestBody = paymentsApi.createServiceRequest(
+        PaymentServiceResponse paymentServiceResponse = paymentsApi.createServiceRequest(
             AUTHORISATION,
             SERVICE_AUTHORISATION,
             createServiceRequestDTO);
 
-        assertThat(requestBody.getServiceRequestReference()).isNotNull();
+        assertThat(paymentServiceResponse.getServiceRequestReference()).isNotNull();
     }
 }
 
