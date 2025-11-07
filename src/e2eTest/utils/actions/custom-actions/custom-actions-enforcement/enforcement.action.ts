@@ -1,12 +1,12 @@
-import { Page } from "@playwright/test";
-import { performAction, performValidation } from "@utils/controller-enforcement";
-import { IAction, actionData, actionRecord } from "@utils/interfaces/action.interface";
+import { Page } from '@playwright/test';
+import { performAction, performValidation } from '@utils/controller-enforcement';
+import { IAction, actionData, actionRecord } from '@utils/interfaces/action.interface';
 import {
   yourApplication, nameAndAddressForEviction, everyoneLivingAtTheProperty, vulnerableAdultsAndChildren,
   violentOrAggressiveBehaviour, firearmPossession, criminalOrAntisocialBehaviour, riskPosedByEveryoneAtProperty,
   verbalOrWrittenThreats, groupProtestsEviction, policeOrSocialServiceVisit, animalsAtTheProperty
-} from "@data/page-data/page-data-enforcement";
-import { enforcementTestCaseNumber } from "../searchCase.action";
+} from '@data/page-data/page-data-enforcement';
+import { enforcementTestCaseNumber } from '../searchCase.action';
 
 export class EnforcementAction implements IAction {
   async execute(page: Page, action: string, fieldName: string | actionRecord, data?: actionData): Promise<void> {

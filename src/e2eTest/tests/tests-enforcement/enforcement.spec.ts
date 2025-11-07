@@ -1,13 +1,13 @@
-import { test } from "@playwright/test";
-import { initializeEnforcementExecutor, performAction, performValidation } from "@utils/controller-enforcement";
-import { caseNumber, caseNotFoundAfterFilter } from "@utils/actions/custom-actions";
-import { initializeExecutor } from "@utils/controller";
-import { caseList, user, caseSummary, signInOrCreateAnAccount } from "@data/page-data";
+import { test } from '@playwright/test';
+import { initializeEnforcementExecutor, performAction, performValidation } from '@utils/controller-enforcement';
+import { caseNumber, caseNotFoundAfterFilter } from '@utils/actions/custom-actions';
+import { initializeExecutor } from '@utils/controller';
+import { caseList, user, caseSummary, signInOrCreateAnAccount } from '@data/page-data';
 import {
   nameAndAddressForEviction, violentOrAggressiveBehaviour, firearmPossession, yourApplication, animalsAtTheProperty,
   criminalOrAntisocialBehaviour, evictionCouldBeDelayed, vulnerableAdultsAndChildren, policeOrSocialServiceVisit,
   riskPosedByEveryoneAtProperty, everyoneLivingAtTheProperty, verbalOrWrittenThreats, groupProtestsEviction
-} from "@data/page-data/page-data-enforcement";
+} from '@data/page-data/page-data-enforcement';
 
 test.beforeEach(async ({ page }) => {
   initializeExecutor(page);
