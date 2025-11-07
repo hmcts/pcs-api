@@ -39,6 +39,13 @@ public class EnforcementOrderEvent implements CCDConfig<PCSCase, State, UserRole
     // Business requirements to be agreed on for the conditions when this event can be triggereed
 
     private final AddressFormatter addressFormatter;
+    private final ViolentAggressiveRiskPage violentAggressiveRiskPage;
+    private final VerbalOrWrittenThreatsRiskPage verbalOrWrittenThreatsRiskPage;
+    private final ProtestorGroupRiskPage protestorGroupRiskPage;
+    private final PoliceOrSocialServicesRiskPage policeOrSocialServicesRiskPage;
+    private final FirearmsPossessionRiskPage firearmsPossessionRiskPage;
+    private final CriminalAntisocialRiskPage criminalAntisocialRiskPage;
+    private final AggressiveAnimalsRiskPage aggressiveAnimalsRiskPage;
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -59,13 +66,13 @@ public class EnforcementOrderEvent implements CCDConfig<PCSCase, State, UserRole
                 .add(new LivingInThePropertyPage())
                 .add(new EvictionDelayWarningPage())
                 .add(new EvictionRisksPosedPage())
-                .add(new ViolentAggressiveRiskPage())
-                .add(new FirearmsPossessionRiskPage())
-                .add(new CriminalAntisocialRiskPage())
-                .add(new VerbalOrWrittenThreatsRiskPage())
-                .add(new ProtestorGroupRiskPage())
-                .add(new PoliceOrSocialServicesRiskPage())
-                .add(new AggressiveAnimalsRiskPage())
+                .add(violentAggressiveRiskPage)
+                .add(firearmsPossessionRiskPage)
+                .add(criminalAntisocialRiskPage)
+                .add(verbalOrWrittenThreatsRiskPage)
+                .add(protestorGroupRiskPage)
+                .add(policeOrSocialServicesRiskPage)
+                .add(aggressiveAnimalsRiskPage)
                 .add(new EvictionVulnerableAdultsChildrenPage())
                 .add(new CheckYourAnswersPlaceHolder());
     }

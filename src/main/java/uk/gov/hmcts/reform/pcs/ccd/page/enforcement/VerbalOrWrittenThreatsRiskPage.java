@@ -1,5 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.enforcement;
 
+import lombok.AllArgsConstructor;
+import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
@@ -10,11 +12,16 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.EnforcementRiskDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.RiskCategory;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
+import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 
 import java.util.ArrayList;
 import java.util.List;
 
+@AllArgsConstructor
+@Component
 public class VerbalOrWrittenThreatsRiskPage implements CcdPageConfiguration {
+
+    private final TextAreaValidationService textAreaValidationService;
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
@@ -33,20 +40,16 @@ public class VerbalOrWrittenThreatsRiskPage implements CcdPageConfiguration {
 
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
                                                                   CaseDetails<PCSCase, State> before) {
-        PCSCase data = details.getData();
-        List<String> errors = new ArrayList<>();
+        PCSCase caseData = details.getData();
 
-        String txt = data.getEnforcementOrder().getRiskDetails().getEnforcementVerbalOrWrittenThreatsDetails();
+        String txt = caseData.getEnforcementOrder().getRiskDetails().getEnforcementVerbalOrWrittenThreatsDetails();
 
-        // Use TextAreaValidationService from PR #751 when merged
-        if (txt.length() > EnforcementRiskValidationUtils.getCharacterLimit()) {
-            errors.add(EnforcementRiskValidationUtils
-                    .getCharacterLimitErrorMessage(RiskCategory.VERBAL_OR_WRITTEN_THREATS));
-        }
+        List<String> validationErrors = new ArrayList<>(textAreaValidationService.validateSingleTextArea(
+            txt,
+            RiskCategory.VERBAL_OR_WRITTEN_THREATS.getText(),
+            TextAreaValidationService.RISK_CATEGORY_EXTRA_LONG_TEXT_LIMIT
+        ));
 
-        return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
-                .data(data)
-                .errors(errors)
-                .build();
+        return textAreaValidationService.createValidationResponse(caseData, validationErrors);
     }
 }

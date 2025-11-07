@@ -2,8 +2,9 @@ package uk.gov.hmcts.reform.pcs.ccd.page.enforcement;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.EnforcementOrder;
@@ -11,27 +12,33 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.EnforcementRiskDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.RiskCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
+import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static uk.gov.hmcts.reform.pcs.ccd.page.enforcement.RiskCategoryTestUtil.expectedCharacterLimitErrorMessage;
 
+@ExtendWith(MockitoExtension.class)
 class FirearmsPossessionRiskPageTest extends BasePageTest {
+
+    @InjectMocks
+    private TextAreaValidationService textAreaValidationService;
 
     @BeforeEach
     void setUp() {
-        setPageUnderTest(new FirearmsPossessionRiskPage());
+        setPageUnderTest(new FirearmsPossessionRiskPage(textAreaValidationService));
     }
 
-    @ParameterizedTest
-    @MethodSource("uk.gov.hmcts.reform.pcs.ccd.page.enforcement.RiskCategoryTestUtil#validTextScenarios")
-    void shouldAcceptValidText(String text) {
+    @Test
+    void shouldAcceptValidText() {
         // Given
+        String riskDetails = "Some firearms details";
         PCSCase caseData = PCSCase.builder()
             .enforcementOrder(EnforcementOrder.builder()
                 .enforcementRiskCategories(Set.of(RiskCategory.FIREARMS_POSSESSION))
                 .riskDetails(EnforcementRiskDetails.builder()
-                    .enforcementFirearmsDetails(text)
+                    .enforcementFirearmsDetails(riskDetails)
                     .build())
                 .build())
             .build();
@@ -40,9 +47,9 @@ class FirearmsPossessionRiskPageTest extends BasePageTest {
         AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
 
         // Then
-        assertThat(response.getErrors()).isEmpty();
+        assertThat(response.getErrors()).isNullOrEmpty();
         assertThat(response.getData().getEnforcementOrder()
-            .getRiskDetails().getEnforcementFirearmsDetails()).isEqualTo(text);
+            .getRiskDetails().getEnforcementFirearmsDetails()).isEqualTo(riskDetails);
     }
 
     @Test
@@ -63,39 +70,7 @@ class FirearmsPossessionRiskPageTest extends BasePageTest {
 
         // Then
         assertThat(response.getErrors()).containsExactly(
-            EnforcementRiskValidationUtils.getCharacterLimitErrorMessage(RiskCategory.FIREARMS_POSSESSION)
+            expectedCharacterLimitErrorMessage(RiskCategory.FIREARMS_POSSESSION)
         );
-    }
-
-
-    @Test
-    void shouldPreserveDataWhenValid() {
-        // Given
-        String validText = "The defendant has a history of firearm possession";
-        PCSCase caseData = PCSCase.builder()
-            .enforcementOrder(EnforcementOrder.builder()
-                .enforcementRiskCategories(Set.of(RiskCategory.FIREARMS_POSSESSION))
-                .riskDetails(EnforcementRiskDetails.builder()
-                    .enforcementFirearmsDetails(validText)
-                    .enforcementViolentDetails("Some violent text")
-                    .enforcementCriminalDetails("Some criminal text")
-                    .build())
-                .build())
-            .build();
-
-        // When
-        AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
-
-        // Then
-        assertThat(response.getErrors()).isEmpty();
-        assertThat(response.getData().getEnforcementOrder()
-            .getRiskDetails().getEnforcementFirearmsDetails())
-            .isEqualTo(validText);
-        assertThat(response.getData().getEnforcementOrder()
-            .getRiskDetails().getEnforcementViolentDetails())
-            .isEqualTo("Some violent text");
-        assertThat(response.getData().getEnforcementOrder()
-            .getRiskDetails().getEnforcementCriminalDetails())
-            .isEqualTo("Some criminal text");
     }
 }

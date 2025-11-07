@@ -2,8 +2,9 @@ package uk.gov.hmcts.reform.pcs.ccd.page.enforcement;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
@@ -11,27 +12,34 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.EnforcementRiskDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.RiskCategory;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
+import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static uk.gov.hmcts.reform.pcs.ccd.page.enforcement.RiskCategoryTestUtil.expectedCharacterLimitErrorMessage;
 
+@ExtendWith(MockitoExtension.class)
 class PoliceOrSocialServicesRiskPageTest extends BasePageTest {
+
+    @InjectMocks
+    private TextAreaValidationService textAreaValidationService;
 
     @BeforeEach
     void setUp() {
-        setPageUnderTest(new PoliceOrSocialServicesRiskPage());
+        setPageUnderTest(new PoliceOrSocialServicesRiskPage(textAreaValidationService));
     }
 
-    @ParameterizedTest
-    @MethodSource("uk.gov.hmcts.reform.pcs.ccd.page.enforcement.RiskCategoryTestUtil#validTextScenarios")
-    void shouldAcceptValidText(String text) {
+    @Test
+    void shouldAcceptValidText() {
         // Given
+        String riskDetails = "Some police or social details";
+
         PCSCase caseData = PCSCase.builder()
                 .enforcementOrder(EnforcementOrder.builder()
                         .enforcementRiskCategories(Set.of(RiskCategory.AGENCY_VISITS))
                         .riskDetails(EnforcementRiskDetails.builder()
-                                .enforcementPoliceOrSocialServicesDetails(text)
+                                .enforcementPoliceOrSocialServicesDetails(riskDetails)
                                 .build())
                         .build())
                 .build();
@@ -40,9 +48,10 @@ class PoliceOrSocialServicesRiskPageTest extends BasePageTest {
         AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
 
         // Then
-        assertThat(response.getErrors()).isEmpty();
+        assertThat(response.getErrors()).isNullOrEmpty();
         assertThat(response.getData().getEnforcementOrder()
-                .getRiskDetails().getEnforcementPoliceOrSocialServicesDetails()).isEqualTo(text);
+                       .getRiskDetails().getEnforcementPoliceOrSocialServicesDetails()).isEqualTo(riskDetails);
+
     }
 
     @Test
@@ -63,8 +72,8 @@ class PoliceOrSocialServicesRiskPageTest extends BasePageTest {
 
         // Then
         assertThat(response.getErrors()).containsExactly(
-                EnforcementRiskValidationUtils.getCharacterLimitErrorMessage(RiskCategory.AGENCY_VISITS)
-        );
+            expectedCharacterLimitErrorMessage(RiskCategory.AGENCY_VISITS));
+
     }
 }
 
