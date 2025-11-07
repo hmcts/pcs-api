@@ -1,0 +1,25 @@
+{
+  "name": "pcs-api",
+  "version": "1.0.0",
+  "description": "## Building and deploying the application",
+  "main": "index.js",
+  "directories": {
+    "lib": "lib"
+  },
+  "scripts": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hmcts/pcs-api.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/hmcts/pcs-api/issues"
+  },
+  "homepage": "https://github.com/hmcts/pcs-api#readme",
+  "devDependencies": {
+    "@playwright/test": "^1.56.1",
+    "@types/node": "^24.9.1"
+  }
+}
