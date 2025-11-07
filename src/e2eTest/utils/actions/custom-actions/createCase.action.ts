@@ -597,21 +597,64 @@ export class CreateCaseAction implements IAction {
   }
 
   private async selectUnderlesseeOrMortgageeDetails(underlesseeOrMortgageeDetail: actionRecord) {
-    await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
+    await performValidation('text', {elementType: 'paragraph', text: 'Case number: ' + caseNumber});
     await performAction('clickRadioButton', {
-      question: underlesseeOrMortgageeDetail.nameQuestion,
+      question: underlesseeOrMortgageeDetails.doYouKnowTheName,
       option: underlesseeOrMortgageeDetail.nameOption
     });
     await performAction('clickRadioButton', {
-      question: underlesseeOrMortgageeDetail.addressQuestion,
+      question: underlesseeOrMortgageeDetails.doYouKnowTheAddress,
       option: underlesseeOrMortgageeDetail.addressOption
     });
     await performAction('clickRadioButton', {
-      question: underlesseeOrMortgageeDetail.anotherUnderlesseeOrMortgageeQuestion,
+      question: underlesseeOrMortgageeDetails.addAnotherUnderlesseeOrMortgagee,
       option: underlesseeOrMortgageeDetail.anotherUnderlesseeOrMortgageeOption
     });
+    const additionalUnderlesseeMortgagee = Number(underlesseeOrMortgageeDetail.additionalUnderlesseeMortgagees) || 0;
+    if (underlesseeOrMortgageeDetail.additionalUnderlesseeMortgagees === underlesseeOrMortgageeDetails.yes && additionalUnderlesseeMortgagee > 0) {
+      for (let i = 0; i < additionalUnderlesseeMortgagee; i++) {
+        await performAction('clickButton', underlesseeOrMortgageeDetails.addNew);
+        const index = i + 1;
+        const nameQuestion = underlesseeOrMortgageeDetails.doYouKnowTheName;
+        const nameOption = underlesseeOrMortgageeDetail[`name${index}Option`] || underlesseeOrMortgageeDetails.no;
+        await performAction('clickRadioButton', {
+          question: nameQuestion,
+          option: nameOption,
+          index,
+        });
+        await performAction('clickRadioButton', {
+          question: nameQuestion,
+          option: nameOption,
+          index,
+        });
+        if (nameOption === underlesseeOrMortgageeDetails.yes) {
+          await performAction('inputText', {
+            text: underlesseeOrMortgageeDetails.doYouKnowTheName,
+            index: index
+          }, `${underlesseeOrMortgageeDetails.nameInput}${index}`);
+        }
+        const addressQuestion = underlesseeOrMortgageeDetails.doYouKnowTheAddress;
+        const correspondenceAddressOption =
+          underlesseeOrMortgageeDetail[`correspondenceAddress${index}Option`] || underlesseeOrMortgageeDetails.no;
+        await performAction('clickRadioButton', {
+          question: addressQuestion,
+          option: correspondenceAddressOption,
+          index,
+        });
+        const correspondenceAddressSameOption =
+          underlesseeOrMortgageeDetail[`correspondenceAddressSame${index}Option`] || underlesseeOrMortgageeDetail.no;
+        if (correspondenceAddressOption === defendantDetails.yes) {
+          await performAction('clickRadioButton', {
+            question: defendantDetails.isCorrespondenceAddressSame,
+            option: correspondenceAddressSameOption,
+            index,
+          });
+        }
+      }
+    }
     await performAction('clickButton', underlesseeOrMortgageeDetails.continue);
-  }
+    }
+
 
   private async reloginAndFindTheCase(userInfo: actionData) {
     await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);

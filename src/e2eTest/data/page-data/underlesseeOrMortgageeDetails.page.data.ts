@@ -5,7 +5,9 @@ export const underlesseeOrMortgageeDetails =
     doYouKnowTheName: 'Do you know the underlessee or mortgagee\'s name?',
     doYouKnowTheAddress: 'Do you know the underlessee or mortgagee\'s correspondence address?',
     addAnotherUnderlesseeOrMortgagee: 'Do you need to add another underlessee or mortgagee?',
+    nameInput: 'TestUser',
     continue: 'Continue',
     yes: 'Yes',
-    no: 'No'
+    no: 'No',
+    addNew: 'Add new'
   };

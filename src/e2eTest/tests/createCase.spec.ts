@@ -1,7 +1,7 @@
 import {test} from '@playwright/test';
 import {initializeExecutor, performAction, performValidation, performValidations} from '@utils/controller';
 import {addressDetails, claimantType, claimType,claimantName, contactPreferences, defendantDetails, tenancyLicenceDetails, groundsForPossession, rentArrearsPossessionGrounds, preActionProtocol, mediationAndSettlement,
-        noticeOfYourIntention, noticeDetails, rentDetails, provideMoreDetailsOfClaim, resumeClaim, resumeClaimOptions, detailsOfRentArrears, whatAreYourGroundsForPossession, rentArrearsOrBreachOfTenancy,
+        noticeOfYourIntention, noticeDetails, rentDetails, detailsOfRentArrears, whatAreYourGroundsForPossession, rentArrearsOrBreachOfTenancy,
         reasonsForPossession, moneyJudgment, claimantCircumstances, applications, completeYourClaim, user, reasonsForRequestingASuspensionOrder, checkYourAnswers, propertyDetails, languageUsed, defendantCircumstances,
         claimingCosts, additionalReasonsForPossession, underlesseeOrMortgageeEntitledToClaim, alternativesToPossession, housingAct, reasonsForRequestingADemotionOrder, statementOfExpressTerms, wantToUploadDocuments,
         home, uploadAdditionalDocs, underlesseeOrMortgageeDetails, dailyRentAmount, statementOfTruth, reasonsForRequestingASuspensionAndDemotionOrder, signInOrCreateAnAccount} from '@data/page-data';
@@ -637,9 +637,14 @@ test.describe('[Create Case - England] @Master @nightly', async () => {
       question: underlesseeOrMortgageeEntitledToClaim.entitledToClaimRelief,
       option: underlesseeOrMortgageeEntitledToClaim.yes});
     await performAction('selectUnderlesseeOrMortgageeDetails', {
-      nameQuestion: underlesseeOrMortgageeDetails.doYouKnowTheName, nameOption: underlesseeOrMortgageeDetails.no,
-      addressQuestion: underlesseeOrMortgageeDetails.doYouKnowTheAddress, addressOption: underlesseeOrMortgageeDetails.no,
-      anotherUnderlesseeOrMortgageeQuestion: underlesseeOrMortgageeDetails.addAnotherUnderlesseeOrMortgagee, anotherUnderlesseeOrMortgageeOption: underlesseeOrMortgageeDetails.yes
+      nameOption: underlesseeOrMortgageeDetails.no,
+      addressOption: underlesseeOrMortgageeDetails.no,
+      anotherUnderlesseeOrMortgageeOption: underlesseeOrMortgageeDetails.yes,
+      additionalUnderlesseeMortgagees: 2,
+      name1Option: underlesseeOrMortgageeDetails.yes,
+      correspondenceAddress1Option: underlesseeOrMortgageeDetails.yes, correspondenceAddressSame1Option: underlesseeOrMortgageeDetails.yes,
+      name2Option: underlesseeOrMortgageeDetails.no,
+      correspondenceAddress2Option: underlesseeOrMortgageeDetails.yes, correspondenceAddressSame2Option: underlesseeOrMortgageeDetails.yes
     });
     await performAction('wantToUploadDocuments', {
       question: wantToUploadDocuments.uploadAnyAdditionalDocumentsLabel,
