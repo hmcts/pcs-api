@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
@@ -9,6 +10,7 @@ import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.DiscretionaryGroundWales;
+import uk.gov.hmcts.reform.pcs.ccd.service.routing.wales.WalesRentDetailsRoutingService;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,8 +18,11 @@ import java.util.Set;
 
 @Component
 @Slf4j
+@RequiredArgsConstructor
 public class GroundsForPossessionWales
     implements CcdPageConfiguration {
+
+    private final WalesRentDetailsRoutingService walesRentDetailsRoutingService;
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
@@ -71,7 +76,7 @@ public class GroundsForPossessionWales
         }
 
         // if Estate management parent ticked, require sub-selection
-        if (hasDiscretionary
+        if (discretionaryGrounds != null
             && discretionaryGrounds.contains(DiscretionaryGroundWales.ESTATE_MANAGEMENT_GROUNDS_SECTION_160)) {
 
             boolean hasEstate = estateManagementGrounds != null && !estateManagementGrounds.isEmpty();
@@ -87,6 +92,8 @@ public class GroundsForPossessionWales
                 .errors(errors)
                 .build();
         }
+
+        data.setShowRentDetailsPage(walesRentDetailsRoutingService.shouldShowRentDetails(data));
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
             .data(data)

@@ -137,6 +137,9 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
     private final SchedulerClient schedulerClient;
     private final DraftCaseDataService draftCaseDataService;
     private final OccupationLicenceDetailsWalesPage occupationLicenceDetailsWalesPage;
+    private final GroundsForPossessionWales groundsForPossessionWales;
+    private final SecureContractGroundsForPossessionWales secureContractGroundsForPossessionWales;
+    private final ReasonsForPosessionWales reasonsForPosessionWales;
     private final AddressFormatter addressFormatter;
     private final RentArrearsGroundsForPossession rentArrearsGroundsForPossession;
     private final RentArrearsGroundForPossessionAdditionalGrounds rentArrearsGroundForPossessionAdditionalGrounds;
@@ -170,9 +173,9 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             .add(defendantsDetails)
             .add(tenancyLicenceDetails)
             .add(occupationLicenceDetailsWalesPage)
-            .add(new GroundsForPossessionWales())
-            .add(new SecureContractGroundsForPossessionWales())
-            .add(new ReasonsForPosessionWales())
+            .add(groundsForPossessionWales)
+            .add(secureContractGroundsForPossessionWales)
+            .add(reasonsForPosessionWales)
             .add(new SecureOrFlexibleGroundsForPossession())
             .add(new RentArrearsOrBreachOfTenancyGround())
             .add(secureOrFlexibleGroundsForPossessionReasons)

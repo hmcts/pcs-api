@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales;
 
 import java.util.List;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -15,6 +16,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.wales.DiscretionaryGroundWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.EstateManagementGroundsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.MandatoryGroundWales;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
+import uk.gov.hmcts.reform.pcs.ccd.service.routing.wales.WalesRentDetailsRoutingService;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
@@ -24,7 +26,9 @@ public class GroundsForPossessionWalesTest extends BasePageTest {
 
     @BeforeEach
     void setUp() {
-        setPageUnderTest(new GroundsForPossessionWales());
+        setPageUnderTest(new GroundsForPossessionWales(
+            new WalesRentDetailsRoutingService(List.of())
+        ));
     }
 
     @ParameterizedTest
