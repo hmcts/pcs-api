@@ -334,9 +334,13 @@ test.describe('[Create Case - England] @Master @nightly', async () => {
       question: underlesseeOrMortgageeEntitledToClaim.entitledToClaimRelief,
       option: underlesseeOrMortgageeEntitledToClaim.yes});
     await performAction('selectUnderlesseeOrMortgageeDetails', {
-      nameQuestion: underlesseeOrMortgageeDetails.doYouKnowTheName, nameOption: underlesseeOrMortgageeDetails.yes,
-      addressQuestion: underlesseeOrMortgageeDetails.doYouKnowTheAddress, addressOption: underlesseeOrMortgageeDetails.yes,
-      anotherUnderlesseeOrMortgageeQuestion: underlesseeOrMortgageeDetails.addAnotherUnderlesseeOrMortgagee, anotherUnderlesseeOrMortgageeOption: underlesseeOrMortgageeDetails.yes
+      nameOption: underlesseeOrMortgageeDetails.yesRadioOption, name: underlesseeOrMortgageeDetails.nameTextInput,
+      addressOption: underlesseeOrMortgageeDetails.yesRadioOption, address: addressDetails.englandCourtAssignedPostcode,
+      anotherUnderlesseeOrMortgageeOption: underlesseeOrMortgageeDetails.yesRadioOption, additionalUnderlesseeMortgagees: 2,
+      name1Option: underlesseeOrMortgageeDetails.yesRadioOption,
+      correspondenceAddress1Option: underlesseeOrMortgageeDetails.noRadioOption,
+      name2Option: underlesseeOrMortgageeDetails.noRadioOption,
+      correspondenceAddress2Option: underlesseeOrMortgageeDetails.noRadioOption,
     });
     await performAction('wantToUploadDocuments', {
       question: wantToUploadDocuments.uploadAnyAdditionalDocumentsLabel,
@@ -450,9 +454,9 @@ test.describe('[Create Case - England] @Master @nightly', async () => {
       question: underlesseeOrMortgageeEntitledToClaim.entitledToClaimRelief,
       option: underlesseeOrMortgageeEntitledToClaim.yes});
     await performAction('selectUnderlesseeOrMortgageeDetails', {
-      nameQuestion: underlesseeOrMortgageeDetails.doYouKnowTheName, nameOption: underlesseeOrMortgageeDetails.yes,
-      addressQuestion: underlesseeOrMortgageeDetails.doYouKnowTheAddress, addressOption: underlesseeOrMortgageeDetails.no,
-      anotherUnderlesseeOrMortgageeQuestion: underlesseeOrMortgageeDetails.addAnotherUnderlesseeOrMortgagee, anotherUnderlesseeOrMortgageeOption: underlesseeOrMortgageeDetails.no
+      nameOption: underlesseeOrMortgageeDetails.yesRadioOption, name: underlesseeOrMortgageeDetails.nameTextInput,
+      addressOption: underlesseeOrMortgageeDetails.noRadioOption,
+      anotherUnderlesseeOrMortgageeOption: underlesseeOrMortgageeDetails.noRadioOption
     });
     await performAction('wantToUploadDocuments', {
       question: wantToUploadDocuments.uploadAnyAdditionalDocumentsLabel,
@@ -652,14 +656,14 @@ test.describe('[Create Case - England] @Master @nightly', async () => {
       question: underlesseeOrMortgageeEntitledToClaim.entitledToClaimRelief,
       option: underlesseeOrMortgageeEntitledToClaim.yes});
     await performAction('selectUnderlesseeOrMortgageeDetails', {
-      nameOption: underlesseeOrMortgageeDetails.no,
-      addressOption: underlesseeOrMortgageeDetails.no,
-      anotherUnderlesseeOrMortgageeOption: underlesseeOrMortgageeDetails.yes,
+      nameOption: underlesseeOrMortgageeDetails.noRadioOption,
+      addressOption: underlesseeOrMortgageeDetails.noRadioOption,
+      anotherUnderlesseeOrMortgageeOption: underlesseeOrMortgageeDetails.yesRadioOption,
       additionalUnderlesseeMortgagees: 2,
-      name1Option: underlesseeOrMortgageeDetails.yes,
-      correspondenceAddress1Option: underlesseeOrMortgageeDetails.yes, correspondenceAddressSame1Option: underlesseeOrMortgageeDetails.yes,
-      name2Option: underlesseeOrMortgageeDetails.no,
-      correspondenceAddress2Option: underlesseeOrMortgageeDetails.yes, correspondenceAddressSame2Option: underlesseeOrMortgageeDetails.yes
+      name1Option: underlesseeOrMortgageeDetails.yesRadioOption,
+      correspondenceAddress1Option: underlesseeOrMortgageeDetails.yesRadioOption, correspondenceAddressSame1Option: underlesseeOrMortgageeDetails.yesRadioOption,
+      name2Option: underlesseeOrMortgageeDetails.noRadioOption,
+      correspondenceAddress2Option: underlesseeOrMortgageeDetails.yesRadioOption, correspondenceAddressSame2Option: underlesseeOrMortgageeDetails.yesRadioOption
     });
     await performAction('wantToUploadDocuments', {
       question: wantToUploadDocuments.uploadAnyAdditionalDocumentsLabel,
@@ -759,9 +763,9 @@ test.describe('[Create Case - England] @Master @nightly', async () => {
       question: underlesseeOrMortgageeEntitledToClaim.entitledToClaimRelief,
       option: underlesseeOrMortgageeEntitledToClaim.yes});
     await performAction('selectUnderlesseeOrMortgageeDetails', {
-      nameQuestion: underlesseeOrMortgageeDetails.doYouKnowTheName, nameOption: underlesseeOrMortgageeDetails.no,
-      addressQuestion: underlesseeOrMortgageeDetails.doYouKnowTheAddress, addressOption: underlesseeOrMortgageeDetails.yes,
-      anotherUnderlesseeOrMortgageeQuestion: underlesseeOrMortgageeDetails.addAnotherUnderlesseeOrMortgagee, anotherUnderlesseeOrMortgageeOption: underlesseeOrMortgageeDetails.no
+      nameOption: underlesseeOrMortgageeDetails.noRadioOption,
+      addressOption: underlesseeOrMortgageeDetails.yesRadioOption, address: addressDetails.englandCourtAssignedPostcode,
+      anotherUnderlesseeOrMortgageeOption: underlesseeOrMortgageeDetails.noRadioOption
     });
     await performAction('wantToUploadDocuments', {
       question: wantToUploadDocuments.uploadAnyAdditionalDocumentsLabel,
@@ -858,9 +862,9 @@ test.describe('[Create Case - England] @Master @nightly', async () => {
       question: underlesseeOrMortgageeEntitledToClaim.entitledToClaimRelief,
       option:underlesseeOrMortgageeEntitledToClaim.yes});
     await performAction('selectUnderlesseeOrMortgageeDetails', {
-      nameQuestion: underlesseeOrMortgageeDetails.doYouKnowTheName, nameOption: underlesseeOrMortgageeDetails.yes,
-      addressQuestion: underlesseeOrMortgageeDetails.doYouKnowTheAddress, addressOption: underlesseeOrMortgageeDetails.yes,
-      anotherUnderlesseeOrMortgageeQuestion: underlesseeOrMortgageeDetails.addAnotherUnderlesseeOrMortgagee, anotherUnderlesseeOrMortgageeOption: underlesseeOrMortgageeDetails.yes
+      nameOption: underlesseeOrMortgageeDetails.yesRadioOption,
+      addressOption: underlesseeOrMortgageeDetails.yesRadioOption, address: addressDetails.englandCourtAssignedPostcode,
+      anotherUnderlesseeOrMortgageeOption: underlesseeOrMortgageeDetails.yesRadioOption
     });
     await performAction('wantToUploadDocuments', {
       question: wantToUploadDocuments.uploadAnyAdditionalDocumentsLabel,
@@ -977,9 +981,9 @@ test.describe('[Create Case - England] @Master @nightly', async () => {
       question: underlesseeOrMortgageeEntitledToClaim.entitledToClaimRelief,
       option:underlesseeOrMortgageeEntitledToClaim.yes});
     await performAction('selectUnderlesseeOrMortgageeDetails', {
-      nameQuestion: underlesseeOrMortgageeDetails.doYouKnowTheName, nameOption: underlesseeOrMortgageeDetails.yes,
-      addressQuestion: underlesseeOrMortgageeDetails.doYouKnowTheAddress, addressOption: underlesseeOrMortgageeDetails.yes,
-      anotherUnderlesseeOrMortgageeQuestion: underlesseeOrMortgageeDetails.addAnotherUnderlesseeOrMortgagee, anotherUnderlesseeOrMortgageeOption: underlesseeOrMortgageeDetails.yes
+      nameOption: underlesseeOrMortgageeDetails.yesRadioOption,
+      addressOption: underlesseeOrMortgageeDetails.noRadioOption,
+      anotherUnderlesseeOrMortgageeOption: underlesseeOrMortgageeDetails.yesRadioOption
     });
     await performAction('wantToUploadDocuments', {
       question: wantToUploadDocuments.uploadAnyAdditionalDocumentsLabel,
