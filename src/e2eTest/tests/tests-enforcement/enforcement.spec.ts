@@ -5,8 +5,7 @@ import { initializeExecutor } from "@utils/controller";
 import { caseList, user, caseSummary, signInOrCreateAnAccount } from "@data/page-data";
 import { nameAndAddressForEviction, violentOrAggressiveBehaviour, firearmPossession, yourApplication, animalsAtTheProperty,
          criminalOrAntisocialBehaviour, evictionCouldBeDelayed, vulnerableAdultsAndChildren, policeOrSocialServiceVisit,
-         riskPosedByEveryoneAtProperty, everyoneLivingAtTheProperty, verbalOrWrittenThreats, groupProtestsEviction } from "@data/page-data/page-data-enforcement";
-import {accessToTheProperty} from "@data/page-data/page-data-enforcement/accessToTheProperty";
+         riskPosedByEveryoneAtProperty, everyoneLivingAtTheProperty, verbalOrWrittenThreats, groupProtestsEviction, accessToTheProperty } from "@data/page-data/page-data-enforcement";
 
 test.beforeEach(async ({page}) => {
   initializeExecutor(page);
@@ -85,8 +84,8 @@ test.describe('[Enforcement - Warrant of Possession] @Master @nightly', async ()
     await performValidation('mainHeader', accessToTheProperty.mainHeader);
     await performAction('accessToProperty', {
       question: accessToTheProperty.accessToThePropertyQuestion,
-      option: accessToTheProperty.yes,
-      label: accessToTheProperty.whyItsDifficultToAccessToTheProperty,
+      option: accessToTheProperty.yesRadioOption,
+      label: accessToTheProperty.whyItsDifficultToAccessToThePropertyLabel,
       input: accessToTheProperty.whyItsDifficultToAccessToThePropertyInput
     });
   });
@@ -113,7 +112,7 @@ test.describe('[Enforcement - Warrant of Possession] @Master @nightly', async ()
     await performValidation('mainHeader', accessToTheProperty.mainHeader);
     await performAction('accessToProperty', {
       question: accessToTheProperty.accessToThePropertyQuestion,
-      option: accessToTheProperty.no,
+      option: accessToTheProperty.noRadioOption,
     });
   });
 
@@ -141,8 +140,8 @@ test.describe('[Enforcement - Warrant of Possession] @Master @nightly', async ()
     await performValidation('mainHeader', accessToTheProperty.mainHeader);
     await performAction('accessToProperty', {
       question: accessToTheProperty.accessToThePropertyQuestion,
-      option: accessToTheProperty.yes,
-      label: accessToTheProperty.whyItsDifficultToAccessToTheProperty,
+      option: accessToTheProperty.yesRadioOption,
+      label: accessToTheProperty.whyItsDifficultToAccessToThePropertyLabel,
       input: accessToTheProperty.whyItsDifficultToAccessToThePropertyInput
     });
   });

@@ -13,7 +13,7 @@ import {EnforcementAction} from '@utils/actions/custom-actions/custom-actions-en
 import {handleCookieConsentAction} from '@utils/actions/custom-actions/handleCookieConsent.action';
 
 export class ActionEnforcementRegistry {
-  private static actions: Map<string, IAction> = new Map([
+  private static actions: Map<string, IAction> = new Map<string, IAction>([
     ['clickButton', new ClickButtonAction()],
     ['clickButtonAndVerifyPageNavigation', new ClickButtonAction()],
     ['verifyPageAndClickButton', new ClickButtonAction()],

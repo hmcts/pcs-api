@@ -1,11 +1,10 @@
 import { Page } from "@playwright/test";
 import { performAction, performValidation } from "@utils/controller-enforcement";
 import { IAction, actionData, actionRecord } from "@utils/interfaces/action.interface";
-import { yourApplication, nameAndAddressForEviction, everyoneLivingAtTheProperty, evictionCouldBeDelayed, vulnerableAdultsAndChildren,
+import { yourApplication, nameAndAddressForEviction, everyoneLivingAtTheProperty,
          violentOrAggressiveBehaviour, firearmPossession, criminalOrAntisocialBehaviour, riskPosedByEveryoneAtProperty,
-         verbalOrWrittenThreats, groupProtestsEviction, policeOrSocialServiceVisit, animalsAtTheProperty } from "@data/page-data/page-data-enforcement";
+         verbalOrWrittenThreats, groupProtestsEviction, policeOrSocialServiceVisit, animalsAtTheProperty, accessToTheProperty } from "@data/page-data/page-data-enforcement";
 import { enforcementTestCaseNumber } from "../searchCase.action";
-import {accessToTheProperty} from "@data/page-data/page-data-enforcement/accessToTheProperty";
 
 export class EnforcementAction implements IAction {
   async execute(page: Page, action: string, fieldName: string | actionRecord, data?: actionData): Promise<void> {
@@ -105,10 +104,10 @@ export class EnforcementAction implements IAction {
   private async accessToProperty(accessToProperty: actionRecord) {
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + enforcementTestCaseNumber });
     await performAction('clickRadioButton', { question: accessToProperty.question, option: accessToProperty.option });
-    if (accessToProperty.option === accessToTheProperty.yes) {
+    if (accessToProperty.option === accessToTheProperty.yesRadioOption) {
       await performAction('inputText', accessToProperty.label, accessToProperty.input);
     }
-    await performAction('clickButton', accessToTheProperty.continue);
+    await performAction('clickButton', accessToTheProperty.continueButton);
   }
 
 }
