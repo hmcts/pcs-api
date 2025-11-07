@@ -20,38 +20,50 @@ public class DocumentDownloadService {
     private final AuthTokenGenerator authTokenGenerator;
 
     public DownloadedDocumentResponse downloadDocument(String authorisation, String documentId) {
-        log.info("Downloading document: {}", documentId);
+        log.info("--- Downloading Document ---");
+        log.info("Requested Document ID: {}", documentId);
 
-        String serviceAuth = authTokenGenerator.generate();
+        try {
+            // Generate S2S token
+            String serviceAuth = authTokenGenerator.generate();
+            log.info("Generated S2S token for downstream call");
 
-        ResponseEntity<Resource> response = caseDocumentClientApi.getDocumentBinary(
-            authorisation,
-            serviceAuth,
-            UUID.fromString(documentId)
-        );
+            // Parse UUID
+            UUID documentUuid = UUID.fromString(documentId);
+            log.info("Calling document management API...");
 
-        log.info("Document downloaded successfully: {}", documentId);
+            // Call the document API
+            ResponseEntity<Resource> response = caseDocumentClientApi.getDocumentBinary(
+                authorisation,
+                serviceAuth,
+                documentUuid
+            );
 
-        return new DownloadedDocumentResponse(
-            response.getBody(),
-            extractFilename(response),
-            extractMimeType(response)
-        );
-    }
+            log.info("Response status: {}", response.getStatusCode());
 
-    private String extractFilename(ResponseEntity<Resource> response) {
-        String contentDisposition = response.getHeaders().getFirst("Content-Disposition");
-        if (contentDisposition != null && contentDisposition.contains("filename=")) {
-            return contentDisposition.substring(contentDisposition.indexOf("filename=") + 9)
-                .replaceAll("\"", "");
+            String mimeType = response.getHeaders().getContentType() != null
+                ? response.getHeaders().getContentType().toString()
+                : "application/octet-stream";
+
+            String fileName = response.getHeaders().getFirst("original-file-name");
+            if (fileName == null || fileName.isEmpty()) {
+                fileName = documentId;
+            }
+
+            log.info("Document found: {}, Type: {}", fileName, mimeType);
+
+            return new DownloadedDocumentResponse(
+                response.getBody(),
+                mimeType,
+                fileName
+            );
+
+        } catch (IllegalArgumentException e) {
+            log.error("Invalid document ID format: {}", documentId, e);
+            throw e;
+        } catch (Exception e) {
+            log.error("Failed to download document: {}", documentId, e);
+            throw e;
         }
-        return "document.pdf";
-    }
-
-    private String extractMimeType(ResponseEntity<Resource> response) {
-        if (response.getHeaders().getContentType() != null) {
-            return response.getHeaders().getContentType().toString();
-        }
-        return "application/pdf";
     }
 }

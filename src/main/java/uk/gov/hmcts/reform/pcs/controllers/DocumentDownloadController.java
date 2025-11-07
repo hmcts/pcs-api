@@ -27,13 +27,7 @@ public class DocumentDownloadController {
     @PostConstruct
     public void init() {
         log.info("=== DocumentDownloadController initialized ===");
-        log.info("Endpoint available at: /cases/{caseId}/documents/{documentId}/download");
-    }
-
-    @GetMapping("/test")
-    public ResponseEntity<String> testEndpoint() {
-        log.info("=== Test endpoint called ===");
-        return ResponseEntity.ok("DocumentDownloadController is working!");
+        log.info("Endpoint: /cases/{caseId}/documents/{documentId}/download");
     }
 
     @GetMapping("/{documentId}/download")
@@ -42,22 +36,31 @@ public class DocumentDownloadController {
         @PathVariable String caseId,
         @PathVariable String documentId
     ) {
-        log.info("=== DocumentDownloadController.downloadDocumentById called ===");
-        log.info("Download request for caseId: {}, documentId: {}", caseId, documentId);
-        log.info("Authorization header present: {}", authorisation != null);
+        log.info("========================================");
+        log.info("DOWNLOAD REQUEST RECEIVED");
+        log.info("Case ID: {}", caseId);
+        log.info("Document ID: {}", documentId);
+        log.info("Auth header present: {}", authorisation != null && !authorisation.isEmpty());
+        log.info("========================================");
 
-        DownloadedDocumentResponse documentResponse = documentDownloadService.downloadDocument(
-            authorisation,
-            documentId
-        );
+        try {
+            DownloadedDocumentResponse documentResponse = documentDownloadService.downloadDocument(
+                authorisation,
+                documentId
+            );
 
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.valueOf(documentResponse.mimeType()));
-        headers.set("original-file-name", documentResponse.fileName());
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.valueOf(documentResponse.mimeType()));
+            headers.set("original-file-name", documentResponse.fileName());
 
-        log.info("Document download successful: {}", documentId);
-        return ResponseEntity.ok()
-            .headers(headers)
-            .body(documentResponse.file());
+            log.info("SUCCESS: Document downloaded - {}", documentResponse.fileName());
+            return ResponseEntity.ok()
+                .headers(headers)
+                .body(documentResponse.file());
+
+        } catch (Exception e) {
+            log.error("ERROR: Failed to download document {} from case {}", documentId, caseId, e);
+            throw e;
+        }
     }
 }
