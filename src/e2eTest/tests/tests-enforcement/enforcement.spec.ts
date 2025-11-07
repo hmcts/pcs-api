@@ -12,14 +12,15 @@ import { everyoneLivingAtTheProperty } from "@data/page-data/page-data-enforceme
 import { riskPosedByEveryoneAtProperty } from "@data/page-data/page-data-enforcement/riskPosedByEveryoneAtProperty.page.data";
 import { vulnerableAdultsAndChildren } from "@data/page-data/page-data-enforcement/vulnerableAdultsAndChildren.page.data";
 import { evictionCouldBeDelayed } from "@data/page-data/page-data-enforcement/evictionCouldBeDelayed.page.data";
+import { signInOrCreateAnAccount } from "@data/page-data/signInOrCreateAnAccount.page.data";
 import { violentOrAggressiveBehaviour } from "@data/page-data/page-data-enforcement/violentOrAggressiveBehaviour.page.data";
 import { firearmPossession } from "@data/page-data/page-data-enforcement/firearmPossession.page.data";
 import { criminalOrAntisocialBehaviour } from "@data/page-data/page-data-enforcement/criminalOrAntisocialBehaviour.page.data";
 import { verbalOrWrittenThreats } from "@data/page-data/page-data-enforcement/verbalOrWrittenThreats.page.data";
 import { groupProtestsEviction } from "@data/page-data/page-data-enforcement/groupProtestsEviction.page.data";
 import { policeOrSocialServiceVisit } from "@data/page-data/page-data-enforcement/policeOrSocialServiceVisit.page.data";
-import { animalsAtTheProperty } from "@data/page-data/page-data-enforcement/animalsAtTheProperty";
-import { signInOrCreateAnAccount } from "@data/page-data/signInOrCreateAnAccount.page.data";
+import { animalsAtTheProperty } from "@data/page-data/page-data-enforcement/animalsAtTheProperty.page.data";
+import { anythingElseHelpWithEviction } from "@data/page-data/page-data-enforcement/anythingElseThatCouldHelpWithEviction.page.data";
 
 test.beforeEach(async ({page}) => {
   initializeExecutor(page);
@@ -95,6 +96,12 @@ test.describe('[Enforcement - Warrant of Possession] @Master @nightly', async ()
     });
     await performValidation('mainHeader', vulnerableAdultsAndChildren.mainHeader);
     await performAction('clickButton', vulnerableAdultsAndChildren.continue);
+    await performAction('provideDetailsAnythingElseHelpWithEviction', {
+      question: anythingElseHelpWithEviction.anythingElseQuestion,
+      option: anythingElseHelpWithEviction.yes,
+      label: anythingElseHelpWithEviction.tellUsAnythingElse,
+      input: anythingElseHelpWithEviction.tellUsAnythingElseInput
+    })
   });
 
   test('Apply for a Warrant of Possession - risk to Bailiff [No]', async () => {
@@ -116,6 +123,12 @@ test.describe('[Enforcement - Warrant of Possession] @Master @nightly', async ()
     });
     await performValidation('mainHeader', vulnerableAdultsAndChildren.mainHeader);
     await performAction('clickButton', vulnerableAdultsAndChildren.continue);
+    await performAction('provideDetailsAnythingElseHelpWithEviction', {
+      question: anythingElseHelpWithEviction.anythingElseQuestion,
+      option: anythingElseHelpWithEviction.no,
+      label: anythingElseHelpWithEviction.tellUsAnythingElse,
+      input: anythingElseHelpWithEviction.tellUsAnythingElseInput
+    })
   });
 
   test('Apply for a Warrant of Possession - risk to Bailiff [Not sure]', async () => {
@@ -139,5 +152,11 @@ test.describe('[Enforcement - Warrant of Possession] @Master @nightly', async ()
     await performAction('clickButton', evictionCouldBeDelayed.continue);
     await performValidation('mainHeader', vulnerableAdultsAndChildren.mainHeader);
     await performAction('clickButton', vulnerableAdultsAndChildren.continue);
+    await performAction('provideDetailsAnythingElseHelpWithEviction', {
+      question: anythingElseHelpWithEviction.anythingElseQuestion,
+      option: anythingElseHelpWithEviction.yes,
+      label: anythingElseHelpWithEviction.tellUsAnythingElse,
+      input: anythingElseHelpWithEviction.tellUsAnythingElseInput
+    })
   });
 });

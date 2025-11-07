@@ -72,7 +72,7 @@ export class MakeClaimAction implements IAction {
         tenancyOrLicenceType: tenancyLicenceDetails.introductoryTenancy
       });
       await performValidation('mainHeader', groundsForPossession.mainHeader);
-      await performAction('selectGroundsForPossession', {groundsRadioInput: groundsForPossession.no});
+      await performAction('selectGroundsForPossession', { groundsRadioInput: groundsForPossession.no });
       await performAction('enterReasonForPossession', [groundsForPossession.noGrounds]);
       await performValidation('mainHeader', preActionProtocol.mainHeader);
       await performAction('selectPreActionProtocol', preActionProtocol.no);
@@ -98,7 +98,10 @@ export class MakeClaimAction implements IAction {
       await performValidation('mainHeader', additionalReasonsForPossession.mainHeader);
       await performAction('selectAdditionalReasonsForPossession', additionalReasonsForPossession.no);
       await performValidation('mainHeader', underlesseeOrMortgageeEntitledToClaim.mainHeader);
-      await performAction('clickButton', underlesseeOrMortgageeEntitledToClaim.continue);
+      await performAction('selectUnderlesseeOrMortgageeEntitledToClaim', {
+        question: underlesseeOrMortgageeEntitledToClaim.entitledToClaimRelief,
+        option: underlesseeOrMortgageeEntitledToClaim.no
+      });
       await performAction('wantToUploadDocuments', {
         question: wantToUploadDocuments.uploadAnyAdditionalDocumentsLabel,
         option: wantToUploadDocuments.no

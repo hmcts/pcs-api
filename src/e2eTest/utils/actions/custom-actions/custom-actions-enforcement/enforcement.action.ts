@@ -12,7 +12,8 @@ import { criminalOrAntisocialBehaviour } from "@data/page-data/page-data-enforce
 import { verbalOrWrittenThreats } from "@data/page-data/page-data-enforcement/verbalOrWrittenThreats.page.data";
 import { groupProtestsEviction } from "@data/page-data/page-data-enforcement/groupProtestsEviction.page.data";
 import { policeOrSocialServiceVisit } from "@data/page-data/page-data-enforcement/policeOrSocialServiceVisit.page.data";
-import { animalsAtTheProperty } from "@data/page-data/page-data-enforcement/animalsAtTheProperty";
+import { animalsAtTheProperty } from "@data/page-data/page-data-enforcement/animalsAtTheProperty.page.data";
+import { anythingElseHelpWithEviction } from "@data/page-data/page-data-enforcement/anythingElseThatCouldHelpWithEviction.page.data";
 
 export class EnforcementAction implements IAction {
   async execute(page: Page, action: string, fieldName: string | actionRecord, data?: actionData): Promise<void> {
@@ -28,6 +29,7 @@ export class EnforcementAction implements IAction {
       ['provideDetailsGroupProtestsEviction', () => this.provideDetailsGroupProtestsEviction(fieldName as actionRecord)],
       ['provideDetailsPoliceOrSocialServiceVisits', () => this.provideDetailsPoliceOrSocialServiceVisits(fieldName as actionRecord)],
       ['provideDetailsAnimalsAtTheProperty', () => this.provideDetailsAnimalsAtTheProperty(fieldName as actionRecord)],
+      ['provideDetailsAnythingElseHelpWithEviction', () => this.provideDetailsAnythingElseHelpWithEviction(fieldName as actionRecord)],
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) throw new Error(`No action found for '${action}'`);
@@ -95,17 +97,27 @@ export class EnforcementAction implements IAction {
     await performAction('clickButton', groupProtestsEviction.continue);
   }
 
-   private async provideDetailsPoliceOrSocialServiceVisits(policeOrSSVisit: actionRecord) {
+  private async provideDetailsPoliceOrSocialServiceVisits(policeOrSSVisit: actionRecord) {
     await performValidation('mainHeader', policeOrSocialServiceVisit.mainHeader);
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + enforcementTestCaseNumber });
     await performAction('inputText', policeOrSSVisit.label, policeOrSSVisit.input);
     await performAction('clickButton', policeOrSocialServiceVisit.continue);
   }
 
-   private async provideDetailsAnimalsAtTheProperty(theAnimalsAtTheProperty: actionRecord) {
+  private async provideDetailsAnimalsAtTheProperty(theAnimalsAtTheProperty: actionRecord) {
     await performValidation('mainHeader', animalsAtTheProperty.mainHeader);
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + enforcementTestCaseNumber });
     await performAction('inputText', theAnimalsAtTheProperty.label, theAnimalsAtTheProperty.input);
     await performAction('clickButton', animalsAtTheProperty.continue);
+  }
+
+  private async provideDetailsAnythingElseHelpWithEviction(anythingElse: actionRecord) {
+    await performValidation('mainHeader', anythingElseHelpWithEviction.mainHeader);
+    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + enforcementTestCaseNumber });
+    await performAction('clickRadioButton', { question: anythingElse.question, option: anythingElse.option });
+    if (anythingElse.option === anythingElseHelpWithEviction.yes) {
+      await performAction('inputText', anythingElse.label, anythingElse.input);
+    }    
+    await performAction('clickButton', anythingElseHelpWithEviction.continue);
   }
 }
