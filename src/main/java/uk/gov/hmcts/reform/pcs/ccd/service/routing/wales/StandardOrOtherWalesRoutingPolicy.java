@@ -3,16 +3,15 @@ package uk.gov.hmcts.reform.pcs.ccd.service.routing.wales;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.DiscretionaryGroundWales;
-import uk.gov.hmcts.reform.pcs.ccd.service.routing.RentDetailsRoutingPolicy;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceTypeWales;
 
 import java.util.Set;
 
 import static uk.gov.hmcts.reform.pcs.ccd.domain.wales.DiscretionaryGroundWales.RENT_ARREARS_SECTION_157;
 
 @Component
-public class StandardOrOtherWalesRoutingPolicy implements RentDetailsRoutingPolicy {
+public class StandardOrOtherWalesRoutingPolicy implements WalesRentDetailsRoutingPolicy {
 
     @Override
     public YesOrNo shouldShowRentDetails(PCSCase caseData) {
@@ -24,9 +23,9 @@ public class StandardOrOtherWalesRoutingPolicy implements RentDetailsRoutingPoli
     }
 
     @Override
-    public boolean supports(TenancyLicenceType tenancyType) {
-        // Not selected via tenancy type; Wales service selects by occupation contract type
-        return false;
+    public boolean supports(OccupationLicenceTypeWales occupationLicenceType) {
+        return occupationLicenceType == OccupationLicenceTypeWales.STANDARD_CONTRACT
+            || occupationLicenceType == OccupationLicenceTypeWales.OTHER;
     }
 }
 
