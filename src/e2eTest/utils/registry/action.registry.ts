@@ -80,6 +80,7 @@ export class ActionRegistry {
     ['wantToUploadDocuments', new CreateCaseAction()],
     ['uploadAdditionalDocs', new CreateCaseAction()],
     ['clickButtonAndWaitForElement', new ClickButtonAction()],
+    ['selectProhibitedConductStandardContract', new CreateCaseWalesAction()],
     ['selectOccupationContractOrLicenceDetails', new CreateCaseWalesAction()],
     ['provideMoreDetailsOfClaim', new CreateCaseAction()]
   ]);
