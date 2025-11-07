@@ -44,9 +44,9 @@ test.describe('[Create Case - Wales] @Master @nightly', async () => {
       phoneNumber: contactPreferences.yes
     });
     await performAction('addDefendantDetails', {
-      nameOption: defendantDetails.yes, firstName: defendantDetails.firstNameInput, lastName: defendantDetails.lastNameInput,
-      correspondenceAddressOption: defendantDetails.yes, correspondenceAddressSameOption: defendantDetails.yes,
-      addAdditionalDefendantsOption: defendantDetails.no
+      nameOption: defendantDetails.yesRadioOption, firstName: defendantDetails.firstNameInput, lastName: defendantDetails.lastNameInput,
+      correspondenceAddressOption: defendantDetails.yesRadioOption, correspondenceAddressSameOption: defendantDetails.yesRadioOption,
+      addAdditionalDefendantsOption: defendantDetails.noRadioOption
     });
     await performAction('selectOccupationContractOrLicenceDetails', {
       occupationContractQuestion: occupationContractOrLicenceDetailsWales.occupationContractOrLicenceType,
@@ -146,9 +146,9 @@ test.describe('[Create Case - Wales] @Master @nightly', async () => {
       phoneNumber: contactPreferences.no
     });
     await performAction('addDefendantDetails', {
-      nameOption: defendantDetails.no,
-      correspondenceAddressOption: defendantDetails.no,
-      addAdditionalDefendantsOption: defendantDetails.no
+      nameOption: defendantDetails.noRadioOption,
+      correspondenceAddressOption: defendantDetails.noRadioOption,
+      addAdditionalDefendantsOption: defendantDetails.noRadioOption
     });
     await performAction('selectOccupationContractOrLicenceDetails', {
       occupationContractQuestion: occupationContractOrLicenceDetailsWales.occupationContractOrLicenceType,
@@ -245,9 +245,9 @@ test.describe('[Create Case - Wales] @Master @nightly', async () => {
       phoneNumber: contactPreferences.yes
     });
     await performAction('addDefendantDetails', {
-      nameOption: defendantDetails.yes, firstName: defendantDetails.firstNameInput, lastName: defendantDetails.lastNameInput,
-      correspondenceAddressOption: defendantDetails.yes, correspondenceAddressSameOption: defendantDetails.yes,
-      addAdditionalDefendantsOption: defendantDetails.no
+      nameOption: defendantDetails.yesRadioOption, firstName: defendantDetails.firstNameInput, lastName: defendantDetails.lastNameInput,
+      correspondenceAddressOption: defendantDetails.yesRadioOption, correspondenceAddressSameOption: defendantDetails.yesRadioOption,
+      addAdditionalDefendantsOption: defendantDetails.noRadioOption
     });
     await performAction('selectOccupationContractOrLicenceDetails', {
       occupationContractQuestion: occupationContractOrLicenceDetailsWales.occupationContractOrLicenceType,

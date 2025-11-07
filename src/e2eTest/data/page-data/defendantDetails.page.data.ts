@@ -10,8 +10,8 @@ export const defendantDetails =
     defendantCorrespondenceAddress: 'Do you know the defendant\'s correspondence address?',
     isCorrespondenceAddressSame: 'Is the defendant\'s correspondence address the same as the address of the property you\'re claiming possession of?',
     additionalDefendants: 'Do you need to add another defendant?',
-    yes: 'Yes',
-    no: 'No',
+    yesRadioOption: 'Yes',
+    noRadioOption: 'No',
     continue: 'Continue',
     addNew: 'Add new'
   };

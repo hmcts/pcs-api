@@ -58,9 +58,9 @@ test.describe.skip('[Create Case - With resume claim options] @Master @nightly',
       phoneNumber: contactPreferences.no
     });
     await performAction('addDefendantDetails', {
-      nameOption: defendantDetails.yes, firstName: defendantDetails.firstNameInput, lastName: defendantDetails.lastNameInput,
-      correspondenceAddressOption: defendantDetails.yes, correspondenceAddressSameOption: defendantDetails.no, address: addressDetails.englandCourtAssignedPostcode,
-      addAdditionalDefendantsOption: defendantDetails.no
+      nameOption: defendantDetails.yesRadioOption, firstName: defendantDetails.firstNameInput, lastName: defendantDetails.lastNameInput,
+      correspondenceAddressOption: defendantDetails.yesRadioOption, correspondenceAddressSameOption: defendantDetails.noRadioOption, address: addressDetails.englandCourtAssignedPostcode,
+      addAdditionalDefendantsOption: defendantDetails.noRadioOption
     });
     await performValidation('mainHeader', tenancyLicenceDetails.mainHeader);
     await performAction('selectTenancyOrLicenceDetails', {
@@ -178,9 +178,9 @@ test.describe.skip('[Create Case - With resume claim options] @Master @nightly',
       phoneNumber: contactPreferences.no
     });
     await performAction('addDefendantDetails', {
-      nameOption: defendantDetails.yes, firstName: defendantDetails.firstNameInput, lastName: defendantDetails.lastNameInput,
-      correspondenceAddressOption: defendantDetails.yes, correspondenceAddressSameOption: defendantDetails.no, address: addressDetails.englandCourtAssignedPostcode,
-      addAdditionalDefendantsOption: defendantDetails.no
+      nameOption: defendantDetails.yesRadioOption, firstName: defendantDetails.firstNameInput, lastName: defendantDetails.lastNameInput,
+      correspondenceAddressOption: defendantDetails.yesRadioOption, correspondenceAddressSameOption: defendantDetails.noRadioOption, address: addressDetails.englandCourtAssignedPostcode,
+      addAdditionalDefendantsOption: defendantDetails.noRadioOption
     });
     await performValidation('mainHeader', tenancyLicenceDetails.mainHeader);
     await performAction('selectTenancyOrLicenceDetails', {

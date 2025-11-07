@@ -224,7 +224,7 @@ export class CreateCaseAction implements IAction {
       question: defendantDetails.doYouKnowTheDefendantName,
       option: defendantData.nameOption,
     });
-    if (defendantData.nameOption === defendantDetails.yes) {
+    if (defendantData.nameOption === defendantDetails.yesRadioOption) {
       await performAction('inputText', defendantDetails.defendantFirstName, defendantData.firstName);
       await performAction('inputText', defendantDetails.defendantLastName, defendantData.lastName);
     }
@@ -232,12 +232,12 @@ export class CreateCaseAction implements IAction {
       question: defendantDetails.defendantCorrespondenceAddress,
       option: defendantData.correspondenceAddressOption,
     });
-    if (defendantData.correspondenceAddressOption === defendantDetails.yes) {
+    if (defendantData.correspondenceAddressOption === defendantDetails.yesRadioOption) {
       await performAction('clickRadioButton', {
         question: defendantDetails.isCorrespondenceAddressSame,
         option: defendantData.correspondenceAddressSameOption,
       });
-      if (defendantData.correspondenceAddressSameOption === defendantDetails.no) {
+      if (defendantData.correspondenceAddressSameOption === defendantDetails.noRadioOption) {
         await performActions(
           'Find Address based on postcode',
           ['inputText', addressDetails.enterUKPostcodeLabel, defendantData.address],
@@ -251,12 +251,12 @@ export class CreateCaseAction implements IAction {
       question: defendantDetails.additionalDefendants,
       option: defendantData.addAdditionalDefendantsOption,
     });
-    if (defendantData.addAdditionalDefendantsOption === defendantDetails.yes && numAdditionalDefendants > 0) {
+    if (defendantData.addAdditionalDefendantsOption === defendantDetails.yesRadioOption && numAdditionalDefendants > 0) {
       for (let i = 0; i < numAdditionalDefendants; i++) {
         await performAction('clickButton', defendantDetails.addNew);
         const index = i + 1;
         const nameQuestion = defendantDetails.doYouKnowTheDefendantName;
-        const nameOption = defendantData[`name${index}Option`] || defendantDetails.no;
+        const nameOption = defendantData[`name${index}Option`] || defendantDetails.noRadioOption;
         await performAction('clickRadioButton', {
           question: nameQuestion,
           option: nameOption,
@@ -267,22 +267,22 @@ export class CreateCaseAction implements IAction {
           option: nameOption,
           index,
         });
-        if (nameOption === defendantDetails.yes) {
+        if (nameOption === defendantDetails.yesRadioOption) {
           await performAction('inputText', {text: defendantDetails.defendantFirstName, index: index}, `${defendantData.firstName}${index}`);
           await performAction('inputText', {text: defendantDetails.defendantLastName, index:index}, `${defendantData.lastName}${index}`
           );
         }
         const addressQuestion = defendantDetails.defendantCorrespondenceAddress;
         const correspondenceAddressOption =
-          defendantData[`correspondenceAddress${index}Option`] || defendantDetails.no;
+          defendantData[`correspondenceAddress${index}Option`] || defendantDetails.noRadioOption;
         await performAction('clickRadioButton', {
           question: addressQuestion,
           option: correspondenceAddressOption,
           index,
         });
         const correspondenceAddressSameOption =
-          defendantData[`correspondenceAddressSame${index}Option`] || defendantDetails.no;
-        if (correspondenceAddressOption === defendantDetails.yes) {
+          defendantData[`correspondenceAddressSame${index}Option`] || defendantDetails.noRadioOption;
+        if (correspondenceAddressOption === defendantDetails.yesRadioOption) {
           await performAction('clickRadioButton', {
             question: defendantDetails.isCorrespondenceAddressSame,
             option: correspondenceAddressSameOption,
