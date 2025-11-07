@@ -36,7 +36,7 @@ security:
     - "/swagger-ui.html"
     - "/swagger-ui/**"
     - "/v3/api-docs/**"
-    - "/case/document/downloadDocument/**"
+    - - "/cases/*/documents/*/download"
 
 spring:
   config:

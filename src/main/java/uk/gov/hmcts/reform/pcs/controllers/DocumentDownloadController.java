@@ -18,7 +18,7 @@ import jakarta.annotation.PostConstruct;
 
 @Slf4j
 @RestController
-@RequestMapping("/case/document")
+@RequestMapping("/cases/{caseId}/documents")
 @RequiredArgsConstructor
 public class DocumentDownloadController {
 
@@ -27,9 +27,8 @@ public class DocumentDownloadController {
     @PostConstruct
     public void init() {
         log.info("=== DocumentDownloadController initialized ===");
-        log.info("Endpoint available at: /case/document/downloadDocument/{documentId}");
+        log.info("Endpoint available at: /cases/{caseId}/documents/{documentId}/download");
     }
-
 
     @GetMapping("/test")
     public ResponseEntity<String> testEndpoint() {
@@ -37,13 +36,14 @@ public class DocumentDownloadController {
         return ResponseEntity.ok("DocumentDownloadController is working!");
     }
 
-    @GetMapping("/downloadDocument/{documentId}")
+    @GetMapping("/{documentId}/download")
     public ResponseEntity<Resource> downloadDocumentById(
         @RequestHeader(HttpHeaders.AUTHORIZATION) String authorisation,
+        @PathVariable String caseId,
         @PathVariable String documentId
     ) {
         log.info("=== DocumentDownloadController.downloadDocumentById called ===");
-        log.info("Download request for document: {}", documentId);
+        log.info("Download request for caseId: {}, documentId: {}", caseId, documentId);
         log.info("Authorization header present: {}", authorisation != null);
 
         DownloadedDocumentResponse documentResponse = documentDownloadService.downloadDocument(
