@@ -221,20 +221,20 @@ export class CreateCaseAction implements IAction {
   private async addDefendantDetails(defendantData: actionRecord) {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: ' + caseNumber});
     await performAction('clickRadioButton', {
-      question: defendantDetails.doYouKnowTheDefendantName,
+      question: defendantDetails.doYouKnowTheDefendantNameQuestion,
       option: defendantData.nameOption,
     });
     if (defendantData.nameOption === defendantDetails.yesRadioOption) {
-      await performAction('inputText', defendantDetails.defendantFirstName, defendantData.firstName);
-      await performAction('inputText', defendantDetails.defendantLastName, defendantData.lastName);
+      await performAction('inputText', defendantDetails.defendantFirstNameTextLabel, defendantData.firstName);
+      await performAction('inputText', defendantDetails.defendantLastNameTextLabel, defendantData.lastName);
     }
     await performAction('clickRadioButton', {
-      question: defendantDetails.defendantCorrespondenceAddress,
+      question: defendantDetails.defendantCorrespondenceAddressQuestion,
       option: defendantData.correspondenceAddressOption,
     });
     if (defendantData.correspondenceAddressOption === defendantDetails.yesRadioOption) {
       await performAction('clickRadioButton', {
-        question: defendantDetails.isCorrespondenceAddressSame,
+        question: defendantDetails.isCorrespondenceAddressSameQuestion,
         option: defendantData.correspondenceAddressSameOption,
       });
       if (defendantData.correspondenceAddressSameOption === defendantDetails.noRadioOption) {
@@ -248,14 +248,14 @@ export class CreateCaseAction implements IAction {
     }
     const numAdditionalDefendants = Number(defendantData.numberOfDefendants) || 0;
     await performAction('clickRadioButton', {
-      question: defendantDetails.additionalDefendants,
+      question: defendantDetails.additionalDefendantsQuestion,
       option: defendantData.addAdditionalDefendantsOption,
     });
     if (defendantData.addAdditionalDefendantsOption === defendantDetails.yesRadioOption && numAdditionalDefendants > 0) {
       for (let i = 0; i < numAdditionalDefendants; i++) {
-        await performAction('clickButton', defendantDetails.addNew);
+        await performAction('clickButton', defendantDetails.addNewButton);
         const index = i + 1;
-        const nameQuestion = defendantDetails.doYouKnowTheDefendantName;
+        const nameQuestion = defendantDetails.doYouKnowTheDefendantNameQuestion;
         const nameOption = defendantData[`name${index}Option`] || defendantDetails.noRadioOption;
         await performAction('clickRadioButton', {
           question: nameQuestion,
@@ -268,11 +268,11 @@ export class CreateCaseAction implements IAction {
           index,
         });
         if (nameOption === defendantDetails.yesRadioOption) {
-          await performAction('inputText', {text: defendantDetails.defendantFirstName, index: index}, `${defendantData.firstName}${index}`);
-          await performAction('inputText', {text: defendantDetails.defendantLastName, index:index}, `${defendantData.lastName}${index}`
+          await performAction('inputText', {text: defendantDetails.defendantFirstNameTextLabel, index: index}, `${defendantData.firstName}${index}`);
+          await performAction('inputText', {text: defendantDetails.defendantLastNameTextLabel, index:index}, `${defendantData.lastName}${index}`
           );
         }
-        const addressQuestion = defendantDetails.defendantCorrespondenceAddress;
+        const addressQuestion = defendantDetails.defendantCorrespondenceAddressQuestion;
         const correspondenceAddressOption =
           defendantData[`correspondenceAddress${index}Option`] || defendantDetails.noRadioOption;
         await performAction('clickRadioButton', {
@@ -284,14 +284,14 @@ export class CreateCaseAction implements IAction {
           defendantData[`correspondenceAddressSame${index}Option`] || defendantDetails.noRadioOption;
         if (correspondenceAddressOption === defendantDetails.yesRadioOption) {
           await performAction('clickRadioButton', {
-            question: defendantDetails.isCorrespondenceAddressSame,
+            question: defendantDetails.isCorrespondenceAddressSameQuestion,
             option: correspondenceAddressSameOption,
             index,
           });
         }
       }
     }
-    await performAction('clickButton', defendantDetails.continue);
+    await performAction('clickButton', defendantDetails.continueButton);
   }
 
   private async selectRentArrearsPossessionGround(rentArrearsPossession: actionRecord) {

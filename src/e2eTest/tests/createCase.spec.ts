@@ -41,7 +41,7 @@ test.describe('[Create Case - England] @Master @nightly', async () => {
       phoneNumber: contactPreferences.no
     });
     await performAction('addDefendantDetails', {
-      nameOption: defendantDetails.yesRadioOption, firstName: defendantDetails.firstNameInput, lastName: defendantDetails.lastNameInput,
+      nameOption: defendantDetails.yesRadioOption, firstName: defendantDetails.firstNameTextInput, lastName: defendantDetails.lastNameTextInput,
       correspondenceAddressOption: defendantDetails.yesRadioOption, correspondenceAddressSameOption: defendantDetails.noRadioOption, address: addressDetails.englandCourtAssignedPostcode,
       addAdditionalDefendantsOption: defendantDetails.yesRadioOption, numberOfDefendants: 2,
       name1Option: defendantDetails.yesRadioOption,
@@ -161,7 +161,7 @@ test.describe('[Create Case - England] @Master @nightly', async () => {
       phoneNumber: contactPreferences.no
     });
     await performAction('addDefendantDetails', {
-      nameOption: defendantDetails.yesRadioOption, firstName: defendantDetails.firstNameInput, lastName: defendantDetails.lastNameInput,
+      nameOption: defendantDetails.yesRadioOption, firstName: defendantDetails.firstNameTextInput, lastName: defendantDetails.lastNameTextInput,
       correspondenceAddressOption: defendantDetails.yesRadioOption, correspondenceAddressSameOption: defendantDetails.noRadioOption, address: addressDetails.englandCourtAssignedPostcode,
       addAdditionalDefendantsOption: defendantDetails.noRadioOption
     });
@@ -273,7 +273,7 @@ test.describe('[Create Case - England] @Master @nightly', async () => {
       correspondenceAddress: contactPreferences.yes
     });
     await performAction('addDefendantDetails', {
-      nameOption: defendantDetails.yesRadioOption, firstName: defendantDetails.firstNameInput, lastName: defendantDetails.lastNameInput,
+      nameOption: defendantDetails.yesRadioOption, firstName: defendantDetails.firstNameTextInput, lastName: defendantDetails.lastNameTextInput,
       correspondenceAddressOption: defendantDetails.yesRadioOption, correspondenceAddressSameOption: defendantDetails.noRadioOption, address: addressDetails.englandCourtAssignedPostcode,
       addAdditionalDefendantsOption: defendantDetails.noRadioOption
     });
@@ -373,7 +373,7 @@ test.describe('[Create Case - England] @Master @nightly', async () => {
       phoneNumber: contactPreferences.no
     });
     await performAction('addDefendantDetails', {
-      nameOption: defendantDetails.yesRadioOption, firstName: defendantDetails.firstNameInput, lastName: defendantDetails.lastNameInput,
+      nameOption: defendantDetails.yesRadioOption, firstName: defendantDetails.firstNameTextInput, lastName: defendantDetails.lastNameTextInput,
       correspondenceAddressOption: defendantDetails.yesRadioOption, correspondenceAddressSameOption: defendantDetails.noRadioOption, address: addressDetails.englandCourtAssignedPostcode,
       addAdditionalDefendantsOption: defendantDetails.noRadioOption
     });
@@ -489,7 +489,7 @@ test.describe('[Create Case - England] @Master @nightly', async () => {
       phoneNumber: contactPreferences.no
     });
     await performAction('addDefendantDetails', {
-      nameOption: defendantDetails.yesRadioOption, firstName: defendantDetails.firstNameInput, lastName: defendantDetails.lastNameInput,
+      nameOption: defendantDetails.yesRadioOption, firstName: defendantDetails.firstNameTextInput, lastName: defendantDetails.lastNameTextInput,
       correspondenceAddressOption: defendantDetails.yesRadioOption, correspondenceAddressSameOption: defendantDetails.noRadioOption, address: addressDetails.englandCourtAssignedPostcode,
       addAdditionalDefendantsOption: defendantDetails.noRadioOption
     });
@@ -588,7 +588,7 @@ test.describe('[Create Case - England] @Master @nightly', async () => {
       phoneNumber: contactPreferences.no
     });
     await performAction('addDefendantDetails', {
-      nameOption: defendantDetails.yesRadioOption, firstName: defendantDetails.firstNameInput, lastName: defendantDetails.lastNameInput,
+      nameOption: defendantDetails.yesRadioOption, firstName: defendantDetails.firstNameTextInput, lastName: defendantDetails.lastNameTextInput,
       correspondenceAddressOption: defendantDetails.yesRadioOption, correspondenceAddressSameOption: defendantDetails.noRadioOption, address: addressDetails.englandCourtAssignedPostcode,
       addAdditionalDefendantsOption: defendantDetails.noRadioOption
     });
@@ -691,7 +691,7 @@ test.describe('[Create Case - England] @Master @nightly', async () => {
       phoneNumber: contactPreferences.yes
     });
     await performAction('addDefendantDetails', {
-      nameOption: defendantDetails.yesRadioOption, firstName: defendantDetails.firstNameInput, lastName: defendantDetails.lastNameInput,
+      nameOption: defendantDetails.yesRadioOption, firstName: defendantDetails.firstNameTextInput, lastName: defendantDetails.lastNameTextInput,
       correspondenceAddressOption: defendantDetails.yesRadioOption, correspondenceAddressSameOption: defendantDetails.yesRadioOption,
       addAdditionalDefendantsOption: defendantDetails.noRadioOption
     });
@@ -890,7 +890,7 @@ test.describe('[Create Case - England] @Master @nightly', async () => {
       phoneNumber: contactPreferences.yes
     });
     await performAction('addDefendantDetails', {
-      nameOption: defendantDetails.yesRadioOption, firstName: defendantDetails.firstNameInput, lastName: defendantDetails.lastNameInput,
+      nameOption: defendantDetails.yesRadioOption, firstName: defendantDetails.firstNameTextInput, lastName: defendantDetails.lastNameTextInput,
       correspondenceAddressOption: defendantDetails.yesRadioOption, correspondenceAddressSameOption: defendantDetails.yesRadioOption,
       addAdditionalDefendantsOption: defendantDetails.noRadioOption
     });
@@ -1009,7 +1009,7 @@ test.describe('[Create Case - England] @Master @nightly', async () => {
       phoneNumber: contactPreferences.no
     });
     await performAction('addDefendantDetails', {
-      nameOption: defendantDetails.yesRadioOption, firstName: defendantDetails.firstNameInput, lastName: defendantDetails.lastNameInput,
+      nameOption: defendantDetails.yesRadioOption, firstName: defendantDetails.firstNameTextInput, lastName: defendantDetails.lastNameTextInput,
       correspondenceAddressOption: defendantDetails.yesRadioOption, correspondenceAddressSameOption: defendantDetails.noRadioOption, address: addressDetails.englandCourtAssignedPostcode,
       addAdditionalDefendantsOption: defendantDetails.noRadioOption
     });

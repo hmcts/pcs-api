@@ -58,7 +58,7 @@ test.describe.skip('[Create Case - With resume claim options] @Master @nightly',
       phoneNumber: contactPreferences.no
     });
     await performAction('addDefendantDetails', {
-      nameOption: defendantDetails.yesRadioOption, firstName: defendantDetails.firstNameInput, lastName: defendantDetails.lastNameInput,
+      nameOption: defendantDetails.yesRadioOption, firstName: defendantDetails.firstNameTextInput, lastName: defendantDetails.lastNameTextInput,
       correspondenceAddressOption: defendantDetails.yesRadioOption, correspondenceAddressSameOption: defendantDetails.noRadioOption, address: addressDetails.englandCourtAssignedPostcode,
       addAdditionalDefendantsOption: defendantDetails.noRadioOption
     });
@@ -178,7 +178,7 @@ test.describe.skip('[Create Case - With resume claim options] @Master @nightly',
       phoneNumber: contactPreferences.no
     });
     await performAction('addDefendantDetails', {
-      nameOption: defendantDetails.yesRadioOption, firstName: defendantDetails.firstNameInput, lastName: defendantDetails.lastNameInput,
+      nameOption: defendantDetails.yesRadioOption, firstName: defendantDetails.firstNameTextInput, lastName: defendantDetails.lastNameTextInput,
       correspondenceAddressOption: defendantDetails.yesRadioOption, correspondenceAddressSameOption: defendantDetails.noRadioOption, address: addressDetails.englandCourtAssignedPostcode,
       addAdditionalDefendantsOption: defendantDetails.noRadioOption
     });
