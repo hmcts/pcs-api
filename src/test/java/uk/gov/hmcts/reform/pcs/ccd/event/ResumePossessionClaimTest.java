@@ -31,6 +31,9 @@ import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.SelectClaimantType
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.TenancyLicenceDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.UploadAdditionalDocumentsDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.OccupationLicenceDetailsWalesPage;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.GroundsForPossessionWales;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.SecureContractGroundsForPossessionWales;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.ReasonsForPosessionWales;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.NoRentArrearsGroundsForPossessionReason;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.AdditionalReasonsForPossession;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.SecureOrFlexibleGroundsForPossessionReasons;
@@ -137,6 +140,12 @@ class ResumePossessionClaimTest extends BaseEventTest {
     @Mock
     private OccupationLicenceDetailsWalesPage occupationLicenceDetailsWalesPage;
     @Mock
+    private GroundsForPossessionWales groundsForPossessionWales;
+    @Mock
+    private SecureContractGroundsForPossessionWales secureContractGroundsForPossessionWales;
+    @Mock
+    private ReasonsForPosessionWales reasonsForPosessionWales;
+    @Mock
     private RentArrearsGroundsForPossession rentArrearsGroundsForPossession;
     @Mock
     private RentArrearsGroundForPossessionAdditionalGrounds rentArrearsGroundForPossessionAdditionalGrounds;
@@ -167,7 +176,9 @@ class ResumePossessionClaimTest extends BaseEventTest {
             introductoryDemotedOtherGroundsReasons, defendantCircumstancesPage, suspensionOfRightToBuyOrderReason,
             statementOfExpressTerms, demotionOfTenancyOrderReason, organisationNameService,
             claimantDetailsWalesPage, prohibitedConductWalesPage, schedulerClient,
-            draftCaseDataService, occupationLicenceDetailsWalesPage, addressFormatter,
+            draftCaseDataService, occupationLicenceDetailsWalesPage,
+            groundsForPossessionWales, secureContractGroundsForPossessionWales, reasonsForPosessionWales,
+            addressFormatter,
             rentArrearsGroundsForPossession,
             rentArrearsGroundForPossessionAdditionalGrounds,
             noRentArrearsGroundsForPossessionOptions,

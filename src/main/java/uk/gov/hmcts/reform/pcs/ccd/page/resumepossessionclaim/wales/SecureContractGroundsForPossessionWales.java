@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales;
 
+import org.springframework.stereotype.Component;
 import java.util.List;
 import java.util.Set;
 
@@ -13,8 +14,16 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractDiscretionaryGroundsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractMandatoryGroundsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.service.routing.wales.WalesRentDetailsRoutingService;
 
+@Component
 public class SecureContractGroundsForPossessionWales implements CcdPageConfiguration {
+
+    private final WalesRentDetailsRoutingService walesRentDetailsRoutingService;
+
+    public SecureContractGroundsForPossessionWales(WalesRentDetailsRoutingService walesRentDetailsRoutingService) {
+        this.walesRentDetailsRoutingService = walesRentDetailsRoutingService;
+    }
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
@@ -71,6 +80,7 @@ public class SecureContractGroundsForPossessionWales implements CcdPageConfigura
         }
 
         caseData.setShowReasonsForGroundsPageWales(YesOrNo.YES);
+        caseData.setShowRentDetailsPage(walesRentDetailsRoutingService.shouldShowRentDetails(caseData));
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
                 .data(caseData)
