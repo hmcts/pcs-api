@@ -16,6 +16,8 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.SuspensionOfRightToBuyDemotionOfTenanc
 import uk.gov.hmcts.reform.pcs.ccd.domain.SuspensionOfRightToBuyHousingAct;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.PeriodicContractTermsWales;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.ProhibitedConductWales;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimGroundEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimPartyEntity;
@@ -223,6 +225,199 @@ class ClaimServiceTest {
         assertThat(createdClaimEntity.getDemotionOfTenancyHousingAct()).isEqualTo(expectedDemotionAct);
         assertThat(createdClaimEntity.getDemotionOfTenancyReason()).isEqualTo(expectedDemotionReason);
         assertThat(createdClaimEntity.getStatementOfExpressTermsDetails()).isEqualTo(expectedStatementDetails);
+    }
+
+    @Test
+    void shouldCreateMainClaim_WithProhibitedConductWales_WhenProhibitedConductClaimIsYes_WithAllFields() {
+        // Given
+        PCSCase pcsCase = mock(PCSCase.class);
+        PartyEntity claimantPartyEntity = new PartyEntity();
+
+        String expectedWhyMakingClaim = "Some reason for making the claim";
+        String expectedDetailsOfTerms = "Some details of terms";
+
+        PeriodicContractTermsWales periodicContractTerms = mock(PeriodicContractTermsWales.class);
+        when(pcsCase.getProhibitedConductWalesClaim()).thenReturn(VerticalYesNo.YES);
+        when(pcsCase.getProhibitedConductWalesWhyMakingClaim()).thenReturn(expectedWhyMakingClaim);
+        when(pcsCase.getPeriodicContractTermsWales()).thenReturn(periodicContractTerms);
+        when(periodicContractTerms.getAgreedTermsOfPeriodicContract()).thenReturn(VerticalYesNo.YES);
+        when(periodicContractTerms.getDetailsOfTerms()).thenReturn(expectedDetailsOfTerms);
+
+        AdditionalReasons additionalReasons = mock(AdditionalReasons.class);
+        when(pcsCase.getAdditionalReasonsForPossession()).thenReturn(additionalReasons);
+        when(additionalReasons.getReasons()).thenReturn("example reasons");
+        when(pcsCase.getClaimingCostsWanted()).thenReturn(VerticalYesNo.NO);
+        when(claimGroundService.getGroundsWithReason(pcsCase)).thenReturn(List.of());
+        when(pcsCase.getClaimantCircumstances()).thenReturn(mock(ClaimantCircumstances.class));
+        when(pcsCase.getSuspensionOfRightToBuy()).thenReturn(mock(SuspensionOfRightToBuy.class));
+        when(pcsCase.getDemotionOfTenancy()).thenReturn(mock(DemotionOfTenancy.class));
+
+        // When
+        ClaimEntity createdClaimEntity = claimService.createMainClaimEntity(pcsCase, claimantPartyEntity);
+
+        // Then
+        ProhibitedConductWales prohibitedConduct = createdClaimEntity.getProhibitedConduct();
+        assertThat(prohibitedConduct).isNotNull();
+        assertThat(prohibitedConduct.getClaimForProhibitedConductContract()).isTrue();
+        assertThat(prohibitedConduct.getAgreedTermsOfPeriodicContract()).isTrue();
+        assertThat(prohibitedConduct.getDetailsOfTerms()).isEqualTo(expectedDetailsOfTerms);
+        assertThat(prohibitedConduct.getWhyMakingClaim()).isEqualTo(expectedWhyMakingClaim);
+    }
+
+    @Test
+    void shouldCreateMainClaim_ProhibitedConductYes_WithoutPeriodicContractTerms() {
+        // Given
+        PCSCase pcsCase = mock(PCSCase.class);
+        PartyEntity claimantPartyEntity = new PartyEntity();
+
+        String expectedWhyMakingClaim = "Some reason for making the claim";
+
+        when(pcsCase.getProhibitedConductWalesClaim()).thenReturn(VerticalYesNo.YES);
+        when(pcsCase.getProhibitedConductWalesWhyMakingClaim()).thenReturn(expectedWhyMakingClaim);
+        when(pcsCase.getPeriodicContractTermsWales()).thenReturn(null);
+
+        AdditionalReasons additionalReasons = mock(AdditionalReasons.class);
+        when(pcsCase.getAdditionalReasonsForPossession()).thenReturn(additionalReasons);
+        when(additionalReasons.getReasons()).thenReturn("example reasons");
+        when(pcsCase.getClaimingCostsWanted()).thenReturn(VerticalYesNo.NO);
+        when(claimGroundService.getGroundsWithReason(pcsCase)).thenReturn(List.of());
+        when(pcsCase.getClaimantCircumstances()).thenReturn(mock(ClaimantCircumstances.class));
+        when(pcsCase.getSuspensionOfRightToBuy()).thenReturn(mock(SuspensionOfRightToBuy.class));
+        when(pcsCase.getDemotionOfTenancy()).thenReturn(mock(DemotionOfTenancy.class));
+
+        // When
+        ClaimEntity createdClaimEntity = claimService.createMainClaimEntity(pcsCase, claimantPartyEntity);
+
+        // Then
+        ProhibitedConductWales prohibitedConduct = createdClaimEntity.getProhibitedConduct();
+        assertThat(prohibitedConduct).isNotNull();
+        assertThat(prohibitedConduct.getClaimForProhibitedConductContract()).isTrue();
+        assertThat(prohibitedConduct.getAgreedTermsOfPeriodicContract()).isNull();
+        assertThat(prohibitedConduct.getDetailsOfTerms()).isNull();
+        assertThat(prohibitedConduct.getWhyMakingClaim()).isEqualTo(expectedWhyMakingClaim);
+    }
+
+    @Test
+    void shouldCreateMainClaim_ProhibitedConductYes_PeriodicContractButAgreedTermsNull() {
+        // Given
+        PCSCase pcsCase = mock(PCSCase.class);
+        PartyEntity claimantPartyEntity = new PartyEntity();
+
+        String expectedWhyMakingClaim = "Some reason for making the claim";
+
+        PeriodicContractTermsWales periodicContractTerms = mock(PeriodicContractTermsWales.class);
+        when(pcsCase.getProhibitedConductWalesClaim()).thenReturn(VerticalYesNo.YES);
+        when(pcsCase.getProhibitedConductWalesWhyMakingClaim()).thenReturn(expectedWhyMakingClaim);
+        when(pcsCase.getPeriodicContractTermsWales()).thenReturn(periodicContractTerms);
+        when(periodicContractTerms.getAgreedTermsOfPeriodicContract()).thenReturn(null);
+        when(periodicContractTerms.getDetailsOfTerms()).thenReturn("Some details");
+
+        AdditionalReasons additionalReasons = mock(AdditionalReasons.class);
+        when(pcsCase.getAdditionalReasonsForPossession()).thenReturn(additionalReasons);
+        when(additionalReasons.getReasons()).thenReturn("example reasons");
+        when(pcsCase.getClaimingCostsWanted()).thenReturn(VerticalYesNo.NO);
+        when(claimGroundService.getGroundsWithReason(pcsCase)).thenReturn(List.of());
+        when(pcsCase.getClaimantCircumstances()).thenReturn(mock(ClaimantCircumstances.class));
+        when(pcsCase.getSuspensionOfRightToBuy()).thenReturn(mock(SuspensionOfRightToBuy.class));
+        when(pcsCase.getDemotionOfTenancy()).thenReturn(mock(DemotionOfTenancy.class));
+
+        // When
+        ClaimEntity createdClaimEntity = claimService.createMainClaimEntity(pcsCase, claimantPartyEntity);
+
+        // Then
+        ProhibitedConductWales prohibitedConduct = createdClaimEntity.getProhibitedConduct();
+        assertThat(prohibitedConduct).isNotNull();
+        assertThat(prohibitedConduct.getClaimForProhibitedConductContract()).isTrue();
+        assertThat(prohibitedConduct.getAgreedTermsOfPeriodicContract()).isNull();
+        assertThat(prohibitedConduct.getDetailsOfTerms()).isEqualTo("Some details");
+        assertThat(prohibitedConduct.getWhyMakingClaim()).isEqualTo(expectedWhyMakingClaim);
+    }
+
+    @Test
+    void shouldCreateMainClaim_WithProhibitedConductWales_WhenProhibitedConductClaimIsYes_WithAgreedTermsNo() {
+        // Given
+        PCSCase pcsCase = mock(PCSCase.class);
+        PartyEntity claimantPartyEntity = new PartyEntity();
+
+        String expectedWhyMakingClaim = "Some reason for making the claim";
+
+        PeriodicContractTermsWales periodicContractTerms = mock(PeriodicContractTermsWales.class);
+        when(pcsCase.getProhibitedConductWalesClaim()).thenReturn(VerticalYesNo.YES);
+        when(pcsCase.getProhibitedConductWalesWhyMakingClaim()).thenReturn(expectedWhyMakingClaim);
+        when(pcsCase.getPeriodicContractTermsWales()).thenReturn(periodicContractTerms);
+        when(periodicContractTerms.getAgreedTermsOfPeriodicContract()).thenReturn(VerticalYesNo.NO);
+        when(periodicContractTerms.getDetailsOfTerms()).thenReturn(null);
+
+        AdditionalReasons additionalReasons = mock(AdditionalReasons.class);
+        when(pcsCase.getAdditionalReasonsForPossession()).thenReturn(additionalReasons);
+        when(additionalReasons.getReasons()).thenReturn("example reasons");
+        when(pcsCase.getClaimingCostsWanted()).thenReturn(VerticalYesNo.NO);
+        when(claimGroundService.getGroundsWithReason(pcsCase)).thenReturn(List.of());
+        when(pcsCase.getClaimantCircumstances()).thenReturn(mock(ClaimantCircumstances.class));
+        when(pcsCase.getSuspensionOfRightToBuy()).thenReturn(mock(SuspensionOfRightToBuy.class));
+        when(pcsCase.getDemotionOfTenancy()).thenReturn(mock(DemotionOfTenancy.class));
+
+        // When
+        ClaimEntity createdClaimEntity = claimService.createMainClaimEntity(pcsCase, claimantPartyEntity);
+
+        // Then
+        ProhibitedConductWales prohibitedConduct = createdClaimEntity.getProhibitedConduct();
+        assertThat(prohibitedConduct).isNotNull();
+        assertThat(prohibitedConduct.getClaimForProhibitedConductContract()).isTrue();
+        assertThat(prohibitedConduct.getAgreedTermsOfPeriodicContract()).isFalse();
+        assertThat(prohibitedConduct.getDetailsOfTerms()).isNull();
+        assertThat(prohibitedConduct.getWhyMakingClaim()).isEqualTo(expectedWhyMakingClaim);
+    }
+
+    @Test
+    void shouldCreateMainClaim_WithProhibitedConductWales_WhenProhibitedConductClaimIsNo() {
+        // Given
+        PCSCase pcsCase = mock(PCSCase.class);
+        PartyEntity claimantPartyEntity = new PartyEntity();
+
+        when(pcsCase.getProhibitedConductWalesClaim()).thenReturn(VerticalYesNo.NO);
+
+        AdditionalReasons additionalReasons = mock(AdditionalReasons.class);
+        when(pcsCase.getAdditionalReasonsForPossession()).thenReturn(additionalReasons);
+        when(additionalReasons.getReasons()).thenReturn("example reasons");
+        when(pcsCase.getClaimingCostsWanted()).thenReturn(VerticalYesNo.NO);
+        when(claimGroundService.getGroundsWithReason(pcsCase)).thenReturn(List.of());
+        when(pcsCase.getClaimantCircumstances()).thenReturn(mock(ClaimantCircumstances.class));
+        when(pcsCase.getSuspensionOfRightToBuy()).thenReturn(mock(SuspensionOfRightToBuy.class));
+        when(pcsCase.getDemotionOfTenancy()).thenReturn(mock(DemotionOfTenancy.class));
+
+        // When
+        ClaimEntity createdClaimEntity = claimService.createMainClaimEntity(pcsCase, claimantPartyEntity);
+
+        // Then
+        ProhibitedConductWales prohibitedConduct = createdClaimEntity.getProhibitedConduct();
+        assertThat(prohibitedConduct).isNotNull();
+        assertThat(prohibitedConduct.getClaimForProhibitedConductContract()).isFalse();
+    }
+
+    @Test
+    void shouldCreateMainClaim_WithoutProhibitedConductWales_WhenProhibitedConductClaimIsNull() {
+        // Given
+        PCSCase pcsCase = mock(PCSCase.class);
+        PartyEntity claimantPartyEntity = new PartyEntity();
+
+        when(pcsCase.getProhibitedConductWalesClaim()).thenReturn(null);
+
+        AdditionalReasons additionalReasons = mock(AdditionalReasons.class);
+        when(pcsCase.getAdditionalReasonsForPossession()).thenReturn(additionalReasons);
+        when(additionalReasons.getReasons()).thenReturn("example reasons");
+        when(pcsCase.getClaimingCostsWanted()).thenReturn(VerticalYesNo.NO);
+        when(claimGroundService.getGroundsWithReason(pcsCase)).thenReturn(List.of());
+        when(pcsCase.getClaimantCircumstances()).thenReturn(mock(ClaimantCircumstances.class));
+        when(pcsCase.getSuspensionOfRightToBuy()).thenReturn(mock(SuspensionOfRightToBuy.class));
+        when(pcsCase.getDemotionOfTenancy()).thenReturn(mock(DemotionOfTenancy.class));
+
+        // When
+        ClaimEntity createdClaimEntity = claimService.createMainClaimEntity(pcsCase, claimantPartyEntity);
+
+        // Then
+        ProhibitedConductWales prohibitedConduct = createdClaimEntity.getProhibitedConduct();
+        assertThat(prohibitedConduct).isNull();
     }
 
 }
