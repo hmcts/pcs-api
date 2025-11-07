@@ -20,6 +20,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.wales.MandatoryGroundWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceDetailsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractDiscretionaryGroundsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractMandatoryGroundsWales;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.PeriodicContractTermsWales;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
@@ -290,6 +291,19 @@ public class PCSCase {
     @JsonUnwrapped(prefix = "wales")
     @CCD
     private WalesHousingAct walesHousingAct;
+
+    @CCD(label = "Are you also making a claim for an order imposing a prohibited conduct standard contract?")
+    private VerticalYesNo prohibitedConductWalesClaim;
+
+    @CCD(
+        label = "Why are you making this claim?",
+        hint = "You can enter up to 250 characters",
+        typeOverride = TextArea
+    )
+    private String prohibitedConductWalesWhyMakingClaim;
+
+    @CCD
+    private PeriodicContractTermsWales periodicContractTermsWales;
 
     @CCD(
         label = "How much is the rent?",
@@ -586,6 +600,8 @@ public class PCSCase {
     private NoRentArrearsReasonForGrounds noRentArrearsReasonForGrounds;
 
     private YesOrNo showNoRentArrearsGroundReasonPage;
+
+    private YesOrNo showRentDetailsPage;
 
     @CCD(
         label = "Which language did you use to complete this service?",
