@@ -52,7 +52,7 @@ export class EnforcementAction implements IAction {
   private async selectRiskPosedByEveryoneAtProperty(riskCategory: actionRecord) {
     await performValidation("text", { elementType: "paragraph", text: "Case number: " + enforcementTestCaseNumber });
     await performAction("check", riskCategory.riskTypes);
-    await performAction("clickButton", riskPosedByEveryoneAtProperty.continue);
+    await performAction("clickButton", riskPosedByEveryoneAtProperty.continueButton);
   }
 
   private async provideDetailsViolentOrAggressiveBehaviour(violentAggressiveBehaviour: actionRecord) {
@@ -107,10 +107,10 @@ export class EnforcementAction implements IAction {
   private async selectVulnerablePeopleInTheProperty(vulnerablePeople: actionRecord) {
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + enforcementTestCaseNumber });
     await performAction('clickRadioButton', { question: vulnerablePeople.question, option: vulnerablePeople.option });
-    if (vulnerablePeople.option === vulnerableAdultsAndChildren.yes) {
+    if (vulnerablePeople.option === vulnerableAdultsAndChildren.yesRadioOption) {
       await performAction('clickRadioButton', { question: vulnerablePeople.confirm, option: vulnerablePeople.peopleOption });
       await performAction('inputText', vulnerablePeople.label, vulnerablePeople.input);
     };
-    await performAction('clickButton', vulnerableAdultsAndChildren.continue);
+    await performAction('clickButton', vulnerableAdultsAndChildren.continueButton);
   }
 }

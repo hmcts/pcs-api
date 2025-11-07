@@ -50,13 +50,13 @@ test.describe("[Enforcement - Warrant of Possession] @Master @nightly", async ()
     await performValidation("mainHeader", riskPosedByEveryoneAtProperty.mainHeader);
     await performAction("selectRiskPosedByEveryoneAtProperty", {
       riskTypes: [
-        riskPosedByEveryoneAtProperty.violentOrAggressiveBehaviour,
-        riskPosedByEveryoneAtProperty.historyOfFirearmPossession,
-        riskPosedByEveryoneAtProperty.criminalOrAntisocialBehaviour,
-        riskPosedByEveryoneAtProperty.verbalOrWrittenThreats,
-        riskPosedByEveryoneAtProperty.protestGroup,
-        riskPosedByEveryoneAtProperty.policeOrSocialService,
-        riskPosedByEveryoneAtProperty.aggressiveAnimals,
+        riskPosedByEveryoneAtProperty.violentOrAggressiveBehaviourCheckBox,
+        riskPosedByEveryoneAtProperty.historyOfFirearmPossessionCheckBox,
+        riskPosedByEveryoneAtProperty.criminalOrAntisocialBehaviourCheckBox,
+        riskPosedByEveryoneAtProperty.verbalOrWrittenThreatsCheckBox,
+        riskPosedByEveryoneAtProperty.protestGroupCheckBox,
+        riskPosedByEveryoneAtProperty.policeOrSocialServiceCheckBox,
+        riskPosedByEveryoneAtProperty.aggressiveAnimalsCheckBox,
       ],
     });
     await performAction("provideDetailsViolentOrAggressiveBehaviour", {
@@ -90,11 +90,11 @@ test.describe("[Enforcement - Warrant of Possession] @Master @nightly", async ()
     await performValidation('mainHeader', vulnerableAdultsAndChildren.mainHeader);
     await performAction('selectVulnerablePeopleInTheProperty', {
       question: vulnerableAdultsAndChildren.IsAnyOneLivingAtThePropertyQuestion,
-      option: vulnerableAdultsAndChildren.yes,
-      confirm: vulnerableAdultsAndChildren.confirmVulnerablePeople,
-      peopleOption: vulnerableAdultsAndChildren.vulnerableAdults,
-      label: vulnerableAdultsAndChildren.howAreTheyVulnerable,
-      input: vulnerableAdultsAndChildren.howAreTheyVulnerableInput
+      option: vulnerableAdultsAndChildren.yesRadioOption,
+      confirm: vulnerableAdultsAndChildren.confirmVulnerablePeopleQuestion,
+      peopleOption: vulnerableAdultsAndChildren.vulnerableAdultsRadioOption,
+      label: vulnerableAdultsAndChildren.howAreTheyVulnerableTextLabel,
+      input: vulnerableAdultsAndChildren.howAreTheyVulnerableTextInput
     });
   });
 
@@ -118,11 +118,11 @@ test.describe("[Enforcement - Warrant of Possession] @Master @nightly", async ()
     await performValidation('mainHeader', vulnerableAdultsAndChildren.mainHeader);
     await performAction('selectVulnerablePeopleInTheProperty', {
       question: vulnerableAdultsAndChildren.IsAnyOneLivingAtThePropertyQuestion,
-      option: vulnerableAdultsAndChildren.yes,
-      confirm: vulnerableAdultsAndChildren.confirmVulnerablePeople,
-      peopleOption: vulnerableAdultsAndChildren.vulnerableChildren,
-      label: vulnerableAdultsAndChildren.howAreTheyVulnerable,
-      input: vulnerableAdultsAndChildren.howAreTheyVulnerableInput
+      option: vulnerableAdultsAndChildren.noRadioOption,
+      confirm: vulnerableAdultsAndChildren.confirmVulnerablePeopleQuestion,
+      peopleOption: vulnerableAdultsAndChildren.vulnerableAdultsRadioOption,
+      label: vulnerableAdultsAndChildren.howAreTheyVulnerableTextLabel,
+      input: vulnerableAdultsAndChildren.howAreTheyVulnerableTextInput
     });
   });
 
@@ -148,11 +148,11 @@ test.describe("[Enforcement - Warrant of Possession] @Master @nightly", async ()
     await performValidation('mainHeader', vulnerableAdultsAndChildren.mainHeader);
     await performAction('selectVulnerablePeopleInTheProperty', {
       question: vulnerableAdultsAndChildren.IsAnyOneLivingAtThePropertyQuestion,
-      option: vulnerableAdultsAndChildren.yes,
-      confirm: vulnerableAdultsAndChildren.confirmVulnerablePeople,
-      peopleOption: vulnerableAdultsAndChildren.vulnerableAdultsAndChildren,
-      label: vulnerableAdultsAndChildren.howAreTheyVulnerable,
-      input: vulnerableAdultsAndChildren.howAreTheyVulnerableInput
+      option: vulnerableAdultsAndChildren.notSureRadioOption,
+      confirm: vulnerableAdultsAndChildren.confirmVulnerablePeopleQuestion,
+      peopleOption: vulnerableAdultsAndChildren.vulnerableAdultsRadioOption,
+      label: vulnerableAdultsAndChildren.howAreTheyVulnerableTextLabel,
+      input: vulnerableAdultsAndChildren.howAreTheyVulnerableTextInput
     });
   });
 });
