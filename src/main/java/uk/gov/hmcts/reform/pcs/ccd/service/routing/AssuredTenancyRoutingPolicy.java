@@ -25,10 +25,10 @@ import static uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType.ASSURED_TENA
  * Shows Rent Details page when grounds 8, 10, or 11 are selected.
  */
 @Component
-public class AssuredTenancyRoutingPolicy implements RentDetailsRoutingPolicy {
+public class AssuredTenancyRoutingPolicy implements RentSectionRoutingPolicy {
 
     @Override
-    public YesOrNo shouldShowRentDetails(PCSCase caseData) {
+    public YesOrNo shouldShowRentSection(PCSCase caseData) {
         if (caseData.getGroundsForPossession() == YesOrNo.YES) {
             return checkRentArrearsGrounds(caseData);
         } else {

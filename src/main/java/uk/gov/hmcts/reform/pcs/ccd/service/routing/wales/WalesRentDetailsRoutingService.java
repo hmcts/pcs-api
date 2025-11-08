@@ -11,9 +11,9 @@ import java.util.List;
 @Service
 public class WalesRentDetailsRoutingService {
 
-    private final List<WalesRentDetailsRoutingPolicy> policies;
+    private final List<WalesRentSectionRoutingPolicy> policies;
 
-    public WalesRentDetailsRoutingService(List<WalesRentDetailsRoutingPolicy> policies) {
+    public WalesRentDetailsRoutingService(List<WalesRentSectionRoutingPolicy> policies) {
         this.policies = policies;
     }
 
@@ -25,8 +25,8 @@ public class WalesRentDetailsRoutingService {
             return YesOrNo.NO;
         }
 
-        WalesRentDetailsRoutingPolicy matching = null;
-        for (WalesRentDetailsRoutingPolicy policy : policies) {
+        WalesRentSectionRoutingPolicy matching = null;
+        for (WalesRentSectionRoutingPolicy policy : policies) {
             if (policy.supports(type)) {
                 if (matching != null) {
                     throw new IllegalStateException(
@@ -42,7 +42,7 @@ public class WalesRentDetailsRoutingService {
             return YesOrNo.NO;
         }
 
-        return matching.shouldShowRentDetails(caseData);
+        return matching.shouldShowRentSection(caseData);
     }
 }
 

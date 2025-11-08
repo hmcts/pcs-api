@@ -20,10 +20,10 @@ import static uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType.SECURE_TENAN
  * AND user chooses "Rent arrears" option.
  */
 @Component
-public class SecureFlexibleRoutingPolicy implements RentDetailsRoutingPolicy {
+public class SecureFlexibleRoutingPolicy implements RentSectionRoutingPolicy {
 
     @Override
-    public YesOrNo shouldShowRentDetails(PCSCase caseData) {
+    public YesOrNo shouldShowRentSection(PCSCase caseData) {
         Set<SecureOrFlexibleDiscretionaryGrounds> discretionaryGrounds =
             caseData.getSecureOrFlexibleDiscretionaryGrounds();
 

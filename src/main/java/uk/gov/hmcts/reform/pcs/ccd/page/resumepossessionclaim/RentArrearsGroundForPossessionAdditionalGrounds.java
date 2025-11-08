@@ -70,7 +70,7 @@ public class RentArrearsGroundForPossessionAdditionalGrounds implements CcdPageC
         Set<RentArrearsDiscretionaryGrounds> mergedDiscretionary = new HashSet<>();
         Set<RentArrearsGround> rentArrearsGrounds = caseData.getRentArrearsGrounds();
         log.warn("rentArrearsGrounds: {}", rentArrearsGrounds);
-        
+
         if (rentArrearsGrounds != null) {
             if (rentArrearsGrounds.contains(RentArrearsGround.SERIOUS_RENT_ARREARS_GROUND8)) {
                 mergedMandatory.add(RentArrearsMandatoryGrounds.SERIOUS_RENT_ARREARS_GROUND8);
@@ -90,7 +90,7 @@ public class RentArrearsGroundForPossessionAdditionalGrounds implements CcdPageC
                 Set.of()
             );
         log.warn("addMandatory: {}", addMandatory);
-        
+
         for (AssuredAdditionalMandatoryGrounds add : addMandatory) {
             mergedMandatory.add(RentArrearsMandatoryGrounds.valueOf(add.name()));
         }
@@ -101,7 +101,7 @@ public class RentArrearsGroundForPossessionAdditionalGrounds implements CcdPageC
                 Set.of()
             );
         log.warn("addDiscretionary: {}", addDiscretionary);
-        
+
         for (AssuredAdditionalDiscretionaryGrounds add : addDiscretionary) {
             mergedDiscretionary.add(RentArrearsDiscretionaryGrounds.valueOf(add.name()));
         }
@@ -160,10 +160,10 @@ public class RentArrearsGroundForPossessionAdditionalGrounds implements CcdPageC
 
         // This handles the case when user unchecks rent arrears grounds
         YesOrNo showRentDetails = rentDetailsRoutingService.shouldShowRentDetails(caseData);
-        caseData.setShowRentDetailsPage(showRentDetails);
+        caseData.setShowRentSection(showRentDetails);
 
         log.warn("=== RentArrearsGroundForPossessionAdditionalGrounds midEvent END ===");
-        
+
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
             .data(caseData)
             .build();

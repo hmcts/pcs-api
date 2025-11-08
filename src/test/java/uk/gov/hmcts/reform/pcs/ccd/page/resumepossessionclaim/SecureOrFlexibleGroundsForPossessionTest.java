@@ -137,7 +137,7 @@ public class SecureOrFlexibleGroundsForPossessionTest extends BasePageTest {
             assertThat(response.getData()).isNull();
         } else {
             PCSCase updatedCaseData = response.getData();
-            assertThat(updatedCaseData.getShowRentDetailsPage()).isEqualTo(expectedShowRentDetailsPage);
+            assertThat(updatedCaseData.getShowRentSection()).isEqualTo(expectedShowRentDetailsPage);
         }
     }
 
@@ -145,14 +145,14 @@ public class SecureOrFlexibleGroundsForPossessionTest extends BasePageTest {
         return Stream.of(
                 // Ground 1 selected - Initially set to No (will be updated by RentArrearsOrBreachOfTenancyGround)
                 arguments(Set.of(RENT_ARREARS_OR_BREACH_OF_TENANCY), YesOrNo.NO),
-                
+
                 // Ground 1 not selected - Set to No
                 arguments(Set.of(SecureOrFlexibleDiscretionaryGrounds.NUISANCE_OR_IMMORAL_USE), YesOrNo.NO),
-                
+
                 // Multiple grounds including Ground 1 - Initially set to No
-                arguments(Set.of(RENT_ARREARS_OR_BREACH_OF_TENANCY, 
+                arguments(Set.of(RENT_ARREARS_OR_BREACH_OF_TENANCY,
                                 SecureOrFlexibleDiscretionaryGrounds.NUISANCE_OR_IMMORAL_USE), YesOrNo.NO),
-                
+
                 // No grounds selected - Set to No
                 arguments(Set.of(), YesOrNo.NO)
         );

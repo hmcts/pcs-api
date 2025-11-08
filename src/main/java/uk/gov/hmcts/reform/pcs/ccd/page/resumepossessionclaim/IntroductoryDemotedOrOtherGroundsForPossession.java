@@ -70,7 +70,7 @@ public class IntroductoryDemotedOrOtherGroundsForPossession implements CcdPageCo
             caseData.setShowIntroductoryDemotedOtherGroundReasonPage(YesOrNo.NO);
         }
 
-        caseData.setShowRentDetailsPage(rentDetailsRoutingService.shouldShowRentDetails(caseData));
+        caseData.setShowRentSection(rentDetailsRoutingService.shouldShowRentDetails(caseData));
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
             .data(caseData)

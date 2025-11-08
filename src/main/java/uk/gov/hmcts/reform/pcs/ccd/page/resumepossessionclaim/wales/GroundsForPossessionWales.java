@@ -93,7 +93,7 @@ public class GroundsForPossessionWales
                 .build();
         }
 
-        data.setShowRentDetailsPage(walesRentDetailsRoutingService.shouldShowRentDetails(data));
+        data.setShowRentSection(walesRentDetailsRoutingService.shouldShowRentDetails(data));
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
             .data(data)

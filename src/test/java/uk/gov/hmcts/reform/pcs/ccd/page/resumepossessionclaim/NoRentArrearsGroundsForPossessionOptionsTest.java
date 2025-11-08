@@ -144,7 +144,7 @@ class NoRentArrearsGroundsForPossessionOptionsTest extends BasePageTest {
             assertThat(response.getData()).isNull();
         } else {
             PCSCase updatedCaseData = response.getData();
-            assertThat(updatedCaseData.getShowRentDetailsPage()).isEqualTo(expectedShowRentDetailsPage);
+            assertThat(updatedCaseData.getShowRentSection()).isEqualTo(expectedShowRentDetailsPage);
         }
     }
 

@@ -34,7 +34,7 @@ public class NoRentArrearsGroundsForPossessionOptions implements CcdPageConfigur
             .pageLabel("What are your additional grounds for possession?")
             .showCondition("groundsForPossession=\"No\" AND typeOfTenancyLicence=\"ASSURED_TENANCY\"")
             .readonly(PCSCase::getShowNoRentArrearsGroundReasonPage, NEVER_SHOW)
-            .readonly(PCSCase::getShowRentDetailsPage, NEVER_SHOW)
+            .readonly(PCSCase::getShowRentSection, NEVER_SHOW)
             .label(
                 "NoRentArrearsGroundsForPossessionOptions-information", """
                     ---
@@ -72,7 +72,7 @@ public class NoRentArrearsGroundsForPossessionOptions implements CcdPageConfigur
         caseData.setShowNoRentArrearsGroundReasonPage(YesOrNo.from(shouldShowReasonsPage));
 
         YesOrNo showRentDetails = rentDetailsRoutingService.shouldShowRentDetails(caseData);
-        caseData.setShowRentDetailsPage(showRentDetails);
+        caseData.setShowRentSection(showRentDetails);
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
             .data(caseData)

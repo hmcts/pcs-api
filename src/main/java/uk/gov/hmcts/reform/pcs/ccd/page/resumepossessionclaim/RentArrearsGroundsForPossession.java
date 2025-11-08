@@ -115,7 +115,7 @@ public class RentArrearsGroundsForPossession implements CcdPageConfiguration {
         caseData.setCopyOfRentArrearsGrounds(rentArrearsGrounds);
 
         // Determine if Rent Details page should be shown using routing service
-        caseData.setShowRentDetailsPage(rentDetailsRoutingService.shouldShowRentDetails(caseData));
+        caseData.setShowRentSection(rentDetailsRoutingService.shouldShowRentDetails(caseData));
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
             .data(caseData)

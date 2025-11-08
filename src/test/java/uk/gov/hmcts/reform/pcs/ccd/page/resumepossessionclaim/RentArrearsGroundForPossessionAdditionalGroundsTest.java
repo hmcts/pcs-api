@@ -383,7 +383,7 @@ class RentArrearsGroundForPossessionAdditionalGroundsTest extends BasePageTest {
 
         // Then
         assertThat(response.getErrors()).isNullOrEmpty();
-        assertThat(response.getData().getShowRentDetailsPage()).isEqualTo(expectedShowRentDetails);
+        assertThat(response.getData().getShowRentSection()).isEqualTo(expectedShowRentDetails);
     }
 
     @Test

@@ -20,10 +20,10 @@ import static uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType.OTHER;
  * AND RENT_ARREARS ground is selected.
  */
 @Component
-public class IntroductoryDemotedOtherRoutingPolicy implements RentDetailsRoutingPolicy {
+public class IntroductoryDemotedOtherRoutingPolicy implements RentSectionRoutingPolicy {
 
     @Override
-    public YesOrNo shouldShowRentDetails(PCSCase caseData) {
+    public YesOrNo shouldShowRentSection(PCSCase caseData) {
         if (caseData.getHasIntroductoryDemotedOtherGroundsForPossession() != VerticalYesNo.YES) {
             return YesOrNo.NO;
         }

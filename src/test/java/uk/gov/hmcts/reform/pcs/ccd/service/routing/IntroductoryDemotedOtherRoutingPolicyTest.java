@@ -71,7 +71,7 @@ class IntroductoryDemotedOtherRoutingPolicyTest {
             .introductoryDemotedOrOtherGrounds(grounds)
             .build();
 
-        YesOrNo result = policy.shouldShowRentDetails(caseData);
+        YesOrNo result = policy.shouldShowRentSection(caseData);
 
         assertThat(result).isEqualTo(expected);
     }
@@ -84,7 +84,7 @@ class IntroductoryDemotedOtherRoutingPolicyTest {
             .introductoryDemotedOrOtherGrounds(null)
             .build();
 
-        YesOrNo result = policy.shouldShowRentDetails(caseData);
+        YesOrNo result = policy.shouldShowRentSection(caseData);
 
         assertThat(result).isEqualTo(YesOrNo.NO);
     }
@@ -97,7 +97,7 @@ class IntroductoryDemotedOtherRoutingPolicyTest {
             .introductoryDemotedOrOtherGrounds(Set.of(RENT_ARREARS))
             .build();
 
-        YesOrNo result = policy.shouldShowRentDetails(caseData);
+        YesOrNo result = policy.shouldShowRentSection(caseData);
 
         assertThat(result).isEqualTo(YesOrNo.NO);
     }
@@ -110,7 +110,7 @@ class IntroductoryDemotedOtherRoutingPolicyTest {
             .introductoryDemotedOrOtherGrounds(null)
             .build();
 
-        YesOrNo result = policy.shouldShowRentDetails(caseData);
+        YesOrNo result = policy.shouldShowRentSection(caseData);
 
         assertThat(result).isEqualTo(YesOrNo.NO);
     }
@@ -123,7 +123,7 @@ class IntroductoryDemotedOtherRoutingPolicyTest {
             .introductoryDemotedOrOtherGrounds(Set.of())
             .build();
 
-        YesOrNo result = policy.shouldShowRentDetails(caseData);
+        YesOrNo result = policy.shouldShowRentSection(caseData);
 
         assertThat(result).isEqualTo(YesOrNo.NO);
     }

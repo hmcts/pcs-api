@@ -60,7 +60,7 @@ class IntroductoryDemotedOrOtherGroundsForPossessionTest extends BasePageTest {
 
         // Then
         PCSCase updatedCaseData = response.getData();
-        assertThat(updatedCaseData.getShowRentDetailsPage()).isEqualTo(expectedShowRentDetailsPage);
+        assertThat(updatedCaseData.getShowRentSection()).isEqualTo(expectedShowRentDetailsPage);
     }
 
     @ParameterizedTest
@@ -84,7 +84,7 @@ class IntroductoryDemotedOrOtherGroundsForPossessionTest extends BasePageTest {
 
         // Then
         PCSCase updatedCaseData = response.getData();
-        assertThat(updatedCaseData.getShowRentDetailsPage()).isEqualTo(expectedShowRentDetailsPage);
+        assertThat(updatedCaseData.getShowRentSection()).isEqualTo(expectedShowRentDetailsPage);
     }
 
     @Test

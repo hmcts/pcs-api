@@ -44,7 +44,7 @@ public class PCSCase {
     // Field label constants - shared between domain annotations and validation
     public static final String NOTICE_EMAIL_EXPLANATION_LABEL = "Explain how it was served by email";
     public static final String NOTICE_OTHER_EXPLANATION_LABEL = "Explain what the other means were";
-    public static final String DETAILS_OF_OTHER_TYPE_OF_TENANCY_LICENCE_LABEL = 
+    public static final String DETAILS_OF_OTHER_TYPE_OF_TENANCY_LICENCE_LABEL =
         "Give details of the type of tenancy or licence agreement that's in place";
 
     @CCD(
@@ -617,7 +617,10 @@ public class PCSCase {
 
     private YesOrNo showNoRentArrearsGroundReasonPage;
 
-    private YesOrNo showRentDetailsPage;
+    private YesOrNo showRentSection;
+
+    @CCD(searchable = false)
+    private YesOrNo showRentArrears;
 
     @CCD(
         label = "Which language did you use to complete this service?",

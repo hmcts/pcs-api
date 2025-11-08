@@ -61,7 +61,7 @@ class SecureFlexibleRoutingPolicyTest {
             .rentArrearsOrBreachOfTenancy(rentArrearsOrBreach)
             .build();
 
-        YesOrNo result = policy.shouldShowRentDetails(caseData);
+        YesOrNo result = policy.shouldShowRentSection(caseData);
 
         assertThat(result).isEqualTo(expected);
     }
@@ -73,7 +73,7 @@ class SecureFlexibleRoutingPolicyTest {
             .secureOrFlexibleDiscretionaryGrounds(Set.of(NUISANCE_OR_IMMORAL_USE))
             .build();
 
-        YesOrNo result = policy.shouldShowRentDetails(caseData);
+        YesOrNo result = policy.shouldShowRentSection(caseData);
 
         assertThat(result).isEqualTo(YesOrNo.NO);
     }
@@ -86,7 +86,7 @@ class SecureFlexibleRoutingPolicyTest {
             .rentArrearsOrBreachOfTenancy(Set.of(BREACH_OF_TENANCY))
             .build();
 
-        YesOrNo result = policy.shouldShowRentDetails(caseData);
+        YesOrNo result = policy.shouldShowRentSection(caseData);
 
         assertThat(result).isEqualTo(YesOrNo.NO);
     }
@@ -98,7 +98,7 @@ class SecureFlexibleRoutingPolicyTest {
             .secureOrFlexibleDiscretionaryGrounds(null)
             .build();
 
-        YesOrNo result = policy.shouldShowRentDetails(caseData);
+        YesOrNo result = policy.shouldShowRentSection(caseData);
 
         assertThat(result).isEqualTo(YesOrNo.NO);
     }
@@ -111,7 +111,7 @@ class SecureFlexibleRoutingPolicyTest {
             .rentArrearsOrBreachOfTenancy(null)
             .build();
 
-        YesOrNo result = policy.shouldShowRentDetails(caseData);
+        YesOrNo result = policy.shouldShowRentSection(caseData);
 
         assertThat(result).isEqualTo(YesOrNo.NO);
     }

@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
@@ -22,7 +23,7 @@ public class RentDetails implements CcdPageConfiguration {
         pageBuilder
                 .page("rentDetails", this::midEvent)
                 .pageLabel("Rent details")
-                .showCondition("showRentDetailsPage=\"Yes\"")
+                .showCondition("showRentSection=\"Yes\"")
                 .label("rentDetails-content",
                         """
                         ---
@@ -48,6 +49,12 @@ public class RentDetails implements CcdPageConfiguration {
 
             // Set formatted value for display
             caseData.setFormattedCalculatedDailyRentChargeAmount(formatCurrency(dailyAmountString));
+
+            // Reset showRentArrears for non-OTHER frequencies (will be set by DailyRentAmount if needed)
+            caseData.setShowRentArrears(YesOrNo.NO);
+        } else {
+            // For OTHER frequency, show Rent Arrears page directly
+            caseData.setShowRentArrears(YesOrNo.YES);
         }
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
@@ -68,6 +75,11 @@ public class RentDetails implements CcdPageConfiguration {
             case MONTHLY:
                 divisor = 30.44;
                 break;
+            case OTHER:
+                // OTHER frequency doesn't use calculated daily rent
+                return BigDecimal.ZERO;
+            default:
+                return BigDecimal.ZERO;
         }
 
         return new BigDecimal(Math.round(rentAmountInPence.doubleValue() / divisor));

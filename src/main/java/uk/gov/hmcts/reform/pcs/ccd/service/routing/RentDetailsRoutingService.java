@@ -17,9 +17,9 @@ import java.util.Map;
 @Service
 public class RentDetailsRoutingService {
 
-    private final Map<TenancyLicenceType, RentDetailsRoutingPolicy> policyMap;
+    private final Map<TenancyLicenceType, RentSectionRoutingPolicy> policyMap;
 
-    public RentDetailsRoutingService(List<RentDetailsRoutingPolicy> policies) {
+    public RentDetailsRoutingService(List<RentSectionRoutingPolicy> policies) {
         this.policyMap = buildPolicyMap(policies);
     }
 
@@ -32,12 +32,12 @@ public class RentDetailsRoutingService {
      */
     public YesOrNo shouldShowRentDetails(PCSCase caseData) {
         TenancyLicenceType tenancyType = caseData.getTypeOfTenancyLicence();
-        RentDetailsRoutingPolicy policy = getPolicyOrThrow(tenancyType);
-        return policy.shouldShowRentDetails(caseData);
+        RentSectionRoutingPolicy policy = getPolicyOrThrow(tenancyType);
+        return policy.shouldShowRentSection(caseData);
     }
 
-    private RentDetailsRoutingPolicy getPolicyOrThrow(TenancyLicenceType tenancyType) {
-        RentDetailsRoutingPolicy policy = policyMap.get(tenancyType);
+    private RentSectionRoutingPolicy getPolicyOrThrow(TenancyLicenceType tenancyType) {
+        RentSectionRoutingPolicy policy = policyMap.get(tenancyType);
         if (policy == null) {
             throw new IllegalStateException(
                 "No routing policy found for tenancy type: " + tenancyType
@@ -46,15 +46,15 @@ public class RentDetailsRoutingService {
         return policy;
     }
 
-    private Map<TenancyLicenceType, RentDetailsRoutingPolicy> buildPolicyMap(
-        List<RentDetailsRoutingPolicy> policies) {
-        Map<TenancyLicenceType, RentDetailsRoutingPolicy> map =
+    private Map<TenancyLicenceType, RentSectionRoutingPolicy> buildPolicyMap(
+        List<RentSectionRoutingPolicy> policies) {
+        Map<TenancyLicenceType, RentSectionRoutingPolicy> map =
             new EnumMap<>(TenancyLicenceType.class);
 
         for (TenancyLicenceType tenancyType : TenancyLicenceType.values()) {
-            for (RentDetailsRoutingPolicy policy : policies) {
+            for (RentSectionRoutingPolicy policy : policies) {
                 if (policy.supports(tenancyType)) {
-                    RentDetailsRoutingPolicy existing = map.putIfAbsent(tenancyType, policy);
+                    RentSectionRoutingPolicy existing = map.putIfAbsent(tenancyType, policy);
                     if (existing != null) {
                         throw new IllegalStateException(
                             "Multiple routing policies found for tenancy type: " + tenancyType

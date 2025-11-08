@@ -22,7 +22,7 @@ class RentDetailsRoutingServiceTest {
     void setUp() {
         assuredTenancyPolicy = new AssuredTenancyRoutingPolicy();
         secureFlexiblePolicy = new SecureFlexibleRoutingPolicy();
-        List<RentDetailsRoutingPolicy> policies = Arrays.asList(
+        List<RentSectionRoutingPolicy> policies = Arrays.asList(
             assuredTenancyPolicy,
             secureFlexiblePolicy
         );

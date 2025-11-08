@@ -42,7 +42,7 @@ public class SecureContractGroundsForPossessionWales implements CcdPageConfigura
                </p>
 
                <p class="govuk-body" tabindex="0">
-                  <a class="govuk-link govuk-!-margin-bottom-3" href="#"  rel="noreferrer noopener" 
+                  <a class="govuk-link govuk-!-margin-bottom-3" href="#"  rel="noreferrer noopener"
                   target="_blank" aria-label="More information about possession grounds (opens in new tab)">
                         More information about possession grounds (opens in new tab)</a>.
                 </p>
@@ -56,10 +56,10 @@ public class SecureContractGroundsForPossessionWales implements CcdPageConfigura
 
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
             CaseDetails<PCSCase, State> detailsBefore) {
-                
+
         PCSCase caseData = details.getData();
 
-        Set<SecureContractDiscretionaryGroundsWales> discretionaryGrounds = 
+        Set<SecureContractDiscretionaryGroundsWales> discretionaryGrounds =
                                                 caseData.getSecureContractDiscretionaryGroundsWales();
 
         Set<SecureContractMandatoryGroundsWales> mandatoryGrounds = caseData.getSecureContractMandatoryGroundsWales();
@@ -80,7 +80,7 @@ public class SecureContractGroundsForPossessionWales implements CcdPageConfigura
         }
 
         caseData.setShowReasonsForGroundsPageWales(YesOrNo.YES);
-        caseData.setShowRentDetailsPage(walesRentDetailsRoutingService.shouldShowRentDetails(caseData));
+        caseData.setShowRentSection(walesRentDetailsRoutingService.shouldShowRentDetails(caseData));
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
                 .data(caseData)

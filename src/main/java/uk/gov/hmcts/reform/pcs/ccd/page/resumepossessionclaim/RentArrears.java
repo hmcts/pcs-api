@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim;
 
+import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
@@ -10,7 +11,8 @@ public class RentArrears implements CcdPageConfiguration {
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
                 .page("rentArrears")
-                .showCondition("showRentDetailsPage=\"Yes\" AND rentFrequency=\"OTHER\"")
+                .showCondition("showRentSection=\"Yes\" AND showRentArrears=\"Yes\"")
+                .readonly(PCSCase::getShowRentArrears, NEVER_SHOW)
                 .pageLabel("Details of rent arrears")
 
                 // ---------- Rent statement guidance ----------
