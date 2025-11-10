@@ -18,7 +18,7 @@ export class CreateCaseAction implements IAction {
       ['createCase', () => this.createCaseAction(fieldName)],
       ['housingPossessionClaim', () => this.housingPossessionClaim()],
       ['selectAddress', () => this.selectAddress(fieldName)],
-      ['addressCheckYourAnswers', () => this.addressCheckYourAnswers()],
+      ['submitAddressCheckYourAnswers', () => this.submitAddressCheckYourAnswers()],
       ['provideMoreDetailsOfClaim', () => this.provideMoreDetailsOfClaim(page)],
       ['selectResumeClaimOption', () => this.selectResumeClaimOption(fieldName)],
       ['extractCaseIdFromAlert', () => this.extractCaseIdFromAlert(page)],
@@ -95,7 +95,7 @@ export class CreateCaseAction implements IAction {
     await performAction('clickButton', addressDetails.continueButton);
   }
 
-  private async addressCheckYourAnswers() {
+  private async submitAddressCheckYourAnswers() {
     await performAction('clickButton', addressCheckYourAnswers.saveAndContinueButton);
   }
 

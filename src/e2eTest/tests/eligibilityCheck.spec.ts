@@ -36,7 +36,7 @@ test.describe('[Eligibility Check - Create Case] @Master @nightly', async () => 
     });
     await performAction('selectBorderPostcode', borderPostcode.countryOptions.england);
     await performValidation('mainHeader', addressCheckYourAnswers.mainHeader)
-    await performAction('addressCheckYourAnswers');
+    await performAction('submitAddressCheckYourAnswers');
     await performValidation('bannerAlert', 'Case #.* has been created.');
   });
 
@@ -64,7 +64,7 @@ test.describe('[Eligibility Check - Create Case] @Master @nightly', async () => 
       addressIndex: addressDetails.addressIndex
     });
     await performValidation('mainHeader', addressCheckYourAnswers.mainHeader)
-    await performAction('addressCheckYourAnswers');
+    await performAction('submitAddressCheckYourAnswers');
     await performValidation('bannerAlert', 'Case #.* has been created.');
   });
 
@@ -83,7 +83,7 @@ test.describe('[Eligibility Check - Create Case] @Master @nightly', async () => 
       addressIndex: addressDetails.addressIndex
     });
     await performValidation('mainHeader', addressCheckYourAnswers.mainHeader)
-    await performAction('addressCheckYourAnswers');
+    await performAction('submitAddressCheckYourAnswers');
     await performValidation('bannerAlert', 'Case #.* has been created.');
   });
 
@@ -111,7 +111,7 @@ test.describe('[Eligibility Check - Create Case] @Master @nightly', async () => 
       addressIndex: addressDetails.addressIndex
     });
     await performValidation('mainHeader', addressCheckYourAnswers.mainHeader)
-    await performAction('addressCheckYourAnswers');
+    await performAction('submitAddressCheckYourAnswers');
     await performAction('extractCaseIdFromAlert');
     await performAction('provideMoreDetailsOfClaim');
     await performAction('selectClaimantType', claimantType.mortgageLender);
@@ -131,7 +131,7 @@ test.describe('[Eligibility Check - Create Case] @Master @nightly', async () => 
       addressIndex: addressDetails.addressIndex
     });
     await performValidation('mainHeader', addressCheckYourAnswers.mainHeader)
-    await performAction('addressCheckYourAnswers');
+    await performAction('submitAddressCheckYourAnswers');
     await performAction('extractCaseIdFromAlert');
     await performAction('provideMoreDetailsOfClaim');
     await performAction('selectClaimantType', claimantType.privateLandlord);
@@ -153,7 +153,7 @@ test.describe('[Eligibility Check - Create Case] @Master @nightly', async () => 
       addressIndex: addressDetails.addressIndex
     });
     await performValidation('mainHeader', addressCheckYourAnswers.mainHeader)
-    await performAction('addressCheckYourAnswers');
+    await performAction('submitAddressCheckYourAnswers');
     await performAction('extractCaseIdFromAlert');
     await performAction('provideMoreDetailsOfClaim');
     await performAction('selectClaimantType', claimantType.wales.communityLandlord);
@@ -176,7 +176,7 @@ test.describe('[Eligibility Check - Create Case] @Master @nightly', async () => 
       addressIndex: addressDetails.addressIndex
     });
     await performValidation('mainHeader', addressCheckYourAnswers.mainHeader)
-    await performAction('addressCheckYourAnswers');
+    await performAction('submitAddressCheckYourAnswers');
     await performAction('extractCaseIdFromAlert');
     await performAction('provideMoreDetailsOfClaim');
     await performAction('selectClaimantType', claimantType.england.registeredProviderForSocialHousing);

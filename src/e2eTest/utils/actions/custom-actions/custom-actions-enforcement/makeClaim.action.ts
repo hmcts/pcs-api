@@ -30,7 +30,7 @@ export class MakeClaimAction implements IAction {
         addressIndex: addressDetails.addressIndex
       });
       await performValidation('mainHeader', addressCheckYourAnswers.mainHeader)
-      await performAction('addressCheckYourAnswers');
+      await performAction('submitAddressCheckYourAnswers');
       await performValidation('bannerAlert', 'Case #.* has been created.');
       await performAction('extractCaseIdFromAlert');
       await performAction('clickButtonAndVerifyPageNavigation', provideMoreDetailsOfClaim.continue, claimantType.mainHeader);

@@ -31,7 +31,7 @@ export class ActionRegistry {
     ['signOut', new signOutAction()],
     ['uploadFile', new UploadFileAction()],
     ['selectAddress', new CreateCaseAction()],
-    ['addressCheckYourAnswers', new CreateCaseAction()],
+    ['submitAddressCheckYourAnswers', new CreateCaseAction()],
     ['extractCaseIdFromAlert', new CreateCaseAction()],
     ['selectResumeClaimOption', new CreateCaseAction()],
     ['selectClaimantType', new CreateCaseAction()],

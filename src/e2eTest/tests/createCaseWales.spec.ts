@@ -28,7 +28,7 @@ test.describe('[Create Case - Wales] @Master @nightly', async () => {
   test('Wales - Secure contract', async () => {
     await performAction('enterTestAddressManually');
     await performValidation('mainHeader', addressCheckYourAnswers.mainHeader)
-    await performAction('addressCheckYourAnswers');
+    await performAction('submitAddressCheckYourAnswers');
     await performValidation('bannerAlert', 'Case #.* has been created.');
     await performAction('extractCaseIdFromAlert');
     await performAction('provideMoreDetailsOfClaim');
@@ -142,7 +142,7 @@ test.describe('[Create Case - Wales] @Master @nightly', async () => {
   test('Wales - Standard contract', async () => {
     await performAction('enterTestAddressManually');
     await performValidation('mainHeader', addressCheckYourAnswers.mainHeader)
-    await performAction('addressCheckYourAnswers');
+    await performAction('submitAddressCheckYourAnswers');
     await performValidation('bannerAlert', 'Case #.* has been created.');
     await performAction('extractCaseIdFromAlert');
     await performAction('provideMoreDetailsOfClaim');
@@ -239,7 +239,7 @@ test.describe('[Create Case - Wales] @Master @nightly', async () => {
   test('Wales - Occupation contract Licence Details - Other', async () => {
     await performAction('enterTestAddressManually');
     await performValidation('mainHeader', addressCheckYourAnswers.mainHeader)
-    await performAction('addressCheckYourAnswers');
+    await performAction('submitAddressCheckYourAnswers');
     await performValidation('bannerAlert', 'Case #.* has been created.');
     await performAction('extractCaseIdFromAlert');
     await performAction('provideMoreDetailsOfClaim');
