@@ -157,7 +157,7 @@ test.describe.skip('[Create Case - With resume claim options] @Master @nightly',
       addressIndex: addressDetails.addressIndex
     });
     await performValidation('mainHeader', addressCheckYourAnswers.mainHeader)
-    await performAction('addressCheckYourAnswers');
+    await performAction('submitAddressCheckYourAnswers');
     await performValidation('bannerAlert', 'Case #.* has been created.');
     await performAction('extractCaseIdFromAlert');
     await performAction('provideMoreDetailsOfClaim');
