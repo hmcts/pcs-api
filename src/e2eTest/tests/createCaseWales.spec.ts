@@ -97,7 +97,10 @@ test.describe('[Create Case - Wales] @Master @nightly', async () => {
       claimantInput: claimantCircumstances.claimantCircumstanceInfoInputData
     });
     await performValidation('mainHeader', defendantCircumstances.mainHeader);
-    await performAction('selectDefendantCircumstances', defendantCircumstances.no);
+    await performAction('selectDefendantCircumstances', {
+      defendantCircumstance: defendantCircumstances.no,
+      additionalDefendants: false
+    });
     await performValidation('mainHeader', prohibitedConductStandardContractWales.mainHeader);
     await performAction('selectProhibitedConductStandardContract', {
       question1: prohibitedConductStandardContractWales.areYouAlsoMakingAClaimQuestion,
@@ -201,7 +204,10 @@ test.describe('[Create Case - Wales] @Master @nightly', async () => {
       claimantInput: claimantCircumstances.claimantCircumstanceInfoInputData
     });
     await performValidation('mainHeader', defendantCircumstances.mainHeader);
-    await performAction('selectDefendantCircumstances', defendantCircumstances.no);
+    await performAction('selectDefendantCircumstances', {
+      defendantCircumstance: defendantCircumstances.no,
+      additionalDefendants: false
+    });
     await performAction('selectProhibitedConductStandardContract', {
       question1: prohibitedConductStandardContractWales.areYouAlsoMakingAClaimQuestion, option1: prohibitedConductStandardContractWales.yes,
       label1: prohibitedConductStandardContractWales.whyAreYouMakingThisClaimLabel, input1: prohibitedConductStandardContractWales.whyAreYouMakingThisClaimSampleData,
@@ -298,7 +304,10 @@ test.describe('[Create Case - Wales] @Master @nightly', async () => {
       claimantInput: claimantCircumstances.claimantCircumstanceInfoInputData
     });
     await performValidation('mainHeader', defendantCircumstances.mainHeader);
-    await performAction('selectDefendantCircumstances', defendantCircumstances.yes);
+    await performAction('selectDefendantCircumstances', {
+      defendantCircumstance: defendantCircumstances.no,
+      additionalDefendants: false
+    });
     await performAction('selectProhibitedConductStandardContract', {
       question1: prohibitedConductStandardContractWales.areYouAlsoMakingAClaimQuestion, option1: prohibitedConductStandardContractWales.no,
     });
