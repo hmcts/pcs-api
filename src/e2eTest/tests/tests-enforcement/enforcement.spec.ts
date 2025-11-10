@@ -6,7 +6,7 @@ import { caseList, user, caseSummary, signInOrCreateAnAccount } from '@data/page
 import {
   nameAndAddressForEviction, violentOrAggressiveBehaviour, firearmPossession, yourApplication, animalsAtTheProperty,
   criminalOrAntisocialBehaviour, evictionCouldBeDelayed, vulnerableAdultsAndChildren, policeOrSocialServiceVisit,
-  riskPosedByEveryoneAtProperty, everyoneLivingAtTheProperty, verbalOrWrittenThreats, groupProtestsEviction
+  riskPosedByEveryoneAtProperty, everyoneLivingAtTheProperty, verbalOrWrittenThreats, groupProtestsEviction, accessToTheProperty
 } from '@data/page-data/page-data-enforcement';
 
 test.beforeEach(async ({ page }) => {
@@ -96,6 +96,13 @@ test.describe('[Enforcement - Warrant of Possession] @Master @nightly', async ()
       label: vulnerableAdultsAndChildren.howAreTheyVulnerableTextLabel,
       input: vulnerableAdultsAndChildren.howAreTheyVulnerableTextInput
     });
+    await performValidation('mainHeader', accessToTheProperty.mainHeader);
+    await performAction('accessToProperty', {
+      question: accessToTheProperty.accessToThePropertyQuestion,
+      option: accessToTheProperty.yesRadioOption,
+      label: accessToTheProperty.whyItsDifficultToAccessToThePropertyTextLabel,
+      input: accessToTheProperty.whyItsDifficultToAccessToThePropertyTextInput,
+    });
   });
 
   test('Apply for a Warrant of Possession - risk to Bailiff [No]', async () => {
@@ -123,6 +130,11 @@ test.describe('[Enforcement - Warrant of Possession] @Master @nightly', async ()
       peopleOption: vulnerableAdultsAndChildren.vulnerableAdultsRadioOption,
       label: vulnerableAdultsAndChildren.howAreTheyVulnerableTextLabel,
       input: vulnerableAdultsAndChildren.howAreTheyVulnerableTextInput
+    });
+    await performValidation('mainHeader', accessToTheProperty.mainHeader);
+    await performAction('accessToProperty', {
+      question: accessToTheProperty.accessToThePropertyQuestion,
+      option: accessToTheProperty.noRadioOption,
     });
   });
 
@@ -153,6 +165,13 @@ test.describe('[Enforcement - Warrant of Possession] @Master @nightly', async ()
       peopleOption: vulnerableAdultsAndChildren.vulnerableAdultsRadioOption,
       label: vulnerableAdultsAndChildren.howAreTheyVulnerableTextLabel,
       input: vulnerableAdultsAndChildren.howAreTheyVulnerableTextInput
+    });
+    await performValidation('mainHeader', accessToTheProperty.mainHeader);
+    await performAction('accessToProperty', {
+      question: accessToTheProperty.accessToThePropertyQuestion,
+      option: accessToTheProperty.yesRadioOption,
+      label: accessToTheProperty.whyItsDifficultToAccessToThePropertyTextLabel,
+      input: accessToTheProperty.whyItsDifficultToAccessToThePropertyTextInput,
     });
   });
 });

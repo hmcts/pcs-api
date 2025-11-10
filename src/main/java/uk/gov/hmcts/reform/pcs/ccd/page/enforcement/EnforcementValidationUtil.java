@@ -21,4 +21,3 @@ public final class EnforcementValidationUtil {
         return String.format(ERROR_MESSAGE_TEMPLATE, label, NumberFormat.getInstance(Locale.UK).format(charLimit));
     }
 }
-

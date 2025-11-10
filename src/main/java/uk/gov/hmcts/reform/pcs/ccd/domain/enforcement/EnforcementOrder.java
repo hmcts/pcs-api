@@ -47,4 +47,8 @@ public class EnforcementOrder {
     private YesNoNotSure vulnerablePeopleYesNo;
     
     private VulnerableAdultsChildren vulnerableAdultsChildren;
+    
+    @JsonUnwrapped
+    @CCD
+    private PropertyAccessDetails propertyAccessDetails;
 }
