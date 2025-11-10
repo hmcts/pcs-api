@@ -6,9 +6,8 @@ import { caseList, user, caseSummary, signInOrCreateAnAccount } from '@data/page
 import {
   nameAndAddressForEviction, violentOrAggressiveBehaviour, firearmPossession, yourApplication, animalsAtTheProperty,
   criminalOrAntisocialBehaviour, evictionCouldBeDelayed, vulnerableAdultsAndChildren, policeOrSocialServiceVisit,
-  riskPosedByEveryoneAtProperty, everyoneLivingAtTheProperty, verbalOrWrittenThreats, groupProtestsEviction
+  riskPosedByEveryoneAtProperty, everyoneLivingAtTheProperty, verbalOrWrittenThreats, groupProtestsEviction, accessToTheProperty, anythingElseHelpWithEviction
 } from '@data/page-data/page-data-enforcement';
-import { anythingElseHelpWithEviction } from '@data/page-data/page-data-enforcement/anythingElseThatCouldHelpWithEviction.page.data';
 
 test.beforeEach(async ({ page }) => {
   initializeExecutor(page);
@@ -25,7 +24,7 @@ test.beforeEach(async ({ page }) => {
   await performAction('filterCaseFromCaseList', caseList.stateAwaitingSubmission);
   await performAction('noCasesFoundAfterSearch')
   //Below three lines will be merged into a single action as part of improvement
-  await performAction("selectFirstCaseFromTheFilter", caseNotFoundAfterFilter);
+  await performAction('selectFirstCaseFromTheFilter', caseNotFoundAfterFilter);
   await performAction('createNewCase', caseNotFoundAfterFilter);
   await performAction('searchMyCaseFromFindCase', { caseNumber: caseNumber, criteria: caseNotFoundAfterFilter });
 });
@@ -90,6 +89,13 @@ test.describe('[Enforcement - Warrant of Possession] @Master @nightly', async ()
       label: anythingElseHelpWithEviction.tellUsAnythingElse,
       input: anythingElseHelpWithEviction.tellUsAnythingElseInput
     })
+    await performValidation('mainHeader', accessToTheProperty.mainHeader);
+    await performAction('accessToProperty', {
+      question: accessToTheProperty.accessToThePropertyQuestion,
+      option: accessToTheProperty.yesRadioOption,
+      label: accessToTheProperty.whyItsDifficultToAccessToThePropertyTextLabel,
+      input: accessToTheProperty.whyItsDifficultToAccessToThePropertyTextInput
+    });
   });
 
   test('Apply for a Warrant of Possession - risk to Bailiff [No]', async () => {
@@ -117,6 +123,11 @@ test.describe('[Enforcement - Warrant of Possession] @Master @nightly', async ()
       label: anythingElseHelpWithEviction.tellUsAnythingElse,
       input: anythingElseHelpWithEviction.tellUsAnythingElseInput
     })
+    await performValidation('mainHeader', accessToTheProperty.mainHeader);
+    await performAction('accessToProperty', {
+      question: accessToTheProperty.accessToThePropertyQuestion,
+      option: accessToTheProperty.noRadioOption,
+    });
   });
 
   test('Apply for a Warrant of Possession - risk to Bailiff [Not sure]', async () => {
@@ -146,5 +157,12 @@ test.describe('[Enforcement - Warrant of Possession] @Master @nightly', async ()
       label: anythingElseHelpWithEviction.tellUsAnythingElse,
       input: anythingElseHelpWithEviction.tellUsAnythingElseInput
     })
+    await performValidation('mainHeader', accessToTheProperty.mainHeader);
+    await performAction('accessToProperty', {
+      question: accessToTheProperty.accessToThePropertyQuestion,
+      option: accessToTheProperty.yesRadioOption,
+      label: accessToTheProperty.whyItsDifficultToAccessToThePropertyTextLabel,
+      input: accessToTheProperty.whyItsDifficultToAccessToThePropertyTextInput
+    });
   });
 });
