@@ -32,7 +32,7 @@ public class UnderlesseeMortgageeDetails {
 
     @CCD(label = """
                     ---
-                    <h2 class="govuk-heading-m">Underlessee or mortgagee address </h2>
+                    <h2 class="govuk-heading-m">Underlessee or mortgagee correspondence address</h2>
                     """, typeOverride = FieldType.Label)
     private String underlesseeOrMortgageeAddressLabel;
 
