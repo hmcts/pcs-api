@@ -213,6 +213,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             .add(new CompletingYourClaim())
             .add(new StatementOfTruth());
 
+
     }
 
     private PCSCase start(EventPayload<PCSCase, State> eventPayload) {
