@@ -22,6 +22,7 @@ import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicence;
+import uk.gov.hmcts.reform.pcs.ccd.entity.enforcement.EnforcementDataEntity;
 import uk.gov.hmcts.reform.pcs.ccd.model.Defendant;
 import uk.gov.hmcts.reform.pcs.ccd.model.PartyDocumentDto;
 import uk.gov.hmcts.reform.pcs.ccd.model.PossessionGrounds;
@@ -94,6 +95,11 @@ public class PcsCaseEntity {
     @JdbcTypeCode(SqlTypes.JSON)
     private List<PartyDocumentDto> partyDocuments;
 
+    @OneToMany(mappedBy = "pcsCase", fetch = LAZY, cascade = ALL)
+    @Builder.Default
+    @JsonManagedReference
+    private Set<EnforcementDataEntity> enforcementDataEntities = new HashSet<>();
+
     public void addClaim(ClaimEntity claim) {
         claims.add(claim);
         claim.setPcsCase(this);
@@ -104,4 +110,10 @@ public class PcsCaseEntity {
         party.setPcsCase(this);
     }
 
+    public void setEnforcementDataEntities(Set<EnforcementDataEntity> enforcementDataEntities) {
+        this.enforcementDataEntities = enforcementDataEntities;
+        for (EnforcementDataEntity entity : enforcementDataEntities) {
+            entity.setPcsCase(this);
+        }
+    }
 }

@@ -15,7 +15,8 @@ import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DraftCaseDataEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DraftCaseDataRepository;
-import uk.gov.hmcts.reform.pcs.exception.UnsubmittedDataException;
+import uk.gov.hmcts.reform.pcs.exception.JsonReaderException;
+import uk.gov.hmcts.reform.pcs.exception.JsonWriterException;
 
 import java.util.Optional;
 
@@ -166,7 +167,7 @@ class DraftCaseDataServiceTest {
 
         // Then
         assertThat(throwable)
-            .isInstanceOf(UnsubmittedDataException.class)
+            .isInstanceOf(JsonReaderException.class)
             .hasMessage("Failed to read saved answers")
             .hasCause(jsonProcessingException);
     }
@@ -184,7 +185,7 @@ class DraftCaseDataServiceTest {
 
         // Then
         assertThat(throwable)
-            .isInstanceOf(UnsubmittedDataException.class)
+            .isInstanceOf(JsonWriterException.class)
             .hasMessage("Failed to save answers")
             .hasCause(jsonProcessingException);
     }

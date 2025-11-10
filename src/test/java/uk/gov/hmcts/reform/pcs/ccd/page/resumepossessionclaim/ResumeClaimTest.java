@@ -15,7 +15,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
-import uk.gov.hmcts.reform.pcs.exception.UnsubmittedDataException;
+import uk.gov.hmcts.reform.pcs.exception.JsonReaderException;
 
 import java.util.Optional;
 import java.util.stream.Stream;
@@ -92,7 +92,7 @@ class ResumeClaimTest extends BasePageTest {
 
         // Then
         assertThat(throwable)
-            .isInstanceOf(UnsubmittedDataException.class)
+            .isInstanceOf(JsonReaderException.class)
             .hasMessage("No unsubmitted case data found for case %s", TEST_CASE_REFERENCE);
     }
 
