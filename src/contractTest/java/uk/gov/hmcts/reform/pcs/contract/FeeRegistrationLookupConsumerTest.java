@@ -6,9 +6,9 @@ import au.com.dius.pact.consumer.junit5.PactConsumerTestExt;
 import au.com.dius.pact.consumer.junit5.PactTestFor;
 import au.com.dius.pact.core.model.V4Pact;
 import au.com.dius.pact.core.model.annotations.Pact;
+import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
 import org.springframework.boot.autoconfigure.http.HttpMessageConvertersAutoConfiguration;
 import org.springframework.cloud.openfeign.EnableFeignClients;
@@ -16,6 +16,7 @@ import org.springframework.cloud.openfeign.FeignAutoConfiguration;
 import org.springframework.cloud.openfeign.FeignClientsConfiguration;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.test.context.TestConstructor;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.gov.hmcts.reform.fees.client.FeesApi;
@@ -25,6 +26,7 @@ import java.math.BigDecimal;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.test.context.TestConstructor.AutowireMode.ALL;
 
 @ImportAutoConfiguration({
     FeignAutoConfiguration.class,
@@ -35,10 +37,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 @TestPropertySource(properties = "fees.api.url=http://localhost:8484")
 @ExtendWith({PactConsumerTestExt.class, SpringExtension.class})
 @PactTestFor(providerName = "feeRegister_lookUp", port = "8484")
+@RequiredArgsConstructor
+@TestConstructor(autowireMode = ALL)
 class FeeRegistrationLookupConsumerTest {
-
-    @Autowired
-    private FeesApi feesApi;
+    private final FeesApi feesApi;
 
     private static final String SERVICE_AUTH_TOKEN = "Bearer serviceToken";
 
