@@ -50,44 +50,44 @@ export class EnforcementAction implements IAction {
   }
 
   private async selectRiskPosedByEveryoneAtProperty(riskCategory: actionRecord) {
-    await performValidation("text", { elementType: "paragraph", text: "Case number: " + enforcementTestCaseNumber });
-    await performAction("check", riskCategory.riskTypes);
-    await performAction("clickButton", riskPosedByEveryoneAtProperty.continueButton);
+    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + enforcementTestCaseNumber });
+    await performAction('check', riskCategory.riskTypes);
+    await performAction('clickButton', riskPosedByEveryoneAtProperty.continueButton);
   }
 
   private async provideDetailsViolentOrAggressiveBehaviour(violentAggressiveBehaviour: actionRecord) {
-    await performValidation("mainHeader", violentOrAggressiveBehaviour.mainHeader);
-    await performValidation("text", { elementType: "paragraph", text: "Case number: " + enforcementTestCaseNumber });
-    await performAction("inputText", violentAggressiveBehaviour.label, violentAggressiveBehaviour.input);
-    await performAction("clickButton", violentOrAggressiveBehaviour.continue);
+    await performValidation('mainHeader', violentOrAggressiveBehaviour.mainHeader);
+    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + enforcementTestCaseNumber });
+    await performAction('inputText', violentAggressiveBehaviour.label, violentAggressiveBehaviour.input);
+    await performAction('clickButton', violentOrAggressiveBehaviour.continue);
   }
 
   private async provideDetailsFireArmPossession(firearm: actionRecord) {
-    await performValidation("mainHeader", firearmPossession.mainHeader);
-    await performValidation("text", { elementType: "paragraph", text: "Case number: " + enforcementTestCaseNumber });
-    await performAction("inputText", firearm.label, firearm.input);
-    await performAction("clickButton", firearmPossession.continue);
+    await performValidation('mainHeader', firearmPossession.mainHeader);
+    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + enforcementTestCaseNumber });
+    await performAction('inputText', firearm.label, firearm.input);
+    await performAction('clickButton', firearmPossession.continue);
   }
 
   private async provideDetailsCriminalOrAntisocialBehavior(criminalAntisocialBehaviour: actionRecord) {
-    await performValidation("mainHeader", criminalOrAntisocialBehaviour.mainHeader);
-    await performValidation("text", { elementType: "paragraph", text: "Case number: " + enforcementTestCaseNumber });
-    await performAction("inputText", criminalAntisocialBehaviour.label, criminalAntisocialBehaviour.input);
-    await performAction("clickButton", criminalOrAntisocialBehaviour.continue);
+    await performValidation('mainHeader', criminalOrAntisocialBehaviour.mainHeader);
+    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + enforcementTestCaseNumber });
+    await performAction('inputText', criminalAntisocialBehaviour.label, criminalAntisocialBehaviour.input);
+    await performAction('clickButton', criminalOrAntisocialBehaviour.continue);
   }
 
   private async provideDetailsVerbalOrWrittenThreats(verbalWritten: actionRecord) {
-    await performValidation("mainHeader", verbalOrWrittenThreats.mainHeader);
-    await performValidation("text", { elementType: "paragraph", text: "Case number: " + enforcementTestCaseNumber });
-    await performAction("inputText", verbalWritten.label, verbalWritten.input);
-    await performAction("clickButton", verbalOrWrittenThreats.continue);
+    await performValidation('mainHeader', verbalOrWrittenThreats.mainHeader);
+    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + enforcementTestCaseNumber });
+    await performAction('inputText', verbalWritten.label, verbalWritten.input);
+    await performAction('clickButton', verbalOrWrittenThreats.continue);
   }
 
   private async provideDetailsGroupProtestsEviction(protestGroup: actionRecord) {
-    await performValidation("mainHeader", groupProtestsEviction.mainHeader);
-    await performValidation("text", { elementType: "paragraph", text: "Case number: " + enforcementTestCaseNumber });
-    await performAction("inputText", protestGroup.label, protestGroup.input);
-    await performAction("clickButton", groupProtestsEviction.continue);
+    await performValidation('mainHeader', groupProtestsEviction.mainHeader);
+    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + enforcementTestCaseNumber });
+    await performAction('inputText', protestGroup.label, protestGroup.input);
+    await performAction('clickButton', groupProtestsEviction.continue);
   }
 
   private async provideDetailsPoliceOrSocialServiceVisits(policeOrSSVisit: actionRecord) {

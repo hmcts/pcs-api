@@ -12,28 +12,28 @@ import {
 test.beforeEach(async ({ page }) => {
   initializeExecutor(page);
   initializeEnforcementExecutor(page);
-  await performAction("navigateToUrl", process.env.MANAGE_CASE_BASE_URL);
-  await performAction("handleCookieConsent", {
+  await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
+  await performAction('handleCookieConsent', {
     accept: signInOrCreateAnAccount.acceptAdditionalCookiesButton,
     hide: signInOrCreateAnAccount.hideThisCookieMessageButton,
   });
-  await performAction("login", user.claimantSolicitor);
-  await performAction("handleCookieConsent", {
+  await performAction('login', user.claimantSolicitor);
+  await performAction('handleCookieConsent', {
     accept: signInOrCreateAnAccount.acceptAnalyticsCookiesButton,
   });
-  await performAction("filterCaseFromCaseList", caseList.stateAwaitingSubmission);
-  await performAction("noCasesFoundAfterSearch");
+  await performAction('filterCaseFromCaseList', caseList.stateAwaitingSubmission);
+  await performAction('noCasesFoundAfterSearch');
   //Below three lines will be merged into a single action as part of improvement
-  await performAction("selectFirstCaseFromTheFilter", caseNotFoundAfterFilter);
+  await performAction('selectFirstCaseFromTheFilter', caseNotFoundAfterFilter);
   await performAction('createNewCase', caseNotFoundAfterFilter);
   await performAction('searchMyCaseFromFindCase', { caseNumber: caseNumber, criteria: caseNotFoundAfterFilter });
 });
 
-test.describe("[Enforcement - Warrant of Possession] @Master @nightly", async () => {
-  test("Apply for a Warrant of Possession - risk to Bailiff [Yes]", async () => {
-    await performAction("select", caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
-    await performAction("clickButtonAndVerifyPageNavigation", caseSummary.go, yourApplication.mainHeader);
-    await performAction("selectApplicationType", {
+test.describe('[Enforcement - Warrant of Possession] @Master @nightly', async () => {
+  test('Apply for a Warrant of Possession - risk to Bailiff [Yes]', async () => {
+    await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
+    await performAction('clickButtonAndVerifyPageNavigation', caseSummary.go, yourApplication.mainHeader);
+    await performAction('selectApplicationType', {
       question: yourApplication.typeOfApplicationQuestion,
       option: yourApplication.typeOfApplicationOptions.warrantOfPossession,
     });
@@ -42,13 +42,13 @@ test.describe("[Enforcement - Warrant of Possession] @Master @nightly", async ()
       question: nameAndAddressForEviction.nameAndAddressPageForEvictionQuestion,
       option: nameAndAddressForEviction.yes,
     });
-    await performValidation("mainHeader", everyoneLivingAtTheProperty.mainHeader);
-    await performAction("selectEveryoneLivingAtTheProperty", {
+    await performValidation('mainHeader', everyoneLivingAtTheProperty.mainHeader);
+    await performAction('selectEveryoneLivingAtTheProperty', {
       question: everyoneLivingAtTheProperty.riskToBailiffQuestion,
       option: everyoneLivingAtTheProperty.yes,
     });
-    await performValidation("mainHeader", riskPosedByEveryoneAtProperty.mainHeader);
-    await performAction("selectRiskPosedByEveryoneAtProperty", {
+    await performValidation('mainHeader', riskPosedByEveryoneAtProperty.mainHeader);
+    await performAction('selectRiskPosedByEveryoneAtProperty', {
       riskTypes: [
         riskPosedByEveryoneAtProperty.violentOrAggressiveBehaviourCheckbox,
         riskPosedByEveryoneAtProperty.historyOfFirearmPossessionCheckbox,
@@ -59,31 +59,31 @@ test.describe("[Enforcement - Warrant of Possession] @Master @nightly", async ()
         riskPosedByEveryoneAtProperty.aggressiveAnimalsCheckbox,
       ],
     });
-    await performAction("provideDetailsViolentOrAggressiveBehaviour", {
+    await performAction('provideDetailsViolentOrAggressiveBehaviour', {
       label: violentOrAggressiveBehaviour.howHaveTheyBeenViolentAndAggressive,
       input: violentOrAggressiveBehaviour.howHaveTheyBeenViolentAndAggressiveInput,
     });
-    await performAction("provideDetailsFireArmPossession", {
+    await performAction('provideDetailsFireArmPossession', {
       label: firearmPossession.whatIsTheirHistoryOfFirearmPossession,
       input: firearmPossession.whatIsTheirHistoryOfFirearmPossessionInput,
     });
-    await performAction("provideDetailsCriminalOrAntisocialBehavior", {
+    await performAction('provideDetailsCriminalOrAntisocialBehavior', {
       label: criminalOrAntisocialBehaviour.whatIsTheirHistoryOfCriminalAntisocialBehaviour,
       input: criminalOrAntisocialBehaviour.whatIsTheirHistoryOfCriminalAntisocialBehaviourInput,
     });
-    await performAction("provideDetailsVerbalOrWrittenThreats", {
+    await performAction('provideDetailsVerbalOrWrittenThreats', {
       label: verbalOrWrittenThreats.verbalOrWrittenThreatsMade,
       input: verbalOrWrittenThreats.verbalOrWrittenThreatsMadeInput,
     });
-    await performAction("provideDetailsGroupProtestsEviction", {
+    await performAction('provideDetailsGroupProtestsEviction', {
       label: groupProtestsEviction.whichGroupMember,
       input: groupProtestsEviction.whichGroupMemberInput,
     });
-    await performAction("provideDetailsPoliceOrSocialServiceVisits", {
+    await performAction('provideDetailsPoliceOrSocialServiceVisits', {
       label: policeOrSocialServiceVisit.whyDidThePoliceOrSSVisitTheProperty,
       input: policeOrSocialServiceVisit.whyDidThePoliceOrSSVisitThePropertyInput,
     });
-    await performAction("provideDetailsAnimalsAtTheProperty", {
+    await performAction('provideDetailsAnimalsAtTheProperty', {
       label: animalsAtTheProperty.whatKindOfAnimalDoTheyHave,
       input: animalsAtTheProperty.whatKindOfAnimalDoTheyHaveInput,
     });
@@ -105,13 +105,13 @@ test.describe("[Enforcement - Warrant of Possession] @Master @nightly", async ()
       question: yourApplication.typeOfApplicationQuestion,
       option: yourApplication.typeOfApplicationOptions.warrantOfPossession,
     });
-    await performValidation("mainHeader", nameAndAddressForEviction.mainHeader);
-    await performAction("selectNameAndAddressForEviction", {
+    await performValidation('mainHeader', nameAndAddressForEviction.mainHeader);
+    await performAction('selectNameAndAddressForEviction', {
       question: nameAndAddressForEviction.nameAndAddressPageForEvictionQuestion,
       option: nameAndAddressForEviction.yes,
     });
-    await performValidation("mainHeader", everyoneLivingAtTheProperty.mainHeader);
-    await performAction("selectEveryoneLivingAtTheProperty", {
+    await performValidation('mainHeader', everyoneLivingAtTheProperty.mainHeader);
+    await performAction('selectEveryoneLivingAtTheProperty', {
       question: everyoneLivingAtTheProperty.riskToBailiffQuestion,
       option: everyoneLivingAtTheProperty.no,
     });
@@ -133,13 +133,13 @@ test.describe("[Enforcement - Warrant of Possession] @Master @nightly", async ()
       question: yourApplication.typeOfApplicationQuestion,
       option: yourApplication.typeOfApplicationOptions.warrantOfPossession,
     });
-    await performValidation("mainHeader", nameAndAddressForEviction.mainHeader);
-    await performAction("selectNameAndAddressForEviction", {
+    await performValidation('mainHeader', nameAndAddressForEviction.mainHeader);
+    await performAction('selectNameAndAddressForEviction', {
       question: nameAndAddressForEviction.nameAndAddressPageForEvictionQuestion,
       option: nameAndAddressForEviction.yes,
     });
-    await performValidation("mainHeader", everyoneLivingAtTheProperty.mainHeader);
-    await performAction("selectEveryoneLivingAtTheProperty", {
+    await performValidation('mainHeader', everyoneLivingAtTheProperty.mainHeader);
+    await performAction('selectEveryoneLivingAtTheProperty', {
       question: everyoneLivingAtTheProperty.riskToBailiffQuestion,
       option: everyoneLivingAtTheProperty.notSure,
     });

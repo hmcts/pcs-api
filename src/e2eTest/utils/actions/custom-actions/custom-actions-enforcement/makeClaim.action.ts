@@ -18,7 +18,7 @@ export class MakeClaimAction implements IAction {
     value?: actionData | actionRecord
   ): Promise<void> {
     const actionsMap = new Map<string, () => Promise<void>>([
-      ["createNewCase", () => this.createNewCase(page, fieldName as actionData)],
+      ['createNewCase', () => this.createNewCase(page, fieldName as actionData)],
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) throw new Error(`No action found for '${action}'`);
@@ -28,36 +28,36 @@ export class MakeClaimAction implements IAction {
   private async createNewCase(page: Page, criteria: actionData): Promise<void> {
     if (criteria == true) {
       initializeExecutor(page);
-      await performAction("clickTab", home.createCaseTab);
-      await performAction("selectJurisdictionCaseTypeEvent");
-      await performAction("housingPossessionClaim");
-      await performAction("selectAddress", {
+      await performAction('clickTab', home.createCaseTab);
+      await performAction('selectJurisdictionCaseTypeEvent');
+      await performAction('housingPossessionClaim');
+      await performAction('selectAddress', {
         postcode: addressDetails.englandCourtAssignedPostcode,
         addressIndex: addressDetails.addressIndex,
       });
-      await performValidation("bannerAlert", "Case #.* has been created.");
-      await performAction("extractCaseIdFromAlert");
+      await performValidation('bannerAlert', 'Case #.* has been created.');
+      await performAction('extractCaseIdFromAlert');
       await performAction(
-        "clickButtonAndVerifyPageNavigation",
+        'clickButtonAndVerifyPageNavigation',
         provideMoreDetailsOfClaim.continue,
         claimantType.mainHeader
       );
-      await performAction("selectClaimantType", claimantType.england.registeredProviderForSocialHousing);
-      await performAction("selectClaimType", claimType.no);
-      await performAction("selectClaimantName", claimantName.yes);
-      await performAction("clickButtonAndVerifyPageNavigation", claimantName.continue, contactPreferences.mainHeader);
-      await performAction("selectContactPreferences", {
+      await performAction('selectClaimantType', claimantType.england.registeredProviderForSocialHousing);
+      await performAction('selectClaimType', claimType.no);
+      await performAction('selectClaimantName', claimantName.yes);
+      await performAction('clickButtonAndVerifyPageNavigation', claimantName.continue, contactPreferences.mainHeader);
+      await performAction('selectContactPreferences', {
         notifications: contactPreferences.yes,
         correspondenceAddress: contactPreferences.yes,
         phoneNumber: contactPreferences.no,
       });
-      await performAction("defendantDetails", {
+      await performAction('defendantDetails', {
         name: defendantDetails.no,
         correspondenceAddress: defendantDetails.no,
         email: defendantDetails.no,
       });
-      await performValidation("mainHeader", tenancyLicenceDetails.mainHeader);
-      await performAction("selectTenancyOrLicenceDetails", {
+      await performValidation('mainHeader', tenancyLicenceDetails.mainHeader);
+      await performAction('selectTenancyOrLicenceDetails', {
         tenancyOrLicenceType: tenancyLicenceDetails.introductoryTenancy,
       });
       await performValidation('mainHeader', groundsForPossession.mainHeader);
@@ -93,15 +93,15 @@ export class MakeClaimAction implements IAction {
         question: wantToUploadDocuments.uploadAnyAdditionalDocumentsLabel,
         option: wantToUploadDocuments.no,
       });
-      await performAction("selectApplications", applications.no);
-      await performAction("selectLanguageUsed", {
+      await performAction('selectApplications', applications.no);
+      await performAction('selectLanguageUsed', {
         question: languageUsed.whichLanguageUsedQuestion,
         option: languageUsed.english,
       });
-      await performAction("completingYourClaim", completeYourClaim.submitAndClaimNow);
-      await performAction("clickButton", statementOfTruth.continue);
-      await performAction("clickButton", checkYourAnswers.saveAndContinue);
-      await performValidation("bannerAlert", "Case #.* has been updated with event: Make a claim");
+      await performAction('completingYourClaim', completeYourClaim.submitAndClaimNow);
+      await performAction('clickButton', statementOfTruth.continue);
+      await performAction('clickButton', checkYourAnswers.saveAndContinue);
+      await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
     }
   }
 }
