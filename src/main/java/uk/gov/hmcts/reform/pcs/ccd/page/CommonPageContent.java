@@ -19,7 +19,7 @@ public class CommonPageContent {
                     <li>Choose 'Continue'.</li>
                     <li>On the next page choose 'Cancel'.</li>
                 </ol>
-                This will save your progress and take you to your case list.
+                This will save your progress and take you to the case overview.
             </div>
         </details>
         """;
