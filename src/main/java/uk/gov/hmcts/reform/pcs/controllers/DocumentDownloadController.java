@@ -14,53 +14,34 @@ import org.springframework.web.bind.annotation.RestController;
 import uk.gov.hmcts.reform.pcs.document.model.DownloadedDocumentResponse;
 import uk.gov.hmcts.reform.pcs.document.service.DocumentDownloadService;
 
-import jakarta.annotation.PostConstruct;
+import jakarta.validation.constraints.NotNull;
 
 @Slf4j
 @RestController
-@RequestMapping("/cases/{caseId}/documents")
+@RequestMapping("/case/document")
 @RequiredArgsConstructor
 public class DocumentDownloadController {
 
     private final DocumentDownloadService documentDownloadService;
 
-    @PostConstruct
-    public void init() {
-        log.info("=== DocumentDownloadController initialized ===");
-        log.info("Endpoint: /cases/{caseId}/documents/{documentId}/download");
-    }
-
-    @GetMapping("/{documentId}/download")
+    @GetMapping(value = "/downloadDocument/{documentId}")
     public ResponseEntity<Resource> downloadDocumentById(
         @RequestHeader(HttpHeaders.AUTHORIZATION) String authorisation,
-        @PathVariable String caseId,
-        @PathVariable String documentId
+        @NotNull @PathVariable String documentId
     ) {
-        log.info("========================================");
-        log.info("DOWNLOAD REQUEST RECEIVED");
-        log.info("Case ID: {}", caseId);
-        log.info("Document ID: {}", documentId);
-        log.info("Auth header present: {}", authorisation != null && !authorisation.isEmpty());
-        log.info("========================================");
+        log.info("Download request received for document: {}", documentId);
 
-        try {
-            DownloadedDocumentResponse documentResponse = documentDownloadService.downloadDocument(
-                authorisation,
-                documentId
-            );
+        DownloadedDocumentResponse documentResponse = documentDownloadService.downloadDocument(
+            authorisation,
+            documentId
+        );
 
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.valueOf(documentResponse.mimeType()));
-            headers.set("original-file-name", documentResponse.fileName());
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.valueOf(documentResponse.mimeType()));
+        headers.set("original-file-name", documentResponse.fileName());
 
-            log.info("SUCCESS: Document downloaded - {}", documentResponse.fileName());
-            return ResponseEntity.ok()
-                .headers(headers)
-                .body(documentResponse.file());
-
-        } catch (Exception e) {
-            log.error("ERROR: Failed to download document {} from case {}", documentId, caseId, e);
-            throw e;
-        }
+        return ResponseEntity.ok()
+            .headers(headers)
+            .body(documentResponse.file());
     }
 }

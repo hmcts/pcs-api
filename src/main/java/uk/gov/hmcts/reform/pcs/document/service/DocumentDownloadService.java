@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.ccd.document.am.feign.CaseDocumentClientApi;
 import uk.gov.hmcts.reform.pcs.document.model.DownloadedDocumentResponse;
+import uk.gov.hmcts.reform.pcs.exception.DocumentDownloadException;
 
 import java.util.UUID;
 
@@ -20,17 +21,14 @@ public class DocumentDownloadService {
     private final AuthTokenGenerator authTokenGenerator;
 
     public DownloadedDocumentResponse downloadDocument(String authorisation, String documentId) {
-        log.info("--- Downloading Document ---");
-        log.info("Requested Document ID: {}", documentId);
+        log.info("Downloading document: {}", documentId);
 
         try {
             // Generate S2S token
             String serviceAuth = authTokenGenerator.generate();
-            log.info("Generated S2S token for downstream call");
 
             // Parse UUID
             UUID documentUuid = UUID.fromString(documentId);
-            log.info("Calling document management API...");
 
             // Call the document API
             ResponseEntity<Resource> response = caseDocumentClientApi.getDocumentBinary(
@@ -39,8 +37,7 @@ public class DocumentDownloadService {
                 documentUuid
             );
 
-            log.info("Response status: {}", response.getStatusCode());
-
+            // Extract metadata from response headers
             String mimeType = response.getHeaders().getContentType() != null
                 ? response.getHeaders().getContentType().toString()
                 : "application/octet-stream";
@@ -50,20 +47,20 @@ public class DocumentDownloadService {
                 fileName = documentId;
             }
 
-            log.info("Document found: {}, Type: {}", fileName, mimeType);
+            log.info("Document downloaded successfully: {}, Type: {}", fileName, mimeType);
 
             return new DownloadedDocumentResponse(
                 response.getBody(),
-                mimeType,
-                fileName
+                fileName,
+                mimeType
             );
 
         } catch (IllegalArgumentException e) {
             log.error("Invalid document ID format: {}", documentId, e);
-            throw e;
+            throw new DocumentDownloadException(documentId, e);
         } catch (Exception e) {
             log.error("Failed to download document: {}", documentId, e);
-            throw e;
+            throw new DocumentDownloadException(documentId, e);
         }
     }
 }
