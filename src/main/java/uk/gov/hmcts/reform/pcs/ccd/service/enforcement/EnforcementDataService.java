@@ -32,15 +32,15 @@ public class EnforcementDataService {
         this.objectMapper = objectMapper;
     }
 
-    public Optional<EnforcementOrder> retrieveSubmittedCaseData(UUID enforcementCaseId) {
-        Optional<EnforcementOrder> optionalCaseData = enforcementDataRepository.findById(enforcementCaseId)
+    public Optional<EnforcementOrder> retrieveSubmittedEnforcementData(UUID enforcementCaseId) {
+        Optional<EnforcementOrder> enforcementData = enforcementDataRepository.findById(enforcementCaseId)
             .map(EnforcementDataEntity::getEnforcementData)
             .map(this::parseEnforcementDataJson);
 
-        optionalCaseData.ifPresent(x ->
+        enforcementData.ifPresent(data ->
                 log.debug("Found submitted Enforcement data for enforcementCaseId {}", enforcementCaseId));
 
-        return optionalCaseData;
+        return enforcementData;
     }
 
     public EnforcementDataEntity createEnforcementData(long caseReference, PCSCase pcsCase) {

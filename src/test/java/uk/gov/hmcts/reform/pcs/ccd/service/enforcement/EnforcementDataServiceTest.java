@@ -62,7 +62,8 @@ class EnforcementDataServiceTest {
         when(enfDataRepository.findById(enforcementCaseId)).thenReturn(Optional.empty());
 
         // When
-        Optional<EnforcementOrder> savedSubmittedEnfData = enfDataService.retrieveSubmittedCaseData(enforcementCaseId);
+        Optional<EnforcementOrder> savedSubmittedEnfData =
+                enfDataService.retrieveSubmittedEnforcementData(enforcementCaseId);
 
         // Then
         assertThat(savedSubmittedEnfData).isEmpty();
@@ -77,7 +78,7 @@ class EnforcementDataServiceTest {
 
         // When
         EnforcementOrder submittedEnforcementOrder =
-                enfDataService.retrieveSubmittedCaseData(enforcementCaseId).orElse(null);
+                enfDataService.retrieveSubmittedEnforcementData(enforcementCaseId).orElse(null);
 
         // Then
         assertThat(submittedEnforcementOrder).isEqualTo(EnforcementDataUtil.buildSampleEnforcementData());
@@ -93,7 +94,7 @@ class EnforcementDataServiceTest {
 
         // When
         Throwable thrown = org.assertj.core.api.Assertions.catchThrowable(() ->
-                enfDataService.retrieveSubmittedCaseData(enforcementCaseId));
+                enfDataService.retrieveSubmittedEnforcementData(enforcementCaseId));
 
         // Then
         assertThat(thrown).isInstanceOf(JsonReaderException.class)
