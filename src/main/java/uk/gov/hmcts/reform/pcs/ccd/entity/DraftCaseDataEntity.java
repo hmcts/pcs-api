@@ -35,7 +35,6 @@ public class DraftCaseDataEntity {
     private String caseData;
 
     @Enumerated(EnumType.STRING)
-    // @Column(nullable = false) - add back
     private EventId eventId;
 
 }

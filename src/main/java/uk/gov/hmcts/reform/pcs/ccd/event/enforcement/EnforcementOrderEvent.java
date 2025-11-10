@@ -49,7 +49,6 @@ public class EnforcementOrderEvent implements CCDConfig<PCSCase, State, UserRole
             configBuilder
                 .decentralisedEvent(enforceTheOrder.name(), this::submit, this::start)
                 .forState(AWAITING_FURTHER_CLAIM_DETAILS)
-                //.forState(CASE_ISSUED)
                 .name("Enforce the order")
                 .grant(Permission.CRUD, UserRole.PCS_SOLICITOR);
         configurePages(eventBuilder);

@@ -31,7 +31,6 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.enforceTheOrder;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.resumePossessionClaim;
 
 /**
@@ -68,8 +67,6 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
     private boolean caseHasUnsubmittedData(long caseReference, State state) {
         if (State.AWAITING_FURTHER_CLAIM_DETAILS == state) {
             return draftCaseDataService.hasUnsubmittedCaseData(caseReference, resumePossessionClaim);
-        } else if (State.CASE_ISSUED == state) { // Applied but note that this is not implemented in ticket
-            return draftCaseDataService.hasUnsubmittedCaseData(caseReference, enforceTheOrder);
         } else {
             return false;
         }
