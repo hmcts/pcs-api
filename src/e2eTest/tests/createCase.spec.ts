@@ -985,7 +985,7 @@ test.describe('[Create Case - England] @Master @nightly', async () => {
       question: underlesseeOrMortgageeEntitledToClaim.entitledToClaimRelief,
       option:underlesseeOrMortgageeEntitledToClaim.yes});
     await performAction('selectUnderlesseeOrMortgageeDetails', {
-      nameOption: underlesseeOrMortgageeDetails.yesRadioOption,
+      nameOption: underlesseeOrMortgageeDetails.noRadioOption,
       addressOption: underlesseeOrMortgageeDetails.noRadioOption,
       anotherUnderlesseeOrMortgageeOption: underlesseeOrMortgageeDetails.noRadioOption
     });
