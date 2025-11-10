@@ -40,4 +40,7 @@ public class EnforcementOrder {
         label = "Risk details"
     )
     private EnforcementRiskDetails riskDetails;
+    @JsonUnwrapped
+    @CCD
+    private PropertyAccessDetails propertyAccessDetails;
 }
