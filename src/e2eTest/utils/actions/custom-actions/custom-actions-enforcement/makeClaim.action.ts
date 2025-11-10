@@ -5,8 +5,7 @@ import { actionData, actionRecord, IAction } from '@utils/interfaces/action.inte
 import {
   home, addressDetails, additionalReasonsForPossession, alternativesToPossession, applications, checkYourAnswers, claimantCircumstances, claimantName,
   claimantType, claimingCosts, claimType, completeYourClaim, contactPreferences, defendantCircumstances, defendantDetails,
-  groundsForPossession, languageUsed, mediationAndSettlement, noticeOfYourIntention, preActionProtocol,
-  provideMoreDetailsOfClaim, statementOfTruth, tenancyLicenceDetails, underlesseeOrMortgageeEntitledToClaim,
+  provideMoreDetailsOfClaim, groundsForPossession, languageUsed, mediationAndSettlement, noticeOfYourIntention, preActionProtocol, statementOfTruth, tenancyLicenceDetails, underlesseeOrMortgageeEntitledToClaim,
   wantToUploadDocuments
 } from '@data/page-data';
 

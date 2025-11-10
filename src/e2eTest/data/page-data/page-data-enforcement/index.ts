@@ -11,4 +11,5 @@ export * from '@data/page-data/page-data-enforcement/verbalOrWrittenThreats.page
 export * from '@data/page-data/page-data-enforcement/violentOrAggressiveBehaviour.page.data';
 export * from '@data/page-data/page-data-enforcement/vulnerableAdultsAndChildren.page.data';
 export * from '@data/page-data/page-data-enforcement/yourApplication.page.data';
-export * from "@data/page-data/page-data-enforcement/accessToTheProperty";
+export * from '@data/page-data/page-data-enforcement/anythingElseThatCouldHelpWithEviction.page.data'
+export * from '@data/page-data/page-data-enforcement/accessToTheProperty';

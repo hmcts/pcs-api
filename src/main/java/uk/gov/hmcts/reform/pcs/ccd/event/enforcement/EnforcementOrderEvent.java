@@ -15,6 +15,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.AggressiveAnimalsRiskPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.AdditionalInformationPage;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.MoneyOwedPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.PropertyAccessDetailsPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.CheckYourAnswersPlaceHolder;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.EnforcementApplicationPage;
@@ -22,6 +23,7 @@ import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.NameAndAddressForEvictionPag
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.EvictionDelayWarningPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.EvictionRisksPosedPage;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.EvictionVulnerableAdultsChildrenPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.PoliceOrSocialServicesRiskPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.ProtestorGroupRiskPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.VerbalOrWrittenThreatsRiskPage;
@@ -38,7 +40,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.enforceTheOrder;
 @Component
 @AllArgsConstructor
 public class EnforcementOrderEvent implements CCDConfig<PCSCase, State, UserRole> {
-    // Business requirements to be agreed on for the conditions when this event can be triggereed
+    // Business requirements to be agreed on for the conditions when this event can be triggered
 
     private final AddressFormatter addressFormatter;
 
@@ -70,7 +72,9 @@ public class EnforcementOrderEvent implements CCDConfig<PCSCase, State, UserRole
                 .add(new AggressiveAnimalsRiskPage())
                 .add(new VulnerableAdultsChildrenPage())
                 .add(new PropertyAccessDetailsPage())
+                .add(new EvictionVulnerableAdultsChildrenPage())
                 .add(new AdditionalInformationPage())
+                .add(new MoneyOwedPage())
                 .add(new CheckYourAnswersPlaceHolder());
     }
 
