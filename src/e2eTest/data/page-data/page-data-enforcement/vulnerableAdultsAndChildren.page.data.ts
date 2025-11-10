@@ -1,5 +1,15 @@
 export const vulnerableAdultsAndChildren = {
   title: 'Create a case - HM Courts & Tribunals Service - GOV.UK',
   mainHeader: 'Vulnerable adults and children at the property (placeholder)',
+  IsAnyOneLivingAtThePropertyQuestion: 'Is anyone living at the property vulnerable?',
+  yes: 'Yes',
+  no: 'No',
+  notSure:'I\'m not sure',
+  confirmVulnerablePeople: 'Confirm if the vulnerable people in the property are adults, children, or both adults and children',
+  vulnerableAdults: 'Vulnerable adults',
+  vulnerableChildren: 'Vulnerable children',
+  vulnerableAdultsAndChildren: 'Vulnerable adults and children',
+  howAreTheyVulnerable: 'How are they vulnerable?',
+  howAreTheyVulnerableInput: 'Test Input How are they vulnerable',
   continue: 'Continue',
 }
