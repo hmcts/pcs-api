@@ -33,6 +33,11 @@ public class RentArrearsOrBreachOfTenancyGround implements CcdPageConfiguration 
             caseData.setShowBreachOfTenancyTextarea(YesOrNo.NO);
         }
 
+        // Show Rent Details page only when user has selected "Rent arrears" option
+        boolean hasRentArrears = caseData.getRentArrearsOrBreachOfTenancy()
+            .contains(RentArrearsOrBreachOfTenancy.RENT_ARREARS);
+        caseData.setShowRentDetailsPage(YesOrNo.from(hasRentArrears));
+
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
                 .data(caseData)
                 .build();

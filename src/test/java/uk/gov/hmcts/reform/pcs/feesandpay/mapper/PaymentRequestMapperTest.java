@@ -24,7 +24,6 @@ class PaymentRequestMapperTest {
     private static final Integer FEE_VERSION = 4;
     private static final BigDecimal FEE_AMOUNT = new BigDecimal("404.00");
     private static final int VOLUME = 1;
-    private static final String ACTION = "case-issue";
     private static final String RESPONSIBLE_PARTY = "Test Claimant";
 
     @Test
@@ -100,31 +99,22 @@ class PaymentRequestMapperTest {
 
     @Test
     void shouldMapToCasePaymentRequest() {
-        CasePaymentRequestDto result = paymentRequestMapper.toCasePaymentRequest(ACTION, RESPONSIBLE_PARTY);
+        CasePaymentRequestDto result = paymentRequestMapper.toCasePaymentRequest(RESPONSIBLE_PARTY);
 
         assertThat(result).isNotNull();
-        assertThat(result.getAction()).isEqualTo(ACTION);
+        assertThat(result.getAction()).isEqualTo("payment");
         assertThat(result.getResponsibleParty()).isEqualTo(RESPONSIBLE_PARTY);
-    }
-
-    @Test
-    void shouldMapToCasePaymentRequestWithDifferentAction() {
-        String customAction = "hearing-fee";
-
-        CasePaymentRequestDto result = paymentRequestMapper.toCasePaymentRequest(customAction, RESPONSIBLE_PARTY);
-
-        assertThat(result).isNotNull();
-        assertThat(result.getAction()).isEqualTo(customAction);
     }
 
     @Test
     void shouldMapToCasePaymentRequestWithDifferentResponsibleParty() {
         String customParty = "Another Claimant";
 
-        CasePaymentRequestDto result = paymentRequestMapper.toCasePaymentRequest(ACTION, customParty);
+        CasePaymentRequestDto result = paymentRequestMapper.toCasePaymentRequest(customParty);
 
         assertThat(result).isNotNull();
         assertThat(result.getResponsibleParty()).isEqualTo(customParty);
+        assertThat(result.getAction()).isEqualTo("payment");
     }
 
     @Test

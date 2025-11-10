@@ -18,7 +18,7 @@ public final class EnforcementRiskValidationUtils {
 
     /**
      * Generates a character limit error message for the specified risk category.
-     * 
+     *
      * @param riskCategory the risk category for which to generate the error message
      * @return formatted error message
      */
