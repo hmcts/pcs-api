@@ -1,9 +1,9 @@
 import { Page } from "@playwright/test";
 import { performAction, performValidation } from "@utils/controller-enforcement";
 import { IAction, actionData, actionRecord } from "@utils/interfaces/action.interface";
-import { yourApplication, nameAndAddressForEviction, everyoneLivingAtTheProperty, evictionCouldBeDelayed, vulnerableAdultsAndChildren,
+import { yourApplication, nameAndAddressForEviction, everyoneLivingAtTheProperty,
          violentOrAggressiveBehaviour, firearmPossession, criminalOrAntisocialBehaviour, riskPosedByEveryoneAtProperty,
-         verbalOrWrittenThreats, groupProtestsEviction, policeOrSocialServiceVisit, animalsAtTheProperty } from "@data/page-data/page-data-enforcement";
+         verbalOrWrittenThreats, groupProtestsEviction, policeOrSocialServiceVisit, animalsAtTheProperty, accessToTheProperty } from "@data/page-data/page-data-enforcement";
 import { enforcementTestCaseNumber } from "../searchCase.action";
 
 export class EnforcementAction implements IAction {
@@ -20,6 +20,7 @@ export class EnforcementAction implements IAction {
       ['provideDetailsGroupProtestsEviction', () => this.provideDetailsGroupProtestsEviction(fieldName as actionRecord)],
       ['provideDetailsPoliceOrSocialServiceVisits', () => this.provideDetailsPoliceOrSocialServiceVisits(fieldName as actionRecord)],
       ['provideDetailsAnimalsAtTheProperty', () => this.provideDetailsAnimalsAtTheProperty(fieldName as actionRecord)],
+      ['accessToProperty', () => this.accessToProperty(fieldName as actionRecord)],
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) throw new Error(`No action found for '${action}'`);
@@ -100,4 +101,13 @@ export class EnforcementAction implements IAction {
     await performAction('inputText', theAnimalsAtTheProperty.label, theAnimalsAtTheProperty.input);
     await performAction('clickButton', animalsAtTheProperty.continue);
   }
+  private async accessToProperty(accessToProperty: actionRecord) {
+    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + enforcementTestCaseNumber });
+    await performAction('clickRadioButton', { question: accessToProperty.question, option: accessToProperty.option });
+    if (accessToProperty.option === accessToTheProperty.yesRadioOption) {
+      await performAction('inputText', accessToProperty.label, accessToProperty.input);
+    }
+    await performAction('clickButton', accessToTheProperty.continueButton);
+  }
+
 }
