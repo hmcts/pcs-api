@@ -273,6 +273,7 @@ sonarqube {
       "**/uk/gov/hmcts/reform/pcs/document/model/DownloadedDocumentResponse.java," +
       "**/uk/gov/hmcts/reform/pcs/controllers/DocumentDownloadController.java," +
       "**/uk/gov/hmcts/reform/pcs/document/service/DocumentDownloadService.java," +
+      "**/uk/gov/hmcts/reform/pcs/exception/DocumentDownloadException.java" +
       "**/entities/**," + "**/model/**"
   }
 }
