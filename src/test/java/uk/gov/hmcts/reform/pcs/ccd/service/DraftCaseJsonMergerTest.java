@@ -45,8 +45,8 @@ class DraftCaseJsonMergerTest {
             .applicationWithClaim(VerticalYesNo.YES)
             .claimantType(claimantTypeList)
             .noRentArrearsReasonForGrounds(NoRentArrearsReasonForGrounds.builder()
-                                               .holidayLetTextArea("some holiday let details")
-                                               .build())
+                                                .holidayLetTextArea("some holiday let details")
+                                                .build())
             .build();
 
         String patchJson = objectMapper.writeValueAsString(patchCaseData);
@@ -62,7 +62,8 @@ class DraftCaseJsonMergerTest {
             .ignoringFields("otherGroundDescription",
                             "applicationWithClaim",
                             "claimantType",
-                            "noRentArrearsReasonForGrounds.holidayLetTextArea")
+                            "noRentArrearsReasonForGrounds.holidayLetTextArea",
+                            "waysToPay")
             .isEqualTo(existingCaseData);
 
         assertThat(mergedCaseData.getOtherGroundDescription()).isEqualTo("some other ground description");
