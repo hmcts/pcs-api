@@ -1,6 +1,6 @@
 import { Page } from '@playwright/test';
 import { performAction, performValidation } from '../../controller';
-import { actionData, actionRecord, IAction } from '../../interfaces/action.interface';
+import { actionData, actionRecord, IAction } from '@utils/interfaces';
 import { caseList, home, createCase, addressDetails } from '@data/page-data';
 import { addressInfo }  from '@utils/actions/custom-actions/createCase.action';
 import { waitForPageRedirectionTimeout } from 'playwright.config';
