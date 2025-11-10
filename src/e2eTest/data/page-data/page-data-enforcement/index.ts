@@ -12,9 +12,3 @@ export * from '@data/page-data/page-data-enforcement/violentOrAggressiveBehaviou
 export * from '@data/page-data/page-data-enforcement/vulnerableAdultsAndChildren.page.data';
 export * from '@data/page-data/page-data-enforcement/yourApplication.page.data';
 export * from '@data/page-data/page-data-enforcement/anythingElseThatCouldHelpWithEviction.page.data'
-
-
-
-
-
-
