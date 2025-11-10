@@ -41,14 +41,14 @@ public class VerbalOrWrittenThreatsRiskPage implements CcdPageConfiguration {
                                                                   CaseDetails<PCSCase, State> before) {
         PCSCase caseData = details.getData();
 
-        String txt = caseData.getEnforcementOrder().getRiskDetails().getEnforcementVerbalOrWrittenThreatsDetails();
-
-        List<String> validationErrors = getValidationErrors(txt);
+        List<String> validationErrors = getValidationErrors(caseData);
 
         return textAreaValidationService.createValidationResponse(caseData, validationErrors);
     }
 
-    private List<String> getValidationErrors(String txt) {
+    private List<String> getValidationErrors(PCSCase caseData) {
+        String txt = caseData.getEnforcementOrder().getRiskDetails().getEnforcementVerbalOrWrittenThreatsDetails();
+
         return textAreaValidationService.validateSingleTextArea(
             txt,
             RiskCategory.VERBAL_OR_WRITTEN_THREATS.getText(),

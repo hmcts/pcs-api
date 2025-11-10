@@ -67,7 +67,6 @@ class FirearmsPossessionRiskPageTest extends BasePageTest {
         AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
 
         // Then
-        // Then
         String expectedError = String.format(CHARACTER_LIMIT_ERROR_TEMPLATE,
                                              RiskCategory.FIREARMS_POSSESSION.getText(),
                                              RISK_CATEGORY_EXTRA_LONG_TEXT_LIMIT);

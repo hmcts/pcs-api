@@ -14,6 +14,7 @@ import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.AggressiveAnimalsRiskPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.CriminalAntisocialRiskPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.FirearmsPossessionRiskPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.PoliceOrSocialServicesRiskPage;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.PropertyAccessDetailsPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.ProtestorGroupRiskPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.VerbalOrWrittenThreatsRiskPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.ViolentAggressiveRiskPage;
@@ -41,13 +42,16 @@ class EnforcementOrderEventTest extends BaseEventTest {
     private CriminalAntisocialRiskPage criminalAntisocialRiskPage;
     @Mock
     private AggressiveAnimalsRiskPage aggressiveAnimalsRiskPage;
+    @Mock
+    private PropertyAccessDetailsPage propertyAccessDetailsPage;
 
     @BeforeEach
     void setUp() {
         setEventUnderTest(new EnforcementOrderEvent(addressFormatter, violentAggressiveRiskPage,
                                                     verbalOrWrittenThreatsRiskPage, protestorGroupRiskPage,
                                                     policeOrSocialServicesRiskPage, firearmsPossessionRiskPage,
-                                                    criminalAntisocialRiskPage, aggressiveAnimalsRiskPage));
+                                                    criminalAntisocialRiskPage, aggressiveAnimalsRiskPage,
+                                                    propertyAccessDetailsPage));
     }
 
     @Test

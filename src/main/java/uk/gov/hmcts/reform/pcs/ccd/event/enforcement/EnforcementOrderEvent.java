@@ -48,6 +48,7 @@ public class EnforcementOrderEvent implements CCDConfig<PCSCase, State, UserRole
     private final FirearmsPossessionRiskPage firearmsPossessionRiskPage;
     private final CriminalAntisocialRiskPage criminalAntisocialRiskPage;
     private final AggressiveAnimalsRiskPage aggressiveAnimalsRiskPage;
+    private final PropertyAccessDetailsPage propertyAccessDetailsPage;
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -76,7 +77,7 @@ public class EnforcementOrderEvent implements CCDConfig<PCSCase, State, UserRole
                 .add(policeOrSocialServicesRiskPage)
                 .add(aggressiveAnimalsRiskPage)
                 .add(new EvictionVulnerableAdultsChildrenPage())
-                .add(new PropertyAccessDetailsPage())
+                .add(propertyAccessDetailsPage)
                 .add(new AdditionalInformationPage())
                 .add(new CheckYourAnswersPlaceHolder());
     }
