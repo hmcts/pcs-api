@@ -3,7 +3,6 @@ package uk.gov.hmcts.reform.pcs.ccd.page.enforcement;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
@@ -23,11 +22,9 @@ import static uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService.RISK
 @ExtendWith(MockitoExtension.class)
 class PoliceOrSocialServicesRiskPageTest extends BasePageTest {
 
-    @InjectMocks
-    private TextAreaValidationService textAreaValidationService;
-
     @BeforeEach
     void setUp() {
+        TextAreaValidationService textAreaValidationService = new TextAreaValidationService();
         setPageUnderTest(new PoliceOrSocialServicesRiskPage(textAreaValidationService));
     }
 
