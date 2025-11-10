@@ -17,7 +17,8 @@ import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static uk.gov.hmcts.reform.pcs.ccd.page.enforcement.RiskCategoryTestUtil.expectedCharacterLimitErrorMessage;
+import static uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService.CHARACTER_LIMIT_ERROR_TEMPLATE;
+import static uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService.RISK_CATEGORY_EXTRA_LONG_TEXT_LIMIT;
 
 @ExtendWith(MockitoExtension.class)
 class PoliceOrSocialServicesRiskPageTest extends BasePageTest {
@@ -57,7 +58,7 @@ class PoliceOrSocialServicesRiskPageTest extends BasePageTest {
     @Test
     void shouldRejectTextOver6800Characters() {
         // Given
-        String longText = "a".repeat(6801);
+        String longText = "a".repeat(RISK_CATEGORY_EXTRA_LONG_TEXT_LIMIT + 1);
         PCSCase caseData = PCSCase.builder()
                 .enforcementOrder(EnforcementOrder.builder()
                         .enforcementRiskCategories(Set.of(RiskCategory.AGENCY_VISITS))
@@ -71,8 +72,11 @@ class PoliceOrSocialServicesRiskPageTest extends BasePageTest {
         AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
 
         // Then
-        assertThat(response.getErrors()).containsExactly(
-            expectedCharacterLimitErrorMessage(RiskCategory.AGENCY_VISITS));
+        String expectedError = String.format(CHARACTER_LIMIT_ERROR_TEMPLATE,
+                                             RiskCategory.AGENCY_VISITS.getText(),
+                                             RISK_CATEGORY_EXTRA_LONG_TEXT_LIMIT);
+
+        assertThat(response.getErrors()).containsExactly(expectedError);
 
     }
 }

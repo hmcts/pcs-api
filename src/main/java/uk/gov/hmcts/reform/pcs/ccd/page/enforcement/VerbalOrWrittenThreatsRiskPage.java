@@ -14,7 +14,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.RiskCategory;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @AllArgsConstructor
@@ -44,12 +43,16 @@ public class VerbalOrWrittenThreatsRiskPage implements CcdPageConfiguration {
 
         String txt = caseData.getEnforcementOrder().getRiskDetails().getEnforcementVerbalOrWrittenThreatsDetails();
 
-        List<String> validationErrors = new ArrayList<>(textAreaValidationService.validateSingleTextArea(
+        List<String> validationErrors = getValidationErrors(txt);
+
+        return textAreaValidationService.createValidationResponse(caseData, validationErrors);
+    }
+
+    private List<String> getValidationErrors(String txt) {
+        return textAreaValidationService.validateSingleTextArea(
             txt,
             RiskCategory.VERBAL_OR_WRITTEN_THREATS.getText(),
             TextAreaValidationService.RISK_CATEGORY_EXTRA_LONG_TEXT_LIMIT
-        ));
-
-        return textAreaValidationService.createValidationResponse(caseData, validationErrors);
+        );
     }
 }

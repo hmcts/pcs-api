@@ -14,7 +14,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.RiskCategory;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @AllArgsConstructor
@@ -40,14 +39,18 @@ public class PoliceOrSocialServicesRiskPage implements CcdPageConfiguration {
                                                                   CaseDetails<PCSCase, State> before) {
         PCSCase caseData = details.getData();
 
+        List<String> validationErrors = getValidationErrors(caseData);
+
+        return textAreaValidationService.createValidationResponse(caseData, validationErrors);
+    }
+
+    private List<String> getValidationErrors(PCSCase caseData) {
         String txt = caseData.getEnforcementOrder().getRiskDetails().getEnforcementPoliceOrSocialServicesDetails();
 
-        List<String> validationErrors = new ArrayList<>(textAreaValidationService.validateSingleTextArea(
+        return textAreaValidationService.validateSingleTextArea(
             txt,
             RiskCategory.AGENCY_VISITS.getText(),
             TextAreaValidationService.RISK_CATEGORY_EXTRA_LONG_TEXT_LIMIT
-        ));
-
-        return textAreaValidationService.createValidationResponse(caseData, validationErrors);
+        );
     }
 }

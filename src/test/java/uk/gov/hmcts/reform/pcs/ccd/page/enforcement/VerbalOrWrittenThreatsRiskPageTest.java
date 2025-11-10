@@ -17,7 +17,8 @@ import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static uk.gov.hmcts.reform.pcs.ccd.page.enforcement.RiskCategoryTestUtil.expectedCharacterLimitErrorMessage;
+import static uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService.CHARACTER_LIMIT_ERROR_TEMPLATE;
+import static uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService.RISK_CATEGORY_EXTRA_LONG_TEXT_LIMIT;
 
 @ExtendWith(MockitoExtension.class)
 class VerbalOrWrittenThreatsRiskPageTest extends BasePageTest {
@@ -36,7 +37,7 @@ class VerbalOrWrittenThreatsRiskPageTest extends BasePageTest {
         String riskDetails = "Some verbal details";
         PCSCase caseData = PCSCase.builder()
             .enforcementOrder(EnforcementOrder.builder()
-                                  .enforcementRiskCategories(Set.of(RiskCategory.VIOLENT_OR_AGGRESSIVE))
+                                  .enforcementRiskCategories(Set.of(RiskCategory.VERBAL_OR_WRITTEN_THREATS))
                                   .riskDetails(EnforcementRiskDetails
                                                    .builder()
                                                    .enforcementVerbalOrWrittenThreatsDetails(riskDetails)
@@ -56,7 +57,7 @@ class VerbalOrWrittenThreatsRiskPageTest extends BasePageTest {
     @Test
     void shouldRejectTextOver6800Characters() {
         // Given
-        String longText = "a".repeat(6801);
+        String longText = "a".repeat(RISK_CATEGORY_EXTRA_LONG_TEXT_LIMIT + 1);
         PCSCase caseData = PCSCase.builder()
             .enforcementOrder(EnforcementOrder.builder()
                                   .enforcementRiskCategories(Set.of(RiskCategory.VERBAL_OR_WRITTEN_THREATS))
@@ -71,7 +72,10 @@ class VerbalOrWrittenThreatsRiskPageTest extends BasePageTest {
         AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
 
         // Then
-        assertThat(response.getErrors()).containsExactly(
-            expectedCharacterLimitErrorMessage(RiskCategory.VERBAL_OR_WRITTEN_THREATS));
+        String expectedError = String.format(CHARACTER_LIMIT_ERROR_TEMPLATE,
+                                             RiskCategory.VERBAL_OR_WRITTEN_THREATS.getText(),
+                                             RISK_CATEGORY_EXTRA_LONG_TEXT_LIMIT);
+
+        assertThat(response.getErrors()).containsExactly(expectedError);
     }
 }
