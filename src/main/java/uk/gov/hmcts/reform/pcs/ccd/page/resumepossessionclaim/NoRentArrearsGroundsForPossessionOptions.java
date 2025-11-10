@@ -12,6 +12,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.NoRentArrearsDiscretionaryGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.NoRentArrearsMandatoryGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 
 import java.util.List;
 import java.util.Set;
@@ -41,7 +42,8 @@ public class NoRentArrearsGroundsForPossessionOptions implements CcdPageConfigur
                     if you need to.</p>"""
             )
             .optional(PCSCase::getNoRentArrearsMandatoryGroundsOptions)
-            .optional(PCSCase::getNoRentArrearsDiscretionaryGroundsOptions);
+            .optional(PCSCase::getNoRentArrearsDiscretionaryGroundsOptions)
+            .label("noRentArrearsGroundsForPossessionOptions-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
 
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,

@@ -3,6 +3,7 @@ package uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 
 public class RentArrears implements CcdPageConfiguration {
 
@@ -64,6 +65,7 @@ public class RentArrears implements CcdPageConfiguration {
 
                 // "Other" free text is mandatory when OTHER is selected
                 .mandatory(PCSCase::getThirdPartyPaymentSourceOther,
-                        "thirdPartyPayments=\"YES\" AND thirdPartyPaymentSources CONTAINS \"OTHER\"");
+                        "thirdPartyPayments=\"YES\" AND thirdPartyPaymentSources CONTAINS \"OTHER\"")
+                .label("rentArrears-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
 }

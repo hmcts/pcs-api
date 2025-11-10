@@ -9,6 +9,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsDiscretionaryGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsMandatoryGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 
 import java.util.List;
 import java.util.Set;
@@ -38,7 +39,7 @@ public class RentArrearsGroundForPossessionAdditionalGrounds implements CcdPageC
             """)
             .optional(PCSCase::getRentArrearsMandatoryGrounds)
             .optional(PCSCase::getRentArrearsDiscretionaryGrounds)
-            .done();
+            .label("groundForPossessionAdditionalGrounds-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
 
     public AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,

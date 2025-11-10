@@ -3,6 +3,7 @@ package uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 
@@ -16,6 +17,7 @@ public class ReasonsForPosessionWales implements CcdPageConfiguration {
                 .page("reasonsForPosessionWales")
                 .pageLabel("Reasons for possession (Wales - placeholder)")
                 .showCondition("showReasonsForGroundsPageWales=\"Yes\"")
-                .readonly(PCSCase::getShowReasonsForGroundsPageWales, NEVER_SHOW);
+                .readonly(PCSCase::getShowReasonsForGroundsPageWales, NEVER_SHOW)
+                .label("reasonsForPosessionWales-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
 }

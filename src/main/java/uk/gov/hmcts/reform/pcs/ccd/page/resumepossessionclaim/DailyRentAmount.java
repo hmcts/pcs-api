@@ -4,6 +4,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 
 public class DailyRentAmount implements CcdPageConfiguration {
 
@@ -29,6 +30,7 @@ public class DailyRentAmount implements CcdPageConfiguration {
                                 </section>
                                 """)
                 .mandatory(PCSCase::getRentPerDayCorrect)
-                .mandatory(PCSCase::getAmendedDailyRentChargeAmount, "rentPerDayCorrect=\"NO\"");
+                .mandatory(PCSCase::getAmendedDailyRentChargeAmount, "rentPerDayCorrect=\"NO\"")
+                .label("dailyRentAmount-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
 }

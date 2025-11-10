@@ -3,6 +3,7 @@ package uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 
 public class PreActionProtocol implements CcdPageConfiguration {
 
@@ -41,6 +42,7 @@ public class PreActionProtocol implements CcdPageConfiguration {
 
                   """)
                 .mandatoryWithLabel(PCSCase::getPreActionProtocolCompleted,
-                        "Have you followed the pre-action protocol?");
+                        "Have you followed the pre-action protocol?")
+                .label("preActionProtocol-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
 }
