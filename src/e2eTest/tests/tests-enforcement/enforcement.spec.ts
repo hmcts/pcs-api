@@ -3,9 +3,22 @@ import { initializeEnforcementExecutor, performAction, performValidation } from 
 import { caseNumber, caseNotFoundAfterFilter } from "@utils/actions/custom-actions";
 import { initializeExecutor } from "@utils/controller";
 import { caseList, user, caseSummary, signInOrCreateAnAccount } from "@data/page-data";
-import { nameAndAddressForEviction, violentOrAggressiveBehaviour, firearmPossession, yourApplication, animalsAtTheProperty,
-         criminalOrAntisocialBehaviour, evictionCouldBeDelayed, vulnerableAdultsAndChildren, policeOrSocialServiceVisit,
-         riskPosedByEveryoneAtProperty, everyoneLivingAtTheProperty, verbalOrWrittenThreats, groupProtestsEviction } from "@data/page-data/page-data-enforcement";
+import {
+  nameAndAddressForEviction,
+  violentOrAggressiveBehaviour,
+  firearmPossession,
+  yourApplication,
+  animalsAtTheProperty,
+  criminalOrAntisocialBehaviour,
+  evictionCouldBeDelayed,
+  vulnerableAdultsAndChildren,
+  policeOrSocialServiceVisit,
+  riskPosedByEveryoneAtProperty,
+  everyoneLivingAtTheProperty,
+  verbalOrWrittenThreats,
+  groupProtestsEviction,
+  accessToTheProperty,
+} from "@data/page-data/page-data-enforcement";
 
 test.beforeEach(async ({ page }) => {
   initializeExecutor(page);
@@ -87,6 +100,13 @@ test.describe("[Enforcement - Warrant of Possession] @Master @nightly", async ()
     });
     await performValidation("mainHeader", vulnerableAdultsAndChildren.mainHeader);
     await performAction("clickButton", vulnerableAdultsAndChildren.continue);
+    await performValidation("mainHeader", accessToTheProperty.mainHeader);
+    await performAction("accessToProperty", {
+      question: accessToTheProperty.accessToThePropertyQuestion,
+      option: accessToTheProperty.yesRadioOption,
+      label: accessToTheProperty.whyItsDifficultToAccessToThePropertyTextLabel,
+      input: accessToTheProperty.whyItsDifficultToAccessToThePropertyTextInput,
+    });
   });
 
   test("Apply for a Warrant of Possession - risk to Bailiff [No]", async () => {
@@ -108,6 +128,11 @@ test.describe("[Enforcement - Warrant of Possession] @Master @nightly", async ()
     });
     await performValidation("mainHeader", vulnerableAdultsAndChildren.mainHeader);
     await performAction("clickButton", vulnerableAdultsAndChildren.continue);
+    await performValidation("mainHeader", accessToTheProperty.mainHeader);
+    await performAction("accessToProperty", {
+      question: accessToTheProperty.accessToThePropertyQuestion,
+      option: accessToTheProperty.noRadioOption,
+    });
   });
 
   test("Apply for a Warrant of Possession - risk to Bailiff [Not sure]", async () => {
@@ -131,5 +156,12 @@ test.describe("[Enforcement - Warrant of Possession] @Master @nightly", async ()
     await performAction("clickButton", evictionCouldBeDelayed.continue);
     await performValidation("mainHeader", vulnerableAdultsAndChildren.mainHeader);
     await performAction("clickButton", vulnerableAdultsAndChildren.continue);
+    await performValidation("mainHeader", accessToTheProperty.mainHeader);
+    await performAction("accessToProperty", {
+      question: accessToTheProperty.accessToThePropertyQuestion,
+      option: accessToTheProperty.yesRadioOption,
+      label: accessToTheProperty.whyItsDifficultToAccessToThePropertyTextLabel,
+      input: accessToTheProperty.whyItsDifficultToAccessToThePropertyTextInput,
+    });
   });
 });

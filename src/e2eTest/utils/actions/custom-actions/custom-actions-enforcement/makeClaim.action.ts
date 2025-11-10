@@ -16,24 +16,17 @@ import {
   claimType,
   completeYourClaim,
   contactPreferences,
-  dailyRentAmount,
   defendantCircumstances,
   defendantDetails,
   groundsForPossession,
   languageUsed,
   mediationAndSettlement,
-  moneyJudgment,
-  noticeDetails,
   noticeOfYourIntention,
   preActionProtocol,
-  provideMoreDetailsOfClaim,
-  rentArrearsPossessionGrounds,
-  rentDetails,
   statementOfTruth,
   tenancyLicenceDetails,
   underlesseeOrMortgageeEntitledToClaim,
   wantToUploadDocuments,
-  whatAreYourGroundsForPossession,
 } from "@data/page-data";
 
 export class MakeClaimAction implements IAction {
@@ -137,7 +130,10 @@ export class MakeClaimAction implements IAction {
       await performValidation("mainHeader", additionalReasonsForPossession.mainHeader);
       await performAction("selectAdditionalReasonsForPossession", additionalReasonsForPossession.no);
       await performValidation("mainHeader", underlesseeOrMortgageeEntitledToClaim.mainHeader);
-      await performAction("clickButton", underlesseeOrMortgageeEntitledToClaim.continue);
+      await performAction("selectUnderlesseeOrMortgageeEntitledToClaim", {
+        question: underlesseeOrMortgageeEntitledToClaim.entitledToClaimRelief,
+        option: underlesseeOrMortgageeEntitledToClaim.no,
+      });
       await performAction("wantToUploadDocuments", {
         question: wantToUploadDocuments.uploadAnyAdditionalDocumentsLabel,
         option: wantToUploadDocuments.no,
