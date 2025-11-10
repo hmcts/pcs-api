@@ -2,11 +2,10 @@ import { Page } from "@playwright/test";
 import { initializeExecutor } from "@utils/controller";
 import { performAction, performValidation } from "@utils/controller";
 import { actionData, actionRecord, IAction } from "@utils/interfaces/action.interface";
-import { home, addressDetails, additionalReasonsForPossession, alternativesToPossession, applications, checkYourAnswers, claimantCircumstances, claimantName,
-         claimantType, claimingCosts, claimType, completeYourClaim, contactPreferences, defendantCircumstances, defendantDetails,
-         groundsForPossession, languageUsed, mediationAndSettlement, noticeOfYourIntention, preActionProtocol,
-         provideMoreDetailsOfClaim, statementOfTruth, tenancyLicenceDetails, underlesseeOrMortgageeEntitledToClaim,
-         wantToUploadDocuments} from "@data/page-data";
+import { home, addressDetails, additionalReasonsForPossession, alternativesToPossession, applications, checkYourAnswers, claimantCircumstances,
+         claimantName, claimantType, claimingCosts, claimType, completeYourClaim, contactPreferences, defendantCircumstances, defendantDetails,
+         groundsForPossession, languageUsed, mediationAndSettlement, noticeOfYourIntention, preActionProtocol, provideMoreDetailsOfClaim,
+         statementOfTruth, tenancyLicenceDetails, underlesseeOrMortgageeEntitledToClaim, wantToUploadDocuments } from "@data/page-data";
 
 export class MakeClaimAction implements IAction {
   async execute(page: Page, action: string, fieldName?: actionData | actionRecord, value?: actionData | actionRecord): Promise<void> {
