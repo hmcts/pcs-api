@@ -138,6 +138,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
     private final DraftCaseDataService draftCaseDataService;
     private final OccupationLicenceDetailsWalesPage occupationLicenceDetailsWalesPage;
     private final AddressFormatter addressFormatter;
+    private final ASBQuestionsWales asbQuestionsWales;
 
     private static final String CASE_ISSUED_FEE_TYPE = "caseIssueFee";
 
@@ -169,7 +170,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             .add(new GroundsForPossessionWales())
             .add(new SecureContractGroundsForPossessionWales())
             .add(new ReasonsForPosessionWales())
-            .add(new ASBQuestionsWales())
+            .add(asbQuestionsWales)
             .add(new SecureOrFlexibleGroundsForPossession())
             .add(new RentArrearsOrBreachOfTenancyGround())
             .add(secureOrFlexibleGroundsForPossessionReasons)

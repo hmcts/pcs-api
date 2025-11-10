@@ -717,4 +717,42 @@ public class PCSCase {
     @CCD(searchable = false)
     private YesOrNo showASBQuestionsPageWales;
 
+    @CCD(
+        searchable = false,
+        label = "Is there actual or threatened antisocial behaviour?"
+    )
+    private VerticalYesNo antisocialBehaviourWales;
+
+    @CCD(
+        label = "Give details of the actual or threatened antisocial behaviour",
+        hint = "You can enter up to 500 characters",
+        typeOverride = TextArea
+    )
+    private String antisocialBehaviourDetailsWales;
+
+    @CCD(
+        searchable = false,
+        label = "Is there actual or threatened use of the premises for illegal purposes?"
+    )
+    private VerticalYesNo illegalPurposesUseWales;
+
+    @CCD(
+        label = "Give details of the actual or threatened use of the premises for illegal purposes",
+        hint = "You can enter up to 500 characters",
+        typeOverride = TextArea
+    )
+    private String illegalPurposesUseDetailsWales;
+
+    @CCD(
+        searchable = false,
+        label = "Has there been other prohibited conduct?"
+    )
+    private VerticalYesNo otherProhibitedConductWales;
+
+    @CCD(
+        label = "Give details of other prohibited conduct",
+        hint = "You can enter up to 500 characters",
+        typeOverride = TextArea
+    )
+    private String otherProhibitedConductDetailsWales;
 }
