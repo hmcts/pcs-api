@@ -655,15 +655,19 @@ test.describe('[Create Case - England] @Master @nightly', async () => {
     await performAction('selectUnderlesseeOrMortgageeEntitledToClaim', {
       question: underlesseeOrMortgageeEntitledToClaim.entitledToClaimRelief,
       option: underlesseeOrMortgageeEntitledToClaim.yes});
+    // await performAction('selectUnderlesseeOrMortgageeDetails', {
+    //   nameOption: underlesseeOrMortgageeDetails.noRadioOption,
+    //   addressOption: underlesseeOrMortgageeDetails.noRadioOption,
+    //   anotherUnderlesseeOrMortgageeOption: underlesseeOrMortgageeDetails.yesRadioOption, additionalUnderlesseeMortgagees: 2,
+    //   name1Option: underlesseeOrMortgageeDetails.yesRadioOption,
+    //   correspondenceAddress1Option: underlesseeOrMortgageeDetails.noRadioOption,
+    //   name2Option: underlesseeOrMortgageeDetails.noRadioOption,
+    //   correspondenceAddress2Option: underlesseeOrMortgageeDetails.noRadioOption,
+    // });
     await performAction('selectUnderlesseeOrMortgageeDetails', {
       nameOption: underlesseeOrMortgageeDetails.noRadioOption,
       addressOption: underlesseeOrMortgageeDetails.noRadioOption,
-      anotherUnderlesseeOrMortgageeOption: underlesseeOrMortgageeDetails.yesRadioOption,
-      additionalUnderlesseeMortgagees: 2,
-      name1Option: underlesseeOrMortgageeDetails.yesRadioOption,
-      correspondenceAddress1Option: underlesseeOrMortgageeDetails.noRadioOption,
-      name2Option: underlesseeOrMortgageeDetails.noRadioOption,
-      correspondenceAddress2Option: underlesseeOrMortgageeDetails.noRadioOption,
+      anotherUnderlesseeOrMortgageeOption: underlesseeOrMortgageeDetails.noRadioOption
     });
     await performAction('wantToUploadDocuments', {
       question: wantToUploadDocuments.uploadAnyAdditionalDocumentsLabel,
@@ -983,7 +987,7 @@ test.describe('[Create Case - England] @Master @nightly', async () => {
     await performAction('selectUnderlesseeOrMortgageeDetails', {
       nameOption: underlesseeOrMortgageeDetails.yesRadioOption,
       addressOption: underlesseeOrMortgageeDetails.noRadioOption,
-      anotherUnderlesseeOrMortgageeOption: underlesseeOrMortgageeDetails.yesRadioOption
+      anotherUnderlesseeOrMortgageeOption: underlesseeOrMortgageeDetails.noRadioOption
     });
     await performAction('wantToUploadDocuments', {
       question: wantToUploadDocuments.uploadAnyAdditionalDocumentsLabel,
