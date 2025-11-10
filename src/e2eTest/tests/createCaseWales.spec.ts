@@ -1,11 +1,12 @@
 import {test} from '@playwright/test';
 import {initializeExecutor, performAction, performValidation} from '@utils/controller';
-import {claimType, claimantType, claimantName, claimantDetailsWales, contactPreferences, defendantDetails,
-        groundsForPossession, preActionProtocol, mediationAndSettlement, noticeOfYourIntention, rentDetails,
-        detailsOfRentArrears, reasonsForPossession, moneyJudgment, claimantCircumstances, user, defendantCircumstances,
-        claimingCosts, home, whatAreYourGroundsForPossessionWales, signInOrCreateAnAccount,
-        occupationContractOrLicenceDetailsWales, prohibitedConductStandardContractWales, dailyRentAmount
-        , addressCheckYourAnswers} from '@data/page-data';
+import {addressCheckYourAnswers, claimType, claimantCircumstances, claimantDetailsWales,
+  claimantName, claimantType, claimingCosts, contactPreferences, dailyRentAmount,
+  defendantCircumstances, defendantDetails, detailsOfRentArrears, groundsForPossession,
+  home, mediationAndSettlement, moneyJudgment, noticeOfYourIntention,
+  occupationContractOrLicenceDetailsWales, preActionProtocol,
+  prohibitedConductStandardContractWales, reasonsForPossession, rentDetails,
+  signInOrCreateAnAccount, user, whatAreYourGroundsForPossessionWales} from '@data/page-data';
 
 test.beforeEach(async ({page}) => {
   initializeExecutor(page);
