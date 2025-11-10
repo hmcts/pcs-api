@@ -7,10 +7,10 @@ import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.type.FieldType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
 import java.util.Set;
-
 /**
  * The main domain model representing an enforcement order.
  */
+
 @Builder
 @Data
 public class EnforcementOrder {
