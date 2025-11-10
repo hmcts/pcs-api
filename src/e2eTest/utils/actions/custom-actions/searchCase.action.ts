@@ -59,7 +59,7 @@ export class SearchCaseAction implements IAction {
       await page.waitForURL(`${process.env.MANAGE_CASE_BASE_URL}/cases/case-details/PCS/PCS-${process.env.CHANGE_ID}/${searchCondition.caseNumber.replaceAll('-', '')}#Summary`);
       await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + searchCondition.caseNumber });
       enforcementTestCaseNumber = searchCondition.caseNumber;
-      enforcementAddressInfo = addressInfo
+      enforcementAddressInfo = addressInfo;
     }
   }
 
