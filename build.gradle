@@ -498,7 +498,7 @@ tasks.register('highLevelDataSetup', JavaExec) {
   jvmArgs = ['--add-opens=java.base/java.lang.reflect=ALL-UNNAMED']
 }
 
-tasks.register('e2ePRTest'){
+tasks.register('e2eTest'){
   dependsOn('runE2ePRTests')
 }
 
