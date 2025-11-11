@@ -1,19 +1,15 @@
 export * from '@data/page-data/page-data-enforcement/animalsAtTheProperty.page.data';
 export * from '@data/page-data/page-data-enforcement/criminalOrAntisocialBehaviour.page.data';
-export * from "@data/page-data/page-data-enforcement/everyoneLivingAtTheProperty.page.data";
-export * from "@data/page-data/page-data-enforcement/evictionCouldBeDelayed.page.data";
+export * from '@data/page-data/page-data-enforcement/everyoneLivingAtTheProperty.page.data';
+export * from '@data/page-data/page-data-enforcement/evictionCouldBeDelayed.page.data';
 export * from '@data/page-data/page-data-enforcement/firearmPossession.page.data';
 export * from '@data/page-data/page-data-enforcement/groupProtestsEviction.page.data';
-export * from "@data/page-data/page-data-enforcement/nameAndAddressForEviction.page.data";
-export * from "@data/page-data/page-data-enforcement/policeOrSocialServiceVisit.page.data"
-export * from "@data/page-data/page-data-enforcement/riskPosedByEveryoneAtProperty.page.data";
-export * from "@data/page-data/page-data-enforcement/verbalOrWrittenThreats.page.data";
-export * from "@data/page-data/page-data-enforcement/violentOrAggressiveBehaviour.page.data";
-export * from "@data/page-data/page-data-enforcement/vulnerableAdultsAndChildren.page.data";
+export * from '@data/page-data/page-data-enforcement/nameAndAddressForEviction.page.data';
+export * from '@data/page-data/page-data-enforcement/policeOrSocialServiceVisit.page.data'
+export * from '@data/page-data/page-data-enforcement/riskPosedByEveryoneAtProperty.page.data';
+export * from '@data/page-data/page-data-enforcement/verbalOrWrittenThreats.page.data';
+export * from '@data/page-data/page-data-enforcement/violentOrAggressiveBehaviour.page.data';
+export * from '@data/page-data/page-data-enforcement/vulnerableAdultsAndChildren.page.data';
 export * from '@data/page-data/page-data-enforcement/yourApplication.page.data';
-
-
-
-
-
-
+export * from '@data/page-data/page-data-enforcement/anythingElseThatCouldHelpWithEviction.page.data'
+export * from '@data/page-data/page-data-enforcement/accessToTheProperty';

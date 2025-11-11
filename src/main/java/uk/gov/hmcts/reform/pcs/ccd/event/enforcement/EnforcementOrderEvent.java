@@ -14,6 +14,9 @@ import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.AggressiveAnimalsRiskPage;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.AdditionalInformationPage;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.MoneyOwedPage;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.PropertyAccessDetailsPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.CheckYourAnswersPlaceHolder;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.EnforcementApplicationPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.NameAndAddressForEvictionPage;
@@ -26,7 +29,7 @@ import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.VerbalOrWrittenThreatsRiskPa
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.ViolentAggressiveRiskPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.FirearmsPossessionRiskPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.CriminalAntisocialRiskPage;
-import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.EvictionVulnerableAdultsChildrenPage;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.VulnerableAdultsChildrenPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.LivingInThePropertyPage;
 
 import static uk.gov.hmcts.reform.pcs.ccd.domain.State.AWAITING_SUBMISSION_TO_HMCTS;
@@ -36,7 +39,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.enforceTheOrder;
 @Component
 @AllArgsConstructor
 public class EnforcementOrderEvent implements CCDConfig<PCSCase, State, UserRole> {
-    // Business requirements to be agreed on for the conditions when this event can be triggereed
+    // Business requirements to be agreed on for the conditions when this event can be triggered
 
     private final AddressFormatter addressFormatter;
 
@@ -66,7 +69,10 @@ public class EnforcementOrderEvent implements CCDConfig<PCSCase, State, UserRole
                 .add(new ProtestorGroupRiskPage())
                 .add(new PoliceOrSocialServicesRiskPage())
                 .add(new AggressiveAnimalsRiskPage())
-                .add(new EvictionVulnerableAdultsChildrenPage())
+                .add(new VulnerableAdultsChildrenPage())
+                .add(new PropertyAccessDetailsPage())
+                .add(new AdditionalInformationPage())
+                .add(new MoneyOwedPage())
                 .add(new CheckYourAnswersPlaceHolder());
     }
 
@@ -82,5 +88,4 @@ public class EnforcementOrderEvent implements CCDConfig<PCSCase, State, UserRole
     private SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {
         return SubmitResponse.defaultResponse();
     }
-
 }

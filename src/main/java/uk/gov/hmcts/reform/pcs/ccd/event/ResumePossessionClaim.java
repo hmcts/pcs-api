@@ -88,7 +88,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
-import uk.gov.hmcts.reform.pcs.feesandpay.task.FeesAndPayTaskComponent;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.FeesAndPayTaskData;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationNameService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
@@ -103,6 +103,7 @@ import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.State.AWAITING_FURTHER_CLAIM_DETAILS;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.State.AWAITING_SUBMISSION_TO_HMCTS;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.resumePossessionClaim;
+import static uk.gov.hmcts.reform.pcs.feesandpay.task.FeesAndPayTaskComponent.FEE_CASE_ISSUED_TASK_DESCRIPTOR;
 
 @Slf4j
 @Component
@@ -291,14 +292,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
 
         draftCaseDataService.deleteUnsubmittedCaseData(caseReference);
 
-        String taskId = UUID.randomUUID().toString();
-
-        schedulerClient.scheduleIfNotExists(
-            FeesAndPayTaskComponent.FEE_CASE_ISSUED_TASK_DESCRIPTOR
-                .instance(taskId)
-                .data(CASE_ISSUED_FEE_TYPE)
-                .scheduledTo(Instant.now())
-        );
+        scheduleCaseIssuedFeeTask(caseReference, pcsCase.getOrganisationName());
 
         return SubmitResponse.defaultResponse();
     }
@@ -323,6 +317,24 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             contactEmail,
             contactAddress,
             pcsCase.getClaimantContactPhoneNumber()
+        );
+    }
+
+    private void scheduleCaseIssuedFeeTask(long caseReference, String responsibleParty) {
+        String taskId = UUID.randomUUID().toString();
+
+        FeesAndPayTaskData taskData = FeesAndPayTaskData.builder()
+            .feeType(CASE_ISSUED_FEE_TYPE)
+            .ccdCaseNumber(String.valueOf(caseReference))
+            .caseReference(String.valueOf(caseReference))
+            .responsibleParty(responsibleParty)
+            .build();
+
+        schedulerClient.scheduleIfNotExists(
+            FEE_CASE_ISSUED_TASK_DESCRIPTOR
+                .instance(taskId)
+                .data(taskData)
+                .scheduledTo(Instant.now())
         );
     }
 }

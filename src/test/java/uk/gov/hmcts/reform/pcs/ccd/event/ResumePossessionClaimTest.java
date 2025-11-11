@@ -344,7 +344,6 @@ class ResumePossessionClaimTest extends BaseEventTest {
     @Test
     void shouldCreateMainClaimInSubmitCallback() {
         // Given
-
         PcsCaseEntity pcsCaseEntity = mock(PcsCaseEntity.class);
         when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(pcsCaseEntity);
 
@@ -362,6 +361,30 @@ class ResumePossessionClaimTest extends BaseEventTest {
 
         // Then
         verify(claimService).createMainClaimEntity(caseData, partyEntity);
+    }
+
+    @Test
+    void shouldScheduleFeeTaskInSubmitCallback() {
+        // Given
+        PcsCaseEntity pcsCaseEntity = mock(PcsCaseEntity.class);
+        when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(pcsCaseEntity);
+
+        PartyEntity partyEntity = mock(PartyEntity.class);
+        when(partyService.createPartyEntity(eq(USER_ID), any(), any(), any(), any(), any()))
+            .thenReturn(partyEntity);
+
+        ClaimEntity claimEntity = ClaimEntity.builder().build();
+        when(claimService.createMainClaimEntity(any(PCSCase.class), any(PartyEntity.class))).thenReturn(claimEntity);
+
+        PCSCase caseData = PCSCase.builder()
+            .organisationName("Org Ltd")
+            .build();
+
+        // When
+        callSubmitHandler(caseData);
+
+        // Then
+        verify(schedulerClient).scheduleIfNotExists(any());
     }
 
     private static Stream<Arguments> claimantTypeScenarios() {
