@@ -3,10 +3,54 @@ import {ServiceAuthUtils} from '@hmcts/playwright-common';
 import {actionData, actionRecord, IAction} from '../../interfaces/action.interface';
 import {Page} from '@playwright/test';
 import {performAction, performActions, performValidation} from '@utils/controller';
-import {createCase, addressDetails, housingPossessionClaim, defendantDetails, claimantName, contactPreferences, mediationAndSettlement, tenancyLicenceDetails, resumeClaimOptions, rentDetails, accessTokenApiData, caseApiData, dailyRentAmount, reasonsForPossession, detailsOfRentArrears,
-        claimantType, claimType, groundsForPossession, preActionProtocol, noticeOfYourIntention, borderPostcode, rentArrearsPossessionGrounds, rentArrearsOrBreachOfTenancy, noticeDetails, moneyJudgment, whatAreYourGroundsForPossession, languageUsed, defendantCircumstances, applications, claimantCircumstances,
-        claimingCosts, alternativesToPossession, reasonsForRequestingADemotionOrder, statementOfExpressTerms, reasonsForRequestingASuspensionOrder, uploadAdditionalDocs, additionalReasonsForPossession, completeYourClaim, home, search, userIneligible,
-        whatAreYourGroundsForPossessionWales, underlesseeOrMortgageeDetails, reasonsForRequestingASuspensionAndDemotionOrder, provideMoreDetailsOfClaim} from "@data/page-data";
+import {
+  createCase,
+  addressDetails,
+  housingPossessionClaim,
+  defendantDetails,
+  claimantName,
+  contactPreferences,
+  mediationAndSettlement,
+  tenancyLicenceDetails,
+  resumeClaimOptions,
+  rentDetails,
+  accessTokenApiData,
+  caseApiData,
+  dailyRentAmount,
+  reasonsForPossession,
+  detailsOfRentArrears,
+  claimantType,
+  claimType,
+  groundsForPossession,
+  preActionProtocol,
+  noticeOfYourIntention,
+  borderPostcode,
+  rentArrearsPossessionGrounds,
+  rentArrearsOrBreachOfTenancy,
+  noticeDetails,
+  moneyJudgment,
+  whatAreYourGroundsForPossession,
+  languageUsed,
+  defendantCircumstances,
+  applications,
+  claimantCircumstances,
+  claimingCosts,
+  alternativesToPossession,
+  reasonsForRequestingADemotionOrder,
+  statementOfExpressTerms,
+  reasonsForRequestingASuspensionOrder,
+  uploadAdditionalDocs,
+  additionalReasonsForPossession,
+  completeYourClaim,
+  home,
+  search,
+  userIneligible,
+  whatAreYourGroundsForPossessionWales,
+  underlesseeOrMortgageeDetails,
+  reasonsForRequestingASuspensionAndDemotionOrder,
+  provideMoreDetailsOfClaim,
+  statementOfTruth
+} from "@data/page-data";
 
 export let caseInfo: { id: string; fid: string; state: string };
 export let caseNumber: string;
@@ -61,7 +105,8 @@ export class CreateCaseAction implements IAction {
       ['selectUnderlesseeOrMortgageeEntitledToClaim', () => this.selectUnderlesseeOrMortgageeEntitledToClaim(fieldName as actionRecord)],
       ['selectUnderlesseeOrMortgageeDetails', () => this.selectUnderlesseeOrMortgageeDetails(fieldName as actionRecord)],
       ['wantToUploadDocuments', () => this.wantToUploadDocuments(fieldName as actionRecord)],
-      ['uploadAdditionalDocs', () => this.uploadAdditionalDocs(fieldName as actionRecord)]
+      ['uploadAdditionalDocs', () => this.uploadAdditionalDocs(fieldName as actionRecord)],
+      ['selectStatementOfTruth', () => this.selectStatementOfTruth(fieldName as actionRecord)]
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) throw new Error(`No action found for '${action}'`);
@@ -611,6 +656,20 @@ export class CreateCaseAction implements IAction {
       option: underlesseeOrMortgageeDetail.anotherUnderlesseeOrMortgageeOption
     });
     await performAction('clickButton', underlesseeOrMortgageeDetails.continue);
+  }
+
+  private async selectStatementOfTruth(claimantDetails: actionRecord) {
+    await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
+    await performAction('clickRadioButton', {
+      question: claimantDetails.completedBy,
+      option: claimantDetails.option
+    });
+    if(claimantDetails.option == statementOfTruth.claimantLegalRepresentativeRadioOption){
+      await performAction('inputText', statementOfTruth.fullNameTextLabel, statementOfTruth.fullNameTextInput);
+      await performAction('inputText', statementOfTruth.nameOfFirmTextLabel, statementOfTruth.nameOfFirmTextInput);
+      await performAction('inputText', statementOfTruth.positionOrOfficeHeldTextLabel, statementOfTruth.positionOrOfficeHeldTextInput);
+    }
+    await performAction('clickButton', statementOfTruth.continueButton);
   }
 
   private async reloginAndFindTheCase(userInfo: actionData) {
