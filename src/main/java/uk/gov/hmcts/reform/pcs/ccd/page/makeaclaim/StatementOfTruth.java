@@ -18,9 +18,9 @@ public class StatementOfTruth implements CcdPageConfiguration {
         pageBuilder.page("statementOfTruth", this::midEvent)
             .pageLabel("Statement of truth")
             .showCondition("completionNextStep=\"SUBMIT_AND_PAY_NOW\"")
-            .label("statementOfTruth-hr", "---")
             .label("statementOfTruth-body",
                 """
+                ---
                 <p class="govuk-body">
                   I understand that proceedings for contempt of court may be brought against
                   anyone who makes, or causes to be made, a false statement in a document
