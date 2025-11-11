@@ -10,7 +10,6 @@ import { MakeClaimAction } from '@utils/actions/custom-actions/custom-actions-en
 import { LoginAction } from '@utils/actions/custom-actions/login.action';
 import { SearchCaseAction } from '@utils/actions/custom-actions/searchCase.action';
 import { EnforcementAction } from '@utils/actions/custom-actions/custom-actions-enforcement/enforcement.action';
-import { handleCookieConsentAction } from '@utils/actions/custom-actions/handleCookieConsent.action';
 
 export class ActionEnforcementRegistry {
   private static actions: Map<string, IAction> = new Map<string, IAction>([
@@ -23,7 +22,6 @@ export class ActionEnforcementRegistry {
     ['select', new SelectAction()],
     ['login', new LoginAction()],
     ['navigateToUrl', new NavigateToUrlAction()],
-    ['handleCookieConsent', new handleCookieConsentAction()],
     ['clickRadioButton', new ClickRadioButtonAction()],
     ['filterCaseFromCaseList', new SearchCaseAction()],
     ['createNewCase', new MakeClaimAction()],

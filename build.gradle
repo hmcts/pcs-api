@@ -499,7 +499,7 @@ tasks.register('highLevelDataSetup', JavaExec) {
 }
 
 tasks.register('e2eTest'){
-  dependsOn('runE2ePrTests')
+  dependsOn('runE2eChromeTests')
 }
 
 tasks.register('e2eRegressionTest'){

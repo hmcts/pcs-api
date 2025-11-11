@@ -1,6 +1,8 @@
 import * as process from 'node:process';
+import * as fs from 'fs';
 
 import {defineConfig, devices} from '@playwright/test';
+import { SessionManager } from '@utils/session-manager';
 
 const DEFAULT_VIEWPORT = {width: 1920, height: 1080};
 export const VERY_SHORT_TIMEOUT = 1000;
@@ -9,6 +11,10 @@ export const MEDIUM_TIMEOUT = 10000;
 export const LONG_TIMEOUT = 30000;
 export const actionRetries = 5;
 export const waitForPageRedirectionTimeout = SHORT_TIMEOUT;
+
+// Check if storage state exists for session reuse
+const storageStatePath = SessionManager.getStorageStatePath();
+const storageState = fs.existsSync(storageStatePath) ? storageStatePath : undefined;
 
 export default defineConfig({
   testDir: 'tests/',
@@ -21,7 +27,13 @@ export default defineConfig({
   workers: 4,
   timeout: 600 * 1000,
   expect: { timeout: 30 * 1000 },
-  use: { actionTimeout: 30 * 1000, navigationTimeout: 30 * 1000 },
+  use: {
+    baseURL: process.env.MANAGE_CASE_BASE_URL || 'http://localhost:3000',
+    actionTimeout: 30 * 1000,
+    navigationTimeout: 30 * 1000,
+    // Use storage state if available (will be created by globalSetup)
+    ...(storageState ? { storageState } : {})
+  },
   /* Report slow tests if they take longer than 5 mins */
   reportSlowTests: { max: 15, threshold: 5 * 60 * 1000 },
   globalSetup: require.resolve('./config/global-setup.config'),
@@ -51,6 +63,8 @@ export default defineConfig({
         javaScriptEnabled: true,
         viewport: DEFAULT_VIEWPORT,
         headless: !!process.env.CI,
+        // Use the authenticated storage state (created by globalSetup)
+        ...(storageState ? { storageState } : {}),
       },
     },
     ...(process.env.CI ? [
@@ -65,6 +79,8 @@ export default defineConfig({
           javaScriptEnabled: true,
           viewport: DEFAULT_VIEWPORT,
           headless: !!process.env.CI,
+          // Use the authenticated storage state (created by globalSetup)
+          ...(storageState ? { storageState } : {}),
         }
       }
     ] : [])

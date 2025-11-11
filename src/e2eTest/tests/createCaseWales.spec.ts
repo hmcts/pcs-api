@@ -3,22 +3,15 @@ import {initializeExecutor, performAction, performValidation, performValidations
 import {claimType, claimantType, claimantName, claimantDetailsWales, contactPreferences, defendantDetails, tenancyLicenceDetails,
         groundsForPossession, rentArrearsPossessionGrounds, preActionProtocol, mediationAndSettlement, noticeOfYourIntention, rentDetails,
         provideMoreDetailsOfClaim, resumeClaim, resumeClaimOptions, detailsOfRentArrears, whatAreYourGroundsForPossession,
-        rentArrearsOrBreachOfTenancy, reasonsForPossession, moneyJudgment, claimantCircumstances, applications, completeYourClaim, user,
+        rentArrearsOrBreachOfTenancy, reasonsForPossession, moneyJudgment, claimantCircumstances, applications, completeYourClaim,
         checkYourAnswers, propertyDetails, languageUsed, defendantCircumstances, claimingCosts, home, additionalReasonsForPossession,
         underlesseeOrMortgageeEntitledToClaim, wantToUploadDocuments, whatAreYourGroundsForPossessionWales, addressDetails,
-        signInOrCreateAnAccount, occupationContractOrLicenceDetailsWales, prohibitedConductStandardContractWales, dailyRentAmount, antiSocialBehaviourWales} from '@data/page-data';
+        occupationContractOrLicenceDetailsWales, prohibitedConductStandardContractWales, dailyRentAmount, antiSocialBehaviourWales} from '@data/page-data';
 
 test.beforeEach(async ({page}) => {
   initializeExecutor(page);
+  // User is already authenticated via globalSetup with cookies accepted
   await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
-  // await performAction('handleCookieConsent', {
-  //   accept: signInOrCreateAnAccount.acceptAdditionalCookiesButton,
-  //   hide: signInOrCreateAnAccount.hideThisCookieMessageButton
-  // });
-  await performAction('login', user.claimantSolicitor);
-  // await performAction('handleCookieConsent', {
-  //   accept: signInOrCreateAnAccount.acceptAnalyticsCookiesButton
-  // });
   await performAction('clickTab', home.createCaseTab);
   await performAction('selectJurisdictionCaseTypeEvent');
   await performAction('housingPossessionClaim');

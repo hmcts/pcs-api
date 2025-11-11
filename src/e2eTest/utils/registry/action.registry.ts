@@ -1,4 +1,4 @@
-import { IAction } from '../interfaces/action.interface';
+import { IAction } from '@utils/interfaces';
 import { ClickTabAction } from '@utils/actions/element-actions/clickTab.action';
 import { InputTextAction } from '@utils/actions/element-actions/inputText.action';
 import { CheckAction } from '@utils/actions/element-actions/check.action';
@@ -11,7 +11,6 @@ import { ClickRadioButtonAction } from '@utils//actions/element-actions/clickRad
 import { UploadFileAction } from '@utils/actions/element-actions/uploadFile.action';
 import { CreateCaseWalesAction } from '@utils/actions/custom-actions/createCaseWales.action';
 import { SearchCaseAction } from '@utils/actions/custom-actions/searchCase.action';
-import { handleCookieConsentAction } from '@utils/actions/custom-actions/handleCookieConsent.action';
 import { signOutAction } from '@utils/actions/custom-actions/signOut.action';
 
 export class ActionRegistry {
@@ -27,7 +26,6 @@ export class ActionRegistry {
     ['createUserAndLogin', new LoginAction()],
     ['login', new LoginAction()],
     ['navigateToUrl', new NavigateToUrlAction()],
-    ['handleCookieConsent', new handleCookieConsentAction()],
     ['signOut', new signOutAction()],
     ['uploadFile', new UploadFileAction()],
     ['selectAddress', new CreateCaseAction()],

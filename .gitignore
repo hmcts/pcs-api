@@ -48,6 +48,7 @@ applicationinsights-agent-*.jar
 /src/e2eTest/allure-report/
 /src/e2eTest/allure-results/
 /src/e2eTest/node_modules/
+/src/e2eTest/.auth/
 /report-for-functional-tests/
 /target/
 /pacts/

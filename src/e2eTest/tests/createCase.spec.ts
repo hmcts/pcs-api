@@ -2,21 +2,14 @@ import {test} from '@playwright/test';
 import {initializeExecutor, performAction, performValidation, performValidations} from '@utils/controller';
 import {addressDetails, claimantType, claimType,claimantName, contactPreferences, defendantDetails, tenancyLicenceDetails, groundsForPossession, rentArrearsPossessionGrounds, preActionProtocol, mediationAndSettlement,
         noticeOfYourIntention, noticeDetails, rentDetails, provideMoreDetailsOfClaim, resumeClaim, resumeClaimOptions, detailsOfRentArrears, whatAreYourGroundsForPossession, rentArrearsOrBreachOfTenancy,
-        reasonsForPossession, moneyJudgment, claimantCircumstances, applications, completeYourClaim, user, reasonsForRequestingASuspensionOrder, checkYourAnswers, propertyDetails, languageUsed, defendantCircumstances,
+        reasonsForPossession, moneyJudgment, claimantCircumstances, applications, completeYourClaim, reasonsForRequestingASuspensionOrder, checkYourAnswers, propertyDetails, languageUsed, defendantCircumstances,
         claimingCosts, additionalReasonsForPossession, underlesseeOrMortgageeEntitledToClaim, alternativesToPossession, housingAct, reasonsForRequestingADemotionOrder, statementOfExpressTerms, wantToUploadDocuments,
-        home, uploadAdditionalDocs, underlesseeOrMortgageeDetails, dailyRentAmount, statementOfTruth, reasonsForRequestingASuspensionAndDemotionOrder, signInOrCreateAnAccount} from '@data/page-data';
+        home, uploadAdditionalDocs, underlesseeOrMortgageeDetails, dailyRentAmount, statementOfTruth, reasonsForRequestingASuspensionAndDemotionOrder} from '@data/page-data';
 
 test.beforeEach(async ({page}) => {
   initializeExecutor(page);
+  // User is already authenticated via globalSetup with cookies accepted
   await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
-  // await performAction('handleCookieConsent', {
-  //   accept: signInOrCreateAnAccount.acceptAdditionalCookiesButton,
-  //   hide: signInOrCreateAnAccount.hideThisCookieMessageButton
-  // });
-  await performAction('login', user.claimantSolicitor);
-  // await performAction('handleCookieConsent', {
-  //   accept: signInOrCreateAnAccount.acceptAnalyticsCookiesButton
-  // });
   await performAction('clickTab', home.createCaseTab);
   await performAction('selectJurisdictionCaseTypeEvent');
   await performAction('housingPossessionClaim');
