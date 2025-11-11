@@ -10,7 +10,11 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.EnforcementOrder;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.RiskCategory;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.SelectEnforcementType;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcement.EnforcementDataEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
@@ -81,7 +85,14 @@ class EnforcementDataServiceTest {
                 enfDataService.retrieveSubmittedEnforcementData(enforcementCaseId).orElse(null);
 
         // Then
-        assertThat(submittedEnforcementOrder).isEqualTo(EnforcementDataUtil.buildSampleEnforcementData());
+        assertThat(submittedEnforcementOrder.getSelectEnforcementType()).isEqualTo(SelectEnforcementType.WARRANT);
+        assertThat(submittedEnforcementOrder.getNameAndAddressForEviction().getCorrectNameAndAddress())
+                .isEqualTo(VerticalYesNo.YES);
+        assertThat(submittedEnforcementOrder.getAnyRiskToBailiff()).isEqualTo(YesNoNotSure.YES);
+        assertThat(submittedEnforcementOrder.getEnforcementRiskCategories())
+                .extracting(RiskCategory::name)
+                .containsExactlyInAnyOrder("VIOLENT_OR_AGGRESSIVE", "VERBAL_OR_WRITTEN_THREATS");
+        assertThat(submittedEnforcementOrder.getRiskDetails().getEnforcementViolentDetails()).isEqualTo("Violent");
     }
 
     @Test
