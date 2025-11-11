@@ -1,18 +1,10 @@
-import { Page } from "@playwright/test";
-import { performAction, performValidation } from "@utils/controller-enforcement";
-import { IAction, actionData, actionRecord } from "@utils/interfaces/action.interface";
-import { yourApplication } from "@data/page-data/page-data-enforcement/yourApplication.page.data";
-import { enforcementTestCaseNumber } from "../searchCase.action";
-import { nameAndAddressForEviction } from "@data/page-data/page-data-enforcement/nameAndAddressForEviction.page.data";
-import { riskPosedByEveryoneAtProperty } from "@data/page-data/page-data-enforcement/riskPosedByEveryoneAtProperty.page.data";
-import { everyoneLivingAtTheProperty } from "@data/page-data/page-data-enforcement/everyoneLivingAtTheProperty.page.data";
-import { violentOrAggressiveBehaviour } from "@data/page-data/page-data-enforcement/violentOrAggressiveBehaviour.page.data";
-import { firearmPossession } from "@data/page-data/page-data-enforcement/firearmPossession.page.data";
-import { criminalOrAntisocialBehaviour } from "@data/page-data/page-data-enforcement/criminalOrAntisocialBehaviour.page.data";
-import { verbalOrWrittenThreats } from "@data/page-data/page-data-enforcement/verbalOrWrittenThreats.page.data";
-import { groupProtestsEviction } from "@data/page-data/page-data-enforcement/groupProtestsEviction.page.data";
-import { policeOrSocialServiceVisit } from "@data/page-data/page-data-enforcement/policeOrSocialServiceVisit.page.data";
-import { animalsAtTheProperty } from "@data/page-data/page-data-enforcement/animalsAtTheProperty";
+import { Page } from '@playwright/test';
+import { performAction, performValidation } from '@utils/controller-enforcement';
+import { IAction, actionData, actionRecord } from '@utils/interfaces/action.interface';
+import { yourApplication, nameAndAddressForEviction, everyoneLivingAtTheProperty,
+         violentOrAggressiveBehaviour, firearmPossession, criminalOrAntisocialBehaviour, riskPosedByEveryoneAtProperty,
+         verbalOrWrittenThreats, groupProtestsEviction, policeOrSocialServiceVisit, animalsAtTheProperty, anythingElseHelpWithEviction, accessToTheProperty } from '@data/page-data/page-data-enforcement';
+import { enforcementTestCaseNumber } from '../searchCase.action';
 
 export class EnforcementAction implements IAction {
   async execute(page: Page, action: string, fieldName: string | actionRecord, data?: actionData): Promise<void> {
@@ -28,6 +20,8 @@ export class EnforcementAction implements IAction {
       ['provideDetailsGroupProtestsEviction', () => this.provideDetailsGroupProtestsEviction(fieldName as actionRecord)],
       ['provideDetailsPoliceOrSocialServiceVisits', () => this.provideDetailsPoliceOrSocialServiceVisits(fieldName as actionRecord)],
       ['provideDetailsAnimalsAtTheProperty', () => this.provideDetailsAnimalsAtTheProperty(fieldName as actionRecord)],
+      ['provideDetailsAnythingElseHelpWithEviction', () => this.provideDetailsAnythingElseHelpWithEviction(fieldName as actionRecord)],
+      ['accessToProperty', () => this.accessToProperty(fieldName as actionRecord)],
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) throw new Error(`No action found for '${action}'`);
@@ -35,15 +29,15 @@ export class EnforcementAction implements IAction {
   }
 
   private async selectApplicationType(applicationType: actionRecord) {
-    await performValidation('text', {elementType: 'paragraph', text: 'Case number: ' + enforcementTestCaseNumber});
-    await performAction('clickRadioButton', {question: applicationType.question, option: applicationType.option});
+    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + enforcementTestCaseNumber });
+    await performAction('clickRadioButton', { question: applicationType.question, option: applicationType.option });
     await performAction('clickButton', yourApplication.continue);
   }
 
   private async selectNameAndAddressForEviction(nameAndAddress: actionRecord) {
-    await performValidation('text', {elementType: 'paragraph', text: 'Case number: ' + enforcementTestCaseNumber});
+    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + enforcementTestCaseNumber });
     /* The below radio button will be referenced to its corresponding question when this name and address page is worked upon.
-    Currently it is a placeholder */
+    Currently,it is a placeholder */
     await performAction('clickRadioButton', nameAndAddress.option);
     await performAction('clickButton', nameAndAddressForEviction.continue);
   }
@@ -95,17 +89,36 @@ export class EnforcementAction implements IAction {
     await performAction('clickButton', groupProtestsEviction.continue);
   }
 
-   private async provideDetailsPoliceOrSocialServiceVisits(policeOrSSVisit: actionRecord) {
+  private async provideDetailsPoliceOrSocialServiceVisits(policeOrSSVisit: actionRecord) {
     await performValidation('mainHeader', policeOrSocialServiceVisit.mainHeader);
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + enforcementTestCaseNumber });
     await performAction('inputText', policeOrSSVisit.label, policeOrSSVisit.input);
     await performAction('clickButton', policeOrSocialServiceVisit.continue);
   }
 
-   private async provideDetailsAnimalsAtTheProperty(theAnimalsAtTheProperty: actionRecord) {
+  private async provideDetailsAnimalsAtTheProperty(theAnimalsAtTheProperty: actionRecord) {
     await performValidation('mainHeader', animalsAtTheProperty.mainHeader);
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + enforcementTestCaseNumber });
     await performAction('inputText', theAnimalsAtTheProperty.label, theAnimalsAtTheProperty.input);
     await performAction('clickButton', animalsAtTheProperty.continue);
   }
+
+  private async provideDetailsAnythingElseHelpWithEviction(anythingElse: actionRecord) {
+    await performValidation('mainHeader', anythingElseHelpWithEviction.mainHeader);
+    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + enforcementTestCaseNumber });
+    await performAction('clickRadioButton', { question: anythingElse.question, option: anythingElse.option });
+    if (anythingElse.option === anythingElseHelpWithEviction.yes) {
+      await performAction('inputText', anythingElse.label, anythingElse.input);
+    }
+    await performAction('clickButton', anythingElseHelpWithEviction.continue);
+  }
+  private async accessToProperty(accessToProperty: actionRecord) {
+    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + enforcementTestCaseNumber });
+    await performAction('clickRadioButton', { question: accessToProperty.question, option: accessToProperty.option });
+    if (accessToProperty.option === accessToTheProperty.yesRadioOption) {
+      await performAction('inputText', accessToProperty.label, accessToProperty.input);
+    }
+    await performAction('clickButton', accessToTheProperty.continueButton);
+  }
+
 }

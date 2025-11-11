@@ -1,27 +1,15 @@
-import { test } from "@playwright/test";
-import { caseList } from "@data/page-data/caseList.page.data";
-import { user } from "@data/user-data/permanent.user.data";
-import { caseSummary } from "@data/page-data/caseSummary.page.data";
-import { yourApplication } from "@data/page-data/page-data-enforcement/yourApplication.page.data";
-import { initializeEnforcementExecutor, performAction, performValidation } from "@utils/controller-enforcement";
-import { caseNumber } from "@utils/actions/custom-actions/createCase.action";
-import { initializeExecutor } from "@utils/controller";
-import { caseNotFoundAfterFilter } from "@utils/actions/custom-actions/searchCase.action";
-import { nameAndAddressForEviction } from "@data/page-data/page-data-enforcement/nameAndAddressForEviction.page.data";
-import { everyoneLivingAtTheProperty } from "@data/page-data/page-data-enforcement/everyoneLivingAtTheProperty.page.data";
-import { riskPosedByEveryoneAtProperty } from "@data/page-data/page-data-enforcement/riskPosedByEveryoneAtProperty.page.data";
-import { vulnerableAdultsAndChildren } from "@data/page-data/page-data-enforcement/vulnerableAdultsAndChildren.page.data";
-import { evictionCouldBeDelayed } from "@data/page-data/page-data-enforcement/evictionCouldBeDelayed.page.data";
-import { violentOrAggressiveBehaviour } from "@data/page-data/page-data-enforcement/violentOrAggressiveBehaviour.page.data";
-import { firearmPossession } from "@data/page-data/page-data-enforcement/firearmPossession.page.data";
-import { criminalOrAntisocialBehaviour } from "@data/page-data/page-data-enforcement/criminalOrAntisocialBehaviour.page.data";
-import { verbalOrWrittenThreats } from "@data/page-data/page-data-enforcement/verbalOrWrittenThreats.page.data";
-import { groupProtestsEviction } from "@data/page-data/page-data-enforcement/groupProtestsEviction.page.data";
-import { policeOrSocialServiceVisit } from "@data/page-data/page-data-enforcement/policeOrSocialServiceVisit.page.data";
-import { animalsAtTheProperty } from "@data/page-data/page-data-enforcement/animalsAtTheProperty";
-import { signInOrCreateAnAccount } from "@data/page-data/signInOrCreateAnAccount.page.data";
+import { test } from '@playwright/test';
+import { initializeEnforcementExecutor, performAction, performValidation } from '@utils/controller-enforcement';
+import { caseNumber, caseNotFoundAfterFilter } from '@utils/actions/custom-actions';
+import { initializeExecutor } from '@utils/controller';
+import { caseList, user, caseSummary, signInOrCreateAnAccount } from '@data/page-data';
+import {
+  nameAndAddressForEviction, violentOrAggressiveBehaviour, firearmPossession, yourApplication, animalsAtTheProperty,
+  criminalOrAntisocialBehaviour, evictionCouldBeDelayed, vulnerableAdultsAndChildren, policeOrSocialServiceVisit,
+  riskPosedByEveryoneAtProperty, everyoneLivingAtTheProperty, verbalOrWrittenThreats, groupProtestsEviction, anythingElseHelpWithEviction
+} from '@data/page-data/page-data-enforcement';
 
-test.beforeEach(async ({page}) => {
+test.beforeEach(async ({ page }) => {
   initializeExecutor(page);
   initializeEnforcementExecutor(page);
   await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
@@ -36,9 +24,9 @@ test.beforeEach(async ({page}) => {
   await performAction('filterCaseFromCaseList', caseList.stateAwaitingSubmission);
   await performAction('noCasesFoundAfterSearch')
   //Below three lines will be merged into a single action as part of improvement
-  await performAction("selectFirstCaseFromTheFilter", caseNotFoundAfterFilter);
+  await performAction('selectFirstCaseFromTheFilter', caseNotFoundAfterFilter);
   await performAction('createNewCase', caseNotFoundAfterFilter);
-  await performAction('searchMyCaseFromFindCase', {caseNumber: caseNumber, criteria: caseNotFoundAfterFilter});
+  await performAction('searchMyCaseFromFindCase', { caseNumber: caseNumber, criteria: caseNotFoundAfterFilter });
 });
 
 test.describe('[Enforcement - Warrant of Possession] @Master @nightly', async () => {
@@ -95,6 +83,12 @@ test.describe('[Enforcement - Warrant of Possession] @Master @nightly', async ()
     });
     await performValidation('mainHeader', vulnerableAdultsAndChildren.mainHeader);
     await performAction('clickButton', vulnerableAdultsAndChildren.continue);
+    await performAction('provideDetailsAnythingElseHelpWithEviction', {
+      question: anythingElseHelpWithEviction.anythingElseQuestion,
+      option: anythingElseHelpWithEviction.yes,
+      label: anythingElseHelpWithEviction.tellUsAnythingElse,
+      input: anythingElseHelpWithEviction.tellUsAnythingElseInput
+    });
   });
 
   test('Apply for a Warrant of Possession - risk to Bailiff [No]', async () => {
@@ -116,6 +110,12 @@ test.describe('[Enforcement - Warrant of Possession] @Master @nightly', async ()
     });
     await performValidation('mainHeader', vulnerableAdultsAndChildren.mainHeader);
     await performAction('clickButton', vulnerableAdultsAndChildren.continue);
+    await performAction('provideDetailsAnythingElseHelpWithEviction', {
+      question: anythingElseHelpWithEviction.anythingElseQuestion,
+      option: anythingElseHelpWithEviction.no,
+      label: anythingElseHelpWithEviction.tellUsAnythingElse,
+      input: anythingElseHelpWithEviction.tellUsAnythingElseInput
+    });
   });
 
   test('Apply for a Warrant of Possession - risk to Bailiff [Not sure]', async () => {
@@ -139,5 +139,11 @@ test.describe('[Enforcement - Warrant of Possession] @Master @nightly', async ()
     await performAction('clickButton', evictionCouldBeDelayed.continue);
     await performValidation('mainHeader', vulnerableAdultsAndChildren.mainHeader);
     await performAction('clickButton', vulnerableAdultsAndChildren.continue);
+    await performAction('provideDetailsAnythingElseHelpWithEviction', {
+      question: anythingElseHelpWithEviction.anythingElseQuestion,
+      option: anythingElseHelpWithEviction.yes,
+      label: anythingElseHelpWithEviction.tellUsAnythingElse,
+      input: anythingElseHelpWithEviction.tellUsAnythingElseInput
+    });
   });
 });

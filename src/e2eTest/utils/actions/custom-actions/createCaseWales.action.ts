@@ -3,12 +3,14 @@ import {Page} from '@playwright/test';
 import {performAction, performActions, performValidation} from '@utils/controller';
 import {claimantDetailsWales} from '@data/page-data/claimantDetailsWales.page.data';
 import {caseNumber, CreateCaseAction} from "@utils/actions/custom-actions/createCase.action";
+import {prohibitedConductStandardContractWales} from '@data/page-data/prohibitedConductStandardContractWales.page.data';
 import {occupationContractOrLicenceDetailsWales} from '@data/page-data/occupationContractOrLicenceDetailsWales.page.data';
 
 export class CreateCaseWalesAction extends CreateCaseAction implements IAction {
   async execute(page: Page, action: string, fieldName: actionData | actionRecord, data?: actionData): Promise<void> {
     const actionsMap = new Map<string, () => Promise<void>>([
       ['selectClaimantDetails', () => this.selectClaimantDetails(fieldName as actionRecord)],
+      ['selectProhibitedConductStandardContract', () => this.selectProhibitedConductStandardContract(fieldName as actionRecord)],
       ['selectOccupationContractOrLicenceDetails', () => this.selectOccupationContractOrLicenceDetails(fieldName as actionRecord)]
     ]);
     const actionToPerform = actionsMap.get(action);
@@ -59,5 +61,18 @@ export class CreateCaseWalesAction extends CreateCaseAction implements IAction {
       await performAction('uploadFile', occupationContractData.files);
     }
     await performAction('clickButton', occupationContractOrLicenceDetailsWales.continue);
+  }
+
+  private async selectProhibitedConductStandardContract(prohibitedConduct: actionRecord) {
+    await performValidation('text', {elementType: 'paragraph', text: 'Case number: ' + caseNumber});
+    await performAction('clickRadioButton', {question: prohibitedConduct.question1, option: prohibitedConduct.option1});
+    if (prohibitedConduct.option1 == prohibitedConductStandardContractWales.yes) {
+      await performAction('inputText', prohibitedConduct.label1, prohibitedConduct.input1);
+      await performAction('clickRadioButton', {question: prohibitedConduct.question2, option: prohibitedConduct.option2});
+      if (prohibitedConduct.option2 == prohibitedConductStandardContractWales.yes) {
+        await performAction('inputText', prohibitedConduct.label2, prohibitedConduct.input2);
+      }
+    }
+    await performAction('clickButton', claimantDetailsWales.continue);
   }
 }
