@@ -18,7 +18,7 @@ import jakarta.annotation.PostConstruct;
 
 @Slf4j
 @RestController
-@RequestMapping("/cases/{caseId}/documents")
+@RequestMapping("/case/document")
 @RequiredArgsConstructor
 public class DocumentDownloadController {
 
@@ -27,18 +27,16 @@ public class DocumentDownloadController {
     @PostConstruct
     public void init() {
         log.info("=== DocumentDownloadController initialized ===");
-        log.info("Endpoint: /cases/{caseId}/documents/{documentId}/download");
+        log.info("Endpoint: /case/document/downloadDocument/{documentId}");
     }
 
-    @GetMapping("/{documentId}/download")
+    @GetMapping("/downloadDocument/{documentId}")
     public ResponseEntity<Resource> downloadDocumentById(
         @RequestHeader(HttpHeaders.AUTHORIZATION) String authorisation,
-        @PathVariable String caseId,
         @PathVariable String documentId
     ) {
         log.info("========================================");
         log.info("DOWNLOAD REQUEST RECEIVED");
-        log.info("Case ID: {}", caseId);
         log.info("Document ID: {}", documentId);
         log.info("Auth header present: {}", authorisation != null && !authorisation.isEmpty());
         log.info("========================================");
@@ -59,7 +57,7 @@ public class DocumentDownloadController {
                 .body(documentResponse.file());
 
         } catch (Exception e) {
-            log.error("ERROR: Failed to download document {} from case {}", documentId, caseId, e);
+            log.error("ERROR: Failed to download document {}", documentId, e);
             throw e;
         }
     }

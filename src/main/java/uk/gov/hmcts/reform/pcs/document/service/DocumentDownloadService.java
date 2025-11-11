@@ -54,8 +54,8 @@ public class DocumentDownloadService {
 
             return new DownloadedDocumentResponse(
                 response.getBody(),
-                mimeType,
-                fileName
+                fileName,
+                mimeType
             );
 
         } catch (IllegalArgumentException e) {
