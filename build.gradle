@@ -184,8 +184,6 @@ tasks.register('yarnInstall', Exec) {
 tasks.register('runE2eChromeTests', Exec) {
   dependsOn yarnInstall
   workingDir = file("${project.projectDir}/src/e2eTest")
-  // Run PR-filtered Playwright tests by default when invoked from pipeline.
-  // The shared Jenkins library will still control *when* this task is invoked (via labels).
   commandLine 'yarn', 'test:pr'
 }
 
