@@ -95,6 +95,20 @@ class DefendantValidatorTest {
         assertThat(actualValidationErrors).containsExactly(errorMessage1, errorMessage2, errorMessage3);
     }
 
+    @Test
+    void shouldHandleMissingAddressForAdditionalDefendant() {
+        // Given
+        DefendantDetails additionalDefendant1 = createDefendantWithAddress(null);
+
+        List<ListValue<DefendantDetails>> additionalDefendants = wrapListItems(List.of(additionalDefendant1));
+
+        // When
+        List<String> actualValidationErrors = underTest.validateAdditionalDefendants(additionalDefendants);
+
+        // Then
+        assertThat(actualValidationErrors).containsExactly(DefendantValidator.EXUI_POFCC81_ERROR);
+    }
+
     private static DefendantDetails createDefendantWithAddress(AddressUK address) {
         return DefendantDetails.builder()
             .addressKnown(VerticalYesNo.YES)
