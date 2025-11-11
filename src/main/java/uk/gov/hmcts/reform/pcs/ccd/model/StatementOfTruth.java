@@ -6,7 +6,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.List;
 
 @Builder
 @Data
@@ -17,13 +16,13 @@ public class StatementOfTruth {
 
     private String completedBy;
 
-    private List<String> agreementClaimant;
+    private String agreementClaimant;
 
     private String fullNameClaimant;
 
     private String positionClaimant;
 
-    private List<String> agreementLegalRep;
+    private String agreementLegalRep;
 
     private String fullNameLegalRep;
 

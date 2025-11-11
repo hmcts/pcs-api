@@ -9,7 +9,6 @@ import uk.gov.hmcts.reform.pcs.ccd.model.StatementOfTruth;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 public class StatementOfTruthService {
@@ -26,11 +25,11 @@ public class StatementOfTruthService {
                 ? details.getCompletedBy().name() : null);
 
         if (details.getCompletedBy() == StatementOfTruthCompletedBy.CLAIMANT) {
-            builder.agreementClaimant(mapToNames(details.getAgreementClaimant()))
+            builder.agreementClaimant(mapToFirstName(details.getAgreementClaimant()))
                 .fullNameClaimant(details.getFullNameClaimant())
                 .positionClaimant(details.getPositionClaimant());
         } else if (details.getCompletedBy() == StatementOfTruthCompletedBy.LEGAL_REPRESENTATIVE) {
-            builder.agreementLegalRep(mapToNames(details.getAgreementLegalRep()))
+            builder.agreementLegalRep(mapToFirstName(details.getAgreementLegalRep()))
                 .fullNameLegalRep(details.getFullNameLegalRep())
                 .firmNameLegalRep(details.getFirmNameLegalRep())
                 .positionLegalRep(details.getPositionLegalRep());
@@ -39,12 +38,13 @@ public class StatementOfTruthService {
         return builder.build();
     }
 
-    private <T extends Enum<T>> List<String> mapToNames(List<T> items) {
+    private <T extends Enum<T>> String mapToFirstName(List<T> items) {
         return Optional.ofNullable(items)
             .orElse(Collections.emptyList())
             .stream()
+            .findFirst()
             .map(Enum::name)
-            .collect(Collectors.toList());
+            .orElse(null);
     }
 
 }
