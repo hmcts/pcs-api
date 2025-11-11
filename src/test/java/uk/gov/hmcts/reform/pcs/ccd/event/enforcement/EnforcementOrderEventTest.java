@@ -10,6 +10,7 @@ import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.event.BaseEventTest;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.AdditionalInformationPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.AggressiveAnimalsRiskPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.CriminalAntisocialRiskPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.FirearmsPossessionRiskPage;
@@ -18,6 +19,7 @@ import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.PropertyAccessDetailsPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.ProtestorGroupRiskPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.VerbalOrWrittenThreatsRiskPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.ViolentAggressiveRiskPage;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.VulnerableAdultsChildrenPage;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 
 import java.util.List;
@@ -44,6 +46,10 @@ class EnforcementOrderEventTest extends BaseEventTest {
     private AggressiveAnimalsRiskPage aggressiveAnimalsRiskPage;
     @Mock
     private PropertyAccessDetailsPage propertyAccessDetailsPage;
+    @Mock
+    private VulnerableAdultsChildrenPage vulnerableAdultsChildrenPage;
+    @Mock
+    private AdditionalInformationPage additionalInformationPage;
 
     @BeforeEach
     void setUp() {
@@ -51,7 +57,8 @@ class EnforcementOrderEventTest extends BaseEventTest {
                                                     verbalOrWrittenThreatsRiskPage, protestorGroupRiskPage,
                                                     policeOrSocialServicesRiskPage, firearmsPossessionRiskPage,
                                                     criminalAntisocialRiskPage, aggressiveAnimalsRiskPage,
-                                                    propertyAccessDetailsPage));
+                                                    propertyAccessDetailsPage, vulnerableAdultsChildrenPage,
+                                                    additionalInformationPage));
     }
 
     @Test

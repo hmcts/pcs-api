@@ -65,7 +65,6 @@ public class PropertyAccessDetailsPage implements CcdPageConfiguration {
                 TextAreaValidationService.RISK_CATEGORY_EXTRA_LONG_TEXT_LIMIT
             ));
         }
-
         return errors;
     }
 }
