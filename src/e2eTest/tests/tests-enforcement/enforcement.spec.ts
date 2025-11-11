@@ -6,7 +6,7 @@ import { caseList, user, caseSummary, signInOrCreateAnAccount } from '@data/page
 import {
   nameAndAddressForEviction, violentOrAggressiveBehaviour, firearmPossession, yourApplication, animalsAtTheProperty,
   criminalOrAntisocialBehaviour, evictionCouldBeDelayed, vulnerableAdultsAndChildren, policeOrSocialServiceVisit,
-  riskPosedByEveryoneAtProperty, everyoneLivingAtTheProperty, verbalOrWrittenThreats, groupProtestsEviction, anythingElseHelpWithEviction
+  accessToTheProperty, riskPosedByEveryoneAtProperty, everyoneLivingAtTheProperty, verbalOrWrittenThreats, groupProtestsEviction, anythingElseHelpWithEviction
 } from '@data/page-data/page-data-enforcement';
 
 test.beforeEach(async ({ page }) => {
@@ -15,14 +15,14 @@ test.beforeEach(async ({ page }) => {
   await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
   await performAction('handleCookieConsent', {
     accept: signInOrCreateAnAccount.acceptAdditionalCookiesButton,
-    hide: signInOrCreateAnAccount.hideThisCookieMessageButton
+    hide: signInOrCreateAnAccount.hideThisCookieMessageButton,
   });
   await performAction('login', user.claimantSolicitor);
   await performAction('handleCookieConsent', {
-    accept: signInOrCreateAnAccount.acceptAnalyticsCookiesButton
+    accept: signInOrCreateAnAccount.acceptAnalyticsCookiesButton,
   });
   await performAction('filterCaseFromCaseList', caseList.stateAwaitingSubmission);
-  await performAction('noCasesFoundAfterSearch')
+  await performAction('noCasesFoundAfterSearch');
   //Below three lines will be merged into a single action as part of improvement
   await performAction('selectFirstCaseFromTheFilter', caseNotFoundAfterFilter);
   await performAction('createNewCase', caseNotFoundAfterFilter);
@@ -35,54 +35,74 @@ test.describe('[Enforcement - Warrant of Possession] @Master @nightly', async ()
     await performAction('clickButtonAndVerifyPageNavigation', caseSummary.go, yourApplication.mainHeader);
     await performAction('selectApplicationType', {
       question: yourApplication.typeOfApplicationQuestion,
-      option: yourApplication.typeOfApplicationOptions.warrantOfPossession
+      option: yourApplication.typeOfApplicationOptions.warrantOfPossession,
     });
     await performValidation('mainHeader', nameAndAddressForEviction.mainHeader);
     await performAction('selectNameAndAddressForEviction', {
       question: nameAndAddressForEviction.nameAndAddressPageForEvictionQuestion,
-      option: nameAndAddressForEviction.yes
+      option: nameAndAddressForEviction.yes,
     });
     await performValidation('mainHeader', everyoneLivingAtTheProperty.mainHeader);
     await performAction('selectEveryoneLivingAtTheProperty', {
       question: everyoneLivingAtTheProperty.riskToBailiffQuestion,
-      option: everyoneLivingAtTheProperty.yes
+      option: everyoneLivingAtTheProperty.yes,
     });
     await performValidation('mainHeader', riskPosedByEveryoneAtProperty.mainHeader);
     await performAction('selectRiskPosedByEveryoneAtProperty', {
-      riskTypes: [riskPosedByEveryoneAtProperty.violentOrAggressiveBehaviour, riskPosedByEveryoneAtProperty.historyOfFirearmPossession,
-      riskPosedByEveryoneAtProperty.criminalOrAntisocialBehaviour, riskPosedByEveryoneAtProperty.verbalOrWrittenThreats,
-      riskPosedByEveryoneAtProperty.protestGroup, riskPosedByEveryoneAtProperty.policeOrSocialService, riskPosedByEveryoneAtProperty.aggressiveAnimals]
+      riskTypes: [
+        riskPosedByEveryoneAtProperty.violentOrAggressiveBehaviourCheckbox,
+        riskPosedByEveryoneAtProperty.historyOfFirearmPossessionCheckbox,
+        riskPosedByEveryoneAtProperty.criminalOrAntisocialBehaviourCheckbox,
+        riskPosedByEveryoneAtProperty.verbalOrWrittenThreatsCheckbox,
+        riskPosedByEveryoneAtProperty.protestGroupCheckbox,
+        riskPosedByEveryoneAtProperty.policeOrSocialServiceCheckbox,
+        riskPosedByEveryoneAtProperty.aggressiveAnimalsCheckbox,
+      ],
     });
     await performAction('provideDetailsViolentOrAggressiveBehaviour', {
       label: violentOrAggressiveBehaviour.howHaveTheyBeenViolentAndAggressive,
-      input: violentOrAggressiveBehaviour.howHaveTheyBeenViolentAndAggressiveInput
+      input: violentOrAggressiveBehaviour.howHaveTheyBeenViolentAndAggressiveInput,
     });
     await performAction('provideDetailsFireArmPossession', {
       label: firearmPossession.whatIsTheirHistoryOfFirearmPossession,
-      input: firearmPossession.whatIsTheirHistoryOfFirearmPossessionInput
+      input: firearmPossession.whatIsTheirHistoryOfFirearmPossessionInput,
     });
     await performAction('provideDetailsCriminalOrAntisocialBehavior', {
       label: criminalOrAntisocialBehaviour.whatIsTheirHistoryOfCriminalAntisocialBehaviour,
-      input: criminalOrAntisocialBehaviour.whatIsTheirHistoryOfCriminalAntisocialBehaviourInput
+      input: criminalOrAntisocialBehaviour.whatIsTheirHistoryOfCriminalAntisocialBehaviourInput,
     });
     await performAction('provideDetailsVerbalOrWrittenThreats', {
       label: verbalOrWrittenThreats.verbalOrWrittenThreatsMade,
-      input: verbalOrWrittenThreats.verbalOrWrittenThreatsMadeInput
+      input: verbalOrWrittenThreats.verbalOrWrittenThreatsMadeInput,
     });
     await performAction('provideDetailsGroupProtestsEviction', {
       label: groupProtestsEviction.whichGroupMember,
-      input: groupProtestsEviction.whichGroupMemberInput
+      input: groupProtestsEviction.whichGroupMemberInput,
     });
     await performAction('provideDetailsPoliceOrSocialServiceVisits', {
       label: policeOrSocialServiceVisit.whyDidThePoliceOrSSVisitTheProperty,
-      input: policeOrSocialServiceVisit.whyDidThePoliceOrSSVisitThePropertyInput
+      input: policeOrSocialServiceVisit.whyDidThePoliceOrSSVisitThePropertyInput,
     });
     await performAction('provideDetailsAnimalsAtTheProperty', {
       label: animalsAtTheProperty.whatKindOfAnimalDoTheyHave,
-      input: animalsAtTheProperty.whatKindOfAnimalDoTheyHaveInput
+      input: animalsAtTheProperty.whatKindOfAnimalDoTheyHaveInput,
     });
     await performValidation('mainHeader', vulnerableAdultsAndChildren.mainHeader);
-    await performAction('clickButton', vulnerableAdultsAndChildren.continue);
+    await performAction('selectVulnerablePeopleInTheProperty', {
+      question: vulnerableAdultsAndChildren.IsAnyOneLivingAtThePropertyQuestion,
+      option: vulnerableAdultsAndChildren.yesRadioOption,
+      confirm: vulnerableAdultsAndChildren.confirmVulnerablePeopleQuestion,
+      peopleOption: vulnerableAdultsAndChildren.vulnerableAdultsRadioOption,
+      label: vulnerableAdultsAndChildren.howAreTheyVulnerableTextLabel,
+      input: vulnerableAdultsAndChildren.howAreTheyVulnerableTextInput
+    });
+    await performValidation('mainHeader', accessToTheProperty.mainHeader);
+    await performAction('accessToProperty', {
+      question: accessToTheProperty.accessToThePropertyQuestion,
+      option: accessToTheProperty.yesRadioOption,
+      label: accessToTheProperty.whyItsDifficultToAccessToThePropertyTextLabel,
+      input: accessToTheProperty.whyItsDifficultToAccessToThePropertyTextInput,
+    });
     await performAction('provideDetailsAnythingElseHelpWithEviction', {
       question: anythingElseHelpWithEviction.anythingElseQuestion,
       option: anythingElseHelpWithEviction.yes,
@@ -96,20 +116,32 @@ test.describe('[Enforcement - Warrant of Possession] @Master @nightly', async ()
     await performAction('clickButtonAndVerifyPageNavigation', caseSummary.go, yourApplication.mainHeader);
     await performAction('selectApplicationType', {
       question: yourApplication.typeOfApplicationQuestion,
-      option: yourApplication.typeOfApplicationOptions.warrantOfPossession
+      option: yourApplication.typeOfApplicationOptions.warrantOfPossession,
     });
     await performValidation('mainHeader', nameAndAddressForEviction.mainHeader);
     await performAction('selectNameAndAddressForEviction', {
       question: nameAndAddressForEviction.nameAndAddressPageForEvictionQuestion,
-      option: nameAndAddressForEviction.yes
+      option: nameAndAddressForEviction.yes,
     });
     await performValidation('mainHeader', everyoneLivingAtTheProperty.mainHeader);
     await performAction('selectEveryoneLivingAtTheProperty', {
       question: everyoneLivingAtTheProperty.riskToBailiffQuestion,
-      option: everyoneLivingAtTheProperty.no
+      option: everyoneLivingAtTheProperty.no,
     });
     await performValidation('mainHeader', vulnerableAdultsAndChildren.mainHeader);
-    await performAction('clickButton', vulnerableAdultsAndChildren.continue);
+    await performAction('selectVulnerablePeopleInTheProperty', {
+      question: vulnerableAdultsAndChildren.IsAnyOneLivingAtThePropertyQuestion,
+      option: vulnerableAdultsAndChildren.noRadioOption,
+      confirm: vulnerableAdultsAndChildren.confirmVulnerablePeopleQuestion,
+      peopleOption: vulnerableAdultsAndChildren.vulnerableAdultsRadioOption,
+      label: vulnerableAdultsAndChildren.howAreTheyVulnerableTextLabel,
+      input: vulnerableAdultsAndChildren.howAreTheyVulnerableTextInput
+    });
+    await performValidation('mainHeader', accessToTheProperty.mainHeader);
+    await performAction('accessToProperty', {
+      question: accessToTheProperty.accessToThePropertyQuestion,
+      option: accessToTheProperty.noRadioOption,
+  });
     await performAction('provideDetailsAnythingElseHelpWithEviction', {
       question: anythingElseHelpWithEviction.anythingElseQuestion,
       option: anythingElseHelpWithEviction.no,
@@ -123,22 +155,36 @@ test.describe('[Enforcement - Warrant of Possession] @Master @nightly', async ()
     await performAction('clickButtonAndVerifyPageNavigation', caseSummary.go, yourApplication.mainHeader);
     await performAction('selectApplicationType', {
       question: yourApplication.typeOfApplicationQuestion,
-      option: yourApplication.typeOfApplicationOptions.warrantOfPossession
+      option: yourApplication.typeOfApplicationOptions.warrantOfPossession,
     });
     await performValidation('mainHeader', nameAndAddressForEviction.mainHeader);
     await performAction('selectNameAndAddressForEviction', {
       question: nameAndAddressForEviction.nameAndAddressPageForEvictionQuestion,
-      option: nameAndAddressForEviction.yes
+      option: nameAndAddressForEviction.yes,
     });
     await performValidation('mainHeader', everyoneLivingAtTheProperty.mainHeader);
     await performAction('selectEveryoneLivingAtTheProperty', {
       question: everyoneLivingAtTheProperty.riskToBailiffQuestion,
-      option: everyoneLivingAtTheProperty.notSure
+      option: everyoneLivingAtTheProperty.notSure,
     });
     await performValidation('mainHeader', evictionCouldBeDelayed.mainHeader);
     await performAction('clickButton', evictionCouldBeDelayed.continue);
     await performValidation('mainHeader', vulnerableAdultsAndChildren.mainHeader);
-    await performAction('clickButton', vulnerableAdultsAndChildren.continue);
+    await performAction('selectVulnerablePeopleInTheProperty', {
+      question: vulnerableAdultsAndChildren.IsAnyOneLivingAtThePropertyQuestion,
+      option: vulnerableAdultsAndChildren.notSureRadioOption,
+      confirm: vulnerableAdultsAndChildren.confirmVulnerablePeopleQuestion,
+      peopleOption: vulnerableAdultsAndChildren.vulnerableAdultsRadioOption,
+      label: vulnerableAdultsAndChildren.howAreTheyVulnerableTextLabel,
+      input: vulnerableAdultsAndChildren.howAreTheyVulnerableTextInput
+    });
+    await performValidation('mainHeader', accessToTheProperty.mainHeader);
+    await performAction('accessToProperty', {
+      question: accessToTheProperty.accessToThePropertyQuestion,
+      option: accessToTheProperty.yesRadioOption,
+      label: accessToTheProperty.whyItsDifficultToAccessToThePropertyTextLabel,
+      input: accessToTheProperty.whyItsDifficultToAccessToThePropertyTextInput,
+    });
     await performAction('provideDetailsAnythingElseHelpWithEviction', {
       question: anythingElseHelpWithEviction.anythingElseQuestion,
       option: anythingElseHelpWithEviction.yes,
