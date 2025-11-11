@@ -730,4 +730,10 @@ public class PCSCase {
     )
     private WaysToPay waysToPay;
 
+    @CCD(searchable = false)
+    private YesOrNo showPreActionProtocolPageWales;
+
+    @CCD(searchable = false)
+    private YesOrNo showASBQuestionsPageWales;
+
 }
