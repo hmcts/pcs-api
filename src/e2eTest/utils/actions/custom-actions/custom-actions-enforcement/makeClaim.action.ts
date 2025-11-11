@@ -1,17 +1,23 @@
-import { Page } from "@playwright/test";
-import { initializeExecutor } from "@utils/controller";
-import { performAction, performValidation } from "@utils/controller";
-import { actionData, actionRecord, IAction } from "@utils/interfaces/action.interface";
-import { home, addressDetails, additionalReasonsForPossession, alternativesToPossession, applications, checkYourAnswers, claimantCircumstances, claimantName,
+import { Page } from '@playwright/test';
+import { initializeExecutor } from '@utils/controller';
+import { performAction, performValidation } from '@utils/controller';
+import { actionData, actionRecord, IAction } from '@utils/interfaces/action.interface';
+import {
+  home, addressDetails, additionalReasonsForPossession, alternativesToPossession, applications, checkYourAnswers, claimantCircumstances, claimantName,
   claimantType, claimingCosts, claimType, completeYourClaim, contactPreferences, defendantCircumstances, defendantDetails,
-  groundsForPossession, languageUsed, mediationAndSettlement, noticeOfYourIntention, preActionProtocol, statementOfTruth, tenancyLicenceDetails, underlesseeOrMortgageeEntitledToClaim,
-  wantToUploadDocuments} from "@data/page-data";
+  provideMoreDetailsOfClaim, groundsForPossession, languageUsed, mediationAndSettlement, noticeOfYourIntention, preActionProtocol, statementOfTruth, tenancyLicenceDetails, underlesseeOrMortgageeEntitledToClaim,
+  wantToUploadDocuments
+} from '@data/page-data';
 
 export class MakeClaimAction implements IAction {
-  async execute(page: Page, action: string, fieldName?: actionData | actionRecord, value?: actionData | actionRecord): Promise<void> {
-
+  async execute(
+    page: Page,
+    action: string,
+    fieldName?: actionData | actionRecord,
+    value?: actionData | actionRecord
+  ): Promise<void> {
     const actionsMap = new Map<string, () => Promise<void>>([
-      ['createNewCase', () => this.createNewCase(page, fieldName as actionData)]
+      ['createNewCase', () => this.createNewCase(page, fieldName as actionData)],
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) throw new Error(`No action found for '${action}'`);
@@ -26,11 +32,15 @@ export class MakeClaimAction implements IAction {
       await performAction('housingPossessionClaim');
       await performAction('selectAddress', {
         postcode: addressDetails.englandCourtAssignedPostcode,
-        addressIndex: addressDetails.addressIndex
+        addressIndex: addressDetails.addressIndex,
       });
       await performValidation('bannerAlert', 'Case #.* has been created.');
       await performAction('extractCaseIdFromAlert');
-      await performAction('provideMoreDetailsOfClaim');
+      await performAction(
+        'clickButtonAndVerifyPageNavigation',
+        provideMoreDetailsOfClaim.continue,
+        claimantType.mainHeader
+      );
       await performAction('selectClaimantType', claimantType.england.registeredProviderForSocialHousing);
       await performAction('selectClaimType', claimType.no);
       await performAction('selectClaimantName', claimantName.yes);
@@ -38,7 +48,7 @@ export class MakeClaimAction implements IAction {
       await performAction('selectContactPreferences', {
         notifications: contactPreferences.yes,
         correspondenceAddress: contactPreferences.yes,
-        phoneNumber: contactPreferences.no
+        phoneNumber: contactPreferences.no,
       });
       await performAction('defendantDetails', {
         name: defendantDetails.noRadioOption,
@@ -47,10 +57,10 @@ export class MakeClaimAction implements IAction {
       });
       await performValidation('mainHeader', tenancyLicenceDetails.mainHeader);
       await performAction('selectTenancyOrLicenceDetails', {
-        tenancyOrLicenceType: tenancyLicenceDetails.introductoryTenancy
+        tenancyOrLicenceType: tenancyLicenceDetails.introductoryTenancy,
       });
       await performValidation('mainHeader', groundsForPossession.mainHeader);
-      await performAction('selectGroundsForPossession', {groundsRadioInput: groundsForPossession.no});
+      await performAction('selectGroundsForPossession', { groundsRadioInput: groundsForPossession.no });
       await performAction('enterReasonForPossession', [groundsForPossession.noGrounds]);
       await performValidation('mainHeader', preActionProtocol.mainHeader);
       await performAction('selectPreActionProtocol', preActionProtocol.no);
@@ -76,13 +86,17 @@ export class MakeClaimAction implements IAction {
       await performValidation('mainHeader', underlesseeOrMortgageeEntitledToClaim.mainHeader);
       await performAction('selectUnderlesseeOrMortgageeEntitledToClaim', {
         question: underlesseeOrMortgageeEntitledToClaim.entitledToClaimRelief,
-        option: underlesseeOrMortgageeEntitledToClaim.no});
+        option: underlesseeOrMortgageeEntitledToClaim.no
+      });
       await performAction('wantToUploadDocuments', {
         question: wantToUploadDocuments.uploadAnyAdditionalDocumentsLabel,
-        option: wantToUploadDocuments.no
+        option: wantToUploadDocuments.no,
       });
       await performAction('selectApplications', applications.no);
-      await performAction('selectLanguageUsed', { question: languageUsed.whichLanguageUsedQuestion, option: languageUsed.english });
+      await performAction('selectLanguageUsed', {
+        question: languageUsed.whichLanguageUsedQuestion,
+        option: languageUsed.english,
+      });
       await performAction('completingYourClaim', completeYourClaim.submitAndClaimNow);
       await performAction('clickButton', statementOfTruth.continue);
       await performAction('clickButton', checkYourAnswers.saveAndContinue);
