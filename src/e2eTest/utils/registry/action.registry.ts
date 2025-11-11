@@ -15,7 +15,7 @@ import {handleCookieConsentAction} from '@utils/actions/custom-actions/handleCoo
 import {signOutAction} from '@utils/actions/custom-actions/signOut.action';
 
 export class ActionRegistry {
-  private static actions: Map<string, IAction> = new Map([
+  private static actions: Map<string, IAction> = new Map<string, IAction>([
     ['clickButton', new ClickButtonAction()],
     ['clickButtonAndVerifyPageNavigation', new ClickButtonAction()],
     ['verifyPageAndClickButton', new ClickButtonAction()],
