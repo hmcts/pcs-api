@@ -293,9 +293,7 @@ test.describe('[Create Case - Wales] @Master @nightly', async () => {
     });
     await performValidation('mainHeader', whatAreYourGroundsForPossessionWales.mainHeader);
     await performAction('selectYourPossessionGrounds', {
-      discretionary: [whatAreYourGroundsForPossessionWales.discretionary.estateManagementGrounds,whatAreYourGroundsForPossessionWales.discretionary.rentArrears],
-      discretionaryEstateGrounds: [whatAreYourGroundsForPossessionWales.discretionary.buildingWorks],
-      mandatory: [whatAreYourGroundsForPossessionWales.mandatory.section187],
+      discretionary: [whatAreYourGroundsForPossessionWales.discretionary.rentArrears,whatAreYourGroundsForPossessionWales.discretionary.antiSocialBehaviour],
     });
     await performValidation('mainHeader', antiSocialBehaviourWales.mainHeader);
     await performAction('clickButton', antiSocialBehaviourWales.continue);
