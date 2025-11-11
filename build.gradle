@@ -302,7 +302,7 @@ ext {
   springFrameworkBootVersion = "3.5.7"
   lombokVersion = "1.18.42"
   springSecurityVersion = "6.5.6"
-  pactVersion = "4.6.17"
+  pactVersion = "4.6.18"
   tomcatEmbedVersion = "11.0.13"
   nettyVersion = "4.1.127.Final"
 }
@@ -326,7 +326,7 @@ dependencies {
   implementation group: 'uk.gov.service.notify', name: 'notifications-java-client', version: '5.2.1-RELEASE'
   implementation platform(group: 'com.azure.spring', name :'spring-cloud-azure-dependencies', version :'6.0.0')
   implementation "com.azure.spring:spring-cloud-azure-starter-servicebus-jms"
-  implementation group: 'org.modelmapper', name: 'modelmapper', version: '3.2.5'
+  implementation group: 'org.modelmapper', name: 'modelmapper', version: '3.2.6'
 
   implementation group: 'com.github.hmcts.java-logging', name: 'logging', version: '6.1.9'
   implementation group: 'com.github.hmcts', name: 'core-case-data-store-client', version: '5.2.0'

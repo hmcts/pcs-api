@@ -38,6 +38,7 @@ public class SecureOrFlexibleGroundsForPossessionReasons implements CcdPageConfi
                     "typeOfTenancyLicence=\"SECURE_TENANCY\""
                             + " OR typeOfTenancyLicence=\"FLEXIBLE_TENANCY\""
                             + " AND (showBreachOfTenancyTextarea=\"Yes\" OR showReasonsForGroundsPage=\"Yes\")"
+                            + " AND legislativeCountry=\"England\""
             )
             .label("possessionReasons-lineSeparator","---")
             .complex(PCSCase::getSecureOrFlexibleGroundsReasons)
