@@ -29,7 +29,7 @@ import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.VerbalOrWrittenThreatsRiskPa
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.ViolentAggressiveRiskPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.FirearmsPossessionRiskPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.CriminalAntisocialRiskPage;
-import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.EvictionVulnerableAdultsChildrenPage;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.VulnerableAdultsChildrenPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.LivingInThePropertyPage;
 
 import static uk.gov.hmcts.reform.pcs.ccd.domain.State.AWAITING_SUBMISSION_TO_HMCTS;
@@ -69,10 +69,10 @@ public class EnforcementOrderEvent implements CCDConfig<PCSCase, State, UserRole
                 .add(new ProtestorGroupRiskPage())
                 .add(new PoliceOrSocialServicesRiskPage())
                 .add(new AggressiveAnimalsRiskPage())
-                .add(new EvictionVulnerableAdultsChildrenPage())
+                .add(new VulnerableAdultsChildrenPage())
+                .add(new PropertyAccessDetailsPage())
                 .add(new AdditionalInformationPage())
                 .add(new MoneyOwedPage())
-                .add(new PropertyAccessDetailsPage())
                 .add(new CheckYourAnswersPlaceHolder());
     }
 
