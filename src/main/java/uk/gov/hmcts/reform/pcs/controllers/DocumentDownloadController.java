@@ -29,6 +29,10 @@ public class DocumentDownloadController {
         @RequestHeader(HttpHeaders.AUTHORIZATION) String authorisation,
         @NotNull @PathVariable String documentId
     ) {
+        System.out.println("****** CONTROLLER HIT ******");
+        System.out.println("Document ID: " + documentId);
+        log.error("******* CONTROLLER HIT - Document ID: {}", documentId);
+
         log.info("Download request received for document: {}", documentId);
 
         DownloadedDocumentResponse documentResponse = documentDownloadService.downloadDocument(
