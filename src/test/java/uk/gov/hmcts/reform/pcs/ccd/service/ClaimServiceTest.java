@@ -81,10 +81,10 @@ class ClaimServiceTest {
         when(pcsCase.getOtherProhibitedConductDetailsWales()).thenReturn(prohibitedConductDetails);
     
         Map<String, String> expectedProhibitedConduct = Map.of(
-        "antisocialBehaviourDetailsWales", asbDetails,
-        "illegalPurposesUseDetailsWales", illegalPurposesDetails,
-        "otherProhibitedConductDetailsWales", prohibitedConductDetails
-    );
+            "antisocialBehaviourDetailsWales", asbDetails,
+            "illegalPurposesUseDetailsWales", illegalPurposesDetails,
+            "otherProhibitedConductDetailsWales", prohibitedConductDetails
+        );
 
 
         // When
