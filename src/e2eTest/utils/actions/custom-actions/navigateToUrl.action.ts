@@ -1,6 +1,6 @@
 import { IAction } from '../../interfaces/action.interface';
-import {Page, test} from '@playwright/test';
-import {MEDIUM_TIMEOUT} from '../../../playwright.config';
+import { Page, test } from '@playwright/test';
+import { MEDIUM_TIMEOUT } from '../../../playwright.config';
 
 export class NavigateToUrlAction implements IAction {
   async execute(page: Page, action: string, url: string): Promise<void> {
