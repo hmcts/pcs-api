@@ -1,9 +1,7 @@
 import {test} from '@playwright/test';
 import {initializeExecutor, performAction, performValidation, performValidations} from '@utils/controller';
-import {claimType, claimantType, claimantName, claimantDetailsWales, contactPreferences, defendantDetails, tenancyLicenceDetails,
-        groundsForPossession, rentArrearsPossessionGrounds, preActionProtocol, mediationAndSettlement, noticeOfYourIntention, rentDetails,
-        provideMoreDetailsOfClaim, resumeClaim, resumeClaimOptions, detailsOfRentArrears, whatAreYourGroundsForPossession,
-        rentArrearsOrBreachOfTenancy, reasonsForPossession, moneyJudgment, claimantCircumstances, applications, completeYourClaim, user,
+import {claimType, claimantType, claimantName, claimantDetailsWales, contactPreferences, defendantDetails, preActionProtocol, mediationAndSettlement, noticeOfYourIntention,
+         reasonsForPossession, moneyJudgment, claimantCircumstances, applications, completeYourClaim, user,
         checkYourAnswers, propertyDetails, languageUsed, defendantCircumstances, claimingCosts, home, additionalReasonsForPossession,
         underlesseeOrMortgageeEntitledToClaim, wantToUploadDocuments, whatAreYourGroundsForPossessionWales, addressDetails,
         signInOrCreateAnAccount, occupationContractOrLicenceDetailsWales, prohibitedConductStandardContractWales, dailyRentAmount, antiSocialBehaviourWales} from '@data/page-data';
@@ -25,7 +23,7 @@ test.beforeEach(async ({page}) => {
 });
 
 test.describe('[Create Case - Wales] @Master @nightly', async () => {
-  test('Wales - Secure contract - Rent arrears only', async () => {
+  test('Wales - Secure contract - Rent arrears only @PR', async () => {
     await performAction('enterTestAddressManually');
     await performValidation('bannerAlert', 'Case #.* has been created.');
     await performAction('extractCaseIdFromAlert');
