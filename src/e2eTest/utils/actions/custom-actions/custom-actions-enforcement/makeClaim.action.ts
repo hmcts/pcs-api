@@ -1,45 +1,23 @@
-import { Page } from "@playwright/test";
-import { addressDetails } from "@data/page-data/addressDetails.page.data";
-import { home } from "@data/page-data/home.page.data";
-import { initializeExecutor } from "@utils/controller";
-import { performAction, performValidation } from "@utils/controller";
-import { actionData, actionRecord, IAction } from "@utils/interfaces/action.interface";
-import { additionalReasonsForPossession } from "@data/page-data/additionalReasonsForPossession.page.data";
-import { alternativesToPossession } from "@data/page-data/alternativesToPossession.page.data";
-import { applications } from "@data/page-data/applications.page.data";
-import { checkYourAnswers } from "@data/page-data/checkYourAnswers.page.data";
-import { claimantCircumstances } from "@data/page-data/claimantCircumstances.page.data";
-import { claimantName } from "@data/page-data/claimantName.page.data";
-import { claimantType } from "@data/page-data/claimantType.page.data";
-import { claimingCosts } from "@data/page-data/claimingCosts.page.data";
-import { claimType } from "@data/page-data/claimType.page.data";
-import { completeYourClaim } from "@data/page-data/completeYourClaim.page.data";
-import { contactPreferences } from "@data/page-data/contactPreferences.page.data";
-import { dailyRentAmount } from "@data/page-data/dailyRentAmount.page.data";
-import { defendantCircumstances } from "@data/page-data/defendantCircumstances.page.data";
-import { defendantDetails } from "@data/page-data/defendantDetails.page.data";
-import { groundsForPossession } from "@data/page-data/groundsForPossession.page.data";
-import { languageUsed } from "@data/page-data/languageUsed.page.data";
-import { mediationAndSettlement } from "@data/page-data/mediationAndSettlement.page.data";
-import { moneyJudgment } from "@data/page-data/moneyJudgment.page.data";
-import { noticeDetails } from "@data/page-data/noticeDetails.page.data";
-import { noticeOfYourIntention } from "@data/page-data/noticeOfYourIntention.page.data";
-import { preActionProtocol } from "@data/page-data/preActionProtocol.page.data";
-import { provideMoreDetailsOfClaim } from "@data/page-data/provideMoreDetailsOfClaim.page.data";
-import { rentArrearsPossessionGrounds } from "@data/page-data/rentArrearsPossessionGrounds.page.data";
-import { rentDetails } from "@data/page-data/rentDetails.page.data";
-import { statementOfTruth } from "@data/page-data/statementOfTruth.page.data";
-import { tenancyLicenceDetails } from "@data/page-data/tenancyLicenceDetails.page.data";
-import { underlesseeOrMortgageeEntitledToClaim } from "@data/page-data/underlesseeOrMortgageeEntitledToClaim.page.data";
-import { uploadAdditionalDocs } from "@data/page-data/uploadAdditionalDocs.page.data";
-import { wantToUploadDocuments } from "@data/page-data/wantToUploadDocuments.page.data";
-import { whatAreYourGroundsForPossession } from "@data/page-data/whatAreYourGroundsForPossession.page.data";
+import { Page } from '@playwright/test';
+import { initializeExecutor } from '@utils/controller';
+import { performAction, performValidation } from '@utils/controller';
+import { actionData, actionRecord, IAction } from '@utils/interfaces/action.interface';
+import {
+  home, addressDetails, additionalReasonsForPossession, alternativesToPossession, applications, checkYourAnswers, claimantCircumstances, claimantName,
+  claimantType, claimingCosts, claimType, completeYourClaim, contactPreferences, defendantCircumstances, defendantDetails,
+  provideMoreDetailsOfClaim, groundsForPossession, languageUsed, mediationAndSettlement, noticeOfYourIntention, preActionProtocol, statementOfTruth, tenancyLicenceDetails, underlesseeOrMortgageeEntitledToClaim,
+  wantToUploadDocuments
+} from '@data/page-data';
 
 export class MakeClaimAction implements IAction {
-  async execute(page: Page, action: string, fieldName?: actionData | actionRecord, value?: actionData | actionRecord): Promise<void> {
-
+  async execute(
+    page: Page,
+    action: string,
+    fieldName?: actionData | actionRecord,
+    value?: actionData | actionRecord
+  ): Promise<void> {
     const actionsMap = new Map<string, () => Promise<void>>([
-      ['createNewCase', () => this.createNewCase(page, fieldName as actionData)]
+      ['createNewCase', () => this.createNewCase(page, fieldName as actionData)],
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) throw new Error(`No action found for '${action}'`);
@@ -54,11 +32,15 @@ export class MakeClaimAction implements IAction {
       await performAction('housingPossessionClaim');
       await performAction('selectAddress', {
         postcode: addressDetails.englandCourtAssignedPostcode,
-        addressIndex: addressDetails.addressIndex
+        addressIndex: addressDetails.addressIndex,
       });
       await performValidation('bannerAlert', 'Case #.* has been created.');
       await performAction('extractCaseIdFromAlert');
-      await performAction('clickButtonAndVerifyPageNavigation', provideMoreDetailsOfClaim.continue, claimantType.mainHeader);
+      await performAction(
+        'clickButtonAndVerifyPageNavigation',
+        provideMoreDetailsOfClaim.continue,
+        claimantType.mainHeader
+      );
       await performAction('selectClaimantType', claimantType.england.registeredProviderForSocialHousing);
       await performAction('selectClaimType', claimType.no);
       await performAction('selectClaimantName', claimantName.yes);
@@ -66,79 +48,55 @@ export class MakeClaimAction implements IAction {
       await performAction('selectContactPreferences', {
         notifications: contactPreferences.yes,
         correspondenceAddress: contactPreferences.yes,
-        phoneNumber: contactPreferences.no
+        phoneNumber: contactPreferences.no,
       });
       await performAction('defendantDetails', {
-        name: defendantDetails.yes,
-        correspondenceAddress: defendantDetails.yes,
-        email: defendantDetails.yes,
-        correspondenceAddressSame: defendantDetails.no
+        name: defendantDetails.no,
+        correspondenceAddress: defendantDetails.no,
+        email: defendantDetails.no,
       });
       await performValidation('mainHeader', tenancyLicenceDetails.mainHeader);
       await performAction('selectTenancyOrLicenceDetails', {
-        tenancyOrLicenceType: tenancyLicenceDetails.assuredTenancy,
-        day: tenancyLicenceDetails.day,
-        month: tenancyLicenceDetails.month,
-        year: tenancyLicenceDetails.year,
-        files: ['tenancyLicence.docx', 'tenancyLicence.png']
+        tenancyOrLicenceType: tenancyLicenceDetails.introductoryTenancy,
       });
       await performValidation('mainHeader', groundsForPossession.mainHeader);
-      await performAction('selectGroundsForPossession', { groundsRadioInput: groundsForPossession.yes });
-      await performAction('selectRentArrearsPossessionGround', {
-        rentArrears: [rentArrearsPossessionGrounds.rentArrears, rentArrearsPossessionGrounds.seriousRentArrears, rentArrearsPossessionGrounds.persistentDelayInPayingRent],
-        otherGrounds: rentArrearsPossessionGrounds.yes
-      });
-      await performAction('selectYourPossessionGrounds', {
-        mandatory: [whatAreYourGroundsForPossession.mandatory.holidayLet, whatAreYourGroundsForPossession.mandatory.ownerOccupier],
-        discretionary: [whatAreYourGroundsForPossession.discretionary.domesticViolence14A, whatAreYourGroundsForPossession.discretionary.rentArrears],
-      });
+      await performAction('selectGroundsForPossession', { groundsRadioInput: groundsForPossession.no });
+      await performAction('enterReasonForPossession', [groundsForPossession.noGrounds]);
       await performValidation('mainHeader', preActionProtocol.mainHeader);
-      await performAction('selectPreActionProtocol', preActionProtocol.yes);
+      await performAction('selectPreActionProtocol', preActionProtocol.no);
       await performValidation('mainHeader', mediationAndSettlement.mainHeader);
       await performAction('selectMediationAndSettlement', {
-        attemptedMediationWithDefendantsOption: mediationAndSettlement.yes,
+        attemptedMediationWithDefendantsOption: mediationAndSettlement.no,
         settlementWithDefendantsOption: mediationAndSettlement.no,
       });
       await performValidation('mainHeader', noticeOfYourIntention.mainHeader);
-      await performValidation('text', { "text": noticeOfYourIntention.guidanceOnPosessionNoticePeriodsLink, "elementType": "paragraphLink" })
-      await performValidation('text', { "text": noticeOfYourIntention.servedNoticeInteractiveText, "elementType": "inlineText" });
-      await performAction('selectNoticeOfYourIntention', noticeOfYourIntention.yes);
-      await performValidation('mainHeader', noticeDetails.mainHeader);
-      await performAction('selectNoticeDetails', {
-        howDidYouServeNotice: noticeDetails.byFirstClassPost,
-        day: '16', month: '07', year: '1985', files: 'NoticeDetails.pdf'
-      });
-      await performValidation('mainHeader', rentDetails.mainHeader);
-      await performAction('provideRentDetails', { rentFrequencyOption: 'weekly', rentAmount: '800' });
-      await performValidation('mainHeader', dailyRentAmount.mainHeader);
-      await performAction('selectDailyRentAmount', {
-        calculateRentAmount: '£114.29',
-        unpaidRentInteractiveOption: dailyRentAmount.no,
-        unpaidRentAmountPerDay: '20'
-      });
-      await performValidation('mainHeader', moneyJudgment.mainHeader);
-      await performAction('selectMoneyJudgment', moneyJudgment.yes);
+      await performAction('selectNoticeOfYourIntention', noticeOfYourIntention.no);
       await performValidation('mainHeader', claimantCircumstances.mainHeader);
       await performAction('selectClaimantCircumstances', {
-        circumstanceOption: claimantCircumstances.yes,
-        claimantInput: claimantCircumstances.claimantCircumstanceInfoInputData
+        circumstanceOption: claimantCircumstances.no
       });
       await performValidation('mainHeader', defendantCircumstances.mainHeader);
-      await performAction('selectDefendantCircumstances', defendantCircumstances.yes);
+      await performAction('selectDefendantCircumstances', defendantCircumstances.no);
       await performValidation('mainHeader', alternativesToPossession.mainHeader);
       await performAction('selectAlternativesToPossession');
       await performValidation('mainHeader', claimingCosts.mainHeader);
-      await performAction('selectClaimingCosts', claimingCosts.yes);
+      await performAction('selectClaimingCosts', claimingCosts.no);
       await performValidation('mainHeader', additionalReasonsForPossession.mainHeader);
-      await performAction('selectAdditionalReasonsForPossession', additionalReasonsForPossession.yes);
+      await performAction('selectAdditionalReasonsForPossession', additionalReasonsForPossession.no);
       await performValidation('mainHeader', underlesseeOrMortgageeEntitledToClaim.mainHeader);
-      await performAction('clickButton', underlesseeOrMortgageeEntitledToClaim.continue);
+      await performAction('selectUnderlesseeOrMortgageeEntitledToClaim', {
+        question: underlesseeOrMortgageeEntitledToClaim.entitledToClaimRelief,
+        option: underlesseeOrMortgageeEntitledToClaim.no
+      });
       await performAction('wantToUploadDocuments', {
         question: wantToUploadDocuments.uploadAnyAdditionalDocumentsLabel,
-        option: wantToUploadDocuments.no
+        option: wantToUploadDocuments.no,
       });
-      await performAction('selectApplications', applications.yes);
-      await performAction('selectLanguageUsed', { question: languageUsed.whichLanguageUsedQuestion, option: languageUsed.english });
+      await performAction('selectApplications', applications.no);
+      await performAction('selectLanguageUsed', {
+        question: languageUsed.whichLanguageUsedQuestion,
+        option: languageUsed.english,
+      });
       await performAction('completingYourClaim', completeYourClaim.submitAndClaimNow);
       await performAction('clickButton', statementOfTruth.continue);
       await performAction('clickButton', checkYourAnswers.saveAndContinue);

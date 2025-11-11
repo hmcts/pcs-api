@@ -1,5 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim;
 
+import lombok.AllArgsConstructor;
+import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
@@ -16,6 +18,8 @@ import java.util.Set;
 
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 
+@AllArgsConstructor
+@Component
 public class AlternativesToPossessionOptions implements CcdPageConfiguration {
 
     @Override
@@ -23,6 +27,7 @@ public class AlternativesToPossessionOptions implements CcdPageConfiguration {
         pageBuilder
             .page("alternativesToPossession", this::midEvent)
             .pageLabel("Alternatives to possession")
+            .showCondition("legislativeCountry!=\"Wales\"")
             .complex(PCSCase::getSuspensionOfRightToBuy)
             .readonlyNoSummary(SuspensionOfRightToBuy::getShowSuspensionOfRightToBuyHousingActsPage,NEVER_SHOW)
             .done()

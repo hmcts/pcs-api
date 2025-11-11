@@ -22,6 +22,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.page.builder.SavingPageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.page.builder.SavingPageBuilderFactory;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ClaimantDetailsWalesPage;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.ProhibitedConductWales;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ContactPreferences;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.DefendantsDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.NoticeDetails;
@@ -29,6 +30,17 @@ import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ResumeClaim;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.SelectClaimantType;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.TenancyLicenceDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.UploadAdditionalDocumentsDetails;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.OccupationLicenceDetailsWalesPage;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.NoRentArrearsGroundsForPossessionReason;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.AdditionalReasonsForPossession;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.SecureOrFlexibleGroundsForPossessionReasons;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.MediationAndSettlement;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ClaimantCircumstancesPage;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.IntroductoryDemotedOtherGroundsReasons;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.DefendantCircumstancesPage;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.SuspensionOfRightToBuyOrderReason;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.StatementOfExpressTerms;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.DemotionOfTenancyOrderReason;
 import uk.gov.hmcts.reform.pcs.ccd.service.ClaimService;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PartyService;
@@ -89,13 +101,37 @@ class ResumePossessionClaimTest extends BaseEventTest {
     @Mock
     private UploadAdditionalDocumentsDetails uploadAdditionalDocumentsDetails;
     @Mock
+    private NoRentArrearsGroundsForPossessionReason noRentArrearsGroundsForPossessionReason;
+    @Mock
+    private AdditionalReasonsForPossession additionalReasonsForPossession;
+    @Mock
+    private SecureOrFlexibleGroundsForPossessionReasons secureOrFlexibleGroundsForPossessionReasons;
+    @Mock
+    private MediationAndSettlement mediationAndSettlement;
+    @Mock
+    private ClaimantCircumstancesPage claimantCircumstancesPage;
+    @Mock
+    private IntroductoryDemotedOtherGroundsReasons introductoryDemotedOtherGroundsReasons;
+    @Mock
+    private DefendantCircumstancesPage defendantCircumstancesPage;
+    @Mock
+    private SuspensionOfRightToBuyOrderReason suspensionOfRightToBuyOrderReason;
+    @Mock
+    private StatementOfExpressTerms statementOfExpressTerms;
+    @Mock
+    private DemotionOfTenancyOrderReason demotionOfTenancyOrderReason;
+    @Mock
     private OrganisationNameService organisationNameService;
     @Mock
     private ClaimantDetailsWalesPage claimantDetailsWalesPage;
     @Mock
+    private ProhibitedConductWales prohibitedConductWalesPage;
+    @Mock
     private SchedulerClient schedulerClient;
     @Mock
     private DraftCaseDataService draftCaseDataService;
+    @Mock
+    private OccupationLicenceDetailsWalesPage occupationLicenceDetailsWalesPage;
 
     private final AddressFormatter addressFormatter = new AddressFormatter();
 
@@ -114,8 +150,12 @@ class ResumePossessionClaimTest extends BaseEventTest {
             savingPageBuilderFactory, resumeClaim,
             selectClaimantType, noticeDetails,
             uploadAdditionalDocumentsDetails, tenancyLicenceDetails, contactPreferences,
-            defendantsDetails, organisationNameService, claimantDetailsWalesPage, schedulerClient,
-            draftCaseDataService, addressFormatter
+            defendantsDetails, noRentArrearsGroundsForPossessionReason, additionalReasonsForPossession,
+            secureOrFlexibleGroundsForPossessionReasons, mediationAndSettlement, claimantCircumstancesPage,
+            introductoryDemotedOtherGroundsReasons, defendantCircumstancesPage, suspensionOfRightToBuyOrderReason,
+            statementOfExpressTerms, demotionOfTenancyOrderReason, organisationNameService,
+            claimantDetailsWalesPage, prohibitedConductWalesPage, schedulerClient,
+            draftCaseDataService, occupationLicenceDetailsWalesPage, addressFormatter
         );
 
         setEventUnderTest(underTest);
@@ -277,7 +317,6 @@ class ResumePossessionClaimTest extends BaseEventTest {
     @Test
     void shouldCreateMainClaimInSubmitCallback() {
         // Given
-
         PcsCaseEntity pcsCaseEntity = mock(PcsCaseEntity.class);
         when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(pcsCaseEntity);
 
@@ -295,6 +334,30 @@ class ResumePossessionClaimTest extends BaseEventTest {
 
         // Then
         verify(claimService).createMainClaimEntity(caseData, partyEntity);
+    }
+
+    @Test
+    void shouldScheduleFeeTaskInSubmitCallback() {
+        // Given
+        PcsCaseEntity pcsCaseEntity = mock(PcsCaseEntity.class);
+        when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(pcsCaseEntity);
+
+        PartyEntity partyEntity = mock(PartyEntity.class);
+        when(partyService.createPartyEntity(eq(USER_ID), any(), any(), any(), any(), any()))
+            .thenReturn(partyEntity);
+
+        ClaimEntity claimEntity = ClaimEntity.builder().build();
+        when(claimService.createMainClaimEntity(any(PCSCase.class), any(PartyEntity.class))).thenReturn(claimEntity);
+
+        PCSCase caseData = PCSCase.builder()
+            .organisationName("Org Ltd")
+            .build();
+
+        // When
+        callSubmitHandler(caseData);
+
+        // Then
+        verify(schedulerClient).scheduleIfNotExists(any());
     }
 
     private static Stream<Arguments> claimantTypeScenarios() {

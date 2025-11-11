@@ -24,16 +24,13 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.page.builder.SavingPageBuilderFactory;
-import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.AdditionalReasonsForPossession;
-import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.ClaimantCircumstancesPage;
-import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.EntitledToClaimRelief;
-import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.MoneyJudgment;
 import uk.gov.hmcts.reform.pcs.ccd.page.makeaclaim.StatementOfTruth;
-import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.GroundsForPossessionWales;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.AdditionalReasonsForPossession;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.AlternativesToPossessionOptions;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.CheckingNotice;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ClaimTypeNotEligibleEngland;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ClaimTypeNotEligibleWales;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ClaimantCircumstancesPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ClaimantDetailsWalesPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ClaimantInformation;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ClaimantTypeNotEligibleEngland;
@@ -52,10 +49,12 @@ import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.IntroductoryDemote
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.IntroductoryDemotedOtherGroundsReasons;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.LanguageUsed;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.MediationAndSettlement;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.MoneyJudgment;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.NoRentArrearsGroundsForPossessionOptions;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.NoRentArrearsGroundsForPossessionReason;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.NoticeDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.PreActionProtocol;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.ProhibitedConductWales;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.RentArrears;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.RentArrearsGroundForPossessionAdditionalGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.RentArrearsGroundsForPossession;
@@ -65,9 +64,6 @@ import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.RentDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ResumeClaim;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.SecureOrFlexibleGroundsForPossession;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.SecureOrFlexibleGroundsForPossessionReasons;
-import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.SecureContractGroundsForPossessionWales;
-import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.ReasonsForPosessionWales;
-import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.OccupationLicenceDetailsWales;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.SelectClaimType;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.SelectClaimantType;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.StatementOfExpressTerms;
@@ -76,10 +72,15 @@ import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.SuspensionOfRightT
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.SuspensionToBuyDemotionOfTenancyActs;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.SuspensionToBuyDemotionOfTenancyOrderReasons;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.TenancyLicenceDetails;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.UnderlesseeMortgageeDetails;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.UnderlesseeMortgageeEntitledToClaimRelief;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.UploadAdditionalDocumentsDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.WalesCheckingNotice;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.WantToUploadDocuments;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.GroundsForPossessionWales;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.OccupationLicenceDetailsWalesPage;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.ReasonsForPosessionWales;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.SecureContractGroundsForPossessionWales;
 import uk.gov.hmcts.reform.pcs.ccd.service.ClaimService;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PartyService;
@@ -87,7 +88,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
-import uk.gov.hmcts.reform.pcs.feesandpay.task.FeesAndPayTaskComponent;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.FeesAndPayTaskData;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationNameService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
@@ -102,6 +103,7 @@ import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.State.AWAITING_FURTHER_CLAIM_DETAILS;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.State.AWAITING_SUBMISSION_TO_HMCTS;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.resumePossessionClaim;
+import static uk.gov.hmcts.reform.pcs.feesandpay.task.FeesAndPayTaskComponent.FEE_CASE_ISSUED_TASK_DESCRIPTOR;
 
 @Slf4j
 @Component
@@ -120,10 +122,22 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
     private final TenancyLicenceDetails tenancyLicenceDetails;
     private final ContactPreferences contactPreferences;
     private final DefendantsDetails defendantsDetails;
+    private final NoRentArrearsGroundsForPossessionReason noRentArrearsGroundsForPossessionReason;
+    private final AdditionalReasonsForPossession additionalReasonsForPossession;
+    private final SecureOrFlexibleGroundsForPossessionReasons secureOrFlexibleGroundsForPossessionReasons;
+    private final MediationAndSettlement mediationAndSettlement;
+    private final ClaimantCircumstancesPage claimantCircumstancesPage;
+    private final IntroductoryDemotedOtherGroundsReasons introductoryDemotedOtherGroundsReasons;
+    private final DefendantCircumstancesPage defendantCircumstancesPage;
+    private final SuspensionOfRightToBuyOrderReason suspensionOfRightToBuyOrderReason;
+    private final StatementOfExpressTerms statementOfExpressTerms;
+    private final DemotionOfTenancyOrderReason demotionOfTenancyOrderReason;
     private final OrganisationNameService organisationNameService;
     private final ClaimantDetailsWalesPage claimantDetailsWales;
+    private final ProhibitedConductWales prohibitedConductWalesPage;
     private final SchedulerClient schedulerClient;
     private final DraftCaseDataService draftCaseDataService;
+    private final OccupationLicenceDetailsWalesPage occupationLicenceDetailsWalesPage;
     private final AddressFormatter addressFormatter;
 
     private static final String CASE_ISSUED_FEE_TYPE = "caseIssueFee";
@@ -152,23 +166,23 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             .add(contactPreferences)
             .add(defendantsDetails)
             .add(tenancyLicenceDetails)
-            .add(new OccupationLicenceDetailsWales())
+            .add(occupationLicenceDetailsWalesPage)
             .add(new GroundsForPossessionWales())
             .add(new SecureContractGroundsForPossessionWales())
             .add(new ReasonsForPosessionWales())
             .add(new SecureOrFlexibleGroundsForPossession())
             .add(new RentArrearsOrBreachOfTenancyGround())
-            .add(new SecureOrFlexibleGroundsForPossessionReasons())
+            .add(secureOrFlexibleGroundsForPossessionReasons)
             .add(new IntroductoryDemotedOrOtherGroundsForPossession())
-            .add(new IntroductoryDemotedOtherGroundsReasons())
+            .add(introductoryDemotedOtherGroundsReasons)
             .add(new GroundsForPossession())
             .add(new RentArrearsGroundsForPossession())
             .add(new RentArrearsGroundForPossessionAdditionalGrounds())
             .add(new RentArrearsGroundsForPossessionReasons())
             .add(new NoRentArrearsGroundsForPossessionOptions())
-            .add(new NoRentArrearsGroundsForPossessionReason())
+            .add(noRentArrearsGroundsForPossessionReason)
             .add(new PreActionProtocol())
-            .add(new MediationAndSettlement())
+            .add(mediationAndSettlement)
             .add(new CheckingNotice())
             .add(new WalesCheckingNotice())
             .add(noticeDetails)
@@ -176,19 +190,21 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             .add(new DailyRentAmount())
             .add(new RentArrears())
             .add(new MoneyJudgment())
-            .add(new ClaimantCircumstancesPage())
-            .add(new DefendantCircumstancesPage())
+            .add(claimantCircumstancesPage)
+            .add(defendantCircumstancesPage)
+            .add(prohibitedConductWalesPage)
             .add(new AlternativesToPossessionOptions())
             .add(new SuspensionOfRightToBuyHousingActOptions())
-            .add(new SuspensionOfRightToBuyOrderReason())
+            .add(suspensionOfRightToBuyOrderReason)
             .add(new DemotionOfTenancyHousingActOptions())
             .add(new SuspensionToBuyDemotionOfTenancyActs())
-            .add(new StatementOfExpressTerms())
-            .add(new DemotionOfTenancyOrderReason())
+            .add(statementOfExpressTerms)
+            .add(demotionOfTenancyOrderReason)
             .add(new SuspensionToBuyDemotionOfTenancyOrderReasons())
             .add(new ClaimingCosts())
-            .add(new AdditionalReasonsForPossession())
-            .add(new EntitledToClaimRelief())
+            .add(additionalReasonsForPossession)
+            .add(new UnderlesseeMortgageeEntitledToClaimRelief())
+            .add(new UnderlesseeMortgageeDetails())
             //TO DO will be routed later on  correctly using tech debt ticket
             .add(new WantToUploadDocuments())
             .add(uploadAdditionalDocumentsDetails)
@@ -269,14 +285,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
 
         draftCaseDataService.deleteUnsubmittedCaseData(caseReference);
 
-        String taskId = UUID.randomUUID().toString();
-
-        schedulerClient.scheduleIfNotExists(
-            FeesAndPayTaskComponent.FEE_CASE_ISSUED_TASK_DESCRIPTOR
-                .instance(taskId)
-                .data(CASE_ISSUED_FEE_TYPE)
-                .scheduledTo(Instant.now())
-        );
+        scheduleCaseIssuedFeeTask(caseReference, pcsCase.getOrganisationName());
 
         return SubmitResponse.defaultResponse();
     }
@@ -301,6 +310,24 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             contactEmail,
             contactAddress,
             pcsCase.getClaimantContactPhoneNumber()
+        );
+    }
+
+    private void scheduleCaseIssuedFeeTask(long caseReference, String responsibleParty) {
+        String taskId = UUID.randomUUID().toString();
+
+        FeesAndPayTaskData taskData = FeesAndPayTaskData.builder()
+            .feeType(CASE_ISSUED_FEE_TYPE)
+            .ccdCaseNumber(String.valueOf(caseReference))
+            .caseReference(String.valueOf(caseReference))
+            .responsibleParty(responsibleParty)
+            .build();
+
+        schedulerClient.scheduleIfNotExists(
+            FEE_CASE_ISSUED_TASK_DESCRIPTOR
+                .instance(taskId)
+                .data(taskData)
+                .scheduledTo(Instant.now())
         );
     }
 }
