@@ -181,7 +181,7 @@ tasks.register('yarnInstall', Exec) {
   commandLine 'yarn', 'install'
 }
 
-tasks.register('runE2ePRTests', Exec) {
+tasks.register('runE2ePrTests', Exec) {
   dependsOn yarnInstall
   workingDir = file("${project.projectDir}/src/e2eTest")
   commandLine 'yarn', 'test:pr'
@@ -499,7 +499,7 @@ tasks.register('highLevelDataSetup', JavaExec) {
 }
 
 tasks.register('e2eTest'){
-  dependsOn('runE2ePRTests')
+  dependsOn('runE2ePrTests')
 }
 
 tasks.register('e2eRegressionTest'){
