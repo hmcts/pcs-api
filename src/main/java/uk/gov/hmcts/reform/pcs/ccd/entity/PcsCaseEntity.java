@@ -109,11 +109,4 @@ public class PcsCaseEntity {
         parties.add(party);
         party.setPcsCase(this);
     }
-
-    public void setEnforcementDataEntities(Set<EnforcementDataEntity> enforcementDataEntities) {
-        this.enforcementDataEntities = enforcementDataEntities;
-        for (EnforcementDataEntity entity : enforcementDataEntities) {
-            entity.setPcsCase(this);
-        }
-    }
 }

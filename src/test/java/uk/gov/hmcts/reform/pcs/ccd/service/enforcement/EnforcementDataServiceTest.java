@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.service.enforcement;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jayway.jsonpath.JsonPath;
 import org.junit.jupiter.api.BeforeEach;
@@ -8,8 +9,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
-import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.EnforcementOrder;
@@ -27,7 +28,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -40,6 +41,7 @@ class EnforcementDataServiceTest {
     @Mock
     private PcsCaseRepository pcsCaseRepository;
 
+    @Spy
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Captor
@@ -103,12 +105,10 @@ class EnforcementDataServiceTest {
         enforcementDataEntity.setEnforcementData("malformed json");
         when(enfDataRepository.findById(enforcementCaseId)).thenReturn(Optional.of(enforcementDataEntity));
 
-        // When
-        Throwable thrown = org.assertj.core.api.Assertions.catchThrowable(() ->
-                enfDataService.retrieveSubmittedEnforcementData(enforcementCaseId));
-
+        // When &
         // Then
-        assertThat(thrown).isInstanceOf(JsonReaderException.class)
+        assertThatThrownBy(() -> enfDataService.retrieveSubmittedEnforcementData(enforcementCaseId))
+                .isInstanceOf(JsonReaderException.class)
                 .hasMessageContaining("Failed to read submitted Enforcement data JSON");
     }
 
@@ -116,18 +116,13 @@ class EnforcementDataServiceTest {
     void shouldSaveNewSubmittedEnforcementData() {
         // Given
         EnforcementOrder enforcementData = EnforcementDataUtil.buildSampleEnforcementData();
-
-        PCSCase pcsCase = mock(PCSCase.class);
-        pcsCase.setEnforcementOrder(enforcementData);
-
         PcsCaseEntity pcsCaseEntity = EnforcementDataUtil.buildPcsCaseEntity(pcsCaseId);
 
         when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE))
                 .thenReturn(Optional.of(pcsCaseEntity));
-        when(pcsCase.getEnforcementOrder()).thenReturn(enforcementData);
 
         // When
-        enfDataService.createEnforcementData(CASE_REFERENCE, pcsCase);
+        enfDataService.createEnforcementData(CASE_REFERENCE, enforcementData);
 
         // Then
         verify(enfDataRepository).save(enfDataEntityCaptor.capture());
@@ -148,32 +143,16 @@ class EnforcementDataServiceTest {
     }
 
     @Test
-    void shouldThrowJsonWriterExceptionWhenSubmittedEnforcementDataCannotBeSerialized() {
+    void shouldThrowJsonWriterExceptionWhenSubmittedEnforcementDataCannotBeSerialized() throws JsonProcessingException {
         // Given
-        PCSCase pcsCase = mock(PCSCase.class);
         EnforcementOrder enforcementData = null;
-        pcsCase.setEnforcementOrder(enforcementData);
-
-        EnforcementDataUtil.buildPcsCaseEntity(pcsCaseId);
-
-        // Mock ObjectMapper to throw exception
-        ObjectMapper mockObjectMapper = mock(ObjectMapper.class);
-        enfDataService = new EnforcementDataService(enfDataRepository, pcsCaseRepository, mockObjectMapper);
-
-        try {
-            when(mockObjectMapper.writeValueAsString(enforcementData))
-                    .thenThrow(new com.fasterxml.jackson.core.JsonProcessingException("Test exception") {
-                    });
-        } catch (com.fasterxml.jackson.core.JsonProcessingException e) {
-            // This block will not be executed
-        }
 
         // When
-        Throwable thrown = org.assertj.core.api.Assertions.catchThrowable(() ->
-                enfDataService.createEnforcementData(CASE_REFERENCE, pcsCase));
+        when(objectMapper.writeValueAsString(enforcementData)).thenThrow(JsonProcessingException.class);
 
         // Then
-        assertThat(thrown).isInstanceOf(JsonWriterException.class)
-                .hasMessageContaining("Failed to write submitted Enforcement data");
+        assertThatThrownBy(() -> enfDataService.createEnforcementData(CASE_REFERENCE, enforcementData))
+            .isInstanceOf(JsonWriterException.class)
+            .hasMessageStartingWith("Failed to write submitted Enforcement data");
     }
 }

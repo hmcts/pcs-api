@@ -4,7 +4,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcement.EnforcementDataEntity;
@@ -43,9 +42,9 @@ public class EnforcementDataService {
         return enforcementData;
     }
 
-    public EnforcementDataEntity createEnforcementData(long caseReference, PCSCase pcsCase) {
+    public EnforcementDataEntity createEnforcementData(long caseReference, EnforcementOrder enforcementOrder) {
 
-        String submittedEnfDataJson = writeSubmittedDataJson(pcsCase.getEnforcementOrder());
+        String submittedEnfDataJson = writeSubmittedDataJson(enforcementOrder);
 
         PcsCaseEntity pcsCaseEntity = pcsCaseRepository.findByCaseReference(caseReference)
                 .orElseThrow(() -> new CaseNotFoundException(caseReference));

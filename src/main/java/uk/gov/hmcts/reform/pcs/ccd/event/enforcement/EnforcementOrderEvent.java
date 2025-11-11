@@ -13,7 +13,6 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcement.EnforcementDataEntity;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.AggressiveAnimalsRiskPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.AdditionalInformationPage;
@@ -22,7 +21,6 @@ import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.PropertyAccessDetailsPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.CheckYourAnswersPlaceHolder;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.EnforcementApplicationPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.NameAndAddressForEvictionPage;
-import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.enforcement.EnforcementDataService;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.EvictionDelayWarningPage;
@@ -36,9 +34,6 @@ import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.CriminalAntisocialRiskPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.VulnerableAdultsChildrenPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.LivingInThePropertyPage;
 
-import java.util.HashSet;
-import java.util.Set;
-
 import static uk.gov.hmcts.reform.pcs.ccd.domain.State.AWAITING_SUBMISSION_TO_HMCTS;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.enforceTheOrder;
 
@@ -49,7 +44,6 @@ public class EnforcementOrderEvent implements CCDConfig<PCSCase, State, UserRole
     // Business requirements to be agreed on for the conditions when this event can be triggered
 
     private final EnforcementDataService enforcementDataService;
-    private final PcsCaseService pcsCaseService;
     private final AddressFormatter addressFormatter;
 
     @Override
@@ -97,11 +91,8 @@ public class EnforcementOrderEvent implements CCDConfig<PCSCase, State, UserRole
     private SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {
         long caseReference = eventPayload.caseReference();
 
-        PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
         EnforcementDataEntity enforcementDataEntity =
-            enforcementDataService.createEnforcementData(caseReference, eventPayload.caseData());
-        pcsCaseEntity.setEnforcementDataEntities(new HashSet<>(Set.of(enforcementDataEntity)));
-        pcsCaseService.save(pcsCaseEntity);
+            enforcementDataService.createEnforcementData(caseReference, eventPayload.caseData().getEnforcementOrder());
 
         // Delete unsubmitted data once HDPI-2637 implemented
 

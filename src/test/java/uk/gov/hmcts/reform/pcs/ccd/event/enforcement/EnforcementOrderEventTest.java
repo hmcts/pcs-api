@@ -9,18 +9,16 @@ import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcement.EnforcementDataEntity;
 import uk.gov.hmcts.reform.pcs.ccd.event.BaseEventTest;
-import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.enforcement.EnforcementDataService;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 
 import java.util.List;
-import java.util.Set;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -32,15 +30,12 @@ class EnforcementOrderEventTest extends BaseEventTest {
     @Mock
     private EnforcementDataService enforcementDataService;
 
-    @Mock
-    private PcsCaseService pcsCaseService;
-
     private static final long CASE_REFERENCE = 1234L;
 
     @BeforeEach
     void setUp() {
         EnforcementOrderEvent enforcementOrderEvent =
-                new EnforcementOrderEvent(enforcementDataService, pcsCaseService, addressFormatter);
+                new EnforcementOrderEvent(enforcementDataService, addressFormatter);
         setEventUnderTest(enforcementOrderEvent);
     }
 
@@ -70,21 +65,20 @@ class EnforcementOrderEventTest extends BaseEventTest {
     }
 
     @Test
-    void shouldCreateSubmitteedEnforcementDataInSubmitCallback() {
+    void shouldCreateSubmittedEnforcementDataInSubmitCallback() {
         // Given
+        EnforcementOrder enforcementOrder = EnforcementOrder.builder().build();
+        PCSCase pcsCase = PCSCase.builder().enforcementOrder(enforcementOrder).build();
 
-        EnforcementDataEntity enforcementDataEntity = mock(EnforcementDataEntity.class);
-        PcsCaseEntity pcsCaseEntity = mock(PcsCaseEntity.class);
-        PCSCase pcsCase = mock(PCSCase.class);
-
-        when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCaseEntity);
-        when(enforcementDataService.createEnforcementData(CASE_REFERENCE, pcsCase)).thenReturn(enforcementDataEntity);
+        EnforcementDataEntity enforcementDataEntity = new EnforcementDataEntity();
+        enforcementDataEntity.setId(UUID.randomUUID());
 
         // When
+        when(enforcementDataService.createEnforcementData(CASE_REFERENCE, enforcementOrder))
+                .thenReturn(enforcementDataEntity);
         callSubmitHandler(pcsCase);
 
         // Then
-        verify(pcsCaseEntity).setEnforcementDataEntities(Set.of(enforcementDataEntity));
-        verify(pcsCaseService).save(pcsCaseEntity);
+        verify(enforcementDataService).createEnforcementData(CASE_REFERENCE, enforcementOrder);
     }
 }
