@@ -15,6 +15,7 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.reform.pcs.ccd.service.UnderlesseeMortgageeValidator.EXUI_POFCC81_ERROR;
 import static uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils.wrapListItems;
 
 @ExtendWith(MockitoExtension.class)
@@ -101,6 +102,20 @@ class UnderlesseeMortgageeValidatorTest {
 
         // Then
         assertThat(actualValidationErrors).containsExactly(errorMessage1, errorMessage2, errorMessage3);
+    }
+
+    @Test
+    void shouldHandleMissingAddressForAdditionalDefendant() {
+        // Given
+        UnderlesseeMortgageeDetails additionalMortgagee = buildUnderlesseeMortgageeDetails(null);
+
+        List<ListValue<UnderlesseeMortgageeDetails>> additionalDefendants = wrapListItems(List.of(additionalMortgagee));
+
+        // When
+        List<String> actualValidationErrors = underTest.validateAdditionalUnderlesseeOrMortgagee(additionalDefendants);
+
+        // Then
+        assertThat(actualValidationErrors).containsExactly(EXUI_POFCC81_ERROR);
     }
 
     private static UnderlesseeMortgageeDetails buildUnderlesseeMortgageeDetails(AddressUK address) {
