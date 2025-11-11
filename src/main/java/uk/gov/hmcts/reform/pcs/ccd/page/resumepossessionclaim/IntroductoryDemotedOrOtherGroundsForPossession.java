@@ -29,7 +29,8 @@ public class IntroductoryDemotedOrOtherGroundsForPossession implements CcdPageCo
             .showCondition(
                 "typeOfTenancyLicence=\"INTRODUCTORY_TENANCY\" "
                   + "OR typeOfTenancyLicence=\"DEMOTED_TENANCY\" "
-                  + "OR typeOfTenancyLicence=\"OTHER\"")
+                  + "OR typeOfTenancyLicence=\"OTHER\""
+                  + " AND legislativeCountry=\"England\"")
             .readonly(PCSCase::getShowIntroductoryDemotedOtherGroundReasonPage,NEVER_SHOW)
             .label(
                 "introductoryDemotedOrOtherGroundsForPossession-info",

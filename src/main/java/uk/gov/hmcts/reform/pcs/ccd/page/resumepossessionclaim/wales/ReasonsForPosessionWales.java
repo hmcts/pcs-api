@@ -10,14 +10,15 @@ import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 @Component
 public class ReasonsForPosessionWales implements CcdPageConfiguration {
     // Placeholder for Wales reasons for possession page - full implementation will
-    // be done in HDPI-2372
+    // be done in HDPI-2435
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
                 .page("reasonsForPosessionWales")
                 .pageLabel("Reasons for possession (Wales - placeholder)")
-                .showCondition("showReasonsForGroundsPageWales=\"Yes\"")
+                .label("reasonsForPosessionWales-separator", "---")
+                .showCondition("legislativeCountry=\"Wales\" AND showReasonsForGroundsPageWales=\"Yes\"")
                 .readonly(PCSCase::getShowReasonsForGroundsPageWales, NEVER_SHOW);
     }
 }

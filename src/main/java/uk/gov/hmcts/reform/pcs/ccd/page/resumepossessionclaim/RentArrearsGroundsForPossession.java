@@ -34,7 +34,8 @@ public class RentArrearsGroundsForPossession implements CcdPageConfiguration {
                 .page("groundForPossessionRentArrears", this::midEvent)
                 .pageLabel("Grounds for possession")
                 .showCondition("groundsForPossession=\"Yes\""
-                               +  " AND typeOfTenancyLicence=\"ASSURED_TENANCY\"")
+                               +  " AND typeOfTenancyLicence=\"ASSURED_TENANCY\""
+                               + " AND legislativeCountry=\"England\"")
                 .readonly(PCSCase::getCopyOfRentArrearsGrounds,NEVER_SHOW)
                 .label("groundForPossessionRentArrears-info", """
                 ---
