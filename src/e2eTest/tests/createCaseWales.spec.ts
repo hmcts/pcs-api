@@ -169,7 +169,7 @@ test.describe('[Create Case - Wales] @Master @nightly', async () => {
     });
     await performValidation('mainHeader', whatAreYourGroundsForPossessionWales.mainHeader);
     await performAction('selectYourPossessionGrounds', {
-      discretionary: [whatAreYourGroundsForPossessionWales.discretionary.estateManagementGrounds],
+      discretionary: [whatAreYourGroundsForPossessionWales.discretionary.estateManagementGrounds,whatAreYourGroundsForPossessionWales.discretionary.rentArrears],
       discretionaryEstateGrounds: [whatAreYourGroundsForPossessionWales.discretionary.buildingWorks],
       mandatory: [whatAreYourGroundsForPossessionWales.mandatory.section187],
     });
@@ -232,7 +232,7 @@ test.describe('[Create Case - Wales] @Master @nightly', async () => {
       ['formLabelValue', propertyDetails.countryLabel, addressDetails.country]);*/
   });
 
-  test('Wales - Occupation contract Licence Details - Other', async () => {
+  test('Wales - Occupation contract Licence Details - Other - No Rent arrears', async () => {
     await performAction('enterTestAddressManually');
     await performValidation('bannerAlert', 'Case #.* has been created.');
     await performAction('extractCaseIdFromAlert');
@@ -281,19 +281,6 @@ test.describe('[Create Case - Wales] @Master @nightly', async () => {
       option: noticeOfYourIntention.yes,
       typeOfNotice: noticeOfYourIntention.typeOfNoticeInput
     });
-    //selectNoticeDetails has been commented out and will be modified as part of https://tools.hmcts.net/jira/browse/HDPI-2515 + https://tools.hmcts.net/jira/browse/HDPI-2516
-    // await performAction('selectNoticeDetails', {
-    //   howDidYouServeNotice: noticeDetails.byOtherElectronicMethod,
-    //   day: '25', month: '02', year: '1970', hour: '22', minute: '45', second: '10', files: 'NoticeDetails.pdf'});
-    // Following lines enabled to reach the Prohibited conduct standard contract page as HDPI-2506
-    await performAction('provideRentDetails', {rentFrequencyOption: 'Monthly', rentAmount: '1000'});
-    await performValidation('mainHeader', dailyRentAmount.mainHeader);
-    await performAction('selectDailyRentAmount', {
-      calculateRentAmount: '£32.85',
-      unpaidRentInteractiveOption: dailyRentAmount.yes
-    });
-    await performValidation('mainHeader', moneyJudgment.mainHeader);
-    await performAction('selectMoneyJudgment', moneyJudgment.no);
     await performValidation('mainHeader', claimantCircumstances.mainHeader);
     await performAction('selectClaimantCircumstances', {
       circumstanceOption: claimantCircumstances.no,
