@@ -13,6 +13,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.AdditionalInformation.ADDITIONAL_INFORMATION_DETAILS_LABEL;
+import static uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService.RISK_CATEGORY_EXTRA_LONG_TEXT_LIMIT;
 
 class AdditionalInformationPageTest extends BasePageTest {
 
@@ -65,7 +66,7 @@ class AdditionalInformationPageTest extends BasePageTest {
     @Test
     void shouldHandleYesSelection_ToManyCharacters() {
         // Given
-        String additionalInformationDetails = "a".repeat(6801);
+        String additionalInformationDetails = "a".repeat(RISK_CATEGORY_EXTRA_LONG_TEXT_LIMIT + 1);
         AdditionalInformation additionalInformation = AdditionalInformation.builder()
             .additionalInformationSelect(VerticalYesNo.YES)
             .additionalInformationDetails(additionalInformationDetails)
