@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.controllers;
 
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.Resource;
@@ -23,6 +24,13 @@ import jakarta.validation.constraints.NotNull;
 public class DocumentDownloadController {
 
     private final DocumentDownloadService documentDownloadService;
+
+    @PostConstruct
+    public void init() {
+        log.error("****** DocumentDownloadController INITIALIZED ******");
+        log.error("Controller registered at: /case/document");
+        log.error("DocumentDownloadService available: {}", documentDownloadService != null);
+    }
 
     @GetMapping(value = "/downloadDocument/{documentId}")
     public ResponseEntity<Resource> downloadDocumentById(
