@@ -45,7 +45,7 @@ public class PCSCase {
     // Field label constants - shared between domain annotations and validation
     public static final String NOTICE_EMAIL_EXPLANATION_LABEL = "Explain how it was served by email";
     public static final String NOTICE_OTHER_EXPLANATION_LABEL = "Explain what the other means were";
-    public static final String DETAILS_OF_OTHER_TYPE_OF_TENANCY_LICENCE_LABEL = 
+    public static final String DETAILS_OF_OTHER_TYPE_OF_TENANCY_LICENCE_LABEL =
         "Give details of the type of tenancy or licence agreement that's in place";
 
     @CCD(
@@ -731,15 +731,26 @@ public class PCSCase {
     private OccupationLicenceDetailsWales occupationLicenceDetailsWales;
 
     @JsonUnwrapped
-    private UnderlesseeMortgagee underlesseeMortgagee;
+    private EnforcementOrder enforcementOrder;
+
+    @CCD(label = "Is there an underlessee or mortgagee entitled to claim relief against forfeiture?")
+    private VerticalYesNo hasUnderlesseeOrMortgagee;
 
     @JsonUnwrapped
-    private EnforcementOrder enforcementOrder;
+    private UnderlesseeMortgageeDetails underlesseeOrMortgagee1;
+
+    @CCD(label = "Do you need to add another underlessee or mortgagee?")
+    private VerticalYesNo addAdditionalUnderlesseeOrMortgagee;
+
+    @CCD(
+        label = "Add underlessee or mortgagee",
+        hint = "Add an underlessee or mortgagee to the case"
+    )
+    private List<ListValue<UnderlesseeMortgageeDetails>> additionalUnderlesseeOrMortgagee;
 
     @CCD(
         searchable = false,
         label = "Ways to pay"
     )
     private WaysToPay waysToPay;
-
 }
