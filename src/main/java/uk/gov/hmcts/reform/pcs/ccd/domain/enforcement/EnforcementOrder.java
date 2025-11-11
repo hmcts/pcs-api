@@ -7,10 +7,10 @@ import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.type.FieldType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
 import java.util.Set;
-
 /**
  * The main domain model representing an enforcement order.
  */
+
 @Builder
 @Data
 public class EnforcementOrder {
@@ -21,7 +21,12 @@ public class EnforcementOrder {
     private SelectEnforcementType selectEnforcementType;
 
     @JsonUnwrapped
+    @CCD
+    private AdditionalInformation additionalInformation;
+
+    @JsonUnwrapped
     private NameAndAddressForEviction nameAndAddressForEviction;
+
     @CCD(
         label = "Does anyone living at the property pose a risk to the bailiff?"
     )
@@ -40,4 +45,15 @@ public class EnforcementOrder {
         label = "Risk details"
     )
     private EnforcementRiskDetails riskDetails;
+
+    @CCD(
+        label = "Is anyone living at the property vulnerable?"
+    )
+    private YesNoNotSure vulnerablePeopleYesNo;
+    
+    private VulnerableAdultsChildren vulnerableAdultsChildren;
+    
+    @JsonUnwrapped
+    @CCD
+    private PropertyAccessDetails propertyAccessDetails;
 }
