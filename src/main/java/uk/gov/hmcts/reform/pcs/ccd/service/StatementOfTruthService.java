@@ -1,7 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.service;
 
 import org.springframework.stereotype.Service;
-import uk.gov.hmcts.ccd.sdk.api.HasLabel;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.StatementOfTruthCompletedBy;
 import uk.gov.hmcts.reform.pcs.ccd.domain.StatementOfTruthDetails;
@@ -27,11 +26,11 @@ public class StatementOfTruthService {
                 ? details.getCompletedBy().name() : null);
 
         if (details.getCompletedBy() == StatementOfTruthCompletedBy.CLAIMANT) {
-            builder.agreementClaimant(mapToLabels(details.getAgreementClaimant()))
+            builder.agreementClaimant(mapToNames(details.getAgreementClaimant()))
                 .fullNameClaimant(details.getFullNameClaimant())
                 .positionClaimant(details.getPositionClaimant());
         } else if (details.getCompletedBy() == StatementOfTruthCompletedBy.LEGAL_REPRESENTATIVE) {
-            builder.agreementLegalRep(mapToLabels(details.getAgreementLegalRep()))
+            builder.agreementLegalRep(mapToNames(details.getAgreementLegalRep()))
                 .fullNameLegalRep(details.getFullNameLegalRep())
                 .firmNameLegalRep(details.getFirmNameLegalRep())
                 .positionLegalRep(details.getPositionLegalRep());
@@ -40,11 +39,11 @@ public class StatementOfTruthService {
         return builder.build();
     }
 
-    private <T extends HasLabel> List<String> mapToLabels(List<T> items) {
+    private <T extends Enum<T>> List<String> mapToNames(List<T> items) {
         return Optional.ofNullable(items)
             .orElse(Collections.emptyList())
             .stream()
-            .map(HasLabel::getLabel)
+            .map(Enum::name)
             .collect(Collectors.toList());
     }
 

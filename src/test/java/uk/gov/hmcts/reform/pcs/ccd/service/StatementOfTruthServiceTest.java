@@ -70,7 +70,7 @@ class StatementOfTruthServiceTest {
         assertThat(result.getCompletedBy()).isEqualTo("CLAIMANT");
         assertThat(result.getAgreementClaimant()).hasSize(1);
         assertThat(result.getAgreementClaimant().get(0))
-            .isEqualTo("I believe that the facts stated in this claim form are true.");
+            .isEqualTo("BELIEVE_TRUE");
         assertThat(result.getFullNameClaimant()).isEqualTo("John Smith");
         assertThat(result.getPositionClaimant()).isEqualTo("Director");
         // Legal rep fields should be null
@@ -100,8 +100,7 @@ class StatementOfTruthServiceTest {
         assertThat(result.getCompletedBy()).isEqualTo("LEGAL_REPRESENTATIVE");
         assertThat(result.getAgreementLegalRep()).hasSize(1);
         assertThat(result.getAgreementLegalRep().get(0))
-            .isEqualTo("The claimant believes that the facts stated in this claim form are true. "
-                + "I am authorised by the claimant to sign this statement.");
+            .isEqualTo("AGREED");
         assertThat(result.getFullNameLegalRep()).isEqualTo("Jane Doe");
         assertThat(result.getFirmNameLegalRep()).isEqualTo("Smith & Co Solicitors");
         assertThat(result.getPositionLegalRep()).isEqualTo("Partner");
