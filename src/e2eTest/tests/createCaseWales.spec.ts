@@ -26,7 +26,13 @@ test.beforeEach(async ({page}) => {
 
 test.describe('[Create Case - Wales] @Master @nightly', async () => {
   test('Wales - Secure contract', async () => {
-    await performAction('enterTestAddressManually');
+    await performAction('enterTestAddressManually', {
+      buildingAndStreet: addressDetails.walesBuildingAndStreetTextInput,
+      townOrCity: addressDetails.walesTownOrCityTextInput,
+      county: addressDetails.walesCountyTextInput,
+      postcode: addressDetails.walesCourtAssignedPostcodeTextInput,
+      country: addressDetails.walesCountryTextInput
+    });
     await performValidation('bannerAlert', 'Case #.* has been created.');
     await performAction('extractCaseIdFromAlert');
     await performAction('provideMoreDetailsOfClaim');
@@ -138,7 +144,13 @@ test.describe('[Create Case - Wales] @Master @nightly', async () => {
   });
 
   test('Wales - Standard contract', async () => {
-    await performAction('enterTestAddressManually');
+    await performAction('enterTestAddressManually', {
+      buildingAndStreet: addressDetails.walesBuildingAndStreetTextInput,
+      townOrCity: addressDetails.walesTownOrCityTextInput,
+      county: addressDetails.walesCountyTextInput,
+      postcode: addressDetails.walesCourtAssignedPostcodeTextInput,
+      country: addressDetails.walesCountryTextInput
+    });
     await performValidation('bannerAlert', 'Case #.* has been created.');
     await performAction('extractCaseIdFromAlert');
     await performAction('provideMoreDetailsOfClaim');
@@ -233,7 +245,13 @@ test.describe('[Create Case - Wales] @Master @nightly', async () => {
   });
 
   test('Wales - Occupation contract Licence Details - Other', async () => {
-    await performAction('enterTestAddressManually');
+    await performAction('enterTestAddressManually', {
+      buildingAndStreet: addressDetails.walesBuildingAndStreetTextInput,
+      townOrCity: addressDetails.walesTownOrCityTextInput,
+      county: addressDetails.walesCountyTextInput,
+      postcode: addressDetails.walesCourtAssignedPostcodeTextInput,
+      country: addressDetails.walesCountryTextInput
+    });
     await performValidation('bannerAlert', 'Case #.* has been created.');
     await performAction('extractCaseIdFromAlert');
     await performAction('provideMoreDetailsOfClaim');
