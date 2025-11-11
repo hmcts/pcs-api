@@ -1,3 +1,3 @@
 ALTER TABLE claim
-  ADD COLUMN prohibited_conduct JSONB;
+  ADD COLUMN asb_questions_wales JSONB;
 

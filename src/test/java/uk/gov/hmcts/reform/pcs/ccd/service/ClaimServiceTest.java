@@ -80,7 +80,7 @@ class ClaimServiceTest {
         when(pcsCase.getIllegalPurposesUseDetailsWales()).thenReturn(illegalPurposesDetails);
         when(pcsCase.getOtherProhibitedConductDetailsWales()).thenReturn(prohibitedConductDetails);
     
-        Map<String, String> expectedProhibitedConduct = Map.of(
+        Map<String, String> expectedASBQuestions = Map.of(
             "antisocialBehaviourDetailsWales", asbDetails,
             "illegalPurposesUseDetailsWales", illegalPurposesDetails,
             "otherProhibitedConductDetailsWales", prohibitedConductDetails
@@ -107,7 +107,7 @@ class ClaimServiceTest {
         assertThat(claimParty.getRole()).isEqualTo(PartyRole.CLAIMANT);
 
         assertThat(createdClaimEntity.getClaimGrounds()).containsExactlyElementsOf(expectedClaimGrounds);
-        assertThat(createdClaimEntity.getProhibitedConduct()).isEqualTo(expectedProhibitedConduct);
+        assertThat(createdClaimEntity.getAsbQuestionsWales()).isEqualTo(expectedASBQuestions);
 
         verify(claimRepository).save(createdClaimEntity);
 

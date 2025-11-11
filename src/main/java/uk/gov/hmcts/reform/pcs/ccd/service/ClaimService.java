@@ -61,22 +61,22 @@ public class ClaimService {
         claimEntity.addClaimGrounds(claimGrounds);
         claimEntity.setClaimantCircumstances(pcsCase.getClaimantCircumstances().getClaimantCircumstancesDetails());
 
-        // Populate prohibitedConduct jsonb from Wales ASB fields
-        Map<String, String> prohibitedConduct = new HashMap<>();
+        // Populate asbQuestions jsonb from Wales ASB fields
+        Map<String, String> asbQuestions = new HashMap<>();
         if (pcsCase.getAntisocialBehaviourDetailsWales() != null) {
-            prohibitedConduct.put("antisocialBehaviourDetailsWales",
+            asbQuestions.put("antisocialBehaviourDetailsWales",
                     pcsCase.getAntisocialBehaviourDetailsWales());
         }
         if (pcsCase.getIllegalPurposesUseDetailsWales() != null) {
-            prohibitedConduct.put("illegalPurposesUseDetailsWales",
+            asbQuestions.put("illegalPurposesUseDetailsWales",
                     pcsCase.getIllegalPurposesUseDetailsWales());
         }
         if (pcsCase.getOtherProhibitedConductDetailsWales() != null) {
-            prohibitedConduct.put("otherProhibitedConductDetailsWales",
+            asbQuestions.put("otherProhibitedConductDetailsWales",
                     pcsCase.getOtherProhibitedConductDetailsWales());
         }
-        if (!prohibitedConduct.isEmpty()) {
-            claimEntity.setProhibitedConduct(prohibitedConduct);
+        if (!asbQuestions.isEmpty()) {
+            claimEntity.setAsbQuestionsWales(asbQuestions);
         }
 
         claimRepository.save(claimEntity);

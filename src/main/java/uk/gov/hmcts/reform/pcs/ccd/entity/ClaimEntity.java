@@ -91,9 +91,9 @@ public class ClaimEntity {
     @Enumerated(EnumType.STRING)
     private LanguageUsed languageUsed;
 
-    @Column(name = "prohibited_conduct")
+    @Column(name = "asb_questions_wales", columnDefinition = "json")
     @JdbcTypeCode(SqlTypes.JSON)
-    private Map<String, String> prohibitedConduct;
+    private Map<String, String> asbQuestionsWales;
 
     public void addParty(PartyEntity party, PartyRole partyRole) {
         ClaimPartyEntity claimPartyEntity = ClaimPartyEntity.builder()
