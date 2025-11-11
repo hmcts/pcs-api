@@ -2,6 +2,8 @@ package uk.gov.hmcts.reform.pcs.ccd.entity;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -26,6 +28,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.DemotionOfTenancyHousingAct;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
@@ -92,6 +95,10 @@ public class ClaimEntity {
 
     @JdbcTypeCode(SqlTypes.JSON)
     private ProhibitedConductWales prohibitedConduct;
+
+    @Column(name = "asb_questions_wales", columnDefinition = "json")
+    @JdbcTypeCode(SqlTypes.JSON)
+    private Map<String, String> asbQuestionsWales;
 
     public void addParty(PartyEntity party, PartyRole partyRole) {
         ClaimPartyEntity claimPartyEntity = ClaimPartyEntity.builder()

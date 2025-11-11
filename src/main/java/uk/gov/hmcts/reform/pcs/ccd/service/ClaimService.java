@@ -16,7 +16,9 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimRepository;
 import uk.gov.hmcts.reform.pcs.ccd.util.YesOrNoToBoolean;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @AllArgsConstructor
@@ -60,6 +62,26 @@ public class ClaimService {
         claimEntity.addParty(claimantPartyEntity, PartyRole.CLAIMANT);
         claimEntity.addClaimGrounds(claimGrounds);
         claimEntity.setClaimantCircumstances(pcsCase.getClaimantCircumstances().getClaimantCircumstancesDetails());
+
+
+        // Populate asbQuestions jsonb from Wales ASB fields
+        Map<String, String> asbQuestions = new HashMap<>();
+        if (pcsCase.getAntisocialBehaviourDetailsWales() != null) {
+            asbQuestions.put("antisocialBehaviourDetailsWales",
+                    pcsCase.getAntisocialBehaviourDetailsWales());
+        }
+        if (pcsCase.getIllegalPurposesUseDetailsWales() != null) {
+            asbQuestions.put("illegalPurposesUseDetailsWales",
+                    pcsCase.getIllegalPurposesUseDetailsWales());
+        }
+        if (pcsCase.getOtherProhibitedConductDetailsWales() != null) {
+            asbQuestions.put("otherProhibitedConductDetailsWales",
+                    pcsCase.getOtherProhibitedConductDetailsWales());
+        }
+        if (!asbQuestions.isEmpty()) {
+            claimEntity.setAsbQuestionsWales(asbQuestions);
+        }
+
         claimRepository.save(claimEntity);
 
         return claimEntity;
