@@ -19,7 +19,8 @@ public class RentArrearsOrBreachOfTenancyGround implements CcdPageConfiguration 
             .pageLabel(SecureOrFlexibleDiscretionaryGrounds.RENT_ARREARS_OR_BREACH_OF_TENANCY.getLabel())
             .showCondition("typeOfTenancyLicence=\"SECURE_TENANCY\" OR typeOfTenancyLicence=\"FLEXIBLE_TENANCY\""
                                + " AND secureOrFlexibleDiscretionaryGroundsCONTAINS"
-                               + "\"RENT_ARREARS_OR_BREACH_OF_TENANCY\"")
+                               + "\"RENT_ARREARS_OR_BREACH_OF_TENANCY\""
+                               + " AND legislativeCountry=\"England\"")
             .label("rentArrearsOrBreachOfTenancyGround-lineSeparator", "---")
             .mandatory(PCSCase::getRentArrearsOrBreachOfTenancy);
     }
