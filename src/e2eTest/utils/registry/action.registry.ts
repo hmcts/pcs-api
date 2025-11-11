@@ -1,4 +1,4 @@
-import {IAction} from '../interfaces/action.interface';
+import {IAction} from '@utils/interfaces';
 import {ClickTabAction} from '@utils/actions/element-actions/clickTab.action';
 import {InputTextAction} from '@utils/actions/element-actions/inputText.action';
 import {CheckAction} from '@utils/actions/element-actions/check.action';
@@ -31,6 +31,7 @@ export class ActionRegistry {
     ['signOut', new signOutAction()],
     ['uploadFile', new UploadFileAction()],
     ['selectAddress', new CreateCaseAction()],
+    ['submitAddressCheckYourAnswers', new CreateCaseAction()],
     ['extractCaseIdFromAlert', new CreateCaseAction()],
     ['selectResumeClaimOption', new CreateCaseAction()],
     ['selectClaimantType', new CreateCaseAction()],
