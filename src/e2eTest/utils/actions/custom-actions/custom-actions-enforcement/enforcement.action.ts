@@ -1,9 +1,11 @@
 import { Page } from '@playwright/test';
 import { performAction, performValidation } from '@utils/controller-enforcement';
 import { IAction, actionData, actionRecord } from '@utils/interfaces/action.interface';
-import { yourApplication, nameAndAddressForEviction, everyoneLivingAtTheProperty,
-         violentOrAggressiveBehaviour, firearmPossession, criminalOrAntisocialBehaviour, riskPosedByEveryoneAtProperty,
-         verbalOrWrittenThreats, groupProtestsEviction, policeOrSocialServiceVisit, animalsAtTheProperty, anythingElseHelpWithEviction, accessToTheProperty } from '@data/page-data/page-data-enforcement';
+import {
+  yourApplication, nameAndAddressForEviction, everyoneLivingAtTheProperty, vulnerableAdultsAndChildren,
+  violentOrAggressiveBehaviour, firearmPossession, criminalOrAntisocialBehaviour, riskPosedByEveryoneAtProperty,
+  verbalOrWrittenThreats, groupProtestsEviction, policeOrSocialServiceVisit, animalsAtTheProperty, anythingElseHelpWithEviction, accessToTheProperty
+} from '@data/page-data/page-data-enforcement';
 import { enforcementTestCaseNumber } from '../searchCase.action';
 
 export class EnforcementAction implements IAction {
@@ -20,6 +22,7 @@ export class EnforcementAction implements IAction {
       ['provideDetailsGroupProtestsEviction', () => this.provideDetailsGroupProtestsEviction(fieldName as actionRecord)],
       ['provideDetailsPoliceOrSocialServiceVisits', () => this.provideDetailsPoliceOrSocialServiceVisits(fieldName as actionRecord)],
       ['provideDetailsAnimalsAtTheProperty', () => this.provideDetailsAnimalsAtTheProperty(fieldName as actionRecord)],
+      ['selectVulnerablePeopleInTheProperty', () => this.selectVulnerablePeopleInTheProperty(fieldName as actionRecord)],
       ['provideDetailsAnythingElseHelpWithEviction', () => this.provideDetailsAnythingElseHelpWithEviction(fieldName as actionRecord)],
       ['accessToProperty', () => this.accessToProperty(fieldName as actionRecord)],
     ]);
@@ -51,7 +54,7 @@ export class EnforcementAction implements IAction {
   private async selectRiskPosedByEveryoneAtProperty(riskCategory: actionRecord) {
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + enforcementTestCaseNumber });
     await performAction('check', riskCategory.riskTypes);
-    await performAction('clickButton', riskPosedByEveryoneAtProperty.continue);
+    await performAction('clickButton', riskPosedByEveryoneAtProperty.continueButton);
   }
 
   private async provideDetailsViolentOrAggressiveBehaviour(violentAggressiveBehaviour: actionRecord) {
@@ -103,6 +106,15 @@ export class EnforcementAction implements IAction {
     await performAction('clickButton', animalsAtTheProperty.continue);
   }
 
+  private async selectVulnerablePeopleInTheProperty(vulnerablePeople: actionRecord) {
+    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + enforcementTestCaseNumber });
+    await performAction('clickRadioButton', { question: vulnerablePeople.question, option: vulnerablePeople.option });
+    if (vulnerablePeople.option === vulnerableAdultsAndChildren.yesRadioOption) {
+      await performAction('clickRadioButton', { question: vulnerablePeople.confirm, option: vulnerablePeople.peopleOption });
+      await performAction('inputText', vulnerablePeople.label, vulnerablePeople.input);
+    };
+    await performAction('clickButton', vulnerableAdultsAndChildren.continueButton);
+  }
   private async provideDetailsAnythingElseHelpWithEviction(anythingElse: actionRecord) {
     await performValidation('mainHeader', anythingElseHelpWithEviction.mainHeader);
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + enforcementTestCaseNumber });
@@ -120,5 +132,4 @@ export class EnforcementAction implements IAction {
     }
     await performAction('clickButton', accessToTheProperty.continueButton);
   }
-
 }
