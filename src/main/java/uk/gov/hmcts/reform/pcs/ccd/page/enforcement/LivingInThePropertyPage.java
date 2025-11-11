@@ -5,6 +5,7 @@ import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.EnforcementOrder;
 
+import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 import static uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent.SAVE_AND_RETURN;
 
 public class LivingInThePropertyPage implements CcdPageConfiguration {
@@ -14,6 +15,10 @@ public class LivingInThePropertyPage implements CcdPageConfiguration {
         pageBuilder
             .page("livingInTheProperty")
             .pageLabel("Everyone living at the property")
+            .showCondition("showLivingInThePropertyPage=\"YES\"")
+            .complex(PCSCase::getEnforcementOrder)
+            .readonly(EnforcementOrder::getShowLivingInThePropertyPage, NEVER_SHOW)
+            .done()
             .label("livingInTheProperty-content", "---")
             .label(
                 "livingInTheProperty-information-text", """

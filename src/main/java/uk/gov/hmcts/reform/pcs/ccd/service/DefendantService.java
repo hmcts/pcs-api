@@ -8,6 +8,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.model.Defendant;
+import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -80,6 +81,54 @@ public class DefendantService {
             .map(this::buildDefendant)
             .toList();
 
+    }
+
+    /**
+     * Builds a display name for a defendant from their details.
+     * Handles cases where the name is not known.
+     * 
+     * @param details Defendant details from the database
+     * @return Display name for the defendant
+     */
+    public String buildDefendantDisplayName(DefendantDetails details) {
+        if (details == null) {
+            return "Unknown";
+        }
+        if (details.getNameKnown() == VerticalYesNo.NO) {
+            return "Name not known";
+        }
+        String firstName = details.getFirstName() != null ? details.getFirstName() : "";
+        String lastName = details.getLastName() != null ? details.getLastName() : "";
+        String fullName = (firstName + " " + lastName).trim();
+        return fullName.isEmpty() ? "Unknown" : fullName;
+    }
+
+    /**
+     * Builds a list of DynamicStringListElement from defendant details stored in the database.
+     * 
+     * @param allDefendants List of defendants from the case data
+     * @return List of DynamicStringListElement for the multi-select list
+     */
+    public List<DynamicStringListElement> buildDefendantListItems(
+        List<ListValue<DefendantDetails>> allDefendants) {
+        
+        if (allDefendants == null || allDefendants.isEmpty()) {
+            return new ArrayList<>();
+        }
+        
+        List<DynamicStringListElement> listItems = new ArrayList<>();
+        for (int i = 0; i < allDefendants.size(); i++) {
+            ListValue<DefendantDetails> listValue = allDefendants.get(i);
+            DefendantDetails defendantDetails = listValue.getValue();
+            String defendantName = buildDefendantDisplayName(defendantDetails);
+            
+            listItems.add(DynamicStringListElement.builder()
+                .code(String.valueOf(i))
+                .label(defendantName)
+                .build());
+        }
+        
+        return listItems;
     }
 
 }

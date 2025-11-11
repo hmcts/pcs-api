@@ -19,7 +19,11 @@ import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.PropertyAccessDetailsPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.CheckYourAnswersPlaceHolder;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.EnforcementApplicationPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.NameAndAddressForEvictionPage;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.ChangeNameAddressPage;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.PeopleWhoWillBeEvictedPage;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.PeopleYouWantToEvictPage;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
+import uk.gov.hmcts.reform.pcs.ccd.service.DefendantService;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.EvictionDelayWarningPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.EvictionRisksPosedPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.PoliceOrSocialServicesRiskPage;
@@ -30,6 +34,12 @@ import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.FirearmsPossessionRiskPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.CriminalAntisocialRiskPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.EvictionVulnerableAdultsChildrenPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.LivingInThePropertyPage;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.EnforcementOrder;
+import uk.gov.hmcts.reform.pcs.ccd.type.DynamicMultiSelectStringList;
+import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import static uk.gov.hmcts.reform.pcs.ccd.domain.State.AWAITING_SUBMISSION_TO_HMCTS;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.enforceTheOrder;
@@ -41,6 +51,7 @@ public class EnforcementOrderEvent implements CCDConfig<PCSCase, State, UserRole
     // Business requirements to be agreed on for the conditions when this event can be triggereed
 
     private final AddressFormatter addressFormatter;
+    private final DefendantService defendantService;
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -58,6 +69,9 @@ public class EnforcementOrderEvent implements CCDConfig<PCSCase, State, UserRole
         pageBuilder
                 .add(new EnforcementApplicationPage())
                 .add(new NameAndAddressForEvictionPage())
+                .add(new ChangeNameAddressPage())
+                .add(new PeopleWhoWillBeEvictedPage())
+                .add(new PeopleYouWantToEvictPage())
                 .add(new LivingInThePropertyPage())
                 .add(new EvictionDelayWarningPage())
                 .add(new EvictionRisksPosedPage())
@@ -77,8 +91,35 @@ public class EnforcementOrderEvent implements CCDConfig<PCSCase, State, UserRole
     private PCSCase start(EventPayload<PCSCase, State> eventPayload) {
         PCSCase caseData = eventPayload.caseData();
         caseData.setFormattedPropertyAddress(addressFormatter.getFormattedAddress(caseData));
-        if (caseData.getAllDefendants() != null && !caseData.getAllDefendants().isEmpty()) {
-            caseData.setDefendant1(caseData.getAllDefendants().getFirst().getValue());
+        
+        // Handle defendant-related operations
+        var allDefendants = caseData.getAllDefendants();
+        if (allDefendants != null && !allDefendants.isEmpty()) {
+            caseData.setDefendant1(allDefendants.getFirst().getValue());
+        }
+        
+        // Populate defendant selection list from database
+        EnforcementOrder enforcementOrder = caseData.getEnforcementOrder();
+        DynamicMultiSelectStringList selectedDefendants = enforcementOrder.getSelectedDefendants();
+        
+        if (selectedDefendants == null
+            || selectedDefendants.getListItems() == null
+            || selectedDefendants.getListItems().isEmpty()) {
+            
+            List<DynamicStringListElement> listItems = defendantService.buildDefendantListItems(allDefendants);
+            
+            // Preserve existing selections if any
+            List<DynamicStringListElement> value = selectedDefendants != null
+                && selectedDefendants.getValue() != null
+                ? selectedDefendants.getValue()
+                : new ArrayList<>();
+            
+            enforcementOrder.setSelectedDefendants(
+                DynamicMultiSelectStringList.builder()
+                    .value(value)  // Preserve existing selections or empty list
+                    .listItems(listItems)  // Populate from database
+                    .build()
+            );
         }
         return caseData;
     }
