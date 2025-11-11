@@ -262,60 +262,52 @@ public class RentArrearsGroundsForPossessionReasons implements CcdPageConfigurat
         );
     }
 
-    private static final String RENT_ARREARS_GROUND_LABEL_PREFIX =
-        "Give details about your reasons for claiming possession (";
-
     private TextAreaValidationService.FieldValidation[] buildMandatoryGroundValidations(
             RentArrearsGroundsReasons grounds) {
         return new TextAreaValidationService.FieldValidation[] {
             TextAreaValidationService.FieldValidation.of(
                 grounds.getOwnerOccupierReason(),
-                RENT_ARREARS_GROUND_LABEL_PREFIX + RentArrearsMandatoryGrounds.OWNER_OCCUPIER_GROUND1.getLabel() + ")",
+                RentArrearsMandatoryGrounds.OWNER_OCCUPIER_GROUND1.getLabel(),
                 TextAreaValidationService.MEDIUM_TEXT_LIMIT
             ),
             TextAreaValidationService.FieldValidation.of(
                 grounds.getRepossessionByLenderReason(),
-                RENT_ARREARS_GROUND_LABEL_PREFIX
-                    + RentArrearsMandatoryGrounds.REPOSSESSION_GROUND2.getLabel() + ")",
+                RentArrearsMandatoryGrounds.REPOSSESSION_GROUND2.getLabel(),
                 TextAreaValidationService.MEDIUM_TEXT_LIMIT
             ),
             TextAreaValidationService.FieldValidation.of(
                 grounds.getHolidayLetReason(),
-                RENT_ARREARS_GROUND_LABEL_PREFIX + RentArrearsMandatoryGrounds.HOLIDAY_LET_GROUND3.getLabel() + ")",
+                RentArrearsMandatoryGrounds.HOLIDAY_LET_GROUND3.getLabel(),
                 TextAreaValidationService.MEDIUM_TEXT_LIMIT
             ),
             TextAreaValidationService.FieldValidation.of(
                 grounds.getStudentLetReason(),
-                RENT_ARREARS_GROUND_LABEL_PREFIX + RentArrearsMandatoryGrounds.STUDENT_LET_GROUND4.getLabel() + ")",
+                RentArrearsMandatoryGrounds.STUDENT_LET_GROUND4.getLabel(),
                 TextAreaValidationService.MEDIUM_TEXT_LIMIT
             ),
             TextAreaValidationService.FieldValidation.of(
                 grounds.getMinisterOfReligionReason(),
-                RENT_ARREARS_GROUND_LABEL_PREFIX
-                    + RentArrearsMandatoryGrounds.MINISTER_RELIGION_GROUND5.getLabel() + ")",
+                RentArrearsMandatoryGrounds.MINISTER_RELIGION_GROUND5.getLabel(),
                 TextAreaValidationService.MEDIUM_TEXT_LIMIT
             ),
             TextAreaValidationService.FieldValidation.of(
                 grounds.getRedevelopmentReason(),
-                RENT_ARREARS_GROUND_LABEL_PREFIX
-                    + RentArrearsMandatoryGrounds.REDEVELOPMENT_GROUND6.getLabel() + ")",
+                RentArrearsMandatoryGrounds.REDEVELOPMENT_GROUND6.getLabel(),
                 TextAreaValidationService.MEDIUM_TEXT_LIMIT
             ),
             TextAreaValidationService.FieldValidation.of(
                 grounds.getDeathOfTenantReason(),
-                RENT_ARREARS_GROUND_LABEL_PREFIX + RentArrearsMandatoryGrounds.DEATH_OF_TENANT_GROUND7.getLabel() + ")",
+                RentArrearsMandatoryGrounds.DEATH_OF_TENANT_GROUND7.getLabel(),
                 TextAreaValidationService.MEDIUM_TEXT_LIMIT
             ),
             TextAreaValidationService.FieldValidation.of(
                 grounds.getAntisocialBehaviourReason(),
-                RENT_ARREARS_GROUND_LABEL_PREFIX
-                    + RentArrearsMandatoryGrounds.ANTISOCIAL_BEHAVIOUR_GROUND7A.getLabel() + ")",
+                RentArrearsMandatoryGrounds.ANTISOCIAL_BEHAVIOUR_GROUND7A.getLabel(),
                 TextAreaValidationService.MEDIUM_TEXT_LIMIT
             ),
             TextAreaValidationService.FieldValidation.of(
                 grounds.getNoRightToRentReason(),
-                RENT_ARREARS_GROUND_LABEL_PREFIX
-                    + RentArrearsMandatoryGrounds.NO_RIGHT_TO_RENT_GROUND7B.getLabel() + ")",
+                RentArrearsMandatoryGrounds.NO_RIGHT_TO_RENT_GROUND7B.getLabel(),
                 TextAreaValidationService.MEDIUM_TEXT_LIMIT
             )
         };
@@ -326,56 +318,47 @@ public class RentArrearsGroundsForPossessionReasons implements CcdPageConfigurat
         return new TextAreaValidationService.FieldValidation[] {
             TextAreaValidationService.FieldValidation.of(
                 grounds.getSuitableAltAccommodationReason(),
-                RENT_ARREARS_GROUND_LABEL_PREFIX
-                    + RentArrearsDiscretionaryGrounds.ALTERNATIVE_ACCOMMODATION_GROUND9.getLabel() + ")",
+                RentArrearsDiscretionaryGrounds.ALTERNATIVE_ACCOMMODATION_GROUND9.getLabel(),
                 TextAreaValidationService.MEDIUM_TEXT_LIMIT
             ),
             TextAreaValidationService.FieldValidation.of(
                 grounds.getBreachOfTenancyConditionsReason(),
-                RENT_ARREARS_GROUND_LABEL_PREFIX
-                    + RentArrearsDiscretionaryGrounds.BREACH_TENANCY_GROUND12.getLabel() + ")",
+                RentArrearsDiscretionaryGrounds.BREACH_TENANCY_GROUND12.getLabel(),
                 TextAreaValidationService.MEDIUM_TEXT_LIMIT
             ),
             TextAreaValidationService.FieldValidation.of(
                 grounds.getPropertyDeteriorationReason(),
-                RENT_ARREARS_GROUND_LABEL_PREFIX
-                    + RentArrearsDiscretionaryGrounds.DETERIORATION_PROPERTY_GROUND13.getLabel() + ")",
+                RentArrearsDiscretionaryGrounds.DETERIORATION_PROPERTY_GROUND13.getLabel(),
                 TextAreaValidationService.MEDIUM_TEXT_LIMIT
             ),
             TextAreaValidationService.FieldValidation.of(
                 grounds.getNuisanceAnnoyanceReason(),
-                RENT_ARREARS_GROUND_LABEL_PREFIX
-                    + RentArrearsDiscretionaryGrounds.NUISANCE_ANNOYANCE_GROUND14.getLabel() + ")",
+                RentArrearsDiscretionaryGrounds.NUISANCE_ANNOYANCE_GROUND14.getLabel(),
                 TextAreaValidationService.MEDIUM_TEXT_LIMIT
             ),
             TextAreaValidationService.FieldValidation.of(
                 grounds.getDomesticViolenceReason(),
-                RENT_ARREARS_GROUND_LABEL_PREFIX
-                    + RentArrearsDiscretionaryGrounds.DOMESTIC_VIOLENCE_GROUND14A.getLabel() + ")",
+                RentArrearsDiscretionaryGrounds.DOMESTIC_VIOLENCE_GROUND14A.getLabel(),
                 TextAreaValidationService.MEDIUM_TEXT_LIMIT
             ),
             TextAreaValidationService.FieldValidation.of(
                 grounds.getOffenceDuringRiotReason(),
-                RENT_ARREARS_GROUND_LABEL_PREFIX
-                    + RentArrearsDiscretionaryGrounds.OFFENCE_RIOT_GROUND14ZA.getLabel() + ")",
+                RentArrearsDiscretionaryGrounds.OFFENCE_RIOT_GROUND14ZA.getLabel(),
                 TextAreaValidationService.MEDIUM_TEXT_LIMIT
             ),
             TextAreaValidationService.FieldValidation.of(
                 grounds.getFurnitureDeteriorationReason(),
-                RENT_ARREARS_GROUND_LABEL_PREFIX
-                    + RentArrearsDiscretionaryGrounds.DETERIORATION_FURNITURE_GROUND15.getLabel() + ")",
+                RentArrearsDiscretionaryGrounds.DETERIORATION_FURNITURE_GROUND15.getLabel(),
                 TextAreaValidationService.MEDIUM_TEXT_LIMIT
             ),
             TextAreaValidationService.FieldValidation.of(
                 grounds.getEmployeeOfLandlordReason(),
-                RENT_ARREARS_GROUND_LABEL_PREFIX
-                    + RentArrearsDiscretionaryGrounds.EMPLOYEE_LANDLORD_GROUND16.getLabel() + ")",
+                RentArrearsDiscretionaryGrounds.EMPLOYEE_LANDLORD_GROUND16.getLabel(),
                 TextAreaValidationService.MEDIUM_TEXT_LIMIT
             ),
             TextAreaValidationService.FieldValidation.of(
                 grounds.getTenancyByFalseStatementReason(),
-                RENT_ARREARS_GROUND_LABEL_PREFIX
-                    + RentArrearsDiscretionaryGrounds.FALSE_STATEMENT_GROUND17.getLabel() + ")",
+                RentArrearsDiscretionaryGrounds.FALSE_STATEMENT_GROUND17.getLabel(),
                 TextAreaValidationService.MEDIUM_TEXT_LIMIT
             )
         };
