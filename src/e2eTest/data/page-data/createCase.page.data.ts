@@ -6,17 +6,12 @@ export const createCase =
     caseTypeLabel: 'Case type',
     eventLabel: 'Event',
     possessionsJurisdiction: 'Possessions',
-    // caseType:
-    //   {
-    //     civilPossessions: process.env.CHANGE_ID
-    //       ? `Civil Possessions ${process.env.CHANGE_ID}`
-    //       : 'Civil Possessions'
-    //   },
     caseType:
-    {
-      civilPossessions:
-      'Civil Possessions 845'
-    },
+      {
+        civilPossessions: process.env.CHANGE_ID
+          ? `Civil Possessions ${process.env.CHANGE_ID}`
+          : 'Civil Possessions'
+      },
     makeAPossessionClaimEvent: 'Make a claim',
     start: 'Start'
   };
