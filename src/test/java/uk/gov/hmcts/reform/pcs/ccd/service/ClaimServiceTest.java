@@ -24,6 +24,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimRepository;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
@@ -53,6 +54,10 @@ class ClaimServiceTest {
         String expectedClaimName = "Main Claim";
         String expectedAdditionalReasons = "some additional reasons";
         String claimantCircumstancesDetails = UUID.randomUUID().toString();
+        String asbDetails = "Some antisocial behaviour details";
+        String illegalPurposesDetails = "Some illegal purposes use details";
+        String prohibitedConductDetails = "Some other prohibited conduct details";
+
         PCSCase pcsCase = mock(PCSCase.class);
         PartyEntity claimantPartyEntity = new PartyEntity();
 
@@ -70,6 +75,17 @@ class ClaimServiceTest {
         when(pcsCase.getLanguageUsed()).thenReturn(LanguageUsed.ENGLISH);
         List<ClaimGroundEntity> expectedClaimGrounds = List.of(mock(ClaimGroundEntity.class));
         when(claimGroundService.getGroundsWithReason(pcsCase)).thenReturn(expectedClaimGrounds);
+        
+        when(pcsCase.getAntisocialBehaviourDetailsWales()).thenReturn(asbDetails);
+        when(pcsCase.getIllegalPurposesUseDetailsWales()).thenReturn(illegalPurposesDetails);
+        when(pcsCase.getOtherProhibitedConductDetailsWales()).thenReturn(prohibitedConductDetails);
+    
+        Map<String, String> expectedProhibitedConduct = Map.of(
+        "antisocialBehaviourDetailsWales", asbDetails,
+        "illegalPurposesUseDetailsWales", illegalPurposesDetails,
+        "otherProhibitedConductDetailsWales", prohibitedConductDetails
+    );
+
 
         // When
         ClaimEntity createdClaimEntity = claimService.createMainClaimEntity(pcsCase, claimantPartyEntity);
@@ -91,6 +107,7 @@ class ClaimServiceTest {
         assertThat(claimParty.getRole()).isEqualTo(PartyRole.CLAIMANT);
 
         assertThat(createdClaimEntity.getClaimGrounds()).containsExactlyElementsOf(expectedClaimGrounds);
+        assertThat(createdClaimEntity.getProhibitedConduct()).isEqualTo(expectedProhibitedConduct);
 
         verify(claimRepository).save(createdClaimEntity);
 
