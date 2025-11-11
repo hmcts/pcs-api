@@ -1,11 +1,9 @@
 package uk.gov.hmcts.reform.pcs.ccd.domain;
 
-import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.api.HasLabel;
 
 public enum StatementOfTruthAgreementClaimant implements HasLabel {
 
-    @CCD(label = "I believe that the facts stated in this claim form are true.")
     BELIEVE_TRUE("I believe that the facts stated in this claim form are true.");
 
     private final String label;

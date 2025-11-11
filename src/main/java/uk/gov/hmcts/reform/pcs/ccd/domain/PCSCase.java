@@ -734,34 +734,7 @@ public class PCSCase {
     )
     private WaysToPay waysToPay;
 
-    @CCD(label = "Completed by")
-    private StatementOfTruthCompletedBy statementOfTruthCompletedBy;
-
-    @CCD(
-        typeOverride = FieldType.MultiSelectList,
-        typeParameterOverride = "StatementOfTruthAgreementClaimant"
-    )
-    private List<StatementOfTruthAgreementClaimant> statementOfTruthAgreementClaimant;
-
-    @CCD(label = "Full name")
-    private String statementOfTruthFullNameClaimant;
-
-    @CCD(label = "Position or office held")
-    private String statementOfTruthPositionClaimant;
-
-    @CCD(
-        typeOverride = FieldType.MultiSelectList,
-        typeParameterOverride = "StatementOfTruthAgreementLegalRep"
-    )
-    private List<StatementOfTruthAgreementLegalRep> statementOfTruthAgreementLegalRep;
-
-    @CCD(label = "Full name")
-    private String statementOfTruthFullNameLegalRep;
-
-    @CCD(label = "Name of firm")
-    private String statementOfTruthFirmNameLegalRep;
-
-    @CCD(label = "Position or office held")
-    private String statementOfTruthPositionLegalRep;
+    @CCD
+    private StatementOfTruthDetails statementOfTruth;
 
 }

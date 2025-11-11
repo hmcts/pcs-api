@@ -4,6 +4,7 @@ import org.springframework.stereotype.Service;
 import uk.gov.hmcts.ccd.sdk.api.HasLabel;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.StatementOfTruthCompletedBy;
+import uk.gov.hmcts.reform.pcs.ccd.domain.StatementOfTruthDetails;
 import uk.gov.hmcts.reform.pcs.ccd.model.StatementOfTruth;
 
 import java.util.Collections;
@@ -15,23 +16,25 @@ import java.util.stream.Collectors;
 public class StatementOfTruthService {
 
     public StatementOfTruth buildStatementOfTruth(PCSCase pcsCase) {
-        if (pcsCase.getStatementOfTruthCompletedBy() == null) {
+        if (pcsCase.getStatementOfTruth() == null 
+            || pcsCase.getStatementOfTruth().getCompletedBy() == null) {
             return null;
         }
 
+        StatementOfTruthDetails details = pcsCase.getStatementOfTruth();
         StatementOfTruth.StatementOfTruthBuilder builder = StatementOfTruth.builder()
-            .completedBy(pcsCase.getStatementOfTruthCompletedBy() != null
-                ? pcsCase.getStatementOfTruthCompletedBy().name() : null);
+            .completedBy(details.getCompletedBy() != null
+                ? details.getCompletedBy().name() : null);
 
-        if (pcsCase.getStatementOfTruthCompletedBy() == StatementOfTruthCompletedBy.CLAIMANT) {
-            builder.agreementClaimant(mapToLabels(pcsCase.getStatementOfTruthAgreementClaimant()))
-                .fullNameClaimant(pcsCase.getStatementOfTruthFullNameClaimant())
-                .positionClaimant(pcsCase.getStatementOfTruthPositionClaimant());
-        } else if (pcsCase.getStatementOfTruthCompletedBy() == StatementOfTruthCompletedBy.LEGAL_REPRESENTATIVE) {
-            builder.agreementLegalRep(mapToLabels(pcsCase.getStatementOfTruthAgreementLegalRep()))
-                .fullNameLegalRep(pcsCase.getStatementOfTruthFullNameLegalRep())
-                .firmNameLegalRep(pcsCase.getStatementOfTruthFirmNameLegalRep())
-                .positionLegalRep(pcsCase.getStatementOfTruthPositionLegalRep());
+        if (details.getCompletedBy() == StatementOfTruthCompletedBy.CLAIMANT) {
+            builder.agreementClaimant(mapToLabels(details.getAgreementClaimant()))
+                .fullNameClaimant(details.getFullNameClaimant())
+                .positionClaimant(details.getPositionClaimant());
+        } else if (details.getCompletedBy() == StatementOfTruthCompletedBy.LEGAL_REPRESENTATIVE) {
+            builder.agreementLegalRep(mapToLabels(details.getAgreementLegalRep()))
+                .fullNameLegalRep(details.getFullNameLegalRep())
+                .firmNameLegalRep(details.getFirmNameLegalRep())
+                .positionLegalRep(details.getPositionLegalRep());
         }
 
         return builder.build();

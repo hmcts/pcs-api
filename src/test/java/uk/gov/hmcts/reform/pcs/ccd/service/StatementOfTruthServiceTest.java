@@ -8,6 +8,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.StatementOfTruthAgreementClaimant;
 import uk.gov.hmcts.reform.pcs.ccd.domain.StatementOfTruthAgreementLegalRep;
 import uk.gov.hmcts.reform.pcs.ccd.domain.StatementOfTruthCompletedBy;
+import uk.gov.hmcts.reform.pcs.ccd.domain.StatementOfTruthDetails;
 import uk.gov.hmcts.reform.pcs.ccd.model.StatementOfTruth;
 
 import java.util.Arrays;
@@ -23,10 +24,26 @@ class StatementOfTruthServiceTest {
     @Mock
     private PCSCase pcsCase;
 
+    @Mock
+    private StatementOfTruthDetails statementOfTruthDetails;
+
+    @Test
+    void shouldReturnNullWhenStatementOfTruthIsNull() {
+        // Given
+        when(pcsCase.getStatementOfTruth()).thenReturn(null);
+
+        // When
+        StatementOfTruth result = statementOfTruthService.buildStatementOfTruth(pcsCase);
+
+        // Then
+        assertThat(result).isNull();
+    }
+
     @Test
     void shouldReturnNullWhenStatementOfTruthCompletedByIsNull() {
         // Given
-        when(pcsCase.getStatementOfTruthCompletedBy()).thenReturn(null);
+        when(pcsCase.getStatementOfTruth()).thenReturn(statementOfTruthDetails);
+        when(statementOfTruthDetails.getCompletedBy()).thenReturn(null);
 
         // When
         StatementOfTruth result = statementOfTruthService.buildStatementOfTruth(pcsCase);
@@ -38,11 +55,12 @@ class StatementOfTruthServiceTest {
     @Test
     void shouldBuildStatementOfTruthForClaimant() {
         // Given
-        when(pcsCase.getStatementOfTruthCompletedBy()).thenReturn(StatementOfTruthCompletedBy.CLAIMANT);
-        when(pcsCase.getStatementOfTruthAgreementClaimant())
+        when(pcsCase.getStatementOfTruth()).thenReturn(statementOfTruthDetails);
+        when(statementOfTruthDetails.getCompletedBy()).thenReturn(StatementOfTruthCompletedBy.CLAIMANT);
+        when(statementOfTruthDetails.getAgreementClaimant())
             .thenReturn(Arrays.asList(StatementOfTruthAgreementClaimant.BELIEVE_TRUE));
-        when(pcsCase.getStatementOfTruthFullNameClaimant()).thenReturn("John Smith");
-        when(pcsCase.getStatementOfTruthPositionClaimant()).thenReturn("Director");
+        when(statementOfTruthDetails.getFullNameClaimant()).thenReturn("John Smith");
+        when(statementOfTruthDetails.getPositionClaimant()).thenReturn("Director");
 
         // When
         StatementOfTruth result = statementOfTruthService.buildStatementOfTruth(pcsCase);
@@ -65,13 +83,14 @@ class StatementOfTruthServiceTest {
     @Test
     void shouldBuildStatementOfTruthForLegalRepresentative() {
         // Given
-        when(pcsCase.getStatementOfTruthCompletedBy())
+        when(pcsCase.getStatementOfTruth()).thenReturn(statementOfTruthDetails);
+        when(statementOfTruthDetails.getCompletedBy())
             .thenReturn(StatementOfTruthCompletedBy.LEGAL_REPRESENTATIVE);
-        when(pcsCase.getStatementOfTruthAgreementLegalRep())
+        when(statementOfTruthDetails.getAgreementLegalRep())
             .thenReturn(Arrays.asList(StatementOfTruthAgreementLegalRep.AGREED));
-        when(pcsCase.getStatementOfTruthFullNameLegalRep()).thenReturn("Jane Doe");
-        when(pcsCase.getStatementOfTruthFirmNameLegalRep()).thenReturn("Smith & Co Solicitors");
-        when(pcsCase.getStatementOfTruthPositionLegalRep()).thenReturn("Partner");
+        when(statementOfTruthDetails.getFullNameLegalRep()).thenReturn("Jane Doe");
+        when(statementOfTruthDetails.getFirmNameLegalRep()).thenReturn("Smith & Co Solicitors");
+        when(statementOfTruthDetails.getPositionLegalRep()).thenReturn("Partner");
 
         // When
         StatementOfTruth result = statementOfTruthService.buildStatementOfTruth(pcsCase);
