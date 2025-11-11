@@ -41,6 +41,7 @@ export class ActionEnforcementRegistry {
     ['provideDetailsGroupProtestsEviction', new EnforcementAction()],
     ['provideDetailsPoliceOrSocialServiceVisits', new EnforcementAction()],
     ['provideDetailsAnimalsAtTheProperty', new EnforcementAction()],
+    ['selectVulnerablePeopleInTheProperty', new EnforcementAction()],
     ['provideDetailsAnythingElseHelpWithEviction', new EnforcementAction()],
     ['accessToProperty', new EnforcementAction()],
   ]);
@@ -48,7 +49,9 @@ export class ActionEnforcementRegistry {
   static getAction(actionName: string): IAction {
     const action = this.actions.get(actionName);
     if (!action) {
-      throw new Error(`Action '${actionName}' is not registered. Available actions: ${Array.from(this.actions.keys()).join(', ')}`);
+      throw new Error(
+        `Action '${actionName}' is not registered. Available actions: ${Array.from(this.actions.keys()).join(', ')}`
+      );
     }
     return action;
   }
