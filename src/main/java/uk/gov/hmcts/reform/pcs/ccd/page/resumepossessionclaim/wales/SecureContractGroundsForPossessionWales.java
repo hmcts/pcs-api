@@ -22,7 +22,8 @@ public class SecureContractGroundsForPossessionWales implements CcdPageConfigura
                 .page("secureOrFlexibleGroundsForPossessionWales", this::midEvent)
                 .pageLabel("What are your grounds for possession?")
                 .showCondition(
-                    "legislativeCountry=\"Wales\" AND occupationLicenceTypeWales=\"SECURE_CONTRACT\""
+                        "occupationLicenceTypeWales=\"SECURE_CONTRACT\""
+                        + " AND legislativeCountry=\"Wales\""
                 )
                 .label("secureOrFlexibleGroundsForPossessionWales-info", """
                ---
@@ -70,7 +71,35 @@ public class SecureContractGroundsForPossessionWales implements CcdPageConfigura
                     .build();
         }
 
-        caseData.setShowReasonsForGroundsPageWales(YesOrNo.YES);
+
+        boolean hasDiscretionary = discretionaryGrounds != null && !discretionaryGrounds.isEmpty();
+        boolean hasMandatory = mandatoryGrounds != null && !mandatoryGrounds.isEmpty();
+
+        boolean hasRentArrears = hasDiscretionary
+                && discretionaryGrounds.contains(SecureContractDiscretionaryGroundsWales.RENT_ARREARS);
+        boolean hasASB = discretionaryGrounds != null
+                && discretionaryGrounds.contains(SecureContractDiscretionaryGroundsWales.ANTISOCIAL_BEHAVIOUR);
+        boolean hasOtherBreach = hasDiscretionary
+                && discretionaryGrounds.contains(SecureContractDiscretionaryGroundsWales.OTHER_BREACH_OF_CONTRACT);
+        boolean hasEstateManagement = hasDiscretionary
+                && discretionaryGrounds.contains(SecureContractDiscretionaryGroundsWales.ESTATE_MANAGEMENT_GROUNDS);
+        boolean hasMandatoryGrounds = mandatoryGrounds != null && !mandatoryGrounds.isEmpty();
+
+        // Determine if there are "other options" (anything that's not rent arrears or ASB)
+        boolean hasOtherOptions = hasOtherBreach || hasEstateManagement || hasMandatory;
+
+        // Routing rules based on options selected
+        if (hasRentArrears && !hasASB && !hasOtherOptions) {
+            caseData.setShowASBQuestionsPageWales(YesOrNo.NO);
+            caseData.setShowReasonsForGroundsPageWales(YesOrNo.NO);
+        } else if (hasASB && !hasOtherOptions) {
+            caseData.setShowASBQuestionsPageWales(YesOrNo.YES);
+            caseData.setShowReasonsForGroundsPageWales(YesOrNo.NO);
+        } else if (hasOtherOptions) {
+            caseData.setShowASBQuestionsPageWales(YesOrNo.NO);
+            caseData.setShowReasonsForGroundsPageWales(YesOrNo.YES);
+            
+        }
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
                 .data(caseData)
