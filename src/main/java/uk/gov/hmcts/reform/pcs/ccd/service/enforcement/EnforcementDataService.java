@@ -10,8 +10,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.enforcement.EnforcementDataEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.enforcement.EnforcementDataRepository;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
-import uk.gov.hmcts.reform.pcs.exception.JsonReaderException;
-import uk.gov.hmcts.reform.pcs.exception.JsonWriterException;
+import uk.gov.hmcts.reform.pcs.exception.SubmittedEnforcementDataException;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -62,7 +61,7 @@ public class EnforcementDataService {
             return objectMapper.readValue(enforcementDataJson, EnforcementOrder.class);
         } catch (JsonProcessingException e) {
             log.error("Failed to read submitted Enforcement data JSON", e);
-            throw new JsonReaderException("Failed to read submitted Enforcement data JSON", e);
+            throw new SubmittedEnforcementDataException("Failed to read submitted Enforcement data JSON", e);
         }
     }
 
@@ -71,7 +70,7 @@ public class EnforcementDataService {
             return objectMapper.writeValueAsString(enforcementData);
         } catch (JsonProcessingException e) {
             log.error("Failed to write submitted Enforcement data", e);
-            throw new JsonWriterException("Failed to write submitted Enforcement data");
+            throw new SubmittedEnforcementDataException("Failed to write submitted Enforcement data");
         }
     }
 }

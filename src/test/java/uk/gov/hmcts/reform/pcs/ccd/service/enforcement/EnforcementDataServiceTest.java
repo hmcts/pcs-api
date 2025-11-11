@@ -20,8 +20,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcement.EnforcementDataEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.enforcement.EnforcementDataRepository;
-import uk.gov.hmcts.reform.pcs.exception.JsonReaderException;
-import uk.gov.hmcts.reform.pcs.exception.JsonWriterException;
+import uk.gov.hmcts.reform.pcs.exception.SubmittedEnforcementDataException;
 
 import java.util.List;
 import java.util.Optional;
@@ -108,7 +107,7 @@ class EnforcementDataServiceTest {
         // When &
         // Then
         assertThatThrownBy(() -> enfDataService.retrieveSubmittedEnforcementData(enforcementCaseId))
-                .isInstanceOf(JsonReaderException.class)
+                .isInstanceOf(SubmittedEnforcementDataException.class)
                 .hasMessageContaining("Failed to read submitted Enforcement data JSON");
     }
 
@@ -152,7 +151,7 @@ class EnforcementDataServiceTest {
 
         // Then
         assertThatThrownBy(() -> enfDataService.createEnforcementData(CASE_REFERENCE, enforcementData))
-            .isInstanceOf(JsonWriterException.class)
+            .isInstanceOf(SubmittedEnforcementDataException.class)
             .hasMessageStartingWith("Failed to write submitted Enforcement data");
     }
 }

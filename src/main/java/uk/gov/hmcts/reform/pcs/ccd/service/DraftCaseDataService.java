@@ -10,8 +10,7 @@ import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DraftCaseDataEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DraftCaseDataRepository;
-import uk.gov.hmcts.reform.pcs.exception.JsonReaderException;
-import uk.gov.hmcts.reform.pcs.exception.JsonWriterException;
+import uk.gov.hmcts.reform.pcs.exception.UnsubmittedDataException;
 
 import java.io.IOException;
 import java.util.Optional;
@@ -71,7 +70,7 @@ public class DraftCaseDataService {
             return draftCaseJsonMerger.mergeJson(baseCaseDataJson, patchCaseDataJson);
         } catch (IOException e) {
             log.error("Unable to merge case data patch JSON", e);
-            throw new JsonWriterException("Failed to update draft case data", e);
+            throw new UnsubmittedDataException("Failed to update draft case data", e);
         }
     }
 
@@ -85,7 +84,7 @@ public class DraftCaseDataService {
             return objectMapper.readValue(caseDataJson, PCSCase.class);
         } catch (JsonProcessingException e) {
             log.error("Unable to parse draft case data JSON", e);
-            throw new JsonReaderException("Failed to read saved answers", e);
+            throw new UnsubmittedDataException("Failed to read saved answers", e);
         }
     }
 
@@ -94,7 +93,7 @@ public class DraftCaseDataService {
             return objectMapper.writeValueAsString(caseData);
         } catch (JsonProcessingException e) {
             log.error("Unable to write draft case data JSON", e);
-            throw new JsonWriterException("Failed to save answers", e);
+            throw new UnsubmittedDataException("Failed to save answers", e);
         }
     }
 
