@@ -737,4 +737,10 @@ public class PCSCase {
     @CCD
     private StatementOfTruthDetails statementOfTruth;
 
+    @CCD(searchable = false)
+    private YesOrNo showPreActionProtocolPageWales;
+
+    @CCD(searchable = false)
+    private YesOrNo showASBQuestionsPageWales;
+
 }
