@@ -17,6 +17,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
+import uk.gov.hmcts.reform.pcs.ccd.service.CaseTitleService;
 import uk.gov.hmcts.reform.pcs.ccd.service.DefendantService;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
@@ -45,6 +46,7 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
     private final SecurityContextService securityContextService;
     private final ModelMapper modelMapper;
     private final DraftCaseDataService draftCaseDataService;
+    private final CaseTitleService caseTitleService;
     private final DefendantService defendantService;
 
     /**
@@ -122,10 +124,7 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
     }
 
     private void setMarkdownFields(PCSCase pcsCase) {
-        pcsCase.setPageHeadingMarkdown("""
-                <p class="govuk-!-font-size-24
-                govuk-!-margin-top-0 govuk-!-margin-bottom-0">
-                Case number: ${[CASE_REFERENCE]}</p>""");
+        pcsCase.setCaseTitleMarkdown(caseTitleService.buildCaseTitle(pcsCase));
 
         if (pcsCase.getHasUnsubmittedCaseData() == YesOrNo.YES) {
             pcsCase.setNextStepsMarkdown("""
