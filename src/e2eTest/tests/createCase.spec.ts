@@ -9,14 +9,14 @@ import {addressDetails, claimantType, claimType,claimantName, contactPreferences
 test.beforeEach(async ({page}) => {
   initializeExecutor(page);
   await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
-  // await performAction('handleCookieConsent', {
-  //   accept: signInOrCreateAnAccount.acceptAdditionalCookiesButton,
-  //   hide: signInOrCreateAnAccount.hideThisCookieMessageButton
-  // });
+  await performAction('handleCookieConsent', {
+    accept: signInOrCreateAnAccount.acceptAdditionalCookiesButton,
+    hide: signInOrCreateAnAccount.hideThisCookieMessageButton
+  });
   await performAction('login', user.claimantSolicitor);
-  // await performAction('handleCookieConsent', {
-  //   accept: signInOrCreateAnAccount.acceptAnalyticsCookiesButton
-  // });
+  await performAction('handleCookieConsent', {
+    accept: signInOrCreateAnAccount.acceptAnalyticsCookiesButton
+  });
   await performAction('clickTab', home.createCaseTab);
   await performAction('selectJurisdictionCaseTypeEvent');
   await performAction('housingPossessionClaim');
