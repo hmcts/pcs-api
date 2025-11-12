@@ -2,7 +2,7 @@ import { IdamUtils } from '@hmcts/playwright-common';
 import { Page } from '@playwright/test';
 import { v4 as uuidv4 } from 'uuid';
 import { performAction, performValidation } from '../../controller';
-import { IAction, actionData, actionRecord } from '../../interfaces/action.interface';
+import { IAction, actionData, actionRecord } from '@utils/interfaces';
 import { signInOrCreateAnAccount } from '@data/page-data/signInOrCreateAnAccount.page.data';
 import { SessionManager } from '../../session-manager';
 
@@ -38,7 +38,7 @@ export class LoginAction implements IAction {
     await performAction('inputText', signInOrCreateAnAccount.emailAddressLabel, userEmail);
     await performAction('inputText', signInOrCreateAnAccount.passwordLabel, userPassword);
     await performAction('clickButton', signInOrCreateAnAccount.signInButton);
-    
+
     // Wait for navigation after login to ensure cookies are set
     await page.waitForURL('**/cases', { timeout: 30000 }).catch(() => {
       // If URL doesn't match, wait for any navigation
