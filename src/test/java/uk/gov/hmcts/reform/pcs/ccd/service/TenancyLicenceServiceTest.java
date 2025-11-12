@@ -163,10 +163,10 @@ class TenancyLicenceServiceTest {
 
         // Test arrearsJudgmentWanted field updates
         assertTenancyLicenceField(
-                pcsCase -> when(pcsCase.getArrearsJudgmentWanted()).thenReturn(VerticalYesNo.YES),
+                pcsCase -> when(pcsCase.getArrearsJudgmentWantedV()).thenReturn(VerticalYesNo.YES),
                 expected -> assertThat(expected.getArrearsJudgmentWanted()).isTrue());
         assertTenancyLicenceField(
-                pcsCase -> when(pcsCase.getArrearsJudgmentWanted()).thenReturn(VerticalYesNo.NO),
+                pcsCase -> when(pcsCase.getArrearsJudgmentWantedV()).thenReturn(VerticalYesNo.NO),
                 expected -> assertThat(expected.getArrearsJudgmentWanted()).isFalse());
     }
 
