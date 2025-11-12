@@ -60,7 +60,7 @@ test.describe('[Eligibility Check - Create Case] @Master @nightly', async () => 
 
   test('Cross border England - Verify postcode eligibility check', async () => {
     await performAction('selectAddress', {
-      postcode: addressDetails.englandCourtAssignedPostcode,
+      postcode: addressDetails.englandCourtAssignedPostcodeTextInput,
       addressIndex: addressDetails.addressIndex
     });
     await performValidation('mainHeader', addressCheckYourAnswers.mainHeader)
@@ -70,7 +70,7 @@ test.describe('[Eligibility Check - Create Case] @Master @nightly', async () => 
 
   test('Cross border England - Verify postcode not assigned to court - Can not use this service page', async () => {
     await performAction('selectAddress', {
-      postcode: addressDetails.englandWalesNoCourtCrossBorderPostcode,
+      postcode: addressDetails.englandWalesNoCourtCrossBorderPostcodeTextInput,
       addressIndex: addressDetails.addressIndex
     });
     await performAction('selectBorderPostcode', borderPostcode.countryOptions.england);
@@ -79,7 +79,7 @@ test.describe('[Eligibility Check - Create Case] @Master @nightly', async () => 
 
   test('Wales - Verify non cross border postcode eligibility check for Wales', async () => {
     await performAction('selectAddress', {
-      postcode: addressDetails.walesCourtAssignedPostcode,
+      postcode: addressDetails.walesCourtAssignedPostcodeTextInput,
       addressIndex: addressDetails.addressIndex
     });
     await performValidation('mainHeader', addressCheckYourAnswers.mainHeader)
@@ -89,7 +89,7 @@ test.describe('[Eligibility Check - Create Case] @Master @nightly', async () => 
 
   test('England - Verify postcode not assigned to court - Can not use this service page', async () => {
     await performAction('selectAddress', {
-      postcode: addressDetails.englandNoCourtAssignedPostcode,
+      postcode: addressDetails.englandNoCourtAssignedPostcodeTextInput,
       addressIndex: addressDetails.addressIndex
     });
     await performValidation('mainHeader', canNotUseOnlineService.mainHeader);
@@ -107,7 +107,7 @@ test.describe('[Eligibility Check - Create Case] @Master @nightly', async () => 
 
   test('England - Unsuccessful case creation journey due to claimant type not in scope of Release1 @R1only', async () => {
     await performAction('selectAddress', {
-      postcode: addressDetails.englandCourtAssignedPostcode,
+      postcode: addressDetails.englandCourtAssignedPostcodeTextInput,
       addressIndex: addressDetails.addressIndex
     });
     await performValidation('mainHeader', addressCheckYourAnswers.mainHeader)
@@ -127,7 +127,7 @@ test.describe('[Eligibility Check - Create Case] @Master @nightly', async () => 
 
   test('Wales - Unsuccessful case creation journey due to claimant type not in scope of Release1 @R1only', async () => {
     await performAction('selectAddress', {
-      postcode: addressDetails.walesCourtAssignedPostcode,
+      postcode: addressDetails.walesCourtAssignedPostcodeTextInput,
       addressIndex: addressDetails.addressIndex
     });
     await performValidation('mainHeader', addressCheckYourAnswers.mainHeader)
@@ -149,7 +149,7 @@ test.describe('[Eligibility Check - Create Case] @Master @nightly', async () => 
 
   test('Wales - Unsuccessful case creation journey due to claim type not in scope of Release1 @R1only', async () => {
     await performAction('selectAddress', {
-      postcode: addressDetails.walesCourtAssignedPostcode,
+      postcode: addressDetails.walesCourtAssignedPostcodeTextInput,
       addressIndex: addressDetails.addressIndex
     });
     await performValidation('mainHeader', addressCheckYourAnswers.mainHeader)
@@ -172,7 +172,7 @@ test.describe('[Eligibility Check - Create Case] @Master @nightly', async () => 
 
   test('England - Unsuccessful case creation journey due to claim type not in scope of Release1 @R1only', async () => {
     await performAction('selectAddress', {
-      postcode: addressDetails.englandCourtAssignedPostcode,
+      postcode: addressDetails.englandCourtAssignedPostcodeTextInput,
       addressIndex: addressDetails.addressIndex
     });
     await performValidation('mainHeader', addressCheckYourAnswers.mainHeader)

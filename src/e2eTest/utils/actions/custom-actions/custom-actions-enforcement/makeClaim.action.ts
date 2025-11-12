@@ -31,8 +31,8 @@ export class MakeClaimAction implements IAction {
       await performAction('selectJurisdictionCaseTypeEvent');
       await performAction('housingPossessionClaim');
       await performAction('selectAddress', {
-        postcode: addressDetails.englandCourtAssignedPostcode,
-        addressIndex: addressDetails.addressIndex,
+        postcode: addressDetails.englandCourtAssignedPostcodeTextInput,
+        addressIndex: addressDetails.addressIndex
       });
       await performValidation('mainHeader', addressCheckYourAnswers.mainHeader)
       await performAction('submitAddressCheckYourAnswers');

@@ -1,14 +1,17 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.DiscretionaryGroundWales;
+import uk.gov.hmcts.reform.pcs.ccd.service.routing.wales.WalesRentDetailsRoutingService;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,8 +19,11 @@ import java.util.Set;
 
 @Component
 @Slf4j
+@RequiredArgsConstructor
 public class GroundsForPossessionWales
     implements CcdPageConfiguration {
+
+    private final WalesRentDetailsRoutingService walesRentDetailsRoutingService;
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
@@ -71,7 +77,7 @@ public class GroundsForPossessionWales
         }
 
         // if Estate management parent ticked, require sub-selection
-        if (hasDiscretionary
+        if (discretionaryGrounds != null
             && discretionaryGrounds.contains(DiscretionaryGroundWales.ESTATE_MANAGEMENT_GROUNDS_SECTION_160)) {
 
             boolean hasEstate = estateManagementGrounds != null && !estateManagementGrounds.isEmpty();
@@ -86,6 +92,38 @@ public class GroundsForPossessionWales
                 .data(data)
                 .errors(errors)
                 .build();
+        }
+
+        // Rent details routing (from HEAD - using routing service)
+        data.setShowRentDetailsPage(walesRentDetailsRoutingService.shouldShowRentDetails(data));
+
+        // ASB/Reasons routing (from master)
+        boolean hasRentArrears = hasDiscretionary 
+                && discretionaryGrounds != null
+                && discretionaryGrounds.contains(DiscretionaryGroundWales.RENT_ARREARS_SECTION_157);
+        boolean hasASB = hasDiscretionary 
+                && discretionaryGrounds != null
+                && discretionaryGrounds.contains(DiscretionaryGroundWales.ANTISOCIAL_BEHAVIOUR_SECTION_157);
+        boolean hasOtherBreach = hasDiscretionary 
+                && discretionaryGrounds != null
+                && discretionaryGrounds.contains(DiscretionaryGroundWales.OTHER_BREACH_SECTION_157);
+        boolean hasEstateManagement = hasDiscretionary
+                && discretionaryGrounds != null
+                && discretionaryGrounds.contains(DiscretionaryGroundWales.ESTATE_MANAGEMENT_GROUNDS_SECTION_160);
+
+        // Determine if there are "other options" (anything that's not rent arrears or ASB)
+        boolean hasOtherOptions = hasOtherBreach || hasEstateManagement || hasMandatory;
+
+        // Routing rules based on options selected
+        if (hasRentArrears && !hasASB && !hasOtherOptions) {
+            data.setShowASBQuestionsPageWales(YesOrNo.NO);
+            data.setShowReasonsForGroundsPageWales(YesOrNo.NO);
+        } else if (hasASB && !hasOtherOptions) {
+            data.setShowASBQuestionsPageWales(YesOrNo.YES);
+            data.setShowReasonsForGroundsPageWales(YesOrNo.NO);
+        } else if (hasOtherOptions) {
+            data.setShowASBQuestionsPageWales(YesOrNo.NO);
+            data.setShowReasonsForGroundsPageWales(YesOrNo.YES);
         }
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
