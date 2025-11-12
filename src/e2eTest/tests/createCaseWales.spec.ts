@@ -182,11 +182,10 @@ test.describe('[Create Case - Wales] @Master @nightly', async () => {
       correspondenceAddress: contactPreferences.no,
       phoneNumber: contactPreferences.yes
     });
-    await performAction('defendantDetails', {
-      name: defendantDetails.yesRadioOption,
-      correspondenceAddress: defendantDetails.yesRadioOption,
-      email: defendantDetails.yesRadioOption,
-      correspondenceAddressSame: defendantDetails.yesRadioOption
+    await performAction('addDefendantDetails', {
+      nameOption: defendantDetails.yesRadioOption, firstName: defendantDetails.firstNameTextInput, lastName: defendantDetails.lastNameTextInput,
+      correspondenceAddressOption: defendantDetails.yesRadioOption, correspondenceAddressSameOption: defendantDetails.yesRadioOption,
+      addAdditionalDefendantsOption: defendantDetails.noRadioOption
     });
      await performAction('selectOccupationContractOrLicenceDetails', {
       occupationContractQuestion: occupationContractOrLicenceDetailsWales.occupationContractOrLicenceType,
@@ -300,8 +299,8 @@ test.describe('[Create Case - Wales] @Master @nightly', async () => {
       phoneNumber: contactPreferences.no
     });
     await performAction('addDefendantDetails', {
-      nameOption: defendantDetails.noRadioOption,
-      correspondenceAddressOption: defendantDetails.noRadioOption,
+      nameOption: defendantDetails.yesRadioOption, firstName: defendantDetails.firstNameTextInput, lastName: defendantDetails.lastNameTextInput,
+      correspondenceAddressOption: defendantDetails.yesRadioOption, correspondenceAddressSameOption: defendantDetails.yesRadioOption,
       addAdditionalDefendantsOption: defendantDetails.noRadioOption
     });
     await performAction('selectOccupationContractOrLicenceDetails', {
