@@ -63,7 +63,13 @@ test.beforeEach(async ({page}) => {
 
 test.describe('[Create Case - Wales] @Master @nightly', async () => {
   test('Wales - Secure contract - Rent arrears only', async () => {
-    await performAction('enterTestAddressManually');
+    await performAction('enterTestAddressManually', {
+      buildingAndStreet: addressDetails.walesBuildingAndStreetTextInput,
+      townOrCity: addressDetails.walesTownOrCityTextInput,
+      county: addressDetails.walesCountyTextInput,
+      postcode: addressDetails.walesCourtAssignedPostcodeTextInput,
+      country: addressDetails.walesCountryTextInput
+    });
     await performValidation('bannerAlert', 'Case #.* has been created.');
     await performAction('extractCaseIdFromAlert');
     await performAction('provideMoreDetailsOfClaim');
@@ -154,7 +160,13 @@ test.describe('[Create Case - Wales] @Master @nightly', async () => {
   });
 
   test('Wales - Secure contract - Rent arrears + ASB + other options', async () => {
-    await performAction('enterTestAddressManually');
+    await performAction('enterTestAddressManually', {
+      buildingAndStreet: addressDetails.walesBuildingAndStreetTextInput,
+      townOrCity: addressDetails.walesTownOrCityTextInput,
+      county: addressDetails.walesCountyTextInput,
+      postcode: addressDetails.walesCourtAssignedPostcodeTextInput,
+      country: addressDetails.walesCountryTextInput
+    });
     await performValidation('bannerAlert', 'Case #.* has been created.');
     await performAction('extractCaseIdFromAlert');
     await performAction('provideMoreDetailsOfClaim');
@@ -262,7 +274,13 @@ test.describe('[Create Case - Wales] @Master @nightly', async () => {
   });
 
   test('Wales - Standard contract - Rent arrears + ASB', async () => {
-    await performAction('enterTestAddressManually');
+    await performAction('enterTestAddressManually', {
+      buildingAndStreet: addressDetails.walesBuildingAndStreetTextInput,
+      townOrCity: addressDetails.walesTownOrCityTextInput,
+      county: addressDetails.walesCountyTextInput,
+      postcode: addressDetails.walesCourtAssignedPostcodeTextInput,
+      country: addressDetails.walesCountryTextInput
+    });
     await performValidation('bannerAlert', 'Case #.* has been created.');
     await performAction('extractCaseIdFromAlert');
     await performAction('provideMoreDetailsOfClaim');
@@ -357,7 +375,13 @@ test.describe('[Create Case - Wales] @Master @nightly', async () => {
   });
 
   test('Wales - Other - No Rent arrears,  ASB + other options', async () => {
-    await performAction('enterTestAddressManually');
+    await performAction('enterTestAddressManually', {
+      buildingAndStreet: addressDetails.walesBuildingAndStreetTextInput,
+      townOrCity: addressDetails.walesTownOrCityTextInput,
+      county: addressDetails.walesCountyTextInput,
+      postcode: addressDetails.walesCourtAssignedPostcodeTextInput,
+      country: addressDetails.walesCountryTextInput
+    });
     await performValidation('bannerAlert', 'Case #.* has been created.');
     await performAction('extractCaseIdFromAlert');
     await performAction('provideMoreDetailsOfClaim');
