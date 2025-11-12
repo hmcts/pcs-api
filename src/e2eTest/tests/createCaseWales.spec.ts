@@ -1,12 +1,49 @@
 import {test} from '@playwright/test';
 import {initializeExecutor, performAction, performValidation, performValidations} from '@utils/controller';
-import {claimType, claimantType, claimantName, claimantDetailsWales, contactPreferences, defendantDetails, tenancyLicenceDetails,
-        groundsForPossession, rentArrearsPossessionGrounds, preActionProtocol, mediationAndSettlement, noticeOfYourIntention, rentDetails,
-        provideMoreDetailsOfClaim, resumeClaim, resumeClaimOptions, detailsOfRentArrears, whatAreYourGroundsForPossession,
-        rentArrearsOrBreachOfTenancy, reasonsForPossession, moneyJudgment, claimantCircumstances, applications, completeYourClaim, user,
-        checkYourAnswers, propertyDetails, languageUsed, defendantCircumstances, claimingCosts, home, additionalReasonsForPossession,
-        underlesseeOrMortgageeEntitledToClaim, wantToUploadDocuments, whatAreYourGroundsForPossessionWales, addressDetails,
-        signInOrCreateAnAccount, occupationContractOrLicenceDetailsWales, prohibitedConductStandardContractWales, dailyRentAmount, antiSocialBehaviourWales} from '@data/page-data';
+import {
+  claimType,
+  claimantType,
+  claimantName,
+  claimantDetailsWales,
+  contactPreferences,
+  defendantDetails,
+  tenancyLicenceDetails,
+  groundsForPossession,
+  rentArrearsPossessionGrounds,
+  preActionProtocol,
+  mediationAndSettlement,
+  noticeOfYourIntention,
+  rentDetails,
+  provideMoreDetailsOfClaim,
+  resumeClaim,
+  resumeClaimOptions,
+  detailsOfRentArrears,
+  whatAreYourGroundsForPossession,
+  rentArrearsOrBreachOfTenancy,
+  reasonsForPossession,
+  moneyJudgment,
+  claimantCircumstances,
+  applications,
+  completeYourClaim,
+  user,
+  checkYourAnswers,
+  propertyDetails,
+  languageUsed,
+  defendantCircumstances,
+  claimingCosts,
+  home,
+  additionalReasonsForPossession,
+  underlesseeOrMortgageeEntitledToClaim,
+  wantToUploadDocuments,
+  whatAreYourGroundsForPossessionWales,
+  addressDetails,
+  signInOrCreateAnAccount,
+  occupationContractOrLicenceDetailsWales,
+  prohibitedConductStandardContractWales,
+  dailyRentAmount,
+  antiSocialBehaviourWales,
+  noticeDetails
+} from '@data/page-data';
 
 test.beforeEach(async ({page}) => {
   initializeExecutor(page);
@@ -26,7 +63,13 @@ test.beforeEach(async ({page}) => {
 
 test.describe('[Create Case - Wales] @Master @nightly', async () => {
   test('Wales - Secure contract - Rent arrears only', async () => {
-    await performAction('enterTestAddressManually');
+    await performAction('enterTestAddressManually', {
+      buildingAndStreet: addressDetails.walesBuildingAndStreetTextInput,
+      townOrCity: addressDetails.walesTownOrCityTextInput,
+      county: addressDetails.walesCountyTextInput,
+      postcode: addressDetails.walesCourtAssignedPostcodeTextInput,
+      country: addressDetails.walesCountryTextInput
+    });
     await performValidation('bannerAlert', 'Case #.* has been created.');
     await performAction('extractCaseIdFromAlert');
     await performAction('provideMoreDetailsOfClaim');
@@ -73,15 +116,14 @@ test.describe('[Create Case - Wales] @Master @nightly', async () => {
       option: noticeOfYourIntention.no
     });
     // Following lines enabled to reach the Prohibited conduct standard contract page as HDPI-2506
-    // The following lines related to rent arrears are disabled and will be re-enabled as part of HDPI-2191.
-    /*await performAction('provideRentDetails', {rentFrequencyOption: 'Monthly', rentAmount: '1000'});
+    await performAction('provideRentDetails', {rentFrequencyOption: 'Monthly', rentAmount: '1000'});
     await performValidation('mainHeader', dailyRentAmount.mainHeader);
     await performAction('selectDailyRentAmount', {
       calculateRentAmount: '£32.85',
       unpaidRentInteractiveOption: dailyRentAmount.yes
     });
     await performValidation('mainHeader', moneyJudgment.mainHeader);
-    await performAction('selectMoneyJudgment', moneyJudgment.no);*/
+    await performAction('selectMoneyJudgment', moneyJudgment.no);
     await performValidation('mainHeader', claimantCircumstances.mainHeader);
     await performAction('selectClaimantCircumstances', {
       circumstanceOption: claimantCircumstances.no,
@@ -118,7 +160,13 @@ test.describe('[Create Case - Wales] @Master @nightly', async () => {
   });
 
   test('Wales - Secure contract - Rent arrears + ASB + other options', async () => {
-    await performAction('enterTestAddressManually');
+    await performAction('enterTestAddressManually', {
+      buildingAndStreet: addressDetails.walesBuildingAndStreetTextInput,
+      townOrCity: addressDetails.walesTownOrCityTextInput,
+      county: addressDetails.walesCountyTextInput,
+      postcode: addressDetails.walesCourtAssignedPostcodeTextInput,
+      country: addressDetails.walesCountryTextInput
+    });
     await performValidation('bannerAlert', 'Case #.* has been created.');
     await performAction('extractCaseIdFromAlert');
     await performAction('provideMoreDetailsOfClaim');
@@ -164,8 +212,7 @@ test.describe('[Create Case - Wales] @Master @nightly', async () => {
       option: noticeOfYourIntention.no
     });
     // Following lines enabled to reach the Prohibited conduct standard contract page as HDPI-2506
-    // The following lines related to rent arrears are disabled and will be re-enabled as part of HDPI-2191.
-    /*await performValidation('mainHeader', rentDetails.mainHeader);
+    await performValidation('mainHeader', rentDetails.mainHeader);
     await performAction('provideRentDetails', {
       rentAmount: '850',
       rentFrequencyOption: 'Other',
@@ -180,7 +227,7 @@ test.describe('[Create Case - Wales] @Master @nightly', async () => {
       paymentOptions: [detailsOfRentArrears.universalCreditOption, detailsOfRentArrears.paymentOtherOption]
     });
     await performValidation('mainHeader', moneyJudgment.mainHeader);
-    await performAction('selectMoneyJudgment', moneyJudgment.yes);*/
+    await performAction('selectMoneyJudgment', moneyJudgment.yes);
     await performValidation('mainHeader', claimantCircumstances.mainHeader);
     await performAction('selectClaimantCircumstances', {
       circumstanceOption: claimantCircumstances.yes,
@@ -227,7 +274,13 @@ test.describe('[Create Case - Wales] @Master @nightly', async () => {
   });
 
   test('Wales - Standard contract - Rent arrears + ASB', async () => {
-    await performAction('enterTestAddressManually');
+    await performAction('enterTestAddressManually', {
+      buildingAndStreet: addressDetails.walesBuildingAndStreetTextInput,
+      townOrCity: addressDetails.walesTownOrCityTextInput,
+      county: addressDetails.walesCountyTextInput,
+      postcode: addressDetails.walesCourtAssignedPostcodeTextInput,
+      country: addressDetails.walesCountryTextInput
+    });
     await performValidation('bannerAlert', 'Case #.* has been created.');
     await performAction('extractCaseIdFromAlert');
     await performAction('provideMoreDetailsOfClaim');
@@ -258,7 +311,7 @@ test.describe('[Create Case - Wales] @Master @nightly', async () => {
     });
     await performValidation('mainHeader', whatAreYourGroundsForPossessionWales.mainHeader);
     await performAction('selectYourPossessionGrounds', {
-      discretionary: [whatAreYourGroundsForPossessionWales.discretionary.rentArrears, whatAreYourGroundsForPossessionWales.discretionary.antiSocialBehaviour],
+      discretionary: [whatAreYourGroundsForPossessionWales.discretionary.rentArrears,whatAreYourGroundsForPossessionWales.discretionary.antiSocialBehaviour],
     });
     await performValidation('mainHeader', antiSocialBehaviourWales.mainHeader);
     await performAction('clickButton', antiSocialBehaviourWales.continue);
@@ -274,15 +327,14 @@ test.describe('[Create Case - Wales] @Master @nightly', async () => {
       option: noticeOfYourIntention.no,
     });
     // Following lines enabled to reach the Prohibited conduct standard contract page as HDPI-2506
-    // The following lines related to rent arrears are disabled and will be re-enabled as part of HDPI-2191.
-    /*await performValidation('mainHeader', rentDetails.mainHeader);
+    await performValidation('mainHeader', rentDetails.mainHeader);
     await performAction('provideRentDetails', {rentFrequencyOption: 'Monthly', rentAmount: '1000'});
     await performAction('selectDailyRentAmount', {
     calculateRentAmount: '£32.85',
     unpaidRentInteractiveOption: dailyRentAmount.yes
     });
     await performValidation('mainHeader', moneyJudgment.mainHeader);
-    await performAction('selectMoneyJudgment', moneyJudgment.yes);*/
+    await performAction('selectMoneyJudgment', moneyJudgment.yes);
     await performValidation('mainHeader', claimantCircumstances.mainHeader);
     await performAction('selectClaimantCircumstances', {
       circumstanceOption: claimantCircumstances.no,
@@ -323,7 +375,13 @@ test.describe('[Create Case - Wales] @Master @nightly', async () => {
   });
 
   test('Wales - Other - No Rent arrears,  ASB + other options', async () => {
-    await performAction('enterTestAddressManually');
+    await performAction('enterTestAddressManually', {
+      buildingAndStreet: addressDetails.walesBuildingAndStreetTextInput,
+      townOrCity: addressDetails.walesTownOrCityTextInput,
+      county: addressDetails.walesCountyTextInput,
+      postcode: addressDetails.walesCourtAssignedPostcodeTextInput,
+      country: addressDetails.walesCountryTextInput
+    });
     await performValidation('bannerAlert', 'Case #.* has been created.');
     await performAction('extractCaseIdFromAlert');
     await performAction('provideMoreDetailsOfClaim');
@@ -372,9 +430,9 @@ test.describe('[Create Case - Wales] @Master @nightly', async () => {
       typeOfNotice: noticeOfYourIntention.typeOfNoticeInput
     });
     //selectNoticeDetails has been commented out and will be modified as part of https://tools.hmcts.net/jira/browse/HDPI-2515 + https://tools.hmcts.net/jira/browse/HDPI-2516
-    // await performAction('selectNoticeDetails', {
-    //   howDidYouServeNotice: noticeDetails.byOtherElectronicMethod,
-    //   day: '25', month: '02', year: '1970', hour: '22', minute: '45', second: '10', files: 'NoticeDetails.pdf'});
+    //await performAction('selectNoticeDetails', {
+    // howDidYouServeNotice: noticeDetails.byOtherElectronicMethod,
+    //  day: '25', month: '02', year: '1970', hour: '22', minute: '45', second: '10', files: 'NoticeDetails.pdf'});
     // Following lines enabled to reach the Prohibited conduct standard contract page as HDPI-2506
     await performValidation('mainHeader', claimantCircumstances.mainHeader);
     await performAction('selectClaimantCircumstances', {
