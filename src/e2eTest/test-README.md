@@ -66,8 +66,8 @@ Playwright 1.30+ | TypeScript 4.9+
 ## 4. Available Actions and Validations
 
 ### Actions
-| Action          | Example Usage |
-|------------------|---------------|
+| Action                                      | Example Usage                                                                                                                                                                                              |
+|---------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | inputText                                   | `performAction('inputText', 'Email', 'test@example.com')`                                                                                                                                                  |
 | check                                       | `performAction('check', 'RememberMe')`                                                                                                                                                                     |
 | navigateToUrl                               | `performAction('navigateToUrl', 'testUrl')`                                                                                                                                                                |
@@ -129,13 +129,14 @@ Playwright 1.30+ | TypeScript 4.9+
 | signOut                                     | `performAction('signOut')`                                                                                                                                                                                 |
 | clickButtonAndWaitForElement                | `performAction('clickButtonAndWaitForElement', 'Sign out', home.mainHeader)`                                                                                                                               |
 | selectOccupationContractOrLicenceDetails    | `performAction('selectOccupationContractOrLicenceDetails', {occupationContractType: occupationContractOrLicenceDetailsWales.other})`                                                                       |
+| handleCookieConsent                         | `performAction('handleCookieConsent', accept: signInOrCreateAnAccount.acceptAnalyticsCookiesButton)`                                                                                                       |
 | provideMoreDetailsOfClaim                   | `performAction('provideMoreDetailsOfClaim')`                                                                                                                                                               |
 | selectUnderlesseeOrMortgageeEntitledToClaim | `performAction('selectUnderlesseeOrMortgageeEntitledToClaim','Yes')`                                                                                                                                       |
 | selectUnderlesseeOrMortgageeDetails         | `performAction('selectUnderlesseeOrMortgageeDetails', { nameOption: 'Yes', addressOption: 'Yes', anotherUnderlesseeOrMortgageeOption: 'Yes'})`                                                             |
 | selectProhibitedConductStandardContract     | `performAction('selectProhibitedConductStandardContract', prohibitedConductStandardContractWales.yes)`                                                                                                     |
 ### Validations
-| Validation          | Example Usage |
-|------------------|---------------|
+| Validation                 | Example Usage                                                                                                                        |
+|----------------------------|--------------------------------------------------------------------------------------------------------------------------------------|
 | text                       | `performValidation('text', 'testElement')`                                                                                           |
 | bannerAlert                | `performValidation('bannerAlert', {message: "Case has been created."})`                                                              |
 | formLabelValue             | `performValidation('formLabelValue',  "Applicant's forename", {value:'TestUser'})`                                                   |
