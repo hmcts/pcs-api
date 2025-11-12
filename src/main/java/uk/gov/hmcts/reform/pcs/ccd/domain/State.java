@@ -18,21 +18,21 @@ public enum State {
     @CCD(
         label = "Awaiting further claim details",
         access = {ClaimantAccess.class},
-        hint = "${pageHeadingMarkdown}"
+        hint = "${caseTitleMarkdown}"
     )
     AWAITING_FURTHER_CLAIM_DETAILS,
 
     @CCD(
         label = "Awaiting Submission to HMCTS",
         access = {ClaimantAccess.class, CitizenAccess.class},
-        hint = "${pageHeadingMarkdown}"
+        hint = "${caseTitleMarkdown}"
     )
     AWAITING_SUBMISSION_TO_HMCTS,
 
     @CCD(
         label = "Case Issued",
         access = {CaseworkerReadAccess.class, ClaimantAccess.class},
-        hint = "${pageHeadingMarkdown}"
+        hint = "${caseTitleMarkdown}"
     )
     CASE_ISSUED
 
