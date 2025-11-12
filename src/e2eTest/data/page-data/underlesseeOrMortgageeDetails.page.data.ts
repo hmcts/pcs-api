@@ -6,7 +6,7 @@ export const underlesseeOrMortgageeDetails =
     doYouKnowTheAddressQuestion: 'Do you know the underlessee or mortgagee\'s correspondence address?',
     addAnotherUnderlesseeOrMortgageeQuestion: 'Do you need to add another underlessee or mortgagee?',
     doYouKnowTheNameTextLabel: 'What is their name?',
-    nameTextInput: 'UnderlesseeMortgagee Name',
+    underlesseeNameTextInput: 'UnderlesseeMortgagee Name',
     continueButton: 'Continue',
     yesRadioOption: 'Yes',
     noRadioOption: 'No',
