@@ -1,7 +1,7 @@
 import {test} from '@playwright/test';
 import {initializeExecutor, performAction, performValidation, performValidations} from '@utils/controller';
 import {addressDetails, claimantType, claimType,claimantName, contactPreferences, defendantDetails, tenancyLicenceDetails, groundsForPossession, rentArrearsPossessionGrounds, preActionProtocol, mediationAndSettlement,
-        noticeOfYourIntention, noticeDetails, rentDetails, provideMoreDetailsOfClaim, resumeClaim, resumeClaimOptions, detailsOfRentArrears, whatAreYourGroundsForPossession, rentArrearsOrBreachOfTenancy,
+        noticeOfYourIntention, noticeDetails, rentDetails, detailsOfRentArrears, whatAreYourGroundsForPossession, rentArrearsOrBreachOfTenancy,
         reasonsForPossession, moneyJudgment, claimantCircumstances, applications, completeYourClaim, user, reasonsForRequestingASuspensionOrder, checkYourAnswers, propertyDetails, languageUsed, defendantCircumstances,
         claimingCosts, additionalReasonsForPossession, underlesseeOrMortgageeEntitledToClaim, alternativesToPossession, housingAct, reasonsForRequestingADemotionOrder, statementOfExpressTerms, wantToUploadDocuments,
         home, uploadAdditionalDocs, underlesseeOrMortgageeDetails, dailyRentAmount, statementOfTruth, reasonsForRequestingASuspensionAndDemotionOrder, signInOrCreateAnAccount} from '@data/page-data';
@@ -60,13 +60,14 @@ test.describe('[Create Case - England] @Master @nightly', async () => {
       rentArrears: [rentArrearsPossessionGrounds.rentArrears, rentArrearsPossessionGrounds.seriousRentArrears, rentArrearsPossessionGrounds.persistentDelayInPayingRent],
       otherGrounds: rentArrearsPossessionGrounds.yes
     });
+    await performValidation('elementNotToBeVisible',[rentArrearsPossessionGrounds.rentArrears, rentArrearsPossessionGrounds.seriousRentArrears, rentArrearsPossessionGrounds.persistentDelayInPayingRent]);
     await performAction('selectYourPossessionGrounds',{
       mandatory: [whatAreYourGroundsForPossession.mandatory.holidayLet,whatAreYourGroundsForPossession.mandatory.ownerOccupier],
-      discretionary: [whatAreYourGroundsForPossession.discretionary.domesticViolence14A,whatAreYourGroundsForPossession.discretionary.rentArrears],
+      discretionary: [whatAreYourGroundsForPossession.discretionary.domesticViolence14A,whatAreYourGroundsForPossession.discretionary.suitableAlternativeAccommodation],
     });
     await performAction('enterReasonForPossession',
       [whatAreYourGroundsForPossession.mandatory.holidayLet,whatAreYourGroundsForPossession.mandatory.ownerOccupier,
-        whatAreYourGroundsForPossession.discretionary.domesticViolence14A])
+        whatAreYourGroundsForPossession.discretionary.domesticViolence14A,whatAreYourGroundsForPossession.discretionary.suitableAlternativeAccommodation])
     await performValidation('mainHeader', preActionProtocol.mainHeader);
     await performAction('selectPreActionProtocol', preActionProtocol.yes);
     await performValidation('mainHeader', mediationAndSettlement.mainHeader);
@@ -175,8 +176,12 @@ test.describe('[Create Case - England] @Master @nightly', async () => {
       rentArrears: [rentArrearsPossessionGrounds.rentArrears],
       otherGrounds: rentArrearsPossessionGrounds.yes
     });
-    // Test for assured tenancy: select one possession ground, choose 'Yes' for additional ground, then continue without selecting others (HDPI-2038)
-    await performAction('selectYourPossessionGrounds');
+    await performValidation('mainHeader', whatAreYourGroundsForPossession.mainHeader);
+    await performAction('selectYourPossessionGrounds', {
+      mandatory: [whatAreYourGroundsForPossession.mandatory.holidayLet]
+    });
+    await performAction('enterReasonForPossession',
+      [whatAreYourGroundsForPossession.mandatory.holidayLet]);
     await performValidation('mainHeader', preActionProtocol.mainHeader);
     await performAction('selectPreActionProtocol', preActionProtocol.yes);
     await performValidation('mainHeader', mediationAndSettlement.mainHeader);
@@ -878,7 +883,7 @@ test.describe('[Create Case - England] @Master @nightly', async () => {
     await performAction('selectTenancyOrLicenceDetails', {
       tenancyOrLicenceType: tenancyLicenceDetails.secureTenancy
     });
-    await performValidation('mainHeader', whatAreYourGroundsForPossession.mainHeader);
+    await performValidation('mainHeader', whatAreYourGroundsForPossession.mainHeaderSecure);
     await performAction('selectYourPossessionGrounds', {
       discretionary: [whatAreYourGroundsForPossession.discretionary.rentArrearsOrBreachOfTenancy, whatAreYourGroundsForPossession.discretionary.deteriorationOfFurniture4],
       mandatory: [whatAreYourGroundsForPossession.mandatory.antiSocialBehaviour],
