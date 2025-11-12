@@ -5,7 +5,7 @@ import { IAction, actionData, actionRecord } from '@utils/interfaces';
 import * as path from 'path';
 import * as fs from 'fs';
 
-// Session configuration - following tcoe-playwright-example pattern
+// Session configuration
 const SESSION_DIR = path.join(process.cwd(), '.auth');
 const STORAGE_STATE_FILE = 'storage-state.json';
 const SESSION_COOKIE_NAME = process.env.SESSION_COOKIE_NAME || 'Idam.Session';
@@ -38,8 +38,7 @@ export class LoginAction implements IAction {
     const storageStatePath = getStorageStatePath();
     const currentUrl = page.url();
     
-    // Check if already authenticated using SessionUtils from @hmcts/playwright-common
-    // Following tcoe-playwright-example pattern
+    // Skip login if already authenticated with valid session
     if (!currentUrl.includes('/login') && !currentUrl.includes('/sign-in')) {
       try {
         if (SessionUtils.isSessionValid(storageStatePath, SESSION_COOKIE_NAME)) {
@@ -51,8 +50,7 @@ export class LoginAction implements IAction {
       }
     }
 
-    // Use IdamPage from @hmcts/playwright-common for login
-    // Following tcoe-playwright-example pattern exactly
+    // Perform login using IdamPage from @hmcts/playwright-common
     const idamPage = new IdamPage(page);
     await idamPage.login({
       username: userEmail,

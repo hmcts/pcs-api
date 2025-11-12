@@ -6,7 +6,7 @@ import { CookieUtils } from '@utils/cookie.utils';
 import * as path from 'path';
 import * as fs from 'fs';
 
-// Session configuration - following tcoe-playwright-example pattern
+// Session configuration
 const SESSION_DIR = path.join(process.cwd(), '.auth');
 const STORAGE_STATE_FILE = 'storage-state.json';
 const SESSION_COOKIE_NAME = process.env.SESSION_COOKIE_NAME || 'Idam.Session';
@@ -33,8 +33,7 @@ async function globalSetupConfig(config: FullConfig): Promise<void> {
       throw new Error('Login failed: missing credentials');
     }
 
-    // Check if session is already valid using SessionUtils from @hmcts/playwright-common
-    // Following tcoe-playwright-example pattern exactly
+    // Skip login if session is already valid
     if (SessionUtils.isSessionValid(storageStatePath, SESSION_COOKIE_NAME)) {
       console.log('Valid session found, skipping login...');
       await browser.close();
@@ -43,11 +42,9 @@ async function globalSetupConfig(config: FullConfig): Promise<void> {
 
     console.log('Performing login and setting up session...');
 
-    // Navigate to login page
+    // Navigate to login page and perform login
     await page.goto(baseURL, { waitUntil: 'domcontentloaded', timeout: 30000 });
-
-    // Perform login using IdamPage from @hmcts/playwright-common
-    // Following tcoe-playwright-example pattern exactly
+    
     const idamPage = new IdamPage(page);
     await idamPage.login({
       username: userEmail,
@@ -63,9 +60,10 @@ async function globalSetupConfig(config: FullConfig): Promise<void> {
       ).catch(() => null);
     });
 
-    // Add analytics cookie to storage state using CookieUtils (following tcoe-playwright-example pattern)
+    // Add all consent cookies directly to storage state (no UI interaction needed)
+    // This prevents cookie banners from appearing in tests
     const cookieUtils = new CookieUtils();
-    await cookieUtils.addManageCasesAnalyticsCookie(storageStatePath, baseURL);
+    await cookieUtils.addAllConsentCookies(storageStatePath, baseURL);
 
     console.log('Login successful and session saved!');
 
