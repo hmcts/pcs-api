@@ -232,7 +232,7 @@ export class CreateCaseAction implements IAction {
     await performAction('clickButton', contactPreferences.continue);
   }
 
-  private async defendantDetails(defendantVal: actionRecord) {
+  private async addDefendantDetails(defendantData: actionRecord) {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
     await performValidation('text', {elementType: 'paragraph', text: 'Property address: '+addressInfo.buildingStreet+', '+addressInfo.townCity+', '+addressInfo.engOrWalPostcode});
     await performAction('clickRadioButton', {
@@ -710,9 +710,9 @@ export class CreateCaseAction implements IAction {
     if (underlesseeOrMortgageeDetail.addressOption === underlesseeOrMortgageeDetails.yesRadioOption) {
         await performActions(
           'Find Address based on postcode',
-          ['inputText', addressDetails.enterUKPostcodeLabel, underlesseeOrMortgageeDetail.address],
-          ['clickButton', addressDetails.findAddressLabel],
-          ['select', addressDetails.selectAddressLabel, addressDetails.addressIndex]
+          ['inputText', addressDetails.enterUKPostcodeTextLabel, underlesseeOrMortgageeDetail.address],
+          ['clickButton', addressDetails.findAddressButton],
+          ['select', addressDetails.addressSelectLabel, addressDetails.addressIndex]
         );
     }
     await performAction('clickRadioButton', {

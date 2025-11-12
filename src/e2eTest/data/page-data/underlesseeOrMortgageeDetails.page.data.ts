@@ -6,9 +6,10 @@ export const underlesseeOrMortgageeDetails =
     doYouKnowTheAddressQuestion: 'Do you know the underlessee or mortgagee\'s correspondence address?',
     addAnotherUnderlesseeOrMortgageeQuestion: 'Do you need to add another underlessee or mortgagee?',
     doYouKnowTheNameTextLabel: 'What is their name?',
-    nameTextInput: 'TestUser',
+    nameTextInput: 'UnderlesseeMortgagee Name',
     continueButton: 'Continue',
     yesRadioOption: 'Yes',
     noRadioOption: 'No',
-    addNewButton: 'Add new'
+    addNewButton: 'Add new',
+    underlesseePostcodeTextInput: 'SL6'
   };

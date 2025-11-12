@@ -129,7 +129,7 @@ test.describe('[Create Case - Wales] @Master @nightly', async () => {
       claimantInput: claimantCircumstances.claimantCircumstanceInfoInputData
     });
     await performValidation('mainHeader', defendantCircumstances.mainHeader);
-    await performAction('selectDefendantCircumstances', defendantCircumstances.yes);
+    await performAction('selectDefendantCircumstances', defendantCircumstances.yesRadioOption);
     await performAction('selectProhibitedConductStandardContract', {
       question1: prohibitedConductStandardContractWales.areYouAlsoMakingAClaimQuestion,
       option1: prohibitedConductStandardContractWales.no,
@@ -183,10 +183,10 @@ test.describe('[Create Case - Wales] @Master @nightly', async () => {
       phoneNumber: contactPreferences.yes
     });
     await performAction('defendantDetails', {
-      name: defendantDetails.yes,
-      correspondenceAddress: defendantDetails.yes,
-      email: defendantDetails.yes,
-      correspondenceAddressSame: defendantDetails.yes
+      name: defendantDetails.yesRadioOption,
+      correspondenceAddress: defendantDetails.yesRadioOption,
+      email: defendantDetails.yesRadioOption,
+      correspondenceAddressSame: defendantDetails.yesRadioOption
     });
      await performAction('selectOccupationContractOrLicenceDetails', {
       occupationContractQuestion: occupationContractOrLicenceDetailsWales.occupationContractOrLicenceType,
