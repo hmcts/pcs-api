@@ -18,7 +18,7 @@ export class CreateCaseAction implements IAction {
     const actionsMap = new Map<string, () => Promise<void>>([
       ['createCase', () => this.createCaseAction(fieldName)],
       ['housingPossessionClaim', () => this.housingPossessionClaim()],
-      ['selectAddress', () => this.selectAddress(fieldName)],
+      ['selectAddress', () => this.selectAddress(page, fieldName)],
       ['submitAddressCheckYourAnswers', () => this.submitAddressCheckYourAnswers()],
       ['provideMoreDetailsOfClaim', () => this.provideMoreDetailsOfClaim(page)],
       ['selectResumeClaimOption', () => this.selectResumeClaimOption(fieldName)],
@@ -93,17 +93,16 @@ export class CreateCaseAction implements IAction {
       ['clickButton', addressDetails.findAddressButton],
       ['select', addressDetails.addressSelectLabel, address.addressIndex]
     );
-    await performAction('clickButton', addressDetails.continueButton);
-  }
-
-  private async submitAddressCheckYourAnswers() {
-    await performAction('clickButton', addressCheckYourAnswers.saveAndContinueButton);
     addressInfo = {
       buildingStreet: await page.getByLabel(addressDetails.buildingAndStreetTextLabel).inputValue(),
       townCity: await page.getByLabel(addressDetails.townOrCityTextLabel).inputValue(),
       engOrWalPostcode: address.postcode
     };
-    await performAction('clickButton', addressDetails.submitButton);
+    await performAction('clickButton', addressDetails.continueButton);
+  }
+
+  private async submitAddressCheckYourAnswers() {
+    await performAction('clickButton', addressCheckYourAnswers.saveAndContinueButton);
   }
 
   private async extractCaseIdFromAlert(page: Page): Promise<void> {
