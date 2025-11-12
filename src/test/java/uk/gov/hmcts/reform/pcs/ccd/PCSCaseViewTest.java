@@ -37,7 +37,7 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.catchThrowable;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -83,10 +83,10 @@ class PCSCaseViewTest {
         when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE)).thenReturn(Optional.empty());
 
         // When
-        Throwable throwable = catchThrowable(() -> underTest.getCase(request(CASE_REFERENCE, DEFAULT_STATE)));
+        CaseViewRequest<State> request = request(CASE_REFERENCE, DEFAULT_STATE);
 
         // Then
-        assertThat(throwable)
+        assertThatThrownBy(() -> underTest.getCase(request))
                 .isInstanceOf(CaseNotFoundException.class)
                 .hasMessage("No case found with reference %s", CASE_REFERENCE);
     }
