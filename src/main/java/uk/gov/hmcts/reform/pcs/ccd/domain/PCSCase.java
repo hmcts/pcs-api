@@ -587,7 +587,7 @@ public class PCSCase {
         label = "Do you want the court to make a judgment for the outstanding arrears?",
         searchable = false
     )
-    private VerticalYesNo arrearsJudgmentWanted;
+    private VerticalYesNo arrearsJudgmentWantedV;
 
     @CCD(
         label = "Mandatory grounds",
