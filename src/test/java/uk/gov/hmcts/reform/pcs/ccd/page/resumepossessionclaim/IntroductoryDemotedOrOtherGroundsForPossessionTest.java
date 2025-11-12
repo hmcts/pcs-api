@@ -19,6 +19,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
+import uk.gov.hmcts.reform.pcs.ccd.service.routing.RentDetailsRoutingService;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,15 +28,19 @@ import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
-import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.anyInt;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class IntroductoryDemotedOrOtherGroundsForPossessionTest extends BasePageTest {
 
     @Mock
     private TextAreaValidationService textAreaValidationService;
+
+    @Mock
+    private RentDetailsRoutingService rentDetailsRoutingService;
 
     @BeforeEach
     void setUp() {
@@ -51,7 +56,10 @@ class IntroductoryDemotedOrOtherGroundsForPossessionTest extends BasePageTest {
                 .build();
         }).when(textAreaValidationService).createValidationResponse(any(), any());
 
-        setPageUnderTest(new IntroductoryDemotedOrOtherGroundsForPossession(textAreaValidationService));
+        setPageUnderTest(new IntroductoryDemotedOrOtherGroundsForPossession(
+            textAreaValidationService,
+            rentDetailsRoutingService
+        ));
     }
 
     @ParameterizedTest
@@ -67,6 +75,9 @@ class IntroductoryDemotedOrOtherGroundsForPossessionTest extends BasePageTest {
             .hasIntroductoryDemotedOtherGroundsForPossession(VerticalYesNo.YES)
             .introductoryDemotedOrOtherGrounds(grounds)
             .build();
+
+        when(rentDetailsRoutingService.shouldShowRentDetails(any(PCSCase.class)))
+            .thenReturn(expectedShowRentDetailsPage);
 
         // When
         AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
@@ -88,6 +99,9 @@ class IntroductoryDemotedOrOtherGroundsForPossessionTest extends BasePageTest {
             .hasIntroductoryDemotedOtherGroundsForPossession(VerticalYesNo.NO)
             .introductoryDemotedOrOtherGrounds(null) // No grounds selected
             .build();
+
+        when(rentDetailsRoutingService.shouldShowRentDetails(any(PCSCase.class)))
+            .thenReturn(expectedShowRentDetailsPage);
 
         // When
         AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
