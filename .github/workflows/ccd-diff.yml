@@ -91,11 +91,8 @@ jobs:
           } > "$BODY_FILE"
 
           COMMENT_ID=$(gh pr view "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" \
-          --json comments \
-          --jq '(.comments.nodes // .comments)[]
-          | select(.body | startswith("# CCD diff summary"))
-          | select(.author.login == "github-actions[bot]")
-          | .databaseId')
+          --json comments --jq '.[] \
+          | select(.body | startswith("# CCD diff summary")) | .databaseId')
 
 
 
