@@ -5,6 +5,9 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import uk.gov.hmcts.reform.pcs.ccd.domain.StatementOfTruthAgreementClaimant;
+import uk.gov.hmcts.reform.pcs.ccd.domain.StatementOfTruthAgreementLegalRep;
+import uk.gov.hmcts.reform.pcs.ccd.domain.StatementOfTruthCompletedBy;
 
 
 @Builder
@@ -14,15 +17,15 @@ import lombok.NoArgsConstructor;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class StatementOfTruth {
 
-    private String completedBy;
+    private StatementOfTruthCompletedBy completedBy;
 
-    private String agreementClaimant;
+    private StatementOfTruthAgreementClaimant agreementClaimant;
 
     private String fullNameClaimant;
 
     private String positionClaimant;
 
-    private String agreementLegalRep;
+    private StatementOfTruthAgreementLegalRep agreementLegalRep;
 
     private String fullNameLegalRep;
 
