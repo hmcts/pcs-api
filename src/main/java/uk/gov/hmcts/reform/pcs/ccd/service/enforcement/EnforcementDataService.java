@@ -58,7 +58,6 @@ public class EnforcementDataService {
         try {
             return objectMapper.readValue(enforcementDataJson, EnforcementOrder.class);
         } catch (JsonProcessingException e) {
-            log.error("Failed to read submitted Enforcement data JSON", e);
             throw new SubmittedEnforcementDataException("Failed to read submitted Enforcement data JSON", e);
         }
     }
@@ -67,7 +66,6 @@ public class EnforcementDataService {
         try {
             return objectMapper.writeValueAsString(enforcementData);
         } catch (JsonProcessingException e) {
-            log.error("Failed to write submitted Enforcement data", e);
             throw new SubmittedEnforcementDataException("Failed to write submitted Enforcement data");
         }
     }
