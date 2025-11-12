@@ -13,8 +13,7 @@ public class DailyRentAmount implements CcdPageConfiguration {
         pageBuilder
                 .page("dailyRentAmount")
                 .pageLabel("Daily rent amount")
-                .showCondition("groundsForPossession=\"Yes\" AND rentFrequency!=\"OTHER\""
-                                + " OR showRentDetailsPage=\"Yes\"")
+                .showCondition("showRentDetailsPage=\"Yes\" AND rentFrequency!=\"OTHER\"")
                 .readonly(PCSCase::getFormattedCalculatedDailyRentChargeAmount, NEVER_SHOW)
                 .label("dailyRentAmount-content",
                         """
