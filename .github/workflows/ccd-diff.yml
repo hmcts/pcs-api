@@ -91,10 +91,8 @@ jobs:
           } > "$BODY_FILE"
 
           COMMENT_ID=$(gh pr view "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" \
-          --json comments --jq '.[] \
-          | select(.body | startswith("# CCD diff summary")) | .databaseId')
-
-
+          --json comments \
+          --jq '.comments[] | select(.body | startswith("# CCD diff summary")) | .databaseId')
 
           if [ -n "$COMMENT_ID" ]; then
               echo "📝 Updating existing CCD diff comment ($COMMENT_ID)"
