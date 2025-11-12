@@ -133,11 +133,6 @@ public class PCSCase {
     )
     private Integer caseManagementLocation;
 
-    @CCD(
-        label = "Amount to pay",
-        hint = "£400"
-    )
-
     @CCD(label = "Party")
     private List<ListValue<Party>> parties;
 
