@@ -6,7 +6,9 @@ import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.event.BaseEventTest;
+import uk.gov.hmcts.reform.pcs.ccd.service.DefendantService;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 
 import java.util.List;
@@ -16,10 +18,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 class EnforcementOrderEventTest extends BaseEventTest {
 
     private final AddressFormatter addressFormatter = new AddressFormatter();
+    private final DefendantService defendantService = new DefendantService(null);
 
     @BeforeEach
     void setUp() {
-        setEventUnderTest(new EnforcementOrderEvent(addressFormatter));
+        setEventUnderTest(new EnforcementOrderEvent(addressFormatter, defendantService));
     }
 
     @Test
@@ -34,7 +37,9 @@ class EnforcementOrderEventTest extends BaseEventTest {
                                  .addressLine1("123 Baker Street")
                                  .addressLine2("Marylebone")
                                  .postTown("London")
-                                 .build()).build();
+                                 .build())
+            .enforcementOrder(EnforcementOrder.builder().build())
+            .build();
 
         // When
         PCSCase result = callStartHandler(caseData);
