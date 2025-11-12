@@ -32,6 +32,8 @@ export class ActionEnforcementRegistry {
     ['noCasesFoundAfterSearch', new SearchCaseAction()],
     ['selectApplicationType', new EnforcementAction()],
     ['selectNameAndAddressForEviction', new EnforcementAction()],
+    ['selectPeopleWhoWillBeEvicted', new EnforcementAction()],
+    ['selectPermissionFromJudge', new EnforcementAction()],
     ['selectEveryoneLivingAtTheProperty', new EnforcementAction()],
     ['selectRiskPosedByEveryoneAtProperty', new EnforcementAction()],
     ['provideDetailsViolentOrAggressiveBehaviour', new EnforcementAction()],

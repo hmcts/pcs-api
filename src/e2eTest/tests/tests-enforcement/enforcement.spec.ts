@@ -6,7 +6,8 @@ import { caseList, user, caseSummary, signInOrCreateAnAccount } from '@data/page
 import {
   nameAndAddressForEviction, violentOrAggressiveBehaviour, firearmPossession, yourApplication, animalsAtTheProperty,
   criminalOrAntisocialBehaviour, evictionCouldBeDelayed, vulnerableAdultsAndChildren, policeOrSocialServiceVisit,
-  accessToTheProperty, riskPosedByEveryoneAtProperty, everyoneLivingAtTheProperty, verbalOrWrittenThreats, groupProtestsEviction, anythingElseHelpWithEviction
+  accessToTheProperty, riskPosedByEveryoneAtProperty, everyoneLivingAtTheProperty, verbalOrWrittenThreats, groupProtestsEviction, anythingElseHelpWithEviction,
+  peopleWillBeEvicted
 } from '@data/page-data/page-data-enforcement';
 
 test.beforeEach(async ({ page }) => {
@@ -42,6 +43,11 @@ test.describe('[Enforcement - Warrant of Possession] @Master @nightly', async ()
       question: nameAndAddressForEviction.nameAndAddressPageForEvictionQuestion,
       option: nameAndAddressForEviction.yes,
     });
+    await performValidation('mainHeader', peopleWillBeEvicted.mainHeader);
+    await performAction('selectPeopleWhoWillBeEvicted', {
+      question: peopleWillBeEvicted.evictEveryOneQuestion,
+      option: peopleWillBeEvicted.yesRadioOption,
+    })
     await performValidation('mainHeader', everyoneLivingAtTheProperty.mainHeader);
     await performAction('selectEveryoneLivingAtTheProperty', {
       question: everyoneLivingAtTheProperty.riskToBailiffQuestion,
@@ -103,11 +109,12 @@ test.describe('[Enforcement - Warrant of Possession] @Master @nightly', async ()
       label: accessToTheProperty.whyItsDifficultToAccessToThePropertyTextLabel,
       input: accessToTheProperty.whyItsDifficultToAccessToThePropertyTextInput,
     });
+    await performValidation('mainHeader', anythingElseHelpWithEviction.mainHeader);
     await performAction('provideDetailsAnythingElseHelpWithEviction', {
       question: anythingElseHelpWithEviction.anythingElseQuestion,
-      option: anythingElseHelpWithEviction.yes,
-      label: anythingElseHelpWithEviction.tellUsAnythingElse,
-      input: anythingElseHelpWithEviction.tellUsAnythingElseInput
+      option: anythingElseHelpWithEviction.yesRadioOption,
+      label: anythingElseHelpWithEviction.tellUsAnythingElseTextLabel,
+      input: anythingElseHelpWithEviction.tellUsAnythingElseTextInput
     });
   });
 
@@ -141,12 +148,13 @@ test.describe('[Enforcement - Warrant of Possession] @Master @nightly', async ()
     await performAction('accessToProperty', {
       question: accessToTheProperty.accessToThePropertyQuestion,
       option: accessToTheProperty.noRadioOption,
-  });
+    });
+    await performValidation('mainHeader', anythingElseHelpWithEviction.mainHeader);
     await performAction('provideDetailsAnythingElseHelpWithEviction', {
       question: anythingElseHelpWithEviction.anythingElseQuestion,
-      option: anythingElseHelpWithEviction.no,
-      label: anythingElseHelpWithEviction.tellUsAnythingElse,
-      input: anythingElseHelpWithEviction.tellUsAnythingElseInput
+      option: anythingElseHelpWithEviction.noRadioOption,
+      label: anythingElseHelpWithEviction.tellUsAnythingElseTextLabel,
+      input: anythingElseHelpWithEviction.tellUsAnythingElseTextInput
     });
   });
 
@@ -185,11 +193,12 @@ test.describe('[Enforcement - Warrant of Possession] @Master @nightly', async ()
       label: accessToTheProperty.whyItsDifficultToAccessToThePropertyTextLabel,
       input: accessToTheProperty.whyItsDifficultToAccessToThePropertyTextInput,
     });
+    await performValidation('mainHeader', anythingElseHelpWithEviction.mainHeader);
     await performAction('provideDetailsAnythingElseHelpWithEviction', {
       question: anythingElseHelpWithEviction.anythingElseQuestion,
-      option: anythingElseHelpWithEviction.yes,
-      label: anythingElseHelpWithEviction.tellUsAnythingElse,
-      input: anythingElseHelpWithEviction.tellUsAnythingElseInput
+      option: anythingElseHelpWithEviction.yesRadioOption,
+      label: anythingElseHelpWithEviction.tellUsAnythingElseTextLabel,
+      input: anythingElseHelpWithEviction.tellUsAnythingElseTextInput,
     });
   });
 });

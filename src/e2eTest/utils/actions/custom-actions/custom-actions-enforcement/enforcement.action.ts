@@ -1,10 +1,12 @@
-import { Page } from '@playwright/test';
+import { expect, Page } from '@playwright/test';
 import { performAction, performValidation } from '@utils/controller-enforcement';
 import { IAction, actionData, actionRecord } from '@utils/interfaces/action.interface';
 import {
   yourApplication, nameAndAddressForEviction, everyoneLivingAtTheProperty, vulnerableAdultsAndChildren,
   violentOrAggressiveBehaviour, firearmPossession, criminalOrAntisocialBehaviour, riskPosedByEveryoneAtProperty,
-  verbalOrWrittenThreats, groupProtestsEviction, policeOrSocialServiceVisit, animalsAtTheProperty, anythingElseHelpWithEviction, accessToTheProperty
+  verbalOrWrittenThreats, groupProtestsEviction, policeOrSocialServiceVisit, animalsAtTheProperty, anythingElseHelpWithEviction, accessToTheProperty,
+  peopleWillBeEvicted,
+  youNeedPermission
 } from '@data/page-data/page-data-enforcement';
 import { enforcementTestCaseNumber } from '../searchCase.action';
 
@@ -14,6 +16,8 @@ export class EnforcementAction implements IAction {
       ['selectApplicationType', () => this.selectApplicationType(fieldName as actionRecord)],
       ['selectNameAndAddressForEviction', () => this.selectNameAndAddressForEviction(fieldName as actionRecord)],
       ['selectEveryoneLivingAtTheProperty', () => this.selectEveryoneLivingAtTheProperty(fieldName as actionRecord)],
+      ['selectPermissionFromJudge', () => this.selectPermissionFromJudge(page)],
+      ['selectPeopleWhoWillBeEvicted', () => this.selectPeopleWhoWillBeEvicted(fieldName as actionRecord)],
       ['selectRiskPosedByEveryoneAtProperty', () => this.selectRiskPosedByEveryoneAtProperty(fieldName as actionRecord)],
       ['provideDetailsViolentOrAggressiveBehaviour', () => this.provideDetailsViolentOrAggressiveBehaviour(fieldName as actionRecord)],
       ['provideDetailsFireArmPossession', () => this.provideDetailsFireArmPossession(fieldName as actionRecord)],
@@ -43,6 +47,28 @@ export class EnforcementAction implements IAction {
     Currently,it is a placeholder */
     await performAction('clickRadioButton', nameAndAddress.option);
     await performAction('clickButton', nameAndAddressForEviction.continue);
+  }
+
+  private async selectPeopleWhoWillBeEvicted(evictPeople: actionRecord) {
+    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + enforcementTestCaseNumber });
+    await performAction('clickRadioButton', { question: evictPeople.question, option: evictPeople.option });
+    await performAction('clickButton', peopleWillBeEvicted.continueButton);
+  }
+
+  private async selectPermissionFromJudge(page: Page) {
+    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + enforcementTestCaseNumber });
+    const [generalApplicationPage] = await Promise.all([
+      page.waitForEvent('popup'),
+      await performAction('clickButton', youNeedPermission.askTheJudgeLink)
+    ]);
+    //expect (await generalApplication.title()).toBe(youNeedPermission.title);
+    await generalApplicationPage.waitForLoadState();
+    await expect(generalApplicationPage).toHaveTitle(youNeedPermission.title);
+    await performValidation('text', {
+          'text': youNeedPermission.mainHeader,
+          'elementType': 'heading'
+        });
+    await generalApplicationPage.close();
   }
 
   private async selectEveryoneLivingAtTheProperty(riskToBailiff: actionRecord) {
@@ -116,13 +142,12 @@ export class EnforcementAction implements IAction {
     await performAction('clickButton', vulnerableAdultsAndChildren.continueButton);
   }
   private async provideDetailsAnythingElseHelpWithEviction(anythingElse: actionRecord) {
-    await performValidation('mainHeader', anythingElseHelpWithEviction.mainHeader);
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + enforcementTestCaseNumber });
     await performAction('clickRadioButton', { question: anythingElse.question, option: anythingElse.option });
-    if (anythingElse.option === anythingElseHelpWithEviction.yes) {
+    if (anythingElse.option === anythingElseHelpWithEviction.yesRadioOption) {
       await performAction('inputText', anythingElse.label, anythingElse.input);
     }
-    await performAction('clickButton', anythingElseHelpWithEviction.continue);
+    await performAction('clickButton', anythingElseHelpWithEviction.continueButton);
   }
   private async accessToProperty(accessToProperty: actionRecord) {
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + enforcementTestCaseNumber });
