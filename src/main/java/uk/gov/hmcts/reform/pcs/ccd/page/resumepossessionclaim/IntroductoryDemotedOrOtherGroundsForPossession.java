@@ -1,5 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim;
 
+import lombok.AllArgsConstructor;
+import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
@@ -9,10 +11,15 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.IntroductoryDemotedOrOtherGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.service.routing.RentDetailsRoutingService;
 
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 
+@Component
+@AllArgsConstructor
 public class IntroductoryDemotedOrOtherGroundsForPossession implements CcdPageConfiguration {
+
+    private final RentDetailsRoutingService rentDetailsRoutingService;
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
@@ -64,10 +71,7 @@ public class IntroductoryDemotedOrOtherGroundsForPossession implements CcdPageCo
             caseData.setShowIntroductoryDemotedOtherGroundReasonPage(YesOrNo.NO);
         }
 
-        boolean hasRentArrears = caseData.getHasIntroductoryDemotedOtherGroundsForPossession() == VerticalYesNo.YES
-            && caseData.getIntroductoryDemotedOrOtherGrounds()
-                .contains(IntroductoryDemotedOrOtherGrounds.RENT_ARREARS);
-        caseData.setShowRentDetailsPage(YesOrNo.from(hasRentArrears));
+        caseData.setShowRentDetailsPage(rentDetailsRoutingService.shouldShowRentDetails(caseData));
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
             .data(caseData)
