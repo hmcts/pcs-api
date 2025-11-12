@@ -89,6 +89,9 @@ jobs:
             printf '👉 Full report: %s\n\n' "$RUN_URL"
             cat "$SUMMARY_PATH"
           } > "$BODY_FILE"
+          echo "=== Listing all PR comments for debugging ==="
+          gh pr view "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --json comments \
+          --jq '.comments[] | {id, databaseId, author: .author.login, header: (.body | split("\n")[0]) }'
 
           COMMENT_ID=$(gh pr view "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" \
           --json comments \
