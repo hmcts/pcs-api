@@ -13,7 +13,7 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.page.builder.SavingPageBuilder;
+import uk.gov.hmcts.reform.pcs.ccd.page.builder.SavingPageBuilderFactory;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.AdditionalInformationPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.AggressiveAnimalsRiskPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.CheckYourAnswersPlaceHolder;
@@ -31,7 +31,6 @@ import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.ProtestorGroupRiskPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.VerbalOrWrittenThreatsRiskPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.ViolentAggressiveRiskPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.VulnerableAdultsChildrenPage;
-import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 
 import static uk.gov.hmcts.reform.pcs.ccd.domain.State.AWAITING_SUBMISSION_TO_HMCTS;
@@ -44,7 +43,7 @@ public class EnforcementOrderEvent implements CCDConfig<PCSCase, State, UserRole
     // Business requirements to be agreed on for the conditions when this event can be triggered
 
     private final AddressFormatter addressFormatter;
-    private final DraftCaseDataService draftCaseDataService;
+    private final SavingPageBuilderFactory savingPageBuilderFactory;
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -58,7 +57,7 @@ public class EnforcementOrderEvent implements CCDConfig<PCSCase, State, UserRole
     }
 
     private void configurePages(Event.EventBuilder<PCSCase, UserRole, State> eventBuilder) {
-        PageBuilder pageBuilder = new SavingPageBuilder(draftCaseDataService, eventBuilder, enforceTheOrder);
+        PageBuilder pageBuilder = savingPageBuilderFactory.create(eventBuilder, enforceTheOrder);
         pageBuilder
                 .add(new EnforcementApplicationPage())
                 .add(new NameAndAddressForEvictionPage())
