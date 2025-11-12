@@ -360,8 +360,25 @@ public class PCSCase {
     @CCD
     private DefendantDetails defendant1;
 
-    @CCD
-    private List<ListValue<DefendantDetails>> defendants;
+    @CCD(label = "Do you need to add another defendant?")
+    private VerticalYesNo addAnotherDefendant;
+
+    @CCD(
+        label = "Add additional defendant",
+        hint = "Add an additional defendant to the case"
+    )
+    private List<ListValue<DefendantDetails>> additionalDefendants;
+
+    private List<ListValue<DefendantDetails>> allDefendants;
+
+    @CCD(
+        label = "Defendant date of birth",
+        hint = "You may not add new defendants at this time")
+    private List<ListValue<DefendantsDOB>> dobDefendants;
+
+    private VerticalYesNo isDefendantsDOBKnown;
+
+    private DefendantsDOBMultiLabel defendantsDOBMultiLabel;
 
     // Notice Details fields
     @CCD(
@@ -461,6 +478,10 @@ public class PCSCase {
 
     @CCD(searchable = false)
     private String nextStepsMarkdown;
+
+    @CCD(searchable = false)
+    private String dobEventMarkdown;
+
 
     // --- Rent arrears (statement upload + totals + third party payments) ---
     @CCD(

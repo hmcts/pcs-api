@@ -9,22 +9,23 @@ import org.modelmapper.ModelMapper;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.DiscretionaryGroundWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.EstateManagementGroundsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.MandatoryGroundWales;
-import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractDiscretionaryGroundsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractMandatoryGroundsWales;
-import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.mapper.DefendantMapper;
+import uk.gov.hmcts.reform.pcs.ccd.model.Defendant;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
-import uk.gov.hmcts.reform.pcs.config.MapperConfig;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -32,7 +33,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -46,16 +46,16 @@ class PcsCaseMergeServiceTest {
     @Mock
     private TenancyLicenceService tenancyLicenceService;
     @Mock
-    private DefendantMapper defendantMapper;
+    private DefendantService defendantService;
 
     private PcsCaseMergeService underTest;
 
     @BeforeEach
     void setUp() {
-        MapperConfig config = new MapperConfig();
-        modelMapper = spy(config.modelMapper());
-        underTest = new PcsCaseMergeService(securityContextService, modelMapper, tenancyLicenceService,
-                                            defendantMapper);
+        underTest = new PcsCaseMergeService(securityContextService,
+                                            modelMapper,
+                                            tenancyLicenceService,
+                                            defendantService);
     }
 
     @Test
@@ -90,6 +90,23 @@ class PcsCaseMergeServiceTest {
 
         // Then
         verify(pcsCaseEntity).setPropertyAddress(updatedAddressEntity);
+    }
+
+    @Test
+    void shouldUpdateDefendantsWhenDefendant1NotNull() {
+        // Given
+        List<Defendant> expectedDefendants = List.of(mock(Defendant.class), mock(Defendant.class));
+        PCSCase pcsCase = mock(PCSCase.class);
+        PcsCaseEntity pcsCaseEntity = mock(PcsCaseEntity.class);
+
+        when(pcsCase.getDefendant1()).thenReturn(mock(DefendantDetails.class));
+        when(defendantService.buildDefendantsList(pcsCase)).thenReturn(expectedDefendants);
+
+        // When
+        underTest.mergeCaseData(pcsCaseEntity, pcsCase);
+
+        // Then
+        verify(pcsCaseEntity).setDefendants(expectedDefendants);
     }
 
     @Test
