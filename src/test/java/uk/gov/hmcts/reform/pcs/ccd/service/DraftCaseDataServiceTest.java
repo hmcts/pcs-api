@@ -21,7 +21,7 @@ import uk.gov.hmcts.reform.pcs.exception.UnsubmittedDataException;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.catchThrowable;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -167,11 +167,8 @@ class DraftCaseDataServiceTest {
         JsonProcessingException jsonProcessingException = mock(JsonProcessingException.class);
         when(objectMapper.readValue(unsubmittedCaseDataJson, PCSCase.class)).thenThrow(jsonProcessingException);
 
-        // When
-        Throwable throwable = catchThrowable(() -> underTest.getUnsubmittedCaseData(CASE_REFERENCE, eventId));
-
         // Then
-        assertThat(throwable)
+        assertThatThrownBy(() -> underTest.getUnsubmittedCaseData(CASE_REFERENCE, eventId))
             .isInstanceOf(UnsubmittedDataException.class)
             .hasMessage("Failed to read saved answers")
             .hasCause(jsonProcessingException);
@@ -182,17 +179,13 @@ class DraftCaseDataServiceTest {
         // Given
         PCSCase caseData = mock(PCSCase.class);
         JsonProcessingException jsonProcessingException = mock(JsonProcessingException.class);
-
         when(objectMapper.writeValueAsString(caseData)).thenThrow(jsonProcessingException);
 
-        // When
-        Throwable throwable = catchThrowable(() ->
-                                                 underTest.patchUnsubmittedCaseData(CASE_REFERENCE, caseData, eventId));
-
         // Then
-        assertThat(throwable)
-            .isInstanceOf(UnsubmittedDataException.class)
+        assertThatThrownBy(() -> underTest.patchUnsubmittedCaseData(CASE_REFERENCE, caseData, eventId))
+           .isInstanceOf(UnsubmittedDataException.class)
             .hasMessage("Failed to save answers")
             .hasCause(jsonProcessingException);
+
     }
 }

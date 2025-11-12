@@ -41,7 +41,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.enforceTheOrder;
 @Component
 @AllArgsConstructor
 public class EnforcementOrderEvent implements CCDConfig<PCSCase, State, UserRole> {
-    // Business requirements to be agreed on for the conditions when this event can be triggereed
+    // Business requirements to be agreed on for the conditions when this event can be triggered
 
     private final AddressFormatter addressFormatter;
     private final DraftCaseDataService draftCaseDataService;
