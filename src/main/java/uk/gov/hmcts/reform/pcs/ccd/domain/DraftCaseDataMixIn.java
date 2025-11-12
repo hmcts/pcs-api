@@ -14,7 +14,7 @@ public abstract class DraftCaseDataMixIn {
     @JsonIgnore
     private YesOrNo showCrossBorderPage;
     @JsonIgnore
-    private String pageHeadingMarkdown;
+    private String caseTitleMarkdown;
     @JsonIgnore
     private String claimPaymentTabMarkdown;
     @JsonIgnore
