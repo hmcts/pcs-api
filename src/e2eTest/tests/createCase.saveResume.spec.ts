@@ -116,7 +116,7 @@ test.describe.skip('[Create Case - With resume claim options] @Master @nightly',
     });
     await performValidation('mainHeader', defendantCircumstances.mainHeader);
     await performAction('selectDefendantCircumstances', {
-      defendantCircumstance: defendantCircumstances.yes,
+      defendantCircumstance: defendantCircumstances.yesRadioOption,
       additionalDefendants: false
     });
     await performValidation('mainHeader', alternativesToPossession.mainHeader);
@@ -232,7 +232,7 @@ test.describe.skip('[Create Case - With resume claim options] @Master @nightly',
     });
     await performValidation('mainHeader', defendantCircumstances.mainHeader);
     await performAction('selectDefendantCircumstances', {
-      defendantCircumstance: defendantCircumstances.yes,
+      defendantCircumstance: defendantCircumstances.yesRadioOption,
       additionalDefendants: false
     });
     await performValidation('mainHeader', alternativesToPossession.mainHeader);

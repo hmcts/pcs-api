@@ -104,7 +104,7 @@ test.describe('[Create Case - England] @Master @nightly', async () => {
     });
     await performValidation('mainHeader', defendantCircumstances.mainHeader);
     await performAction('selectDefendantCircumstances', {
-      defendantCircumstance: defendantCircumstances.yes,
+      defendantCircumstance: defendantCircumstances.yesRadioOption,
       additionalDefendants: true
     });
     await performValidation('mainHeader', alternativesToPossession.mainHeader);
@@ -216,7 +216,7 @@ test.describe('[Create Case - England] @Master @nightly', async () => {
     });
     await performValidation('mainHeader', defendantCircumstances.mainHeader);
     await performAction('selectDefendantCircumstances', {
-      defendantCircumstance: defendantCircumstances.yes,
+      defendantCircumstance: defendantCircumstances.yesRadioOption,
       additionalDefendants: false
     });
     await performValidation('mainHeader', alternativesToPossession.mainHeader);
@@ -313,7 +313,7 @@ test.describe('[Create Case - England] @Master @nightly', async () => {
     });
     await performValidation('mainHeader', defendantCircumstances.mainHeader);
     await performAction('selectDefendantCircumstances', {
-      defendantCircumstance: defendantCircumstances.no,
+      defendantCircumstance: defendantCircumstances.noRadioOption,
       additionalDefendants: false
     });
     await performValidation('mainHeader', alternativesToPossession.mainHeader);
@@ -432,7 +432,7 @@ test.describe('[Create Case - England] @Master @nightly', async () => {
     });
     await performValidation('mainHeader', defendantCircumstances.mainHeader);
     await performAction('selectDefendantCircumstances', {
-      defendantCircumstance: defendantCircumstances.no,
+      defendantCircumstance: defendantCircumstances.noRadioOption,
       additionalDefendants: false
     });
     await performValidation('mainHeader', alternativesToPossession.mainHeader);
@@ -537,7 +537,7 @@ test.describe('[Create Case - England] @Master @nightly', async () => {
     });
     await performValidation('mainHeader', defendantCircumstances.mainHeader);
     await performAction('selectDefendantCircumstances', {
-      defendantCircumstance: defendantCircumstances.no,
+      defendantCircumstance: defendantCircumstances.noRadioOption,
       additionalDefendants: false
     });
     await performValidation('mainHeader', alternativesToPossession.mainHeader);
@@ -629,7 +629,7 @@ test.describe('[Create Case - England] @Master @nightly', async () => {
     });
     await performValidation('mainHeader', defendantCircumstances.mainHeader);
     await performAction('selectDefendantCircumstances', {
-      defendantCircumstance: defendantCircumstances.no,
+      defendantCircumstance: defendantCircumstances.noRadioOption,
       additionalDefendants: false
     });
     await performValidation('mainHeader', alternativesToPossession.mainHeader);
@@ -735,7 +735,7 @@ test.describe('[Create Case - England] @Master @nightly', async () => {
     });
     await performValidation('mainHeader', defendantCircumstances.mainHeader);
     await performAction('selectDefendantCircumstances', {
-      defendantCircumstance: defendantCircumstances.no,
+      defendantCircumstance: defendantCircumstances.noRadioOption,
       additionalDefendants: false
     });
     await performValidation('mainHeader', alternativesToPossession.mainHeader);
@@ -835,7 +835,7 @@ test.describe('[Create Case - England] @Master @nightly', async () => {
     });
     await performValidation('mainHeader', defendantCircumstances.mainHeader);
     await performAction('selectDefendantCircumstances', {
-      defendantCircumstance: defendantCircumstances.no,
+      defendantCircumstance: defendantCircumstances.noRadioOption,
       additionalDefendants: false
     });
     await performValidation('mainHeader', alternativesToPossession.mainHeader);
@@ -949,7 +949,7 @@ test.describe('[Create Case - England] @Master @nightly', async () => {
     });
     await performValidation('mainHeader', defendantCircumstances.mainHeader);
     await performAction('selectDefendantCircumstances', {
-      defendantCircumstance: defendantCircumstances.yes,
+      defendantCircumstance: defendantCircumstances.yesRadioOption,
       additionalDefendants: false
     });
     await performValidation('mainHeader', alternativesToPossession.mainHeader);
@@ -1065,7 +1065,7 @@ test.describe('[Create Case - England] @Master @nightly', async () => {
     });
     await performValidation('mainHeader', defendantCircumstances.mainHeader);
     await performAction('selectDefendantCircumstances', {
-      defendantCircumstance: defendantCircumstances.no,
+      defendantCircumstance: defendantCircumstances.noRadioOption,
       additionalDefendants: false
     });
     await performValidation('mainHeader', alternativesToPossession.mainHeader);
@@ -1157,7 +1157,7 @@ test.describe('[Create Case - England] @Master @nightly', async () => {
     });
     await performValidation('mainHeader', defendantCircumstances.mainHeader);
     await performAction('selectDefendantCircumstances', {
-      defendantCircumstance: defendantCircumstances.no,
+      defendantCircumstance: defendantCircumstances.noRadioOption,
       additionalDefendants: false
     });
     await performValidation('mainHeader', alternativesToPossession.mainHeader);

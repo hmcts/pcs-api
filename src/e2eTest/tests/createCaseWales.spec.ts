@@ -98,7 +98,7 @@ test.describe('[Create Case - Wales] @Master @nightly', async () => {
     });
     await performValidation('mainHeader', defendantCircumstances.mainHeader);
     await performAction('selectDefendantCircumstances', {
-      defendantCircumstance: defendantCircumstances.no,
+      defendantCircumstance: defendantCircumstances.noRadioOption,
       additionalDefendants: false
     });
     await performValidation('mainHeader', prohibitedConductStandardContractWales.mainHeader);
@@ -205,7 +205,7 @@ test.describe('[Create Case - Wales] @Master @nightly', async () => {
     });
     await performValidation('mainHeader', defendantCircumstances.mainHeader);
     await performAction('selectDefendantCircumstances', {
-      defendantCircumstance: defendantCircumstances.no,
+      defendantCircumstance: defendantCircumstances.noRadioOption,
       additionalDefendants: false
     });
     await performAction('selectProhibitedConductStandardContract', {
@@ -305,7 +305,7 @@ test.describe('[Create Case - Wales] @Master @nightly', async () => {
     });
     await performValidation('mainHeader', defendantCircumstances.mainHeader);
     await performAction('selectDefendantCircumstances', {
-      defendantCircumstance: defendantCircumstances.no,
+      defendantCircumstance: defendantCircumstances.noRadioOption,
       additionalDefendants: false
     });
     await performAction('selectProhibitedConductStandardContract', {

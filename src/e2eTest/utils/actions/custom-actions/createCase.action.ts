@@ -591,15 +591,14 @@ export class CreateCaseAction implements IAction {
   ) {
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseNumber });
     await performAction('clickRadioButton', defendantDetails.defendantCircumstance);
-
-    if (defendantDetails.defendantCircumstance == defendantCircumstances.yes) {
+    if (defendantDetails.defendantCircumstance == defendantCircumstances.yesRadioOption) {
       if (defendantDetails.additionalDefendants == true) {
-        await performAction('inputText', defendantCircumstances.defendantCircumstancesPluralLabel, defendantCircumstances.defendantCircumstancesSampleData);
+        await performAction('inputText', defendantCircumstances.defendantCircumstancesPluralTextLabel, defendantCircumstances.defendantCircumstancesTextInput);
       } else {
-        await performAction('inputText', defendantCircumstances.defendantCircumstancesSingularLabel, defendantCircumstances.defendantCircumstancesSampleData);
+        await performAction('inputText', defendantCircumstances.defendantCircumstancesSingularTextLabel, defendantCircumstances.defendantCircumstancesTextInput);
       }
     }
-    await performAction('clickButton', defendantCircumstances.continue);
+    await performAction('clickButton', defendantCircumstances.continueButton);
   }
 
   private async enterTestAddressManually() {
@@ -663,7 +662,7 @@ export class CreateCaseAction implements IAction {
         );
     }
     await performAction('clickRadioButton', {
-      question: underlesseeOrMortgageeDetails.addAnotherUnderlesseeOrMortgagee,
+      question: underlesseeOrMortgageeDetails.addAnotherUnderlesseeOrMortgageeQuestion,
       option: underlesseeOrMortgageeDetail.anotherUnderlesseeOrMortgageeOption
     });
     const additionalUnderlesseeMortgagee = Number(underlesseeOrMortgageeDetail.additionalUnderlesseeMortgagees) || 0;
