@@ -1,12 +1,26 @@
 import { chromium, FullConfig } from '@playwright/test';
-import { IdamUtils, IdamPage } from '@hmcts/playwright-common';
+import { IdamUtils, IdamPage, SessionUtils } from '@hmcts/playwright-common';
 import { accessTokenApiData } from '@data/api-data/accessToken.api.data';
-import { SessionManager } from '@utils/session-manager';
-import { CookieHandler } from '@utils/cookie-handler.utils';
 import { user } from '@data/user-data';
+import { CookieUtils } from '@utils/cookie.utils';
+import * as path from 'path';
+import * as fs from 'fs';
+
+// Session configuration - following tcoe-playwright-example pattern
+const SESSION_DIR = path.join(process.cwd(), '.auth');
+const STORAGE_STATE_FILE = 'storage-state.json';
+const SESSION_COOKIE_NAME = process.env.SESSION_COOKIE_NAME || 'Idam.Session';
+
+function getStorageStatePath(): string {
+  if (!fs.existsSync(SESSION_DIR)) {
+    fs.mkdirSync(SESSION_DIR, { recursive: true });
+  }
+  return path.join(SESSION_DIR, STORAGE_STATE_FILE);
+}
 
 async function globalSetupConfig(config: FullConfig): Promise<void> {
   const baseURL = config.projects[0].use?.baseURL || process.env.MANAGE_CASE_BASE_URL || '';
+  const storageStatePath = getStorageStatePath();
   const browser = await chromium.launch();
   const context = await browser.newContext();
   const page = await context.newPage();
@@ -19,76 +33,46 @@ async function globalSetupConfig(config: FullConfig): Promise<void> {
       throw new Error('Login failed: missing credentials');
     }
 
-    // Check if session is already valid using SessionManager (which uses SessionUtils from @hmcts/playwright-common)
-    if (SessionManager.isSessionValid()) {
+    // Check if session is already valid using SessionUtils from @hmcts/playwright-common
+    // Following tcoe-playwright-example pattern exactly
+    if (SessionUtils.isSessionValid(storageStatePath, SESSION_COOKIE_NAME)) {
       console.log('Valid session found, skipping login...');
-      // Storage state is already saved and will be used by Playwright config
       await browser.close();
       return;
     }
 
-    console.log('Performing login and cookie consent...');
+    console.log('Performing login and setting up session...');
 
     // Navigate to login page
     await page.goto(baseURL, { waitUntil: 'domcontentloaded', timeout: 30000 });
 
-    // Wait for page to be ready
-    try {
-      await page.waitForLoadState('domcontentloaded', { timeout: 10000 });
-    } catch {
-      console.log('Initial page load wait timed out, continuing...');
-    }
-
-    // Handle additional cookies consent if present (non-blocking - continue even if it fails)
-    await CookieHandler.handleAdditionalCookies(page);
-
     // Perform login using IdamPage from @hmcts/playwright-common
+    // Following tcoe-playwright-example pattern exactly
     const idamPage = new IdamPage(page);
     await idamPage.login({
       username: userEmail,
       password: userPassword,
-      sessionFile: SessionManager.getStorageStatePath(),
+      sessionFile: storageStatePath,
     });
 
     // Wait for navigation after login
     await page.waitForURL('**/cases', { timeout: 30000 }).catch(async () => {
-      // If URL doesn't match, wait for any navigation away from login
       await page.waitForFunction(
         () => !window.location.href.includes('/login') && !window.location.href.includes('/sign-in'),
         { timeout: 30000 }
-      ).catch(() => page.waitForLoadState('domcontentloaded', { timeout: 10000 }).catch(() => null));
+      ).catch(() => null);
     });
 
-    // Handle analytics cookies consent if present (non-blocking - continue even if it fails)
-    await CookieHandler.handleAnalyticsCookies(page);
+    // Add analytics cookie to storage state using CookieUtils (following tcoe-playwright-example pattern)
+    const cookieUtils = new CookieUtils();
+    await cookieUtils.addManageCasesAnalyticsCookie(storageStatePath, baseURL);
 
-    // Navigate to base URL to ensure we're at the authenticated home page
-    await page.goto(baseURL, { waitUntil: 'domcontentloaded', timeout: 30000 });
-
-    // Wait for page to be ready (use domcontentloaded instead of networkidle for reliability)
-    try {
-      await page.waitForLoadState('domcontentloaded', { timeout: 10000 });
-    } catch {
-      console.log('Page load state wait timed out, continuing anyway...');
-    }
-
-    // Wait a bit to ensure all cookies are set and page is fully loaded
-    await page.waitForTimeout(2000);
-
-    // Add analytics cookie to storage state file for persistence (following tcoe-playwright-example pattern)
-    await CookieHandler.addManageCasesAnalyticsCookie(SessionManager.getStorageStatePath());
-    
-    // Ensure storage state is up to date with all cookies
-    await SessionManager.saveStorageState(page);
-    
     console.log('Login successful and session saved!');
 
   } catch (error) {
     console.error('Failed to setup authentication:', error);
-    // Re-throw to fail the global setup, which will prevent tests from running
     throw error;
   } finally {
-    // Ensure browser is always closed, even if an error occurs
     await browser.close();
   }
 }

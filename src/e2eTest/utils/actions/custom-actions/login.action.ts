@@ -1,10 +1,21 @@
-import { IdamUtils } from '@hmcts/playwright-common';
+import { IdamUtils, IdamPage, SessionUtils } from '@hmcts/playwright-common';
 import { Page } from '@playwright/test';
 import { v4 as uuidv4 } from 'uuid';
-import { performAction, performValidation } from '../../controller';
 import { IAction, actionData, actionRecord } from '@utils/interfaces';
-import { signInOrCreateAnAccount } from '@data/page-data/signInOrCreateAnAccount.page.data';
-import { SessionManager } from '../../session-manager';
+import * as path from 'path';
+import * as fs from 'fs';
+
+// Session configuration - following tcoe-playwright-example pattern
+const SESSION_DIR = path.join(process.cwd(), '.auth');
+const STORAGE_STATE_FILE = 'storage-state.json';
+const SESSION_COOKIE_NAME = process.env.SESSION_COOKIE_NAME || 'Idam.Session';
+
+function getStorageStatePath(): string {
+  if (!fs.existsSync(SESSION_DIR)) {
+    fs.mkdirSync(SESSION_DIR, { recursive: true });
+  }
+  return path.join(SESSION_DIR, STORAGE_STATE_FILE);
+}
 
 export class LoginAction implements IAction {
   async execute(page: Page, action: string, userType: string | actionRecord, roles?: actionData): Promise<void> {
@@ -19,34 +30,35 @@ export class LoginAction implements IAction {
 
   private async login(page: Page, user: string | actionRecord) {
     const userEmail = typeof user === 'string' ? process.env.IDAM_PCS_USER_EMAIL : user.email;
-    const userPassword = typeof user === 'string' ?  process.env.IDAM_PCS_USER_PASSWORD : user.password;
+    const userPassword = typeof user === 'string' ? process.env.IDAM_PCS_USER_PASSWORD : user.password;
     if (!userEmail || !userPassword || typeof userEmail !== 'string' || typeof userPassword !== 'string') {
       throw new Error('Login failed: missing credentials');
     }
 
-    // Check if already authenticated (storageState should handle this, but verify)
+    const storageStatePath = getStorageStatePath();
     const currentUrl = page.url();
+    
+    // Check if already authenticated using SessionUtils from @hmcts/playwright-common
+    // Following tcoe-playwright-example pattern
     if (!currentUrl.includes('/login') && !currentUrl.includes('/sign-in')) {
-      // Already logged in, skip login
-      console.log('Already authenticated, skipping login');
-      return;
+      try {
+        if (SessionUtils.isSessionValid(storageStatePath, SESSION_COOKIE_NAME)) {
+          console.log('Already authenticated with valid session, skipping login');
+          return;
+        }
+      } catch {
+        // Session check failed, proceed with login
+      }
     }
 
-    // If we reach here, we need to login (shouldn't happen if globalSetup worked correctly)
-    console.warn('Login action called but user not authenticated. This should be handled by globalSetup.');
-    await performValidation('mainHeader', signInOrCreateAnAccount.mainHeader)
-    await performAction('inputText', signInOrCreateAnAccount.emailAddressLabel, userEmail);
-    await performAction('inputText', signInOrCreateAnAccount.passwordLabel, userPassword);
-    await performAction('clickButton', signInOrCreateAnAccount.signInButton);
-
-    // Wait for navigation after login to ensure cookies are set
-    await page.waitForURL('**/cases', { timeout: 30000 }).catch(() => {
-      // If URL doesn't match, wait for any navigation
-      return page.waitForLoadState('networkidle');
+    // Use IdamPage from @hmcts/playwright-common for login
+    // Following tcoe-playwright-example pattern exactly
+    const idamPage = new IdamPage(page);
+    await idamPage.login({
+      username: userEmail,
+      password: userPassword,
+      sessionFile: storageStatePath,
     });
-
-    // Save storage state after successful login (Playwright's native format)
-    await SessionManager.saveStorageState(page);
   }
 
   private async createUserAndLogin(page: Page, userType: string, roles: string[]): Promise<void> {

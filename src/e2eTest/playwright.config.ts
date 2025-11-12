@@ -1,8 +1,9 @@
 import * as process from 'node:process';
 import * as fs from 'fs';
+import * as path from 'path';
 
 import {defineConfig, devices} from '@playwright/test';
-import { SessionManager } from '@utils/session-manager';
+import { SessionUtils } from '@hmcts/playwright-common';
 
 const DEFAULT_VIEWPORT = {width: 1920, height: 1080};
 export const VERY_SHORT_TIMEOUT = 1000;
@@ -12,9 +13,25 @@ export const LONG_TIMEOUT = 30000;
 export const actionRetries = 5;
 export const waitForPageRedirectionTimeout = SHORT_TIMEOUT;
 
-// Check if storage state exists for session reuse
-const storageStatePath = SessionManager.getStorageStatePath();
-const storageState = fs.existsSync(storageStatePath) ? storageStatePath : undefined;
+// Session configuration - following tcoe-playwright-example pattern
+const SESSION_DIR = path.join(process.cwd(), '.auth');
+const STORAGE_STATE_FILE = 'storage-state.json';
+const SESSION_COOKIE_NAME = process.env.SESSION_COOKIE_NAME || 'Idam.Session';
+
+function getStorageStatePath(): string {
+  if (!fs.existsSync(SESSION_DIR)) {
+    fs.mkdirSync(SESSION_DIR, { recursive: true });
+  }
+  return path.join(SESSION_DIR, STORAGE_STATE_FILE);
+}
+
+// Check if storage state exists and is valid using SessionUtils from @hmcts/playwright-common
+// Following tcoe-playwright-example pattern exactly
+const storageStatePath = getStorageStatePath();
+const storageState = fs.existsSync(storageStatePath) && 
+  SessionUtils.isSessionValid(storageStatePath, SESSION_COOKIE_NAME)
+  ? storageStatePath 
+  : undefined;
 
 export default defineConfig({
   testDir: 'tests/',
@@ -31,7 +48,7 @@ export default defineConfig({
     baseURL: process.env.MANAGE_CASE_BASE_URL || 'http://localhost:3000',
     actionTimeout: 30 * 1000,
     navigationTimeout: 30 * 1000,
-    // Use storage state if available (will be created by globalSetup)
+    // Use storage state if available (created by globalSetup)
     ...(storageState ? { storageState } : {})
   },
   /* Report slow tests if they take longer than 5 mins */
