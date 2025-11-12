@@ -502,18 +502,6 @@ tasks.register('e2eTest'){
   dependsOn('runE2ePrTests')
 }
 
-tasks.register('e2eRegressionTest'){
-  dependsOn('runE2eRegressionTests')
-}
-
-tasks.register('e2eTestChrome'){
-  dependsOn('runE2eChromeTests')
-}
-
-tasks.register('e2eTestFirefox'){
-  dependsOn('runE2eFirefoxTests')
-}
-
 // Ensure we cover Cftlib dev & test with our CI checks
 check.dependsOn cftlibTest
 
