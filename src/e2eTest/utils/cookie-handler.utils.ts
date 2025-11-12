@@ -1,10 +1,13 @@
-import { Page } from '@playwright/test';
+import { Page, Cookie } from '@playwright/test';
 import { signInOrCreateAnAccount } from '@data/page-data';
+import { SessionManager } from '@utils/session-manager';
+import * as fs from 'fs';
 
 /**
  * Handles cookie consent banners in a non-blocking way.
  * If cookie banners are not found or interactions fail, the function logs a message and continues.
  * This ensures tests continue even if cookie handling fails.
+ * Also adds analytics cookies to the storage state file for persistence.
  */
 export class CookieHandler {
   /**
@@ -77,6 +80,75 @@ export class CookieHandler {
   static async handleAllCookies(page: Page): Promise<void> {
     await this.handleAdditionalCookies(page);
     await this.handleAnalyticsCookies(page);
+  }
+
+  /**
+   * Adds analytics cookie to storage state file (similar to tcoe-playwright-example pattern)
+   * This ensures the analytics cookie preference is persisted in the saved session
+   * @param baseURL - Base URL to determine the domain for the cookie
+   */
+  static async addAnalyticsCookieToStorageState(baseURL: string): Promise<void> {
+    try {
+      const storageStatePath = SessionManager.getStorageStatePath();
+      if (!fs.existsSync(storageStatePath)) {
+        console.log('Storage state file not found, skipping analytics cookie addition');
+        return;
+      }
+
+      const state = JSON.parse(fs.readFileSync(storageStatePath, 'utf-8'));
+      const cookies = Array.isArray(state?.cookies) ? state.cookies : [];
+      
+      // Get domain from baseURL
+      const domain = this.resolveHostname(baseURL);
+      
+      // Get userId from existing cookies if available
+      const userId = cookies.find((cookie: Cookie) => cookie.name === '__userid__')?.value || 'default';
+      
+      // Check if analytics cookie already exists
+      const analyticsCookieName = `hmcts-exui-cookies-${userId}-mc-accepted`;
+      const existingCookie = cookies.find((cookie: Cookie) => cookie.name === analyticsCookieName);
+      
+      if (!existingCookie) {
+        cookies.push({
+          name: analyticsCookieName,
+          value: 'true',
+          domain,
+          path: '/',
+          expires: -1,
+          httpOnly: false,
+          secure: true,
+          sameSite: 'Lax',
+        });
+        
+        state.cookies = cookies;
+        fs.writeFileSync(storageStatePath, JSON.stringify(state, null, 2), 'utf-8');
+        console.log('Analytics cookie added to storage state');
+      }
+    } catch (error) {
+      // Non-blocking - log but don't fail
+      console.log(`Failed to add analytics cookie to storage state: ${error instanceof Error ? error.message : String(error)}`);
+    }
+  }
+
+  /**
+   * Resolves hostname from URL
+   * @param url - URL string
+   * @returns hostname
+   */
+  private static resolveHostname(url: string): string {
+    try {
+      return new URL(url).hostname;
+    } catch {
+      try {
+        return new URL(`https://${url}`).hostname;
+      } catch (fallbackError) {
+        throw new Error(
+          `Failed to resolve hostname from URL "${url}": ${
+            fallbackError instanceof Error ? fallbackError.message : String(fallbackError)
+          }`
+        );
+      }
+    }
   }
 }
 

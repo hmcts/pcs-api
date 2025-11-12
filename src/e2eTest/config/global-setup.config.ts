@@ -1,5 +1,5 @@
 import { chromium, FullConfig } from '@playwright/test';
-import { IdamUtils } from '@hmcts/playwright-common';
+import { IdamUtils, IdamPage } from '@hmcts/playwright-common';
 import { accessTokenApiData } from '@data/api-data/accessToken.api.data';
 import { SessionManager } from '@utils/session-manager';
 import { CookieHandler } from '@utils/cookie-handler.utils';
@@ -42,11 +42,13 @@ async function globalSetupConfig(config: FullConfig): Promise<void> {
     // Handle additional cookies consent if present (non-blocking - continue even if it fails)
     await CookieHandler.handleAdditionalCookies(page);
 
-    // Perform login
-    await page.waitForSelector('h1:has-text("Sign in or create an account")', { timeout: 10000 });
-    await page.getByLabel('Email address').fill(userEmail);
-    await page.getByLabel('Password').fill(userPassword);
-    await page.getByRole('button', { name: 'Sign in' }).click();
+    // Perform login using IdamPage from @hmcts/playwright-common
+    const idamPage = new IdamPage(page);
+    await idamPage.login({
+      username: userEmail,
+      password: userPassword,
+      sessionFile: SessionManager.getStorageStatePath(),
+    });
 
     // Wait for navigation after login
     await page.waitForURL('**/cases', { timeout: 30000 }).catch(async () => {
@@ -73,8 +75,13 @@ async function globalSetupConfig(config: FullConfig): Promise<void> {
     // Wait a bit to ensure all cookies are set and page is fully loaded
     await page.waitForTimeout(2000);
 
-    // Save storage state (Playwright's native format - includes cookies and localStorage)
+    // Add analytics cookie to storage state file for persistence (like tcoe-playwright-example)
+    // This updates the session file that IdamPage already saved
+    await CookieHandler.addAnalyticsCookieToStorageState(baseURL);
+    
+    // Ensure storage state is up to date with all cookies
     await SessionManager.saveStorageState(page);
+    
     console.log('Login successful and session saved!');
 
   } catch (error) {
