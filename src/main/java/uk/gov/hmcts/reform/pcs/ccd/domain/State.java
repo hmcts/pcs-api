@@ -16,6 +16,13 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.ClaimantAccess;
 public enum State {
 
     @CCD(
+        label = "Draft",
+        access = {ClaimantAccess.class},
+        hint = "${pageHeadingMarkdown}"
+    )
+    DRAFT,
+
+    @CCD(
         label = "Awaiting further claim details",
         access = {ClaimantAccess.class},
         hint = "${pageHeadingMarkdown}"
@@ -41,7 +48,14 @@ public enum State {
         access = {CaseworkerReadAccess.class, ClaimantAccess.class},
         hint = "${pageHeadingMarkdown}"
     )
-    CASE_CLOSED
+    CASE_CLOSED,
+
+    @CCD(
+        label = "Test Case",
+        access = {CaseworkerReadAccess.class, ClaimantAccess.class},
+        hint = "${pageHeadingMarkdown}"
+    )
+    TEST_CASE
 
 }
 
