@@ -160,8 +160,6 @@ class ResumePossessionClaimTest extends BaseEventTest {
     private RentArrearsGroundForPossessionAdditionalGrounds rentArrearsGroundForPossessionAdditionalGrounds;
     @Mock
     private NoRentArrearsGroundsForPossessionOptions noRentArrearsGroundsForPossessionOptions;
-    @Mock
-    private IntroductoryDemotedOrOtherGroundsForPossession introductoryDemotedOrOtherGroundsForPossession;
 
     private final AddressFormatter addressFormatter = new AddressFormatter();
 
@@ -192,8 +190,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
             addressFormatter,
             rentArrearsGroundsForPossession,
             rentArrearsGroundForPossessionAdditionalGrounds,
-            noRentArrearsGroundsForPossessionOptions,
-            introductoryDemotedOrOtherGroundsForPossession
+            noRentArrearsGroundsForPossessionOptions
         );
 
         setEventUnderTest(underTest);
