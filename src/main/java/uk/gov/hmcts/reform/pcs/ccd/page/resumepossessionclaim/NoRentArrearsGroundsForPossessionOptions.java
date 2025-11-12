@@ -1,6 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim;
 
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
@@ -12,6 +12,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.NoRentArrearsDiscretionaryGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.NoRentArrearsMandatoryGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.service.routing.RentDetailsRoutingService;
 
 import java.util.List;
 import java.util.Set;
@@ -19,16 +20,18 @@ import java.util.Set;
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 
 
-@AllArgsConstructor
-@Component
 @Slf4j
+@Component
+@RequiredArgsConstructor
 public class NoRentArrearsGroundsForPossessionOptions implements CcdPageConfiguration {
+
+    private final RentDetailsRoutingService rentDetailsRoutingService;
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
             .page("noRentArrearsGroundsForPossessionOptions", this::midEvent)
-            .pageLabel("What are your grounds for possession?")
+            .pageLabel("What are your additional grounds for possession?")
             .showCondition("groundsForPossession=\"No\" AND typeOfTenancyLicence=\"ASSURED_TENANCY\""
                              + " AND legislativeCountry=\"England\""
             )
@@ -70,12 +73,8 @@ public class NoRentArrearsGroundsForPossessionOptions implements CcdPageConfigur
         boolean shouldShowReasonsPage = hasOtherDiscretionaryGrounds || hasOtherMandatoryGrounds;
         caseData.setShowNoRentArrearsGroundReasonPage(YesOrNo.from(shouldShowReasonsPage));
 
-        // Determine if Rent Details page should be shown (HDPI-2123)
-        // Show rent details if ground 8, 10, or 11 is selected
-        boolean hasRentRelatedGrounds = mandatoryGrounds.contains(NoRentArrearsMandatoryGrounds.SERIOUS_RENT_ARREARS)
-            || discretionaryGrounds.contains(NoRentArrearsDiscretionaryGrounds.RENT_ARREARS)
-            || discretionaryGrounds.contains(NoRentArrearsDiscretionaryGrounds.RENT_PAYMENT_DELAY);
-        caseData.setShowRentDetailsPage(YesOrNo.from(hasRentRelatedGrounds));
+        YesOrNo showRentDetails = rentDetailsRoutingService.shouldShowRentDetails(caseData);
+        caseData.setShowRentDetailsPage(showRentDetails);
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
             .data(caseData)
