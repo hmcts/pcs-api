@@ -21,10 +21,10 @@ plugins {
   id 'org.flywaydb.flyway' version "$flywayVersion"
   id 'org.sonarqube' version '7.0.1.6134'
   id 'net.serenity-bdd.serenity-gradle-plugin' version "$serenityBddVersion"
-  id 'hmcts.ccd.sdk' version '6.5.0'
-  id 'com.github.hmcts.rse-cft-lib' version '0.19.1919'
+  id 'hmcts.ccd.sdk' version '6.5.2'
+  id 'com.github.hmcts.rse-cft-lib' version '0.19.1922'
   id 'io.freefair.lombok' version '9.1.0'
-  id 'au.com.dius.pact' version '4.6.17'
+  id 'au.com.dius.pact' version '4.6.18'
   /*
     Applies analysis tools including checkstyle and OWASP Dependency checker.
     See https://github.com/hmcts/gradle-java-plugin
@@ -181,18 +181,6 @@ tasks.register('yarnInstall', Exec) {
   commandLine 'yarn', 'install'
 }
 
-tasks.register('runE2ePrTests', Exec) {
-  dependsOn yarnInstall
-  workingDir = file("${project.projectDir}/src/e2eTest")
-  commandLine 'yarn', 'test:pr'
-}
-
-tasks.register('runE2eRegressionTests', Exec) {
-  dependsOn yarnInstall
-  workingDir = file("${project.projectDir}/src/e2eTest")
-  commandLine 'yarn', 'test:regression'
-}
-
 tasks.register('runE2eChromeTests', Exec) {
   dependsOn yarnInstall
   workingDir = file("${project.projectDir}/src/e2eTest")
@@ -309,7 +297,7 @@ repositories {
 
 ext {
   log4JVersion = "2.25.2"
-  logbackVersion = "1.5.20"
+  logbackVersion = "1.5.21"
   testcontainersVersion = "1.21.3"
   springFrameworkBootVersion = "3.5.7"
   lombokVersion = "1.18.42"
@@ -500,18 +488,6 @@ tasks.register('highLevelDataSetup', JavaExec) {
 
 tasks.register('e2eTest'){
   dependsOn('runE2eChromeTests')
-}
-
-tasks.register('e2eRegressionTest'){
-  dependsOn('runE2eRegressionTests')
-}
-
-tasks.register('e2eTestChrome'){
-  dependsOn('runE2eChromeTests')
-}
-
-tasks.register('e2eTestFirefox'){
-  dependsOn('runE2eFirefoxTests')
 }
 
 // Ensure we cover Cftlib dev & test with our CI checks

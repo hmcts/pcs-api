@@ -23,7 +23,7 @@ test.beforeEach(async ({ page }) => {
 });
 
 test.describe('[Enforcement - Warrant of Possession] @Master @nightly', async () => {
-  test('Apply for a Warrant of Possession - risk to Bailiff [Yes] @PR', async () => {
+  test('Apply for a Warrant of Possession - risk to Bailiff [Yes]', async () => {
     await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
     await performAction('clickButtonAndVerifyPageNavigation', caseSummary.go, yourApplication.mainHeader);
     await performAction('selectApplicationType', {

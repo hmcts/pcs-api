@@ -18,7 +18,7 @@ test.beforeEach(async ({page}) => {
 });
 
 test.describe('[Create Case - Wales] @Master @nightly', async () => {
-  test('Wales - Secure contract - Rent arrears only @PR', async () => {
+  test('Wales - Secure contract - Rent arrears only', async () => {
     await performAction('enterTestAddressManually');
     await performValidation('bannerAlert', 'Case #.* has been created.');
     await performAction('extractCaseIdFromAlert');
