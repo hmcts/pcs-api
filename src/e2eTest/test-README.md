@@ -66,8 +66,8 @@ Playwright 1.30+ | TypeScript 4.9+
 ## 4. Available Actions and Validations
 
 ### Actions
-| Action                                      | Example Usage                                                                                                                                                                                              |
-|---------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Action          | Example Usage |
+|------------------|---------------|
 | inputText                                   | `performAction('inputText', 'Email', 'test@example.com')`                                                                                                                                                  |
 | check                                       | `performAction('check', 'RememberMe')`                                                                                                                                                                     |
 | navigateToUrl                               | `performAction('navigateToUrl', 'testUrl')`                                                                                                                                                                |
@@ -135,8 +135,8 @@ Playwright 1.30+ | TypeScript 4.9+
 | selectUnderlesseeOrMortgageeDetails         | `performAction('selectUnderlesseeOrMortgageeDetails', { nameOption: 'Yes', addressOption: 'Yes', anotherUnderlesseeOrMortgageeOption: 'Yes'})`                                                             |
 | selectProhibitedConductStandardContract     | `performAction('selectProhibitedConductStandardContract', prohibitedConductStandardContractWales.yes)`                                                                                                     |
 ### Validations
-| Validation                 | Example Usage                                                                                                                        |
-|----------------------------|--------------------------------------------------------------------------------------------------------------------------------------|
+| Validation          | Example Usage |
+|------------------|---------------|
 | text                       | `performValidation('text', 'testElement')`                                                                                           |
 | bannerAlert                | `performValidation('bannerAlert', {message: "Case has been created."})`                                                              |
 | formLabelValue             | `performValidation('formLabelValue',  "Applicant's forename", {value:'TestUser'})`                                                   |
@@ -147,6 +147,7 @@ Playwright 1.30+ | TypeScript 4.9+
 | elementToBeVisible         | `performValidation('elementToBeVisible', 'testElement')`                                                                             |
 | elementNotToBeVisible      | `performValidation('elementNotToBeVisible', 'testElement')`                                                                          |
 | waitUntilElementDisappears | `performValidation('waitUntilElementDisappears', 'testElement')`                                                                     |
+| autoValidatePageContent    | `performValidation('autoValidatePageContent')`                                                                                       |
 ### Basic Test
 
 ```typescript
