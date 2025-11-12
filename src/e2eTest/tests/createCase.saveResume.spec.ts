@@ -135,7 +135,7 @@ test.describe.skip('[Create Case - With resume claim options] @Master @nightly',
       option: languageUsed.english
     });
     await performAction('completingYourClaim', completeYourClaim.submitAndClaimNow);
-    await performAction('clickButton', statementOfTruth.continue);
+    await performAction('selectStatementOfTruth', {completedBy: statementOfTruth.completedByLabel, option :statementOfTruth.claimantRadioOption});
     await performAction('clickButton', checkYourAnswers.saveAndContinue);
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
     await performValidations(
@@ -247,7 +247,7 @@ test.describe.skip('[Create Case - With resume claim options] @Master @nightly',
       option: languageUsed.english
     });
     await performAction('completingYourClaim', completeYourClaim.submitAndClaimNow);
-    await performAction('clickButton', statementOfTruth.continue);
+    await performAction('selectStatementOfTruth', {completedBy: statementOfTruth.completedByLabel, option :statementOfTruth.claimantRadioOption});
     await performAction('clickButton', checkYourAnswers.saveAndContinue);
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
     await performValidations(
