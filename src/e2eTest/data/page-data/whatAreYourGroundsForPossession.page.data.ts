@@ -1,6 +1,7 @@
 export const whatAreYourGroundsForPossession = {
   title: 'Create a case - HM Courts & Tribunals Service - GOV.UK',
-  mainHeader: 'What are your grounds for possession?',
+  mainHeader: 'What are your additional grounds for possession?',
+  mainHeaderSecure: 'What are your grounds for possession?',
   mandatory:
     {
       antiSocialBehaviour: 'Antisocial behaviour',

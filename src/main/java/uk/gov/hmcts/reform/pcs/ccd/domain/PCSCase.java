@@ -223,6 +223,22 @@ public class PCSCase {
     )
     private Set<RentArrearsDiscretionaryGrounds> rentArrearsDiscretionaryGrounds;
 
+    @CCD(
+        label = "Mandatory grounds",
+        hint = "Select all that apply",
+        typeOverride = MultiSelectList,
+        typeParameterOverride = "AssuredAdditionalMandatoryGrounds"
+    )
+    private Set<AssuredAdditionalMandatoryGrounds> assuredAdditionalMandatoryGrounds;
+
+    @CCD(
+        label = "Discretionary grounds",
+        hint = "Select all that apply",
+        typeOverride = MultiSelectList,
+        typeParameterOverride = "AssuredAdditionalDiscretionaryGrounds"
+    )
+    private Set<AssuredAdditionalDiscretionaryGrounds> assuredAdditionalDiscretionaryGrounds;
+
     @JsonUnwrapped
     private RentArrearsGroundsReasons rentArrearsGroundsReasons;
 
@@ -257,7 +273,7 @@ public class PCSCase {
     )
     private YesOrNo noticeServed;
 
-    private String pageHeadingMarkdown;
+    private String caseTitleMarkdown;
 
     private LegislativeCountry legislativeCountry;
 
@@ -575,7 +591,7 @@ public class PCSCase {
     @CCD(
         label = "Do you want the court to make a judgment for the outstanding arrears?"
     )
-    private YesOrNo arrearsJudgmentWanted;
+    private VerticalYesNo arrearsJudgmentWanted;
 
     @CCD(
         label = "Mandatory grounds",
@@ -729,5 +745,11 @@ public class PCSCase {
         label = "Ways to pay"
     )
     private WaysToPay waysToPay;
+
+    @CCD(searchable = false)
+    private YesOrNo showPreActionProtocolPageWales;
+
+    @CCD(searchable = false)
+    private YesOrNo showASBQuestionsPageWales;
 
 }
