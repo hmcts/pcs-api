@@ -20,7 +20,6 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class EnforcementOrderEventTest extends BaseEventTest {
@@ -74,8 +73,6 @@ class EnforcementOrderEventTest extends BaseEventTest {
         enforcementDataEntity.setId(UUID.randomUUID());
 
         // When
-        when(enforcementDataService.createEnforcementData(CASE_REFERENCE, enforcementOrder))
-                .thenReturn(enforcementDataEntity);
         callSubmitHandler(pcsCase);
 
         // Then

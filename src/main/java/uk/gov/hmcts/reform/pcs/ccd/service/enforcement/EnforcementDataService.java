@@ -41,7 +41,7 @@ public class EnforcementDataService {
         return enforcementData;
     }
 
-    public EnforcementDataEntity createEnforcementData(long caseReference, EnforcementOrder enforcementOrder) {
+    public void createEnforcementData(long caseReference, EnforcementOrder enforcementOrder) {
 
         String submittedEnfDataJson = writeSubmittedDataJson(enforcementOrder);
 
@@ -52,8 +52,6 @@ public class EnforcementDataService {
         enforcementDataEntity.setPcsCase(pcsCaseEntity);
 
         enforcementDataRepository.save(enforcementDataEntity);
-
-        return enforcementDataEntity;
     }
 
     private EnforcementOrder parseEnforcementDataJson(String enforcementDataJson) {

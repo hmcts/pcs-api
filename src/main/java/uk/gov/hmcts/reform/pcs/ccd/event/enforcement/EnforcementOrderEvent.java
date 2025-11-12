@@ -13,7 +13,6 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.entity.enforcement.EnforcementDataEntity;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.AggressiveAnimalsRiskPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.AdditionalInformationPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.MoneyOwedPage;
@@ -91,12 +90,9 @@ public class EnforcementOrderEvent implements CCDConfig<PCSCase, State, UserRole
     private SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {
         long caseReference = eventPayload.caseReference();
 
-        EnforcementDataEntity enforcementDataEntity =
-            enforcementDataService.createEnforcementData(caseReference, eventPayload.caseData().getEnforcementOrder());
+        enforcementDataService.createEnforcementData(caseReference, eventPayload.caseData().getEnforcementOrder());
 
         // Delete unsubmitted data once HDPI-2637 implemented
-
-        log.info("Submitted Enforcement data for enforcement case id {}", enforcementDataEntity.getId());
 
         return SubmitResponse.defaultResponse();
     }
