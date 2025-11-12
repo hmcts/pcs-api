@@ -92,7 +92,7 @@ jobs:
 
           # Look for an existing CCD diff comment (by header and author)
           COMMENT_ID=$(gh pr view "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --json comments \
-            --jq '.comments[] | select(.body | startswith("# CCD diff summary")) | select(.author.login == "github-actions[bot]") | .id' | head -n 1)
+            --jq '.comments[] | select(.body | startswith("# CCD diff summary")) | .id' | head -n 1)
 
           if [ -n "$COMMENT_ID" ]; then
             echo "📝 Updating existing CCD diff comment ($COMMENT_ID)"
