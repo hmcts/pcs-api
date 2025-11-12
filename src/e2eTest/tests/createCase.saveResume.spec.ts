@@ -1,9 +1,9 @@
 import {test} from '@playwright/test';
 import {initializeExecutor, performAction, performValidation, performValidations} from '@utils/controller';
 import {addressDetails, claimantType, claimType, claimantName, contactPreferences, defendantDetails, tenancyLicenceDetails, groundsForPossession,
-        rentArrearsPossessionGrounds, preActionProtocol, mediationAndSettlement, noticeOfYourIntention, noticeDetails, rentDetails, completeYourClaim,
-        dailyRentAmount, provideMoreDetailsOfClaim, whatAreYourGroundsForPossession, moneyJudgment, claimantCircumstances, applications, user,
-        checkYourAnswers, propertyDetails, languageUsed, defendantCircumstances, claimingCosts, uploadAdditionalDocs, statementOfTruth, home,
+        preActionProtocol, mediationAndSettlement, noticeOfYourIntention, noticeDetails, rentDetails, completeYourClaim,
+        dailyRentAmount, whatAreYourGroundsForPossession, moneyJudgment, claimantCircumstances, applications, user,
+        checkYourAnswers, propertyDetails, languageUsed, defendantCircumstances, claimingCosts, statementOfTruth, home,
         additionalReasonsForPossession, underlesseeOrMortgageeEntitledToClaim, alternativesToPossession, reasonsForPossession,
         wantToUploadDocuments, resumeClaim, resumeClaimOptions } from '@data/page-data/';
 
@@ -25,7 +25,7 @@ test.beforeEach(async ({page}) => {
 test.describe.skip('[Create Case - With resume claim options] @Master @nightly', async () => {
   test('England - Resume with saved options - Assured Tentency - Rent arrears + other grounds when user selects no to rent arrears question', async () => {
     await performAction('selectAddress', {
-      postcode: addressDetails.englandCourtAssignedPostcode,
+      postcode: addressDetails.englandCourtAssignedPostcodeTextInput,
       addressIndex: addressDetails.addressIndex
     });
     await performValidation('bannerAlert', 'Case #.* has been created.');
@@ -142,7 +142,7 @@ test.describe.skip('[Create Case - With resume claim options] @Master @nightly',
 
   test('England - Resume without saved options - Secure Tentency - No Rent Arrears', async () => {
     await performAction('selectAddress', {
-      postcode: addressDetails.englandCourtAssignedPostcode,
+      postcode: addressDetails.englandCourtAssignedPostcodeTextInput,
       addressIndex: addressDetails.addressIndex
     });
     await performValidation('bannerAlert', 'Case #.* has been created.');

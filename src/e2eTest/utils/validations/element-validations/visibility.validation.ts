@@ -5,9 +5,13 @@ export class VisibilityValidation implements IValidation {
   async validate(page: Page, validation: string, fieldName: string, data: validationData): Promise<void> {
     let element = page.locator(`label:has-text("${fieldName}"),
                                          span:has-text("${fieldName}")`);
+    let selectors = fieldName == "" ? Array.isArray(data) ? data as string[] : [data as string] : [fieldName];
+    let elements = selectors.map(selector => page.locator(`label:has-text("${selector}"),
+                                         span:has-text("${selector}")`));
+
     const validationsMap = new Map<string, () => Promise<void>>([
       ['elementToBeVisible', () => this.elementToBeVisible(element)],
-      ['elementNotToBeVisible', () => this.elementNotToBeVisible(element)],
+      ['elementNotToBeVisible', () => this.elementNotToBeVisible(elements)],
       ['waitUntilElementDisappears', () => this.waitUntilElementDisappears(element)]
     ]);
     const validationToPerform = validationsMap.get(validation);
@@ -19,8 +23,10 @@ export class VisibilityValidation implements IValidation {
     await expect(element).toBeVisible();
   }
 
-  private async elementNotToBeVisible(element: Locator): Promise<void> {
-    await expect(element).not.toBeVisible();
+  private async elementNotToBeVisible(elements: Locator[]): Promise<void> {
+    for (const element of elements) {
+      await expect(element).not.toBeVisible();
+    }
   }
 
   private async waitUntilElementDisappears(element: Locator): Promise<void> {

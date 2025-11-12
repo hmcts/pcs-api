@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales;
 
+import org.springframework.stereotype.Component;
 import java.util.List;
 import java.util.Set;
 
@@ -13,8 +14,16 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractDiscretionaryGroundsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractMandatoryGroundsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.service.routing.wales.WalesRentDetailsRoutingService;
 
+@Component
 public class SecureContractGroundsForPossessionWales implements CcdPageConfiguration {
+
+    private final WalesRentDetailsRoutingService walesRentDetailsRoutingService;
+
+    public SecureContractGroundsForPossessionWales(WalesRentDetailsRoutingService walesRentDetailsRoutingService) {
+        this.walesRentDetailsRoutingService = walesRentDetailsRoutingService;
+    }
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
@@ -71,7 +80,10 @@ public class SecureContractGroundsForPossessionWales implements CcdPageConfigura
                     .build();
         }
 
+        // Rent details routing (from HEAD - using routing service)
+        caseData.setShowRentDetailsPage(walesRentDetailsRoutingService.shouldShowRentDetails(caseData));
 
+        // ASB/Reasons routing (from master - conditional logic)
         boolean hasDiscretionary = discretionaryGrounds != null && !discretionaryGrounds.isEmpty();
         boolean hasMandatory = mandatoryGrounds != null && !mandatoryGrounds.isEmpty();
 
@@ -83,7 +95,6 @@ public class SecureContractGroundsForPossessionWales implements CcdPageConfigura
                 && discretionaryGrounds.contains(SecureContractDiscretionaryGroundsWales.OTHER_BREACH_OF_CONTRACT);
         boolean hasEstateManagement = hasDiscretionary
                 && discretionaryGrounds.contains(SecureContractDiscretionaryGroundsWales.ESTATE_MANAGEMENT_GROUNDS);
-        boolean hasMandatoryGrounds = mandatoryGrounds != null && !mandatoryGrounds.isEmpty();
 
         // Determine if there are "other options" (anything that's not rent arrears or ASB)
         boolean hasOtherOptions = hasOtherBreach || hasEstateManagement || hasMandatory;
@@ -98,7 +109,6 @@ public class SecureContractGroundsForPossessionWales implements CcdPageConfigura
         } else if (hasOtherOptions) {
             caseData.setShowASBQuestionsPageWales(YesOrNo.NO);
             caseData.setShowReasonsForGroundsPageWales(YesOrNo.YES);
-            
         }
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
