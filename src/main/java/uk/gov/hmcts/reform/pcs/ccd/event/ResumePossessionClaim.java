@@ -140,7 +140,14 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
     private final SchedulerClient schedulerClient;
     private final DraftCaseDataService draftCaseDataService;
     private final OccupationLicenceDetailsWalesPage occupationLicenceDetailsWalesPage;
+    private final GroundsForPossessionWales groundsForPossessionWales;
+    private final SecureContractGroundsForPossessionWales secureContractGroundsForPossessionWales;
+    private final ReasonsForPosessionWales reasonsForPosessionWales;
     private final AddressFormatter addressFormatter;
+    private final RentArrearsGroundsForPossession rentArrearsGroundsForPossession;
+    private final RentArrearsGroundForPossessionAdditionalGrounds rentArrearsGroundForPossessionAdditionalGrounds;
+    private final NoRentArrearsGroundsForPossessionOptions noRentArrearsGroundsForPossessionOptions;
+    private final IntroductoryDemotedOrOtherGroundsForPossession introductoryDemotedOrOtherGroundsForPossession;
 
     private static final String CASE_ISSUED_FEE_TYPE = "caseIssueFee";
 
@@ -169,20 +176,20 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             .add(defendantsDetails)
             .add(tenancyLicenceDetails)
             .add(occupationLicenceDetailsWalesPage)
-            .add(new GroundsForPossessionWales())
-            .add(new SecureContractGroundsForPossessionWales())
-            .add(new ReasonsForPosessionWales())
+            .add(groundsForPossessionWales)
+            .add(secureContractGroundsForPossessionWales)
+            .add(reasonsForPosessionWales)
             .add(new ASBQuestionsWales())
             .add(new SecureOrFlexibleGroundsForPossession())
             .add(new RentArrearsOrBreachOfTenancyGround())
             .add(secureOrFlexibleGroundsForPossessionReasons)
-            .add(new IntroductoryDemotedOrOtherGroundsForPossession())
+            .add(introductoryDemotedOrOtherGroundsForPossession)
             .add(introductoryDemotedOtherGroundsReasons)
             .add(new GroundsForPossession())
-            .add(new RentArrearsGroundsForPossession())
-            .add(new RentArrearsGroundForPossessionAdditionalGrounds())
+            .add(rentArrearsGroundsForPossession)
+            .add(rentArrearsGroundForPossessionAdditionalGrounds)
             .add(new RentArrearsGroundsForPossessionReasons())
-            .add(new NoRentArrearsGroundsForPossessionOptions())
+            .add(noRentArrearsGroundsForPossessionOptions)
             .add(noRentArrearsGroundsForPossessionReason)
             .add(new PreActionProtocol())
             .add(mediationAndSettlement)
