@@ -259,7 +259,7 @@ public class PCSCase {
     )
     private YesOrNo noticeServed;
 
-    private String pageHeadingMarkdown;
+    private String caseTitleMarkdown;
 
     private String claimPaymentTabMarkdown;
 
