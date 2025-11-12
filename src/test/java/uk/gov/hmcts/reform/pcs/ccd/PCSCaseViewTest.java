@@ -6,6 +6,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.modelmapper.ModelMapper;
@@ -23,6 +24,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
+import uk.gov.hmcts.reform.pcs.ccd.service.CaseTitleService;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
@@ -37,6 +39,7 @@ import java.util.stream.Stream;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -64,6 +67,8 @@ class PCSCaseViewTest {
     @Mock
     private DraftCaseDataService draftCaseDataService;
     @Mock
+    private CaseTitleService caseTitleService;
+    @Mock
     private PcsCaseEntity pcsCaseEntity;
 
     private PCSCaseView underTest;
@@ -73,7 +78,7 @@ class PCSCaseViewTest {
         when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(pcsCaseEntity));
 
         underTest = new PCSCaseView(pcsCaseRepository, securityContextService,
-                modelMapper, pcsCaseService, draftCaseDataService);
+                modelMapper, pcsCaseService, draftCaseDataService, caseTitleService);
     }
 
     @Test
@@ -122,13 +127,24 @@ class PCSCaseViewTest {
         assertThat(pcsCase.getPropertyAddress()).isNull();
     }
 
-    @Test
-    void shouldSetPageHeadingMarkdownWhenCaseIsRetrieved() {
+    void shouldSetCaseTitleMarkdown() {
+        // Given
+        AddressEntity addressEntity = mock(AddressEntity.class);
+        when(pcsCaseEntity.getPropertyAddress()).thenReturn(addressEntity);
+        AddressUK addressUK = stubAddressEntityModelMapper(addressEntity);
+
+        String expectedCaseTitle = "expected case title";
+        when(caseTitleService.buildCaseTitle(any(PCSCase.class))).thenReturn(expectedCaseTitle);
+
         // When
         PCSCase pcsCase = underTest.getCase(request(DEFAULT_STATE));
 
         // Then
-        assertThat(pcsCase.getPageHeadingMarkdown()).isNotBlank();
+        assertThat(pcsCase.getCaseTitleMarkdown()).isEqualTo(expectedCaseTitle);
+
+        ArgumentCaptor<PCSCase> pcsCaseCaptor = ArgumentCaptor.forClass(PCSCase.class);
+        verify(caseTitleService).buildCaseTitle(pcsCaseCaptor.capture());
+        assertThat(pcsCaseCaptor.getValue().getPropertyAddress()).isEqualTo(addressUK);
     }
 
     @Test
@@ -270,6 +286,11 @@ class PCSCaseViewTest {
         AddressUK addressUK = mock(AddressUK.class);
         when(modelMapper.map(addressEntity, AddressUK.class)).thenReturn(addressUK);
         return addressUK;
+    }
+
+    @SuppressWarnings("SameParameterValue")
+    private static CaseViewRequest<State> request(long caseReference, State state) {
+        return new CaseViewRequest<>(caseReference, state);
     }
 
 }
