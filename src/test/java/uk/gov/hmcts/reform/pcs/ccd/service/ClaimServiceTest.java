@@ -16,6 +16,8 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.SuspensionOfRightToBuyDemotionOfTenanc
 import uk.gov.hmcts.reform.pcs.ccd.domain.SuspensionOfRightToBuyHousingAct;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.ASBQuestionsDetailsWales;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.ASBQuestionsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.PeriodicContractTermsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.ProhibitedConductWales;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
@@ -26,7 +28,6 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimRepository;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
@@ -78,15 +79,17 @@ class ClaimServiceTest {
         List<ClaimGroundEntity> expectedClaimGrounds = List.of(mock(ClaimGroundEntity.class));
         when(claimGroundService.getGroundsWithReason(pcsCase)).thenReturn(expectedClaimGrounds);
 
-        when(pcsCase.getAntisocialBehaviourDetailsWales()).thenReturn(asbDetails);
-        when(pcsCase.getIllegalPurposesUseDetailsWales()).thenReturn(illegalPurposesDetails);
-        when(pcsCase.getOtherProhibitedConductDetailsWales()).thenReturn(prohibitedConductDetails);
-    
-        Map<String, String> expectedASBQuestions = Map.of(
-            "antisocialBehaviourDetailsWales", asbDetails,
-            "illegalPurposesUseDetailsWales", illegalPurposesDetails,
-            "otherProhibitedConductDetailsWales", prohibitedConductDetails
-        );
+        ASBQuestionsDetailsWales asbQuestionsDetailsWales = mock(ASBQuestionsDetailsWales.class);
+        when(pcsCase.getAsbQuestionsWales()).thenReturn(asbQuestionsDetailsWales);
+        when(asbQuestionsDetailsWales.getAntisocialBehaviourDetails()).thenReturn(asbDetails);
+        when(asbQuestionsDetailsWales.getIllegalPurposesUseDetails()).thenReturn(illegalPurposesDetails);
+        when(asbQuestionsDetailsWales.getOtherProhibitedConductDetails()).thenReturn(prohibitedConductDetails);
+
+        ASBQuestionsWales expectedASBQuestions = ASBQuestionsWales.builder()
+            .antisocialBehaviourDetails(asbDetails)
+            .illegalPurposesUseDetails(illegalPurposesDetails)
+            .otherProhibitedConductDetails(prohibitedConductDetails)
+            .build();
 
         // When
         ClaimEntity createdClaimEntity = claimService.createMainClaimEntity(pcsCase, claimantPartyEntity);
@@ -108,7 +111,7 @@ class ClaimServiceTest {
         assertThat(claimParty.getRole()).isEqualTo(PartyRole.CLAIMANT);
 
         assertThat(createdClaimEntity.getClaimGrounds()).containsExactlyElementsOf(expectedClaimGrounds);
-        assertThat(createdClaimEntity.getAsbQuestionsWales()).isEqualTo(expectedASBQuestions);
+        assertThat(createdClaimEntity.getAsbQuestions()).isEqualTo(expectedASBQuestions);
 
         verify(claimRepository).save(createdClaimEntity);
 

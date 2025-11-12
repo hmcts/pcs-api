@@ -11,6 +11,7 @@ import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.ASBQuestionsDetailsWales;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 
@@ -56,12 +57,14 @@ class ASBQuestionsWalesTest extends BasePageTest {
         void shouldValidateASBQuestionsWalesTextAreas() {
             // Given
             PCSCase caseData = PCSCase.builder()
-                .antisocialBehaviourWales(VerticalYesNo.YES)
-                .antisocialBehaviourDetailsWales("Details about antisocial behaviour")
-                .illegalPurposesUseWales(VerticalYesNo.YES)
-                .illegalPurposesUseDetailsWales("Details about illegal purposes use")
-                .otherProhibitedConductWales(VerticalYesNo.YES)
-                .otherProhibitedConductDetailsWales("Details about other prohibited conduct")
+                .asbQuestionsWales(ASBQuestionsDetailsWales.builder()
+                    .antisocialBehaviour(VerticalYesNo.YES)
+                    .antisocialBehaviourDetails("Details about antisocial behaviour")
+                    .illegalPurposesUse(VerticalYesNo.YES)
+                    .illegalPurposesUseDetails("Details about illegal purposes use")
+                    .otherProhibitedConduct(VerticalYesNo.YES)
+                    .otherProhibitedConductDetails("Details about other prohibited conduct")
+                    .build())
                 .build();
 
             // When
@@ -77,12 +80,14 @@ class ASBQuestionsWalesTest extends BasePageTest {
         void shouldHandleNullTextAreaValuesGracefully() {
             // Given
             PCSCase caseData = PCSCase.builder()
-                .antisocialBehaviourWales(VerticalYesNo.YES)
-                .antisocialBehaviourDetailsWales(null)
-                .illegalPurposesUseWales(VerticalYesNo.YES)
-                .illegalPurposesUseDetailsWales(null)
-                .otherProhibitedConductWales(VerticalYesNo.YES)
-                .otherProhibitedConductDetailsWales(null)
+                .asbQuestionsWales(ASBQuestionsDetailsWales.builder()
+                    .antisocialBehaviour(VerticalYesNo.YES)
+                    .antisocialBehaviourDetails(null)
+                    .illegalPurposesUse(VerticalYesNo.YES)
+                    .illegalPurposesUseDetails(null)
+                    .otherProhibitedConduct(VerticalYesNo.YES)
+                    .otherProhibitedConductDetails(null)
+                    .build())
                 .build();
 
             // When

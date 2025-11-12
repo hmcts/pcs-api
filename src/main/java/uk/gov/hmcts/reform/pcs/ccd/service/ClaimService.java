@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantCircumstances;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DemotionOfTenancy;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.ASBQuestionsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.ProhibitedConductWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.SuspensionOfRightToBuy;
 import uk.gov.hmcts.reform.pcs.ccd.domain.SuspensionOfRightToBuyDemotionOfTenancy;
@@ -16,9 +17,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimRepository;
 import uk.gov.hmcts.reform.pcs.ccd.util.YesOrNoToBoolean;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @Service
 @AllArgsConstructor
@@ -36,6 +35,7 @@ public class ClaimService {
         SuspensionOfRightToBuy suspensionOrder = resolveSuspensionOfRightToBuy(pcsCase);
         DemotionOfTenancy demotionOrder = resolveDemotionOfTenancy(pcsCase);
         ProhibitedConductWales prohibitedConduct = buildProhibitedConduct(pcsCase);
+        ASBQuestionsWales asbQuestions = buildAsbQuestions(pcsCase);
 
         ClaimEntity claimEntity = ClaimEntity.builder()
             .summary("Main Claim")
@@ -56,31 +56,13 @@ public class ClaimService {
             .applicationWithClaim(YesOrNoToBoolean.convert(pcsCase.getApplicationWithClaim()))
             .languageUsed(pcsCase.getLanguageUsed())
             .prohibitedConduct(prohibitedConduct)
+            .asbQuestions(asbQuestions)
             .build();
 
 
         claimEntity.addParty(claimantPartyEntity, PartyRole.CLAIMANT);
         claimEntity.addClaimGrounds(claimGrounds);
         claimEntity.setClaimantCircumstances(pcsCase.getClaimantCircumstances().getClaimantCircumstancesDetails());
-
-
-        // Populate asbQuestions jsonb from Wales ASB fields
-        Map<String, String> asbQuestions = new HashMap<>();
-        if (pcsCase.getAntisocialBehaviourDetailsWales() != null) {
-            asbQuestions.put("antisocialBehaviourDetailsWales",
-                    pcsCase.getAntisocialBehaviourDetailsWales());
-        }
-        if (pcsCase.getIllegalPurposesUseDetailsWales() != null) {
-            asbQuestions.put("illegalPurposesUseDetailsWales",
-                    pcsCase.getIllegalPurposesUseDetailsWales());
-        }
-        if (pcsCase.getOtherProhibitedConductDetailsWales() != null) {
-            asbQuestions.put("otherProhibitedConductDetailsWales",
-                    pcsCase.getOtherProhibitedConductDetailsWales());
-        }
-        if (!asbQuestions.isEmpty()) {
-            claimEntity.setAsbQuestionsWales(asbQuestions);
-        }
 
         claimRepository.save(claimEntity);
 
@@ -132,5 +114,16 @@ public class ClaimService {
             .build();
     }
 
+    private ASBQuestionsWales buildAsbQuestions(PCSCase pcsCase) {
+        if (pcsCase.getAsbQuestionsWales() == null) {
+            return null;
+        }
+
+        return ASBQuestionsWales.builder()
+            .antisocialBehaviourDetails(pcsCase.getAsbQuestionsWales().getAntisocialBehaviourDetails())
+            .illegalPurposesUseDetails(pcsCase.getAsbQuestionsWales().getIllegalPurposesUseDetails())
+            .otherProhibitedConductDetails(pcsCase.getAsbQuestionsWales().getOtherProhibitedConductDetails())
+            .build();
+    }
 
 }
