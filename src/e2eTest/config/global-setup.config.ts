@@ -2,8 +2,8 @@ import { chromium, FullConfig } from '@playwright/test';
 import { IdamUtils } from '@hmcts/playwright-common';
 import { accessTokenApiData } from '@data/api-data/accessToken.api.data';
 import { SessionManager } from '@utils/session-manager';
+import { CookieHandler } from '@utils/cookie-handler.utils';
 import { user } from '@data/user-data';
-import { signInOrCreateAnAccount } from '@data/page-data';
 
 async function globalSetupConfig(config: FullConfig): Promise<void> {
   const baseURL = config.projects[0].use?.baseURL || process.env.MANAGE_CASE_BASE_URL || '';
@@ -40,39 +40,7 @@ async function globalSetupConfig(config: FullConfig): Promise<void> {
     }
 
     // Handle additional cookies consent if present (non-blocking - continue even if it fails)
-    try {
-      const additionalCookiesBanner = page.locator('#cm_cookie_notification');
-      const acceptAdditionalBtn = additionalCookiesBanner.getByRole('button', {
-        name: signInOrCreateAnAccount.acceptAdditionalCookiesButton,
-      });
-
-      if (await additionalCookiesBanner.isVisible({ timeout: 5000 }).catch(() => false)) {
-        await acceptAdditionalBtn.click({ timeout: 5000 }).catch(() => {
-          console.log('Failed to click additional cookies accept button, continuing...');
-        });
-        await additionalCookiesBanner.waitFor({ state: 'hidden', timeout: 5000 }).catch(() => null);
-
-        // Handle hide button if present
-        try {
-          const successBanner = page.locator('#accept-all-cookies-success');
-          const hideBtn = successBanner.getByRole('button', {
-            name: signInOrCreateAnAccount.hideThisCookieMessageButton,
-          });
-          if (await successBanner.isVisible({ timeout: 2000 }).catch(() => false)) {
-            await hideBtn.click({ timeout: 5000 }).catch(() => {
-              console.log('Failed to click hide button, continuing...');
-            });
-            await successBanner.waitFor({ state: 'hidden', timeout: 5000 }).catch(() => null);
-          }
-        } catch {
-          // Hide button handling failed - not critical, continue
-          console.log('Hide button handling failed, continuing...');
-        }
-      }
-    } catch {
-      // Cookie consent handling failed - log but don't fail the setup
-      console.log('Additional cookies banner handling failed, continuing with login...');
-    }
+    await CookieHandler.handleAdditionalCookies(page);
 
     // Perform login
     await page.waitForSelector('h1:has-text("Sign in or create an account")', { timeout: 10000 });
@@ -90,22 +58,7 @@ async function globalSetupConfig(config: FullConfig): Promise<void> {
     });
 
     // Handle analytics cookies consent if present (non-blocking - continue even if it fails)
-    try {
-      const analyticsBanner = page.locator('xuilib-cookie-banner');
-      const acceptAnalyticsBtn = analyticsBanner.getByRole('button', {
-        name: signInOrCreateAnAccount.acceptAnalyticsCookiesButton,
-      });
-
-      if (await analyticsBanner.isVisible({ timeout: 5000 }).catch(() => false)) {
-        await acceptAnalyticsBtn.click({ timeout: 5000 }).catch(() => {
-          console.log('Failed to click analytics cookies accept button, continuing...');
-        });
-        await analyticsBanner.waitFor({ state: 'hidden', timeout: 5000 }).catch(() => null);
-      }
-    } catch {
-      // Analytics cookie consent handling failed - log but don't fail the setup
-      console.log('Analytics cookies banner handling failed, continuing...');
-    }
+    await CookieHandler.handleAnalyticsCookies(page);
 
     // Navigate to base URL to ensure we're at the authenticated home page
     await page.goto(baseURL, { waitUntil: 'domcontentloaded', timeout: 30000 });
@@ -126,8 +79,10 @@ async function globalSetupConfig(config: FullConfig): Promise<void> {
 
   } catch (error) {
     console.error('Failed to setup authentication:', error);
+    // Re-throw to fail the global setup, which will prevent tests from running
     throw error;
   } finally {
+    // Ensure browser is always closed, even if an error occurs
     await browser.close();
   }
 }
