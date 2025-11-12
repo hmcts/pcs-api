@@ -52,10 +52,6 @@ class PCSCaseViewTest {
     private static final long CASE_REFERENCE = 1234L;
     private static final State DEFAULT_STATE = State.CASE_ISSUED;
 
-    private static CaseViewRequest<State> request(State state) {
-        return new CaseViewRequest<>(CASE_REFERENCE, state);
-    }
-
     @Mock
     private PcsCaseRepository pcsCaseRepository;
     @Mock
@@ -87,7 +83,7 @@ class PCSCaseViewTest {
         when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE)).thenReturn(Optional.empty());
 
         // When
-        Throwable throwable = catchThrowable(() -> underTest.getCase(request(DEFAULT_STATE)));
+        Throwable throwable = catchThrowable(() -> underTest.getCase(request(CASE_REFERENCE, DEFAULT_STATE)));
 
         // Then
         assertThat(throwable)
@@ -103,7 +99,7 @@ class PCSCaseViewTest {
         when(draftCaseDataService.hasUnsubmittedCaseData(CASE_REFERENCE, eventId)).thenReturn(hasUnsubmittedData);
 
         // When
-        PCSCase pcsCase = underTest.getCase(request(state));
+        PCSCase pcsCase = underTest.getCase(request(CASE_REFERENCE, state));
 
         // Then
         assertThat(pcsCase.getHasUnsubmittedCaseData()).isEqualTo(expectedCaseDataValue);
@@ -121,12 +117,13 @@ class PCSCaseViewTest {
     @Test
     void shouldReturnCaseWithNoPropertyAddress() {
         // When
-        PCSCase pcsCase = underTest.getCase(request(DEFAULT_STATE));
+        PCSCase pcsCase = underTest.getCase(request(CASE_REFERENCE, DEFAULT_STATE));
 
         // Then
         assertThat(pcsCase.getPropertyAddress()).isNull();
     }
 
+    @Test
     void shouldSetCaseTitleMarkdown() {
         // Given
         AddressEntity addressEntity = mock(AddressEntity.class);
@@ -137,7 +134,7 @@ class PCSCaseViewTest {
         when(caseTitleService.buildCaseTitle(any(PCSCase.class))).thenReturn(expectedCaseTitle);
 
         // When
-        PCSCase pcsCase = underTest.getCase(request(DEFAULT_STATE));
+        PCSCase pcsCase = underTest.getCase(request(CASE_REFERENCE, DEFAULT_STATE));
 
         // Then
         assertThat(pcsCase.getCaseTitleMarkdown()).isEqualTo(expectedCaseTitle);
@@ -155,7 +152,7 @@ class PCSCaseViewTest {
         AddressUK addressUK = stubAddressEntityModelMapper(addressEntity);
 
         // When
-        PCSCase pcsCase = underTest.getCase(request(DEFAULT_STATE));
+        PCSCase pcsCase = underTest.getCase(request(CASE_REFERENCE, DEFAULT_STATE));
 
         // Then
         assertThat(pcsCase.getPropertyAddress()).isEqualTo(addressUK);
@@ -172,7 +169,7 @@ class PCSCaseViewTest {
         when(modelMapper.map(partyEntity, Party.class)).thenReturn(party);
 
         // When
-        PCSCase pcsCase = underTest.getCase(request(DEFAULT_STATE));
+        PCSCase pcsCase = underTest.getCase(request(CASE_REFERENCE, DEFAULT_STATE));
 
         // Then
         List<ListValue<Party>> mappedParties = pcsCase.getParties();
@@ -188,7 +185,7 @@ class PCSCaseViewTest {
         when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(pcsCaseEntity));
 
         // When
-        PCSCase pcsCase = underTest.getCase(request(DEFAULT_STATE));
+        PCSCase pcsCase = underTest.getCase(request(CASE_REFERENCE, DEFAULT_STATE));
 
         // Then
         assertThat(pcsCase.getPreActionProtocolCompleted()).isEqualTo(VerticalYesNo.YES);
@@ -202,7 +199,7 @@ class PCSCaseViewTest {
         when(pcsCaseEntity.getPreActionProtocolCompleted()).thenReturn(databaseFlag);
 
         // When
-        PCSCase pcsCase = underTest.getCase(request(DEFAULT_STATE));
+        PCSCase pcsCase = underTest.getCase(request(CASE_REFERENCE, DEFAULT_STATE));
 
         // Then
         assertThat(pcsCase.getPreActionProtocolCompleted()).isEqualTo(expectedCaseDataValue);
@@ -224,7 +221,7 @@ class PCSCaseViewTest {
         when(pcsCaseEntity.getLegislativeCountry()).thenReturn(expectedLegislativeCountry);
 
         // When
-        PCSCase pcsCase = underTest.getCase(request(DEFAULT_STATE));
+        PCSCase pcsCase = underTest.getCase(request(CASE_REFERENCE, DEFAULT_STATE));
 
         // Then
         assertThat(pcsCase.getLegislativeCountry()).isEqualTo(expectedLegislativeCountry);
@@ -237,7 +234,7 @@ class PCSCaseViewTest {
         when(pcsCaseEntity.getClaimantType()).thenReturn(expectedClaimantType);
 
         // When
-        PCSCase pcsCase = underTest.getCase(request(DEFAULT_STATE));
+        PCSCase pcsCase = underTest.getCase(request(CASE_REFERENCE, DEFAULT_STATE));
 
         // Then
         assertThat(pcsCase.getClaimantType()).isNotNull();
@@ -251,7 +248,7 @@ class PCSCaseViewTest {
         when(pcsCaseEntity.getClaimantType()).thenReturn(null);
 
         // When
-        PCSCase pcsCase = underTest.getCase(request(DEFAULT_STATE));
+        PCSCase pcsCase = underTest.getCase(request(CASE_REFERENCE, DEFAULT_STATE));
 
         // Then
         assertThat(pcsCase.getClaimantType()).isNull();
@@ -264,7 +261,7 @@ class PCSCaseViewTest {
         when(pcsCaseEntity.getClaimantType()).thenReturn(claimantType);
 
         // When
-        PCSCase pcsCase = underTest.getCase(request(DEFAULT_STATE));
+        PCSCase pcsCase = underTest.getCase(request(CASE_REFERENCE, DEFAULT_STATE));
 
         // Then
         assertThat(pcsCase.getClaimantType()).isNotNull();
