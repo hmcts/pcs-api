@@ -13,6 +13,6 @@ public class MoneyJudgment implements CcdPageConfiguration {
                 .pageLabel("Money judgment")
                 .showCondition("showRentDetailsPage=\"Yes\"")
                 .label("moneyJudgment-separator", "---")
-                .mandatory(PCSCase::getArrearsJudgmentWantedV);
+                .mandatory(PCSCase::getArrearsJudgmentWanted);
     }
 }
