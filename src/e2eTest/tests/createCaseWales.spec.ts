@@ -1,5 +1,6 @@
 import {test} from '@playwright/test';
 import {initializeExecutor, performAction, performValidation, performValidations} from '@utils/controller';
+import {PageContentValidation} from '@utils/validations/element-validations/pageContent.validation';
 import {
   claimType,
   claimantType,
@@ -59,6 +60,10 @@ test.beforeEach(async ({page}) => {
   await performAction('clickTab', home.createCaseTab);
   await performAction('selectJurisdictionCaseTypeEvent');
   await performAction('housingPossessionClaim');
+});
+
+test.afterEach(async () => {
+  PageContentValidation.finalizeTest();
 });
 
 test.describe('[Create Case - Wales] @Master @nightly', async () => {

@@ -1,5 +1,6 @@
 import {test} from '@playwright/test';
 import { initializeExecutor, performAction, performValidation } from '@utils/controller';
+import {PageContentValidation} from '@utils/validations/element-validations/pageContent.validation';
 import {caseInfo} from '@utils/actions/custom-actions';
 import {user} from '@data/user-data';
 import {signInOrCreateAnAccount} from '@data/page-data';
@@ -17,6 +18,10 @@ test.beforeEach(async ({page}) => {
     accept: signInOrCreateAnAccount.acceptAnalyticsCookiesButton
   });
   await performAction('createCase', {data: caseApiData.createCasePayload});
+});
+
+test.afterEach(async () => {
+  PageContentValidation.finalizeTest();
 });
 
 //Skipping these tests until create case journey is fully developed because tests may fail each time when payload changes for create case API
