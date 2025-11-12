@@ -1,13 +1,11 @@
 import { Page, Cookie } from '@playwright/test';
 import { signInOrCreateAnAccount } from '@data/page-data';
-import { SessionManager } from '@utils/session-manager';
 import * as fs from 'fs';
 
 /**
- * Handles cookie consent banners in a non-blocking way.
- * If cookie banners are not found or interactions fail, the function logs a message and continues.
- * This ensures tests continue even if cookie handling fails.
- * Also adds analytics cookies to the storage state file for persistence.
+ * Handles cookie consent banners and analytics cookies.
+ * UI banner handling is service-specific (not in common repos).
+ * Analytics cookie addition follows the pattern from tcoe-playwright-example.
  */
 export class CookieHandler {
   /**
@@ -83,32 +81,37 @@ export class CookieHandler {
   }
 
   /**
-   * Adds analytics cookie to storage state file (similar to tcoe-playwright-example pattern)
+   * Adds analytics cookie to storage state file (following tcoe-playwright-example pattern)
    * This ensures the analytics cookie preference is persisted in the saved session
-   * @param baseURL - Base URL to determine the domain for the cookie
+   * @param sessionPath - Path to the storage state file
    */
-  static async addAnalyticsCookieToStorageState(baseURL: string): Promise<void> {
+  static async addManageCasesAnalyticsCookie(sessionPath: string): Promise<void> {
     try {
-      const storageStatePath = SessionManager.getStorageStatePath();
-      if (!fs.existsSync(storageStatePath)) {
-        console.log('Storage state file not found, skipping analytics cookie addition');
+      const state = JSON.parse(fs.readFileSync(sessionPath, 'utf-8'));
+      const cookies = Array.isArray(state?.cookies) ? state.cookies : [];
+
+      // Get userId from existing cookies (required for cookie name)
+      const userId = cookies.find(
+        (cookie: Cookie) => cookie.name === '__userid__'
+      )?.value;
+
+      if (!userId) {
+        console.log('User ID not found in cookies, skipping analytics cookie addition');
         return;
       }
 
-      const state = JSON.parse(fs.readFileSync(storageStatePath, 'utf-8'));
-      const cookies = Array.isArray(state?.cookies) ? state.cookies : [];
-      
-      // Get domain from baseURL
-      const domain = this.resolveHostname(baseURL);
-      
-      // Get userId from existing cookies if available
-      const userId = cookies.find((cookie: Cookie) => cookie.name === '__userid__')?.value || 'default';
-      
       // Check if analytics cookie already exists
       const analyticsCookieName = `hmcts-exui-cookies-${userId}-mc-accepted`;
-      const existingCookie = cookies.find((cookie: Cookie) => cookie.name === analyticsCookieName);
-      
+      const existingCookie = cookies.find(
+        (cookie: Cookie) => cookie.name === analyticsCookieName
+      );
+
       if (!existingCookie) {
+        // Get domain from first cookie or derive from session
+        const domain = cookies.length > 0 && cookies[0].domain
+          ? cookies[0].domain
+          : this.resolveHostname(process.env.MANAGE_CASE_BASE_URL || '');
+
         cookies.push({
           name: analyticsCookieName,
           value: 'true',
@@ -116,12 +119,12 @@ export class CookieHandler {
           path: '/',
           expires: -1,
           httpOnly: false,
-          secure: true,
+          secure: false,
           sameSite: 'Lax',
         });
-        
+
         state.cookies = cookies;
-        fs.writeFileSync(storageStatePath, JSON.stringify(state, null, 2), 'utf-8');
+        fs.writeFileSync(sessionPath, JSON.stringify(state, null, 2), 'utf-8');
         console.log('Analytics cookie added to storage state');
       }
     } catch (error) {
@@ -131,7 +134,7 @@ export class CookieHandler {
   }
 
   /**
-   * Resolves hostname from URL
+   * Resolves hostname from URL (helper method)
    * @param url - URL string
    * @returns hostname
    */

@@ -75,9 +75,8 @@ async function globalSetupConfig(config: FullConfig): Promise<void> {
     // Wait a bit to ensure all cookies are set and page is fully loaded
     await page.waitForTimeout(2000);
 
-    // Add analytics cookie to storage state file for persistence (like tcoe-playwright-example)
-    // This updates the session file that IdamPage already saved
-    await CookieHandler.addAnalyticsCookieToStorageState(baseURL);
+    // Add analytics cookie to storage state file for persistence (following tcoe-playwright-example pattern)
+    await CookieHandler.addManageCasesAnalyticsCookie(SessionManager.getStorageStatePath());
     
     // Ensure storage state is up to date with all cookies
     await SessionManager.saveStorageState(page);
