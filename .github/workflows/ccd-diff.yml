@@ -90,9 +90,11 @@ jobs:
             cat "$SUMMARY_PATH"
           } > "$BODY_FILE"
 
-            # Look for an existing CCD diff comment (by header and author)
-            COMMENT_ID=$(gh pr view "$PR_NUMBER" --repo "$GITHUB_REPOSITORY"
-          --json comments --jq '.comments[] | select(.body | startswith("# CCD diff summary")) | .databaseId')
+            # Look for an existing CCD diff comment (by header)
+          COMMENT_ID=$(gh pr view "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" \
+          --json comments \
+          --jq '.comments.nodes[] | select(.body | startswith("# CCD diff summary")) | .databaseId')
+
 
           if [ -n "$COMMENT_ID" ]; then
               echo "📝 Updating existing CCD diff comment ($COMMENT_ID)"
@@ -101,4 +103,4 @@ jobs:
             else
               echo "💬 Creating new CCD diff comment"
               gh pr comment "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --body-file "$BODY_FILE"
-            fi
+          fi
