@@ -170,6 +170,8 @@ test.describe('[Create Case - Wales] @Master @nightly', async () => {
       postcode: addressDetails.walesCourtAssignedPostcodeTextInput,
       country: addressDetails.walesCountryTextInput
     });
+    await performValidation('mainHeader', addressCheckYourAnswers.mainHeader)
+    await performAction('submitAddressCheckYourAnswers');
     await performValidation('bannerAlert', 'Case #.* has been created.');
     await performAction('extractCaseIdFromAlert');
     await performAction('provideMoreDetailsOfClaim');
