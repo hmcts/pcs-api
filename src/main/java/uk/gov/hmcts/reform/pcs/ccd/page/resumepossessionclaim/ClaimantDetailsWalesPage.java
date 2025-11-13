@@ -9,6 +9,7 @@ import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.WalesHousingAct;
+import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 
 import java.time.Clock;
 import java.time.LocalDate;
@@ -52,7 +53,8 @@ public class ClaimantDetailsWalesPage implements CcdPageConfiguration {
                     "walesLicensedAgentAppointed=\"YES\"")
                 .mandatory(WalesHousingAct::getAgentAppointmentDate,
                     "walesLicensedAgentAppointed=\"YES\"")
-            .done();
+            .done()
+            .label("claimantDetailsWales-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
 
     public AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
