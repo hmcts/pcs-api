@@ -78,6 +78,7 @@ public class PaymentsServiceRequestConsumerTest {
             .volume(1)
             .build()
     };
+
     @Pact(provider = "payment_accounts", consumer = "pcs_api")
     public V4Pact createServiceRequestPact(PactDslWithProvider builder) {
         //Building Request body for Pact test:
@@ -95,7 +96,7 @@ public class PaymentsServiceRequestConsumerTest {
             .stringValue("code", CODE)
             .stringValue("version", VERSION)
             .numberValue("volume", VOLUME)
-            // Fields not needed for request, only for FeesDto type expectations:
+            // The below fields are not needed for request, only for FeesDto (Fees Array) type expectations:
             .stringType("ccd_case_number", "")
             .stringType("description", "")
             .numberType("id")
@@ -126,7 +127,7 @@ public class PaymentsServiceRequestConsumerTest {
             .body(responseBody)
             .toPact(V4Pact.class);
     }
-    
+
     @Test
     @PactTestFor(pactMethod = "createServiceRequestPact")
     void shouldReturnServiceRequestReference() {
