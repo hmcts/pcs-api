@@ -1,0 +1,16 @@
+export const borderPostcode = {
+  mainHeader: `Border postcode`,
+  cancelLink: `Cancel`,
+  continueButton: `Continue`,
+  englandRadioOption: `England`,
+  isThePropertyLocatedInEnglandOrScotlandQuestion: `Is the property located in England or Scotland?`,
+  isThePropertyLocatedEnglandOrWalesQuestion: `Is the property located in England or Wales?`,
+  makeAClaimCaption: `Make a claim`,
+  previousButton: `Previous`,
+  scotlandRadioOption: `Scotland`,
+  walesRadioOption: `Wales`,
+  yourCaseCouldBeDelayedParagraph: `Your case could be delayed or rejected if you select the wrong country.`,
+  yourPostcodeIncludesPropertiesInEnglandScotlandParagraph: `Your postcode includes properties in England and Scotland. We need to know which country your property is in, as you will not be able to use this service if your property is in Scotland.`,
+  ifYouAreNotSureWhichCountryParagraph: `If you’re not sure which country your property is in, try searching for your address on the land and property register.`,
+  yourPostcodeIncludesPropertiesInEnglandWalesParagraph: `Your postcode includes properties in England and Wales. We need to know which country your property is in, as the law is different in each country.`,
+};

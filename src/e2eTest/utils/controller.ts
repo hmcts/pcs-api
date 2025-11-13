@@ -1,3 +1,4 @@
+// controller.ts
 import {Page, test} from '@playwright/test';
 import {actionData, actionRecord, actionTuple} from './interfaces/action.interface';
 import {validationData, validationRecord, validationTuple} from './interfaces/validation.interface';
@@ -5,9 +6,11 @@ import {ActionRegistry} from './registry/action.registry';
 import {ValidationRegistry} from './registry/validation.registry';
 
 let testExecutor: { page: Page };
+let previousUrl: string = ''; // Move previousUrl to module scope
 
 export function initializeExecutor(page: Page): void {
   testExecutor = { page };
+  previousUrl = page.url(); // Initialize previousUrl
 }
 
 function getExecutor(): { page: Page } {
@@ -17,8 +20,33 @@ function getExecutor(): { page: Page } {
   return testExecutor;
 }
 
+async function detectPageNavigation(): Promise<boolean> {
+  const executor = getExecutor();
+
+  // Wait for page to settle
+  await executor.page.waitForTimeout(100);
+  const currentUrl = executor.page.url();
+
+  const hasNavigated = currentUrl !== previousUrl;
+
+  if (hasNavigated) {
+    console.log(`🔄 Page navigation detected: ${previousUrl} -> ${currentUrl}`);
+    previousUrl = currentUrl; // Update previousUrl only when navigation occurs
+  }
+
+  return hasNavigated;
+}
+
 export async function performAction(action: string, fieldName?: actionData | actionRecord, value?: actionData | actionRecord): Promise<void> {
   const executor = getExecutor();
+
+  const hasNavigated = await detectPageNavigation();
+  if (hasNavigated) {
+    console.log('🚀 Starting page content validation...');
+    const pageValidator = ValidationRegistry.getValidation('autoValidatePageContent');
+    await pageValidator.validate(executor.page, 'autoValidatePageContent');
+  }
+
   const actionInstance = ActionRegistry.getAction(action);
   let displayFieldName = fieldName;
   let displayValue = value ?? fieldName;
