@@ -29,17 +29,17 @@ export class CookieUtils {
    */
   public async addAllConsentCookies(sessionPath: string, baseURL?: string): Promise<void> {
     try {
-      const domain = baseURL 
-        ? this.resolveHostname(baseURL) 
+      const domain = baseURL
+        ? this.resolveHostname(baseURL)
         : this.resolveHostname(process.env.MANAGE_CASE_BASE_URL || '');
       const state = JSON.parse(fs.readFileSync(sessionPath, 'utf-8'));
       const cookies = Array.isArray(state?.cookies) ? state.cookies : [];
-      
+
       // Get userId from existing cookies (required for analytics cookie name)
       const userId = cookies.find(
         (cookie: Cookie) => cookie.name === '__userid__'
       )?.value;
-      
+
       if (!userId) {
         console.log('User ID not found in cookies, skipping consent cookie addition');
         return;
@@ -50,7 +50,7 @@ export class CookieUtils {
       const existingAnalyticsCookie = cookies.find(
         (cookie: Cookie) => cookie.name === analyticsCookieName
       );
-      
+
       if (!existingAnalyticsCookie) {
         cookies.push({
           name: analyticsCookieName,
@@ -74,7 +74,7 @@ export class CookieUtils {
         'cm_cookie_notification',
         'cookie-notification'
       ];
-      
+
       let additionalCookieAdded = false;
       for (const cookieName of additionalCookieNames) {
         const existingCookie = cookies.find(
@@ -109,5 +109,4 @@ export class CookieUtils {
       throw new Error(`Failed to add consent cookies to storage state: ${error}`);
     }
   }
-
 }

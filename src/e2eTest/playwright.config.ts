@@ -3,7 +3,6 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 import {defineConfig, devices} from '@playwright/test';
-import { SessionUtils } from '@hmcts/playwright-common';
 
 const DEFAULT_VIEWPORT = {width: 1920, height: 1080};
 export const VERY_SHORT_TIMEOUT = 1000;
@@ -13,24 +12,9 @@ export const LONG_TIMEOUT = 30000;
 export const actionRetries = 5;
 export const waitForPageRedirectionTimeout = SHORT_TIMEOUT;
 
-// Session configuration
-const SESSION_DIR = path.join(process.cwd(), '.auth');
-const STORAGE_STATE_FILE = 'storage-state.json';
-const SESSION_COOKIE_NAME = process.env.SESSION_COOKIE_NAME || 'Idam.Session';
-
-function getStorageStatePath(): string {
-  if (!fs.existsSync(SESSION_DIR)) {
-    fs.mkdirSync(SESSION_DIR, { recursive: true });
-  }
-  return path.join(SESSION_DIR, STORAGE_STATE_FILE);
-}
-
-// Use storage state if it exists and is valid
-const storageStatePath = getStorageStatePath();
-const storageState = fs.existsSync(storageStatePath) && 
-  SessionUtils.isSessionValid(storageStatePath, SESSION_COOKIE_NAME)
-  ? storageStatePath 
-  : undefined;
+// Use storage state if it exists (global-setup creates it)
+const storageStatePath = path.join(process.cwd(), '.auth', 'storage-state.json');
+const storageState = fs.existsSync(storageStatePath) ? storageStatePath : undefined;
 
 export default defineConfig({
   testDir: 'tests/',

@@ -33,7 +33,7 @@ async function globalSetupConfig(config: FullConfig): Promise<void> {
       throw new Error('Login failed: missing credentials');
     }
 
-    // Skip login if session is already valid
+    // Skip login if session is already valid (same logic for CI and local)
     if (SessionUtils.isSessionValid(storageStatePath, SESSION_COOKIE_NAME)) {
       console.log('Valid session found, skipping login...');
       await browser.close();
