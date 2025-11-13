@@ -15,8 +15,8 @@ import {addressDetails, claimantType, claimType, claimantName, contactPreference
 
 test.beforeEach(async ({page}) => {
   initializeExecutor(page);
-  // User is already authenticated via globalSetup with cookies accepted
-  await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
+  // User is already authenticated via globalSetup
+  await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL + '/cases/case-filter');
   await performAction('clickTab', home.createCaseTab);
   await performAction('selectJurisdictionCaseTypeEvent');
   await performAction('housingPossessionClaim');

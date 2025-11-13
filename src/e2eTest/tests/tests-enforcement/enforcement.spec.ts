@@ -12,8 +12,8 @@ import {
 test.beforeEach(async ({ page }) => {
   initializeExecutor(page);
   initializeEnforcementExecutor(page);
-  // User is already authenticated via globalSetup with cookies accepted
-  await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
+  // User is already authenticated via globalSetup
+  await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL + '/cases/case-filter');
   await performAction('filterCaseFromCaseList', caseList.stateAwaitingSubmission);
   await performAction('noCasesFoundAfterSearch');
   //Below three lines will be merged into a single action as part of improvement

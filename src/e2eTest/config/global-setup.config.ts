@@ -31,7 +31,6 @@ async function globalSetupConfig(config: FullConfig): Promise<void> {
       throw new Error('Login failed: missing credentials');
     }
 
-    // Skip login if session is already valid (same logic for CI and local)
     if (SessionUtils.isSessionValid(storageStatePath, SESSION_COOKIE_NAME)) {
       console.log('Valid session found, skipping login...');
       await browser.close();
@@ -40,7 +39,6 @@ async function globalSetupConfig(config: FullConfig): Promise<void> {
 
     console.log('Performing login and setting up session...');
 
-    // Navigate to login page and perform login
     await page.goto(baseURL, { waitUntil: 'domcontentloaded', timeout: 30000 });
     
     const idamPage = new IdamPage(page);
@@ -50,37 +48,22 @@ async function globalSetupConfig(config: FullConfig): Promise<void> {
       sessionFile: storageStatePath,
     });
 
-    // Wait for navigation after login
     await page.waitForURL('**/cases', { timeout: 30000 }).catch(() => {
       return page.waitForFunction(
         () => !window.location.href.includes('/login') && !window.location.href.includes('/sign-in'),
         { timeout: 30000 }
-      ).catch(() => null);
+      );
     });
 
-    // Wait for page to be ready
     await page.waitForLoadState('domcontentloaded', { timeout: 30000 }).catch(() => {
       return page.waitForLoadState('load', { timeout: 30000 });
     });
 
-    // Verify storage state file was created and contains cookies
-    if (fs.existsSync(storageStatePath)) {
-      const stateContent = JSON.parse(fs.readFileSync(storageStatePath, 'utf-8'));
-      const cookieCount = Array.isArray(stateContent?.cookies) ? stateContent.cookies.length : 0;
-      console.log(`Login successful! Session saved to ${storageStatePath} with ${cookieCount} cookies.`);
-      
-      // Log session cookie if present
-      const sessionCookie = stateContent?.cookies?.find((c: any) => 
-        c.name === SESSION_COOKIE_NAME || c.name?.includes('Session')
-      );
-      if (sessionCookie) {
-        console.log(`Session cookie found: ${sessionCookie.name} (domain: ${sessionCookie.domain})`);
-      } else {
-        console.warn('Warning: No session cookie found in storage state!');
-      }
-    } else {
+    if (!fs.existsSync(storageStatePath)) {
       throw new Error(`Storage state file was not created at ${storageStatePath}`);
     }
+
+    console.log('Login successful and session saved!');
 
   } catch (error) {
     console.error('Failed to setup authentication:', error);
