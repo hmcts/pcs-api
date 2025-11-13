@@ -8,8 +8,7 @@ import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 
 /**
- * Service for generating fully populated test case instances using Instancio 1.0.4.
- * This service is thread-safe and automatically handles all domain model changes.
+ * Service for generating fully populated test case instances using Instancio.
  */
 @Service
 @Slf4j

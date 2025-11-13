@@ -13,13 +13,8 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.CrossBorderPostcodeSelection;
-import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.EnterPropertyAddress;
-import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.PostcodeNotAssignedToCourt;
-import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.PropertyNotEligible;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.StartTheService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
-import uk.gov.hmcts.reform.pcs.feesandpay.service.FeesAndPayService;
 
 import java.math.BigDecimal;
 
@@ -32,6 +27,7 @@ public class CaseCreationTestingSupport implements CCDConfig<PCSCase, State, Use
 
     private final PcsCaseService pcsCaseService;
 
+
     private static final String FEE = "Unable to retrieve";
 
     @Override
@@ -40,21 +36,16 @@ public class CaseCreationTestingSupport implements CCDConfig<PCSCase, State, Use
             configBuilder
                 .decentralisedEvent(createTestCase.name(), this::submit, this::start)
                 .initialState(State.TEST_CASE)
-                .name("Make a claim T.HINSON")
+                .name("FOR QA - Test Case Creation")
                 .grant(Permission.CRUD, UserRole.PCS_SOLICITOR);
 
         new PageBuilder(eventBuilder)
-            .add(new StartTheService())
-//            .add(enterPropertyAddress)
-//            .add(crossBorderPostcodeSelection)
-//            .add(propertyNotEligible)
-            .add(new PostcodeNotAssignedToCourt());
+            .add(new StartTheService());
 
     }
 
     private PCSCase start(EventPayload<PCSCase, State> eventPayload) {
         PCSCase caseData = eventPayload.caseData();
-
 
 
         return caseData;
