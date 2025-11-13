@@ -3,6 +3,7 @@ package uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 
 public class GeneralApplication implements CcdPageConfiguration {
 
@@ -44,6 +45,7 @@ public class GeneralApplication implements CcdPageConfiguration {
                   </section>
 
                   """)
-                .mandatory(PCSCase::getApplicationWithClaim);
+                .mandatory(PCSCase::getApplicationWithClaim)
+            .label("generalApplication-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
 }

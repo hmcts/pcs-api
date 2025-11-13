@@ -15,6 +15,7 @@ import static uk.gov.hmcts.ccd.sdk.type.FieldType.DynamicMultiSelectList;
 /**
  * The main domain model representing an enforcement order.
  */
+
 @Builder
 @Data
 public class EnforcementOrder {
@@ -23,6 +24,10 @@ public class EnforcementOrder {
         label = "What do you want to apply for?"
     )
     private SelectEnforcementType selectEnforcementType;
+
+    @JsonUnwrapped
+    @CCD
+    private AdditionalInformation additionalInformation;
 
     @JsonUnwrapped
     private NameAndAddressForEviction nameAndAddressForEviction;
@@ -74,6 +79,14 @@ public class EnforcementOrder {
         label = "Risk details"
     )
     private EnforcementRiskDetails riskDetails;
+
+    @CCD(
+        label = "Is anyone living at the property vulnerable?"
+    )
+    private YesNoNotSure vulnerablePeopleYesNo;
+    
+    private VulnerableAdultsChildren vulnerableAdultsChildren;
+    
     @JsonUnwrapped
     @CCD
     private PropertyAccessDetails propertyAccessDetails;

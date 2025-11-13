@@ -12,6 +12,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.NoRentArrearsMandatoryGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.model.NoRentArrearsReasonForGrounds;
+import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 
 import java.util.ArrayList;
@@ -31,7 +32,8 @@ public class NoRentArrearsGroundsForPossessionReason implements CcdPageConfigura
             .pageLabel("Reasons for possession")
             .showCondition("groundsForPossession=\"No\" "
                                + "AND typeOfTenancyLicence=\"ASSURED_TENANCY\""
-                               + " AND showNoRentArrearsGroundReasonPage=\"Yes\"")
+                               + " AND showNoRentArrearsGroundReasonPage=\"Yes\""
+                               + " AND legislativeCountry=\"England\"")
             .label("noRentArrearsOptions-lineSeparator", "---")
             .complex(PCSCase::getNoRentArrearsReasonForGrounds)
             // Ground 1
@@ -268,7 +270,9 @@ public class NoRentArrearsGroundsForPossessionReason implements CcdPageConfigura
             .mandatory(
                 NoRentArrearsReasonForGrounds::getFalseStatementTextArea,
                 "noRentArrearsDiscretionaryGroundsOptionsCONTAINS\"FALSE_STATEMENT\""
-            );
+            )
+            .done()
+            .label("noRentArrearsGroundsForPossessionReason-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
 
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
