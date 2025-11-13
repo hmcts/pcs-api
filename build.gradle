@@ -21,8 +21,8 @@ plugins {
   id 'org.flywaydb.flyway' version "$flywayVersion"
   id 'org.sonarqube' version '7.0.1.6134'
   id 'net.serenity-bdd.serenity-gradle-plugin' version "$serenityBddVersion"
-  id 'hmcts.ccd.sdk' version '6.5.2'
-  id 'com.github.hmcts.rse-cft-lib' version '0.19.1922'
+  id 'hmcts.ccd.sdk' version '6.5.3'
+  id 'com.github.hmcts.rse-cft-lib' version '0.19.1923'
   id 'io.freefair.lombok' version '9.1.0'
   id 'au.com.dius.pact' version '4.6.18'
   /*
@@ -315,7 +315,7 @@ ext {
   lombokVersion = "1.18.42"
   springSecurityVersion = "6.5.6"
   pactVersion = "4.6.18"
-  tomcatEmbedVersion = "11.0.13"
+  tomcatEmbedVersion = "11.0.14"
   nettyVersion = "4.1.127.Final"
 }
 
