@@ -13,6 +13,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.SuspensionOfRightToBuy;
 import uk.gov.hmcts.reform.pcs.ccd.domain.SuspensionOfRightToBuyDemotionOfTenancy;
+import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 
 import java.util.Set;
 
@@ -62,7 +63,8 @@ public class AlternativesToPossessionOptions implements CcdPageConfiguration {
                       place by the demotion order.
                     </p>
                     """)
-            .optional(PCSCase::getAlternativesToPossession);
+            .optional(PCSCase::getAlternativesToPossession)
+            .label("alternativesToPossession-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
 
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
