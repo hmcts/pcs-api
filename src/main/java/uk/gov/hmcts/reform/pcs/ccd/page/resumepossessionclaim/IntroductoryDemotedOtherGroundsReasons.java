@@ -9,6 +9,7 @@ import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.IntroductoryDemotedOtherGroundReason;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 
 import java.util.ArrayList;
@@ -73,7 +74,8 @@ public class IntroductoryDemotedOtherGroundsReasons implements CcdPageConfigurat
                 ""","hasIntroductoryDemotedOtherGroundsForPossession=\"NO\"")
             .mandatory(IntroductoryDemotedOtherGroundReason::getNoGrounds,
                        "hasIntroductoryDemotedOtherGroundsForPossession=\"NO\"")
-            .done();
+            .done()
+            .label("introductoryDemotedOtherGroundsReasons-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
 
     }
 

@@ -11,6 +11,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 import uk.gov.hmcts.reform.pcs.ccd.service.DefendantValidator;
 
 import java.util.ArrayList;
@@ -50,8 +51,8 @@ public class DefendantsDetails implements CcdPageConfiguration {
                 ---
                 <h2>Additional defendants</h2>""")
             .mandatory(PCSCase::getAddAnotherDefendant)
-            .mandatory(PCSCase::getAdditionalDefendants, "addAnotherDefendant=\"YES\"");
-
+            .mandatory(PCSCase::getAdditionalDefendants, "addAnotherDefendant=\"YES\"")
+            .label("defendantsDetails-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
 
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,

@@ -3,7 +3,7 @@ appVersion: "1.0"
 description: A Helm chart for pcs-api App
 name: pcs-api
 home: https://github.com/hmcts/pcs-api
-version: 0.0.44
+version: 0.0.45
 maintainers:
   - name: HMCTS pcs team
 dependencies:
@@ -19,7 +19,7 @@ dependencies:
     repository: 'oci://hmctspublic.azurecr.io/helm'
     condition: ccd.enabled
   - name: xui-webapp
-    version: 1.0.38
+    version: 1.0.39
     repository: 'oci://hmctspublic.azurecr.io/helm'
     condition: xui-webapp.enabled
   - name: postgresql
