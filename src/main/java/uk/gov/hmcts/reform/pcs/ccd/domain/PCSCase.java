@@ -742,6 +742,9 @@ public class PCSCase {
     )
     private WaysToPay waysToPay;
 
+    @CCD
+    private StatementOfTruthDetails statementOfTruth;
+
     @CCD(searchable = false)
     private YesOrNo showPreActionProtocolPageWales;
 
