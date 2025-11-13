@@ -33,5 +33,15 @@ export const addressDetails = {
   englandWalesCrossBorderPostcodeTextInput: 'SY13 2LH',
   header: 'There is a problem',
   addressDetailsError: 'An address is required',
+  englandBuildingAndStreet: '1 Second Avenue',
+  englandTownOrCity: 'London',
+  englandNoCourtAssignedPostcode: 'LE3 5EZ',
+  walesNoCourtAssignedPostcode: 'LL30 1DE',
+  walesCourtAssignedPostcode: 'CF11 6QX',
+  scotlandNoCourtAssignedPostcode: 'SA31 3DG',
+  englandWalesNoCourtCrossBorderPostcode: 'SY4 5NN',
+  englandScotlandNoCourtCrossBorderPostcode: 'TD12 4AS',
+  englandWalesCrossBorderPostcode: 'SY13 2LH',
+  continueButton: 'Continue',
   submitButton: 'Submit'
 };
